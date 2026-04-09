@@ -93,6 +93,8 @@ What was actually runnable today:
 - `scripts/export-plugin.py` now proves that the shared packaging contract can
   materialize temporary Claude/Codex layouts without checking generated plugin
   trees into the repo.
+- `handoff` and `gather` now have scenario-level bootstrap checks rather than
+  only static contract-marker coverage.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -115,8 +117,8 @@ What was actually runnable today:
   `cautilus` exposes a real upstream contract
 - collaboration-layer tightening beyond the current representative `announcement`
   and `hitl` policy surface
-- broader representative intent checks for `handoff`, `gather`,
-  `create-skill`, and `spec` beyond the current contract-marker baseline
+- broader representative intent checks for `create-skill` and `spec` beyond the
+  current contract-marker baseline
 - generated Claude/Codex host layouts and drift checks beyond the current
   shared manifest validation
 - richer published-plugin metadata and optional host-specific `commands/agents`
@@ -197,6 +199,22 @@ Evidence:
 - `scripts/export-plugin.py`
 - `scripts/run-evals.py`
 - `docs/host-packaging.md`
+
+### 6. Representative skill validation has started moving from text markers to workflow smoke
+
+`handoff` and `gather` now prove their adapter bootstrap path in `run-evals.py`
+by creating clean temp repos, initializing adapters, and resolving the durable
+artifact location. That is a better maintenance boundary than treating these
+skills as prose-only contracts. The remaining gap in this area is now mostly
+`create-skill` and `spec`.
+
+Evidence:
+
+- `skills/public/handoff/scripts/init_adapter.py`
+- `skills/public/handoff/scripts/resolve_adapter.py`
+- `skills/public/gather/scripts/init_adapter.py`
+- `skills/public/gather/scripts/resolve_adapter.py`
+- `scripts/run-evals.py`
 
 ## Commands Run
 

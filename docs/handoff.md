@@ -65,6 +65,7 @@
 - [packaging/charness.json](/home/ubuntu/charness/packaging/charness.json), [plugin.schema.json](/home/ubuntu/charness/packaging/plugin.schema.json), [host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md), [validate-packaging.py](/home/ubuntu/charness/scripts/validate-packaging.py)가 추가돼 Claude/Codex dual-support용 shared packaging contract가 생겼다.
 - [export-plugin.py](/home/ubuntu/charness/scripts/export-plugin.py)가 추가돼 shared packaging manifest에서 temp Claude/Codex plugin layout을 실제로 materialize하는 첫 export path가 생겼다.
 - packaging contract는 이제 shared repo inputs, host-specific manifest paths, Codex repo marketplace shape까지 고정하고, richer install-surface metadata와 host-specific `commands/agents` generation만 다음 단계로 남겼다.
+- `run-evals.py`는 이제 `handoff` / `gather` adapter init/resolve bootstrap까지 포함해 representative skill 검증이 marker check에서 one-step workflow smoke로 넓어졌다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - support skill migrations and integration wrappers
@@ -75,7 +76,7 @@
 
 1. pre-`cautilus`로 계속 가면 packaging export에 richer install-surface metadata, optional `.mcp.json` / `.app.json`, 그리고 future host-specific `commands/agents` seam을 어디까지 둘지 정한다.
 2. 그 다음 generated host manifests를 committed fixture로 둘지, 계속 temp export smoke만 유지할지 결정한다.
-3. 그와 병행해 `handoff` / `gather` / `create-skill` / `spec` representative gate를 더 강하게 만들 필요가 있는지 본다.
+3. 그와 병행해 `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
 4. 사용자가 `~/cautilus` 작업 완료를 알리면 upstream repo 또는 release boundary, install/update path, detect/healthcheck contract를 먼저 확인한다.
 5. extracted evaluation engine용 integration manifest를 추가하고 control-plane contract에 연결한다.
 6. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 provisional matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.

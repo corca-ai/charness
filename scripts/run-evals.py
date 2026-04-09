@@ -131,7 +131,7 @@ def scenario_quality_adapter_bootstrap(root: Path) -> None:
         resolve_script = root / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py"
 
         init_result = run_command(
-            ["python3", str(init_script), "--repo-root", str(tmp), "--preset-id", "portable-defaults"],
+            ["python3", str(init_script), "--repo-root", str(tmp)],
             cwd=root,
         )
         expect_success(init_result, "quality adapter init")
@@ -163,6 +163,56 @@ def scenario_quality_adapter_checked_in(root: Path) -> None:
     gate_commands = payload.get("data", {}).get("gate_commands", [])
     if "./scripts/run-quality.sh" not in gate_commands:
         raise EvalError(f"checked-in quality adapter resolve: missing canonical gate command in {gate_commands!r}")
+
+
+def scenario_handoff_adapter_bootstrap(root: Path) -> None:
+    with tempfile.TemporaryDirectory(prefix="charness-eval-handoff-adapter-") as tmpdir:
+        tmp = Path(tmpdir)
+        init_script = root / "skills" / "public" / "handoff" / "scripts" / "init_adapter.py"
+        resolve_script = root / "skills" / "public" / "handoff" / "scripts" / "resolve_adapter.py"
+
+        init_result = run_command(
+            ["python3", str(init_script), "--repo-root", str(tmp)],
+            cwd=root,
+        )
+        expect_success(init_result, "handoff adapter init")
+
+        adapter_path = tmp / ".agents" / "handoff-adapter.yaml"
+        if not adapter_path.exists():
+            raise EvalError("handoff adapter init: expected .agents/handoff-adapter.yaml to exist")
+
+        resolve_result = run_command(["python3", str(resolve_script), "--repo-root", str(tmp)], cwd=root)
+        expect_success(resolve_result, "handoff adapter resolve")
+        payload = json.loads(resolve_result.stdout)
+        if payload.get("found") is not True or payload.get("valid") is not True:
+            raise EvalError(f"handoff adapter resolve: unexpected payload {payload!r}")
+        if payload.get("artifact_path") != "skill-outputs/handoff/handoff.md":
+            raise EvalError(f"handoff adapter resolve: unexpected artifact_path {payload.get('artifact_path')!r}")
+
+
+def scenario_gather_adapter_bootstrap(root: Path) -> None:
+    with tempfile.TemporaryDirectory(prefix="charness-eval-gather-adapter-") as tmpdir:
+        tmp = Path(tmpdir)
+        init_script = root / "skills" / "public" / "gather" / "scripts" / "init_adapter.py"
+        resolve_script = root / "skills" / "public" / "gather" / "scripts" / "resolve_adapter.py"
+
+        init_result = run_command(
+            ["python3", str(init_script), "--repo-root", str(tmp)],
+            cwd=root,
+        )
+        expect_success(init_result, "gather adapter init")
+
+        adapter_path = tmp / ".agents" / "gather-adapter.yaml"
+        if not adapter_path.exists():
+            raise EvalError("gather adapter init: expected .agents/gather-adapter.yaml to exist")
+
+        resolve_result = run_command(["python3", str(resolve_script), "--repo-root", str(tmp)], cwd=root)
+        expect_success(resolve_result, "gather adapter resolve")
+        payload = json.loads(resolve_result.stdout)
+        if payload.get("found") is not True or payload.get("valid") is not True:
+            raise EvalError(f"gather adapter resolve: unexpected payload {payload!r}")
+        if payload.get("artifact_path") != "skill-outputs/gather/gather.md":
+            raise EvalError(f"gather adapter resolve: unexpected artifact_path {payload.get('artifact_path')!r}")
 
 
 def scenario_handoff_absolute_links(root: Path) -> None:
@@ -277,6 +327,8 @@ SCENARIOS = (
     Scenario("doc-links-valid", "fixture docs with valid internal links pass markdown link validation"),
     Scenario("quality-adapter-bootstrap", "quality init/resolve scripts bootstrap a clean repo"),
     Scenario("quality-adapter-checked-in", "checked-in quality adapter resolves to the declared repo contract"),
+    Scenario("handoff-adapter-bootstrap", "handoff adapter helpers bootstrap the durable handoff artifact path"),
+    Scenario("gather-adapter-bootstrap", "gather adapter helpers bootstrap the durable gather artifact path"),
     Scenario("handoff-absolute-links", "repo-local absolute markdown links remain valid in handoff-style docs"),
     Scenario("find-skills-local-first", "find-skills keeps local-first discovery while exposing configured official roots"),
     Scenario("representative-skill-contracts", "representative public skills retain their required contract markers"),
@@ -292,6 +344,8 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "doc-links-valid": scenario_doc_links_valid,
         "quality-adapter-bootstrap": scenario_quality_adapter_bootstrap,
         "quality-adapter-checked-in": scenario_quality_adapter_checked_in,
+        "handoff-adapter-bootstrap": scenario_handoff_adapter_bootstrap,
+        "gather-adapter-bootstrap": scenario_gather_adapter_bootstrap,
         "handoff-absolute-links": scenario_handoff_absolute_links,
         "find-skills-local-first": scenario_find_skills_local_first,
         "representative-skill-contracts": scenario_representative_skill_contracts,
