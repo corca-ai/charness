@@ -1,7 +1,7 @@
 # Ambiguity Rules
 
 The goal of `spec` is not zero ambiguity. The goal is to remove the ambiguity
-that would cause churn in implementation.
+that would cause churn or false confidence in implementation.
 
 ## Ask When
 
@@ -12,6 +12,11 @@ Ask follow-up questions when ambiguity affects:
 - risk level
 - dependency choice
 - migration or rollout path
+- acceptance criteria
+
+If a question is really a `Probe Question`, do not pretend conversation alone
+will settle it. Label it as a probe and define how implementation will answer
+it.
 
 ## Decide Autonomously When
 
@@ -29,4 +34,5 @@ Explicitly defer a decision when:
 - the choice belongs to a later rollout stage
 - the user has not signaled enough product preference yet
 
-Deferred items must stay visible in `Open Questions` or `Deferred Decisions`.
+Deferred items must stay visible in `Deferred Decisions` or an equivalent
+section of the canonical artifact.

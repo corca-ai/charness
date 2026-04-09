@@ -21,7 +21,9 @@
 - `ideation`은 `interview`를 흡수하고, product/system/workflow concept shaping에 맞춰 problem lens + entity/stage lens를 함께 쓰되 `spec`으로 넘어가기 전 discovery-to-concept 단계에 머무르도록 설계됐다.
 - `ideation`은 living concept model, truth/edge, world modeling, and agent/human lenses 중심으로 재구성됐다.
 - Session 6 초안으로 [skills/public/spec/SKILL.md](/home/ubuntu/charness/skills/public/spec/SKILL.md)와 관련 references가 추가됐다.
-- `spec`은 `ideation` 산출물을 그대로 이어받아 ambiguity를 implementation contract로 줄이고, success criteria와 acceptance checks를 정의한 뒤 `impl`로 넘기는 역할로 설계됐다.
+- `spec`은 `ideation` 산출물을 그대로 이어받아 현재 구현 계약을 관리하는 living contract skill로 재설계됐다.
+- `spec`은 `contract-first` / `braided` / `executable-spec` mode를 갖고, `Fixed Decisions` / `Probe Questions` / `Deferred Decisions`로 현재 slice의 불확실성을 관리한다.
+- `spec`은 success criteria를 acceptance checks와 직접 연결하고, 구현 중 새 사실이 나오면 canonical artifact를 갱신하도록 설계됐다.
 - master plan에는 모든 public skill을 나중에 `workbench` 시나리오와 `hitl` 검토로 검증한다는 규칙이 추가됐다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
@@ -69,7 +71,11 @@
 - [world-modeling.md](/home/ubuntu/charness/skills/public/ideation/references/world-modeling.md)
 - [agent-human-lens.md](/home/ubuntu/charness/skills/public/ideation/references/agent-human-lens.md)
 - [skills/public/spec/SKILL.md](/home/ubuntu/charness/skills/public/spec/SKILL.md)
+- [contract-modes.md](/home/ubuntu/charness/skills/public/spec/references/contract-modes.md)
+- [fixed-probe-defer.md](/home/ubuntu/charness/skills/public/spec/references/fixed-probe-defer.md)
 - [success-criteria.md](/home/ubuntu/charness/skills/public/spec/references/success-criteria.md)
+- [acceptance-checks.md](/home/ubuntu/charness/skills/public/spec/references/acceptance-checks.md)
+- [impl-loop.md](/home/ubuntu/charness/skills/public/spec/references/impl-loop.md)
 - [ideation-boundary.md](/home/ubuntu/charness/skills/public/spec/references/ideation-boundary.md)
 - [entity-stage-design/SKILL.md](/home/ubuntu/ceal/.codex/skills/entity-stage-design/SKILL.md)
 - [clarify/SKILL.md](/home/ubuntu/claude-plugins/plugins/cwf/skills/clarify/SKILL.md)

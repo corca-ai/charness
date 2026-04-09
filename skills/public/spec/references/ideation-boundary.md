@@ -15,11 +15,14 @@ From `ideation`, inherit:
 
 `spec` adds:
 
-- implementation scope
+- the current implementation slice
+- fixed decisions
+- probe questions
+- deferred decisions
 - explicit non-goals
 - success criteria
 - acceptance checks
-- first implementation slice
+- first or next implementation slice
 
 ## Send Back To Ideation When
 
@@ -29,3 +32,6 @@ Send work back when:
 - there is no stable wedge or concept shape
 - the biggest assumption is still concept-defining
 - the current document reads like brainstorming rather than a decision frame
+
+Normal implementation learning does not require a trip back to `ideation`.
+Concept-defining drift does.
