@@ -127,8 +127,9 @@ Deliverables:
 - bootstrap scenarios
 - profile/preset scenarios
 - intent-regression checks for representative skills
-- workbench scenarios plus HITL review passes for every public skill before
-  downstream adoption
+- public skill validation-tier policy
+- scenario-based evaluation for `evaluator-required` public skills plus HITL
+  review where the tier policy says it matters before downstream adoption
 
 ### Workstream 5: Ceal consumption layer
 
@@ -369,13 +370,15 @@ Deliverables:
 - profile fixtures
 - external integration checks
 - representative skill intent checks
-- workbench scenarios for every public skill
-- HITL review pass across the public skill set
+- public skill validation tier matrix
+- scenario-based evaluation for `evaluator-required` skills
+- HITL review pass for `HITL recommended` skills
 
 Exit criteria:
 
 - the harness can prove its own bootstrap and upgrade flows
-- every public skill has at least one maintained workbench validation path
+- every public skill has at least one maintained validation path that matches
+  its declared tier
 
 ### Session 14: Ceal profile and preset application
 
@@ -437,8 +440,8 @@ Mitigation:
 Mitigation:
 
 - design validation fixtures alongside integration manifests, not after them
-- treat workbench scenarios as part of each public skill's finishing contract,
-  not as optional cleanup
+- treat tier-appropriate deeper validation as part of each public skill's
+  finishing contract, not as optional cleanup
 
 ## First Session Status
 
