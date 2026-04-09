@@ -127,3 +127,25 @@ def test_adapter_lib_renders_and_loads_simple_yaml_mapping() -> None:
         "commands": ["pytest -q", "ruff check ."],
         "empty": [],
     }
+
+
+def test_check_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs_dir = repo / "docs"
+    docs_dir.mkdir(parents=True)
+    repeated_lines = "\n".join(f"- repeated line {i}" for i in range(20))
+    (docs_dir / "alpha.md").write_text(f"# Alpha\n\n{repeated_lines}\n", encoding="utf-8")
+    (docs_dir / "beta.md").write_text(f"# Beta\n\n{repeated_lines}\n", encoding="utf-8")
+
+    result = run_script(
+        "scripts/check-duplicates.py",
+        "--repo-root",
+        str(repo),
+        "--fail-on-match",
+        "--json",
+    )
+    assert result.returncode == 1
+    duplicates = json.loads(result.stdout)
+    assert duplicates
+    assert duplicates[0]["left"] == "docs/alpha.md"
+    assert duplicates[0]["right"] == "docs/beta.md"

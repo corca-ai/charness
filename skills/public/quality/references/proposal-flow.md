@@ -27,6 +27,8 @@ Examples:
   already uses `pyproject.toml`
 - move repeated skill helper logic into a shared module because duplicate
   bootstrap code is already drifting across multiple skills
+- collapse repeated checked-in guidance into one source document because the
+  same rules now exist in multiple docs and will drift
 - add one focused integration test because the failure path is user-visible and
   unit tests cannot prove it honestly
 - add dependency review in CI because supply-chain changes are currently

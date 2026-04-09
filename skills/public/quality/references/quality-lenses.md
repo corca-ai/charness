@@ -10,6 +10,7 @@ Borrow from `concept-review`:
 - ownership honesty
 - source-of-truth clarity
 - doc-to-runtime synchronization
+- duplicate documentation that creates competing sources of truth
 - skill trigger-contract honesty when the repo authors skills
 
 ## Behavior
@@ -41,3 +42,4 @@ Check whether the quality bar can actually be maintained:
 - maintenance burden
 - drift between claimed and runnable commands
 - refactor pressure from copied helper seams or skill-package drift
+- duplicated documentation that should collapse into one maintained surface

@@ -14,6 +14,7 @@ one isolated test.
 - test confidence improvement
 - security and supply-chain posture review
 - skill package and maintenance drift review
+- documentation drift and duplication review
 
 The job is not to invent one universal checklist. The job is to understand the
 repo's current quality surface, run the meaningful gates that already exist,
@@ -86,6 +87,8 @@ recording.
      sustain the quality bar
    - when the repo authors skills, include skill package quality, portable
      bootstrap seams, and shared-helper drift in these lenses
+   - when docs are part of the operating surface, include duplicated guidance,
+     conflicting copies, and source-of-truth drift
 5. Classify each issue by enforcement tier first.
    - `AUTO_EXISTING`: already enforced by a meaningful deterministic gate
    - `AUTO_CANDIDATE`: should be promoted into a linter, validator, test, hook,

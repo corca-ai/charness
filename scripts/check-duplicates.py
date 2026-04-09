@@ -11,6 +11,10 @@ from pathlib import Path
 DEFAULT_PATTERNS = (
     "scripts/*.py",
     "skills/public/*/scripts/*.py",
+    "docs/*.md",
+    "skills/public/*/references/*.md",
+    "skills/public/*/SKILL.md",
+    "README.md",
 )
 DEFAULT_MIN_NONEMPTY_LINES = 18
 
@@ -54,7 +58,9 @@ def find_duplicates(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Detect near-duplicate helper scripts.")
+    parser = argparse.ArgumentParser(
+        description="Detect near-duplicate helper code and checked-in documentation."
+    )
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
     parser.add_argument("--threshold", type=float, default=0.98)
     parser.add_argument("--min-nonempty-lines", type=int, default=DEFAULT_MIN_NONEMPTY_LINES)

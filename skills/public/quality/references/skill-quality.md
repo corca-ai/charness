@@ -19,12 +19,15 @@ Check for:
 - durable artifact seams that are explicit and overridable
 - repeated helper logic that should move to a shared seam
 - drift between what the skill promises and what shipped scripts can enforce
+- repeated documentation blocks that create copy-paste maintenance across skill
+  bodies, references, or repo docs
 
 Preferred deterministic gates:
 
 - package validators such as `validate-skills.py`
 - adapter resolution smoke checks such as `validate-adapters.py`
 - duplicate detection for copied helper logic
+- duplicate detection for checked-in docs and reference bodies
 - markdown and link checks for checked-in skill docs
 
 Preferred manual findings:
