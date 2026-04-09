@@ -63,6 +63,30 @@ Put checks in dependency order:
 User-blocking setup comes first. Auto-creatable defaults come after the
 blocking checks they depend on.
 
+## Option Minimalism
+
+Modes and options are expensive. They often record design indecision rather
+than user need.
+
+Before adding one, ask:
+
+1. can the skill infer the right behavior from context, existing artifacts, or
+   the request wording?
+2. can a stronger default serve most users better than a visible choice?
+3. are the behaviors truly distinct enough that collapsing them would harm the
+   user?
+
+Prefer the skill designer taking responsibility for good defaults over pushing
+that burden onto the user.
+
+Add an explicit mode or option only when:
+
+- the behaviors are meaningfully different
+- the difference matters to user value, not only to implementation neatness
+- inference would be risky or dishonest
+
+`mode/option` is not the default answer to ambiguity.
+
 ## Reasoned Proposal Rule
 
 When proposing a non-blocking default, also state why.
@@ -108,6 +132,22 @@ integrations/tools/<tool-id>.json
 
 `SKILL.md` is the trigger contract and decision skeleton. Long explanations,
 schemas, anti-patterns, and examples belong in `references/`.
+
+## Helper Script Rule
+
+If a skill repeatedly depends on deterministic steps such as:
+
+- adapter resolution
+- adapter initialization
+- durable artifact upsert or naming
+- validation of repeated fields
+- bootstrap checks with stable output
+
+then ship a helper script instead of leaving the process as prose-only
+instructions.
+
+Good scripts reduce cold-start variance and make error recovery real. A future
+session should not have to reinterpret the same ritual from scratch.
 
 ## Reuse Rule
 

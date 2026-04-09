@@ -50,6 +50,7 @@ skill before writing from scratch.
    - skill body stays generic
    - repo or host specifics move to adapter files or presets
    - optional fields must distinguish `unset` from `explicitly empty`
+   - prefer strong defaults and inference over user-facing modes or options
 4. Decide dependency ownership honestly.
    - harness-owned support logic belongs in `skills/support/`
    - external tools and upstream support skills belong in
@@ -59,7 +60,9 @@ skill before writing from scratch.
 5. Implement the smallest coherent package.
    - `SKILL.md` contains trigger contract and decision skeleton only
    - move schemas, examples, and theory into `references/`
-   - add scripts only for deterministic repeated checks
+   - add scripts for deterministic repeated checks, adapter bootstrap, and
+     durable artifact handling when the skill would otherwise rely on hand-wavy
+     repeated steps
 6. Verify before stopping.
    - cold-start test from repo root
    - trigger collision check against adjacent skills
@@ -73,11 +76,19 @@ skill before writing from scratch.
 - Do not let a public skill smuggle multiple concepts just because the old repo
   had several narrow expert surfaces.
 - Host-specific behavior belongs in adapters and presets, not in `SKILL.md`.
+- Do not reach for user-facing modes or options just because the design is
+  underspecified. First ask whether the right behavior can be inferred from
+  context, current artifacts, or a stronger default.
+- Add a mode or option only when the behaviors are genuinely distinct,
+  user-meaningful, and unsafe to infer.
 - External tool dependencies must be explicit in manifests and degradation
   rules, not implied by a casual command example.
 - Presets are explicit defaults, not hidden behavior changes.
 - Use WebSearch explicitly for research steps; do not imply it weakly.
 - Never ask users to paste secrets into chat.
+- If a skill needs the same bootstrap, adapter resolution, artifact upsert, or
+  recovery step more than once, ship a helper script instead of leaving the
+  behavior as prose-only ritual.
 - Keep `SKILL.md` concise. If the body approaches 200 lines, move detail into
   `references/`.
 

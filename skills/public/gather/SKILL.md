@@ -12,15 +12,26 @@ instead of re-fetching or re-summarizing the same source from scratch.
 
 ## Bootstrap
 
-Prefer the narrowest relevant scope first.
+Resolve the adapter first, then prefer the narrowest relevant scope.
+
+Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
+
+```bash
+python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+```
+
+By default, `gather` writes its durable artifact to
+`skill-outputs/gather/gather.md`. Repos can override the directory with
+`.agents/gather-adapter.yaml`.
 
 ```bash
 # 1. local context and existing knowledge assets
 rg --files docs skills
+sed -n '1,220p' <resolved-gather-artifact> 2>/dev/null || true
 rg -n "knowledge|source|reference|vendor|upstream|artifact|gather" .
 
-# 2. current handoff or adjacent task context
-sed -n '1,220p' docs/handoff.md
+# 2. optional adjacent handoff or task context
+rg -n "Workflow Trigger|Current State|Next Session|Current Slice|Success Criteria" docs skill-outputs .agents 2>/dev/null || true
 
 # 3. direct local targets when the user named a path
 rg -n "" <named-path> 2>/dev/null || true
@@ -74,6 +85,7 @@ The result should usually include:
 
 ## References
 
+- `references/adapter-contract.md`
 - `references/source-priority.md`
 - `references/asset-refresh.md`
 - `references/document-seams.md`

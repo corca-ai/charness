@@ -11,6 +11,9 @@ Use these in order:
 2. the most relevant handoff note when it materially changes the next action
 3. the current diff or target files
 
+If none of these give you an honest contract for the current slice, bootstrap a
+small one inline before implementation begins.
+
 ## What To Carry Forward
 
 Carry forward:

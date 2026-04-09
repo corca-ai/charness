@@ -13,12 +13,23 @@ everything that happened.
 
 ## Bootstrap
 
-Start from the current handoff artifact and live repo state.
+Resolve the adapter first, then start from the current handoff artifact and live
+repo state.
+
+Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
 
 ```bash
-# 1. current handoff and adjacent plan
-sed -n '1,220p' docs/handoff.md 2>/dev/null || true
-sed -n '1,220p' docs/master-plan.md
+python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+```
+
+By default, `handoff` writes its durable artifact to
+`skill-outputs/handoff/handoff.md`. Repos can override the directory with
+`.agents/handoff-adapter.yaml`.
+
+```bash
+# 1. current handoff and adjacent plan or roadmap context
+sed -n '1,220p' <resolved-handoff-artifact> 2>/dev/null || true
+rg -n "Session|Goal|Deliverables|Exit criteria|Next Session|Discuss" docs skill-outputs .agents 2>/dev/null || true
 
 # 2. current repo state
 git status --short
@@ -38,9 +49,9 @@ the `Workflow Trigger` first and continue with that workflow.
      instruction
    - for refresh, inspect only the live state that changes the next action
 2. Identify the canonical handoff artifact.
-   - in this repo, prefer `docs/handoff.md`
-   - in another host, use the current durable handoff surface instead of
-     forcing one filename
+   - default to the adapter-resolved artifact path
+   - if the repo already has a checked-in handoff surface, point the adapter
+     there instead of hardcoding the host choice into the skill
 3. Rewrite the handoff around continuation, not history.
    - exact workflow trigger
    - current state facts that matter
@@ -74,6 +85,7 @@ The handoff should usually contain:
 
 ## References
 
+- `references/adapter-contract.md`
 - `references/workflow-trigger.md`
 - `references/state-selection.md`
 - `references/document-seams.md`

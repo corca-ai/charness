@@ -14,13 +14,23 @@ incident and wastes the next one.
 
 ## Bootstrap
 
-Read the current debugging context before starting fresh.
+Resolve the adapter first, then read the current debugging context.
+
+Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
+
+```bash
+python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+```
+
+By default, `debug` writes its durable artifact to
+`skill-outputs/debug/debug.md`. Repos can override the directory with
+`.agents/debug-adapter.yaml`.
 
 ```bash
 # 1. recent context and adjacent contracts
 rg --files docs skills
-sed -n '1,220p' docs/handoff.md
-sed -n '1,220p' skills/public/spec/SKILL.md
+sed -n '1,220p' <resolved-debug-artifact> 2>/dev/null || true
+rg -n "Current Slice|Success Criteria|Acceptance Checks|Fixed Decisions|Probe Questions|Deferred Decisions" .
 
 # 2. existing debug notes, incident docs, or failure reports
 rg -n "error|incident|debug|root cause|repro|stack trace|failure" .
@@ -87,6 +97,7 @@ The durable debug artifact should usually include:
 
 ## References
 
+- `references/adapter-contract.md`
 - `references/five-steps.md`
 - `references/debug-memory.md`
 - `references/anti-patterns.md`

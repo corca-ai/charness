@@ -9,5 +9,7 @@ Examples:
 - a knowledge or research folder
 - a task-local gathered artifact
 
-If no durable surface exists yet, create the smallest one that matches the
-repo's current document style.
+If no durable surface exists yet, default to `skill-outputs/gather/gather.md`.
+
+If the repo has a better checked-in home, move the directory choice into the
+gather adapter rather than the skill body.

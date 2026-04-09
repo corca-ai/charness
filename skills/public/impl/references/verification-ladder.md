@@ -1,19 +1,26 @@
 # Verification Ladder
 
-Use the lightest honest check that proves the behavior.
+Use the strongest honest verification capability that is reasonably available.
 
-## Common Levels
+## Capability-Seeking Rule
 
-- read-only reasoning against the code path
-- local unit or integration test
-- smoke script or CLI check
-- end-to-end or browser path
-- eval or scenario-based check
+Do not anchor on one kind of verification.
+
+Actively look for the best available way to prove the slice, including:
+
+- local tests
+- support skills
+- integration tools or external binaries
+- CLI or API checks
+- browser paths
+- evals or scenarios
+- read-only reasoning only when stronger proof is genuinely unavailable
 
 ## Rules
 
-- prefer an executable check over a claim when a local check is available
+- prefer executed proof over a claim whenever an executable path exists
 - if a branch matters to user-visible behavior, symbol existence is not enough
+- if stronger verification needs setup or permission, ask for it explicitly
 - when a check is missing, add the smallest one that prevents the branch from
   going unproven
 
@@ -22,5 +29,6 @@ Use the lightest honest check that proves the behavior.
 At the end of the slice, state:
 
 - what was verified directly
-- what was inferred but not executed
-- what remains unverified and why
+- what capability was used to verify it
+- what stronger verification was unavailable and why
+- what remains unverified

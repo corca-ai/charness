@@ -5,9 +5,11 @@ host.
 
 ## Canonical Rule
 
-Use the repo's existing durable handoff surface when one exists.
+If no host-specific decision exists yet, default to
+`skill-outputs/handoff/handoff.md`.
 
-In `charness`, the canonical artifact is `docs/handoff.md`.
+If a repo already uses a better durable handoff surface, move that choice into
+the handoff adapter instead of the skill body.
 
 ## Non-Goals
 
