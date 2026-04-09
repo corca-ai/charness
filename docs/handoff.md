@@ -2,8 +2,8 @@
 
 ## Workflow Trigger
 
-- 다음 세션에서 이 문서를 멘션하면 `$ceal:impl`로 이어서 `charness` Session 5를 진행한다.
-- 시작하자마자 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [skill-migration-map.md](/home/ubuntu/charness/docs/skill-migration-map.md), [entity-stage-design/SKILL.md](/home/ubuntu/ceal/.codex/skills/entity-stage-design/SKILL.md)를 다시 읽고 `ideation`을 설계한다.
+- 다음 세션에서 이 문서를 멘션하면 `$ceal:impl`로 이어서 `charness` Session 6을 진행한다.
+- 시작하자마자 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [skills/public/ideation/SKILL.md](/home/ubuntu/charness/skills/public/ideation/SKILL.md), [spec-boundary.md](/home/ubuntu/charness/skills/public/ideation/references/spec-boundary.md), [clarify/SKILL.md](/home/ubuntu/claude-plugins/plugins/cwf/skills/clarify/SKILL.md)를 다시 읽고 `spec`을 설계한다.
 
 ## Current State
 
@@ -17,6 +17,8 @@
 - Session 4 초안으로 [skills/public/retro/SKILL.md](/home/ubuntu/charness/skills/public/retro/SKILL.md)와 adapter/reference/script 세트가 추가됐다.
 - `retro`는 `session`/`weekly` mode를 하나의 public skill 안에서 처리하고, adapter가 없을 때 `session`은 soft fallback, `weekly`는 adapter scaffold를 우선하는 방향으로 설계됐다.
 - `retro`의 핵심 가치는 self-growing/healing으로 잡았고, `Next Improvements`를 `workflow` / `capability` / `memory`로 나누는 방향이 반영됐다.
+- Session 5 초안으로 [skills/public/ideation/SKILL.md](/home/ubuntu/charness/skills/public/ideation/SKILL.md)와 관련 references가 추가됐다.
+- `ideation`은 `interview`를 흡수하고, product/system/workflow concept shaping에 맞춰 problem lens + entity/stage lens를 함께 쓰되 `spec`으로 넘어가기 전 discovery-to-concept 단계에 머무르도록 설계됐다.
 - master plan에는 모든 public skill을 나중에 `workbench` 시나리오와 `hitl` 검토로 검증한다는 규칙이 추가됐다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
@@ -26,14 +28,14 @@
 
 ## Next Session
 
-1. `skills/public/ideation/` 초안을 만든다.
-   - `interview`를 흡수하는 public concept
-   - entity와 stage를 분리해서 생각하는 장점을 가져오되, 별도 specialist surface로 쪼개지지 않게 유지
-2. Ceal의 [entity-stage-design/SKILL.md](/home/ubuntu/ceal/.codex/skills/entity-stage-design/SKILL.md)를 reference로 읽고 필요한 아이디어만 portable하게 차용한다.
-   - durable entities vs chronological stages 분리
-   - incremental design refinement
-   - contradiction surfacing
-3. `ideation`이 `spec`과 겹치지 않도록 경계를 명확히 한다.
+1. `skills/public/spec/` 초안을 만든다.
+   - implementation-ready success criteria
+   - ambiguity reduction
+   - handoff to `impl`
+2. `ideation`과 `spec`의 경계를 실제 본문 수준에서 더 단단하게 만든다.
+   - concept shaping은 `ideation`
+   - execution contract는 `spec`
+3. `claude-plugins/clarify` 계열 reference를 읽되, procedural weight를 줄인 portable harness style로 번역한다.
 4. validation은 지금 바로 하지 말고, public skill cluster가 더 모인 뒤 `workbench` + `hitl` 묶음으로 수행한다.
 
 ## Discuss
@@ -44,6 +46,7 @@
 - profile inheritance를 얼마나 허용할지, 아니면 flattened bundle만 허용할지 결정이 필요하다.
 - preset schema를 JSON으로 둘지 markdown-first catalog를 더 유지할지 나중에 정해야 한다.
 - `ideation`에서 entity/stage thinking을 어느 정도까지 public core에 넣고, 어디부터 reference나 examples로 뺄지 조정이 필요하다.
+- `spec`이 procedural checklist로 무거워지지 않으면서도 implementation handoff를 충분히 단단하게 만들 수 있을지 설계가 필요하다.
 
 ## References
 
@@ -61,4 +64,8 @@
 - [skills/public/retro/SKILL.md](/home/ubuntu/charness/skills/public/retro/SKILL.md)
 - [mode-guide.md](/home/ubuntu/charness/skills/public/retro/references/mode-guide.md)
 - [section-guide.md](/home/ubuntu/charness/skills/public/retro/references/section-guide.md)
+- [skills/public/ideation/SKILL.md](/home/ubuntu/charness/skills/public/ideation/SKILL.md)
+- [problem-framing.md](/home/ubuntu/charness/skills/public/ideation/references/problem-framing.md)
+- [spec-boundary.md](/home/ubuntu/charness/skills/public/ideation/references/spec-boundary.md)
 - [entity-stage-design/SKILL.md](/home/ubuntu/ceal/.codex/skills/entity-stage-design/SKILL.md)
+- [clarify/SKILL.md](/home/ubuntu/claude-plugins/plugins/cwf/skills/clarify/SKILL.md)
