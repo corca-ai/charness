@@ -1,0 +1,79 @@
+# charness
+
+Portable Corca harness layer for skills, profiles, integrations, and
+self-validation.
+
+## Operating Stance
+
+- USE THE ACTUAL AVAILABLE SKILLS FOR THIS TURN.
+  If a matching skill exists in the current session, load it before
+  improvising.
+- KEEP THE HARNESS PORTABLE.
+  Host-specific behavior belongs in adapters, presets, and integration
+  manifests, not in public skill bodies.
+- PREFER VALIDATORS AND SCRIPTS OVER PROSE RITUALS.
+  If a repeated check matters, turn it into a repo-owned script.
+- KEEP MANUALLY MAINTAINED REPO DOCS IN ENGLISH.
+  `docs/handoff.md` may stay Korean when that makes the next session pickup
+  sharper.
+- SPEAK TO THIS USER IN KOREAN UNLESS THEY ASK OTHERWISE.
+  Conversation language and repo document language are separate policies.
+- LESS IS MORE.
+  Strong defaults and inference beat user-facing modes unless the distinction is
+  genuinely meaningful and unsafe to infer.
+
+## Repo Memory
+
+- `docs/handoff.md`: next-session pickup and volatile repo state
+- `docs/master-plan.md`: session order and planned product boundary
+- `docs/skill-migration-map.md`: migration intent and remaining destinations
+- `docs/control-plane.md`: external integration contract
+- `skill-outputs/quality/quality.md`: current dogfood quality findings and next
+  gates
+
+Read the smallest memory surface that answers the current question.
+
+## Non-Derivable Conventions
+
+### Commit Discipline
+
+- After each meaningful unit of work, create a git commit before moving on.
+- Prefer commit subjects that state user-facing purpose, not only mechanism.
+- After any `git push`, confirm the branch is clean and the remote update
+  succeeded.
+
+### Skill and Metadata Discipline
+
+- Treat `skills/public/<skill-id>/SKILL.md` as the trigger contract and decision
+  skeleton only.
+- Keep long rationale, examples, schemas, and edge cases in `references/`.
+- Keep frontmatter YAML-safe. Quote descriptions when punctuation would make
+  plain scalars fragile.
+- Do not leave a profile, preset, or integration reference pointing at a
+  missing artifact.
+
+### Validation Discipline
+
+- When editing skill packages, run `python3 scripts/validate-skills.py`.
+- When editing profiles, run `python3 scripts/validate-profiles.py`.
+- When editing adapter bootstrap or resolver behavior, run
+  `python3 scripts/validate-adapters.py`.
+- When editing committed markdown links or handoff references, run
+  `python3 scripts/check-doc-links.py`.
+- Keep `python3 -m py_compile skills/public/*/scripts/*.py` as the cheap smoke
+  test for helper scripts.
+
+### Change Discipline
+
+- Prefer deleting drift over documenting drift.
+- If the same helper shape appears twice, factor it before spreading it to a
+  third place.
+- If a public skill needs repeated bootstrap, adapter resolution, artifact
+  naming, or recovery behavior, ship a helper script instead of leaving it as
+  prose-only guidance.
+
+### Session Discipline
+
+- Update `docs/handoff.md` when the next session's first move changed.
+- Keep durable review findings in `skill-outputs/` when a skill is designed to
+  accumulate them.
