@@ -37,7 +37,12 @@ def load_manifest(repo_root: Path, package_id: str) -> dict:
 
 def copy_tree(src: Path, dest: Path) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(src, dest, dirs_exist_ok=True)
+    shutil.copytree(
+        src,
+        dest,
+        dirs_exist_ok=True,
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", ".pytest_cache", ".ruff_cache"),
+    )
 
 
 def copy_file(src: Path, dest: Path) -> None:

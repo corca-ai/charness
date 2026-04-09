@@ -103,6 +103,8 @@ What was actually runnable today:
   only checking that mentioned paths happen to exist.
 - profile and packaging validators now run JSON Schema validation before custom
   cross-artifact checks, which closes remaining shape-drift gaps.
+- helper-layer Python now has a deterministic file-length and function-length
+  gate instead of leaving that concern to manual review.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -279,6 +281,20 @@ Evidence:
 - `packaging/plugin.schema.json`
 - `scripts/validate-profiles.py`
 - `scripts/validate-packaging.py`
+
+### 11. Helper-layer Python size is now an enforced quality surface
+
+The repo was not previously checking Python function length or file length at
+all. That gap is now closed for the helper layer with a repo-owned script that
+checks `scripts/*.py` and `skills/public/*/scripts/*.py`. Tests remain out of
+scope for now so the new gate constrains operator-facing logic without forcing
+test-style rewrites first.
+
+Evidence:
+
+- `scripts/check-python-lengths.py`
+- `scripts/run-quality.sh`
+- `tests/test_quality_gates.py`
 
 ## Commands Run
 

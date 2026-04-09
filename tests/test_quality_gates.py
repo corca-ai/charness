@@ -119,6 +119,11 @@ def test_validate_packaging_passes_on_current_repo() -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_check_python_lengths_passes_on_current_repo() -> None:
+    result = run_script("scripts/check-python-lengths.py", "--repo-root", str(ROOT))
+    assert result.returncode == 0, result.stderr
+
+
 def test_validate_profiles_rejects_missing_skill_reference(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     profiles_dir = repo / "profiles"
@@ -138,6 +143,40 @@ def test_validate_profiles_rejects_missing_skill_reference(tmp_path: Path) -> No
     result = run_script("scripts/validate-profiles.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing artifact `handoff`" in result.stderr
+
+
+def test_check_python_lengths_rejects_too_long_function(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True)
+    long_body = "\n".join(f"    value_{i} = {i}" for i in range(101))
+    (scripts_dir / "long.py").write_text(
+        "\n".join(
+            [
+                "def too_long():",
+                long_body,
+                "    return 0",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    result = run_script("scripts/check-python-lengths.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "function `too_long` length" in result.stderr
+
+
+def test_check_python_lengths_rejects_too_long_skill_helper_file(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    helper_dir = repo / "skills" / "public" / "demo" / "scripts"
+    helper_dir.mkdir(parents=True)
+    (helper_dir / "helper.py").write_text(
+        "\n".join(f"print({i})" for i in range(221)) + "\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/check-python-lengths.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "file length 221 exceeds limit 220" in result.stderr
 
 
 def test_validate_profiles_rejects_unknown_smoke_scenario(tmp_path: Path) -> None:

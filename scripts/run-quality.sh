@@ -9,6 +9,7 @@ python3 scripts/validate-profiles.py --repo-root "$REPO_ROOT"
 python3 scripts/validate-adapters.py --repo-root "$REPO_ROOT"
 python3 scripts/validate-integrations.py --repo-root "$REPO_ROOT"
 python3 scripts/validate-packaging.py --repo-root "$REPO_ROOT"
+python3 scripts/check-python-lengths.py --repo-root "$REPO_ROOT"
 python3 scripts/check-skill-contracts.py --repo-root "$REPO_ROOT"
 python3 scripts/check-doc-links.py --repo-root "$REPO_ROOT"
 ./scripts/check-markdown.sh

@@ -70,6 +70,7 @@
 - `doctor.py`는 이제 prior `sync-support` lock에 적힌 `materialized_paths`가 사라졌을 때 `support-missing`을 보고해 broken support sync drift를 잡는다. first-run에서는 아직 sync하지 않은 support artifact 때문에 fail-closed하지 않는다.
 - `validate-skills.py`는 이제 모든 public skill이 실제 `## References` section을 유지하고, reference 파일이 SKILL body에 빠짐없이 연결돼 있는지까지 검증한다. `SKILL.md`도 200줄을 넘기기 전에 references로 detail을 밀어내도록 guard가 생겼다.
 - `validate-profiles.py`와 `validate-packaging.py`는 이제 custom cross-file checks 전에 schema validation도 함께 실행해 unknown field나 structural drift를 더 일찍 막는다. smoke fixture도 canonical taxonomy에 맞게 갱신됐다.
+- [check-python-lengths.py](/home/ubuntu/charness/scripts/check-python-lengths.py)가 추가돼 helper-layer Python에서 함수 길이와 파일 길이를 deterministic gate로 본다. 현재 scope는 `scripts/*.py`와 `skills/public/*/scripts/*.py`이고, `tests/`는 제외한다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - support skill migrations and integration wrappers
