@@ -10,6 +10,7 @@ Borrow from `concept-review`:
 - ownership honesty
 - source-of-truth clarity
 - doc-to-runtime synchronization
+- skill trigger-contract honesty when the repo authors skills
 
 ## Behavior
 
@@ -19,6 +20,8 @@ Borrow from `test-improvement`:
 - failure-path confidence
 - low-signal or gameable checks
 - duplicate-pressure and missing seam coverage
+- helper scripts that actually prove the skill can cold-start and resolve its
+  adapter seams
 
 ## Security
 
@@ -37,3 +40,4 @@ Check whether the quality bar can actually be maintained:
 - CI gate realism
 - maintenance burden
 - drift between claimed and runnable commands
+- refactor pressure from copied helper seams or skill-package drift

@@ -23,6 +23,8 @@ Examples:
 
 - add `ruff check` in CI because Python linting is currently absent and the repo
   already uses `pyproject.toml`
+- move repeated skill helper logic into a shared module because duplicate
+  bootstrap code is already drifting across multiple skills
 - add one focused integration test because the failure path is user-visible and
   unit tests cannot prove it honestly
 - add dependency review in CI because supply-chain changes are currently

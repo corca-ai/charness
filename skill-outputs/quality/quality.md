@@ -27,7 +27,7 @@ What was actually runnable today:
 - `ruff check scripts tests skills/public/*/scripts`
 - `pytest -q`
 - `scripts/run-quality.sh` as the repo-owned quality entrypoint
-- `scripts/check-duplicates.py` as a report-first duplicate hotspot check
+- `scripts/check-duplicates.py --fail-on-match` as a fail-closed duplicate gate
 - `scripts/check-markdown.sh` via `markdownlint-cli2`
 - `scripts/check-secrets.sh` via `secretlint`
 - `scripts/check-shell.sh` as an optional `shellcheck` wrapper
@@ -61,24 +61,24 @@ What was actually runnable today:
   honestly when `shellcheck` or `lychee` are unavailable.
 - `scripts/run-quality.sh` now provides one canonical repo-owned quality
   entrypoint.
+- adapter bootstrap helpers now share repo-level utilities instead of shipping
+  per-skill YAML loader copies.
+- `quality` now explicitly treats skill packages and helper drift as a quality
+  surface, not only code/tests/security in the narrow sense.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
 
-- Skill helper scripts are highly duplicated. `_stdlib_yaml.py` is effectively
-  copied per skill, and the adapter resolver implementations are near-clones
-  across `debug`, `gather`, `handoff`, and `quality`.
 - `spec` still exposes explicit user-facing modes while the current
   `create-skill` authoring contract says to avoid modes/options unless they are
   truly necessary and unsafe to infer.
-- `scripts/check-duplicates.py` is report-first today. It surfaces current
-  hotspots but does not fail the quality run yet.
+- `shellcheck` and `lychee` still depend on optional local binaries, so shell
+  and external-link posture is honest but not fully enforced everywhere.
 
 ## Missing
 
 - Repo-owned smoke scenarios under `evals/` or `workbench` fixtures
 - A checked-in quality adapter for this repo once stable commands exist
-- A fail-closed duplicate policy for helper script reuse
 
 ## Deferred
 
@@ -102,21 +102,21 @@ Evidence:
 - current `scripts/` contents
 - `evals/.gitkeep`
 
-### 2. Adapter helper implementation is drifting toward copy-paste maintenance
+### 2. Skill quality and helper drift now need to stay under deterministic ownership
 
-The minimal YAML loader is duplicated per skill, and the adapter resolvers for
-`debug`, `gather`, `handoff`, and `quality` are all very high-similarity
-variants. This is now a real duplicate hotspot and should be covered by a
-repo-specific duplicate policy before more skills copy the pattern again.
+This repo now has repo-owned validators for skill packages and a fail-closed
+duplicate gate for substantive helper scripts. That is the right direction, but
+the important policy point is broader: skill package quality should keep being
+promoted into validators and shared helpers rather than drifting back into
+copy-paste local wrappers.
 
 Evidence:
 
-- `skills/public/debug/scripts/_stdlib_yaml.py` lines 1-67
-- `skills/public/gather/scripts/_stdlib_yaml.py` lines 1-67
-- `skills/public/quality/scripts/_stdlib_yaml.py` lines 1-67
-- `skills/public/debug/scripts/resolve_adapter.py` lines 17-135
-- `skills/public/gather/scripts/resolve_adapter.py` lines 17-135
-- `skills/public/quality/scripts/resolve_adapter.py` lines 17-156
+- `scripts/validate-skills.py`
+- `scripts/check-duplicates.py`
+- `scripts/adapter_lib.py`
+- `scripts/adapter_init_lib.py`
+- `skills/public/quality/references/skill-quality.md`
 
 ### 3. `spec` still violates the repo's newer option-minimalism rule
 
@@ -157,7 +157,7 @@ jsonschema.Draft7Validator(schema).validate(instance)
 print('ok')
 PY
 python3 scripts/check-doc-links.py
-python3 scripts/check-duplicates.py
+python3 scripts/check-duplicates.py --fail-on-match
 ./scripts/check-markdown.sh
 ./scripts/check-secrets.sh
 ./scripts/check-shell.sh
@@ -166,18 +166,15 @@ python3 scripts/check-duplicates.py
 
 ## Recommended Next Gates
 
-1. Turn `scripts/check-duplicates.py` into a fail-closed gate once the current
-   adapter helper hotspots are either factored or explicitly allowlisted.
-
-2. Add repo-owned smoke scenarios under `evals/`
+1. Add repo-owned smoke scenarios under `evals/`
    At minimum:
    - one skill package shape scenario
    - one profile/schema scenario
    - one adapter resolution scenario
    - one handoff portability scenario
 
-3. Keep `./scripts/run-quality.sh` as the canonical local quality entrypoint and
+2. Keep `./scripts/run-quality.sh` as the canonical local quality entrypoint and
    wire it into future collaboration-layer or CI flows.
 
-4. Decide whether `shellcheck` and `lychee` should become required local setup
+3. Decide whether `shellcheck` and `lychee` should become required local setup
    for `charness`, or remain optional-but-recommended quality escalations.

@@ -13,6 +13,7 @@ one isolated test.
 - concept integrity review
 - test confidence improvement
 - security and supply-chain posture review
+- skill package and maintenance drift review
 
 The job is not to invent one universal checklist. The job is to understand the
 repo's current quality surface, run the meaningful gates that already exist,
@@ -83,6 +84,8 @@ recording.
    - `security`: are there meaningful code, secret, or supply-chain risks
    - `operability`: are setup, CI, and maintenance surfaces honest enough to
      sustain the quality bar
+   - when the repo authors skills, include skill package quality, portable
+     bootstrap seams, and shared-helper drift in these lenses
 5. Classify each issue by enforcement tier first.
    - `AUTO_EXISTING`: already enforced by a meaningful deterministic gate
    - `AUTO_CANDIDATE`: should be promoted into a linter, validator, test, hook,
@@ -138,6 +141,7 @@ The result should usually include:
 
 - `references/adapter-contract.md`
 - `references/quality-lenses.md`
+- `references/skill-quality.md`
 - `references/proposal-flow.md`
 - `references/gate-classification.md`
 - `references/automation-promotion.md`
