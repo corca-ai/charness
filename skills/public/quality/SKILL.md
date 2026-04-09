@@ -25,6 +25,12 @@ quality concern can be enforced by a linter, validator, test, hook, or script,
 `quality` should prefer promoting it into that gate instead of leaving it as
 repeated prose advice.
 
+`quality` and concept review are adjacent but not identical. Use `quality` for
+repo posture, enforceable drift, duplicated surfaces, weak gates, and the next
+concrete validation move. Use concept-review-style reasoning when the main
+question is whether concepts, boundaries, ownership, or source-of-truth design
+are still the right ones even without near-duplicate text or an obvious gate.
+
 ## Bootstrap
 
 Resolve the adapter first, then inspect the current quality surface.
@@ -142,6 +148,8 @@ The result should usually include:
 - If a missing binary or local setup step would materially improve confidence,
   recommend installing it with the reason and the exact command or package
   family to use.
+- Do not pretend a conceptual boundary problem is solved just because duplicate
+  text was linted away; semantic boundary questions still need concept review.
 
 ## References
 

@@ -13,6 +13,13 @@ Borrow from `concept-review`:
 - duplicate documentation that creates competing sources of truth
 - skill trigger-contract honesty when the repo authors skills
 
+Boundary note:
+
+- `quality` should catch duplicated or drifting concept surfaces when they are
+  already visible in docs, gates, or runtime seams
+- a deeper question like "should these be two concepts at all?" still belongs
+  to concept-review-style analysis, not only duplicate detection
+
 ## Behavior
 
 Borrow from `test-improvement`:
