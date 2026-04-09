@@ -22,6 +22,9 @@ Corca harness product, then reconnects Ceal as one consumer of that product.
   have their own upstream repo or clear product boundary.
 - if an external tool repo already ships a support skill, prefer consuming that
   upstream skill through an integration manifest and sync/update flow.
+- `charness` remains the host-neutral source of truth; Claude and Codex plugin
+  layouts should be generated from shared repo artifacts instead of maintained
+  as two independent trees.
 
 ## Target Taxonomy
 
@@ -115,6 +118,9 @@ Deliverables:
 - install/update/doctor strategy
 - support-skill sync policy for upstream skill providers
 - promotion plan for workbench successor and other reusable engines
+- host-compatible packaging contract for Claude plugin and Codex plugin layouts
+- generator or export path that maps shared repo artifacts into host-specific
+  plugin manifests and distribution directories
 
 ### Workstream 4: harness self-validation
 
@@ -130,6 +136,7 @@ Deliverables:
 - public skill validation-tier policy
 - scenario-based evaluation for `evaluator-required` public skills plus HITL
   review where the tier policy says it matters before downstream adoption
+- packaging compatibility checks for host-specific plugin exports
 
 ### Workstream 5: Ceal consumption layer
 
@@ -353,10 +360,13 @@ Deliverables:
 
 - manifests for `agent-browser`, `specdown`, `crill`, and evaluation successor
 - `sync`, `update`, and `doctor` command design or initial implementation
+- support sync default strategy and lock-shaping contract
 
 Exit criteria:
 
 - integrated tools can be installed, checked, and updated consistently
+- support sync behavior is explicit enough that later host packaging does not
+  need to guess local wrapper or lock semantics
 
 ### Session 13: harness self-validation
 
@@ -373,6 +383,7 @@ Deliverables:
 - public skill validation tier matrix
 - scenario-based evaluation for `evaluator-required` skills
 - HITL review pass for `HITL recommended` skills
+- explicit next-step queue for human-only review surfaces
 
 Exit criteria:
 
@@ -380,7 +391,30 @@ Exit criteria:
 - every public skill has at least one maintained validation path that matches
   its declared tier
 
-### Session 14: Ceal profile and preset application
+### Session 14: host-compatible packaging and distribution
+
+Goal:
+
+- make `charness` installable on Claude-style and Codex-style plugin surfaces
+  without forking the source of truth
+
+Deliverables:
+
+- packaging contract that maps shared repo artifacts into Claude plugin and
+  Codex plugin layouts
+- generated plugin manifests for both hosts from one shared source
+- repo or personal marketplace guidance for Codex and install guidance for
+  Claude
+- packaging fixtures or validation checks that prove exported layouts stay in
+  sync with the neutral source
+
+Exit criteria:
+
+- host-specific plugin packaging is generated rather than hand-maintained
+- packaging work builds on stable support/control-plane contracts instead of
+  duplicating them per host
+
+### Session 15: Ceal profile and preset application
 
 Goal:
 
@@ -397,7 +431,7 @@ Exit criteria:
 
 - Ceal customization lives in Ceal, not in shared skill bodies
 
-### Session 15: Ceal self-validation
+### Session 16: Ceal self-validation
 
 Goal:
 
@@ -442,6 +476,14 @@ Mitigation:
 - design validation fixtures alongside integration manifests, not after them
 - treat tier-appropriate deeper validation as part of each public skill's
   finishing contract, not as optional cleanup
+
+### Risk: host packaging creates a second source of truth
+
+Mitigation:
+
+- keep `charness` artifacts host-neutral by default
+- generate Claude/Codex plugin layouts from shared manifests and skill content
+- finish support-sync and lock semantics before broad host packaging work
 
 ## First Session Status
 
