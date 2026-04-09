@@ -26,6 +26,7 @@
 - `spec`은 success criteria를 acceptance checks와 직접 연결하고, 구현 중 새 사실이 나오면 canonical artifact를 갱신하도록 설계됐다.
 - Session 7 산출물로 [skills/public/impl/SKILL.md](/home/ubuntu/charness/skills/public/impl/SKILL.md), [skills/public/debug/SKILL.md](/home/ubuntu/charness/skills/public/debug/SKILL.md), [skills/public/gather/SKILL.md](/home/ubuntu/charness/skills/public/gather/SKILL.md), [skills/public/handoff/SKILL.md](/home/ubuntu/charness/skills/public/handoff/SKILL.md)와 관련 references가 추가됐다.
 - `impl`은 living contract를 소비하는 execution skill로 정리됐고, `debug`는 durable debug artifact를 유지하는 five-step root-cause skill로, `gather`는 durable knowledge asset skill로, `handoff`는 workflow-trigger 중심 baton-pass skill로 portable하게 정리됐다.
+- `debug` / `gather` / `handoff`의 durable artifact 기본 위치는 `skill-outputs/<skill-name>/` 아래 정해진 파일로 두고, adapter에서 `output_dir`로 override하는 방향이 정해졌다. helper scriptification은 아직 남아 있다.
 - constitutional core의 public execution cluster가 이제 `gather` / `ideation` / `spec` / `impl` / `debug` / `retro` / `handoff` 수준에서 실제 skill body를 갖추게 됐다.
 - master plan에는 모든 public skill을 나중에 `workbench` 시나리오와 `hitl` 검토로 검증한다는 규칙이 추가됐다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
@@ -40,7 +41,8 @@
 1. `quality`를 one-skill public concept로 설계하고, `concept-review` / `test-improvement` / `security-audit` 계열 참조를 어디까지 흡수할지 정한다.
 2. TypeScript와 Python용 sample preset 방향을 정하고, proposal behavior가 repo stack을 어떻게 감지할지 정리한다.
 3. `quality`가 지금까지 만든 `spec` / `impl` / `debug` cluster와 어떻게 이어지는지 경계를 고정한다.
-4. validation은 지금 바로 하지 말고, public skill cluster가 더 모인 뒤 `workbench` + `hitl` 묶음으로 수행한다.
+4. `quality` 다음에는 `charness` repo 자체에 lint / test / concept / security review를 돌리는 dogfood session을 수행한다.
+5. `workbench` + `hitl` validation은 public skill cluster가 더 모인 뒤 묶어서 수행한다.
 
 ## Discuss
 

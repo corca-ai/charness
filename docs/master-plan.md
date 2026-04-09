@@ -292,7 +292,25 @@ Exit criteria:
 - `quality` can detect current gates, identify gaps, and recommend concrete
   setups without hardcoding one repo's stack
 
-### Session 9: collaboration layer
+### Session 9: repo dogfood review
+
+Goal:
+
+- run the new core skill cluster against `charness` itself before moving on
+
+Deliverables:
+
+- repo review pass covering lint/test/setup reality
+- concept and contract review against current public skills
+- security and supply-chain review notes
+- follow-up fixes or issue list for discovered gaps
+
+Exit criteria:
+
+- `charness` has one explicit self-review pass using its own evolving workflow
+- quality findings are visible before collaboration-layer work begins
+
+### Session 10: collaboration layer
 
 Goal:
 
@@ -308,7 +326,7 @@ Exit criteria:
 
 - collaboration skills are host-neutral and only specialized by adapters
 
-### Session 10: `find-skills` and support-skill policy
+### Session 11: `find-skills` and support-skill policy
 
 Goal:
 
@@ -324,7 +342,7 @@ Exit criteria:
 
 - users can discover both native public skills and external integrated tools
 
-### Session 11: external integration manifests and sync tooling
+### Session 12: external integration manifests and sync tooling
 
 Goal:
 
@@ -339,7 +357,7 @@ Exit criteria:
 
 - integrated tools can be installed, checked, and updated consistently
 
-### Session 12: harness self-validation
+### Session 13: harness self-validation
 
 Goal:
 
@@ -359,7 +377,7 @@ Exit criteria:
 - the harness can prove its own bootstrap and upgrade flows
 - every public skill has at least one maintained workbench validation path
 
-### Session 13: Ceal profile and preset application
+### Session 14: Ceal profile and preset application
 
 Goal:
 
@@ -376,7 +394,7 @@ Exit criteria:
 
 - Ceal customization lives in Ceal, not in shared skill bodies
 
-### Session 14: Ceal self-validation
+### Session 15: Ceal self-validation
 
 Goal:
 
