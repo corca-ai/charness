@@ -21,7 +21,8 @@ What was actually runnable today:
 - `resolve_adapter.py --repo-root .` smoke runs for `debug`, `gather`,
   `handoff`, `quality`, and `retro`
 - `scripts/validate-skills.py`, `scripts/validate-profiles.py`,
-  `scripts/validate-adapters.py`, and `scripts/check-doc-links.py`
+  `scripts/validate-adapters.py`, `scripts/validate-packaging.py`, and
+  `scripts/check-doc-links.py`
 - Python syntax compilation for every committed helper script under
   `skills/public/*/scripts/*.py`
 - `ruff check scripts tests skills/public/*/scripts`
@@ -86,6 +87,9 @@ What was actually runnable today:
 - `scripts/check-skill-contracts.py` now gives the repo a deterministic
   representative intent gate for `handoff`, `gather`, `create-skill`, and
   `spec`, and `run-evals.py` includes that scenario in the smoke layer.
+- `packaging/charness.json` and `scripts/validate-packaging.py` now give the
+  repo a shared packaging contract for Claude/Codex host exports before any
+  generated plugin tree exists.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -110,6 +114,8 @@ What was actually runnable today:
   and `hitl` policy surface
 - broader representative intent checks for `handoff`, `gather`,
   `create-skill`, and `spec` beyond the current contract-marker baseline
+- generated Claude/Codex host layouts and drift checks beyond the current
+  shared manifest validation
 
 ## Findings
 
@@ -157,6 +163,21 @@ Evidence:
 - `skills/public/create-skill/SKILL.md`
 - `skills/public/spec/SKILL.md`
 - `skills/public/spec/references/contract-modes.md`
+
+### 4. Host packaging now has a single canonical contract, but export materialization is still the next boundary
+
+The repo now has a shared packaging manifest and validator that pin the neutral
+bundle inputs plus the required Claude/Codex manifest paths. That closes the
+policy gap which mattered most before generation work starts. The next step is
+not another doc pass, but an export path that materializes plugin manifests and
+repo-marketplace fixtures from this shared source.
+
+Evidence:
+
+- `packaging/charness.json`
+- `packaging/plugin.schema.json`
+- `scripts/validate-packaging.py`
+- `docs/host-packaging.md`
 
 ## Commands Run
 

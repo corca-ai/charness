@@ -62,6 +62,8 @@
 - `spec` public body는 explicit mode menu를 버리고 lighter contract-shaping heuristic 중심으로 축약돼 `create-skill`의 option-minimalism과의 충돌이 줄었다.
 - 서브에이전트 탐색 결과, `cautilus` 없이 바로 할 가치가 큰 self-work는 `sync-support` 기본 전략 고정, support lock artifact shaping, 첫 real support artifact, `meta-builder` profile, representative intent checks 확대, `spec` mode drift 정리로 좁혀졌다.
 - Claude plugin 구조와 Codex plugin 구조를 모두 지원해야 하지만, 이 repo의 source of truth는 host-neutral하게 유지하고 host-specific packaging은 shared artifact에서 generate하는 방향으로 정리됐다. 설치 호환 구조 작업은 support/control-plane/self-validation 빈칸을 먼저 메운 뒤 시작하는 편이 낫다.
+- [packaging/charness.json](/home/ubuntu/charness/packaging/charness.json), [plugin.schema.json](/home/ubuntu/charness/packaging/plugin.schema.json), [host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md), [validate-packaging.py](/home/ubuntu/charness/scripts/validate-packaging.py)가 추가돼 Claude/Codex dual-support용 shared packaging contract가 생겼다.
+- packaging contract는 shared repo inputs와 host-specific manifest paths만 먼저 고정하고, generated export directories 자체는 다음 단계로 남겼다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - support skill migrations and integration wrappers
@@ -70,9 +72,9 @@
 
 ## Next Session
 
-1. pre-`cautilus`로 계속 가면 Claude plugin/Codex plugin을 각각 손으로 유지하지 말고, host-neutral source에서 두 layout을 generate하는 packaging contract부터 문서화한다.
-2. 그와 병행해 `handoff` / `gather` / `create-skill` / `spec` representative gate를 더 강하게 만들 필요가 있는지 본다.
-3. 필요하면 `meta-builder` profile과 packaging contract를 연결하는 generator/export 검증으로 이어간다.
+1. pre-`cautilus`로 계속 가면 shared packaging manifest를 바탕으로 Claude/Codex export generator의 최소 출력 shape를 구현한다.
+2. export generator가 생기면 generated host manifest와 repo-marketplace fixture를 실제로 materialize하고 drift check를 붙인다.
+3. 그와 병행해 `handoff` / `gather` / `create-skill` / `spec` representative gate를 더 강하게 만들 필요가 있는지 본다.
 4. 사용자가 `~/cautilus` 작업 완료를 알리면 upstream repo 또는 release boundary, install/update path, detect/healthcheck contract를 먼저 확인한다.
 5. extracted evaluation engine용 integration manifest를 추가하고 control-plane contract에 연결한다.
 6. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 provisional matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.
@@ -83,6 +85,7 @@
 
 - Claude plugin과 Codex plugin을 동시에 지원할 때 어떤 shared packaging manifest를 canonical source로 둘지 정해야 한다.
 - future evaluation engine을 `workbench` transitional id로 계속 둘지, extraction 전에 새 permanent id를 줄지 결정이 필요하다.
+- shared packaging manifest가 release version을 직접 들고 갈지, export-time override를 허용할지 나중에 정해야 한다.
 - `cautilus` 쪽 contract가 나온 뒤 `find-skills`나 support policy에서 `official`보다 더 일반적인 용어(`trusted` / `declared`)로 바꿀지 다시 볼 가치가 있다.
 - profile inheritance를 얼마나 허용할지, 아니면 flattened bundle만 허용할지 결정이 필요하다.
 - preset schema를 JSON으로 둘지 markdown-first catalog를 더 유지할지 나중에 정해야 한다.
@@ -104,12 +107,17 @@
 - [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)
 - [engineering-quality.json](/home/ubuntu/charness/profiles/engineering-quality.json)
 - [meta-builder.json](/home/ubuntu/charness/profiles/meta-builder.json)
+- [host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md)
+- [packaging/README.md](/home/ubuntu/charness/packaging/README.md)
+- [plugin.schema.json](/home/ubuntu/charness/packaging/plugin.schema.json)
+- [charness.json](/home/ubuntu/charness/packaging/charness.json)
 - [quality-adapter.yaml](/home/ubuntu/charness/.agents/quality-adapter.yaml)
 - [lock.schema.json](/home/ubuntu/charness/integrations/locks/lock.schema.json)
 - [skills/support/README.md](/home/ubuntu/charness/skills/support/README.md)
 - [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/agent-browser/REFERENCE.md)
 - [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/crill/REFERENCE.md)
 - [check-skill-contracts.py](/home/ubuntu/charness/scripts/check-skill-contracts.py)
+- [validate-packaging.py](/home/ubuntu/charness/scripts/validate-packaging.py)
 - [external-integrations.md](/home/ubuntu/charness/docs/external-integrations.md)
 - [skill-migration-map.md](/home/ubuntu/charness/docs/skill-migration-map.md)
 - [control-plane.md](/home/ubuntu/charness/docs/control-plane.md)

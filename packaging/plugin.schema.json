@@ -1,0 +1,238 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "charness host packaging manifest",
+  "description": "Contract for exporting host-neutral repo artifacts into Claude and Codex plugin layouts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "package_id",
+    "display_name",
+    "version",
+    "summary",
+    "author",
+    "homepage",
+    "repository",
+    "source",
+    "codex",
+    "claude"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1"
+    },
+    "package_id": {
+      "$ref": "#/definitions/slug"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "$ref": "#/definitions/version"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "author": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "homepage": {
+      "type": "string",
+      "format": "uri"
+    },
+    "repository": {
+      "type": "string",
+      "format": "uri"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "readme",
+        "skills_dir",
+        "public_skills_dir",
+        "support_skills_dir",
+        "profiles_dir",
+        "presets_dir",
+        "integrations_dir"
+      ],
+      "properties": {
+        "readme": {
+          "$ref": "#/definitions/relativePath"
+        },
+        "skills_dir": {
+          "$ref": "#/definitions/relativePath"
+        },
+        "public_skills_dir": {
+          "$ref": "#/definitions/relativePath"
+        },
+        "support_skills_dir": {
+          "$ref": "#/definitions/relativePath"
+        },
+        "profiles_dir": {
+          "$ref": "#/definitions/relativePath"
+        },
+        "presets_dir": {
+          "$ref": "#/definitions/relativePath"
+        },
+        "integrations_dir": {
+          "$ref": "#/definitions/relativePath"
+        }
+      }
+    },
+    "codex": {
+      "$ref": "#/definitions/codexExport"
+    },
+    "claude": {
+      "$ref": "#/definitions/claudeExport"
+    }
+  },
+  "definitions": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "relativePath": {
+      "type": "string",
+      "pattern": "^(?!/)(?!\\.\\./).+"
+    },
+    "codexManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "description",
+        "skills"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/slug"
+        },
+        "version": {
+          "$ref": "#/definitions/version"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "skills": {
+          "const": "./skills/"
+        }
+      }
+    },
+    "codexMarketplace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "default_source_path",
+        "display_name",
+        "category"
+      ],
+      "properties": {
+        "path": {
+          "const": ".agents/plugins/marketplace.json"
+        },
+        "default_source_path": {
+          "type": "string",
+          "pattern": "^\\./.+"
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "codexExport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_path",
+        "manifest",
+        "repo_marketplace"
+      ],
+      "properties": {
+        "manifest_path": {
+          "const": ".codex-plugin/plugin.json"
+        },
+        "manifest": {
+          "$ref": "#/definitions/codexManifest"
+        },
+        "repo_marketplace": {
+          "$ref": "#/definitions/codexMarketplace"
+        }
+      }
+    },
+    "claudeManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "description",
+        "repository"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/slug"
+        },
+        "version": {
+          "$ref": "#/definitions/version"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repository": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "claudeExport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_path",
+        "manifest"
+      ],
+      "properties": {
+        "manifest_path": {
+          "const": ".claude-plugin/plugin.json"
+        },
+        "manifest": {
+          "$ref": "#/definitions/claudeManifest"
+        }
+      }
+    }
+  }
+}

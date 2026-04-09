@@ -111,6 +111,7 @@ skills/
   support/
 integrations/
   tools/
+packaging/
 profiles/
 presets/
 docs/

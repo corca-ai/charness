@@ -49,6 +49,11 @@ def scenario_profile_valid(root: Path) -> None:
     expect_success(result, "profile-valid fixture")
 
 
+def scenario_packaging_valid(root: Path) -> None:
+    result = run_command(["python3", "scripts/validate-packaging.py", "--repo-root", str(root)], cwd=root)
+    expect_success(result, "packaging manifest validation")
+
+
 def scenario_doc_links_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "doc-links-valid"
     result = run_command(["python3", "scripts/check-doc-links.py", "--repo-root", str(fixture)], cwd=root)
@@ -203,6 +208,7 @@ def scenario_representative_skill_contracts(root: Path) -> None:
 SCENARIOS = (
     Scenario("skill-valid", "fixture repo with one valid public skill passes package validation"),
     Scenario("profile-valid", "fixture repo with one valid profile passes artifact validation"),
+    Scenario("packaging-valid", "shared host-packaging manifest stays aligned with repo artifacts"),
     Scenario("doc-links-valid", "fixture docs with valid internal links pass markdown link validation"),
     Scenario("quality-adapter-bootstrap", "quality init/resolve scripts bootstrap a clean repo"),
     Scenario("quality-adapter-checked-in", "checked-in quality adapter resolves to the declared repo contract"),
@@ -216,6 +222,7 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
     handlers = {
         "skill-valid": scenario_skill_package_valid,
         "profile-valid": scenario_profile_valid,
+        "packaging-valid": scenario_packaging_valid,
         "doc-links-valid": scenario_doc_links_valid,
         "quality-adapter-bootstrap": scenario_quality_adapter_bootstrap,
         "quality-adapter-checked-in": scenario_quality_adapter_checked_in,

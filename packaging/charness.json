@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "package_id": "charness",
+  "display_name": "charness",
+  "version": "0.0.0-dev",
+  "summary": "Portable Corca harness layer exported into Claude and Codex plugin layouts from shared repo artifacts.",
+  "author": {
+    "name": "Corca",
+    "url": "https://www.corca.ai/"
+  },
+  "homepage": "https://github.com/corca-ai/charness",
+  "repository": "https://github.com/corca-ai/charness",
+  "source": {
+    "readme": "README.md",
+    "skills_dir": "skills",
+    "public_skills_dir": "skills/public",
+    "support_skills_dir": "skills/support",
+    "profiles_dir": "profiles",
+    "presets_dir": "presets",
+    "integrations_dir": "integrations/tools"
+  },
+  "codex": {
+    "manifest_path": ".codex-plugin/plugin.json",
+    "manifest": {
+      "name": "charness",
+      "version": "0.0.0-dev",
+      "description": "Portable Corca harness layer exported into Claude and Codex plugin layouts from shared repo artifacts.",
+      "skills": "./skills/"
+    },
+    "repo_marketplace": {
+      "path": ".agents/plugins/marketplace.json",
+      "default_source_path": "./plugins/charness",
+      "display_name": "charness",
+      "category": "Productivity"
+    }
+  },
+  "claude": {
+    "manifest_path": ".claude-plugin/plugin.json",
+    "manifest": {
+      "name": "charness",
+      "version": "0.0.0-dev",
+      "description": "Portable Corca harness layer exported into Claude and Codex plugin layouts from shared repo artifacts.",
+      "repository": "https://github.com/corca-ai/charness"
+    }
+  }
+}

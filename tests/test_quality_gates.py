@@ -63,6 +63,11 @@ def test_validate_profiles_passes_on_current_repo() -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_validate_packaging_passes_on_current_repo() -> None:
+    result = run_script("scripts/validate-packaging.py", "--repo-root", str(ROOT))
+    assert result.returncode == 0, result.stderr
+
+
 def test_validate_profiles_rejects_missing_skill_reference(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     profiles_dir = repo / "profiles"
@@ -159,7 +164,73 @@ def test_check_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:
 def test_run_evals_passes_on_current_repo() -> None:
     result = run_script("scripts/run-evals.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
-    assert "Ran 8 eval scenario(s)." in result.stdout
+    assert "Ran 9 eval scenario(s)." in result.stdout
+
+
+def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "packaging").mkdir(parents=True)
+    (repo / "skills" / "public").mkdir(parents=True)
+    (repo / "skills" / "support").mkdir(parents=True)
+    (repo / "profiles").mkdir(parents=True)
+    (repo / "presets").mkdir(parents=True)
+    (repo / "integrations" / "tools").mkdir(parents=True)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (repo / "packaging" / "demo.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "package_id": "demo",
+                "display_name": "demo",
+                "version": "0.0.0-dev",
+                "summary": "Demo package.",
+                "author": {"name": "Demo"},
+                "homepage": "https://example.com/demo",
+                "repository": "https://example.com/demo",
+                "source": {
+                    "readme": "README.md",
+                    "skills_dir": "skills",
+                    "public_skills_dir": "skills/public",
+                    "support_skills_dir": "skills/support",
+                    "profiles_dir": "profiles",
+                    "presets_dir": "presets",
+                    "integrations_dir": "integrations/tools",
+                },
+                "codex": {
+                    "manifest_path": "plugin.json",
+                    "manifest": {
+                        "name": "demo",
+                        "version": "0.0.0-dev",
+                        "description": "Demo package.",
+                        "skills": "./skills/",
+                    },
+                    "repo_marketplace": {
+                        "path": ".agents/plugins/marketplace.json",
+                        "default_source_path": "./plugins/demo",
+                        "display_name": "demo",
+                        "category": "Productivity",
+                    },
+                },
+                "claude": {
+                    "manifest_path": ".claude-plugin/plugin.json",
+                    "manifest": {
+                        "name": "demo",
+                        "version": "0.0.0-dev",
+                        "description": "Demo package.",
+                        "repository": "https://example.com/demo",
+                    },
+                },
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/validate-packaging.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert ".codex-plugin/plugin.json" in result.stderr
 
 
 def test_check_skill_contracts_rejects_missing_required_snippet(tmp_path: Path) -> None:
