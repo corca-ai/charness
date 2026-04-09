@@ -21,6 +21,14 @@ upstream support-skill reuse in `charness`.
 The manifest is authoritative for intent. Lock files are authoritative only for
 what was last synced or observed on one machine.
 
+Support capability state should stay explicit in doctor and lock output:
+
+- `native-support`
+- `upstream-consumed`
+- `wrapped-upstream`
+- `forked-local`
+- `integration-only`
+
 ## Command Responsibilities
 
 ### `charness sync-support`
@@ -105,9 +113,12 @@ The first manifest wave should cover:
 - `agent-browser`
 - `specdown`
 - `crill`
-- the future standalone evaluation engine split from `workbench`
+- the future standalone evaluation engine split from `workbench` once it exists
+  as a real upstream repo or release boundary
 
-Each target should get one manifest before broad skill migration depends on it.
+The first three are now concrete manifest instances. The evaluation engine
+remains deferred on purpose until the Ceal-side extraction creates a stable
+upstream source of truth.
 
 ## Deferred Decisions
 

@@ -1,0 +1,79 @@
+{
+  "schema_version": "1",
+  "tool_id": "crill",
+  "kind": "external_binary_with_skill",
+  "display_name": "crill",
+  "summary": "CLI for mobile app UX exploration, replay, and diff built around persisted scenario artifacts.",
+  "upstream_repo": "corca-ai/crill",
+  "homepage": "https://github.com/corca-ai/crill",
+  "platforms": [
+    "linux",
+    "macos"
+  ],
+  "status": "experimental",
+  "lifecycle": {
+    "install": {
+      "mode": "manual",
+      "docs_url": "https://github.com/corca-ai/crill",
+      "notes": [
+        "Current install path is repo-oriented: clone the upstream repo, then run `uv sync`.",
+        "Platform-specific mobile automation prerequisites stay in the upstream setup flow."
+      ]
+    },
+    "update": {
+      "mode": "manual",
+      "docs_url": "https://github.com/corca-ai/crill",
+      "notes": [
+        "Update the upstream checkout and re-run `uv sync` in that repo."
+      ]
+    }
+  },
+  "checks": {
+    "detect": {
+      "commands": [
+        "crill --help"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:crill"
+      ],
+      "failure_hint": "Install the upstream project and ensure the `crill` CLI is on PATH."
+    },
+    "healthcheck": {
+      "commands": [
+        "crill scan --help"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:scan"
+      ],
+      "failure_hint": "The CLI exists but scan help is unavailable. Reinstall the upstream environment or verify the active virtualenv."
+    }
+  },
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer a recent upstream-supported checkout or release.",
+    "detected_by": "manual"
+  },
+  "support_skill_source": {
+    "source_type": "upstream_repo",
+    "path": ".agents/skills/crill-operator/SKILL.md",
+    "ref": "main",
+    "sync_strategy": "reference",
+    "notes": [
+      "The upstream repo already carries operator guidance for real-device workflows."
+    ]
+  },
+  "degradation": {
+    "when_missing": [
+      "Mobile UX scan and replay workflows should stay unavailable rather than falling back to guessed screenshots.",
+      "Ask for alternate evidence when the runtime is not installed."
+    ],
+    "when_version_mismatch": [
+      "Runtime or setup drift should be treated as a manual investigation point before trusting scan results."
+    ]
+  },
+  "host_notes": [
+    "The upstream tool currently assumes repo-local `uv` workflows and may need platform setup beyond a single binary install."
+  ]
+}

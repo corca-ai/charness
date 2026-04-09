@@ -2,8 +2,8 @@
 
 ## Workflow Trigger
 
-- 다음 세션에서 이 문서를 멘션하면 `$ceal:impl`로 이어서 `charness` Session 12를 진행한다.
-- 시작하자마자 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [docs/support-skill-policy.md](/home/ubuntu/charness/docs/support-skill-policy.md), [docs/external-integrations.md](/home/ubuntu/charness/docs/external-integrations.md), [skills/public/find-skills/SKILL.md](/home/ubuntu/charness/skills/public/find-skills/SKILL.md), [profiles/constitutional.json](/home/ubuntu/charness/profiles/constitutional.json), [skills/public/create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md)를 다시 읽고 support-skill sync/update/doctor seam을 설계한다.
+- 다음 세션에서 이 문서를 멘션하면 `$ceal:impl`로 이어서 `charness` Session 13을 진행한다.
+- 시작하자마자 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md), [integrations/tools/agent-browser.json](/home/ubuntu/charness/integrations/tools/agent-browser.json), [integrations/tools/specdown.json](/home/ubuntu/charness/integrations/tools/specdown.json), [integrations/tools/crill.json](/home/ubuntu/charness/integrations/tools/crill.json), [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md)를 다시 읽고 Session 13 self-validation/workbench-HITL 계획을 concrete scenario로 내린다.
 
 ## Current State
 
@@ -42,6 +42,10 @@
 - `find-skills`는 Vercel-style discovery flow를 참고하되 charness에서는 local public/support/integration을 먼저 보고, adapter가 있으면 `official_skill_roots`를 통해 Ceal 같은 host-official skill pack도 함께 찾는 구조로 정리됐다.
 - [constitutional.json](/home/ubuntu/charness/profiles/constitutional.json)은 `find-skills`를 다시 포함하고, [tests/test_quality_gates.py](/home/ubuntu/charness/tests/test_quality_gates.py)에 adapter-configured official root smoke가 추가됐다.
 - Session 11 중 duplicate gate가 큰 문서 집합에서 느려지는 문제가 드러나, [check-duplicates.py](/home/ubuntu/charness/scripts/check-duplicates.py)에 quick upper-bound filtering을 넣어 [run-quality.sh](/home/ubuntu/charness/scripts/run-quality.sh)가 다시 빠르게 통과하도록 보강했다.
+- Session 12에서 [integrations/tools/agent-browser.json](/home/ubuntu/charness/integrations/tools/agent-browser.json), [integrations/tools/specdown.json](/home/ubuntu/charness/integrations/tools/specdown.json), [integrations/tools/crill.json](/home/ubuntu/charness/integrations/tools/crill.json)이 추가돼 real upstream sources를 가리키는 첫 manifest wave가 생겼다.
+- Session 12에서 [scripts/validate-integrations.py](/home/ubuntu/charness/scripts/validate-integrations.py), [scripts/doctor.py](/home/ubuntu/charness/scripts/doctor.py), [scripts/sync_support.py](/home/ubuntu/charness/scripts/sync_support.py), [scripts/update_tools.py](/home/ubuntu/charness/scripts/update_tools.py), [scripts/control_plane_lib.py](/home/ubuntu/charness/scripts/control_plane_lib.py)가 추가돼 control-plane dry-run and doctor seam이 생겼다.
+- `doctor`는 실제 machine state를 읽으므로 이 머신에서는 `specdown`만 `ok`이고 `agent-browser`와 `crill`은 아직 `missing`이다. quality gate에는 doctor를 직접 넣지 않고, manifest validation과 deterministic tests만 넣었다.
+- future evaluation engine manifest는 의도적으로 deferred 상태다. 추출된 upstream repo나 release boundary가 생기기 전에는 placeholder manifest를 만들지 않기로 했다.
 - constitutional core의 public execution cluster가 이제 `gather` / `ideation` / `spec` / `impl` / `debug` / `retro` / `handoff` 수준에서 실제 skill body를 갖추게 됐다.
 - master plan에는 모든 public skill을 나중에 `workbench` 시나리오와 `hitl` 검토로 검증한다는 규칙이 추가됐다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
@@ -52,10 +56,10 @@
 
 ## Next Session
 
-1. Session 12로 넘어가 support-skill sync/update/doctor policy를 control-plane seam으로 내린다.
-2. `agent-browser`, `specdown`, future workbench successor를 manifest instance 기준으로 어떻게 추적할지 정한다.
-3. support capability state (`native-support`, `upstream-consumed`, `wrapped-upstream`, `forked-local`, `integration-only`)를 doctor output과 lock artifact에 어떻게 반영할지 정한다.
-4. `workbench` + `hitl` validation은 public skill cluster가 더 모인 뒤 묶어서 수행한다.
+1. Session 13으로 넘어가 public skill set에 대한 self-validation/workbench/HITL plan을 concrete scenario로 내린다.
+2. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정한다.
+3. future evaluation engine이 추출되기 전까지 어떤 validation은 local smoke로, 어떤 것은 human review로 남길지 경계를 정한다.
+4. support control plane은 이후 real host adoption이 생기면 lock artifact format과 generated wrapper usage를 추가로 조인다.
 
 ## Discuss
 

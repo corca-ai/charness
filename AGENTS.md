@@ -62,6 +62,8 @@ Read the smallest memory surface that answers the current question.
 - When editing profiles, run `python3 scripts/validate-profiles.py`.
 - When editing adapter bootstrap or resolver behavior, run
   `python3 scripts/validate-adapters.py`.
+- When editing integration manifests or control-plane scripts, run
+  `python3 scripts/validate-integrations.py`.
 - When editing committed markdown links or handoff references, run
   `python3 scripts/check-doc-links.py`.
 - When markdown or secret-bearing text changes materially, run
@@ -73,6 +75,10 @@ Read the smallest memory surface that answers the current question.
   hotspots before copying a pattern again.
 - Keep `python3 -m py_compile skills/public/*/scripts/*.py` as the cheap smoke
   test for helper scripts.
+- Keep `python3 scripts/sync_support.py --json` and
+  `python3 scripts/update_tools.py --json` as dry-run sanity checks for the
+  control plane. Use `python3 scripts/doctor.py --json` when you intentionally
+  want real machine-state diagnostics.
 
 ### Change Discipline
 
