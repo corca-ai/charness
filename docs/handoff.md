@@ -2,8 +2,8 @@
 
 ## Workflow Trigger
 
-- 다음 세션에서 이 문서를 멘션하면 `$ceal:impl`로 이어서 `charness` Session 9를 진행한다.
-- 시작하자마자 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), [presets/typescript-quality.md](/home/ubuntu/charness/presets/typescript-quality.md), [presets/python-quality.md](/home/ubuntu/charness/presets/python-quality.md), [skills/public/impl/SKILL.md](/home/ubuntu/charness/skills/public/impl/SKILL.md), [skills/public/debug/SKILL.md](/home/ubuntu/charness/skills/public/debug/SKILL.md)를 다시 읽고 `charness` repo 자체를 대상으로 lint / test / concept / security dogfood review를 수행한다.
+- 다음 세션에서 이 문서를 멘션하면 `$ceal:impl`로 이어서 `charness` Session 11을 진행한다.
+- 시작하자마자 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [skill-migration-map.md](/home/ubuntu/charness/docs/skill-migration-map.md), [skills/public/announcement/SKILL.md](/home/ubuntu/charness/skills/public/announcement/SKILL.md), [skills/public/hitl/SKILL.md](/home/ubuntu/charness/skills/public/hitl/SKILL.md), [profiles/collaboration.json](/home/ubuntu/charness/profiles/collaboration.json), [skills/public/create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md)를 다시 읽고 `find-skills`와 support-skill consumption policy를 설계한다.
 
 ## Current State
 
@@ -35,20 +35,23 @@
 - Session 9 후반에 [pyproject.toml](/home/ubuntu/charness/pyproject.toml), [run-quality.sh](/home/ubuntu/charness/scripts/run-quality.sh), [check-duplicates.py](/home/ubuntu/charness/scripts/check-duplicates.py), [tests/test_quality_gates.py](/home/ubuntu/charness/tests/test_quality_gates.py)가 추가돼 Python helper layer에 `ruff`/`pytest`/repo-owned quality runner가 생겼다.
 - Session 9 후반에 [package.json](/home/ubuntu/charness/package.json), [.markdownlint-cli2.jsonc](/home/ubuntu/charness/.markdownlint-cli2.jsonc), [.secretlintrc.json](/home/ubuntu/charness/.secretlintrc.json), [check-markdown.sh](/home/ubuntu/charness/scripts/check-markdown.sh), [check-secrets.sh](/home/ubuntu/charness/scripts/check-secrets.sh), [check-shell.sh](/home/ubuntu/charness/scripts/check-shell.sh), [check-links-external.sh](/home/ubuntu/charness/scripts/check-links-external.sh)가 추가돼 markdownlint/secretlint와 optional shell/link external gate가 quality runner에 연결됐다.
 - Session 9 마무리로 [run-evals.py](/home/ubuntu/charness/scripts/run-evals.py)와 [evals/README.md](/home/ubuntu/charness/evals/README.md), fixture repos가 추가돼 repo-owned smoke scenario layer가 생겼고, `run-quality.sh`가 이를 호출한다.
+- Session 10 산출물로 [skills/public/announcement/SKILL.md](/home/ubuntu/charness/skills/public/announcement/SKILL.md), [skills/public/hitl/SKILL.md](/home/ubuntu/charness/skills/public/hitl/SKILL.md), 각 adapter/reference/script 세트, 그리고 [collaboration.json](/home/ubuntu/charness/profiles/collaboration.json)이 추가됐다.
+- `announcement`는 draft-first delivery skill로 정리됐고, sections/audience/delivery backend는 adapter seam으로 밀어냈다.
+- `hitl`은 resumable human-judgment review skill로 정리됐고, runtime state는 repo-local `output_dir` 아래에 두는 portable state model로 축약했다.
 - constitutional core의 public execution cluster가 이제 `gather` / `ideation` / `spec` / `impl` / `debug` / `retro` / `handoff` 수준에서 실제 skill body를 갖추게 됐다.
 - master plan에는 모든 public skill을 나중에 `workbench` 시나리오와 `hitl` 검토로 검증한다는 규칙이 추가됐다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - 실제 tool별 manifest instance
-  - `announcement` / `hitl` / `find-skills` public skill bodies
+  - `find-skills` public skill body
   - support skill migrations and integration wrappers
   - support integration validator와 doctor implementation
 
 ## Next Session
 
-1. Session 10으로 넘어가 collaboration layer인 `announcement`와 `hitl`의 portable body를 설계한다.
-2. Session 9에서 추가한 self-validation scripts를 기준으로 후속 lint/duplicate/integration gates를 어디까지 productized할지 정한다.
-3. `quality` dogfood에서 남은 duplicate hotspot과 `spec` mode drift를 언제 actual fix로 당길지 결정한다.
+1. Session 11로 넘어가 `find-skills`와 support-skill consumption policy를 설계한다.
+2. `announcement`와 `hitl`의 adapter seam이 collaboration profile에 충분한지, 또는 추가 preset/example이 필요한지 정한다.
+3. Session 12 control-plane work 전에 support-skill sync/update policy를 문서와 script seam 양쪽에서 정리한다.
 4. `workbench` + `hitl` validation은 public skill cluster가 더 모인 뒤 묶어서 수행한다.
 
 ## Discuss
@@ -64,6 +67,8 @@
 - shipped sample preset을 어디까지 repo-agnostic example로 둘지, 어디부터 host/profile seam으로 뺄지 결정이 필요하다.
 - `quality` dogfood에서 나온 concrete gate proposals를 Session 10 이후 어느 층위에서 실제 구현할지 정해야 한다.
 - `spec`의 explicit mode 구조를 유지할지, `create-skill`의 option-minimalism에 맞춰 heuristic branch로 낮출지 결정이 필요하다.
+- `announcement` delivery kind를 `none | release-notes | command`까지만 public core에 둘지, downstream examples를 더 늘릴지 정해야 한다.
+- `hitl` runtime state를 지금처럼 portable minimum으로 둘지, later support layer에서 richer queue/context tooling을 붙일지 정해야 한다.
 
 ## References
 
@@ -101,6 +106,9 @@
 - [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md)
 - [typescript-quality.md](/home/ubuntu/charness/presets/typescript-quality.md)
 - [python-quality.md](/home/ubuntu/charness/presets/python-quality.md)
+- [skills/public/announcement/SKILL.md](/home/ubuntu/charness/skills/public/announcement/SKILL.md)
+- [skills/public/hitl/SKILL.md](/home/ubuntu/charness/skills/public/hitl/SKILL.md)
+- [profiles/collaboration.json](/home/ubuntu/charness/profiles/collaboration.json)
 - [contract-consumption.md](/home/ubuntu/charness/skills/public/impl/references/contract-consumption.md)
 - [five-steps.md](/home/ubuntu/charness/skills/public/debug/references/five-steps.md)
 - [source-priority.md](/home/ubuntu/charness/skills/public/gather/references/source-priority.md)
