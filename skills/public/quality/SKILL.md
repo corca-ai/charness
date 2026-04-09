@@ -18,6 +18,11 @@ The job is not to invent one universal checklist. The job is to understand the
 repo's current quality surface, run the meaningful gates that already exist,
 and propose the missing ones concretely.
 
+Deterministic gates should define pass/fail authority wherever possible. If a
+quality concern can be enforced by a linter, validator, test, hook, or script,
+`quality` should prefer promoting it into that gate instead of leaving it as
+repeated prose advice.
+
 ## Bootstrap
 
 Resolve the adapter first, then inspect the current quality surface.
@@ -46,7 +51,7 @@ sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 rg --files docs skills
 
 # 2. repo signals for existing gates and contracts
-rg -n "eslint|ruff|mypy|pyright|tsc|pytest|vitest|jest|coverage|deptry|knip|audit|sast|owasp|threat|architecture|concept" .
+rg -n "eslint|ruff|mypy|pyright|tsc|pytest|vitest|jest|coverage|deptry|knip|audit|sast|owasp|threat|architecture|concept|markdownlint|secretlint|shellcheck|lychee|gitleaks|trufflehog" .
 
 # 3. current repo state
 git status --short
@@ -78,16 +83,24 @@ recording.
    - `security`: are there meaningful code, secret, or supply-chain risks
    - `operability`: are setup, CI, and maintenance surfaces honest enough to
      sustain the quality bar
-5. Classify gaps.
+5. Classify each issue by enforcement tier first.
+   - `AUTO_EXISTING`: already enforced by a meaningful deterministic gate
+   - `AUTO_CANDIDATE`: should be promoted into a linter, validator, test, hook,
+     or script
+   - `NON_AUTOMATABLE`: still requires judgment, tradeoff analysis, or human
+     review
+6. Classify gaps.
    - `healthy`: already enforced and useful
    - `weak`: present but low-signal or easy to game
    - `missing`: should exist but does not
    - `defer`: useful later, but not the next highest-leverage gate
-6. Propose the next quality moves concretely.
+7. Propose the next quality moves concretely.
    - for missing or weak gates, name the exact setup or command family to add
    - prefer the smallest gate that materially improves confidence
    - do not force one stack's tooling when the repo does not use that stack
-7. End with a quality posture summary.
+   - when the problem is automatable, prefer a deterministic gate proposal over
+     more prose
+8. End with a quality posture summary.
    - what was actually run
    - what the current bar proves
    - what it still does not prove
@@ -99,6 +112,7 @@ The result should usually include:
 
 - `Scope`
 - `Current Gates`
+- `Enforcement Triage`
 - `Healthy`
 - `Weak`
 - `Missing`
@@ -111,6 +125,8 @@ The result should usually include:
 - Do not reduce quality to one aggregate score.
 - Do not recommend gates the repo cannot realistically run without saying why.
 - Do not confuse gate presence with gate usefulness.
+- Do not leave an automatable quality rule as prose-only guidance when a
+  linter, validator, test, hook, or script could own it.
 - Do not propose generic "add more tests" or "improve security" without naming
   the actual seam and the next concrete setup.
 - If a gate already exists, prefer tightening or reusing it before adding a new
@@ -124,4 +140,5 @@ The result should usually include:
 - `references/quality-lenses.md`
 - `references/proposal-flow.md`
 - `references/gate-classification.md`
+- `references/automation-promotion.md`
 - `references/sample-presets.md`

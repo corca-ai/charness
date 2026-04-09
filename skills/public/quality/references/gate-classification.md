@@ -2,6 +2,12 @@
 
 Classify each observed gate or missing gate honestly.
 
+This happens after enforcement triage:
+
+- `AUTO_EXISTING`
+- `AUTO_CANDIDATE`
+- `NON_AUTOMATABLE`
+
 ## `healthy`
 
 - currently present
