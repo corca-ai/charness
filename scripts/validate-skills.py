@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 from pathlib import Path
 
-
-ROOT = Path(__file__).resolve().parent.parent
-PUBLIC_SKILLS_DIR = ROOT / "skills" / "public"
 REQUIRED_FRONTMATTER_KEYS = ("name", "description")
 SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
@@ -91,12 +89,18 @@ def validate_support_files(skill_dir: Path) -> None:
                 raise ValidationError(f"scripts/{required} is missing")
 
 
-def iter_skill_dirs() -> list[Path]:
-    return sorted(path for path in PUBLIC_SKILLS_DIR.iterdir() if path.is_dir())
+def iter_skill_dirs(root: Path) -> list[Path]:
+    public_skills_dir = root / "skills" / "public"
+    return sorted(path for path in public_skills_dir.iterdir() if path.is_dir())
 
 
 def main() -> int:
-    skill_dirs = iter_skill_dirs()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
+    args = parser.parse_args()
+
+    root = args.repo_root.resolve()
+    skill_dirs = iter_skill_dirs(root)
     if not skill_dirs:
         print("No public skills found.")
         return 0
@@ -123,4 +127,3 @@ if __name__ == "__main__":
     except ValidationError as exc:
         print(str(exc), file=sys.stderr)
         sys.exit(1)
-

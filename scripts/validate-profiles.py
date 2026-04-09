@@ -2,18 +2,12 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import sys
 from pathlib import Path
 
-
-ROOT = Path(__file__).resolve().parent.parent
-PROFILES_DIR = ROOT / "profiles"
-PUBLIC_SKILLS_DIR = ROOT / "skills" / "public"
-SUPPORT_SKILLS_DIR = ROOT / "skills" / "support"
-PRESETS_DIR = ROOT / "presets"
-INTEGRATIONS_DIR = ROOT / "integrations" / "tools"
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")
 
 
@@ -47,7 +41,12 @@ def require_file(path: Path, field: str, value: str) -> None:
         raise ValidationError(f"`{field}` references missing artifact `{value}`")
 
 
-def validate_profile(path: Path) -> None:
+def validate_profile(path: Path, root: Path) -> None:
+    public_skills_dir = root / "skills" / "public"
+    support_skills_dir = root / "skills" / "support"
+    presets_dir = root / "presets"
+    integrations_dir = root / "integrations" / "tools"
+
     data = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         raise ValidationError("profile must be a JSON object")
@@ -68,12 +67,12 @@ def validate_profile(path: Path) -> None:
         raise ValidationError("`bundles.public_skills` must be a non-empty list")
     for skill_id in public_skills:
         skill_id = validate_slug(skill_id, "bundles.public_skills[]")
-        require_file(PUBLIC_SKILLS_DIR / skill_id / "SKILL.md", "bundles.public_skills[]", skill_id)
+        require_file(public_skills_dir / skill_id / "SKILL.md", "bundles.public_skills[]", skill_id)
 
     for field, base, suffix in (
-        ("support_skills", SUPPORT_SKILLS_DIR, "SKILL.md"),
-        ("preset_ids", PRESETS_DIR, ".md"),
-        ("integration_ids", INTEGRATIONS_DIR, ".json"),
+        ("support_skills", support_skills_dir, "SKILL.md"),
+        ("preset_ids", presets_dir, ".md"),
+        ("integration_ids", integrations_dir, ".json"),
     ):
         items = bundles.get(field, [])
         if items is None:
@@ -98,23 +97,27 @@ def validate_profile(path: Path) -> None:
         validate_string_list(notes, "notes")
 
 
-def iter_profile_files() -> list[Path]:
+def iter_profile_files(root: Path) -> list[Path]:
+    profiles_dir = root / "profiles"
     return sorted(
-        path
-        for path in PROFILES_DIR.glob("*.json")
-        if path.name != "profile.schema.json"
+        path for path in profiles_dir.glob("*.json") if path.name != "profile.schema.json"
     )
 
 
 def main() -> int:
-    files = iter_profile_files()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
+    args = parser.parse_args()
+
+    root = args.repo_root.resolve()
+    files = iter_profile_files(root)
     if not files:
         print("No profile instances found.")
         return 0
 
     for path in files:
         try:
-            validate_profile(path)
+            validate_profile(path, root)
         except (ValidationError, json.JSONDecodeError) as exc:
             raise ValidationError(f"{path}: {exc}") from exc
 

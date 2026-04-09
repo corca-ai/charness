@@ -2,14 +2,11 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import subprocess
 import sys
 from pathlib import Path
-
-
-ROOT = Path(__file__).resolve().parent.parent
-PUBLIC_SKILLS_DIR = ROOT / "skills" / "public"
 
 
 class ValidationError(Exception):
@@ -20,10 +17,10 @@ def expected_artifact_filename(skill_id: str) -> str:
     return f"{skill_id}.md"
 
 
-def validate_resolver(path: Path) -> None:
+def validate_resolver(path: Path, root: Path) -> None:
     skill_id = path.parent.parent.name
     completed = subprocess.run(
-        ["python3", str(path), "--repo-root", str(ROOT)],
+        ["python3", str(path), "--repo-root", str(root)],
         check=False,
         capture_output=True,
         text=True,
@@ -54,18 +51,24 @@ def validate_resolver(path: Path) -> None:
         )
 
 
-def iter_resolvers() -> list[Path]:
-    return sorted(PUBLIC_SKILLS_DIR.glob("*/scripts/resolve_adapter.py"))
+def iter_resolvers(root: Path) -> list[Path]:
+    public_skills_dir = root / "skills" / "public"
+    return sorted(public_skills_dir.glob("*/scripts/resolve_adapter.py"))
 
 
 def main() -> int:
-    resolvers = iter_resolvers()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
+    args = parser.parse_args()
+
+    root = args.repo_root.resolve()
+    resolvers = iter_resolvers(root)
     if not resolvers:
         print("No adapter resolvers found.")
         return 0
 
     for resolver in resolvers:
-        validate_resolver(resolver)
+        validate_resolver(resolver, root)
 
     print(f"Validated {len(resolvers)} adapter resolvers.")
     return 0
@@ -77,4 +80,3 @@ if __name__ == "__main__":
     except ValidationError as exc:
         print(str(exc), file=sys.stderr)
         sys.exit(1)
-

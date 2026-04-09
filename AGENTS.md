@@ -54,12 +54,16 @@ Read the smallest memory surface that answers the current question.
 
 ### Validation Discipline
 
+- Prefer `./scripts/run-quality.sh` as the canonical local quality entrypoint
+  once the change touches multiple repo-owned quality surfaces.
 - When editing skill packages, run `python3 scripts/validate-skills.py`.
 - When editing profiles, run `python3 scripts/validate-profiles.py`.
 - When editing adapter bootstrap or resolver behavior, run
   `python3 scripts/validate-adapters.py`.
 - When editing committed markdown links or handoff references, run
   `python3 scripts/check-doc-links.py`.
+- Use `python3 scripts/check-duplicates.py` to surface helper-script duplicate
+  hotspots before copying a pattern again.
 - Keep `python3 -m py_compile skills/public/*/scripts/*.py` as the cheap smoke
   test for helper scripts.
 

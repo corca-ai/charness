@@ -20,8 +20,14 @@ What was actually runnable today:
 - adapter example parse sanity for skills that ship `adapter.example.yaml`
 - `resolve_adapter.py --repo-root .` smoke runs for `debug`, `gather`,
   `handoff`, `quality`, and `retro`
+- `scripts/validate-skills.py`, `scripts/validate-profiles.py`,
+  `scripts/validate-adapters.py`, and `scripts/check-doc-links.py`
 - Python syntax compilation for every committed helper script under
   `skills/public/*/scripts/*.py`
+- `ruff check scripts tests skills/public/*/scripts`
+- `pytest -q`
+- `scripts/run-quality.sh` as the repo-owned quality entrypoint
+- `scripts/check-duplicates.py` as a report-first duplicate hotspot check
 - JSON Schema validation for `profiles/constitutional.json` against
   `profiles/profile.schema.json`
 - manual concept review against `README.md`, `docs/master-plan.md`,
@@ -40,6 +46,14 @@ What was actually runnable today:
   YAML-safe frontmatter.
 - `scripts/validate-profiles.py` now validates shipped profile instances against
   actual repo artifacts.
+- `scripts/validate-adapters.py` now validates resolver output shape and artifact
+  naming.
+- `scripts/check-doc-links.py` now catches broken local links and foreign
+  absolute workspace paths.
+- `ruff` and `pytest` now run successfully against the repo-owned Python helper
+  layer.
+- `scripts/run-quality.sh` now provides one canonical repo-owned quality
+  entrypoint.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -50,16 +64,14 @@ What was actually runnable today:
 - `spec` still exposes explicit user-facing modes while the current
   `create-skill` authoring contract says to avoid modes/options unless they are
   truly necessary and unsafe to infer.
-- `docs/handoff.md` still carries Ceal-specific branding and absolute local file
-  references to other repos, which makes the committed handoff artifact less
-  portable than the rest of the repo.
+- `scripts/check-duplicates.py` is report-first today. It surfaces current
+  hotspots but does not fail the quality run yet.
 
 ## Missing
 
-- A duplicate-check gate for helper scripts
-- A doc/link portability check for committed markdown
 - Repo-owned smoke scenarios under `evals/` or `workbench` fixtures
 - A checked-in quality adapter for this repo once stable commands exist
+- A fail-closed duplicate policy for helper script reuse
 
 ## Deferred
 
@@ -83,23 +95,12 @@ Evidence:
 - current `scripts/` contents
 - `evals/.gitkeep`
 
-### 2. Committed handoff artifact was still partially Ceal-shaped before this pass
-
-The committed handoff file had Ceal branding and foreign local filesystem
-references. Those paths work only on one machine and should be rejected by a
-repo-owned doc link check.
-
-Evidence:
-
-- previous Session 8 handoff state
-- `scripts/check-doc-links.py`
-
-### 3. Adapter helper implementation is drifting toward copy-paste maintenance
+### 2. Adapter helper implementation is drifting toward copy-paste maintenance
 
 The minimal YAML loader is duplicated per skill, and the adapter resolvers for
 `debug`, `gather`, `handoff`, and `quality` are all very high-similarity
 variants. This is now a real duplicate hotspot and should be covered by a
-repo-specific duplicate check before more skills copy the pattern again.
+repo-specific duplicate policy before more skills copy the pattern again.
 
 Evidence:
 
@@ -110,7 +111,7 @@ Evidence:
 - `skills/public/gather/scripts/resolve_adapter.py` lines 17-135
 - `skills/public/quality/scripts/resolve_adapter.py` lines 17-156
 
-### 4. `spec` still violates the repo's newer option-minimalism rule
+### 3. `spec` still violates the repo's newer option-minimalism rule
 
 The authoring contract now says not to introduce user-facing modes/options
 unless the behavior is meaningfully distinct and unsafe to infer. `spec` still
@@ -132,7 +133,11 @@ python3 skills/public/gather/scripts/resolve_adapter.py --repo-root .
 python3 skills/public/handoff/scripts/resolve_adapter.py --repo-root .
 python3 skills/public/quality/scripts/resolve_adapter.py --repo-root .
 python3 skills/public/retro/scripts/resolve_adapter.py --repo-root .
+python3 scripts/validate-adapters.py
 python3 -m py_compile skills/public/*/scripts/*.py
+ruff check scripts tests skills/public/*/scripts
+pytest -q
+./scripts/run-quality.sh
 python3 scripts/validate-skills.py
 python3 scripts/validate-profiles.py
 python3 - <<'PY'
@@ -145,24 +150,20 @@ jsonschema.Draft7Validator(schema).validate(instance)
 print('ok')
 PY
 python3 scripts/check-doc-links.py
+python3 scripts/check-duplicates.py
 ```
 
 ## Recommended Next Gates
 
-1. `python3 scripts/validate-adapters.py`
-   Run each committed `resolve_adapter.py --repo-root .`, assert `valid=true`,
-   and verify the expected durable artifact filename and canonical search order.
+1. Turn `scripts/check-duplicates.py` into a fail-closed gate once the current
+   adapter helper hotspots are either factored or explicitly allowlisted.
 
-2. `python3 scripts/check-duplicates.py`
-   Detect very-high-similarity helper scripts under `skills/public/*/scripts/`
-   so adapter boilerplate drift becomes visible before it spreads further.
-
-3. `python3 -m py_compile skills/public/*/scripts/*.py`
-   Keep this as a cheap syntax smoke test for the current Python helper layer.
-
-4. Add repo-owned smoke scenarios under `evals/`
+2. Add repo-owned smoke scenarios under `evals/`
    At minimum:
    - one skill package shape scenario
    - one profile/schema scenario
    - one adapter resolution scenario
    - one handoff portability scenario
+
+3. Keep `./scripts/run-quality.sh` as the canonical local quality entrypoint and
+   wire it into future collaboration-layer or CI flows.
