@@ -2,8 +2,8 @@
 
 ## Workflow Trigger
 
-- 다음 세션에서 이 문서를 멘션하면 `$ceal:impl`로 이어서 `charness` Session 4를 진행한다.
-- 시작하자마자 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [skills/public/create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md), [portable-authoring.md](/home/ubuntu/charness/skills/public/create-skill/references/portable-authoring.md)를 다시 읽고 `retro`를 strong portable public skill로 재작성한다.
+- 다음 세션에서 이 문서를 멘션하면 `$ceal:impl`로 이어서 `charness` validation pass를 진행한다.
+- 시작하자마자 [skills/public/create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md), [skills/public/retro/SKILL.md](/home/ubuntu/charness/skills/public/retro/SKILL.md), [master-plan.md](/home/ubuntu/charness/docs/master-plan.md)를 다시 읽고 `workbench` 시나리오와 `hitl` 검토로 현재 public skill 초안을 테스트한다.
 
 ## Current State
 
@@ -14,6 +14,9 @@
 - Session 2 산출물로 [manifest.schema.json](/home/ubuntu/charness/integrations/tools/manifest.schema.json), [profile.schema.json](/home/ubuntu/charness/profiles/profile.schema.json), [control-plane.md](/home/ubuntu/charness/docs/control-plane.md)가 추가됐다.
 - Session 3 산출물로 [skills/public/create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md)와 관련 references가 추가돼 canonical portable authoring contract가 생겼다.
 - 첫 profile instance로 [constitutional.json](/home/ubuntu/charness/profiles/constitutional.json)이 추가됐고, sample preset convention으로 [portable-defaults.md](/home/ubuntu/charness/presets/portable-defaults.md)가 생겼다.
+- Session 4 초안으로 [skills/public/retro/SKILL.md](/home/ubuntu/charness/skills/public/retro/SKILL.md)와 adapter/reference/script 세트가 추가됐다.
+- `retro`는 `session`/`weekly` mode를 하나의 public skill 안에서 처리하고, adapter가 없을 때 `session`은 soft fallback, `weekly`는 adapter scaffold를 우선하는 방향으로 설계됐다.
+- `retro`의 핵심 가치는 self-growing/healing으로 잡았고, `Next Improvements`를 `workflow` / `capability` / `memory`로 나누는 방향이 반영됐다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - 실제 tool별 manifest instance
@@ -22,15 +25,15 @@
 
 ## Next Session
 
-1. `skills/public/retro/` 초안을 만든다.
-   - strong portable public skill body
-   - session / weekly mode seam
-   - host-specific artifact cadence를 adapter나 preset으로 미루는 기준
-2. `create-skill` contract를 실제 migration에 적용하면서 빈 구멍을 찾는다.
-   - body가 너무 얇아지는지
-   - references 분리가 과한지
-   - retro에서 필요한 추가 authoring rule이 있는지
-3. 가능하면 `retro`에 필요한 첫 adapter/preset example까지 같이 둔다.
+1. `workbench`로 `create-skill`과 `retro` 평가 시나리오를 만든다.
+   - cold-start invocation
+   - missing adapter / invalid adapter
+   - `session` vs `weekly` mode selection
+2. `hitl` 검토를 붙여 user-facing 가치와 과도한 무게를 확인한다.
+   - `retro`가 너무 cwf-like heavy 하지 않은지
+   - `create-skill`과 `retro`가 실제 migration을 견딜 정도로 구체적인지
+3. validation 결과를 반영해 현재 두 public skill 초안을 다듬는다.
+4. 그 다음 우선순위 skill로 `ideation` 또는 `quality`를 잡을지 결정한다.
 
 ## Discuss
 
@@ -39,6 +42,7 @@
 - future evaluation engine을 `workbench` transitional id로 계속 둘지, extraction 전에 새 permanent id를 줄지 결정이 필요하다.
 - profile inheritance를 얼마나 허용할지, 아니면 flattened bundle만 허용할지 결정이 필요하다.
 - preset schema를 JSON으로 둘지 markdown-first catalog를 더 유지할지 나중에 정해야 한다.
+- public skill 초안들을 먼저 묶어서 검증한 뒤 다음 migration 우선순위를 `ideation`으로 갈지 `quality`로 갈지 판단해야 한다.
 
 ## References
 
@@ -53,3 +57,6 @@
 - [skills/public/create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md)
 - [portable-authoring.md](/home/ubuntu/charness/skills/public/create-skill/references/portable-authoring.md)
 - [constitutional.json](/home/ubuntu/charness/profiles/constitutional.json)
+- [skills/public/retro/SKILL.md](/home/ubuntu/charness/skills/public/retro/SKILL.md)
+- [mode-guide.md](/home/ubuntu/charness/skills/public/retro/references/mode-guide.md)
+- [section-guide.md](/home/ubuntu/charness/skills/public/retro/references/section-guide.md)
