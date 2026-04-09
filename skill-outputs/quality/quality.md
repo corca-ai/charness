@@ -95,6 +95,8 @@ What was actually runnable today:
   trees into the repo.
 - `handoff` and `gather` now have scenario-level bootstrap checks rather than
   only static contract-marker coverage.
+- profile validation metadata now stays synchronized with the eval registry
+  instead of allowing arbitrary `smoke_scenarios` strings to drift silently.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -215,6 +217,20 @@ Evidence:
 - `skills/public/gather/scripts/init_adapter.py`
 - `skills/public/gather/scripts/resolve_adapter.py`
 - `scripts/run-evals.py`
+
+### 7. Profile metadata now has a tighter contract with actual repo-owned validation surfaces
+
+Profile files can now declare `smoke_scenarios` only when those scenario ids
+actually exist in the eval registry, and `required_integrations` now has the
+same artifact-integrity bar as bundle integrations. This matters because the
+profile layer is starting to carry real operational meaning, not just labels.
+
+Evidence:
+
+- `scripts/eval_registry.py`
+- `scripts/validate-profiles.py`
+- `profiles/meta-builder.json`
+- `profiles/engineering-quality.json`
 
 ## Commands Run
 

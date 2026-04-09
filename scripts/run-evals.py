@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -8,18 +9,16 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass
 from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.eval_registry import SCENARIOS, Scenario
 
 
 class EvalError(Exception):
     pass
-
-
-@dataclass
-class Scenario:
-    scenario_id: str
-    description: str
 
 
 def run_command(command: list[str], *, cwd: Path) -> subprocess.CompletedProcess[str]:
@@ -317,22 +316,6 @@ def scenario_find_skills_local_first(root: Path) -> None:
 def scenario_representative_skill_contracts(root: Path) -> None:
     result = run_command(["python3", "scripts/check-skill-contracts.py", "--repo-root", str(root)], cwd=root)
     expect_success(result, "representative skill contracts")
-
-
-SCENARIOS = (
-    Scenario("skill-valid", "fixture repo with one valid public skill passes package validation"),
-    Scenario("profile-valid", "fixture repo with one valid profile passes artifact validation"),
-    Scenario("packaging-valid", "shared host-packaging manifest stays aligned with repo artifacts"),
-    Scenario("packaging-export", "shared packaging metadata materializes usable Claude and Codex plugin layouts"),
-    Scenario("doc-links-valid", "fixture docs with valid internal links pass markdown link validation"),
-    Scenario("quality-adapter-bootstrap", "quality init/resolve scripts bootstrap a clean repo"),
-    Scenario("quality-adapter-checked-in", "checked-in quality adapter resolves to the declared repo contract"),
-    Scenario("handoff-adapter-bootstrap", "handoff adapter helpers bootstrap the durable handoff artifact path"),
-    Scenario("gather-adapter-bootstrap", "gather adapter helpers bootstrap the durable gather artifact path"),
-    Scenario("handoff-absolute-links", "repo-local absolute markdown links remain valid in handoff-style docs"),
-    Scenario("find-skills-local-first", "find-skills keeps local-first discovery while exposing configured official roots"),
-    Scenario("representative-skill-contracts", "representative public skills retain their required contract markers"),
-)
 
 
 def run_scenario(root: Path, scenario: Scenario) -> None:

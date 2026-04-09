@@ -89,6 +89,62 @@ def test_validate_profiles_rejects_missing_skill_reference(tmp_path: Path) -> No
     assert "missing artifact `missing-skill`" in result.stderr
 
 
+def test_validate_profiles_rejects_unknown_smoke_scenario(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    profiles_dir = repo / "profiles"
+    public_skill_dir = repo / "skills" / "public" / "handoff"
+    profiles_dir.mkdir(parents=True)
+    public_skill_dir.mkdir(parents=True)
+    (public_skill_dir / "SKILL.md").write_text(
+        "---\nname: handoff\ndescription: \"demo\"\n---\n\n# Handoff\n",
+        encoding="utf-8",
+    )
+    (profiles_dir / "demo.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "profile_id": "demo",
+                "display_name": "Demo",
+                "purpose": "Test",
+                "bundles": {"public_skills": ["handoff"]},
+                "validation": {"smoke_scenarios": ["not-a-real-scenario"]},
+            }
+        ),
+        encoding="utf-8",
+    )
+    result = run_script("scripts/validate-profiles.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "unknown eval scenario `not-a-real-scenario`" in result.stderr
+
+
+def test_validate_profiles_rejects_missing_extends_reference(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    profiles_dir = repo / "profiles"
+    public_skill_dir = repo / "skills" / "public" / "handoff"
+    profiles_dir.mkdir(parents=True)
+    public_skill_dir.mkdir(parents=True)
+    (public_skill_dir / "SKILL.md").write_text(
+        "---\nname: handoff\ndescription: \"demo\"\n---\n\n# Handoff\n",
+        encoding="utf-8",
+    )
+    (profiles_dir / "demo.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "profile_id": "demo",
+                "display_name": "Demo",
+                "purpose": "Test",
+                "extends": ["missing-base"],
+                "bundles": {"public_skills": ["handoff"]},
+            }
+        ),
+        encoding="utf-8",
+    )
+    result = run_script("scripts/validate-profiles.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "extends[]` references missing artifact `missing-base`" in result.stderr
+
+
 def test_validate_adapters_passes_on_current_repo() -> None:
     result = run_script("scripts/validate-adapters.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
