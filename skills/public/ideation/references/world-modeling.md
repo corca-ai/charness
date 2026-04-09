@@ -1,7 +1,6 @@
-# Entity/Stage Lens
+# World Modeling
 
-Use this lens when the idea involves systems, workflows, or evolving state over
-time.
+Use this lens when the concept involves systems, workflows, or evolving state.
 
 ## Durable Entities
 
@@ -37,12 +36,13 @@ Split entities from stages when:
 - a workflow has multiple checkpoints or phases
 - the same durable object appears across several stages
 - contradictions become easier to see when the timeline is separated
+- the concept needs a cumulative world model rather than a flat summary
 
 Do not force the split for a simple idea that is still one compact concept.
 
 ## Portable Borrowing Rule
 
 The idea came from Ceal's `entity-stage-design` skill, but `ideation` should
-borrow only the conceptual separation. It should not inherit preview-mode
-rendering, host-specific environment sections, or step-by-step document
-generation as mandatory behavior.
+borrow only the conceptual separation and cumulative world-model discipline. It
+should not inherit preview rendering, host-specific environment sections, or
+step-by-step document generation as mandatory behavior.
