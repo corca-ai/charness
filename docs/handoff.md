@@ -3,7 +3,7 @@
 ## Workflow Trigger
 
 - 다음 세션에서 이 문서를 멘션하면 `$ceal:impl`로 이어서 `charness` Session 13을 진행한다.
-- 시작하자마자 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md), [integrations/tools/agent-browser.json](/home/ubuntu/charness/integrations/tools/agent-browser.json), [integrations/tools/specdown.json](/home/ubuntu/charness/integrations/tools/specdown.json), [integrations/tools/crill.json](/home/ubuntu/charness/integrations/tools/crill.json), [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md)를 다시 읽고 Session 13 self-validation/workbench-HITL 계획을 concrete scenario로 내린다.
+- 시작하자마자 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md), [integrations/tools/agent-browser.json](/home/ubuntu/charness/integrations/tools/agent-browser.json), [integrations/tools/specdown.json](/home/ubuntu/charness/integrations/tools/specdown.json), [integrations/tools/crill.json](/home/ubuntu/charness/integrations/tools/crill.json), [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), [docs/support-skill-policy.md](/home/ubuntu/charness/docs/support-skill-policy.md)를 다시 읽고 Session 13 validation contract를 설계한다.
 
 ## Current State
 
@@ -43,29 +43,36 @@
 - [constitutional.json](/home/ubuntu/charness/profiles/constitutional.json)은 `find-skills`를 다시 포함하고, [tests/test_quality_gates.py](/home/ubuntu/charness/tests/test_quality_gates.py)에 adapter-configured official root smoke가 추가됐다.
 - Session 11 중 duplicate gate가 큰 문서 집합에서 느려지는 문제가 드러나, [check-duplicates.py](/home/ubuntu/charness/scripts/check-duplicates.py)에 quick upper-bound filtering을 넣어 [run-quality.sh](/home/ubuntu/charness/scripts/run-quality.sh)가 다시 빠르게 통과하도록 보강했다.
 - Session 12에서 [integrations/tools/agent-browser.json](/home/ubuntu/charness/integrations/tools/agent-browser.json), [integrations/tools/specdown.json](/home/ubuntu/charness/integrations/tools/specdown.json), [integrations/tools/crill.json](/home/ubuntu/charness/integrations/tools/crill.json)이 추가돼 real upstream sources를 가리키는 첫 manifest wave가 생겼다.
+- `agent-browser` upstream은 `https://github.com/vercel-labs/agent-browser`, `specdown` upstream은 `https://github.com/corca-ai/specdown`, `crill` upstream은 `https://github.com/corca-ai/crill`로 고정했다.
 - Session 12에서 [scripts/validate-integrations.py](/home/ubuntu/charness/scripts/validate-integrations.py), [scripts/doctor.py](/home/ubuntu/charness/scripts/doctor.py), [scripts/sync_support.py](/home/ubuntu/charness/scripts/sync_support.py), [scripts/update_tools.py](/home/ubuntu/charness/scripts/update_tools.py), [scripts/control_plane_lib.py](/home/ubuntu/charness/scripts/control_plane_lib.py)가 추가돼 control-plane dry-run and doctor seam이 생겼다.
 - `doctor`는 실제 machine state를 읽으므로 이 머신에서는 `specdown`만 `ok`이고 `agent-browser`와 `crill`은 아직 `missing`이다. quality gate에는 doctor를 직접 넣지 않고, manifest validation과 deterministic tests만 넣었다.
 - future evaluation engine manifest는 의도적으로 deferred 상태다. 추출된 upstream repo나 release boundary가 생기기 전에는 placeholder manifest를 만들지 않기로 했다.
+- public skill set의 deeper evaluation은 future workbench successor로 하기로 했고, provisional product name은 `cautilus`다. 사용자가 `~/cautilus` 작업을 끝냈다고 알려주기 전까지는 `charness`에서 실제 evaluator integration을 시작하지 않는다.
 - constitutional core의 public execution cluster가 이제 `gather` / `ideation` / `spec` / `impl` / `debug` / `retro` / `handoff` 수준에서 실제 skill body를 갖추게 됐다.
 - master plan에는 모든 public skill을 나중에 `workbench` 시나리오와 `hitl` 검토로 검증한다는 규칙이 추가됐다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
-  - 실제 tool별 manifest instance
   - support skill migrations and integration wrappers
-  - support integration validator와 doctor implementation
+  - extracted evaluation engine (`cautilus`) integration manifest
+  - support control-plane lock artifact shaping beyond the current initial seam
 
 ## Next Session
 
-1. Session 13으로 넘어가 public skill set에 대한 self-validation/workbench/HITL plan을 concrete scenario로 내린다.
-2. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정한다.
-3. future evaluation engine이 추출되기 전까지 어떤 validation은 local smoke로, 어떤 것은 human review로 남길지 경계를 정한다.
-4. support control plane은 이후 real host adoption이 생기면 lock artifact format과 generated wrapper usage를 추가로 조인다.
+1. Session 13에서는 실제 evaluator integration이 아니라 validation contract만 설계한다.
+2. public skill별 validation tier를 정한다:
+   - smoke-only
+   - HITL recommended
+   - evaluator-required
+3. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정한다.
+4. `cautilus`가 준비되기 전까지 어떤 validation은 local smoke로, 어떤 것은 human review로 남길지 경계를 정한다.
+5. 사용자가 `cautilus` 작업 완료를 알려주면 그때 evaluator integration Session으로 넘어간다.
 
 ## Discuss
 
 - `sync-support` 기본 전략을 `reference`, `copy`, `symlink` 중 무엇으로 둘지 아직 결정이 필요하다.
 - upstream support skill version과 binary version 상태를 하나의 lock artifact로 둘지, 별도 lock으로 나눌지 정해야 한다.
 - future evaluation engine을 `workbench` transitional id로 계속 둘지, extraction 전에 새 permanent id를 줄지 결정이 필요하다.
+- `cautilus` 쪽 contract가 나온 뒤 `find-skills`나 support policy에서 `official`보다 더 일반적인 용어(`trusted` / `declared`)로 바꿀지 다시 볼 가치가 있다.
 - profile inheritance를 얼마나 허용할지, 아니면 flattened bundle만 허용할지 결정이 필요하다.
 - preset schema를 JSON으로 둘지 markdown-first catalog를 더 유지할지 나중에 정해야 한다.
 - `ideation`에서 entity/stage thinking을 어느 정도까지 public core에 넣고, 어디부터 reference나 examples로 뺄지 조정이 필요하다.
