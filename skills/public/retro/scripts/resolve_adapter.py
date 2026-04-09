@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import sys
 from pathlib import Path
 from typing import Any
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-_spec = importlib.util.spec_from_file_location("_stdlib_yaml", SCRIPT_DIR / "_stdlib_yaml.py")
-assert _spec is not None and _spec.loader is not None
-_stdlib_yaml = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(_stdlib_yaml)
+REPO_ROOT = Path(__file__).resolve().parents[4]
+sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.adapter_lib import load_yaml_file
 
 ADAPTER_CANDIDATES = (
     Path(".agents/retro-adapter.yaml"),
@@ -144,7 +143,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "searched_paths": searched_paths,
         }
 
-    raw = _stdlib_yaml.load_file(adapter_path)
+    raw = load_yaml_file(adapter_path)
     raw_data = raw if isinstance(raw, dict) else {}
     warnings: list[str] = []
     canonical_path = repo_root / ".agents" / "retro-adapter.yaml"

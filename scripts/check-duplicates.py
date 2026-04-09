@@ -12,21 +12,30 @@ DEFAULT_PATTERNS = (
     "scripts/*.py",
     "skills/public/*/scripts/*.py",
 )
+DEFAULT_MIN_NONEMPTY_LINES = 18
 
 
-def iter_files(root: Path, patterns: tuple[str, ...]) -> list[Path]:
+def is_substantive(path: Path, min_nonempty_lines: int) -> bool:
+    text = path.read_text(encoding="utf-8")
+    nonempty_lines = sum(1 for line in text.splitlines() if line.strip())
+    return nonempty_lines >= min_nonempty_lines
+
+
+def iter_files(root: Path, patterns: tuple[str, ...], min_nonempty_lines: int) -> list[Path]:
     seen: set[Path] = set()
     files: list[Path] = []
     for pattern in patterns:
         for path in root.glob(pattern):
-            if path.is_file() and path not in seen:
+            if path.is_file() and path not in seen and is_substantive(path, min_nonempty_lines):
                 seen.add(path)
                 files.append(path)
     return sorted(files)
 
 
-def find_duplicates(root: Path, threshold: float, patterns: tuple[str, ...]) -> list[dict[str, object]]:
-    files = iter_files(root, patterns)
+def find_duplicates(
+    root: Path, threshold: float, patterns: tuple[str, ...], min_nonempty_lines: int
+) -> list[dict[str, object]]:
+    files = iter_files(root, patterns, min_nonempty_lines)
     duplicates: list[dict[str, object]] = []
     for index, left in enumerate(files):
         left_text = left.read_text(encoding="utf-8")
@@ -48,12 +57,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Detect near-duplicate helper scripts.")
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
     parser.add_argument("--threshold", type=float, default=0.98)
+    parser.add_argument("--min-nonempty-lines", type=int, default=DEFAULT_MIN_NONEMPTY_LINES)
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--fail-on-match", action="store_true")
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
-    duplicates = find_duplicates(root, args.threshold, DEFAULT_PATTERNS)
+    duplicates = find_duplicates(root, args.threshold, DEFAULT_PATTERNS, args.min_nonempty_lines)
     if args.json:
         print(json.dumps(duplicates, indent=2))
     elif duplicates:

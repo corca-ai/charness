@@ -15,4 +15,4 @@ python3 scripts/check-doc-links.py --repo-root "$REPO_ROOT"
 python3 -m py_compile scripts/*.py skills/public/*/scripts/*.py
 ruff check scripts tests skills/public/*/scripts
 pytest -q
-python3 scripts/check-duplicates.py --repo-root "$REPO_ROOT"
+python3 scripts/check-duplicates.py --repo-root "$REPO_ROOT" --fail-on-match

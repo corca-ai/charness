@@ -1,44 +1,37 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 from __future__ import annotations
 
 import argparse
 import sys
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[4]
+sys.path.insert(0, str(REPO_ROOT))
 
-def scaffold_adapter(repo_name: str, preset_id: str) -> str:
-    return "\n".join(
-        [
-            "version: 1",
-            f"repo: {repo_name}",
-            "language: en",
-            "output_dir: skill-outputs/quality",
-            f"preset_id: {preset_id}",
-            f"customized_from: {preset_id}",
-            "concept_paths: []",
-            "preflight_commands: []",
-            "gate_commands: []",
-            "security_commands: []",
-            "",
-        ]
-    )
+from scripts.adapter_init_lib import base_adapter_items, run_init_adapter
+
+
+def add_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--preset-id", default="portable-defaults")
+
+
+def build_items(repo_name: str, args: argparse.Namespace) -> list[tuple[str, object]]:
+    return [
+        *base_adapter_items(repo_name, "skill-outputs/quality", preset_id=args.preset_id),
+        ("concept_paths", []),
+        ("preflight_commands", []),
+        ("gate_commands", []),
+        ("security_commands", []),
+    ]
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--output", type=Path, default=Path(".agents/quality-adapter.yaml"))
-    parser.add_argument("--preset-id", default="portable-defaults")
-    parser.add_argument("--force", action="store_true")
-    args = parser.parse_args()
-
-    repo_root = args.repo_root.resolve()
-    output = args.output if args.output.is_absolute() else repo_root / args.output
-    if output.exists() and not args.force:
-        raise SystemExit(f"Adapter already exists at {output}. Use --force to overwrite.")
-
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(scaffold_adapter(repo_root.name, args.preset_id), encoding="utf-8")
+    output = run_init_adapter(
+        default_output=Path(".agents/quality-adapter.yaml"),
+        build_items=build_items,
+        add_arguments=add_arguments,
+    )
     sys.stdout.write(f"{output}\n")
 
 

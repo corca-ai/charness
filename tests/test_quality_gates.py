@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+ADAPTER_LIB_PATH = ROOT / "scripts" / "adapter_lib.py"
+ADAPTER_LIB_SPEC = importlib.util.spec_from_file_location("adapter_lib", ADAPTER_LIB_PATH)
+assert ADAPTER_LIB_SPEC is not None and ADAPTER_LIB_SPEC.loader is not None
+ADAPTER_LIB = importlib.util.module_from_spec(ADAPTER_LIB_SPEC)
+ADAPTER_LIB_SPEC.loader.exec_module(ADAPTER_LIB)
 
 
 def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
@@ -95,9 +101,29 @@ def test_check_doc_links_rejects_foreign_absolute_path(tmp_path: Path) -> None:
     assert "foreign absolute link" in result.stderr
 
 
-def test_check_duplicates_reports_current_hotspots() -> None:
-    result = run_script("scripts/check-duplicates.py", "--repo-root", str(ROOT), "--json")
+def test_check_duplicates_passes_clean_repo() -> None:
+    result = run_script("scripts/check-duplicates.py", "--repo-root", str(ROOT), "--json", "--fail-on-match")
     assert result.returncode == 0, result.stderr
     duplicates = json.loads(result.stdout)
     assert isinstance(duplicates, list)
-    assert duplicates, "expected current repo to have duplicate helper hotspots"
+    assert duplicates == []
+
+
+def test_adapter_lib_renders_and_loads_simple_yaml_mapping() -> None:
+    rendered = ADAPTER_LIB.render_yaml_mapping(
+        [
+            ("version", 1),
+            ("repo", "demo"),
+            ("output_dir", "skill-outputs/demo"),
+            ("commands", ["pytest -q", "ruff check ."]),
+            ("empty", []),
+        ]
+    )
+
+    assert ADAPTER_LIB.load_yaml(rendered) == {
+        "version": 1,
+        "repo": "demo",
+        "output_dir": "skill-outputs/demo",
+        "commands": ["pytest -q", "ruff check ."],
+        "empty": [],
+    }
