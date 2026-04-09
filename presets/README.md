@@ -14,3 +14,5 @@ explicit inputs, not hidden runtime behavior.
 
 - `portable-defaults`: generic charness defaults for adapter location, language,
   durable output paths, and explicit manifest/profile references
+- `typescript-quality`: sample vocabulary for TypeScript-oriented quality gates
+- `python-quality`: sample vocabulary for Python-oriented quality gates

@@ -2,8 +2,8 @@
 
 ## Workflow Trigger
 
-- 다음 세션에서 이 문서를 멘션하면 `$ceal:impl`로 이어서 `charness` Session 8을 진행한다.
-- 시작하자마자 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [skill-migration-map.md](/home/ubuntu/charness/docs/skill-migration-map.md), [skills/public/impl/SKILL.md](/home/ubuntu/charness/skills/public/impl/SKILL.md), [skills/public/debug/SKILL.md](/home/ubuntu/charness/skills/public/debug/SKILL.md), [/home/ubuntu/ceal/.agents/skills/concept-review/SKILL.md](/home/ubuntu/ceal/.agents/skills/concept-review/SKILL.md), [/home/ubuntu/ceal/.agents/skills/test-improvement/SKILL.md](/home/ubuntu/ceal/.agents/skills/test-improvement/SKILL.md)를 다시 읽고 `quality`와 sample preset 방향을 설계한다.
+- 다음 세션에서 이 문서를 멘션하면 `$ceal:impl`로 이어서 `charness` Session 9를 진행한다.
+- 시작하자마자 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), [presets/typescript-quality.md](/home/ubuntu/charness/presets/typescript-quality.md), [presets/python-quality.md](/home/ubuntu/charness/presets/python-quality.md), [skills/public/impl/SKILL.md](/home/ubuntu/charness/skills/public/impl/SKILL.md), [skills/public/debug/SKILL.md](/home/ubuntu/charness/skills/public/debug/SKILL.md)를 다시 읽고 `charness` repo 자체를 대상으로 lint / test / concept / security dogfood review를 수행한다.
 
 ## Current State
 
@@ -27,21 +27,23 @@
 - Session 7 산출물로 [skills/public/impl/SKILL.md](/home/ubuntu/charness/skills/public/impl/SKILL.md), [skills/public/debug/SKILL.md](/home/ubuntu/charness/skills/public/debug/SKILL.md), [skills/public/gather/SKILL.md](/home/ubuntu/charness/skills/public/gather/SKILL.md), [skills/public/handoff/SKILL.md](/home/ubuntu/charness/skills/public/handoff/SKILL.md)와 관련 references가 추가됐다.
 - `impl`은 living contract를 소비하되 별도 `spec` 세션이 없어도 inline current-slice contract를 부트스트랩할 수 있는 execution skill로 조정되고 있다.
 - `debug`, `gather`, `handoff`는 durable artifact 기본 위치를 `skill-outputs/<skill-name>/` 아래 정해진 파일로 두고, adapter `output_dir` override와 helper script bootstrap까지 갖추는 방향으로 보강되고 있다.
+- Session 8 초안으로 [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), 관련 references, adapter helper scripts, 그리고 [typescript-quality.md](/home/ubuntu/charness/presets/typescript-quality.md) / [python-quality.md](/home/ubuntu/charness/presets/python-quality.md) sample preset이 추가됐다.
+- `quality`는 `concept-review`, `test-improvement`, security posture review를 하나의 public proposal skill로 묶고, 기본 artifact를 `skill-outputs/quality/quality.md`에 두며 adapter `output_dir` override를 허용한다.
 - constitutional core의 public execution cluster가 이제 `gather` / `ideation` / `spec` / `impl` / `debug` / `retro` / `handoff` 수준에서 실제 skill body를 갖추게 됐다.
 - master plan에는 모든 public skill을 나중에 `workbench` 시나리오와 `hitl` 검토로 검증한다는 규칙이 추가됐다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - 실제 tool별 manifest instance
-  - `quality` / `announcement` / `hitl` / `find-skills` public skill bodies
+  - `announcement` / `hitl` / `find-skills` public skill bodies
   - support skill migrations and integration wrappers
   - validation scripts와 doctor implementation
 
 ## Next Session
 
-1. `quality`를 one-skill public concept로 설계하고, `concept-review` / `test-improvement` / `security-audit` 계열 참조를 어디까지 흡수할지 정한다.
-2. TypeScript와 Python용 sample preset 방향을 정하고, proposal behavior가 repo stack을 어떻게 감지할지 정리한다.
-3. `quality`가 지금까지 만든 `spec` / `impl` / `debug` cluster와 어떻게 이어지는지 경계를 고정한다.
-4. `quality` 다음에는 `charness` repo 자체에 lint / test / concept / security review를 돌리는 dogfood session을 수행한다.
+1. `quality`를 사용해 `charness` repo 자체에 lint / test / concept / security dogfood review를 수행한다.
+2. 현재 repo에 이미 있는 gate와 약한 gate를 분리하고, charness에 실제로 필요한 next gate proposal을 남긴다.
+3. `quality`가 `impl` / `debug` / later `hitl`과 어떻게 이어지는지 실제 repo 결과로 검증한다.
+4. dogfood 결과를 durable artifact와 handoff에 반영한다.
 5. `workbench` + `hitl` validation은 public skill cluster가 더 모인 뒤 묶어서 수행한다.
 
 ## Discuss
@@ -55,6 +57,7 @@
 - `spec`이 procedural checklist로 무거워지지 않으면서도 implementation handoff를 충분히 단단하게 만들 수 있을지 계속 검증이 필요하다.
 - `quality`가 proposal skill인지 gate skill인지, 또는 두 성격을 어떻게 함께 담을지 정리가 필요하다.
 - shipped sample preset을 어디까지 repo-agnostic example로 둘지, 어디부터 host/profile seam으로 뺄지 결정이 필요하다.
+- `quality` dogfood에서 나온 concrete gate proposals를 Session 10 이후 어느 층위에서 실제 구현할지 정해야 한다.
 
 ## References
 
@@ -88,6 +91,9 @@
 - [skills/public/debug/SKILL.md](/home/ubuntu/charness/skills/public/debug/SKILL.md)
 - [skills/public/gather/SKILL.md](/home/ubuntu/charness/skills/public/gather/SKILL.md)
 - [skills/public/handoff/SKILL.md](/home/ubuntu/charness/skills/public/handoff/SKILL.md)
+- [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md)
+- [typescript-quality.md](/home/ubuntu/charness/presets/typescript-quality.md)
+- [python-quality.md](/home/ubuntu/charness/presets/python-quality.md)
 - [contract-consumption.md](/home/ubuntu/charness/skills/public/impl/references/contract-consumption.md)
 - [five-steps.md](/home/ubuntu/charness/skills/public/debug/references/five-steps.md)
 - [source-priority.md](/home/ubuntu/charness/skills/public/gather/references/source-priority.md)
