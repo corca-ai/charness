@@ -2,8 +2,8 @@
 
 ## Workflow Trigger
 
-- 다음 세션에서 이 문서를 멘션하면 `$ceal:impl`로 이어서 `charness` Session 13을 진행한다.
-- 시작하자마자 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md), [integrations/tools/agent-browser.json](/home/ubuntu/charness/integrations/tools/agent-browser.json), [integrations/tools/specdown.json](/home/ubuntu/charness/integrations/tools/specdown.json), [integrations/tools/crill.json](/home/ubuntu/charness/integrations/tools/crill.json), [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), [docs/support-skill-policy.md](/home/ubuntu/charness/docs/support-skill-policy.md)를 다시 읽고 Session 13 validation contract를 설계한다.
+- 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 사용자가 `~/cautilus` 작업 완료를 알린 뒤 evaluator integration Session을 시작한다.
+- 시작하자마자 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md), [integrations/tools/agent-browser.json](/home/ubuntu/charness/integrations/tools/agent-browser.json), [integrations/tools/specdown.json](/home/ubuntu/charness/integrations/tools/specdown.json), [integrations/tools/crill.json](/home/ubuntu/charness/integrations/tools/crill.json), [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), [docs/support-skill-policy.md](/home/ubuntu/charness/docs/support-skill-policy.md)를 다시 읽고 `cautilus` contract와 `charness` validation contract를 연결한다.
 
 ## Current State
 
@@ -58,14 +58,14 @@
 
 ## Next Session
 
-1. Session 13에서는 실제 evaluator integration이 아니라 validation contract만 설계한다.
-2. public skill별 validation tier를 정한다:
+1. 사용자가 `~/cautilus` 작업 완료를 알리면 upstream repo 또는 release boundary, install/update path, detect/healthcheck contract를 먼저 확인한다.
+2. extracted evaluation engine용 integration manifest를 추가하고 control-plane contract에 연결한다.
+3. public skill별 validation tier를 정한다:
    - smoke-only
    - HITL recommended
    - evaluator-required
-3. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정한다.
-4. `cautilus`가 준비되기 전까지 어떤 validation은 local smoke로, 어떤 것은 human review로 남길지 경계를 정한다.
-5. 사용자가 `cautilus` 작업 완료를 알려주면 그때 evaluator integration Session으로 넘어간다.
+4. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정하고, evaluator-required 경계와 HITL fallback 경계를 함께 문서화한다.
+5. manifest validation, control-plane tests, eval fixtures, handoff를 새 evaluator contract에 맞게 갱신한다.
 
 ## Discuss
 
