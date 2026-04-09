@@ -127,6 +127,8 @@ Deliverables:
 - bootstrap scenarios
 - profile/preset scenarios
 - intent-regression checks for representative skills
+- workbench scenarios plus HITL review passes for every public skill before
+  downstream adoption
 
 ### Workstream 5: Ceal consumption layer
 
@@ -232,6 +234,8 @@ Deliverables:
 - new `ideation` skill
 - migration notes from `interview`
 - archival/deprecation plan for `interview`
+- reference notes from Ceal's `entity-stage-design` skill where its durable
+  entity/stage separation helps the new concept
 
 Exit criteria:
 
@@ -347,10 +351,13 @@ Deliverables:
 - profile fixtures
 - external integration checks
 - representative skill intent checks
+- workbench scenarios for every public skill
+- HITL review pass across the public skill set
 
 Exit criteria:
 
 - the harness can prove its own bootstrap and upgrade flows
+- every public skill has at least one maintained workbench validation path
 
 ### Session 13: Ceal profile and preset application
 
@@ -412,6 +419,8 @@ Mitigation:
 Mitigation:
 
 - design validation fixtures alongside integration manifests, not after them
+- treat workbench scenarios as part of each public skill's finishing contract,
+  not as optional cleanup
 
 ## First Session Status
 
