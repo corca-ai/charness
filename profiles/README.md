@@ -12,6 +12,7 @@ Profiles define default bundles. They are not separate skills.
 - `constitutional`: default core workflow bundle
 - `collaboration`: announcement and HITL overlay
 - `engineering-quality`: quality-review overlay
+- `meta-builder`: maintainer overlay for authoring/discovery/quality work
 
 ## Contract Notes
 

@@ -81,6 +81,8 @@ What was actually runnable today:
 - control-plane locks now have one schema-backed per-tool shape with `support`,
   `doctor`, and `update` sections instead of each command overwriting a
   different ad-hoc payload.
+- `profiles/meta-builder.json` now fills the remaining documented profile slot
+  for maintainer-facing authoring/discovery/quality work.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
