@@ -90,6 +90,9 @@ What was actually runnable today:
 - `packaging/charness.json` and `scripts/validate-packaging.py` now give the
   repo a shared packaging contract for Claude/Codex host exports before any
   generated plugin tree exists.
+- `scripts/export-plugin.py` now proves that the shared packaging contract can
+  materialize temporary Claude/Codex layouts without checking generated plugin
+  trees into the repo.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -116,6 +119,8 @@ What was actually runnable today:
   `create-skill`, and `spec` beyond the current contract-marker baseline
 - generated Claude/Codex host layouts and drift checks beyond the current
   shared manifest validation
+- richer published-plugin metadata and optional host-specific `commands/agents`
+  generation beyond the current minimal export scope
 
 ## Findings
 
@@ -177,6 +182,20 @@ Evidence:
 - `packaging/charness.json`
 - `packaging/plugin.schema.json`
 - `scripts/validate-packaging.py`
+- `docs/host-packaging.md`
+
+### 5. The first export path exists, so the remaining packaging work is now about breadth rather than basic feasibility
+
+`scripts/export-plugin.py` now materializes both Claude and Codex layouts from
+the shared manifest, including a Codex repo-marketplace file. That closes the
+basic feasibility question. The remaining packaging work is about how much
+published metadata and host-specific surface area should be generated, not
+whether one neutral source can drive both hosts.
+
+Evidence:
+
+- `scripts/export-plugin.py`
+- `scripts/run-evals.py`
 - `docs/host-packaging.md`
 
 ## Commands Run

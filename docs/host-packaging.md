@@ -18,6 +18,7 @@ layouts.
 - source policy: [packaging/charness.json](/home/ubuntu/charness/packaging/charness.json)
 - source schema: [packaging/plugin.schema.json](/home/ubuntu/charness/packaging/plugin.schema.json)
 - validation entrypoint: [scripts/validate-packaging.py](/home/ubuntu/charness/scripts/validate-packaging.py)
+- export entrypoint: [scripts/export-plugin.py](/home/ubuntu/charness/scripts/export-plugin.py)
 
 The shared packaging manifest is authoritative for:
 
@@ -40,8 +41,8 @@ The first contract keeps these repo directories host-neutral:
 - `integrations/tools/`
 - `README.md`
 
-That means future export scripts can copy or materialize a host plugin layout
-without needing a second skill taxonomy or a second profile catalog.
+That means the export script can materialize a host plugin layout without
+needing a second skill taxonomy or a second profile catalog.
 
 ## Host Mapping
 
@@ -67,12 +68,33 @@ The Claude export must map the shared bundle into:
 - optional future `commands/` and `agents/`
 
 `commands/` and `agents/` stay host-specific outputs. They should only appear
-when a future export generator has a clear shared source or a clearly bounded
+when a future export iteration has a clear shared source or a clearly bounded
 host adapter.
+
+## Current Export Scope
+
+The first export flow writes host layouts into an operator-chosen output root
+and keeps generated plugin trees out of this repo.
+
+What it materializes today:
+
+- `README.md`
+- `skills/`
+- `profiles/`
+- `presets/`
+- `integrations/tools/`
+- the host-specific plugin manifest
+- an optional Codex repo marketplace file
+
+What it intentionally does not materialize yet:
+
+- generated `commands/` or `agents/`
+- richer install-surface metadata for published plugin catalogs
+- release-time overrides for version stamping
 
 ## Non-Goals
 
-- shipping generated plugin trees in-repo before the export flow exists
+- shipping generated plugin trees in-repo
 - inventing a second metadata system for host-specific skill behavior
 - treating host manifests as the canonical place for bundle membership
 - solving Ceal packaging in the shared repo

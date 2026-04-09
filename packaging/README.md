@@ -14,5 +14,6 @@ into host-specific plugin surfaces.
   inputs, and host export targets
 - generated Claude and Codex manifests should derive from this metadata instead
   of becoming manually curated policy copies
-- validation currently proves contract shape and repo-path integrity; export
-  generation remains the next step
+- `scripts/validate-packaging.py` proves contract shape and repo-path integrity
+- `scripts/export-plugin.py` materializes temporary Claude/Codex plugin layouts
+  from the shared manifest without checking generated trees into the repo

@@ -54,6 +54,70 @@ def scenario_packaging_valid(root: Path) -> None:
     expect_success(result, "packaging manifest validation")
 
 
+def scenario_packaging_export(root: Path) -> None:
+    with tempfile.TemporaryDirectory(prefix="charness-eval-packaging-codex-") as codex_tmpdir:
+        codex_root = Path(codex_tmpdir)
+        codex_result = run_command(
+            [
+                "python3",
+                "scripts/export-plugin.py",
+                "--repo-root",
+                str(root),
+                "--host",
+                "codex",
+                "--output-root",
+                str(codex_root),
+                "--with-marketplace",
+            ],
+            cwd=root,
+        )
+        expect_success(codex_result, "codex plugin export")
+        codex_plugin_root = codex_root / "plugins" / "charness"
+        codex_manifest_path = codex_plugin_root / ".codex-plugin" / "plugin.json"
+        codex_marketplace_path = codex_root / ".agents" / "plugins" / "marketplace.json"
+        if not codex_manifest_path.exists():
+            raise EvalError("codex plugin export: missing generated plugin manifest")
+        if not codex_marketplace_path.exists():
+            raise EvalError("codex plugin export: missing generated repo marketplace")
+        codex_manifest = json.loads(codex_manifest_path.read_text(encoding="utf-8"))
+        if codex_manifest.get("skills") != "./skills/":
+            raise EvalError(f"codex plugin export: unexpected skills path {codex_manifest.get('skills')!r}")
+        codex_marketplace = json.loads(codex_marketplace_path.read_text(encoding="utf-8"))
+        plugin_entries = codex_marketplace.get("plugins", [])
+        if len(plugin_entries) != 1 or plugin_entries[0].get("source", {}).get("path") != "./plugins/charness":
+            raise EvalError(f"codex plugin export: unexpected marketplace payload {codex_marketplace!r}")
+
+    with tempfile.TemporaryDirectory(prefix="charness-eval-packaging-claude-") as claude_tmpdir:
+        claude_root = Path(claude_tmpdir)
+        claude_result = run_command(
+            [
+                "python3",
+                "scripts/export-plugin.py",
+                "--repo-root",
+                str(root),
+                "--host",
+                "claude",
+                "--output-root",
+                str(claude_root),
+            ],
+            cwd=root,
+        )
+        expect_success(claude_result, "claude plugin export")
+        claude_plugin_root = claude_root / "plugins" / "charness"
+        claude_manifest_path = claude_plugin_root / ".claude-plugin" / "plugin.json"
+        if not claude_manifest_path.exists():
+            raise EvalError("claude plugin export: missing generated plugin manifest")
+        claude_manifest = json.loads(claude_manifest_path.read_text(encoding="utf-8"))
+        if claude_manifest.get("repository") != "https://github.com/corca-ai/charness":
+            raise EvalError(
+                f"claude plugin export: unexpected repository {claude_manifest.get('repository')!r}"
+            )
+        exported_readme = claude_plugin_root / "README.md"
+        exported_skills_dir = claude_plugin_root / "skills" / "public"
+        if not exported_readme.exists() or not exported_skills_dir.exists():
+            raise EvalError("claude plugin export: shared repo inputs were not materialized")
+
+
 def scenario_doc_links_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "doc-links-valid"
     result = run_command(["python3", "scripts/check-doc-links.py", "--repo-root", str(fixture)], cwd=root)
@@ -209,6 +273,7 @@ SCENARIOS = (
     Scenario("skill-valid", "fixture repo with one valid public skill passes package validation"),
     Scenario("profile-valid", "fixture repo with one valid profile passes artifact validation"),
     Scenario("packaging-valid", "shared host-packaging manifest stays aligned with repo artifacts"),
+    Scenario("packaging-export", "shared packaging metadata materializes usable Claude and Codex plugin layouts"),
     Scenario("doc-links-valid", "fixture docs with valid internal links pass markdown link validation"),
     Scenario("quality-adapter-bootstrap", "quality init/resolve scripts bootstrap a clean repo"),
     Scenario("quality-adapter-checked-in", "checked-in quality adapter resolves to the declared repo contract"),
@@ -223,6 +288,7 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "skill-valid": scenario_skill_package_valid,
         "profile-valid": scenario_profile_valid,
         "packaging-valid": scenario_packaging_valid,
+        "packaging-export": scenario_packaging_export,
         "doc-links-valid": scenario_doc_links_valid,
         "quality-adapter-bootstrap": scenario_quality_adapter_bootstrap,
         "quality-adapter-checked-in": scenario_quality_adapter_checked_in,

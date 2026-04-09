@@ -164,7 +164,7 @@ def test_check_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:
 def test_run_evals_passes_on_current_repo() -> None:
     result = run_script("scripts/run-evals.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
-    assert "Ran 9 eval scenario(s)." in result.stdout
+    assert "Ran 10 eval scenario(s)." in result.stdout
 
 
 def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) -> None:
@@ -231,6 +231,50 @@ def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) ->
     result = run_script("scripts/validate-packaging.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert ".codex-plugin/plugin.json" in result.stderr
+
+
+def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> None:
+    codex_root = tmp_path / "codex-export"
+    claude_root = tmp_path / "claude-export"
+
+    codex_result = run_script(
+        "scripts/export-plugin.py",
+        "--repo-root",
+        str(ROOT),
+        "--host",
+        "codex",
+        "--output-root",
+        str(codex_root),
+        "--with-marketplace",
+    )
+    assert codex_result.returncode == 0, codex_result.stderr
+    codex_manifest = codex_root / "plugins" / "charness" / ".codex-plugin" / "plugin.json"
+    codex_marketplace = codex_root / ".agents" / "plugins" / "marketplace.json"
+    assert codex_manifest.is_file()
+    assert codex_marketplace.is_file()
+    assert json.loads(codex_manifest.read_text(encoding="utf-8"))["skills"] == "./skills/"
+    assert (
+        json.loads(codex_marketplace.read_text(encoding="utf-8"))["plugins"][0]["source"]["path"]
+        == "./plugins/charness"
+    )
+
+    claude_result = run_script(
+        "scripts/export-plugin.py",
+        "--repo-root",
+        str(ROOT),
+        "--host",
+        "claude",
+        "--output-root",
+        str(claude_root),
+    )
+    assert claude_result.returncode == 0, claude_result.stderr
+    claude_manifest = claude_root / "plugins" / "charness" / ".claude-plugin" / "plugin.json"
+    exported_readme = claude_root / "plugins" / "charness" / "README.md"
+    exported_profiles = claude_root / "plugins" / "charness" / "profiles"
+    assert claude_manifest.is_file()
+    assert exported_readme.is_file()
+    assert exported_profiles.is_dir()
+    assert json.loads(claude_manifest.read_text(encoding="utf-8"))["repository"] == "https://github.com/corca-ai/charness"
 
 
 def test_check_skill_contracts_rejects_missing_required_snippet(tmp_path: Path) -> None:
