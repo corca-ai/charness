@@ -2,8 +2,8 @@
 
 ## Workflow Trigger
 
-- 다음 세션에서 이 문서를 멘션하면 `$ceal:impl`로 이어서 `charness` Session 11을 진행한다.
-- 시작하자마자 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [skill-migration-map.md](/home/ubuntu/charness/docs/skill-migration-map.md), [skills/public/announcement/SKILL.md](/home/ubuntu/charness/skills/public/announcement/SKILL.md), [skills/public/hitl/SKILL.md](/home/ubuntu/charness/skills/public/hitl/SKILL.md), [profiles/collaboration.json](/home/ubuntu/charness/profiles/collaboration.json), [skills/public/create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md)를 다시 읽고 `find-skills`와 support-skill consumption policy를 설계한다.
+- 다음 세션에서 이 문서를 멘션하면 `$ceal:impl`로 이어서 `charness` Session 12를 진행한다.
+- 시작하자마자 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [docs/support-skill-policy.md](/home/ubuntu/charness/docs/support-skill-policy.md), [docs/external-integrations.md](/home/ubuntu/charness/docs/external-integrations.md), [skills/public/find-skills/SKILL.md](/home/ubuntu/charness/skills/public/find-skills/SKILL.md), [profiles/constitutional.json](/home/ubuntu/charness/profiles/constitutional.json), [skills/public/create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md)를 다시 읽고 support-skill sync/update/doctor seam을 설계한다.
 
 ## Current State
 
@@ -38,20 +38,23 @@
 - Session 10 산출물로 [skills/public/announcement/SKILL.md](/home/ubuntu/charness/skills/public/announcement/SKILL.md), [skills/public/hitl/SKILL.md](/home/ubuntu/charness/skills/public/hitl/SKILL.md), 각 adapter/reference/script 세트, 그리고 [collaboration.json](/home/ubuntu/charness/profiles/collaboration.json)이 추가됐다.
 - `announcement`는 draft-first delivery skill로 정리됐고, sections/audience/delivery backend는 adapter seam으로 밀어냈다.
 - `hitl`은 resumable human-judgment review skill로 정리됐고, runtime state는 repo-local `output_dir` 아래에 두는 portable state model로 축약했다.
+- Session 11에서 [skills/public/find-skills/SKILL.md](/home/ubuntu/charness/skills/public/find-skills/SKILL.md), [docs/support-skill-policy.md](/home/ubuntu/charness/docs/support-skill-policy.md), [skills/public/find-skills/adapter.example.yaml](/home/ubuntu/charness/skills/public/find-skills/adapter.example.yaml), [skills/public/find-skills/scripts/resolve_adapter.py](/home/ubuntu/charness/skills/public/find-skills/scripts/resolve_adapter.py), [skills/public/find-skills/scripts/list_capabilities.py](/home/ubuntu/charness/skills/public/find-skills/scripts/list_capabilities.py)가 추가됐다.
+- `find-skills`는 Vercel-style discovery flow를 참고하되 charness에서는 local public/support/integration을 먼저 보고, adapter가 있으면 `official_skill_roots`를 통해 Ceal 같은 host-official skill pack도 함께 찾는 구조로 정리됐다.
+- [constitutional.json](/home/ubuntu/charness/profiles/constitutional.json)은 `find-skills`를 다시 포함하고, [tests/test_quality_gates.py](/home/ubuntu/charness/tests/test_quality_gates.py)에 adapter-configured official root smoke가 추가됐다.
+- Session 11 중 duplicate gate가 큰 문서 집합에서 느려지는 문제가 드러나, [check-duplicates.py](/home/ubuntu/charness/scripts/check-duplicates.py)에 quick upper-bound filtering을 넣어 [run-quality.sh](/home/ubuntu/charness/scripts/run-quality.sh)가 다시 빠르게 통과하도록 보강했다.
 - constitutional core의 public execution cluster가 이제 `gather` / `ideation` / `spec` / `impl` / `debug` / `retro` / `handoff` 수준에서 실제 skill body를 갖추게 됐다.
 - master plan에는 모든 public skill을 나중에 `workbench` 시나리오와 `hitl` 검토로 검증한다는 규칙이 추가됐다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - 실제 tool별 manifest instance
-  - `find-skills` public skill body
   - support skill migrations and integration wrappers
   - support integration validator와 doctor implementation
 
 ## Next Session
 
-1. Session 11로 넘어가 `find-skills`와 support-skill consumption policy를 설계한다.
-2. `announcement`와 `hitl`의 adapter seam이 collaboration profile에 충분한지, 또는 추가 preset/example이 필요한지 정한다.
-3. Session 12 control-plane work 전에 support-skill sync/update policy를 문서와 script seam 양쪽에서 정리한다.
+1. Session 12로 넘어가 support-skill sync/update/doctor policy를 control-plane seam으로 내린다.
+2. `agent-browser`, `specdown`, future workbench successor를 manifest instance 기준으로 어떻게 추적할지 정한다.
+3. support capability state (`native-support`, `upstream-consumed`, `wrapped-upstream`, `forked-local`, `integration-only`)를 doctor output과 lock artifact에 어떻게 반영할지 정한다.
 4. `workbench` + `hitl` validation은 public skill cluster가 더 모인 뒤 묶어서 수행한다.
 
 ## Discuss

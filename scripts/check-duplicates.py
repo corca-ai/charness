@@ -40,12 +40,21 @@ def find_duplicates(
     root: Path, threshold: float, patterns: tuple[str, ...], min_nonempty_lines: int
 ) -> list[dict[str, object]]:
     files = iter_files(root, patterns, min_nonempty_lines)
+    texts = {path: path.read_text(encoding="utf-8") for path in files}
     duplicates: list[dict[str, object]] = []
     for index, left in enumerate(files):
-        left_text = left.read_text(encoding="utf-8")
+        left_text = texts[left]
         for right in files[index + 1 :]:
-            right_text = right.read_text(encoding="utf-8")
-            ratio = difflib.SequenceMatcher(None, left_text, right_text).ratio()
+            right_text = texts[right]
+            max_possible_ratio = (2 * min(len(left_text), len(right_text))) / (len(left_text) + len(right_text))
+            if max_possible_ratio < threshold:
+                continue
+            matcher = difflib.SequenceMatcher(None, left_text, right_text)
+            if matcher.real_quick_ratio() < threshold:
+                continue
+            if matcher.quick_ratio() < threshold:
+                continue
+            ratio = matcher.ratio()
             if ratio >= threshold:
                 duplicates.append(
                     {

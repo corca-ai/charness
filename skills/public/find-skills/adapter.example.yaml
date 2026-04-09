@@ -1,0 +1,9 @@
+version: 1
+repo: my-repo
+language: en
+output_dir: skill-outputs/find-skills
+preset_id: portable-defaults
+customized_from: portable-defaults
+official_skill_roots: []
+prefer_local_first: true
+allow_external_registry: false

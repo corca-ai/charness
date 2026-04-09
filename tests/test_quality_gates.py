@@ -155,3 +155,66 @@ def test_run_evals_passes_on_current_repo() -> None:
     result = run_script("scripts/run-evals.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
     assert "Ran 5 eval scenario(s)." in result.stdout
+
+
+def test_find_skills_lists_adapter_configured_official_roots(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    local_skill_dir = repo / "skills" / "public" / "local-demo"
+    official_skill_dir = repo / "vendor" / "official-skills" / "official-demo"
+    adapter_dir = repo / ".agents"
+    local_skill_dir.mkdir(parents=True)
+    official_skill_dir.mkdir(parents=True)
+    adapter_dir.mkdir(parents=True)
+
+    (local_skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: local-demo",
+                'description: "Local demo skill."',
+                "---",
+                "",
+                "# Local Demo",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (official_skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: official-demo",
+                'description: "Official demo skill."',
+                "---",
+                "",
+                "# Official Demo",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (adapter_dir / "find-skills-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "language: en",
+                "output_dir: skill-outputs/find-skills",
+                "official_skill_roots:",
+                "- vendor/official-skills",
+                "prefer_local_first: true",
+                "allow_external_registry: false",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/find-skills/scripts/list_capabilities.py",
+        "--repo-root",
+        str(repo),
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["public_skills"][0]["id"] == "local-demo"
+    assert payload["official_skills"][0]["id"] == "official-demo"
