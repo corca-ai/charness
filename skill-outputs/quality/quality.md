@@ -83,6 +83,9 @@ What was actually runnable today:
   different ad-hoc payload.
 - `profiles/meta-builder.json` now fills the remaining documented profile slot
   for maintainer-facing authoring/discovery/quality work.
+- `scripts/check-skill-contracts.py` now gives the repo a deterministic
+  representative intent gate for `handoff`, `gather`, `create-skill`, and
+  `spec`, and `run-evals.py` includes that scenario in the smoke layer.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -106,7 +109,7 @@ What was actually runnable today:
 - collaboration-layer tightening beyond the current representative `announcement`
   and `hitl` policy surface
 - broader representative intent checks for `handoff`, `gather`,
-  `create-skill`, and `spec`
+  `create-skill`, and `spec` beyond the current contract-marker baseline
 
 ## Findings
 

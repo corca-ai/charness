@@ -58,6 +58,7 @@
 - `sync-support`의 v1 기본 권장 전략은 이제 `reference`로 고정됐고, generated reference artifact가 [skills/support/generated/agent-browser/REFERENCE.md](/home/ubuntu/charness/skills/support/generated/agent-browser/REFERENCE.md), [skills/support/generated/crill/REFERENCE.md](/home/ubuntu/charness/skills/support/generated/crill/REFERENCE.md)에 생겼다.
 - integration lock은 이제 [lock.schema.json](/home/ubuntu/charness/integrations/locks/lock.schema.json) 기준의 단일 per-tool shape를 갖고, `support` / `doctor` / `update` section을 merge하는 방향으로 정리됐다.
 - [meta-builder.json](/home/ubuntu/charness/profiles/meta-builder.json)이 추가돼 target taxonomy의 profile 빈칸이 메워졌고, maintainer-facing authoring/discovery/quality overlay 범위가 explicit해졌다.
+- [check-skill-contracts.py](/home/ubuntu/charness/scripts/check-skill-contracts.py)가 추가돼 `handoff` / `gather` / `create-skill` / `spec`의 representative contract markers를 deterministic gate와 eval scenario로 검증한다.
 - 서브에이전트 탐색 결과, `cautilus` 없이 바로 할 가치가 큰 self-work는 `sync-support` 기본 전략 고정, support lock artifact shaping, 첫 real support artifact, `meta-builder` profile, representative intent checks 확대, `spec` mode drift 정리로 좁혀졌다.
 - Claude plugin 구조와 Codex plugin 구조를 모두 지원해야 하지만, 이 repo의 source of truth는 host-neutral하게 유지하고 host-specific packaging은 shared artifact에서 generate하는 방향으로 정리됐다. 설치 호환 구조 작업은 support/control-plane/self-validation 빈칸을 먼저 메운 뒤 시작하는 편이 낫다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
@@ -68,9 +69,9 @@
 
 ## Next Session
 
-1. pre-`cautilus`로 계속 가면 representative intent checks를 `handoff` / `gather` / `create-skill` / `spec` 쪽으로 넓힌다.
-2. 그 다음 `spec` mode drift를 `create-skill`의 option-minimalism과 맞도록 정리할지 결정하고 필요하면 public skill body를 손본다.
-3. packaging을 시작할 때는 Claude plugin/Codex plugin을 각각 손으로 유지하지 말고, host-neutral source에서 두 layout을 generate하는 contract부터 문서화한다.
+1. pre-`cautilus`로 계속 가면 `spec` mode drift를 `create-skill`의 option-minimalism과 맞도록 정리할지 결정하고 필요하면 public skill body를 손본다.
+2. 그 다음 packaging을 시작할 때는 Claude plugin/Codex plugin을 각각 손으로 유지하지 말고, host-neutral source에서 두 layout을 generate하는 contract부터 문서화한다.
+3. 그와 병행해 `handoff` / `gather` / `create-skill` / `spec` representative gate를 더 강하게 만들 필요가 있는지 본다.
 4. 사용자가 `~/cautilus` 작업 완료를 알리면 upstream repo 또는 release boundary, install/update path, detect/healthcheck contract를 먼저 확인한다.
 5. extracted evaluation engine용 integration manifest를 추가하고 control-plane contract에 연결한다.
 6. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 provisional matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.
@@ -107,6 +108,7 @@
 - [skills/support/README.md](/home/ubuntu/charness/skills/support/README.md)
 - [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/agent-browser/REFERENCE.md)
 - [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/crill/REFERENCE.md)
+- [check-skill-contracts.py](/home/ubuntu/charness/scripts/check-skill-contracts.py)
 - [external-integrations.md](/home/ubuntu/charness/docs/external-integrations.md)
 - [skill-migration-map.md](/home/ubuntu/charness/docs/skill-migration-map.md)
 - [control-plane.md](/home/ubuntu/charness/docs/control-plane.md)

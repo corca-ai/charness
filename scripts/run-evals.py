@@ -195,6 +195,11 @@ def scenario_find_skills_local_first(root: Path) -> None:
             raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
 
 
+def scenario_representative_skill_contracts(root: Path) -> None:
+    result = run_command(["python3", "scripts/check-skill-contracts.py", "--repo-root", str(root)], cwd=root)
+    expect_success(result, "representative skill contracts")
+
+
 SCENARIOS = (
     Scenario("skill-valid", "fixture repo with one valid public skill passes package validation"),
     Scenario("profile-valid", "fixture repo with one valid profile passes artifact validation"),
@@ -203,6 +208,7 @@ SCENARIOS = (
     Scenario("quality-adapter-checked-in", "checked-in quality adapter resolves to the declared repo contract"),
     Scenario("handoff-absolute-links", "repo-local absolute markdown links remain valid in handoff-style docs"),
     Scenario("find-skills-local-first", "find-skills keeps local-first discovery while exposing configured official roots"),
+    Scenario("representative-skill-contracts", "representative public skills retain their required contract markers"),
 )
 
 
@@ -215,6 +221,7 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "quality-adapter-checked-in": scenario_quality_adapter_checked_in,
         "handoff-absolute-links": scenario_handoff_absolute_links,
         "find-skills-local-first": scenario_find_skills_local_first,
+        "representative-skill-contracts": scenario_representative_skill_contracts,
     }
     handlers[scenario.scenario_id](root)
 

@@ -89,6 +89,11 @@ def test_validate_adapters_passes_on_current_repo() -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_check_skill_contracts_passes_on_current_repo() -> None:
+    result = run_script("scripts/check-skill-contracts.py", "--repo-root", str(ROOT))
+    assert result.returncode == 0, result.stderr
+
+
 def test_check_doc_links_rejects_foreign_absolute_path(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -154,7 +159,40 @@ def test_check_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:
 def test_run_evals_passes_on_current_repo() -> None:
     result = run_script("scripts/run-evals.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
-    assert "Ran 7 eval scenario(s)." in result.stdout
+    assert "Ran 8 eval scenario(s)." in result.stdout
+
+
+def test_check_skill_contracts_rejects_missing_required_snippet(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    handoff_skill_dir = repo / "skills" / "public" / "handoff"
+    gather_skill_dir = repo / "skills" / "public" / "gather"
+    create_skill_dir = repo / "skills" / "public" / "create-skill"
+    spec_skill_dir = repo / "skills" / "public" / "spec"
+    handoff_skill_dir.mkdir(parents=True)
+    gather_skill_dir.mkdir(parents=True)
+    create_skill_dir.mkdir(parents=True)
+    spec_skill_dir.mkdir(parents=True)
+
+    (handoff_skill_dir / "SKILL.md").write_text(
+        "---\nname: handoff\ndescription: \"demo\"\n---\n\n# Handoff\n",
+        encoding="utf-8",
+    )
+    (gather_skill_dir / "SKILL.md").write_text(
+        (ROOT / "skills" / "public" / "gather" / "SKILL.md").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (create_skill_dir / "SKILL.md").write_text(
+        (ROOT / "skills" / "public" / "create-skill" / "SKILL.md").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (spec_skill_dir / "SKILL.md").write_text(
+        (ROOT / "skills" / "public" / "spec" / "SKILL.md").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/check-skill-contracts.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "missing required contract snippet" in result.stderr
 
 
 def test_find_skills_lists_adapter_configured_official_roots(tmp_path: Path) -> None:

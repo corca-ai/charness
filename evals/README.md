@@ -13,6 +13,7 @@ that prove the harness still works as a product:
 - handoff-style absolute in-repo links still pass portability checks
 - checked-in adapters still resolve to the declared repo contract
 - representative discovery workflows still honor local-first packaging rules
+- representative public skills still retain their required contract markers
 
 Canonical runner:
 
