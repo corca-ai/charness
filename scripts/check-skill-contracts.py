@@ -35,13 +35,15 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "If a skill needs the same bootstrap, adapter resolution, artifact upsert, or",
     ),
     "skills/public/spec/SKILL.md": (
-        "## Mode Selection",
+        "## Contract Shaping",
+        "Choose the lightest honest contract shape.",
+        "keep the contract",
+        "probe-friendly and visible instead of inventing a user-facing mode choice.",
         "- `Fixed Decisions`",
         "- `Probe Questions`",
         "- `Deferred Decisions`",
         "- `Acceptance Checks`",
         "- `First Implementation Slice`",
-        "If the mode is ambiguous, default to `braided`.",
     ),
 }
 

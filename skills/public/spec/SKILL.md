@@ -36,21 +36,18 @@ the entire discovery history from scratch.
 If the repo already has executable acceptance artifacts, treat them as part of
 the spec surface rather than as a separate world.
 
-## Mode Selection
+## Contract Shaping
 
-Choose the lightest mode that still makes the contract honest.
+Choose the lightest honest contract shape.
 
-- `contract-first`
-  - use when scope, behavior, and acceptance should be explicit before coding
-  - common for schema changes, migrations, APIs, and legacy modifications
-- `braided`
-  - use when some answers will emerge only through a thin implementation slice
-  - common for prompts, agent workflows, interaction design, and integrations
-- `executable-spec`
-  - use when the repo already expresses acceptance through executable specs or
-    tests and the contract should be pushed directly into those checks
+When implementation churn would be expensive, reduce ambiguity earlier and make
+the slice more explicit before coding starts.
 
-If the mode is ambiguous, default to `braided`.
+If some answers will emerge only while building, keep the contract
+probe-friendly and visible instead of inventing a user-facing mode choice.
+
+If the repo already treats executable checks as contract artifacts, push
+acceptance into those checks instead of managing a separate prose-only branch.
 
 ## Workflow
 
@@ -82,9 +79,11 @@ If the mode is ambiguous, default to `braided`.
    - if the repo already uses executable specs or tests as contract artifacts,
      prefer promoting acceptance checks into that form
 6. Keep the contract alive during implementation.
-   - in `contract-first`, the spec may mostly stabilize before coding
-   - in `braided`, update the artifact as probes resolve
-   - in `executable-spec`, keep prose and executable checks synchronized
+   - stabilize the contract earlier when churn would otherwise be expensive
+   - keep unresolved items visible as probes when answers should emerge through
+     implementation
+   - keep prose and executable checks synchronized when the repo already uses
+     executable contract artifacts
    - if implementation discovers a fact that changes scope or acceptance, update
      the spec instead of leaving chat-only drift
 7. End with the next execution state.

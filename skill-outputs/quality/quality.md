@@ -144,18 +144,19 @@ Evidence:
 - `scripts/adapter_init_lib.py`
 - `skills/public/quality/references/skill-quality.md`
 
-### 3. `spec` still violates the repo's newer option-minimalism rule
+### 3. `spec` mode drift has been reduced, but the lighter contract-shaping surface still needs follow-through review
 
-The authoring contract now says not to introduce user-facing modes/options
-unless the behavior is meaningfully distinct and unsafe to infer. `spec` still
-has an explicit `Mode Selection` section with three named modes. That may be
-defensible, but it is now a concept drift that should be resolved explicitly
-rather than left implicit.
+The public `spec` body no longer exposes a named mode menu. That resolves the
+most obvious conflict with `create-skill`'s option-minimalism rule. The
+remaining question is whether the lighter heuristic wording is enough in
+practice, or whether more of the old branching logic should move into
+references and examples.
 
 Evidence:
 
-- `skills/public/create-skill/SKILL.md` lines 79-83
-- `skills/public/spec/SKILL.md` lines 39-53
+- `skills/public/create-skill/SKILL.md`
+- `skills/public/spec/SKILL.md`
+- `skills/public/spec/references/contract-modes.md`
 
 ## Commands Run
 

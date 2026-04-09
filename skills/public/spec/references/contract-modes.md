@@ -1,9 +1,11 @@
-# Contract Modes
+# Contract Shapes
 
-`spec` can run in different shapes. Choose the lightest mode that still keeps
-the contract honest.
+`spec` may need different contract shapes during execution.
 
-## `contract-first`
+These are shaping heuristics for the skill designer and operator. They are not
+meant to become a mandatory user-facing mode menu in every invocation.
+
+## Bias Toward Upfront Stabilization
 
 Use when implementation churn would be expensive and the key behavior should be
 explicit before coding starts.
@@ -21,7 +23,7 @@ Default posture:
 - reduce ambiguity aggressively up front
 - leave only safe deferred decisions visible
 
-## `braided`
+## Bias Toward Braided Work
 
 Use when part of the contract will emerge while building.
 
@@ -38,7 +40,7 @@ Default posture:
 - label unresolved items as probes
 - update the spec as implementation resolves those probes
 
-## `executable-spec`
+## Bias Toward Executable Checks
 
 Use when the repo already treats executable checks as part of the contract.
 
