@@ -18,7 +18,7 @@ from scripts.control_plane_lib import (
     read_lock,
     run_check,
     support_state_for_manifest,
-    write_lock,
+    upsert_lock,
 )
 
 
@@ -42,20 +42,16 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
         doctor_status = "unhealthy"
 
     payload = {
-        "schema_version": "1",
-        "tool_id": manifest["tool_id"],
         "checked_at": now_iso(),
-        "manifest_path": manifest["_manifest_path"],
         "support_state": support_state,
         "detect": detect_result,
         "healthcheck": healthcheck_result,
         "version": version_result,
         "doctor_status": doctor_status,
-        "previous_lock_present": previous_lock is not None,
     }
     if write:
-        write_lock(repo_root, manifest["tool_id"], payload)
-    return payload
+        upsert_lock(repo_root, manifest, doctor=payload)
+    return {**payload, "tool_id": manifest["tool_id"], "previous_lock_present": previous_lock is not None}
 
 
 def main() -> int:

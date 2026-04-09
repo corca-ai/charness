@@ -11,7 +11,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.control_plane_lib import load_manifests, now_iso, run_check, run_shell, write_lock
+from scripts.control_plane_lib import load_manifests, now_iso, run_check, run_shell, upsert_lock
 
 
 def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -> dict[str, object]:
@@ -45,10 +45,7 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
     }
     status = "updated" if all(result.exit_code == 0 for result in command_results) and detect_result["ok"] and healthcheck_result["ok"] else "failed"
     payload = {
-        "schema_version": "1",
-        "tool_id": manifest["tool_id"],
         "updated_at": now_iso(),
-        "manifest_path": manifest["_manifest_path"],
         "update_status": status,
         "mode": mode,
         "commands": [
@@ -63,7 +60,7 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
         "detect": detect_result,
         "healthcheck": healthcheck_result,
     }
-    write_lock(repo_root, manifest["tool_id"], payload)
+    upsert_lock(repo_root, manifest, update=payload)
     return {
         "tool_id": manifest["tool_id"],
         "status": status,

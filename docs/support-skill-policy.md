@@ -99,3 +99,9 @@ Session 12 should turn these rules into:
 - update policy
 - doctor checks
 - manifest instances for real tools
+
+For the current v1 seam, `reference` is the preferred default sync strategy:
+
+- keep the upstream support surface visible
+- generate a local reference artifact when needed
+- avoid copying or forking until a manifest explicitly asks for it

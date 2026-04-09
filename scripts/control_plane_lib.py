@@ -14,6 +14,7 @@ import jsonschema
 from packaging.version import InvalidVersion, Version
 
 MANIFEST_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "integrations" / "tools" / "manifest.schema.json"
+LOCK_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "integrations" / "locks" / "lock.schema.json"
 LOCKS_DIR = Path("integrations/locks")
 TOOLS_DIR = Path("integrations/tools")
 GENERATED_SUPPORT_DIR = Path("skills/support/generated")
@@ -34,6 +35,10 @@ def now_iso() -> str:
 
 def load_manifest_schema() -> dict[str, Any]:
     return json.loads(MANIFEST_SCHEMA_PATH.read_text(encoding="utf-8"))
+
+
+def load_lock_schema() -> dict[str, Any]:
+    return json.loads(LOCK_SCHEMA_PATH.read_text(encoding="utf-8"))
 
 
 def manifest_paths(repo_root: Path) -> list[Path]:
@@ -210,22 +215,58 @@ def support_state_for_manifest(manifest: dict[str, Any]) -> str:
     return "upstream-consumed"
 
 
+def validate_lock_data(data: dict[str, Any], schema: dict[str, Any], path: Path) -> None:
+    jsonschema.validate(data, schema)
+
+
+def lock_paths(repo_root: Path) -> list[Path]:
+    return sorted(path for path in (repo_root / LOCKS_DIR).glob("*.json") if path.name != "lock.schema.json")
+
+
 def lock_path(repo_root: Path, tool_id: str) -> Path:
     return repo_root / LOCKS_DIR / f"{tool_id}.json"
-
-
-def write_lock(repo_root: Path, tool_id: str, payload: dict[str, Any]) -> Path:
-    path = lock_path(repo_root, tool_id)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    return path
 
 
 def read_lock(repo_root: Path, tool_id: str) -> dict[str, Any] | None:
     path = lock_path(repo_root, tool_id)
     if not path.exists():
         return None
-    return json.loads(path.read_text(encoding="utf-8"))
+    data = json.loads(path.read_text(encoding="utf-8"))
+    validate_lock_data(data, load_lock_schema(), path)
+    return data
+
+
+def base_lock_payload(manifest: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "schema_version": "1",
+        "tool_id": manifest["tool_id"],
+        "manifest_path": manifest["_manifest_path"],
+    }
+
+
+def upsert_lock(
+    repo_root: Path,
+    manifest: dict[str, Any],
+    *,
+    support: dict[str, Any] | None = None,
+    doctor: dict[str, Any] | None = None,
+    update: dict[str, Any] | None = None,
+) -> Path:
+    payload = read_lock(repo_root, manifest["tool_id"]) or base_lock_payload(manifest)
+    payload["schema_version"] = "1"
+    payload["tool_id"] = manifest["tool_id"]
+    payload["manifest_path"] = manifest["_manifest_path"]
+    if support is not None:
+        payload["support"] = support
+    if doctor is not None:
+        payload["doctor"] = doctor
+    if update is not None:
+        payload["update"] = update
+    validate_lock_data(payload, load_lock_schema(), lock_path(repo_root, manifest["tool_id"]))
+    path = lock_path(repo_root, manifest["tool_id"])
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return path
 
 
 def selected_manifests(repo_root: Path, tool_ids: list[str]) -> list[dict[str, Any]]:
@@ -260,16 +301,43 @@ def render_generated_wrapper(manifest: dict[str, Any]) -> str:
     )
 
 
+def render_reference_note(manifest: dict[str, Any]) -> str:
+    support = manifest["support_skill_source"]
+    return "\n".join(
+        [
+            f"# {manifest['tool_id']} Support Reference",
+            "",
+            "This generated reference records how `charness` consumes the upstream",
+            "support surface without copying it into the local taxonomy.",
+            "",
+            f"- upstream repo: `{manifest['upstream_repo']}`",
+            f"- upstream path: `{support['path']}`",
+            f"- sync strategy: `{support['sync_strategy']}`",
+            f"- support state: `{support_state_for_manifest(manifest)}`",
+            "",
+            "Regenerate this file through `scripts/sync_support.py` instead of",
+            "editing it by hand.",
+            "",
+        ]
+    )
+
+
 def materialize_support(repo_root: Path, manifest: dict[str, Any]) -> list[str]:
     support = manifest.get("support_skill_source")
     if not support:
         return []
     strategy = support["sync_strategy"]
-    if strategy != "generated_wrapper":
-        return []
-    wrapper_id = support["wrapper_skill_id"]
-    skill_dir = repo_root / GENERATED_SUPPORT_DIR / wrapper_id
-    skill_dir.mkdir(parents=True, exist_ok=True)
-    skill_path = skill_dir / "SKILL.md"
-    skill_path.write_text(render_generated_wrapper(manifest), encoding="utf-8")
-    return [str(skill_path.relative_to(repo_root))]
+    if strategy == "generated_wrapper":
+        wrapper_id = support["wrapper_skill_id"]
+        skill_dir = repo_root / GENERATED_SUPPORT_DIR / wrapper_id
+        skill_dir.mkdir(parents=True, exist_ok=True)
+        skill_path = skill_dir / "SKILL.md"
+        skill_path.write_text(render_generated_wrapper(manifest), encoding="utf-8")
+        return [str(skill_path.relative_to(repo_root))]
+    if strategy == "reference":
+        reference_dir = repo_root / GENERATED_SUPPORT_DIR / manifest["tool_id"]
+        reference_dir.mkdir(parents=True, exist_ok=True)
+        reference_path = reference_dir / "REFERENCE.md"
+        reference_path.write_text(render_reference_note(manifest), encoding="utf-8")
+        return [str(reference_path.relative_to(repo_root))]
+    raise ValueError(f"unsupported sync strategy `{strategy}` for local materialization")

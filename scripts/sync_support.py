@@ -16,7 +16,7 @@ from scripts.control_plane_lib import (
     materialize_support,
     now_iso,
     support_state_for_manifest,
-    write_lock,
+    upsert_lock,
 )
 
 
@@ -41,14 +41,11 @@ def sync_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -> 
     }
     if execute:
         result["materialized_paths"] = materialize_support(repo_root, manifest)
-        write_lock(
+        upsert_lock(
             repo_root,
-            manifest["tool_id"],
-            {
-                "schema_version": "1",
-                "tool_id": manifest["tool_id"],
+            manifest,
+            support={
                 "synced_at": now_iso(),
-                "manifest_path": manifest["_manifest_path"],
                 "support_state": state,
                 "sync_strategy": support["sync_strategy"],
                 "source_type": support["source_type"],

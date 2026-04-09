@@ -143,7 +143,7 @@ def test_validate_integrations_rejects_invalid_generated_wrapper(tmp_path: Path)
 def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     repo = seed_control_plane_repo(tmp_path)
 
-    doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json")
+    doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--write-locks")
     assert doctor.returncode == 0, doctor.stderr
     doctor_payload = json.loads(doctor.stdout)
     assert doctor_payload[0]["tool_id"] == "demo-tool"
@@ -164,3 +164,64 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
 
     lock_path = repo / "integrations" / "locks" / "demo-tool.json"
     assert lock_path.exists()
+    lock_payload = json.loads(lock_path.read_text(encoding="utf-8"))
+    assert lock_payload["support"]["sync_strategy"] == "generated_wrapper"
+    assert lock_payload["doctor"]["doctor_status"] == "ok"
+    assert lock_payload["update"]["update_status"] == "updated"
+
+
+def test_sync_support_reference_materializes_reference_artifact_and_lock(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    tools_dir = repo / "integrations" / "tools"
+    locks_dir = repo / "integrations" / "locks"
+    generated_dir = repo / "skills" / "support" / "generated"
+    tools_dir.mkdir(parents=True)
+    locks_dir.mkdir(parents=True)
+    generated_dir.mkdir(parents=True)
+
+    (tools_dir / "manifest.schema.json").write_text(
+        (ROOT / "integrations" / "tools" / "manifest.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (tools_dir / "agent-browser.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "tool_id": "agent-browser",
+                "kind": "external_binary_with_skill",
+                "display_name": "agent-browser",
+                "upstream_repo": "vercel-labs/agent-browser",
+                "homepage": "https://github.com/vercel-labs/agent-browser",
+                "lifecycle": {"install": {"mode": "manual"}, "update": {"mode": "manual"}},
+                "checks": {
+                    "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                    "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                },
+                "version_expectation": {"policy": "advisory", "constraint": "latest"},
+                "support_skill_source": {
+                    "source_type": "upstream_repo",
+                    "path": "skills/agent-browser/SKILL.md",
+                    "ref": "main",
+                    "sync_strategy": "reference",
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    sync = run_script("scripts/sync_support.py", "--repo-root", str(repo), "--execute", "--json")
+    assert sync.returncode == 0, sync.stderr
+    sync_payload = json.loads(sync.stdout)
+    assert sync_payload[0]["status"] == "synced"
+
+    reference_path = repo / "skills" / "support" / "generated" / "agent-browser" / "REFERENCE.md"
+    assert reference_path.exists()
+    reference_text = reference_path.read_text(encoding="utf-8")
+    assert "upstream repo: `vercel-labs/agent-browser`" in reference_text
+    assert "sync strategy: `reference`" in reference_text
+
+    lock_payload = json.loads((repo / "integrations" / "locks" / "agent-browser.json").read_text(encoding="utf-8"))
+    assert lock_payload["support"]["sync_strategy"] == "reference"
+    assert lock_payload["support"]["materialized_paths"] == ["skills/support/generated/agent-browser/REFERENCE.md"]

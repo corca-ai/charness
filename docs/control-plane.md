@@ -21,6 +21,12 @@ upstream support-skill reuse in `charness`.
 The manifest is authoritative for intent. Lock files are authoritative only for
 what was last synced or observed on one machine.
 
+For v1, `sync-support` should default to `reference` as the recommended
+strategy. That means `charness` records where the upstream support surface
+lives and can materialize a local generated reference artifact, but does not
+copy or fork the upstream content unless the manifest explicitly asks for a
+stronger strategy.
+
 Support capability state should stay explicit in doctor and lock output:
 
 - `native-support`
@@ -43,16 +49,20 @@ Reads:
 
 Writes:
 
-- lock entry recording resolved upstream ref and sync timestamp
+- lock entry under one stable per-tool shape with a `support` section
 - generated wrapper content under `skills/support/generated/` when
   `sync_strategy` is `generated_wrapper`
-- local reference, copy, or symlink material only when the manifest declares
-  that strategy
+- generated reference notes under `skills/support/generated/` when
+  `sync_strategy` is `reference`
+- local copy or symlink material only when the manifest declares that strategy
 
 Rules:
 
 - never installs or updates the external binary itself
 - never copies an upstream skill unless the manifest explicitly says `copy`
+- `reference` is the default recommendation because it keeps the local taxonomy
+  honest while still leaving a durable breadcrumb for operators and later host
+  packaging
 - leaves public skill taxonomy untouched
 - should support `--dry-run` before any write mode exists
 
@@ -69,7 +79,8 @@ Reads:
 
 Writes:
 
-- updated lock entry with the new observed version
+- updated lock entry with an `update` section rather than overwriting unrelated
+  support or doctor state
 - structured result per tool: `updated`, `noop`, `manual`, or `failed`
 
 Rules:
@@ -105,6 +116,8 @@ Rules:
 - must report per-tool failures without stopping after the first problem
 - should distinguish missing tool, stale version, and broken support-skill sync
 - should reuse manifest degradation notes in operator-facing output
+- when writing locks, should update the `doctor` section without discarding
+  prior `support` or `update` sections
 
 ## Initial Target Set
 
@@ -122,10 +135,6 @@ upstream source of truth.
 
 ## Deferred Decisions
 
-- whether `sync-support` defaults to `reference`, `copy`, or host-specific
-  strategy selection
-- whether tool-version lock data and support-skill sync data live in one lock
-  file or separate artifacts
 - whether the future evaluation engine keeps a `workbench` transitional id or
   gets a new permanent tool id before extraction
 

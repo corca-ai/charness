@@ -75,6 +75,12 @@ What was actually runnable today:
   profile instead of leaving that taxonomy slot empty.
 - `.agents/quality-adapter.yaml` is now checked in with the canonical
   `./scripts/run-quality.sh` gate command and repo concept paths.
+- `sync-support` now has a stable v1 recommendation of `reference`, and actual
+  generated reference artifacts exist for `agent-browser` and `crill` under
+  `skills/support/generated/`.
+- control-plane locks now have one schema-backed per-tool shape with `support`,
+  `doctor`, and `update` sections instead of each command overwriting a
+  different ad-hoc payload.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -97,6 +103,8 @@ What was actually runnable today:
   `cautilus` exposes a real upstream contract
 - collaboration-layer tightening beyond the current representative `announcement`
   and `hitl` policy surface
+- broader representative intent checks for `handoff`, `gather`,
+  `create-skill`, and `spec`
 
 ## Findings
 

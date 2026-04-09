@@ -55,6 +55,8 @@
 - [engineering-quality.json](/home/ubuntu/charness/profiles/engineering-quality.json)이 추가돼 `quality` overlay profile 빈칸이 메워졌고, checked-in [quality-adapter.yaml](/home/ubuntu/charness/.agents/quality-adapter.yaml)이 canonical `./scripts/run-quality.sh` gate를 기록한다.
 - `evals`는 이제 repo-owned smoke뿐 아니라 checked-in quality adapter resolve와 `find-skills` local-first discovery까지 대표 intent check로 포함한다.
 - `HITL recommended` skill들의 실제 인간 검토는 아직 남아 있지만, durable queue가 [skill-outputs/hitl/hitl.md](/home/ubuntu/charness/skill-outputs/hitl/hitl.md)에 잡혀 있다.
+- `sync-support`의 v1 기본 권장 전략은 이제 `reference`로 고정됐고, generated reference artifact가 [skills/support/generated/agent-browser/REFERENCE.md](/home/ubuntu/charness/skills/support/generated/agent-browser/REFERENCE.md), [skills/support/generated/crill/REFERENCE.md](/home/ubuntu/charness/skills/support/generated/crill/REFERENCE.md)에 생겼다.
+- integration lock은 이제 [lock.schema.json](/home/ubuntu/charness/integrations/locks/lock.schema.json) 기준의 단일 per-tool shape를 갖고, `support` / `doctor` / `update` section을 merge하는 방향으로 정리됐다.
 - 서브에이전트 탐색 결과, `cautilus` 없이 바로 할 가치가 큰 self-work는 `sync-support` 기본 전략 고정, support lock artifact shaping, 첫 real support artifact, `meta-builder` profile, representative intent checks 확대, `spec` mode drift 정리로 좁혀졌다.
 - Claude plugin 구조와 Codex plugin 구조를 모두 지원해야 하지만, 이 repo의 source of truth는 host-neutral하게 유지하고 host-specific packaging은 shared artifact에서 generate하는 방향으로 정리됐다. 설치 호환 구조 작업은 support/control-plane/self-validation 빈칸을 먼저 메운 뒤 시작하는 편이 낫다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
@@ -65,8 +67,8 @@
 
 ## Next Session
 
-1. pre-`cautilus`로 계속 가면 `sync-support` 기본 전략(`reference`/`copy`/`symlink`)과 support lock artifact shaping contract를 먼저 고정한다.
-2. 그 다음 첫 real support artifact 또는 generated-wrapper path를 추가하고, representative intent checks를 `handoff` / `gather` / `create-skill` / `spec` 쪽으로 넓힌다.
+1. pre-`cautilus`로 계속 가면 representative intent checks를 `handoff` / `gather` / `create-skill` / `spec` 쪽으로 넓힌다.
+2. 그 다음 `meta-builder` profile 최소 범위를 정하고 실제 profile artifact를 추가한다.
 3. packaging을 시작할 때는 Claude plugin/Codex plugin을 각각 손으로 유지하지 말고, host-neutral source에서 두 layout을 generate하는 contract부터 문서화한다.
 4. 사용자가 `~/cautilus` 작업 완료를 알리면 upstream repo 또는 release boundary, install/update path, detect/healthcheck contract를 먼저 확인한다.
 5. extracted evaluation engine용 integration manifest를 추가하고 control-plane contract에 연결한다.
@@ -76,8 +78,6 @@
 
 ## Discuss
 
-- `sync-support` 기본 전략을 `reference`, `copy`, `symlink` 중 무엇으로 둘지 아직 결정이 필요하다.
-- upstream support skill version과 binary version 상태를 하나의 lock artifact로 둘지, 별도 lock으로 나눌지 정해야 한다.
 - `meta-builder` profile의 최소 범위를 어디까지 둘지, 그리고 어떤 preset/authoring helper를 포함할지 정해야 한다.
 - Claude plugin과 Codex plugin을 동시에 지원할 때 어떤 shared packaging manifest를 canonical source로 둘지 정해야 한다.
 - future evaluation engine을 `workbench` transitional id로 계속 둘지, extraction 전에 새 permanent id를 줄지 결정이 필요하다.
@@ -102,6 +102,10 @@
 - [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)
 - [engineering-quality.json](/home/ubuntu/charness/profiles/engineering-quality.json)
 - [quality-adapter.yaml](/home/ubuntu/charness/.agents/quality-adapter.yaml)
+- [lock.schema.json](/home/ubuntu/charness/integrations/locks/lock.schema.json)
+- [skills/support/README.md](/home/ubuntu/charness/skills/support/README.md)
+- [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/agent-browser/REFERENCE.md)
+- [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/crill/REFERENCE.md)
 - [external-integrations.md](/home/ubuntu/charness/docs/external-integrations.md)
 - [skill-migration-map.md](/home/ubuntu/charness/docs/skill-migration-map.md)
 - [control-plane.md](/home/ubuntu/charness/docs/control-plane.md)
