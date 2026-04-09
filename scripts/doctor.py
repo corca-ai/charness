@@ -13,6 +13,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.control_plane_lib import (
     evaluate_version,
+    inspect_support_sync,
     load_manifests,
     now_iso,
     read_lock,
@@ -33,8 +34,11 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
     version_result = evaluate_version(manifest, detect_result)
     support_state = support_state_for_manifest(manifest)
     previous_lock = read_lock(repo_root, manifest["tool_id"])
+    support_sync = inspect_support_sync(repo_root, previous_lock)
 
-    if detect_result["ok"] and healthcheck_result["ok"]:
+    if support_sync["status"] == "missing":
+        doctor_status = "support-missing"
+    elif detect_result["ok"] and healthcheck_result["ok"]:
         doctor_status = "ok" if version_result["status"] in {"advisory", "matched", "unknown"} else "version-mismatch"
     elif not detect_result["ok"]:
         doctor_status = "missing"
@@ -47,6 +51,7 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
         "detect": detect_result,
         "healthcheck": healthcheck_result,
         "version": version_result,
+        "support_sync": support_sync,
         "doctor_status": doctor_status,
     }
     if write:
@@ -73,7 +78,7 @@ def main() -> int:
         for result in results:
             print(f"{result['tool_id']}: {result['doctor_status']} ({result['support_state']})")
 
-    if any(result["doctor_status"] in {"missing", "unhealthy", "version-mismatch"} for result in results):
+    if any(result["doctor_status"] in {"missing", "unhealthy", "version-mismatch", "support-missing"} for result in results):
         return 1
     return 0
 

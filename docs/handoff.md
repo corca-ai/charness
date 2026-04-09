@@ -67,6 +67,7 @@
 - packaging contract는 이제 shared repo inputs, host-specific manifest paths, Codex repo marketplace shape까지 고정하고, richer install-surface metadata와 host-specific `commands/agents` generation만 다음 단계로 남겼다.
 - `run-evals.py`는 이제 `handoff` / `gather` adapter init/resolve bootstrap까지 포함해 representative skill 검증이 marker check에서 one-step workflow smoke로 넓어졌다.
 - [eval_registry.py](/home/ubuntu/charness/scripts/eval_registry.py)와 강화된 [validate-profiles.py](/home/ubuntu/charness/scripts/validate-profiles.py) 덕분에 profile `validation.smoke_scenarios`가 실제 repo-owned eval scenario와 동기화되는지, `extends`와 validation metadata가 drift하지 않는지까지 본다.
+- `doctor.py`는 이제 prior `sync-support` lock에 적힌 `materialized_paths`가 사라졌을 때 `support-missing`을 보고해 broken support sync drift를 잡는다. first-run에서는 아직 sync하지 않은 support artifact 때문에 fail-closed하지 않는다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - support skill migrations and integration wrappers

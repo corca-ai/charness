@@ -97,6 +97,8 @@ What was actually runnable today:
   only static contract-marker coverage.
 - profile validation metadata now stays synchronized with the eval registry
   instead of allowing arbitrary `smoke_scenarios` strings to drift silently.
+- `doctor` now detects broken support-sync drift when a previously materialized
+  generated wrapper or reference artifact disappears.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -231,6 +233,20 @@ Evidence:
 - `scripts/validate-profiles.py`
 - `profiles/meta-builder.json`
 - `profiles/engineering-quality.json`
+
+### 8. Control-plane doctor now distinguishes broken support sync from first-run state
+
+`doctor` now checks previously recorded `materialized_paths` from the support
+lock and reports `support-missing` if those generated artifacts disappear. That
+closes a real gap in the documented control-plane contract without making
+first-run repos fail only because they have not run `sync-support` yet.
+
+Evidence:
+
+- `scripts/control_plane_lib.py`
+- `scripts/doctor.py`
+- `tests/test_control_plane.py`
+- `docs/control-plane.md`
 
 ## Commands Run
 

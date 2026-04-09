@@ -119,6 +119,14 @@ Rules:
 - when writing locks, should update the `doctor` section without discarding
   prior `support` or `update` sections
 
+Current v1 drift rule:
+
+- if a prior `sync-support` run recorded `materialized_paths`, `doctor` should
+  verify those paths still exist and report `support-missing` when they do not
+- first-run repos without a prior support lock should not fail closed only
+  because generated wrapper or reference artifacts have not been materialized
+  yet
+
 ## Initial Target Set
 
 The first manifest wave should cover:

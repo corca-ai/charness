@@ -149,6 +149,7 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     assert doctor_payload[0]["tool_id"] == "demo-tool"
     assert doctor_payload[0]["doctor_status"] == "ok"
     assert doctor_payload[0]["support_state"] == "wrapped-upstream"
+    assert doctor_payload[0]["support_sync"]["status"] == "not-tracked"
 
     sync = run_script("scripts/sync_support.py", "--repo-root", str(repo), "--execute", "--json")
     assert sync.returncode == 0, sync.stderr
@@ -167,7 +168,28 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     lock_payload = json.loads(lock_path.read_text(encoding="utf-8"))
     assert lock_payload["support"]["sync_strategy"] == "generated_wrapper"
     assert lock_payload["doctor"]["doctor_status"] == "ok"
+    assert lock_payload["doctor"]["support_sync"]["status"] == "not-tracked"
     assert lock_payload["update"]["update_status"] == "updated"
+
+
+def test_doctor_detects_missing_materialized_support_from_previous_sync(tmp_path: Path) -> None:
+    repo = seed_control_plane_repo(tmp_path)
+
+    sync = run_script("scripts/sync_support.py", "--repo-root", str(repo), "--execute", "--json")
+    assert sync.returncode == 0, sync.stderr
+
+    generated_skill = repo / "skills" / "support" / "generated" / "demo-tool-wrapper" / "SKILL.md"
+    assert generated_skill.exists()
+    generated_skill.unlink()
+
+    doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--write-locks")
+    assert doctor.returncode == 1, doctor.stderr
+    doctor_payload = json.loads(doctor.stdout)
+    assert doctor_payload[0]["doctor_status"] == "support-missing"
+    assert doctor_payload[0]["support_sync"]["status"] == "missing"
+    assert doctor_payload[0]["support_sync"]["missing_paths"] == [
+        "skills/support/generated/demo-tool-wrapper/SKILL.md"
+    ]
 
 
 def test_sync_support_reference_materializes_reference_artifact_and_lock(tmp_path: Path) -> None:

@@ -197,6 +197,7 @@
         "detect",
         "healthcheck",
         "version",
+        "support_sync",
         "doctor_status"
       ],
       "properties": {
@@ -223,13 +224,39 @@
         "version": {
           "$ref": "#/definitions/versionResult"
         },
+        "support_sync": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "expected_paths",
+            "missing_paths"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "ok",
+                "missing",
+                "not-tracked"
+              ]
+            },
+            "expected_paths": {
+              "$ref": "#/definitions/stringList"
+            },
+            "missing_paths": {
+              "$ref": "#/definitions/stringList"
+            }
+          }
+        },
         "doctor_status": {
           "type": "string",
           "enum": [
             "ok",
             "missing",
             "unhealthy",
-            "version-mismatch"
+            "version-mismatch",
+            "support-missing"
           ]
         }
       }

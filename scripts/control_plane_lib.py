@@ -341,3 +341,21 @@ def materialize_support(repo_root: Path, manifest: dict[str, Any]) -> list[str]:
         reference_path.write_text(render_reference_note(manifest), encoding="utf-8")
         return [str(reference_path.relative_to(repo_root))]
     raise ValueError(f"unsupported sync strategy `{strategy}` for local materialization")
+
+
+def inspect_support_sync(repo_root: Path, previous_lock: dict[str, Any] | None) -> dict[str, Any]:
+    support = previous_lock.get("support") if previous_lock else None
+    if not support:
+        return {
+            "status": "not-tracked",
+            "expected_paths": [],
+            "missing_paths": [],
+        }
+
+    expected_paths = support.get("materialized_paths", [])
+    missing_paths = [path for path in expected_paths if not (repo_root / path).exists()]
+    return {
+        "status": "ok" if not missing_paths else "missing",
+        "expected_paths": expected_paths,
+        "missing_paths": missing_paths,
+    }
