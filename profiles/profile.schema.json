@@ -1,0 +1,142 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "charness profile",
+  "description": "Bundle contract for public skills, support skills, presets, and validation expectations.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "profile_id",
+    "display_name",
+    "purpose",
+    "bundles"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1"
+    },
+    "profile_id": {
+      "$ref": "#/definitions/slug"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1
+    },
+    "extends": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/slug"
+      },
+      "uniqueItems": true
+    },
+    "bundles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "public_skills"
+      ],
+      "properties": {
+        "public_skills": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "gather",
+              "ideation",
+              "spec",
+              "impl",
+              "debug",
+              "retro",
+              "quality",
+              "announcement",
+              "handoff",
+              "hitl",
+              "create-skill",
+              "find-skills"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "support_skills": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "agent-browser",
+              "web-fetch",
+              "specdown"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "preset_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/slug"
+          },
+          "uniqueItems": true
+        },
+        "integration_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/slug"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "activation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "default": {
+          "type": "boolean"
+        },
+        "recommended_when": {
+          "$ref": "#/definitions/stringList"
+        },
+        "avoid_when": {
+          "$ref": "#/definitions/stringList"
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required_integrations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/slug"
+          },
+          "uniqueItems": true
+        },
+        "smoke_scenarios": {
+          "$ref": "#/definitions/stringList"
+        }
+      }
+    },
+    "notes": {
+      "$ref": "#/definitions/stringList"
+    }
+  },
+  "definitions": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+    },
+    "stringList": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    }
+  }
+}
