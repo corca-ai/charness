@@ -130,14 +130,14 @@ def test_validate_profiles_rejects_missing_skill_reference(tmp_path: Path) -> No
                 "profile_id": "constitutional",
                 "display_name": "Constitutional",
                 "purpose": "Test",
-                "bundles": {"public_skills": ["missing-skill"]},
+                "bundles": {"public_skills": ["handoff"]},
             }
         ),
         encoding="utf-8",
     )
     result = run_script("scripts/validate-profiles.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "missing artifact `missing-skill`" in result.stderr
+    assert "missing artifact `handoff`" in result.stderr
 
 
 def test_validate_profiles_rejects_unknown_smoke_scenario(tmp_path: Path) -> None:
@@ -194,6 +194,36 @@ def test_validate_profiles_rejects_missing_extends_reference(tmp_path: Path) -> 
     result = run_script("scripts/validate-profiles.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "extends[]` references missing artifact `missing-base`" in result.stderr
+
+
+def test_validate_profiles_rejects_unknown_top_level_field(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    profiles_dir = repo / "profiles"
+    public_skill_dir = repo / "skills" / "public" / "handoff"
+    profiles_dir.mkdir(parents=True)
+    public_skill_dir.mkdir(parents=True)
+    (public_skill_dir / "SKILL.md").write_text(
+        "---\nname: handoff\ndescription: \"demo\"\n---\n\n# Handoff\n\n## References\n\n- `references/demo.md`\n",
+        encoding="utf-8",
+    )
+    (public_skill_dir / "references").mkdir(parents=True)
+    (public_skill_dir / "references" / "demo.md").write_text("# Demo\n", encoding="utf-8")
+    (profiles_dir / "demo.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "profile_id": "demo",
+                "display_name": "Demo",
+                "purpose": "Test",
+                "bundles": {"public_skills": ["handoff"]},
+                "unexpected": True,
+            }
+        ),
+        encoding="utf-8",
+    )
+    result = run_script("scripts/validate-profiles.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "Additional properties are not allowed" in result.stderr
 
 
 def test_validate_adapters_passes_on_current_repo() -> None:
@@ -338,6 +368,72 @@ def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) ->
     result = run_script("scripts/validate-packaging.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert ".codex-plugin/plugin.json" in result.stderr
+
+
+def test_validate_packaging_rejects_unknown_top_level_field(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "packaging").mkdir(parents=True)
+    (repo / "skills" / "public").mkdir(parents=True)
+    (repo / "skills" / "support").mkdir(parents=True)
+    (repo / "profiles").mkdir(parents=True)
+    (repo / "presets").mkdir(parents=True)
+    (repo / "integrations" / "tools").mkdir(parents=True)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (repo / "packaging" / "demo.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "package_id": "demo",
+                "display_name": "demo",
+                "version": "0.0.0-dev",
+                "summary": "Demo package.",
+                "author": {"name": "Demo"},
+                "homepage": "https://example.com/demo",
+                "repository": "https://example.com/demo",
+                "source": {
+                    "readme": "README.md",
+                    "skills_dir": "skills",
+                    "public_skills_dir": "skills/public",
+                    "support_skills_dir": "skills/support",
+                    "profiles_dir": "profiles",
+                    "presets_dir": "presets",
+                    "integrations_dir": "integrations/tools",
+                },
+                "codex": {
+                    "manifest_path": ".codex-plugin/plugin.json",
+                    "manifest": {
+                        "name": "demo",
+                        "version": "0.0.0-dev",
+                        "description": "Demo package.",
+                        "skills": "./skills/",
+                    },
+                    "repo_marketplace": {
+                        "path": ".agents/plugins/marketplace.json",
+                        "default_source_path": "./plugins/demo",
+                        "display_name": "demo",
+                        "category": "Productivity",
+                    },
+                },
+                "claude": {
+                    "manifest_path": ".claude-plugin/plugin.json",
+                    "manifest": {
+                        "name": "demo",
+                        "version": "0.0.0-dev",
+                        "description": "Demo package.",
+                        "repository": "https://example.com/demo",
+                    },
+                },
+                "unexpected": True,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/validate-packaging.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "Additional properties are not allowed" in result.stderr
 
 
 def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> None:

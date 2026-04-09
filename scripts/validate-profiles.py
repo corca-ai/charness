@@ -9,12 +9,16 @@ import re
 import sys
 from pathlib import Path
 
+import jsonschema
+from jsonschema import ValidationError as JsonSchemaValidationError
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.eval_registry import scenario_ids
 
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")
+PROFILE_SCHEMA_PATH = REPO_ROOT / "profiles" / "profile.schema.json"
 
 
 class ValidationError(Exception):
@@ -67,6 +71,10 @@ def require_file(path: Path, field: str, value: str) -> None:
         raise ValidationError(f"`{field}` references missing artifact `{value}`")
 
 
+def load_profile_schema() -> dict[str, object]:
+    return json.loads(PROFILE_SCHEMA_PATH.read_text(encoding="utf-8"))
+
+
 def validate_profile(path: Path, root: Path) -> None:
     profile_ids = {profile_path.stem for profile_path in iter_profile_files(root)}
     known_eval_scenarios = scenario_ids()
@@ -78,6 +86,7 @@ def validate_profile(path: Path, root: Path) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         raise ValidationError("profile must be a JSON object")
+    jsonschema.validate(data, load_profile_schema())
 
     validate_string(data.get("schema_version"), "schema_version")
     profile_id = validate_slug(data.get("profile_id"), "profile_id")
@@ -186,7 +195,7 @@ def main() -> int:
     for path in files:
         try:
             validate_profile(path, root)
-        except (ValidationError, json.JSONDecodeError) as exc:
+        except (ValidationError, json.JSONDecodeError, JsonSchemaValidationError) as exc:
             raise ValidationError(f"{path}: {exc}") from exc
 
     print(f"Validated {len(files)} profile instances.")

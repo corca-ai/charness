@@ -5,7 +5,7 @@
   "purpose": "Fixture profile for smoke validation.",
   "bundles": {
     "public_skills": [
-      "demo"
+      "handoff"
     ]
   }
 }

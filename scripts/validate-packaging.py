@@ -8,8 +8,11 @@ import re
 import sys
 from pathlib import Path
 
+import jsonschema
+
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")
 VERSION_RE = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$")
+PACKAGING_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "packaging" / "plugin.schema.json"
 
 
 class ValidationError(Exception):
@@ -50,6 +53,10 @@ def require_file(path: Path, field: str) -> None:
 def require_dir(path: Path, field: str) -> None:
     if not path.is_dir():
         raise ValidationError(f"`{field}` references missing directory `{path}`")
+
+
+def load_packaging_schema() -> dict[str, object]:
+    return json.loads(PACKAGING_SCHEMA_PATH.read_text(encoding="utf-8"))
 
 
 def validate_source_paths(root: Path, source: object) -> None:
@@ -135,6 +142,7 @@ def validate_packaging_manifest(path: Path, root: Path) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         raise ValidationError("packaging manifest must be a JSON object")
+    jsonschema.validate(data, load_packaging_schema())
 
     if validate_string(data.get("schema_version"), "schema_version") != "1":
         raise ValidationError("`schema_version` must be `1`")

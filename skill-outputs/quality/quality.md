@@ -101,6 +101,8 @@ What was actually runnable today:
   generated wrapper or reference artifact disappears.
 - `validate-skills.py` now guards the actual `References` contract instead of
   only checking that mentioned paths happen to exist.
+- profile and packaging validators now run JSON Schema validation before custom
+  cross-artifact checks, which closes remaining shape-drift gaps.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -263,6 +265,20 @@ Evidence:
 - `scripts/validate-skills.py`
 - `tests/test_quality_gates.py`
 - `skills/public/create-skill/SKILL.md`
+
+### 10. Schema files now participate in actual validator execution instead of only documenting intent
+
+`validate-profiles.py` and `validate-packaging.py` now use the checked-in JSON
+Schemas before running repo-specific integrity checks. That means
+`additionalProperties`, enum drift, and other shape regressions fail at the
+validator boundary rather than relying on human review or indirect tests.
+
+Evidence:
+
+- `profiles/profile.schema.json`
+- `packaging/plugin.schema.json`
+- `scripts/validate-profiles.py`
+- `scripts/validate-packaging.py`
 
 ## Commands Run
 
