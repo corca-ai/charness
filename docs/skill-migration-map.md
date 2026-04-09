@@ -7,7 +7,7 @@ can be considered portable.
 ## Destination Map
 
 | Current Ceal skill | Target in `charness` | Action |
-|---|---|---|
+| --- | --- | --- |
 | `gather` | `public/gather` | migrate and review |
 | `interview` | absorbed into `public/ideation` | merge, then retire standalone skill |
 | `concept-review` | likely inputs/lenses for `public/quality` and architecture references elsewhere | redesign before migrating |

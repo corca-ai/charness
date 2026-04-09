@@ -8,6 +8,10 @@ python3 scripts/validate-skills.py --repo-root "$REPO_ROOT"
 python3 scripts/validate-profiles.py --repo-root "$REPO_ROOT"
 python3 scripts/validate-adapters.py --repo-root "$REPO_ROOT"
 python3 scripts/check-doc-links.py --repo-root "$REPO_ROOT"
+./scripts/check-markdown.sh
+./scripts/check-secrets.sh
+./scripts/check-shell.sh
+./scripts/check-links-external.sh
 python3 -m py_compile scripts/*.py skills/public/*/scripts/*.py
 ruff check scripts tests skills/public/*/scripts
 pytest -q

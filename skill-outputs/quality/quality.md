@@ -28,6 +28,10 @@ What was actually runnable today:
 - `pytest -q`
 - `scripts/run-quality.sh` as the repo-owned quality entrypoint
 - `scripts/check-duplicates.py` as a report-first duplicate hotspot check
+- `scripts/check-markdown.sh` via `markdownlint-cli2`
+- `scripts/check-secrets.sh` via `secretlint`
+- `scripts/check-shell.sh` as an optional `shellcheck` wrapper
+- `scripts/check-links-external.sh` as an optional `lychee` wrapper
 - JSON Schema validation for `profiles/constitutional.json` against
   `profiles/profile.schema.json`
 - manual concept review against `README.md`, `docs/master-plan.md`,
@@ -52,6 +56,9 @@ What was actually runnable today:
   absolute workspace paths.
 - `ruff` and `pytest` now run successfully against the repo-owned Python helper
   layer.
+- `markdownlint-cli2` and `secretlint` now run as repo-local dependencies.
+- shell and external-link checks now have dedicated wrappers and degrade
+  honestly when `shellcheck` or `lychee` are unavailable.
 - `scripts/run-quality.sh` now provides one canonical repo-owned quality
   entrypoint.
 - The top-level repo shape matches the documented skeleton in `README.md`.
@@ -151,6 +158,10 @@ print('ok')
 PY
 python3 scripts/check-doc-links.py
 python3 scripts/check-duplicates.py
+./scripts/check-markdown.sh
+./scripts/check-secrets.sh
+./scripts/check-shell.sh
+./scripts/check-links-external.sh
 ```
 
 ## Recommended Next Gates
@@ -167,3 +178,6 @@ python3 scripts/check-duplicates.py
 
 3. Keep `./scripts/run-quality.sh` as the canonical local quality entrypoint and
    wire it into future collaboration-layer or CI flows.
+
+4. Decide whether `shellcheck` and `lychee` should become required local setup
+   for `charness`, or remain optional-but-recommended quality escalations.

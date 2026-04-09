@@ -62,6 +62,11 @@ Read the smallest memory surface that answers the current question.
   `python3 scripts/validate-adapters.py`.
 - When editing committed markdown links or handoff references, run
   `python3 scripts/check-doc-links.py`.
+- When markdown or secret-bearing text changes materially, run
+  `./scripts/check-markdown.sh` and `./scripts/check-secrets.sh`.
+- Use `./scripts/check-shell.sh` and `./scripts/check-links-external.sh` when
+  `shellcheck` or `lychee` are available; these are honest optional escalations,
+  not fake guarantees.
 - Use `python3 scripts/check-duplicates.py` to surface helper-script duplicate
   hotspots before copying a pattern again.
 - Keep `python3 -m py_compile skills/public/*/scripts/*.py` as the cheap smoke

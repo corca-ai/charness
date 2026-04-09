@@ -8,7 +8,7 @@ artifacts.
 Choose the target surface before writing files.
 
 | Artifact | Owns | Does not own | Canonical path |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | public skill | one user-facing concept | external tool installs, host defaults | `skills/public/<skill-id>/` |
 | support skill | harness-owned tool usage guidance | public taxonomy, binary ownership | `skills/support/<skill-id>/` |
 | profile | default bundle selection | host-specific secrets or runtime wiring | `profiles/<profile-id>.json` |

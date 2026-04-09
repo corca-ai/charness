@@ -1,0 +1,11 @@
+{
+  "globs": [
+    "**/*.md",
+    "!node_modules",
+    "!skill-outputs/**",
+    "!.pytest_cache/**"
+  ],
+  "config": {
+    "MD013": false
+  }
+}
