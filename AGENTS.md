@@ -56,6 +56,8 @@ Read the smallest memory surface that answers the current question.
 
 - Prefer `./scripts/run-quality.sh` as the canonical local quality entrypoint
   once the change touches multiple repo-owned quality surfaces.
+- Use `python3 scripts/run-evals.py` when changing validator contracts,
+  adapter bootstrap behavior, or portable markdown-link assumptions.
 - When editing skill packages, run `python3 scripts/validate-skills.py`.
 - When editing profiles, run `python3 scripts/validate-profiles.py`.
 - When editing adapter bootstrap or resolver behavior, run

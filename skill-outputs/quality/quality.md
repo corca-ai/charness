@@ -65,6 +65,9 @@ What was actually runnable today:
   per-skill YAML loader copies.
 - `quality` now explicitly treats skill packages and helper drift as a quality
   surface, not only code/tests/security in the narrow sense.
+- repo-owned smoke scenarios now exist under `evals/`, with
+  `scripts/run-evals.py` covering package validation, profile validation, doc
+  link validity, adapter bootstrap, and handoff-style absolute-link portability.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -77,7 +80,6 @@ What was actually runnable today:
 
 ## Missing
 
-- Repo-owned smoke scenarios under `evals/` or `workbench` fixtures
 - A checked-in quality adapter for this repo once stable commands exist
 
 ## Deferred
@@ -158,6 +160,7 @@ print('ok')
 PY
 python3 scripts/check-doc-links.py
 python3 scripts/check-duplicates.py --fail-on-match
+python3 scripts/run-evals.py
 ./scripts/check-markdown.sh
 ./scripts/check-secrets.sh
 ./scripts/check-shell.sh
@@ -166,15 +169,8 @@ python3 scripts/check-duplicates.py --fail-on-match
 
 ## Recommended Next Gates
 
-1. Add repo-owned smoke scenarios under `evals/`
-   At minimum:
-   - one skill package shape scenario
-   - one profile/schema scenario
-   - one adapter resolution scenario
-   - one handoff portability scenario
-
-2. Keep `./scripts/run-quality.sh` as the canonical local quality entrypoint and
+1. Keep `./scripts/run-quality.sh` as the canonical local quality entrypoint and
    wire it into future collaboration-layer or CI flows.
 
-3. Decide whether `shellcheck` and `lychee` should become required local setup
+2. Decide whether `shellcheck` and `lychee` should become required local setup
    for `charness`, or remain optional-but-recommended quality escalations.

@@ -1,0 +1,11 @@
+{
+  "schema_version": "1",
+  "profile_id": "minimal",
+  "display_name": "Minimal",
+  "purpose": "Fixture profile for smoke validation.",
+  "bundles": {
+    "public_skills": [
+      "demo"
+    ]
+  }
+}

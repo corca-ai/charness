@@ -149,3 +149,9 @@ def test_check_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:
     assert duplicates
     assert duplicates[0]["left"] == "docs/alpha.md"
     assert duplicates[0]["right"] == "docs/beta.md"
+
+
+def test_run_evals_passes_on_current_repo() -> None:
+    result = run_script("scripts/run-evals.py", "--repo-root", str(ROOT))
+    assert result.returncode == 0, result.stderr
+    assert "Ran 5 eval scenario(s)." in result.stdout
