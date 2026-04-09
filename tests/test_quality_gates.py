@@ -58,6 +58,57 @@ def test_validate_skills_rejects_unquoted_description(tmp_path: Path) -> None:
     assert "double-quoted" in result.stderr
 
 
+def test_validate_skills_rejects_missing_references_section(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "missing `## References` section" in result.stderr
+
+
+def test_validate_skills_rejects_unlisted_reference_file(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    references_dir = skill_dir / "references"
+    references_dir.mkdir(parents=True)
+    (references_dir / "note.md").write_text("# Note\n", encoding="utf-8")
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "## References",
+                "",
+                "- `references/other.md`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (references_dir / "other.md").write_text("# Other\n", encoding="utf-8")
+    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "unlisted reference file(s): `references/note.md`" in result.stderr
+
+
 def test_validate_profiles_passes_on_current_repo() -> None:
     result = run_script("scripts/validate-profiles.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr

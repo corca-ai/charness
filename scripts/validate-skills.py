@@ -9,6 +9,7 @@ from pathlib import Path
 
 REQUIRED_FRONTMATTER_KEYS = ("name", "description")
 SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+MAX_SKILL_MD_LINES = 200
 
 
 class ValidationError(Exception):
@@ -74,10 +75,39 @@ def validate_frontmatter(path: Path) -> None:
 def validate_support_files(skill_dir: Path) -> None:
     skill_md = skill_dir / "SKILL.md"
     contents = skill_md.read_text(encoding="utf-8")
+    lines = contents.splitlines()
+
+    if len(lines) > MAX_SKILL_MD_LINES:
+        raise ValidationError(
+            f"SKILL.md should stay concise; move detail into references before it grows past {MAX_SKILL_MD_LINES} lines"
+        )
+
+    if "## References" not in contents:
+        raise ValidationError("missing `## References` section")
+
+    listed_reference_paths = [
+        line.split("`")[1]
+        for line in lines
+        if line.startswith("- `references/")
+    ]
+    if not listed_reference_paths:
+        raise ValidationError("`## References` must list at least one `references/...` file")
 
     for rel in re.findall(r"`((?:references|scripts)/[^`]+)`", contents):
         if not (skill_dir / rel).exists():
             raise ValidationError(f"referenced path `{rel}` does not exist")
+
+    references_dir = skill_dir / "references"
+    if references_dir.exists():
+        existing_reference_paths = {
+            str(path.relative_to(skill_dir))
+            for path in references_dir.iterdir()
+            if path.is_file()
+        }
+        missing_reference_listings = sorted(existing_reference_paths - set(listed_reference_paths))
+        if missing_reference_listings:
+            formatted = ", ".join(f"`{path}`" for path in missing_reference_listings)
+            raise ValidationError(f"unlisted reference file(s): {formatted}")
 
     has_adapter_example = (skill_dir / "adapter.example.yaml").exists()
     has_scripts_dir = (skill_dir / "scripts").exists()

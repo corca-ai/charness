@@ -99,6 +99,8 @@ What was actually runnable today:
   instead of allowing arbitrary `smoke_scenarios` strings to drift silently.
 - `doctor` now detects broken support-sync drift when a previously materialized
   generated wrapper or reference artifact disappears.
+- `validate-skills.py` now guards the actual `References` contract instead of
+  only checking that mentioned paths happen to exist.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -247,6 +249,20 @@ Evidence:
 - `scripts/doctor.py`
 - `tests/test_control_plane.py`
 - `docs/control-plane.md`
+
+### 9. Public skill bodies now have a stronger structural guard against reference drift
+
+`validate-skills.py` now requires every public skill to keep a real
+`## References` section, list at least one reference artifact, and keep all
+checked-in reference files represented there. That moves more of the
+`create-skill` contract into deterministic enforcement instead of relying on
+maintainer memory.
+
+Evidence:
+
+- `scripts/validate-skills.py`
+- `tests/test_quality_gates.py`
+- `skills/public/create-skill/SKILL.md`
 
 ## Commands Run
 
