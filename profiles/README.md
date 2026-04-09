@@ -7,6 +7,12 @@ Profiles define default bundles. They are not separate skills.
 - `profile.schema.json`: canonical schema for profile metadata
 - `<profile-id>.json`: future profile instances
 
+## Current Profiles
+
+- `constitutional`: default core workflow bundle
+- `collaboration`: announcement and HITL overlay
+- `engineering-quality`: quality-review overlay
+
 ## Contract Notes
 
 - profiles bundle public skills, support skills, presets, and integration

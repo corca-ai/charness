@@ -80,6 +80,22 @@ def scenario_quality_adapter_bootstrap(root: Path) -> None:
             raise EvalError(f"quality adapter resolve: unexpected artifact_path {payload.get('artifact_path')!r}")
 
 
+def scenario_quality_adapter_checked_in(root: Path) -> None:
+    resolve_script = root / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py"
+    resolve_result = run_command(["python3", str(resolve_script), "--repo-root", str(root)], cwd=root)
+    expect_success(resolve_result, "checked-in quality adapter resolve")
+    payload = json.loads(resolve_result.stdout)
+    if payload.get("found") is not True or payload.get("valid") is not True:
+        raise EvalError(f"checked-in quality adapter resolve: unexpected payload {payload!r}")
+    if payload.get("artifact_path") != "skill-outputs/quality/quality.md":
+        raise EvalError(
+            f"checked-in quality adapter resolve: unexpected artifact_path {payload.get('artifact_path')!r}"
+        )
+    gate_commands = payload.get("data", {}).get("gate_commands", [])
+    if "./scripts/run-quality.sh" not in gate_commands:
+        raise EvalError(f"checked-in quality adapter resolve: missing canonical gate command in {gate_commands!r}")
+
+
 def scenario_handoff_absolute_links(root: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="charness-eval-handoff-") as tmpdir:
         tmp = Path(tmpdir)
@@ -100,12 +116,93 @@ def scenario_handoff_absolute_links(root: Path) -> None:
         expect_success(result, "handoff absolute-link portability")
 
 
+def scenario_find_skills_local_first(root: Path) -> None:
+    with tempfile.TemporaryDirectory(prefix="charness-eval-find-skills-") as tmpdir:
+        tmp = Path(tmpdir)
+        local_skill_dir = tmp / "skills" / "public" / "local-demo"
+        official_skill_dir = tmp / "vendor" / "official-skills" / "official-demo"
+        adapter_dir = tmp / ".agents"
+        integrations_dir = tmp / "integrations" / "tools"
+        local_skill_dir.mkdir(parents=True)
+        official_skill_dir.mkdir(parents=True)
+        adapter_dir.mkdir(parents=True)
+        integrations_dir.mkdir(parents=True)
+
+        (local_skill_dir / "SKILL.md").write_text(
+            "\n".join(
+                [
+                    "---",
+                    "name: local-demo",
+                    'description: "Local demo skill."',
+                    "---",
+                    "",
+                    "# Local Demo",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (official_skill_dir / "SKILL.md").write_text(
+            "\n".join(
+                [
+                    "---",
+                    "name: official-demo",
+                    'description: "Official demo skill."',
+                    "---",
+                    "",
+                    "# Official Demo",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (adapter_dir / "find-skills-adapter.yaml").write_text(
+            "\n".join(
+                [
+                    "version: 1",
+                    f"repo: {tmp.name}",
+                    "language: en",
+                    "output_dir: skill-outputs/find-skills",
+                    "preset_id: portable-defaults",
+                    "customized_from: portable-defaults",
+                    "official_skill_roots:",
+                    "- vendor/official-skills",
+                    "prefer_local_first: true",
+                    "allow_external_registry: false",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        (integrations_dir / "demo-tool.json").write_text(
+            json.dumps({"schema_version": "1", "tool_id": "demo-tool"}, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+        result = run_command(
+            ["python3", "skills/public/find-skills/scripts/list_capabilities.py", "--repo-root", str(tmp)],
+            cwd=root,
+        )
+        expect_success(result, "find-skills local-first discovery")
+        payload = json.loads(result.stdout)
+        if payload["public_skills"][0]["id"] != "local-demo":
+            raise EvalError(f"find-skills local-first discovery: unexpected public skills {payload['public_skills']!r}")
+        if payload["official_skills"][0]["id"] != "official-demo":
+            raise EvalError(
+                f"find-skills local-first discovery: unexpected official skills {payload['official_skills']!r}"
+            )
+        if payload["integrations"][0]["id"] != "demo-tool":
+            raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
+
+
 SCENARIOS = (
     Scenario("skill-valid", "fixture repo with one valid public skill passes package validation"),
     Scenario("profile-valid", "fixture repo with one valid profile passes artifact validation"),
     Scenario("doc-links-valid", "fixture docs with valid internal links pass markdown link validation"),
     Scenario("quality-adapter-bootstrap", "quality init/resolve scripts bootstrap a clean repo"),
+    Scenario("quality-adapter-checked-in", "checked-in quality adapter resolves to the declared repo contract"),
     Scenario("handoff-absolute-links", "repo-local absolute markdown links remain valid in handoff-style docs"),
+    Scenario("find-skills-local-first", "find-skills keeps local-first discovery while exposing configured official roots"),
 )
 
 
@@ -115,7 +212,9 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "profile-valid": scenario_profile_valid,
         "doc-links-valid": scenario_doc_links_valid,
         "quality-adapter-bootstrap": scenario_quality_adapter_bootstrap,
+        "quality-adapter-checked-in": scenario_quality_adapter_checked_in,
         "handoff-absolute-links": scenario_handoff_absolute_links,
+        "find-skills-local-first": scenario_find_skills_local_first,
     }
     handlers[scenario.scenario_id](root)
 

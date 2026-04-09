@@ -27,6 +27,7 @@ What was actually runnable today:
 - `ruff check scripts tests skills/public/*/scripts`
 - `pytest -q`
 - `scripts/run-quality.sh` as the repo-owned quality entrypoint
+- checked-in `.agents/quality-adapter.yaml` resolve for the current repo
 - `scripts/check-duplicates.py --fail-on-match` as a fail-closed duplicate gate
 - `scripts/check-markdown.sh` via `markdownlint-cli2`
 - `scripts/check-secrets.sh` via `secretlint`
@@ -67,7 +68,13 @@ What was actually runnable today:
   surface, not only code/tests/security in the narrow sense.
 - repo-owned smoke scenarios now exist under `evals/`, with
   `scripts/run-evals.py` covering package validation, profile validation, doc
-  link validity, adapter bootstrap, and handoff-style absolute-link portability.
+  link validity, adapter bootstrap, checked-in quality adapter resolution,
+  handoff-style absolute-link portability, and representative `find-skills`
+  discovery behavior.
+- `profiles/engineering-quality.json` now provides an explicit quality overlay
+  profile instead of leaving that taxonomy slot empty.
+- `.agents/quality-adapter.yaml` is now checked in with the canonical
+  `./scripts/run-quality.sh` gate command and repo concept paths.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -80,29 +87,33 @@ What was actually runnable today:
 
 ## Missing
 
-- A checked-in quality adapter for this repo once stable commands exist
+- no immediate missing gate surfaced in this pass beyond the deferred items
 
 ## Deferred
 
-- Support integration validator once actual tool manifest instances land
-- Full `workbench` + `hitl` validation after more public skills exist
-- Collaboration-layer quality gates for `announcement` and `hitl`
+- actual human review decisions for the `HITL recommended` tier; a durable
+  queue now exists at `skill-outputs/hitl/hitl.md`
+- scenario-based evaluator paths for the `evaluator-required` tier once
+  `cautilus` exposes a real upstream contract
+- collaboration-layer tightening beyond the current representative `announcement`
+  and `hitl` policy surface
 
 ## Findings
 
-### 1. The repo promises self-validation deliverables but still ships only a partial set
+### 1. The repo now has a usable self-validation baseline, but deeper validation is intentionally split by tier
 
-`docs/master-plan.md` says Workstream 4 should provide a taxonomy validator,
-support integration validator, bootstrap scenarios, profile/preset scenarios,
-and intent-regression checks. The actual top-level `scripts/` and `evals/`
-surface is no longer empty, but it still lacks repo-owned smoke scenarios,
-duplicate checks, and integration validators.
+`docs/public-skill-validation.md` fixes which skills need future evaluator
+coverage and which ones remain human-review-first. That makes the remaining
+validation gap narrower and more honest: the missing piece is no longer a vague
+"more evals" bucket, but specifically `cautilus`-backed scenarios for the
+`evaluator-required` set plus real human review for the `HITL recommended`
+set.
 
 Evidence:
 
-- `docs/master-plan.md` lines 119-131
-- current `scripts/` contents
-- `evals/.gitkeep`
+- `docs/public-skill-validation.md`
+- `scripts/run-evals.py`
+- `skill-outputs/hitl/hitl.md`
 
 ### 2. Skill quality and helper drift now need to stay under deterministic ownership
 

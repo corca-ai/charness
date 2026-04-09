@@ -51,6 +51,9 @@
 - public skill별 provisional validation tier는 [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)에 정리됐다. 현재 배정은 `smoke-only` 없음, `HITL recommended`는 `announcement` / `hitl` / `ideation` / `quality` / `retro`, `evaluator-required`는 `create-skill` / `debug` / `find-skills` / `gather` / `handoff` / `impl` / `spec`이다.
 - constitutional core의 public execution cluster가 이제 `gather` / `ideation` / `spec` / `impl` / `debug` / `retro` / `handoff` 수준에서 실제 skill body를 갖추게 됐다.
 - master plan에는 모든 public skill이 tier에 맞는 maintained validation path를 가져야 한다는 규칙이 반영됐고, deeper validation policy는 [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)에 고정됐다.
+- [engineering-quality.json](/home/ubuntu/charness/profiles/engineering-quality.json)이 추가돼 `quality` overlay profile 빈칸이 메워졌고, checked-in [quality-adapter.yaml](/home/ubuntu/charness/.agents/quality-adapter.yaml)이 canonical `./scripts/run-quality.sh` gate를 기록한다.
+- `evals`는 이제 repo-owned smoke뿐 아니라 checked-in quality adapter resolve와 `find-skills` local-first discovery까지 대표 intent check로 포함한다.
+- `HITL recommended` skill들의 실제 인간 검토는 아직 남아 있지만, durable queue가 [skill-outputs/hitl/hitl.md](/home/ubuntu/charness/skill-outputs/hitl/hitl.md)에 잡혀 있다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - support skill migrations and integration wrappers
@@ -89,6 +92,8 @@
 - [README.md](/home/ubuntu/charness/README.md)
 - [master-plan.md](/home/ubuntu/charness/docs/master-plan.md)
 - [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)
+- [engineering-quality.json](/home/ubuntu/charness/profiles/engineering-quality.json)
+- [quality-adapter.yaml](/home/ubuntu/charness/.agents/quality-adapter.yaml)
 - [external-integrations.md](/home/ubuntu/charness/docs/external-integrations.md)
 - [skill-migration-map.md](/home/ubuntu/charness/docs/skill-migration-map.md)
 - [control-plane.md](/home/ubuntu/charness/docs/control-plane.md)
@@ -122,6 +127,7 @@
 - [skills/public/announcement/SKILL.md](/home/ubuntu/charness/skills/public/announcement/SKILL.md)
 - [skills/public/hitl/SKILL.md](/home/ubuntu/charness/skills/public/hitl/SKILL.md)
 - [profiles/collaboration.json](/home/ubuntu/charness/profiles/collaboration.json)
+- [skill-outputs/hitl/hitl.md](/home/ubuntu/charness/skill-outputs/hitl/hitl.md)
 - [contract-consumption.md](/home/ubuntu/charness/skills/public/impl/references/contract-consumption.md)
 - [five-steps.md](/home/ubuntu/charness/skills/public/debug/references/five-steps.md)
 - [source-priority.md](/home/ubuntu/charness/skills/public/gather/references/source-priority.md)

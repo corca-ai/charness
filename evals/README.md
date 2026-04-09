@@ -1,6 +1,7 @@
 # Evals
 
-`evals/` holds repo-owned smoke scenarios for `charness` itself.
+`evals/` holds repo-owned smoke scenarios and representative intent checks for
+`charness` itself.
 
 These are not broad benchmark suites. They are small, deterministic scenarios
 that prove the harness still works as a product:
@@ -10,6 +11,8 @@ that prove the harness still works as a product:
 - markdown link validation still accepts valid internal docs
 - adapter bootstrap scripts still work on a clean repo
 - handoff-style absolute in-repo links still pass portability checks
+- checked-in adapters still resolve to the declared repo contract
+- representative discovery workflows still honor local-first packaging rules
 
 Canonical runner:
 

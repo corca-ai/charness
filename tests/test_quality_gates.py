@@ -154,7 +154,7 @@ def test_check_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:
 def test_run_evals_passes_on_current_repo() -> None:
     result = run_script("scripts/run-evals.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
-    assert "Ran 5 eval scenario(s)." in result.stdout
+    assert "Ran 7 eval scenario(s)." in result.stdout
 
 
 def test_find_skills_lists_adapter_configured_official_roots(tmp_path: Path) -> None:
