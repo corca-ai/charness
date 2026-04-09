@@ -18,6 +18,8 @@ Good proposals name:
 - where it should run
 - why it is the next best improvement
 - whether the proposal is `AUTO_CANDIDATE` or `NON_AUTOMATABLE`
+- what local install or permission is required when the gate depends on an
+  external binary or service
 
 Examples:
 

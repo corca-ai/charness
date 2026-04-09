@@ -136,6 +136,9 @@ The result should usually include:
   parallel tool.
 - If a stronger check would require an external tool, support skill, or
   permission, say so explicitly.
+- If a missing binary or local setup step would materially improve confidence,
+  recommend installing it with the reason and the exact command or package
+  family to use.
 
 ## References
 

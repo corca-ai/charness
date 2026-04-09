@@ -9,4 +9,11 @@ if ! command -v lychee >/dev/null 2>&1; then
   exit 0
 fi
 
-lychee --offline --no-progress --include-fragments .
+lychee \
+  --offline \
+  --no-progress \
+  --include-fragments \
+  --root-dir "$REPO_ROOT" \
+  --exclude '^/' \
+  --exclude '^file://' \
+  .
