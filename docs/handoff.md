@@ -1,4 +1,4 @@
-# Ceal Handoff
+# charness Handoff
 
 ## Workflow Trigger
 
@@ -29,6 +29,8 @@
 - `debug`, `gather`, `handoff`는 durable artifact 기본 위치를 `skill-outputs/<skill-name>/` 아래 정해진 파일로 두고, adapter `output_dir` override와 helper script bootstrap까지 갖추는 방향으로 보강되고 있다.
 - Session 8 초안으로 [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), 관련 references, adapter helper scripts, 그리고 [typescript-quality.md](/home/ubuntu/charness/presets/typescript-quality.md) / [python-quality.md](/home/ubuntu/charness/presets/python-quality.md) sample preset이 추가됐다.
 - `quality`는 `concept-review`, `test-improvement`, security posture review를 하나의 public proposal skill로 묶고, 기본 artifact를 `skill-outputs/quality/quality.md`에 두며 adapter `output_dir` override를 허용한다.
+- Session 9 dogfood pass로 [quality.md](/home/ubuntu/charness/skill-outputs/quality/quality.md)가 추가됐고, repo-specific self-validation 초안으로 `scripts/validate-skills.py`, `scripts/validate-profiles.py`, `scripts/validate-adapters.py`, `scripts/check-doc-links.py`가 생겼다.
+- Session 9에서 skill frontmatter description은 YAML-safe quoted string으로 통일됐고, `constitutional` profile에서 아직 없는 `find-skills` bundle reference를 제거했다.
 - constitutional core의 public execution cluster가 이제 `gather` / `ideation` / `spec` / `impl` / `debug` / `retro` / `handoff` 수준에서 실제 skill body를 갖추게 됐다.
 - master plan에는 모든 public skill을 나중에 `workbench` 시나리오와 `hitl` 검토로 검증한다는 규칙이 추가됐다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
@@ -40,11 +42,10 @@
 
 ## Next Session
 
-1. `quality`를 사용해 `charness` repo 자체에 lint / test / concept / security dogfood review를 수행한다.
-2. 현재 repo에 이미 있는 gate와 약한 gate를 분리하고, charness에 실제로 필요한 next gate proposal을 남긴다.
-3. `quality`가 `impl` / `debug` / later `hitl`과 어떻게 이어지는지 실제 repo 결과로 검증한다.
-4. dogfood 결과를 durable artifact와 handoff에 반영한다.
-5. `workbench` + `hitl` validation은 public skill cluster가 더 모인 뒤 묶어서 수행한다.
+1. Session 10으로 넘어가 collaboration layer인 `announcement`와 `hitl`의 portable body를 설계한다.
+2. Session 9에서 추가한 self-validation scripts를 기준으로 후속 lint/duplicate/integration gates를 어디까지 productized할지 정한다.
+3. `quality` dogfood에서 남은 duplicate hotspot과 `spec` mode drift를 언제 actual fix로 당길지 결정한다.
+4. `workbench` + `hitl` validation은 public skill cluster가 더 모인 뒤 묶어서 수행한다.
 
 ## Discuss
 
@@ -58,6 +59,7 @@
 - `quality`가 proposal skill인지 gate skill인지, 또는 두 성격을 어떻게 함께 담을지 정리가 필요하다.
 - shipped sample preset을 어디까지 repo-agnostic example로 둘지, 어디부터 host/profile seam으로 뺄지 결정이 필요하다.
 - `quality` dogfood에서 나온 concrete gate proposals를 Session 10 이후 어느 층위에서 실제 구현할지 정해야 한다.
+- `spec`의 explicit mode 구조를 유지할지, `create-skill`의 option-minimalism에 맞춰 heuristic branch로 낮출지 결정이 필요하다.
 
 ## References
 
@@ -98,7 +100,3 @@
 - [five-steps.md](/home/ubuntu/charness/skills/public/debug/references/five-steps.md)
 - [source-priority.md](/home/ubuntu/charness/skills/public/gather/references/source-priority.md)
 - [workflow-trigger.md](/home/ubuntu/charness/skills/public/handoff/references/workflow-trigger.md)
-- [/home/ubuntu/ceal/.agents/skills/concept-review/SKILL.md](/home/ubuntu/ceal/.agents/skills/concept-review/SKILL.md)
-- [/home/ubuntu/ceal/.agents/skills/test-improvement/SKILL.md](/home/ubuntu/ceal/.agents/skills/test-improvement/SKILL.md)
-- [entity-stage-design/SKILL.md](/home/ubuntu/ceal/.codex/skills/entity-stage-design/SKILL.md)
-- [clarify/SKILL.md](/home/ubuntu/claude-plugins/plugins/cwf/skills/clarify/SKILL.md)

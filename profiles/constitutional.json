@@ -12,8 +12,7 @@
       "debug",
       "retro",
       "handoff",
-      "create-skill",
-      "find-skills"
+      "create-skill"
     ],
     "preset_ids": [
       "portable-defaults"
@@ -26,6 +25,7 @@
     ]
   },
   "notes": [
-    "Excludes collaboration-only skills and engineering-quality overlays."
+    "Excludes collaboration-only skills and engineering-quality overlays.",
+    "Does not include public skills that are planned but not shipped yet."
   ]
 }
