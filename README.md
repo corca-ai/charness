@@ -35,6 +35,11 @@ Hosts should install `charness` as one harness package, not as a menu of
 partially installed public skills. Runtime adaptation should decide which
 integrations and onboarding paths are usable on that host.
 
+Downstream hosts may still expose different surfaces from the same upstream
+package. For example, a maintainer workspace may expose the full `charness`
+bundle, while a product install may expose a narrower host-owned preset that
+depends on `charness`.
+
 ## Taxonomy
 
 ### Public Skills
@@ -110,6 +115,7 @@ The detailed multi-session plan lives in:
 - [docs/master-plan.md](docs/master-plan.md)
 - [docs/external-integrations.md](docs/external-integrations.md)
 - [docs/skill-migration-map.md](docs/skill-migration-map.md)
+- [docs/ceal-consumption-model.md](docs/ceal-consumption-model.md)
 
 ## Repository Shape
 

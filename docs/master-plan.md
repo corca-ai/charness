@@ -153,6 +153,9 @@ system prompt references.
 
 Deliverables:
 
+- documented dual consumption model:
+  - Ceal maintainer repo consumes full `charness`
+  - Ceal Slack app org installs consume Ceal-owned presets
 - Ceal profile selection policy
 - Ceal adapter presets
 - Ceal prompt references
@@ -438,6 +441,7 @@ Deliverables:
 Exit criteria:
 
 - Ceal customization lives in Ceal, not in shared skill bodies
+- Ceal does not rely on a hand-maintained fork-like local copy of `charness`
 
 ### Session 16: Ceal self-validation
 
