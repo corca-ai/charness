@@ -31,6 +31,10 @@ quality concern can be enforced by a linter, validator, test, hook, or script,
 `quality` should prefer promoting it into that gate instead of leaving it as
 repeated prose advice.
 
+Maintainer-local setup counts when the repo depends on it. If a checked-in hook
+or similar repo-owned developer control exists, `quality` should prefer a
+deterministic validator that proves the current clone actually uses it.
+
 `quality` and concept review are adjacent but not identical. Use `quality` for
 repo posture, enforceable drift, duplicated surfaces, weak gates, and the next
 concrete validation move. Use concept-review-style reasoning when the main

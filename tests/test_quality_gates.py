@@ -265,6 +265,49 @@ def test_install_git_hooks_sets_core_hookspath(tmp_path: Path) -> None:
     assert hookspath.stdout.strip() == str((repo / ".githooks").resolve())
 
 
+def test_validate_maintainer_setup_passes_on_current_repo() -> None:
+    result = run_script("scripts/validate-maintainer-setup.py", "--repo-root", str(ROOT))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_maintainer_setup_requires_installed_hookspath(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / ".githooks").mkdir(parents=True)
+    shutil.copy2(ROOT / "scripts" / "validate-maintainer-setup.py", repo / "scripts" / "validate-maintainer-setup.py")
+    shutil.copy2(ROOT / "scripts" / "install-git-hooks.sh", repo / "scripts" / "install-git-hooks.sh")
+    shutil.copy2(ROOT / ".githooks" / "pre-push", repo / ".githooks" / "pre-push")
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
+
+    missing = subprocess.run(
+        ["python3", "scripts/validate-maintainer-setup.py", "--repo-root", str(repo)],
+        cwd=repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert missing.returncode == 1
+    assert "install-git-hooks.sh" in missing.stderr
+
+    install = subprocess.run(
+        ["bash", "scripts/install-git-hooks.sh"],
+        cwd=repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert install.returncode == 0, install.stderr
+
+    ready = subprocess.run(
+        ["python3", "scripts/validate-maintainer-setup.py", "--repo-root", str(repo)],
+        cwd=repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert ready.returncode == 0, ready.stderr
+
+
 def test_validate_profiles_rejects_missing_skill_reference(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     profiles_dir = repo / "profiles"

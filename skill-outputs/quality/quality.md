@@ -14,6 +14,8 @@ Google Workspace `gws-cli` gather seam.
   `./scripts/install-git-hooks.sh`.
 - `scripts/validate-quality-artifact.py` now keeps this file short and shaped
   as a current snapshot instead of an ever-growing session log.
+- `scripts/validate-maintainer-setup.py` now fails closed when this clone has
+  not actually activated the checked-in pre-push hook.
 
 ## Healthy
 
@@ -24,11 +26,12 @@ Google Workspace `gws-cli` gather seam.
   helper path.
 - public `gather` now has a repo-owned helper for Google Workspace operator
   guidance instead of relying on ad hoc memory.
+- maintainer-local hook drift is no longer invisible: the canonical quality
+  runner now checks whether this clone actually points `core.hooksPath` at the
+  checked-in `.githooks` directory.
 
 ## Weak
 
-- local `pre-push` enforcement still depends on each clone installing
-  `core.hooksPath`; the checked-in hook alone does not enforce anything.
 - some public skills still have durable artifacts or onboarding seams without a
   checked-in adapter contract.
 
@@ -50,6 +53,7 @@ Google Workspace `gws-cli` gather seam.
 
 - `./scripts/run-quality.sh`
 - `python3 scripts/doctor.py --repo-root . --tool-id gws-cli --json`
+- `python3 scripts/validate-maintainer-setup.py --repo-root .`
 
 ## Recommended Next Gates
 
