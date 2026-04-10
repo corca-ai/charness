@@ -61,7 +61,14 @@ the `Workflow Trigger` first and continue with that workflow.
 4. Keep the trigger explicit.
    - if a named workflow or skill should run next, say it directly
    - if the next pickup depends on reading specific files first, name them
-5. Finish with a clean baton pass.
+5. Run a misunderstanding premortem when the handoff changed materially.
+   - if the runtime supports subagents, run one or two bounded premortem reads
+     that ask what the next operator is most likely to misunderstand
+   - bias the prompts toward workflow trigger ambiguity, ownership boundary
+     confusion, and examples that could be over-literalized
+   - if subagents are unavailable, do the same check yourself before finalizing
+   - incorporate only concrete clarity fixes, not speculative churn
+6. Finish with a clean baton pass.
    - the next operator should know what to do first without interpretation
 
 ## Output Shape
@@ -80,6 +87,8 @@ The handoff should usually contain:
 - Do not hide the real next workflow behind vague prose.
 - Do not write unverified state as fact.
 - Do not let the handoff drift away from the current repo state.
+- Do not assume your own interpretation of the handoff is the only plausible
+  one when a bounded premortem could catch a likely misread.
 - If the handoff changed materially, treat it as a real artifact update rather
   than an afterthought.
 
@@ -89,3 +98,4 @@ The handoff should usually contain:
 - `references/workflow-trigger.md`
 - `references/state-selection.md`
 - `references/document-seams.md`
+- `references/premortem-loop.md`

@@ -20,8 +20,18 @@ Corca harness product, then reconnects Ceal as one consumer of that product.
 - `gws-cli` is not a support skill.
 - external binaries should not be vendored into `charness` when they already
   have their own upstream repo or clear product boundary.
+- a reference implementation repo does not become a runtime dependency just
+  because its code informed a `charness` provider design.
 - if an external tool repo already ships a support skill, prefer consuming that
   upstream skill through an integration manifest and sync/update flow.
+- `gather` provider runtime that `charness` expects consumers to use directly
+  should be owned by `charness`, not modeled as an upstream plugin dependency.
+- Google gather should prefer a real external runtime such as `gws-cli`, not a
+  borrowed public-export helper path.
+- reference implementations from another plugin repo do not automatically imply
+  runtime ownership; `gather` provider helpers that `charness` expects to ship
+  should become `charness`-owned runtime/support surfaces instead of external
+  skill dependencies.
 - `charness` remains the host-neutral source of truth; Claude and Codex plugin
   layouts should be generated from shared repo artifacts instead of maintained
   as two independent trees.

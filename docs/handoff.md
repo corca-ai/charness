@@ -84,13 +84,15 @@
 - integration manifest schema는 이제 optional `readiness_checks`도 지원한다. `doctor.py`는 이를 실행해 `readiness` payload와 `not-ready` status를 낼 수 있으므로, binary가 있더라도 setup prerequisite가 빠진 host를 별도 상태로 구분한다.
 - [list_capabilities.py](/home/ubuntu/charness/skills/public/find-skills/scripts/list_capabilities.py)는 이제 integration discovery 결과에 `readiness_checks` 요약도 포함한다. [create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md) 역시 setup prerequisite를 operator prose 대신 manifest readiness probe로 표현하라고 요구한다.
 - integration manifest schema는 이제 optional `config_layers`도 지원한다. 이건 host-neutral precedence만 담는 레이어로, `grant -> authenticated-binary -> env -> operator-step -> public-fallback` 순서를 validator가 강제하고 `find-skills` discovery도 요약을 노출한다.
-- `gather` reusable provider surface의 첫 concrete manifests로 [github-gh.json](/home/ubuntu/charness/integrations/tools/github-gh.json), [google-public-export.json](/home/ubuntu/charness/integrations/tools/google-public-export.json), [notion-published-export.json](/home/ubuntu/charness/integrations/tools/notion-published-export.json), [slack-bot-export.json](/home/ubuntu/charness/integrations/tools/slack-bot-export.json)이 추가됐다. 이들은 `~/claude-plugins/plugins/cwf/skills/gather`의 existing implementation을 기준으로 provider별 capability/access/onboarding metadata를 repo-owned manifest로 고정한다.
-- generated support reference는 이제 access modes, capability requirements, config layers, reuse notes까지 포함하도록 두꺼워졌고, [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/google-public-export/REFERENCE.md), [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/notion-published-export/REFERENCE.md), [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/slack-bot-export/REFERENCE.md)도 추가됐다.
+- `gather` provider ownership boundary를 다시 정리한 [gather-provider-ownership.md](/home/ubuntu/charness/docs/gather-provider-ownership.md)가 추가됐다. 핵심은 `claude-plugins` 같은 다른 plugin repo는 reference implementation일 수는 있지만, `charness gather`가 consumer repo에서 바로 써야 할 provider runtime이라면 `charness`가 그 support/runtime을 소유해야 한다는 점이다.
+- `google-public-export` manifest와 generated reference는 제거됐다. Google path는 future `gws-cli` integration으로 옮길 계획이다.
+- `slack-bot-export`와 `notion-published-export`도 external integration surface에서 내려왔다. 다음 설계 단위는 이 둘을 `charness`-owned gather provider runtime/support surface로 다시 넣는 것이다.
 - Ceal consumption model v1이 [ceal-consumption-model.md](/home/ubuntu/charness/docs/ceal-consumption-model.md)에 정리됐다. 핵심은 Ceal repo maintainer 환경은 full `charness`를 소비하고, Ceal Slack app 조직 설치는 Ceal-owned preset을 install unit으로 삼는 dual consumption model이다.
 - preset contract가 한 단계 강해졌다. preset file은 이제 YAML-safe frontmatter로 `name`, `description`, `preset_kind`, `install_scope`를 가져야 하고, [validate-presets.py](/home/ubuntu/charness/scripts/validate-presets.py)가 이를 검증한다. shipped `charness` preset은 현재 전부 `maintainer` scope이고, future `organization` scope preset은 `product-slice` kind와 `## Exposure Contract` section을 요구한다.
 - repo root 자체가 plugin root로 동작할 수 있도록 [plugin.json](/home/ubuntu/charness/.claude-plugin/plugin.json), [marketplace.json](/home/ubuntu/charness/.claude-plugin/marketplace.json), [plugin.json](/home/ubuntu/charness/.codex-plugin/plugin.json), [marketplace.json](/home/ubuntu/charness/.agents/plugins/marketplace.json)을 checked-in generated artifact로 두기 시작했다. 이 파일들은 [charness.json](/home/ubuntu/charness/packaging/charness.json)에서 [sync_root_plugin_manifests.py](/home/ubuntu/charness/scripts/sync_root_plugin_manifests.py)로 생성되고, [validate-packaging.py](/home/ubuntu/charness/scripts/validate-packaging.py)가 shared packaging manifest와의 일치를 강제한다.
 - root install surface에는 이제 얇은 startup advisory helper [plugin_preamble.py](/home/ubuntu/charness/scripts/plugin_preamble.py)도 있다. 이 스크립트는 package version, root install-surface drift, explicit Claude/Codex update hints, lock-based readiness summary, vendored-copy warnings만 읽고 알리며, skill execution 중 networked self-update를 하지 않는다.
 - [sync_support.py](/home/ubuntu/charness/scripts/sync_support.py)는 이제 manifest가 선언하면 executable support sync로 `copy`와 maintainer-local `symlink`를 수행할 수 있다. 다만 shared contract는 explicit `--upstream-checkout owner/name=/abs/path` mapping을 요구하고, current shipped manifests는 여전히 `reference`를 기본으로 유지한다.
+- [skills/public/handoff/SKILL.md](/home/ubuntu/charness/skills/public/handoff/SKILL.md)는 이제 materially changed handoff를 마무리하기 전에, runtime이 허용하면 1~2개의 bounded subagent premortem을 돌려 “다음 에이전트가 무엇을 오해할지”를 먼저 점검하라고 요구한다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - support skill migrations and integration wrappers
@@ -101,7 +103,7 @@
 
 ## Next Session
 
-1. pre-`cautilus`로 계속 가면 `gather` provider manifests 다음 단계로, 방금 추가한 `copy` / `symlink` contract를 어떤 shipped manifest에 먼저 적용할지 정한다. 특히 CWF gather처럼 하나의 upstream skill이 여러 provider를 품는 경우를 per-provider duplicated copy로 둘지, shared upstream support manifest로 분리할지, 아니면 reference-only를 유지할지 좁혀야 한다.
+1. pre-`cautilus`로 계속 가면 `gather` provider ownership correction을 먼저 한다. Slack / published-Notion provider를 `charness`-owned support/runtime으로 다시 설계하고, `copy` / `symlink` executable sync contract는 진짜 upstream-owned runtime boundary에만 적용한다.
 2. packaging export는 계속 최소 generated surface만 유지하고, richer install-surface metadata는 capability contract와 충돌하지 않게 나중에 본다.
 3. checked-in root host manifests로 Claude/Codex direct install experiment를 실제로 해 보고, 필요하면 packaging metadata를 더 보강한다.
 4. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
@@ -152,9 +154,7 @@
 - [skills/support/README.md](/home/ubuntu/charness/skills/support/README.md)
 - [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/agent-browser/REFERENCE.md)
 - [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/crill/REFERENCE.md)
-- [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/google-public-export/REFERENCE.md)
-- [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/notion-published-export/REFERENCE.md)
-- [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/slack-bot-export/REFERENCE.md)
+- [gather-provider-ownership.md](/home/ubuntu/charness/docs/gather-provider-ownership.md)
 - [check-skill-contracts.py](/home/ubuntu/charness/scripts/check-skill-contracts.py)
 - [validate-packaging.py](/home/ubuntu/charness/scripts/validate-packaging.py)
 - [export-plugin.py](/home/ubuntu/charness/scripts/export-plugin.py)

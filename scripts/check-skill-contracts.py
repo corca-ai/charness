@@ -14,6 +14,7 @@ class ValidationError(Exception):
 REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/handoff/SKILL.md": (
         "mention-only pickup",
+        "Run a misunderstanding premortem",
         "The handoff should usually contain:",
         "- `Workflow Trigger`",
         "- `Current State`",

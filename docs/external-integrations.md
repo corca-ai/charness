@@ -4,8 +4,8 @@
 
 This also applies to provider-specific capability surfaces that sit below one
 public workflow concept. For example, `gather` stays one public skill even
-when it uses separate integration manifests for `gh`, Slack export, public
-Google export, or published Notion export.
+when it uses separate provider paths such as `gh`, Slack, Google Workspace, or
+published Notion gathering.
 
 ## Principle
 
@@ -40,6 +40,24 @@ Examples:
 - how hosts should install or update it
 - how a public skill should degrade when it is absent
 
+### `gather` provider exception
+
+Some `gather` providers are not true upstream runtime dependencies even when
+their first implementation was inspired by another repo.
+
+If `charness gather` is supposed to work in consumer repos without asking those
+repos to install a second plugin or reimplement helper scripts, then
+`charness` owns that provider runtime.
+
+That means:
+
+- Slack gather helper logic belongs in `charness`
+- published Notion gather helper logic belongs in `charness`
+- Google Workspace access should be modeled through a real external runtime
+  such as `gws-cli`, not through a borrowed public-export implementation
+
+See [gather-provider-ownership.md](/home/ubuntu/charness/docs/gather-provider-ownership.md).
+
 ## Runtime Access Principle
 
 `charness` should assume it may run inside an isolated runtime where the agent
@@ -73,6 +91,10 @@ Fork only when:
 - the upstream skill is unavailable to the host model/runtime,
 - the upstream skill is unmaintained,
 - or `charness` needs a thin compatibility wrapper with a very small surface.
+
+Do not apply this rule to a provider that `charness` actually intends to own as
+part of its shipped runtime surface. Provenance is not the same as runtime
+ownership.
 
 ## Integration Manifest Contract
 
@@ -138,5 +160,6 @@ These do not need implementation in session 1, but the plan assumes them.
 
 ## Current Exclusions
 
-- `gws-cli` is intentionally excluded from support skill scope because it is too
-  general and would force the same treatment for many unrelated connectors.
+- `gws-cli` is intentionally excluded from support skill scope because it is an
+  external binary boundary, not a `charness` support skill.
+- a reference implementation repo is not, by itself, an integration contract.

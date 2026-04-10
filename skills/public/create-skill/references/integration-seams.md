@@ -18,6 +18,9 @@ The canonical contract is [manifest.schema.json](/home/ubuntu/charness/integrati
 
 - `charness` owns when the tool should be used and how workflows degrade
 - upstream owns the binary and deep tool-specific behavior
+- another repo can be a useful reference implementation without becoming the
+  runtime owner; model external ownership only when the consumer really needs
+  that external runtime installed or synced
 - a thin local wrapper is acceptable only when the upstream skill is missing,
   incompatible, or too broad for the harness
 - public skills own the capability requirement, not the secret plumbing
