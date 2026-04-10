@@ -62,6 +62,8 @@ the `Workflow Trigger` first and continue with that workflow.
    - if a named workflow or skill should run next, say it directly
    - if the next pickup depends on reading specific files first, name them
 5. Run a misunderstanding premortem when the handoff changed materially.
+   - use Gary Klein-style premortem discipline to ask what the next operator is
+     most likely to misunderstand
    - if the runtime supports subagents, run one or two bounded premortem reads
      that ask what the next operator is most likely to misunderstand
    - bias the prompts toward workflow trigger ambiguity, ownership boundary

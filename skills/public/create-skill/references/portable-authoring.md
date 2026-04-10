@@ -106,6 +106,30 @@ Bad:
 If the user declines a proposed optional field, record that as an explicit
 empty or explicit alternative so later runs do not ask again.
 
+## Named Anchor Rule
+
+Use a real-person name in `SKILL.md` core when it materially improves retrieval
+of a useful reasoning frame from pretraining.
+
+Good:
+
+- Daniel Jackson in a concept-shaping skill where boundary honesty, source of
+  truth, and one clear user-facing concept are central
+- Gary Klein in a premortem-bearing skill where likely failure modes and wrong
+  next actions should be surfaced before closeout
+- Ward Cunningham in a spec skill where executable acceptance artifacts should
+  stay at the boundary instead of becoming a duplicate unit suite
+
+Bad:
+
+- adding a famous name only to signal taste
+- adding several names that all retrieve the same mental move
+- leaving the name in a reference when the public trigger contract is where the
+  retrieval benefit actually matters
+
+If the name is optional color rather than a meaningful retrieval anchor, leave
+it out of the public core.
+
 ## Runtime Capability Rule
 
 Assume the skill may run in both:
@@ -167,6 +191,20 @@ instructions.
 
 Good scripts reduce cold-start variance and make error recovery real. A future
 session should not have to reinterpret the same ritual from scratch.
+
+## Cross-Skill Propagation Rule
+
+When a high-leverage reasoning pattern lands in one public skill, inspect
+adjacent public skills before stopping.
+
+Check for:
+
+- obvious missing symmetry in the same cluster
+- new named anchors that belong in more than one public core
+- review or closeout steps that now look inconsistent across neighboring skills
+
+Do not force perfect uniformity. Propagate only when the same user-facing
+concept pressure is genuinely present.
 
 ## Reuse Rule
 

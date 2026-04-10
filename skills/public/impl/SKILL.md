@@ -13,6 +13,10 @@ user asks for implementation directly and no separate spec step happened. In
 that case, `impl` should bootstrap the smallest honest contract for the current
 slice instead of pretending the task is already well-defined.
 
+Use Gary Klein-style premortem discipline before closing a slice: ask what the
+next maintainer, operator, or user is most likely to misunderstand or break,
+then tighten the implementation or closeout around that failure.
+
 ## Bootstrap
 
 Read the current implementation contract before changing code. If no canonical
@@ -98,13 +102,19 @@ Adapter policy:
      contract before stopping
    - if the work uncovers concept-defining drift, send it back to `spec` or
      `ideation` instead of burying the change in code
-6. Run a fresh-eye review before stopping.
+6. Run a Gary Klein-style premortem before stopping.
+   - ask what wrong next action a maintainer or operator is most likely to take
+   - ask which branch, recovery path, setup assumption, or ownership boundary
+     is most likely to fail under normal pressure
+   - fix the highest-likelihood failure mode or record why it remains open
+7. Run a fresh-eye review before stopping.
    - review runtime behavior and branch reachability
    - review boundary honesty and ownership
    - review docs/spec synchronization
-7. End with execution status.
+8. End with execution status.
    - what changed
    - what was verified
+   - what the premortem found
    - what contract updates were made
    - what remains for the next slice
 
@@ -115,6 +125,7 @@ The closeout should usually include:
 - `Implemented`
 - `Contract Source`
 - `Verification`
+- `Premortem`
 - `Contract Updates`
 - `Residual Risks`
 - `Next Slice`
@@ -133,6 +144,7 @@ The closeout should usually include:
   external tool, ask for it rather than pretending the weaker proof is enough.
 - If the change touches shared seams or architectural ownership, do not stop at
   same-context self-review alone.
+- Do not skip the bounded premortem just because the code looks locally clean.
 
 ## References
 

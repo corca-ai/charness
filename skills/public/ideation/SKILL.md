@@ -8,6 +8,10 @@ description: "Use when the user is still shaping a product, system, or workflow 
 Use this when the request is still under-shaped and the goal is to turn vague
 intent into a sharper, more defensible concept.
 
+Use Daniel Jackson-style concept discipline when the question is whether the
+current idea is one clear user-facing concept, whether boundaries are honest,
+and which ambiguities are upstream enough that they should be decided first.
+
 ## Bootstrap
 
 Read only the context that reduces uncertainty for the current idea.
@@ -41,13 +45,19 @@ incrementally instead of leaving the model only in chat.
    - when the idea has durable structure, update the working document or docs at
      each meaningful step
 2. Choose the shaping lenses that fit.
+   - `concept lens`: use Daniel Jackson-style discipline to test whether the
+     concept is one clear user-facing unit with honest boundaries
    - `truth lens`: pain, customer, status quo, demand evidence
    - `world lens`: durable entities, relationships, constraints
    - `stage lens`: chronology, checkpoints, state transitions
+   - `decision lens`: sort ambiguities by downstream impact and dependency
+     order so the highest-leverage upstream choice is handled first
    - `edge lens`: wedge, moat, hard part worth doing, easy experiment worth trying first
    - `feedback lens`: early feedback loops, distribution posture, viral hooks when relevant, expansion surfaces
    - `agent-human lens`: agent-first surfaces, API/CLI/skill priority, interface importance, human cognition and social behavior
 3. Ask the smallest set of high-leverage questions.
+   - when multiple decisions are open, start with the one that most changes the
+     rest of the design
    - ask one question at a time when real tradeoffs remain
    - prefer precise questions over broad brainstorming prompts
    - skip questions the repo, docs, or prior answers already resolved
@@ -80,6 +90,10 @@ The final synthesis should usually include:
 - `Verified Facts`
 - `Assumptions`
 - `Open Questions`
+- `Decision Candidates`
+- `Dependency Order`
+- `Recommended Current Decision`
+- `Alternatives and Tradeoffs`
 - `World Model`
 - `Truth Tests`
 - `Edge and Expansion`
@@ -96,6 +110,8 @@ Use that split as a thinking aid, not as mandatory ceremony.
 ## Guardrails
 
 - Do not jump into implementation while the concept is still unstable.
+- Do not flatten several upstream decisions into one vague brainstorming blob.
+- Do not leave the current recommended decision implicit when tradeoffs are real.
 - Do not ask questions the repo, docs, or provided context can already answer.
 - If the user already has a formed plan, still challenge demand, wedge, moat,
   feedback path, and agent/human fit before handing off to `spec`.

@@ -40,6 +40,11 @@ When the repo uses executable specs, inspect whether they stay at the
 acceptance boundary or whether they have started duplicating low-level test
 detail and runtime cost.
 
+Borrow Ward Cunningham-style executable-spec discipline when the repo uses
+tools such as `specdown`: executable acceptance artifacts should make the
+contract concrete at the boundary, not replace the unit suite or hide low-level
+test detail.
+
 ## Contract Shaping
 
 Choose the lightest honest contract shape.

@@ -111,6 +111,8 @@ The result should usually include:
 - Every retro must include at least one expert counterfactual.
 - Prefer two named experts with distinct lenses when the session had meaningful
   tradeoffs.
+- For decision quality under uncertainty, default to Gary Klein +
+  Daniel Kahneman unless a more domain-specific pair fits better.
 - If sub-agents are available and the session warrants depth, use two named
   expert sub-agents.
 - If sub-agents are unavailable or too expensive for the session weight, write

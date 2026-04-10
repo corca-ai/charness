@@ -45,6 +45,8 @@ skill before writing from scratch.
    - integration: external ownership contract, never a hidden dependency
 2. Write a short brief.
    - concept, audience, trigger, external dependencies, accumulated state
+   - candidate named anchors when a real reasoning frame should be retrieved in
+     the public core
    - simulate cold start, warm start, error recovery, and 5-7 agent failure
      modes before changing files
 3. Decide the portability seams.
@@ -70,6 +72,8 @@ skill before writing from scratch.
      instead of burying them in operator prose only
 5. Implement the smallest coherent package.
    - `SKILL.md` contains trigger contract and decision skeleton only
+   - keep named person anchors in `SKILL.md` core only when they materially
+     improve retrieval of a real reasoning frame
    - move schemas, examples, and theory into `references/`
    - add scripts for deterministic repeated checks, adapter bootstrap, and
      durable artifact handling when the skill would otherwise rely on hand-wavy
@@ -86,6 +90,8 @@ skill before writing from scratch.
   already captures the right behavior.
 - Do not let a public skill smuggle multiple concepts just because the old repo
   had several narrow expert surfaces.
+- Use a named person anchor in the public core when it reliably retrieves a
+  real reasoning frame; do not use names as decoration.
 - Host-specific behavior belongs in adapters and presets, not in `SKILL.md`.
 - Do not reach for user-facing modes or options just because the design is
   underspecified. First ask whether the right behavior can be inferred from
@@ -102,6 +108,9 @@ skill before writing from scratch.
 - If a skill needs the same bootstrap, adapter resolution, artifact upsert, or
   recovery step more than once, ship a helper script instead of leaving the
   behavior as prose-only ritual.
+- When adding a high-leverage reasoning or review pattern to one public skill,
+  inspect adjacent public skills for obvious propagation opportunities before
+  stopping.
 - Keep `SKILL.md` concise. If the body approaches 200 lines, move detail into
   `references/`.
 
