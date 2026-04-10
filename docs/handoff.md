@@ -49,6 +49,8 @@
 - `doctor`는 실제 machine state를 읽으므로 이 머신에서는 `specdown`만 `ok`이고 `agent-browser`와 `crill`은 아직 `missing`이다. quality gate에는 doctor를 직접 넣지 않고, manifest validation과 deterministic tests만 넣었다.
 - future evaluation engine manifest는 의도적으로 deferred 상태다. 추출된 upstream repo나 release boundary가 생기기 전에는 placeholder manifest를 만들지 않기로 했다.
 - public skill set의 deeper evaluation은 future workbench successor로 하기로 했고, provisional product name은 `cautilus`다. 사용자가 `~/cautilus` 작업을 끝냈다고 알려주기 전까지는 `charness`에서 실제 evaluator integration을 시작하지 않는다.
+- checked-in [cautilus-adapter.yaml](/home/ubuntu/charness/.agents/cautilus-adapter.yaml)이 추가돼 `charness`는 이제 `Cautilus doctor` 기준 최소 live-consumer surface를 가진다.
+- 현재 root `cautilus-adapter`는 repo-owned `quality` gate를 외부 evaluator entrypoint로 감싼 첫 migration step이고, richer scenario/eval surface는 이후 named `cautilus-adapters/`로 분리한다.
 - public skill별 provisional validation tier는 [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)에 정리됐다. 현재 배정은 `smoke-only` 없음, `HITL recommended`는 `announcement` / `hitl` / `ideation` / `quality` / `retro`, `evaluator-required`는 `create-skill` / `debug` / `find-skills` / `gather` / `handoff` / `impl` / `spec`이다.
 - constitutional core의 public execution cluster가 이제 `gather` / `ideation` / `spec` / `impl` / `debug` / `retro` / `handoff` 수준에서 실제 skill body를 갖추게 됐다.
 - master plan에는 모든 public skill이 tier에 맞는 maintained validation path를 가져야 한다는 규칙이 반영됐고, deeper validation policy는 [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)에 고정됐다.
@@ -83,7 +85,7 @@
 2. 그 다음 generated host manifests를 committed fixture로 둘지, 계속 temp export smoke만 유지할지 결정한다.
 3. 그와 병행해 `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
 4. profile inheritance를 실제 merged bundle feature로 키울지 정하기 전까지는 현재 validator contract 안에서 metadata drift만 막는다.
-5. 사용자가 `~/cautilus` 작업 완료를 알리면 upstream repo 또는 release boundary, install/update path, detect/healthcheck contract를 먼저 확인한다.
+5. `Cautilus doctor`가 통과하는 root adapter를 유지하면서, richer evaluator surface가 필요해지면 named `cautilus-adapters/`를 설계한다.
 6. extracted evaluation engine용 integration manifest를 추가하고 control-plane contract에 연결한다.
 7. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 provisional matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.
 8. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정하고, evaluator-required 경계와 HITL fallback 경계를 함께 문서화한다.
@@ -122,6 +124,7 @@
 - [plugin.schema.json](/home/ubuntu/charness/packaging/plugin.schema.json)
 - [charness.json](/home/ubuntu/charness/packaging/charness.json)
 - [quality-adapter.yaml](/home/ubuntu/charness/.agents/quality-adapter.yaml)
+- [cautilus-adapter.yaml](/home/ubuntu/charness/.agents/cautilus-adapter.yaml)
 - [lock.schema.json](/home/ubuntu/charness/integrations/locks/lock.schema.json)
 - [skills/support/README.md](/home/ubuntu/charness/skills/support/README.md)
 - [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/agent-browser/REFERENCE.md)
