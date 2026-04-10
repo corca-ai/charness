@@ -42,7 +42,7 @@ Do not force the split for a simple idea that is still one compact concept.
 
 ## Portable Borrowing Rule
 
-The idea came from Ceal's `entity-stage-design` skill, but `ideation` should
+The entity/stage separation pattern informed this design, but `ideation` should
 borrow only the conceptual separation and cumulative world-model discipline. It
 should not inherit preview rendering, host-specific environment sections, or
 step-by-step document generation as mandatory behavior.

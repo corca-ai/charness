@@ -17,7 +17,7 @@ surface without forking the skill body.
 - `customized_from`
 - `official_skill_roots`
   - additional skill roots the host treats as trusted official inventory
-  - Ceal can point this at its official skill directory
+  - a downstream host can point this at its official skill directory
 - `prefer_local_first`
   - keep local `charness` skills ahead of official roots
 - `allow_external_registry`

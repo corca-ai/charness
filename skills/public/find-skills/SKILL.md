@@ -47,7 +47,7 @@ new local skill.
    - support skills for tool-usage helpers
    - integration manifests for external binaries or upstream support skills
 3. Expand to official skill roots when the adapter provides them.
-   - host-official skills such as Ceal skill packs
+   - host-official skill packs
    - other maintained skill roots that the current harness is allowed to
      consult
 4. Classify the best match honestly.

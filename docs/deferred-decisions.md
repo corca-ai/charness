@@ -126,7 +126,7 @@ Reopen trigger:
 - Question: Keep sample presets repo-agnostic vs move to host/profile seams?
 - Current choice: Keep `charness`-shipped presets repo-agnostic maintainer examples; move consumer-specific install surfaces to downstream repos.
 - Why now: Maintains portable source-of-truth boundaries.
-- Impact surfaces: `presets/*`, `docs/ceal-consumption-model.md`
+- Impact surfaces: `presets/*`
 - Reopen trigger: If cross-host install UX requires shipping host-specific presets in-core.
 
 ### D14. Quality Dogfood Proposal Promotion

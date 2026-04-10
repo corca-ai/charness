@@ -162,8 +162,8 @@ The first manifest wave should cover:
   as a real upstream repo or release boundary
 
 The first three are now concrete manifest instances. The evaluation engine
-remains deferred on purpose until the Ceal-side extraction creates a stable
-upstream source of truth.
+remains deferred on purpose until the upstream extraction creates a stable
+source of truth.
 
 ## Deferred Decisions
 

@@ -198,43 +198,6 @@ Acceptance:
   missing
 - `./scripts/run-quality.sh` passes
 
-## Ceal Repo Items
-
-These are roadmap items, but they should be done in the Ceal repo, not here.
-
-### 6. Apply Full `charness` In Ceal Maintainer Environment
-
-Read first from this repo:
-
-- [docs/ceal-consumption-model.md](/home/ubuntu/charness/docs/ceal-consumption-model.md)
-
-Success looks like:
-
-- Ceal maintainer workflows consume full `charness`
-- Ceal does not maintain a fork-like local copy
-- any local materialization is generated/pinned, not hand-edited
-
-### 7. Build Ceal Organization Presets
-
-Read first from this repo:
-
-- [docs/ceal-consumption-model.md](/home/ubuntu/charness/docs/ceal-consumption-model.md)
-- [presets/README.md](/home/ubuntu/charness/presets/README.md)
-
-Success looks like:
-
-- Ceal Slack app org installs expose Ceal-owned presets, not raw full-harness
-  internals
-- preset exposure contract is explicit
-
-### 8. Run Ceal-Side Validation
-
-Success looks like:
-
-- Ceal seeded flows use the shared harness cleanly
-- Ceal-specific prompt/preset behavior is validated in Ceal, not hidden in
-  shared skill bodies
-
 ## Closeout Rule
 
 For any accepted item:

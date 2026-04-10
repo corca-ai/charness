@@ -2,8 +2,8 @@
 
 `charness` is the portable Corca harness layer.
 
-It is not Ceal-specific. It defines reusable agent skills, support integrations,
-profiles, adapter conventions, and validation flows that any host can adopt.
+It defines reusable agent skills, support integrations, profiles, adapter
+conventions, and validation flows that any host can adopt.
 
 It should assume that it may run inside an isolated agent runtime. Public
 skills should therefore prefer capability-grant and authenticated-binary paths
@@ -24,12 +24,12 @@ environment fallback where needed.
 `charness` does not own:
 
 - host-specific product logic
-- Ceal-specific defaults, prompts, or delivery targets
+- downstream-specific defaults, prompts, or delivery targets
 - external binaries that already live in their own repos
 - generic connector coverage for every SaaS tool
 
-Ceal should consume `charness` as an upstream harness product, then add its own
-adapters, presets, and system prompt references on top.
+Downstream hosts consume `charness` as an upstream harness product, then add
+their own adapters, presets, and system prompt references on top.
 
 Hosts should install `charness` as one harness package, not as a menu of
 partially installed public skills. Runtime adaptation should decide which
@@ -44,20 +44,34 @@ depends on `charness`.
 
 ### Public Skills
 
-Public skills are user-facing concepts. One concept should map to one skill.
+Public skills are user-facing concepts. One concept maps to one skill.
 
-- `gather`
-- `ideation`
-- `spec`
-- `impl`
-- `debug`
-- `retro`
-- `quality`
-- `announcement`
-- `handoff`
-- `hitl`
-- `create-skill`
-- `find-skills`
+#### Discovery → Contract
+
+- `gather` — external facts and source material into durable local knowledge
+- `ideation` — shape a concept through conversation before committing to a spec
+- `spec` — refine a concept into a living implementation contract
+
+#### Build → Fix
+
+- `impl` — produce code, config, tests, or operator-facing artifacts
+- `debug` — trace root cause of bugs, errors, or unexpected behavior
+
+#### Reflect → Improve
+
+- `retro` — review what happened, what created waste, which decisions mattered
+- `quality` — detect current quality gates, identify gaps, propose next gates
+
+#### Communicate → Coordinate
+
+- `announcement` — draft change announcements, release notes, or chat summaries
+- `handoff` — prepare the next session or operator with current state
+- `hitl` — insert deliberate human judgment into a bounded review loop
+
+#### Meta
+
+- `create-skill` — author a new skill or improve an existing one
+- `find-skills` — discover which skill or capability handles a task
 
 ### Support Skills
 
@@ -114,8 +128,6 @@ The detailed multi-session plan lives in:
 
 - [docs/master-plan.md](docs/master-plan.md)
 - [docs/external-integrations.md](docs/external-integrations.md)
-- [docs/skill-migration-map.md](docs/skill-migration-map.md)
-- [docs/ceal-consumption-model.md](docs/ceal-consumption-model.md)
 - [docs/operator-acceptance.md](docs/operator-acceptance.md)
 
 ## Plugin Install Surface

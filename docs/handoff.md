@@ -8,7 +8,7 @@
 
 ## Current State
 
-- `charness`는 Ceal과 분리된 portable Corca harness product로 정의됐다.
+- `charness`는 portable Corca harness product로 정의됐다.
 - public skill / support skill / profile / integration 경계가 문서로 고정됐다.
 - `quality`는 public skill 하나로 두고, `hitl`은 collaboration profile에 두며, `ideation`이 `interview`를 흡수하고, `retro`는 mode로 확장한다는 결정이 반영됐다.
 - external binary는 `charness`가 vendor하지 않고 integration manifest와 sync/update/doctor flow로 다룬다는 정책이 고정됐다.
@@ -42,7 +42,7 @@
 - `announcement`는 draft-first delivery skill로 정리됐고, sections/audience/delivery backend는 adapter seam으로 밀어냈다.
 - `hitl`은 resumable human-judgment review skill로 정리됐고, runtime state는 repo-local `output_dir` 아래에 두는 portable state model로 축약했다.
 - Session 11에서 [skills/public/find-skills/SKILL.md](/home/ubuntu/charness/skills/public/find-skills/SKILL.md), [docs/support-skill-policy.md](/home/ubuntu/charness/docs/support-skill-policy.md), [skills/public/find-skills/adapter.example.yaml](/home/ubuntu/charness/skills/public/find-skills/adapter.example.yaml), [skills/public/find-skills/scripts/resolve_adapter.py](/home/ubuntu/charness/skills/public/find-skills/scripts/resolve_adapter.py), [skills/public/find-skills/scripts/list_capabilities.py](/home/ubuntu/charness/skills/public/find-skills/scripts/list_capabilities.py)가 추가됐다.
-- `find-skills`는 Vercel-style discovery flow를 참고하되 charness에서는 local public/support/integration을 먼저 보고, adapter가 있으면 `official_skill_roots`를 통해 Ceal 같은 host-official skill pack도 함께 찾는 구조로 정리됐다.
+- `find-skills`는 Vercel-style discovery flow를 참고하되 charness에서는 local public/support/integration을 먼저 보고, adapter가 있으면 `official_skill_roots`를 통해 host-official skill pack도 함께 찾는 구조로 정리됐다.
 - [constitutional.json](/home/ubuntu/charness/profiles/constitutional.json)은 `find-skills`를 다시 포함하고, [tests/test_quality_gates.py](/home/ubuntu/charness/tests/test_quality_gates.py)에 adapter-configured official root smoke가 추가됐다.
 - Session 11 중 duplicate gate가 큰 문서 집합에서 느려지는 문제가 드러나, [check-duplicates.py](/home/ubuntu/charness/scripts/check-duplicates.py)에 quick upper-bound filtering을 넣어 [run-quality.sh](/home/ubuntu/charness/scripts/run-quality.sh)가 다시 빠르게 통과하도록 보강했다.
 - Session 12에서 [integrations/tools/agent-browser.json](/home/ubuntu/charness/integrations/tools/agent-browser.json), [integrations/tools/specdown.json](/home/ubuntu/charness/integrations/tools/specdown.json), [integrations/tools/crill.json](/home/ubuntu/charness/integrations/tools/crill.json)이 추가돼 real upstream sources를 가리키는 첫 manifest wave가 생겼다.
@@ -95,7 +95,7 @@
 - checked-in [pre-push](/home/ubuntu/charness/.githooks/pre-push)와 [install-git-hooks.sh](/home/ubuntu/charness/scripts/install-git-hooks.sh)가 추가돼, maintainer가 clone-local git `core.hooksPath`를 repo-owned hook dir로 쉽게 맞출 수 있다. canonical hook target은 계속 `./scripts/run-quality.sh` 하나다.
 - [gws-cli.json](/home/ubuntu/charness/integrations/tools/gws-cli.json)이 추가돼 Google Workspace path도 이제 docs-only intent가 아니라 real external integration surface를 가진다. Google은 support-owned runtime이 아니라 계속 `gws` binary boundary로 간다.
 - public `gather`는 이제 [advise_google_workspace_path.py](/home/ubuntu/charness/skills/public/gather/scripts/advise_google_workspace_path.py)와 [google-workspace-via-gws.md](/home/ubuntu/charness/skills/public/gather/references/google-workspace-via-gws.md)를 통해 Google Workspace source에서 `gws-cli` readiness를 operator guidance로 바꾸는 첫 workflow seam을 가진다.
-- Ceal consumption model v1이 [ceal-consumption-model.md](/home/ubuntu/charness/docs/ceal-consumption-model.md)에 정리됐다. 핵심은 Ceal repo maintainer 환경은 full `charness`를 소비하고, Ceal Slack app 조직 설치는 Ceal-owned preset을 install unit으로 삼는 dual consumption model이다.
+- Downstream consumption model v1이 정리됐다. 핵심은 downstream maintainer 환경은 full `charness`를 소비하고, product install은 downstream-owned preset을 install unit으로 삼는 dual consumption model이다.
 - preset contract가 한 단계 강해졌다. preset file은 이제 YAML-safe frontmatter로 `name`, `description`, `preset_kind`, `install_scope`를 가져야 하고, [validate-presets.py](/home/ubuntu/charness/scripts/validate-presets.py)가 이를 검증한다. shipped `charness` preset은 현재 전부 `maintainer` scope이고, future `organization` scope preset은 `product-slice` kind와 `## Exposure Contract` section을 요구한다.
 - repo root 자체가 plugin root로 동작할 수 있도록 [plugin.json](/home/ubuntu/charness/.claude-plugin/plugin.json), [marketplace.json](/home/ubuntu/charness/.claude-plugin/marketplace.json), [plugin.json](/home/ubuntu/charness/.codex-plugin/plugin.json), [marketplace.json](/home/ubuntu/charness/.agents/plugins/marketplace.json)을 checked-in generated artifact로 두기 시작했다. 이 파일들은 [charness.json](/home/ubuntu/charness/packaging/charness.json)에서 [sync_root_plugin_manifests.py](/home/ubuntu/charness/scripts/sync_root_plugin_manifests.py)로 생성되고, [validate-packaging.py](/home/ubuntu/charness/scripts/validate-packaging.py)가 shared packaging manifest와의 일치를 강제한다.
 - root install surface에는 이제 얇은 startup advisory helper [plugin_preamble.py](/home/ubuntu/charness/scripts/plugin_preamble.py)도 있다. 이 스크립트는 package version, root install-surface drift, explicit Claude/Codex update hints, lock-based readiness summary, vendored-copy warnings만 읽고 알리며, skill execution 중 networked self-update를 하지 않는다.
@@ -120,7 +120,7 @@
 2. `cautilus` integration Session을 시작한다.
 3. checked-in root host manifests로 Claude/Codex direct install experiment를 실제로 해 보고, 필요하면 packaging metadata를 더 보강한다.
 4. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
-5. Ceal repo 쪽에서 first `organization`-scope preset을 실제로 정의할 때, 현재 preset contract를 그대로 쓸지 보고 필요한 최소 metadata만 더한다.
+5. downstream host가 first `organization`-scope preset을 실제로 정의할 때, 현재 preset contract를 그대로 쓸지 보고 필요한 최소 metadata만 더한다.
 6. `Cautilus doctor`가 통과하는 root adapter를 유지하면서, richer evaluator surface가 필요해지면 named `cautilus-adapters/`를 설계한다.
 7. extracted evaluation engine용 integration manifest를 추가하고 control-plane contract에 연결한다.
 8. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 provisional matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.

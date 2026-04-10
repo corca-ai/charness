@@ -151,7 +151,7 @@ networked self-update loop.
 - shipping generated plugin trees in-repo
 - inventing a second metadata system for host-specific skill behavior
 - treating host manifests as the canonical place for bundle membership
-- solving Ceal packaging in the shared repo
+- solving downstream host packaging in the shared repo
 
 ## Deferred Decisions
 

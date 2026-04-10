@@ -81,8 +81,7 @@ These labels matter for later sync/update/doctor behavior.
 - adapter-configured official skill roots after that
 - generic external ecosystems only when the host explicitly allows them
 
-That keeps discovery honest without hiding host-official capability packs such
-as Ceal's own skill surface.
+That keeps discovery honest without hiding host-official capability packs.
 
 ## Required Contracts
 

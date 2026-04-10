@@ -174,7 +174,7 @@ Default to porting before inventing:
 
 1. inspect the upstream or prior-repo skill
 2. keep the useful workflow spine
-3. delete Ceal or host assumptions
+3. delete host-specific assumptions
 4. move variable details into adapters, presets, or integration manifests
 5. only then add new material
 
