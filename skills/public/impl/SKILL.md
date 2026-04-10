@@ -24,10 +24,16 @@ rg --files docs skills
 sed -n '1,220p' docs/handoff.md
 sed -n '1,220p' skills/public/spec/SKILL.md
 
-# 2. locate the canonical spec/design artifact
+# 2. impl adapter resolution and verification survey
+python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .
+python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+python3 "$SKILL_DIR/scripts/survey_verification.py" --repo-root .
+
+# 3. locate the canonical spec/design artifact
 rg -n "Current Slice|Success Criteria|Acceptance Checks|Fixed Decisions|Probe Questions|Deferred Decisions|requirements|acceptance" .
 
-# 3. repo patterns and current target area
+# 4. repo patterns and current target area
 rg -n "test|spec|fixture|eval|smoke|integration" .
 git status --short
 ```
@@ -35,6 +41,18 @@ git status --short
 If the canonical contract artifact is missing, reconstruct the smallest honest
 contract first. Do not stop just because `spec` was not run as a separate
 session. Stop only if the slice is still too ambiguous to define honestly.
+
+Adapter policy:
+
+- if the impl adapter is missing, continue with inferred defaults and manual
+  capability discovery
+- if the repo has recurring verification expectations worth encoding, create
+  `.agents/impl-adapter.yaml` early instead of relearning the same tools each
+  session
+- if the adapter is invalid, repair it using `references/adapter-contract.md`
+  before relying on adapter-defined paths or verification preferences
+- treat the verification survey as onboarding, not a closing nicety: look for
+  the best self-verification path before you code and again before you stop
 
 ## Workflow
 
@@ -54,9 +72,20 @@ session. Stop only if the slice is still too ambiguous to define honestly.
    - prefer a slice that proves one user-visible behavior or one structural seam
    - when a probe exists, design the slice so it answers the probe cleanly
 4. Verify while iterating.
+   - start by surveying the strongest available self-verification path from the
+     adapter, installed skills, repo-local scripts, binaries, browser paths,
+     APIs, agent runtimes, or other host capabilities
    - use whatever available capability most honestly proves the slice:
      local tests, support skills, integration tools, binaries, APIs, browser
      paths, evals, or other repo-available checks
+   - when UI, rendered artifacts, screenshots, or other operator-visible
+     presentation changed, inspect the real output in a browser or equivalent
+     viewport path if one exists
+   - when user-visible agent or tool invocation is part of the slice, prefer a
+     real invocation over mock-only proof when the repo exposes one
+   - if the repo's preferred verification tools are missing but installable,
+     propose the install or setup during onboarding instead of silently
+     downgrading the claim
    - if stronger verification requires setup or permission, ask for it instead
      of silently downgrading the claim
    - add or strengthen checks when a user-visible branch would otherwise stay
@@ -107,6 +136,7 @@ The closeout should usually include:
 
 ## References
 
+- `references/adapter-contract.md`
 - `references/contract-consumption.md`
 - `references/verification-ladder.md`
 - `references/review-gate.md`

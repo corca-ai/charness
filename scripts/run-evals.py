@@ -41,7 +41,8 @@ def expect_adapter_bootstrap(
     *,
     skill_id: str,
     adapter_name: str,
-    expected_artifact_path: str,
+    expected_artifact_path: str | None = None,
+    expected_data: dict[str, object] | None = None,
 ) -> None:
     with tempfile.TemporaryDirectory(prefix=f"charness-eval-{skill_id}-adapter-") as tmpdir:
         tmp = Path(tmpdir)
@@ -61,8 +62,13 @@ def expect_adapter_bootstrap(
         payload = json.loads(resolve_result.stdout)
         if payload.get("found") is not True or payload.get("valid") is not True:
             raise EvalError(f"{skill_id} adapter resolve: unexpected payload {payload!r}")
-        if payload.get("artifact_path") != expected_artifact_path:
+        if expected_artifact_path is not None and payload.get("artifact_path") != expected_artifact_path:
             raise EvalError(f"{skill_id} adapter resolve: unexpected artifact_path {payload.get('artifact_path')!r}")
+        if expected_data is not None:
+            data = payload.get("data", {})
+            for key, expected in expected_data.items():
+                if data.get(key) != expected:
+                    raise EvalError(f"{skill_id} adapter resolve: unexpected {key} {data.get(key)!r}")
 
 
 def scenario_skill_package_valid(root: Path) -> None:
@@ -153,12 +159,11 @@ def scenario_doc_links_valid(root: Path) -> None:
 
 
 def scenario_quality_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(
-        root,
-        skill_id="quality",
-        adapter_name="quality-adapter.yaml",
-        expected_artifact_path="skill-outputs/quality/quality.md",
-    )
+    expect_adapter_bootstrap(root, skill_id="quality", adapter_name="quality-adapter.yaml", expected_artifact_path="skill-outputs/quality/quality.md")
+
+
+def scenario_impl_adapter_bootstrap(root: Path) -> None:
+    expect_adapter_bootstrap(root, skill_id="impl", adapter_name="impl-adapter.yaml", expected_data={"output_dir": "skill-outputs/impl", "verification_tools": [], "ui_verification_tools": []})
 
 
 def scenario_quality_adapter_checked_in(root: Path) -> None:
@@ -178,21 +183,11 @@ def scenario_quality_adapter_checked_in(root: Path) -> None:
 
 
 def scenario_handoff_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(
-        root,
-        skill_id="handoff",
-        adapter_name="handoff-adapter.yaml",
-        expected_artifact_path="skill-outputs/handoff/handoff.md",
-    )
+    expect_adapter_bootstrap(root, skill_id="handoff", adapter_name="handoff-adapter.yaml", expected_artifact_path="skill-outputs/handoff/handoff.md")
 
 
 def scenario_gather_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(
-        root,
-        skill_id="gather",
-        adapter_name="gather-adapter.yaml",
-        expected_artifact_path="skill-outputs/gather/gather.md",
-    )
+    expect_adapter_bootstrap(root, skill_id="gather", adapter_name="gather-adapter.yaml", expected_artifact_path="skill-outputs/gather/gather.md")
 
 
 def scenario_handoff_absolute_links(root: Path) -> None:
@@ -334,6 +329,7 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "packaging-valid": scenario_packaging_valid,
         "packaging-export": scenario_packaging_export,
         "doc-links-valid": scenario_doc_links_valid,
+        "impl-adapter-bootstrap": scenario_impl_adapter_bootstrap,
         "quality-adapter-bootstrap": scenario_quality_adapter_bootstrap,
         "quality-adapter-checked-in": scenario_quality_adapter_checked_in,
         "handoff-adapter-bootstrap": scenario_handoff_adapter_bootstrap,

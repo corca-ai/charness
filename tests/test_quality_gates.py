@@ -512,7 +512,7 @@ def test_check_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:
 def test_run_evals_passes_on_current_repo() -> None:
     result = run_script("scripts/run-evals.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
-    assert "Ran 12 eval scenario(s)." in result.stdout
+    assert "Ran 13 eval scenario(s)." in result.stdout
 
 
 def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) -> None:
@@ -795,3 +795,40 @@ def test_find_skills_lists_adapter_configured_official_roots(tmp_path: Path) -> 
     payload = json.loads(result.stdout)
     assert payload["public_skills"][0]["id"] == "local-demo"
     assert payload["official_skills"][0]["id"] == "official-demo"
+
+
+def test_impl_survey_reports_broken_preferred_skill_symlink(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    adapter_dir = repo / ".agents"
+    skills_dir = adapter_dir / "skills"
+    adapter_dir.mkdir(parents=True)
+    skills_dir.mkdir(parents=True)
+
+    (adapter_dir / "impl-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "language: en",
+                "output_dir: skill-outputs/impl",
+                "verification_tools:",
+                "- cmd:python3",
+                "- skill:agent-browser",
+                "ui_verification_tools:",
+                "- skill:agent-browser",
+                "verification_install_proposals:",
+                "- Install the preferred browser verifier before closing UI work.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (skills_dir / "agent-browser").symlink_to(repo / "missing-agent-browser")
+
+    result = run_script("skills/public/impl/scripts/survey_verification.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["missing_tools"] == ["skill:agent-browser"]
+    assert payload["missing_ui_tools"] == ["skill:agent-browser"]
+    assert payload["tool_checks"][1]["warning"].startswith("Broken skill symlink:")
+    assert "Repo-specific verification install proposals are available." in payload["warnings"]

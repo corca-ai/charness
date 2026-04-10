@@ -49,6 +49,13 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "- `Acceptance Checks`",
         "- `First Implementation Slice`",
     ),
+    "skills/public/impl/SKILL.md": (
+        "impl adapter resolution and verification survey",
+        "best self-verification path before you code and again before you stop",
+        "inspect the real output in a browser or equivalent",
+        "real invocation over mock-only proof",
+        "propose the install or setup during onboarding",
+    ),
 }
 
 
