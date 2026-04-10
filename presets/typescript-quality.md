@@ -26,8 +26,8 @@ adapter needs a sane starting vocabulary.
 - preflight: dependency install sanity, lockfile presence, repo health
 - behavior gates: `vitest`, `jest`, or repo-native test runner
 - static gates: `tsc --noEmit`, `eslint`
-- confidence extras when justified: coverage, `knip`, dependency review, supply
-  chain audit
+- confidence extras when justified: coverage, `knip`, `secretlint` or
+  `gitleaks`, dependency review, supply-chain audit
 
 ## Notes
 

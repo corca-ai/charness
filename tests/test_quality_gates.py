@@ -24,6 +24,19 @@ def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProce
     )
 
 
+def run_shell_script(
+    script: Path, *, cwd: Path | None = None, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["/bin/bash", str(script)],
+        cwd=cwd or ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+
 def make_minimal_skill_repo(tmp_path: Path, description: str) -> Path:
     repo = tmp_path / "repo"
     skill_dir = repo / "skills" / "public" / "demo"
@@ -236,6 +249,70 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
 def test_check_python_lengths_passes_on_current_repo() -> None:
     result = run_script("scripts/check-python-lengths.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
+
+
+def test_check_secrets_prefers_gitleaks_when_available(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True)
+    shutil.copy2(ROOT / "scripts" / "check-secrets.sh", scripts_dir / "check-secrets.sh")
+    shutil.copy2(ROOT / ".gitleaks.toml", repo / ".gitleaks.toml")
+
+    bin_dir = repo / "bin"
+    bin_dir.mkdir()
+    output_path = repo / "gitleaks-args.txt"
+    gitleaks = bin_dir / "gitleaks"
+    gitleaks.write_text(
+        "#!/bin/bash\nprintf '%s\\n' \"$@\" > \"$TEST_OUTPUT\"\n",
+        encoding="utf-8",
+    )
+    gitleaks.chmod(0o755)
+
+    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin", TEST_OUTPUT=str(output_path))
+    result = run_shell_script(repo / "scripts" / "check-secrets.sh", cwd=repo, env=env)
+    assert result.returncode == 0, result.stderr
+    args = output_path.read_text(encoding="utf-8").splitlines()
+    assert args[0] == "dir"
+    assert "--config" in args
+    assert str(repo / ".gitleaks.toml") in args
+    assert "--redact" in args
+
+
+def test_check_secrets_falls_back_to_secretlint_via_npm(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True)
+    shutil.copy2(ROOT / "scripts" / "check-secrets.sh", scripts_dir / "check-secrets.sh")
+    shutil.copy2(ROOT / ".secretlintrc.json", repo / ".secretlintrc.json")
+    shutil.copy2(ROOT / ".secretlintignore", repo / ".secretlintignore")
+
+    bin_dir = repo / "bin"
+    bin_dir.mkdir()
+    output_path = repo / "npm-args.txt"
+    npm = bin_dir / "npm"
+    npm.write_text(
+        "#!/bin/bash\nprintf '%s\\n' \"$@\" > \"$TEST_OUTPUT\"\n",
+        encoding="utf-8",
+    )
+    npm.chmod(0o755)
+
+    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin", TEST_OUTPUT=str(output_path))
+    result = run_shell_script(repo / "scripts" / "check-secrets.sh", cwd=repo, env=env)
+    assert result.returncode == 0, result.stderr
+    args = output_path.read_text(encoding="utf-8").splitlines()
+    assert args == ["exec", "--no-install", "--", "secretlint", "**/*", "--secretlintignore", ".secretlintignore"]
+
+
+def test_check_secrets_requires_gitleaks_or_secretlint_runtime(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True)
+    shutil.copy2(ROOT / "scripts" / "check-secrets.sh", scripts_dir / "check-secrets.sh")
+
+    env = dict(PATH="")
+    result = run_shell_script(repo / "scripts" / "check-secrets.sh", cwd=repo, env=env)
+    assert result.returncode == 1
+    assert "requires either gitleaks or repo-local secretlint via npm" in result.stderr
 
 
 def test_check_supply_chain_passes_on_current_repo() -> None:

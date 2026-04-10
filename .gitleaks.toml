@@ -1,0 +1,14 @@
+title = "charness gitleaks config"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Ignore generated, vendored, and transient paths in charness"
+paths = [
+  '''(^|/)node_modules/''',
+  '''(^|/)\.git/''',
+  '''(^|/)\.pytest_cache/''',
+  '''(^|/)skill-outputs/''',
+  '''(^|/)package-lock\.json$''',
+]

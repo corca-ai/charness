@@ -38,3 +38,18 @@ It currently checks:
 
 It does not yet do online vulnerability lookups. Treat that as a separate
 follow-up seam, not as a hidden promise.
+
+## Secret Scanner Choice
+
+For repo-local secret scanning, `quality` should not pretend there is one
+universal winner.
+
+- prefer `gitleaks` when the repo is not already Node-based and wants a
+  binary-first gate with git, directory, and stdin scan modes plus baseline
+  and allowlist support
+- prefer `secretlint` when the repo already carries Node tooling and needs
+  pluggable rules, rule-level suppression, or custom rule packages
+
+`charness` now treats `gitleaks` as the lower-friction first choice for
+npm-light repos, but keeps `secretlint` as an honest fallback where the repo
+already vendors it.

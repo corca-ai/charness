@@ -3,9 +3,7 @@ Date: 2026-04-10
 
 ## Scope
 
-Current repo-wide quality posture after adding an offline supply-chain
-gate, migrating the first package-manager-specific security references
-into `quality`, and re-running the standing local bar.
+Current repo-wide quality posture after adding an offline supply-chain gate, clarifying `gitleaks` vs `secretlint`, and re-running the standing local bar.
 
 ## Current Gates
 
@@ -14,6 +12,7 @@ into `quality`, and re-running the standing local bar.
   `./scripts/install-git-hooks.sh`.
 - `./scripts/run-quality.sh` now runs independent validation phases in
   parallel while still recording per-command timing and fail/pass history.
+- `scripts/check-secrets.sh` now prefers `gitleaks` with a checked-in `.gitleaks.toml` and falls back to repo-local `secretlint` when `gitleaks` is unavailable.
 - `scripts/check-supply-chain.py` now enforces repo-local manifest and
   lockfile alignment for npm/pnpm/yarn/bun surfaces plus `uv.lock`
   presence when Python dependencies are declared.
@@ -76,6 +75,7 @@ into `quality`, and re-running the standing local bar.
 - `quality` now ships package-manager-specific security references for npm,
   pnpm, and uv instead of leaving supply-chain follow-up as handoff-only
   prose.
+- `quality` now also records a clearer secret-scanner choice: binary-first repos should start with `gitleaks`, while Node-heavy repos can still justify `secretlint` for pluggable rule depth.
 
 ## Weak
 
@@ -85,6 +85,9 @@ into `quality`, and re-running the standing local bar.
   host health when `CHARNESS_LINK_CHECK_ONLINE=1` is enabled locally.
 - the new supply-chain gate proves manifest/lockfile discipline, but it does
   not yet prove live advisory visibility or triage behavior.
+- the current secret gate was validated through repo-owned tests and fallback
+  logic, but `gitleaks` itself was not exercised live in this clone because
+  the binary is not installed locally.
 
 ## Missing
 
@@ -106,6 +109,7 @@ into `quality`, and re-running the standing local bar.
 ## Commands Run
 
 - `./scripts/run-quality.sh`
+- `./scripts/check-secrets.sh`
 - `python3 scripts/check-supply-chain.py --repo-root .`
 - `cat skill-outputs/quality/runtime-signals.json`
 - `pytest -q tests/test_quality_gates.py`
@@ -118,6 +122,9 @@ into `quality`, and re-running the standing local bar.
 - `AUTO_CANDIDATE`: add an optional networked advisory wrapper for npm/pnpm/uv
   only if the repo is prepared to own binary setup, flaky-host behavior, and
   triage responsibilities explicitly.
+- `AUTO_CANDIDATE`: if a downstream repo does not already carry Node tooling,
+  prefer `gitleaks` over `secretlint` for the first secret gate to avoid
+  turning secret scanning into a package-manager adoption decision.
 - `AUTO_CANDIDATE`: add a deterministic smoke path for shipped support-sync
   contracts so `agent-browser`-style upstream support references cannot drift
   silently.

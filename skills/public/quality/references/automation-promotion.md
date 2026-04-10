@@ -27,7 +27,7 @@ Examples:
 
 - repeated helper boilerplate that should be surfaced by duplicate checks
 - profile references to missing skills that should fail validation
-- secret-bearing text that should be checked by a secret linter
+- secret-bearing text that should be checked by `gitleaks`, `secretlint`, or another repo-native secret scanner
 - markdown portability rules that should be checked by markdown lint or link
   validation
 

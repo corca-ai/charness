@@ -26,8 +26,8 @@ adapter needs a sane starting vocabulary.
 - preflight: environment sync sanity, lockfile presence, repo health
 - behavior gates: `pytest` or repo-native test runner
 - static gates: `ruff check`, `mypy` or `pyright`
-- confidence extras when justified: coverage, `deptry`, dependency review,
-  supply-chain audit
+- confidence extras when justified: coverage, `deptry`, `gitleaks` or another
+  repo-native secret scanner, dependency review, supply-chain audit
 
 ## Notes
 
