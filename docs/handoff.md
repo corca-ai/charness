@@ -73,6 +73,8 @@
 - `validate-skills.py`는 이제 모든 public skill이 실제 `## References` section을 유지하고, reference 파일이 SKILL body에 빠짐없이 연결돼 있는지까지 검증한다. `SKILL.md`도 200줄을 넘기기 전에 references로 detail을 밀어내도록 guard가 생겼다.
 - `validate-profiles.py`와 `validate-packaging.py`는 이제 custom cross-file checks 전에 schema validation도 함께 실행해 unknown field나 structural drift를 더 일찍 막는다. smoke fixture도 canonical taxonomy에 맞게 갱신됐다.
 - [check-python-lengths.py](/home/ubuntu/charness/scripts/check-python-lengths.py)가 추가돼 helper-layer Python에서 함수 길이와 파일 길이를 deterministic gate로 본다. 현재 scope는 `scripts/*.py`와 `skills/public/*/scripts/*.py`이고, `tests/`는 제외한다.
+- `charness`는 이제 격리 에이전트 런타임도 first-class target으로 본다. 새 [runtime-capability-contract.md](/home/ubuntu/charness/docs/runtime-capability-contract.md)는 grant-first / authenticated-binary / env fallback 모델을 고정하고, `gather`를 exemplar로 capability-driven onboarding 방향을 문서화한다.
+- [skills/public/gather/SKILL.md](/home/ubuntu/charness/skills/public/gather/SKILL.md)와 [create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md)는 이제 public skill 설치 모델과 capability/access-mode boundary를 반영한다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - support skill migrations and integration wrappers
@@ -81,15 +83,16 @@
 
 ## Next Session
 
-1. pre-`cautilus`로 계속 가면 packaging export에 richer install-surface metadata, optional `.mcp.json` / `.app.json`, 그리고 future host-specific `commands/agents` seam을 어디까지 둘지 정한다.
-2. 그 다음 generated host manifests를 committed fixture로 둘지, 계속 temp export smoke만 유지할지 결정한다.
-3. 그와 병행해 `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
-4. profile inheritance를 실제 merged bundle feature로 키울지 정하기 전까지는 현재 validator contract 안에서 metadata drift만 막는다.
-5. `Cautilus doctor`가 통과하는 root adapter를 유지하면서, richer evaluator surface가 필요해지면 named `cautilus-adapters/`를 설계한다.
-6. extracted evaluation engine용 integration manifest를 추가하고 control-plane contract에 연결한다.
-7. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 provisional matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.
-8. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정하고, evaluator-required 경계와 HITL fallback 경계를 함께 문서화한다.
-9. manifest validation, control-plane tests, eval fixtures, handoff를 새 evaluator contract에 맞게 갱신한다.
+1. pre-`cautilus`로 계속 가면 `gather` exemplar를 바탕으로 capability-driven onboarding이 실제 manifest/support/adapter metadata에서 어떻게 표현될지 좁힌다.
+2. packaging export는 계속 최소 generated surface만 유지하고, richer install-surface metadata는 capability contract와 충돌하지 않게 나중에 본다.
+3. 그 다음 generated host manifests를 committed fixture로 둘지, 계속 temp export smoke만 유지할지 결정한다.
+4. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
+5. profile inheritance를 실제 merged bundle feature로 키울지 정하기 전까지는 현재 validator contract 안에서 metadata drift만 막는다.
+6. `Cautilus doctor`가 통과하는 root adapter를 유지하면서, richer evaluator surface가 필요해지면 named `cautilus-adapters/`를 설계한다.
+7. extracted evaluation engine용 integration manifest를 추가하고 control-plane contract에 연결한다.
+8. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 provisional matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.
+9. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정하고, evaluator-required 경계와 HITL fallback 경계를 함께 문서화한다.
+10. manifest validation, control-plane tests, eval fixtures, handoff를 새 evaluator contract에 맞게 갱신한다.
 
 ## Discuss
 
@@ -98,6 +101,7 @@
 - shared packaging manifest가 release version을 직접 들고 갈지, export-time override를 허용할지 나중에 정해야 한다.
 - generated Claude/Codex export trees를 repo fixture로 보관할지, script+temp smoke만 canonical로 둘지 정해야 한다.
 - profile `extends`를 실제 merged bundle feature로 키울지, 계속 mostly-deferred metadata seam으로 둘지 나중에 정해야 한다.
+- capability grants, authenticated binaries, and env fallback를 integration manifest schema에 어느 깊이까지 올릴지 정해야 한다.
 - `cautilus` 쪽 contract가 나온 뒤 `find-skills`나 support policy에서 `official`보다 더 일반적인 용어(`trusted` / `declared`)로 바꿀지 다시 볼 가치가 있다.
 - profile inheritance를 얼마나 허용할지, 아니면 flattened bundle만 허용할지 결정이 필요하다.
 - preset schema를 JSON으로 둘지 markdown-first catalog를 더 유지할지 나중에 정해야 한다.
@@ -134,6 +138,7 @@
 - [export-plugin.py](/home/ubuntu/charness/scripts/export-plugin.py)
 - [eval_registry.py](/home/ubuntu/charness/scripts/eval_registry.py)
 - [external-integrations.md](/home/ubuntu/charness/docs/external-integrations.md)
+- [runtime-capability-contract.md](/home/ubuntu/charness/docs/runtime-capability-contract.md)
 - [skill-migration-map.md](/home/ubuntu/charness/docs/skill-migration-map.md)
 - [control-plane.md](/home/ubuntu/charness/docs/control-plane.md)
 - [manifest.schema.json](/home/ubuntu/charness/integrations/tools/manifest.schema.json)

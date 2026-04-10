@@ -28,10 +28,27 @@ Examples:
 
 - when the tool should be used in harness workflows
 - how to detect whether it is available
+- which access modes are supported (`grant`, `binary`, `env`, `public`,
+  `human-only`, `degraded`)
 - which version range is expected
 - how to health-check it
 - how hosts should install or update it
 - how a public skill should degrade when it is absent
+
+## Runtime Access Principle
+
+`charness` should assume it may run inside an isolated runtime where the agent
+cannot read arbitrary local secret files directly.
+
+So external integrations should prefer:
+
+1. runtime capability grants
+2. already authenticated local binaries
+3. environment-variable fallback only when the host lacks a stronger grant
+   path
+
+The integration layer may record env var names or permission scope names, but
+should not require checked-in secret values or adapter-level secret transport.
 
 ## Support Skill Reuse Rule
 
@@ -73,6 +90,9 @@ Expected fields:
   - command and success criteria
 - `healthcheck`
   - command and expected signal
+- `access_modes`
+  - ordered supported access modes such as `grant`, `binary`, `env`, or
+    `public`
 - `version_expectation`
 - `support_skill_source`
   - absent when no upstream skill exists
@@ -97,6 +117,7 @@ These do not need implementation in session 1, but the plan assumes them.
 - Do not vendor external binaries just to simplify docs.
 - Do not duplicate upstream support skills unless there is a concrete host
   compatibility reason.
+- Do not model secret values in adapters, presets, or public skill bodies.
 
 ## Current Exclusions
 

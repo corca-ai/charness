@@ -5,6 +5,11 @@
 It is not Ceal-specific. It defines reusable agent skills, support integrations,
 profiles, adapter conventions, and validation flows that any host can adopt.
 
+It should assume that it may run inside an isolated agent runtime. Public
+skills should therefore prefer capability-grant and authenticated-binary paths
+over direct secret-file assumptions, while still allowing ordinary local
+environment fallback where needed.
+
 ## Scope
 
 `charness` owns:
@@ -25,6 +30,10 @@ profiles, adapter conventions, and validation flows that any host can adopt.
 
 Ceal should consume `charness` as an upstream harness product, then add its own
 adapters, presets, and system prompt references on top.
+
+Hosts should install `charness` as one harness package, not as a menu of
+partially installed public skills. Runtime adaptation should decide which
+integrations and onboarding paths are usable on that host.
 
 ## Taxonomy
 
@@ -85,6 +94,7 @@ Instead, `charness` should provide:
 
 - a manifest that points to the upstream source
 - install and update guidance
+- capability and access-mode guidance
 - capability detection
 - version expectations
 - a health check

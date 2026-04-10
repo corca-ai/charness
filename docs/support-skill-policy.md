@@ -11,6 +11,9 @@ Support skills are not public workflow concepts.
 They exist to teach the harness how to use specialized tools consistently
 without turning those tools into the product's philosophy.
 
+They are also where host/runtime-specific capability usage guidance can live
+without forcing secret-handling details into a public skill body.
+
 ## Classification Rule
 
 Ask this first:
@@ -84,10 +87,17 @@ as Ceal's own skill surface.
 Any support capability that is not purely native should eventually have:
 
 - an integration manifest
+- supported runtime access modes
 - install/update guidance
 - detect/healthcheck commands
 - version expectation
 - degradation rules when absent
+
+When the capability depends on private access:
+
+- prefer a runtime grant or authenticated local binary first
+- allow env fallback for ordinary local operator setups when needed
+- never require adapters or checked-in docs to carry raw secret values
 
 ## Session 12 Hook
 

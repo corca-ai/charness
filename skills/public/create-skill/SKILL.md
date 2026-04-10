@@ -57,6 +57,9 @@ skill before writing from scratch.
      `integrations/tools/<tool-id>.json`
    - if an upstream support skill already exists, prefer reference, sync, or a
      thin wrapper over copying
+   - if private access is involved, model capability grants, authenticated
+     binaries, env fallback, and degradation explicitly instead of hiding
+     secret assumptions in the skill body
 5. Implement the smallest coherent package.
    - `SKILL.md` contains trigger contract and decision skeleton only
    - move schemas, examples, and theory into `references/`
@@ -83,6 +86,8 @@ skill before writing from scratch.
   user-meaningful, and unsafe to infer.
 - External tool dependencies must be explicit in manifests and degradation
   rules, not implied by a casual command example.
+- When a host may be isolated, prefer grant-first and authenticated-binary
+  flows over direct secret-file assumptions.
 - Presets are explicit defaults, not hidden behavior changes.
 - Use WebSearch explicitly for research steps; do not imply it weakly.
 - Never ask users to paste secrets into chat.
@@ -98,3 +103,4 @@ skill before writing from scratch.
 - `references/adapter-pattern.md`
 - `references/preset-conventions.md`
 - `references/integration-seams.md`
+- `references/runtime-capabilities.md`

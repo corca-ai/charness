@@ -44,6 +44,7 @@ Agent failure modes must be concrete. Good examples:
 - edits `SKILL.md` before proving the boundary is public vs support
 - hardcodes host or repo names into a portable skill
 - hides an external dependency behind a one-off shell command
+- assumes direct `.env` or secret-file access in a runtime that may be isolated
 - copies an upstream support skill even though a manifest plus sync strategy
   would be enough
 - treats `unset` and `explicitly empty` as the same thing and keeps re-asking
@@ -103,6 +104,22 @@ Bad:
 
 If the user declines a proposed optional field, record that as an explicit
 empty or explicit alternative so later runs do not ask again.
+
+## Runtime Capability Rule
+
+Assume the skill may run in both:
+
+- isolated runtimes that can provide capability grants
+- ordinary local coding environments that rely on authenticated binaries or env
+  fallback
+
+Prefer designing the public skill and integration surface so:
+
+1. grant-first works cleanly
+2. authenticated-binary reuse works next
+3. env fallback remains possible without becoming the canonical mental model
+
+Do not put raw secret-handling rituals in the public skill body.
 
 ## WebSearch Rule
 

@@ -10,6 +10,10 @@ Use this when the goal is durable knowledge, not just a one-turn summary.
 `gather` should produce a reusable local asset that later sessions can read
 instead of re-fetching or re-summarizing the same source from scratch.
 
+`gather` is one public concept even when it uses different capability providers
+under the hood. Provider choice, credential mechanics, and onboarding details
+belong in support and integration layers, not in the public skill definition.
+
 ## Bootstrap
 
 Resolve the adapter first, then prefer the narrowest relevant scope.
@@ -39,6 +43,28 @@ rg -n "" <named-path> 2>/dev/null || true
 
 If the source already exists locally in the repo or workspace, read it before
 widening into web search or external discovery.
+
+## Capability Resolution
+
+Prefer the strongest honest access path first:
+
+1. runtime capability grant or connector access already provided by the host
+2. authenticated local binary already present on the machine
+3. environment-variable or process-environment fallback when the host lacks a
+   stronger grant path
+4. public unauthenticated fetch path when that still answers the request
+5. clean stop with an explicit missing-capability explanation
+
+Examples:
+
+- GitHub via runtime grant or authenticated `gh`
+- Google Workspace via runtime grant or an approved external tool contract
+- Slack via runtime grant or a bot-token-backed integration
+- Notion via runtime grant, token-backed integration, or published-page
+  fallback
+
+Do not ask the user to paste secrets into chat. If private access is missing,
+name the missing capability and stop cleanly or fall back to a public path.
 
 ## Workflow
 
@@ -89,3 +115,4 @@ The result should usually include:
 - `references/source-priority.md`
 - `references/asset-refresh.md`
 - `references/document-seams.md`
+- `references/capability-contract.md`

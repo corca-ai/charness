@@ -40,6 +40,9 @@ Prefer a thin shared core:
 
 Anything beyond this needs a concrete justification tied to repeated work.
 
+Adapters may record capability ids, provider preferences, or env var names when
+those are genuinely repo-local defaults. They must not carry secret values.
+
 ## Search Order
 
 Prefer repo-owned adapter paths first:
@@ -63,6 +66,7 @@ Prefer repo-owned adapter paths first:
 ## Anti-Patterns
 
 - putting host secrets or mutable config inside the skill bundle
+- putting raw secret material in adapters
 - adding fields just because they vary
 - using a preset as a secret transport
 - hardcoding repo names in `SKILL.md`

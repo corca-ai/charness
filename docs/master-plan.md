@@ -25,6 +25,11 @@ Corca harness product, then reconnects Ceal as one consumer of that product.
 - `charness` remains the host-neutral source of truth; Claude and Codex plugin
   layouts should be generated from shared repo artifacts instead of maintained
   as two independent trees.
+- `charness` should assume it may run inside an isolated agent runtime, so
+  runtime capability grants and authenticated binaries should be preferred over
+  direct secret-file assumptions.
+- hosts should install the full public-skill harness package, while capability
+  resolution and onboarding decide which external integrations are usable.
 
 ## Target Taxonomy
 
@@ -115,6 +120,7 @@ binaries.
 Deliverables:
 
 - tool manifests
+- capability and access-mode contract for isolated and non-isolated runtimes
 - install/update/doctor strategy
 - support-skill sync policy for upstream skill providers
 - promotion plan for workbench successor and other reusable engines
