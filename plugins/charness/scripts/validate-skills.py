@@ -4,12 +4,41 @@ from __future__ import annotations
 
 import argparse
 import re
+import shlex
 import sys
 from pathlib import Path
 
 REQUIRED_FRONTMATTER_KEYS = ("name", "description")
 SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 MAX_SKILL_MD_LINES = 200
+
+# CHARNESS_BASELINE: commands a public skill may call in its Bootstrap block
+# without declaring them. See create-skill/references/binary-preflight.md.
+CHARNESS_BASELINE = frozenset({
+    "sh", "bash", "dash", "zsh",
+    "if", "then", "else", "elif", "fi", "for", "while", "until",
+    "do", "done", "case", "esac", "in", "function", "select",
+    "git", "python", "python3",
+    "sed", "find", "awk", "grep", "cut", "tr", "sort", "uniq", "wc",
+    "head", "tail", "diff", "cmp", "paste", "join", "tee", "xargs", "seq",
+    "echo", "cat", "ls", "mkdir", "rmdir", "cp", "mv", "rm", "ln", "touch",
+    "pwd", "printf", "true", "false", "test", "expr", "date", "env",
+    "basename", "dirname", "readlink", "realpath", "sleep",
+    "command", "type", "which", "read", "exit", "return", "set", "unset",
+    "export", "eval", "trap", "source", "local", "shift", "getopts",
+    "[", "]", "[[", "]]", ":",
+})
+
+BOOTSTRAP_HEADING_RE = re.compile(r"^##\s+Bootstrap\s*$")
+NEXT_SECTION_RE = re.compile(r"^##\s+\S")
+FENCE_OPEN_RE = re.compile(r"^```(?:bash|sh)?\s*$")
+FENCE_CLOSE_RE = re.compile(r"^```\s*$")
+REQUIRED_TOOLS_RE = re.compile(r"^\s*#\s*Required Tools:\s*(.+?)\s*$")
+ENV_ASSIGN_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+SCRIPT_EXTENSION_RE = re.compile(r"\.(sh|bash|zsh|py|js|ts|rb|pl|lua|rs|go|json|yaml|yml|md)$")
+REDIRECT_PREFIX_RE = re.compile(r"^[0-9]*[<>&]")
+NUMERIC_RE = re.compile(r"^[0-9]+$")
+COMMAND_SEPARATORS = frozenset({"|", "||", "&&", ";", "&"})
 
 
 class ValidationError(Exception):
@@ -72,7 +101,162 @@ def validate_frontmatter(path: Path) -> None:
     validate_quoted_string("description", data["description"])
 
 
-def validate_support_files(skill_dir: Path) -> None:
+def extract_bootstrap_fences(contents: str) -> list[tuple[int, list[str]]]:
+    """Return `(first_line_index, lines_inside_fence)` tuples for the fenced
+    code blocks under the `## Bootstrap` heading. Line indices are 1-based.
+    """
+    lines = contents.splitlines()
+    bootstrap_start: int | None = None
+    for i, line in enumerate(lines):
+        if BOOTSTRAP_HEADING_RE.match(line):
+            bootstrap_start = i
+            break
+    if bootstrap_start is None:
+        return []
+    next_section = len(lines)
+    for i in range(bootstrap_start + 1, len(lines)):
+        if NEXT_SECTION_RE.match(lines[i]):
+            next_section = i
+            break
+    fences: list[tuple[int, list[str]]] = []
+    i = bootstrap_start + 1
+    while i < next_section:
+        if FENCE_OPEN_RE.match(lines[i]):
+            fence_body_start = i + 1
+            j = fence_body_start
+            while j < next_section and not FENCE_CLOSE_RE.match(lines[j]):
+                j += 1
+            fences.append((fence_body_start + 1, lines[fence_body_start:j]))
+            i = j + 1
+        else:
+            i += 1
+    return fences
+
+
+def tokenize_shell_line(line: str) -> list[str]:
+    try:
+        return shlex.split(line, comments=False, posix=True)
+    except ValueError:
+        return line.split()
+
+
+def classify_command_token(tok: str) -> str | None:
+    """Return a baseline-comparable command name, or None for non-commands."""
+    if not tok:
+        return None
+    tok = tok.lstrip("!")
+    if tok in ("{", "}", "(", ")", "!"):
+        return None
+    if ENV_ASSIGN_RE.match(tok):
+        return None
+    if REDIRECT_PREFIX_RE.match(tok):
+        return None
+    if NUMERIC_RE.match(tok):
+        return None
+    if "/" in tok:
+        base = tok.rsplit("/", 1)[-1]
+        if SCRIPT_EXTENSION_RE.search(base):
+            return None
+        return base or None
+    return tok
+
+
+def non_baseline_commands_in_line(line: str) -> set[str]:
+    tokens = tokenize_shell_line(line)
+    if not tokens:
+        return set()
+    non_base: set[str] = set()
+    expect_command = True
+    for tok in tokens:
+        if expect_command:
+            if ENV_ASSIGN_RE.match(tok):
+                continue
+            name = classify_command_token(tok)
+            if name and name not in CHARNESS_BASELINE:
+                non_base.add(name)
+            expect_command = False
+        if tok in COMMAND_SEPARATORS:
+            expect_command = True
+    return non_base
+
+
+def has_swallow_pattern(line: str) -> bool:
+    """Detect `2>/dev/null` or `|| true` / `|| :` shell-operator swallows."""
+    if "2>/dev/null" in line:
+        return True
+    tokens = tokenize_shell_line(line)
+    for i, tok in enumerate(tokens):
+        if tok == "||" and i + 1 < len(tokens) and tokens[i + 1] in ("true", ":"):
+            return True
+    return False
+
+
+def validate_bootstrap_binary_preflight(contents: str) -> None:
+    """Enforce the Binary Preflight contract on public SKILL.md Bootstrap
+    fences. See create-skill/references/binary-preflight.md for the contract.
+    """
+    fences = extract_bootstrap_fences(contents)
+    if not fences:
+        return
+    any_declared = False
+    for fence_start_line, fence_lines in fences:
+        declared: set[str] = set()
+        detected: set[str] = set()
+        swallow_errors: list[str] = []
+        for offset, raw in enumerate(fence_lines):
+            line_num = fence_start_line + offset
+            declaration_match = REQUIRED_TOOLS_RE.match(raw)
+            if declaration_match:
+                declared.update(
+                    tool.strip()
+                    for tool in declaration_match.group(1).split(",")
+                    if tool.strip()
+                )
+                continue
+            stripped = raw.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            non_base = non_baseline_commands_in_line(raw)
+            if not non_base:
+                continue
+            detected.update(non_base)
+            if has_swallow_pattern(raw):
+                swallow_errors.append(
+                    f"Bootstrap line {line_num}: non-baseline "
+                    f"{', '.join(sorted(non_base))} wrapped in "
+                    f"`|| true` / `2>/dev/null` swallow; rewrite without the "
+                    f"swallow or guard with a `command -v` sentinel (see "
+                    f"`create-skill/references/binary-preflight.md`)"
+                )
+        if swallow_errors:
+            raise ValidationError("; ".join(swallow_errors))
+        missing = detected - declared
+        if missing:
+            bins = ", ".join(sorted(missing))
+            raise ValidationError(
+                f"Bootstrap fence at line {fence_start_line} calls non-baseline "
+                f"binary/binaries `{bins}` without a `# Required Tools:` "
+                f"declaration inside the same fence"
+            )
+        unused = declared - detected
+        if unused:
+            bins = ", ".join(sorted(unused))
+            raise ValidationError(
+                f"Bootstrap fence at line {fence_start_line} declares "
+                f"`# Required Tools: {bins}` but the fence never calls it; "
+                f"remove the declaration or add the usage"
+            )
+        if declared:
+            any_declared = True
+    if any_declared and "binary-preflight" not in contents:
+        raise ValidationError(
+            "`# Required Tools:` is declared but SKILL.md body has no "
+            "`binary-preflight` pointer; add a prose reference to "
+            "`create-skill/references/binary-preflight.md`"
+        )
+
+
+def validate_support_files(skill_dir: Path, kind: str) -> None:
     skill_md = skill_dir / "SKILL.md"
     contents = skill_md.read_text(encoding="utf-8")
     lines = contents.splitlines()
@@ -118,6 +302,9 @@ def validate_support_files(skill_dir: Path) -> None:
             if not (skill_dir / "scripts" / required).exists():
                 raise ValidationError(f"scripts/{required} is missing")
 
+    if kind == "public":
+        validate_bootstrap_binary_preflight(contents)
+
 
 SKILL_ROOTS = (
     ("public", Path("skills/public")),
@@ -157,7 +344,7 @@ def main() -> int:
             raise ValidationError(f"{skill_dir}: missing SKILL.md")
         try:
             validate_frontmatter(skill_md)
-            validate_support_files(skill_dir)
+            validate_support_files(skill_dir, kind)
         except ValidationError as exc:
             raise ValidationError(f"{skill_md}: {exc}") from exc
         validated += 1

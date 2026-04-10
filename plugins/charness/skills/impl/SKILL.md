@@ -23,6 +23,8 @@ Read the current implementation contract before changing code. If no canonical
 contract exists, bootstrap a small current-slice contract first.
 
 ```bash
+# Required Tools: rg
+# Missing-binary protocol: create-skill/references/binary-preflight.md
 # 1. current contract and nearby context
 rg --files docs skills
 sed -n '1,220p' docs/handoff.md

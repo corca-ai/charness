@@ -17,6 +17,8 @@ and which ambiguities are upstream enough that they should be decided first.
 Read only the context that reduces uncertainty for the current idea.
 
 ```bash
+# Required Tools: rg
+# Missing-binary protocol: create-skill/references/binary-preflight.md
 # 1. repo and adjacent design context
 rg --files docs skills
 sed -n '1,220p' docs/handoff.md

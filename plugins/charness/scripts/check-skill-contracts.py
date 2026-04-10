@@ -11,6 +11,13 @@ class ValidationError(Exception):
     pass
 
 
+# Each tuple below pins the exact substrings a SKILL.md must contain so that
+# load-bearing authoring contracts cannot be silently rewritten. When a pinned
+# snippet is removed, the gate fails with a generic "missing snippet" error,
+# so new pins should be grouped under their own dict entry with a short
+# comment explaining the contract they protect — not added to an unrelated
+# skill's tuple. When a pinned snippet is edited, the gate will fail and the
+# fix is to update both the skill body and this list in the same commit.
 REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/handoff/SKILL.md": (
         "mention-only pickup",
@@ -37,6 +44,16 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "metadata rich enough to reveal capability kind and supported access modes",
         "express them as manifest readiness checks",
         "If a skill needs the same bootstrap, adapter resolution, artifact upsert, or",
+        # Binary Preflight Philosophy — pins the lazy-preflight contract so
+        # that future edits cannot silently drop the "declare, detect, ask"
+        # loop or the CHARNESS_BASELINE / CHARNESS_BINARY_PREFLIGHT names.
+        "## Binary Preflight Philosophy",
+        "Public skills must not silently assume non-baseline binaries",
+        "CHARNESS_BASELINE",
+        "Preflight is lazy, not eager",
+        "CHARNESS_BINARY_PREFLIGHT=degraded",
+        "Auto-install is forbidden",
+        "Silent skip is forbidden",
     ),
     "skills/public/spec/SKILL.md": (
         "## Contract Shaping",

@@ -27,9 +27,11 @@ By default, `handoff` writes its durable artifact to
 `.agents/handoff-adapter.yaml`.
 
 ```bash
+# Required Tools: rg
+# Missing-binary protocol: create-skill/references/binary-preflight.md
 # 1. current handoff and adjacent plan or roadmap context
 sed -n '1,220p' <resolved-handoff-artifact> 2>/dev/null || true
-rg -n "Session|Goal|Deliverables|Exit criteria|Next Session|Discuss" docs skill-outputs .agents 2>/dev/null || true
+rg -n "Session|Goal|Deliverables|Exit criteria|Next Session|Discuss" docs skill-outputs .agents
 
 # 2. current repo state
 git status --short

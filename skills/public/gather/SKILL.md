@@ -39,16 +39,18 @@ By default, `gather` writes its durable artifact to
 `.agents/gather-adapter.yaml`.
 
 ```bash
+# Required Tools: rg
+# Missing-binary protocol: create-skill/references/binary-preflight.md
 # 1. local context and existing knowledge assets
 rg --files docs skills
 sed -n '1,220p' <resolved-gather-artifact> 2>/dev/null || true
 rg -n "knowledge|source|reference|vendor|upstream|artifact|gather" .
 
 # 2. optional adjacent handoff or task context
-rg -n "Workflow Trigger|Current State|Next Session|Current Slice|Success Criteria" docs skill-outputs .agents 2>/dev/null || true
+rg -n "Workflow Trigger|Current State|Next Session|Current Slice|Success Criteria" docs skill-outputs .agents
 
 # 3. direct local targets when the user named a path
-rg -n "" <named-path> 2>/dev/null || true
+rg -n "" <named-path>
 ```
 
 If the source already exists locally in the repo or workspace, read it before

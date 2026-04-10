@@ -14,6 +14,7 @@ Every invocation starts here. Read only the files that affect the current
 change.
 
 ```bash
+# Required Tools: rg
 # 1. charness boundary and migration context
 sed -n '1,220p' README.md
 sed -n '1,240p' docs/master-plan.md
@@ -114,6 +115,39 @@ skill before writing from scratch.
 - Keep `SKILL.md` concise. If the body approaches 200 lines, move detail into
   `references/`.
 
+## Binary Preflight Philosophy
+
+Public skills must not silently assume non-baseline binaries. If a Bootstrap
+step calls a tool outside `CHARNESS_BASELINE` (currently `sh`, `git`,
+`python3`, `sed`, `find`, `awk`, `grep`, and basic coreutils), the skill
+declares it inline with a `# Required Tools: <name>` comment inside the
+same fenced block and points to `references/binary-preflight.md` somewhere
+in its body.
+
+Preflight is lazy, not eager: the skill runs its Bootstrap commands and only
+enters the preflight protocol when a command actually fails with exit 127 or
+emits the `MISSING_BIN: <name>` sentinel. On detection the agent stops, tells
+the user which binary is missing and why the step needs it, proposes the
+install command from the mapping table in `references/binary-preflight.md`,
+and waits for explicit consent before installing. Auto-install is forbidden.
+Silent skip is forbidden.
+
+Non-interactive callers use `CHARNESS_BINARY_PREFLIGHT=degraded` so missing
+binaries log `MISSING_BIN: <name> (degraded)` and skip only the affected step,
+keeping the rest of the skill running with the degradation recorded in the
+skill's durable artifact.
+
+Failures must actually propagate. Bootstrap fences that wrap non-baseline
+calls in `2>/dev/null || true` swallow the `command not found` signal and
+turn the lazy preflight into a no-op. Either drop the swallow on the
+non-baseline call or guard it with a `command -v` sentinel; see the full
+pattern in `references/binary-preflight.md`.
+
+When a binary is owned by a support skill (e.g. `gather-slack` needing
+`jq`), the public skill declares the support skill, not the binary. The
+support skill's `capability.json` is the single source of truth for its own
+readiness probe.
+
 ## References
 
 - `references/portable-authoring.md`
@@ -121,3 +155,4 @@ skill before writing from scratch.
 - `references/preset-conventions.md`
 - `references/integration-seams.md`
 - `references/runtime-capabilities.md`
+- `references/binary-preflight.md`

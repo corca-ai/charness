@@ -60,6 +60,8 @@ python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root . --preset-id portable-
 ```
 
 ```bash
+# Required Tools: rg
+# Missing-binary protocol: create-skill/references/binary-preflight.md
 # 1. current quality artifact and adjacent contracts
 sed -n '1,220p' <resolved-quality-artifact> 2>/dev/null || true
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true

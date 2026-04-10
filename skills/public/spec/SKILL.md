@@ -17,6 +17,8 @@ settled up front. Sometimes it becomes sharper while implementation proceeds.
 Read the current concept artifacts before inventing new structure.
 
 ```bash
+# Required Tools: rg
+# Missing-binary protocol: create-skill/references/binary-preflight.md
 # 1. current concept and adjacent context
 rg --files docs skills
 sed -n '1,220p' docs/handoff.md
