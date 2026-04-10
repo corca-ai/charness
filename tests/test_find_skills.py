@@ -63,6 +63,14 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
                     "grant_ids": ["github.repo.read"],
                     "permission_scopes": ["repo:read"],
                 },
+                "readiness_checks": [
+                    {
+                        "check_id": "github-auth",
+                        "summary": "GitHub auth is configured.",
+                        "commands": ["gh auth status"],
+                        "success_criteria": ["exit_code:0"],
+                    }
+                ],
                 "version_expectation": {"policy": "advisory", "constraint": "latest"},
             },
             ensure_ascii=False,
@@ -95,6 +103,12 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
                 "grant_ids": ["github.repo.read"],
                 "permission_scopes": ["repo:read"],
             },
+            "readiness_checks": [
+                {
+                    "check_id": "github-auth",
+                    "summary": "GitHub auth is configured.",
+                }
+            ],
             "path": "integrations/tools/example.json",
             "source": "local-integration",
             "layer": "external integration",

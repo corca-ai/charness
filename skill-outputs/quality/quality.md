@@ -124,6 +124,8 @@ What was actually runnable today:
   understand access shape.
 - control-plane manifests can now declare setup `readiness_checks`, and doctor
   distinguishes `not-ready` from plain missing/unhealthy states.
+- discovery and authoring contracts now understand readiness too, instead of
+  leaving it as a control-plane-only concern.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -419,6 +421,21 @@ Evidence:
 - `scripts/doctor.py`
 - `tests/test_control_plane.py`
 - `docs/external-integrations.md`
+
+### 19. Readiness now reaches discovery and authoring, not only doctor
+
+`find-skills` now exposes readiness-check summaries in integration discovery,
+and `create-skill` tells maintainers to express setup prerequisites as
+manifest probes instead of leaving them buried in operator prose. That keeps
+setup-readiness knowledge aligned across authoring, discovery, and control
+plane.
+
+Evidence:
+
+- `skills/public/find-skills/scripts/list_capabilities.py`
+- `tests/test_find_skills.py`
+- `skills/public/create-skill/SKILL.md`
+- `skills/public/create-skill/references/integration-seams.md`
 
 ## Commands Run
 

@@ -34,6 +34,7 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "if an upstream support skill already exists, prefer reference, sync, or a",
         "keep manifest",
         "metadata rich enough to reveal capability kind and supported access modes",
+        "express them as manifest readiness checks",
         "If a skill needs the same bootstrap, adapter resolution, artifact upsert, or",
     ),
     "skills/public/spec/SKILL.md": (

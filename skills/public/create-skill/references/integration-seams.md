@@ -30,6 +30,8 @@ The canonical contract is [manifest.schema.json](/home/ubuntu/charness/integrati
 - prefer grant-first, then authenticated binary, then env fallback
 - keep manifest metadata rich enough for discovery surfaces to expose what kind
   of capability exists and which access modes it supports
+- declare readiness probes in the manifest when setup prerequisites should fail
+  closed before runtime use
 - define degradation behavior when the tool is missing or stale
 - prefer `reference`, `copy`, `symlink`, or `generated_wrapper` explicitly;
   never make sync strategy implicit

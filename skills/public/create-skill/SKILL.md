@@ -62,6 +62,8 @@ skill before writing from scratch.
      secret assumptions in the skill body
    - when discovery surfaces should expose the dependency, keep manifest
      metadata rich enough to reveal capability kind and supported access modes
+   - when setup prerequisites matter, express them as manifest readiness checks
+     instead of burying them in operator prose only
 5. Implement the smallest coherent package.
    - `SKILL.md` contains trigger contract and decision skeleton only
    - move schemas, examples, and theory into `references/`

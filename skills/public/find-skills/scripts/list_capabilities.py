@@ -102,6 +102,13 @@ def integrations(root: Path) -> list[dict[str, object]]:
                 "kind": data.get("kind", "unknown"),
                 "access_modes": data.get("access_modes", []),
                 "capability_requirements": data.get("capability_requirements", {}),
+                "readiness_checks": [
+                    {
+                        "check_id": check["check_id"],
+                        "summary": check["summary"],
+                    }
+                    for check in data.get("readiness_checks", [])
+                ],
                 "path": str(manifest.relative_to(root)),
                 "source": "local-integration",
                 "layer": "external integration",
