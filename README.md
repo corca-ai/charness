@@ -125,6 +125,7 @@ Codex-compatible plugin root.
 Checked-in generated files:
 
 - `.claude-plugin/plugin.json`
+- `.claude-plugin/marketplace.json`
 - `.codex-plugin/plugin.json`
 - `.agents/plugins/marketplace.json`
 
@@ -144,27 +145,35 @@ Updates belong to the install or operator layer, not to individual skill runs.
 
 ### Claude Code
 
-Documented local development path:
+Canonical shared-install path:
+
+```bash
+/plugin marketplace add corca-ai/charness
+/plugin install charness@corca-charness
+```
+
+This repo now carries a checked-in Claude marketplace file at
+`.claude-plugin/marketplace.json`, so a pushed GitHub repo can act as a
+single-plugin marketplace as well as a plugin root.
+
+Practical implication:
+
+- shared install should use the marketplace flow
+- local development can still use:
 
 ```bash
 claude --plugin-dir /absolute/path/to/charness
 ```
 
-This is the safest current path because Claude's official docs explicitly
-document `--plugin-dir` for local plugin testing and recommend marketplaces for
-shared distribution.
-
-Practical implication:
-
-- local development and validation can treat this repo root as the plugin root
-- wider public distribution should still assume a marketplace-oriented flow
-  until direct repo install is confirmed by experiment
-
 Update model:
 
-- local `--plugin-dir` usage picks up repo changes directly
-- installed marketplace copies should update through Claude's plugin update or
-  marketplace update flow
+- update the marketplace if needed, then:
+
+```bash
+/plugin update charness@corca-charness
+```
+
+- local `--plugin-dir` usage still picks up repo changes directly
 - do not add runtime self-update checks to skills
 
 ### Codex
@@ -182,8 +191,9 @@ Practical implication:
 
 - local development can treat this repo root as both marketplace root and
   plugin root
-- public distribution should still be treated as experimental until direct repo
-  install is confirmed against a pushed GitHub repo
+- official docs still describe repo-local or personal marketplace installation,
+  so GitHub-backed public install remains a follow-up experiment rather than a
+  guaranteed path today
 
 Update model:
 

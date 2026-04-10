@@ -66,13 +66,40 @@ def build_codex_marketplace(manifest: dict, *, source_path: str) -> dict:
     }
 
 
+def build_claude_marketplace(manifest: dict, *, source_path: str) -> dict:
+    claude_marketplace = manifest["claude"]["marketplace"]
+    return {
+        "name": claude_marketplace["name"],
+        "owner": {
+            "name": manifest["author"]["name"],
+        },
+        "metadata": {
+            "description": manifest["summary"],
+            "version": manifest["version"],
+        },
+        "plugins": [
+            {
+                "name": manifest["package_id"],
+                "source": source_path,
+                "version": manifest["version"],
+                "description": manifest["summary"],
+            }
+        ],
+    }
+
+
 def expected_root_artifacts(manifest: dict) -> list[tuple[str, dict]]:
-    marketplace = manifest["codex"]["repo_marketplace"]
+    codex_marketplace = manifest["codex"]["repo_marketplace"]
+    claude_marketplace = manifest["claude"]["marketplace"]
     return [
         (manifest["codex"]["manifest_path"], manifest["codex"]["manifest"]),
         (manifest["claude"]["manifest_path"], manifest["claude"]["manifest"]),
         (
-            marketplace["path"],
-            build_codex_marketplace(manifest, source_path=marketplace["repo_root_source_path"]),
+            claude_marketplace["path"],
+            build_claude_marketplace(manifest, source_path=claude_marketplace["source_path"]),
+        ),
+        (
+            codex_marketplace["path"],
+            build_codex_marketplace(manifest, source_path=codex_marketplace["repo_root_source_path"]),
         ),
     ]

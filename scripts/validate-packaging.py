@@ -139,27 +139,49 @@ def validate_codex(package_id: str, version: str, summary: str, data: object) ->
 def validate_root_install_artifacts(root: Path, data: dict[str, object]) -> None:
     codex = data["codex"]
     claude = data["claude"]
-    marketplace = codex["repo_marketplace"]
+    codex_marketplace = codex["repo_marketplace"]
     expected_files = (
         (codex["manifest_path"], codex["manifest"], "codex.manifest_path"),
         (claude["manifest_path"], claude["manifest"], "claude.manifest_path"),
         (
-            marketplace["path"],
+            claude["marketplace"]["path"],
+            {
+                "name": claude["marketplace"]["name"],
+                "owner": {
+                    "name": data["author"]["name"],
+                },
+                "metadata": {
+                    "description": data["summary"],
+                    "version": data["version"],
+                },
+                "plugins": [
+                    {
+                        "name": data["package_id"],
+                        "source": claude["marketplace"]["source_path"],
+                        "version": data["version"],
+                        "description": data["summary"],
+                    }
+                ],
+            },
+            "claude.marketplace.path",
+        ),
+        (
+            codex_marketplace["path"],
             {
                 "name": data["package_id"],
-                "interface": {"displayName": marketplace["display_name"]},
+                "interface": {"displayName": codex_marketplace["display_name"]},
                 "plugins": [
                     {
                         "name": data["package_id"],
                         "source": {
                             "source": "local",
-                            "path": marketplace["repo_root_source_path"],
+                            "path": codex_marketplace["repo_root_source_path"],
                         },
                         "policy": {
                             "installation": "AVAILABLE",
                             "authentication": "ON_INSTALL",
                         },
-                        "category": marketplace["category"],
+                        "category": codex_marketplace["category"],
                     }
                 ],
             },
@@ -188,6 +210,14 @@ def validate_claude(package_id: str, version: str, summary: str, repository: str
         raise ValidationError("`claude.manifest.description` must match top-level `summary`")
     if validate_string(manifest.get("repository"), "claude.manifest.repository") != repository:
         raise ValidationError("`claude.manifest.repository` must match top-level `repository`")
+    marketplace = data.get("marketplace")
+    if not isinstance(marketplace, dict):
+        raise ValidationError("`claude.marketplace` must be an object")
+    if validate_string(marketplace.get("path"), "claude.marketplace.path") != ".claude-plugin/marketplace.json":
+        raise ValidationError("`claude.marketplace.path` must be `.claude-plugin/marketplace.json`")
+    validate_slug(marketplace.get("name"), "claude.marketplace.name")
+    if validate_string(marketplace.get("source_path"), "claude.marketplace.source_path") != "./":
+        raise ValidationError("`claude.marketplace.source_path` must be `./`")
 
 
 def validate_packaging_manifest(path: Path, root: Path, *, validate_root_artifacts: bool = True) -> None:

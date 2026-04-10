@@ -48,6 +48,7 @@ The repo root itself also carries checked-in generated host manifests so the
 GitHub repository can act as a direct plugin root during install experiments:
 
 - `.claude-plugin/plugin.json`
+- `.claude-plugin/marketplace.json`
 - `.codex-plugin/plugin.json`
 - `.agents/plugins/marketplace.json`
 
@@ -118,7 +119,8 @@ leaving a GitHub-visible install surface.
 
 Operationally this means:
 
-- Claude local development can load the repo root with `--plugin-dir`
+- Claude shared install can treat the repo as a single-plugin marketplace
+- Claude local development can still load the repo root with `--plugin-dir`
 - Codex local development can load the repo root through the checked-in repo
   marketplace file
 - public GitHub install remains a testable hypothesis, not an already-proven

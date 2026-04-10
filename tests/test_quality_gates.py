@@ -179,6 +179,11 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
                         "description": "Demo package.",
                         "repository": "https://example.com/demo",
                     },
+                    "marketplace": {
+                        "path": ".claude-plugin/marketplace.json",
+                        "name": "demo-marketplace",
+                        "source_path": "./",
+                    },
                 },
             },
             indent=2,
@@ -189,6 +194,7 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
     result = run_script("scripts/sync_root_plugin_manifests.py", "--repo-root", str(repo), "--package-id", "demo")
     assert result.returncode == 0, result.stderr
     assert (repo / ".claude-plugin" / "plugin.json").exists()
+    assert (repo / ".claude-plugin" / "marketplace.json").exists()
     assert (repo / ".codex-plugin" / "plugin.json").exists()
     assert (repo / ".agents" / "plugins" / "marketplace.json").exists()
 
@@ -530,6 +536,11 @@ def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) ->
                         "description": "Demo package.",
                         "repository": "https://example.com/demo",
                     },
+                    "marketplace": {
+                        "path": ".claude-plugin/marketplace.json",
+                        "name": "demo-marketplace",
+                        "source_path": "./",
+                    },
                 },
             },
             ensure_ascii=False,
@@ -595,6 +606,11 @@ def test_validate_packaging_rejects_unknown_top_level_field(tmp_path: Path) -> N
                         "version": "0.0.0-dev",
                         "description": "Demo package.",
                         "repository": "https://example.com/demo",
+                    },
+                    "marketplace": {
+                        "path": ".claude-plugin/marketplace.json",
+                        "name": "demo-marketplace",
+                        "source_path": "./",
                     },
                 },
                 "unexpected": True,

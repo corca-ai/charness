@@ -15,6 +15,7 @@ into host-specific plugin surfaces.
 - generated Claude and Codex manifests should derive from this metadata instead
   of becoming manually curated policy copies
 - checked-in root host manifests also derive from this metadata:
+  - `.claude-plugin/marketplace.json`
   - `.claude-plugin/plugin.json`
   - `.codex-plugin/plugin.json`
   - `.agents/plugins/marketplace.json`

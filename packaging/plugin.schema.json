@@ -228,7 +228,8 @@
       "additionalProperties": false,
       "required": [
         "manifest_path",
-        "manifest"
+        "manifest",
+        "marketplace"
       ],
       "properties": {
         "manifest_path": {
@@ -236,6 +237,30 @@
         },
         "manifest": {
           "$ref": "#/definitions/claudeManifest"
+        },
+        "marketplace": {
+          "$ref": "#/definitions/claudeMarketplace"
+        }
+      }
+    },
+    "claudeMarketplace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "name",
+        "source_path"
+      ],
+      "properties": {
+        "path": {
+          "const": ".claude-plugin/marketplace.json"
+        },
+        "name": {
+          "$ref": "#/definitions/slug"
+        },
+        "source_path": {
+          "type": "string",
+          "pattern": "^\\./.*$"
         }
       }
     }
