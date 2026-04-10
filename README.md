@@ -132,10 +132,23 @@ The detailed multi-session plan lives in:
 
 ## Plugin Install Surface
 
-This repository is shaped so the repo root itself can act as a Claude- or
-Codex-compatible plugin root.
+`charness` is intended to install as one plugin bundle.
 
-Checked-in generated files:
+Installing this repo as a plugin installs the repo-owned harness surface
+together:
+
+- public skills under `skills/public/`
+- support skills under `skills/support/`
+- profiles under `profiles/`
+- presets under `presets/`
+- integration manifests under `integrations/tools/`
+
+It does not automatically install external binaries or external upstream plugin
+repos. Those stay governed by integration manifests and host/runtime capability
+detection.
+
+The repo root itself is shaped so it can act as a Claude- or Codex-compatible
+plugin root. Checked-in generated files:
 
 - `.claude-plugin/plugin.json`
 - `.claude-plugin/marketplace.json`
@@ -147,9 +160,9 @@ via `python3 scripts/sync_root_plugin_manifests.py --repo-root .`.
 
 That means:
 
-- the repo remains the host-neutral source of truth
-- plugin manifests are checked in for direct install experiments and easier
-  updates
+- the repo stays the host-neutral source of truth
+- host install surfaces are generated from one shared manifest
+- the same checkout can back both Claude and Codex
 - runtime skill execution should not self-update the plugin
 
 Updates belong to the install or operator layer, not to individual skill runs.
@@ -209,43 +222,57 @@ It stays read-only:
 
 ## Install And Update
 
-### Claude Code
+The install contract should be usable by both humans and agents. The commands
+below are intended to be copy-pasteable in either workflow.
 
-Canonical shared-install path:
+### What Gets Installed
+
+Regardless of host, the plugin unit is this repo checkout, not an à la carte
+selection of individual skills.
+
+Expected bundled content:
+
+- `skills/public/`
+- `skills/support/`
+- `profiles/`
+- `presets/`
+- `integrations/tools/`
+
+Expected non-bundled content:
+
+- external binaries such as `cautilus`
+- host-owned prompts, presets, or product logic
+- upstream plugin repos that `charness` only references as integrations
+
+### Claude Code Only
+
+Verified local development path:
+
+```bash
+claude --plugin-dir /absolute/path/to/charness
+```
+
+Verified smoke check:
+
+```bash
+claude --print --plugin-dir /absolute/path/to/charness \
+  "Return exactly one line: charness-smoke"
+```
+
+Verified shared-install path:
 
 ```bash
 /plugin marketplace add corca-ai/charness
 /plugin install charness@corca-charness
 ```
 
-This repo now carries a checked-in Claude marketplace file at
-`.claude-plugin/marketplace.json`, so a pushed GitHub repo can act as a
-single-plugin marketplace as well as a plugin root.
-
-Practical implication:
-
-- shared install should use the marketplace flow
-- local development can still use:
-
-```bash
-claude --plugin-dir /absolute/path/to/charness
-```
-
 Update model:
 
-- update the marketplace if needed, then:
-
-```bash
-/plugin update charness@corca-charness
-```
-
-- local `--plugin-dir` usage still picks up repo changes directly
+- for a marketplace install, run `/plugin update charness@corca-charness`
+- for a local checkout install, update the checkout itself
 - do not add runtime self-update checks to skills
-- hosts that want a startup advisory can render
-  `python3 scripts/plugin_preamble.py --repo-root /absolute/path/to/charness`
-  before user work begins
 
-### Codex
+### Codex Only
 
 Documented local install path:
 
@@ -253,25 +280,39 @@ Documented local install path:
 - point `source.path` at the plugin directory with a `./`-prefixed relative
   path
 
-This repo now ships that marketplace file checked in, with `source.path`
-pointing at the repo root.
+This repo ships that marketplace file checked in, with `source.path` pointing
+at the repo root. That makes one checkout usable as both marketplace root and
+plugin root for local Codex testing.
 
-Practical implication:
+Current status:
 
-- local development can treat this repo root as both marketplace root and
-  plugin root
-- official docs still describe repo-local or personal marketplace installation,
-  so GitHub-backed public install remains a follow-up experiment rather than a
-  guaranteed path today
+- local marketplace-based testing is the documented path
+- public GitHub-backed discover/install proof is still pending and should be
+  treated as an explicit follow-up check, not as a claimed guarantee
 
 Update model:
 
-- update the repo copy that `source.path` points to
+- update the checkout that `source.path` points to
 - restart or reload Codex so the install sees the new files
 - do not check for updates during skill execution
-- hosts that want a startup advisory can render
-  `python3 scripts/plugin_preamble.py --repo-root /absolute/path/to/charness`
-  before user work begins
+
+### Claude And Codex On One Checkout
+
+Recommended dual-host shape:
+
+1. Clone `charness` once.
+2. Point Claude at that checkout with `claude --plugin-dir /absolute/path/to/charness`.
+3. Point Codex at the same checkout through the checked-in `.agents/plugins/marketplace.json`.
+4. Update the checkout once when you want both hosts to move together.
+
+Optional startup advisory:
+
+```bash
+python3 scripts/plugin_preamble.py --repo-root /absolute/path/to/charness
+```
+
+This stays read-only and reports install-surface drift plus host-specific
+update hints.
 
 ## Repository Shape
 

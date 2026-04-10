@@ -4,7 +4,7 @@
 
 - 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md), [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md), [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md), [integrations/tools/cautilus.json](/home/ubuntu/charness/integrations/tools/cautilus.json), [.agents/cautilus-adapter.yaml](/home/ubuntu/charness/.agents/cautilus-adapter.yaml)를 읽고 `cautilus` consumer 상태와 다음 evaluator slice를 확인한다.
 - 기본 consumer smoke가 다시 필요하면 standalone install을 가정하지 말고 clean upstream checkout이나 release install surface로 `cautilus adapter resolve`, `cautilus doctor`, `cautilus mode evaluate --mode full_gate`를 먼저 돌린다. 이 머신에서는 2026-04-10에 `/home/ubuntu/cautilus` checkout으로 해당 smoke가 이미 통과했다.
-- 그다음 slice는 checked-in root host manifests direct-install 실험과 maintained scenario wiring 중 더 block되는 쪽부터 잡는다.
+- 그다음 slice는 fresh machine 기준 public install proof를 먼저 잡는다. Claude는 shared marketplace install, Codex는 marketplace-based local/public discovery path를 우선 검증하고, 그 결과를 확인한 뒤 maintained scenario wiring으로 넘어간다.
 - evaluator contract를 볼 때는 [integrations/tools/cautilus.json](/home/ubuntu/charness/integrations/tools/cautilus.json), [.agents/cautilus-adapter.yaml](/home/ubuntu/charness/.agents/cautilus-adapter.yaml), [docs/support-skill-policy.md](/home/ubuntu/charness/docs/support-skill-policy.md)를 같이 읽는다.
 - executable-spec guidance를 이어서 다룰 때는 [skills/public/spec/SKILL.md](/home/ubuntu/charness/skills/public/spec/SKILL.md), [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), [specdown-quality.md](/home/ubuntu/charness/presets/specdown-quality.md)를 먼저 읽는다.
 
@@ -136,11 +136,11 @@
 ## Next Session
 
 1. pre-`cautilus` deferred product decisions는 [deferred-decisions.md](/home/ubuntu/charness/docs/deferred-decisions.md)에서 2026-04-10 batch로 닫혔다. 다음 세션 시작 시에는 이 문서의 reopen trigger만 빠르게 확인하고 바로 integration work로 들어간다.
-2. Claude direct-install은 확인됐고 root `cautilus` consumer smoke도 이미 끝났으니, 다음 session의 첫 구현 slice는 maintained scenario wiring으로 잡는다.
+2. Claude direct-install은 확인됐고 root `cautilus` consumer smoke도 이미 끝났지만, 다음 session의 첫 구현 slice는 fresh machine public install proof다. Claude shared install, Codex discover/install visibility, dual-host same-checkout update model을 먼저 검증한다.
 3. 첫 maintained scenario slice에서는 `evaluator-required` public skill 중 어디를 먼저 고정할지 정하고, root adapter를 유지한 채 named `cautilus-adapters/`가 당장 필요한지 판단한다.
 4. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 current matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.
 5. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정하고, evaluator-required 경계와 HITL fallback 경계를 함께 문서화한다.
-6. 현재 로컬 `codex` CLI surface로는 real install proof를 만들기 어렵다. Codex 쪽 follow-up은 공개 install/validate path가 확인되거나 richer local host surface를 찾았을 때 다시 잡는다.
+6. 현재 로컬 `codex` CLI surface로는 real install proof를 만들기 어려웠다. Codex 쪽 follow-up은 다른 머신에서 fresh clone + marketplace path로 실제 discover/install 여부를 보는 방식으로 진행한다.
 7. `quality`의 offline supply-chain gate 위에 online advisory/audit seam을 추가할지 다시 판단한다. 필요하면 npm/pnpm/uv용 optional wrapper를 만들되, network 의존성과 triage 책임을 분명히 남긴다.
 8. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
 9. downstream host가 first `organization`-scope preset을 실제로 정의할 때, 현재 preset contract를 그대로 쓸지 보고 필요한 최소 metadata만 더한다.
