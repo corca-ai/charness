@@ -29,6 +29,8 @@ Preferred deterministic gates:
 - duplicate detection for copied helper logic
 - duplicate detection for checked-in docs and reference bodies
 - markdown and link checks for checked-in skill docs
+- repo-owned validators that fail on bare internal markdown references in prose
+  when the project expects document mentions to stay clickable
 
 Preferred manual findings:
 

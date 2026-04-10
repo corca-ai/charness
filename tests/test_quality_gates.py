@@ -610,6 +610,46 @@ def test_check_doc_links_rejects_foreign_absolute_path(tmp_path: Path) -> None:
     assert "foreign absolute link" in result.stderr
 
 
+def test_check_doc_links_rejects_bare_internal_markdown_reference(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs_dir = repo / "docs"
+    docs_dir.mkdir(parents=True)
+    (repo / "README.md").write_text(
+        "# Demo\n\nSee docs/guide.md before editing.\n",
+        encoding="utf-8",
+    )
+    (docs_dir / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    result = run_script("scripts/check-doc-links.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "bare internal markdown reference" in result.stderr
+
+
+def test_check_doc_links_allows_internal_markdown_reference_in_code(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs_dir = repo / "docs"
+    docs_dir.mkdir(parents=True)
+    (repo / "README.md").write_text(
+        "\n".join(
+            [
+                "# Demo",
+                "",
+                "Use the linked guide: [guide](docs/guide.md).",
+                "",
+                "`docs/guide.md` can still appear in inline code.",
+                "",
+                "```bash",
+                "sed -n '1,20p' docs/guide.md",
+                "```",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (docs_dir / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    result = run_script("scripts/check-doc-links.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
 def test_check_duplicates_passes_clean_repo() -> None:
     result = run_script("scripts/check-duplicates.py", "--repo-root", str(ROOT), "--json", "--fail-on-match")
     assert result.returncode == 0, result.stderr

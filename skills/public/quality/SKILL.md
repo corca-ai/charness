@@ -80,9 +80,9 @@ git status --short
 ```
 
 If the adapter is missing, use inferred defaults and continue. The purpose of
-`quality` is to give first-use value before a repo has a perfect quality setup.
-Scaffold the adapter when the repo already has stable gate commands worth
-recording.
+`quality` is to give first-use value before a repo has a perfect quality
+setup. Scaffold the adapter when the repo already has stable gate commands
+worth recording.
 
 ## Workflow
 
@@ -114,7 +114,10 @@ recording.
    - when the repo authors skills, include skill package quality, portable
      bootstrap seams, and shared-helper drift in these lenses
    - when docs are part of the operating surface, include duplicated guidance,
-     conflicting copies, and source-of-truth drift
+     conflicting copies, source-of-truth drift, and clickable repo-doc links in
+     prose
+   - treat external URL health separately from repo-local markdown-link
+     discipline
    - when executable specs exist, inspect whether they stay boundary-focused,
      duplicate lower-level tests, or rely on shell wrappers where direct
      adapters would be clearer and faster
@@ -168,24 +171,18 @@ The result should usually include:
 - Do not recommend gates the repo cannot realistically run without saying why.
 - Do not confuse gate presence with gate usefulness.
 - Do not ignore runtime drift just because a gate still passes functionally.
-- Do not treat slow or broad executable specs as automatically strong quality
-  when they mostly duplicate cheaper deterministic coverage.
+- Do not treat slow or broad executable specs as automatically strong quality when they mostly duplicate cheaper deterministic coverage.
 - Do not recommend verbose or permanent logs without naming who will read them and how they stay bounded.
 - Do not leave an automatable quality rule as prose-only guidance when a
   linter, validator, test, hook, or script could own it.
 - If you stop short of an obvious repo-owned deterministic gate, name that as
   an unresolved enforcement gap explicitly.
-- Do not propose generic "add more tests" or "improve security" without naming
-  the actual seam and the next concrete setup.
-- If a gate already exists, prefer tightening or reusing it before adding a new
-  parallel tool.
-- If a stronger check would require an external tool, support skill, or
-  permission, say so explicitly.
-- If a missing binary or local setup step would materially improve confidence,
-  recommend installing it with the reason and the exact command or package
-  family to use.
-- Do not pretend a conceptual boundary problem is solved just because duplicate
-  text was linted away; semantic boundary questions still need concept review.
+- Do not propose generic "add more tests" or "improve security" without naming the actual seam and the next concrete setup.
+- If a gate already exists, prefer tightening or reusing it before adding a new parallel tool.
+- If a stronger check would require an external tool, support skill, or permission, say so explicitly.
+- If a missing binary or local setup step would materially improve confidence, recommend installing it with the reason and exact command or package family.
+- Keep repo-local markdown-link discipline separate from external URL health when the repo needs both.
+- Do not pretend a conceptual boundary problem is solved just because duplicate text was linted away; semantic boundary questions still need concept review.
 
 ## References
 

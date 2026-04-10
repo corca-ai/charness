@@ -21,6 +21,9 @@ guidance around cost, overlap, and adapter depth.
   as a current snapshot instead of an ever-growing session log.
 - `scripts/validate-maintainer-setup.py` now fails closed when this clone has
   not actually activated the checked-in pre-push hook.
+- `scripts/check-doc-links.py` now owns two linked doc rules together:
+  referenced markdown targets must exist, and prose mentions of repo-owned
+  markdown docs must stay clickable instead of drifting into bare paths.
 - `scripts/check-links-external.sh` now scopes `lychee` to extracted external
   `http(s)` URLs instead of scanning repo-local absolute file links and
   reporting them all as excluded; online validation is now explicit opt-in via
@@ -62,6 +65,9 @@ guidance around cost, overlap, and adapter depth.
   metadata instead of spending its budget excluding repo-local absolute paths,
   and it no longer blocks routine pre-push runs on unauthenticated network
   backoff by default.
+- internal markdown-link discipline now has a repo-owned deterministic owner
+  again instead of being implicitly delegated to a network-oriented link
+  checker that never enforced it.
 
 ## Weak
 
@@ -91,6 +97,7 @@ guidance around cost, overlap, and adapter depth.
 - `cat skill-outputs/quality/runtime-signals.json`
 - `python3 scripts/doctor.py --repo-root . --tool-id gws-cli --json`
 - `python3 scripts/validate-maintainer-setup.py --repo-root .`
+- `python3 scripts/check-doc-links.py --repo-root .`
 - `python3 scripts/list_external_links.py --repo-root .`
 - `CHARNESS_LINK_CHECK_ONLINE=1 ./scripts/check-links-external.sh`
 
