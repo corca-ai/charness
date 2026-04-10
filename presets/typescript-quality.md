@@ -1,3 +1,10 @@
+---
+name: typescript-quality
+description: "Sample vocabulary preset for TypeScript-oriented quality work in maintainer environments."
+preset_kind: sample-vocabulary
+install_scope: maintainer
+---
+
 # typescript-quality
 
 This preset is a shipped sample for TypeScript and mixed Node/TypeScript repos.

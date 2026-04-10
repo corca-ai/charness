@@ -114,6 +114,11 @@ def test_validate_profiles_passes_on_current_repo() -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_validate_presets_passes_on_current_repo() -> None:
+    result = run_script("scripts/validate-presets.py", "--repo-root", str(ROOT))
+    assert result.returncode == 0, result.stderr
+
+
 def test_validate_packaging_passes_on_current_repo() -> None:
     result = run_script("scripts/validate-packaging.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
@@ -143,6 +148,64 @@ def test_validate_profiles_rejects_missing_skill_reference(tmp_path: Path) -> No
     result = run_script("scripts/validate-profiles.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing artifact `handoff`" in result.stderr
+
+
+def test_validate_presets_rejects_organization_scope_without_product_slice(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    presets_dir = repo / "presets"
+    presets_dir.mkdir(parents=True)
+    (presets_dir / "bad-preset.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: bad-preset",
+                'description: "Bad preset."',
+                "preset_kind: sample-vocabulary",
+                "install_scope: organization",
+                "---",
+                "",
+                "# bad-preset",
+                "",
+                "## Intended Use",
+                "",
+                "Broken example.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    result = run_script("scripts/validate-presets.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "organization-scope presets must use `preset_kind: product-slice`" in result.stderr
+
+
+def test_validate_presets_rejects_product_slice_without_exposure_contract(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    presets_dir = repo / "presets"
+    presets_dir.mkdir(parents=True)
+    (presets_dir / "org-slice.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: org-slice",
+                'description: "Org slice."',
+                "preset_kind: product-slice",
+                "install_scope: organization",
+                "---",
+                "",
+                "# org-slice",
+                "",
+                "## Intended Use",
+                "",
+                "Missing exposure contract.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    result = run_script("scripts/validate-presets.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "product-slice presets must include an `## Exposure Contract` section" in result.stderr
 
 
 def test_check_python_lengths_rejects_too_long_function(tmp_path: Path) -> None:

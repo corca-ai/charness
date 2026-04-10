@@ -87,13 +87,14 @@
 - `gather` reusable provider surface의 첫 concrete manifests로 [github-gh.json](/home/ubuntu/charness/integrations/tools/github-gh.json), [google-public-export.json](/home/ubuntu/charness/integrations/tools/google-public-export.json), [notion-published-export.json](/home/ubuntu/charness/integrations/tools/notion-published-export.json), [slack-bot-export.json](/home/ubuntu/charness/integrations/tools/slack-bot-export.json)이 추가됐다. 이들은 `~/claude-plugins/plugins/cwf/skills/gather`의 existing implementation을 기준으로 provider별 capability/access/onboarding metadata를 repo-owned manifest로 고정한다.
 - generated support reference는 이제 access modes, capability requirements, config layers, reuse notes까지 포함하도록 두꺼워졌고, [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/google-public-export/REFERENCE.md), [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/notion-published-export/REFERENCE.md), [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/slack-bot-export/REFERENCE.md)도 추가됐다.
 - Ceal consumption model v1이 [ceal-consumption-model.md](/home/ubuntu/charness/docs/ceal-consumption-model.md)에 정리됐다. 핵심은 Ceal repo maintainer 환경은 full `charness`를 소비하고, Ceal Slack app 조직 설치는 Ceal-owned preset을 install unit으로 삼는 dual consumption model이다.
+- preset contract가 한 단계 강해졌다. preset file은 이제 YAML-safe frontmatter로 `name`, `description`, `preset_kind`, `install_scope`를 가져야 하고, [validate-presets.py](/home/ubuntu/charness/scripts/validate-presets.py)가 이를 검증한다. shipped `charness` preset은 현재 전부 `maintainer` scope이고, future `organization` scope preset은 `product-slice` kind와 `## Exposure Contract` section을 요구한다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - support skill migrations and integration wrappers
   - extracted evaluation engine (`cautilus`) integration manifest
   - executable support-sync beyond the current reference-only seam
   - support control-plane lock artifact shaping beyond the current initial seam
-  - preset metadata contract strong enough to express downstream org-installable exposure slices
+  - the first concrete downstream org-installable preset in the host repo
 
 ## Next Session
 
@@ -102,7 +103,7 @@
 3. 그 다음 generated host manifests를 committed fixture로 둘지, 계속 temp export smoke만 유지할지 결정한다.
 4. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
 5. profile inheritance를 실제 merged bundle feature로 키울지 정하기 전까지는 현재 validator contract 안에서 metadata drift만 막는다.
-6. preset metadata를 “maintainer-facing defaults”와 “downstream org-installable product slice”를 함께 설명할 수 있는 stronger contract로 키울지 본다.
+6. Ceal repo 쪽에서 first `organization`-scope preset을 실제로 정의할 때, 방금 추가한 preset contract를 그대로 쓸지 보고 필요한 최소 metadata만 더한다.
 7. `Cautilus doctor`가 통과하는 root adapter를 유지하면서, richer evaluator surface가 필요해지면 named `cautilus-adapters/`를 설계한다.
 8. extracted evaluation engine용 integration manifest를 추가하고 control-plane contract에 연결한다.
 9. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 provisional matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.

@@ -1,3 +1,10 @@
+---
+name: python-quality
+description: "Sample vocabulary preset for Python-oriented quality work in maintainer environments."
+preset_kind: sample-vocabulary
+install_scope: maintainer
+---
+
 # python-quality
 
 This preset is a shipped sample for Python repos.

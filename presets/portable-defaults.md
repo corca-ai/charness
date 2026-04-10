@@ -1,3 +1,10 @@
+---
+name: portable-defaults
+description: "Neutral baseline preset for full-harness maintainer environments before any host-specific policy applies."
+preset_kind: portable-defaults
+install_scope: maintainer
+---
+
 # portable-defaults
 
 This preset exists to give migrated skills one neutral portable baseline before

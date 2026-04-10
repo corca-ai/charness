@@ -11,9 +11,24 @@ install exposes only one preset.
 ## Current Convention
 
 - canonical path: `presets/<preset-id>.md`
+- canonical format: YAML-safe frontmatter plus Markdown body
 - preset ids use lowercase slugs
+- required frontmatter fields: `name`, `description`, `preset_kind`,
+  `install_scope`
 - adapters record `preset_id` and `customized_from` when a preset was applied
 - profiles may reference preset ids, but presets do not replace profiles
+
+Current preset kinds:
+
+- `portable-defaults`: neutral full-harness defaults for maintainer contexts
+- `sample-vocabulary`: shipped example vocabulary, still maintainer-facing
+- `product-slice`: host-owned install surface for downstream organization
+  installs
+
+Current install scopes:
+
+- `maintainer`
+- `organization`
 
 ## Current Sample
 

@@ -20,13 +20,19 @@ not public skills and they are not mandatory runtime config.
 ## Rules
 
 - preset ids are lowercase slugs such as `portable-defaults`
-- the canonical checked-in file is `presets/<preset-id>.md` until a schema is
-  introduced
+- the canonical checked-in file is `presets/<preset-id>.md`
+- preset files should carry YAML-safe frontmatter with:
+  - `name`
+  - `description`
+  - `preset_kind`
+  - `install_scope`
 - applying a preset must be explicit
 - the adapter should record `preset_id` and `customized_from` when a preset was
   used
 - a preset may suggest defaults for integrations, but the actual tool contract
   still lives in the integration manifest
+- `maintainer` presets are allowed in `charness`; downstream
+  `organization`-scope presets should usually stay in the host repo
 
 ## Sample Preset
 

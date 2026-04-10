@@ -6,6 +6,7 @@ cd "$REPO_ROOT"
 
 python3 scripts/validate-skills.py --repo-root "$REPO_ROOT"
 python3 scripts/validate-profiles.py --repo-root "$REPO_ROOT"
+python3 scripts/validate-presets.py --repo-root "$REPO_ROOT"
 python3 scripts/validate-adapters.py --repo-root "$REPO_ROOT"
 python3 scripts/validate-integrations.py --repo-root "$REPO_ROOT"
 python3 scripts/validate-packaging.py --repo-root "$REPO_ROOT"
