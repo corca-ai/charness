@@ -19,6 +19,7 @@
 - `retro`는 `session`/`weekly` mode를 하나의 public skill 안에서 처리하고, adapter가 없을 때 `session`은 soft fallback, `weekly`는 adapter scaffold를 우선하는 방향으로 설계됐다.
 - `retro`의 핵심 가치는 self-growing/healing으로 잡았고, `Next Improvements`를 `workflow` / `capability` / `memory`로 나누는 방향이 반영됐다.
 - `retro`의 `weekly`는 이제 prior weekly artifact 비교, evidence summary, optional `snapshot_path`를 통한 compact snapshot까지 허용하되, `gstack`식 host-specific live state는 가져오지 않는 방향으로 정리됐다.
+- `retro` adapter contract와 example은 이제 optional `snapshot_path`를 이해하고, weekly guidance는 prior retro comparison과 narrative-only fallback를 명시적으로 요구한다.
 - Session 5 초안으로 [skills/public/ideation/SKILL.md](/home/ubuntu/charness/skills/public/ideation/SKILL.md)와 관련 references가 추가됐다.
 - `ideation`은 `interview`를 흡수하고, product/system/workflow concept shaping에 맞춰 problem lens + entity/stage lens를 함께 쓰되 `spec`으로 넘어가기 전 discovery-to-concept 단계에 머무르도록 설계됐다.
 - `ideation`은 living concept model, truth/edge, world modeling, and agent/human lenses 중심으로 재구성됐다.
@@ -181,8 +182,10 @@
 - [portable-authoring.md](/home/ubuntu/charness/skills/public/create-skill/references/portable-authoring.md)
 - [constitutional.json](/home/ubuntu/charness/profiles/constitutional.json)
 - [skills/public/retro/SKILL.md](/home/ubuntu/charness/skills/public/retro/SKILL.md)
+- [adapter-contract.md](/home/ubuntu/charness/skills/public/retro/references/adapter-contract.md)
 - [mode-guide.md](/home/ubuntu/charness/skills/public/retro/references/mode-guide.md)
 - [section-guide.md](/home/ubuntu/charness/skills/public/retro/references/section-guide.md)
+- [weekly-trends.md](/home/ubuntu/charness/skills/public/retro/references/weekly-trends.md)
 - [skills/public/ideation/SKILL.md](/home/ubuntu/charness/skills/public/ideation/SKILL.md)
 - [concept-architecture.md](/home/ubuntu/charness/skills/public/ideation/references/concept-architecture.md)
 - [truth-and-edge.md](/home/ubuntu/charness/skills/public/ideation/references/truth-and-edge.md)
