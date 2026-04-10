@@ -120,6 +120,9 @@
     "version_expectation": {
       "$ref": "#/definitions/versionExpectation"
     },
+    "capability_requirements": {
+      "$ref": "#/definitions/capabilityRequirements"
+    },
     "support_skill_source": {
       "$ref": "#/definitions/supportSkillSource"
     },
@@ -146,6 +149,15 @@
         "minLength": 1
       },
       "minItems": 1
+    },
+    "envVarList": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
     },
     "action": {
       "type": "object",
@@ -225,6 +237,21 @@
             "package_manager",
             "manual"
           ]
+        }
+      }
+    },
+    "capabilityRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "grant_ids": {
+          "$ref": "#/definitions/stringList"
+        },
+        "env_vars": {
+          "$ref": "#/definitions/envVarList"
+        },
+        "permission_scopes": {
+          "$ref": "#/definitions/stringList"
         }
       }
     },

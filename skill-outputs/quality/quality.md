@@ -117,6 +117,8 @@ What was actually runnable today:
 - `create-skill` now explicitly tells maintainers to keep integration manifests
   rich enough for discovery surfaces to expose capability kind and access
   modes, rather than leaving that requirement implicit.
+- integration manifests can now carry non-secret `capability_requirements`, and
+  discovery/validation paths understand those fields.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -369,6 +371,22 @@ Evidence:
 - `skills/public/create-skill/references/integration-seams.md`
 - `skills/public/create-skill/references/runtime-capabilities.md`
 - `scripts/check-skill-contracts.py`
+
+### 16. Non-secret capability requirements now have a schema-backed home
+
+The manifest layer can now describe non-secret capability requirements such as
+grant ids, env var names, and permission scopes. That is a useful midpoint:
+`charness` can model what an integration needs without yet committing to
+host-specific state directories or secret-file transport. Discovery surfaces
+and validation logic both understand the new metadata.
+
+Evidence:
+
+- `integrations/tools/manifest.schema.json`
+- `scripts/validate-integrations.py`
+- `skills/public/find-skills/scripts/list_capabilities.py`
+- `tests/test_control_plane.py`
+- `tests/test_find_skills.py`
 
 ## Commands Run
 

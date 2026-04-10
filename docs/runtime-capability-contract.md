@@ -49,6 +49,12 @@ Allowed:
 - permission scope names
 - install and grant instructions
 
+So manifests may record non-secret capability requirements such as:
+
+- `grant_ids`
+- `env_vars`
+- `permission_scopes`
+
 Not allowed:
 
 - checked-in API keys or tokens

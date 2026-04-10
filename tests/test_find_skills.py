@@ -59,6 +59,10 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
                     "healthcheck": {"commands": ["tool health"], "success_criteria": ["exit_code:0"]},
                 },
                 "access_modes": ["grant", "binary", "degraded"],
+                "capability_requirements": {
+                    "grant_ids": ["github.repo.read"],
+                    "permission_scopes": ["repo:read"],
+                },
                 "version_expectation": {"policy": "advisory", "constraint": "latest"},
             },
             ensure_ascii=False,
@@ -87,6 +91,10 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
             "id": "example",
             "kind": "external_binary",
             "access_modes": ["grant", "binary", "degraded"],
+            "capability_requirements": {
+                "grant_ids": ["github.repo.read"],
+                "permission_scopes": ["repo:read"],
+            },
             "path": "integrations/tools/example.json",
             "source": "local-integration",
             "layer": "external integration",

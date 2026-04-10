@@ -101,6 +101,7 @@ def integrations(root: Path) -> list[dict[str, object]]:
                 "id": data.get("tool_id", manifest.stem),
                 "kind": data.get("kind", "unknown"),
                 "access_modes": data.get("access_modes", []),
+                "capability_requirements": data.get("capability_requirements", {}),
                 "path": str(manifest.relative_to(root)),
                 "source": "local-integration",
                 "layer": "external integration",

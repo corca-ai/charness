@@ -45,6 +45,19 @@ def validate_access_mode_order(manifest: dict[str, object], path: Path) -> None:
         )
 
 
+def validate_capability_requirements(manifest: dict[str, object], path: Path) -> None:
+    access_modes = manifest.get("access_modes", [])
+    if not isinstance(access_modes, list):
+        return
+    requirements = manifest.get("capability_requirements")
+    if not isinstance(requirements, dict):
+        requirements = {}
+    if "grant" in access_modes and not requirements.get("grant_ids"):
+        raise ValidationError(f"{path}: grant access requires capability_requirements.grant_ids")
+    if "env" in access_modes and not requirements.get("env_vars"):
+        raise ValidationError(f"{path}: env access requires capability_requirements.env_vars")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
@@ -55,7 +68,9 @@ def main() -> int:
         for manifest_path in sorted((repo_root / "integrations" / "tools").glob("*.json")):
             if manifest_path.name == "manifest.schema.json":
                 continue
-            validate_access_mode_order(json.loads(manifest_path.read_text(encoding="utf-8")), manifest_path)
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            validate_access_mode_order(manifest, manifest_path)
+            validate_capability_requirements(manifest, manifest_path)
         lock_schema = load_lock_schema()
         lock_files = lock_paths(repo_root)
         for path in lock_files:

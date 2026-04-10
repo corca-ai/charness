@@ -267,11 +267,14 @@ def seed_find_skills_fixture(tmp: Path) -> None:
                 "checks": {
                     "detect": {"commands": ["demo-tool --version"], "success_criteria": ["exit_code:0"]},
                     "healthcheck": {"commands": ["demo-tool health"], "success_criteria": ["exit_code:0"]},
+                    },
+                    "access_modes": ["binary", "degraded"],
+                    "capability_requirements": {
+                        "permission_scopes": ["browser.session"],
+                    },
+                    "version_expectation": {"policy": "advisory", "constraint": "latest"},
                 },
-                "access_modes": ["binary", "degraded"],
-                "version_expectation": {"policy": "advisory", "constraint": "latest"},
-            },
-            ensure_ascii=False,
+                ensure_ascii=False,
             indent=2,
         )
         + "\n",
@@ -290,6 +293,8 @@ def assert_find_skills_payload(payload: dict[str, object]) -> None:
     if integration["kind"] != "external_binary":
         raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
     if integration["access_modes"] != ["binary", "degraded"]:
+        raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
+    if integration["capability_requirements"] != {"permission_scopes": ["browser.session"]}:
         raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
 
 

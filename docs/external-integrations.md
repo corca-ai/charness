@@ -93,6 +93,9 @@ Expected fields:
 - `access_modes`
   - ordered supported access modes such as `grant`, `binary`, `env`, or
     `public`
+- `capability_requirements`
+  - non-secret grant ids, env var names, or permission scopes needed to use
+    those access modes
 - `version_expectation`
 - `support_skill_source`
   - absent when no upstream skill exists
