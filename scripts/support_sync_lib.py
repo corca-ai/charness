@@ -8,6 +8,8 @@ from typing import Any
 
 
 def support_state_for_manifest(manifest: dict[str, Any], *, sync_strategy: str | None = None) -> str:
+    if manifest.get("kind") == "support_runtime":
+        return "native-support"
     support = manifest.get("support_skill_source")
     if not support:
         return "integration-only"

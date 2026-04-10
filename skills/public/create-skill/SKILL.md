@@ -27,6 +27,7 @@ sed -n '1,240p' skills/support/<skill-id>/SKILL.md
 # 3. external-tool or profile context when relevant
 sed -n '1,240p' docs/control-plane.md
 sed -n '1,260p' integrations/tools/manifest.schema.json
+sed -n '1,260p' skills/support/capability.schema.json
 sed -n '1,240p' profiles/profile.schema.json
 sed -n '1,220p' presets/README.md
 ```
@@ -53,6 +54,9 @@ skill before writing from scratch.
    - prefer strong defaults and inference over user-facing modes or options
 4. Decide dependency ownership honestly.
    - harness-owned support logic belongs in `skills/support/`
+   - if `charness` owns the runtime capability, keep its machine-readable
+     metadata next to the support skill as
+     `skills/support/<skill-id>/capability.json`
    - external tools and upstream support skills belong in
      `integrations/tools/<tool-id>.json`
    - if an upstream support skill already exists, prefer reference, sync, or a

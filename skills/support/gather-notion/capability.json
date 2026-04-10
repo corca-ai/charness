@@ -1,0 +1,58 @@
+{
+  "schema_version": "1",
+  "capability_id": "gather-notion",
+  "kind": "support_runtime",
+  "display_name": "Published Notion gather runtime",
+  "summary": "charness-owned published Notion gather runtime used by the public gather skill.",
+  "support_skill_path": "skills/support/gather-notion/SKILL.md",
+  "supports_public_skills": [
+    "gather"
+  ],
+  "checks": {
+    "detect": {
+      "commands": [
+        "command -v python3 >/dev/null"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Provide `python3` on PATH before using the published Notion gather runtime."
+    },
+    "healthcheck": {
+      "commands": [
+        "python3 --version"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:Python 3"
+      ],
+      "failure_hint": "The host lacks a usable Python 3 runtime for published Notion gather."
+    }
+  },
+  "access_modes": [
+    "public",
+    "human-only",
+    "degraded"
+  ],
+  "readiness_checks": [],
+  "config_layers": [
+    {
+      "layer_id": "notion-publish-step",
+      "layer_type": "operator-step",
+      "summary": "The operator may need to publish the Notion page to the web first."
+    },
+    {
+      "layer_id": "notion-public-export",
+      "layer_type": "public-fallback",
+      "summary": "Use the published-page export helper for public Notion page URLs."
+    }
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer the checked-in charness published Notion gather runtime."
+  },
+  "host_notes": [
+    "This support runtime covers published-page gather only.",
+    "Private Notion API access remains a separate future capability."
+  ]
+}

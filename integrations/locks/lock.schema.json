@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "charness integration lock",
-  "description": "Generated machine-local state for one integration manifest.",
+  "description": "Generated machine-local state for one integration or support capability manifest.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -309,7 +309,8 @@
           "enum": [
             "external_binary",
             "external_skill",
-            "external_binary_with_skill"
+            "external_binary_with_skill",
+            "support_runtime"
           ]
         },
         "access_modes": {

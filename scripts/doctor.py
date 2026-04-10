@@ -13,7 +13,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.control_plane_lib import (
     evaluate_version,
-    load_manifests,
+    load_capabilities,
     now_iso,
     read_lock,
     run_check,
@@ -91,9 +91,9 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    manifests = load_manifests(repo_root)
-    selected = [manifest for manifest in manifests if not args.tool_id or manifest["tool_id"] in args.tool_id]
-    results = [inspect_manifest(repo_root, manifest, write=args.write_locks) for manifest in selected]
+    capabilities = load_capabilities(repo_root)
+    selected = [capability for capability in capabilities if not args.tool_id or capability["tool_id"] in args.tool_id]
+    results = [inspect_manifest(repo_root, capability, write=args.write_locks) for capability in selected]
 
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))

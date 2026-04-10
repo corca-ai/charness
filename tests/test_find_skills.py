@@ -150,3 +150,154 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
             "layer": "external integration",
         }
     ]
+
+
+def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None:
+    (tmp_path / "skills" / "public" / "gather").mkdir(parents=True)
+    (tmp_path / "skills" / "public" / "gather" / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: gather",
+                'description: "Gather skill."',
+                "---",
+                "",
+                "# Gather",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "skills" / "support" / "gather-slack").mkdir(parents=True)
+    (tmp_path / "skills" / "support" / "gather-slack" / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: gather-slack",
+                'description: "Slack support."',
+                "---",
+                "",
+                "# Gather Slack",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "skills" / "support" / "capability.schema.json").write_text(
+        (REPO_ROOT / "skills" / "support" / "capability.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (tmp_path / "skills" / "support" / "gather-slack" / "capability.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "capability_id": "gather-slack",
+                "kind": "support_runtime",
+                "display_name": "Slack gather",
+                "summary": "Support-owned Slack runtime.",
+                "support_skill_path": "skills/support/gather-slack/SKILL.md",
+                "supports_public_skills": ["gather"],
+                "checks": {
+                    "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                    "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                },
+                "access_modes": ["grant", "env", "degraded"],
+                "capability_requirements": {
+                    "grant_ids": ["slack.history"],
+                    "env_vars": ["SLACK_BOT_TOKEN"],
+                },
+                "config_layers": [
+                    {
+                        "layer_id": "slack-grant",
+                        "layer_type": "grant",
+                        "summary": "Prefer runtime grant first.",
+                    },
+                    {
+                        "layer_id": "slack-env",
+                        "layer_type": "env",
+                        "summary": "Fallback to env.",
+                    },
+                ],
+                "readiness_checks": [
+                    {
+                        "check_id": "slack-ready",
+                        "summary": "Slack runtime is ready.",
+                        "commands": ["true"],
+                        "success_criteria": ["exit_code:0"],
+                    }
+                ],
+                "version_expectation": {"policy": "advisory", "constraint": "local"},
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (tmp_path / ".agents").mkdir(parents=True)
+    (tmp_path / ".agents" / "find-skills-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: skill-outputs/find-skills",
+                "preset_id: portable-defaults",
+                "customized_from: portable-defaults",
+                "official_skill_roots: []",
+                "prefer_local_first: true",
+                "allow_external_registry: false",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/find-skills/scripts/list_capabilities.py",
+            "--repo-root",
+            str(tmp_path),
+        ],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    payload = json.loads(result.stdout)
+    assert payload["support_capabilities"] == [
+        {
+            "id": "gather-slack",
+            "kind": "support_runtime",
+            "access_modes": ["grant", "env", "degraded"],
+            "capability_requirements": {
+                "grant_ids": ["slack.history"],
+                "env_vars": ["SLACK_BOT_TOKEN"],
+            },
+            "config_layers": [
+                {
+                    "layer_id": "slack-grant",
+                    "layer_type": "grant",
+                    "summary": "Prefer runtime grant first.",
+                },
+                {
+                    "layer_id": "slack-env",
+                    "layer_type": "env",
+                    "summary": "Fallback to env.",
+                },
+            ],
+            "readiness_checks": [
+                {
+                    "check_id": "slack-ready",
+                    "summary": "Slack runtime is ready.",
+                }
+            ],
+            "path": "skills/support/gather-slack/capability.json",
+            "support_skill_path": "skills/support/gather-slack/SKILL.md",
+            "supports_public_skills": ["gather"],
+            "source": "local-support-capability",
+            "layer": "support capability",
+        }
+    ]

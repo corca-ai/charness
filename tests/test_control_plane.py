@@ -337,6 +337,87 @@ def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path) -> 
     assert doctor_payload[0]["readiness"]["failed_checks"] == ["demo-ready-file"]
 
 
+def test_doctor_reads_support_owned_capability_metadata(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    support_dir = repo / "skills" / "support" / "gather-slack"
+    locks_dir = repo / "integrations" / "locks"
+    support_dir.mkdir(parents=True)
+    locks_dir.mkdir(parents=True)
+    (support_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: gather-slack",
+                'description: "Slack runtime."',
+                "---",
+                "",
+                "# Gather Slack",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (support_dir / "capability.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "capability_id": "gather-slack",
+                "kind": "support_runtime",
+                "display_name": "Slack gather",
+                "summary": "Support-owned Slack runtime.",
+                "support_skill_path": "skills/support/gather-slack/SKILL.md",
+                "supports_public_skills": ["gather"],
+                "checks": {
+                    "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                    "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                },
+                "access_modes": ["grant", "env", "degraded"],
+                "capability_requirements": {
+                    "grant_ids": ["slack.history"],
+                    "env_vars": ["SLACK_BOT_TOKEN"],
+                },
+                "config_layers": [
+                    {
+                        "layer_id": "slack-grant",
+                        "layer_type": "grant",
+                        "summary": "Prefer runtime grant first.",
+                    },
+                    {
+                        "layer_id": "slack-env",
+                        "layer_type": "env",
+                        "summary": "Fallback to env.",
+                    },
+                ],
+                "readiness_checks": [
+                    {
+                        "check_id": "slack-ready",
+                        "summary": "Slack runtime is ready.",
+                        "commands": ["true"],
+                        "success_criteria": ["exit_code:0"],
+                    }
+                ],
+                "version_expectation": {"policy": "advisory", "constraint": "local"},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--write-locks")
+    assert doctor.returncode == 0, doctor.stderr
+    payload = json.loads(doctor.stdout)
+    assert payload[0]["tool_id"] == "gather-slack"
+    assert payload[0]["kind"] == "support_runtime"
+    assert payload[0]["support_state"] == "native-support"
+    assert payload[0]["doctor_status"] == "ok"
+    assert payload[0]["access_modes"] == ["grant", "env", "degraded"]
+
+    lock_payload = json.loads((locks_dir / "gather-slack.json").read_text(encoding="utf-8"))
+    assert lock_payload["manifest_path"] == "skills/support/gather-slack/capability.json"
+    assert lock_payload["doctor"]["kind"] == "support_runtime"
+
+
 def test_sync_support_reference_materializes_reference_artifact_and_lock(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     tools_dir = repo / "integrations" / "tools"

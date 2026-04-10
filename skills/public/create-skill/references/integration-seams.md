@@ -14,6 +14,11 @@ fallback.
 
 The canonical contract is [manifest.schema.json](/home/ubuntu/charness/integrations/tools/manifest.schema.json).
 
+When `charness` owns the runtime itself, the canonical metadata contract is
+[capability.schema.json](/home/ubuntu/charness/skills/support/capability.schema.json)
+and the file should live next to the support skill as
+`skills/support/<skill-id>/capability.json`.
+
 ## Ownership Rules
 
 - `charness` owns when the tool should be used and how workflows degrade
@@ -33,6 +38,8 @@ The canonical contract is [manifest.schema.json](/home/ubuntu/charness/integrati
 - prefer grant-first, then authenticated binary, then env fallback
 - keep manifest metadata rich enough for discovery surfaces to expose what kind
   of capability exists and which access modes it supports
+- keep support capability metadata equally rich when `charness` owns the
+  runtime and no true external integration boundary exists
 - declare readiness probes in the manifest when setup prerequisites should fail
   closed before runtime use
 - define degradation behavior when the tool is missing or stale

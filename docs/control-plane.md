@@ -1,7 +1,8 @@
 # Control Plane Contract
 
-This document defines the first control-plane contract for external tools and
-upstream support-skill reuse in `charness`.
+This document defines the control-plane contract for external tools,
+support-owned runtime capability metadata, and upstream support-skill reuse in
+`charness`.
 
 ## Goals
 
@@ -13,13 +14,17 @@ upstream support-skill reuse in `charness`.
 
 ## Source Of Truth
 
-- source policy: `integrations/tools/*.json`
-- source schema: [manifest.schema.json](/home/ubuntu/charness/integrations/tools/manifest.schema.json)
+- external source policy: `integrations/tools/*.json`
+- external source schema: [manifest.schema.json](/home/ubuntu/charness/integrations/tools/manifest.schema.json)
+- support capability source policy: `skills/support/*/capability.json`
+- support capability schema: [capability.schema.json](/home/ubuntu/charness/skills/support/capability.schema.json)
 - generated live state: `integrations/locks/*.json`
 - generated wrapper or synced support skills: `skills/support/generated/`
 
-The manifest is authoritative for intent. Lock files are authoritative only for
-what was last synced or observed on one machine.
+External manifests are authoritative for external ownership intent. Support
+capability metadata is authoritative for `charness`-owned runtime capability
+that still needs machine-readable discovery and doctor context. Lock files are
+authoritative only for what was last synced or observed on one machine.
 
 For v1, `sync-support` should default to `reference` as the recommended
 strategy. That means `charness` records where the upstream support surface
@@ -103,7 +108,7 @@ Rules:
 ### `charness doctor`
 
 Purpose:
-verify that the host matches the manifest contract closely enough for harness
+verify that the host matches the capability contract closely enough for harness
 workflows to rely on it.
 
 Checks:
@@ -116,8 +121,8 @@ Checks:
 
 Exit semantics:
 
-- `0`: all checked integrations satisfy the manifest
-- `1`: at least one integration is missing, unhealthy, not ready, or version-mismatched
+- `0`: all checked capabilities satisfy the contract
+- `1`: at least one capability is missing, unhealthy, not ready, or version-mismatched
 - `2`: manifest error or control-plane misuse blocked evaluation
 
 Rules:
@@ -137,8 +142,8 @@ Current v1 drift rule:
   because generated wrapper or reference artifacts have not been materialized
   yet
 
-Current doctor payload also carries manifest-side capability context so setup
-and onboarding layers can inspect it without re-reading the manifest:
+Current doctor payload also carries metadata-side capability context so setup
+and onboarding layers can inspect it without re-reading the source file:
 
 - `kind`
 - `access_modes`

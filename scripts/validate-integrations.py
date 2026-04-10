@@ -14,6 +14,7 @@ sys.path.insert(0, str(REPO_ROOT))
 from scripts.control_plane_lib import (
     load_lock_schema,
     load_manifests,
+    load_support_capabilities,
     lock_paths,
     validate_lock_data,
 )
@@ -93,6 +94,7 @@ def main() -> int:
     try:
         repo_root = args.repo_root.resolve()
         manifests = load_manifests(repo_root)
+        support_capabilities = load_support_capabilities(repo_root)
         for manifest_path in sorted((repo_root / "integrations" / "tools").glob("*.json")):
             if manifest_path.name == "manifest.schema.json":
                 continue
@@ -100,13 +102,21 @@ def main() -> int:
             validate_access_mode_order(manifest, manifest_path)
             validate_capability_requirements(manifest, manifest_path)
             validate_config_layers(manifest, manifest_path)
+        for capability_path in sorted((repo_root / "skills" / "support").glob("*/capability.json")):
+            capability = json.loads(capability_path.read_text(encoding="utf-8"))
+            validate_access_mode_order(capability, capability_path)
+            validate_capability_requirements(capability, capability_path)
+            validate_config_layers(capability, capability_path)
         lock_schema = load_lock_schema()
         lock_files = lock_paths(repo_root)
         for path in lock_files:
             validate_lock_data(json.loads(path.read_text(encoding="utf-8")), lock_schema, path)
     except Exception as exc:  # pragma: no cover - surfaced via CLI tests
         raise ValidationError(str(exc)) from exc
-    print(f"Validated {len(manifests)} integration manifests and {len(lock_files)} lock files.")
+    print(
+        f"Validated {len(manifests)} integration manifests, "
+        f"{len(support_capabilities)} support capabilities, and {len(lock_files)} lock files."
+    )
     return 0
 
 

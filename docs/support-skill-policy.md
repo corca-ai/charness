@@ -88,7 +88,8 @@ as Ceal's own skill surface.
 
 Any support capability that is not purely native should eventually have:
 
-- an integration manifest
+- colocated capability metadata when `charness` owns the runtime
+- an integration manifest only when the ownership boundary is truly external
 - supported runtime access modes
 - install/update guidance
 - detect/healthcheck commands

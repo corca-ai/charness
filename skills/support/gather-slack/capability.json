@@ -1,0 +1,95 @@
+{
+  "schema_version": "1",
+  "capability_id": "gather-slack",
+  "kind": "support_runtime",
+  "display_name": "Slack thread gather runtime",
+  "summary": "charness-owned Slack thread gather runtime used by the public gather skill.",
+  "support_skill_path": "skills/support/gather-slack/SKILL.md",
+  "supports_public_skills": [
+    "gather"
+  ],
+  "checks": {
+    "detect": {
+      "commands": [
+        "command -v node >/dev/null",
+        "command -v jq >/dev/null",
+        "command -v perl >/dev/null"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Provide `node`, `jq`, and `perl` before using the Slack gather runtime."
+    },
+    "healthcheck": {
+      "commands": [
+        "node --version",
+        "jq --version",
+        "perl -e 'print qq(ok\\n)'"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "The local Slack gather runtime dependencies exist but look broken."
+    }
+  },
+  "access_modes": [
+    "grant",
+    "env",
+    "human-only",
+    "degraded"
+  ],
+  "capability_requirements": {
+    "grant_ids": [
+      "slack.conversations.history",
+      "slack.users.read",
+      "slack.files.read"
+    ],
+    "env_vars": [
+      "SLACK_BOT_TOKEN"
+    ],
+    "permission_scopes": [
+      "channels:history",
+      "channels:join",
+      "users:read",
+      "files:read"
+    ]
+  },
+  "readiness_checks": [
+    {
+      "check_id": "slack-runtime-deps",
+      "summary": "Slack gather runtime shell dependencies are available.",
+      "commands": [
+        "command -v node >/dev/null && command -v jq >/dev/null && command -v perl >/dev/null"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Install or expose `node`, `jq`, and `perl` before using Slack gather."
+    }
+  ],
+  "config_layers": [
+    {
+      "layer_id": "slack-runtime-grant",
+      "layer_type": "grant",
+      "summary": "Prefer a host-mediated Slack capability grant when available."
+    },
+    {
+      "layer_id": "slack-bot-env",
+      "layer_type": "env",
+      "summary": "Fall back to `SLACK_BOT_TOKEN` in ordinary local operator setups."
+    },
+    {
+      "layer_id": "slack-channel-operator-step",
+      "layer_type": "operator-step",
+      "summary": "The operator may still need to add the bot to the workspace or target channel."
+    }
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer the checked-in charness Slack gather runtime."
+  },
+  "host_notes": [
+    "This is charness-owned runtime, not an external plugin dependency.",
+    "Consumer repos should provide capability access, not reimplement the Slack export scripts."
+  ]
+}

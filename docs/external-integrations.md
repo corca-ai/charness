@@ -62,6 +62,11 @@ Current `charness` support homes:
 - `skills/support/gather-notion/`
 
 See [gather-provider-ownership.md](/home/ubuntu/charness/docs/gather-provider-ownership.md).
+The machine-readable metadata for these `charness`-owned gather providers now
+lives next to the support skill itself under:
+
+- `skills/support/gather-slack/capability.json`
+- `skills/support/gather-notion/capability.json`
 
 ## Runtime Access Principle
 

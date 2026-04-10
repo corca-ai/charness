@@ -1,0 +1,227 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "charness support capability",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "capability_id",
+    "kind",
+    "display_name",
+    "summary",
+    "support_skill_path",
+    "checks",
+    "access_modes",
+    "version_expectation"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1"
+    },
+    "capability_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+    },
+    "kind": {
+      "const": "support_runtime"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "support_skill_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "supports_public_skills": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "detect",
+        "healthcheck"
+      ],
+      "properties": {
+        "detect": {
+          "$ref": "#/definitions/check"
+        },
+        "healthcheck": {
+          "$ref": "#/definitions/check"
+        }
+      }
+    },
+    "access_modes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "grant",
+          "binary",
+          "env",
+          "public",
+          "human-only",
+          "degraded"
+        ]
+      }
+    },
+    "capability_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "grant_ids": {
+          "$ref": "#/definitions/stringList"
+        },
+        "env_vars": {
+          "$ref": "#/definitions/stringList"
+        },
+        "permission_scopes": {
+          "$ref": "#/definitions/stringList"
+        }
+      }
+    },
+    "readiness_checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/readinessCheck"
+      }
+    },
+    "config_layers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/configLayer"
+      }
+    },
+    "version_expectation": {
+      "$ref": "#/definitions/versionExpectation"
+    },
+    "host_notes": {
+      "$ref": "#/definitions/stringList"
+    }
+  },
+  "definitions": {
+    "stringList": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commands",
+        "success_criteria"
+      ],
+      "properties": {
+        "commands": {
+          "$ref": "#/definitions/stringList"
+        },
+        "success_criteria": {
+          "$ref": "#/definitions/stringList"
+        },
+        "failure_hint": {
+          "type": "string"
+        }
+      }
+    },
+    "readinessCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_id",
+        "summary",
+        "commands",
+        "success_criteria"
+      ],
+      "properties": {
+        "check_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commands": {
+          "$ref": "#/definitions/stringList"
+        },
+        "success_criteria": {
+          "$ref": "#/definitions/stringList"
+        },
+        "failure_hint": {
+          "type": "string"
+        }
+      }
+    },
+    "configLayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layer_id",
+        "layer_type",
+        "summary"
+      ],
+      "properties": {
+        "layer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "layer_type": {
+          "type": "string",
+          "enum": [
+            "grant",
+            "authenticated-binary",
+            "env",
+            "operator-step",
+            "public-fallback"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "versionExpectation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy",
+        "constraint"
+      ],
+      "properties": {
+        "policy": {
+          "type": "string",
+          "enum": [
+            "advisory",
+            "exact",
+            "minimum",
+            "range"
+          ]
+        },
+        "constraint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "detected_by": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "stdout"
+          ]
+        }
+      }
+    }
+  }
+}

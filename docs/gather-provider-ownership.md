@@ -95,8 +95,8 @@ When a consumer wants provider-backed gather:
 ## Modeling Rule Going Forward
 
 - use `integrations/tools/*.json` for true external ownership boundaries
-- use `skills/support/` plus repo-owned helper scripts for `charness`-owned
-  provider runtime
+- use `skills/support/<skill-id>/capability.json` plus repo-owned helper
+  scripts for `charness`-owned provider runtime
 - keep provenance in references or docs instead of pretending it is the active
   runtime owner
 

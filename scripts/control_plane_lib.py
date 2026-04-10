@@ -23,9 +23,11 @@ from scripts.support_sync_lib import (
 )
 
 MANIFEST_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "integrations" / "tools" / "manifest.schema.json"
+SUPPORT_CAPABILITY_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "skills" / "support" / "capability.schema.json"
 LOCK_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "integrations" / "locks" / "lock.schema.json"
 LOCKS_DIR = Path("integrations/locks")
 TOOLS_DIR = Path("integrations/tools")
+SUPPORT_CAPABILITIES_GLOB = Path("skills/support/*/capability.json")
 GENERATED_SUPPORT_DIR = Path("skills/support/generated")
 SEMVER_RE = re.compile(r"\b\d+(?:\.\d+){1,}\b")
 
@@ -45,9 +47,11 @@ def now_iso() -> str:
 def load_manifest_schema() -> dict[str, Any]:
     return json.loads(MANIFEST_SCHEMA_PATH.read_text(encoding="utf-8"))
 
-
 def load_lock_schema() -> dict[str, Any]:
     return json.loads(LOCK_SCHEMA_PATH.read_text(encoding="utf-8"))
+
+def load_support_capability_schema() -> dict[str, Any]:
+    return json.loads(SUPPORT_CAPABILITY_SCHEMA_PATH.read_text(encoding="utf-8"))
 
 
 def manifest_paths(repo_root: Path) -> list[Path]:
@@ -58,12 +62,47 @@ def manifest_paths(repo_root: Path) -> list[Path]:
 def load_manifest(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
-
 def validate_manifest_data(data: dict[str, Any], schema: dict[str, Any], path: Path) -> None:
     jsonschema.validate(data, schema)
     support = data.get("support_skill_source")
     if support and support.get("sync_strategy") == "generated_wrapper" and not support.get("wrapper_skill_id"):
         raise ValueError(f"{path}: generated_wrapper requires wrapper_skill_id")
+
+def support_capability_paths(repo_root: Path) -> list[Path]:
+    return sorted(repo_root.glob(str(SUPPORT_CAPABILITIES_GLOB)))
+
+
+def validate_support_capability_data(data: dict[str, Any], schema: dict[str, Any], path: Path) -> None:
+    jsonschema.validate(data, schema)
+    expected_skill_path = str((path.parent / "SKILL.md").relative_to(path.parents[3]))
+    if data["support_skill_path"] != expected_skill_path:
+        raise ValueError(
+            f"{path}: support_skill_path must match colocated support skill `{expected_skill_path}`"
+        )
+
+
+def normalize_support_capability(
+    data: dict[str, Any],
+    path: Path,
+    repo_root: Path,
+) -> dict[str, Any]:
+    return {
+        "tool_id": data["capability_id"],
+        "kind": data["kind"],
+        "display_name": data["display_name"],
+        "summary": data["summary"],
+        "checks": data["checks"],
+        "access_modes": data["access_modes"],
+        "capability_requirements": data.get("capability_requirements", {}),
+        "readiness_checks": data.get("readiness_checks", []),
+        "config_layers": data.get("config_layers", []),
+        "version_expectation": data["version_expectation"],
+        "host_notes": data.get("host_notes", []),
+        "support_skill_path": data["support_skill_path"],
+        "supports_public_skills": data.get("supports_public_skills", []),
+        "_manifest_path": str(path.relative_to(repo_root)),
+        "_capability_family": "support",
+    }
 
 
 def load_manifests(repo_root: Path) -> list[dict[str, Any]]:
@@ -80,6 +119,32 @@ def load_manifests(repo_root: Path) -> list[dict[str, Any]]:
         data["_manifest_path"] = str(path.relative_to(repo_root))
         manifests.append(data)
     return manifests
+
+
+def load_support_capabilities(repo_root: Path) -> list[dict[str, Any]]:
+    schema = load_support_capability_schema()
+    capabilities: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    for path in support_capability_paths(repo_root):
+        data = load_manifest(path)
+        validate_support_capability_data(data, schema, path)
+        capability_id = data["capability_id"]
+        if capability_id in seen_ids:
+            raise ValueError(f"duplicate support capability id `{capability_id}`")
+        seen_ids.add(capability_id)
+        capabilities.append(normalize_support_capability(data, path, repo_root))
+    return capabilities
+
+
+def load_capabilities(repo_root: Path) -> list[dict[str, Any]]:
+    items = [*load_manifests(repo_root), *load_support_capabilities(repo_root)]
+    seen_ids: set[str] = set()
+    for item in items:
+        tool_id = item["tool_id"]
+        if tool_id in seen_ids:
+            raise ValueError(f"duplicate capability id `{tool_id}`")
+        seen_ids.add(tool_id)
+    return items
 
 
 def manifest_by_tool_id(repo_root: Path) -> dict[str, dict[str, Any]]:

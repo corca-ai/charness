@@ -10,10 +10,11 @@ Choose the target surface before writing files.
 | Artifact | Owns | Does not own | Canonical path |
 | --- | --- | --- | --- |
 | public skill | one user-facing concept | external tool installs, host defaults | `skills/public/<skill-id>/` |
-| support skill | harness-owned tool usage guidance | public taxonomy, binary ownership | `skills/support/<skill-id>/` |
+| support skill | harness-owned tool usage guidance and owned runtime helpers | public taxonomy, binary ownership | `skills/support/<skill-id>/` |
 | profile | default bundle selection | host-specific secrets or runtime wiring | `profiles/<profile-id>.json` |
 | preset | opt-in default values and vocabulary | mandatory hidden behavior | `presets/<preset-id>.md` |
 | integration | external ownership, detection, degradation | product philosophy | `integrations/tools/<tool-id>.json` |
+| support capability metadata | machine-readable contract for `charness`-owned runtime | true external ownership | `skills/support/<skill-id>/capability.json` |
 
 If the answer is "two of these at once", split the work.
 
@@ -142,6 +143,7 @@ skills/public/<skill-id>/
   scripts/
 skills/support/<skill-id>/
   SKILL.md
+  capability.json
 profiles/<profile-id>.json
 presets/<preset-id>.md
 integrations/tools/<tool-id>.json

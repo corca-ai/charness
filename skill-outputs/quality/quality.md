@@ -45,17 +45,16 @@ Concept-integrity follow-up after:
 ### Weak
 
 - Slack and published Notion now have a `charness`-owned support/runtime home,
-  but their old exploratory manifests still remain in `integrations/tools/` as
-  transitional capability metadata. That split is honest now, but still
-  slightly awkward.
+  and their machine-readable capability metadata now lives next to those
+  support skills instead of pretending they are external integrations.
 - Google ownership is clearer than before, but the real `gws-cli` integration
   contract is still absent, so the corrected direction exists only in docs.
 
 ### Missing
 
 - No `gws-cli` manifest yet for the Google path.
-- No permanent support-owned capability metadata surface yet for Slack/Notion
-  after moving runtime ownership into `skills/support/`.
+- No broader support-owned capability metadata pattern yet beyond the first
+  Slack/Notion gather runtime cases.
 
 ### Recommended Next Gates
 

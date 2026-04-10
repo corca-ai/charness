@@ -12,7 +12,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.control_plane_lib import load_manifests, read_lock
+from scripts.control_plane_lib import load_capabilities, read_lock
 
 VALIDATE_PACKAGING_PATH = REPO_ROOT / "scripts" / "validate-packaging.py"
 VALIDATE_PACKAGING_SPEC = importlib.util.spec_from_file_location(
@@ -36,12 +36,12 @@ def load_packaging(repo_root: Path) -> dict[str, object]:
 
 def collect_readiness_summary(repo_root: Path) -> list[dict[str, str]]:
     summaries: list[dict[str, str]] = []
-    for manifest in load_manifests(repo_root):
-        lock_payload = read_lock(repo_root, manifest["tool_id"])
+    for capability in load_capabilities(repo_root):
+        lock_payload = read_lock(repo_root, capability["tool_id"])
         doctor = lock_payload.get("doctor") if lock_payload else None
         summaries.append(
             {
-                "tool_id": manifest["tool_id"],
+                "tool_id": capability["tool_id"],
                 "status": doctor.get("doctor_status", "unknown") if doctor else "unknown",
             }
         )

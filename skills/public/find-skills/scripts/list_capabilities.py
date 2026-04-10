@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402, I001
 from __future__ import annotations
 
 import argparse
@@ -8,7 +9,10 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
+REPO_ROOT = SCRIPT_DIR.parents[3]
+sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.control_plane_lib import load_support_capabilities  # noqa: E402
 from resolve_adapter import load_adapter  # noqa: E402
 
 
@@ -125,6 +129,40 @@ def integrations(root: Path) -> list[dict[str, object]]:
     return items
 
 
+def support_capabilities(root: Path) -> list[dict[str, object]]:
+    items: list[dict[str, object]] = []
+    for capability in load_support_capabilities(root):
+        items.append(
+            {
+                "id": capability["tool_id"],
+                "kind": capability["kind"],
+                "access_modes": capability.get("access_modes", []),
+                "capability_requirements": capability.get("capability_requirements", {}),
+                "config_layers": [
+                    {
+                        "layer_id": layer["layer_id"],
+                        "layer_type": layer["layer_type"],
+                        "summary": layer["summary"],
+                    }
+                    for layer in capability.get("config_layers", [])
+                ],
+                "readiness_checks": [
+                    {
+                        "check_id": check["check_id"],
+                        "summary": check["summary"],
+                    }
+                    for check in capability.get("readiness_checks", [])
+                ],
+                "path": capability["_manifest_path"],
+                "support_skill_path": capability["support_skill_path"],
+                "supports_public_skills": capability.get("supports_public_skills", []),
+                "source": "local-support-capability",
+                "layer": "support capability",
+            }
+        )
+    return items
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
@@ -144,6 +182,7 @@ def main() -> None:
         },
         "public_skills": public_skills(root),
         "support_skills": support_skills(root),
+        "support_capabilities": support_capabilities(root),
         "integrations": integrations(root),
         "official_skills": official_skills(root, official_skill_roots),
     }

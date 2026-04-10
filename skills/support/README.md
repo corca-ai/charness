@@ -7,6 +7,8 @@ concepts.
 
 - local harness-owned support skills, for example provider runtime that public
   skills consume under the hood
+- colocated capability metadata at `skills/support/<skill-id>/capability.json`
+  when `charness` owns the runtime surface
 - `generated/`: machine-generated wrapper or reference material created by the
   control plane
 
