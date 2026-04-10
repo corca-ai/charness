@@ -25,7 +25,34 @@
       "name": "charness",
       "version": "0.0.0-dev",
       "description": "Portable Corca harness layer exported into Claude and Codex plugin layouts from shared repo artifacts.",
-      "skills": "./skills/"
+      "author": {
+        "name": "Corca",
+        "url": "https://www.corca.ai/"
+      },
+      "homepage": "https://github.com/corca-ai/charness",
+      "repository": "https://github.com/corca-ai/charness",
+      "keywords": [
+        "workflow",
+        "skills",
+        "harness",
+        "integrations"
+      ],
+      "skills": "./skills/",
+      "interface": {
+        "displayName": "charness",
+        "shortDescription": "Portable workflow skills and integration guidance.",
+        "longDescription": "Install the charness workflow surface for portable skills, profiles, presets, and external integration guidance.",
+        "developerName": "Corca",
+        "category": "Productivity",
+        "capabilities": [
+          "Read",
+          "Write"
+        ],
+        "websiteURL": "https://github.com/corca-ai/charness",
+        "defaultPrompt": [
+          "Use charness to apply portable workflow skills, profiles, presets, and integration guidance in this repo."
+        ]
+      }
     },
     "repo_marketplace": {
       "path": ".agents/plugins/marketplace.json",

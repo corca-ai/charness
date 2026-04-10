@@ -92,14 +92,20 @@ def validate_source_paths(root: Path, source: object) -> None:
         rel_path = validate_relative_path(source.get(field), f"source.{field}")
         require_dir(root / rel_path, f"source.{field}")
 
-
-def validate_codex(package_id: str, version: str, summary: str, data: object) -> None:
+def validate_codex(
+    package_id: str,
+    version: str,
+    summary: str,
+    expected_author: dict[str, object],
+    homepage: str,
+    repository: str,
+    data: object,
+) -> None:
     if not isinstance(data, dict):
         raise ValidationError("`codex` must be an object")
     manifest_path = validate_string(data.get("manifest_path"), "codex.manifest_path")
     if manifest_path != ".codex-plugin/plugin.json":
         raise ValidationError("`codex.manifest_path` must be `.codex-plugin/plugin.json`")
-
     manifest = data.get("manifest")
     if not isinstance(manifest, dict):
         raise ValidationError("`codex.manifest` must be an object")
@@ -109,9 +115,50 @@ def validate_codex(package_id: str, version: str, summary: str, data: object) ->
         raise ValidationError("`codex.manifest.version` must match top-level `version`")
     if validate_string(manifest.get("description"), "codex.manifest.description") != summary:
         raise ValidationError("`codex.manifest.description` must match top-level `summary`")
+    author = manifest.get("author")
+    if not isinstance(author, dict):
+        raise ValidationError("`codex.manifest.author` must be an object")
+    if validate_string(author.get("name"), "codex.manifest.author.name") != validate_string(expected_author.get("name"), "author.name"):
+        raise ValidationError("`codex.manifest.author.name` must match top-level `author.name`")
+    for field in ("url", "email"):
+        if field in author:
+            actual = validate_string(author.get(field), f"codex.manifest.author.{field}")
+            if expected_author.get(field) is not None and actual != validate_string(expected_author.get(field), f"author.{field}"):
+                raise ValidationError(f"`codex.manifest.author.{field}` must match top-level `author.{field}`")
+    if validate_string(manifest.get("homepage"), "codex.manifest.homepage") != homepage:
+        raise ValidationError("`codex.manifest.homepage` must match top-level `homepage`")
+    if validate_string(manifest.get("repository"), "codex.manifest.repository") != repository:
+        raise ValidationError("`codex.manifest.repository` must match top-level `repository`")
+    keywords = manifest.get("keywords")
+    if not isinstance(keywords, list) or not keywords:
+        raise ValidationError("`codex.manifest.keywords` must be a non-empty array")
+    for index, keyword in enumerate(keywords):
+        validate_string(keyword, f"codex.manifest.keywords[{index}]")
     if validate_string(manifest.get("skills"), "codex.manifest.skills") != "./skills/":
         raise ValidationError("`codex.manifest.skills` must be `./skills/`")
-
+    interface = manifest.get("interface")
+    if not isinstance(interface, dict):
+        raise ValidationError("`codex.manifest.interface` must be an object")
+    for field in ("displayName", "shortDescription", "longDescription", "category"):
+        validate_string(interface.get(field), f"codex.manifest.interface.{field}")
+    if validate_string(interface.get("developerName"), "codex.manifest.interface.developerName") != validate_string(expected_author.get("name"), "author.name"):
+        raise ValidationError("`codex.manifest.interface.developerName` must match top-level `author.name`")
+    capabilities = interface.get("capabilities")
+    if not isinstance(capabilities, list) or not capabilities:
+        raise ValidationError("`codex.manifest.interface.capabilities` must be a non-empty array")
+    for index, capability in enumerate(capabilities):
+        validate_string(capability, f"codex.manifest.interface.capabilities[{index}]")
+    if validate_string(interface.get("websiteURL"), "codex.manifest.interface.websiteURL") != homepage:
+        raise ValidationError("`codex.manifest.interface.websiteURL` must match top-level `homepage`")
+    default_prompt = interface.get("defaultPrompt")
+    if not isinstance(default_prompt, list) or not default_prompt:
+        raise ValidationError("`codex.manifest.interface.defaultPrompt` must be a non-empty array")
+    for index, prompt in enumerate(default_prompt):
+        prompt_text = validate_string(prompt, f"codex.manifest.interface.defaultPrompt[{index}]")
+        if len(prompt_text) > 128:
+            raise ValidationError(
+                f"`codex.manifest.interface.defaultPrompt[{index}]` must be at most 128 characters"
+            )
     marketplace = data.get("repo_marketplace")
     if not isinstance(marketplace, dict):
         raise ValidationError("`codex.repo_marketplace` must be an object")
@@ -134,7 +181,6 @@ def validate_codex(package_id: str, version: str, summary: str, data: object) ->
         raise ValidationError("`codex.repo_marketplace.repo_root_source_path` must be `./`")
     validate_string(marketplace.get("display_name"), "codex.repo_marketplace.display_name")
     validate_string(marketplace.get("category"), "codex.repo_marketplace.category")
-
 
 def validate_root_install_artifacts(root: Path, data: dict[str, object]) -> None:
     codex = data["codex"]
@@ -191,7 +237,6 @@ def validate_root_install_artifacts(root: Path, data: dict[str, object]) -> None
     for rel_path, expected, field in expected_files:
         require_json_matches(root / rel_path, expected, field)
 
-
 def validate_claude(
     package_id: str,
     version: str,
@@ -245,7 +290,6 @@ def validate_claude(
     if validate_string(marketplace.get("source_path"), "claude.marketplace.source_path") != "./":
         raise ValidationError("`claude.marketplace.source_path` must be `./`")
 
-
 def validate_packaging_manifest(path: Path, root: Path, *, validate_root_artifacts: bool = True) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
@@ -274,7 +318,7 @@ def validate_packaging_manifest(path: Path, root: Path, *, validate_root_artifac
         raise ValidationError("`homepage` should match `repository` until a separate package homepage exists")
 
     validate_source_paths(root, data.get("source"))
-    validate_codex(package_id, version, summary, data.get("codex"))
+    validate_codex(package_id, version, summary, author, homepage, repository, data.get("codex"))
     validate_claude(package_id, version, summary, repository, author, data.get("claude"))
     if validate_root_artifacts:
         validate_root_install_artifacts(root, data)
