@@ -20,6 +20,32 @@ Good timing artifacts help answer:
 - whether a recent change widened the standing bar accidentally
 - whether flaky setup or external calls are inflating runtime
 
+Do not default to removing standing gates just because they are slow. First
+make speed regressions visible, then tighten overlap, execution shape, or
+runtime behavior.
+
+## Slow Gate Triage
+
+When a standing lint, test, eval, or executable-spec gate is slow:
+
+1. confirm the repo still needs the full gate and is not accidentally running a
+   wider surface than intended
+2. inspect overlap and duplication before weakening coverage
+3. move repeated fine-grained assertions into cheaper lower layers when they do
+   not belong at the boundary
+4. optimize repeated command bodies, adapters, or orchestration paths before
+   reducing contract depth
+5. use parallelism or scoped execution where the repo can support it honestly
+6. only then consider changing standing gate scope, and name the coverage tradeoff explicitly
+
+Preferred deterministic guards:
+
+- overlap lint for duplicated broad test commands
+- timing logs with bounded rotation
+- adapter- or runner-level caching for repeated command bodies
+- repo-owned scoped smoke plus a separate fuller boundary run when both are
+  genuinely needed and clearly labeled
+
 ## Logs And Diagnostics
 
 If the repo depends on logs, traces, or machine-readable diagnostics for normal

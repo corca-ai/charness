@@ -34,6 +34,23 @@ When a repo uses executable specs, inspect:
 1. delete duplicate or low-signal executable cases
 2. move fine-grained assertions into unit tests or source-level checks
 3. replace repeated shell patterns with a direct adapter or check table
-4. keep one thin repo-level executable-spec smoke for the contract boundary
-5. only then widen standing spec coverage if the cheaper layers still miss a
+4. optimize repeated command bodies with adapter-level caching or equivalent
+   runtime reuse when the repo can do so honestly
+5. use bounded parallelism or scoped execution where the runner supports it
+6. keep one thin repo-level executable-spec smoke for the contract boundary
+7. only then widen standing spec coverage if the cheaper layers still miss a
    meaningful regression class
+
+## Principle
+
+Do not solve slow executable specs by casually deleting the standing gate.
+
+First ask:
+
+- is the slowness coming from duplicate coverage rather than needed boundary proof
+- is a broad shell command hiding repeated execution that a guard or adapter
+  could collapse
+- is the repo missing continuous timings that would make runtime drift visible
+
+Speed work is healthy when it preserves the contract while reducing duplicated
+execution. It is weak when it only removes proof.
