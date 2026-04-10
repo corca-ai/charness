@@ -79,6 +79,13 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "when the automatable move is already clear and repo-owned, implement it in",
         "If you stop short of an obvious repo-owned deterministic gate",
     ),
+    "skills/public/release/SKILL.md": (
+        "maintainer-facing workflow",
+        "Choose the lightest honest bump",
+        "patch for bug fixes, copy fixes, and behavior repairs",
+        "Do not hand-edit generated plugin manifests",
+        "Do not push, tag, or announce a release without explicit user confirmation",
+    ),
     "skills/public/retro/SKILL.md": (
         "If the user correctly points out a missed issue",
         "`Persisted`: whether the retro was written to a durable artifact",

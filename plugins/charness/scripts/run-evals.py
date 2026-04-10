@@ -169,6 +169,17 @@ def scenario_quality_adapter_checked_in(root: Path) -> None:
     gate_commands = payload.get("data", {}).get("gate_commands", [])
     if "./scripts/run-quality.sh" not in gate_commands:
         raise EvalError(f"checked-in quality adapter resolve: missing canonical gate command in {gate_commands!r}")
+
+
+def scenario_release_adapter_bootstrap(root: Path) -> None:
+    expect_adapter_bootstrap(
+        root,
+        skill_id="release",
+        adapter_name="release-adapter.yaml",
+        expected_artifact_path="skill-outputs/release/release.md",
+    )
+
+
 def scenario_handoff_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="handoff", adapter_name="handoff-adapter.yaml", expected_artifact_path="skill-outputs/handoff/handoff.md")
 def scenario_gather_adapter_bootstrap(root: Path) -> None:
@@ -316,6 +327,7 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "impl-adapter-bootstrap": scenario_impl_adapter_bootstrap,
         "quality-adapter-bootstrap": scenario_quality_adapter_bootstrap,
         "quality-adapter-checked-in": scenario_quality_adapter_checked_in,
+        "release-adapter-bootstrap": scenario_release_adapter_bootstrap,
         "handoff-adapter-bootstrap": scenario_handoff_adapter_bootstrap,
         "gather-adapter-bootstrap": scenario_gather_adapter_bootstrap,
         "handoff-absolute-links": scenario_handoff_absolute_links,

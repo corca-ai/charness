@@ -57,6 +57,7 @@ Corca harness product, then reconnects Ceal as one consumer of that product.
 - `hitl`
 - `create-skill`
 - `find-skills`
+- `release`
 
 ### Support skills
 
@@ -84,6 +85,7 @@ Corca harness product, then reconnects Ceal as one consumer of that product.
   - `quality`
 - `meta-builder`
   - builder-facing presets and authoring helpers beyond the constitutional set
+  - release workflow for repo-owned plugin surfaces
 
 ### External integrations
 

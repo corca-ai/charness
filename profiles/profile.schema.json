@@ -56,7 +56,8 @@
               "handoff",
               "hitl",
               "create-skill",
-              "find-skills"
+              "find-skills",
+              "release"
             ]
           },
           "minItems": 1,

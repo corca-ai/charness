@@ -72,6 +72,7 @@ Public skills are user-facing concepts. One concept maps to one skill.
 
 - `create-skill` — author a new skill or improve an existing one
 - `find-skills` — discover which skill or capability handles a task
+- `release` — cut or verify a repo release surface and its generated install metadata
 
 ### Support Skills
 
