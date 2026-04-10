@@ -44,6 +44,16 @@ The first contract keeps these repo directories host-neutral:
 That means the export script can materialize a host plugin layout without
 needing a second skill taxonomy or a second profile catalog.
 
+The repo root itself also carries checked-in generated host manifests so the
+GitHub repository can act as a direct plugin root during install experiments:
+
+- `.claude-plugin/plugin.json`
+- `.codex-plugin/plugin.json`
+- `.agents/plugins/marketplace.json`
+
+Those files are generated from the shared packaging manifest and validated
+against it. They are still derived artifacts, not the source of truth.
+
 ## Host Mapping
 
 ### Codex
@@ -91,6 +101,20 @@ What it intentionally does not materialize yet:
 - generated `commands/` or `agents/`
 - richer install-surface metadata for published plugin catalogs
 - release-time overrides for version stamping
+
+## Root Install Surface
+
+The checked-in root manifests exist for a different reason than temporary
+export trees.
+
+- temporary export trees prove that shared source artifacts can be materialized
+  into a host layout under another root
+- checked-in root manifests let the repository itself behave like a plugin root
+  without duplicating `skills/`, `profiles/`, `presets/`, or
+  `integrations/tools/`
+
+This hybrid model avoids a duplicated `plugins/charness/...` tree while still
+leaving a GitHub-visible install surface.
 
 ## Non-Goals
 

@@ -1,38 +1,22 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import shutil
 import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-VALIDATE_PACKAGING_PATH = REPO_ROOT / "scripts" / "validate-packaging.py"
-VALIDATE_PACKAGING_SPEC = importlib.util.spec_from_file_location(
-    "validate_packaging",
-    VALIDATE_PACKAGING_PATH,
-)
-assert VALIDATE_PACKAGING_SPEC is not None and VALIDATE_PACKAGING_SPEC.loader is not None
-VALIDATE_PACKAGING = importlib.util.module_from_spec(VALIDATE_PACKAGING_SPEC)
-VALIDATE_PACKAGING_SPEC.loader.exec_module(VALIDATE_PACKAGING)
+sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.packaging_lib import PackagingError, build_codex_marketplace, load_manifest, write_json
 
 
 class ExportError(Exception):
     pass
-
-
-def load_manifest(repo_root: Path, package_id: str) -> dict:
-    manifest_path = repo_root / "packaging" / f"{package_id}.json"
-    if not manifest_path.exists():
-        raise ExportError(f"missing packaging manifest `{manifest_path}`")
-    try:
-        VALIDATE_PACKAGING.validate_packaging_manifest(manifest_path, repo_root)
-    except Exception as exc:
-        raise ExportError(str(exc)) from exc
-    return json.loads(manifest_path.read_text(encoding="utf-8"))
 
 
 def copy_tree(src: Path, dest: Path) -> None:
@@ -62,36 +46,6 @@ def export_shared_sources(repo_root: Path, plugin_root: Path, source: dict) -> N
         copy_tree(repo_root / rel_path, plugin_root / rel_path)
 
 
-def write_json(path: Path, data: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-
-def build_codex_marketplace(manifest: dict) -> dict:
-    package_id = manifest["package_id"]
-    repo_marketplace = manifest["codex"]["repo_marketplace"]
-    return {
-        "name": package_id,
-        "interface": {
-            "displayName": repo_marketplace["display_name"],
-        },
-        "plugins": [
-            {
-                "name": package_id,
-                "source": {
-                    "source": "local",
-                    "path": repo_marketplace["default_source_path"],
-                },
-                "policy": {
-                    "installation": "AVAILABLE",
-                    "authentication": "ON_INSTALL",
-                },
-                "category": repo_marketplace["category"],
-            }
-        ],
-    }
-
-
 def export_plugin(repo_root: Path, output_root: Path, manifest: dict, host: str, with_marketplace: bool) -> Path:
     package_id = manifest["package_id"]
     plugin_root = output_root / "plugins" / package_id
@@ -104,7 +58,13 @@ def export_plugin(repo_root: Path, output_root: Path, manifest: dict, host: str,
 
     if host == "codex" and with_marketplace:
         marketplace_path = output_root / manifest["codex"]["repo_marketplace"]["path"]
-        write_json(marketplace_path, build_codex_marketplace(manifest))
+        write_json(
+            marketplace_path,
+            build_codex_marketplace(
+                manifest,
+                source_path=manifest["codex"]["repo_marketplace"]["default_source_path"],
+            ),
+        )
 
     return plugin_root
 
@@ -120,7 +80,10 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     output_root = args.output_root.resolve()
-    manifest = load_manifest(repo_root, args.package_id)
+    try:
+        manifest = load_manifest(repo_root, args.package_id)
+    except PackagingError as exc:
+        raise ExportError(str(exc)) from exc
     plugin_root = export_plugin(repo_root, output_root, manifest, args.host, args.with_marketplace)
 
     print(

@@ -117,6 +117,29 @@ The detailed multi-session plan lives in:
 - [docs/skill-migration-map.md](docs/skill-migration-map.md)
 - [docs/ceal-consumption-model.md](docs/ceal-consumption-model.md)
 
+## Plugin Install Surface
+
+This repository is shaped so the repo root itself can act as a Claude- or
+Codex-compatible plugin root.
+
+Checked-in generated files:
+
+- `.claude-plugin/plugin.json`
+- `.codex-plugin/plugin.json`
+- `.agents/plugins/marketplace.json`
+
+These files are generated from [packaging/charness.json](packaging/charness.json)
+via `python3 scripts/sync_root_plugin_manifests.py --repo-root .`.
+
+That means:
+
+- the repo remains the host-neutral source of truth
+- plugin manifests are checked in for direct install experiments and easier
+  updates
+- runtime skill execution should not self-update the plugin
+
+Updates belong to the install or operator layer, not to individual skill runs.
+
 ## Repository Shape
 
 This repo starts small and grows into these top-level areas:

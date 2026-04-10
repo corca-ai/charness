@@ -151,6 +151,7 @@
       "required": [
         "path",
         "default_source_path",
+        "repo_root_source_path",
         "display_name",
         "category"
       ],
@@ -161,6 +162,10 @@
         "default_source_path": {
           "type": "string",
           "pattern": "^\\./.+"
+        },
+        "repo_root_source_path": {
+          "type": "string",
+          "pattern": "^\\./.*$"
         },
         "display_name": {
           "type": "string",

@@ -55,6 +55,19 @@ def require_dir(path: Path, field: str) -> None:
         raise ValidationError(f"`{field}` references missing directory `{path}`")
 
 
+def require_json_matches(path: Path, expected: dict, field: str) -> None:
+    if not path.is_file():
+        raise ValidationError(f"`{field}` references missing file `{path}`")
+    try:
+        actual = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValidationError(f"`{field}` is not valid JSON: {exc}") from exc
+    if actual != expected:
+        raise ValidationError(
+            f"`{field}` does not match generated content from the shared packaging manifest"
+        )
+
+
 def load_packaging_schema() -> dict[str, object]:
     return json.loads(PACKAGING_SCHEMA_PATH.read_text(encoding="utf-8"))
 
@@ -114,8 +127,47 @@ def validate_codex(package_id: str, version: str, summary: str, data: object) ->
             "`codex.repo_marketplace.default_source_path` must point at "
             f"`./plugins/{package_id}`"
         )
+    repo_root_source_path = validate_string(
+        marketplace.get("repo_root_source_path"), "codex.repo_marketplace.repo_root_source_path"
+    )
+    if repo_root_source_path != "./":
+        raise ValidationError("`codex.repo_marketplace.repo_root_source_path` must be `./`")
     validate_string(marketplace.get("display_name"), "codex.repo_marketplace.display_name")
     validate_string(marketplace.get("category"), "codex.repo_marketplace.category")
+
+
+def validate_root_install_artifacts(root: Path, data: dict[str, object]) -> None:
+    codex = data["codex"]
+    claude = data["claude"]
+    marketplace = codex["repo_marketplace"]
+    expected_files = (
+        (codex["manifest_path"], codex["manifest"], "codex.manifest_path"),
+        (claude["manifest_path"], claude["manifest"], "claude.manifest_path"),
+        (
+            marketplace["path"],
+            {
+                "name": data["package_id"],
+                "interface": {"displayName": marketplace["display_name"]},
+                "plugins": [
+                    {
+                        "name": data["package_id"],
+                        "source": {
+                            "source": "local",
+                            "path": marketplace["repo_root_source_path"],
+                        },
+                        "policy": {
+                            "installation": "AVAILABLE",
+                            "authentication": "ON_INSTALL",
+                        },
+                        "category": marketplace["category"],
+                    }
+                ],
+            },
+            "codex.repo_marketplace.path",
+        ),
+    )
+    for rel_path, expected, field in expected_files:
+        require_json_matches(root / rel_path, expected, field)
 
 
 def validate_claude(package_id: str, version: str, summary: str, repository: str, data: object) -> None:
@@ -138,7 +190,7 @@ def validate_claude(package_id: str, version: str, summary: str, repository: str
         raise ValidationError("`claude.manifest.repository` must match top-level `repository`")
 
 
-def validate_packaging_manifest(path: Path, root: Path) -> None:
+def validate_packaging_manifest(path: Path, root: Path, *, validate_root_artifacts: bool = True) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         raise ValidationError("packaging manifest must be a JSON object")
@@ -168,6 +220,8 @@ def validate_packaging_manifest(path: Path, root: Path) -> None:
     validate_source_paths(root, data.get("source"))
     validate_codex(package_id, version, summary, data.get("codex"))
     validate_claude(package_id, version, summary, repository, data.get("claude"))
+    if validate_root_artifacts:
+        validate_root_install_artifacts(root, data)
 
 
 def iter_packaging_files(root: Path) -> list[Path]:

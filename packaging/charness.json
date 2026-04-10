@@ -30,6 +30,7 @@
     "repo_marketplace": {
       "path": ".agents/plugins/marketplace.json",
       "default_source_path": "./plugins/charness",
+      "repo_root_source_path": "./",
       "display_name": "charness",
       "category": "Productivity"
     }

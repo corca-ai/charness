@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -122,6 +123,77 @@ def test_validate_presets_passes_on_current_repo() -> None:
 def test_validate_packaging_passes_on_current_repo() -> None:
     result = run_script("scripts/validate-packaging.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
+
+
+def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "packaging").mkdir(parents=True)
+    (repo / "skills" / "public").mkdir(parents=True)
+    (repo / "skills" / "support").mkdir(parents=True)
+    (repo / "profiles").mkdir(parents=True)
+    (repo / "presets").mkdir(parents=True)
+    (repo / "integrations" / "tools").mkdir(parents=True)
+    shutil.copy2(ROOT / "packaging" / "plugin.schema.json", repo / "packaging" / "plugin.schema.json")
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (repo / "packaging" / "demo.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "package_id": "demo",
+                "display_name": "demo",
+                "version": "0.1.0",
+                "summary": "Demo package.",
+                "author": {"name": "Demo"},
+                "homepage": "https://example.com/demo",
+                "repository": "https://example.com/demo",
+                "source": {
+                    "readme": "README.md",
+                    "skills_dir": "skills",
+                    "public_skills_dir": "skills/public",
+                    "support_skills_dir": "skills/support",
+                    "profiles_dir": "profiles",
+                    "presets_dir": "presets",
+                    "integrations_dir": "integrations/tools",
+                },
+                "codex": {
+                    "manifest_path": ".codex-plugin/plugin.json",
+                    "manifest": {
+                        "name": "demo",
+                        "version": "0.1.0",
+                        "description": "Demo package.",
+                        "skills": "./skills/",
+                    },
+                    "repo_marketplace": {
+                        "path": ".agents/plugins/marketplace.json",
+                        "default_source_path": "./plugins/demo",
+                        "repo_root_source_path": "./",
+                        "display_name": "demo",
+                        "category": "Productivity",
+                    },
+                },
+                "claude": {
+                    "manifest_path": ".claude-plugin/plugin.json",
+                    "manifest": {
+                        "name": "demo",
+                        "version": "0.1.0",
+                        "description": "Demo package.",
+                        "repository": "https://example.com/demo",
+                    },
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/sync_root_plugin_manifests.py", "--repo-root", str(repo), "--package-id", "demo")
+    assert result.returncode == 0, result.stderr
+    assert (repo / ".claude-plugin" / "plugin.json").exists()
+    assert (repo / ".codex-plugin" / "plugin.json").exists()
+    assert (repo / ".agents" / "plugins" / "marketplace.json").exists()
+
+    validate = run_script("scripts/validate-packaging.py", "--repo-root", str(repo))
+    assert validate.returncode == 0, validate.stderr
 
 
 def test_check_python_lengths_passes_on_current_repo() -> None:
