@@ -17,8 +17,15 @@ python3 scripts/check-doc-links.py --repo-root "$REPO_ROOT"
 ./scripts/check-secrets.sh
 ./scripts/check-shell.sh
 ./scripts/check-links-external.sh
-python3 -m py_compile scripts/*.py skills/public/*/scripts/*.py
-ruff check scripts tests skills/public/*/scripts
+shopt -s nullglob
+python_files=(
+  scripts/*.py
+  skills/public/*/scripts/*.py
+  skills/support/*/scripts/*.py
+  skills/support/*/vendor/*.py
+)
+python3 -m py_compile "${python_files[@]}"
+ruff check scripts tests skills/public/*/scripts skills/support/*/scripts
 pytest -q
 python3 scripts/run-evals.py --repo-root "$REPO_ROOT"
 python3 scripts/check-duplicates.py --repo-root "$REPO_ROOT" --fail-on-match

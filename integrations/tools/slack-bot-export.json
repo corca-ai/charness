@@ -129,7 +129,7 @@
     ]
   },
   "host_notes": [
-    "Current `charness` v1 sync materializes a support reference, not the upstream executable scripts themselves. Hosts still need an equivalent runtime path to execute Slack export.",
-    "This manifest is transitional metadata only. The intended long-term model is `charness`-owned Slack gather provider runtime, not an external plugin runtime dependency."
+    "Current `charness` runtime now lives under `skills/support/gather-slack/`; this manifest remains temporary capability metadata until support-owned capability metadata has a permanent home.",
+    "Treat this manifest as deprecated transitional metadata, not as the runtime ownership boundary."
   ]
 }

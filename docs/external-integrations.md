@@ -56,6 +56,11 @@ That means:
 - Google Workspace access should be modeled through a real external runtime
   such as `gws-cli`, not through a borrowed public-export implementation
 
+Current `charness` support homes:
+
+- `skills/support/gather-slack/`
+- `skills/support/gather-notion/`
+
 See [gather-provider-ownership.md](/home/ubuntu/charness/docs/gather-provider-ownership.md).
 
 ## Runtime Access Principle

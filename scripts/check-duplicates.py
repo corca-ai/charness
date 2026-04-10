@@ -11,9 +11,12 @@ from pathlib import Path
 DEFAULT_PATTERNS = (
     "scripts/*.py",
     "skills/public/*/scripts/*.py",
+    "skills/support/*/scripts/*.py",
     "docs/*.md",
     "skills/public/*/references/*.md",
+    "skills/support/*/references/*.md",
     "skills/public/*/SKILL.md",
+    "skills/support/*/SKILL.md",
     "README.md",
 )
 DEFAULT_MIN_NONEMPTY_LINES = 18

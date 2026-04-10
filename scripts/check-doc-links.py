@@ -13,6 +13,7 @@ DOC_GLOBS = (
     "presets/**/*.md",
     "profiles/**/*.md",
     "skills/public/**/*.md",
+    "skills/support/**/*.md",
 )
 LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 

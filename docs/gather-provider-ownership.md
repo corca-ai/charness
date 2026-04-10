@@ -106,5 +106,5 @@ When a consumer wants provider-backed gather:
    contract is ready.
 2. Treat Slack and Notion as `charness`-owned provider runtime, not external
    plugin dependencies.
-3. Design the `charness`-owned support/runtime home for Slack and Notion gather
-   helpers so consumers stop inheriting this ambiguity.
+3. Keep capability metadata honest while the support/runtime home lands under
+   `skills/support/`.

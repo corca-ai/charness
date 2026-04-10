@@ -113,15 +113,28 @@ def validate_support_files(skill_dir: Path) -> None:
     has_scripts_dir = (skill_dir / "scripts").exists()
     if has_adapter_example and not has_scripts_dir:
         raise ValidationError("adapter.example.yaml exists but scripts/ is missing")
-    if has_scripts_dir:
+    if has_adapter_example:
         for required in ("resolve_adapter.py", "init_adapter.py"):
             if not (skill_dir / "scripts" / required).exists():
                 raise ValidationError(f"scripts/{required} is missing")
 
 
-def iter_skill_dirs(root: Path) -> list[Path]:
-    public_skills_dir = root / "skills" / "public"
-    return sorted(path for path in public_skills_dir.iterdir() if path.is_dir())
+SKILL_ROOTS = (
+    ("public", Path("skills/public")),
+    ("support", Path("skills/support")),
+)
+
+
+def iter_skill_dirs(root: Path) -> list[tuple[str, Path]]:
+    skill_dirs: list[tuple[str, Path]] = []
+    for kind, rel_root in SKILL_ROOTS:
+        skill_root = root / rel_root
+        if not skill_root.exists():
+            continue
+        for path in skill_root.iterdir():
+            if path.is_dir() and path.name != "generated":
+                skill_dirs.append((kind, path))
+    return sorted(skill_dirs, key=lambda item: (item[0], item[1].name))
 
 
 def main() -> int:
@@ -132,11 +145,13 @@ def main() -> int:
     root = args.repo_root.resolve()
     skill_dirs = iter_skill_dirs(root)
     if not skill_dirs:
-        print("No public skills found.")
+        print("No skill packages found.")
         return 0
 
     validated = 0
-    for skill_dir in skill_dirs:
+    public_validated = 0
+    support_validated = 0
+    for kind, skill_dir in skill_dirs:
         skill_md = skill_dir / "SKILL.md"
         if not skill_md.exists():
             raise ValidationError(f"{skill_dir}: missing SKILL.md")
@@ -146,8 +161,15 @@ def main() -> int:
         except ValidationError as exc:
             raise ValidationError(f"{skill_md}: {exc}") from exc
         validated += 1
+        if kind == "public":
+            public_validated += 1
+        else:
+            support_validated += 1
 
-    print(f"Validated {validated} public skill packages.")
+    print(
+        f"Validated {validated} skill packages "
+        f"({public_validated} public, {support_validated} support)."
+    )
     return 0
 
 

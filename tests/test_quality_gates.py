@@ -110,6 +110,37 @@ def test_validate_skills_rejects_unlisted_reference_file(tmp_path: Path) -> None
     assert "unlisted reference file(s): `references/note.md`" in result.stderr
 
 
+def test_validate_skills_accepts_support_skill_package(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "support" / "demo-support"
+    references_dir = skill_dir / "references"
+    scripts_dir = skill_dir / "scripts"
+    references_dir.mkdir(parents=True)
+    scripts_dir.mkdir()
+    (references_dir / "runtime.md").write_text("# Runtime\n", encoding="utf-8")
+    (scripts_dir / "helper.py").write_text("print('ok')\n", encoding="utf-8")
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo-support",
+                'description: "Demo support skill."',
+                "---",
+                "",
+                "# Demo Support",
+                "",
+                "## References",
+                "",
+                "- `references/runtime.md`",
+                "- `scripts/helper.py`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
 def test_validate_profiles_passes_on_current_repo() -> None:
     result = run_script("scripts/validate-profiles.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr

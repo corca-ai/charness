@@ -31,6 +31,11 @@ Concept-integrity follow-up after:
   pretending that another plugin repo owns `charness` runtime.
 - `docs/external-integrations.md` and `docs/master-plan.md` now distinguish
   true external binaries from `charness`-owned provider runtime more clearly.
+- skill-package quality gates can now expand to `skills/support/*` without
+  pretending only public skills deserve package discipline.
+- `skills/support/gather-slack/` and `skills/support/gather-notion/` now give
+  `charness` an actual local runtime home for provider-backed gather instead of
+  leaving ownership correction at the doc-only stage.
 - `handoff` now requires a bounded misunderstanding premortem when the baton
   changes materially, which directly addresses the class of ownership/workflow
   misread that surfaced in this session.
@@ -39,17 +44,18 @@ Concept-integrity follow-up after:
 
 ### Weak
 
-- The repo now has the right ownership statement for Slack and published
-  Notion gather, but those provider surfaces still remain in
-  `integrations/tools/` as transitional metadata while the replacement
-  `charness`-owned support/runtime surface does not yet exist.
+- Slack and published Notion now have a `charness`-owned support/runtime home,
+  but their old exploratory manifests still remain in `integrations/tools/` as
+  transitional capability metadata. That split is honest now, but still
+  slightly awkward.
 - Google ownership is clearer than before, but the real `gws-cli` integration
   contract is still absent, so the corrected direction exists only in docs.
 
 ### Missing
 
 - No `gws-cli` manifest yet for the Google path.
-- No `charness`-owned Slack/Notion gather provider runtime package yet.
+- No permanent support-owned capability metadata surface yet for Slack/Notion
+  after moving runtime ownership into `skills/support/`.
 
 ### Recommended Next Gates
 

@@ -14,6 +14,10 @@ instead of re-fetching or re-summarizing the same source from scratch.
 under the hood. Provider choice, credential mechanics, and onboarding details
 belong in support and integration layers, not in the public skill definition.
 
+Current `charness`-owned provider runtime lives under support skills such as
+`gather-slack` and `gather-notion`. Google Workspace remains an external
+runtime boundary and should flow through a real integration such as `gws-cli`.
+
 ## Bootstrap
 
 Resolve the adapter first, then prefer the narrowest relevant scope.

@@ -5,12 +5,15 @@ concepts.
 
 ## Current Layout
 
+- local harness-owned support skills, for example provider runtime that public
+  skills consume under the hood
 - `generated/`: machine-generated wrapper or reference material created by the
   control plane
 
 ## Rules
 
 - do not put public workflow concepts here
+- keep the public surface stable even when support/runtime lives here
 - prefer upstream consumption plus manifests when the external repo already
   ships a usable support surface
 - generated reference artifacts may live here even when `charness` does not own

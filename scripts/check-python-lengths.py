@@ -18,7 +18,11 @@ class ValidationError(Exception):
 
 def iter_python_targets(root: Path) -> list[Path]:
     return sorted(
-        [*root.glob("scripts/*.py"), *root.glob("skills/public/*/scripts/*.py")]
+        [
+            *root.glob("scripts/*.py"),
+            *root.glob("skills/public/*/scripts/*.py"),
+            *root.glob("skills/support/*/scripts/*.py"),
+        ]
     )
 
 
