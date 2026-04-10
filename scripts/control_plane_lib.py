@@ -14,6 +14,13 @@ import jsonschema
 from packaging.version import InvalidVersion, Version
 
 from scripts.control_plane_render import render_generated_wrapper, render_reference_note
+from scripts.support_sync_lib import (
+    effective_sync_strategy,
+    materialize_copy,
+    materialize_symlink,
+    resolve_support_source_path,
+    support_state_for_manifest,
+)
 
 MANIFEST_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "integrations" / "tools" / "manifest.schema.json"
 LOCK_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "integrations" / "locks" / "lock.schema.json"
@@ -207,16 +214,6 @@ def evaluate_version(manifest: dict[str, Any], detect_result: dict[str, Any]) ->
     }
 
 
-def support_state_for_manifest(manifest: dict[str, Any]) -> str:
-    support = manifest.get("support_skill_source")
-    if not support:
-        return "integration-only"
-    strategy = support["sync_strategy"]
-    if strategy == "generated_wrapper" or support["source_type"] == "local_wrapper":
-        return "wrapped-upstream"
-    return "upstream-consumed"
-
-
 def validate_lock_data(data: dict[str, Any], schema: dict[str, Any], path: Path) -> None:
     jsonschema.validate(data, schema)
 
@@ -278,11 +275,17 @@ def selected_manifests(repo_root: Path, tool_ids: list[str]) -> list[dict[str, A
     return [manifests[tool_id] for tool_id in tool_ids if tool_id in manifests]
 
 
-def materialize_support(repo_root: Path, manifest: dict[str, Any]) -> list[str]:
+def materialize_support(
+    repo_root: Path,
+    manifest: dict[str, Any],
+    *,
+    upstream_checkouts: dict[str, Path],
+    local_dev_symlink: bool = False,
+) -> list[str]:
     support = manifest.get("support_skill_source")
     if not support:
         return []
-    strategy = support["sync_strategy"]
+    strategy = effective_sync_strategy(manifest, local_dev_symlink=local_dev_symlink)
     if strategy == "generated_wrapper":
         wrapper_id = support["wrapper_skill_id"]
         skill_dir = repo_root / GENERATED_SUPPORT_DIR / wrapper_id
@@ -299,22 +302,14 @@ def materialize_support(repo_root: Path, manifest: dict[str, Any]) -> list[str]:
             encoding="utf-8",
         )
         return [str(reference_path.relative_to(repo_root))]
+    if strategy in {"copy", "symlink"}:
+        source_path = resolve_support_source_path(
+            repo_root,
+            manifest,
+            upstream_checkouts=upstream_checkouts,
+        )
+        dest_root = repo_root / GENERATED_SUPPORT_DIR / manifest["tool_id"]
+        if strategy == "copy":
+            return materialize_copy(source_path, dest_root, repo_root)
+        return materialize_symlink(source_path, dest_root, repo_root)
     raise ValueError(f"unsupported sync strategy `{strategy}` for local materialization")
-
-
-def inspect_support_sync(repo_root: Path, previous_lock: dict[str, Any] | None) -> dict[str, Any]:
-    support = previous_lock.get("support") if previous_lock else None
-    if not support:
-        return {
-            "status": "not-tracked",
-            "expected_paths": [],
-            "missing_paths": [],
-        }
-
-    expected_paths = support.get("materialized_paths", [])
-    missing_paths = [path for path in expected_paths if not (repo_root / path).exists()]
-    return {
-        "status": "ok" if not missing_paths else "missing",
-        "expected_paths": expected_paths,
-        "missing_paths": missing_paths,
-    }

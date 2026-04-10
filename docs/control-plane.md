@@ -55,6 +55,9 @@ Writes:
 - generated reference notes under `skills/support/generated/` when
   `sync_strategy` is `reference`
 - local copy or symlink material only when the manifest declares that strategy
+- `copy` and `symlink` require an explicit upstream checkout mapping from the
+  operator, for example
+  `--upstream-checkout corca-ai/claude-plugins=/abs/path/to/claude-plugins`
 
 Rules:
 
@@ -63,6 +66,11 @@ Rules:
 - `reference` is the default recommendation because it keeps the local taxonomy
   honest while still leaving a durable breadcrumb for operators and later host
   packaging
+- shared manifests should prefer `copy` when they need executable support
+  materialization; `--local-dev-symlink` is only a maintainer-local override
+  for repos that want faster iteration without changing the published contract
+- `copy` and `symlink` must fail closed when the requested upstream checkout is
+  not mapped or the referenced upstream path does not exist
 - leaves public skill taxonomy untouched
 - should support `--dry-run` before any write mode exists
 

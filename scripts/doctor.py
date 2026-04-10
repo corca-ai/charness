@@ -13,14 +13,13 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.control_plane_lib import (
     evaluate_version,
-    inspect_support_sync,
     load_manifests,
     now_iso,
     read_lock,
     run_check,
-    support_state_for_manifest,
     upsert_lock,
 )
+from scripts.support_sync_lib import inspect_support_sync, support_state_for_manifest
 
 
 def evaluate_readiness(manifest: dict[str, object], repo_root: Path) -> dict[str, object]:
@@ -45,8 +44,11 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
     }
     readiness_result = evaluate_readiness(manifest, repo_root)
     version_result = evaluate_version(manifest, detect_result)
-    support_state = support_state_for_manifest(manifest)
     previous_lock = read_lock(repo_root, manifest["tool_id"])
+    synced_strategy = None
+    if previous_lock and isinstance(previous_lock.get("support"), dict):
+        synced_strategy = previous_lock["support"].get("sync_strategy")
+    support_state = support_state_for_manifest(manifest, sync_strategy=synced_strategy)
     support_sync = inspect_support_sync(repo_root, previous_lock)
 
     if support_sync["status"] == "missing":

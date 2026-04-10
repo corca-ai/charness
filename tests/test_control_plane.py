@@ -407,3 +407,190 @@ def test_sync_support_reference_materializes_reference_artifact_and_lock(tmp_pat
     lock_payload = json.loads((repo / "integrations" / "locks" / "agent-browser.json").read_text(encoding="utf-8"))
     assert lock_payload["support"]["sync_strategy"] == "reference"
     assert lock_payload["support"]["materialized_paths"] == ["skills/support/generated/agent-browser/REFERENCE.md"]
+
+
+def test_sync_support_copy_materializes_upstream_checkout(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    upstream = tmp_path / "upstream"
+    tools_dir = repo / "integrations" / "tools"
+    locks_dir = repo / "integrations" / "locks"
+    generated_dir = repo / "skills" / "support" / "generated"
+    tools_dir.mkdir(parents=True)
+    locks_dir.mkdir(parents=True)
+    generated_dir.mkdir(parents=True)
+    (upstream / "skills" / "demo-copy").mkdir(parents=True)
+    (upstream / "skills" / "demo-copy" / "SKILL.md").write_text("# demo\n", encoding="utf-8")
+    (upstream / "skills" / "demo-copy" / "helper.sh").write_text("echo demo\n", encoding="utf-8")
+
+    (tools_dir / "manifest.schema.json").write_text(
+        (ROOT / "integrations" / "tools" / "manifest.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (tools_dir / "demo-copy.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "tool_id": "demo-copy",
+                "kind": "external_skill",
+                "display_name": "demo-copy",
+                "upstream_repo": "example/demo-copy",
+                "homepage": "https://example.com/demo-copy",
+                "lifecycle": {"install": {"mode": "manual"}, "update": {"mode": "manual"}},
+                "checks": {
+                    "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                    "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                },
+                "access_modes": ["binary"],
+                "version_expectation": {"policy": "advisory", "constraint": "latest"},
+                "support_skill_source": {
+                    "source_type": "upstream_repo",
+                    "path": "skills/demo-copy",
+                    "ref": "main",
+                    "sync_strategy": "copy",
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    sync = run_script(
+        "scripts/sync_support.py",
+        "--repo-root",
+        str(repo),
+        "--execute",
+        "--upstream-checkout",
+        f"example/demo-copy={upstream}",
+        "--json",
+    )
+    assert sync.returncode == 0, sync.stderr
+    sync_payload = json.loads(sync.stdout)
+    assert sync_payload[0]["materialized_paths"] == ["skills/support/generated/demo-copy"]
+    copied_skill = repo / "skills" / "support" / "generated" / "demo-copy" / "SKILL.md"
+    copied_helper = repo / "skills" / "support" / "generated" / "demo-copy" / "helper.sh"
+    assert copied_skill.exists()
+    assert copied_helper.exists()
+
+
+def test_sync_support_symlink_materializes_upstream_checkout(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    upstream = tmp_path / "upstream"
+    tools_dir = repo / "integrations" / "tools"
+    locks_dir = repo / "integrations" / "locks"
+    generated_dir = repo / "skills" / "support" / "generated"
+    tools_dir.mkdir(parents=True)
+    locks_dir.mkdir(parents=True)
+    generated_dir.mkdir(parents=True)
+    (upstream / "skills" / "demo-link").mkdir(parents=True)
+    (upstream / "skills" / "demo-link" / "SKILL.md").write_text("# demo-link\n", encoding="utf-8")
+
+    (tools_dir / "manifest.schema.json").write_text(
+        (ROOT / "integrations" / "tools" / "manifest.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (tools_dir / "demo-link.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "tool_id": "demo-link",
+                "kind": "external_skill",
+                "display_name": "demo-link",
+                "upstream_repo": "example/demo-link",
+                "homepage": "https://example.com/demo-link",
+                "lifecycle": {"install": {"mode": "manual"}, "update": {"mode": "manual"}},
+                "checks": {
+                    "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                    "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                },
+                "access_modes": ["binary"],
+                "version_expectation": {"policy": "advisory", "constraint": "latest"},
+                "support_skill_source": {
+                    "source_type": "upstream_repo",
+                    "path": "skills/demo-link",
+                    "ref": "main",
+                    "sync_strategy": "symlink",
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    sync = run_script(
+        "scripts/sync_support.py",
+        "--repo-root",
+        str(repo),
+        "--execute",
+        "--upstream-checkout",
+        f"example/demo-link={upstream}",
+        "--json",
+    )
+    assert sync.returncode == 0, sync.stderr
+    link_root = repo / "skills" / "support" / "generated" / "demo-link"
+    assert link_root.is_symlink()
+    assert link_root.resolve() == (upstream / "skills" / "demo-link").resolve()
+
+
+def test_sync_support_local_dev_symlink_overrides_copy_manifest(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    upstream = tmp_path / "upstream"
+    tools_dir = repo / "integrations" / "tools"
+    locks_dir = repo / "integrations" / "locks"
+    generated_dir = repo / "skills" / "support" / "generated"
+    tools_dir.mkdir(parents=True)
+    locks_dir.mkdir(parents=True)
+    generated_dir.mkdir(parents=True)
+    (upstream / "skills" / "demo-copy").mkdir(parents=True)
+    (upstream / "skills" / "demo-copy" / "SKILL.md").write_text("# demo-copy\n", encoding="utf-8")
+
+    (tools_dir / "manifest.schema.json").write_text(
+        (ROOT / "integrations" / "tools" / "manifest.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (tools_dir / "demo-copy.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "tool_id": "demo-copy",
+                "kind": "external_skill",
+                "display_name": "demo-copy",
+                "upstream_repo": "example/demo-copy",
+                "homepage": "https://example.com/demo-copy",
+                "lifecycle": {"install": {"mode": "manual"}, "update": {"mode": "manual"}},
+                "checks": {
+                    "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                    "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                },
+                "access_modes": ["binary"],
+                "version_expectation": {"policy": "advisory", "constraint": "latest"},
+                "support_skill_source": {
+                    "source_type": "upstream_repo",
+                    "path": "skills/demo-copy",
+                    "ref": "main",
+                    "sync_strategy": "copy",
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    sync = run_script(
+        "scripts/sync_support.py",
+        "--repo-root",
+        str(repo),
+        "--execute",
+        "--upstream-checkout",
+        f"example/demo-copy={upstream}",
+        "--local-dev-symlink",
+        "--json",
+    )
+    assert sync.returncode == 0, sync.stderr
+    sync_payload = json.loads(sync.stdout)
+    assert sync_payload[0]["sync_strategy"] == "symlink"
+    link_root = repo / "skills" / "support" / "generated" / "demo-copy"
+    assert link_root.is_symlink()
+    assert link_root.resolve() == (upstream / "skills" / "demo-copy").resolve()

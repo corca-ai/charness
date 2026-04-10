@@ -89,17 +89,19 @@
 - Ceal consumption model v1이 [ceal-consumption-model.md](/home/ubuntu/charness/docs/ceal-consumption-model.md)에 정리됐다. 핵심은 Ceal repo maintainer 환경은 full `charness`를 소비하고, Ceal Slack app 조직 설치는 Ceal-owned preset을 install unit으로 삼는 dual consumption model이다.
 - preset contract가 한 단계 강해졌다. preset file은 이제 YAML-safe frontmatter로 `name`, `description`, `preset_kind`, `install_scope`를 가져야 하고, [validate-presets.py](/home/ubuntu/charness/scripts/validate-presets.py)가 이를 검증한다. shipped `charness` preset은 현재 전부 `maintainer` scope이고, future `organization` scope preset은 `product-slice` kind와 `## Exposure Contract` section을 요구한다.
 - repo root 자체가 plugin root로 동작할 수 있도록 [plugin.json](/home/ubuntu/charness/.claude-plugin/plugin.json), [marketplace.json](/home/ubuntu/charness/.claude-plugin/marketplace.json), [plugin.json](/home/ubuntu/charness/.codex-plugin/plugin.json), [marketplace.json](/home/ubuntu/charness/.agents/plugins/marketplace.json)을 checked-in generated artifact로 두기 시작했다. 이 파일들은 [charness.json](/home/ubuntu/charness/packaging/charness.json)에서 [sync_root_plugin_manifests.py](/home/ubuntu/charness/scripts/sync_root_plugin_manifests.py)로 생성되고, [validate-packaging.py](/home/ubuntu/charness/scripts/validate-packaging.py)가 shared packaging manifest와의 일치를 강제한다.
+- root install surface에는 이제 얇은 startup advisory helper [plugin_preamble.py](/home/ubuntu/charness/scripts/plugin_preamble.py)도 있다. 이 스크립트는 package version, root install-surface drift, explicit Claude/Codex update hints, lock-based readiness summary, vendored-copy warnings만 읽고 알리며, skill execution 중 networked self-update를 하지 않는다.
+- [sync_support.py](/home/ubuntu/charness/scripts/sync_support.py)는 이제 manifest가 선언하면 executable support sync로 `copy`와 maintainer-local `symlink`를 수행할 수 있다. 다만 shared contract는 explicit `--upstream-checkout owner/name=/abs/path` mapping을 요구하고, current shipped manifests는 여전히 `reference`를 기본으로 유지한다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - support skill migrations and integration wrappers
   - extracted evaluation engine (`cautilus`) integration manifest
-  - executable support-sync beyond the current reference-only seam
+  - concrete adoption of executable support-sync on shipped manifests
   - support control-plane lock artifact shaping beyond the current initial seam
   - the first concrete downstream org-installable preset in the host repo
 
 ## Next Session
 
-1. pre-`cautilus`로 계속 가면 `gather` provider manifests 다음 단계로, upstream executable support surface를 `reference` 이상으로 materialize할지 (`copy` / `symlink` / fetch) 아니면 host가 별도 provider runtime을 책임지게 둘지 결정하고 그 contract를 좁힌다.
+1. pre-`cautilus`로 계속 가면 `gather` provider manifests 다음 단계로, 방금 추가한 `copy` / `symlink` contract를 어떤 shipped manifest에 먼저 적용할지 정한다. 특히 CWF gather처럼 하나의 upstream skill이 여러 provider를 품는 경우를 per-provider duplicated copy로 둘지, shared upstream support manifest로 분리할지, 아니면 reference-only를 유지할지 좁혀야 한다.
 2. packaging export는 계속 최소 generated surface만 유지하고, richer install-surface metadata는 capability contract와 충돌하지 않게 나중에 본다.
 3. checked-in root host manifests로 Claude/Codex direct install experiment를 실제로 해 보고, 필요하면 packaging metadata를 더 보강한다.
 4. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
