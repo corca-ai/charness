@@ -27,8 +27,7 @@ Concept-integrity follow-up after:
 - `docs/gather-provider-ownership.md` now makes the intended runtime boundary
   explicit: reference implementations do not automatically become runtime
   owners.
-- `google-public-export`, `slack-bot-export`, and
-  `notion-published-export` no longer sit in the external integration surface
+- `google-public-export` no longer sits in the external integration surface
   pretending that another plugin repo owns `charness` runtime.
 - `docs/external-integrations.md` and `docs/master-plan.md` now distinguish
   true external binaries from `charness`-owned provider runtime more clearly.
@@ -41,8 +40,9 @@ Concept-integrity follow-up after:
 ### Weak
 
 - The repo now has the right ownership statement for Slack and published
-  Notion gather, but it does not yet have the replacement `charness`-owned
-  support/runtime surface that consumers can use.
+  Notion gather, but those provider surfaces still remain in
+  `integrations/tools/` as transitional metadata while the replacement
+  `charness`-owned support/runtime surface does not yet exist.
 - Google ownership is clearer than before, but the real `gws-cli` integration
   contract is still absent, so the corrected direction exists only in docs.
 

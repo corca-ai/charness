@@ -26,6 +26,7 @@ support surface without copying it into the local taxonomy.
 ## Host Notes
 
 - Current `charness` v1 sync materializes a support reference, not the upstream executable scripts themselves. Hosts still need an equivalent runtime path to execute Slack export.
+- This manifest is transitional metadata only. The intended long-term model is `charness`-owned Slack gather provider runtime, not an external plugin runtime dependency.
 
 Regenerate this file through `scripts/sync_support.py` instead of
 editing it by hand.
