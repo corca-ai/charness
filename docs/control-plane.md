@@ -103,18 +103,20 @@ Checks:
 - detect command succeeds
 - observed version satisfies `version_expectation`
 - healthcheck command returns the expected signal
+- optional manifest-declared `readiness_checks` succeed
 - declared support-skill reference exists or can be regenerated
 
 Exit semantics:
 
 - `0`: all checked integrations satisfy the manifest
-- `1`: at least one integration is missing, unhealthy, or version-mismatched
+- `1`: at least one integration is missing, unhealthy, not ready, or version-mismatched
 - `2`: manifest error or control-plane misuse blocked evaluation
 
 Rules:
 
 - must report per-tool failures without stopping after the first problem
 - should distinguish missing tool, stale version, and broken support-skill sync
+- should distinguish a setup-not-ready host from a missing or unhealthy binary
 - should reuse manifest degradation notes in operator-facing output
 - when writing locks, should update the `doctor` section without discarding
   prior `support` or `update` sections
@@ -133,6 +135,7 @@ and onboarding layers can inspect it without re-reading the manifest:
 - `kind`
 - `access_modes`
 - `capability_requirements`
+- `readiness`
 
 ## Initial Target Set
 

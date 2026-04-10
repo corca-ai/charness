@@ -117,6 +117,13 @@
       "minItems": 1,
       "uniqueItems": true
     },
+    "readiness_checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/readinessCheck"
+      },
+      "minItems": 1
+    },
     "version_expectation": {
       "$ref": "#/definitions/versionExpectation"
     },
@@ -196,6 +203,35 @@
         "success_criteria"
       ],
       "properties": {
+        "commands": {
+          "$ref": "#/definitions/stringList"
+        },
+        "success_criteria": {
+          "$ref": "#/definitions/stringList"
+        },
+        "failure_hint": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "readinessCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_id",
+        "summary",
+        "commands",
+        "success_criteria"
+      ],
+      "properties": {
+        "check_id": {
+          "$ref": "#/definitions/slug"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
         "commands": {
           "$ref": "#/definitions/stringList"
         },

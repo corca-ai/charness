@@ -96,6 +96,8 @@ Expected fields:
 - `capability_requirements`
   - non-secret grant ids, env var names, or permission scopes needed to use
     those access modes
+- `readiness_checks`
+  - optional setup-readiness probes that can fail closed before runtime use
 - `version_expectation`
 - `support_skill_source`
   - absent when no upstream skill exists

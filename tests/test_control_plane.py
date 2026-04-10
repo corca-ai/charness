@@ -27,6 +27,7 @@ def seed_control_plane_repo(tmp_path: Path) -> Path:
     locks_dir.mkdir(parents=True)
     generated_dir.mkdir(parents=True)
     bin_dir.mkdir(parents=True)
+    (repo / ".demo-ready").write_text("ready\n", encoding="utf-8")
 
     (tools_dir / "manifest.schema.json").write_text(
         (ROOT / "integrations" / "tools" / "manifest.schema.json").read_text(encoding="utf-8"),
@@ -76,6 +77,15 @@ def seed_control_plane_repo(tmp_path: Path) -> Path:
                     },
                 },
                 "access_modes": ["binary", "degraded"],
+                "readiness_checks": [
+                    {
+                        "check_id": "demo-ready-file",
+                        "summary": "Repo readiness marker exists.",
+                        "commands": ["test -f .demo-ready"],
+                        "success_criteria": ["exit_code:0"],
+                        "failure_hint": "Run the setup step that writes .demo-ready before relying on demo-tool.",
+                    }
+                ],
                 "version_expectation": {
                     "policy": "minimum",
                     "constraint": ">=1.0.0",
@@ -218,6 +228,8 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     assert doctor_payload[0]["kind"] == "external_binary_with_skill"
     assert doctor_payload[0]["access_modes"] == ["binary", "degraded"]
     assert doctor_payload[0]["capability_requirements"] == {}
+    assert doctor_payload[0]["readiness"]["ok"] is True
+    assert doctor_payload[0]["readiness"]["failed_checks"] == []
     assert doctor_payload[0]["doctor_status"] == "ok"
     assert doctor_payload[0]["support_state"] == "wrapped-upstream"
     assert doctor_payload[0]["support_sync"]["status"] == "not-tracked"
@@ -239,6 +251,7 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     lock_payload = json.loads(lock_path.read_text(encoding="utf-8"))
     assert lock_payload["support"]["sync_strategy"] == "generated_wrapper"
     assert lock_payload["doctor"]["doctor_status"] == "ok"
+    assert lock_payload["doctor"]["readiness"]["ok"] is True
     assert lock_payload["doctor"]["support_sync"]["status"] == "not-tracked"
     assert lock_payload["update"]["update_status"] == "updated"
 
@@ -261,6 +274,18 @@ def test_doctor_detects_missing_materialized_support_from_previous_sync(tmp_path
     assert doctor_payload[0]["support_sync"]["missing_paths"] == [
         "skills/support/generated/demo-tool-wrapper/SKILL.md"
     ]
+
+
+def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path) -> None:
+    repo = seed_control_plane_repo(tmp_path)
+    (repo / ".demo-ready").unlink()
+
+    doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--write-locks")
+    assert doctor.returncode == 1, doctor.stderr
+    doctor_payload = json.loads(doctor.stdout)
+    assert doctor_payload[0]["doctor_status"] == "not-ready"
+    assert doctor_payload[0]["readiness"]["ok"] is False
+    assert doctor_payload[0]["readiness"]["failed_checks"] == ["demo-ready-file"]
 
 
 def test_sync_support_reference_materializes_reference_artifact_and_lock(tmp_path: Path) -> None:

@@ -23,6 +23,18 @@ from scripts.control_plane_lib import (
 )
 
 
+def evaluate_readiness(manifest: dict[str, object], repo_root: Path) -> dict[str, object]:
+    checks: list[dict[str, object]] = []
+    for check in manifest.get("readiness_checks", []):
+        result = run_check(check, repo_root)
+        checks.append({"check_id": check["check_id"], "summary": check["summary"], **result})
+    return {
+        "ok": all(check["ok"] for check in checks),
+        "checks": checks,
+        "failed_checks": [check["check_id"] for check in checks if not check["ok"]],
+    }
+
+
 def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: bool) -> dict[str, object]:
     detect_result = run_check(manifest["checks"]["detect"], repo_root)
     healthcheck_result = run_check(manifest["checks"]["healthcheck"], repo_root) if detect_result["ok"] else {
@@ -31,6 +43,7 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
         "failure_details": ["detect failed; healthcheck skipped"],
         "failure_hint": manifest["checks"]["healthcheck"].get("failure_hint"),
     }
+    readiness_result = evaluate_readiness(manifest, repo_root)
     version_result = evaluate_version(manifest, detect_result)
     support_state = support_state_for_manifest(manifest)
     previous_lock = read_lock(repo_root, manifest["tool_id"])
@@ -38,12 +51,16 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
 
     if support_sync["status"] == "missing":
         doctor_status = "support-missing"
-    elif detect_result["ok"] and healthcheck_result["ok"]:
-        doctor_status = "ok" if version_result["status"] in {"advisory", "matched", "unknown"} else "version-mismatch"
     elif not detect_result["ok"]:
         doctor_status = "missing"
-    else:
+    elif not healthcheck_result["ok"]:
         doctor_status = "unhealthy"
+    elif not readiness_result["ok"]:
+        doctor_status = "not-ready"
+    elif version_result["status"] not in {"advisory", "matched", "unknown"}:
+        doctor_status = "version-mismatch"
+    else:
+        doctor_status = "ok"
 
     payload = {
         "checked_at": now_iso(),
@@ -53,6 +70,7 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
         "support_state": support_state,
         "detect": detect_result,
         "healthcheck": healthcheck_result,
+        "readiness": readiness_result,
         "version": version_result,
         "support_sync": support_sync,
         "doctor_status": doctor_status,
@@ -81,7 +99,7 @@ def main() -> int:
         for result in results:
             print(f"{result['tool_id']}: {result['doctor_status']} ({result['support_state']})")
 
-    if any(result["doctor_status"] in {"missing", "unhealthy", "version-mismatch", "support-missing"} for result in results):
+    if any(result["doctor_status"] in {"missing", "unhealthy", "not-ready", "version-mismatch", "support-missing"} for result in results):
         return 1
     return 0
 

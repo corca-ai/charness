@@ -122,6 +122,8 @@ What was actually runnable today:
 - `doctor` JSON now surfaces manifest-side capability metadata too, so
   onboarding and debugging surfaces do not need a second manifest read just to
   understand access shape.
+- control-plane manifests can now declare setup `readiness_checks`, and doctor
+  distinguishes `not-ready` from plain missing/unhealthy states.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -403,6 +405,20 @@ Evidence:
 - `scripts/doctor.py`
 - `tests/test_control_plane.py`
 - `docs/control-plane.md`
+
+### 18. Setup readiness now has a manifest contract instead of living as prose
+
+Integration manifests can now declare `readiness_checks`, and `doctor` runs
+them before calling a host ready. That is a good intermediate step before any
+host-specific setup layer exists, because the repo can now fail closed on
+missing setup prerequisites without pretending they are binary-install failures.
+
+Evidence:
+
+- `integrations/tools/manifest.schema.json`
+- `scripts/doctor.py`
+- `tests/test_control_plane.py`
+- `docs/external-integrations.md`
 
 ## Commands Run
 

@@ -126,6 +126,72 @@
         }
       }
     },
+    "readinessCheckResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_id",
+        "summary",
+        "ok",
+        "results",
+        "failure_details"
+      ],
+      "properties": {
+        "check_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commandResult"
+          }
+        },
+        "failure_details": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "failure_hint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "readinessResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "checks",
+        "failed_checks"
+      ],
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/readinessCheckResult"
+          }
+        },
+        "failed_checks": {
+          "$ref": "#/definitions/stringList"
+        }
+      }
+    },
     "versionResult": {
       "type": "object",
       "additionalProperties": false,
@@ -228,6 +294,7 @@
         "support_state",
         "detect",
         "healthcheck",
+        "readiness",
         "version",
         "support_sync",
         "doctor_status"
@@ -267,6 +334,9 @@
         "healthcheck": {
           "$ref": "#/definitions/checkResult"
         },
+        "readiness": {
+          "$ref": "#/definitions/readinessResult"
+        },
         "version": {
           "$ref": "#/definitions/versionResult"
         },
@@ -301,6 +371,7 @@
             "ok",
             "missing",
             "unhealthy",
+            "not-ready",
             "version-mismatch",
             "support-missing"
           ]
