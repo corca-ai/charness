@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 node_modules/
 .pytest_cache/
+skill-outputs/quality/runtime-signals.json
+skill-outputs/quality/history/runtime-signals-*.jsonl

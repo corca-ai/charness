@@ -238,6 +238,87 @@ def test_check_python_lengths_passes_on_current_repo() -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_record_quality_runtime_writes_summary_and_archive(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    first = run_script(
+        "scripts/record_quality_runtime.py",
+        "--repo-root",
+        str(repo),
+        "--label",
+        "pytest",
+        "--elapsed-ms",
+        "1234",
+        "--status",
+        "pass",
+        "--timestamp",
+        "2026-04-10T09:00:00Z",
+        cwd=ROOT,
+    )
+    assert first.returncode == 0, first.stderr
+
+    second = run_script(
+        "scripts/record_quality_runtime.py",
+        "--repo-root",
+        str(repo),
+        "--label",
+        "pytest",
+        "--elapsed-ms",
+        "2345",
+        "--status",
+        "fail",
+        "--timestamp",
+        "2026-04-11T09:00:00Z",
+        cwd=ROOT,
+    )
+    assert second.returncode == 0, second.stderr
+
+    summary_path = repo / "skill-outputs" / "quality" / "runtime-signals.json"
+    archive_path = repo / "skill-outputs" / "quality" / "history" / "runtime-signals-2026-04.jsonl"
+    assert summary_path.exists()
+    assert archive_path.exists()
+
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    pytest_entry = summary["commands"]["pytest"]
+    assert pytest_entry["samples"] == 2
+    assert pytest_entry["passes"] == 1
+    assert pytest_entry["failures"] == 1
+    assert pytest_entry["latest"]["elapsed_ms"] == 2345
+    assert pytest_entry["median_recent_elapsed_ms"] == 1789
+
+    archive_lines = archive_path.read_text(encoding="utf-8").strip().splitlines()
+    assert len(archive_lines) == 2
+
+
+def test_record_quality_runtime_rotates_old_monthly_archives(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    history_dir = repo / "skill-outputs" / "quality" / "history"
+    history_dir.mkdir(parents=True)
+
+    for month in range(1, 14):
+        result = run_script(
+            "scripts/record_quality_runtime.py",
+            "--repo-root",
+            str(repo),
+            "--label",
+            "pytest",
+            "--elapsed-ms",
+            str(1000 + month),
+            "--status",
+            "pass",
+            "--timestamp",
+            f"2025-{month:02d}-01T00:00:00Z" if month <= 12 else "2026-01-01T00:00:00Z",
+            cwd=ROOT,
+        )
+        assert result.returncode == 0, result.stderr
+
+    archives = sorted(path.name for path in history_dir.glob("runtime-signals-*.jsonl"))
+    assert len(archives) == 12
+    assert "runtime-signals-2025-01.jsonl" not in archives
+    assert "runtime-signals-2026-01.jsonl" in archives
+
+
 def test_install_git_hooks_sets_core_hookspath(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)

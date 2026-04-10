@@ -17,6 +17,7 @@ MAX_ARTIFACT_LINES = 140
 REQUIRED_SECTIONS = (
     "## Scope",
     "## Current Gates",
+    "## Runtime Signals",
     "## Healthy",
     "## Weak",
     "## Missing",

@@ -101,6 +101,8 @@ recording.
    - keep the run bounded to the current scope when the task is not repo-wide
    - if the repo has executable-spec overlap or cost guards, run those before
      proposing more spec coverage
+   - for timing, logs, and retention signals, use
+     `references/operability-signals.md`
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and
      ownership model
@@ -140,6 +142,7 @@ recording.
      direct adapter before widening the standing spec bar
 8. End with a quality posture summary.
    - what was actually run
+   - what runtime or diagnostic signals were captured
    - what the current bar proves
    - what it still does not prove
    - the next best gate or cleanup to add
@@ -150,6 +153,7 @@ The result should usually include:
 
 - `Scope`
 - `Current Gates`
+- `Runtime Signals`
 - `Enforcement Triage`
 - `Healthy`
 - `Weak`
@@ -163,8 +167,10 @@ The result should usually include:
 - Do not reduce quality to one aggregate score.
 - Do not recommend gates the repo cannot realistically run without saying why.
 - Do not confuse gate presence with gate usefulness.
+- Do not ignore runtime drift just because a gate still passes functionally.
 - Do not treat slow or broad executable specs as automatically strong quality
   when they mostly duplicate cheaper deterministic coverage.
+- Do not recommend verbose or permanent logs without naming who will read them and how they stay bounded.
 - Do not leave an automatable quality rule as prose-only guidance when a
   linter, validator, test, hook, or script could own it.
 - If you stop short of an obvious repo-owned deterministic gate, name that as
@@ -189,5 +195,6 @@ The result should usually include:
 - `references/proposal-flow.md`
 - `references/gate-classification.md`
 - `references/automation-promotion.md`
+- `references/operability-signals.md`
 - `references/executable-spec-economics.md`
 - `references/sample-presets.md`

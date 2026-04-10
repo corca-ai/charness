@@ -47,6 +47,9 @@ Check whether the quality bar can actually be maintained:
 - local setup honesty
 - CI gate realism
 - maintenance burden
+- runtime drift for standing lint, test, eval, or quality commands
+- useful diagnostics or logs that appear early enough for operators and agents
 - drift between claimed and runnable commands
+- retention and rotation for long-lived logs or machine-readable diagnostics
 - refactor pressure from copied helper seams or skill-package drift
 - duplicated documentation that should collapse into one maintained surface

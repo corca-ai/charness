@@ -13,10 +13,21 @@ guidance around cost, overlap, and adapter depth.
 - `./scripts/run-quality.sh` remains the canonical local gate.
 - `.githooks/pre-push` enforces that gate in clones that installed
   `./scripts/install-git-hooks.sh`.
+- `scripts/record_quality_runtime.py` now records per-gate elapsed time into a
+  compact current summary plus rotated monthly archives.
 - `scripts/validate-quality-artifact.py` now keeps this file short and shaped
   as a current snapshot instead of an ever-growing session log.
 - `scripts/validate-maintainer-setup.py` now fails closed when this clone has
   not actually activated the checked-in pre-push hook.
+
+## Runtime Signals
+
+- standing quality gates now write per-command elapsed time to
+  `skill-outputs/quality/runtime-signals.json`
+- older timing samples rotate into monthly `history/runtime-signals-YYYY-MM.jsonl`
+  archives instead of accumulating in the current snapshot
+- `quality` should now treat lint/test/runtime drift and bounded diagnostic
+  retention as operability quality, not as an afterthought
 
 ## Healthy
 
@@ -59,6 +70,7 @@ guidance around cost, overlap, and adapter depth.
 ## Commands Run
 
 - `./scripts/run-quality.sh`
+- `cat skill-outputs/quality/runtime-signals.json`
 - `python3 scripts/doctor.py --repo-root . --tool-id gws-cli --json`
 - `python3 scripts/validate-maintainer-setup.py --repo-root .`
 
@@ -73,6 +85,9 @@ guidance around cost, overlap, and adapter depth.
 - `AUTO_CANDIDATE`: connect the new `cautilus` integration manifest to honest
   maintained scenarios for `evaluator-required` skills without pretending the
   current repo-local bar already has that depth.
+- `AUTO_CANDIDATE`: when a repo relies on logs or machine-readable diagnostics
+  for debugging or operations, add deterministic checks for bounded retention
+  and rotation instead of letting those artifacts grow invisibly.
 
 ## History
 
