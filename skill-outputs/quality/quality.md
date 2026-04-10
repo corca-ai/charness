@@ -114,6 +114,9 @@ What was actually runnable today:
   instead of flattening external capabilities to bare ids and paths.
 - integration validation now enforces that ordered `access_modes` follow the
   canonical runtime preference order instead of treating order as informal.
+- `create-skill` now explicitly tells maintainers to keep integration manifests
+  rich enough for discovery surfaces to expose capability kind and access
+  modes, rather than leaving that requirement implicit.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -351,6 +354,21 @@ Evidence:
 - `scripts/validate-integrations.py`
 - `tests/test_control_plane.py`
 - `docs/runtime-capability-contract.md`
+
+### 15. The authoring contract now acknowledges discovery-time capability metadata
+
+`find-skills` and integration validation are no longer the only places that
+care about capability metadata. `create-skill` now tells maintainers to keep
+integration manifests rich enough for discovery surfaces to expose capability
+kind and access modes. That closes one more drift path between authoring,
+validation, and runtime discovery.
+
+Evidence:
+
+- `skills/public/create-skill/SKILL.md`
+- `skills/public/create-skill/references/integration-seams.md`
+- `skills/public/create-skill/references/runtime-capabilities.md`
+- `scripts/check-skill-contracts.py`
 
 ## Commands Run
 

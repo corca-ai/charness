@@ -60,6 +60,8 @@ skill before writing from scratch.
    - if private access is involved, model capability grants, authenticated
      binaries, env fallback, and degradation explicitly instead of hiding
      secret assumptions in the skill body
+   - when discovery surfaces should expose the dependency, keep manifest
+     metadata rich enough to reveal capability kind and supported access modes
 5. Implement the smallest coherent package.
    - `SKILL.md` contains trigger contract and decision skeleton only
    - move schemas, examples, and theory into `references/`

@@ -22,7 +22,8 @@ When an external capability is needed, design for:
 
 - public skill: user intent, required capability class, degradation behavior
 - support skill: provider-specific usage guidance
-- integration manifest: install, detect, healthcheck, access modes
+- integration manifest: install, detect, healthcheck, access modes, and
+  discovery-time capability metadata
 - adapter: repo-local artifact paths and explicit non-secret defaults
 
 ## Review Questions

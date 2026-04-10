@@ -32,6 +32,8 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "public skill: one user-facing concept",
         "support skill: teaches tool usage without becoming product philosophy",
         "if an upstream support skill already exists, prefer reference, sync, or a",
+        "keep manifest",
+        "metadata rich enough to reveal capability kind and supported access modes",
         "If a skill needs the same bootstrap, adapter resolution, artifact upsert, or",
     ),
     "skills/public/spec/SKILL.md": (
