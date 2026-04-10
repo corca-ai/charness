@@ -126,6 +126,8 @@ What was actually runnable today:
   distinguishes `not-ready` from plain missing/unhealthy states.
 - discovery and authoring contracts now understand readiness too, instead of
   leaving it as a control-plane-only concern.
+- manifests can now declare host-neutral `config_layers`, and validation plus
+  discovery understand that precedence surface too.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -436,6 +438,22 @@ Evidence:
 - `tests/test_find_skills.py`
 - `skills/public/create-skill/SKILL.md`
 - `skills/public/create-skill/references/integration-seams.md`
+
+### 20. Host-neutral config precedence now has a place in the manifest contract
+
+`config_layers` gives the repo a way to say "grant first, then authenticated
+binary, then env fallback" without yet committing to any host-specific file or
+state layout. That is the right next step after access modes, capability
+requirements, and readiness because it captures fallback shape while keeping the
+schema portable.
+
+Evidence:
+
+- `integrations/tools/manifest.schema.json`
+- `scripts/validate-integrations.py`
+- `skills/public/find-skills/scripts/list_capabilities.py`
+- `tests/test_control_plane.py`
+- `tests/test_find_skills.py`
 
 ## Commands Run
 

@@ -61,8 +61,26 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
                 "access_modes": ["grant", "binary", "degraded"],
                 "capability_requirements": {
                     "grant_ids": ["github.repo.read"],
+                    "env_vars": ["GITHUB_TOKEN"],
                     "permission_scopes": ["repo:read"],
                 },
+                "config_layers": [
+                    {
+                        "layer_id": "github-grant",
+                        "layer_type": "grant",
+                        "summary": "Use a host-provided GitHub read grant first.",
+                    },
+                    {
+                        "layer_id": "github-cli",
+                        "layer_type": "authenticated-binary",
+                        "summary": "Reuse authenticated gh CLI state when available.",
+                    },
+                    {
+                        "layer_id": "github-env",
+                        "layer_type": "env",
+                        "summary": "Fallback to GITHUB_TOKEN in ordinary local setups.",
+                    },
+                ],
                 "readiness_checks": [
                     {
                         "check_id": "github-auth",
@@ -101,8 +119,26 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
             "access_modes": ["grant", "binary", "degraded"],
             "capability_requirements": {
                 "grant_ids": ["github.repo.read"],
+                "env_vars": ["GITHUB_TOKEN"],
                 "permission_scopes": ["repo:read"],
             },
+            "config_layers": [
+                {
+                    "layer_id": "github-grant",
+                    "layer_type": "grant",
+                    "summary": "Use a host-provided GitHub read grant first.",
+                },
+                {
+                    "layer_id": "github-cli",
+                    "layer_type": "authenticated-binary",
+                    "summary": "Reuse authenticated gh CLI state when available.",
+                },
+                {
+                    "layer_id": "github-env",
+                    "layer_type": "env",
+                    "summary": "Fallback to GITHUB_TOKEN in ordinary local setups.",
+                },
+            ],
             "readiness_checks": [
                 {
                     "check_id": "github-auth",

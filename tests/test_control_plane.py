@@ -218,6 +218,55 @@ def test_validate_integrations_requires_capability_requirements_for_grant_and_en
     assert "grant access requires capability_requirements.grant_ids" in result.stderr
 
 
+def test_validate_integrations_rejects_unsorted_config_layers(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    tools_dir = repo / "integrations" / "tools"
+    tools_dir.mkdir(parents=True)
+    (tools_dir / "manifest.schema.json").write_text(
+        (ROOT / "integrations" / "tools" / "manifest.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (tools_dir / "bad-layers.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "tool_id": "bad-layers",
+                "kind": "external_binary",
+                "display_name": "bad-layers",
+                "upstream_repo": "example/bad-layers",
+                "homepage": "https://example.com/bad-layers",
+                "lifecycle": {"install": {"mode": "manual"}, "update": {"mode": "manual"}},
+                "checks": {
+                    "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                    "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                },
+                "access_modes": ["grant", "env", "degraded"],
+                "capability_requirements": {
+                    "grant_ids": ["demo.grant"],
+                    "env_vars": ["DEMO_TOKEN"],
+                },
+                "config_layers": [
+                    {
+                        "layer_id": "env-fallback",
+                        "layer_type": "env",
+                        "summary": "Use env fallback.",
+                    },
+                    {
+                        "layer_id": "grant-first",
+                        "layer_type": "grant",
+                        "summary": "Use runtime grant first.",
+                    },
+                ],
+                "version_expectation": {"policy": "advisory", "constraint": "latest"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    result = run_script("scripts/validate-integrations.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "config_layers must stay in preferred order" in result.stderr
+
+
 def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     repo = seed_control_plane_repo(tmp_path)
 

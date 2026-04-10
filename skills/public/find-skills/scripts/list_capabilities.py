@@ -102,6 +102,14 @@ def integrations(root: Path) -> list[dict[str, object]]:
                 "kind": data.get("kind", "unknown"),
                 "access_modes": data.get("access_modes", []),
                 "capability_requirements": data.get("capability_requirements", {}),
+                "config_layers": [
+                    {
+                        "layer_id": layer["layer_id"],
+                        "layer_type": layer["layer_type"],
+                        "summary": layer["summary"],
+                    }
+                    for layer in data.get("config_layers", [])
+                ],
                 "readiness_checks": [
                     {
                         "check_id": check["check_id"],

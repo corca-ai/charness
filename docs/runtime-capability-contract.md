@@ -55,6 +55,17 @@ So manifests may record non-secret capability requirements such as:
 - `env_vars`
 - `permission_scopes`
 
+They may also record ordered host-neutral `config_layers` such as:
+
+1. `grant`
+2. `authenticated-binary`
+3. `env`
+4. `operator-step`
+5. `public-fallback`
+
+This is about precedence and fallback shape, not about host-specific file
+paths or secret-file transport.
+
 Not allowed:
 
 - checked-in API keys or tokens

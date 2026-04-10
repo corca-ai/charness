@@ -32,6 +32,14 @@ ACCESS_MODE_ORDER = {
     "degraded": 5,
 }
 
+CONFIG_LAYER_ORDER = {
+    "grant": 0,
+    "authenticated-binary": 1,
+    "env": 2,
+    "operator-step": 3,
+    "public-fallback": 4,
+}
+
 
 def validate_access_mode_order(manifest: dict[str, object], path: Path) -> None:
     access_modes = manifest.get("access_modes", [])
@@ -58,6 +66,26 @@ def validate_capability_requirements(manifest: dict[str, object], path: Path) ->
         raise ValidationError(f"{path}: env access requires capability_requirements.env_vars")
 
 
+def validate_config_layers(manifest: dict[str, object], path: Path) -> None:
+    config_layers = manifest.get("config_layers", [])
+    if not isinstance(config_layers, list):
+        return
+    layer_types = [layer["layer_type"] for layer in config_layers]
+    ranks = [CONFIG_LAYER_ORDER[layer_type] for layer_type in layer_types]
+    if ranks != sorted(ranks):
+        raise ValidationError(
+            f"{path}: config_layers must stay in preferred order "
+            "(grant, authenticated-binary, env, operator-step, public-fallback)"
+        )
+    requirements = manifest.get("capability_requirements")
+    if not isinstance(requirements, dict):
+        requirements = {}
+    if "grant" in layer_types and not requirements.get("grant_ids"):
+        raise ValidationError(f"{path}: grant config layer requires capability_requirements.grant_ids")
+    if "env" in layer_types and not requirements.get("env_vars"):
+        raise ValidationError(f"{path}: env config layer requires capability_requirements.env_vars")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
@@ -71,6 +99,7 @@ def main() -> int:
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             validate_access_mode_order(manifest, manifest_path)
             validate_capability_requirements(manifest, manifest_path)
+            validate_config_layers(manifest, manifest_path)
         lock_schema = load_lock_schema()
         lock_files = lock_paths(repo_root)
         for path in lock_files:

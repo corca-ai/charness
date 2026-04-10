@@ -98,6 +98,9 @@ Expected fields:
     those access modes
 - `readiness_checks`
   - optional setup-readiness probes that can fail closed before runtime use
+- `config_layers`
+  - ordered host-neutral precedence such as `grant` ->
+    `authenticated-binary` -> `env` -> `operator-step` -> `public-fallback`
 - `version_expectation`
 - `support_skill_source`
   - absent when no upstream skill exists

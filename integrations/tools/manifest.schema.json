@@ -124,6 +124,13 @@
       },
       "minItems": 1
     },
+    "config_layers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/configLayer"
+      },
+      "minItems": 1
+    },
     "version_expectation": {
       "$ref": "#/definitions/versionExpectation"
     },
@@ -236,6 +243,41 @@
           "$ref": "#/definitions/stringList"
         },
         "success_criteria": {
+          "$ref": "#/definitions/stringList"
+        },
+        "failure_hint": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "configLayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layer_id",
+        "layer_type",
+        "summary"
+      ],
+      "properties": {
+        "layer_id": {
+          "$ref": "#/definitions/slug"
+        },
+        "layer_type": {
+          "type": "string",
+          "enum": [
+            "grant",
+            "authenticated-binary",
+            "env",
+            "operator-step",
+            "public-fallback"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requires": {
           "$ref": "#/definitions/stringList"
         },
         "failure_hint": {
