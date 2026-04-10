@@ -90,7 +90,9 @@
 - `slack-bot-export`와 `notion-published-export` exploratory manifests는 제거됐다. Slack/Notion의 machine-readable metadata는 이제 [capability.json](/home/ubuntu/charness/skills/support/gather-slack/capability.json), [capability.json](/home/ubuntu/charness/skills/support/gather-notion/capability.json)에 colocate된다.
 - validator/quality gate도 이제 `skills/support/*`를 public skill과 같은 package discipline으로 보기 시작한다. `validate-skills`, link check, duplicate check, Python length gate, py_compile, `ruff`가 support skill package를 함께 본다.
 - `doctor`와 `plugin_preamble`는 이제 external integration manifest뿐 아니라 support-owned capability metadata도 읽는다. 반대로 `sync-support`와 `update-tools`는 계속 true external integration만 본다.
-- checked-in [pre-push](/home/ubuntu/charness/.githooks/pre-push)와 [install-git-hooks.sh](/home/ubuntu/charness/scripts/install-git-hooks.sh)가 추가돼, maintainer가 local git `core.hooksPath`를 repo-owned hook dir로 쉽게 맞출 수 있다. canonical hook target은 계속 `./scripts/run-quality.sh` 하나다.
+- checked-in [pre-push](/home/ubuntu/charness/.githooks/pre-push)와 [install-git-hooks.sh](/home/ubuntu/charness/scripts/install-git-hooks.sh)가 추가돼, maintainer가 clone-local git `core.hooksPath`를 repo-owned hook dir로 쉽게 맞출 수 있다. canonical hook target은 계속 `./scripts/run-quality.sh` 하나다.
+- Google gather 경로는 이제 docs-only placeholder가 아니라 real external manifest [gws-cli.json](/home/ubuntu/charness/integrations/tools/gws-cli.json)으로 control-plane에 들어왔다. 다만 public `gather`가 이를 소비하는 workflow seam은 아직 없다.
+- [gws-cli.json](/home/ubuntu/charness/integrations/tools/gws-cli.json)이 추가돼 Google Workspace path도 이제 docs-only intent가 아니라 real external integration surface를 가진다. Google은 support-owned runtime이 아니라 계속 `gws` binary boundary로 간다.
 - Ceal consumption model v1이 [ceal-consumption-model.md](/home/ubuntu/charness/docs/ceal-consumption-model.md)에 정리됐다. 핵심은 Ceal repo maintainer 환경은 full `charness`를 소비하고, Ceal Slack app 조직 설치는 Ceal-owned preset을 install unit으로 삼는 dual consumption model이다.
 - preset contract가 한 단계 강해졌다. preset file은 이제 YAML-safe frontmatter로 `name`, `description`, `preset_kind`, `install_scope`를 가져야 하고, [validate-presets.py](/home/ubuntu/charness/scripts/validate-presets.py)가 이를 검증한다. shipped `charness` preset은 현재 전부 `maintainer` scope이고, future `organization` scope preset은 `product-slice` kind와 `## Exposure Contract` section을 요구한다.
 - repo root 자체가 plugin root로 동작할 수 있도록 [plugin.json](/home/ubuntu/charness/.claude-plugin/plugin.json), [marketplace.json](/home/ubuntu/charness/.claude-plugin/marketplace.json), [plugin.json](/home/ubuntu/charness/.codex-plugin/plugin.json), [marketplace.json](/home/ubuntu/charness/.agents/plugins/marketplace.json)을 checked-in generated artifact로 두기 시작했다. 이 파일들은 [charness.json](/home/ubuntu/charness/packaging/charness.json)에서 [sync_root_plugin_manifests.py](/home/ubuntu/charness/scripts/sync_root_plugin_manifests.py)로 생성되고, [validate-packaging.py](/home/ubuntu/charness/scripts/validate-packaging.py)가 shared packaging manifest와의 일치를 강제한다.
@@ -107,7 +109,7 @@
 
 ## Next Session
 
-1. pre-`cautilus`로 계속 가면 `gather` provider ownership correction의 다음 단계로, support-owned capability metadata를 `create-skill` authoring contract와 richer `find-skills` output까지 더 자연스럽게 연결한다.
+1. pre-`cautilus`로 계속 가면 Google gather path를 실제로 `gws-cli` integration과 어떻게 연결할지 본다. 지금은 binary boundary와 control-plane metadata는 생겼지만, `gather` 쪽 workflow-level usage seam은 아직 얇다.
 2. packaging export는 계속 최소 generated surface만 유지하고, richer install-surface metadata는 capability contract와 충돌하지 않게 나중에 본다.
 3. checked-in root host manifests로 Claude/Codex direct install experiment를 실제로 해 보고, 필요하면 packaging metadata를 더 보강한다.
 4. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.

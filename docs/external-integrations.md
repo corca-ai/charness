@@ -17,6 +17,7 @@ Examples:
 - `agent-browser`
 - `specdown`
 - `crill`
+- `gws-cli`
 - future evaluation engine split from `workbench`
 
 ## Ownership Model
@@ -171,5 +172,7 @@ These do not need implementation in session 1, but the plan assumes them.
 ## Current Exclusions
 
 - `gws-cli` is intentionally excluded from support skill scope because it is an
-  external binary boundary, not a `charness` support skill.
+  external binary boundary, not a `charness` support skill. It now belongs in
+  the external integration surface via
+  `integrations/tools/gws-cli.json`.
 - a reference implementation repo is not, by itself, an integration contract.

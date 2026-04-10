@@ -1,0 +1,122 @@
+{
+  "schema_version": "1",
+  "tool_id": "gws-cli",
+  "kind": "external_binary",
+  "display_name": "Google Workspace CLI (gws)",
+  "summary": "Authenticated Google Workspace CLI provider for Docs, Drive, Sheets, Slides, Gmail, Calendar, and adjacent Workspace gather flows.",
+  "upstream_repo": "googleworkspace/cli",
+  "homepage": "https://github.com/googleworkspace/cli",
+  "platforms": [
+    "linux",
+    "macos"
+  ],
+  "status": "active",
+  "lifecycle": {
+    "install": {
+      "mode": "manual",
+      "docs_url": "https://github.com/googleworkspace/cli",
+      "notes": [
+        "Install `gws` through the upstream npm package or another host-approved package path.",
+        "For gather-oriented Google Workspace access, prefer `gws auth login --readonly -s drive,docs,sheets,slides` after install.",
+        "If no OAuth client is configured yet, use `gws auth setup --login` first."
+      ]
+    },
+    "update": {
+      "mode": "manual",
+      "docs_url": "https://github.com/googleworkspace/cli/releases",
+      "notes": [
+        "Update through the same mechanism that originally installed `gws`."
+      ]
+    }
+  },
+  "checks": {
+    "detect": {
+      "commands": [
+        "gws --version"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:gws "
+      ],
+      "failure_hint": "Install `gws` first or use a stronger host-provided Google Workspace capability path."
+    },
+    "healthcheck": {
+      "commands": [
+        "gws auth --help"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:login"
+      ],
+      "failure_hint": "The CLI exists but its auth surface is unavailable. Reinstall `gws` or fall back to a different Google Workspace provider path."
+    }
+  },
+  "access_modes": [
+    "binary",
+    "env",
+    "human-only",
+    "degraded"
+  ],
+  "capability_requirements": {
+    "env_vars": [
+      "GOOGLE_WORKSPACE_CLI_TOKEN",
+      "GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE",
+      "GOOGLE_WORKSPACE_CLI_CLIENT_ID",
+      "GOOGLE_WORKSPACE_CLI_CLIENT_SECRET"
+    ],
+    "permission_scopes": [
+      "https://www.googleapis.com/auth/drive.readonly",
+      "https://www.googleapis.com/auth/documents.readonly",
+      "https://www.googleapis.com/auth/spreadsheets.readonly",
+      "https://www.googleapis.com/auth/presentations.readonly"
+    ]
+  },
+  "readiness_checks": [
+    {
+      "check_id": "gws-auth-ready",
+      "summary": "Google Workspace CLI has an authenticated configuration available.",
+      "commands": [
+        "gws auth status"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Run `gws auth login --readonly -s drive,docs,sheets,slides` or provide the approved env fallback before relying on Google Workspace gather."
+    }
+  ],
+  "config_layers": [
+    {
+      "layer_id": "authenticated-gws-cli",
+      "layer_type": "authenticated-binary",
+      "summary": "Prefer an already authenticated `gws` session for private Google Workspace gather."
+    },
+    {
+      "layer_id": "gws-env-fallback",
+      "layer_type": "env",
+      "summary": "Fall back to the documented `GOOGLE_WORKSPACE_CLI_*` environment variables in ordinary local operator setups."
+    },
+    {
+      "layer_id": "gws-auth-operator-step",
+      "layer_type": "operator-step",
+      "summary": "When no auth state exists yet, the operator may need `gws auth setup --login` or `gws auth login` before gather can proceed."
+    }
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer a recent upstream-supported gws release.",
+    "detected_by": "stdout"
+  },
+  "degradation": {
+    "when_missing": [
+      "Do not claim private Google Workspace access succeeded without an authenticated CLI or a stronger host capability path.",
+      "Ask for an exported artifact or a different source when the required Workspace capability is absent."
+    ],
+    "when_version_mismatch": [
+      "Treat schema drift or API-surface mismatch as a manual review point before trusting gathered Google Workspace content."
+    ]
+  },
+  "host_notes": [
+    "This manifest models the `gws` CLI path only. A future host-provided Google Workspace grant can sit alongside it as a stronger provider path.",
+    "The binary is the ownership boundary; `charness` should not reintroduce a copied Google public-export helper path."
+  ]
+}

@@ -161,9 +161,12 @@ Install it into local git config with:
 ./scripts/install-git-hooks.sh
 ```
 
-That sets `core.hooksPath` to the repo-owned `.githooks/` directory so `git push`
-automatically runs the canonical quality gate before the push leaves the
-machine.
+That sets local `core.hooksPath` to the repo-owned `.githooks/` directory for
+this clone, so `git push` in an installed clone automatically runs the
+canonical quality gate before the push leaves the machine.
+
+Without that one-time install step, the checked-in hook exists in the repo but
+is not yet enforcing anything for the current clone.
 
 For hosts that want a shared startup advisory without embedding networked
 self-update logic into every skill run, use:

@@ -40,6 +40,8 @@ Concept-integrity follow-up after:
 - the repo now has a checked-in `.githooks/pre-push` that runs the canonical
   `./scripts/run-quality.sh` gate, plus a repo-owned installer script for
   setting `core.hooksPath` locally.
+- `gws-cli` now exists as a real external integration manifest instead of
+  remaining a docs-only placeholder for the Google Workspace path.
 - `handoff` now requires a bounded misunderstanding premortem when the baton
   changes materially, which directly addresses the class of ownership/workflow
   misread that surfaced in this session.
@@ -51,14 +53,16 @@ Concept-integrity follow-up after:
 - Slack and published Notion now have a `charness`-owned support/runtime home,
   and their machine-readable capability metadata now lives next to those
   support skills instead of pretending they are external integrations.
-- Google ownership is clearer than before, but the real `gws-cli` integration
-  contract is still absent, so the corrected direction exists only in docs.
+- The repo now ships a checked-in `.githooks/pre-push`, but enforcement still
+  depends on each clone installing `core.hooksPath` through
+  `./scripts/install-git-hooks.sh`.
 
 ### Missing
 
-- No `gws-cli` manifest yet for the Google path.
 - No broader support-owned capability metadata pattern yet beyond the first
   Slack/Notion gather runtime cases.
+- No workflow-level `gather` helper path yet that consumes `gws-cli` the way
+  Slack/Notion now consume support-owned runtime.
 
 ### Recommended Next Gates
 
@@ -130,8 +134,8 @@ What was actually runnable today:
 - `scripts/run-quality.sh` now provides one canonical repo-owned quality
   entrypoint.
 - `.githooks/pre-push` now blocks `git push` on the canonical local quality
-  gate when the maintainer installs repo-owned hooks with
-  `./scripts/install-git-hooks.sh`.
+  gate after the maintainer installs repo-owned hooks with
+  `./scripts/install-git-hooks.sh` in that clone.
 - adapter bootstrap helpers now share repo-level utilities instead of shipping
   per-skill YAML loader copies.
 - `quality` now explicitly treats skill packages and helper drift as a quality

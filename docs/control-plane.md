@@ -157,6 +157,7 @@ The first manifest wave should cover:
 - `agent-browser`
 - `specdown`
 - `crill`
+- `gws-cli`
 - the future standalone evaluation engine split from `workbench` once it exists
   as a real upstream repo or release boundary
 
