@@ -2,8 +2,9 @@
 
 ## Workflow Trigger
 
-- 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), [security-overview.md](/home/ubuntu/charness/skills/public/quality/references/security-overview.md), [security-npm.md](/home/ubuntu/charness/skills/public/quality/references/security-npm.md), [security-pnpm.md](/home/ubuntu/charness/skills/public/quality/references/security-pnpm.md), [security-uv.md](/home/ubuntu/charness/skills/public/quality/references/security-uv.md), [check-supply-chain.py](/home/ubuntu/charness/scripts/check-supply-chain.py), [skill-outputs/quality/quality.md](/home/ubuntu/charness/skill-outputs/quality/quality.md)를 읽고 offline lockfile gate 다음 단계로 online advisory/audit seam을 어디까지 올릴지 정한다.
-- 그 slice를 끝내면 [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md), [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md), [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md)를 읽고 `cautilus` maintained scenario wiring과 direct-install 실험 중 하나로 넘어간다.
+- 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md), [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md), [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md), [integrations/tools/cautilus.json](/home/ubuntu/charness/integrations/tools/cautilus.json), [.agents/cautilus-adapter.yaml](/home/ubuntu/charness/.agents/cautilus-adapter.yaml)를 읽고 `cautilus` consumer 상태와 다음 evaluator slice를 확인한다.
+- 기본 consumer smoke가 다시 필요하면 standalone install을 가정하지 말고 clean upstream checkout이나 release install surface로 `cautilus adapter resolve`, `cautilus doctor`, `cautilus mode evaluate --mode full_gate`를 먼저 돌린다. 이 머신에서는 2026-04-10에 `/home/ubuntu/cautilus` checkout으로 해당 smoke가 이미 통과했다.
+- 그다음 slice는 checked-in root host manifests direct-install 실험과 maintained scenario wiring 중 더 block되는 쪽부터 잡는다.
 - evaluator contract를 볼 때는 [integrations/tools/cautilus.json](/home/ubuntu/charness/integrations/tools/cautilus.json), [.agents/cautilus-adapter.yaml](/home/ubuntu/charness/.agents/cautilus-adapter.yaml), [docs/support-skill-policy.md](/home/ubuntu/charness/docs/support-skill-policy.md)를 같이 읽는다.
 - executable-spec guidance를 이어서 다룰 때는 [skills/public/spec/SKILL.md](/home/ubuntu/charness/skills/public/spec/SKILL.md), [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), [specdown-quality.md](/home/ubuntu/charness/presets/specdown-quality.md)를 먼저 읽는다.
 
@@ -53,6 +54,7 @@
 - `doctor`는 실제 machine state를 읽으므로 이 머신에서는 `specdown`만 `ok`이고 `agent-browser`와 `crill`은 아직 `missing`이다. quality gate에는 doctor를 직접 넣지 않고, manifest validation과 deterministic tests만 넣었다.
 - evaluator boundary는 더 이상 placeholder가 아니다. [cautilus.json](/home/ubuntu/charness/integrations/tools/cautilus.json)이 실제 upstream repo와 bundled skill boundary를 기록하고, deeper maintained scenario wiring만 후속 작업으로 남아 있다.
 - checked-in [cautilus-adapter.yaml](/home/ubuntu/charness/.agents/cautilus-adapter.yaml)이 추가돼 `charness`는 이제 `Cautilus doctor` 기준 최소 live-consumer surface를 가진다.
+- 2026-04-10에 clean `/home/ubuntu/cautilus` checkout으로 `node ./bin/cautilus adapter resolve --repo-root /home/ubuntu/charness`, `node ./bin/cautilus doctor --repo-root /home/ubuntu/charness`, `node ./bin/cautilus mode evaluate --repo-root /home/ubuntu/charness --mode full_gate --baseline-ref HEAD --output-dir /tmp/cautilus-charness-full-gate`를 실행했고, `doctor`는 `ready`, `full_gate` report는 `accept-now`로 끝났다.
 - 현재 root `cautilus-adapter`는 repo-owned `quality` gate를 외부 evaluator entrypoint로 감싼 첫 migration step이고, richer scenario/eval surface는 이후 named `cautilus-adapters/`로 분리한다.
 - public skill별 current validation tier는 [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)에 정리됐다. 현재 배정은 `smoke-only` 없음, `HITL recommended`는 `announcement` / `hitl` / `ideation` / `quality` / `retro`, `evaluator-required`는 `create-skill` / `debug` / `find-skills` / `gather` / `handoff` / `impl` / `spec`이다.
 - constitutional core의 public execution cluster가 이제 `gather` / `ideation` / `spec` / `impl` / `debug` / `retro` / `handoff` 수준에서 실제 skill body를 갖추게 됐다.
@@ -129,14 +131,14 @@
 ## Next Session
 
 1. pre-`cautilus` deferred product decisions는 [deferred-decisions.md](/home/ubuntu/charness/docs/deferred-decisions.md)에서 2026-04-10 batch로 닫혔다. 다음 세션 시작 시에는 이 문서의 reopen trigger만 빠르게 확인하고 바로 integration work로 들어간다.
-2. `quality`의 새 offline supply-chain gate 위에 online advisory/audit seam을 추가할지 결정한다. 필요하면 npm/pnpm/uv용 optional wrapper를 만들되, network 의존성과 triage 책임을 분명히 남긴다.
-3. checked-in root host manifests로 Claude/Codex direct install experiment를 실제로 해 보고, 필요하면 packaging metadata를 더 보강한다.
-4. `cautilus` integration Session의 다음 단계로 maintained scenario wiring을 시작한다.
+2. root `cautilus` consumer smoke는 이미 확인됐으니, 다음 session에서는 checked-in root host manifests로 Claude/Codex direct install experiment와 maintained scenario wiring 중 더 block되는 쪽을 바로 고른다.
+3. direct-install 실험을 먼저 잡으면 packaging metadata와 repo-root install hypothesis를 실제 host install로 확인하고, 부족한 metadata만 최소 범위로 보강한다.
+4. maintained scenario wiring을 먼저 잡으면 `evaluator-required` public skill 중 첫 target set과 adapter shape를 고정하고, named `cautilus-adapters/`가 필요한지 판단한다.
 5. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 current matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.
 6. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정하고, evaluator-required 경계와 HITL fallback 경계를 함께 문서화한다.
-7. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
-8. downstream host가 first `organization`-scope preset을 실제로 정의할 때, 현재 preset contract를 그대로 쓸지 보고 필요한 최소 metadata만 더한다.
-9. `Cautilus doctor`가 통과하는 root adapter를 유지하면서, richer evaluator surface가 필요해지면 named `cautilus-adapters/`를 설계한다.
+7. `quality`의 offline supply-chain gate 위에 online advisory/audit seam을 추가할지 다시 판단한다. 필요하면 npm/pnpm/uv용 optional wrapper를 만들되, network 의존성과 triage 책임을 분명히 남긴다.
+8. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
+9. downstream host가 first `organization`-scope preset을 실제로 정의할 때, 현재 preset contract를 그대로 쓸지 보고 필요한 최소 metadata만 더한다.
 10. manifest validation, control-plane tests, eval fixtures, handoff를 새 evaluator contract에 맞게 갱신한다.
 
 ## Discuss
