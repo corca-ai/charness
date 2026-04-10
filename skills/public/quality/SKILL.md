@@ -51,6 +51,10 @@ By default, `quality` writes its durable artifact to
 `skill-outputs/quality/quality.md`. Repos can override the directory with
 `.agents/quality-adapter.yaml`.
 
+Keep the current artifact short and current. When older review detail starts to
+bury today's posture, move that detail into sibling `history/*.md` archives and
+leave `quality.md` as the current snapshot plus links back to history.
+
 If the adapter is missing and the repo would benefit from explicit command
 groups, scaffold one:
 

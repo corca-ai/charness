@@ -49,6 +49,10 @@ Default path:
 
 - `skill-outputs/quality/quality.md`
 
+Recommended sibling history path:
+
+- `skill-outputs/quality/history/*.md`
+
 To change the location, override `output_dir` in the adapter.
 
 ## Design Rules

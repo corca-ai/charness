@@ -17,6 +17,12 @@ belong in support and integration layers, not in the public skill definition.
 Current `charness`-owned provider runtime lives under support skills such as
 `gather-slack` and `gather-notion`. Google Workspace remains an external
 runtime boundary and should flow through a real integration such as `gws-cli`.
+When the source is Google Workspace, prefer the repo-owned helper below rather
+than guessing the next operator step:
+
+```bash
+python3 "$SKILL_DIR/scripts/advise_google_workspace_path.py" --repo-root .
+```
 
 ## Bootstrap
 
@@ -120,3 +126,5 @@ The result should usually include:
 - `references/asset-refresh.md`
 - `references/document-seams.md`
 - `references/capability-contract.md`
+- `references/google-workspace-via-gws.md`
+- `scripts/advise_google_workspace_path.py`

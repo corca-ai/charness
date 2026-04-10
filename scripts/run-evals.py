@@ -316,11 +316,14 @@ def scenario_find_skills_local_first(root: Path) -> None:
         expect_success(result, "find-skills local-first discovery")
         assert_find_skills_payload(json.loads(result.stdout))
 
-
 def scenario_representative_skill_contracts(root: Path) -> None:
     result = run_command(["python3", "scripts/check-skill-contracts.py", "--repo-root", str(root)], cwd=root)
     expect_success(result, "representative skill contracts")
 
+
+def scenario_support_sync_contracts(root: Path) -> None:
+    result = run_command(["python3", "scripts/eval_support_sync_contracts.py", "--repo-root", str(root)], cwd=root)
+    expect_success(result, "support-sync dry-run contracts")
 
 def run_scenario(root: Path, scenario: Scenario) -> None:
     handlers = {
@@ -336,6 +339,7 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "gather-adapter-bootstrap": scenario_gather_adapter_bootstrap,
         "handoff-absolute-links": scenario_handoff_absolute_links,
         "find-skills-local-first": scenario_find_skills_local_first,
+        "support-sync-contracts": scenario_support_sync_contracts,
         "representative-skill-contracts": scenario_representative_skill_contracts,
     }
     handlers[scenario.scenario_id](root)

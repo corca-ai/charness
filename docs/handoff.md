@@ -91,13 +91,15 @@
 - validator/quality gate도 이제 `skills/support/*`를 public skill과 같은 package discipline으로 보기 시작한다. `validate-skills`, link check, duplicate check, Python length gate, py_compile, `ruff`가 support skill package를 함께 본다.
 - `doctor`와 `plugin_preamble`는 이제 external integration manifest뿐 아니라 support-owned capability metadata도 읽는다. 반대로 `sync-support`와 `update-tools`는 계속 true external integration만 본다.
 - checked-in [pre-push](/home/ubuntu/charness/.githooks/pre-push)와 [install-git-hooks.sh](/home/ubuntu/charness/scripts/install-git-hooks.sh)가 추가돼, maintainer가 clone-local git `core.hooksPath`를 repo-owned hook dir로 쉽게 맞출 수 있다. canonical hook target은 계속 `./scripts/run-quality.sh` 하나다.
-- Google gather 경로는 이제 docs-only placeholder가 아니라 real external manifest [gws-cli.json](/home/ubuntu/charness/integrations/tools/gws-cli.json)으로 control-plane에 들어왔다. 다만 public `gather`가 이를 소비하는 workflow seam은 아직 없다.
 - [gws-cli.json](/home/ubuntu/charness/integrations/tools/gws-cli.json)이 추가돼 Google Workspace path도 이제 docs-only intent가 아니라 real external integration surface를 가진다. Google은 support-owned runtime이 아니라 계속 `gws` binary boundary로 간다.
+- public `gather`는 이제 [advise_google_workspace_path.py](/home/ubuntu/charness/skills/public/gather/scripts/advise_google_workspace_path.py)와 [google-workspace-via-gws.md](/home/ubuntu/charness/skills/public/gather/references/google-workspace-via-gws.md)를 통해 Google Workspace source에서 `gws-cli` readiness를 operator guidance로 바꾸는 첫 workflow seam을 가진다.
 - Ceal consumption model v1이 [ceal-consumption-model.md](/home/ubuntu/charness/docs/ceal-consumption-model.md)에 정리됐다. 핵심은 Ceal repo maintainer 환경은 full `charness`를 소비하고, Ceal Slack app 조직 설치는 Ceal-owned preset을 install unit으로 삼는 dual consumption model이다.
 - preset contract가 한 단계 강해졌다. preset file은 이제 YAML-safe frontmatter로 `name`, `description`, `preset_kind`, `install_scope`를 가져야 하고, [validate-presets.py](/home/ubuntu/charness/scripts/validate-presets.py)가 이를 검증한다. shipped `charness` preset은 현재 전부 `maintainer` scope이고, future `organization` scope preset은 `product-slice` kind와 `## Exposure Contract` section을 요구한다.
 - repo root 자체가 plugin root로 동작할 수 있도록 [plugin.json](/home/ubuntu/charness/.claude-plugin/plugin.json), [marketplace.json](/home/ubuntu/charness/.claude-plugin/marketplace.json), [plugin.json](/home/ubuntu/charness/.codex-plugin/plugin.json), [marketplace.json](/home/ubuntu/charness/.agents/plugins/marketplace.json)을 checked-in generated artifact로 두기 시작했다. 이 파일들은 [charness.json](/home/ubuntu/charness/packaging/charness.json)에서 [sync_root_plugin_manifests.py](/home/ubuntu/charness/scripts/sync_root_plugin_manifests.py)로 생성되고, [validate-packaging.py](/home/ubuntu/charness/scripts/validate-packaging.py)가 shared packaging manifest와의 일치를 강제한다.
 - root install surface에는 이제 얇은 startup advisory helper [plugin_preamble.py](/home/ubuntu/charness/scripts/plugin_preamble.py)도 있다. 이 스크립트는 package version, root install-surface drift, explicit Claude/Codex update hints, lock-based readiness summary, vendored-copy warnings만 읽고 알리며, skill execution 중 networked self-update를 하지 않는다.
 - [sync_support.py](/home/ubuntu/charness/scripts/sync_support.py)는 이제 manifest가 선언하면 executable support sync로 `copy`와 maintainer-local `symlink`를 수행할 수 있다. 다만 shared contract는 explicit `--upstream-checkout owner/name=/abs/path` mapping을 요구하고, current shipped manifests는 여전히 `reference`를 기본으로 유지한다.
+- [quality.md](/home/ubuntu/charness/skill-outputs/quality/quality.md)는 이제 current snapshot만 유지하고, 이전 누적 기록은 [history/](/home/ubuntu/charness/skill-outputs/quality/history/) 아래 archive로 분리한다. repo-owned [validate-quality-artifact.py](/home/ubuntu/charness/scripts/validate-quality-artifact.py)가 이 shape를 fail-closed로 검증한다.
+- `run-evals.py`에는 이제 `agent-browser`/`specdown` shipped support-sync contract를 보는 dry-run scenario가 추가돼, upstream support reference가 있는 integration과 그렇지 않은 integration을 repo-owned smoke로 구분한다.
 - [skills/public/handoff/SKILL.md](/home/ubuntu/charness/skills/public/handoff/SKILL.md)는 이제 materially changed handoff를 마무리하기 전에, runtime이 허용하면 1~2개의 bounded subagent premortem을 돌려 “다음 에이전트가 무엇을 오해할지”를 먼저 점검하라고 요구한다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
@@ -109,8 +111,8 @@
 
 ## Next Session
 
-1. pre-`cautilus`로 계속 가면 Google gather path를 실제로 `gws-cli` integration과 어떻게 연결할지 본다. 지금은 binary boundary와 control-plane metadata는 생겼지만, `gather` 쪽 workflow-level usage seam은 아직 얇다.
-2. packaging export는 계속 최소 generated surface만 유지하고, richer install-surface metadata는 capability contract와 충돌하지 않게 나중에 본다.
+1. 다음 세션의 첫 큰 단위는 `Discuss`에 남은 deferred product decisions를 한 번에 좁혀서 닫는 것이다. 이 세션에서 pre-`cautilus` self-work는 quality artifact shape, Google gather seam, support-sync smoke까지 진행했으므로, 이제 evaluator integration 전에 열린 결정을 정리할 타이밍이다.
+2. deferred decisions를 닫은 뒤에는 `cautilus` integration Session을 시작한다.
 3. checked-in root host manifests로 Claude/Codex direct install experiment를 실제로 해 보고, 필요하면 packaging metadata를 더 보강한다.
 4. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
 5. profile inheritance를 실제 merged bundle feature로 키울지 정하기 전까지는 현재 validator contract 안에서 metadata drift만 막는다.
