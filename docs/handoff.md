@@ -2,7 +2,7 @@
 
 ## Workflow Trigger
 
-- 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), [skill-quality.md](/home/ubuntu/charness/skills/public/quality/references/skill-quality.md), [quality-lenses.md](/home/ubuntu/charness/skills/public/quality/references/quality-lenses.md), [operability-signals.md](/home/ubuntu/charness/skills/public/quality/references/operability-signals.md), [check-doc-links.py](/home/ubuntu/charness/scripts/check-doc-links.py), [skill-migration-map.md](/home/ubuntu/charness/docs/skill-migration-map.md), [master-plan.md](/home/ubuntu/charness/docs/master-plan.md)를 읽고 supply-chain security audit 흡수를 `quality` reference/script slice로 시작한다.
+- 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), [security-overview.md](/home/ubuntu/charness/skills/public/quality/references/security-overview.md), [security-npm.md](/home/ubuntu/charness/skills/public/quality/references/security-npm.md), [security-pnpm.md](/home/ubuntu/charness/skills/public/quality/references/security-pnpm.md), [security-uv.md](/home/ubuntu/charness/skills/public/quality/references/security-uv.md), [check-supply-chain.py](/home/ubuntu/charness/scripts/check-supply-chain.py), [skill-outputs/quality/quality.md](/home/ubuntu/charness/skill-outputs/quality/quality.md)를 읽고 offline lockfile gate 다음 단계로 online advisory/audit seam을 어디까지 올릴지 정한다.
 - 그 slice를 끝내면 [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md), [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md), [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md)를 읽고 `cautilus` maintained scenario wiring과 direct-install 실험 중 하나로 넘어간다.
 - evaluator contract를 볼 때는 [integrations/tools/cautilus.json](/home/ubuntu/charness/integrations/tools/cautilus.json), [.agents/cautilus-adapter.yaml](/home/ubuntu/charness/.agents/cautilus-adapter.yaml), [docs/support-skill-policy.md](/home/ubuntu/charness/docs/support-skill-policy.md)를 같이 읽는다.
 - executable-spec guidance를 이어서 다룰 때는 [skills/public/spec/SKILL.md](/home/ubuntu/charness/skills/public/spec/SKILL.md), [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), [specdown-quality.md](/home/ubuntu/charness/presets/specdown-quality.md)를 먼저 읽는다.
@@ -116,9 +116,9 @@
 - [check-links-external.sh](/home/ubuntu/charness/scripts/check-links-external.sh)는 더 이상 repo-local absolute markdown links를 `lychee`로 훑지 않는다. 현재는 [list_external_links.py](/home/ubuntu/charness/scripts/list_external_links.py)가 real external `http(s)` URL만 추출하고, online validation은 `CHARNESS_LINK_CHECK_ONLINE=1`일 때만 수행한다.
 - [check-doc-links.py](/home/ubuntu/charness/scripts/check-doc-links.py)는 이제 broken internal link뿐 아니라 prose에서 bare internal `*.md` reference도 fail-closed로 잡는다. code block과 inline code 예시는 허용된다.
 - [quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md)와 [quality.md](/home/ubuntu/charness/skill-outputs/quality/quality.md)는 이제 repo-local markdown-link discipline과 external URL health를 별도 gate로 다루는 경계를 explicit하게 가진다.
-- 다음 큰 content migration candidate는 supply-chain security audit이다. current decision은 별도 public skill을 만들지 않고 `quality`의 security/supply-chain lens 안으로 흡수하는 것이다. package-manager-specific checklist는 `skills/public/quality/references/security-*.md` 계열로 재작성하고, host ritual과 static CVE lists는 그대로 들여오지 않는다.
+- supply-chain security audit의 첫 migration slice는 끝났고, 현재 decision은 별도 public skill 없이 `quality`의 security/supply-chain lens 안에서 offline lockfile gate + package-manager-specific references로 유지하는 것이다. 남은 질문은 online advisory/audit flow를 repo-owned optional seam으로 둘지, downstream repo 정책으로만 남길지다.
 - 아직 없는 것:
-  - `quality` 안의 supply-chain security audit reference/script migration
+  - `quality` 안의 optional online advisory/audit seam 범위 결정
   - maintained `cautilus` scenarios for the `evaluator-required` public skills
   - support skill migrations and integration wrappers
   - concrete adoption of executable support-sync on shipped manifests
@@ -128,7 +128,7 @@
 ## Next Session
 
 1. pre-`cautilus` deferred product decisions는 [deferred-decisions.md](/home/ubuntu/charness/docs/deferred-decisions.md)에서 2026-04-10 batch로 닫혔다. 다음 세션 시작 시에는 이 문서의 reopen trigger만 빠르게 확인하고 바로 integration work로 들어간다.
-2. supply-chain security audit source를 `quality` 안으로 흡수한다. 첫 slice는 overview + npm/pnpm/uv 정도가 적절하고, host ritual과 static CVE lists는 버린다.
+2. `quality`의 새 offline supply-chain gate 위에 online advisory/audit seam을 추가할지 결정한다. 필요하면 npm/pnpm/uv용 optional wrapper를 만들되, network 의존성과 triage 책임을 분명히 남긴다.
 3. checked-in root host manifests로 Claude/Codex direct install experiment를 실제로 해 보고, 필요하면 packaging metadata를 더 보강한다.
 4. `cautilus` integration Session의 다음 단계로 maintained scenario wiring을 시작한다.
 5. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 current matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.

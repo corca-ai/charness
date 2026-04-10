@@ -3,10 +3,9 @@ Date: 2026-04-10
 
 ## Scope
 
-Current repo-wide quality posture after tightening local enforcement,
-splitting quality history from the current snapshot, adding the first
-Google Workspace `gws-cli` gather seam, and tightening executable-spec
-guidance around cost, overlap, and adapter depth.
+Current repo-wide quality posture after adding an offline supply-chain
+gate, migrating the first package-manager-specific security references
+into `quality`, and re-running the standing local bar.
 
 ## Current Gates
 
@@ -15,6 +14,9 @@ guidance around cost, overlap, and adapter depth.
   `./scripts/install-git-hooks.sh`.
 - `./scripts/run-quality.sh` now runs independent validation phases in
   parallel while still recording per-command timing and fail/pass history.
+- `scripts/check-supply-chain.py` now enforces repo-local manifest and
+  lockfile alignment for npm/pnpm/yarn/bun surfaces plus `uv.lock`
+  presence when Python dependencies are declared.
 - `scripts/record_quality_runtime.py` now records per-gate elapsed time into a
   compact current summary plus rotated monthly archives.
 - `scripts/validate-quality-artifact.py` now keeps this file short and shaped
@@ -33,6 +35,9 @@ guidance around cost, overlap, and adapter depth.
 
 - standing quality gates now write per-command elapsed time to
   `skill-outputs/quality/runtime-signals.json`
+- the current runtime summary now includes `check-supply-chain`, so
+  security-adjacent offline drift shows up in the same timing surface as
+  the rest of the local bar
 - older timing samples rotate into monthly `history/runtime-signals-YYYY-MM.jsonl`
   archives instead of accumulating in the current snapshot
 - standing pre-push quality time can now shrink without losing per-command
@@ -68,6 +73,9 @@ guidance around cost, overlap, and adapter depth.
 - internal markdown-link discipline now has a repo-owned deterministic owner
   again instead of being implicitly delegated to a network-oriented link
   checker that never enforced it.
+- `quality` now ships package-manager-specific security references for npm,
+  pnpm, and uv instead of leaving supply-chain follow-up as handoff-only
+  prose.
 
 ## Weak
 
@@ -75,6 +83,8 @@ guidance around cost, overlap, and adapter depth.
   checked-in adapter contract.
 - external-link validation still depends on network reachability and upstream
   host health when `CHARNESS_LINK_CHECK_ONLINE=1` is enabled locally.
+- the new supply-chain gate proves manifest/lockfile discipline, but it does
+  not yet prove live advisory visibility or triage behavior.
 
 ## Missing
 
@@ -83,6 +93,8 @@ guidance around cost, overlap, and adapter depth.
   and root adapter seam.
 - no automated current-repo gate yet that decides which public skills must ship
   adapters versus which can stay adapter-free honestly.
+- no optional online advisory/audit seam yet for npm/pnpm/uv that names the
+  binary, network dependency, and triage owner explicitly.
 
 ## Deferred
 
@@ -94,30 +106,24 @@ guidance around cost, overlap, and adapter depth.
 ## Commands Run
 
 - `./scripts/run-quality.sh`
+- `python3 scripts/check-supply-chain.py --repo-root .`
 - `cat skill-outputs/quality/runtime-signals.json`
-- `python3 scripts/doctor.py --repo-root . --tool-id gws-cli --json`
-- `python3 scripts/validate-maintainer-setup.py --repo-root .`
-- `python3 scripts/check-doc-links.py --repo-root .`
-- `python3 scripts/list_external_links.py --repo-root .`
-- `CHARNESS_LINK_CHECK_ONLINE=1 ./scripts/check-links-external.sh`
+- `pytest -q tests/test_quality_gates.py`
 
 ## Recommended Next Gates
 
 - `AUTO_CANDIDATE`: classify which public skills require a checked-in adapter
   contract and fail closed when a durable-artifact or onboarding-heavy skill
   lacks one.
+- `AUTO_CANDIDATE`: add an optional networked advisory wrapper for npm/pnpm/uv
+  only if the repo is prepared to own binary setup, flaky-host behavior, and
+  triage responsibilities explicitly.
 - `AUTO_CANDIDATE`: add a deterministic smoke path for shipped support-sync
   contracts so `agent-browser`-style upstream support references cannot drift
   silently.
-- `AUTO_CANDIDATE`: if network-backed external link checks stay too noisy for
-  pre-push, split them into a scoped local smoke plus a slower fuller run with
-  explicit operator labeling instead of keeping one ambiguous gate.
 - `AUTO_CANDIDATE`: connect the new `cautilus` integration manifest to honest
   maintained scenarios for `evaluator-required` skills without pretending the
   current repo-local bar already has that depth.
-- `AUTO_CANDIDATE`: when a repo relies on logs or machine-readable diagnostics
-  for debugging or operations, add deterministic checks for bounded retention
-  and rotation instead of letting those artifacts grow invisibly.
 
 ## History
 

@@ -106,6 +106,7 @@ flush_phase
 
 queue_timed "check-markdown" ./scripts/check-markdown.sh
 queue_timed "check-secrets" ./scripts/check-secrets.sh
+queue_timed "check-supply-chain" python3 scripts/check-supply-chain.py --repo-root "$REPO_ROOT"
 queue_timed "check-shell" ./scripts/check-shell.sh
 queue_timed "check-links-external" ./scripts/check-links-external.sh
 shopt -s nullglob

@@ -238,6 +238,90 @@ def test_check_python_lengths_passes_on_current_repo() -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_check_supply_chain_passes_on_current_repo() -> None:
+    result = run_script("scripts/check-supply-chain.py", "--repo-root", str(ROOT))
+    assert result.returncode == 0, result.stderr
+    assert "package-lock.json" in result.stdout
+
+
+def test_check_supply_chain_requires_javascript_lockfile(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "package.json").write_text(
+        json.dumps({"private": True, "devDependencies": {"markdownlint-cli2": "0.22.0"}}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/check-supply-chain.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "no lockfile is checked in" in result.stderr
+
+
+def test_check_supply_chain_requires_declared_pnpm_lockfile(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "package.json").write_text(
+        json.dumps(
+            {
+                "private": True,
+                "packageManager": "pnpm@9.0.0",
+                "dependencies": {"left-pad": "1.3.0"},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo / "package-lock.json").write_text("{}", encoding="utf-8")
+
+    result = run_script("scripts/check-supply-chain.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "packageManager declares `pnpm`" in result.stderr
+
+
+def test_check_supply_chain_requires_uv_lock_when_dependencies_exist(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "pyproject.toml").write_text(
+        "\n".join(
+            [
+                "[project]",
+                'name = "demo"',
+                'version = "0.1.0"',
+                'dependencies = ["requests>=2.0"]',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/check-supply-chain.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "uv.lock is missing" in result.stderr
+
+
+def test_check_supply_chain_accepts_uv_lock_for_python_dependencies(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "pyproject.toml").write_text(
+        "\n".join(
+            [
+                "[project]",
+                'name = "demo"',
+                'version = "0.1.0"',
+                'dependencies = ["requests>=2.0"]',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (repo / "uv.lock").write_text("version = 1\n", encoding="utf-8")
+
+    result = run_script("scripts/check-supply-chain.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    assert "uv:uv.lock" in result.stdout
+
+
 def test_record_quality_runtime_writes_summary_and_archive(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

@@ -173,8 +173,7 @@ The result should usually include:
 - Do not ignore runtime drift just because a gate still passes functionally.
 - Do not treat slow or broad executable specs as automatically strong quality when they mostly duplicate cheaper deterministic coverage.
 - Do not recommend verbose or permanent logs without naming who will read them and how they stay bounded.
-- Do not leave an automatable quality rule as prose-only guidance when a
-  linter, validator, test, hook, or script could own it.
+- Do not leave an automatable quality rule as prose-only guidance when a linter, validator, test, hook, or script could own it.
 - If you stop short of an obvious repo-owned deterministic gate, name that as
   an unresolved enforcement gap explicitly.
 - Do not propose generic "add more tests" or "improve security" without naming the actual seam and the next concrete setup.
@@ -195,3 +194,7 @@ The result should usually include:
 - `references/operability-signals.md`
 - `references/executable-spec-economics.md`
 - `references/sample-presets.md`
+- `references/security-overview.md`
+- `references/security-npm.md`
+- `references/security-pnpm.md`
+- `references/security-uv.md`
