@@ -80,6 +80,7 @@
 - [validate-integrations.py](/home/ubuntu/charness/scripts/validate-integrations.py)는 이제 `access_modes`가 canonical runtime preference order를 따르는지도 검증한다. ordered metadata가 단순 관습이 아니라 repo-owned contract가 됐다.
 - [create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md)와 관련 references는 이제 integration manifest가 discovery surface에 드러날 capability kind/access metadata까지 담아야 한다고 명시한다. capability contract가 validation/discovery뿐 아니라 authoring guidance에도 연결됐다.
 - integration manifest schema는 이제 optional `capability_requirements`를 받아 `grant_ids`, `env_vars`, `permission_scopes` 같은 non-secret requirement를 표현할 수 있다. `find-skills` discovery도 이 metadata를 노출하고, `validate-integrations.py`는 `grant`/`env` access mode가 있을 때 필요한 requirement fields를 요구한다.
+- [doctor.py](/home/ubuntu/charness/scripts/doctor.py)는 이제 live health 결과와 함께 manifest의 `kind`, `access_modes`, `capability_requirements`도 JSON payload에 실어 control-plane consumer가 별도 manifest reread 없이 capability context를 볼 수 있게 한다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - support skill migrations and integration wrappers

@@ -215,6 +215,9 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     assert doctor.returncode == 0, doctor.stderr
     doctor_payload = json.loads(doctor.stdout)
     assert doctor_payload[0]["tool_id"] == "demo-tool"
+    assert doctor_payload[0]["kind"] == "external_binary_with_skill"
+    assert doctor_payload[0]["access_modes"] == ["binary", "degraded"]
+    assert doctor_payload[0]["capability_requirements"] == {}
     assert doctor_payload[0]["doctor_status"] == "ok"
     assert doctor_payload[0]["support_state"] == "wrapped-upstream"
     assert doctor_payload[0]["support_sync"]["status"] == "not-tracked"

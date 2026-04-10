@@ -127,6 +127,13 @@ Current v1 drift rule:
   because generated wrapper or reference artifacts have not been materialized
   yet
 
+Current doctor payload also carries manifest-side capability context so setup
+and onboarding layers can inspect it without re-reading the manifest:
+
+- `kind`
+- `access_modes`
+- `capability_requirements`
+
 ## Initial Target Set
 
 The first manifest wave should cover:

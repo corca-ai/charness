@@ -119,6 +119,9 @@ What was actually runnable today:
   modes, rather than leaving that requirement implicit.
 - integration manifests can now carry non-secret `capability_requirements`, and
   discovery/validation paths understand those fields.
+- `doctor` JSON now surfaces manifest-side capability metadata too, so
+  onboarding and debugging surfaces do not need a second manifest read just to
+  understand access shape.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -387,6 +390,19 @@ Evidence:
 - `skills/public/find-skills/scripts/list_capabilities.py`
 - `tests/test_control_plane.py`
 - `tests/test_find_skills.py`
+
+### 17. Control-plane diagnostics now surface capability context directly
+
+`doctor` results now include manifest `kind`, `access_modes`, and
+`capability_requirements` alongside live detect/health/version status. That is
+useful because setup or debugging layers can inspect one JSON payload instead
+of rejoining doctor output with a separate manifest read.
+
+Evidence:
+
+- `scripts/doctor.py`
+- `tests/test_control_plane.py`
+- `docs/control-plane.md`
 
 ## Commands Run
 

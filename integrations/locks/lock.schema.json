@@ -39,6 +39,35 @@
         "minLength": 1
       }
     },
+    "accessModeList": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "grant",
+          "binary",
+          "env",
+          "public",
+          "human-only",
+          "degraded"
+        ]
+      }
+    },
+    "capabilityRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "grant_ids": {
+          "$ref": "#/definitions/stringList"
+        },
+        "env_vars": {
+          "$ref": "#/definitions/stringList"
+        },
+        "permission_scopes": {
+          "$ref": "#/definitions/stringList"
+        }
+      }
+    },
     "commandResult": {
       "type": "object",
       "additionalProperties": false,
@@ -193,6 +222,9 @@
       "additionalProperties": false,
       "required": [
         "checked_at",
+        "kind",
+        "access_modes",
+        "capability_requirements",
         "support_state",
         "detect",
         "healthcheck",
@@ -204,6 +236,20 @@
         "checked_at": {
           "type": "string",
           "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "external_binary",
+            "external_skill",
+            "external_binary_with_skill"
+          ]
+        },
+        "access_modes": {
+          "$ref": "#/definitions/accessModeList"
+        },
+        "capability_requirements": {
+          "$ref": "#/definitions/capabilityRequirements"
         },
         "support_state": {
           "type": "string",

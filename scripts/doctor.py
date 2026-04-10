@@ -47,6 +47,9 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
 
     payload = {
         "checked_at": now_iso(),
+        "kind": manifest["kind"],
+        "access_modes": manifest["access_modes"],
+        "capability_requirements": manifest.get("capability_requirements", {}),
         "support_state": support_state,
         "detect": detect_result,
         "healthcheck": healthcheck_result,
