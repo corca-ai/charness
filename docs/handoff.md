@@ -2,9 +2,9 @@
 
 ## Workflow Trigger
 
-- 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 사용자가 `~/cautilus` 작업 완료를 알리기 전이면 pre-`cautilus` self-work를 계속하고, 완료를 알린 뒤에는 evaluator integration Session을 시작한다.
-- pre-`cautilus` self-work를 이어갈 때는 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md), [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md), [docs/support-skill-policy.md](/home/ubuntu/charness/docs/support-skill-policy.md)를 먼저 읽고 support/control-plane/validation 빈칸을 메우는 쪽을 host packaging보다 우선한다.
-- `cautilus` integration을 시작할 때는 [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md), [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md), [integrations/tools/agent-browser.json](/home/ubuntu/charness/integrations/tools/agent-browser.json), [integrations/tools/specdown.json](/home/ubuntu/charness/integrations/tools/specdown.json), [integrations/tools/crill.json](/home/ubuntu/charness/integrations/tools/crill.json), [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), [docs/support-skill-policy.md](/home/ubuntu/charness/docs/support-skill-policy.md)를 다시 읽고 `cautilus` contract와 `charness` validation contract를 연결한다.
+- 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md), [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md), [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md)를 먼저 읽고 `cautilus` maintained scenario wiring과 direct-install 실험 중 하나를 바로 진행한다.
+- evaluator contract를 볼 때는 [integrations/tools/cautilus.json](/home/ubuntu/charness/integrations/tools/cautilus.json), [.agents/cautilus-adapter.yaml](/home/ubuntu/charness/.agents/cautilus-adapter.yaml), [docs/support-skill-policy.md](/home/ubuntu/charness/docs/support-skill-policy.md)를 같이 읽는다.
+- executable-spec guidance를 이어서 다룰 때는 [skills/public/spec/SKILL.md](/home/ubuntu/charness/skills/public/spec/SKILL.md), [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), [specdown-quality.md](/home/ubuntu/charness/presets/specdown-quality.md)를 먼저 읽는다.
 
 ## Current State
 
@@ -49,11 +49,10 @@
 - `agent-browser` upstream은 `https://github.com/vercel-labs/agent-browser`, `specdown` upstream은 `https://github.com/corca-ai/specdown`, `crill` upstream은 `https://github.com/corca-ai/crill`로 고정했다.
 - Session 12에서 [scripts/validate-integrations.py](/home/ubuntu/charness/scripts/validate-integrations.py), [scripts/doctor.py](/home/ubuntu/charness/scripts/doctor.py), [scripts/sync_support.py](/home/ubuntu/charness/scripts/sync_support.py), [scripts/update_tools.py](/home/ubuntu/charness/scripts/update_tools.py), [scripts/control_plane_lib.py](/home/ubuntu/charness/scripts/control_plane_lib.py)가 추가돼 control-plane dry-run and doctor seam이 생겼다.
 - `doctor`는 실제 machine state를 읽으므로 이 머신에서는 `specdown`만 `ok`이고 `agent-browser`와 `crill`은 아직 `missing`이다. quality gate에는 doctor를 직접 넣지 않고, manifest validation과 deterministic tests만 넣었다.
-- future evaluation engine manifest는 의도적으로 deferred 상태다. 추출된 upstream repo나 release boundary가 생기기 전에는 placeholder manifest를 만들지 않기로 했다.
-- public skill set의 deeper evaluation은 future workbench successor로 하기로 했고, provisional product name은 `cautilus`다. 사용자가 `~/cautilus` 작업을 끝냈다고 알려주기 전까지는 `charness`에서 실제 evaluator integration을 시작하지 않는다.
+- evaluator boundary는 더 이상 placeholder가 아니다. [cautilus.json](/home/ubuntu/charness/integrations/tools/cautilus.json)이 실제 upstream repo와 bundled skill boundary를 기록하고, deeper maintained scenario wiring만 후속 작업으로 남아 있다.
 - checked-in [cautilus-adapter.yaml](/home/ubuntu/charness/.agents/cautilus-adapter.yaml)이 추가돼 `charness`는 이제 `Cautilus doctor` 기준 최소 live-consumer surface를 가진다.
 - 현재 root `cautilus-adapter`는 repo-owned `quality` gate를 외부 evaluator entrypoint로 감싼 첫 migration step이고, richer scenario/eval surface는 이후 named `cautilus-adapters/`로 분리한다.
-- public skill별 provisional validation tier는 [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)에 정리됐다. 현재 배정은 `smoke-only` 없음, `HITL recommended`는 `announcement` / `hitl` / `ideation` / `quality` / `retro`, `evaluator-required`는 `create-skill` / `debug` / `find-skills` / `gather` / `handoff` / `impl` / `spec`이다.
+- public skill별 current validation tier는 [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)에 정리됐다. 현재 배정은 `smoke-only` 없음, `HITL recommended`는 `announcement` / `hitl` / `ideation` / `quality` / `retro`, `evaluator-required`는 `create-skill` / `debug` / `find-skills` / `gather` / `handoff` / `impl` / `spec`이다.
 - constitutional core의 public execution cluster가 이제 `gather` / `ideation` / `spec` / `impl` / `debug` / `retro` / `handoff` 수준에서 실제 skill body를 갖추게 됐다.
 - master plan에는 모든 public skill이 tier에 맞는 maintained validation path를 가져야 한다는 규칙이 반영됐고, deeper validation policy는 [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)에 고정됐다.
 - [engineering-quality.json](/home/ubuntu/charness/profiles/engineering-quality.json)이 추가돼 `quality` overlay profile 빈칸이 메워졌고, checked-in [quality-adapter.yaml](/home/ubuntu/charness/.agents/quality-adapter.yaml)이 canonical `./scripts/run-quality.sh` gate를 기록한다.
@@ -107,9 +106,12 @@
 - `run-evals.py`에는 이제 `agent-browser`/`specdown` shipped support-sync contract를 보는 dry-run scenario가 추가돼, upstream support reference가 있는 integration과 그렇지 않은 integration을 repo-owned smoke로 구분한다.
 - [skills/public/handoff/SKILL.md](/home/ubuntu/charness/skills/public/handoff/SKILL.md)는 이제 materially changed handoff를 마무리하기 전에, runtime이 허용하면 1~2개의 bounded subagent premortem을 돌려 “다음 에이전트가 무엇을 오해할지”를 먼저 점검하라고 요구한다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
+- [export-plugin.py](/home/ubuntu/charness/scripts/export-plugin.py)는 이제 shared manifest 기본 version을 유지하면서 export-time `--version-override`를 허용한다.
+- shipped sample preset은 이제 [specdown-quality.md](/home/ubuntu/charness/presets/specdown-quality.md), [monorepo-quality.md](/home/ubuntu/charness/presets/monorepo-quality.md)까지 포함해 더 현실적이고 varied한 maintainer example을 가진다.
+- `spec` / `quality`는 executable specs를 acceptance boundary에 남기고, duplicated shell-heavy detail은 unit/source-level checks나 direct adapter로 내리라는 guidance를 explicit하게 갖게 됐다.
 - 아직 없는 것:
+  - maintained `cautilus` scenarios for the `evaluator-required` public skills
   - support skill migrations and integration wrappers
-  - extracted evaluation engine (`cautilus`) integration manifest
   - concrete adoption of executable support-sync on shipped manifests
   - support control-plane lock artifact shaping beyond the current initial seam
   - the first concrete downstream org-installable preset in the host repo
@@ -117,15 +119,14 @@
 ## Next Session
 
 1. pre-`cautilus` deferred product decisions는 [deferred-decisions.md](/home/ubuntu/charness/docs/deferred-decisions.md)에서 2026-04-10 batch로 닫혔다. 다음 세션 시작 시에는 이 문서의 reopen trigger만 빠르게 확인하고 바로 integration work로 들어간다.
-2. `cautilus` integration Session을 시작한다.
-3. checked-in root host manifests로 Claude/Codex direct install experiment를 실제로 해 보고, 필요하면 packaging metadata를 더 보강한다.
-4. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
-5. downstream host가 first `organization`-scope preset을 실제로 정의할 때, 현재 preset contract를 그대로 쓸지 보고 필요한 최소 metadata만 더한다.
-6. `Cautilus doctor`가 통과하는 root adapter를 유지하면서, richer evaluator surface가 필요해지면 named `cautilus-adapters/`를 설계한다.
-7. extracted evaluation engine용 integration manifest를 추가하고 control-plane contract에 연결한다.
-8. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 provisional matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.
-9. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정하고, evaluator-required 경계와 HITL fallback 경계를 함께 문서화한다.
-10. manifest validation, control-plane tests, eval fixtures, handoff를 새 evaluator contract에 맞게 갱신한다.
+2. checked-in root host manifests로 Claude/Codex direct install experiment를 실제로 해 보고, 필요하면 packaging metadata를 더 보강한다.
+3. `cautilus` integration Session의 다음 단계로 maintained scenario wiring을 시작한다.
+4. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 current matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.
+5. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정하고, evaluator-required 경계와 HITL fallback 경계를 함께 문서화한다.
+6. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
+7. downstream host가 first `organization`-scope preset을 실제로 정의할 때, 현재 preset contract를 그대로 쓸지 보고 필요한 최소 metadata만 더한다.
+8. `Cautilus doctor`가 통과하는 root adapter를 유지하면서, richer evaluator surface가 필요해지면 named `cautilus-adapters/`를 설계한다.
+9. manifest validation, control-plane tests, eval fixtures, handoff를 새 evaluator contract에 맞게 갱신한다.
 
 ## Discuss
 

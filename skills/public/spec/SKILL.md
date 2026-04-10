@@ -36,6 +36,10 @@ the entire discovery history from scratch.
 If the repo already has executable acceptance artifacts, treat them as part of
 the spec surface rather than as a separate world.
 
+When the repo uses executable specs, inspect whether they stay at the
+acceptance boundary or whether they have started duplicating low-level test
+detail and runtime cost.
+
 ## Contract Shaping
 
 Choose the lightest honest contract shape.
@@ -48,6 +52,11 @@ probe-friendly and visible instead of inventing a user-facing mode choice.
 
 If the repo already treats executable checks as contract artifacts, push
 acceptance into those checks instead of managing a separate prose-only branch.
+
+If those executable checks are materially expensive, shape the contract so the
+standing acceptance bar stays honest about cost. Keep executable examples at
+the boundary and push duplicated unit-detail coverage downward instead of
+celebrating broad slow coverage.
 
 ## Workflow
 
@@ -78,6 +87,11 @@ acceptance into those checks instead of managing a separate prose-only branch.
    - add negative cases when failure would matter to users or operators
    - if the repo already uses executable specs or tests as contract artifacts,
      prefer promoting acceptance checks into that form
+   - if executable specs already exist, keep them at acceptance level and move
+     repeated low-level detail into unit tests, source guards, or more direct
+     adapters
+   - when one acceptance path is materially slower than the rest, document why
+     that cost is justified and which cheaper layers should absorb the detail
 6. Keep the contract alive during implementation.
    - stabilize the contract earlier when churn would otherwise be expensive
    - keep unresolved items visible as probes when answers should emerge through
@@ -118,8 +132,12 @@ If the idea depends on durable structure or flow, reuse ideation outputs such as
 - Do not leave success criteria as vague aspirations.
 - Do not allow an important success criterion without at least one acceptance
   check.
+- Do not let acceptance checks become a second copy of the unit suite just
+  because the repo already has executable specs.
 - Do not silently assume implementation details when they materially change
   scope or user-visible behavior.
+- Do not keep broad shell-driven executable checks in the contract when a
+  cheaper deterministic lower layer would prove the same behavior honestly.
 - If the concept artifact is still unstable in a concept-defining way, send the
   work back to `ideation` rather than writing a fake spec.
 - A good spec refines an existing concept artifact and stays synchronized with
@@ -134,6 +152,7 @@ If the idea depends on durable structure or flow, reuse ideation outputs such as
 - `references/ingest-and-refine.md`
 - `references/success-criteria.md`
 - `references/acceptance-checks.md`
+- `references/executable-spec-cost.md`
 - `references/ambiguity-rules.md`
 - `references/impl-loop.md`
 - `references/ideation-boundary.md`

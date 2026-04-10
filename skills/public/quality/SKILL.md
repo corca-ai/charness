@@ -93,10 +93,14 @@ recording.
    - local executable gates already present
    - current concept or architecture sources of truth
    - security and supply-chain signals already configured
+   - executable-spec frameworks, adapter depth, and overlap controls when the
+     repo keeps acceptance checks in specs
    - obvious blind spots where the repo has no gate at all
 3. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
    - keep the run bounded to the current scope when the task is not repo-wide
+   - if the repo has executable-spec overlap or cost guards, run those before
+     proposing more spec coverage
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and
      ownership model
@@ -109,6 +113,9 @@ recording.
      bootstrap seams, and shared-helper drift in these lenses
    - when docs are part of the operating surface, include duplicated guidance,
      conflicting copies, and source-of-truth drift
+   - when executable specs exist, inspect whether they stay boundary-focused,
+     duplicate lower-level tests, or rely on shell wrappers where direct
+     adapters would be clearer and faster
 5. Classify each issue by enforcement tier first.
    - `AUTO_EXISTING`: already enforced by a meaningful deterministic gate
    - `AUTO_CANDIDATE`: should be promoted into a linter, validator, test, hook,
@@ -128,6 +135,9 @@ recording.
      more prose
    - when the automatable move is already clear and repo-owned, implement it in
      the same turn unless the user asked to stay review-only
+   - when executable specs are slow or overlapping, prefer deleting duplicate
+     coverage, moving detail into unit/source-level checks, or introducing a
+     direct adapter before widening the standing spec bar
 8. End with a quality posture summary.
    - what was actually run
    - what the current bar proves
@@ -153,6 +163,8 @@ The result should usually include:
 - Do not reduce quality to one aggregate score.
 - Do not recommend gates the repo cannot realistically run without saying why.
 - Do not confuse gate presence with gate usefulness.
+- Do not treat slow or broad executable specs as automatically strong quality
+  when they mostly duplicate cheaper deterministic coverage.
 - Do not leave an automatable quality rule as prose-only guidance when a
   linter, validator, test, hook, or script could own it.
 - If you stop short of an obvious repo-owned deterministic gate, name that as
@@ -177,4 +189,5 @@ The result should usually include:
 - `references/proposal-flow.md`
 - `references/gate-classification.md`
 - `references/automation-promotion.md`
+- `references/executable-spec-economics.md`
 - `references/sample-presets.md`

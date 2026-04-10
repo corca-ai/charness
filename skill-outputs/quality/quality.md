@@ -4,8 +4,9 @@ Date: 2026-04-10
 ## Scope
 
 Current repo-wide quality posture after tightening local enforcement,
-splitting quality history from the current snapshot, and adding the first
-Google Workspace `gws-cli` gather seam.
+splitting quality history from the current snapshot, adding the first
+Google Workspace `gws-cli` gather seam, and tightening executable-spec
+guidance around cost, overlap, and adapter depth.
 
 ## Current Gates
 
@@ -29,6 +30,11 @@ Google Workspace `gws-cli` gather seam.
 - maintainer-local hook drift is no longer invisible: the canonical quality
   runner now checks whether this clone actually points `core.hooksPath` at the
   checked-in `.githooks` directory.
+- the control plane now tracks `cautilus` as a real external evaluator
+  boundary instead of a deferred placeholder.
+- `spec` and `quality` now explicitly tell executable-spec repos to keep specs
+  at acceptance level, delete overlap, and move duplicated shell-heavy detail
+  into cheaper lower layers.
 
 ## Weak
 
@@ -37,8 +43,9 @@ Google Workspace `gws-cli` gather seam.
 
 ## Missing
 
-- no evaluator-backed `cautilus` validation path yet for the
-  `evaluator-required` public skills.
+- no maintained evaluator-backed `cautilus` scenario path yet for the
+  `evaluator-required` public skills beyond the current integration manifest
+  and root adapter seam.
 - no automated current-repo gate yet that decides which public skills must ship
   adapters versus which can stay adapter-free honestly.
 
@@ -63,6 +70,9 @@ Google Workspace `gws-cli` gather seam.
 - `AUTO_CANDIDATE`: add a deterministic smoke path for shipped support-sync
   contracts so `agent-browser`-style upstream support references cannot drift
   silently.
+- `AUTO_CANDIDATE`: connect the new `cautilus` integration manifest to honest
+  maintained scenarios for `evaluator-required` skills without pretending the
+  current repo-local bar already has that depth.
 
 ## History
 

@@ -24,6 +24,14 @@ Good acceptance checks usually specify:
 
 Pick the lightest check that still proves the behavior honestly.
 
+If the repo uses executable specs such as `specdown`:
+
+- keep them at the acceptance boundary, not as a duplicate unit suite
+- prefer direct adapters, check tables, or source-level guards before broad
+  shell-driven commands
+- name the expected scope and cost when one acceptance check is substantially
+  slower than the rest of the bar
+
 ## Negative Cases
 
 For important paths, include at least one negative case.
@@ -42,3 +50,5 @@ If the repo already uses executable specs or acceptance-heavy tests:
 - prefer turning important checks into executable artifacts
 - keep the prose contract synchronized with those checks
 - do not introduce a new executable framework unless the repo already wants it
+- do not let executable-spec convenience hide repeated broad commands that
+  should move down into unit tests or adapter-level checks
