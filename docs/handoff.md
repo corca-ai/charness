@@ -75,6 +75,7 @@
 - [check-python-lengths.py](/home/ubuntu/charness/scripts/check-python-lengths.py)가 추가돼 helper-layer Python에서 함수 길이와 파일 길이를 deterministic gate로 본다. 현재 scope는 `scripts/*.py`와 `skills/public/*/scripts/*.py`이고, `tests/`는 제외한다.
 - `charness`는 이제 격리 에이전트 런타임도 first-class target으로 본다. 새 [runtime-capability-contract.md](/home/ubuntu/charness/docs/runtime-capability-contract.md)는 grant-first / authenticated-binary / env fallback 모델을 고정하고, `gather`를 exemplar로 capability-driven onboarding 방향을 문서화한다.
 - [skills/public/gather/SKILL.md](/home/ubuntu/charness/skills/public/gather/SKILL.md)와 [create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md)는 이제 public skill 설치 모델과 capability/access-mode boundary를 반영한다.
+- [manifest.schema.json](/home/ubuntu/charness/integrations/tools/manifest.schema.json)과 shipped integration manifests는 이제 ordered `access_modes`를 실제 metadata로 가진다. 현재 schema는 `grant` / `binary` / `env` / `public` / `human-only` / `degraded`를 허용하고, 현재 bundled tools는 `binary`-first + human/degraded fallback contract를 명시한다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - support skill migrations and integration wrappers
@@ -83,7 +84,7 @@
 
 ## Next Session
 
-1. pre-`cautilus`로 계속 가면 `gather` exemplar를 바탕으로 capability-driven onboarding이 실제 manifest/support/adapter metadata에서 어떻게 표현될지 좁힌다.
+1. pre-`cautilus`로 계속 가면 `gather` exemplar를 바탕으로 `access_modes` 다음 단계 capability metadata를 실제 manifest/support/adapter metadata에서 어디까지 고정할지 좁힌다.
 2. packaging export는 계속 최소 generated surface만 유지하고, richer install-surface metadata는 capability contract와 충돌하지 않게 나중에 본다.
 3. 그 다음 generated host manifests를 committed fixture로 둘지, 계속 temp export smoke만 유지할지 결정한다.
 4. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
@@ -101,7 +102,7 @@
 - shared packaging manifest가 release version을 직접 들고 갈지, export-time override를 허용할지 나중에 정해야 한다.
 - generated Claude/Codex export trees를 repo fixture로 보관할지, script+temp smoke만 canonical로 둘지 정해야 한다.
 - profile `extends`를 실제 merged bundle feature로 키울지, 계속 mostly-deferred metadata seam으로 둘지 나중에 정해야 한다.
-- capability grants, authenticated binaries, and env fallback를 integration manifest schema에 어느 깊이까지 올릴지 정해야 한다.
+- capability grants, authenticated binaries, and env fallback를 `access_modes` beyond metadata로 integration manifest schema에 어느 깊이까지 올릴지 정해야 한다.
 - `cautilus` 쪽 contract가 나온 뒤 `find-skills`나 support policy에서 `official`보다 더 일반적인 용어(`trusted` / `declared`)로 바꿀지 다시 볼 가치가 있다.
 - profile inheritance를 얼마나 허용할지, 아니면 flattened bundle만 허용할지 결정이 필요하다.
 - preset schema를 JSON으로 둘지 markdown-first catalog를 더 유지할지 나중에 정해야 한다.

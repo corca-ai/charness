@@ -50,6 +50,11 @@
       "failure_hint": "The CLI exists but scan help is unavailable. Reinstall the upstream environment or verify the active virtualenv."
     }
   },
+  "access_modes": [
+    "binary",
+    "human-only",
+    "degraded"
+  ],
   "version_expectation": {
     "policy": "advisory",
     "constraint": "Prefer a recent upstream-supported checkout or release.",

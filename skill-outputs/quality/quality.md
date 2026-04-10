@@ -108,6 +108,8 @@ What was actually runnable today:
 - the repo now has an explicit runtime-capability model for isolated hosts,
   grant-first access, and env fallback instead of leaving that boundary as an
   implied future concern.
+- integration manifests now carry explicit ordered `access_modes`, so the
+  capability model is no longer only prose in docs and skill references.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -305,10 +307,15 @@ The repo now explicitly assumes isolated agent runtimes and models runtime
 grants, authenticated binaries, and env fallback as separate access modes.
 That is the right abstraction for future `gather` expansion and later host
 consumption because it keeps secret transport out of public skills and adapters.
+The first step is now grounded in actual integration metadata too: shipped
+manifests declare their supported `access_modes` instead of leaving runtime
+access expectations entirely implicit.
 
 Evidence:
 
 - `docs/runtime-capability-contract.md`
+- `integrations/tools/manifest.schema.json`
+- `integrations/tools/agent-browser.json`
 - `skills/public/gather/SKILL.md`
 - `skills/public/gather/references/capability-contract.md`
 - `skills/public/create-skill/references/runtime-capabilities.md`

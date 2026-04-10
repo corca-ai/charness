@@ -49,6 +49,11 @@
       "failure_hint": "The binary exists but the CLI surface looks broken. Reinstall from a clean upstream release."
     }
   },
+  "access_modes": [
+    "binary",
+    "human-only",
+    "degraded"
+  ],
   "version_expectation": {
     "policy": "advisory",
     "constraint": "Prefer a recent upstream-supported release.",

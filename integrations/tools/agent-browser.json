@@ -49,6 +49,11 @@
       "failure_hint": "The CLI exists but does not respond cleanly. Reinstall it or run `agent-browser install --with-deps` on Linux."
     }
   },
+  "access_modes": [
+    "binary",
+    "human-only",
+    "degraded"
+  ],
   "version_expectation": {
     "policy": "advisory",
     "constraint": "Prefer a recent upstream-supported release.",

@@ -75,6 +75,7 @@ def seed_control_plane_repo(tmp_path: Path) -> Path:
                         "success_criteria": ["exit_code:0", "stdout_contains:help"],
                     },
                 },
+                "access_modes": ["binary", "degraded"],
                 "version_expectation": {
                     "policy": "minimum",
                     "constraint": ">=1.0.0",
@@ -124,6 +125,7 @@ def test_validate_integrations_rejects_invalid_generated_wrapper(tmp_path: Path)
                     "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
                     "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
                 },
+                "access_modes": ["binary"],
                 "version_expectation": {"policy": "advisory", "constraint": "latest"},
                 "support_skill_source": {
                     "source_type": "local_wrapper",
@@ -219,6 +221,7 @@ def test_sync_support_reference_materializes_reference_artifact_and_lock(tmp_pat
                     "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
                     "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
                 },
+                "access_modes": ["binary", "degraded"],
                 "version_expectation": {"policy": "advisory", "constraint": "latest"},
                 "support_skill_source": {
                     "source_type": "upstream_repo",

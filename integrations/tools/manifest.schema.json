@@ -13,6 +13,7 @@
     "homepage",
     "lifecycle",
     "checks",
+    "access_modes",
     "version_expectation"
   ],
   "properties": {
@@ -99,6 +100,22 @@
           "$ref": "#/definitions/check"
         }
       }
+    },
+    "access_modes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "grant",
+          "binary",
+          "env",
+          "public",
+          "human-only",
+          "degraded"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
     },
     "version_expectation": {
       "$ref": "#/definitions/versionExpectation"
