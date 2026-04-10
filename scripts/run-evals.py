@@ -131,6 +131,10 @@ def scenario_packaging_export(root: Path) -> None:
             raise EvalError(
                 f"claude plugin export: unexpected repository {claude_manifest.get('repository')!r}"
             )
+        if claude_manifest.get("author", {}).get("name") != "Corca":
+            raise EvalError(
+                f"claude plugin export: unexpected author payload {claude_manifest.get('author')!r}"
+            )
         exported_readme = claude_plugin_root / "README.md"
         exported_skills_dir = claude_plugin_root / "skills" / "public"
         if not exported_readme.exists() or not exported_skills_dir.exists():

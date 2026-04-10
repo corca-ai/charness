@@ -55,6 +55,9 @@
 - evaluator boundary는 더 이상 placeholder가 아니다. [cautilus.json](/home/ubuntu/charness/integrations/tools/cautilus.json)이 실제 upstream repo와 bundled skill boundary를 기록하고, deeper maintained scenario wiring만 후속 작업으로 남아 있다.
 - checked-in [cautilus-adapter.yaml](/home/ubuntu/charness/.agents/cautilus-adapter.yaml)이 추가돼 `charness`는 이제 `Cautilus doctor` 기준 최소 live-consumer surface를 가진다.
 - 2026-04-10에 clean `/home/ubuntu/cautilus` checkout으로 `node ./bin/cautilus adapter resolve --repo-root /home/ubuntu/charness`, `node ./bin/cautilus doctor --repo-root /home/ubuntu/charness`, `node ./bin/cautilus mode evaluate --repo-root /home/ubuntu/charness --mode full_gate --baseline-ref HEAD --output-dir /tmp/cautilus-charness-full-gate`를 실행했고, `doctor`는 `ready`, `full_gate` report는 `accept-now`로 끝났다.
+- 2026-04-10에 Claude direct-install 실험도 실제로 돌렸다. `claude plugins validate`로 checked-in marketplace/plugin manifest를 확인했고, 임시 `HOME`에서 `claude plugins marketplace add /home/ubuntu/charness/.claude-plugin/marketplace.json` 및 `claude plugins install charness@corca-charness`가 통과했다.
+- Claude validate에서 드러난 유일한 gap은 plugin manifest의 missing `author` warning이었고, shared packaging contract가 이제 Claude plugin manifest까지 `author` metadata를 내리도록 보강됐다.
+- 현재 로컬 `codex` CLI (`0.118.0`)에서는 Claude와 같은 공개 plugin validate/install 서브커맨드가 노출되지 않는다. 그래서 Codex 쪽은 checked-in `.agents/plugins/marketplace.json`, packaging validation, export smoke, startup advisory까지만 repo-owned proof가 있고, real host install proof는 후속 과제로 남아 있다.
 - 현재 root `cautilus-adapter`는 repo-owned `quality` gate를 외부 evaluator entrypoint로 감싼 첫 migration step이고, richer scenario/eval surface는 이후 named `cautilus-adapters/`로 분리한다.
 - public skill별 current validation tier는 [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)에 정리됐다. 현재 배정은 `smoke-only` 없음, `HITL recommended`는 `announcement` / `hitl` / `ideation` / `quality` / `retro`, `evaluator-required`는 `create-skill` / `debug` / `find-skills` / `gather` / `handoff` / `impl` / `spec`이다.
 - constitutional core의 public execution cluster가 이제 `gather` / `ideation` / `spec` / `impl` / `debug` / `retro` / `handoff` 수준에서 실제 skill body를 갖추게 됐다.
@@ -131,11 +134,11 @@
 ## Next Session
 
 1. pre-`cautilus` deferred product decisions는 [deferred-decisions.md](/home/ubuntu/charness/docs/deferred-decisions.md)에서 2026-04-10 batch로 닫혔다. 다음 세션 시작 시에는 이 문서의 reopen trigger만 빠르게 확인하고 바로 integration work로 들어간다.
-2. root `cautilus` consumer smoke는 이미 확인됐으니, 다음 session에서는 checked-in root host manifests로 Claude/Codex direct install experiment와 maintained scenario wiring 중 더 block되는 쪽을 바로 고른다.
-3. direct-install 실험을 먼저 잡으면 packaging metadata와 repo-root install hypothesis를 실제 host install로 확인하고, 부족한 metadata만 최소 범위로 보강한다.
-4. maintained scenario wiring을 먼저 잡으면 `evaluator-required` public skill 중 첫 target set과 adapter shape를 고정하고, named `cautilus-adapters/`가 필요한지 판단한다.
-5. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 current matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.
-6. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정하고, evaluator-required 경계와 HITL fallback 경계를 함께 문서화한다.
+2. Claude direct-install은 확인됐고 root `cautilus` consumer smoke도 이미 끝났으니, 다음 session의 첫 구현 slice는 maintained scenario wiring으로 잡는다.
+3. 첫 maintained scenario slice에서는 `evaluator-required` public skill 중 어디를 먼저 고정할지 정하고, root adapter를 유지한 채 named `cautilus-adapters/`가 당장 필요한지 판단한다.
+4. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 current matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.
+5. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정하고, evaluator-required 경계와 HITL fallback 경계를 함께 문서화한다.
+6. 현재 로컬 `codex` CLI surface로는 real install proof를 만들기 어렵다. Codex 쪽 follow-up은 공개 install/validate path가 확인되거나 richer local host surface를 찾았을 때 다시 잡는다.
 7. `quality`의 offline supply-chain gate 위에 online advisory/audit seam을 추가할지 다시 판단한다. 필요하면 npm/pnpm/uv용 optional wrapper를 만들되, network 의존성과 triage 책임을 분명히 남긴다.
 8. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
 9. downstream host가 first `organization`-scope preset을 실제로 정의할 때, 현재 preset contract를 그대로 쓸지 보고 필요한 최소 metadata만 더한다.

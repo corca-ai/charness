@@ -192,7 +192,14 @@ def validate_root_install_artifacts(root: Path, data: dict[str, object]) -> None
         require_json_matches(root / rel_path, expected, field)
 
 
-def validate_claude(package_id: str, version: str, summary: str, repository: str, data: object) -> None:
+def validate_claude(
+    package_id: str,
+    version: str,
+    summary: str,
+    repository: str,
+    expected_author: dict[str, object],
+    data: object,
+) -> None:
     if not isinstance(data, dict):
         raise ValidationError("`claude` must be an object")
     manifest_path = validate_string(data.get("manifest_path"), "claude.manifest_path")
@@ -208,6 +215,25 @@ def validate_claude(package_id: str, version: str, summary: str, repository: str
         raise ValidationError("`claude.manifest.version` must match top-level `version`")
     if validate_string(manifest.get("description"), "claude.manifest.description") != summary:
         raise ValidationError("`claude.manifest.description` must match top-level `summary`")
+    author = manifest.get("author")
+    if not isinstance(author, dict):
+        raise ValidationError("`claude.manifest.author` must be an object")
+    if validate_string(author.get("name"), "claude.manifest.author.name") != validate_string(
+        expected_author.get("name"), "author.name"
+    ):
+        raise ValidationError("`claude.manifest.author.name` must match top-level `author.name`")
+    if "url" in author:
+        author_url = validate_string(author.get("url"), "claude.manifest.author.url")
+        if expected_author.get("url") is not None and author_url != validate_string(
+            expected_author.get("url"), "author.url"
+        ):
+            raise ValidationError("`claude.manifest.author.url` must match top-level `author.url`")
+    if "email" in author:
+        author_email = validate_string(author.get("email"), "claude.manifest.author.email")
+        if expected_author.get("email") is not None and author_email != validate_string(
+            expected_author.get("email"), "author.email"
+        ):
+            raise ValidationError("`claude.manifest.author.email` must match top-level `author.email`")
     if validate_string(manifest.get("repository"), "claude.manifest.repository") != repository:
         raise ValidationError("`claude.manifest.repository` must match top-level `repository`")
     marketplace = data.get("marketplace")
@@ -249,7 +275,7 @@ def validate_packaging_manifest(path: Path, root: Path, *, validate_root_artifac
 
     validate_source_paths(root, data.get("source"))
     validate_codex(package_id, version, summary, data.get("codex"))
-    validate_claude(package_id, version, summary, repository, data.get("claude"))
+    validate_claude(package_id, version, summary, repository, author, data.get("claude"))
     if validate_root_artifacts:
         validate_root_install_artifacts(root, data)
 

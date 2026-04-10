@@ -204,6 +204,7 @@
         "name",
         "version",
         "description",
+        "author",
         "repository"
       ],
       "properties": {
@@ -216,6 +217,9 @@
         "description": {
           "type": "string",
           "minLength": 1
+        },
+        "author": {
+          "$ref": "#/definitions/author"
         },
         "repository": {
           "type": "string",
@@ -261,6 +265,27 @@
         "source_path": {
           "type": "string",
           "pattern": "^\\./.*$"
+        }
+      }
+    },
+    "author": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
         }
       }
     }
