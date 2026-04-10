@@ -37,6 +37,18 @@ For each important decision:
 
 This section explains the past. It is not the place for tool shopping.
 
+## Weekly Additions
+
+For `weekly`, add three bounded sections when they are supported by real
+evidence:
+
+- `Window`: the time span being reviewed
+- `Evidence Summary`: which artifacts or commands were actually used
+- `Trends vs Last Retro`: current delta versus the last durable weekly retro
+
+If there is no prior weekly retro, say so plainly and skip the comparison
+section instead of inventing trend data.
+
 ## Expert Counterfactuals
 
 Ask:
@@ -57,3 +69,15 @@ Every retro needs concrete future changes. Group them by type:
 
 This is where self-growing and self-healing live. Capability recommendations
 belong here because they are future improvements, not past decisions.
+
+## Snapshot
+
+If the adapter defines `snapshot_path`, persist a compact machine-readable
+snapshot for weekly mode. Keep it small:
+
+- mode
+- window
+- evidence sources used
+- real metrics or deltas actually cited
+
+Do not invent a hidden snapshot format when no explicit path was configured.

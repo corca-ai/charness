@@ -32,6 +32,7 @@ Use for:
 Evidence bias:
 
 - durable artifacts under `output_dir`
+- the most recent weekly retro in `output_dir` when it exists
 - adapter `evidence_paths`
 - adapter `metrics_commands`
 
@@ -39,6 +40,9 @@ Adapter policy:
 
 - adapter is strongly preferred
 - if metrics are missing, say the weekly retro is narrative-only
+- if no prior weekly retro exists, say the trend baseline is missing instead of
+  implying one
+- if `snapshot_path` is configured, persist a compact weekly snapshot there
 
 ## Auto Selection
 

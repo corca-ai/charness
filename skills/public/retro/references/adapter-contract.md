@@ -29,6 +29,7 @@ Optional shared provenance:
 - `preset_id`
 - `preset_version`
 - `customized_from`
+- `snapshot_path`
 
 Retro-specific fields:
 
@@ -51,6 +52,7 @@ preset_id: portable-defaults
 customized_from: portable-defaults
 default_mode: session
 weekly_window_days: 7
+snapshot_path: skill-outputs/retro/weekly-latest.json
 evidence_paths:
   - docs/handoff.md
 metrics_commands: []
@@ -60,6 +62,8 @@ metrics_commands: []
 
 - `default_mode` only breaks ties after explicit user wording and obvious context.
 - `weekly_window_days` matters only for `weekly` mode.
+- `snapshot_path` is optional and only used when `weekly` wants a compact
+  machine-readable snapshot in addition to prose output.
 - `evidence_paths` are additional local sources worth reading for retros.
 - `metrics_commands` are optional. If they are absent, weekly mode may still
   run narratively.
@@ -69,5 +73,6 @@ metrics_commands: []
 - missing adapter is soft for `session`
 - missing adapter is stronger for `weekly`, especially when metrics or durable
   artifacts are expected
+- `snapshot_path` must be explicit; never infer hidden machine-write locations
 - `metrics_commands` must be real commands with real sources; never placeholders
 - use explicit empty lists to record intentional opt-out from evidence or metrics

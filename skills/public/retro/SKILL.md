@@ -52,12 +52,16 @@ Adapter policy:
 2. Gather evidence in this order.
    - current thread, current task, changed files, recent commits
    - existing handoff or prior retro artifacts when they matter
+   - for `weekly`, the most recent durable weekly retro under `output_dir` when one exists
    - adapter-defined `evidence_paths`
    - adapter-defined `metrics_commands` only when they sharpen a weekly claim
 3. Write the core retro.
    - `Context`: what unit of work is being reviewed and what matters next
+   - `Window`: for `weekly`, the time window being summarized
+   - `Evidence Summary`: which durable artifacts, commands, or metrics actually informed the retro
    - `Waste`: where time, clarity, or trust was lost
    - `Critical Decisions`: which decisions changed outcome or constrained later work
+   - `Trends vs Last Retro`: for `weekly`, compare against the last durable weekly retro when one exists
    - `Expert Counterfactuals`: what 1-2 named experts in this domain would likely
      have done differently
    - `Next Improvements`: concrete changes for the next session
@@ -69,6 +73,7 @@ Adapter policy:
    - `memory`: write the lesson into a durable artifact so it is not relearned
 5. Persist when there is a durable home.
    - if `output_dir` exists or the adapter defines one, update the retro artifact
+   - if `weekly` and the adapter defines `snapshot_path`, write a compact machine-readable snapshot with the window, evidence sources, and any real metrics or deltas you used
    - otherwise still give the user a concise retro in chat
    - never stop without stating `Persisted: yes <path>` or `Persisted: no <reason>`
 
@@ -78,8 +83,11 @@ The result should usually include:
 
 - `Mode`
 - `Context`
+- `Window` for `weekly`
+- `Evidence Summary` for `weekly`
 - `Waste`
 - `Critical Decisions`
+- `Trends vs Last Retro` for `weekly` when prior evidence exists
 - `Expert Counterfactuals`
 - `Next Improvements`
 - `Persisted`
@@ -115,11 +123,13 @@ The result should usually include:
 - Separate observed facts from proposed improvements.
 - Do not fabricate metrics when the adapter does not provide a real source.
 - Weekly retros may stay narrative without metrics, but must say so explicitly.
+- If no prior weekly retro exists, say so explicitly instead of implying a trend line.
 - Capability suggestions exist to reduce future waste, not to show tool awareness.
 - Do not let the retro turn into a generic postmortem when the user asked for a
   short session review.
 - Do not claim persistence implicitly; name the durable path or the reason it
   remained chat-only.
+- Do not invent hidden machine formats. Only write a weekly snapshot when the adapter gives an explicit `snapshot_path`.
 - If no improvement is proposed, explain why the current workflow should remain
   unchanged.
 
@@ -130,3 +140,4 @@ The result should usually include:
 - `references/section-guide.md`
 - `references/expert-lens.md`
 - `references/trigger-and-persistence.md`
+- `references/weekly-trends.md`

@@ -29,6 +29,7 @@ STRING_FIELDS = (
     "preset_version",
     "customized_from",
     "default_mode",
+    "snapshot_path",
 )
 STRING_LIST_FIELDS = ("evidence_paths", "metrics_commands")
 

@@ -67,6 +67,8 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "`Persisted`: whether the retro was written to a durable artifact",
         "never stop without stating `Persisted: yes <path>` or `Persisted: no <reason>`",
         "Trigger a short `session` retro automatically when a user correction exposes a",
+        "`Trends vs Last Retro`: for `weekly`, compare against the last durable weekly retro when one exists",
+        "Only write a weekly snapshot when the adapter gives an explicit `snapshot_path`",
     ),
 }
 
