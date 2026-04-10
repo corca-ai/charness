@@ -8,38 +8,32 @@ description: "Use when the goal is to understand and improve the repo's current 
 Use this when the task is overall quality posture, not only one narrow bug or
 one isolated test.
 
-`quality` is one public concept. It absorbs:
+`quality` is one public concept. It absorbs concept integrity review, test
+confidence improvement, security and supply-chain posture review, skill
+package and maintenance drift review, and documentation drift review.
 
-- concept integrity review
-- test confidence improvement
-- security and supply-chain posture review
-- skill package and maintenance drift review
-- documentation drift and duplication review
+The job is to understand the repo's current quality surface, run the
+meaningful gates that already exist, and propose the missing ones concretely.
 
-The job is not to invent one universal checklist. The job is to understand the
-repo's current quality surface, run the meaningful gates that already exist,
-and propose the missing ones concretely.
-
-When the next quality move is repo-local, deterministic, and low-risk, `quality`
-should prefer implementing that gate in the same turn instead of stopping at a
-recommendation. Review-only output is appropriate when the user asked for it,
-when the tradeoff is genuinely product-defining, or when the gate cannot be
-owned honestly by a repo-local script, test, hook, or config change.
+When the next quality move is repo-local, deterministic, and low-risk, prefer
+implementing that gate in the same turn. Stay review-only when the user asks
+or the tradeoff is genuinely product-defining.
 
 Deterministic gates should define pass/fail authority wherever possible. If a
 quality concern can be enforced by a linter, validator, test, hook, or script,
 `quality` should prefer promoting it into that gate instead of leaving it as
 repeated prose advice.
 
-Maintainer-local setup counts when the repo depends on it. If a checked-in hook
-or similar repo-owned developer control exists, `quality` should prefer a
-deterministic validator that proves the current clone actually uses it.
+Maintainer-local enforcement counts when the repo depends on it. When the
+repo has an obvious final stop-before-finish gate with no checked-in hook,
+repo-owned hook installer, or documented no-hook policy, `quality` must name
+that as a missing enforcement gap rather than treating the passing command as
+healthy posture. See `references/maintainer-local-enforcement.md`.
 
-`quality` and concept review are adjacent but not identical. Use `quality` for
-repo posture, enforceable drift, duplicated surfaces, weak gates, and the next
-concrete validation move. Use concept-review-style reasoning when the main
-question is whether concepts, boundaries, ownership, or source-of-truth design
-are still the right ones even without near-duplicate text or an obvious gate.
+`quality` and concept review are adjacent. Use `quality` for repo posture,
+drift, duplicated surfaces, weak gates, and the next concrete validation move.
+Use concept review when boundaries, ownership, or source-of-truth design stay
+unresolved without duplicate text or an obvious gate.
 
 ## Bootstrap
 
@@ -55,9 +49,8 @@ By default, `quality` writes its durable artifact to
 `skill-outputs/quality/quality.md`. Repos can override the directory with
 `.agents/quality-adapter.yaml`.
 
-Keep the current artifact short and current. When older review detail starts to
-bury today's posture, move that detail into sibling `history/*.md` archives and
-leave `quality.md` as the current snapshot plus links back to history.
+Keep `quality.md` short and current. Move older review detail into sibling
+`history/*.md` archives when today's posture starts getting buried.
 
 If the adapter is missing and the repo would benefit from explicit command
 groups, scaffold one:
@@ -72,17 +65,17 @@ sed -n '1,220p' <resolved-quality-artifact> 2>/dev/null || true
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 rg --files docs skills
 
-# 2. repo signals for existing gates and contracts
-rg -n "eslint|ruff|mypy|pyright|tsc|pytest|vitest|jest|coverage|deptry|knip|audit|sast|owasp|threat|architecture|concept|markdownlint|secretlint|shellcheck|lychee|gitleaks|trufflehog" .
+# 2. repo signals and maintainer-local enforcement surface
+rg -n "eslint|ruff|mypy|pyright|tsc|pytest|vitest|jest|coverage|deptry|knip|audit|sast|owasp|threat|architecture|concept|markdownlint|secretlint|shellcheck|lychee|gitleaks|trufflehog|pre-push|prepush|githook|husky|simple-git-hooks|lefthook|core\.hooksPath" .
+git config --get core.hooksPath || true
+find .git/hooks -maxdepth 1 -type f 2>/dev/null | sort
 
 # 3. current repo state
 git status --short
 ```
 
-If the adapter is missing, use inferred defaults and continue. The purpose of
-`quality` is to give first-use value before a repo has a perfect quality
-setup. Scaffold the adapter when the repo already has stable gate commands
-worth recording.
+If the adapter is missing, use inferred defaults and continue; scaffold one
+when the repo already has stable gate commands worth recording.
 
 ## Workflow
 
@@ -95,14 +88,15 @@ worth recording.
    - security and supply-chain signals already configured
    - executable-spec frameworks, adapter depth, and overlap controls when the
      repo keeps acceptance checks in specs
+   - maintainer-local enforcement for the final stop-before-finish gate: a
+     checked-in hook, installer, or explicit no-hook policy
    - obvious blind spots where the repo has no gate at all
 3. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
    - keep the run bounded to the current scope when the task is not repo-wide
    - if the repo has executable-spec overlap or cost guards, run those before
      proposing more spec coverage
-   - for timing, logs, and retention signals, use
-     `references/operability-signals.md`
+   - for timing/logs/retention signals, see `references/operability-signals.md`
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and
      ownership model
@@ -113,14 +107,12 @@ worth recording.
      sustain the quality bar
    - when the repo authors skills, include skill package quality, portable
      bootstrap seams, and shared-helper drift in these lenses
-   - when docs are part of the operating surface, include duplicated guidance,
-     conflicting copies, source-of-truth drift, and clickable repo-doc links in
-     prose
+   - for docs-as-operating-surface, flag duplicated guidance, conflicting
+     copies, source-of-truth drift, and bare repo-doc links in prose
    - treat external URL health separately from repo-local markdown-link
      discipline
-   - when executable specs exist, inspect whether they stay boundary-focused,
-     duplicate lower-level tests, or rely on shell wrappers where direct
-     adapters would be clearer and faster
+   - for executable specs, inspect boundary focus, lower-level duplication,
+     and shell-wrapper use where direct adapters would be clearer and faster
 5. Classify each issue by enforcement tier first.
    - `AUTO_EXISTING`: already enforced by a meaningful deterministic gate
    - `AUTO_CANDIDATE`: should be promoted into a linter, validator, test, hook,
@@ -136,13 +128,12 @@ worth recording.
    - for missing or weak gates, name the exact setup or command family to add
    - prefer the smallest gate that materially improves confidence
    - do not force one stack's tooling when the repo does not use that stack
-   - when the problem is automatable, prefer a deterministic gate proposal over
-     more prose
+   - when the problem is automatable, prefer a deterministic gate over prose
    - when the automatable move is already clear and repo-owned, implement it in
      the same turn unless the user asked to stay review-only
-   - when executable specs are slow or overlapping, prefer deleting duplicate
-     coverage, moving detail into unit/source-level checks, or introducing a
-     direct adapter before widening the standing spec bar
+   - if executable specs are slow or overlapping, delete duplicates, move
+     detail into unit-level checks, or add a direct adapter before widening
+     the spec bar
 8. End with a quality posture summary.
    - what was actually run
    - what runtime or diagnostic signals were captured
@@ -157,6 +148,7 @@ The result should usually include:
 - `Scope`
 - `Current Gates`
 - `Runtime Signals`
+- `Maintainer-Local Enforcement`
 - `Enforcement Triage`
 - `Healthy`
 - `Weak`
@@ -176,6 +168,8 @@ The result should usually include:
 - Do not leave an automatable quality rule as prose-only guidance when a linter, validator, test, hook, or script could own it.
 - If you stop short of an obvious repo-owned deterministic gate, name that as
   an unresolved enforcement gap explicitly.
+- Do not treat a passing final local gate as sufficient posture when clones
+  have no repo-owned way to run it before push and no documented no-hook waiver.
 - Do not propose generic "add more tests" or "improve security" without naming the actual seam and the next concrete setup.
 - If a gate already exists, prefer tightening or reusing it before adding a new parallel tool.
 - If a stronger check would require an external tool, support skill, or permission, say so explicitly.
@@ -186,6 +180,7 @@ The result should usually include:
 ## References
 
 - `references/adapter-contract.md`
+- `references/maintainer-local-enforcement.md`
 - `references/quality-lenses.md`
 - `references/skill-quality.md`
 - `references/proposal-flow.md`
