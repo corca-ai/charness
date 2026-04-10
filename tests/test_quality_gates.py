@@ -804,13 +804,13 @@ def test_check_skill_contracts_rejects_missing_required_snippet(tmp_path: Path) 
     assert "missing required contract snippet" in result.stderr
 
 
-def test_find_skills_lists_adapter_configured_official_roots(tmp_path: Path) -> None:
+def test_find_skills_lists_adapter_configured_trusted_roots(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     local_skill_dir = repo / "skills" / "public" / "local-demo"
-    official_skill_dir = repo / "vendor" / "official-skills" / "official-demo"
+    trusted_skill_dir = repo / "vendor" / "trusted-skills" / "trusted-demo"
     adapter_dir = repo / ".agents"
     local_skill_dir.mkdir(parents=True)
-    official_skill_dir.mkdir(parents=True)
+    trusted_skill_dir.mkdir(parents=True)
     adapter_dir.mkdir(parents=True)
 
     (local_skill_dir / "SKILL.md").write_text(
@@ -826,7 +826,7 @@ def test_find_skills_lists_adapter_configured_official_roots(tmp_path: Path) -> 
         ),
         encoding="utf-8",
     )
-    (official_skill_dir / "SKILL.md").write_text(
+    (trusted_skill_dir / "SKILL.md").write_text(
         "\n".join(
             [
                 "---",
@@ -847,7 +847,7 @@ def test_find_skills_lists_adapter_configured_official_roots(tmp_path: Path) -> 
                 "language: en",
                 "output_dir: skill-outputs/find-skills",
                 "trusted_skill_roots:",
-                "- vendor/official-skills",
+                "- vendor/trusted-skills",
                 "prefer_local_first: true",
                 "allow_external_registry: false",
                 "",

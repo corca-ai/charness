@@ -212,11 +212,11 @@ def scenario_handoff_absolute_links(root: Path) -> None:
 
 def seed_find_skills_fixture(tmp: Path) -> None:
     local_skill_dir = tmp / "skills" / "public" / "local-demo"
-    official_skill_dir = tmp / "vendor" / "official-skills" / "official-demo"
+    trusted_skill_dir = tmp / "vendor" / "trusted-skills" / "trusted-demo"
     adapter_dir = tmp / ".agents"
     integrations_dir = tmp / "integrations" / "tools"
     local_skill_dir.mkdir(parents=True)
-    official_skill_dir.mkdir(parents=True)
+    trusted_skill_dir.mkdir(parents=True)
     adapter_dir.mkdir(parents=True)
     integrations_dir.mkdir(parents=True)
 
@@ -224,7 +224,7 @@ def seed_find_skills_fixture(tmp: Path) -> None:
         "\n".join(["---", "name: local-demo", 'description: "Local demo skill."', "---", "", "# Local Demo"]) + "\n",
         encoding="utf-8",
     )
-    (official_skill_dir / "SKILL.md").write_text(
+    (trusted_skill_dir / "SKILL.md").write_text(
         "\n".join(["---", "name: trusted-demo", 'description: "Trusted demo skill."', "---", "", "# Trusted Demo"])
         + "\n",
         encoding="utf-8",
@@ -239,7 +239,7 @@ def seed_find_skills_fixture(tmp: Path) -> None:
                 "preset_id: portable-defaults",
                 "customized_from: portable-defaults",
                 "trusted_skill_roots:",
-                "- vendor/official-skills",
+                "- vendor/trusted-skills",
                 "prefer_local_first: true",
                 "allow_external_registry: false",
                 "",
