@@ -112,6 +112,8 @@ What was actually runnable today:
   capability model is no longer only prose in docs and skill references.
 - `find-skills` discovery now surfaces integration `kind` and `access_modes`
   instead of flattening external capabilities to bare ids and paths.
+- integration validation now enforces that ordered `access_modes` follow the
+  canonical runtime preference order instead of treating order as informal.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -336,6 +338,19 @@ Evidence:
 - `skills/public/find-skills/SKILL.md`
 - `tests/test_find_skills.py`
 - `scripts/run-evals.py`
+
+### 14. Ordered access metadata is now enforced rather than merely documented
+
+Integration manifests already declared ordered `access_modes`. The repo now
+also validates that order against the canonical runtime preference sequence, so
+`grant`/`binary`/`env`/fallback semantics do not drift into arbitrary per-file
+ordering.
+
+Evidence:
+
+- `scripts/validate-integrations.py`
+- `tests/test_control_plane.py`
+- `docs/runtime-capability-contract.md`
 
 ## Commands Run
 

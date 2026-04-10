@@ -22,6 +22,8 @@ The preferred model is:
 ## Access Modes
 
 External integrations should describe which access modes they can consume.
+When a manifest lists more than one, it should keep them in preferred runtime
+order.
 
 - `grant`: runtime-provided capability or connector grant with no raw secret
   material persisted in repo artifacts

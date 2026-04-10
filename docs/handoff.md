@@ -77,6 +77,7 @@
 - [skills/public/gather/SKILL.md](/home/ubuntu/charness/skills/public/gather/SKILL.md)와 [create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md)는 이제 public skill 설치 모델과 capability/access-mode boundary를 반영한다.
 - [manifest.schema.json](/home/ubuntu/charness/integrations/tools/manifest.schema.json)과 shipped integration manifests는 이제 ordered `access_modes`를 실제 metadata로 가진다. 현재 schema는 `grant` / `binary` / `env` / `public` / `human-only` / `degraded`를 허용하고, 현재 bundled tools는 `binary`-first + human/degraded fallback contract를 명시한다.
 - [list_capabilities.py](/home/ubuntu/charness/skills/public/find-skills/scripts/list_capabilities.py)는 이제 integration discovery 결과에 `kind`와 `access_modes`를 포함한다. `find-skills`는 external integration을 단순 존재 여부가 아니라 실제 access path가 보이는 capability surface로 보여준다.
+- [validate-integrations.py](/home/ubuntu/charness/scripts/validate-integrations.py)는 이제 `access_modes`가 canonical runtime preference order를 따르는지도 검증한다. ordered metadata가 단순 관습이 아니라 repo-owned contract가 됐다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - support skill migrations and integration wrappers

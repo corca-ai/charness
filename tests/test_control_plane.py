@@ -142,6 +142,39 @@ def test_validate_integrations_rejects_invalid_generated_wrapper(tmp_path: Path)
     assert "generated_wrapper requires wrapper_skill_id" in result.stderr
 
 
+def test_validate_integrations_rejects_unsorted_access_modes(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    tools_dir = repo / "integrations" / "tools"
+    tools_dir.mkdir(parents=True)
+    (tools_dir / "manifest.schema.json").write_text(
+        (ROOT / "integrations" / "tools" / "manifest.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    (tools_dir / "bad-order.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "tool_id": "bad-order",
+                "kind": "external_binary",
+                "display_name": "bad-order",
+                "upstream_repo": "example/bad-order",
+                "homepage": "https://example.com/bad-order",
+                "lifecycle": {"install": {"mode": "manual"}, "update": {"mode": "manual"}},
+                "checks": {
+                    "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                    "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                },
+                "access_modes": ["env", "binary", "degraded"],
+                "version_expectation": {"policy": "advisory", "constraint": "latest"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    result = run_script("scripts/validate-integrations.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "access_modes must stay in preferred runtime order" in result.stderr
+
+
 def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     repo = seed_control_plane_repo(tmp_path)
 

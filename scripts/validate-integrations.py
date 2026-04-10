@@ -23,14 +23,41 @@ class ValidationError(Exception):
     pass
 
 
+ACCESS_MODE_ORDER = {
+    "grant": 0,
+    "binary": 1,
+    "env": 2,
+    "public": 3,
+    "human-only": 4,
+    "degraded": 5,
+}
+
+
+def validate_access_mode_order(manifest: dict[str, object], path: Path) -> None:
+    access_modes = manifest.get("access_modes", [])
+    if not isinstance(access_modes, list):
+        return
+    ranks = [ACCESS_MODE_ORDER[mode] for mode in access_modes]
+    if ranks != sorted(ranks):
+        raise ValidationError(
+            f"{path}: access_modes must stay in preferred runtime order "
+            "(grant, binary, env, public, human-only, degraded)"
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     args = parser.parse_args()
     try:
-        manifests = load_manifests(args.repo_root.resolve())
+        repo_root = args.repo_root.resolve()
+        manifests = load_manifests(repo_root)
+        for manifest_path in sorted((repo_root / "integrations" / "tools").glob("*.json")):
+            if manifest_path.name == "manifest.schema.json":
+                continue
+            validate_access_mode_order(json.loads(manifest_path.read_text(encoding="utf-8")), manifest_path)
         lock_schema = load_lock_schema()
-        lock_files = lock_paths(args.repo_root.resolve())
+        lock_files = lock_paths(repo_root)
         for path in lock_files:
             validate_lock_data(json.loads(path.read_text(encoding="utf-8")), lock_schema, path)
     except Exception as exc:  # pragma: no cover - surfaced via CLI tests
