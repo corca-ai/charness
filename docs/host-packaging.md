@@ -126,6 +126,26 @@ Operationally this means:
 - public GitHub install remains a testable hypothesis, not an already-proven
   guarantee, until a pushed-repo experiment confirms it on both hosts
 
+## Thin Startup Advisory
+
+`charness` does not use a thick runtime preamble like `gstack`.
+
+Instead, hosts may render a thin startup advisory from:
+
+- [scripts/plugin_preamble.py](/home/ubuntu/charness/scripts/plugin_preamble.py)
+
+Current v1 output is intentionally read-only:
+
+- package version
+- root install-surface drift status
+- explicit update hints for Claude and Codex installs
+- lock-based readiness summary for known integrations
+- vendored-copy warnings for consumer repos that still carry a local
+  non-symlink `charness` copy
+
+This keeps startup guidance centralized without turning skill execution into a
+networked self-update loop.
+
 ## Non-Goals
 
 - shipping generated plugin trees in-repo

@@ -141,6 +141,29 @@ That means:
 
 Updates belong to the install or operator layer, not to individual skill runs.
 
+For hosts that want a shared startup advisory without embedding networked
+self-update logic into every skill run, use:
+
+```bash
+python3 scripts/plugin_preamble.py --repo-root /absolute/path/to/charness
+```
+
+This prints:
+
+- current `charness` version
+- root install-surface drift warning when the checked-in manifests no longer
+  match the shared packaging manifest
+- explicit Claude and Codex update hints
+- last observed integration readiness from lock state
+- warnings about vendored local copies that should become generated or pinned
+  upstream artifacts
+
+It stays read-only:
+
+- no runtime self-update
+- no project mutation
+- no host-specific routing or telemetry prompts
+
 ## Install And Update
 
 ### Claude Code
@@ -175,6 +198,9 @@ Update model:
 
 - local `--plugin-dir` usage still picks up repo changes directly
 - do not add runtime self-update checks to skills
+- hosts that want a startup advisory can render
+  `python3 scripts/plugin_preamble.py --repo-root /absolute/path/to/charness`
+  before user work begins
 
 ### Codex
 
@@ -200,6 +226,9 @@ Update model:
 - update the repo copy that `source.path` points to
 - restart or reload Codex so the install sees the new files
 - do not check for updates during skill execution
+- hosts that want a startup advisory can render
+  `python3 scripts/plugin_preamble.py --repo-root /absolute/path/to/charness`
+  before user work begins
 
 ## Repository Shape
 
