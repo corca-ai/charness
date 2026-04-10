@@ -92,29 +92,19 @@ def scenario_packaging_export(root: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="charness-eval-packaging-codex-") as codex_tmpdir:
         codex_root = Path(codex_tmpdir)
         codex_result = run_command(
-            [
-                "python3",
-                "scripts/export-plugin.py",
-                "--repo-root",
-                str(root),
-                "--host",
-                "codex",
-                "--output-root",
-                str(codex_root),
-                "--version-override",
-                "9.9.9",
-                "--with-marketplace",
-            ],
+            ["python3", "scripts/export-plugin.py", "--repo-root", str(root), "--host", "codex", "--output-root", str(codex_root), "--version-override", "9.9.9", "--with-marketplace"],
             cwd=root,
         )
         expect_success(codex_result, "codex plugin export")
         codex_plugin_root = codex_root / "plugins" / "charness"
         codex_manifest_path = codex_plugin_root / ".codex-plugin" / "plugin.json"
         codex_marketplace_path = codex_root / ".agents" / "plugins" / "marketplace.json"
-        if not codex_manifest_path.exists():
-            raise EvalError("codex plugin export: missing generated plugin manifest")
-        if not codex_marketplace_path.exists():
-            raise EvalError("codex plugin export: missing generated repo marketplace")
+        for path, label in (
+            (codex_manifest_path, "generated plugin manifest"),
+            (codex_marketplace_path, "generated repo marketplace"),
+        ):
+            if not path.exists():
+                raise EvalError(f"codex plugin export: missing {label}")
         codex_manifest = json.loads(codex_manifest_path.read_text(encoding="utf-8"))
         if codex_manifest.get("skills") != "./skills/":
             raise EvalError(f"codex plugin export: unexpected skills path {codex_manifest.get('skills')!r}")
@@ -128,16 +118,7 @@ def scenario_packaging_export(root: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="charness-eval-packaging-claude-") as claude_tmpdir:
         claude_root = Path(claude_tmpdir)
         claude_result = run_command(
-            [
-                "python3",
-                "scripts/export-plugin.py",
-                "--repo-root",
-                str(root),
-                "--host",
-                "claude",
-                "--output-root",
-                str(claude_root),
-            ],
+            ["python3", "scripts/export-plugin.py", "--repo-root", str(root), "--host", "claude", "--output-root", str(claude_root)],
             cwd=root,
         )
         expect_success(claude_result, "claude plugin export")
