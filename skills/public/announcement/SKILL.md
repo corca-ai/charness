@@ -1,18 +1,18 @@
 ---
 name: announcement
-description: "Use when drafting or delivering a repo change announcement, release note, or chat-ready summary. Draft value comes first; delivery, audience, and omission policy stay adapter-driven."
+description: "Use when drafting or delivering human-facing repo change communication such as release-note style summaries or chat-ready updates. Draft value comes first; delivery, audience, and omission policy stay adapter-driven."
 ---
 
 # Announcement
 
-Use this when the user wants a concise announcement of recent repo work, a
-release-note style summary, or a delivery-ready team update.
+Use this when the user wants human-facing communication about recent repo work,
+such as a release-note style summary or a delivery-ready team update.
 
 `announcement` is one public concept:
 
 - recover the human-facing value of recent changes
 - draft the message in a stable shape
-- optionally deliver it through an adapter-defined backend
+- deliver it through an adapter-defined human-facing backend when confirmed
 - record what was delivered so later announcements can continue from there
 
 ## Bootstrap
@@ -54,7 +54,7 @@ config must not block drafting.
 
 1. Restate the announcement goal.
    - draft only
-   - draft plus delivery
+   - draft plus human-facing delivery
    - release-note style versus chat-ready summary
 2. Resolve drafting context.
    - collect commits since the last recorded announcement when possible
@@ -78,7 +78,7 @@ config must not block drafting.
 7. If the user wants delivery, resolve the backend seam only then.
    - `none`: draft only
    - `release-notes`: update a checked-in markdown file
-   - `command`: run an adapter-defined post command
+   - `human-backend`: deliver through an adapter-defined human-facing backend
 8. Record the result after delivery or explicit draft finalization.
    - append a JSONL record so the next run can continue from the current head
 

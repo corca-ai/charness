@@ -830,11 +830,11 @@ def test_find_skills_lists_adapter_configured_official_roots(tmp_path: Path) -> 
         "\n".join(
             [
                 "---",
-                "name: official-demo",
-                'description: "Official demo skill."',
+                "name: trusted-demo",
+                'description: "Trusted demo skill."',
                 "---",
                 "",
-                "# Official Demo",
+                "# Trusted Demo",
             ]
         ),
         encoding="utf-8",
@@ -846,7 +846,7 @@ def test_find_skills_lists_adapter_configured_official_roots(tmp_path: Path) -> 
                 "repo: repo",
                 "language: en",
                 "output_dir: skill-outputs/find-skills",
-                "official_skill_roots:",
+                "trusted_skill_roots:",
                 "- vendor/official-skills",
                 "prefer_local_first: true",
                 "allow_external_registry: false",
@@ -864,7 +864,7 @@ def test_find_skills_lists_adapter_configured_official_roots(tmp_path: Path) -> 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["public_skills"][0]["id"] == "local-demo"
-    assert payload["official_skills"][0]["id"] == "official-demo"
+    assert payload["trusted_skills"][0]["id"] == "trusted-demo"
 
 
 def test_impl_survey_reports_broken_preferred_skill_symlink(tmp_path: Path) -> None:

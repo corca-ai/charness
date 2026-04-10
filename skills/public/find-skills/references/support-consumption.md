@@ -3,13 +3,13 @@
 When the best match is not a public skill, `find-skills` should explain the
 layer honestly.
 
-## Official Skill
+## Trusted Skill
 
 Use this label when:
 
 - the host adapter exposes a trusted skill root outside local `charness`
 - the capability exists there but is not part of the local public skill bundle
-- the right answer is "use the host's official skill" rather than "invent a new
+- the right answer is "use the host's trusted skill" rather than "invent a new
   charness skill"
 
 ## Support Skill

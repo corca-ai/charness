@@ -105,8 +105,12 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         if items is not None:
             validated[field] = items
 
-    if validated["delivery_kind"] not in ("none", "release-notes", "command"):
-        errors.append("delivery_kind must be one of: none, release-notes, command")
+    if validated["delivery_kind"] == "command":
+        validated["delivery_kind"] = "human-backend"
+        warnings.append("delivery_kind `command` is deprecated; rename it to `human-backend`.")
+
+    if validated["delivery_kind"] not in ("none", "release-notes", "human-backend"):
+        errors.append("delivery_kind must be one of: none, release-notes, human-backend")
 
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")
@@ -114,8 +118,8 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         warnings.append("No audience_tags configured; drafts will omit audience prefixes.")
     if validated["delivery_kind"] == "release-notes" and not validated["release_notes_path"]:
         warnings.append("release-notes delivery_kind is set but release_notes_path is empty.")
-    if validated["delivery_kind"] == "command" and not validated["post_command_template"]:
-        warnings.append("command delivery_kind is set but post_command_template is empty.")
+    if validated["delivery_kind"] == "human-backend" and not validated["post_command_template"]:
+        warnings.append("human-backend delivery_kind is set but post_command_template is empty.")
 
     return validated, errors, warnings
 
@@ -156,7 +160,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "errors": [],
             "warnings": [
                 "No announcement adapter found. Using draft-first defaults.",
-                "Create .agents/announcement-adapter.yaml to record section order, audience tags, and delivery seams.",
+                "Create .agents/announcement-adapter.yaml to record section order, audience tags, and human-facing delivery seams.",
             ],
             "searched_paths": searched_paths,
         }

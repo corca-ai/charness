@@ -85,12 +85,12 @@ def support_skills(root: Path) -> list[dict[str, str]]:
     )
 
 
-def official_skills(root: Path, skill_roots: list[str]) -> list[dict[str, str]]:
-    configured_roots = [(f"official-root-{index + 1}", (root / skill_root).resolve()) for index, skill_root in enumerate(skill_roots)]
+def trusted_skills(root: Path, skill_roots: list[str]) -> list[dict[str, str]]:
+    configured_roots = [(f"trusted-root-{index + 1}", (root / skill_root).resolve()) for index, skill_root in enumerate(skill_roots)]
     return _collect_skill_entries(
         configured_roots,
         repo_root=root,
-        layer="official skill",
+        layer="trusted skill",
     )
 
 
@@ -169,14 +169,14 @@ def main() -> None:
     args = parser.parse_args()
     root = args.repo_root.resolve()
     adapter = load_adapter(root)
-    official_skill_roots = adapter["data"].get("official_skill_roots", [])
+    trusted_skill_roots = adapter["data"].get("trusted_skill_roots", [])
     payload = {
         "adapter": {
             "found": adapter["found"],
             "valid": adapter["valid"],
             "path": adapter["path"],
             "warnings": adapter["warnings"],
-            "official_skill_roots": official_skill_roots,
+            "trusted_skill_roots": trusted_skill_roots,
             "allow_external_registry": adapter["data"].get("allow_external_registry", False),
             "prefer_local_first": adapter["data"].get("prefer_local_first", True),
         },
@@ -184,7 +184,7 @@ def main() -> None:
         "support_skills": support_skills(root),
         "support_capabilities": support_capabilities(root),
         "integrations": integrations(root),
-        "official_skills": official_skills(root, official_skill_roots),
+        "trusted_skills": trusted_skills(root, trusted_skill_roots),
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2))
 

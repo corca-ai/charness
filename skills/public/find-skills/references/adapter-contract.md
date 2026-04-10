@@ -15,11 +15,11 @@ surface without forking the skill body.
 - `preset_id`
 - `preset_version`
 - `customized_from`
-- `official_skill_roots`
-  - additional skill roots the host treats as trusted official inventory
-  - a downstream host can point this at its official skill directory
+- `trusted_skill_roots`
+  - additional skill roots the host treats as trusted inventory
+  - a downstream host can point this at its trusted skill directory
 - `prefer_local_first`
-  - keep local `charness` skills ahead of official roots
+  - keep local `charness` skills ahead of trusted roots
 - `allow_external_registry`
   - whether a generic external skill ecosystem can be proposed at all
 
@@ -35,13 +35,13 @@ Without an adapter, `find-skills` should:
 Without host approval, it should not pretend that a generic external skill
 registry is part of the harness.
 
-## Official Skill Roots
+## Trusted Skill Roots
 
-Official skill roots are not the same thing as local public skills.
+Trusted skill roots are not the same thing as local public skills.
 
 Use them when:
 
-- the current host ships an official skill pack outside `charness`
+- the current host ships a trusted skill pack outside `charness`
 - that pack is still part of the trusted workflow surface
 - the host wants `find-skills` to discover it before proposing new work
 

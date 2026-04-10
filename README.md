@@ -60,13 +60,13 @@ Public skills are user-facing concepts. One concept maps to one skill.
 #### Reflect → Improve
 
 - `retro` — review what happened, what created waste, which decisions mattered
-- `quality` — detect current quality gates, identify gaps, propose next gates
+- `quality` — review the current quality bar, surface concrete findings, and propose strong next gates while keeping enforcement repo-owned
 
 #### Communicate → Coordinate
 
-- `announcement` — draft change announcements, release notes, or chat summaries
-- `handoff` — prepare the next session or operator with current state
-- `hitl` — insert deliberate human judgment into a bounded review loop
+- `announcement` — human-to-human change communication with adapter-defined delivery backends
+- `handoff` — agent-to-agent continuation artifact for the next session or operator
+- `hitl` — agent-to-human bounded review loop with resumable state
 
 #### Meta
 
@@ -81,7 +81,7 @@ use specialized tools consistently.
 - `agent-browser`
 - `web-fetch`
 - `specdown`
-- transitional evaluation support for the future workbench successor
+- transitional evaluation support around `cautilus` integration
 
 ### Profiles
 
@@ -102,7 +102,7 @@ Examples:
 - `agent-browser`
 - `specdown`
 - `crill`
-- future standalone evaluation engine (currently workbench-adjacent)
+- `cautilus`
 
 ## External Tool Policy
 

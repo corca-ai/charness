@@ -60,8 +60,10 @@ The default delivery record lives beside it:
 
 - `none`
 - `release-notes`
-- `command`
+- `human-backend`
 
 `announcement` should not hardcode one SaaS target in the public body. If a
-host wants Slack, email, or another backend, express that through a repo-owned
-command seam or a downstream adapter/preset.
+host wants Slack, GitHub release publishing, email, or another backend,
+express that through a repo-owned backend seam or a downstream adapter/preset.
+One common implementation path is a repo-owned command template, but that
+implementation detail is not the public delivery kind.

@@ -16,9 +16,12 @@ Draft only. No posting or file update.
 
 Append or update a checked-in markdown file such as `docs/release-notes.md`.
 
-### `command`
+### `human-backend`
 
-Run a repo-owned command template from the adapter.
+Deliver through an adapter-defined human-facing backend.
+
+One common implementation seam is a repo-owned command template, but the
+portable concept is still "human-facing delivery", not "run a command".
 
 Supported placeholders:
 
@@ -28,4 +31,4 @@ Supported placeholders:
 - `{delivery_target_q}`
 
 If a host wants a chat or SaaS backend, keep the public skill generic and route
-through a repo-owned command seam.
+through a repo-owned backend seam.

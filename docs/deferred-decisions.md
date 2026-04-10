@@ -36,8 +36,8 @@ Reopen trigger:
 ### D2. Future Evaluator Engine ID
 
 - Question: Keep `workbench` transitional id or assign a permanent id before extraction?
-- Current choice: Standardize on `cautilus` as the active product id for extraction-facing work.
-- Why now: Current handoff and adapter flow already use `cautilus`.
+- Current choice: Standardize on `cautilus` as the active product id for extraction-facing work, with no transitional naming compatibility.
+- Why now: Current handoff and adapter flow already use `cautilus`, and keeping legacy naming would only preserve ambiguity.
 - Impact surfaces: `docs/handoff.md`, `.agents/cautilus-adapter.yaml`, future integration manifest naming
 - Reopen trigger: If upstream evaluator branding or repository identity changes.
 
@@ -76,10 +76,10 @@ Reopen trigger:
 ### D7. `official` Terminology in Discovery Policy
 
 - Question: Replace `official` with broader wording (`trusted`/`declared`) now?
-- Current choice: Keep current terminology for v1; revisit after concrete `cautilus` contract lands.
-- Why now: No migration pressure yet; avoids premature vocabulary churn.
+- Current choice: Replace `official` with `trusted` now.
+- Why now: The actual policy boundary is host trust, not brand-official status.
 - Impact surfaces: `docs/support-skill-policy.md`, `skills/public/find-skills/*`
-- Reopen trigger: If discovery policy must include non-official but policy-approved skill roots.
+- Reopen trigger: If the trust policy later needs a more precise distinction than one `trusted` bucket.
 
 ### D8. Profile Inheritance Policy
 
@@ -100,32 +100,32 @@ Reopen trigger:
 ### D10. `ideation` Core Boundary
 
 - Question: How much entity/stage thinking belongs in public core vs references?
-- Current choice: Keep lightweight entity/stage framing in public core; push depth and examples into references.
-- Why now: Preserves a short trigger contract and portable defaults.
+- Current choice: Keep lightweight entity/stage framing in public core; push detailed playbooks, examples, and edge handling into references.
+- Why now: Preserves a short trigger contract and portable defaults while relying on reference discoverability and agent reference-following.
 - Impact surfaces: `skills/public/ideation/SKILL.md`, `skills/public/ideation/references/*`
 - Reopen trigger: If repeated user confusion shows core guidance is too thin.
 
 ### D11. `spec` Weight Control
 
 - Question: How to keep `spec` strong without procedural bloat?
-- Current choice: Keep heuristic core (`Fixed Decisions` / `Probe Questions` / `Deferred Decisions`) and keep procedural detail in references.
-- Why now: Aligns with option-minimalism and current public authoring discipline.
+- Current choice: Keep heuristic core (`Fixed Decisions` / `Probe Questions` / `Deferred Decisions`) and keep procedural detail, examples, and edge handling in references.
+- Why now: Aligns with option-minimalism and current public authoring discipline while relying on reference discoverability and agent reference-following.
 - Impact surfaces: `skills/public/spec/SKILL.md`, `skills/public/spec/references/*`
 - Reopen trigger: If implementation handoff quality repeatedly fails due to underspecified core guidance.
 
 ### D12. `quality` Skill Identity
 
 - Question: Is `quality` a proposal skill, gate skill, or both?
-- Current choice: `quality` remains a public proposal/review skill; deterministic enforcement stays in repo-owned quality gates/scripts.
-- Why now: Preserves separation between operator guidance and CI/runtime enforcement.
+- Current choice: `quality` remains a strong public proposal/review skill; deterministic enforcement stays in repo-owned quality gates/scripts.
+- Why now: Preserves separation between operator guidance and CI/runtime enforcement without weakening the proposal surface into soft advice.
 - Impact surfaces: `skills/public/quality/SKILL.md`, `scripts/run-quality.sh`, quality docs
 - Reopen trigger: If users need one unified interface that both proposes and enforces without ambiguity.
 
 ### D13. Sample Preset Scope
 
 - Question: Keep sample presets repo-agnostic vs move to host/profile seams?
-- Current choice: Keep `charness`-shipped presets repo-agnostic maintainer examples; move consumer-specific install surfaces to downstream repos.
-- Why now: Maintains portable source-of-truth boundaries.
+- Current choice: Keep `charness`-shipped presets repo-agnostic maintainer examples; make those examples realistic and varied, but keep consumer-specific install surfaces in downstream repos.
+- Why now: Maintains portable source-of-truth boundaries without forcing shipped examples to stay toy-like.
 - Impact surfaces: `presets/*`
 - Reopen trigger: If cross-host install UX requires shipping host-specific presets in-core.
 
@@ -147,17 +147,17 @@ Reopen trigger:
 
 ### D16. `announcement` Delivery Kinds
 
-- Question: Keep `none | release-notes | command` in public core vs expand now?
-- Current choice: Keep current minimal set in public core; expand only via downstream examples when needed.
-- Why now: Avoids overfitting public core to host-specific delivery channels.
+- Question: How much delivery taxonomy belongs in `announcement` public core?
+- Current choice: `announcement` is human-to-human communication. Public core covers draft shape, audience, and explicit human-facing delivery confirmation; actual delivery backends stay adapter-defined, and `command` is not a public core kind.
+- Why now: `command` describes an implementation seam, not a communication concept.
 - Impact surfaces: `skills/public/announcement/SKILL.md`, announcement references/examples
-- Reopen trigger: If multiple consumers need the same additional delivery kinds.
+- Reopen trigger: If multiple consumers need the same additional human-facing delivery concept beyond draft style plus adapter-defined backend.
 
 ### D17. `hitl` Runtime State Depth
 
 - Question: Keep portable minimum runtime state vs add richer queue/context tooling now?
-- Current choice: Keep portable minimum state model in public core; consider richer tooling as future support-layer work.
-- Why now: Keeps public contract lean and host-neutral.
+- Current choice: Keep portable minimum runtime state model in public core for agent-to-human bounded review; consider richer queue and context tooling as future support-layer work.
+- Why now: Keeps the public contract lean and host-neutral instead of turning `hitl` into a host-specific review product.
 - Impact surfaces: `skills/public/hitl/SKILL.md`, support-layer roadmap
 - Reopen trigger: If current state model cannot sustain real review-loop throughput.
 

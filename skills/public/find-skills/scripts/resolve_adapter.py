@@ -22,7 +22,6 @@ ADAPTER_CANDIDATES = (
 )
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
-LIST_FIELDS = ("official_skill_roots",)
 BOOLEAN_FIELDS = ("prefer_local_first", "allow_external_registry")
 ARTIFACT_FILENAME = "find-skills.md"
 
@@ -60,7 +59,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "repo": repo_root.name,
         "language": "en",
         "output_dir": "skill-outputs/find-skills",
-        "official_skill_roots": [],
+        "trusted_skill_roots": [],
         "prefer_local_first": True,
         "allow_external_registry": False,
     }
@@ -83,10 +82,15 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         if value is not None:
             validated[field] = value
 
-    for field in LIST_FIELDS:
-        items = _string_list(data.get(field), field, errors)
-        if items is not None:
-            validated[field] = items
+    trusted_roots = _string_list(data.get("trusted_skill_roots"), "trusted_skill_roots", errors)
+    legacy_roots = _string_list(data.get("official_skill_roots"), "official_skill_roots", errors)
+    if trusted_roots is not None:
+        validated["trusted_skill_roots"] = trusted_roots
+        if legacy_roots is not None and legacy_roots != trusted_roots:
+            warnings.append("Both trusted_skill_roots and official_skill_roots are set; using trusted_skill_roots.")
+    elif legacy_roots is not None:
+        validated["trusted_skill_roots"] = legacy_roots
+        warnings.append("official_skill_roots is deprecated; rename it to trusted_skill_roots.")
 
     for field in BOOLEAN_FIELDS:
         value = _boolean(data.get(field), field, errors)
@@ -95,8 +99,8 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
 
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")
-    if not validated["official_skill_roots"]:
-        warnings.append("No official_skill_roots configured; discovery stays local-first only.")
+    if not validated["trusted_skill_roots"]:
+        warnings.append("No trusted_skill_roots configured; discovery stays local-first only.")
 
     return validated, errors, warnings
 
@@ -128,7 +132,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "errors": [],
             "warnings": [
                 "No find-skills adapter found. Using local-first discovery defaults.",
-                "Create .agents/find-skills-adapter.yaml to declare official skill roots or registry policy.",
+                "Create .agents/find-skills-adapter.yaml to declare trusted skill roots or registry policy.",
             ],
             "searched_paths": searched_paths,
         }

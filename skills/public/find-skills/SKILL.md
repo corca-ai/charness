@@ -1,6 +1,6 @@
 ---
 name: find-skills
-description: "Use when the user wants to discover which skill, support capability, or integration should handle a task. Search the current harness first, expand to adapter-configured official skill roots when available, and explain the next usable path without hiding missing capability gaps."
+description: "Use when the user wants to discover which skill, support capability, or integration should handle a task. Search the current harness first, expand to adapter-configured trusted skill roots when available, and explain the next usable path without hiding missing capability gaps."
 ---
 
 # Find Skills
@@ -16,7 +16,7 @@ Use this when the user is asking:
 
 - discover the right capability surface
 - prefer local native skills first
-- expand to adapter-configured official skill roots before treating a gap as new
+- expand to adapter-configured trusted skill roots before treating a gap as new
 - distinguish public skills, support skills, and external integrations honestly
 - show the next usable path instead of only saying "not found"
 
@@ -34,7 +34,7 @@ sed -n '1,220p' docs/support-skill-policy.md 2>/dev/null || true
 If the user's need sounds like a public workflow, inspect `skills/public/`
 first. If it sounds like a tool-use capability, inspect support skills and
 integration manifests before proposing a new public skill.
-If the adapter advertises official skill roots, search those before proposing a
+If the adapter advertises trusted skill roots, search those before proposing a
 new local skill.
 
 ## Workflow
@@ -46,19 +46,19 @@ new local skill.
    - public skills for user-facing workflow concepts
    - support skills for tool-usage helpers
    - integration manifests for external binaries or upstream support skills
-3. Expand to official skill roots when the adapter provides them.
-   - host-official skill packs
+3. Expand to trusted skill roots when the adapter provides them.
+   - host-trusted skill packs
    - other maintained skill roots that the current harness is allowed to
      consult
 4. Classify the best match honestly.
    - `public skill`
-   - `official skill`
+   - `trusted skill`
    - `support skill`
    - `external integration`
    - `missing capability`
 5. Recommend the smallest usable next step.
    - invoke an existing public skill
-   - point to an adapter-configured official skill if the current host uses one
+   - point to an adapter-configured trusted skill if the current host uses one
    - use a support capability through the right workflow
    - install or wire an external integration if the policy already supports it,
      and surface the supported access modes when that changes the next step
@@ -95,7 +95,7 @@ The result should usually include:
 
 - Do not recommend a new public skill when an existing public concept already
   covers the task.
-- Do not skip adapter-configured official skill roots if the host has declared
+- Do not skip adapter-configured trusted skill roots if the host has declared
   them as part of its supported discovery surface.
 - Do not recommend a support skill when the task is really a user-facing
   workflow concept.

@@ -225,7 +225,7 @@ def seed_find_skills_fixture(tmp: Path) -> None:
         encoding="utf-8",
     )
     (official_skill_dir / "SKILL.md").write_text(
-        "\n".join(["---", "name: official-demo", 'description: "Official demo skill."', "---", "", "# Official Demo"])
+        "\n".join(["---", "name: trusted-demo", 'description: "Trusted demo skill."', "---", "", "# Trusted Demo"])
         + "\n",
         encoding="utf-8",
     )
@@ -238,7 +238,7 @@ def seed_find_skills_fixture(tmp: Path) -> None:
                 "output_dir: skill-outputs/find-skills",
                 "preset_id: portable-defaults",
                 "customized_from: portable-defaults",
-                "official_skill_roots:",
+                "trusted_skill_roots:",
                 "- vendor/official-skills",
                 "prefer_local_first: true",
                 "allow_external_registry: false",
@@ -289,8 +289,8 @@ def seed_find_skills_fixture(tmp: Path) -> None:
 def assert_find_skills_payload(payload: dict[str, object]) -> None:
     if payload["public_skills"][0]["id"] != "local-demo":
         raise EvalError(f"find-skills local-first discovery: unexpected public skills {payload['public_skills']!r}")
-    if payload["official_skills"][0]["id"] != "official-demo":
-        raise EvalError(f"find-skills local-first discovery: unexpected official skills {payload['official_skills']!r}")
+    if payload["trusted_skills"][0]["id"] != "trusted-demo":
+        raise EvalError(f"find-skills local-first discovery: unexpected trusted skills {payload['trusted_skills']!r}")
     integration = payload["integrations"][0]
     if integration["id"] != "demo-tool":
         raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")

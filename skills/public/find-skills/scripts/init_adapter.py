@@ -16,7 +16,7 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
         repo_name,
         "skill-outputs/find-skills",
     ) + [
-        ("official_skill_roots", []),
+        ("trusted_skill_roots", []),
         ("prefer_local_first", True),
         ("allow_external_registry", False),
     ]

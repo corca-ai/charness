@@ -78,10 +78,10 @@ These labels matter for later sync/update/doctor behavior.
 
 - local public skills first
 - local support skills and local integration manifests next
-- adapter-configured official skill roots after that
+- adapter-configured trusted skill roots after that
 - generic external ecosystems only when the host explicitly allows them
 
-That keeps discovery honest without hiding host-official capability packs.
+That keeps discovery honest without hiding host-trusted capability packs.
 
 ## Required Contracts
 
