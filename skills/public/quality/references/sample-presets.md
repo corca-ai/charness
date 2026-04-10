@@ -6,6 +6,8 @@ Current shipped samples:
 
 - `typescript-quality`
 - `python-quality`
+- `specdown-quality`
+- `monorepo-quality`
 
 These presets are examples of vocabulary and default command surfaces, not
 mandatory hidden behavior.

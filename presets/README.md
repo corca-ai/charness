@@ -36,6 +36,10 @@ Current install scopes:
   durable output paths, and explicit manifest/profile references
 - `typescript-quality`: sample vocabulary for TypeScript-oriented quality gates
 - `python-quality`: sample vocabulary for Python-oriented quality gates
+- `specdown-quality`: sample vocabulary for executable-spec repos that need to
+  control shell-adapter cost, overlap, and acceptance-vs-unit boundaries
+- `monorepo-quality`: sample vocabulary for monorepos that need scoped gates
+  plus one honest top-level smoke
 
 ## Downstream Host Rule
 
