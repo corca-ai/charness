@@ -2,6 +2,64 @@
 
 Date: 2026-04-09
 
+## Update: 2026-04-10
+
+### Scope
+
+Concept-integrity follow-up after:
+
+- correcting `gather` provider ownership boundaries
+- removing misleading external-integration manifests for provider runtime that
+  `charness` should own itself
+- adding a bounded handoff premortem loop to reduce next-session misreads
+
+### Commands Run
+
+- `./scripts/run-quality.sh`
+- `python3 scripts/validate-integrations.py --repo-root .`
+- `python3 scripts/validate-skills.py --repo-root .`
+- `python3 scripts/check-skill-contracts.py --repo-root .`
+- `python3 scripts/check-doc-links.py --repo-root .`
+- `pytest -q tests/test_quality_gates.py tests/test_control_plane.py tests/test_plugin_preamble.py`
+
+### Healthy
+
+- `docs/gather-provider-ownership.md` now makes the intended runtime boundary
+  explicit: reference implementations do not automatically become runtime
+  owners.
+- `google-public-export`, `slack-bot-export`, and
+  `notion-published-export` no longer sit in the external integration surface
+  pretending that another plugin repo owns `charness` runtime.
+- `docs/external-integrations.md` and `docs/master-plan.md` now distinguish
+  true external binaries from `charness`-owned provider runtime more clearly.
+- `handoff` now requires a bounded misunderstanding premortem when the baton
+  changes materially, which directly addresses the class of ownership/workflow
+  misread that surfaced in this session.
+- `check-skill-contracts.py` now treats that premortem loop as part of the
+  representative `handoff` contract, so it is no longer prose-only drift.
+
+### Weak
+
+- The repo now has the right ownership statement for Slack and published
+  Notion gather, but it does not yet have the replacement `charness`-owned
+  support/runtime surface that consumers can use.
+- Google ownership is clearer than before, but the real `gws-cli` integration
+  contract is still absent, so the corrected direction exists only in docs.
+
+### Missing
+
+- No `gws-cli` manifest yet for the Google path.
+- No `charness`-owned Slack/Notion gather provider runtime package yet.
+
+### Recommended Next Gates
+
+- `AUTO_CANDIDATE`: add a validator or manifest-registry rule that prevents a
+  `gather` provider from being modeled as `external_skill` when the documented
+  ownership model says `charness` ships that provider runtime itself.
+- `NON_AUTOMATABLE`: decide the concrete home for `charness`-owned provider
+  runtime, for example whether it lives under `skills/support/gather-*`,
+  repo-owned helper scripts, or both.
+
 ## Scope
 
 Repo-wide dogfood review of `charness` itself, with emphasis on:
@@ -496,3 +554,67 @@ python3 scripts/run-evals.py
 
 2. Decide whether `shellcheck` and `lychee` should become required local setup
    for `charness`, or remain optional-but-recommended quality escalations.
+
+## Addendum: 2026-04-10 Concept Review
+
+### Scope
+
+Concept-focused review after correcting the `gather` provider ownership model
+and tightening `handoff` against next-agent misreads.
+
+### Healthy
+
+- [gather-provider-ownership.md](/home/ubuntu/charness/docs/gather-provider-ownership.md)
+  now makes the key boundary explicit: a reference implementation in another
+  plugin repo does not automatically become the runtime owner for `charness`.
+- [docs/external-integrations.md](/home/ubuntu/charness/docs/external-integrations.md)
+  now distinguishes true external runtimes from `gather` provider runtime that
+  `charness` itself expects to ship.
+- [skills/public/handoff/SKILL.md](/home/ubuntu/charness/skills/public/handoff/SKILL.md)
+  now requires a bounded misunderstanding premortem before finalizing a
+  materially changed handoff, which directly addresses the class of error that
+  caused the provider-ownership confusion.
+- `google-public-export` was removed from the integration surface. That matches
+  the decision that Google should come through a true external runtime boundary
+  such as `gws-cli`, not a borrowed public-export helper path.
+
+### Weak
+
+- [slack-bot-export.json](/home/ubuntu/charness/integrations/tools/slack-bot-export.json)
+  and
+  [notion-published-export.json](/home/ubuntu/charness/integrations/tools/notion-published-export.json)
+  still encode the old ownership model. They remain useful as capability notes,
+  but conceptually they are transitional because they still point at
+  `corca-ai/claude-plugins` as if that repo owned the runtime surface.
+
+### Missing
+
+- there is no `gws-cli` integration manifest yet, even though Google has now
+  been pushed onto that external-runtime boundary
+- there is not yet a `charness`-owned Slack provider runtime surface
+- there is not yet a `charness`-owned published-Notion provider runtime surface
+
+### Deferred
+
+- migrating Slack and published-Notion provider execution into `charness`-
+  owned support/runtime
+- deciding whether those provider runtimes should live as dedicated support
+  skills, shared helper scripts under `gather`, or another bounded local seam
+
+### Commands Run
+
+```bash
+sed -n '1,220p' docs/external-integrations.md
+sed -n '1,220p' docs/master-plan.md
+sed -n '1,220p' docs/gather-provider-ownership.md
+sed -n '1,220p' skills/public/handoff/SKILL.md
+./scripts/run-quality.sh
+```
+
+### Recommended Next Gates
+
+1. Replace the current Slack and published-Notion transitional manifests with a
+   `charness`-owned runtime/support contract instead of leaving the old
+   upstream-plugin ownership model in place.
+2. Add a real `gws-cli` integration manifest before reintroducing any Google
+   gather path.
