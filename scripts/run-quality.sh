@@ -4,43 +4,110 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-run_timed() {
+RUN_QUALITY_TMPDIR="$(mktemp -d)"
+trap 'rm -rf "$RUN_QUALITY_TMPDIR"' EXIT
+
+declare -a PHASE_LABELS=()
+declare -a PHASE_PIDS=()
+declare -a PHASE_LOGS=()
+declare -a PHASE_METAS=()
+
+record_runtime() {
   local label="$1"
-  shift
-  local start_ns end_ns elapsed_ms rc status
-  start_ns="$(date +%s%N)"
-  if "$@"; then
-    rc=0
-    status="pass"
-  else
-    rc=$?
-    status="fail"
-  fi
-  end_ns="$(date +%s%N)"
-  elapsed_ms="$(((end_ns - start_ns) / 1000000))"
+  local elapsed_ms="$2"
+  local status="$3"
+  local timestamp="$4"
   python3 scripts/record_quality_runtime.py \
     --repo-root "$REPO_ROOT" \
     --label "$label" \
     --elapsed-ms "$elapsed_ms" \
-    --status "$status" >/dev/null
+    --status "$status" \
+    --timestamp "$timestamp" >/dev/null
+}
+
+queue_timed() {
+  local label="$1"
+  shift
+  local slug="${label//[^A-Za-z0-9_.-]/_}"
+  local log_path="$RUN_QUALITY_TMPDIR/${slug}.log"
+  local meta_path="$RUN_QUALITY_TMPDIR/${slug}.meta"
+
+  (
+    local start_ns end_ns elapsed_ms rc status timestamp
+    start_ns="$(date +%s%N)"
+    if "$@" >"$log_path" 2>&1; then
+      rc=0
+      status="pass"
+    else
+      rc=$?
+      status="fail"
+    fi
+    end_ns="$(date +%s%N)"
+    elapsed_ms="$(((end_ns - start_ns) / 1000000))"
+    timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    printf '%s\n%s\n%s\n%s\n' "$elapsed_ms" "$status" "$timestamp" "$rc" >"$meta_path"
+    exit 0
+  ) &
+
+  PHASE_LABELS+=("$label")
+  PHASE_PIDS+=("$!")
+  PHASE_LOGS+=("$log_path")
+  PHASE_METAS+=("$meta_path")
+}
+
+flush_phase() {
+  local rc=0
+  local pid label log_path meta_path elapsed_ms status timestamp cmd_rc
+  local -a meta_lines
+
+  for pid in "${PHASE_PIDS[@]}"; do
+    wait "$pid" || true
+  done
+
+  for i in "${!PHASE_LABELS[@]}"; do
+    label="${PHASE_LABELS[$i]}"
+    log_path="${PHASE_LOGS[$i]}"
+    meta_path="${PHASE_METAS[$i]}"
+
+    if [[ -s "$log_path" ]]; then
+      cat "$log_path"
+    fi
+
+    mapfile -t meta_lines <"$meta_path"
+    elapsed_ms="${meta_lines[0]}"
+    status="${meta_lines[1]}"
+    timestamp="${meta_lines[2]}"
+    cmd_rc="${meta_lines[3]}"
+    record_runtime "$label" "$elapsed_ms" "$status" "$timestamp"
+    if [[ "$cmd_rc" != "0" ]]; then
+      rc="$cmd_rc"
+    fi
+  done
+
+  PHASE_LABELS=()
+  PHASE_PIDS=()
+  PHASE_LOGS=()
+  PHASE_METAS=()
   return "$rc"
 }
 
-run_timed "validate-skills" python3 scripts/validate-skills.py --repo-root "$REPO_ROOT"
-run_timed "validate-profiles" python3 scripts/validate-profiles.py --repo-root "$REPO_ROOT"
-run_timed "validate-presets" python3 scripts/validate-presets.py --repo-root "$REPO_ROOT"
-run_timed "validate-adapters" python3 scripts/validate-adapters.py --repo-root "$REPO_ROOT"
-run_timed "validate-integrations" python3 scripts/validate-integrations.py --repo-root "$REPO_ROOT"
-run_timed "validate-packaging" python3 scripts/validate-packaging.py --repo-root "$REPO_ROOT"
-run_timed "validate-quality-artifact" python3 scripts/validate-quality-artifact.py --repo-root "$REPO_ROOT"
-run_timed "validate-maintainer-setup" python3 scripts/validate-maintainer-setup.py --repo-root "$REPO_ROOT"
-run_timed "check-python-lengths" python3 scripts/check-python-lengths.py --repo-root "$REPO_ROOT"
-run_timed "check-skill-contracts" python3 scripts/check-skill-contracts.py --repo-root "$REPO_ROOT"
-run_timed "check-doc-links" python3 scripts/check-doc-links.py --repo-root "$REPO_ROOT"
-run_timed "check-markdown" ./scripts/check-markdown.sh
-run_timed "check-secrets" ./scripts/check-secrets.sh
-run_timed "check-shell" ./scripts/check-shell.sh
-run_timed "check-links-external" ./scripts/check-links-external.sh
+queue_timed "validate-skills" python3 scripts/validate-skills.py --repo-root "$REPO_ROOT"
+queue_timed "validate-profiles" python3 scripts/validate-profiles.py --repo-root "$REPO_ROOT"
+queue_timed "validate-presets" python3 scripts/validate-presets.py --repo-root "$REPO_ROOT"
+queue_timed "validate-adapters" python3 scripts/validate-adapters.py --repo-root "$REPO_ROOT"
+queue_timed "validate-integrations" python3 scripts/validate-integrations.py --repo-root "$REPO_ROOT"
+queue_timed "validate-packaging" python3 scripts/validate-packaging.py --repo-root "$REPO_ROOT"
+queue_timed "validate-quality-artifact" python3 scripts/validate-quality-artifact.py --repo-root "$REPO_ROOT"
+queue_timed "validate-maintainer-setup" python3 scripts/validate-maintainer-setup.py --repo-root "$REPO_ROOT"
+queue_timed "check-python-lengths" python3 scripts/check-python-lengths.py --repo-root "$REPO_ROOT"
+queue_timed "check-skill-contracts" python3 scripts/check-skill-contracts.py --repo-root "$REPO_ROOT"
+queue_timed "check-doc-links" python3 scripts/check-doc-links.py --repo-root "$REPO_ROOT"
+flush_phase
+
+queue_timed "check-markdown" ./scripts/check-markdown.sh
+queue_timed "check-secrets" ./scripts/check-secrets.sh
+queue_timed "check-shell" ./scripts/check-shell.sh
+queue_timed "check-links-external" ./scripts/check-links-external.sh
 shopt -s nullglob
 python_files=(
   scripts/*.py
@@ -48,8 +115,11 @@ python_files=(
   skills/support/*/scripts/*.py
   skills/support/*/vendor/*.py
 )
-run_timed "py-compile" python3 -m py_compile "${python_files[@]}"
-run_timed "ruff" ruff check scripts tests skills/public/*/scripts skills/support/*/scripts
-run_timed "pytest" pytest -q
-run_timed "run-evals" python3 scripts/run-evals.py --repo-root "$REPO_ROOT"
-run_timed "check-duplicates" python3 scripts/check-duplicates.py --repo-root "$REPO_ROOT" --fail-on-match
+queue_timed "py-compile" python3 -m py_compile "${python_files[@]}"
+queue_timed "ruff" ruff check scripts tests skills/public/*/scripts skills/support/*/scripts
+flush_phase
+
+queue_timed "pytest" pytest -q
+queue_timed "run-evals" python3 scripts/run-evals.py --repo-root "$REPO_ROOT"
+queue_timed "check-duplicates" python3 scripts/check-duplicates.py --repo-root "$REPO_ROOT" --fail-on-match
+flush_phase
