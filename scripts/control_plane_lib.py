@@ -13,6 +13,8 @@ from typing import Any
 import jsonschema
 from packaging.version import InvalidVersion, Version
 
+from scripts.control_plane_render import render_generated_wrapper, render_reference_note
+
 MANIFEST_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "integrations" / "tools" / "manifest.schema.json"
 LOCK_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "integrations" / "locks" / "lock.schema.json"
 LOCKS_DIR = Path("integrations/locks")
@@ -276,52 +278,6 @@ def selected_manifests(repo_root: Path, tool_ids: list[str]) -> list[dict[str, A
     return [manifests[tool_id] for tool_id in tool_ids if tool_id in manifests]
 
 
-def render_generated_wrapper(manifest: dict[str, Any]) -> str:
-    tool_id = manifest["tool_id"]
-    support = manifest["support_skill_source"]
-    wrapper_id = support["wrapper_skill_id"]
-    return "\n".join(
-        [
-            "---",
-            f"name: {wrapper_id}",
-            f'description: \"Generated wrapper for the upstream {tool_id} support surface.\"',
-            "---",
-            "",
-            f"# {wrapper_id}",
-            "",
-            f"This generated wrapper points at the upstream `{tool_id}` support guidance.",
-            "",
-            f"- upstream repo: `{manifest['upstream_repo']}`",
-            f"- upstream path: `{support['path']}`",
-            f"- sync strategy: `{support['sync_strategy']}`",
-            "",
-            "Regenerate this file through `scripts/sync_support.py` instead of editing it by hand.",
-            "",
-        ]
-    )
-
-
-def render_reference_note(manifest: dict[str, Any]) -> str:
-    support = manifest["support_skill_source"]
-    return "\n".join(
-        [
-            f"# {manifest['tool_id']} Support Reference",
-            "",
-            "This generated reference records how `charness` consumes the upstream",
-            "support surface without copying it into the local taxonomy.",
-            "",
-            f"- upstream repo: `{manifest['upstream_repo']}`",
-            f"- upstream path: `{support['path']}`",
-            f"- sync strategy: `{support['sync_strategy']}`",
-            f"- support state: `{support_state_for_manifest(manifest)}`",
-            "",
-            "Regenerate this file through `scripts/sync_support.py` instead of",
-            "editing it by hand.",
-            "",
-        ]
-    )
-
-
 def materialize_support(repo_root: Path, manifest: dict[str, Any]) -> list[str]:
     support = manifest.get("support_skill_source")
     if not support:
@@ -338,7 +294,10 @@ def materialize_support(repo_root: Path, manifest: dict[str, Any]) -> list[str]:
         reference_dir = repo_root / GENERATED_SUPPORT_DIR / manifest["tool_id"]
         reference_dir.mkdir(parents=True, exist_ok=True)
         reference_path = reference_dir / "REFERENCE.md"
-        reference_path.write_text(render_reference_note(manifest), encoding="utf-8")
+        reference_path.write_text(
+            render_reference_note(manifest, support_state=support_state_for_manifest(manifest)),
+            encoding="utf-8",
+        )
         return [str(reference_path.relative_to(repo_root))]
     raise ValueError(f"unsupported sync strategy `{strategy}` for local materialization")
 

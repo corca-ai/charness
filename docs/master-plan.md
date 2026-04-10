@@ -120,6 +120,8 @@ binaries.
 Deliverables:
 
 - tool manifests
+- capability-specific provider manifests for multi-provider public skills such
+  as `gather`
 - capability and access-mode contract for isolated and non-isolated runtimes
 - install/update/doctor strategy
 - support-skill sync policy for upstream skill providers

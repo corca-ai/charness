@@ -371,7 +371,17 @@ def test_sync_support_reference_materializes_reference_artifact_and_lock(tmp_pat
                     "path": "skills/agent-browser/SKILL.md",
                     "ref": "main",
                     "sync_strategy": "reference",
+                    "notes": [
+                        "Use the upstream browser debugging guidance directly."
+                    ],
                 },
+                "config_layers": [
+                    {
+                        "layer_id": "authenticated-binary",
+                        "layer_type": "authenticated-binary",
+                        "summary": "Use the installed browser CLI directly.",
+                    }
+                ],
             },
             indent=2,
         )
@@ -389,6 +399,10 @@ def test_sync_support_reference_materializes_reference_artifact_and_lock(tmp_pat
     reference_text = reference_path.read_text(encoding="utf-8")
     assert "upstream repo: `vercel-labs/agent-browser`" in reference_text
     assert "sync strategy: `reference`" in reference_text
+    assert "## Reuse Notes" in reference_text
+    assert "Use the upstream browser debugging guidance directly." in reference_text
+    assert "## Config Layers" in reference_text
+    assert "`authenticated-binary`: Use the installed browser CLI directly." in reference_text
 
     lock_payload = json.loads((repo / "integrations" / "locks" / "agent-browser.json").read_text(encoding="utf-8"))
     assert lock_payload["support"]["sync_strategy"] == "reference"

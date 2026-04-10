@@ -1,0 +1,97 @@
+{
+  "schema_version": "1",
+  "tool_id": "google-public-export",
+  "kind": "external_skill",
+  "display_name": "Google public export gather",
+  "summary": "Public Google Docs, Slides, and Sheets export path reused from the upstream CWF gather implementation.",
+  "upstream_repo": "corca-ai/claude-plugins",
+  "homepage": "https://github.com/corca-ai/claude-plugins",
+  "platforms": [
+    "linux",
+    "macos"
+  ],
+  "status": "experimental",
+  "lifecycle": {
+    "install": {
+      "mode": "manual",
+      "docs_url": "https://github.com/corca-ai/claude-plugins",
+      "notes": [
+        "No separate binary install is required beyond a normal shell environment with `bash` and `curl`.",
+        "The target Google document still needs public or otherwise exportable sharing before this path can succeed."
+      ]
+    },
+    "update": {
+      "mode": "manual",
+      "docs_url": "https://github.com/corca-ai/claude-plugins",
+      "notes": [
+        "Refresh the upstream gather implementation when its export behavior changes."
+      ]
+    }
+  },
+  "checks": {
+    "detect": {
+      "commands": [
+        "command -v bash >/dev/null",
+        "command -v curl >/dev/null"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Provide a normal shell environment with `bash` and `curl`, or skip the public Google export path."
+    },
+    "healthcheck": {
+      "commands": [
+        "bash --version",
+        "curl --version"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "The shell runtime is present but export prerequisites look broken. Repair the host shell environment before relying on this provider."
+    }
+  },
+  "access_modes": [
+    "public",
+    "human-only",
+    "degraded"
+  ],
+  "config_layers": [
+    {
+      "layer_id": "google-sharing-step",
+      "layer_type": "operator-step",
+      "summary": "The operator may need to share or publish the Google document so the export endpoint is reachable."
+    },
+    {
+      "layer_id": "google-public-export",
+      "layer_type": "public-fallback",
+      "summary": "Use the public Google export endpoint for supported Docs, Slides, or Sheets URLs."
+    }
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer the current upstream gather export script behavior.",
+    "detected_by": "manual"
+  },
+  "support_skill_source": {
+    "source_type": "upstream_repo",
+    "path": "plugins/cwf/skills/gather/SKILL.md",
+    "ref": "main",
+    "sync_strategy": "reference",
+    "notes": [
+      "Relevant upstream handler: `plugins/cwf/skills/gather/scripts/g-export.sh`.",
+      "See `plugins/cwf/skills/gather/references/google-export.md` for format limits and export caveats."
+    ]
+  },
+  "degradation": {
+    "when_missing": [
+      "Ask for a public export URL or an alternate uploaded artifact instead of pretending private Google Workspace access exists.",
+      "Do not promise image-heavy or private document fidelity from this public export path."
+    ],
+    "when_version_mismatch": [
+      "Treat export format drift as a manual review point before trusting transformed markdown output."
+    ]
+  },
+  "host_notes": [
+    "This manifest intentionally models only the public export path. Private Google Workspace access is a separate future integration."
+  ]
+}

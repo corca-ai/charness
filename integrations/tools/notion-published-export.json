@@ -1,0 +1,96 @@
+{
+  "schema_version": "1",
+  "tool_id": "notion-published-export",
+  "kind": "external_skill",
+  "display_name": "Notion published-page gather",
+  "summary": "Published Notion page export reused from the upstream CWF gather implementation.",
+  "upstream_repo": "corca-ai/claude-plugins",
+  "homepage": "https://github.com/corca-ai/claude-plugins",
+  "platforms": [
+    "linux",
+    "macos"
+  ],
+  "status": "experimental",
+  "lifecycle": {
+    "install": {
+      "mode": "manual",
+      "docs_url": "https://github.com/corca-ai/claude-plugins",
+      "notes": [
+        "No extra service credential is required for the published-page path.",
+        "The Notion page must be published to the web before this path can succeed."
+      ]
+    },
+    "update": {
+      "mode": "manual",
+      "docs_url": "https://github.com/corca-ai/claude-plugins",
+      "notes": [
+        "Refresh the upstream gather implementation when its Notion export behavior changes."
+      ]
+    }
+  },
+  "checks": {
+    "detect": {
+      "commands": [
+        "command -v python3 >/dev/null"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Provide `python3` on PATH or skip the Notion published-page export path."
+    },
+    "healthcheck": {
+      "commands": [
+        "python3 --version"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:Python 3"
+      ],
+      "failure_hint": "The host lacks a usable Python 3 runtime for the upstream Notion export helper."
+    }
+  },
+  "access_modes": [
+    "public",
+    "human-only",
+    "degraded"
+  ],
+  "config_layers": [
+    {
+      "layer_id": "notion-publish-step",
+      "layer_type": "operator-step",
+      "summary": "The operator may need to publish the Notion page to the web before export is possible."
+    },
+    {
+      "layer_id": "notion-public-export",
+      "layer_type": "public-fallback",
+      "summary": "Use the published-page export helper for public Notion page URLs."
+    }
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer the current upstream Notion export helper behavior.",
+    "detected_by": "manual"
+  },
+  "support_skill_source": {
+    "source_type": "upstream_repo",
+    "path": "plugins/cwf/skills/gather/SKILL.md",
+    "ref": "main",
+    "sync_strategy": "reference",
+    "notes": [
+      "Relevant upstream handler: `plugins/cwf/skills/gather/scripts/notion-to-md.py`.",
+      "See `plugins/cwf/skills/gather/references/notion-export.md` for publication requirements and limitations."
+    ]
+  },
+  "degradation": {
+    "when_missing": [
+      "Ask for a published URL or exported artifact instead of implying private Notion access exists.",
+      "Do not promise sub-page or database fidelity when the public export helper cannot represent them."
+    ],
+    "when_version_mismatch": [
+      "Treat undocumented Notion export drift as a manual review point before trusting converted output."
+    ]
+  },
+  "host_notes": [
+    "This manifest intentionally models only published-page export. Private Notion API access is a separate future integration."
+  ]
+}

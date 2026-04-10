@@ -2,6 +2,11 @@
 
 `charness` should integrate external tools without pretending to own them.
 
+This also applies to provider-specific capability surfaces that sit below one
+public workflow concept. For example, `gather` stays one public skill even
+when it uses separate integration manifests for `gh`, Slack export, public
+Google export, or published Notion export.
+
 ## Principle
 
 If a tool already exists as its own repo, package, or likely standalone
@@ -58,6 +63,10 @@ When an external tool repo already ships a support skill:
 2. Do not fork it into `charness` by default.
 3. Track it through an integration manifest.
 4. Provide sync/update/doctor flows from `charness`.
+
+For the current v1 seam, `reference` sync is still the default. That keeps
+upstream usage guidance visible, but does not yet mean `charness` can
+materialize the upstream executable scripts themselves.
 
 Fork only when:
 

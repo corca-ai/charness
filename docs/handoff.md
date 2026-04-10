@@ -84,15 +84,18 @@
 - integration manifest schema는 이제 optional `readiness_checks`도 지원한다. `doctor.py`는 이를 실행해 `readiness` payload와 `not-ready` status를 낼 수 있으므로, binary가 있더라도 setup prerequisite가 빠진 host를 별도 상태로 구분한다.
 - [list_capabilities.py](/home/ubuntu/charness/skills/public/find-skills/scripts/list_capabilities.py)는 이제 integration discovery 결과에 `readiness_checks` 요약도 포함한다. [create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md) 역시 setup prerequisite를 operator prose 대신 manifest readiness probe로 표현하라고 요구한다.
 - integration manifest schema는 이제 optional `config_layers`도 지원한다. 이건 host-neutral precedence만 담는 레이어로, `grant -> authenticated-binary -> env -> operator-step -> public-fallback` 순서를 validator가 강제하고 `find-skills` discovery도 요약을 노출한다.
+- `gather` reusable provider surface의 첫 concrete manifests로 [github-gh.json](/home/ubuntu/charness/integrations/tools/github-gh.json), [google-public-export.json](/home/ubuntu/charness/integrations/tools/google-public-export.json), [notion-published-export.json](/home/ubuntu/charness/integrations/tools/notion-published-export.json), [slack-bot-export.json](/home/ubuntu/charness/integrations/tools/slack-bot-export.json)이 추가됐다. 이들은 `~/claude-plugins/plugins/cwf/skills/gather`의 existing implementation을 기준으로 provider별 capability/access/onboarding metadata를 repo-owned manifest로 고정한다.
+- generated support reference는 이제 access modes, capability requirements, config layers, reuse notes까지 포함하도록 두꺼워졌고, [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/google-public-export/REFERENCE.md), [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/notion-published-export/REFERENCE.md), [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/slack-bot-export/REFERENCE.md)도 추가됐다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - 아직 없는 것:
   - support skill migrations and integration wrappers
   - extracted evaluation engine (`cautilus`) integration manifest
+  - executable support-sync beyond the current reference-only seam
   - support control-plane lock artifact shaping beyond the current initial seam
 
 ## Next Session
 
-1. pre-`cautilus`로 계속 가면 `gather` exemplar와 `find-skills` discovery payload를 바탕으로 `capability_requirements` 다음 단계 metadata를 실제 manifest/support/adapter metadata에서 어디까지 고정할지 좁힌다.
+1. pre-`cautilus`로 계속 가면 `gather` provider manifests 다음 단계로, upstream executable support surface를 `reference` 이상으로 materialize할지 (`copy` / `symlink` / fetch) 아니면 host가 별도 provider runtime을 책임지게 둘지 결정하고 그 contract를 좁힌다.
 2. packaging export는 계속 최소 generated surface만 유지하고, richer install-surface metadata는 capability contract와 충돌하지 않게 나중에 본다.
 3. 그 다음 generated host manifests를 committed fixture로 둘지, 계속 temp export smoke만 유지할지 결정한다.
 4. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
@@ -142,6 +145,9 @@
 - [skills/support/README.md](/home/ubuntu/charness/skills/support/README.md)
 - [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/agent-browser/REFERENCE.md)
 - [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/crill/REFERENCE.md)
+- [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/google-public-export/REFERENCE.md)
+- [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/notion-published-export/REFERENCE.md)
+- [REFERENCE.md](/home/ubuntu/charness/skills/support/generated/slack-bot-export/REFERENCE.md)
 - [check-skill-contracts.py](/home/ubuntu/charness/scripts/check-skill-contracts.py)
 - [validate-packaging.py](/home/ubuntu/charness/scripts/validate-packaging.py)
 - [export-plugin.py](/home/ubuntu/charness/scripts/export-plugin.py)
