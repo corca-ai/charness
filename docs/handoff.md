@@ -116,37 +116,25 @@
 
 ## Next Session
 
-1. 다음 세션의 첫 큰 단위는 `Discuss`에 남은 deferred product decisions를 한 번에 좁혀서 닫는 것이다. 이 세션에서 pre-`cautilus` self-work는 quality artifact shape, Google gather seam, support-sync smoke까지 진행했으므로, 이제 evaluator integration 전에 열린 결정을 정리할 타이밍이다.
-2. deferred decisions를 닫은 뒤에는 `cautilus` integration Session을 시작한다.
+1. pre-`cautilus` deferred product decisions는 [deferred-decisions.md](/home/ubuntu/charness/docs/deferred-decisions.md)에서 2026-04-10 batch로 닫혔다. 다음 세션 시작 시에는 이 문서의 reopen trigger만 빠르게 확인하고 바로 integration work로 들어간다.
+2. `cautilus` integration Session을 시작한다.
 3. checked-in root host manifests로 Claude/Codex direct install experiment를 실제로 해 보고, 필요하면 packaging metadata를 더 보강한다.
 4. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
-5. profile inheritance를 실제 merged bundle feature로 키울지 정하기 전까지는 현재 validator contract 안에서 metadata drift만 막는다.
-6. Ceal repo 쪽에서 first `organization`-scope preset을 실제로 정의할 때, 방금 추가한 preset contract를 그대로 쓸지 보고 필요한 최소 metadata만 더한다.
-7. `Cautilus doctor`가 통과하는 root adapter를 유지하면서, richer evaluator surface가 필요해지면 named `cautilus-adapters/`를 설계한다.
-8. extracted evaluation engine용 integration manifest를 추가하고 control-plane contract에 연결한다.
-9. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 provisional matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.
-10. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정하고, evaluator-required 경계와 HITL fallback 경계를 함께 문서화한다.
-11. manifest validation, control-plane tests, eval fixtures, handoff를 새 evaluator contract에 맞게 갱신한다.
+5. Ceal repo 쪽에서 first `organization`-scope preset을 실제로 정의할 때, 현재 preset contract를 그대로 쓸지 보고 필요한 최소 metadata만 더한다.
+6. `Cautilus doctor`가 통과하는 root adapter를 유지하면서, richer evaluator surface가 필요해지면 named `cautilus-adapters/`를 설계한다.
+7. extracted evaluation engine용 integration manifest를 추가하고 control-plane contract에 연결한다.
+8. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 provisional matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.
+9. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정하고, evaluator-required 경계와 HITL fallback 경계를 함께 문서화한다.
+10. manifest validation, control-plane tests, eval fixtures, handoff를 새 evaluator contract에 맞게 갱신한다.
 
 ## Discuss
 
-- Claude plugin과 Codex plugin을 동시에 지원할 때 어떤 shared packaging manifest를 canonical source로 둘지 정해야 한다.
-- future evaluation engine을 `workbench` transitional id로 계속 둘지, extraction 전에 새 permanent id를 줄지 결정이 필요하다.
-- shared packaging manifest가 release version을 직접 들고 갈지, export-time override를 허용할지 나중에 정해야 한다.
-- generated Claude/Codex export trees를 repo fixture로 보관할지, script+temp smoke만 canonical로 둘지 정해야 한다.
-- profile `extends`를 실제 merged bundle feature로 키울지, 계속 mostly-deferred metadata seam으로 둘지 나중에 정해야 한다.
-- capability grants, authenticated binaries, and env fallback를 `access_modes`/`capability_requirements` beyond metadata로 integration manifest schema에 어느 깊이까지 올릴지 정해야 한다.
-- `cautilus` 쪽 contract가 나온 뒤 `find-skills`나 support policy에서 `official`보다 더 일반적인 용어(`trusted` / `declared`)로 바꿀지 다시 볼 가치가 있다.
-- profile inheritance를 얼마나 허용할지, 아니면 flattened bundle만 허용할지 결정이 필요하다.
-- preset schema를 JSON으로 둘지 markdown-first catalog를 더 유지할지 나중에 정해야 한다.
-- `ideation`에서 entity/stage thinking을 어느 정도까지 public core에 넣고, 어디부터 reference나 examples로 뺄지 조정이 필요하다.
-- `spec`이 procedural checklist로 무거워지지 않으면서도 implementation handoff를 충분히 단단하게 만들 수 있을지 계속 검증이 필요하다.
-- `quality`가 proposal skill인지 gate skill인지, 또는 두 성격을 어떻게 함께 담을지 정리가 필요하다.
-- shipped sample preset을 어디까지 repo-agnostic example로 둘지, 어디부터 host/profile seam으로 뺄지 결정이 필요하다.
-- `quality` dogfood에서 나온 concrete gate proposals를 Session 10 이후 어느 층위에서 실제 구현할지 정해야 한다.
-- `spec`의 explicit mode 구조를 유지할지, `create-skill`의 option-minimalism에 맞춰 heuristic branch로 낮출지 결정이 필요하다.
-- `announcement` delivery kind를 `none | release-notes | command`까지만 public core에 둘지, downstream examples를 더 늘릴지 정해야 한다.
-- `hitl` runtime state를 지금처럼 portable minimum으로 둘지, later support layer에서 richer queue/context tooling을 붙일지 정해야 한다.
+- pre-`cautilus` deferred decision backlog는 [deferred-decisions.md](/home/ubuntu/charness/docs/deferred-decisions.md)에서 2026-04-10 기준으로 닫혔다.
+- 아래 트리거가 생기면 해당 Decision ID만 reopen한다.
+  - upstream evaluator naming/contract 변경 (`D2`, `D7`)
+  - profile composition 실사용에서 flattened policy 한계 노출 (`D5`, `D8`)
+  - org-install preset scale-up으로 markdown contract 한계 노출 (`D9`, `D13`)
+  - quality/hitl 운영에서 current boundary가 throughput 또는 regression containment를 못 지킬 때 (`D12`, `D14`, `D17`)
 
 ## References
 
@@ -154,6 +142,7 @@
 - [AGENTS.md](/home/ubuntu/charness/AGENTS.md)
 - [README.md](/home/ubuntu/charness/README.md)
 - [master-plan.md](/home/ubuntu/charness/docs/master-plan.md)
+- [deferred-decisions.md](/home/ubuntu/charness/docs/deferred-decisions.md)
 - [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)
 - [engineering-quality.json](/home/ubuntu/charness/profiles/engineering-quality.json)
 - [meta-builder.json](/home/ubuntu/charness/profiles/meta-builder.json)

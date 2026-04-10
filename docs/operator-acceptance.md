@@ -30,13 +30,13 @@ sed -n '1,220p' docs/public-skill-validation.md
 
 Why this exists:
 
-- `docs/handoff.md` still has a `Discuss` backlog.
-- The next planned session is to close those product-boundary decisions before
-  `cautilus` integration.
+- A deferred product-boundary backlog existed in `docs/handoff.md` `Discuss`.
+- It is now closed in [docs/deferred-decisions.md](/home/ubuntu/charness/docs/deferred-decisions.md) (2026-04-10 batch), and should only be reopened by explicit triggers.
 
 Read first:
 
 - [docs/handoff.md](/home/ubuntu/charness/docs/handoff.md)
+- [docs/deferred-decisions.md](/home/ubuntu/charness/docs/deferred-decisions.md)
 - [docs/master-plan.md](/home/ubuntu/charness/docs/master-plan.md)
 - [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md)
 - [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md)
@@ -44,16 +44,16 @@ Read first:
 Suggested agent prompt:
 
 ```text
-Read docs/handoff.md Discuss and docs/master-plan.md. Propose concrete decisions
-for the still-open product-boundary items, challenge weak assumptions, then
-update the docs to record the decisions we actually made.
+Read docs/deferred-decisions.md and docs/master-plan.md. If any reopen trigger
+is active, propose and record the minimum decision update needed; otherwise
+confirm closure and continue to cautilus integration work.
 ```
 
 Acceptance:
 
-- `docs/handoff.md` `Discuss` list is materially smaller or explicitly
-  narrowed.
-- The chosen decisions are reflected in canonical docs, not only chat.
+- `docs/deferred-decisions.md` stays in sync with current product-boundary choices.
+- `docs/handoff.md` `Discuss` is either empty or scoped to explicit reopen triggers only.
+- Any reopened decision records its new choice and impacted docs.
 - `./scripts/run-quality.sh` passes after the doc updates.
 
 ### 2. Wire `cautilus` Into `charness`
