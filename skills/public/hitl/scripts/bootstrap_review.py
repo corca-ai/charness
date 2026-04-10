@@ -8,7 +8,16 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
+
+def _runtime_root() -> Path:
+    script_path = Path(__file__).resolve()
+    for ancestor in script_path.parents:
+        if (ancestor / "scripts" / "adapter_lib.py").is_file():
+            return ancestor
+    return script_path.parents[4]
+
+
+REPO_ROOT = _runtime_root()
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.adapter_lib import render_yaml_mapping

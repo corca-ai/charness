@@ -9,7 +9,16 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
+
+def _runtime_root() -> Path:
+    script_path = Path(__file__).resolve()
+    for ancestor in script_path.parents:
+        if (ancestor / "scripts" / "adapter_lib.py").is_file():
+            return ancestor
+    return script_path.parents[4]
+
+
+REPO_ROOT = _runtime_root()
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.control_plane_lib import load_manifest
@@ -73,9 +82,9 @@ def main() -> None:
     parser.add_argument("--repo-root", type=Path, required=True)
     args = parser.parse_args()
 
-    repo_root = args.repo_root.resolve()
-    manifest = load_manifest(repo_root / "integrations" / "tools" / f"{TOOL_ID}.json")
-    doctor = run_doctor(repo_root)
+    args.repo_root.resolve()
+    manifest = load_manifest(REPO_ROOT / "integrations" / "tools" / f"{TOOL_ID}.json")
+    doctor = run_doctor(REPO_ROOT)
     next_steps = build_next_steps(doctor, manifest)
     payload = {
         "provider": TOOL_ID,

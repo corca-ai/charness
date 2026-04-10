@@ -147,12 +147,12 @@ It does not automatically install external binaries or external upstream plugin
 repos. Those stay governed by integration manifests and host/runtime capability
 detection.
 
-The repo root itself is shaped so it can act as a Claude- or Codex-compatible
-plugin root. Checked-in generated files:
+The checked-in install surface lives under `plugins/charness/`. Root-level
+generated files only advertise that install surface:
 
-- `.claude-plugin/plugin.json`
+- `plugins/charness/.claude-plugin/plugin.json`
+- `plugins/charness/.codex-plugin/plugin.json`
 - `.claude-plugin/marketplace.json`
-- `.codex-plugin/plugin.json`
 - `.agents/plugins/marketplace.json`
 
 These files are generated from [packaging/charness.json](packaging/charness.json)
@@ -163,6 +163,8 @@ That means:
 - the repo stays the host-neutral source of truth
 - host install surfaces are generated from one shared manifest
 - the same checkout can back both Claude and Codex
+- public skills are flattened for host discovery under `plugins/charness/skills/`
+- support assets are packaged alongside them under `plugins/charness/support/`
 - runtime skill execution should not self-update the plugin
 
 Updates belong to the install or operator layer, not to individual skill runs.
@@ -230,10 +232,10 @@ below are intended to be copy-pasteable in either workflow.
 Regardless of host, the plugin unit is this repo checkout, not an à la carte
 selection of individual skills.
 
-Expected bundled content:
+Expected install-surface content inside `plugins/charness/`:
 
-- `skills/public/`
-- `skills/support/`
+- `skills/<public-skill>/`
+- `support/<support-skill>/`
 - `profiles/`
 - `presets/`
 - `integrations/tools/`
@@ -249,13 +251,13 @@ Expected non-bundled content:
 Verified local development path:
 
 ```bash
-claude --plugin-dir /absolute/path/to/charness
+claude --plugin-dir /absolute/path/to/charness/plugins
 ```
 
 Verified smoke check:
 
 ```bash
-claude --print --plugin-dir /absolute/path/to/charness \
+claude --print --plugin-dir /absolute/path/to/charness/plugins \
   "Return exactly one line: charness-smoke"
 ```
 
@@ -281,8 +283,8 @@ Documented local install path:
   path
 
 This repo ships that marketplace file checked in, with `source.path` pointing
-at the repo root. That makes one checkout usable as both marketplace root and
-plugin root for local Codex testing.
+at `./plugins/charness`. That keeps the source repo taxonomy separate from the
+host-facing flat skill layout.
 
 Current status:
 
@@ -301,7 +303,7 @@ Update model:
 Recommended dual-host shape:
 
 1. Clone `charness` once.
-2. Point Claude at that checkout with `claude --plugin-dir /absolute/path/to/charness`.
+2. Point Claude at that checkout with `claude --plugin-dir /absolute/path/to/charness/plugins`.
 3. Point Codex at the same checkout through the checked-in `.agents/plugins/marketplace.json`.
 4. Update the checkout once when you want both hosts to move together.
 
@@ -330,6 +332,7 @@ presets/
 docs/
 evals/
 scripts/
+plugins/
 ```
 
 The first session establishes taxonomy and migration policy before moving skills.

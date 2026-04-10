@@ -24,6 +24,7 @@ import urllib.parse
 import urllib.request
 
 API_URL = "https://www.notion.so/api/v3/loadPageChunk"
+SYNC_API_URL = "https://www.notion.so/api/v3/syncRecordValues"
 HEADERS = {
     "Content-Type": "application/json",
     "User-Agent": "Mozilla/5.0 notion-to-md/1.0",
@@ -32,6 +33,8 @@ HEADERS = {
 HTTP_TIMEOUT = 30
 MAX_RETRIES = 3
 MAX_CHUNKS = 50
+MAX_SYNC_PASSES = 5
+SYNC_BATCH_SIZE = 100
 
 
 def eprint(*args, **kwargs):
@@ -58,13 +61,13 @@ def parse_notion_url(url: str) -> str:
     return f"{hex_id[:8]}-{hex_id[8:12]}-{hex_id[12:16]}-{hex_id[16:20]}-{hex_id[20:]}"
 
 
-def _api_request(payload: dict) -> dict:
+def _api_request(payload: dict, *, api_url: str = API_URL) -> dict:
     """POST to Notion v3 API with retry and timeout."""
     data = json.dumps(payload).encode("utf-8")
 
     for attempt in range(MAX_RETRIES):
         try:
-            req = urllib.request.Request(API_URL, data=data, headers=HEADERS)
+            req = urllib.request.Request(api_url, data=data, headers=HEADERS)
             with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as resp:
                 return json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as error:
@@ -90,6 +93,62 @@ def _api_request(payload: dict) -> dict:
     raise RuntimeError("Max retries exceeded")
 
 
+def _normalize_block_value(block_data: dict) -> dict:
+    value = block_data.get("value")
+    while isinstance(value, dict) and isinstance(value.get("value"), dict):
+        value = value["value"]
+    return value if isinstance(value, dict) else {}
+
+
+def _merge_blocks(block_map: dict, records: dict) -> int:
+    added = 0
+    for block_id, block_data in records.items():
+        value = _normalize_block_value(block_data)
+        if value:
+            if block_id not in block_map:
+                added += 1
+            block_map[block_id] = value
+    return added
+
+
+def _missing_child_ids(block_map: dict) -> list[str]:
+    missing: list[str] = []
+    seen: set[str] = set()
+    for block in block_map.values():
+        for child_id in block.get("content", []) or []:
+            if child_id not in block_map and child_id not in seen:
+                seen.add(child_id)
+                missing.append(child_id)
+    return missing
+
+
+def _sync_missing_blocks(block_map: dict) -> None:
+    for sync_pass in range(MAX_SYNC_PASSES):
+        missing = _missing_child_ids(block_map)
+        if not missing:
+            return
+        before = len(block_map)
+        for start in range(0, len(missing), SYNC_BATCH_SIZE):
+            chunk = missing[start : start + SYNC_BATCH_SIZE]
+            resp = _api_request(
+                {
+                    "requests": [
+                        {
+                            "pointer": {"table": "block", "id": block_id},
+                            "version": -1,
+                        }
+                        for block_id in chunk
+                    ]
+                },
+                api_url=SYNC_API_URL,
+            )
+            _merge_blocks(block_map, resp.get("recordMap", {}).get("block", {}))
+        added = len(block_map) - before
+        if added <= 0:
+            return
+        eprint(f"  syncRecordValues pass {sync_pass + 1}: +{added} blocks")
+
+
 def fetch_page(page_id: str) -> tuple:
     """Fetch all blocks for a page with automatic pagination."""
     eprint("Fetching page...")
@@ -108,10 +167,7 @@ def fetch_page(page_id: str) -> tuple:
         resp = _api_request(payload)
 
         blocks = resp.get("recordMap", {}).get("block", {})
-        for block_id, block_data in blocks.items():
-            value = block_data.get("value")
-            if value:
-                block_map[block_id] = value
+        _merge_blocks(block_map, blocks)
 
         next_cursor = resp.get("cursor", {})
         if not next_cursor.get("stack"):
@@ -122,7 +178,10 @@ def fetch_page(page_id: str) -> tuple:
     if chunk_number >= MAX_CHUNKS:
         eprint(f"  Warning: reached max {MAX_CHUNKS} chunks, some content may be missing.")
 
+    _sync_missing_blocks(block_map)
     page_block = block_map.get(page_id, {})
+    if page_block.get("type") != "page":
+        raise RuntimeError("Published Notion API payload no longer exposes a usable page block after normalization.")
     title_arr = page_block.get("properties", {}).get("title")
     page_title = render_rich_text(title_arr)
 
@@ -276,11 +335,20 @@ def convert_block(block_id: str, block_map: dict, indent_level: int = 0) -> str:
     if block_type in {"text", "paragraph"}:
         return f"{indent}{title}" if title else ""
     if block_type == "header":
-        return f"{indent}# {title}"
+        child_parts = [convert_block(child_id, block_map, indent_level) for child_id in children]
+        child_parts = [part for part in child_parts if part]
+        child_md = "\n\n".join(child_parts)
+        return f"{indent}# {title}" + (f"\n\n{child_md}" if child_md else "")
     if block_type == "sub_header":
-        return f"{indent}## {title}"
+        child_parts = [convert_block(child_id, block_map, indent_level) for child_id in children]
+        child_parts = [part for part in child_parts if part]
+        child_md = "\n\n".join(child_parts)
+        return f"{indent}## {title}" + (f"\n\n{child_md}" if child_md else "")
     if block_type == "sub_sub_header":
-        return f"{indent}### {title}"
+        child_parts = [convert_block(child_id, block_map, indent_level) for child_id in children]
+        child_parts = [part for part in child_parts if part]
+        child_md = "\n\n".join(child_parts)
+        return f"{indent}### {title}" + (f"\n\n{child_md}" if child_md else "")
     if block_type == "bulleted_list":
         item = f"{indent}- {title}" if title else f"{indent}-"
         child_parts = [convert_block(child_id, block_map, indent_level + 1) for child_id in children]
@@ -435,6 +503,10 @@ def main():
             raise ValueError(f"Output path must be within workspace root: {output_path}")
 
         markdown = blocks_to_markdown(page_id, block_map)
+        if "<!-- missing block: None -->" in markdown and len(markdown.encode("utf-8")) <= 128:
+            raise RuntimeError(
+                "Published Notion export produced a placeholder-only result. The upstream page payload likely changed or remained incomplete."
+            )
 
         with open(output_path, "w", encoding="utf-8") as handle:
             handle.write(markdown)

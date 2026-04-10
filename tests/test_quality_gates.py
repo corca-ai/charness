@@ -1096,14 +1096,26 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     exported_profiles = claude_root / "plugins" / "charness" / "profiles"
     exported_gather_skill = claude_root / "plugins" / "charness" / "skills" / "gather" / "SKILL.md"
     exported_support_skill = claude_root / "plugins" / "charness" / "support" / "gather-slack" / "SKILL.md"
+    exported_helper_script = claude_root / "plugins" / "charness" / "scripts" / "adapter_lib.py"
     assert claude_manifest.is_file()
     assert exported_readme.is_file()
     assert exported_profiles.is_dir()
     assert exported_gather_skill.is_file()
     assert exported_support_skill.is_file()
+    assert exported_helper_script.is_file()
     assert not (claude_root / "plugins" / "charness" / "skills" / "public").exists()
     assert not (claude_root / "plugins" / "charness" / "support" / "generated").exists()
     assert json.loads(claude_manifest.read_text(encoding="utf-8"))["repository"] == "https://github.com/corca-ai/charness"
+
+    consumer_root = tmp_path / "consumer"
+    consumer_root.mkdir()
+    gather_resolve = run_script(
+        str(claude_root / "plugins" / "charness" / "skills" / "gather" / "scripts" / "resolve_adapter.py"),
+        "--repo-root",
+        str(consumer_root),
+        cwd=ROOT,
+    )
+    assert gather_resolve.returncode == 0, gather_resolve.stderr
 
 
 def test_export_plugin_allows_version_override(tmp_path: Path) -> None:

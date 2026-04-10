@@ -9,11 +9,28 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
-REPO_ROOT = SCRIPT_DIR.parents[3]
+
+
+def _runtime_root() -> Path:
+    script_path = Path(__file__).resolve()
+    for ancestor in script_path.parents:
+        if (ancestor / "scripts" / "adapter_lib.py").is_file():
+            return ancestor
+    return script_path.parents[4]
+
+
+REPO_ROOT = _runtime_root()
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.control_plane_lib import load_support_capabilities  # noqa: E402
+from scripts.repo_layout import public_skills_dir, support_dir  # noqa: E402
 from resolve_adapter import load_adapter  # noqa: E402
+
+
+def _local_surface_root(target_root: Path) -> Path:
+    if (REPO_ROOT / "skills" / "public").is_dir():
+        return target_root
+    return REPO_ROOT
 
 
 def extract_frontmatter(path: Path) -> dict[str, str]:
@@ -71,7 +88,7 @@ def _collect_skill_entries(
 
 def public_skills(root: Path) -> list[dict[str, str]]:
     return _collect_skill_entries(
-        [("local-public", root / "skills" / "public")],
+        [("local-public", public_skills_dir(root))],
         repo_root=root,
         layer="public skill",
     )
@@ -79,7 +96,7 @@ def public_skills(root: Path) -> list[dict[str, str]]:
 
 def support_skills(root: Path) -> list[dict[str, str]]:
     return _collect_skill_entries(
-        [("local-support", root / "skills" / "support")],
+        [("local-support", support_dir(root))],
         repo_root=root,
         layer="support skill",
     )
@@ -168,6 +185,7 @@ def main() -> None:
     parser.add_argument("--repo-root", type=Path, required=True)
     args = parser.parse_args()
     root = args.repo_root.resolve()
+    local_root = _local_surface_root(root)
     adapter = load_adapter(root)
     trusted_skill_roots = adapter["data"].get("trusted_skill_roots", [])
     payload = {
@@ -180,10 +198,10 @@ def main() -> None:
             "allow_external_registry": adapter["data"].get("allow_external_registry", False),
             "prefer_local_first": adapter["data"].get("prefer_local_first", True),
         },
-        "public_skills": public_skills(root),
-        "support_skills": support_skills(root),
-        "support_capabilities": support_capabilities(root),
-        "integrations": integrations(root),
+        "public_skills": public_skills(local_root),
+        "support_skills": support_skills(local_root),
+        "support_capabilities": support_capabilities(local_root),
+        "integrations": integrations(local_root),
         "trusted_skills": trusted_skills(root, trusted_skill_roots),
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2))

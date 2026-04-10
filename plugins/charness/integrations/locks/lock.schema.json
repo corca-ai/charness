@@ -1,0 +1,433 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "charness integration lock",
+  "description": "Generated machine-local state for one integration or support capability manifest.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tool_id",
+    "manifest_path"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1"
+    },
+    "tool_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+    },
+    "manifest_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "support": {
+      "$ref": "#/definitions/supportSection"
+    },
+    "doctor": {
+      "$ref": "#/definitions/doctorSection"
+    },
+    "update": {
+      "$ref": "#/definitions/updateSection"
+    }
+  },
+  "definitions": {
+    "stringList": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "accessModeList": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "grant",
+          "binary",
+          "env",
+          "public",
+          "human-only",
+          "degraded"
+        ]
+      }
+    },
+    "capabilityRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "grant_ids": {
+          "$ref": "#/definitions/stringList"
+        },
+        "env_vars": {
+          "$ref": "#/definitions/stringList"
+        },
+        "permission_scopes": {
+          "$ref": "#/definitions/stringList"
+        }
+      }
+    },
+    "commandResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "command",
+        "exit_code",
+        "stdout",
+        "stderr"
+      ],
+      "properties": {
+        "command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exit_code": {
+          "type": "integer"
+        },
+        "stdout": {
+          "type": "string"
+        },
+        "stderr": {
+          "type": "string"
+        }
+      }
+    },
+    "checkResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "results",
+        "failure_details"
+      ],
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commandResult"
+          }
+        },
+        "failure_details": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "failure_hint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "readinessCheckResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_id",
+        "summary",
+        "ok",
+        "results",
+        "failure_details"
+      ],
+      "properties": {
+        "check_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commandResult"
+          }
+        },
+        "failure_details": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "failure_hint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "readinessResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "checks",
+        "failed_checks"
+      ],
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/readinessCheckResult"
+          }
+        },
+        "failed_checks": {
+          "$ref": "#/definitions/stringList"
+        }
+      }
+    },
+    "versionResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "constraint",
+        "observed_version"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "advisory",
+            "matched",
+            "mismatched",
+            "unknown"
+          ]
+        },
+        "constraint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observed_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "supportSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "synced_at",
+        "support_state",
+        "sync_strategy",
+        "source_type",
+        "source_path",
+        "materialized_paths"
+      ],
+      "properties": {
+        "synced_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "support_state": {
+          "type": "string",
+          "enum": [
+            "native-support",
+            "upstream-consumed",
+            "wrapped-upstream",
+            "forked-local",
+            "integration-only"
+          ]
+        },
+        "sync_strategy": {
+          "type": "string",
+          "enum": [
+            "reference",
+            "copy",
+            "symlink",
+            "generated_wrapper"
+          ]
+        },
+        "source_type": {
+          "type": "string",
+          "enum": [
+            "upstream_repo",
+            "local_wrapper"
+          ]
+        },
+        "source_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "materialized_paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "doctorSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checked_at",
+        "kind",
+        "access_modes",
+        "capability_requirements",
+        "support_state",
+        "detect",
+        "healthcheck",
+        "readiness",
+        "version",
+        "support_sync",
+        "doctor_status"
+      ],
+      "properties": {
+        "checked_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "external_binary",
+            "external_skill",
+            "external_binary_with_skill",
+            "support_runtime"
+          ]
+        },
+        "access_modes": {
+          "$ref": "#/definitions/accessModeList"
+        },
+        "capability_requirements": {
+          "$ref": "#/definitions/capabilityRequirements"
+        },
+        "support_state": {
+          "type": "string",
+          "enum": [
+            "native-support",
+            "upstream-consumed",
+            "wrapped-upstream",
+            "forked-local",
+            "integration-only"
+          ]
+        },
+        "detect": {
+          "$ref": "#/definitions/checkResult"
+        },
+        "healthcheck": {
+          "$ref": "#/definitions/checkResult"
+        },
+        "readiness": {
+          "$ref": "#/definitions/readinessResult"
+        },
+        "version": {
+          "$ref": "#/definitions/versionResult"
+        },
+        "support_sync": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "expected_paths",
+            "missing_paths"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "ok",
+                "missing",
+                "not-tracked"
+              ]
+            },
+            "expected_paths": {
+              "$ref": "#/definitions/stringList"
+            },
+            "missing_paths": {
+              "$ref": "#/definitions/stringList"
+            }
+          }
+        },
+        "doctor_status": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "missing",
+            "unhealthy",
+            "not-ready",
+            "version-mismatch",
+            "support-missing"
+          ]
+        }
+      }
+    },
+    "updateSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "updated_at",
+        "update_status",
+        "mode",
+        "commands",
+        "detect",
+        "healthcheck"
+      ],
+      "properties": {
+        "updated_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "update_status": {
+          "type": "string",
+          "enum": [
+            "updated",
+            "failed",
+            "noop",
+            "manual",
+            "dry-run"
+          ]
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "script",
+            "package_manager",
+            "git_checkout",
+            "none"
+          ]
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commandResult"
+          }
+        },
+        "detect": {
+          "$ref": "#/definitions/checkResult"
+        },
+        "healthcheck": {
+          "$ref": "#/definitions/checkResult"
+        }
+      }
+    }
+  }
+}
