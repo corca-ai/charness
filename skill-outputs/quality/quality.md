@@ -16,6 +16,7 @@ Concept-integrity follow-up after:
 ### Commands Run
 
 - `./scripts/run-quality.sh`
+- `./scripts/install-git-hooks.sh`
 - `python3 scripts/validate-integrations.py --repo-root .`
 - `python3 scripts/validate-skills.py --repo-root .`
 - `python3 scripts/check-skill-contracts.py --repo-root .`
@@ -36,6 +37,9 @@ Concept-integrity follow-up after:
 - `skills/support/gather-slack/` and `skills/support/gather-notion/` now give
   `charness` an actual local runtime home for provider-backed gather instead of
   leaving ownership correction at the doc-only stage.
+- the repo now has a checked-in `.githooks/pre-push` that runs the canonical
+  `./scripts/run-quality.sh` gate, plus a repo-owned installer script for
+  setting `core.hooksPath` locally.
 - `handoff` now requires a bounded misunderstanding premortem when the baton
   changes materially, which directly addresses the class of ownership/workflow
   misread that surfaced in this session.
@@ -61,9 +65,8 @@ Concept-integrity follow-up after:
 - `AUTO_CANDIDATE`: add a validator or manifest-registry rule that prevents a
   `gather` provider from being modeled as `external_skill` when the documented
   ownership model says `charness` ships that provider runtime itself.
-- `NON_AUTOMATABLE`: decide the concrete home for `charness`-owned provider
-  runtime, for example whether it lives under `skills/support/gather-*`,
-  repo-owned helper scripts, or both.
+- `AUTO_EXISTING`: keep `.githooks/pre-push` pointing at the same canonical
+  `./scripts/run-quality.sh` entrypoint rather than letting hook and CI drift.
 
 ## Scope
 
@@ -126,6 +129,9 @@ What was actually runnable today:
   honestly when `shellcheck` or `lychee` are unavailable.
 - `scripts/run-quality.sh` now provides one canonical repo-owned quality
   entrypoint.
+- `.githooks/pre-push` now blocks `git push` on the canonical local quality
+  gate when the maintainer installs repo-owned hooks with
+  `./scripts/install-git-hooks.sh`.
 - adapter bootstrap helpers now share repo-level utilities instead of shipping
   per-skill YAML loader copies.
 - `quality` now explicitly treats skill packages and helper drift as a quality

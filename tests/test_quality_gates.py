@@ -238,6 +238,33 @@ def test_check_python_lengths_passes_on_current_repo() -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_install_git_hooks_sets_core_hookspath(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / ".githooks").mkdir(parents=True)
+    shutil.copy2(ROOT / "scripts" / "install-git-hooks.sh", repo / "scripts" / "install-git-hooks.sh")
+    shutil.copy2(ROOT / ".githooks" / "pre-push", repo / ".githooks" / "pre-push")
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
+
+    result = subprocess.run(
+        ["bash", "scripts/install-git-hooks.sh"],
+        cwd=repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+
+    hookspath = subprocess.run(
+        ["git", "config", "--get", "core.hooksPath"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert hookspath.stdout.strip() == str((repo / ".githooks").resolve())
+
+
 def test_validate_profiles_rejects_missing_skill_reference(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     profiles_dir = repo / "profiles"

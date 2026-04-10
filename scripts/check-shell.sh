@@ -9,7 +9,12 @@ if ! command -v shellcheck >/dev/null 2>&1; then
   exit 0
 fi
 
-mapfile -t sh_files < <(find scripts -maxdepth 1 -type f -name '*.sh' | sort)
+mapfile -t sh_files < <(
+  {
+    find scripts -maxdepth 1 -type f -name '*.sh'
+    find .githooks -maxdepth 1 -type f 2>/dev/null
+  } | sort
+)
 if [ "${#sh_files[@]}" -eq 0 ]; then
   exit 0
 fi

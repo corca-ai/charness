@@ -20,6 +20,12 @@ The job is not to invent one universal checklist. The job is to understand the
 repo's current quality surface, run the meaningful gates that already exist,
 and propose the missing ones concretely.
 
+When the next quality move is repo-local, deterministic, and low-risk, `quality`
+should prefer implementing that gate in the same turn instead of stopping at a
+recommendation. Review-only output is appropriate when the user asked for it,
+when the tradeoff is genuinely product-defining, or when the gate cannot be
+owned honestly by a repo-local script, test, hook, or config change.
+
 Deterministic gates should define pass/fail authority wherever possible. If a
 quality concern can be enforced by a linter, validator, test, hook, or script,
 `quality` should prefer promoting it into that gate instead of leaving it as
@@ -112,6 +118,8 @@ recording.
    - do not force one stack's tooling when the repo does not use that stack
    - when the problem is automatable, prefer a deterministic gate proposal over
      more prose
+   - when the automatable move is already clear and repo-owned, implement it in
+     the same turn unless the user asked to stay review-only
 8. End with a quality posture summary.
    - what was actually run
    - what the current bar proves
@@ -139,6 +147,8 @@ The result should usually include:
 - Do not confuse gate presence with gate usefulness.
 - Do not leave an automatable quality rule as prose-only guidance when a
   linter, validator, test, hook, or script could own it.
+- If you stop short of an obvious repo-owned deterministic gate, name that as
+  an unresolved enforcement gap explicitly.
 - Do not propose generic "add more tests" or "improve security" without naming
   the actual seam and the next concrete setup.
 - If a gate already exists, prefer tightening or reusing it before adding a new

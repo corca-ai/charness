@@ -141,6 +141,30 @@ That means:
 
 Updates belong to the install or operator layer, not to individual skill runs.
 
+## Local Development Hooks
+
+The canonical local quality gate is:
+
+```bash
+./scripts/run-quality.sh
+```
+
+This repo also ships a checked-in pre-push hook at:
+
+```text
+.githooks/pre-push
+```
+
+Install it into local git config with:
+
+```bash
+./scripts/install-git-hooks.sh
+```
+
+That sets `core.hooksPath` to the repo-owned `.githooks/` directory so `git push`
+automatically runs the canonical quality gate before the push leaves the
+machine.
+
 For hosts that want a shared startup advisory without embedding networked
 self-update logic into every skill run, use:
 

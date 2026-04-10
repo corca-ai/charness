@@ -56,6 +56,12 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "real invocation over mock-only proof",
         "propose the install or setup during onboarding",
     ),
+    "skills/public/quality/SKILL.md": (
+        "When the next quality move is repo-local, deterministic, and low-risk",
+        "implementing that gate in the same turn",
+        "when the automatable move is already clear and repo-owned, implement it in",
+        "If you stop short of an obvious repo-owned deterministic gate",
+    ),
 }
 
 
