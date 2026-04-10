@@ -60,7 +60,8 @@ new local skill.
    - invoke an existing public skill
    - point to an adapter-configured official skill if the current host uses one
    - use a support capability through the right workflow
-   - install or wire an external integration if the policy already supports it
+   - install or wire an external integration if the policy already supports it,
+     and surface the supported access modes when that changes the next step
    - if the capability is genuinely missing, say whether it belongs in a new
      public skill, support skill, or integration manifest
 6. Explain why.

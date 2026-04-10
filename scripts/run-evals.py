@@ -36,6 +36,35 @@ def expect_success(result: subprocess.CompletedProcess[str], context: str) -> No
         raise EvalError(f"{context}: exited with {result.returncode}\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}")
 
 
+def expect_adapter_bootstrap(
+    root: Path,
+    *,
+    skill_id: str,
+    adapter_name: str,
+    expected_artifact_path: str,
+) -> None:
+    with tempfile.TemporaryDirectory(prefix=f"charness-eval-{skill_id}-adapter-") as tmpdir:
+        tmp = Path(tmpdir)
+        skill_dir = root / "skills" / "public" / skill_id / "scripts"
+        init_script = skill_dir / "init_adapter.py"
+        resolve_script = skill_dir / "resolve_adapter.py"
+
+        init_result = run_command(["python3", str(init_script), "--repo-root", str(tmp)], cwd=root)
+        expect_success(init_result, f"{skill_id} adapter init")
+
+        adapter_path = tmp / ".agents" / adapter_name
+        if not adapter_path.exists():
+            raise EvalError(f"{skill_id} adapter init: expected {adapter_path.relative_to(tmp)} to exist")
+
+        resolve_result = run_command(["python3", str(resolve_script), "--repo-root", str(tmp)], cwd=root)
+        expect_success(resolve_result, f"{skill_id} adapter resolve")
+        payload = json.loads(resolve_result.stdout)
+        if payload.get("found") is not True or payload.get("valid") is not True:
+            raise EvalError(f"{skill_id} adapter resolve: unexpected payload {payload!r}")
+        if payload.get("artifact_path") != expected_artifact_path:
+            raise EvalError(f"{skill_id} adapter resolve: unexpected artifact_path {payload.get('artifact_path')!r}")
+
+
 def scenario_skill_package_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "skill-valid"
     result = run_command(["python3", "scripts/validate-skills.py", "--repo-root", str(fixture)], cwd=root)
@@ -124,28 +153,12 @@ def scenario_doc_links_valid(root: Path) -> None:
 
 
 def scenario_quality_adapter_bootstrap(root: Path) -> None:
-    with tempfile.TemporaryDirectory(prefix="charness-eval-adapter-") as tmpdir:
-        tmp = Path(tmpdir)
-        init_script = root / "skills" / "public" / "quality" / "scripts" / "init_adapter.py"
-        resolve_script = root / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py"
-
-        init_result = run_command(
-            ["python3", str(init_script), "--repo-root", str(tmp)],
-            cwd=root,
-        )
-        expect_success(init_result, "quality adapter init")
-
-        adapter_path = tmp / ".agents" / "quality-adapter.yaml"
-        if not adapter_path.exists():
-            raise EvalError("quality adapter init: expected .agents/quality-adapter.yaml to exist")
-
-        resolve_result = run_command(["python3", str(resolve_script), "--repo-root", str(tmp)], cwd=root)
-        expect_success(resolve_result, "quality adapter resolve")
-        payload = json.loads(resolve_result.stdout)
-        if payload.get("found") is not True or payload.get("valid") is not True:
-            raise EvalError(f"quality adapter resolve: unexpected payload {payload!r}")
-        if payload.get("artifact_path") != "skill-outputs/quality/quality.md":
-            raise EvalError(f"quality adapter resolve: unexpected artifact_path {payload.get('artifact_path')!r}")
+    expect_adapter_bootstrap(
+        root,
+        skill_id="quality",
+        adapter_name="quality-adapter.yaml",
+        expected_artifact_path="skill-outputs/quality/quality.md",
+    )
 
 
 def scenario_quality_adapter_checked_in(root: Path) -> None:
@@ -165,53 +178,21 @@ def scenario_quality_adapter_checked_in(root: Path) -> None:
 
 
 def scenario_handoff_adapter_bootstrap(root: Path) -> None:
-    with tempfile.TemporaryDirectory(prefix="charness-eval-handoff-adapter-") as tmpdir:
-        tmp = Path(tmpdir)
-        init_script = root / "skills" / "public" / "handoff" / "scripts" / "init_adapter.py"
-        resolve_script = root / "skills" / "public" / "handoff" / "scripts" / "resolve_adapter.py"
-
-        init_result = run_command(
-            ["python3", str(init_script), "--repo-root", str(tmp)],
-            cwd=root,
-        )
-        expect_success(init_result, "handoff adapter init")
-
-        adapter_path = tmp / ".agents" / "handoff-adapter.yaml"
-        if not adapter_path.exists():
-            raise EvalError("handoff adapter init: expected .agents/handoff-adapter.yaml to exist")
-
-        resolve_result = run_command(["python3", str(resolve_script), "--repo-root", str(tmp)], cwd=root)
-        expect_success(resolve_result, "handoff adapter resolve")
-        payload = json.loads(resolve_result.stdout)
-        if payload.get("found") is not True or payload.get("valid") is not True:
-            raise EvalError(f"handoff adapter resolve: unexpected payload {payload!r}")
-        if payload.get("artifact_path") != "skill-outputs/handoff/handoff.md":
-            raise EvalError(f"handoff adapter resolve: unexpected artifact_path {payload.get('artifact_path')!r}")
+    expect_adapter_bootstrap(
+        root,
+        skill_id="handoff",
+        adapter_name="handoff-adapter.yaml",
+        expected_artifact_path="skill-outputs/handoff/handoff.md",
+    )
 
 
 def scenario_gather_adapter_bootstrap(root: Path) -> None:
-    with tempfile.TemporaryDirectory(prefix="charness-eval-gather-adapter-") as tmpdir:
-        tmp = Path(tmpdir)
-        init_script = root / "skills" / "public" / "gather" / "scripts" / "init_adapter.py"
-        resolve_script = root / "skills" / "public" / "gather" / "scripts" / "resolve_adapter.py"
-
-        init_result = run_command(
-            ["python3", str(init_script), "--repo-root", str(tmp)],
-            cwd=root,
-        )
-        expect_success(init_result, "gather adapter init")
-
-        adapter_path = tmp / ".agents" / "gather-adapter.yaml"
-        if not adapter_path.exists():
-            raise EvalError("gather adapter init: expected .agents/gather-adapter.yaml to exist")
-
-        resolve_result = run_command(["python3", str(resolve_script), "--repo-root", str(tmp)], cwd=root)
-        expect_success(resolve_result, "gather adapter resolve")
-        payload = json.loads(resolve_result.stdout)
-        if payload.get("found") is not True or payload.get("valid") is not True:
-            raise EvalError(f"gather adapter resolve: unexpected payload {payload!r}")
-        if payload.get("artifact_path") != "skill-outputs/gather/gather.md":
-            raise EvalError(f"gather adapter resolve: unexpected artifact_path {payload.get('artifact_path')!r}")
+    expect_adapter_bootstrap(
+        root,
+        skill_id="gather",
+        adapter_name="gather-adapter.yaml",
+        expected_artifact_path="skill-outputs/gather/gather.md",
+    )
 
 
 def scenario_handoff_absolute_links(root: Path) -> None:
@@ -234,83 +215,95 @@ def scenario_handoff_absolute_links(root: Path) -> None:
         expect_success(result, "handoff absolute-link portability")
 
 
+def seed_find_skills_fixture(tmp: Path) -> None:
+    local_skill_dir = tmp / "skills" / "public" / "local-demo"
+    official_skill_dir = tmp / "vendor" / "official-skills" / "official-demo"
+    adapter_dir = tmp / ".agents"
+    integrations_dir = tmp / "integrations" / "tools"
+    local_skill_dir.mkdir(parents=True)
+    official_skill_dir.mkdir(parents=True)
+    adapter_dir.mkdir(parents=True)
+    integrations_dir.mkdir(parents=True)
+
+    (local_skill_dir / "SKILL.md").write_text(
+        "\n".join(["---", "name: local-demo", 'description: "Local demo skill."', "---", "", "# Local Demo"]) + "\n",
+        encoding="utf-8",
+    )
+    (official_skill_dir / "SKILL.md").write_text(
+        "\n".join(["---", "name: official-demo", 'description: "Official demo skill."', "---", "", "# Official Demo"])
+        + "\n",
+        encoding="utf-8",
+    )
+    (adapter_dir / "find-skills-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                f"repo: {tmp.name}",
+                "language: en",
+                "output_dir: skill-outputs/find-skills",
+                "preset_id: portable-defaults",
+                "customized_from: portable-defaults",
+                "official_skill_roots:",
+                "- vendor/official-skills",
+                "prefer_local_first: true",
+                "allow_external_registry: false",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (integrations_dir / "demo-tool.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "tool_id": "demo-tool",
+                "kind": "external_binary",
+                "upstream_repo": "https://example.com/demo-tool",
+                "homepage": "https://example.com/demo-tool",
+                "lifecycle": {
+                    "install": {"commands": ["demo-tool install"], "notes": "Install demo-tool."},
+                    "update": {"commands": ["demo-tool update"], "notes": "Update demo-tool."},
+                },
+                "checks": {
+                    "detect": {"commands": ["demo-tool --version"], "success_criteria": ["exit_code:0"]},
+                    "healthcheck": {"commands": ["demo-tool health"], "success_criteria": ["exit_code:0"]},
+                },
+                "access_modes": ["binary", "degraded"],
+                "version_expectation": {"policy": "advisory", "constraint": "latest"},
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def assert_find_skills_payload(payload: dict[str, object]) -> None:
+    if payload["public_skills"][0]["id"] != "local-demo":
+        raise EvalError(f"find-skills local-first discovery: unexpected public skills {payload['public_skills']!r}")
+    if payload["official_skills"][0]["id"] != "official-demo":
+        raise EvalError(f"find-skills local-first discovery: unexpected official skills {payload['official_skills']!r}")
+    integration = payload["integrations"][0]
+    if integration["id"] != "demo-tool":
+        raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
+    if integration["kind"] != "external_binary":
+        raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
+    if integration["access_modes"] != ["binary", "degraded"]:
+        raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
+
+
 def scenario_find_skills_local_first(root: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="charness-eval-find-skills-") as tmpdir:
         tmp = Path(tmpdir)
-        local_skill_dir = tmp / "skills" / "public" / "local-demo"
-        official_skill_dir = tmp / "vendor" / "official-skills" / "official-demo"
-        adapter_dir = tmp / ".agents"
-        integrations_dir = tmp / "integrations" / "tools"
-        local_skill_dir.mkdir(parents=True)
-        official_skill_dir.mkdir(parents=True)
-        adapter_dir.mkdir(parents=True)
-        integrations_dir.mkdir(parents=True)
-
-        (local_skill_dir / "SKILL.md").write_text(
-            "\n".join(
-                [
-                    "---",
-                    "name: local-demo",
-                    'description: "Local demo skill."',
-                    "---",
-                    "",
-                    "# Local Demo",
-                ]
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-        (official_skill_dir / "SKILL.md").write_text(
-            "\n".join(
-                [
-                    "---",
-                    "name: official-demo",
-                    'description: "Official demo skill."',
-                    "---",
-                    "",
-                    "# Official Demo",
-                ]
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-        (adapter_dir / "find-skills-adapter.yaml").write_text(
-            "\n".join(
-                [
-                    "version: 1",
-                    f"repo: {tmp.name}",
-                    "language: en",
-                    "output_dir: skill-outputs/find-skills",
-                    "preset_id: portable-defaults",
-                    "customized_from: portable-defaults",
-                    "official_skill_roots:",
-                    "- vendor/official-skills",
-                    "prefer_local_first: true",
-                    "allow_external_registry: false",
-                    "",
-                ]
-            ),
-            encoding="utf-8",
-        )
-        (integrations_dir / "demo-tool.json").write_text(
-            json.dumps({"schema_version": "1", "tool_id": "demo-tool"}, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
+        seed_find_skills_fixture(tmp)
 
         result = run_command(
             ["python3", "skills/public/find-skills/scripts/list_capabilities.py", "--repo-root", str(tmp)],
             cwd=root,
         )
         expect_success(result, "find-skills local-first discovery")
-        payload = json.loads(result.stdout)
-        if payload["public_skills"][0]["id"] != "local-demo":
-            raise EvalError(f"find-skills local-first discovery: unexpected public skills {payload['public_skills']!r}")
-        if payload["official_skills"][0]["id"] != "official-demo":
-            raise EvalError(
-                f"find-skills local-first discovery: unexpected official skills {payload['official_skills']!r}"
-            )
-        if payload["integrations"][0]["id"] != "demo-tool":
-            raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
+        assert_find_skills_payload(json.loads(result.stdout))
 
 
 def scenario_representative_skill_contracts(root: Path) -> None:

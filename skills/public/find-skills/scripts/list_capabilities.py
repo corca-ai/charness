@@ -90,14 +90,17 @@ def official_skills(root: Path, skill_roots: list[str]) -> list[dict[str, str]]:
     )
 
 
-def integrations(root: Path) -> list[dict[str, str]]:
-    items: list[dict[str, str]] = []
+def integrations(root: Path) -> list[dict[str, object]]:
+    items: list[dict[str, object]] = []
     for manifest in sorted((root / "integrations" / "tools").glob("*.json")):
         if manifest.name == "manifest.schema.json":
             continue
+        data = json.loads(manifest.read_text(encoding="utf-8"))
         items.append(
             {
-                "id": manifest.stem,
+                "id": data.get("tool_id", manifest.stem),
+                "kind": data.get("kind", "unknown"),
+                "access_modes": data.get("access_modes", []),
                 "path": str(manifest.relative_to(root)),
                 "source": "local-integration",
                 "layer": "external integration",

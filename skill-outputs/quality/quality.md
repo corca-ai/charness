@@ -110,6 +110,8 @@ What was actually runnable today:
   implied future concern.
 - integration manifests now carry explicit ordered `access_modes`, so the
   capability model is no longer only prose in docs and skill references.
+- `find-skills` discovery now surfaces integration `kind` and `access_modes`
+  instead of flattening external capabilities to bare ids and paths.
 - The top-level repo shape matches the documented skeleton in `README.md`.
 
 ## Weak
@@ -319,6 +321,21 @@ Evidence:
 - `skills/public/gather/SKILL.md`
 - `skills/public/gather/references/capability-contract.md`
 - `skills/public/create-skill/references/runtime-capabilities.md`
+
+### 13. Capability metadata has started reaching discovery-time behavior, not only validation
+
+`find-skills` now exposes integration `kind` and `access_modes` in its
+discovery payload. That matters because the user-facing "what can this harness
+do here?" question is no longer forced to stop at installed/not-installed. The
+repo can now distinguish, for example, a grant-capable integration from a
+binary-only one at discovery time.
+
+Evidence:
+
+- `skills/public/find-skills/scripts/list_capabilities.py`
+- `skills/public/find-skills/SKILL.md`
+- `tests/test_find_skills.py`
+- `scripts/run-evals.py`
 
 ## Commands Run
 
