@@ -78,10 +78,10 @@ Public skills are user-facing concepts. One concept maps to one skill.
 Support skills are not the product's public philosophy. They help other skills
 use specialized tools consistently.
 
-- `agent-browser`
-- `web-fetch`
-- `specdown`
-- transitional evaluation support around `cautilus` integration
+- `gather-slack`
+- `gather-notion`
+- generated upstream support references when an integration ships its own skill
+  surface, such as `agent-browser` or `cautilus`
 
 ### Profiles
 

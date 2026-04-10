@@ -158,17 +158,11 @@ The first manifest wave should cover:
 - `specdown`
 - `crill`
 - `gws-cli`
-- the future standalone evaluation engine split from `workbench` once it exists
-  as a real upstream repo or release boundary
+- `cautilus`
 
-The first three are now concrete manifest instances. The evaluation engine
-remains deferred on purpose until the upstream extraction creates a stable
-source of truth.
-
-## Deferred Decisions
-
-- whether the future evaluation engine keeps a `workbench` transitional id or
-  gets a new permanent tool id before extraction
+These are now concrete manifest instances. The evaluator boundary is no longer
+deferred: `cautilus` is the tracked standalone evaluation product, while
+consumer-owned adapters remain local repo assets.
 
 ## Non-Goals
 

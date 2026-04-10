@@ -12,7 +12,13 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.packaging_lib import PackagingError, build_codex_marketplace, load_manifest, write_json
+from scripts.packaging_lib import (
+    PackagingError,
+    build_codex_marketplace,
+    load_manifest,
+    manifest_with_version_override,
+    write_json,
+)
 
 
 class ExportError(Exception):
@@ -76,6 +82,10 @@ def main() -> int:
     parser.add_argument("--host", choices=("claude", "codex"), required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--with-marketplace", action="store_true")
+    parser.add_argument(
+        "--version-override",
+        help="Override the exported package version without mutating the shared packaging manifest.",
+    )
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -84,6 +94,7 @@ def main() -> int:
         manifest = load_manifest(repo_root, args.package_id)
     except PackagingError as exc:
         raise ExportError(str(exc)) from exc
+    manifest = manifest_with_version_override(manifest, args.version_override)
     plugin_root = export_plugin(repo_root, output_root, manifest, args.host, args.with_marketplace)
 
     print(
@@ -91,6 +102,7 @@ def main() -> int:
             {
                 "package_id": args.package_id,
                 "host": args.host,
+                "version": manifest["version"],
                 "plugin_root": str(plugin_root),
                 "marketplace_written": args.host == "codex" and args.with_marketplace,
             },

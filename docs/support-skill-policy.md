@@ -50,7 +50,7 @@ Examples:
 
 - `agent-browser`
 - `specdown`
-- future evaluation engine extracted from `workbench`
+- `cautilus`
 
 ## Fork Only When
 

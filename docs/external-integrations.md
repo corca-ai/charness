@@ -18,7 +18,7 @@ Examples:
 - `specdown`
 - `crill`
 - `gws-cli`
-- future evaluation engine split from `workbench`
+- `cautilus`
 
 ## Ownership Model
 

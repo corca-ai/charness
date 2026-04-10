@@ -21,7 +21,7 @@ SCENARIOS = (
     Scenario("handoff-adapter-bootstrap", "handoff adapter helpers bootstrap the durable handoff artifact path"),
     Scenario("gather-adapter-bootstrap", "gather adapter helpers bootstrap the durable gather artifact path"),
     Scenario("handoff-absolute-links", "repo-local absolute markdown links remain valid in handoff-style docs"),
-    Scenario("find-skills-local-first", "find-skills keeps local-first discovery while exposing configured official roots"),
+    Scenario("find-skills-local-first", "find-skills keeps local-first discovery while exposing configured trusted roots"),
     Scenario("support-sync-contracts", "shipped support-sync contracts stay discoverable without pretending every integration owns a support skill"),
     Scenario("representative-skill-contracts", "representative public skills retain their required contract markers"),
 )

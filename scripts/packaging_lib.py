@@ -36,6 +36,16 @@ def load_manifest(repo_root: Path, package_id: str) -> dict:
     return json.loads(manifest_path.read_text(encoding="utf-8"))
 
 
+def manifest_with_version_override(manifest: dict, version_override: str | None) -> dict:
+    if version_override is None:
+        return manifest
+    overridden = json.loads(json.dumps(manifest))
+    overridden["version"] = version_override
+    overridden["codex"]["manifest"]["version"] = version_override
+    overridden["claude"]["manifest"]["version"] = version_override
+    return overridden
+
+
 def write_json(path: Path, data: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

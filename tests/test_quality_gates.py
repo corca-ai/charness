@@ -771,6 +771,33 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     assert json.loads(claude_manifest.read_text(encoding="utf-8"))["repository"] == "https://github.com/corca-ai/charness"
 
 
+def test_export_plugin_allows_version_override(tmp_path: Path) -> None:
+    output_root = tmp_path / "codex-export"
+    result = run_script(
+        "scripts/export-plugin.py",
+        "--repo-root",
+        str(ROOT),
+        "--host",
+        "codex",
+        "--output-root",
+        str(output_root),
+        "--version-override",
+        "1.2.3",
+        "--with-marketplace",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["version"] == "1.2.3"
+
+    codex_manifest = output_root / "plugins" / "charness" / ".codex-plugin" / "plugin.json"
+    codex_marketplace = output_root / ".agents" / "plugins" / "marketplace.json"
+    assert json.loads(codex_manifest.read_text(encoding="utf-8"))["version"] == "1.2.3"
+    assert json.loads(codex_marketplace.read_text(encoding="utf-8"))["plugins"][0]["name"] == "charness"
+
+    shared_manifest = json.loads((ROOT / "packaging" / "charness.json").read_text(encoding="utf-8"))
+    assert shared_manifest["version"] == "0.0.0-dev"
+
+
 def test_check_skill_contracts_rejects_missing_required_snippet(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     handoff_skill_dir = repo / "skills" / "public" / "handoff"

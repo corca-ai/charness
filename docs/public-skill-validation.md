@@ -1,14 +1,16 @@
 # Public Skill Validation Tiers
 
 This document fixes the deeper-validation policy for current `charness` public
-skills before the standalone evaluator contract is wired into the repo.
+skills now that the standalone evaluator product boundary is wired into the
+repo, but before maintained evaluator scenarios are part of the normal local
+bar.
 
 ## Purpose
 
 - keep repo-owned smoke, lint, validator, and bootstrap checks as the baseline
   for every public skill
 - decide which skills need routine human review, evaluator scenarios, or both
-- let the future `cautilus` integration start from a fixed matrix instead of
+- keep `cautilus` integration aligned with a fixed validation matrix instead of
   re-deriving validation expectations from scratch
 
 ## Baseline Rules
@@ -17,8 +19,9 @@ skills before the standalone evaluator contract is wired into the repo.
   package validation, adapter bootstrap checks, markdown and link checks, and
   smoke evals when the repo owns them
 - the tier only describes extra validation beyond that baseline
-- until the extracted evaluator has a real upstream contract, any
-  `evaluator-required` skill falls back to smoke plus targeted HITL sampling
+- until maintained `cautilus` scenarios land in this repo, any
+  `evaluator-required` skill still falls back to smoke plus targeted HITL
+  sampling
 - a skill can move upward to a stronger tier later, but should not move
   downward without evidence that the deeper gate is wasted effort
 
@@ -74,12 +77,12 @@ Current assignment:
   whole workflow can be scored automatically.
 - `create-skill`, `find-skills`, `gather`, `handoff`, `spec`, `impl`, and
   `debug` shape later execution or durable repo state. Those are the highest
-  leverage candidates for maintained scenario evaluation once `cautilus`
-  exposes a stable contract.
+  leverage candidates for maintained scenario evaluation now that `cautilus`
+  is the tracked evaluator boundary.
 
-## Next Step After `cautilus`
+## Next Step
 
-Once the evaluator extraction is real, the next integration session should:
+The next integration session should:
 
 1. confirm that the upstream `cautilus` contract can exercise the
    `evaluator-required` set without host-specific assumptions

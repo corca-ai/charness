@@ -62,7 +62,8 @@ Why this exists:
 
 - `public-skill-validation.md` already says which public skills are
   `evaluator-required`.
-- The upstream evaluator contract still needs to be connected.
+- The upstream evaluator contract is now connected at the integration-manifest
+  layer, but maintained scenario usage still needs to become real.
 
 Read first:
 
@@ -96,7 +97,8 @@ Acceptance:
 - `cautilus` has a real integration surface in `charness`.
 - `docs/public-skill-validation.md` is confirmed or minimally adjusted against
   the actual upstream contract.
-- Repo-owned tests/evals/docs reflect the new evaluator path.
+- Repo-owned tests/evals/docs reflect the new evaluator path and any added
+  maintained scenario wiring honestly.
 - `./scripts/run-quality.sh` passes.
 
 ### 3. Run Claude/Codex Direct-Install Experiments

@@ -101,7 +101,31 @@ What it intentionally does not materialize yet:
 
 - generated `commands/` or `agents/`
 - richer install-surface metadata for published plugin catalogs
-- release-time overrides for version stamping
+- release-time overrides beyond version stamping
+
+## Release-Time Version Override
+
+The shared packaging manifest keeps the default version. That remains the
+checked-in source of truth.
+
+When a release workflow needs a stamped export without mutating
+`packaging/charness.json`, the export entrypoint may override the emitted
+version:
+
+```bash
+python3 scripts/export-plugin.py \
+  --repo-root . \
+  --host codex \
+  --output-root /tmp/charness-export \
+  --version-override 1.2.3 \
+  --with-marketplace
+```
+
+Guardrails:
+
+- the override only changes emitted release metadata
+- it must not change shared bundle membership or other policy fields
+- the checked-in shared manifest remains the canonical default version
 
 ## Root Install Surface
 
@@ -155,8 +179,6 @@ networked self-update loop.
 
 ## Deferred Decisions
 
-- whether release version stamping should stay manual in the shared manifest or
-  move into an export-time override
 - whether future Codex exports should always ship repo-marketplace metadata or
   only when explicitly requested by an operator
 - whether Claude-specific `commands/` or `agents/` should be generated from

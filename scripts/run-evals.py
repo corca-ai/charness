@@ -101,6 +101,8 @@ def scenario_packaging_export(root: Path) -> None:
                 "codex",
                 "--output-root",
                 str(codex_root),
+                "--version-override",
+                "9.9.9",
                 "--with-marketplace",
             ],
             cwd=root,
@@ -116,6 +118,8 @@ def scenario_packaging_export(root: Path) -> None:
         codex_manifest = json.loads(codex_manifest_path.read_text(encoding="utf-8"))
         if codex_manifest.get("skills") != "./skills/":
             raise EvalError(f"codex plugin export: unexpected skills path {codex_manifest.get('skills')!r}")
+        if codex_manifest.get("version") != "9.9.9":
+            raise EvalError(f"codex plugin export: unexpected version {codex_manifest.get('version')!r}")
         codex_marketplace = json.loads(codex_marketplace_path.read_text(encoding="utf-8"))
         plugin_entries = codex_marketplace.get("plugins", [])
         if len(plugin_entries) != 1 or plugin_entries[0].get("source", {}).get("path") != "./plugins/charness":
