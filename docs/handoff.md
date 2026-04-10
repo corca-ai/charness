@@ -2,7 +2,8 @@
 
 ## Workflow Trigger
 
-- 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, [master-plan.md](/home/ubuntu/charness/docs/master-plan.md), [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md), [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md), [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md)를 먼저 읽고 `cautilus` maintained scenario wiring과 direct-install 실험 중 하나를 바로 진행한다.
+- 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), [quality-lenses.md](/home/ubuntu/charness/skills/public/quality/references/quality-lenses.md), [operability-signals.md](/home/ubuntu/charness/skills/public/quality/references/operability-signals.md), [skill-migration-map.md](/home/ubuntu/charness/docs/skill-migration-map.md), [master-plan.md](/home/ubuntu/charness/docs/master-plan.md)를 읽고 supply-chain security audit 흡수를 `quality` reference/script slice로 시작한다.
+- 그 slice를 끝내면 [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md), [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md), [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md)를 읽고 `cautilus` maintained scenario wiring과 direct-install 실험 중 하나로 넘어간다.
 - evaluator contract를 볼 때는 [integrations/tools/cautilus.json](/home/ubuntu/charness/integrations/tools/cautilus.json), [.agents/cautilus-adapter.yaml](/home/ubuntu/charness/.agents/cautilus-adapter.yaml), [docs/support-skill-policy.md](/home/ubuntu/charness/docs/support-skill-policy.md)를 같이 읽는다.
 - executable-spec guidance를 이어서 다룰 때는 [skills/public/spec/SKILL.md](/home/ubuntu/charness/skills/public/spec/SKILL.md), [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), [specdown-quality.md](/home/ubuntu/charness/presets/specdown-quality.md)를 먼저 읽는다.
 
@@ -109,7 +110,11 @@
 - [export-plugin.py](/home/ubuntu/charness/scripts/export-plugin.py)는 이제 shared manifest 기본 version을 유지하면서 export-time `--version-override`를 허용한다.
 - shipped sample preset은 이제 [specdown-quality.md](/home/ubuntu/charness/presets/specdown-quality.md), [monorepo-quality.md](/home/ubuntu/charness/presets/monorepo-quality.md)까지 포함해 더 현실적이고 varied한 maintainer example을 가진다.
 - `spec` / `quality`는 executable specs를 acceptance boundary에 남기고, duplicated shell-heavy detail은 unit/source-level checks나 direct adapter로 내리라는 guidance를 explicit하게 갖게 됐다.
+- [create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md), [ideation/SKILL.md](/home/ubuntu/charness/skills/public/ideation/SKILL.md), [impl/SKILL.md](/home/ubuntu/charness/skills/public/impl/SKILL.md), [handoff/SKILL.md](/home/ubuntu/charness/skills/public/handoff/SKILL.md), [spec/SKILL.md](/home/ubuntu/charness/skills/public/spec/SKILL.md), [retro/SKILL.md](/home/ubuntu/charness/skills/public/retro/SKILL.md)에 named-person anchors와 decision/premortem guidance가 들어갔다. `ideation`은 이제 Daniel Jackson-style concept discipline과 blocker-first decision lens를 explicit하게 가진다.
+- `quality`는 이제 runtime drift, diagnostic visibility, log/timing rotation을 operability quality로 본다. [record_quality_runtime.py](/home/ubuntu/charness/scripts/record_quality_runtime.py)와 [run-quality.sh](/home/ubuntu/charness/scripts/run-quality.sh)가 standing gate elapsed time을 local runtime signal로 기록하고, [operability-signals.md](/home/ubuntu/charness/skills/public/quality/references/operability-signals.md), [executable-spec-economics.md](/home/ubuntu/charness/skills/public/quality/references/executable-spec-economics.md)가 slow gate triage를 explicit하게 설명한다.
+- 다음 큰 content migration candidate는 supply-chain security audit이다. current decision은 별도 public skill을 만들지 않고 `quality`의 security/supply-chain lens 안으로 흡수하는 것이다. package-manager-specific checklist는 `skills/public/quality/references/security-*.md` 계열로 재작성하고, host ritual과 static CVE lists는 그대로 들여오지 않는다.
 - 아직 없는 것:
+  - `quality` 안의 supply-chain security audit reference/script migration
   - maintained `cautilus` scenarios for the `evaluator-required` public skills
   - support skill migrations and integration wrappers
   - concrete adoption of executable support-sync on shipped manifests
@@ -119,14 +124,15 @@
 ## Next Session
 
 1. pre-`cautilus` deferred product decisions는 [deferred-decisions.md](/home/ubuntu/charness/docs/deferred-decisions.md)에서 2026-04-10 batch로 닫혔다. 다음 세션 시작 시에는 이 문서의 reopen trigger만 빠르게 확인하고 바로 integration work로 들어간다.
-2. checked-in root host manifests로 Claude/Codex direct install experiment를 실제로 해 보고, 필요하면 packaging metadata를 더 보강한다.
-3. `cautilus` integration Session의 다음 단계로 maintained scenario wiring을 시작한다.
-4. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 current matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.
-5. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정하고, evaluator-required 경계와 HITL fallback 경계를 함께 문서화한다.
-6. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
-7. downstream host가 first `organization`-scope preset을 실제로 정의할 때, 현재 preset contract를 그대로 쓸지 보고 필요한 최소 metadata만 더한다.
-8. `Cautilus doctor`가 통과하는 root adapter를 유지하면서, richer evaluator surface가 필요해지면 named `cautilus-adapters/`를 설계한다.
-9. manifest validation, control-plane tests, eval fixtures, handoff를 새 evaluator contract에 맞게 갱신한다.
+2. supply-chain security audit source를 `quality` 안으로 흡수한다. 첫 slice는 overview + npm/pnpm/uv 정도가 적절하고, host ritual과 static CVE lists는 버린다.
+3. checked-in root host manifests로 Claude/Codex direct install experiment를 실제로 해 보고, 필요하면 packaging metadata를 더 보강한다.
+4. `cautilus` integration Session의 다음 단계로 maintained scenario wiring을 시작한다.
+5. [public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)의 current matrix를 `cautilus` contract 기준으로 confirm하거나 필요한 최소 범위만 조정한다.
+6. `quality`가 이미 가진 smoke/lint/validator layer 위에 어떤 intent/workflow eval을 더 올릴지 정하고, evaluator-required 경계와 HITL fallback 경계를 함께 문서화한다.
+7. `create-skill` / `spec`도 marker check를 넘는 repo-owned workflow gate로 올릴 수 있을지 본다.
+8. downstream host가 first `organization`-scope preset을 실제로 정의할 때, 현재 preset contract를 그대로 쓸지 보고 필요한 최소 metadata만 더한다.
+9. `Cautilus doctor`가 통과하는 root adapter를 유지하면서, richer evaluator surface가 필요해지면 named `cautilus-adapters/`를 설계한다.
+10. manifest validation, control-plane tests, eval fixtures, handoff를 새 evaluator contract에 맞게 갱신한다.
 
 ## Discuss
 
@@ -193,6 +199,9 @@
 - [skills/public/gather/SKILL.md](/home/ubuntu/charness/skills/public/gather/SKILL.md)
 - [skills/public/handoff/SKILL.md](/home/ubuntu/charness/skills/public/handoff/SKILL.md)
 - [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md)
+- [quality-lenses.md](/home/ubuntu/charness/skills/public/quality/references/quality-lenses.md)
+- [operability-signals.md](/home/ubuntu/charness/skills/public/quality/references/operability-signals.md)
+- [executable-spec-economics.md](/home/ubuntu/charness/skills/public/quality/references/executable-spec-economics.md)
 - [typescript-quality.md](/home/ubuntu/charness/presets/typescript-quality.md)
 - [python-quality.md](/home/ubuntu/charness/presets/python-quality.md)
 - [skills/public/announcement/SKILL.md](/home/ubuntu/charness/skills/public/announcement/SKILL.md)
