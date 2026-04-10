@@ -140,6 +140,57 @@ That means:
 
 Updates belong to the install or operator layer, not to individual skill runs.
 
+## Install And Update
+
+### Claude Code
+
+Documented local development path:
+
+```bash
+claude --plugin-dir /absolute/path/to/charness
+```
+
+This is the safest current path because Claude's official docs explicitly
+document `--plugin-dir` for local plugin testing and recommend marketplaces for
+shared distribution.
+
+Practical implication:
+
+- local development and validation can treat this repo root as the plugin root
+- wider public distribution should still assume a marketplace-oriented flow
+  until direct repo install is confirmed by experiment
+
+Update model:
+
+- local `--plugin-dir` usage picks up repo changes directly
+- installed marketplace copies should update through Claude's plugin update or
+  marketplace update flow
+- do not add runtime self-update checks to skills
+
+### Codex
+
+Documented local install path:
+
+- keep a marketplace file at `.agents/plugins/marketplace.json`
+- point `source.path` at the plugin directory with a `./`-prefixed relative
+  path
+
+This repo now ships that marketplace file checked in, with `source.path`
+pointing at the repo root.
+
+Practical implication:
+
+- local development can treat this repo root as both marketplace root and
+  plugin root
+- public distribution should still be treated as experimental until direct repo
+  install is confirmed against a pushed GitHub repo
+
+Update model:
+
+- update the repo copy that `source.path` points to
+- restart or reload Codex so the install sees the new files
+- do not check for updates during skill execution
+
 ## Repository Shape
 
 This repo starts small and grows into these top-level areas:

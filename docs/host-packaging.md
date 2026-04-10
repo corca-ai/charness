@@ -116,6 +116,14 @@ export trees.
 This hybrid model avoids a duplicated `plugins/charness/...` tree while still
 leaving a GitHub-visible install surface.
 
+Operationally this means:
+
+- Claude local development can load the repo root with `--plugin-dir`
+- Codex local development can load the repo root through the checked-in repo
+  marketplace file
+- public GitHub install remains a testable hypothesis, not an already-proven
+  guarantee, until a pushed-repo experiment confirms it on both hosts
+
 ## Non-Goals
 
 - shipping generated plugin trees in-repo
