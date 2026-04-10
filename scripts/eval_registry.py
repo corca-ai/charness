@@ -15,6 +15,7 @@ SCENARIOS = (
     Scenario("packaging-valid", "shared host-packaging manifest stays aligned with repo artifacts"),
     Scenario("packaging-export", "shared packaging metadata materializes usable Claude and Codex plugin layouts"),
     Scenario("doc-links-valid", "fixture docs with valid internal links pass markdown link validation"),
+    Scenario("impl-adapter-bootstrap", "impl init/resolve scripts bootstrap repo-specific verification preferences"),
     Scenario("quality-adapter-bootstrap", "quality init/resolve scripts bootstrap a clean repo"),
     Scenario("quality-adapter-checked-in", "checked-in quality adapter resolves to the declared repo contract"),
     Scenario("handoff-adapter-bootstrap", "handoff adapter helpers bootstrap the durable handoff artifact path"),
