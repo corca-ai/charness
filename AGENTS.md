@@ -26,6 +26,8 @@ self-validation.
 
 - `docs/handoff.md`: next-session pickup and volatile repo state
 - `docs/master-plan.md`: session order and planned product boundary
+- `docs/operator-acceptance.md`: operator-facing takeover checklist for the
+  remaining roadmap items
 - `docs/skill-migration-map.md`: migration intent and remaining destinations
 - `docs/control-plane.md`: external integration contract
 - `skill-outputs/quality/quality.md`: current dogfood quality findings and next
@@ -94,3 +96,6 @@ Read the smallest memory surface that answers the current question.
 - Update `docs/handoff.md` when the next session's first move changed.
 - Keep durable review findings in `skill-outputs/` when a skill is designed to
   accumulate them.
+- If the user correctly points out a missed issue, broken assumption, or
+  missing gate that should likely have been caught, run a brief retro before
+  continuing and say whether that retro was persisted.

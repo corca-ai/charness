@@ -116,6 +116,7 @@ The detailed multi-session plan lives in:
 - [docs/external-integrations.md](docs/external-integrations.md)
 - [docs/skill-migration-map.md](docs/skill-migration-map.md)
 - [docs/ceal-consumption-model.md](docs/ceal-consumption-model.md)
+- [docs/operator-acceptance.md](docs/operator-acceptance.md)
 
 ## Plugin Install Surface
 

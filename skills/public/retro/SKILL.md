@@ -8,6 +8,11 @@ description: "Use after a meaningful work unit or when the user asks for a retro
 Use this after a meaningful unit of work completes or when the user asks for a
 retrospective.
 
+If the user correctly points out a missed issue, broken assumption, or missing
+gate that the current workflow should likely have caught, run a short
+`session` retro before continuing. Keep it bounded to the miss that was just
+revealed; do not turn every correction into a long postmortem.
+
 ## Bootstrap
 
 Every invocation starts here.
@@ -56,6 +61,8 @@ Adapter policy:
    - `Expert Counterfactuals`: what 1-2 named experts in this domain would likely
      have done differently
    - `Next Improvements`: concrete changes for the next session
+   - `Persisted`: whether the retro was written to a durable artifact, and if
+     not, why not
 4. Make `Next Improvements` concrete.
    - `workflow`: change the sequence, gate, or review habit
    - `capability`: add or adjust a skill, tool, adapter, preset, or automation
@@ -63,6 +70,33 @@ Adapter policy:
 5. Persist when there is a durable home.
    - if `output_dir` exists or the adapter defines one, update the retro artifact
    - otherwise still give the user a concise retro in chat
+   - never stop without stating `Persisted: yes <path>` or `Persisted: no <reason>`
+
+## Output Shape
+
+The result should usually include:
+
+- `Mode`
+- `Context`
+- `Waste`
+- `Critical Decisions`
+- `Expert Counterfactuals`
+- `Next Improvements`
+- `Persisted`
+
+## Auto-Retro Trigger
+
+- Trigger a short `session` retro automatically when a user correction exposes a
+  real miss in the workflow, not just a preference difference.
+- Treat valid examples such as:
+  - missing local enforcement that the agent claimed existed
+  - a wrong ownership or source-of-truth assumption
+  - a broken or missing gate that should have been checked
+- Do not trigger the full retro flow for:
+  - wording preferences
+  - open product tradeoffs the agent already marked as unresolved
+  - minor factual slips that do not reveal a workflow or guardrail gap
+- The retro may stay inline and short, but it must still include `Persisted`.
 
 ## Expert Counterfactual Rule
 
@@ -84,6 +118,8 @@ Adapter policy:
 - Capability suggestions exist to reduce future waste, not to show tool awareness.
 - Do not let the retro turn into a generic postmortem when the user asked for a
   short session review.
+- Do not claim persistence implicitly; name the durable path or the reason it
+  remained chat-only.
 - If no improvement is proposed, explain why the current workflow should remain
   unchanged.
 
@@ -93,3 +129,4 @@ Adapter policy:
 - `references/mode-guide.md`
 - `references/section-guide.md`
 - `references/expert-lens.md`
+- `references/trigger-and-persistence.md`
