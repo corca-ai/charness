@@ -144,10 +144,13 @@ def scenario_packaging_export(root: Path) -> None:
                 f"claude plugin export: unexpected author payload {claude_manifest.get('author')!r}"
             )
         exported_readme = claude_plugin_root / "README.md"
-        exported_skills_dir = claude_plugin_root / "skills" / "public"
-        if not exported_readme.exists() or not exported_skills_dir.exists():
-            raise EvalError("claude plugin export: shared repo inputs were not materialized")
-
+        exported_gather_skill = claude_plugin_root / "skills" / "gather" / "SKILL.md"
+        exported_support_skill = claude_plugin_root / "support" / "gather-slack" / "SKILL.md"
+        exported_generated_support = claude_plugin_root / "support" / "generated"
+        if not exported_readme.exists() or not exported_gather_skill.exists() or not exported_support_skill.exists():
+            raise EvalError("claude plugin export: host-facing plugin tree was not materialized")
+        if exported_generated_support.exists():
+            raise EvalError("claude plugin export: machine-generated support artifacts leaked into the install surface")
 
 def scenario_doc_links_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "doc-links-valid"

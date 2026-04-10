@@ -8,7 +8,7 @@
       "name": "charness",
       "source": {
         "source": "local",
-        "path": "./"
+        "path": "./plugins/charness"
       },
       "policy": {
         "installation": "AVAILABLE",

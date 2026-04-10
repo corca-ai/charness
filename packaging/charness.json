@@ -57,7 +57,7 @@
     "repo_marketplace": {
       "path": ".agents/plugins/marketplace.json",
       "default_source_path": "./plugins/charness",
-      "repo_root_source_path": "./",
+      "checked_in_source_path": "./plugins/charness",
       "display_name": "charness",
       "category": "Productivity"
     }
@@ -77,7 +77,7 @@
     "marketplace": {
       "path": ".claude-plugin/marketplace.json",
       "name": "corca-charness",
-      "source_path": "./"
+      "source_path": "./plugins/charness"
     }
   }
 }

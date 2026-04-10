@@ -1,0 +1,83 @@
+{
+  "schema_version": "1",
+  "tool_id": "agent-browser",
+  "kind": "external_binary_with_skill",
+  "display_name": "agent-browser",
+  "summary": "Browser automation CLI for JS-rendered pages, DOM inspection, and interactive browser debugging.",
+  "upstream_repo": "vercel-labs/agent-browser",
+  "homepage": "https://github.com/vercel-labs/agent-browser",
+  "platforms": [
+    "linux",
+    "macos"
+  ],
+  "status": "active",
+  "lifecycle": {
+    "install": {
+      "mode": "manual",
+      "docs_url": "https://github.com/vercel-labs/agent-browser",
+      "notes": [
+        "Recommended install paths are npm, Homebrew, or Cargo.",
+        "Run `agent-browser install` after installing the CLI so Chrome for Testing or an existing browser runtime is available."
+      ]
+    },
+    "update": {
+      "mode": "script",
+      "commands": [
+        "agent-browser upgrade"
+      ],
+      "docs_url": "https://github.com/vercel-labs/agent-browser"
+    }
+  },
+  "checks": {
+    "detect": {
+      "commands": [
+        "agent-browser --version"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Install the CLI first, then run `agent-browser install` to prepare a browser runtime."
+    },
+    "healthcheck": {
+      "commands": [
+        "agent-browser --help"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:agent-browser"
+      ],
+      "failure_hint": "The CLI exists but does not respond cleanly. Reinstall it or run `agent-browser install --with-deps` on Linux."
+    }
+  },
+  "access_modes": [
+    "binary",
+    "human-only",
+    "degraded"
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer a recent upstream-supported release.",
+    "detected_by": "stdout"
+  },
+  "support_skill_source": {
+    "source_type": "upstream_repo",
+    "path": "skills/agent-browser/SKILL.md",
+    "ref": "main",
+    "sync_strategy": "reference",
+    "notes": [
+      "Prefer the upstream support skill surface when the host runtime can consume it."
+    ]
+  },
+  "degradation": {
+    "when_missing": [
+      "Fall back to plain HTTP or non-browser workflows when possible.",
+      "Do not pretend browser-backed checks succeeded."
+    ],
+    "when_version_mismatch": [
+      "Prefer operator guidance over silent retries when CLI behavior drifts."
+    ]
+  },
+  "host_notes": [
+    "Hosts may need a separate Chromium or Chrome installation if they do not use `agent-browser install`."
+  ]
+}

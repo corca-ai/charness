@@ -1,0 +1,22 @@
+{
+  "schema_version": "1",
+  "profile_id": "collaboration",
+  "display_name": "Collaboration",
+  "purpose": "Portable collaboration bundle for announcement drafting and human-in-the-loop review.",
+  "bundles": {
+    "public_skills": [
+      "announcement",
+      "hitl"
+    ]
+  },
+  "activation": {
+    "recommended_when": [
+      "A host needs delivery or review loops beyond the constitutional core.",
+      "Human judgment or stakeholder communication is part of the workflow."
+    ]
+  },
+  "notes": [
+    "Keeps delivery and review seams adapter-driven rather than host-specific.",
+    "Intended as an overlay profile alongside core workflow skills."
+  ]
+}

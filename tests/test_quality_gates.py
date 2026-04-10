@@ -224,7 +224,7 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
                     "repo_marketplace": {
                         "path": ".agents/plugins/marketplace.json",
                         "default_source_path": "./plugins/demo",
-                        "repo_root_source_path": "./",
+                        "checked_in_source_path": "./plugins/demo",
                         "display_name": "demo",
                         "category": "Productivity",
                     },
@@ -241,7 +241,7 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
                     "marketplace": {
                         "path": ".claude-plugin/marketplace.json",
                         "name": "demo-marketplace",
-                        "source_path": "./",
+                        "source_path": "./plugins/demo",
                     },
                 },
             },
@@ -252,9 +252,9 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
     )
     result = run_script("scripts/sync_root_plugin_manifests.py", "--repo-root", str(repo), "--package-id", "demo")
     assert result.returncode == 0, result.stderr
-    assert (repo / ".claude-plugin" / "plugin.json").exists()
+    assert (repo / "plugins" / "demo" / ".claude-plugin" / "plugin.json").exists()
     assert (repo / ".claude-plugin" / "marketplace.json").exists()
-    assert (repo / ".codex-plugin" / "plugin.json").exists()
+    assert (repo / "plugins" / "demo" / ".codex-plugin" / "plugin.json").exists()
     assert (repo / ".agents" / "plugins" / "marketplace.json").exists()
 
     validate = run_script("scripts/validate-packaging.py", "--repo-root", str(repo))
@@ -936,7 +936,7 @@ def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) ->
                     "repo_marketplace": {
                         "path": ".agents/plugins/marketplace.json",
                         "default_source_path": "./plugins/demo",
-                        "repo_root_source_path": "./",
+                        "checked_in_source_path": "./plugins/demo",
                         "display_name": "demo",
                         "category": "Productivity",
                     },
@@ -953,7 +953,7 @@ def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) ->
                     "marketplace": {
                         "path": ".claude-plugin/marketplace.json",
                         "name": "demo-marketplace",
-                        "source_path": "./",
+                        "source_path": "./plugins/demo",
                     },
                 },
             },
@@ -1023,7 +1023,7 @@ def test_validate_packaging_rejects_unknown_top_level_field(tmp_path: Path) -> N
                     "repo_marketplace": {
                         "path": ".agents/plugins/marketplace.json",
                         "default_source_path": "./plugins/demo",
-                        "repo_root_source_path": "./",
+                        "checked_in_source_path": "./plugins/demo",
                         "display_name": "demo",
                         "category": "Productivity",
                     },
@@ -1040,7 +1040,7 @@ def test_validate_packaging_rejects_unknown_top_level_field(tmp_path: Path) -> N
                     "marketplace": {
                         "path": ".claude-plugin/marketplace.json",
                         "name": "demo-marketplace",
-                        "source_path": "./",
+                        "source_path": "./plugins/demo",
                     },
                 },
                 "unexpected": True,
@@ -1094,9 +1094,15 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     claude_manifest = claude_root / "plugins" / "charness" / ".claude-plugin" / "plugin.json"
     exported_readme = claude_root / "plugins" / "charness" / "README.md"
     exported_profiles = claude_root / "plugins" / "charness" / "profiles"
+    exported_gather_skill = claude_root / "plugins" / "charness" / "skills" / "gather" / "SKILL.md"
+    exported_support_skill = claude_root / "plugins" / "charness" / "support" / "gather-slack" / "SKILL.md"
     assert claude_manifest.is_file()
     assert exported_readme.is_file()
     assert exported_profiles.is_dir()
+    assert exported_gather_skill.is_file()
+    assert exported_support_skill.is_file()
+    assert not (claude_root / "plugins" / "charness" / "skills" / "public").exists()
+    assert not (claude_root / "plugins" / "charness" / "support" / "generated").exists()
     assert json.loads(claude_manifest.read_text(encoding="utf-8"))["repository"] == "https://github.com/corca-ai/charness"
 
 

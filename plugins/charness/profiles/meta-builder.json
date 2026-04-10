@@ -1,0 +1,36 @@
+{
+  "schema_version": "1",
+  "profile_id": "meta-builder",
+  "display_name": "Meta Builder",
+  "purpose": "Portable overlay for maintainers extending charness itself through authoring, discovery, and quality work.",
+  "bundles": {
+    "public_skills": [
+      "create-skill",
+      "find-skills",
+      "quality"
+    ],
+    "preset_ids": [
+      "portable-defaults",
+      "python-quality"
+    ]
+  },
+  "activation": {
+    "recommended_when": [
+      "A maintainer is creating or revising portable skills, support integrations, profiles, or presets in charness.",
+      "The work needs both authoring guidance and repo-owned quality tightening in one bounded workflow."
+    ],
+    "avoid_when": [
+      "The task is ordinary downstream product work that only consumes charness artifacts."
+    ]
+  },
+  "validation": {
+    "smoke_scenarios": [
+      "quality-adapter-checked-in",
+      "find-skills-local-first"
+    ]
+  },
+  "notes": [
+    "Designed as a maintainer-facing overlay rather than a default end-user bundle.",
+    "Keeps meta-authoring work explicit without inventing a new public workflow concept."
+  ]
+}

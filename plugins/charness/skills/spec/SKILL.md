@@ -1,0 +1,164 @@
+---
+name: spec
+description: "Use when a concept needs to become a living implementation contract. Refine ideation artifacts or existing design docs into the current build contract, decide what must be fixed now versus probed during implementation, define testable success criteria, and keep the contract synchronized as `impl` learns new facts."
+---
+
+# Spec
+
+Use this when the next job is to make the build contract explicit enough that
+implementation can move without rediscovering the problem.
+
+`spec` is not only a document-writing phase before `impl`. It is the skill for
+managing the current implementation contract. Sometimes that contract is mostly
+settled up front. Sometimes it becomes sharper while implementation proceeds.
+
+## Bootstrap
+
+Read the current concept artifacts before inventing new structure.
+
+```bash
+# 1. current concept and adjacent context
+rg --files docs skills
+sed -n '1,220p' docs/handoff.md
+sed -n '1,220p' skills/public/ideation/SKILL.md
+
+# 2. existing concept/spec/design docs
+rg -n "concept|spec|requirements|success criteria|acceptance|entity|stage|constraint" .
+
+# 3. implementation-side neighbors
+sed -n '1,220p' skills/public/create-skill/SKILL.md
+sed -n '1,220p' skills/public/impl/SKILL.md 2>/dev/null || true
+```
+
+If an ideation document already exists, refine it into a spec. Do not restate
+the entire discovery history from scratch.
+
+If the repo already has executable acceptance artifacts, treat them as part of
+the spec surface rather than as a separate world.
+
+When the repo uses executable specs, inspect whether they stay at the
+acceptance boundary or whether they have started duplicating low-level test
+detail and runtime cost.
+
+Borrow Ward Cunningham-style executable-spec discipline when the repo uses
+tools such as `specdown`: executable acceptance artifacts should make the
+contract concrete at the boundary, not replace the unit suite or hide low-level
+test detail.
+
+## Contract Shaping
+
+Choose the lightest honest contract shape.
+
+When implementation churn would be expensive, reduce ambiguity earlier and make
+the slice more explicit before coding starts.
+
+If some answers will emerge only while building, keep the contract
+probe-friendly and visible instead of inventing a user-facing mode choice.
+
+If the repo already treats executable checks as contract artifacts, push
+acceptance into those checks instead of managing a separate prose-only branch.
+
+If those executable checks are materially expensive, shape the contract so the
+standing acceptance bar stays honest about cost. Keep executable examples at
+the boundary and push duplicated unit-detail coverage downward instead of
+celebrating broad slow coverage.
+
+## Workflow
+
+1. Ingest the current artifact.
+   - identify the source artifact or source summary
+   - restate the stable idea in implementation terms
+   - separate what is already decided from what is still ambiguous
+2. Classify the remaining uncertainty.
+   - `Fixed Decisions`: must be decided before this slice starts
+   - `Probe Questions`: should be answered through a small implementation slice,
+     spike, or executable check
+   - `Deferred Decisions`: visible decisions that can safely wait
+3. Reduce only the ambiguity that blocks this slice.
+   - ask targeted questions only for choices that change build scope,
+     user-visible behavior, acceptance, sequencing, dependency choice, or risk
+   - if a reasonable default is clear, recommend it with reasons instead of
+     opening broad option trees
+4. Define the current execution contract.
+   - current slice
+   - non-goals
+   - constraints
+   - success criteria
+   - acceptance checks
+   - open risks, probe questions, or deferred decisions
+5. Tie the contract to verification.
+   - every important success criterion should imply at least one acceptance
+     check
+   - add negative cases when failure would matter to users or operators
+   - if the repo already uses executable specs or tests as contract artifacts,
+     prefer promoting acceptance checks into that form
+   - if executable specs already exist, keep them at acceptance level and move
+     repeated low-level detail into unit tests, source guards, or more direct
+     adapters
+   - when one acceptance path is materially slower than the rest, document why
+     that cost is justified and which cheaper layers should absorb the detail
+6. Keep the contract alive during implementation.
+   - stabilize the contract earlier when churn would otherwise be expensive
+   - keep unresolved items visible as probes when answers should emerge through
+     implementation
+   - keep prose and executable checks synchronized when the repo already uses
+     executable contract artifacts
+   - if implementation discovers a fact that changes scope or acceptance, update
+     the spec instead of leaving chat-only drift
+7. End with the next execution state.
+   - whether the current contract is ready for `impl`
+   - what the first or next implementation slice should be
+   - which artifact is canonical during implementation
+
+## Output Shape
+
+The final spec should usually include:
+
+- `Problem`
+- `Current Slice`
+- `Fixed Decisions`
+- `Probe Questions`
+- `Deferred Decisions`
+- `Non-Goals`
+- `Constraints`
+- `Success Criteria`
+- `Acceptance Checks`
+- `Canonical Artifact`
+- `First Implementation Slice`
+
+If the idea depends on durable structure or flow, reuse ideation outputs such as
+`Entities` or `Stages` instead of recreating them under new names.
+
+## Guardrails
+
+- Do not reopen broad concept exploration that belongs in `ideation`.
+- Do not treat `spec` as mandatory upfront completeness. A thin honest contract
+  is better than a fake complete one.
+- Do not leave success criteria as vague aspirations.
+- Do not allow an important success criterion without at least one acceptance
+  check.
+- Do not let acceptance checks become a second copy of the unit suite just
+  because the repo already has executable specs.
+- Do not silently assume implementation details when they materially change
+  scope or user-visible behavior.
+- Do not keep broad shell-driven executable checks in the contract when a
+  cheaper deterministic lower layer would prove the same behavior honestly.
+- If the concept artifact is still unstable in a concept-defining way, send the
+  work back to `ideation` rather than writing a fake spec.
+- A good spec refines an existing concept artifact and stays synchronized with
+  implementation. It does not discard the artifact or leave it stale.
+- Keep host-specific file locations or template choices outside the core skill
+  body; use repo documents or adapters where needed.
+
+## References
+
+- `references/contract-modes.md`
+- `references/fixed-probe-defer.md`
+- `references/ingest-and-refine.md`
+- `references/success-criteria.md`
+- `references/acceptance-checks.md`
+- `references/executable-spec-cost.md`
+- `references/ambiguity-rules.md`
+- `references/impl-loop.md`
+- `references/ideation-boundary.md`
+- `references/document-seams.md`

@@ -1,0 +1,71 @@
+{
+  "schema_version": "1",
+  "tool_id": "specdown",
+  "kind": "external_binary",
+  "display_name": "specdown",
+  "summary": "Executable specification runner that turns Markdown specs into runnable tests and reports.",
+  "upstream_repo": "corca-ai/specdown",
+  "homepage": "https://github.com/corca-ai/specdown",
+  "platforms": [
+    "linux",
+    "macos"
+  ],
+  "status": "active",
+  "lifecycle": {
+    "install": {
+      "mode": "manual",
+      "docs_url": "https://github.com/corca-ai/specdown",
+      "notes": [
+        "Preferred install paths are the upstream install script, Homebrew, or `go install`.",
+        "Keep install method host-controlled instead of baking one package manager into charness."
+      ]
+    },
+    "update": {
+      "mode": "manual",
+      "docs_url": "https://github.com/corca-ai/specdown/releases",
+      "notes": [
+        "Use the same mechanism that originally installed the binary."
+      ]
+    }
+  },
+  "checks": {
+    "detect": {
+      "commands": [
+        "specdown version"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Install specdown from the upstream repo or releases page."
+    },
+    "healthcheck": {
+      "commands": [
+        "specdown run -help"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stderr_contains:Usage: specdown run"
+      ],
+      "failure_hint": "The binary exists but the CLI surface looks broken. Reinstall from a clean upstream release."
+    }
+  },
+  "access_modes": [
+    "binary",
+    "human-only",
+    "degraded"
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer a recent upstream-supported release.",
+    "detected_by": "stdout"
+  },
+  "degradation": {
+    "when_missing": [
+      "Executable spec workflows should degrade to prose-only review or alternate test harnesses.",
+      "Do not claim spec execution or report generation succeeded without the binary."
+    ],
+    "when_version_mismatch": [
+      "Treat report or adapter drift as a manual review point before trusting results."
+    ]
+  }
+}

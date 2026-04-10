@@ -1,0 +1,86 @@
+{
+  "schema_version": "1",
+  "tool_id": "github-gh",
+  "kind": "external_binary",
+  "display_name": "GitHub CLI (gh)",
+  "summary": "Authenticated GitHub CLI provider for repository, pull request, issue, and discussion gather flows.",
+  "upstream_repo": "cli/cli",
+  "homepage": "https://github.com/cli/cli",
+  "platforms": [
+    "any"
+  ],
+  "status": "active",
+  "lifecycle": {
+    "install": {
+      "mode": "manual",
+      "docs_url": "https://cli.github.com/",
+      "notes": [
+        "Preferred install paths stay host-controlled: package manager, release download, or official install script.",
+        "Use `gh auth login` after install when private repository access is needed."
+      ]
+    },
+    "update": {
+      "mode": "manual",
+      "docs_url": "https://github.com/cli/cli/releases",
+      "notes": [
+        "Update through the same mechanism that originally installed `gh`."
+      ]
+    }
+  },
+  "checks": {
+    "detect": {
+      "commands": [
+        "gh --version"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:gh version"
+      ],
+      "failure_hint": "Install GitHub CLI first or fall back to public GitHub URLs and generic web fetch."
+    },
+    "healthcheck": {
+      "commands": [
+        "gh help auth"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:auth"
+      ],
+      "failure_hint": "The CLI exists but its auth surface is unavailable. Reinstall `gh` or use a public fallback path."
+    }
+  },
+  "access_modes": [
+    "binary",
+    "public",
+    "degraded"
+  ],
+  "config_layers": [
+    {
+      "layer_id": "authenticated-gh",
+      "layer_type": "authenticated-binary",
+      "summary": "Prefer an already authenticated `gh` session for private GitHub gather."
+    },
+    {
+      "layer_id": "public-github-fallback",
+      "layer_type": "public-fallback",
+      "summary": "Fall back to public GitHub URLs or generic fetch when authentication is unavailable."
+    }
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer a recent upstream-supported GitHub CLI release.",
+    "detected_by": "stdout"
+  },
+  "degradation": {
+    "when_missing": [
+      "Public GitHub URLs may still be gathered through unauthenticated fetch paths when they are world-readable.",
+      "Do not claim private repository access succeeded without an authenticated CLI or a stronger grant path."
+    ],
+    "when_version_mismatch": [
+      "Treat broken template or JSON output assumptions as a manual review point before trusting gathered metadata."
+    ]
+  },
+  "host_notes": [
+    "This manifest models the `gh` CLI path only. Runtime capability grants can later sit alongside it as a separate provider path."
+  ]
+}

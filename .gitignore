@@ -4,3 +4,8 @@ node_modules/
 .pytest_cache/
 skill-outputs/quality/runtime-signals.json
 skill-outputs/quality/history/runtime-signals-*.jsonl
+integrations/locks/*.json
+!integrations/locks/.gitkeep
+!integrations/locks/lock.schema.json
+skills/support/generated/*
+!skills/support/generated/.gitkeep

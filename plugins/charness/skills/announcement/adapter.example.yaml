@@ -1,0 +1,17 @@
+version: 1
+repo: charness
+product_name: charness
+language: en
+output_dir: skill-outputs/announcement
+preset_id: portable-defaults
+customized_from: portable-defaults
+sections:
+- Highlights
+- Changes
+- Fixes
+audience_tags: []
+omission_lenses: []
+delivery_kind: none
+delivery_target: ""
+release_notes_path: ""
+post_command_template: ""

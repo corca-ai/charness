@@ -1,0 +1,392 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "charness integration manifest",
+  "description": "Contract for external tool and upstream support-skill integrations.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tool_id",
+    "kind",
+    "display_name",
+    "upstream_repo",
+    "homepage",
+    "lifecycle",
+    "checks",
+    "access_modes",
+    "version_expectation"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1"
+    },
+    "tool_id": {
+      "$ref": "#/definitions/slug"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "external_binary",
+        "external_skill",
+        "external_binary_with_skill"
+      ]
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "upstream_repo": {
+      "type": "string",
+      "minLength": 1
+    },
+    "homepage": {
+      "type": "string",
+      "format": "uri"
+    },
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "linux",
+          "macos",
+          "windows",
+          "any"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "experimental",
+        "active",
+        "deprecated"
+      ]
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "install",
+        "update"
+      ],
+      "properties": {
+        "install": {
+          "$ref": "#/definitions/action"
+        },
+        "update": {
+          "$ref": "#/definitions/action"
+        }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "detect",
+        "healthcheck"
+      ],
+      "properties": {
+        "detect": {
+          "$ref": "#/definitions/check"
+        },
+        "healthcheck": {
+          "$ref": "#/definitions/check"
+        }
+      }
+    },
+    "access_modes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "grant",
+          "binary",
+          "env",
+          "public",
+          "human-only",
+          "degraded"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "readiness_checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/readinessCheck"
+      },
+      "minItems": 1
+    },
+    "config_layers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/configLayer"
+      },
+      "minItems": 1
+    },
+    "version_expectation": {
+      "$ref": "#/definitions/versionExpectation"
+    },
+    "capability_requirements": {
+      "$ref": "#/definitions/capabilityRequirements"
+    },
+    "support_skill_source": {
+      "$ref": "#/definitions/supportSkillSource"
+    },
+    "degradation": {
+      "$ref": "#/definitions/degradation"
+    },
+    "host_notes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "definitions": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+    },
+    "stringList": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "envVarList": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "script",
+            "package_manager",
+            "git_checkout",
+            "none"
+          ]
+        },
+        "commands": {
+          "$ref": "#/definitions/stringList"
+        },
+        "docs_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "notes": {
+          "$ref": "#/definitions/stringList"
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commands",
+        "success_criteria"
+      ],
+      "properties": {
+        "commands": {
+          "$ref": "#/definitions/stringList"
+        },
+        "success_criteria": {
+          "$ref": "#/definitions/stringList"
+        },
+        "failure_hint": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "readinessCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_id",
+        "summary",
+        "commands",
+        "success_criteria"
+      ],
+      "properties": {
+        "check_id": {
+          "$ref": "#/definitions/slug"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commands": {
+          "$ref": "#/definitions/stringList"
+        },
+        "success_criteria": {
+          "$ref": "#/definitions/stringList"
+        },
+        "failure_hint": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "configLayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layer_id",
+        "layer_type",
+        "summary"
+      ],
+      "properties": {
+        "layer_id": {
+          "$ref": "#/definitions/slug"
+        },
+        "layer_type": {
+          "type": "string",
+          "enum": [
+            "grant",
+            "authenticated-binary",
+            "env",
+            "operator-step",
+            "public-fallback"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requires": {
+          "$ref": "#/definitions/stringList"
+        },
+        "failure_hint": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "versionExpectation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy",
+        "constraint"
+      ],
+      "properties": {
+        "policy": {
+          "type": "string",
+          "enum": [
+            "advisory",
+            "minimum",
+            "range",
+            "exact"
+          ]
+        },
+        "constraint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "detected_by": {
+          "type": "string",
+          "enum": [
+            "stdout",
+            "stderr",
+            "package_manager",
+            "manual"
+          ]
+        }
+      }
+    },
+    "capabilityRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "grant_ids": {
+          "$ref": "#/definitions/stringList"
+        },
+        "env_vars": {
+          "$ref": "#/definitions/envVarList"
+        },
+        "permission_scopes": {
+          "$ref": "#/definitions/stringList"
+        }
+      }
+    },
+    "supportSkillSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_type",
+        "sync_strategy"
+      ],
+      "properties": {
+        "source_type": {
+          "type": "string",
+          "enum": [
+            "upstream_repo",
+            "local_wrapper"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sync_strategy": {
+          "type": "string",
+          "enum": [
+            "reference",
+            "copy",
+            "symlink",
+            "generated_wrapper"
+          ]
+        },
+        "wrapper_skill_id": {
+          "$ref": "#/definitions/slug"
+        },
+        "notes": {
+          "$ref": "#/definitions/stringList"
+        }
+      }
+    },
+    "degradation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "when_missing"
+      ],
+      "properties": {
+        "when_missing": {
+          "$ref": "#/definitions/stringList"
+        },
+        "when_version_mismatch": {
+          "$ref": "#/definitions/stringList"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "schema_version": "1",
+  "profile_id": "engineering-quality",
+  "display_name": "Engineering Quality",
+  "purpose": "Portable overlay for repo-wide quality review and deterministic gate improvement.",
+  "bundles": {
+    "public_skills": [
+      "quality"
+    ],
+    "preset_ids": [
+      "python-quality"
+    ]
+  },
+  "activation": {
+    "recommended_when": [
+      "A repo needs an explicit quality posture review or gate-tightening pass.",
+      "Deterministic validation commands should be treated as part of the operator workflow."
+    ],
+    "avoid_when": [
+      "The task is one narrow bug fix with no repo-wide quality question."
+    ]
+  },
+  "validation": {
+    "smoke_scenarios": [
+      "quality-adapter-bootstrap",
+      "quality-adapter-checked-in"
+    ]
+  },
+  "notes": [
+    "Designed as an overlay profile rather than a replacement for the constitutional core.",
+    "Uses the checked-in quality adapter and canonical quality runner as the repo-owned baseline."
+  ]
+}

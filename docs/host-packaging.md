@@ -44,15 +44,15 @@ The first contract keeps these repo directories host-neutral:
 That means the export script can materialize a host plugin layout without
 needing a second skill taxonomy or a second profile catalog.
 
-The repo root itself also carries checked-in generated host manifests so the
-GitHub repository can act as a direct plugin root during install experiments:
+The repo also carries a checked-in generated plugin tree so the GitHub
+repository exposes one stable install surface:
 
-- `.claude-plugin/plugin.json`
+- `plugins/charness/.claude-plugin/plugin.json`
+- `plugins/charness/.codex-plugin/plugin.json`
 - `.claude-plugin/marketplace.json`
-- `.codex-plugin/plugin.json`
 - `.agents/plugins/marketplace.json`
 
-Those files are generated from the shared packaging manifest and validated
+These files are generated from the shared packaging manifest and validated
 against it. They are still derived artifacts, not the source of truth.
 
 ## Host Mapping
@@ -62,7 +62,8 @@ against it. They are still derived artifacts, not the source of truth.
 The Codex export must map the shared bundle into:
 
 - `.codex-plugin/plugin.json`
-- `skills/`
+- `skills/` with flat public skill directories
+- `support/` for non-discoverable support assets
 - optional future `.mcp.json`, `.app.json`, and `assets/`
 - optional repo marketplace at `.agents/plugins/marketplace.json`
 
@@ -74,7 +75,8 @@ Codex plugin docs use that location for repo-scoped plugin catalogs.
 The Claude export must map the shared bundle into:
 
 - `.claude-plugin/plugin.json`
-- `skills/`
+- `skills/` with flat public skill directories
+- `support/` for non-discoverable support assets
 - optional future `.mcp.json`
 - optional future `commands/` and `agents/`
 
@@ -84,17 +86,18 @@ host adapter.
 
 ## Current Export Scope
 
-The first export flow writes host layouts into an operator-chosen output root
-and keeps generated plugin trees out of this repo.
+The export flow writes host layouts into an operator-chosen output root and the
+repo also keeps a generated checked-in install tree under `plugins/charness/`.
 
 What it materializes today:
 
 - `README.md`
-- `skills/`
+- flat public `skills/`
+- `support/` without `support/generated/`
 - `profiles/`
 - `presets/`
 - `integrations/tools/`
-- the host-specific plugin manifest
+- both host plugin manifests inside one checked-in plugin root
 - an optional Codex repo marketplace file
 
 What it intentionally does not materialize yet:
@@ -127,26 +130,26 @@ Guardrails:
 - it must not change shared bundle membership or other policy fields
 - the checked-in shared manifest remains the canonical default version
 
-## Root Install Surface
+## Checked-In Install Surface
 
-The checked-in root manifests exist for a different reason than temporary
+The checked-in install surface exists for a different reason than temporary
 export trees.
 
 - temporary export trees prove that shared source artifacts can be materialized
   into a host layout under another root
-- checked-in root manifests let the repository itself behave like a plugin root
-  without duplicating `skills/`, `profiles/`, `presets/`, or
-  `integrations/tools/`
+- the checked-in plugin tree gives hosts one stable install path with the
+  correct flat skill layout
 
-This hybrid model avoids a duplicated `plugins/charness/...` tree while still
-leaving a GitHub-visible install surface.
+This means the source repo taxonomy and the host-facing plugin taxonomy are now
+explicitly different on purpose.
 
 Operationally this means:
 
 - Claude shared install can treat the repo as a single-plugin marketplace
-- Claude local development can still load the repo root with `--plugin-dir`
-- Codex local development can load the repo root through the checked-in repo
-  marketplace file
+- Claude local development should point `--plugin-dir` at the checked-in
+  `plugins/` directory, not the repo root
+- Codex local development should load `./plugins/charness` through the
+  checked-in repo marketplace file
 - public GitHub install remains a testable hypothesis, not an already-proven
   guarantee, until a pushed-repo experiment confirms it on both hosts
 
@@ -172,7 +175,6 @@ networked self-update loop.
 
 ## Non-Goals
 
-- shipping generated plugin trees in-repo
 - inventing a second metadata system for host-specific skill behavior
 - treating host manifests as the canonical place for bundle membership
 - solving downstream host packaging in the shared repo

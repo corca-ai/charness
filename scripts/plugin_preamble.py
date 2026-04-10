@@ -50,7 +50,10 @@ def collect_readiness_summary(repo_root: Path) -> list[dict[str, str]]:
 
 def detect_copy_warnings(consumer_root: Path) -> list[str]:
     warnings: list[str] = []
+    source_repo = (consumer_root / "packaging" / "charness.json").exists()
     for relative_path in VENDORED_COPY_CANDIDATES:
+        if source_repo and relative_path == Path("plugins/charness"):
+            continue
         candidate = consumer_root / relative_path
         if candidate.exists() and not candidate.is_symlink():
             warnings.append(

@@ -1,0 +1,84 @@
+{
+  "schema_version": "1",
+  "tool_id": "cautilus",
+  "kind": "external_binary_with_skill",
+  "display_name": "cautilus",
+  "summary": "Standalone evaluation engine and bundled skill for bounded behavior review beyond repo-local deterministic gates.",
+  "upstream_repo": "corca-ai/cautilus",
+  "homepage": "https://github.com/corca-ai/cautilus",
+  "platforms": [
+    "linux",
+    "macos"
+  ],
+  "status": "experimental",
+  "lifecycle": {
+    "install": {
+      "mode": "manual",
+      "docs_url": "https://github.com/corca-ai/cautilus",
+      "notes": [
+        "Install from a tagged GitHub release with the upstream install script or keep a checked-out upstream repo with its runtime dependencies installed.",
+        "Consumer repos keep `cautilus-adapter.yaml` and named adapters locally; `charness` only points at the product boundary."
+      ]
+    },
+    "update": {
+      "mode": "manual",
+      "docs_url": "https://github.com/corca-ai/cautilus/releases",
+      "notes": [
+        "Update through the same release or checkout path that originally installed `cautilus`."
+      ]
+    }
+  },
+  "checks": {
+    "detect": {
+      "commands": [
+        "cautilus --version"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Install the standalone `cautilus` binary or keep the upstream checkout on PATH."
+    },
+    "healthcheck": {
+      "commands": [
+        "cautilus doctor --help"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:doctor"
+      ],
+      "failure_hint": "The binary exists but its repo-consumer surface is unavailable. Reinstall from a clean upstream release or refresh the upstream checkout."
+    }
+  },
+  "access_modes": [
+    "binary",
+    "human-only",
+    "degraded"
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer a recent upstream-supported release or checkout aligned with the checked-in consumer contract.",
+    "detected_by": "stdout"
+  },
+  "support_skill_source": {
+    "source_type": "upstream_repo",
+    "path": "skills/cautilus/SKILL.md",
+    "ref": "main",
+    "sync_strategy": "reference",
+    "notes": [
+      "Prefer the upstream bundled skill instead of copying evaluator workflow guidance into `charness`."
+    ]
+  },
+  "degradation": {
+    "when_missing": [
+      "Keep deterministic local gates authoritative and report evaluator-backed validation as unavailable.",
+      "Do not claim deeper workflow or behavior review succeeded without the standalone evaluator."
+    ],
+    "when_version_mismatch": [
+      "Treat compare, normalize, or review-surface drift as a manual investigation point before trusting evaluator output."
+    ]
+  },
+  "host_notes": [
+    "The repo-local root `cautilus-adapter.yaml` stays the consumer-owned entrypoint.",
+    "Richer named evaluator adapters remain consumer-owned even when `charness` tracks the upstream product boundary."
+  ]
+}

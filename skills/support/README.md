@@ -12,6 +12,10 @@ concepts.
 - `generated/`: machine-generated wrapper or reference material created by the
   control plane
 
+Checked-in plugin exports flatten public skills for host discovery and copy
+non-generated support assets into `plugins/charness/support/`. Machine-local
+`generated/` artifacts are not part of the shipped plugin bundle.
+
 ## Rules
 
 - do not put public workflow concepts here

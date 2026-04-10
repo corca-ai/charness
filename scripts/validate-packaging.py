@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -10,10 +11,13 @@ from pathlib import Path
 
 import jsonschema
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+from scripts.validate_packaging_install_surface import validate_checked_in_plugin_tree
+
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")
 VERSION_RE = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$")
-PACKAGING_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "packaging" / "plugin.schema.json"
-
+PACKAGING_SCHEMA_PATH = REPO_ROOT / "packaging" / "plugin.schema.json"
 
 class ValidationError(Exception):
     pass
@@ -91,6 +95,7 @@ def validate_source_paths(root: Path, source: object) -> None:
     for field in dir_fields:
         rel_path = validate_relative_path(source.get(field), f"source.{field}")
         require_dir(root / rel_path, f"source.{field}")
+
 
 def validate_codex(
     package_id: str,
@@ -174,11 +179,13 @@ def validate_codex(
             "`codex.repo_marketplace.default_source_path` must point at "
             f"`./plugins/{package_id}`"
         )
-    repo_root_source_path = validate_string(
-        marketplace.get("repo_root_source_path"), "codex.repo_marketplace.repo_root_source_path"
+    checked_in_source_path = validate_string(
+        marketplace.get("checked_in_source_path"), "codex.repo_marketplace.checked_in_source_path"
     )
-    if repo_root_source_path != "./":
-        raise ValidationError("`codex.repo_marketplace.repo_root_source_path` must be `./`")
+    if checked_in_source_path != default_source_path:
+        raise ValidationError(
+            "`codex.repo_marketplace.checked_in_source_path` must match `default_source_path`"
+        )
     validate_string(marketplace.get("display_name"), "codex.repo_marketplace.display_name")
     validate_string(marketplace.get("category"), "codex.repo_marketplace.category")
 
@@ -187,8 +194,6 @@ def validate_root_install_artifacts(root: Path, data: dict[str, object]) -> None
     claude = data["claude"]
     codex_marketplace = codex["repo_marketplace"]
     expected_files = (
-        (codex["manifest_path"], codex["manifest"], "codex.manifest_path"),
-        (claude["manifest_path"], claude["manifest"], "claude.manifest_path"),
         (
             claude["marketplace"]["path"],
             {
@@ -221,7 +226,7 @@ def validate_root_install_artifacts(root: Path, data: dict[str, object]) -> None
                         "name": data["package_id"],
                         "source": {
                             "source": "local",
-                            "path": codex_marketplace["repo_root_source_path"],
+                            "path": codex_marketplace["checked_in_source_path"],
                         },
                         "policy": {
                             "installation": "AVAILABLE",
@@ -236,6 +241,17 @@ def validate_root_install_artifacts(root: Path, data: dict[str, object]) -> None
     )
     for rel_path, expected, field in expected_files:
         require_json_matches(root / rel_path, expected, field)
+    try:
+        validate_checked_in_plugin_tree(
+            root,
+            data,
+            require_dir=require_dir,
+            require_file=require_file,
+            require_json_matches=require_json_matches,
+            validate_relative_path=validate_relative_path,
+        )
+    except RuntimeError as exc:
+        raise ValidationError(str(exc)) from exc
 
 def validate_claude(
     package_id: str,
@@ -287,8 +303,10 @@ def validate_claude(
     if validate_string(marketplace.get("path"), "claude.marketplace.path") != ".claude-plugin/marketplace.json":
         raise ValidationError("`claude.marketplace.path` must be `.claude-plugin/marketplace.json`")
     validate_slug(marketplace.get("name"), "claude.marketplace.name")
-    if validate_string(marketplace.get("source_path"), "claude.marketplace.source_path") != "./":
-        raise ValidationError("`claude.marketplace.source_path` must be `./`")
+    if validate_string(marketplace.get("source_path"), "claude.marketplace.source_path") != f"./plugins/{package_id}":
+        raise ValidationError(
+            "`claude.marketplace.source_path` must point at the checked-in plugin tree"
+        )
 
 def validate_packaging_manifest(path: Path, root: Path, *, validate_root_artifacts: bool = True) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))

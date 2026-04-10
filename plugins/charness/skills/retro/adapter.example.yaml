@@ -1,0 +1,11 @@
+version: 1
+repo: CHANGE_ME
+language: en
+output_dir: skill-outputs/retro
+preset_id: portable-defaults
+customized_from: portable-defaults
+default_mode: session
+weekly_window_days: 7
+snapshot_path: skill-outputs/retro/weekly-latest.json
+evidence_paths: []
+metrics_commands: []

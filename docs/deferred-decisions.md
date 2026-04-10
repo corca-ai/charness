@@ -29,7 +29,7 @@ Reopen trigger:
 
 - Question: Which shared packaging manifest is canonical for Claude/Codex dual support?
 - Current choice: `packaging/charness.json` stays the single source of truth.
-- Why now: This is already how root plugin manifests are generated and validated.
+- Why now: This is already how the checked-in plugin install surface and root marketplace files are generated and validated.
 - Impact surfaces: `docs/host-packaging.md`, `scripts/sync_root_plugin_manifests.py`, `scripts/validate-packaging.py`
 - Reopen trigger: If host-specific metadata can no longer be represented as generated output from one shared manifest.
 

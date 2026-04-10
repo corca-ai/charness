@@ -105,7 +105,7 @@ Acceptance:
 
 Why this exists:
 
-- root plugin manifests are now checked in
+- a checked-in plugin install surface now exists under `plugins/charness`
 - public install/update behavior still needs real-host confirmation
 
 Read first:
@@ -126,14 +126,14 @@ Suggested operator runs:
 
 - Claude Code:
   - try the shared marketplace path from `README.md`
-  - try local `--plugin-dir /absolute/path/to/charness`
+  - try local `--plugin-dir /absolute/path/to/charness/plugins`
 - Codex:
   - use the checked-in `.agents/plugins/marketplace.json`
   - reload Codex after updating the checkout
 
 Acceptance:
 
-- install works from the documented root artifacts
+- install works from the documented checked-in install surface
 - update behavior matches the documented model
 - any required doc or manifest tweaks are committed back here
 

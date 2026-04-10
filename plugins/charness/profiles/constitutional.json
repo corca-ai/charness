@@ -1,0 +1,33 @@
+{
+  "schema_version": "1",
+  "profile_id": "constitutional",
+  "display_name": "Constitutional",
+  "purpose": "Default portable charness bundle for core workflow skills.",
+  "bundles": {
+    "public_skills": [
+      "gather",
+      "ideation",
+      "spec",
+      "impl",
+      "debug",
+      "retro",
+      "handoff",
+      "create-skill",
+      "find-skills"
+    ],
+    "preset_ids": [
+      "portable-defaults"
+    ]
+  },
+  "activation": {
+    "default": true,
+    "recommended_when": [
+      "No host-specific profile is available yet."
+    ]
+  },
+  "notes": [
+    "Excludes collaboration-only skills and engineering-quality overlays.",
+    "Includes the local-first discovery skill for honest capability lookup.",
+    "Does not include public skills that are planned but not shipped yet."
+  ]
+}
