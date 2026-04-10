@@ -267,19 +267,28 @@ def seed_find_skills_fixture(tmp: Path) -> None:
                 "checks": {
                     "detect": {"commands": ["demo-tool --version"], "success_criteria": ["exit_code:0"]},
                     "healthcheck": {"commands": ["demo-tool health"], "success_criteria": ["exit_code:0"]},
-                    },
-                    "access_modes": ["binary", "degraded"],
-                    "capability_requirements": {
-                        "permission_scopes": ["browser.session"],
-                    },
-                    "version_expectation": {"policy": "advisory", "constraint": "latest"},
                 },
-                ensure_ascii=False,
+                "access_modes": ["binary", "degraded"],
+                "capability_requirements": {
+                    "permission_scopes": ["browser.session"],
+                },
+                "readiness_checks": [
+                    {
+                        "check_id": "browser-setup",
+                        "summary": "Browser setup is complete.",
+                        "commands": ["test -f .browser-ready"],
+                        "success_criteria": ["exit_code:0"],
+                    }
+                ],
+                "version_expectation": {"policy": "advisory", "constraint": "latest"},
+            },
+            ensure_ascii=False,
             indent=2,
         )
         + "\n",
         encoding="utf-8",
     )
+    (tmp / ".browser-ready").write_text("ready\n", encoding="utf-8")
 
 
 def assert_find_skills_payload(payload: dict[str, object]) -> None:
@@ -295,6 +304,8 @@ def assert_find_skills_payload(payload: dict[str, object]) -> None:
     if integration["access_modes"] != ["binary", "degraded"]:
         raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
     if integration["capability_requirements"] != {"permission_scopes": ["browser.session"]}:
+        raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
+    if integration["readiness_checks"] != [{"check_id": "browser-setup", "summary": "Browser setup is complete."}]:
         raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
 
 
