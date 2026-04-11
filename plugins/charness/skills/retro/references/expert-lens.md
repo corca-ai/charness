@@ -1,6 +1,7 @@
 # Expert Lens
 
-The expert lens is mandatory, but it should stay lightweight by default.
+Counterfactual analysis is mandatory. Named experts are optional unless they
+materially sharpen the next move.
 
 ## Goal
 
@@ -13,10 +14,13 @@ Produce a counterfactual that upgrades the next session:
 
 ## Default Pattern
 
-Use two named experts with different lenses:
+Use one or two counterfactual lenses:
 
-- one expert for the domain itself
-- one expert for decision quality, operating discipline, or system design
+- one lens for the domain itself
+- one lens for decision quality, operating discipline, or system design
+
+If a real-person name helps retrieve the right reasoning frame, use it.
+Otherwise write the lens directly.
 
 Examples:
 
@@ -27,6 +31,7 @@ Examples:
 ## Rules
 
 - choose names that actually fit the domain
+- if the same action would emerge without the name, prefer the direct lens
 - do not always reuse the same pair when the work domain changed
 - if the named experts would say effectively the same thing, pick a more
   divergent second lens

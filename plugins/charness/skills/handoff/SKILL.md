@@ -10,6 +10,10 @@ the session state.
 
 The handoff should describe the exact next pickup path, not preserve a diary of
 everything that happened.
+Keep Christopher Alexander-style sequence discipline in the baton pass: record
+the next move in the order it should unfold, not in the order this session
+happened. See `references/continuation-sequence.md` when several plausible
+pickups exist.
 
 ## Bootstrap
 
@@ -105,6 +109,7 @@ The handoff should usually contain:
 ## References
 
 - `references/adapter-contract.md`
+- `references/continuation-sequence.md`
 - `references/workflow-trigger.md`
 - `references/state-selection.md`
 - `references/document-seams.md`

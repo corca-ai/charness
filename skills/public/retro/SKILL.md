@@ -1,6 +1,6 @@
 ---
 name: retro
-description: "Use after a meaningful work unit or when the user asks for a retrospective. Reviews what happened, what created waste, which decisions mattered, what named experts in this domain would have done differently, and which workflow/capability/memory improvements should make the next session better. Auto-selects `session` or `weekly` mode from context; ambiguous cases default to `session`."
+description: "Use after a meaningful work unit or when the user asks for a retrospective. Reviews what happened, what created waste, which decisions mattered, which named expert lens or direct counterfactual would have changed the next move, and which workflow/capability/memory improvements should make the next session better. Auto-selects `session` or `weekly` mode from context; ambiguous cases default to `session`."
 ---
 
 # Retro
@@ -62,8 +62,8 @@ Adapter policy:
    - `Waste`: where time, clarity, or trust was lost
    - `Critical Decisions`: which decisions changed outcome or constrained later work
    - `Trends vs Last Retro`: for `weekly`, compare against the last durable weekly retro when one exists
-   - `Expert Counterfactuals`: what 1-2 named experts in this domain would likely
-     have done differently
+   - `Expert Counterfactuals`: what 1-2 counterfactual lenses, named experts
+     when useful, would likely have done differently
    - `Next Improvements`: concrete changes for the next session
    - `Persisted`: whether the retro was written to a durable artifact, and if
      not, why not
@@ -108,15 +108,16 @@ The result should usually include:
 
 ## Expert Counterfactual Rule
 
-- Every retro must include at least one expert counterfactual.
-- Prefer two named experts with distinct lenses when the session had meaningful
-  tradeoffs.
-- For decision quality under uncertainty, default to Gary Klein +
-  Daniel Kahneman unless a more domain-specific pair fits better.
-- If sub-agents are available and the session warrants depth, use two named
-  expert sub-agents.
-- If sub-agents are unavailable or too expensive for the session weight, write
-  the two named counterfactuals inline.
+- Every retro must include at least one counterfactual lens.
+- Prefer named experts only when the name sharpens a different changed action,
+  constraint, or question.
+- When the core miss is decision quality under uncertainty, Gary Klein +
+  Daniel Kahneman is a reasonable pair unless a more domain-specific lens fits
+  better.
+- If sub-agents are available and the session warrants depth, use up to two
+  named-expert sub-agents with clearly different lenses.
+- If sub-agents are unavailable, too expensive for the session weight, or
+  names add little, write the counterfactuals inline without forcing personas.
 - Do not use expert names as decoration. Each expert must produce a different
   changed action, constraint, or question.
 

@@ -11,6 +11,12 @@ intent into a sharper, more defensible concept.
 Use Daniel Jackson-style concept discipline when the question is whether the
 current idea is one clear user-facing concept, whether boundaries are honest,
 and which ambiguities are upstream enough that they should be decided first.
+Keep Christopher Alexander-style sequence discipline in the background:
+resolve the upstream question that most changes the rest of the design before
+hardening downstream detail. When uncertainty is high and the next move should
+start from available means, affordable loss, or early stakeholder commitment,
+borrow Saras Sarasvathy-style effectuation. See
+`references/sequence-discipline.md` and `references/effectuation.md`.
 
 ## Bootstrap
 
@@ -54,12 +60,15 @@ incrementally instead of leaving the model only in chat.
    - `stage lens`: chronology, checkpoints, state transitions
    - `decision lens`: sort ambiguities by downstream impact and dependency
      order so the highest-leverage upstream choice is handled first
+   - `effectuation lens`: available means, affordable loss, stakeholder
+     commitments, and useful contingencies when the idea is still highly
+     uncertain
    - `edge lens`: wedge, moat, hard part worth doing, easy experiment worth trying first
    - `feedback lens`: early feedback loops, distribution posture, viral hooks when relevant, expansion surfaces
    - `agent-human lens`: agent-first surfaces, API/CLI/skill priority, interface importance, human cognition and social behavior
 3. Ask the smallest set of high-leverage questions.
-   - when multiple decisions are open, start with the one that most changes the
-     rest of the design
+   - when multiple decisions are open, start with the upstream one that most
+     changes the rest of the design while preserving later options
    - ask one question at a time when real tradeoffs remain
    - prefer precise questions over broad brainstorming prompts
    - skip questions the repo, docs, or prior answers already resolved
@@ -138,4 +147,6 @@ Use that split as a thinking aid, not as mandatory ceremony.
 - `references/truth-and-edge.md`
 - `references/world-modeling.md`
 - `references/agent-human-lens.md`
+- `references/effectuation.md`
+- `references/sequence-discipline.md`
 - `references/spec-boundary.md`

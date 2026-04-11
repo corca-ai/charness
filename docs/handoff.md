@@ -36,6 +36,8 @@
 - `skills/public/release/*`와 `scripts/plugin_preamble.py`도 `charness update` / Claude restart 기준으로 갱신했다.
 - `scripts/run-evals.py`에 managed CLI install smoke가 추가됐다.
 - 마지막 repo 검증은 managed CLI smoke 포함 `./scripts/run-quality.sh` 통과와 temp-home managed install eval이다.
+- public skill authoring contract도 보강됐다. `AGENTS.md`와 `create-skill`은 이제 sparse real-person anchor를 `SKILL.md` core의 의도적 retrieval technique로 취급하되, 행동 규칙에 연결되고 사실충실해야 하며 nuance와 when-to-read guidance는 `references/`로 보내라고 명시한다.
+- `ideation/spec/impl/handoff`는 Christopher Alexander-style sequence discipline을 core behavior로 갖고, `ideation`은 Saras Sarasvathy effectuation, `spec/impl`은 Kent Beck + John Ousterhout, `retro`는 named expert lens를 선호하되 direct counterfactual lens도 허용하는 쪽으로 정리됐다.
 - `charness init`와 `charness update`는 이제 `~/.local/share/charness/host-state.json`에 post-command doctor snapshot을 남긴다. `charness doctor --write-state`로도 interactive restart 전후 proof snapshot을 수동 기록할 수 있다.
 - Retro 2026-04-11 #3: `./charness init --repo-root /checkout`로 CLI를 설치해도 이후 `/home/ubuntu` 같은 repo 밖에서 `charness update`와 `charness doctor`를 실행할 수 있다고 착각했다. 실제로는 installed CLI가 managed checkout 기본값 `~/.agents/src/charness`만 찾았고, 그 경로가 없으면 `update`는 `missing source checkout`로 실패하고 `doctor`는 traceback을 냈다. 이제 CLI는 마지막 successful `init`/`update`의 source checkout을 `~/.local/share/charness/install-state.json`에 기억하고, source가 없을 때도 `doctor`가 `missing-source` guidance를 내도록 고쳤다.
 - Claude local marketplace update dogfood는 끝났다. temp checkout에서 `0.0.1-update-test -> 0.0.2-update-test`로 버전을 올리고 `charness update`를 돌렸을 때 `~/.claude/plugins/cache/corca-charness-update-test/charness/...` install path와 installed version이 같이 올라갔다.

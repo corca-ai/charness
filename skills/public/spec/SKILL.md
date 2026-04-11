@@ -46,6 +46,12 @@ Borrow Ward Cunningham-style executable-spec discipline when the repo uses
 tools such as `specdown`: executable acceptance artifacts should make the
 contract concrete at the boundary, not replace the unit suite or hide low-level
 test detail.
+Keep Christopher Alexander-style sequence discipline in the contract: order
+`Fixed Decisions`, `Probe Questions`, and `Deferred Decisions` so upstream
+commitments land before downstream detail hardens. When the slice is still
+noisy, borrow Kent Beck for thin feedback-bearing slices and John Ousterhout
+for simpler interfaces and deeper seams. See
+`references/sequence-discipline.md` and `references/design-lenses.md`.
 
 ## Contract Shaping
 
@@ -76,6 +82,7 @@ celebrating broad slow coverage.
    - `Probe Questions`: should be answered through a small implementation slice,
      spike, or executable check
    - `Deferred Decisions`: visible decisions that can safely wait
+   - order these lists by dependency pressure, not prose convenience
 3. Reduce only the ambiguity that blocks this slice.
    - ask targeted questions only for choices that change build scope,
      user-visible behavior, acceptance, sequencing, dependency choice, or risk
@@ -160,6 +167,8 @@ If the idea depends on durable structure or flow, reuse ideation outputs such as
 - `references/success-criteria.md`
 - `references/acceptance-checks.md`
 - `references/executable-spec-cost.md`
+- `references/design-lenses.md`
+- `references/sequence-discipline.md`
 - `references/ambiguity-rules.md`
 - `references/impl-loop.md`
 - `references/ideation-boundary.md`

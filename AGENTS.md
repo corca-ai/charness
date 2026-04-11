@@ -54,6 +54,9 @@ Read the smallest memory surface that answers the current question.
 
 - Treat `skills/public/<skill-id>/SKILL.md` as the trigger contract and decision
   skeleton only.
+- Sparse real-person anchors in `SKILL.md` core are an intentional retrieval
+  technique when they improve reasoning; keep them factual, behavior-linked,
+  and supported by `references/`.
 - Keep long rationale, examples, schemas, and edge cases in `references/`.
 - Keep frontmatter YAML-safe. Quote descriptions when punctuation would make
   plain scalars fragile.

@@ -48,6 +48,10 @@ skill before writing from scratch.
    - concept, audience, trigger, external dependencies, accumulated state
    - candidate named anchors when a real reasoning frame should be retrieved in
      the public core
+   - any ambient philosophy that should become a behavior rule across adjacent
+     public skills, not only a reference note
+   - for each named anchor, the exact move it should retrieve and any factual
+     claim that needs source verification before you compress it
    - simulate cold start, warm start, error recovery, and 5-7 agent failure
      modes before changing files
 3. Decide the portability seams.
@@ -76,8 +80,12 @@ skill before writing from scratch.
      skill migration
 5. Implement the smallest coherent package.
    - `SKILL.md` contains trigger contract and decision skeleton only
-   - keep named person anchors in `SKILL.md` core only when they materially
-     improve retrieval of a real reasoning frame
+   - treat sparse named person anchors in `SKILL.md` core as a deliberate
+     retrieval tool when they materially improve recall of a real reasoning
+     frame
+   - keep the behavior rule in core when the philosophy should shape repeated
+     moves; put factual essence, nuance, and when-to-read guidance in
+     `references/`
    - move schemas, examples, and theory into `references/`
    - add scripts for deterministic repeated checks, adapter bootstrap, and
      durable artifact handling when the skill would otherwise rely on hand-wavy
@@ -95,7 +103,13 @@ skill before writing from scratch.
 - Do not let a public skill smuggle multiple concepts just because the old repo
   had several narrow expert surfaces.
 - Use a named person anchor in the public core when it reliably retrieves a
-  real reasoning frame; do not use names as decoration.
+  real reasoning frame; do not use names as decoration or strip them out when
+  the public trigger actually benefits from the anchor.
+- When one philosophy should shape several adjacent skills, encode its
+  behavioral translation in each core and keep only the anchors that materially
+  improve retrieval.
+- Keep expert references source-faithful and minimal. Verify fuzzy or
+  non-obvious claims before compressing them into a public skill or reference.
 - Host-specific behavior belongs in adapters and presets, not in `SKILL.md`.
 - Do not reach for user-facing modes or options just because the design is
   underspecified. First ask whether the right behavior can be inferred from

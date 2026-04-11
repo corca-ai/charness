@@ -16,6 +16,12 @@ slice instead of pretending the task is already well-defined.
 Use Gary Klein-style premortem discipline before closing a slice: ask what the
 next maintainer, operator, or user is most likely to misunderstand or break,
 then tighten the implementation or closeout around that failure.
+Keep Christopher Alexander-style sequence discipline for slice order: prefer
+the change that opens the next good move without prematurely freezing adjacent
+decisions. Use Kent Beck when the slice needs smaller feedback loops, and John
+Ousterhout when complexity pressure points to a simpler interface or deeper
+seam. See `references/sequence-discipline.md` and
+`references/design-lenses.md`.
 
 ## Bootstrap
 
@@ -76,6 +82,7 @@ Adapter policy:
      and what is explicitly deferred inside the implementation closeout
 3. Implement the smallest meaningful unit.
    - prefer a slice that proves one user-visible behavior or one structural seam
+   - prefer the slice that opens the next good move most cleanly
    - when a probe exists, design the slice so it answers the probe cleanly
 4. Verify while iterating.
    - start by surveying the strongest available self-verification path from the
@@ -153,5 +160,7 @@ The closeout should usually include:
 - `references/adapter-contract.md`
 - `references/contract-consumption.md`
 - `references/verification-ladder.md`
+- `references/design-lenses.md`
+- `references/sequence-discipline.md`
 - `references/review-gate.md`
 - `references/spec-loop.md`

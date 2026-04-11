@@ -109,7 +109,8 @@ empty or explicit alternative so later runs do not ask again.
 ## Named Anchor Rule
 
 Use a real-person name in `SKILL.md` core when it materially improves retrieval
-of a useful reasoning frame from pretraining.
+of a useful reasoning frame from pretraining. This is a positive tool, not only
+an exception.
 
 Good:
 
@@ -124,11 +125,29 @@ Bad:
 
 - adding a famous name only to signal taste
 - adding several names that all retrieve the same mental move
+- stripping a strong public-core anchor into references only when the retrieval
+  benefit belongs in `SKILL.md`
 - leaving the name in a reference when the public trigger contract is where the
   retrieval benefit actually matters
 
+Keep the anchor sparse, factual, and attached to a concrete move. Put the
+source-faithful essence, nuance, and when-to-read guidance in `references/`.
+
+If the same philosophy should shape several adjacent skills, encode the
+behavioral translation in each public core and keep only the anchors that
+materially improve retrieval there.
+
 If the name is optional color rather than a meaningful retrieval anchor, leave
 it out of the public core.
+
+## Expert Reference Hygiene
+
+When you add a named anchor or expert reference:
+
+- keep the public-core claim close to what the source actually supports
+- compress to the few moves the skill really needs, not a mini-biography
+- verify fuzzy or non-obvious paraphrases before shipping them
+- prefer one strong anchor plus a behavior rule over a pile of overlapping names
 
 ## Runtime Capability Rule
 

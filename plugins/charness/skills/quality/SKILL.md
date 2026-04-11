@@ -32,11 +32,10 @@ healthy posture. See `references/maintainer-local-enforcement.md`.
 
 `quality` and concept review are adjacent. Use `quality` for repo posture,
 drift, duplicated surfaces, weak gates, and the next concrete validation move.
-Use concept review when boundaries, ownership, or source-of-truth design stay
-unresolved without duplicate text or an obvious gate. Use named-expert lenses
-only when they sharpen the next gate choice. See `references/quality-lenses.md`.
+Use concept review when boundaries, ownership, or source-of-truth design stay unresolved without duplicate text or an obvious gate. Use named-expert lenses only when they sharpen the next gate choice. See `references/quality-lenses.md`.
 
 ## Bootstrap
+
 Resolve the adapter first, then inspect the current quality surface.
 
 Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
