@@ -13,6 +13,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
+from scripts.eval_init_repo import run_init_repo_inspect_states
 from scripts.eval_registry import SCENARIOS, Scenario
 
 
@@ -171,25 +172,17 @@ def scenario_quality_adapter_checked_in(root: Path) -> None:
         raise EvalError(f"checked-in quality adapter resolve: missing canonical gate command in {gate_commands!r}")
 
 def scenario_narrative_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(
-        root,
-        skill_id="narrative",
-        adapter_name="narrative-adapter.yaml",
-        expected_artifact_path="skill-outputs/narrative/narrative.md",
-    )
+    expect_adapter_bootstrap(root, skill_id="narrative", adapter_name="narrative-adapter.yaml", expected_artifact_path="skill-outputs/narrative/narrative.md")
 
 def scenario_release_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(
-        root,
-        skill_id="release",
-        adapter_name="release-adapter.yaml",
-        expected_artifact_path="skill-outputs/release/release.md",
-    )
+    expect_adapter_bootstrap(root, skill_id="release", adapter_name="release-adapter.yaml", expected_artifact_path="skill-outputs/release/release.md")
 
 def scenario_handoff_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="handoff", adapter_name="handoff-adapter.yaml", expected_artifact_path="skill-outputs/handoff/handoff.md")
 def scenario_gather_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="gather", adapter_name="gather-adapter.yaml", expected_artifact_path="skill-outputs/gather/gather.md")
+def scenario_init_repo_inspect_states(root: Path) -> None:
+    run_init_repo_inspect_states(root, run_command=run_command, expect_success=expect_success, error_type=EvalError)
 def scenario_handoff_absolute_links(root: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="charness-eval-handoff-") as tmpdir:
         tmp = Path(tmpdir)
@@ -335,6 +328,7 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "release-adapter-bootstrap": scenario_release_adapter_bootstrap,
         "handoff-adapter-bootstrap": scenario_handoff_adapter_bootstrap,
         "gather-adapter-bootstrap": scenario_gather_adapter_bootstrap,
+        "init-repo-inspect-states": scenario_init_repo_inspect_states,
         "handoff-absolute-links": scenario_handoff_absolute_links,
         "find-skills-local-first": scenario_find_skills_local_first,
         "support-sync-contracts": scenario_support_sync_contracts,

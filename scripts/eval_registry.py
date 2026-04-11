@@ -22,6 +22,7 @@ SCENARIOS = (
     Scenario("release-adapter-bootstrap", "release init/resolve scripts bootstrap the release artifact and adapter contract"),
     Scenario("handoff-adapter-bootstrap", "handoff adapter helpers bootstrap the durable handoff artifact path"),
     Scenario("gather-adapter-bootstrap", "gather adapter helpers bootstrap the durable gather artifact path"),
+    Scenario("init-repo-inspect-states", "init-repo state inspection distinguishes greenfield bootstrap from partial repo normalization"),
     Scenario("handoff-absolute-links", "repo-local absolute markdown links remain valid in handoff-style docs"),
     Scenario("find-skills-local-first", "find-skills keeps local-first discovery while exposing configured trusted roots"),
     Scenario("support-sync-contracts", "shipped support-sync contracts stay discoverable without pretending every integration owns a support skill"),

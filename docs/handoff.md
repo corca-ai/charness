@@ -12,6 +12,7 @@
 - `charness`는 portable Corca harness product로 정리됐고, public/support/profile/integration 경계는 현재 taxonomy 기준으로 고정됐다.
 - public skill `narrative`가 추가돼 source-of-truth doc alignment와 audience-facing brief derivation이 `announcement`와 분리됐다.
 - public skill `init-repo`가 추가돼 greenfield bootstrap과 partial repo operating-surface normalization을 `README.md`, `AGENTS.md`, `CLAUDE.md` symlink policy, `docs/roadmap.md`, `docs/operator-acceptance.md` 기준으로 다루게 됐다.
+- `init-repo`는 blanket `lychee` ignore를 기본 템플릿으로 넣지 않는다. external link 검사는 optional escalation으로 두고, broad ignore는 실제 필요가 확인된 뒤에만 좁게 추가한다.
 - repo-owned release/install surface는 `plugins/charness` 아래 checked-in plugin bundle로 정리돼 있고, root marketplace files는 그 install surface만 advertise한다.
 - Ceal-era migration surface는 정리됐다. tracked tree에는 `Ceal`, `interview`, `concept-review`, `test-improvement`, `entity-stage-design`, `workbench` 같은 legacy naming이 남아 있지 않다.
 - `master-plan`은 더 이상 기본 운영 표면이 아니다. 기존 `docs/master-plan.md` 파일은 제거했고, planning 문서는 필요할 때만 명시적으로 만들며 기본 경로에서는 `docs/operator-acceptance.md`와 선택적 `docs/roadmap.md`를 본다.
@@ -20,6 +21,7 @@
 - Claude local docs는 parent `plugins/` 경로를 가리키고 있었고, 그 경로는 plugin root가 아니라서 skill discovery proof가 되지 않았다. 이번 세션에서 관련 문서를 `plugins/charness` 기준으로 고친다.
 - root [INSTALL.md](/home/ubuntu/charness/INSTALL.md)와 [UNINSTALL.md](/home/ubuntu/charness/UNINSTALL.md)를 추가해 agent-readable 설치 계약을 README에서 분리했다.
 - `.agents/skills`는 checked-in 기본 install surface가 아니다. 이 repo는 root [.agents/plugins/marketplace.json](/home/ubuntu/charness/.agents/plugins/marketplace.json)과 [plugins/charness](/home/ubuntu/charness/plugins/charness)만 source of truth로 유지하고, source checkout public skills를 별도 symlink로 노출하지 않는다.
+- `init-repo`에는 greenfield/partial state inspection eval이 추가됐고, `python3 scripts/run-evals.py --repo-root .`에서 통과했다.
 - Codex `exec`는 `/tmp` exported consumer root, exported plugin root, repo root 비교 기준으로 local marketplace install proof를 제공하지 못했다. exported roots에서는 curated builtin/plugin skill만 보였고, repo root에서는 checked-in plugin 대신 source checkout `skills/`를 직접 읽었다.
 - `scripts/install-machine-local.py`를 추가했다. source checkout에서 이 스크립트를 돌리면 `~/.agents/plugins/charness`로 exported install surface를 쓰고 `~/.agents/plugins/marketplace.json`에 Codex personal marketplace entry를 merge한다.
 - 이 머신에서 `python3 scripts/install-machine-local.py --repo-root .`를 실제로 돌려 `~/.agents/plugins/charness`와 `~/.agents/plugins/marketplace.json`를 만들었다. marketplace `source.path`는 `./.agents/plugins/charness`다.
@@ -31,8 +33,8 @@
 1. 다른 머신 또는 실제 interactive Codex에서 `~/.agents/plugins/marketplace.json` 기준 machine-local marketplace discovery/install visibility를 확인한다.
 2. 가능하면 `charness@local` enable state가 어떤 config surface에 저장되는지 실제 host output으로 확인한다.
 3. repo-scoped `.agents/plugins/marketplace.json` development path와 machine-local `~/.agents` operator path를 둘 다 유지할지 다시 판단한다.
-4. `init-repo`에 대해 greenfield repo 1개와 partial repo 1개 정도의 real dogfood 또는 eval scenario를 추가할지 먼저 결정하고, 최소한 하나는 실제로 돌려 본다.
-5. Codex proof와 `init-repo` dogfood 결과를 바로 이 handoff나 별도 durable artifact에 남긴다.
+4. `init-repo` state inspection eval만으로 충분한지 보고, 필요하면 full doc-scaffold dogfood를 하나 더 추가한다.
+5. Codex proof와 추가 `init-repo` dogfood 결과를 바로 이 handoff나 별도 durable artifact에 남긴다.
 
 ## Discuss
 
