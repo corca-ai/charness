@@ -122,11 +122,11 @@ def run_managed_cli_install(
         env["HOME"] = str(home_root)
         env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
         init_result = run_command(
-            ["python3", "charness", "init", "--home-root", str(home_root)],
+            ["bash", "init.sh"],
             cwd=root,
             env=env,
         )
-        expect_success(init_result, "managed cli init")
+        expect_success(init_result, "managed init.sh bootstrap")
         init_payload = json.loads(init_result.stdout)
         plugin_root = home_root / ".codex" / "plugins" / "charness"
         marketplace_path = home_root / ".agents" / "plugins" / "marketplace.json"

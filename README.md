@@ -263,7 +263,7 @@ Expected non-bundled content:
 Official managed path:
 
 ```bash
-./charness init
+./init.sh
 ```
 
 Update model:
@@ -285,20 +285,12 @@ Official managed install path:
 Bootstrap:
 
 ```bash
-mkdir -p ~/.agents/src
-if [ -d ~/.agents/src/charness/.git ]; then
-  cd ~/.agents/src/charness
-else
-  git clone https://github.com/corca-ai/charness ~/.agents/src/charness
-  cd ~/.agents/src/charness
-fi
-./charness init
+./init.sh
 ```
 
-When run from another checkout, that first `./charness init` seeds the managed
-checkout under `~/.agents/src/charness` and installs the reusable CLI from
-there. The installed CLI is not supposed to keep pointing at an arbitrary
-checkout.
+When run from another checkout, `./init.sh` seeds the managed checkout under
+`~/.agents/src/charness` and installs the reusable CLI from there. The
+installed CLI is not supposed to keep pointing at an arbitrary checkout.
 
 Current status:
 
@@ -320,6 +312,7 @@ Update model:
 In a source checkout:
 
 ```bash
+./init.sh
 ./charness init
 ./charness doctor
 ./charness update

@@ -27,22 +27,19 @@ individual public skills à la carte.
 - you can run shell commands and read local files
 - for checkout bootstrap installs, you are working from the checkout root
 
-## Step 1: Bootstrap The Thin CLI
+## Step 1: Bootstrap With `init.sh`
 
 The official install path is the managed `charness` CLI.
 
-If `charness` is not already on PATH, bootstrap from any checkout:
+If `charness` is not already on PATH, run the repo bootstrap script from any
+checkout:
 
 ```bash
-mkdir -p ~/.agents/src
-if [ -d ~/.agents/src/charness/.git ]; then
-  cd ~/.agents/src/charness
-else
-  git clone https://github.com/corca-ai/charness ~/.agents/src/charness
-  cd ~/.agents/src/charness
-fi
-./charness init
+./init.sh
 ```
+
+`init.sh` reuses `~/.agents/src/charness` when it already exists. Otherwise it
+creates that managed checkout first, then runs `charness init` from there.
 
 That first run materializes the official managed checkout at
 `~/.agents/src/charness`, exports the host install surfaces, and installs a

@@ -11,6 +11,7 @@ fi
 
 mapfile -t sh_files < <(
   {
+    find . -maxdepth 1 -type f -name '*.sh'
     find scripts -maxdepth 1 -type f -name '*.sh'
     find .githooks -maxdepth 1 -type f 2>/dev/null
   } | sort

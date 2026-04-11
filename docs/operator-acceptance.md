@@ -126,7 +126,7 @@ python3 scripts/sync_root_plugin_manifests.py --repo-root .
 
 Suggested operator runs:
 
-- bootstrap or reuse the managed checkout under `~/.agents/src/charness`, then run `./charness init`
+- bootstrap or reuse the managed checkout under `~/.agents/src/charness` with `./init.sh`
 - verify Claude with `claude plugins list` or `charness doctor`
 - verify Codex through `~/.agents/plugins/marketplace.json`, then restart Codex
   and install or enable the local `charness` entry from Plugin Directory if
