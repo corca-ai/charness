@@ -6,6 +6,7 @@
 - 이 머신에서는 `~/.agents/skills` source-checkout symlink가 이미 제거돼 있으니, 다시 생기지 않았는지만 짧게 확인한다.
 - Claude local proof는 끝났다. historical proof path는 `--plugin-dir /absolute/path/to/charness/plugins/charness`였고, parent `plugins/`를 주면 skill discovery proof가 되지 않았다.
 - Codex는 managed `~/.agents/plugins/marketplace.json` 경로에서 `INSTALLED_BY_DEFAULT`까지 올렸지만, `exec`만으로는 install/discovery proof가 약하니 interactive session 또는 다른 머신에서 실제 visibility proof를 이어서 본다.
+- Retro 2026-04-11: `INSTALLED_BY_DEFAULT`를 `~/.agents/plugins/marketplace.json`에 넣으면 다음 세션에서 plugin이 바로 세션 skill로 올라올 것이라고 가정한 건 과했다. 공식 문서는 personal marketplace가 Plugin Directory source가 된다고 설명하고, 실제 install은 `~/.codex/plugins/cache/...`에 생기며 enable state는 `~/.codex/config.toml`에 남는다고 구분한다. `~/.codex/plugins/charness` 부재나 config entry 부재는 install이 아직 안 된 신호로 취급해야 한다.
 
 ## Current State
 
