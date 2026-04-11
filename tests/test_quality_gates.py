@@ -477,6 +477,17 @@ def test_validate_packaging_passes_on_current_repo() -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_validate_packaging_rejects_checked_in_plugin_tree_drift(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    shutil.copytree(ROOT, repo)
+    readme_path = repo / "README.md"
+    readme_path.write_text(readme_path.read_text(encoding="utf-8") + "\nDrift.\n", encoding="utf-8")
+
+    result = run_script("scripts/validate-packaging.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "checked-in plugin tree does not match the generated install surface" in result.stderr
+
+
 def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "packaging").mkdir(parents=True)

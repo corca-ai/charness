@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import tempfile
 from pathlib import Path
 from typing import Callable
 
@@ -98,3 +99,40 @@ def validate_checked_in_plugin_tree(
         require_file(plugin_root / "scripts" / "adapter_lib.py", "checked_in_plugin.scripts.adapter_lib")
         require_file(plugin_root / "scripts" / "adapter_init_lib.py", "checked_in_plugin.scripts.adapter_init_lib")
         require_file(plugin_root / "scripts" / "control_plane_lib.py", "checked_in_plugin.scripts.control_plane_lib")
+    validate_checked_in_plugin_tree_matches_generated(root, plugin_root, data)
+
+
+def collect_files(root: Path) -> set[Path]:
+    return {path.relative_to(root) for path in root.rglob("*") if path.is_file()}
+
+
+def validate_checked_in_plugin_tree_matches_generated(root: Path, plugin_root: Path, data: dict[str, object]) -> None:
+    from scripts.packaging_lib import export_plugin_tree
+
+    with tempfile.TemporaryDirectory(prefix="charness-validate-plugin-tree-") as tmpdir:
+        generated_plugin_root = Path(tmpdir) / "plugins" / data["package_id"]
+        export_plugin_tree(root, generated_plugin_root, data)
+
+        expected_files = collect_files(generated_plugin_root)
+        actual_files = collect_files(plugin_root)
+        if actual_files != expected_files:
+            missing = sorted(str(path) for path in expected_files - actual_files)
+            extra = sorted(str(path) for path in actual_files - expected_files)
+            details: list[str] = []
+            if missing:
+                details.append(f"missing: {', '.join(missing)}")
+            if extra:
+                details.append(f"extra: {', '.join(extra)}")
+            raise RuntimeError(
+                "checked-in plugin tree does not match the generated install surface"
+                + (f" ({'; '.join(details)})" if details else "")
+            )
+
+        for rel_path in sorted(expected_files):
+            expected_text = (generated_plugin_root / rel_path).read_text(encoding="utf-8")
+            actual_text = (plugin_root / rel_path).read_text(encoding="utf-8")
+            if actual_text != expected_text:
+                raise RuntimeError(
+                    "checked-in plugin tree does not match the generated install surface "
+                    f"(drift at `{(plugin_root / rel_path).relative_to(root)}`)"
+                )

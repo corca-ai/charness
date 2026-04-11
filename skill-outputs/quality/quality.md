@@ -3,26 +3,28 @@ Date: 2026-04-11
 
 ## Scope
 
-Current repo-wide quality posture after adding an offline supply-chain gate, clarifying `gitleaks` vs `secretlint`, and re-running the standing local bar.
+Current repo-wide quality posture after a `quality` dogfood session caught
+checked-in plugin export drift in the canonical local bar and promoted that
+drift check into `validate-packaging`.
 
 ## Current Gates
 
 - `./scripts/run-quality.sh` remains the canonical local gate.
 - `.githooks/pre-push` enforces that gate in clones that installed
   `./scripts/install-git-hooks.sh`.
-- `./scripts/run-quality.sh` now runs independent validation phases in
-  parallel while still recording per-command timing and fail/pass history.
-- `./scripts/run-quality.sh` now prints one concise pass/fail line per command,
-  replays full command output only for failures, and keeps full success logs as
-  an explicit `CHARNESS_QUALITY_VERBOSE=1` opt-in.
+- `./scripts/run-quality.sh` runs independent phases in parallel, records
+  per-command timing, and keeps verbose success logs as an explicit
+  `CHARNESS_QUALITY_VERBOSE=1` opt-in.
 - `scripts/check-secrets.sh` now prefers `gitleaks` with a checked-in `.gitleaks.toml` and falls back to repo-local `secretlint` when `gitleaks` is unavailable.
 - `scripts/check-supply-chain.py` now enforces repo-local manifest and
   lockfile alignment for npm/pnpm/yarn/bun surfaces plus `uv.lock`
   presence when Python dependencies are declared.
-- `scripts/record_quality_runtime.py` now records per-gate elapsed time into a
-  compact current summary plus rotated monthly archives.
-- `scripts/validate-quality-artifact.py` now keeps this file short and shaped
-  as a current snapshot instead of an ever-growing session log.
+- `scripts/validate-packaging.py` now fails closed when the checked-in plugin
+  tree drifts from the generated install surface, not only when manifest JSON
+  or top-level marketplace artifacts drift.
+- `scripts/record_quality_runtime.py` keeps a compact current timing summary
+  plus rotated monthly archives.
+- `scripts/validate-quality-artifact.py` keeps this file short and current.
 - `scripts/validate-maintainer-setup.py` now fails closed when this clone has
   not actually activated the checked-in pre-push hook.
 - `scripts/check-links-external.sh` now scopes `lychee` to extracted external
@@ -34,28 +36,18 @@ Current repo-wide quality posture after adding an offline supply-chain gate, cla
 
 - standing quality gates now write per-command elapsed time to
   `skill-outputs/quality/runtime-signals.json`
-- the current runtime summary now includes `check-supply-chain`, so
-  security-adjacent offline drift shows up in the same timing surface as
-  the rest of the local bar
-- older timing samples rotate into monthly `history/runtime-signals-YYYY-MM.jsonl`
-  archives instead of accumulating in the current snapshot
-- standing pre-push quality time can now shrink without losing per-command
-  timing fidelity because the runner records each command after its phase
-  completes
-- pre-push output is now bounded on success while still preserving precise
-  failing-command diagnostics and total wall-clock time in the terminal
-- `quality` should now treat lint/test/runtime drift and bounded diagnostic
-  retention as operability quality, not as an afterthought
+- the current runtime summary includes `check-supply-chain`, and older timing
+  samples rotate into monthly `history/runtime-signals-YYYY-MM.jsonl` archives
+- success output stays bounded while preserving failing-command diagnostics and
+  per-command timing, so operability drift is visible without noisy happy-path logs
+- this session proved the local bar can catch install-surface drift before
+  pre-push, because `run-quality` surfaced a managed-checkout update failure
+  caused by an unsynced checked-in plugin export
 
 ## Healthy
 
 - quality, packaging, profile, adapter, integration, and representative-skill
   validators all run through one repo-owned entrypoint.
-- the repo now distinguishes `charness`-owned gather runtime from true
-  external binaries, and Google is modeled as `gws-cli` rather than a copied
-  helper path.
-- public `gather` now has a repo-owned helper for Google Workspace operator
-  guidance instead of relying on ad hoc memory.
 - maintainer-local hook drift is no longer invisible: the canonical quality
   runner now checks whether this clone actually points `core.hooksPath` at the
   checked-in `.githooks` directory.
@@ -76,9 +68,11 @@ Current repo-wide quality posture after adding an offline supply-chain gate, cla
 - internal markdown-link discipline now has a repo-owned deterministic owner
   again instead of being implicitly delegated to a network-oriented link
   checker that never enforced it.
+- checked-in plugin export drift is no longer only a pre-push concern: the
+  canonical packaging validator now compares the generated plugin tree against
+  the committed tree and fails on content drift.
 - `quality` now ships package-manager-specific security references for npm,
-  pnpm, and uv instead of leaving supply-chain follow-up as handoff-only
-  prose.
+  pnpm, and uv instead of leaving supply-chain follow-up as handoff-only prose.
 
 ## Weak
 
@@ -94,11 +88,11 @@ Current repo-wide quality posture after adding an offline supply-chain gate, cla
 
 ## Missing
 
+- no automated current-repo gate yet that decides which public skills must ship
+  adapters versus which can stay adapter-free honestly.
 - no maintained evaluator-backed `cautilus` scenario path yet for the
   `evaluator-required` public skills beyond the current integration manifest
   and root adapter seam.
-- no automated current-repo gate yet that decides which public skills must ship
-  adapters versus which can stay adapter-free honestly.
 - no optional online advisory/audit seam yet for npm/pnpm/uv that names the
   binary, network dependency, and triage owner explicitly.
 
@@ -112,6 +106,9 @@ Current repo-wide quality posture after adding an offline supply-chain gate, cla
 ## Commands Run
 
 - `./scripts/run-quality.sh`
+- `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
+- `python3 scripts/validate-packaging.py --repo-root .`
+- `pytest -q tests/test_quality_gates.py -k 'validate_packaging_passes_on_current_repo or validate_packaging_rejects_checked_in_plugin_tree_drift or sync_root_plugin_manifests_writes_install_surface'`
 - `pytest -q tests/test_quality_gates.py -k 'run_quality or record_quality_runtime'`
 - `./scripts/check-secrets.sh`
 - `python3 scripts/check-supply-chain.py --repo-root .`
@@ -122,9 +119,12 @@ Current repo-wide quality posture after adding an offline supply-chain gate, cla
 - `AUTO_CANDIDATE`: classify which public skills require a checked-in adapter
   contract and fail closed when a durable-artifact or onboarding-heavy skill
   lacks one.
+- `AUTO_CANDIDATE`: add a read-only test path that proves managed-checkout
+  `charness update` stays clean against the current worktree or an ephemeral
+  source bundle, so local uncommitted install-surface drift cannot hide behind
+  `git clone` semantics during CLI tests.
 - `AUTO_CANDIDATE`: add an optional networked advisory wrapper for npm/pnpm/uv
-  only if the repo is prepared to own binary setup, flaky-host behavior, and
-  triage responsibilities explicitly.
+  only if the repo is prepared to own binary setup, flaky-host behavior, and triage.
 - `AUTO_CANDIDATE`: if a downstream repo does not already carry Node tooling,
   prefer `gitleaks` over `secretlint` for the first secret gate to avoid
   turning secret scanning into a package-manager adoption decision.

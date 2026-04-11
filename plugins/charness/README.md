@@ -333,9 +333,12 @@ charness uninstall
 Current command intent:
 
 - `init`: bootstrap or refresh the managed local install surface
-- `doctor`: inspect the managed install plus host-native Codex and Claude state
+- `doctor`: inspect the managed install plus host-native Codex and Claude state;
+  add `--write-state` when you want to persist a proof snapshot to
+  `~/.local/share/charness/host-state.json`
 - `update`: refresh the installed surface and optionally advance the managed
-  checkout
+  checkout; it also records the post-update host snapshot to
+  `~/.local/share/charness/host-state.json`
 - `reset`: remove host plugin state while keeping the managed checkout and CLI
 - `uninstall`: remove the managed host-facing install surface while preserving
   the checkout unless explicitly asked otherwise
@@ -399,6 +402,15 @@ charness doctor
 
 This stays read-only and reports install-surface drift plus host-specific
 update hints.
+
+When you need a durable before/after proof around a Codex restart, use:
+
+```bash
+charness doctor --write-state
+```
+
+`charness init` and `charness update` already record their own post-command
+host snapshots to `~/.local/share/charness/host-state.json`.
 
 ## Repository Shape
 
