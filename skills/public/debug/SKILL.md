@@ -26,6 +26,10 @@ By default, `debug` writes its durable artifact to
 `skill-outputs/debug/debug.md`. Repos can override the directory with
 `.agents/debug-adapter.yaml`.
 
+Keep the current debug artifact tight. If recurring incidents start turning it
+into a ledger, move older case detail into the repo's longer-lived debug or
+troubleshooting surfaces and keep this file focused on the current incident.
+
 ```bash
 # Required Tools: rg
 # Missing-binary protocol: create-skill/references/binary-preflight.md
@@ -93,6 +97,8 @@ The durable debug artifact should usually include:
 - Do not stop at the first plausible cause; enumerate multiple candidates first.
 - Do not treat "cannot reproduce locally" as resolution. Record what was tried
   and what observation is still missing.
+- Do not let the current debug artifact accrete unrelated incidents or
+  free-form session logs.
 - Do not leave the learning only in chat when the repo has a durable debug
   artifact path or document style.
 - Web search is the default tool for any "gather more information" step.

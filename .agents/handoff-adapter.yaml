@@ -1,0 +1,5 @@
+version: 1
+repo: charness
+language: en
+output_dir: docs
+

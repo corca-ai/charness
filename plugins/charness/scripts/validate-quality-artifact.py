@@ -11,6 +11,14 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.artifact_validator import (
+    ValidationError,
+    find_index,
+    read_lines,
+    validate_date_line,
+    validate_max_lines,
+    validate_section_order,
+)
 from skills.public.quality.scripts.resolve_adapter import load_adapter
 
 MAX_ARTIFACT_LINES = 140
@@ -29,23 +37,6 @@ REQUIRED_SECTIONS = (
 HISTORY_LINK_RE = re.compile(r"\[.+\]\(history/[^)]+\.md\)")
 
 
-class ValidationError(Exception):
-    pass
-
-
-def find_index(lines: list[str], heading: str) -> int:
-    for index, line in enumerate(lines):
-        if line.strip() == heading:
-            return index
-    raise ValidationError(f"missing required section `{heading}`")
-
-
-def validate_section_order(lines: list[str]) -> None:
-    indices = [find_index(lines, heading) for heading in REQUIRED_SECTIONS]
-    if indices != sorted(indices):
-        raise ValidationError("required sections must stay in canonical order")
-
-
 def validate_history_section(lines: list[str]) -> None:
     start = find_index(lines, "## History") + 1
     section_lines = [line.strip() for line in lines[start:] if line.strip()]
@@ -56,20 +47,13 @@ def validate_history_section(lines: list[str]) -> None:
 
 
 def validate_quality_artifact(path: Path) -> None:
-    if not path.exists():
-        raise ValidationError(f"missing quality artifact `{path}`")
-
-    lines = path.read_text(encoding="utf-8").splitlines()
+    lines = read_lines(path)
     if not lines or lines[0].strip() != "# Quality Review":
         raise ValidationError("quality artifact must start with `# Quality Review`")
-    if len(lines) > MAX_ARTIFACT_LINES:
-        raise ValidationError(
-            f"quality artifact should stay concise; archive older review detail before it grows past {MAX_ARTIFACT_LINES} lines"
-        )
-    if len(lines) < 2 or not lines[1].startswith("Date: "):
-        raise ValidationError("quality artifact must record `Date: YYYY-MM-DD` on line 2")
+    validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="quality artifact")
+    validate_date_line(lines)
 
-    validate_section_order(lines)
+    validate_section_order(lines, REQUIRED_SECTIONS)
     validate_history_section(lines)
 
 

@@ -64,6 +64,8 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         ("validate-adapters", "validate-adapters.py"),
         ("validate-integrations", "validate-integrations.py"),
         ("validate-packaging", "validate-packaging.py"),
+        ("validate-handoff-artifact", "validate-handoff-artifact.py"),
+        ("validate-debug-artifact", "validate-debug-artifact.py"),
         ("validate-quality-artifact", "validate-quality-artifact.py"),
         ("validate-maintainer-setup", "validate-maintainer-setup.py"),
         ("check-python-lengths", "check-python-lengths.py"),
@@ -798,7 +800,7 @@ def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path) -
     assert "PASS pytest" in result.stdout
     assert "quality success output from validate-skills" not in result.stdout
     assert "quality success output from check-markdown" not in result.stdout
-    assert "Quality summary: 21 passed, 0 failed" in result.stdout
+    assert "Quality summary: 23 passed, 0 failed" in result.stdout
 
 
 def test_run_quality_replays_only_failing_command_logs(tmp_path: Path) -> None:
@@ -810,7 +812,7 @@ def test_run_quality_replays_only_failing_command_logs(tmp_path: Path) -> None:
     assert "--- check-markdown output ---" in result.stdout
     assert "quality failure output from check-markdown" in result.stdout
     assert "quality success output from validate-skills" not in result.stdout
-    assert "Quality summary: 20 passed, 1 failed" in result.stdout
+    assert "Quality summary: 22 passed, 1 failed" in result.stdout
 
 
 def test_run_quality_verbose_replays_success_logs(tmp_path: Path) -> None:

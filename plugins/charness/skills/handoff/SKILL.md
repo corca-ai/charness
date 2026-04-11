@@ -26,6 +26,10 @@ By default, `handoff` writes its durable artifact to
 `skill-outputs/handoff/handoff.md`. Repos can override the directory with
 `.agents/handoff-adapter.yaml`.
 
+Keep the handoff inside the repo-owned size and shape gate. If it starts
+growing into an archive, move durable detail into the right repo doc before
+adding more prose here.
+
 ```bash
 # Required Tools: rg
 # Missing-binary protocol: create-skill/references/binary-preflight.md
@@ -91,6 +95,8 @@ The handoff should usually contain:
 - Do not hide the real next workflow behind vague prose.
 - Do not write unverified state as fact.
 - Do not let the handoff drift away from the current repo state.
+- Do not add new top-level sections just to preserve history; prune or move the
+  durable detail instead.
 - Do not assume your own interpretation of the handoff is the only plausible
   one when a bounded premortem could catch a likely misread.
 - If the handoff changed materially, treat it as a real artifact update rather
