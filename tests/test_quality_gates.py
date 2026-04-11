@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import importlib
 import importlib.util
 import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+EVAL_REGISTRY = importlib.import_module("scripts.eval_registry")
+
 ADAPTER_LIB_PATH = ROOT / "scripts" / "adapter_lib.py"
 ADAPTER_LIB_SPEC = importlib.util.spec_from_file_location("adapter_lib", ADAPTER_LIB_PATH)
 assert ADAPTER_LIB_SPEC is not None and ADAPTER_LIB_SPEC.loader is not None
@@ -1161,7 +1166,7 @@ def test_check_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:
 def test_run_evals_passes_on_current_repo() -> None:
     result = run_script("scripts/run-evals.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
-    assert "Ran 16 eval scenario(s)." in result.stdout
+    assert f"Ran {len(EVAL_REGISTRY.SCENARIOS)} eval scenario(s)." in result.stdout
 
 
 def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) -> None:
