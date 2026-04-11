@@ -59,6 +59,12 @@ def base_result(
     return result
 
 
+def attach_release(result: dict[str, object], release: dict[str, object] | None) -> dict[str, object]:
+    if release is not None:
+        result["release"] = release
+    return result
+
+
 def persist_install_lock(
     repo_root: Path,
     manifest: dict[str, object],
@@ -122,19 +128,18 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
                 healthcheck=healthcheck_result,
                 release=release,
             )
-        result = base_result(
-            manifest,
-            install_action,
-            status="noop",
-            mode=mode,
-            commands=[],
-            detect=detect_result,
-            healthcheck=healthcheck_result,
+        return attach_release(
+            base_result(
+                manifest,
+                install_action,
+                status="noop",
+                mode=mode,
+                commands=[],
+                detect=detect_result,
+                healthcheck=healthcheck_result,
+            ),
+            release,
         )
-        if release is not None:
-            result["release"] = release
-        return result
-
     if mode == "manual":
         detect_result, healthcheck_result = detect_and_healthcheck(
             repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
@@ -152,24 +157,20 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
                 healthcheck=healthcheck_result,
                 release=release,
             )
-        result = base_result(
-            manifest,
-            install_action,
-            status=status,
-            mode=mode,
-            commands=[],
-            detect=detect_result,
-            healthcheck=healthcheck_result,
+        return attach_release(
+            base_result(
+                manifest,
+                install_action,
+                status=status,
+                mode=mode,
+                commands=[],
+                detect=detect_result,
+                healthcheck=healthcheck_result,
+            ),
+            release,
         )
-        if release is not None:
-            result["release"] = release
-        return result
-
     if not execute:
-        result = base_result(manifest, install_action, status="dry-run", mode=mode, commands=commands)
-        if release is not None:
-            result["release"] = release
-        return result
+        return attach_release(base_result(manifest, install_action, status="dry-run", mode=mode, commands=commands), release)
 
     command_results = execute_install_commands(repo_root, commands)
     detect_result, healthcheck_result = detect_and_healthcheck(
@@ -191,18 +192,18 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
         healthcheck=healthcheck_result,
         release=release,
     )
-    result = base_result(
-        manifest,
-        install_action,
-        status=status,
-        mode=mode,
-        commands=command_results,
-        detect=detect_result,
-        healthcheck=healthcheck_result,
+    return attach_release(
+        base_result(
+            manifest,
+            install_action,
+            status=status,
+            mode=mode,
+            commands=command_results,
+            detect=detect_result,
+            healthcheck=healthcheck_result,
+        ),
+        release,
     )
-    if release is not None:
-        result["release"] = release
-    return result
 
 
 def main() -> int:

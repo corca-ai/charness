@@ -10,7 +10,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-SEMVER_RE = re.compile(r"\b\d+(?:\.\d+){1,}\b")
+SEMVER_RE = re.compile(r"(?<!\d)\d+(?:\.\d+){1,}(?!\d)")
 GITHUB_API_TEMPLATE = "https://api.github.com/repos/{repo}/releases/latest"
 
 

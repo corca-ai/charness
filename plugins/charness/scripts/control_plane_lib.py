@@ -31,8 +31,7 @@ from scripts.support_sync_lib import (
 
 MANIFEST_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "integrations" / "tools" / "manifest.schema.json"
 LOCKS_DIR = Path("integrations/locks")
-SEMVER_RE = re.compile(r"\b\d+(?:\.\d+){1,}\b")
-
+SEMVER_RE = re.compile(r"(?<!\d)\d+(?:\.\d+){1,}(?!\d)")
 
 @dataclass
 class CommandResult:
@@ -40,8 +39,6 @@ class CommandResult:
     exit_code: int
     stdout: str
     stderr: str
-
-
 def now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
@@ -53,7 +50,6 @@ def load_lock_schema() -> dict[str, Any]:
 
 def load_support_capability_schema() -> dict[str, Any]:
     return json.loads(support_capability_schema_path(Path(__file__).resolve().parent.parent).read_text(encoding="utf-8"))
-
 
 def manifest_paths(repo_root: Path) -> list[Path]:
     manifests = sorted(integrations_tools_dir(repo_root).glob("*.json"))
