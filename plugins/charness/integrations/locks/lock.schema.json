@@ -27,6 +27,9 @@
     "doctor": {
       "$ref": "#/definitions/doctorSection"
     },
+    "install": {
+      "$ref": "#/definitions/installSection"
+    },
     "update": {
       "$ref": "#/definitions/updateSection"
     }
@@ -376,6 +379,70 @@
             "version-mismatch",
             "support-missing"
           ]
+        }
+      }
+    },
+    "installSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "installed_at",
+        "install_status",
+        "mode",
+        "commands",
+        "detect",
+        "healthcheck"
+      ],
+      "properties": {
+        "installed_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "install_status": {
+          "type": "string",
+          "enum": [
+            "installed",
+            "failed",
+            "noop",
+            "manual",
+            "dry-run",
+            "already-installed"
+          ]
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "script",
+            "package_manager",
+            "git_checkout",
+            "none"
+          ]
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commandResult"
+          }
+        },
+        "detect": {
+          "$ref": "#/definitions/checkResult"
+        },
+        "healthcheck": {
+          "$ref": "#/definitions/checkResult"
+        },
+        "docs_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       }
     },

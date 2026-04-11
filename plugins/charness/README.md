@@ -340,6 +340,33 @@ Current command intent:
 - `uninstall`: remove the managed host-facing install surface while preserving
   the checkout unless explicitly asked otherwise
 
+External tool command surface:
+
+```bash
+charness tool doctor cautilus
+charness tool install cautilus
+charness tool update agent-browser
+charness tool sync-support cautilus
+```
+
+Intent:
+
+- `tool doctor`: write current integration readiness to `integrations/locks/`
+- `tool install`: try manifest-declared install flows when allowed, otherwise
+  persist manual install guidance plus refreshed doctor state
+- `tool update`: run manifest-declared update flows when allowed, then refresh
+  support references and doctor state
+- `tool sync-support`: regenerate `skills/support/generated/` reference or
+  wrapper artifacts for integrations that reuse an upstream support skill
+
+Current boundary:
+
+- `agent-browser` can self-update because its manifest declares
+  `agent-browser upgrade`
+- `cautilus`, `specdown`, `gws-cli`, and similar manual-mode tools do not get
+  silently installed by `charness`; the CLI leaves structured docs, notes, and
+  lock state for the next agent or operator step instead
+
 ### Claude And Codex On One Managed Install
 
 Recommended shared shape:

@@ -48,7 +48,6 @@ def now_iso() -> str:
 
 def load_manifest_schema() -> dict[str, Any]:
     return json.loads(MANIFEST_SCHEMA_PATH.read_text(encoding="utf-8"))
-
 def load_lock_schema() -> dict[str, Any]:
     return json.loads((integrations_locks_dir(Path(__file__).resolve().parent.parent) / "lock.schema.json").read_text(encoding="utf-8"))
 
@@ -312,6 +311,7 @@ def upsert_lock(
     *,
     support: dict[str, Any] | None = None,
     doctor: dict[str, Any] | None = None,
+    install: dict[str, Any] | None = None,
     update: dict[str, Any] | None = None,
 ) -> Path:
     payload = read_lock(repo_root, manifest["tool_id"]) or base_lock_payload(manifest)
@@ -322,6 +322,8 @@ def upsert_lock(
         payload["support"] = support
     if doctor is not None:
         payload["doctor"] = doctor
+    if install is not None:
+        payload["install"] = install
     if update is not None:
         payload["update"] = update
     validate_lock_data(payload, load_lock_schema(), lock_path(repo_root, manifest["tool_id"]))
