@@ -19,6 +19,8 @@ brief without leaving the durable docs behind.
 If the idea is still under-shaped, use `ideation` first. If the docs are
 already aligned and the user only wants delivery-ready wording, use
 `announcement`.
+If the repo has little or no durable truth surface yet, use `init-repo` to
+bootstrap that surface before treating the task as narrative alignment.
 
 ## Bootstrap
 
@@ -57,6 +59,9 @@ git status --short
    - check whether local context may be stale relative to git remote state
    - if freshness is ambiguous and the repo cannot be trusted as-is, surface
      that risk before editing
+   - if the source map is effectively empty or only placeholder-level, stop and
+     recommend `init-repo` rather than pretending there is already a narrative
+     surface to align
 3. Tighten the durable story first.
    - rewrite contradictions instead of layering parallel narratives
    - propagate user-confirmed direction changes into source-of-truth docs, not

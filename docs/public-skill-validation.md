@@ -62,6 +62,7 @@ standalone evaluator exists.
 
 Current assignment:
 
+- `init-repo`
 - `create-skill`
 - `debug`
 - `find-skills`
@@ -78,7 +79,7 @@ Current assignment:
 - `hitl` already exists to insert human judgment into a bounded loop, so its
   own quality bar should emphasize operator review rather than pretending the
   whole workflow can be scored automatically.
-- `create-skill`, `find-skills`, `gather`, `handoff`, `spec`, `impl`, and
+- `create-skill`, `find-skills`, `gather`, `handoff`, `init-repo`, `spec`, `impl`, and
   `debug` shape later execution or durable repo state. Those are the highest
   leverage candidates for maintained scenario evaluation now that `cautilus`
   is the tracked evaluator boundary.

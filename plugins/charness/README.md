@@ -48,6 +48,7 @@ Public skills are user-facing concepts. One concept maps to one skill.
 
 #### Discovery → Contract
 
+- `init-repo` — bootstrap or normalize a repo's basic operating surface
 - `gather` — external facts and source material into durable local knowledge
 - `ideation` — shape a concept through conversation before committing to a spec
 - `spec` — refine a concept into a living implementation contract
