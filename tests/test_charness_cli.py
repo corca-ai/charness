@@ -28,6 +28,33 @@ def make_repo_copy(tmp_path: Path) -> Path:
     return repo_copy
 
 
+def make_release_fixture(tmp_path: Path) -> Path:
+    fixture = tmp_path / "release-fixtures.json"
+    fixture.write_text(
+        json.dumps(
+            {
+                "corca-ai/cautilus": {
+                    "tag_name": "v1.2.3",
+                    "html_url": "https://github.com/corca-ai/cautilus/releases/tag/v1.2.3",
+                    "published_at": "2026-04-10T00:00:00Z",
+                    "assets": [{"name": "cautilus-linux-amd64.tar.gz"}],
+                },
+                "vercel-labs/agent-browser": {
+                    "tag_name": "v0.25.3",
+                    "html_url": "https://github.com/vercel-labs/agent-browser/releases/tag/v0.25.3",
+                    "published_at": "2026-04-07T02:11:00Z",
+                    "assets": [{"name": "agent-browser-x86_64-unknown-linux-gnu.tar.gz"}],
+                },
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return fixture
+
+
 def run_cli_in_repo(repo_root: Path, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["python3", str(repo_root / "charness"), *args],
@@ -466,8 +493,10 @@ def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path) -> None
 def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path) -> None:
     repo_root = make_repo_copy(tmp_path)
     home_root = tmp_path / "home"
+    release_fixture = make_release_fixture(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
 
     result = run_cli_in_repo(
         repo_root,
@@ -484,10 +513,14 @@ def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path)
     cautilus = payload["results"]["cautilus"]
     assert cautilus["install"]["status"] == "manual"
     assert cautilus["install"]["docs_url"] == "https://github.com/corca-ai/cautilus"
+    assert cautilus["install"]["release"]["latest_tag"] == "v1.2.3"
     assert cautilus["support"]["status"] == "synced"
     assert cautilus["support"]["materialized_paths"] == ["skills/support/generated/cautilus/REFERENCE.md"]
     assert cautilus["doctor"]["doctor_status"] == "missing"
+    assert cautilus["doctor"]["release"]["latest_version"] == "1.2.3"
+    assert "v1.2.3" in cautilus["next_step"]
     lock_payload = json.loads((repo_root / "integrations" / "locks" / "cautilus.json").read_text(encoding="utf-8"))
+    assert lock_payload["release"]["latest_tag"] == "v1.2.3"
     assert lock_payload["install"]["install_status"] == "manual"
     assert lock_payload["support"]["materialized_paths"] == ["skills/support/generated/cautilus/REFERENCE.md"]
     assert lock_payload["doctor"]["doctor_status"] == "missing"
@@ -498,9 +531,11 @@ def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Pa
     repo_root = make_repo_copy(tmp_path)
     home_root = tmp_path / "home"
     fake_agent_browser = make_fake_agent_browser(tmp_path)
+    release_fixture = make_release_fixture(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
     env["PATH"] = f"{fake_agent_browser.parent}:{env.get('PATH', '')}"
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
 
     result = run_cli_in_repo(
         repo_root,
@@ -516,9 +551,12 @@ def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Pa
     payload = json.loads(result.stdout)
     browser = payload["results"]["agent-browser"]
     assert browser["update"]["status"] == "updated"
+    assert browser["update"]["release"]["latest_tag"] == "v0.25.3"
     assert browser["support"]["status"] == "synced"
     assert browser["doctor"]["doctor_status"] == "ok"
+    assert "v0.25.3" in browser["next_step"]
     lock_payload = json.loads((repo_root / "integrations" / "locks" / "agent-browser.json").read_text(encoding="utf-8"))
+    assert lock_payload["release"]["latest_tag"] == "v0.25.3"
     assert lock_payload["update"]["update_status"] == "updated"
     assert lock_payload["support"]["materialized_paths"] == ["skills/support/generated/agent-browser/REFERENCE.md"]
     assert lock_payload["doctor"]["doctor_status"] == "ok"
