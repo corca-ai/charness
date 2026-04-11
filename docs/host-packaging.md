@@ -145,8 +145,10 @@ explicitly different on purpose.
 
 Operationally this means:
 
-- the official operator install path is a thin `charness` CLI that manages one
-  machine-local exported plugin surface under `~/.codex/plugins/charness`
+- the official operator install path is a thin `charness` CLI rooted at the
+  managed checkout `~/.agents/src/charness`
+- that CLI manages one machine-local exported plugin surface under
+  `~/.codex/plugins/charness`
 - Claude should prefer host-native marketplace and plugin installation driven by
   `charness init` and `charness update`; `claude-charness` remains an optional
   local wrapper for proof or fallback use

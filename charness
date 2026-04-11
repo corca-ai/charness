@@ -155,12 +155,34 @@ def read_install_state(home_root: Path) -> tuple[Path, bool] | None:
 def resolve_repo_root(home_root: Path, explicit_repo_root: Path | None) -> tuple[Path, bool]:
     if explicit_repo_root is not None:
         return explicit_repo_root.resolve(), False
-    if EMBEDDED_REPO_ROOT is not None:
-        return EMBEDDED_REPO_ROOT, False
     remembered = read_install_state(home_root)
-    if remembered is not None:
+    if remembered is not None and remembered[1] is True:
         return remembered
     return managed_checkout_root(home_root), True
+
+
+def default_bootstrap_repo_url(home_root: Path, configured_repo_url: str) -> str:
+    remembered = read_install_state(home_root)
+    if (remembered is None or remembered[1] is False) and EMBEDDED_REPO_ROOT is not None and has_source_manifest(EMBEDDED_REPO_ROOT):
+        return str(EMBEDDED_REPO_ROOT)
+    return configured_repo_url
+
+
+def enforce_managed_cli_contract(
+    *,
+    home_root: Path,
+    repo_root: Path,
+    managed_checkout: bool,
+    skip_cli_install: bool,
+) -> None:
+    if managed_checkout:
+        return
+    if skip_cli_install:
+        return
+    raise CharnessError(
+        "official charness installs must use the managed checkout "
+        f"`{managed_checkout_root(home_root)}`; for proof-only runs from another checkout, rerun with `--skip-cli-install`."
+    )
 
 
 def ensure_checkout(repo_root: Path, *, managed: bool, repo_url: str, allow_clone: bool, allow_pull: bool) -> dict[str, object]:
@@ -544,7 +566,7 @@ def build_claude_host_guidance(
         return {
             "status": "missing-source",
             "manual_action_required": True,
-            "message": "No charness source checkout was found for this CLI. Run `charness init --repo-root /absolute/path/to/charness` or reinstall from a checkout.",
+            "message": "No managed charness source checkout was found for this CLI. Run `charness init` from a checkout or bootstrap `~/.agents/src/charness` again.",
         }
     plugin_ref = claude_plugin_ref(repo_root)
     if marketplace_entry is None:
@@ -866,11 +888,17 @@ def resolve_runtime_paths(args: argparse.Namespace) -> tuple[Path, Path, Path, P
 def cmd_init(args: argparse.Namespace) -> int:
     home_root = args.home_root.resolve()
     repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    enforce_managed_cli_contract(
+        home_root=home_root,
+        repo_root=repo_root,
+        managed_checkout=managed_checkout,
+        skip_cli_install=args.skip_cli_install,
+    )
     plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path = resolve_runtime_paths(args)
     checkout = ensure_checkout(
         repo_root,
         managed=managed_checkout,
-        repo_url=args.repo_url,
+        repo_url=default_bootstrap_repo_url(home_root, args.repo_url),
         allow_clone=True,
         allow_pull=False,
     )
@@ -897,7 +925,8 @@ def cmd_init(args: argparse.Namespace) -> int:
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
-    write_install_state(home_root, repo_root=Path(checkout["repo_root"]), managed_checkout=managed_checkout)
+    if managed_checkout:
+        write_install_state(home_root, repo_root=Path(checkout["repo_root"]), managed_checkout=True)
     payload["checkout"] = checkout
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
@@ -906,6 +935,12 @@ def cmd_init(args: argparse.Namespace) -> int:
 def cmd_update(args: argparse.Namespace) -> int:
     home_root = args.home_root.resolve()
     repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    enforce_managed_cli_contract(
+        home_root=home_root,
+        repo_root=repo_root,
+        managed_checkout=managed_checkout,
+        skip_cli_install=args.skip_cli_install,
+    )
     plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path = resolve_runtime_paths(args)
     checkout = ensure_checkout(
         repo_root,
@@ -937,7 +972,8 @@ def cmd_update(args: argparse.Namespace) -> int:
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
-    write_install_state(home_root, repo_root=Path(checkout["repo_root"]), managed_checkout=managed_checkout)
+    if managed_checkout:
+        write_install_state(home_root, repo_root=Path(checkout["repo_root"]), managed_checkout=True)
     payload["checkout"] = checkout
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0

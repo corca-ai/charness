@@ -31,7 +31,7 @@ individual public skills à la carte.
 
 The official install path is the managed `charness` CLI.
 
-If `charness` is not already on PATH, bootstrap from a checkout:
+If `charness` is not already on PATH, bootstrap from any checkout:
 
 ```bash
 mkdir -p ~/.agents/src
@@ -44,18 +44,23 @@ fi
 ./charness init
 ```
 
-That first run installs a reusable CLI copy at `~/.local/bin/charness` by
-default. If `~/.local/bin` is on PATH, later runs can use:
+That first run materializes the official managed checkout at
+`~/.agents/src/charness`, exports the host install surfaces, and installs a
+reusable CLI copy at `~/.local/bin/charness`. If `~/.local/bin` is on PATH,
+later runs can use:
 
 ```bash
 charness update
 ```
 
-If you are deliberately proving the install from a non-managed checkout, use:
+If you are deliberately proving the install from a non-managed checkout, keep
+that as a proof-only path and do not let it become the installed CLI source:
 
 ```bash
 ./charness init --repo-root /absolute/path/to/charness --skip-cli-install
 ```
+
+The official installed CLI should always resolve back to `~/.agents/src/charness`.
 
 ## Step 2: Follow The `next_steps` Output
 

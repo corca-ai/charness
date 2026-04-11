@@ -21,6 +21,7 @@
 - Claude local dogfood는 exported plugin root 기준으로 확인됐다. `claude --plugin-dir /tmp/.../plugins/charness` debug log에서 `Loaded 14 skills from plugin charness`가 찍혔고, `/gather` 호출로 `TITLE:charness` 응답까지 확인했다.
 - root executable [charness](/home/ubuntu/charness/charness)를 추가했다. `init`, `update`, `doctor`, `reset`, `uninstall`를 제공하고, checkout 기반 bootstrap일 때 `~/.local/bin/charness`에 자기 자신을 설치한다.
 - `./charness init`는 managed install surface를 만든다: `~/.codex/plugins/charness`, `~/.agents/plugins/marketplace.json`, `~/.local/bin/charness`, optional `~/.local/bin/claude-charness`, plus Claude user-scope marketplace/plugin install.
+- official installed CLI source는 이제 managed checkout `~/.agents/src/charness`만 허용한다. repo 밖에서 쓰는 `charness`는 `~/.local/share/charness/install-state.json`을 통해 그 managed checkout을 기억한다. non-managed `--repo-root`는 proof/development path로만 남고 `--skip-cli-install`이 필요하다.
 - `.agents/skills`는 checked-in 기본 install surface가 아니다. 이 repo는 thin CLI가 관리하는 `~/.codex/plugins/charness` source plugin root와 `~/.agents/plugins/marketplace.json`를 operator install anchor로 쓰고, source checkout public skills를 별도 symlink로 노출하지 않는다.
 - `INSTALL.md`, `README.md`, `UNINSTALL.md`, `docs/host-packaging.md`, `docs/operator-acceptance.md`는 marketplace 설치를 primary path에서 내리고 thin CLI managed install을 공식 경로로 설명하도록 갱신했다.
 - `skills/public/release/*`와 `scripts/plugin_preamble.py`도 `charness update` / Claude restart 기준으로 갱신했다.

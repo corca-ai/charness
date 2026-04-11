@@ -137,8 +137,6 @@ def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
         "init",
         "--home-root",
         str(home_root),
-        "--repo-root",
-        str(ROOT),
         env=env,
     )
     assert result.returncode == 0, result.stderr
@@ -146,7 +144,8 @@ def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
     assert payload["plugin_root"] == str(home_root / ".codex" / "plugins" / "charness")
     assert payload["cli_path"] == str(home_root / ".local" / "bin" / "charness")
     assert payload["claude_wrapper_path"] == str(home_root / ".local" / "bin" / "claude-charness")
-    assert payload["checkout"]["repo_root"] == str(ROOT)
+    assert payload["checkout"]["repo_root"] == str(home_root / ".agents" / "src" / "charness")
+    assert payload["checkout"]["managed"] is True
     assert (
         payload["next_steps"]["codex"]
         == "Restart Codex from the home directory that owns "
@@ -175,8 +174,6 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path) -> None:
         "init",
         "--home-root",
         str(home_root),
-        "--repo-root",
-        str(ROOT),
         env=env,
     )
     assert init_result.returncode == 0, init_result.stderr
@@ -185,8 +182,6 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path) -> None:
         "doctor",
         "--home-root",
         str(home_root),
-        "--repo-root",
-        str(ROOT),
         "--json",
         env=env,
     )
@@ -211,7 +206,9 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path) -> None:
     )
     assert payload["claude_marketplace_name"] == "corca-charness"
     assert payload["claude_plugin_ref"] == "charness@corca-charness"
-    assert payload["claude_marketplace_entry"]["source"]["path"] == str(ROOT)
+    assert payload["repo_root"] == str(home_root / ".agents" / "src" / "charness")
+    assert payload["managed_checkout"] is True
+    assert payload["claude_marketplace_entry"]["source"]["path"] == str(home_root / ".agents" / "src" / "charness")
     assert payload["claude_installed_entry"]["version"] == "local"
     assert payload["claude_host_guidance"]["status"] == "installed"
     assert payload["claude_host_guidance"]["manual_action_required"] is False
@@ -229,8 +226,6 @@ def test_charness_doctor_reports_codex_version_drift(tmp_path: Path) -> None:
         "init",
         "--home-root",
         str(home_root),
-        "--repo-root",
-        str(ROOT),
         env=env,
     )
     assert init_result.returncode == 0, init_result.stderr
@@ -245,8 +240,6 @@ def test_charness_doctor_reports_codex_version_drift(tmp_path: Path) -> None:
         "doctor",
         "--home-root",
         str(home_root),
-        "--repo-root",
-        str(ROOT),
         "--json",
         env=env,
     )
@@ -274,8 +267,6 @@ def test_charness_update_reports_codex_version_drift(tmp_path: Path) -> None:
         "init",
         "--home-root",
         str(home_root),
-        "--repo-root",
-        str(ROOT),
         env=env,
     )
     assert init_result.returncode == 0, init_result.stderr
@@ -290,8 +281,6 @@ def test_charness_update_reports_codex_version_drift(tmp_path: Path) -> None:
         "update",
         "--home-root",
         str(home_root),
-        "--repo-root",
-        str(ROOT),
         env=env,
     )
     assert update_result.returncode == 0, update_result.stderr
@@ -306,7 +295,7 @@ def test_charness_update_reports_codex_version_drift(tmp_path: Path) -> None:
     )
 
 
-def test_installed_cli_remembers_explicit_repo_root(tmp_path: Path) -> None:
+def test_installed_cli_remembers_managed_checkout(tmp_path: Path) -> None:
     home_root = tmp_path / "home"
     fake_claude = make_fake_claude(tmp_path)
     env = os.environ.copy()
@@ -316,8 +305,6 @@ def test_installed_cli_remembers_explicit_repo_root(tmp_path: Path) -> None:
         "init",
         "--home-root",
         str(home_root),
-        "--repo-root",
-        str(ROOT),
         env=env,
     )
     assert init_result.returncode == 0, init_result.stderr
@@ -332,9 +319,31 @@ def test_installed_cli_remembers_explicit_repo_root(tmp_path: Path) -> None:
     )
     assert doctor_result.returncode == 0, doctor_result.stderr
     payload = json.loads(doctor_result.stdout)
-    assert payload["repo_root"] == str(ROOT)
+    assert payload["repo_root"] == str(home_root / ".agents" / "src" / "charness")
     assert payload["checkout_present"] is True
+    assert payload["managed_checkout"] is True
     assert payload["claude_host_guidance"]["status"] == "installed"
+
+
+def test_non_managed_repo_root_requires_skip_cli_install(tmp_path: Path) -> None:
+    home_root = tmp_path / "home"
+    fake_claude = make_fake_claude(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
+    init_result = run_cli(
+        "init",
+        "--home-root",
+        str(home_root),
+        "--repo-root",
+        str(ROOT),
+        env=env,
+    )
+    assert init_result.returncode != 0
+    assert (
+        "official charness installs must use the managed checkout" in init_result.stderr
+        or "official charness installs must use the managed checkout" in init_result.stdout
+    )
 
 
 def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path) -> None:
@@ -363,7 +372,7 @@ def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path
     assert payload["plugin_preamble"] is None
     assert payload["claude_host_guidance"]["status"] == "missing-source"
     assert payload["claude_host_guidance"]["message"] == (
-        "No charness source checkout was found for this CLI. Run `charness init --repo-root /absolute/path/to/charness` or reinstall from a checkout."
+        "No managed charness source checkout was found for this CLI. Run `charness init` from a checkout or bootstrap `~/.agents/src/charness` again."
     )
 
 
@@ -377,8 +386,6 @@ def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path) -> None
         "init",
         "--home-root",
         str(home_root),
-        "--repo-root",
-        str(ROOT),
         env=env,
     )
     assert init_result.returncode == 0, init_result.stderr
@@ -393,8 +400,6 @@ def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path) -> None
         "reset",
         "--home-root",
         str(home_root),
-        "--repo-root",
-        str(ROOT),
         "--json",
         env=env,
     )

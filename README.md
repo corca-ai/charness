@@ -295,6 +295,11 @@ fi
 ./charness init
 ```
 
+When run from another checkout, that first `./charness init` seeds the managed
+checkout under `~/.agents/src/charness` and installs the reusable CLI from
+there. The installed CLI is not supposed to keep pointing at an arbitrary
+checkout.
+
 Current status:
 
 - managed local CLI install is the official operator path
@@ -352,6 +357,15 @@ Recommended shared shape:
 4. Let `charness init` install the Claude plugin through Claude's own plugin
    manager, then restart Claude Code when `next_steps.claude` asks for it.
 5. Run `charness update` when you want both hosts to move together.
+
+Proof-only local checkout path:
+
+```bash
+./charness init --repo-root /absolute/path/to/charness --skip-cli-install
+```
+
+Use that only for development or packaging proof. It is not the official
+installed-CLI source.
 
 Optional startup advisory:
 

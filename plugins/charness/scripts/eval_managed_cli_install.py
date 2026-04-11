@@ -122,7 +122,7 @@ def run_managed_cli_install(
         env["HOME"] = str(home_root)
         env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
         init_result = run_command(
-            ["python3", "charness", "init", "--home-root", str(home_root), "--repo-root", str(root)],
+            ["python3", "charness", "init", "--home-root", str(home_root)],
             cwd=root,
             env=env,
         )
@@ -149,7 +149,7 @@ def run_managed_cli_install(
         if init_payload.get("next_steps", {}).get("codex") != expected_next_step:
             raise error_type(f"managed cli init: unexpected Codex next step {init_payload!r}")
         doctor_result = run_command(
-            ["python3", str(cli_path), "doctor", "--home-root", str(home_root), "--repo-root", str(root), "--json"],
+            ["python3", str(cli_path), "doctor", "--home-root", str(home_root), "--json"],
             cwd=root,
             env=env,
         )
@@ -157,6 +157,9 @@ def run_managed_cli_install(
         doctor_payload = json.loads(doctor_result.stdout)
         if doctor_payload.get("plugin_root_present") is not True:
             raise error_type(f"managed cli doctor: unexpected plugin_root state {doctor_payload!r}")
+        expected_repo_root = str(home_root / ".agents" / "src" / "charness")
+        if doctor_payload.get("repo_root") != expected_repo_root:
+            raise error_type(f"managed cli doctor: unexpected repo root {doctor_payload!r}")
         entry = doctor_payload.get("codex_marketplace_entry")
         if not isinstance(entry, dict):
             raise error_type(f"managed cli doctor: missing codex marketplace entry {doctor_payload!r}")

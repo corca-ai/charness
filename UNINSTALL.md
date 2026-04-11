@@ -20,7 +20,7 @@ source-of-truth repo unless the user explicitly asks for that.
 Possible install modes:
 
 - managed local install via `charness init`
-- checkout-local proof install via `./charness init`
+- proof-only checkout run via `./charness init --repo-root /absolute/path/to/charness --skip-cli-install`
 - generated export copy used as a disposable install surface
 
 ## Step 2: Remove Host References
