@@ -72,6 +72,10 @@ Support capability states should stay explicit:
 
 These labels matter for later sync/update/doctor behavior.
 
+They should also stay visible in machine-readable operator state so a later
+agent can tell whether a dependency is native, upstream-consumed, or still
+waiting on manual install work.
+
 ## `find-skills` Interaction
 
 `find-skills` should use this policy in order:

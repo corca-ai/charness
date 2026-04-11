@@ -122,6 +122,9 @@ Useful local commands:
 python3 scripts/validate-packaging.py --repo-root .
 python3 scripts/sync_root_plugin_manifests.py --repo-root .
 ./charness doctor
+./charness tool doctor cautilus
+./charness tool install cautilus
+./charness tool update agent-browser
 ```
 
 Suggested operator runs:
@@ -143,6 +146,8 @@ Acceptance:
   personal marketplace entry
 - `charness doctor` distinguishes “surface prepared” from “host install/enable
   still required”
+- `charness tool install/update/doctor` leave machine-readable lock state for
+  external dependencies and any remaining manual steps
 - update behavior matches the documented single-path model
 - any required doc or manifest tweaks are committed back here
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import textwrap
 from pathlib import Path
@@ -14,6 +15,23 @@ def run_cli(*args: str, env: dict[str, str] | None = None) -> subprocess.Complet
     return subprocess.run(
         ["python3", str(CLI), *args],
         cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+
+def make_repo_copy(tmp_path: Path) -> Path:
+    repo_copy = tmp_path / "repo"
+    shutil.copytree(ROOT, repo_copy)
+    return repo_copy
+
+
+def run_cli_in_repo(repo_root: Path, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["python3", str(repo_root / "charness"), *args],
+        cwd=repo_root,
         check=False,
         capture_output=True,
         text=True,
@@ -117,6 +135,35 @@ def make_fake_claude(tmp_path: Path) -> Path:
                     print("    Scope: user")
                     print("    Status: ✔ enabled")
                     print("")
+                raise SystemExit(0)
+            raise SystemExit(0)
+            """
+        ),
+        encoding="utf-8",
+    )
+    script.chmod(0o755)
+    return script
+
+
+def make_fake_agent_browser(tmp_path: Path) -> Path:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    script = bin_dir / "agent-browser"
+    script.write_text(
+        textwrap.dedent(
+            """\
+            #!/usr/bin/env python3
+            import sys
+
+            args = sys.argv[1:]
+            if args == ["--version"]:
+                print("agent-browser 0.25.3")
+                raise SystemExit(0)
+            if args == ["--help"]:
+                print("agent-browser")
+                raise SystemExit(0)
+            if args == ["upgrade"]:
+                print("upgraded")
                 raise SystemExit(0)
             raise SystemExit(0)
             """
@@ -414,3 +461,64 @@ def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path) -> None
     assert payload["removed_cli"] is False
     assert payload["removed_checkout"] is False
     assert (home_root / ".local" / "bin" / "charness").is_file()
+
+
+def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path) -> None:
+    repo_root = make_repo_copy(tmp_path)
+    home_root = tmp_path / "home"
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+
+    result = run_cli_in_repo(
+        repo_root,
+        "tool",
+        "install",
+        "--repo-root",
+        str(repo_root),
+        "--json",
+        "cautilus",
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    cautilus = payload["results"]["cautilus"]
+    assert cautilus["install"]["status"] == "manual"
+    assert cautilus["install"]["docs_url"] == "https://github.com/corca-ai/cautilus"
+    assert cautilus["support"]["status"] == "synced"
+    assert cautilus["support"]["materialized_paths"] == ["skills/support/generated/cautilus/REFERENCE.md"]
+    assert cautilus["doctor"]["doctor_status"] == "missing"
+    lock_payload = json.loads((repo_root / "integrations" / "locks" / "cautilus.json").read_text(encoding="utf-8"))
+    assert lock_payload["install"]["install_status"] == "manual"
+    assert lock_payload["support"]["materialized_paths"] == ["skills/support/generated/cautilus/REFERENCE.md"]
+    assert lock_payload["doctor"]["doctor_status"] == "missing"
+    assert (repo_root / "skills" / "support" / "generated" / "cautilus" / "REFERENCE.md").is_file()
+
+
+def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Path) -> None:
+    repo_root = make_repo_copy(tmp_path)
+    home_root = tmp_path / "home"
+    fake_agent_browser = make_fake_agent_browser(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{fake_agent_browser.parent}:{env.get('PATH', '')}"
+
+    result = run_cli_in_repo(
+        repo_root,
+        "tool",
+        "update",
+        "--repo-root",
+        str(repo_root),
+        "--json",
+        "agent-browser",
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    browser = payload["results"]["agent-browser"]
+    assert browser["update"]["status"] == "updated"
+    assert browser["support"]["status"] == "synced"
+    assert browser["doctor"]["doctor_status"] == "ok"
+    lock_payload = json.loads((repo_root / "integrations" / "locks" / "agent-browser.json").read_text(encoding="utf-8"))
+    assert lock_payload["update"]["update_status"] == "updated"
+    assert lock_payload["support"]["materialized_paths"] == ["skills/support/generated/agent-browser/REFERENCE.md"]
+    assert lock_payload["doctor"]["doctor_status"] == "ok"

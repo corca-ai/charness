@@ -885,6 +885,123 @@ def resolve_runtime_paths(args: argparse.Namespace) -> tuple[Path, Path, Path, P
     return plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path
 
 
+def resolve_tool_repo_root(args: argparse.Namespace) -> tuple[Path, bool]:
+    home_root = args.home_root.resolve()
+    repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    ensure_checkout(
+        repo_root,
+        managed=managed_checkout,
+        repo_url=getattr(args, "repo_url", REPO_URL),
+        allow_clone=False,
+        allow_pull=False,
+    )
+    return repo_root, managed_checkout
+
+
+def invoke_repo_json_script(
+    repo_root: Path,
+    relative_script: str,
+    *script_args: str,
+    allow_failure: bool = False,
+) -> object:
+    result = run(["python3", relative_script, *script_args], cwd=repo_root)
+    if result.returncode != 0 and not allow_failure:
+        expect_success(result, f"`{relative_script}` in `{repo_root}`")
+    stdout = result.stdout.strip()
+    if not stdout:
+        if result.returncode != 0:
+            raise CharnessError(
+                f"`{relative_script}` in `{repo_root}` exited with code {result.returncode} and produced no JSON output\nSTDERR:\n{result.stderr}"
+            )
+        return None
+    try:
+        return json.loads(stdout)
+    except json.JSONDecodeError as exc:
+        raise CharnessError(
+            f"`{relative_script}` in `{repo_root}` did not return valid JSON\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+        ) from exc
+
+
+def tool_ids_from_args(args: argparse.Namespace) -> list[str]:
+    return list(getattr(args, "tool_ids", []) or [])
+
+
+def tool_result_map(results: object) -> dict[str, dict[str, object]]:
+    if not isinstance(results, list):
+        return {}
+    mapped: dict[str, dict[str, object]] = {}
+    for item in results:
+        if not isinstance(item, dict):
+            continue
+        tool_id = item.get("tool_id")
+        if isinstance(tool_id, str):
+            mapped[tool_id] = item
+    return mapped
+
+
+def tool_next_step(
+    tool_id: str,
+    install_result: dict[str, object] | None,
+    doctor_result: dict[str, object] | None,
+    support_result: dict[str, object] | None,
+) -> str:
+    if install_result is not None and install_result.get("status") == "manual":
+        docs_url = install_result.get("docs_url")
+        notes = install_result.get("notes")
+        first_note = notes[0] if isinstance(notes, list) and notes and isinstance(notes[0], str) else None
+        guidance = first_note or f"Follow the upstream install flow for `{tool_id}`."
+        if isinstance(docs_url, str) and docs_url:
+            guidance = f"{guidance} Docs: {docs_url}"
+        return guidance
+    if doctor_result is not None:
+        doctor_status = doctor_result.get("doctor_status")
+        if doctor_status == "ok":
+            return f"`{tool_id}` is ready."
+        if doctor_status == "missing":
+            hint = doctor_result.get("detect", {}).get("failure_hint")
+            if isinstance(hint, str) and hint:
+                return hint
+        if doctor_status == "support-missing" and support_result is not None:
+            paths = support_result.get("materialized_paths")
+            if isinstance(paths, list) and paths:
+                return f"Regenerated support artifacts for `{tool_id}` under {', '.join(paths)}."
+    if support_result is not None and support_result.get("status") == "synced":
+        paths = support_result.get("materialized_paths")
+        if isinstance(paths, list) and paths:
+            return f"Support references for `{tool_id}` were refreshed under {', '.join(paths)}."
+    return f"Review the structured result for `{tool_id}` and follow the manifest guidance."
+
+
+def print_tool_human_summary(payload: dict[str, object]) -> None:
+    print(f"REPO_ROOT: {payload['repo_root']}")
+    print(f"MANAGED_CHECKOUT: {'yes' if payload['managed_checkout'] else 'no'}")
+    tool_ids = payload.get("tool_ids", [])
+    if isinstance(tool_ids, list):
+        print(f"TOOLS: {', '.join(tool_ids) if tool_ids else 'all'}")
+    results = payload.get("results", {})
+    if not isinstance(results, dict):
+        return
+    for tool_id, result in results.items():
+        if not isinstance(result, dict):
+            continue
+        print(f"{tool_id}:")
+        install_result = result.get("install")
+        if isinstance(install_result, dict):
+            print(f"  INSTALL: {install_result.get('status')} ({install_result.get('mode')})")
+        update_result = result.get("update")
+        if isinstance(update_result, dict):
+            print(f"  UPDATE: {update_result.get('status')} ({update_result.get('mode')})")
+        support_result = result.get("support")
+        if isinstance(support_result, dict):
+            print(f"  SUPPORT: {support_result.get('status')}")
+        doctor_result = result.get("doctor")
+        if isinstance(doctor_result, dict):
+            print(f"  DOCTOR: {doctor_result.get('doctor_status')} ({doctor_result.get('support_state')})")
+        next_step = result.get("next_step")
+        if isinstance(next_step, str):
+            print(f"  NEXT: {next_step}")
+
+
 def cmd_init(args: argparse.Namespace) -> int:
     home_root = args.home_root.resolve()
     repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
@@ -1060,9 +1177,197 @@ def cmd_reset(args: argparse.Namespace) -> int:
     return cmd_uninstall(args)
 
 
+def cmd_tool_doctor(args: argparse.Namespace) -> int:
+    repo_root, managed_checkout = resolve_tool_repo_root(args)
+    script_args = ["--repo-root", str(repo_root), "--json"]
+    for tool_id in tool_ids_from_args(args):
+        script_args.extend(["--tool-id", tool_id])
+    if not args.no_write_locks:
+        script_args.append("--write-locks")
+    doctor_results = invoke_repo_json_script(repo_root, "scripts/doctor.py", *script_args, allow_failure=True)
+    payload = {
+        "repo_root": str(repo_root),
+        "managed_checkout": managed_checkout,
+        "tool_ids": tool_ids_from_args(args),
+        "results": {
+            tool_id: {"doctor": result, "next_step": tool_next_step(tool_id, None, result, None)}
+            for tool_id, result in tool_result_map(doctor_results).items()
+        },
+    }
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print_tool_human_summary(payload)
+    doctor_map = tool_result_map(doctor_results)
+    if any(result.get("doctor_status") in {"missing", "unhealthy", "not-ready", "version-mismatch", "support-missing"} for result in doctor_map.values()):
+        return 1
+    return 0
+
+
+def cmd_tool_sync_support(args: argparse.Namespace) -> int:
+    repo_root, managed_checkout = resolve_tool_repo_root(args)
+    script_args = ["--repo-root", str(repo_root), "--json"]
+    for tool_id in tool_ids_from_args(args):
+        script_args.extend(["--tool-id", tool_id])
+    for upstream_checkout in args.upstream_checkout:
+        script_args.extend(["--upstream-checkout", upstream_checkout])
+    if args.local_dev_symlink:
+        script_args.append("--local-dev-symlink")
+    if not args.dry_run:
+        script_args.append("--execute")
+    support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *script_args, allow_failure=True)
+    doctor_args = ["--repo-root", str(repo_root), "--json"]
+    for tool_id in tool_ids_from_args(args):
+        doctor_args.extend(["--tool-id", tool_id])
+    if not args.dry_run:
+        doctor_args.append("--write-locks")
+    doctor_results = invoke_repo_json_script(repo_root, "scripts/doctor.py", *doctor_args, allow_failure=True)
+    support_map = tool_result_map(support_results)
+    doctor_map = tool_result_map(doctor_results)
+    payload = {
+        "repo_root": str(repo_root),
+        "managed_checkout": managed_checkout,
+        "tool_ids": tool_ids_from_args(args),
+        "results": {
+            tool_id: {
+                "support": support_map.get(tool_id),
+                "doctor": doctor_map.get(tool_id),
+                "next_step": tool_next_step(tool_id, None, doctor_map.get(tool_id), support_map.get(tool_id)),
+            }
+            for tool_id in sorted(set([*support_map.keys(), *doctor_map.keys()]))
+        },
+    }
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print_tool_human_summary(payload)
+    if any(
+        isinstance(result, dict)
+        and isinstance(result.get("doctor"), dict)
+        and result["doctor"].get("doctor_status") in {"missing", "unhealthy", "not-ready", "version-mismatch", "support-missing"}
+        for result in payload["results"].values()
+    ):
+        return 1
+    return 0
+
+
+def cmd_tool_install(args: argparse.Namespace) -> int:
+    repo_root, managed_checkout = resolve_tool_repo_root(args)
+    install_args = ["--repo-root", str(repo_root), "--json"]
+    for tool_id in tool_ids_from_args(args):
+        install_args.extend(["--tool-id", tool_id])
+    if not args.dry_run:
+        install_args.append("--execute")
+    install_results = invoke_repo_json_script(repo_root, "scripts/install_tools.py", *install_args, allow_failure=True)
+    support_results: object = []
+    if not args.skip_sync_support:
+        support_args = ["--repo-root", str(repo_root), "--json"]
+        for tool_id in tool_ids_from_args(args):
+            support_args.extend(["--tool-id", tool_id])
+        for upstream_checkout in args.upstream_checkout:
+            support_args.extend(["--upstream-checkout", upstream_checkout])
+        if args.local_dev_symlink:
+            support_args.append("--local-dev-symlink")
+        if not args.dry_run:
+            support_args.append("--execute")
+        support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *support_args, allow_failure=True)
+    doctor_args = ["--repo-root", str(repo_root), "--json"]
+    for tool_id in tool_ids_from_args(args):
+        doctor_args.extend(["--tool-id", tool_id])
+    if not args.dry_run:
+        doctor_args.append("--write-locks")
+    doctor_results = invoke_repo_json_script(repo_root, "scripts/doctor.py", *doctor_args, allow_failure=True)
+    install_map = tool_result_map(install_results)
+    support_map = tool_result_map(support_results)
+    doctor_map = tool_result_map(doctor_results)
+    payload = {
+        "repo_root": str(repo_root),
+        "managed_checkout": managed_checkout,
+        "tool_ids": tool_ids_from_args(args),
+        "results": {
+            tool_id: {
+                "install": install_map.get(tool_id),
+                "support": support_map.get(tool_id),
+                "doctor": doctor_map.get(tool_id),
+                "next_step": tool_next_step(tool_id, install_map.get(tool_id), doctor_map.get(tool_id), support_map.get(tool_id)),
+            }
+            for tool_id in sorted(set([*install_map.keys(), *support_map.keys(), *doctor_map.keys()]))
+        },
+    }
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print_tool_human_summary(payload)
+    if any(
+        isinstance(result, dict)
+        and isinstance(result.get("install"), dict)
+        and result["install"].get("status") == "failed"
+        for result in payload["results"].values()
+    ):
+        return 1
+    return 0
+
+
+def cmd_tool_update(args: argparse.Namespace) -> int:
+    repo_root, managed_checkout = resolve_tool_repo_root(args)
+    update_args = ["--repo-root", str(repo_root), "--json"]
+    for tool_id in tool_ids_from_args(args):
+        update_args.extend(["--tool-id", tool_id])
+    if not args.dry_run:
+        update_args.append("--execute")
+    update_results = invoke_repo_json_script(repo_root, "scripts/update_tools.py", *update_args, allow_failure=True)
+    support_results: object = []
+    if not args.skip_sync_support:
+        support_args = ["--repo-root", str(repo_root), "--json"]
+        for tool_id in tool_ids_from_args(args):
+            support_args.extend(["--tool-id", tool_id])
+        for upstream_checkout in args.upstream_checkout:
+            support_args.extend(["--upstream-checkout", upstream_checkout])
+        if args.local_dev_symlink:
+            support_args.append("--local-dev-symlink")
+        if not args.dry_run:
+            support_args.append("--execute")
+        support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *support_args, allow_failure=True)
+    doctor_args = ["--repo-root", str(repo_root), "--json"]
+    for tool_id in tool_ids_from_args(args):
+        doctor_args.extend(["--tool-id", tool_id])
+    if not args.dry_run:
+        doctor_args.append("--write-locks")
+    doctor_results = invoke_repo_json_script(repo_root, "scripts/doctor.py", *doctor_args, allow_failure=True)
+    update_map = tool_result_map(update_results)
+    support_map = tool_result_map(support_results)
+    doctor_map = tool_result_map(doctor_results)
+    payload = {
+        "repo_root": str(repo_root),
+        "managed_checkout": managed_checkout,
+        "tool_ids": tool_ids_from_args(args),
+        "results": {
+            tool_id: {
+                "update": update_map.get(tool_id),
+                "support": support_map.get(tool_id),
+                "doctor": doctor_map.get(tool_id),
+                "next_step": tool_next_step(tool_id, None, doctor_map.get(tool_id), support_map.get(tool_id)),
+            }
+            for tool_id in sorted(set([*update_map.keys(), *support_map.keys(), *doctor_map.keys()]))
+        },
+    }
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print_tool_human_summary(payload)
+    if any(
+        isinstance(result, dict)
+        and isinstance(result.get("update"), dict)
+        and result["update"].get("status") == "failed"
+        for result in payload["results"].values()
+    ):
+        return 1
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Thin charness CLI for managed local install, update, doctor, and uninstall flows."
+        description="Thin charness CLI for managed local install plus external tool install/update/doctor flows."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -1149,6 +1454,72 @@ def build_parser() -> argparse.ArgumentParser:
     reset_parser.add_argument("--cli-path", type=Path)
     reset_parser.add_argument("--json", action="store_true")
     reset_parser.set_defaults(func=cmd_reset)
+
+    tool_parser = subparsers.add_parser(
+        "tool",
+        help="Inspect, install, update, or sync external tool integrations that charness-managed skills depend on.",
+    )
+    tool_subparsers = tool_parser.add_subparsers(dest="tool_command", required=True)
+
+    def add_common_tool_args(command: argparse.ArgumentParser) -> None:
+        command.add_argument("--home-root", type=Path, default=default_home_root())
+        command.add_argument("--repo-root", type=Path, help="Use an explicit existing source checkout instead of the managed default checkout.")
+        command.add_argument("--repo-url", default=REPO_URL)
+        command.add_argument("--json", action="store_true")
+        command.add_argument("tool_ids", nargs="*")
+
+    def add_support_sync_args(command: argparse.ArgumentParser) -> None:
+        command.add_argument("--upstream-checkout", action="append", default=[])
+        command.add_argument("--local-dev-symlink", action="store_true")
+
+    tool_doctor_parser = tool_subparsers.add_parser(
+        "doctor",
+        help="Write machine-readable doctor state for one or more external tools.",
+    )
+    add_common_tool_args(tool_doctor_parser)
+    tool_doctor_parser.add_argument(
+        "--no-write-locks",
+        action="store_true",
+        help="Skip updating integrations/locks/*.json when you only want a read-only probe.",
+    )
+    tool_doctor_parser.set_defaults(func=cmd_tool_doctor)
+
+    tool_sync_support_parser = tool_subparsers.add_parser(
+        "sync-support",
+        help="Refresh generated support references or wrappers for one or more external tools.",
+    )
+    add_common_tool_args(tool_sync_support_parser)
+    add_support_sync_args(tool_sync_support_parser)
+    tool_sync_support_parser.add_argument("--dry-run", action="store_true")
+    tool_sync_support_parser.set_defaults(func=cmd_tool_sync_support)
+
+    tool_install_parser = tool_subparsers.add_parser(
+        "install",
+        help="Attempt tool installation where the manifest allows it, otherwise persist install guidance and doctor state.",
+    )
+    add_common_tool_args(tool_install_parser)
+    add_support_sync_args(tool_install_parser)
+    tool_install_parser.add_argument("--dry-run", action="store_true")
+    tool_install_parser.add_argument(
+        "--skip-sync-support",
+        action="store_true",
+        help="Skip support reference regeneration after install guidance or execution.",
+    )
+    tool_install_parser.set_defaults(func=cmd_tool_install)
+
+    tool_update_parser = tool_subparsers.add_parser(
+        "update",
+        help="Attempt manifest-declared external tool updates, then refresh support references and doctor state.",
+    )
+    add_common_tool_args(tool_update_parser)
+    add_support_sync_args(tool_update_parser)
+    tool_update_parser.add_argument("--dry-run", action="store_true")
+    tool_update_parser.add_argument(
+        "--skip-sync-support",
+        action="store_true",
+        help="Skip support reference regeneration after update.",
+    )
+    tool_update_parser.set_defaults(func=cmd_tool_update)
 
     return parser
 

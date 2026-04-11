@@ -13,6 +13,9 @@ self-validation.
   manifests, not in public skill bodies.
 - PREFER VALIDATORS AND SCRIPTS OVER PROSE RITUALS.
   If a repeated check matters, turn it into a repo-owned script.
+- LEAVE AGENT-READABLE STATE.
+  Install, update, and support-sync flows should emit structured output and
+  persist machine-readable state when they mutate the operator surface.
 - KEEP MANUALLY MAINTAINED REPO DOCS IN ENGLISH.
   `docs/handoff.md` may stay Korean when that makes the next session pickup
   sharper.
@@ -90,6 +93,9 @@ Read the smallest memory surface that answers the current question.
 - If a public skill needs repeated bootstrap, adapter resolution, artifact
   naming, or recovery behavior, ship a helper script instead of leaving it as
   prose-only guidance.
+- When tool install or update work is partly manual, keep the remaining steps
+  explicit in structured output and lock state so a later agent can continue
+  without rediscovering the machine.
 
 ### Session Discipline
 
