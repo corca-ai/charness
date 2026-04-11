@@ -57,11 +57,11 @@ def expect_adapter_bootstrap(
             raise EvalError(f"{skill_id} adapter resolve: unexpected payload {payload!r}")
         if expected_artifact_path is not None and payload.get("artifact_path") != expected_artifact_path:
             raise EvalError(f"{skill_id} adapter resolve: unexpected artifact_path {payload.get('artifact_path')!r}")
-            if expected_data is not None:
-                data = payload.get("data", {})
-                for key, expected in expected_data.items():
-                    if data.get(key) != expected:
-                        raise EvalError(f"{skill_id} adapter resolve: unexpected {key} {data.get(key)!r}")
+        if expected_data is not None:
+            data = payload.get("data", {})
+            for key, expected in expected_data.items():
+                if data.get(key) != expected:
+                    raise EvalError(f"{skill_id} adapter resolve: unexpected {key} {data.get(key)!r}")
 def scenario_skill_package_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "skill-valid"
     result = run_command(["python3", "scripts/validate-skills.py", "--repo-root", str(fixture)], cwd=root)
@@ -170,7 +170,6 @@ def scenario_quality_adapter_checked_in(root: Path) -> None:
     if "./scripts/run-quality.sh" not in gate_commands:
         raise EvalError(f"checked-in quality adapter resolve: missing canonical gate command in {gate_commands!r}")
 
-
 def scenario_narrative_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(
         root,
@@ -179,7 +178,6 @@ def scenario_narrative_adapter_bootstrap(root: Path) -> None:
         expected_artifact_path="skill-outputs/narrative/narrative.md",
     )
 
-
 def scenario_release_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(
         root,
@@ -187,7 +185,6 @@ def scenario_release_adapter_bootstrap(root: Path) -> None:
         adapter_name="release-adapter.yaml",
         expected_artifact_path="skill-outputs/release/release.md",
     )
-
 
 def scenario_handoff_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="handoff", adapter_name="handoff-adapter.yaml", expected_artifact_path="skill-outputs/handoff/handoff.md")
@@ -304,7 +301,6 @@ def assert_find_skills_payload(payload: dict[str, object]) -> None:
     if integration["readiness_checks"] != [{"check_id": "browser-setup", "summary": "Browser setup is complete."}]:
         raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
 
-
 def scenario_find_skills_local_first(root: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="charness-eval-find-skills-") as tmpdir:
         tmp = Path(tmpdir)
@@ -320,7 +316,6 @@ def scenario_find_skills_local_first(root: Path) -> None:
 def scenario_representative_skill_contracts(root: Path) -> None:
     result = run_command(["python3", "scripts/check-skill-contracts.py", "--repo-root", str(root)], cwd=root)
     expect_success(result, "representative skill contracts")
-
 
 def scenario_support_sync_contracts(root: Path) -> None:
     result = run_command(["python3", "scripts/eval_support_sync_contracts.py", "--repo-root", str(root)], cwd=root)

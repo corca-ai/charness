@@ -15,10 +15,9 @@ change.
 
 ```bash
 # Required Tools: rg
-# 1. charness boundary and migration context
+# 1. charness boundary and current product context
 sed -n '1,220p' README.md
 sed -n '1,240p' docs/master-plan.md
-sed -n '1,220p' docs/skill-migration-map.md
 
 # 2. existing target or source skill
 rg --files skills/public skills/support

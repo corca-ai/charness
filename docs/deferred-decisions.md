@@ -33,10 +33,10 @@ Reopen trigger:
 - Impact surfaces: `docs/host-packaging.md`, `scripts/sync_root_plugin_manifests.py`, `scripts/validate-packaging.py`
 - Reopen trigger: If host-specific metadata can no longer be represented as generated output from one shared manifest.
 
-### D2. Future Evaluator Engine ID
+### D2. Evaluator Engine ID
 
-- Question: Keep `workbench` transitional id or assign a permanent id before extraction?
-- Current choice: Standardize on `cautilus` as the active product id for extraction-facing work, with no transitional naming compatibility.
+- Question: Keep a legacy evaluator alias or standardize on one active product id?
+- Current choice: Standardize on `cautilus` as the active product id for extraction-facing work, with no legacy naming compatibility.
 - Why now: Current handoff and adapter flow already use `cautilus`, and keeping legacy naming would only preserve ambiguity.
 - Impact surfaces: `docs/handoff.md`, `.agents/cautilus-adapter.yaml`, future integration manifest naming
 - Reopen trigger: If upstream evaluator branding or repository identity changes.

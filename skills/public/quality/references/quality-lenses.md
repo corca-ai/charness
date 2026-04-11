@@ -4,7 +4,7 @@
 
 ## Concept
 
-Borrow from `concept-review`:
+Use a concept-integrity lens:
 
 - stable concepts
 - ownership honesty
@@ -18,11 +18,11 @@ Boundary note:
 - `quality` should catch duplicated or drifting concept surfaces when they are
   already visible in docs, gates, or runtime seams
 - a deeper question like "should these be two concepts at all?" still belongs
-  to concept-review-style analysis, not only duplicate detection
+  to concept-integrity analysis, not only duplicate detection
 
 ## Behavior
 
-Borrow from `test-improvement`:
+Use a behavior-confidence lens:
 
 - behavior-facing assertions
 - failure-path confidence

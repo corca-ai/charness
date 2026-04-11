@@ -12,7 +12,7 @@
 
 - `charness`는 portable Corca harness product로 정의됐다.
 - public skill / support skill / profile / integration 경계가 문서로 고정됐다.
-- `quality`는 public skill 하나로 두고, `hitl`은 collaboration profile에 두며, `ideation`이 `interview`를 흡수하고, `retro`는 mode로 확장한다는 결정이 반영됐다.
+- `quality`는 단일 public review skill로, `hitl`은 collaboration profile public skill로, `retro`는 mode-bearing public skill로 고정됐다.
 - public skill [narrative](/home/ubuntu/charness/skills/public/narrative/SKILL.md)가 추가됐다. 이 skill은 source-of-truth doc alignment와 audience-facing brief derivation을 묶고, checked-in [.agents/narrative-adapter.yaml](/home/ubuntu/charness/.agents/narrative-adapter.yaml)로 charness truth surface를 고정한다.
 - repo-owned plugin version bump, install-surface sync, and user update guidance를 다루는 maintainer-facing public skill [release](/home/ubuntu/charness/skills/public/release/SKILL.md)가 추가됐다. charness에서는 checked-in [.agents/release-adapter.yaml](/home/ubuntu/charness/.agents/release-adapter.yaml)이 canonical release seam이다.
 - external binary는 `charness`가 vendor하지 않고 integration manifest와 sync/update/doctor flow로 다룬다는 정책이 고정됐다.
@@ -25,7 +25,7 @@
 - `retro`의 `weekly`는 이제 prior weekly artifact 비교, evidence summary, optional `snapshot_path`를 통한 compact snapshot까지 허용하되, `gstack`식 host-specific live state는 가져오지 않는 방향으로 정리됐다.
 - `retro` adapter contract와 example은 이제 optional `snapshot_path`를 이해하고, weekly guidance는 prior retro comparison과 narrative-only fallback를 명시적으로 요구한다.
 - Session 5 초안으로 [skills/public/ideation/SKILL.md](/home/ubuntu/charness/skills/public/ideation/SKILL.md)와 관련 references가 추가됐다.
-- `ideation`은 `interview`를 흡수하고, product/system/workflow concept shaping에 맞춰 problem lens + entity/stage lens를 함께 쓰되 `spec`으로 넘어가기 전 discovery-to-concept 단계에 머무르도록 설계됐다.
+- `ideation`은 product/system/workflow concept shaping에 맞춰 problem lens + entity/stage lens를 함께 쓰되 `spec`으로 넘어가기 전 discovery-to-concept 단계에 머무르도록 설계됐다.
 - `ideation`은 living concept model, truth/edge, world modeling, and agent/human lenses 중심으로 재구성됐다.
 - Session 6 초안으로 [skills/public/spec/SKILL.md](/home/ubuntu/charness/skills/public/spec/SKILL.md)와 관련 references가 추가됐다.
 - `spec`은 `ideation` 산출물을 그대로 이어받아 현재 구현 계약을 관리하는 living contract skill로 재설계됐다.
@@ -35,7 +35,7 @@
 - `impl`은 living contract를 소비하되 별도 `spec` 세션이 없어도 inline current-slice contract를 부트스트랩할 수 있는 execution skill로 조정되고 있다.
 - `debug`, `gather`, `handoff`는 durable artifact 기본 위치를 `skill-outputs/<skill-name>/` 아래 정해진 파일로 두고, adapter `output_dir` override와 helper script bootstrap까지 갖추는 방향으로 보강되고 있다.
 - Session 8 초안으로 [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md), 관련 references, adapter helper scripts, 그리고 [typescript-quality.md](/home/ubuntu/charness/presets/typescript-quality.md) / [python-quality.md](/home/ubuntu/charness/presets/python-quality.md) sample preset이 추가됐다.
-- `quality`는 `concept-review`, `test-improvement`, security posture review를 하나의 public proposal skill로 묶고, 기본 artifact를 `skill-outputs/quality/quality.md`에 두며 adapter `output_dir` override를 허용한다.
+- `quality`는 concept integrity, behavior confidence, security posture review를 하나의 public proposal skill로 묶고, 기본 artifact를 `skill-outputs/quality/quality.md`에 두며 adapter `output_dir` override를 허용한다.
 - Session 9 dogfood pass로 [quality.md](/home/ubuntu/charness/skill-outputs/quality/quality.md)가 추가됐고, repo-specific self-validation 초안으로 `scripts/validate-skills.py`, `scripts/validate-profiles.py`, `scripts/validate-adapters.py`, `scripts/check-doc-links.py`가 생겼다.
 - Session 9에서 skill frontmatter description은 YAML-safe quoted string으로 통일됐고, `constitutional` profile에서 아직 없는 `find-skills` bundle reference를 제거했다.
 - Session 9에서 [AGENTS.md](/home/ubuntu/charness/AGENTS.md)가 추가돼, commit discipline, portability, validator entrypoints, handoff update 원칙을 repo-local operating guide로 정리했다.
@@ -120,6 +120,7 @@
 - [skills/public/retro/SKILL.md](/home/ubuntu/charness/skills/public/retro/SKILL.md)는 이제 valid user catch가 드러낸 실제 workflow miss에 대해 짧은 auto-retro를 요구하고, every retro closeout에 `Persisted: yes <path>` 또는 `Persisted: no <reason>`를 명시하도록 강해졌다.
 - [operator-acceptance.md](/home/ubuntu/charness/docs/operator-acceptance.md)가 추가돼, 남은 roadmap item을 사용자가 직접 인수할 때 읽을 문서, 실행할 명령, agent prompt, acceptance 기준을 한 곳에 모은다.
 - `run-evals.py`에는 이제 `agent-browser`/`specdown` shipped support-sync contract를 보는 dry-run scenario가 추가돼, upstream support reference가 있는 integration과 그렇지 않은 integration을 repo-owned smoke로 구분한다.
+- 짧은 retro: installed surface dogfood 전 legacy skill 명칭이 active references와 handoff에 남아 있던 miss를 수정해야 한다는 점이 확인됐다. 이 retro는 이 handoff 항목으로 persisted 됐다.
 - [skills/public/handoff/SKILL.md](/home/ubuntu/charness/skills/public/handoff/SKILL.md)는 이제 materially changed handoff를 마무리하기 전에, runtime이 허용하면 1~2개의 bounded subagent premortem을 돌려 “다음 에이전트가 무엇을 오해할지”를 먼저 점검하라고 요구한다.
 - manifest와 profile metadata는 v1에서 JSON을 canonical format으로 두고, preset은 schema 도입 전까지 markdown convention으로 관리한다.
 - [export-plugin.py](/home/ubuntu/charness/scripts/export-plugin.py)는 이제 shared manifest 기본 version을 유지하면서 export-time `--version-override`를 허용한다.
@@ -191,7 +192,6 @@
 - [eval_registry.py](/home/ubuntu/charness/scripts/eval_registry.py)
 - [external-integrations.md](/home/ubuntu/charness/docs/external-integrations.md)
 - [runtime-capability-contract.md](/home/ubuntu/charness/docs/runtime-capability-contract.md)
-- [skill-migration-map.md](/home/ubuntu/charness/docs/skill-migration-map.md)
 - [control-plane.md](/home/ubuntu/charness/docs/control-plane.md)
 - [manifest.schema.json](/home/ubuntu/charness/integrations/tools/manifest.schema.json)
 - [profile.schema.json](/home/ubuntu/charness/profiles/profile.schema.json)
