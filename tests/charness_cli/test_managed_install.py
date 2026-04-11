@@ -11,6 +11,9 @@ from .support import CLI, clone_seeded_managed_home, make_fake_claude, run_cli
 def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
     home_root = tmp_path / "home"
     fake_claude = make_fake_claude(tmp_path)
+    legacy_skills = home_root / ".agents" / "skills"
+    legacy_skills.parent.mkdir(parents=True, exist_ok=True)
+    legacy_skills.symlink_to(CLI.parents[1] / "skills" / "public", target_is_directory=True)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
     env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
@@ -28,6 +31,8 @@ def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
         f"`{home_root / '.agents' / 'plugins' / 'marketplace.json'}`. If `charness` is still not available, open Plugin Directory and install or enable the local `charness` entry."
     )
     assert payload["next_steps"]["claude"] == "Restart Claude Code to load charness."
+    assert payload["removed_legacy_skills_symlink"] is True
+    assert "legacy_skills_symlink_removed" in payload["completed_actions"]
     marketplace = json.loads((home_root / ".agents" / "plugins" / "marketplace.json").read_text(encoding="utf-8"))
     assert marketplace["plugins"][0]["name"] == "charness"
     assert marketplace["plugins"][0]["source"]["path"] == "./.codex/plugins/charness"
@@ -37,6 +42,8 @@ def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
     assert "charness@corca-charness" in installed_plugins["plugins"]
     assert (home_root / ".local" / "bin" / "charness").is_file()
     assert (home_root / ".local" / "bin" / "claude-charness").is_file()
+    assert legacy_skills.exists() is False
+    assert legacy_skills.is_symlink() is False
 
 
 def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
@@ -53,6 +60,7 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert payload["claude_wrapper_present"] is True
     assert payload["codex_marketplace_entry"]["name"] == "charness"
     assert payload["codex_marketplace_entry"]["source"]["path"] == "./.codex/plugins/charness"
+    assert payload["legacy_skills_symlink_present"] is False
     assert payload["codex_source_version"] == "0.0.0-dev"
     assert payload["codex_cache_manifest_version"] is None
     assert payload["codex_source_cache_drift"] is False
@@ -197,6 +205,7 @@ def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path, seeded_
     assert payload["removed_plugin_root"] is True
     assert payload["removed_codex_marketplace_entry"] is True
     assert payload["removed_codex_cache"] is True
+    assert payload["removed_legacy_skills_symlink"] is False
     assert payload["removed_codex_config_entries"] == ["charness@charness"]
     assert payload["removed_claude_plugin"] is True
     assert payload["removed_claude_marketplace"] is True

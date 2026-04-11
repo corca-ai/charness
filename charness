@@ -38,6 +38,10 @@ def legacy_plugin_root(home_root: Path) -> Path:
     return home_root / ".agents" / "plugins" / PACKAGE_ID
 
 
+def legacy_skills_path(home_root: Path) -> Path:
+    return home_root / ".agents" / "skills"
+
+
 def default_codex_marketplace_path(home_root: Path) -> Path:
     return home_root / ".agents" / "plugins" / "marketplace.json"
 
@@ -682,6 +686,11 @@ def install_surface(
     old_plugin_root = legacy_plugin_root(home_root)
     if old_plugin_root != plugin_root and old_plugin_root.exists():
         shutil.rmtree(old_plugin_root)
+    removed_legacy_skills_symlink = False
+    old_skills_path = legacy_skills_path(home_root)
+    if old_skills_path.is_symlink():
+        old_skills_path.unlink()
+        removed_legacy_skills_symlink = True
     invoke_repo_script(repo_root, "scripts/validate-packaging.py", "--repo-root", str(repo_root))
     invoke_repo_script(repo_root, "scripts/sync_root_plugin_manifests.py", "--repo-root", str(repo_root))
     install_output = invoke_repo_script(
@@ -698,6 +707,8 @@ def install_surface(
     )
     payload = json.loads(install_output)
     completed_actions = ["codex_source_prepared", "codex_marketplace_registered"]
+    if removed_legacy_skills_symlink:
+        completed_actions.append("legacy_skills_symlink_removed")
     if cli_path is not None:
         install_cli_binary(cli_path)
         payload["cli_path"] = str(cli_path)
@@ -719,6 +730,7 @@ def install_surface(
     payload["completed_actions"] = completed_actions
     payload["next_steps"]["claude"] = claude_plugin_message
     payload["claude_marketplace_message"] = claude_marketplace_message
+    payload["removed_legacy_skills_symlink"] = removed_legacy_skills_symlink
     return payload
 
 
@@ -746,6 +758,8 @@ def build_doctor_payload(
         "plugin_root_present": plugin_root.is_dir(),
         "legacy_plugin_root": str(legacy_plugin_root(home_root)),
         "legacy_plugin_root_present": legacy_plugin_root(home_root).is_dir(),
+        "legacy_skills_path": str(legacy_skills_path(home_root)),
+        "legacy_skills_symlink_present": legacy_skills_path(home_root).is_symlink(),
         "codex_marketplace_path": str(codex_marketplace_path),
         "codex_marketplace_entry": codex_marketplace_entry(codex_marketplace_path),
         "codex_source_manifest_path": str(codex_source_manifest_path(plugin_root)),
@@ -838,6 +852,8 @@ def print_human_summary(payload: dict[str, object]) -> None:
         print(f"CODEX_SOURCE_VERSION: {payload['codex_source_version']}")
     if payload.get("legacy_plugin_root_present"):
         print(f"LEGACY_PLUGIN_ROOT: present {payload['legacy_plugin_root']}")
+    if payload.get("legacy_skills_symlink_present"):
+        print(f"LEGACY_SKILLS_SYMLINK: present {payload['legacy_skills_path']}")
     entry = payload.get("codex_marketplace_entry")
     if isinstance(entry, dict):
         source = entry.get("source", {})
@@ -1223,6 +1239,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     removed_marketplace = remove_codex_marketplace_entry(codex_marketplace_path)
     removed_plugin_root = False
     removed_legacy_plugin_root = False
+    removed_legacy_skills_symlink = False
     removed_codex_cache = False
     removed_codex_config_entries: list[str] = []
     removed_claude_plugin = False
@@ -1237,6 +1254,10 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     if old_plugin_root != plugin_root and old_plugin_root.exists():
         shutil.rmtree(old_plugin_root)
         removed_legacy_plugin_root = True
+    old_skills_path = legacy_skills_path(home_root)
+    if old_skills_path.is_symlink():
+        old_skills_path.unlink()
+        removed_legacy_skills_symlink = True
     codex_cache_path = default_codex_cache_root(home_root) / PACKAGE_ID
     if codex_cache_path.exists():
         shutil.rmtree(codex_cache_path)
@@ -1265,6 +1286,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
         "removed_codex_marketplace_entry": removed_marketplace,
         "removed_plugin_root": removed_plugin_root,
         "removed_legacy_plugin_root": removed_legacy_plugin_root,
+        "removed_legacy_skills_symlink": removed_legacy_skills_symlink,
         "removed_codex_cache": removed_codex_cache,
         "removed_codex_config_entries": removed_codex_config_entries,
         "removed_claude_plugin": removed_claude_plugin,
