@@ -229,6 +229,11 @@ It stays read-only:
 The install contract should be usable by both humans and agents. The commands
 below are intended to be copy-pasteable in either workflow.
 
+Canonical install documents live in the repo root:
+
+- `INSTALL.md`
+- `UNINSTALL.md`
+
 ### What Gets Installed
 
 Regardless of host, the plugin unit is this repo checkout, not an à la carte

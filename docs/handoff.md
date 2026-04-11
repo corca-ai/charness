@@ -2,7 +2,7 @@
 
 ## Workflow Trigger
 
-- 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [README.md](/home/ubuntu/charness/README.md), [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md), [docs/operator-acceptance.md](/home/ubuntu/charness/docs/operator-acceptance.md), [plugins/charness/.codex-plugin/plugin.json](/home/ubuntu/charness/plugins/charness/.codex-plugin/plugin.json), [.agents/plugins/marketplace.json](/home/ubuntu/charness/.agents/plugins/marketplace.json)을 읽고 남은 Codex install proof만 이어서 본다.
+- 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [INSTALL.md](/home/ubuntu/charness/INSTALL.md), [UNINSTALL.md](/home/ubuntu/charness/UNINSTALL.md), [README.md](/home/ubuntu/charness/README.md), [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md), [docs/operator-acceptance.md](/home/ubuntu/charness/docs/operator-acceptance.md), [plugins/charness/.codex-plugin/plugin.json](/home/ubuntu/charness/plugins/charness/.codex-plugin/plugin.json), [.agents/plugins/marketplace.json](/home/ubuntu/charness/.agents/plugins/marketplace.json)을 읽고 남은 Codex install proof만 이어서 본다.
 - 이 머신에서는 `~/.agents/skills` source-checkout symlink가 이미 제거돼 있으니, 다시 생기지 않았는지만 짧게 확인한다.
 - Claude local proof는 끝났다. 실제 local path는 `--plugin-dir /absolute/path/to/charness/plugins/charness`이고, parent `plugins/`를 주면 skill discovery proof가 되지 않는다.
 - Codex는 exported consumer root와 plugin root 둘 다에서 `exec` 경로로는 local marketplace/plugin discovery가 잡히지 않았으니, interactive session 또는 다른 머신에서 실제 install/discovery proof를 이어서 본다.
@@ -17,6 +17,7 @@
 - 이 머신의 `~/.agents/skills` source-checkout symlink는 제거됐다.
 - Claude local dogfood는 exported plugin root 기준으로 확인됐다. `claude --plugin-dir /tmp/.../plugins/charness` debug log에서 `Loaded 14 skills from plugin charness`가 찍혔고, `/gather` 호출로 `TITLE:charness` 응답까지 확인했다.
 - Claude local docs는 parent `plugins/` 경로를 가리키고 있었고, 그 경로는 plugin root가 아니라서 skill discovery proof가 되지 않았다. 이번 세션에서 관련 문서를 `plugins/charness` 기준으로 고친다.
+- root [INSTALL.md](/home/ubuntu/charness/INSTALL.md)와 [UNINSTALL.md](/home/ubuntu/charness/UNINSTALL.md)를 추가해 agent-readable 설치 계약을 README에서 분리했다.
 - Codex `exec`는 `/tmp` exported consumer root, exported plugin root, repo root 비교 기준으로 local marketplace install proof를 제공하지 못했다. exported roots에서는 curated builtin/plugin skill만 보였고, repo root에서는 checked-in plugin 대신 source checkout `skills/`를 직접 읽었다.
 - 마지막 repo 검증은 `./scripts/run-quality.sh` 통과와 Claude exported-plugin smoke/runtime proof다.
 
@@ -38,6 +39,8 @@
 - [docs/handoff.md](/home/ubuntu/charness/docs/handoff.md)
 - [AGENTS.md](/home/ubuntu/charness/AGENTS.md)
 - [README.md](/home/ubuntu/charness/README.md)
+- [INSTALL.md](/home/ubuntu/charness/INSTALL.md)
+- [UNINSTALL.md](/home/ubuntu/charness/UNINSTALL.md)
 - [docs/master-plan.md](/home/ubuntu/charness/docs/master-plan.md)
 - [docs/public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)
 - [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md)

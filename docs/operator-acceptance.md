@@ -110,6 +110,8 @@ Why this exists:
 
 Read first:
 
+- [INSTALL.md](/home/ubuntu/charness/INSTALL.md)
+- [UNINSTALL.md](/home/ubuntu/charness/UNINSTALL.md)
 - [README.md](/home/ubuntu/charness/README.md)
 - [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md)
 - [packaging/charness.json](/home/ubuntu/charness/packaging/charness.json)
