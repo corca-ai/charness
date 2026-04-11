@@ -147,7 +147,7 @@ Operationally this means:
 
 - Claude shared install can treat the repo as a single-plugin marketplace
 - Claude local development should point `--plugin-dir` at the checked-in
-  `plugins/` directory, not the repo root
+  `plugins/charness` directory, not the repo root or the `plugins/` parent
 - Codex local development should load `./plugins/charness` through the
   checked-in repo marketplace file
 - public GitHub install remains a testable hypothesis, not an already-proven

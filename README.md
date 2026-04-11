@@ -253,13 +253,13 @@ Expected non-bundled content:
 Verified local development path:
 
 ```bash
-claude --plugin-dir /absolute/path/to/charness/plugins
+claude --plugin-dir /absolute/path/to/charness/plugins/charness
 ```
 
 Verified smoke check:
 
 ```bash
-claude --print --plugin-dir /absolute/path/to/charness/plugins \
+claude --print --plugin-dir /absolute/path/to/charness/plugins/charness \
   "Return exactly one line: charness-smoke"
 ```
 
@@ -305,7 +305,7 @@ Update model:
 Recommended dual-host shape:
 
 1. Clone `charness` once.
-2. Point Claude at that checkout with `claude --plugin-dir /absolute/path/to/charness/plugins`.
+2. Point Claude at that checkout with `claude --plugin-dir /absolute/path/to/charness/plugins/charness`.
 3. Point Codex at the same checkout through the checked-in `.agents/plugins/marketplace.json`.
 4. Update the checkout once when you want both hosts to move together.
 

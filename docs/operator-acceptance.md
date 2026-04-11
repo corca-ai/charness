@@ -126,7 +126,7 @@ Suggested operator runs:
 
 - Claude Code:
   - try the shared marketplace path from `README.md`
-  - try local `--plugin-dir /absolute/path/to/charness/plugins`
+  - try local `--plugin-dir /absolute/path/to/charness/plugins/charness`
 - Codex:
   - use the checked-in `.agents/plugins/marketplace.json`
   - reload Codex after updating the checkout
