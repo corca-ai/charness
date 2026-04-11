@@ -12,7 +12,8 @@ source-of-truth repo unless the user explicitly asks for that.
   to simulate uninstall
 - do not remove a user's checkout, CLI, or generated export without explicit
   confirmation
-- prefer `charness uninstall` over ad hoc host-specific file deletion
+- prefer `charness reset` or `charness uninstall` over ad hoc host-specific
+  file deletion
 
 ## Step 1: Determine The Install Mode
 
@@ -24,14 +25,29 @@ Possible install modes:
 
 ## Step 2: Remove Host References
 
-Preferred path:
+Preferred path when the user wants to keep the checkout and CLI but remove host
+plugin state:
+
+```bash
+charness reset
+```
+
+This removes:
+
+- Codex marketplace entry, source plugin root, cache copy, and charness config
+  entry
+- Claude installed plugin and configured marketplace
+- the managed Claude wrapper
+
+Preferred path when the user also wants the exported host surfaces removed under
+the uninstall name:
 
 ```bash
 charness uninstall
 ```
 
-This removes the managed Codex marketplace entry, the exported plugin root, and
-the managed Claude wrapper while preserving the source checkout and CLI.
+`charness uninstall` now removes the same host-facing plugin state while still
+preserving the source checkout and CLI unless explicit delete flags are passed.
 
 If the host caches plugin visibility, restart Codex after the uninstall.
 
@@ -51,7 +67,11 @@ Only delete files after explicit confirmation.
 Typical managed local paths:
 
 - `~/.codex/plugins/charness`
+- `~/.codex/plugins/cache/charness`
+- `~/.codex/config.toml`
 - `~/.agents/plugins/marketplace.json`
+- `~/.claude/plugins/known_marketplaces.json`
+- `~/.claude/plugins/installed_plugins.json`
 - `~/.agents/src/charness`
 - `~/.local/bin/charness`
 - `~/.local/bin/claude-charness`

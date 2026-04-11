@@ -20,13 +20,16 @@ from scripts.eval_registry import SCENARIOS, Scenario
 
 class EvalError(Exception):
     pass
-def run_command(command: list[str], *, cwd: Path) -> subprocess.CompletedProcess[str]:
+
+
+def run_command(command: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         command,
         cwd=cwd,
         check=False,
         capture_output=True,
         text=True,
+        env=env,
     )
 def expect_success(result: subprocess.CompletedProcess[str], context: str) -> None:
     if result.returncode != 0:

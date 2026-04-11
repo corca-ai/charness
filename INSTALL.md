@@ -57,22 +57,19 @@ If you are deliberately proving the install from a non-managed checkout, use:
 ./charness init --repo-root /absolute/path/to/charness --skip-cli-install
 ```
 
-## Step 2: Expected Managed Surface
+## Step 2: Follow The `next_steps` Output
 
-After `charness init`, the managed install should look like:
+`charness init` is the canonical host detector. Do not guess which host action
+still needs to happen. Read the emitted `next_steps` and follow them exactly.
 
-- source checkout at `~/.agents/src/charness`
-- installed CLI at `~/.local/bin/charness`
-- exported plugin root at `~/.codex/plugins/charness`
-- Codex personal marketplace at `~/.agents/plugins/marketplace.json`
-- Codex marketplace `source.path` pointing at `./.codex/plugins/charness`
-- Claude wrapper at `~/.local/bin/claude-charness`
+Typical outcomes:
 
-Claude should use the wrapper rather than ad hoc `--plugin-dir` calls:
-
-```bash
-claude-charness
-```
+- Claude: marketplace and plugin install complete during `charness init`, so
+  the remaining step is usually just restarting Claude Code
+- Codex: `charness init` prepares `~/.codex/plugins/charness` plus
+  `~/.agents/plugins/marketplace.json`; if Codex has not yet installed the
+  plugin, `next_steps.codex` tells the operator to restart Codex and, if
+  needed, install or enable `charness` from Plugin Directory
 
 The checked-in root marketplace files remain generated compatibility artifacts,
 not the official operator-facing install path.
@@ -82,30 +79,18 @@ not the official operator-facing install path.
 Recommended verification steps:
 
 1. Run `charness doctor`.
-2. Restart Codex from the home directory that owns
-   `~/.agents/plugins/marketplace.json`.
-3. If `charness doctor` still reports `needs-host-install`, open Plugin
-   Directory and install or enable the local `charness` entry.
-4. Confirm that Codex host markers appear:
-   `~/.codex/plugins/cache/.../charness/...` and a `charness@...` plugin entry
-   in `~/.codex/config.toml`.
-5. If the behavior is ambiguous, record the exact host output and treat that as
+2. Confirm that host guidance matches reality:
+   - Codex should report whether cache/config markers are already present or a
+     host install step is still required
+   - Claude should report whether marketplace and installed-plugin markers are
+     already present
+3. If the behavior is ambiguous, record the exact host output and treat that as
    a proof gap to close, not as silent success.
-
-If you need to prove Claude skill runtime from the installed surface, prefer an
-actual skill invocation such as:
-
-```bash
-claude-charness --print \
-  "/gather Read ~/.codex/plugins/charness/README.md and return exactly TITLE:charness if the title is '# charness'."
-```
 
 ## Step 4: Update Model
 
 - run `charness update`
-- restart Codex after the update when the host still depends on marketplace
-  rediscovery
-- rerun `claude-charness` when needed
+- follow the new `next_steps` output after the update
 - skill execution must stay read-only with respect to install/update state
 
 ## Step 5: Report Back

@@ -127,7 +127,7 @@ python3 scripts/sync_root_plugin_manifests.py --repo-root .
 Suggested operator runs:
 
 - bootstrap or reuse the managed checkout, then run `./charness init`
-- verify Claude with `claude-charness`
+- verify Claude with `claude plugins list` or `charness doctor`
 - verify Codex through `~/.agents/plugins/marketplace.json`, then restart Codex
   and install or enable the local `charness` entry from Plugin Directory if
   `charness doctor` still reports `needs-host-install`

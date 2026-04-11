@@ -264,19 +264,12 @@ Official managed path:
 
 ```bash
 ./charness init
-claude-charness
-```
-
-Managed smoke check:
-
-```bash
-claude-charness --print \
-  "Return exactly one line: charness-smoke"
 ```
 
 Update model:
 
 - run `charness update`
+- restart Claude Code after `charness init` or `charness update`
 - do not add runtime self-update checks to skills
 
 ### Codex Only
@@ -307,7 +300,7 @@ Current status:
 - managed local CLI install is the official operator path
 - `charness init` deterministically prepares the local plugin source and
   personal marketplace entry
-- Codex host install or enable still depends on Codex itself; use
+- Codex host install or enable may still depend on Codex itself; use
   `charness doctor` to see whether cache/config markers appeared and whether a
   manual Plugin Directory step is still required
 
@@ -325,6 +318,7 @@ In a source checkout:
 ./charness init
 ./charness doctor
 ./charness update
+./charness reset
 ./charness uninstall
 ```
 
@@ -334,15 +328,17 @@ After the first managed install puts the CLI on PATH:
 charness init
 charness doctor
 charness update
+charness reset
 charness uninstall
 ```
 
 Current command intent:
 
 - `init`: bootstrap or refresh the managed local install surface
-- `doctor`: inspect the managed install, wrapper, and marketplace visibility
+- `doctor`: inspect the managed install plus host-native Codex and Claude state
 - `update`: refresh the installed surface and optionally advance the managed
   checkout
+- `reset`: remove host plugin state while keeping the managed checkout and CLI
 - `uninstall`: remove the managed host-facing install surface while preserving
   the checkout unless explicitly asked otherwise
 
@@ -353,7 +349,8 @@ Recommended shared shape:
 1. Keep the source checkout at `~/.agents/src/charness`.
 2. Run `charness init` once to export the installed plugin surface to `~/.codex/plugins/charness`.
 3. Point Codex at that exported surface through `~/.agents/plugins/marketplace.json`.
-4. Use `claude-charness` so Claude always points at that same exported surface.
+4. Let `charness init` install the Claude plugin through Claude's own plugin
+   manager, then restart Claude Code when `next_steps.claude` asks for it.
 5. Run `charness update` when you want both hosts to move together.
 
 Optional startup advisory:

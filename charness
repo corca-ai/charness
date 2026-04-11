@@ -49,6 +49,18 @@ def default_codex_cache_root(home_root: Path) -> Path:
     return home_root / ".codex" / "plugins" / "cache"
 
 
+def default_claude_plugins_root(home_root: Path) -> Path:
+    return home_root / ".claude" / "plugins"
+
+
+def default_claude_known_marketplaces_path(home_root: Path) -> Path:
+    return default_claude_plugins_root(home_root) / "known_marketplaces.json"
+
+
+def default_claude_installed_plugins_path(home_root: Path) -> Path:
+    return default_claude_plugins_root(home_root) / "installed_plugins.json"
+
+
 def default_claude_wrapper_path(home_root: Path) -> Path:
     return home_root / ".local" / "bin" / "claude-charness"
 
@@ -189,6 +201,23 @@ def load_json(path: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def load_packaging(path: Path) -> dict[str, object]:
+    return load_json(path / "packaging" / f"{PACKAGE_ID}.json")
+
+
+def claude_marketplace_name(repo_root: Path) -> str:
+    packaging = load_packaging(repo_root)
+    return str(packaging["claude"]["marketplace"]["name"])
+
+
+def claude_plugin_ref(repo_root: Path) -> str:
+    return f"{PACKAGE_ID}@{claude_marketplace_name(repo_root)}"
+
+
+def claude_marketplace_source(repo_root: Path) -> str:
+    return str(repo_root)
+
+
 def codex_marketplace_entry(path: Path) -> dict[str, object] | None:
     if not path.is_file():
         return None
@@ -200,6 +229,156 @@ def codex_marketplace_entry(path: Path) -> dict[str, object] | None:
         if isinstance(plugin, dict) and plugin.get("name") == PACKAGE_ID:
             return plugin
     return None
+
+
+def claude_known_marketplace(path: Path, name: str) -> dict[str, object] | None:
+    if not path.is_file():
+        return None
+    data = load_json(path)
+    entry = data.get(name)
+    return entry if isinstance(entry, dict) else None
+
+
+def claude_installed_plugin(path: Path, plugin_ref: str) -> dict[str, object] | None:
+    if not path.is_file():
+        return None
+    data = load_json(path)
+    plugins = data.get("plugins")
+    if not isinstance(plugins, dict):
+        return None
+    entries = plugins.get(plugin_ref)
+    if not isinstance(entries, list) or not entries:
+        return None
+    first = entries[0]
+    return first if isinstance(first, dict) else None
+
+
+def claude_enabled_status(repo_root: Path) -> dict[str, object] | None:
+    if shutil.which("claude") is None:
+        return None
+    result = run(["claude", "plugins", "list"], cwd=repo_root)
+    if result.returncode != 0:
+        return {"ok": False, "raw": result.stdout + result.stderr}
+    plugin_ref = claude_plugin_ref(repo_root)
+    enabled = None
+    present = False
+    current = None
+    for raw_line in result.stdout.splitlines():
+        line = raw_line.strip()
+        if line.startswith("❯ "):
+            current = line.removeprefix("❯ ").strip()
+            continue
+        if current == plugin_ref and line.startswith("Status:"):
+            present = True
+            enabled = "enabled" in line.lower()
+            break
+    return {"ok": True, "plugin_ref": plugin_ref, "present": present, "enabled": enabled, "raw": result.stdout}
+
+
+def remove_codex_config_entries(config_path: Path) -> list[str]:
+    if not config_path.is_file():
+        return []
+    text = config_path.read_text(encoding="utf-8")
+    pattern = re.compile(r'^\[plugins\."([^"]+)"\]\s*$([\s\S]*?)(?=^\[|\Z)', re.MULTILINE)
+    removed: list[str] = []
+    rebuilt: list[str] = []
+    last_end = 0
+    for match in pattern.finditer(text):
+        plugin_id = match.group(1)
+        start, end = match.span()
+        rebuilt.append(text[last_end:start])
+        if plugin_id.startswith(f"{PACKAGE_ID}@"):
+            removed.append(plugin_id)
+        else:
+            rebuilt.append(text[start:end])
+        last_end = end
+    rebuilt.append(text[last_end:])
+    if removed:
+        config_path.write_text("".join(rebuilt).rstrip() + "\n", encoding="utf-8")
+    return removed
+
+
+def ensure_parent_json(path: Path, payload: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def remove_claude_installed_entry(path: Path, plugin_ref: str) -> bool:
+    if not path.is_file():
+        return False
+    data = load_json(path)
+    plugins = data.get("plugins")
+    if not isinstance(plugins, dict) or plugin_ref not in plugins:
+        return False
+    plugins.pop(plugin_ref, None)
+    ensure_parent_json(path, data)
+    return True
+
+
+def remove_claude_marketplace_entry(path: Path, marketplace_name: str) -> bool:
+    if not path.is_file():
+        return False
+    data = load_json(path)
+    if marketplace_name not in data:
+        return False
+    data.pop(marketplace_name, None)
+    ensure_parent_json(path, data)
+    return True
+
+
+def ensure_claude_marketplace(repo_root: Path, *, home_root: Path) -> tuple[list[str], str]:
+    if shutil.which("claude") is None:
+        return [], "Claude CLI not detected; skipped marketplace bootstrap."
+    name = claude_marketplace_name(repo_root)
+    source = claude_marketplace_source(repo_root)
+    known_path = default_claude_known_marketplaces_path(home_root)
+    existing = claude_known_marketplace(known_path, name)
+    actions: list[str] = []
+    existing_source = existing.get("source") if isinstance(existing, dict) else None
+    existing_path = existing_source.get("path") if isinstance(existing_source, dict) else None
+    if existing is None:
+        result = run(["claude", "plugins", "marketplace", "add", "--scope", "user", source], cwd=repo_root)
+        expect_success(result, f"claude marketplace add `{source}`")
+        update_result = run(["claude", "plugins", "marketplace", "update", name], cwd=repo_root)
+        expect_success(update_result, f"claude marketplace update `{name}`")
+        actions.append("claude_marketplace_added")
+        actions.append("claude_marketplace_updated")
+        return actions, f"Claude marketplace `{name}` was added from `{source}`."
+    if existing_path != source:
+        remove_result = run(["claude", "plugins", "marketplace", "remove", name], cwd=repo_root)
+        expect_success(remove_result, f"claude marketplace remove `{name}`")
+        add_result = run(["claude", "plugins", "marketplace", "add", "--scope", "user", source], cwd=repo_root)
+        expect_success(add_result, f"claude marketplace add `{source}`")
+        update_result = run(["claude", "plugins", "marketplace", "update", name], cwd=repo_root)
+        expect_success(update_result, f"claude marketplace update `{name}`")
+        actions.extend(["claude_marketplace_replaced", "claude_marketplace_added", "claude_marketplace_updated"])
+        return actions, f"Claude marketplace `{name}` was repointed to `{source}`."
+    return actions, f"Claude marketplace `{name}` already configured."
+
+
+def ensure_claude_plugin(repo_root: Path, *, home_root: Path, update: bool) -> tuple[list[str], str]:
+    if shutil.which("claude") is None:
+        return [], "Claude CLI not detected; skipped plugin install."
+    marketplace_name = claude_marketplace_name(repo_root)
+    plugin_ref = claude_plugin_ref(repo_root)
+    actions: list[str] = []
+    if update:
+        result = run(["claude", "plugins", "marketplace", "update", marketplace_name], cwd=repo_root)
+        expect_success(result, f"claude marketplace update `{marketplace_name}`")
+        actions.append("claude_marketplace_updated")
+    installed = claude_installed_plugin(default_claude_installed_plugins_path(home_root), plugin_ref)
+    if installed is None:
+        result = run(["claude", "plugins", "install", "-s", "user", plugin_ref], cwd=repo_root)
+        expect_success(result, f"claude plugin install `{plugin_ref}`")
+        actions.append("claude_plugin_installed")
+    elif update:
+        result = run(["claude", "plugins", "update", "-s", "user", plugin_ref], cwd=repo_root)
+        expect_success(result, f"claude plugin update `{plugin_ref}`")
+        actions.append("claude_plugin_updated")
+    result = run(["claude", "plugins", "enable", "-s", "user", plugin_ref], cwd=repo_root)
+    if result.returncode == 0:
+        actions.append("claude_plugin_enabled")
+    return actions, "Restart Claude Code to load the updated charness plugin." if update else "Restart Claude Code to load charness."
 
 
 def codex_cache_entries(cache_root: Path) -> list[dict[str, str]]:
@@ -263,6 +442,48 @@ def build_codex_host_guidance(
     }
 
 
+def build_claude_host_guidance(
+    *,
+    repo_root: Path,
+    home_root: Path,
+    marketplace_entry: dict[str, object] | None,
+    installed_entry: dict[str, object] | None,
+    enabled_status: dict[str, object] | None,
+) -> dict[str, object]:
+    if shutil.which("claude") is None:
+        return {
+            "status": "unavailable",
+            "manual_action_required": False,
+            "message": "Claude CLI not detected on this machine.",
+        }
+    plugin_ref = claude_plugin_ref(repo_root)
+    if marketplace_entry is None:
+        return {
+            "status": "needs-marketplace",
+            "manual_action_required": True,
+            "message": "Run `charness init` to add the Claude marketplace and install charness.",
+        }
+    listed = enabled_status.get("present") if isinstance(enabled_status, dict) else False
+    if installed_entry is None and not listed:
+        return {
+            "status": "needs-install",
+            "manual_action_required": True,
+            "message": f"Run `charness init` to install `{plugin_ref}` into Claude.",
+        }
+    enabled = enabled_status.get("enabled") if isinstance(enabled_status, dict) else None
+    if enabled is False:
+        return {
+            "status": "needs-enable",
+            "manual_action_required": True,
+            "message": f"`{plugin_ref}` is installed in Claude but disabled; run `claude plugins enable {plugin_ref}` or rerun `charness init`.",
+        }
+    return {
+        "status": "installed",
+        "manual_action_required": False,
+        "message": "Claude host install markers are present. Restart Claude Code to load or refresh charness.",
+    }
+
+
 def remove_codex_marketplace_entry(path: Path) -> bool:
     if not path.is_file():
         return False
@@ -277,6 +498,35 @@ def remove_codex_marketplace_entry(path: Path) -> bool:
     return removed
 
 
+def remove_claude_plugin(repo_root: Path, *, home_root: Path) -> bool:
+    if shutil.which("claude") is None:
+        return False
+    plugin_ref = claude_plugin_ref(repo_root)
+    result = run(["claude", "plugins", "uninstall", "-s", "user", plugin_ref], cwd=repo_root)
+    combined = f"{result.stdout}\n{result.stderr}".lower()
+    if result.returncode != 0 and "not installed" not in combined and "not found" not in combined:
+        raise CharnessError(f"claude plugin uninstall `{plugin_ref}` failed\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}")
+    removed_file_entry = remove_claude_installed_entry(default_claude_installed_plugins_path(home_root), plugin_ref)
+    cache_root = default_claude_plugins_root(home_root) / "cache" / claude_marketplace_name(repo_root) / PACKAGE_ID
+    removed_cache = False
+    if cache_root.exists():
+        shutil.rmtree(cache_root)
+        removed_cache = True
+    return result.returncode == 0 or removed_file_entry or removed_cache
+
+
+def remove_claude_marketplace(repo_root: Path, *, home_root: Path) -> bool:
+    if shutil.which("claude") is None:
+        return False
+    name = claude_marketplace_name(repo_root)
+    result = run(["claude", "plugins", "marketplace", "remove", name], cwd=repo_root)
+    combined = f"{result.stdout}\n{result.stderr}".lower()
+    if result.returncode != 0 and "not found" not in combined and "no marketplace" not in combined:
+        raise CharnessError(f"claude marketplace remove `{name}` failed\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}")
+    removed_file_entry = remove_claude_marketplace_entry(default_claude_known_marketplaces_path(home_root), name)
+    return result.returncode == 0 or removed_file_entry
+
+
 def install_surface(
     repo_root: Path,
     *,
@@ -285,6 +535,7 @@ def install_surface(
     codex_marketplace_path: Path,
     claude_wrapper_path: Path | None,
     cli_path: Path | None,
+    update: bool,
 ) -> dict[str, object]:
     old_plugin_root = legacy_plugin_root(home_root)
     if old_plugin_root != plugin_root and old_plugin_root.exists():
@@ -304,6 +555,7 @@ def install_surface(
         str(codex_marketplace_path),
     )
     payload = json.loads(install_output)
+    completed_actions = ["codex_source_prepared", "codex_marketplace_registered"]
     if cli_path is not None:
         install_cli_binary(cli_path)
         payload["cli_path"] = str(cli_path)
@@ -314,6 +566,17 @@ def install_surface(
         payload["claude_wrapper_path"] = str(claude_wrapper_path)
     else:
         payload["claude_wrapper_path"] = None
+    claude_marketplace_actions, claude_marketplace_message = ensure_claude_marketplace(
+        repo_root, home_root=home_root
+    )
+    claude_plugin_actions, claude_plugin_message = ensure_claude_plugin(
+        repo_root, home_root=home_root, update=update
+    )
+    completed_actions.extend(claude_marketplace_actions)
+    completed_actions.extend(claude_plugin_actions)
+    payload["completed_actions"] = completed_actions
+    payload["next_steps"]["claude"] = claude_plugin_message
+    payload["claude_marketplace_message"] = claude_marketplace_message
     return payload
 
 
@@ -350,11 +613,31 @@ def build_doctor_payload(
         "claude_wrapper_path": str(claude_wrapper_path),
         "claude_wrapper_present": claude_wrapper_path.is_file(),
         "claude_wrapper_in_path": wrapper_in_path(claude_wrapper_path),
+        "claude_known_marketplaces_path": str(default_claude_known_marketplaces_path(home_root)),
+        "claude_installed_plugins_path": str(default_claude_installed_plugins_path(home_root)),
         "hosts": {
             "codex": shutil.which("codex") is not None,
             "claude": shutil.which("claude") is not None,
         },
     }
+    payload["claude_marketplace_name"] = claude_marketplace_name(repo_root) if has_source_manifest(repo_root) else None
+    payload["claude_plugin_ref"] = claude_plugin_ref(repo_root) if has_source_manifest(repo_root) else None
+    payload["claude_marketplace_entry"] = (
+        claude_known_marketplace(default_claude_known_marketplaces_path(home_root), payload["claude_marketplace_name"])
+        if payload["claude_marketplace_name"]
+        else None
+    )
+    payload["claude_enabled_status"] = claude_enabled_status(repo_root) if has_source_manifest(repo_root) else None
+    claude_listed = (
+        payload["claude_enabled_status"].get("present")
+        if isinstance(payload.get("claude_enabled_status"), dict)
+        else False
+    )
+    payload["claude_installed_entry"] = (
+        claude_installed_plugin(default_claude_installed_plugins_path(home_root), payload["claude_plugin_ref"])
+        if payload["claude_plugin_ref"] and claude_listed
+        else None
+    )
     if has_source_manifest(repo_root):
         preamble_output = invoke_repo_script(
             repo_root,
@@ -372,6 +655,13 @@ def build_doctor_payload(
         codex_marketplace_path=codex_marketplace_path,
         cache_entries=payload["codex_cache_entries"],
         config_entries=payload["codex_config_entries"],
+    )
+    payload["claude_host_guidance"] = build_claude_host_guidance(
+        repo_root=repo_root,
+        home_root=home_root,
+        marketplace_entry=payload["claude_marketplace_entry"],
+        installed_entry=payload["claude_installed_entry"],
+        enabled_status=payload["claude_enabled_status"],
     )
     return payload
 
@@ -419,6 +709,19 @@ def print_human_summary(payload: dict[str, object]) -> None:
         f"CLAUDE_WRAPPER: {'present' if payload['claude_wrapper_present'] else 'missing'} {payload['claude_wrapper_path']}"
     )
     print(f"CLAUDE_WRAPPER_IN_PATH: {'yes' if payload['claude_wrapper_in_path'] else 'no'}")
+    claude_marketplace_entry = payload.get("claude_marketplace_entry")
+    if isinstance(claude_marketplace_entry, dict):
+        print(
+            f"CLAUDE_MARKETPLACE: present {payload['claude_known_marketplaces_path']} -> {payload['claude_marketplace_name']}"
+        )
+    else:
+        print(f"CLAUDE_MARKETPLACE: missing-entry {payload['claude_known_marketplaces_path']}")
+    claude_installed_entry = payload.get("claude_installed_entry")
+    if isinstance(claude_installed_entry, dict):
+        install_path = claude_installed_entry.get("installPath")
+        print(f"CLAUDE_PLUGIN: present {payload['claude_plugin_ref']} -> {install_path}")
+    else:
+        print(f"CLAUDE_PLUGIN: missing-entry {payload['claude_installed_plugins_path']}")
     preamble = payload.get("plugin_preamble")
     if isinstance(preamble, dict):
         root_surface = preamble.get("root_install_surface", {})
@@ -427,6 +730,9 @@ def print_human_summary(payload: dict[str, object]) -> None:
     host_guidance = payload.get("codex_host_guidance")
     if isinstance(host_guidance, dict) and isinstance(host_guidance.get("message"), str):
         print(f"CODEX_NEXT_STEP: {host_guidance['message']}")
+    claude_guidance = payload.get("claude_host_guidance")
+    if isinstance(claude_guidance, dict) and isinstance(claude_guidance.get("message"), str):
+        print(f"CLAUDE_NEXT_STEP: {claude_guidance['message']}")
 
 
 def resolve_runtime_paths(args: argparse.Namespace) -> tuple[Path, Path, Path, Path]:
@@ -465,6 +771,7 @@ def cmd_init(args: argparse.Namespace) -> int:
         codex_marketplace_path=codex_marketplace_path,
         claude_wrapper_path=selected_wrapper_path,
         cli_path=None if args.skip_cli_install else cli_path,
+        update=False,
     )
     payload["checkout"] = checkout
     print(json.dumps(payload, ensure_ascii=False, indent=2))
@@ -490,6 +797,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         codex_marketplace_path=codex_marketplace_path,
         claude_wrapper_path=selected_wrapper_path,
         cli_path=None if args.skip_cli_install else cli_path,
+        update=True,
     )
     payload["checkout"] = checkout
     print(json.dumps(payload, ensure_ascii=False, indent=2))
@@ -517,11 +825,17 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
 
 def cmd_uninstall(args: argparse.Namespace) -> int:
+    home_root = args.home_root.resolve()
+    repo_root, _managed_checkout = resolve_repo_root(home_root, args.repo_root)
     plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path = resolve_runtime_paths(args)
-    old_plugin_root = legacy_plugin_root(args.home_root.resolve())
+    old_plugin_root = legacy_plugin_root(home_root)
     removed_marketplace = remove_codex_marketplace_entry(codex_marketplace_path)
     removed_plugin_root = False
     removed_legacy_plugin_root = False
+    removed_codex_cache = False
+    removed_codex_config_entries: list[str] = []
+    removed_claude_plugin = False
+    removed_claude_marketplace = False
     removed_checkout = False
     removed_wrapper = False
     removed_cli = False
@@ -531,16 +845,22 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     if old_plugin_root != plugin_root and old_plugin_root.exists():
         shutil.rmtree(old_plugin_root)
         removed_legacy_plugin_root = True
+    codex_cache_path = default_codex_cache_root(home_root) / PACKAGE_ID
+    if codex_cache_path.exists():
+        shutil.rmtree(codex_cache_path)
+        removed_codex_cache = True
+    removed_codex_config_entries = remove_codex_config_entries(default_codex_config_path(home_root))
+    if has_source_manifest(repo_root):
+        removed_claude_plugin = remove_claude_plugin(repo_root, home_root=home_root)
+        removed_claude_marketplace = remove_claude_marketplace(repo_root, home_root=home_root)
     wrapper_path = claude_wrapper_path
     if wrapper_path.exists():
         wrapper_path.unlink()
         removed_wrapper = True
-    if args.delete_cli and cli_path.exists():
+    if getattr(args, "delete_cli", False) and cli_path.exists():
         cli_path.unlink()
         removed_cli = True
-    if args.delete_checkout:
-        home_root = args.home_root.resolve()
-        repo_root, _managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    if getattr(args, "delete_checkout", False):
         if repo_root.exists():
             shutil.rmtree(repo_root)
             removed_checkout = True
@@ -549,12 +869,20 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
         "removed_codex_marketplace_entry": removed_marketplace,
         "removed_plugin_root": removed_plugin_root,
         "removed_legacy_plugin_root": removed_legacy_plugin_root,
+        "removed_codex_cache": removed_codex_cache,
+        "removed_codex_config_entries": removed_codex_config_entries,
+        "removed_claude_plugin": removed_claude_plugin,
+        "removed_claude_marketplace": removed_claude_marketplace,
         "removed_claude_wrapper": removed_wrapper,
         "removed_cli": removed_cli,
         "removed_checkout": removed_checkout,
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
+
+
+def cmd_reset(args: argparse.Namespace) -> int:
+    return cmd_uninstall(args)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -627,6 +955,25 @@ def build_parser() -> argparse.ArgumentParser:
     uninstall_parser.add_argument("--delete-cli", action="store_true")
     uninstall_parser.add_argument("--json", action="store_true")
     uninstall_parser.set_defaults(func=cmd_uninstall)
+
+    reset_parser = subparsers.add_parser(
+        "reset",
+        help="Remove host plugin state for Codex and Claude while preserving the managed checkout and CLI.",
+    )
+    reset_parser.add_argument("--home-root", type=Path, default=default_home_root())
+    reset_parser.add_argument("--repo-root", type=Path, help="Use an explicit checkout path when removing Claude plugin state.")
+    reset_parser.add_argument("--plugin-root", type=Path)
+    reset_parser.add_argument(
+        "--codex-marketplace-path",
+        type=Path,
+    )
+    reset_parser.add_argument(
+        "--claude-wrapper-path",
+        type=Path,
+    )
+    reset_parser.add_argument("--cli-path", type=Path)
+    reset_parser.add_argument("--json", action="store_true")
+    reset_parser.set_defaults(func=cmd_reset)
 
     return parser
 

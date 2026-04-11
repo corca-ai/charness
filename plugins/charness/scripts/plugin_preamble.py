@@ -78,7 +78,7 @@ def build_payload(repo_root: Path, consumer_root: Path) -> dict[str, object]:
         "version": packaging["version"],
         "runtime_self_update": False,
         "update_hints": {
-            "claude": "Run `charness update`, then re-enter Claude through `claude-charness`.",
+            "claude": "Run `charness update`, then restart Claude Code.",
             "codex": "Run `charness update`, then restart Codex.",
         },
         "root_install_surface": evaluate_root_install_surface(repo_root),

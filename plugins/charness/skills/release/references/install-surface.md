@@ -23,7 +23,7 @@ example:
 
 - run `charness update`
 - restart Codex when host visibility still depends on marketplace rediscovery
-- rerun `claude-charness` when needed
+- restart Claude Code when needed
 
 ## Drift Rule
 

@@ -147,8 +147,9 @@ Operationally this means:
 
 - the official operator install path is a thin `charness` CLI that manages one
   machine-local exported plugin surface under `~/.codex/plugins/charness`
-- Claude should prefer a managed wrapper such as `claude-charness`, which in
-  turn points `--plugin-dir` at that managed exported surface
+- Claude should prefer host-native marketplace and plugin installation driven by
+  `charness init` and `charness update`; `claude-charness` remains an optional
+  local wrapper for proof or fallback use
 - Codex personal installs may point `~/.agents/plugins/marketplace.json` at
   `./.codex/plugins/charness` while keeping the marketplace file itself under
   `~/.agents`
