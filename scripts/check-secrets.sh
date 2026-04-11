@@ -13,7 +13,16 @@ if command -v gitleaks >/dev/null 2>&1; then
 fi
 
 if command -v npm >/dev/null 2>&1; then
-  exec npm exec --no-install -- secretlint "**/*" --secretlintignore .secretlintignore
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    mapfile -d '' secretlint_files < <(git ls-files -z --cached --others --exclude-standard)
+    if ((${#secretlint_files[@]} == 0)); then
+      echo "No tracked or unignored files to scan."
+      exit 0
+    fi
+    exec npm exec --no-install -- secretlint --secretlintignore .secretlintignore "${secretlint_files[@]}"
+  fi
+
+  exec npm exec --no-install -- secretlint --secretlintignore .secretlintignore "**/*"
 fi
 
 echo "secret scanning requires either gitleaks or repo-local secretlint via npm." >&2

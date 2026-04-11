@@ -596,6 +596,29 @@ def test_check_secrets_falls_back_to_secretlint_via_npm(tmp_path: Path) -> None:
     shutil.copy2(ROOT / "scripts" / "check-secrets.sh", scripts_dir / "check-secrets.sh")
     shutil.copy2(ROOT / ".secretlintrc.json", repo / ".secretlintrc.json")
     shutil.copy2(ROOT / ".secretlintignore", repo / ".secretlintignore")
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (repo / ".gitignore").write_text("integrations/locks/*.json\n", encoding="utf-8")
+    (repo / "integrations" / "locks").mkdir(parents=True)
+    (repo / "integrations" / "locks" / "agent-browser.json").write_text(
+        '{"token":"ignored-runtime-state"}\n',
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        [
+            "git",
+            "add",
+            "README.md",
+            ".gitignore",
+            ".secretlintrc.json",
+            ".secretlintignore",
+            "scripts/check-secrets.sh",
+        ],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
 
     bin_dir = repo / "bin"
     bin_dir.mkdir()
@@ -611,7 +634,11 @@ def test_check_secrets_falls_back_to_secretlint_via_npm(tmp_path: Path) -> None:
     result = run_shell_script(repo / "scripts" / "check-secrets.sh", cwd=repo, env=env)
     assert result.returncode == 0, result.stderr
     args = output_path.read_text(encoding="utf-8").splitlines()
-    assert args == ["exec", "--no-install", "--", "secretlint", "**/*", "--secretlintignore", ".secretlintignore"]
+    assert args[:6] == ["exec", "--no-install", "--", "secretlint", "--secretlintignore", ".secretlintignore"]
+    assert "README.md" in args
+    assert "scripts/check-secrets.sh" in args
+    assert "integrations/locks/agent-browser.json" not in args
+    assert "**/*" not in args
 
 
 def test_check_secrets_requires_gitleaks_or_secretlint_runtime(tmp_path: Path) -> None:
