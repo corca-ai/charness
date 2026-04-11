@@ -71,6 +71,9 @@ skill before writing from scratch.
      metadata rich enough to reveal capability kind and supported access modes
    - when setup prerequisites matter, express them as manifest readiness checks
      instead of burying them in operator prose only
+   - if the work is really a repo-owned command-line product, use
+     `create-cli` instead of burying CLI lifecycle decisions inside a generic
+     skill migration
 5. Implement the smallest coherent package.
    - `SKILL.md` contains trigger contract and decision skeleton only
    - keep named person anchors in `SKILL.md` core only when they materially
@@ -156,3 +159,4 @@ readiness probe.
 - `references/integration-seams.md`
 - `references/runtime-capabilities.md`
 - `references/binary-preflight.md`
+- `../create-cli/SKILL.md`

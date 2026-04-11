@@ -20,6 +20,7 @@ from scripts.control_plane_lib import (
     upsert_lock,
 )
 from scripts.support_sync_lib import inspect_support_sync, support_state_for_manifest
+from scripts.upstream_release_lib import probe_release
 
 
 def evaluate_readiness(manifest: dict[str, object], repo_root: Path) -> dict[str, object]:
@@ -77,8 +78,13 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
         "support_sync": support_sync,
         "doctor_status": doctor_status,
     }
+    release = probe_release(manifest)
+    if release is not None:
+        payload["release"] = release
     if write:
-        upsert_lock(repo_root, manifest, doctor=payload)
+        lock_payload = dict(payload)
+        lock_payload.pop("release", None)
+        upsert_lock(repo_root, manifest, doctor=lock_payload, release=release)
     return {**payload, "tool_id": manifest["tool_id"], "previous_lock_present": previous_lock is not None}
 
 

@@ -178,6 +178,9 @@ The result should usually include:
 - If a missing binary or local setup step would materially improve confidence, recommend installing it with the reason and exact command or package family.
 - Keep repo-local markdown-link discipline separate from external URL health when the repo needs both.
 - Do not pretend a conceptual boundary problem is solved just because duplicate text was linted away; semantic boundary questions still need concept review.
+- If the repo is shipping a CLI or bootstrap command surface, inspect whether
+  install/update/doctor/reset behavior follows `create-cli`-level quality
+  expectations instead of treating the entrypoint as ordinary helper glue.
 
 ## References
 

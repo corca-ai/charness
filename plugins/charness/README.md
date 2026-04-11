@@ -353,7 +353,8 @@ Intent:
 
 - `tool doctor`: write current integration readiness to `integrations/locks/`
 - `tool install`: try manifest-declared install flows when allowed, otherwise
-  persist manual install guidance plus refreshed doctor state
+  persist manual install guidance, latest upstream release metadata, plus
+  refreshed doctor state
 - `tool update`: run manifest-declared update flows when allowed, then refresh
   support references and doctor state
 - `tool sync-support`: regenerate `skills/support/generated/` reference or
@@ -366,6 +367,9 @@ Current boundary:
 - `cautilus`, `specdown`, `gws-cli`, and similar manual-mode tools do not get
   silently installed by `charness`; the CLI leaves structured docs, notes, and
   lock state for the next agent or operator step instead
+- release probing uses the upstream GitHub latest-release surface when the
+  manifest points at a GitHub repo, so manual guidance can still name a current
+  release without claiming the host was mutated
 
 ### Claude And Codex On One Managed Install
 

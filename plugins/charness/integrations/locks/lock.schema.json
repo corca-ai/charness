@@ -27,6 +27,9 @@
     "doctor": {
       "$ref": "#/definitions/doctorSection"
     },
+    "release": {
+      "$ref": "#/definitions/releaseSection"
+    },
     "install": {
       "$ref": "#/definitions/installSection"
     },
@@ -378,6 +381,83 @@
             "not-ready",
             "version-mismatch",
             "support-missing"
+          ]
+        }
+      }
+    },
+    "releaseSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "repo",
+        "status",
+        "api_url",
+        "html_url",
+        "latest_tag",
+        "latest_version",
+        "published_at",
+        "asset_names",
+        "error"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "github"
+          ]
+        },
+        "repo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "no-release",
+            "error"
+          ]
+        },
+        "api_url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "html_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "latest_tag": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "latest_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "published_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "asset_names": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
           ]
         }
       }

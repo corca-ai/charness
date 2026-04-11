@@ -945,6 +945,19 @@ def tool_next_step(
     doctor_result: dict[str, object] | None,
     support_result: dict[str, object] | None,
 ) -> str:
+    release = None
+    for candidate in (install_result, doctor_result, support_result):
+        if isinstance(candidate, dict) and isinstance(candidate.get("release"), dict):
+            release = candidate["release"]
+            break
+    release_suffix = ""
+    if isinstance(release, dict) and release.get("status") == "ok":
+        tag = release.get("latest_tag")
+        url = release.get("html_url")
+        if isinstance(tag, str) and tag:
+            release_suffix = f" Latest upstream release: `{tag}`."
+        if isinstance(url, str) and url:
+            release_suffix = f"{release_suffix} {url}".strip()
     if install_result is not None and install_result.get("status") == "manual":
         docs_url = install_result.get("docs_url")
         notes = install_result.get("notes")
@@ -952,24 +965,24 @@ def tool_next_step(
         guidance = first_note or f"Follow the upstream install flow for `{tool_id}`."
         if isinstance(docs_url, str) and docs_url:
             guidance = f"{guidance} Docs: {docs_url}"
-        return guidance
+        return f"{guidance}{release_suffix}".strip()
     if doctor_result is not None:
         doctor_status = doctor_result.get("doctor_status")
         if doctor_status == "ok":
-            return f"`{tool_id}` is ready."
+            return f"`{tool_id}` is ready.{release_suffix}".strip()
         if doctor_status == "missing":
             hint = doctor_result.get("detect", {}).get("failure_hint")
             if isinstance(hint, str) and hint:
-                return hint
+                return f"{hint}{release_suffix}".strip()
         if doctor_status == "support-missing" and support_result is not None:
             paths = support_result.get("materialized_paths")
             if isinstance(paths, list) and paths:
-                return f"Regenerated support artifacts for `{tool_id}` under {', '.join(paths)}."
+                return f"Regenerated support artifacts for `{tool_id}` under {', '.join(paths)}.{release_suffix}".strip()
     if support_result is not None and support_result.get("status") == "synced":
         paths = support_result.get("materialized_paths")
         if isinstance(paths, list) and paths:
-            return f"Support references for `{tool_id}` were refreshed under {', '.join(paths)}."
-    return f"Review the structured result for `{tool_id}` and follow the manifest guidance."
+            return f"Support references for `{tool_id}` were refreshed under {', '.join(paths)}.{release_suffix}".strip()
+    return f"Review the structured result for `{tool_id}` and follow the manifest guidance.{release_suffix}".strip()
 
 
 def print_tool_human_summary(payload: dict[str, object]) -> None:
@@ -997,6 +1010,16 @@ def print_tool_human_summary(payload: dict[str, object]) -> None:
         doctor_result = result.get("doctor")
         if isinstance(doctor_result, dict):
             print(f"  DOCTOR: {doctor_result.get('doctor_status')} ({doctor_result.get('support_state')})")
+        release_result = None
+        for candidate in (install_result, update_result, doctor_result, support_result):
+            if isinstance(candidate, dict) and isinstance(candidate.get("release"), dict):
+                release_result = candidate["release"]
+                break
+        if isinstance(release_result, dict):
+            print(
+                f"  RELEASE: {release_result.get('status')} "
+                f"{release_result.get('latest_tag') or release_result.get('html_url') or ''}".rstrip()
+            )
         next_step = result.get("next_step")
         if isinstance(next_step, str):
             print(f"  NEXT: {next_step}")

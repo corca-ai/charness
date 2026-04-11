@@ -52,6 +52,8 @@ without re-deriving machine conditions.
   `skills/support/generated/` when relevant
 - manual-only steps should still record explicit upstream docs and remaining
   guidance instead of disappearing into prose
+- when the manifest points at a GitHub repo, control-plane output should try to
+  record the latest release metadata so manual guidance can stay current
 
 ### `charness tool sync-support`
 

@@ -12,6 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.control_plane_lib import load_manifests, now_iso, run_check, run_shell, upsert_lock
+from scripts.upstream_release_lib import probe_release
 
 
 def failed_healthcheck(manifest: dict[str, object], *, reason: str) -> dict[str, object]:
@@ -58,6 +59,12 @@ def base_result(
     return result
 
 
+def attach_release(result: dict[str, object], release: dict[str, object] | None) -> dict[str, object]:
+    if release is not None:
+        result["release"] = release
+    return result
+
+
 def persist_install_lock(
     repo_root: Path,
     manifest: dict[str, object],
@@ -68,10 +75,12 @@ def persist_install_lock(
     commands: list[dict[str, object]],
     detect: dict[str, object],
     healthcheck: dict[str, object],
+    release: dict[str, object] | None,
 ) -> None:
     upsert_lock(
         repo_root,
         manifest,
+        release=release,
         install={
             "installed_at": now_iso(),
             "install_status": status,
@@ -101,6 +110,7 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
     install_action = manifest["lifecycle"]["install"]
     mode = install_action["mode"]
     commands = install_action.get("commands", [])
+    release = probe_release(manifest)
 
     if mode == "none":
         detect_result, healthcheck_result = detect_and_healthcheck(
@@ -116,17 +126,20 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
                 commands=[],
                 detect=detect_result,
                 healthcheck=healthcheck_result,
+                release=release,
             )
-        return base_result(
-            manifest,
-            install_action,
-            status="noop",
-            mode=mode,
-            commands=[],
-            detect=detect_result,
-            healthcheck=healthcheck_result,
+        return attach_release(
+            base_result(
+                manifest,
+                install_action,
+                status="noop",
+                mode=mode,
+                commands=[],
+                detect=detect_result,
+                healthcheck=healthcheck_result,
+            ),
+            release,
         )
-
     if mode == "manual":
         detect_result, healthcheck_result = detect_and_healthcheck(
             repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
@@ -142,19 +155,22 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
                 commands=[],
                 detect=detect_result,
                 healthcheck=healthcheck_result,
+                release=release,
             )
-        return base_result(
-            manifest,
-            install_action,
-            status=status,
-            mode=mode,
-            commands=[],
-            detect=detect_result,
-            healthcheck=healthcheck_result,
+        return attach_release(
+            base_result(
+                manifest,
+                install_action,
+                status=status,
+                mode=mode,
+                commands=[],
+                detect=detect_result,
+                healthcheck=healthcheck_result,
+            ),
+            release,
         )
-
     if not execute:
-        return base_result(manifest, install_action, status="dry-run", mode=mode, commands=commands)
+        return attach_release(base_result(manifest, install_action, status="dry-run", mode=mode, commands=commands), release)
 
     command_results = execute_install_commands(repo_root, commands)
     detect_result, healthcheck_result = detect_and_healthcheck(
@@ -174,15 +190,19 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
         commands=command_results,
         detect=detect_result,
         healthcheck=healthcheck_result,
+        release=release,
     )
-    return base_result(
-        manifest,
-        install_action,
-        status=status,
-        mode=mode,
-        commands=command_results,
-        detect=detect_result,
-        healthcheck=healthcheck_result,
+    return attach_release(
+        base_result(
+            manifest,
+            install_action,
+            status=status,
+            mode=mode,
+            commands=command_results,
+            detect=detect_result,
+            healthcheck=healthcheck_result,
+        ),
+        release,
     )
 
 

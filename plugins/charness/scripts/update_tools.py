@@ -12,28 +12,63 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.control_plane_lib import load_manifests, now_iso, run_check, run_shell, upsert_lock
+from scripts.upstream_release_lib import probe_release
 
 
 def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -> dict[str, object]:
     update_action = manifest["lifecycle"]["update"]
     mode = update_action["mode"]
+    release = probe_release(manifest)
     if mode == "none":
-        return {"tool_id": manifest["tool_id"], "status": "noop", "mode": mode}
+        result = {"tool_id": manifest["tool_id"], "status": "noop", "mode": mode}
+        if release is not None:
+            result["release"] = release
+        return result
     if mode == "manual":
-        return {
+        detect_result = run_check(manifest["checks"]["detect"], repo_root)
+        healthcheck_result = run_check(manifest["checks"]["healthcheck"], repo_root) if detect_result["ok"] else {
+            "ok": False,
+            "results": [],
+            "failure_details": ["detect failed; healthcheck skipped"],
+            "failure_hint": manifest["checks"]["healthcheck"].get("failure_hint"),
+        }
+        result = {
             "tool_id": manifest["tool_id"],
             "status": "manual",
             "mode": mode,
             "docs_url": update_action.get("docs_url"),
             "notes": update_action.get("notes", []),
+            "commands": [],
+            "detect": detect_result,
+            "healthcheck": healthcheck_result,
         }
+        if release is not None:
+            result["release"] = release
+        if execute:
+            upsert_lock(
+                repo_root,
+                manifest,
+                release=release,
+                update={
+                    "updated_at": now_iso(),
+                    "update_status": "manual",
+                    "mode": mode,
+                    "commands": [],
+                    "detect": detect_result,
+                    "healthcheck": healthcheck_result,
+                },
+            )
+        return result
     if not execute:
-        return {
+        result = {
             "tool_id": manifest["tool_id"],
             "status": "dry-run",
             "mode": mode,
             "commands": update_action.get("commands", []),
         }
+        if release is not None:
+            result["release"] = release
+        return result
 
     command_results = [run_shell(command, repo_root) for command in update_action.get("commands", [])]
     detect_result = run_check(manifest["checks"]["detect"], repo_root)
@@ -60,13 +95,16 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
         "detect": detect_result,
         "healthcheck": healthcheck_result,
     }
-    upsert_lock(repo_root, manifest, update=payload)
-    return {
+    upsert_lock(repo_root, manifest, release=release, update=payload)
+    result = {
         "tool_id": manifest["tool_id"],
         "status": status,
         "mode": mode,
         "commands": payload["commands"],
     }
+    if release is not None:
+        result["release"] = release
+    return result
 
 
 def main() -> int:

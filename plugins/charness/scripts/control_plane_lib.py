@@ -311,6 +311,7 @@ def upsert_lock(
     *,
     support: dict[str, Any] | None = None,
     doctor: dict[str, Any] | None = None,
+    release: dict[str, Any] | None = None,
     install: dict[str, Any] | None = None,
     update: dict[str, Any] | None = None,
 ) -> Path:
@@ -322,6 +323,8 @@ def upsert_lock(
         payload["support"] = support
     if doctor is not None:
         payload["doctor"] = doctor
+    if release is not None:
+        payload["release"] = release
     if install is not None:
         payload["install"] = install
     if update is not None:
