@@ -1200,17 +1200,58 @@ def test_check_python_lengths_rejects_too_long_skill_helper_file(tmp_path: Path)
 def test_check_python_lengths_ignores_gitignored_python_files(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     scripts_dir = repo / "scripts"
+    tests_dir = repo / "tests"
     scripts_dir.mkdir(parents=True)
-    (repo / ".gitignore").write_text("scripts/generated_*.py\n", encoding="utf-8")
+    tests_dir.mkdir(parents=True)
+    (repo / ".gitignore").write_text("scripts/generated_*.py\ntests/generated_*.py\n", encoding="utf-8")
     (scripts_dir / "kept.py").write_text("def short():\n    return 1\n", encoding="utf-8")
     (scripts_dir / "generated_long.py").write_text(
         "\n".join(f"print({i})" for i in range(381)) + "\n",
         encoding="utf-8",
     )
-    init_git_repo(repo, ".gitignore", "scripts/kept.py")
+    (tests_dir / "kept_test.py").write_text("def test_short():\n    assert True\n", encoding="utf-8")
+    (tests_dir / "generated_long.py").write_text(
+        "\n".join(["def test_generated():", *[f"    value_{i} = {i}" for i in range(151)], "    assert True", ""]),
+        encoding="utf-8",
+    )
+    init_git_repo(repo, ".gitignore", "scripts/kept.py", "tests/kept_test.py")
 
     result = run_script("scripts/check-python-lengths.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
+
+
+def test_check_python_lengths_rejects_too_long_test_file(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    tests_dir = repo / "tests"
+    tests_dir.mkdir(parents=True)
+    (tests_dir / "test_big.py").write_text(
+        "\n".join(f"VALUE_{i} = {i}" for i in range(2001)) + "\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/check-python-lengths.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "file length 2001 exceeds limit 2000" in result.stderr
+
+
+def test_check_python_lengths_rejects_too_long_test_function(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    tests_dir = repo / "tests"
+    tests_dir.mkdir(parents=True)
+    long_body = "\n".join(f"    value_{i} = {i}" for i in range(150))
+    (tests_dir / "test_long.py").write_text(
+        "\n".join(
+            [
+                "def test_too_long():",
+                long_body,
+                "    assert True",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    result = run_script("scripts/check-python-lengths.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "function `test_too_long` length 152 exceeds limit 150" in result.stderr
 
 
 def test_validate_profiles_rejects_unknown_smoke_scenario(tmp_path: Path) -> None:

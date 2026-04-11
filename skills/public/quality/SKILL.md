@@ -102,8 +102,8 @@ when the repo already has stable gate commands worth recording.
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and
      ownership model
-   - `behavior`: do tests and checks say something falsifiable about real
-     behavior
+   - `behavior`: do tests, evals, and checks say something falsifiable about
+     real behavior, and does the repo-owned test code stay maintainable
    - `security`: are there meaningful code, secret, or supply-chain risks
    - `operability`: are setup, CI, and maintenance surfaces honest enough to
      sustain the quality bar
@@ -112,8 +112,7 @@ when the repo already has stable gate commands worth recording.
    - for docs-as-operating-surface, flag duplicated guidance, conflicting
      copies, source-of-truth drift, and bare repo-doc links in prose
    - for repo-owned source gates, prefer tracked or explicitly unignored files
-     over whole-worktree scans; inspect gitignored runtime state only when the
-     check explicitly owns machine-local artifacts
+     over whole-worktree scans; inspect gitignored runtime state only when the check explicitly owns machine-local artifacts
    - treat external URL health separately from repo-local markdown-link
      discipline
    - for executable specs, inspect boundary focus, lower-level duplication,
@@ -171,7 +170,8 @@ The result should usually include:
   an unresolved enforcement gap explicitly.
 - Do not treat a passing final local gate as sufficient posture when clones
   have no repo-owned way to run it before push and no documented no-hook waiver.
-- Do not propose generic "add more tests" or "improve security" without naming the actual seam and the next concrete setup.
+- Do not propose generic "add more tests" or "improve security" without naming
+  the actual seam, the next concrete setup, or whether the test surface now needs a maintainability gate.
 - If a gate already exists, prefer tightening or reusing it before adding a new parallel tool.
 - If a stronger check would require an external tool, support skill, or permission, say so explicitly.
 - If a missing binary or local setup step would materially improve confidence, recommend installing it with the reason and exact command or package family.

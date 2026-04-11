@@ -15,7 +15,9 @@ from scripts.repo_file_listing import iter_matching_repo_files
 
 REPO_SCRIPT_FILE_MAX = 380
 SKILL_HELPER_FILE_MAX = 220
+TEST_FILE_MAX = 2000
 FUNCTION_MAX = 100
+TEST_FUNCTION_MAX = 150
 
 
 class ValidationError(Exception):
@@ -29,6 +31,8 @@ def iter_python_targets(root: Path) -> list[Path]:
             "scripts/*.py",
             "skills/public/*/scripts/*.py",
             "skills/support/*/scripts/*.py",
+            "tests/*.py",
+            "tests/**/*.py",
         ),
     )
 
@@ -37,6 +41,8 @@ def file_limit_for(path: Path, root: Path) -> int:
     relative = path.relative_to(root)
     if relative.parts[:1] == ("scripts",):
         return REPO_SCRIPT_FILE_MAX
+    if relative.parts[:1] == ("tests",):
+        return TEST_FILE_MAX
     return SKILL_HELPER_FILE_MAX
 
 
@@ -47,17 +53,25 @@ def validate_file_length(path: Path, root: Path) -> None:
         raise ValidationError(f"{path}: file length {line_count} exceeds limit {limit}")
 
 
-def validate_function_lengths(path: Path) -> None:
+def function_limit_for(path: Path, root: Path) -> int:
+    relative = path.relative_to(root)
+    if relative.parts[:1] == ("tests",):
+        return TEST_FUNCTION_MAX
+    return FUNCTION_MAX
+
+
+def validate_function_lengths(path: Path, root: Path) -> None:
     tree = ast.parse(path.read_text(encoding="utf-8"))
+    limit = function_limit_for(path, root)
     for node in ast.walk(tree):
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
         if not hasattr(node, "lineno") or not hasattr(node, "end_lineno"):
             continue
         length = node.end_lineno - node.lineno + 1
-        if length > FUNCTION_MAX:
+        if length > limit:
             raise ValidationError(
-                f"{path}: function `{node.name}` length {length} exceeds limit {FUNCTION_MAX}"
+                f"{path}: function `{node.name}` length {length} exceeds limit {limit}"
             )
 
 
@@ -71,11 +85,11 @@ def main() -> int:
     for path in targets:
         try:
             validate_file_length(path, root)
-            validate_function_lengths(path)
+            validate_function_lengths(path, root)
         except (ValidationError, SyntaxError) as exc:
             raise ValidationError(str(exc)) from exc
 
-    print(f"Validated Python helper length limits for {len(targets)} file(s).")
+    print(f"Validated Python length limits for {len(targets)} file(s).")
     return 0
 
 
