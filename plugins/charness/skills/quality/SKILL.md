@@ -111,6 +111,9 @@ when the repo already has stable gate commands worth recording.
      bootstrap seams, and shared-helper drift in these lenses
    - for docs-as-operating-surface, flag duplicated guidance, conflicting
      copies, source-of-truth drift, and bare repo-doc links in prose
+   - for repo-owned source gates, prefer tracked or explicitly unignored files
+     over whole-worktree scans; inspect gitignored runtime state only when the
+     check explicitly owns machine-local artifacts
    - treat external URL health separately from repo-local markdown-link
      discipline
    - for executable specs, inspect boundary focus, lower-level duplication,
@@ -143,8 +146,6 @@ when the repo already has stable gate commands worth recording.
    - what it still does not prove
    - the next best gate or cleanup to add
 
-## Output Shape
-
 The result should usually include:
 
 - `Scope`
@@ -158,8 +159,6 @@ The result should usually include:
 - `Deferred`
 - `Commands Run`
 - `Recommended Next Gates`
-
-## Guardrails
 
 - Do not reduce quality to one aggregate score.
 - Do not recommend gates the repo cannot realistically run without saying why.
@@ -176,6 +175,7 @@ The result should usually include:
 - If a gate already exists, prefer tightening or reusing it before adding a new parallel tool.
 - If a stronger check would require an external tool, support skill, or permission, say so explicitly.
 - If a missing binary or local setup step would materially improve confidence, recommend installing it with the reason and exact command or package family.
+- Do not let whole-worktree scans fail on gitignored runtime artifacts unless the gate explicitly exists to validate that machine-local state.
 - Keep repo-local markdown-link discipline separate from external URL health when the repo needs both.
 - Do not pretend a conceptual boundary problem is solved just because duplicate text was linted away; semantic boundary questions still need concept review.
 - If the repo is shipping a CLI or bootstrap command surface, inspect whether
