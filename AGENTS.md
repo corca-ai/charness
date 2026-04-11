@@ -13,6 +13,9 @@ self-validation.
   manifests, not in public skill bodies.
 - PREFER VALIDATORS AND SCRIPTS OVER PROSE RITUALS.
   If a repeated check matters, turn it into a repo-owned script.
+- LEAVE AGENT-READABLE STATE AFTER PARTIAL AUTOMATION.
+  If a tool cannot finish the job end-to-end, persist structured breadcrumbs so
+  the next agent can continue without rediscovering machine state.
 - LEAVE AGENT-READABLE STATE.
   Install, update, and support-sync flows should emit structured output and
   persist machine-readable state when they mutate the operator surface.

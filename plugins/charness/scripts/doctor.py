@@ -19,6 +19,7 @@ from scripts.control_plane_lib import (
     run_check,
     upsert_lock,
 )
+from scripts.install_provenance_lib import detect_install_provenance
 from scripts.support_sync_lib import inspect_support_sync, support_state_for_manifest
 from scripts.upstream_release_lib import probe_release
 
@@ -45,6 +46,8 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
     }
     readiness_result = evaluate_readiness(manifest, repo_root)
     version_result = evaluate_version(manifest, detect_result)
+    provenance_result = detect_install_provenance(manifest)
+    provenance_result["checked_at"] = now_iso()
     previous_lock = read_lock(repo_root, manifest["tool_id"])
     synced_strategy = None
     if previous_lock and isinstance(previous_lock.get("support"), dict):
@@ -75,6 +78,7 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
         "healthcheck": healthcheck_result,
         "readiness": readiness_result,
         "version": version_result,
+        "provenance": provenance_result,
         "support_sync": support_sync,
         "doctor_status": doctor_status,
     }
@@ -84,7 +88,8 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
     if write:
         lock_payload = dict(payload)
         lock_payload.pop("release", None)
-        upsert_lock(repo_root, manifest, doctor=lock_payload, release=release)
+        lock_payload.pop("provenance", None)
+        upsert_lock(repo_root, manifest, doctor=lock_payload, release=release, provenance=provenance_result)
     return {**payload, "tool_id": manifest["tool_id"], "previous_lock_present": previous_lock is not None}
 
 

@@ -106,6 +106,20 @@
     "constraint": "Prefer a recent upstream-supported gws release.",
     "detected_by": "stdout"
   },
+  "package_managers": {
+    "npm": {
+      "package_name": "@googleworkspace/cli",
+      "notes": [
+        "Upstream documents `npm install -g @googleworkspace/cli` as the package-manager install path."
+      ]
+    },
+    "brew": {
+      "package_name": "googleworkspace-cli",
+      "notes": [
+        "Upstream documents `brew install googleworkspace-cli` on macOS and Linux."
+      ]
+    }
+  },
   "degradation": {
     "when_missing": [
       "Do not claim private Google Workspace access succeeded without an authenticated CLI or a stronger host capability path.",

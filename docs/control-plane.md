@@ -54,6 +54,9 @@ without re-deriving machine conditions.
   guidance instead of disappearing into prose
 - when the manifest points at a GitHub repo, control-plane output should try to
   record the latest release metadata so manual guidance can stay current
+- when the host install path can be inferred safely, control-plane output
+  should record install provenance so later updates can route through the same
+  package manager instead of guessing
 
 ### `charness tool sync-support`
 
@@ -139,6 +142,9 @@ Writes:
 Rules:
 
 - `manual` mode prints instructions and never mutates the host
+- if install provenance is known and the manifest declares a matching package
+  manager route, update may promote `manual` into an explicit
+  `package_manager` execution path
 - executable update modes may only run commands declared in the manifest
 - every successful update must rerun detect and healthcheck before the lock is
   refreshed

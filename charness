@@ -941,12 +941,12 @@ def tool_result_map(results: object) -> dict[str, dict[str, object]]:
 
 def tool_next_step(
     tool_id: str,
-    install_result: dict[str, object] | None,
+    action_result: dict[str, object] | None,
     doctor_result: dict[str, object] | None,
     support_result: dict[str, object] | None,
 ) -> str:
     release = None
-    for candidate in (install_result, doctor_result, support_result):
+    for candidate in (action_result, doctor_result, support_result):
         if isinstance(candidate, dict) and isinstance(candidate.get("release"), dict):
             release = candidate["release"]
             break
@@ -955,34 +955,56 @@ def tool_next_step(
         tag = release.get("latest_tag")
         url = release.get("html_url")
         if isinstance(tag, str) and tag:
-            release_suffix = f" Latest upstream release: `{tag}`."
+            release_suffix = f"Latest upstream release: `{tag}`."
         if isinstance(url, str) and url:
             release_suffix = f"{release_suffix} {url}".strip()
-    if install_result is not None and install_result.get("status") == "manual":
-        docs_url = install_result.get("docs_url")
-        notes = install_result.get("notes")
+
+    def with_release(message: str) -> str:
+        return f"{message} {release_suffix}".strip() if release_suffix else message
+    if action_result is not None and action_result.get("status") == "manual":
+        docs_url = action_result.get("docs_url")
+        notes = action_result.get("notes")
         first_note = notes[0] if isinstance(notes, list) and notes and isinstance(notes[0], str) else None
         guidance = first_note or f"Follow the upstream install flow for `{tool_id}`."
+        provenance = action_result.get("provenance")
+        if isinstance(provenance, dict) and provenance.get("status") == "detected":
+            manager = provenance.get("install_method")
+            if isinstance(manager, str) and manager in {"brew", "npm", "cargo", "go"}:
+                guidance = f"`{tool_id}` is already installed via `{manager}`."
         if isinstance(docs_url, str) and docs_url:
             guidance = f"{guidance} Docs: {docs_url}"
-        return f"{guidance}{release_suffix}".strip()
+        return with_release(guidance)
+    if isinstance(action_result, dict) and action_result.get("mode") == "package_manager":
+        package_manager = action_result.get("package_manager")
+        package_name = action_result.get("package_name")
+        status = action_result.get("status")
+        if isinstance(package_manager, str) and isinstance(package_name, str):
+            if status == "updated":
+                return with_release(f"`{tool_id}` was updated via `{package_manager}` package `{package_name}`.")
+            return with_release(f"`{tool_id}` can be refreshed via `{package_manager}` package `{package_name}`.")
     if doctor_result is not None:
         doctor_status = doctor_result.get("doctor_status")
         if doctor_status == "ok":
-            return f"`{tool_id}` is ready.{release_suffix}".strip()
+            provenance = doctor_result.get("provenance")
+            if isinstance(provenance, dict):
+                manager = provenance.get("install_method")
+                package_name = provenance.get("package_name")
+                if isinstance(manager, str) and manager in {"brew", "npm", "cargo", "go"} and isinstance(package_name, str):
+                    return with_release(f"`{tool_id}` is ready via `{manager}` package `{package_name}`.")
+            return with_release(f"`{tool_id}` is ready.")
         if doctor_status == "missing":
             hint = doctor_result.get("detect", {}).get("failure_hint")
             if isinstance(hint, str) and hint:
-                return f"{hint}{release_suffix}".strip()
+                return with_release(hint)
         if doctor_status == "support-missing" and support_result is not None:
             paths = support_result.get("materialized_paths")
             if isinstance(paths, list) and paths:
-                return f"Regenerated support artifacts for `{tool_id}` under {', '.join(paths)}.{release_suffix}".strip()
+                return with_release(f"Regenerated support artifacts for `{tool_id}` under {', '.join(paths)}.")
     if support_result is not None and support_result.get("status") == "synced":
         paths = support_result.get("materialized_paths")
         if isinstance(paths, list) and paths:
-            return f"Support references for `{tool_id}` were refreshed under {', '.join(paths)}.{release_suffix}".strip()
-    return f"Review the structured result for `{tool_id}` and follow the manifest guidance.{release_suffix}".strip()
+            return with_release(f"Support references for `{tool_id}` were refreshed under {', '.join(paths)}.")
+    return with_release(f"Review the structured result for `{tool_id}` and follow the manifest guidance.")
 
 
 def print_tool_human_summary(payload: dict[str, object]) -> None:
@@ -1001,15 +1023,33 @@ def print_tool_human_summary(payload: dict[str, object]) -> None:
         install_result = result.get("install")
         if isinstance(install_result, dict):
             print(f"  INSTALL: {install_result.get('status')} ({install_result.get('mode')})")
+            provenance = install_result.get("provenance")
+            if isinstance(provenance, dict):
+                print(
+                    "  INSTALL_PROVENANCE: "
+                    f"{provenance.get('install_method')} "
+                    f"{provenance.get('package_name') or provenance.get('binary_path') or ''}".rstrip()
+                )
         update_result = result.get("update")
         if isinstance(update_result, dict):
             print(f"  UPDATE: {update_result.get('status')} ({update_result.get('mode')})")
+            package_manager = update_result.get("package_manager")
+            package_name = update_result.get("package_name")
+            if isinstance(package_manager, str) and package_manager:
+                print(f"  UPDATE_ROUTE: {package_manager} {package_name or ''}".rstrip())
         support_result = result.get("support")
         if isinstance(support_result, dict):
             print(f"  SUPPORT: {support_result.get('status')}")
         doctor_result = result.get("doctor")
         if isinstance(doctor_result, dict):
             print(f"  DOCTOR: {doctor_result.get('doctor_status')} ({doctor_result.get('support_state')})")
+            provenance = doctor_result.get("provenance")
+            if isinstance(provenance, dict):
+                print(
+                    "  PROVENANCE: "
+                    f"{provenance.get('install_method')} "
+                    f"{provenance.get('package_name') or provenance.get('binary_path') or ''}".rstrip()
+                )
         release_result = None
         for candidate in (install_result, update_result, doctor_result, support_result):
             if isinstance(candidate, dict) and isinstance(candidate.get("release"), dict):
@@ -1369,7 +1409,7 @@ def cmd_tool_update(args: argparse.Namespace) -> int:
                 "update": update_map.get(tool_id),
                 "support": support_map.get(tool_id),
                 "doctor": doctor_map.get(tool_id),
-                "next_step": tool_next_step(tool_id, None, doctor_map.get(tool_id), support_map.get(tool_id)),
+                "next_step": tool_next_step(tool_id, update_map.get(tool_id), doctor_map.get(tool_id), support_map.get(tool_id)),
             }
             for tool_id in sorted(set([*update_map.keys(), *support_map.keys(), *doctor_map.keys()]))
         },

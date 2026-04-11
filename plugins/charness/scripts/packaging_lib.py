@@ -80,6 +80,18 @@ def copy_file(src: Path, dest: Path) -> None:
     shutil.copy2(src, dest)
 
 
+def export_lock_surface(src: Path, dest: Path) -> None:
+    if dest.exists():
+        shutil.rmtree(dest)
+    if not src.exists():
+        return
+    dest.mkdir(parents=True, exist_ok=True)
+    for name in (".gitkeep", "README.md", "lock.schema.json"):
+        candidate = src / name
+        if candidate.exists():
+            copy_file(candidate, dest / name)
+
+
 def rewrite_support_capability_path(capability_path: Path) -> None:
     data = json.loads(capability_path.read_text(encoding="utf-8"))
     skill_dir = capability_path.parent.name
@@ -126,7 +138,7 @@ def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> No
 
     locks_root = repo_root / "integrations" / "locks"
     exported_locks_root = plugin_root / "integrations" / "locks"
-    replace_tree_if_present(locks_root, exported_locks_root)
+    export_lock_surface(locks_root, exported_locks_root)
 
     scripts_root = repo_root / "scripts"
     exported_scripts_root = plugin_root / "scripts"

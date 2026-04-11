@@ -137,6 +137,9 @@
     "capability_requirements": {
       "$ref": "#/definitions/capabilityRequirements"
     },
+    "package_managers": {
+      "$ref": "#/definitions/packageManagers"
+    },
     "support_skill_source": {
       "$ref": "#/definitions/supportSkillSource"
     },
@@ -330,6 +333,40 @@
         },
         "permission_scopes": {
           "$ref": "#/definitions/stringList"
+        }
+      }
+    },
+    "packageManagerHint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "package_name"
+      ],
+      "properties": {
+        "package_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "notes": {
+          "$ref": "#/definitions/stringList"
+        }
+      }
+    },
+    "packageManagers": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "brew": {
+          "$ref": "#/definitions/packageManagerHint"
+        },
+        "npm": {
+          "$ref": "#/definitions/packageManagerHint"
+        },
+        "cargo": {
+          "$ref": "#/definitions/packageManagerHint"
+        },
+        "go": {
+          "$ref": "#/definitions/packageManagerHint"
         }
       }
     },

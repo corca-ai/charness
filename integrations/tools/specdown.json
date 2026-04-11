@@ -59,6 +59,20 @@
     "constraint": "Prefer a recent upstream-supported release.",
     "detected_by": "stdout"
   },
+  "package_managers": {
+    "brew": {
+      "package_name": "corca-ai/tap/specdown",
+      "notes": [
+        "Upstream documents Homebrew as `brew install corca-ai/tap/specdown`."
+      ]
+    },
+    "go": {
+      "package_name": "github.com/corca-ai/specdown/cmd/specdown",
+      "notes": [
+        "Upstream documents `go install github.com/corca-ai/specdown/cmd/specdown@latest`."
+      ]
+    }
+  },
   "degradation": {
     "when_missing": [
       "Executable spec workflows should degrade to prose-only review or alternate test harnesses.",

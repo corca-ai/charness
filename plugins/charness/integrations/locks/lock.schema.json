@@ -30,6 +30,9 @@
     "release": {
       "$ref": "#/definitions/releaseSection"
     },
+    "provenance": {
+      "$ref": "#/definitions/provenanceSection"
+    },
     "install": {
       "$ref": "#/definitions/installSection"
     },
@@ -462,6 +465,93 @@
         }
       }
     },
+    "provenanceSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checked_at",
+        "binary_name",
+        "status",
+        "install_method",
+        "binary_path",
+        "resolved_path",
+        "package_name",
+        "package_manager_prefix",
+        "available_package_managers",
+        "update_supported"
+      ],
+      "properties": {
+        "checked_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "binary_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "detected",
+            "missing",
+            "unknown"
+          ]
+        },
+        "install_method": {
+          "type": "string",
+          "enum": [
+            "brew",
+            "npm",
+            "cargo",
+            "go",
+            "path",
+            "missing",
+            "unknown"
+          ]
+        },
+        "binary_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "resolved_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "package_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "package_manager_prefix": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "available_package_managers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "brew",
+              "npm",
+              "cargo",
+              "go"
+            ]
+          }
+        },
+        "update_supported": {
+          "type": "boolean"
+        }
+      }
+    },
     "installSection": {
       "type": "object",
       "additionalProperties": false,
@@ -512,6 +602,18 @@
           "$ref": "#/definitions/checkResult"
         },
         "docs_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "package_manager": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "package_name": {
           "type": [
             "string",
             "null"
@@ -573,6 +675,18 @@
         },
         "healthcheck": {
           "$ref": "#/definitions/checkResult"
+        },
+        "package_manager": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "package_name": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     }

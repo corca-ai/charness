@@ -12,6 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.control_plane_lib import load_manifests, now_iso, run_check, run_shell, upsert_lock
+from scripts.install_provenance_lib import detect_install_provenance
 from scripts.upstream_release_lib import probe_release
 
 
@@ -65,6 +66,22 @@ def attach_release(result: dict[str, object], release: dict[str, object] | None)
     return result
 
 
+def attach_metadata(
+    result: dict[str, object],
+    *,
+    provenance: dict[str, object],
+    release: dict[str, object] | None,
+) -> dict[str, object]:
+    result["provenance"] = provenance
+    return attach_release(result, release)
+
+
+def capture_provenance(manifest: dict[str, object]) -> dict[str, object]:
+    provenance = detect_install_provenance(manifest)
+    provenance["checked_at"] = now_iso()
+    return provenance
+
+
 def persist_install_lock(
     repo_root: Path,
     manifest: dict[str, object],
@@ -76,11 +93,13 @@ def persist_install_lock(
     detect: dict[str, object],
     healthcheck: dict[str, object],
     release: dict[str, object] | None,
+    provenance: dict[str, object],
 ) -> None:
     upsert_lock(
         repo_root,
         manifest,
         release=release,
+        provenance=provenance,
         install={
             "installed_at": now_iso(),
             "install_status": status,
@@ -89,6 +108,8 @@ def persist_install_lock(
             "detect": detect,
             "healthcheck": healthcheck,
             "docs_url": install_action.get("docs_url"),
+            "package_manager": provenance.get("install_method") if provenance.get("install_method") in {"brew", "npm", "cargo", "go"} else None,
+            "package_name": provenance.get("package_name"),
             "notes": install_action.get("notes", []),
         },
     )
@@ -111,6 +132,7 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
     mode = install_action["mode"]
     commands = install_action.get("commands", [])
     release = probe_release(manifest)
+    provenance = capture_provenance(manifest)
 
     if mode == "none":
         detect_result, healthcheck_result = detect_and_healthcheck(
@@ -127,19 +149,18 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
                 detect=detect_result,
                 healthcheck=healthcheck_result,
                 release=release,
+                provenance=provenance,
             )
-        return attach_release(
-            base_result(
-                manifest,
-                install_action,
-                status="noop",
-                mode=mode,
-                commands=[],
-                detect=detect_result,
-                healthcheck=healthcheck_result,
-            ),
-            release,
+        result = base_result(
+            manifest,
+            install_action,
+            status="noop",
+            mode=mode,
+            commands=[],
+            detect=detect_result,
+            healthcheck=healthcheck_result,
         )
+        return attach_metadata(result, provenance=provenance, release=release)
     if mode == "manual":
         detect_result, healthcheck_result = detect_and_healthcheck(
             repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
@@ -156,26 +177,27 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
                 detect=detect_result,
                 healthcheck=healthcheck_result,
                 release=release,
+                provenance=provenance,
             )
-        return attach_release(
-            base_result(
-                manifest,
-                install_action,
-                status=status,
-                mode=mode,
-                commands=[],
-                detect=detect_result,
-                healthcheck=healthcheck_result,
-            ),
-            release,
+        result = base_result(
+            manifest,
+            install_action,
+            status=status,
+            mode=mode,
+            commands=[],
+            detect=detect_result,
+            healthcheck=healthcheck_result,
         )
+        return attach_metadata(result, provenance=provenance, release=release)
     if not execute:
-        return attach_release(base_result(manifest, install_action, status="dry-run", mode=mode, commands=commands), release)
+        result = base_result(manifest, install_action, status="dry-run", mode=mode, commands=commands)
+        return attach_metadata(result, provenance=provenance, release=release)
 
     command_results = execute_install_commands(repo_root, commands)
     detect_result, healthcheck_result = detect_and_healthcheck(
         repo_root, manifest, failure_reason="detect failed after install"
     )
+    provenance = capture_provenance(manifest)
     status = (
         "installed"
         if all(result["exit_code"] == 0 for result in command_results) and detect_result["ok"] and healthcheck_result["ok"]
@@ -191,19 +213,18 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
         detect=detect_result,
         healthcheck=healthcheck_result,
         release=release,
+        provenance=provenance,
     )
-    return attach_release(
-        base_result(
-            manifest,
-            install_action,
-            status=status,
-            mode=mode,
-            commands=command_results,
-            detect=detect_result,
-            healthcheck=healthcheck_result,
-        ),
-        release,
+    result = base_result(
+        manifest,
+        install_action,
+        status=status,
+        mode=mode,
+        commands=command_results,
+        detect=detect_result,
+        healthcheck=healthcheck_result,
     )
+    return attach_metadata(result, provenance=provenance, release=release)
 
 
 def main() -> int:

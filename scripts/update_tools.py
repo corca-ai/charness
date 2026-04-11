@@ -12,26 +12,52 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.control_plane_lib import load_manifests, now_iso, run_check, run_shell, upsert_lock
+from scripts.install_provenance_lib import detect_install_provenance, package_manager_update_action
 from scripts.upstream_release_lib import probe_release
 
 
+def failed_healthcheck(manifest: dict[str, object], *, reason: str) -> dict[str, object]:
+    return {
+        "ok": False,
+        "results": [],
+        "failure_details": [reason],
+        "failure_hint": manifest["checks"]["healthcheck"].get("failure_hint"),
+    }
+
+
+def attach_metadata(
+    result: dict[str, object],
+    *,
+    provenance: dict[str, object],
+    release: dict[str, object] | None,
+) -> dict[str, object]:
+    result["provenance"] = provenance
+    if release is not None:
+        result["release"] = release
+    return result
+
+
 def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -> dict[str, object]:
-    update_action = manifest["lifecycle"]["update"]
+    configured_action = manifest["lifecycle"]["update"]
+    provenance = detect_install_provenance(manifest)
+    provenance["checked_at"] = now_iso()
+    routed_action = package_manager_update_action(manifest, provenance) if configured_action["mode"] == "manual" else None
+    update_action = routed_action or configured_action
     mode = update_action["mode"]
     release = probe_release(manifest)
     if mode == "none":
-        result = {"tool_id": manifest["tool_id"], "status": "noop", "mode": mode}
-        if release is not None:
-            result["release"] = release
-        return result
+        return attach_metadata(
+            {"tool_id": manifest["tool_id"], "status": "noop", "mode": mode},
+            provenance=provenance,
+            release=release,
+        )
     if mode == "manual":
         detect_result = run_check(manifest["checks"]["detect"], repo_root)
-        healthcheck_result = run_check(manifest["checks"]["healthcheck"], repo_root) if detect_result["ok"] else {
-            "ok": False,
-            "results": [],
-            "failure_details": ["detect failed; healthcheck skipped"],
-            "failure_hint": manifest["checks"]["healthcheck"].get("failure_hint"),
-        }
+        healthcheck_result = (
+            run_check(manifest["checks"]["healthcheck"], repo_root)
+            if detect_result["ok"]
+            else failed_healthcheck(manifest, reason="detect failed; healthcheck skipped")
+        )
         result = {
             "tool_id": manifest["tool_id"],
             "status": "manual",
@@ -42,13 +68,12 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
             "detect": detect_result,
             "healthcheck": healthcheck_result,
         }
-        if release is not None:
-            result["release"] = release
         if execute:
             upsert_lock(
                 repo_root,
                 manifest,
                 release=release,
+                provenance=provenance,
                 update={
                     "updated_at": now_iso(),
                     "update_status": "manual",
@@ -56,28 +81,32 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
                     "commands": [],
                     "detect": detect_result,
                     "healthcheck": healthcheck_result,
+                    "package_manager": None,
+                    "package_name": None,
                 },
             )
-        return result
+        return attach_metadata(result, provenance=provenance, release=release)
     if not execute:
-        result = {
-            "tool_id": manifest["tool_id"],
-            "status": "dry-run",
-            "mode": mode,
-            "commands": update_action.get("commands", []),
-        }
-        if release is not None:
-            result["release"] = release
-        return result
+        return attach_metadata(
+            {
+                "tool_id": manifest["tool_id"],
+                "status": "dry-run",
+                "mode": mode,
+                "commands": update_action.get("commands", []),
+                "package_manager": update_action.get("package_manager"),
+                "package_name": update_action.get("package_name"),
+            },
+            provenance=provenance,
+            release=release,
+        )
 
     command_results = [run_shell(command, repo_root) for command in update_action.get("commands", [])]
     detect_result = run_check(manifest["checks"]["detect"], repo_root)
-    healthcheck_result = run_check(manifest["checks"]["healthcheck"], repo_root) if detect_result["ok"] else {
-        "ok": False,
-        "results": [],
-        "failure_details": ["detect failed after update"],
-        "failure_hint": manifest["checks"]["healthcheck"].get("failure_hint"),
-    }
+    healthcheck_result = (
+        run_check(manifest["checks"]["healthcheck"], repo_root)
+        if detect_result["ok"]
+        else failed_healthcheck(manifest, reason="detect failed after update")
+    )
     status = "updated" if all(result.exit_code == 0 for result in command_results) and detect_result["ok"] and healthcheck_result["ok"] else "failed"
     payload = {
         "updated_at": now_iso(),
@@ -94,17 +123,19 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
         ],
         "detect": detect_result,
         "healthcheck": healthcheck_result,
+        "package_manager": update_action.get("package_manager"),
+        "package_name": update_action.get("package_name"),
     }
-    upsert_lock(repo_root, manifest, release=release, update=payload)
+    upsert_lock(repo_root, manifest, release=release, provenance=provenance, update=payload)
     result = {
         "tool_id": manifest["tool_id"],
         "status": status,
         "mode": mode,
         "commands": payload["commands"],
+        "package_manager": payload["package_manager"],
+        "package_name": payload["package_name"],
     }
-    if release is not None:
-        result["release"] = release
-    return result
+    return attach_metadata(result, provenance=provenance, release=release)
 
 
 def main() -> int:

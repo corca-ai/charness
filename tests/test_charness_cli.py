@@ -45,6 +45,18 @@ def make_release_fixture(tmp_path: Path) -> Path:
                     "published_at": "2026-04-07T02:11:00Z",
                     "assets": [{"name": "agent-browser-x86_64-unknown-linux-gnu.tar.gz"}],
                 },
+                "corca-ai/specdown": {
+                    "tag_name": "v0.47.2",
+                    "html_url": "https://github.com/corca-ai/specdown/releases/tag/v0.47.2",
+                    "published_at": "2026-04-05T01:03:46Z",
+                    "assets": [{"name": "specdown_0.47.2_linux_amd64.tar.gz"}],
+                },
+                "googleworkspace/cli": {
+                    "tag_name": "v0.22.5",
+                    "html_url": "https://github.com/googleworkspace/cli/releases/tag/v0.22.5",
+                    "published_at": "2026-03-31T18:53:24Z",
+                    "assets": [{"name": "google-workspace-cli-x86_64-unknown-linux-gnu.tar.gz"}],
+                },
             },
             ensure_ascii=False,
             indent=2,
@@ -199,6 +211,110 @@ def make_fake_agent_browser(tmp_path: Path) -> Path:
     )
     script.chmod(0o755)
     return script
+
+
+def make_fake_brew_specdown(tmp_path: Path) -> tuple[Path, Path]:
+    brew_root = tmp_path / "linuxbrew"
+    bin_dir = brew_root / "bin"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    brew_script = bin_dir / "brew"
+    brew_script.write_text(
+        textwrap.dedent(
+            f"""\
+            #!/usr/bin/env python3
+            import sys
+
+            args = sys.argv[1:]
+            if args == ["--prefix"]:
+                print({str(brew_root)!r})
+                raise SystemExit(0)
+            if args == ["upgrade", "corca-ai/tap/specdown"]:
+                print("upgraded specdown")
+                raise SystemExit(0)
+            raise SystemExit(1)
+            """
+        ),
+        encoding="utf-8",
+    )
+    brew_script.chmod(0o755)
+    specdown_script = bin_dir / "specdown"
+    specdown_script.write_text(
+        textwrap.dedent(
+            """\
+            #!/usr/bin/env python3
+            import sys
+
+            args = sys.argv[1:]
+            if args == ["version"]:
+                print("0.47.2")
+                raise SystemExit(0)
+            if args == ["run", "-help"]:
+                print("Usage: specdown run", file=sys.stderr)
+                raise SystemExit(0)
+            raise SystemExit(1)
+            """
+        ),
+        encoding="utf-8",
+    )
+    specdown_script.chmod(0o755)
+    return brew_script, specdown_script
+
+
+def make_fake_npm_gws(tmp_path: Path) -> tuple[Path, Path]:
+    npm_prefix = tmp_path / "npm-global"
+    bin_dir = npm_prefix / "bin"
+    package_bin = npm_prefix / "lib" / "node_modules" / "@googleworkspace" / "cli"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    package_bin.mkdir(parents=True, exist_ok=True)
+    npm_script = tmp_path / "bin" / "npm"
+    npm_script.parent.mkdir(parents=True, exist_ok=True)
+    npm_script.write_text(
+        textwrap.dedent(
+            f"""\
+            #!/usr/bin/env python3
+            import sys
+
+            args = sys.argv[1:]
+            if args == ["prefix", "-g"]:
+                print({str(npm_prefix)!r})
+                raise SystemExit(0)
+            if args == ["install", "-g", "@googleworkspace/cli@latest"]:
+                print("updated @googleworkspace/cli")
+                raise SystemExit(0)
+            raise SystemExit(1)
+            """
+        ),
+        encoding="utf-8",
+    )
+    npm_script.chmod(0o755)
+    gws_impl = package_bin / "run-gws.js"
+    gws_impl.write_text(
+        textwrap.dedent(
+            """\
+            #!/usr/bin/env python3
+            import json
+            import sys
+
+            args = sys.argv[1:]
+            if args == ["--version"]:
+                print("gws 0.18.1")
+                print("This is not an officially supported Google product.")
+                raise SystemExit(0)
+            if args == ["auth", "--help"]:
+                print("login")
+                raise SystemExit(0)
+            if args == ["auth", "status"]:
+                print(json.dumps({"token_valid": True}))
+                raise SystemExit(0)
+            raise SystemExit(1)
+            """
+        ),
+        encoding="utf-8",
+    )
+    gws_impl.chmod(0o755)
+    gws_link = bin_dir / "gws"
+    gws_link.symlink_to(gws_impl)
+    return npm_script, gws_link
 
 
 def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
@@ -560,3 +676,103 @@ def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Pa
     assert lock_payload["update"]["update_status"] == "updated"
     assert lock_payload["support"]["materialized_paths"] == ["skills/support/generated/agent-browser/REFERENCE.md"]
     assert lock_payload["doctor"]["doctor_status"] == "ok"
+
+
+def test_tool_doctor_records_npm_provenance(tmp_path: Path) -> None:
+    repo_root = make_repo_copy(tmp_path)
+    home_root = tmp_path / "home"
+    npm_script, _ = make_fake_npm_gws(tmp_path)
+    release_fixture = make_release_fixture(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{npm_script.parent}:{(npm_script.parent.parent / 'npm-global' / 'bin')}:{env.get('PATH', '')}"
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+
+    result = run_cli_in_repo(
+        repo_root,
+        "tool",
+        "doctor",
+        "--repo-root",
+        str(repo_root),
+        "--json",
+        "gws-cli",
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    gws = payload["results"]["gws-cli"]["doctor"]
+    assert gws["doctor_status"] == "ok"
+    assert gws["provenance"]["install_method"] == "npm"
+    assert gws["provenance"]["package_name"] == "@googleworkspace/cli"
+    assert gws["release"]["latest_tag"] == "v0.22.5"
+
+
+def test_tool_update_routes_brew_provenance_for_specdown(tmp_path: Path) -> None:
+    repo_root = make_repo_copy(tmp_path)
+    home_root = tmp_path / "home"
+    brew_script, _ = make_fake_brew_specdown(tmp_path)
+    release_fixture = make_release_fixture(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{brew_script.parent}:{env.get('PATH', '')}"
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+
+    result = run_cli_in_repo(
+        repo_root,
+        "tool",
+        "update",
+        "--repo-root",
+        str(repo_root),
+        "--json",
+        "--skip-sync-support",
+        "specdown",
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    specdown = payload["results"]["specdown"]
+    assert specdown["update"]["status"] == "updated"
+    assert specdown["update"]["mode"] == "package_manager"
+    assert specdown["update"]["package_manager"] == "brew"
+    assert specdown["update"]["package_name"] == "corca-ai/tap/specdown"
+    assert specdown["doctor"]["provenance"]["install_method"] == "brew"
+    assert "brew" in specdown["next_step"]
+    lock_payload = json.loads((repo_root / "integrations" / "locks" / "specdown.json").read_text(encoding="utf-8"))
+    assert lock_payload["provenance"]["install_method"] == "brew"
+    assert lock_payload["update"]["mode"] == "package_manager"
+    assert lock_payload["update"]["package_name"] == "corca-ai/tap/specdown"
+
+
+def test_tool_update_routes_npm_provenance_for_gws(tmp_path: Path) -> None:
+    repo_root = make_repo_copy(tmp_path)
+    home_root = tmp_path / "home"
+    npm_script, _ = make_fake_npm_gws(tmp_path)
+    release_fixture = make_release_fixture(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{npm_script.parent}:{(npm_script.parent.parent / 'npm-global' / 'bin')}:{env.get('PATH', '')}"
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+
+    result = run_cli_in_repo(
+        repo_root,
+        "tool",
+        "update",
+        "--repo-root",
+        str(repo_root),
+        "--json",
+        "--skip-sync-support",
+        "gws-cli",
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    gws = payload["results"]["gws-cli"]
+    assert gws["update"]["status"] == "updated"
+    assert gws["update"]["mode"] == "package_manager"
+    assert gws["update"]["package_manager"] == "npm"
+    assert gws["update"]["package_name"] == "@googleworkspace/cli"
+    assert gws["doctor"]["provenance"]["install_method"] == "npm"
+    assert "npm" in gws["next_step"]
+    lock_payload = json.loads((repo_root / "integrations" / "locks" / "gws-cli.json").read_text(encoding="utf-8"))
+    assert lock_payload["provenance"]["install_method"] == "npm"
+    assert lock_payload["update"]["package_name"] == "@googleworkspace/cli"

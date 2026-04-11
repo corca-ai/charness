@@ -7,6 +7,8 @@ Prefer:
 - one canonical bootstrap path
 - one canonical source of truth for installed state
 - one documented update command
+- one honest story for what the installer owns vs what the operator or host
+  package manager still owns
 
 Be explicit about what the CLI can and cannot automate.
 
@@ -15,6 +17,9 @@ Be explicit about what the CLI can and cannot automate.
   enough structured guidance for the next agent.
 - If a CLI can probe upstream releases or package metadata, do it to improve
   guidance, but do not claim mutation happened when it did not.
+- If an installer script exists, prefer making it install only the product
+  itself. Missing system prerequisites should fail with precise guidance rather
+  than mutating `brew`, `apt`, `npm`, or other host package managers.
 
 Homebrew note:
 
@@ -25,3 +30,10 @@ Homebrew note:
 
 Use the same install method for updates unless the product owns a safer
 self-update path.
+
+Release-first note:
+
+- A release-first contract can be more honest than a Homebrew-first contract
+  while the runtime, artifact shape, or porting target is still moving.
+- Homebrew becomes cleaner after the product ships stable release artifacts
+  instead of source-oriented bootstraps.
