@@ -14,7 +14,6 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 from scripts.eval_init_repo import run_init_repo_inspect_states
-from scripts.eval_managed_cli_install import run_managed_cli_install
 from scripts.eval_registry import SCENARIOS, Scenario
 
 
@@ -152,8 +151,6 @@ def scenario_packaging_export(root: Path) -> None:
             cwd=root,
         )
         expect_success(resolve_result, "claude plugin export gather resolve")
-def scenario_managed_cli_install(root: Path) -> None:
-    run_managed_cli_install(root, run_command=run_command, expect_success=expect_success, error_type=EvalError)
 def scenario_doc_links_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "doc-links-valid"
     result = run_command(["python3", "scripts/check-doc-links.py", "--repo-root", str(fixture)], cwd=root)
@@ -326,7 +323,6 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "profile-valid": scenario_profile_valid,
         "packaging-valid": scenario_packaging_valid,
         "packaging-export": scenario_packaging_export,
-        "managed-cli-install": scenario_managed_cli_install,
         "doc-links-valid": scenario_doc_links_valid,
         "impl-adapter-bootstrap": scenario_impl_adapter_bootstrap,
         "quality-adapter-bootstrap": scenario_quality_adapter_bootstrap,

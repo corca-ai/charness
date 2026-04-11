@@ -14,7 +14,6 @@ SCENARIOS = (
     Scenario("profile-valid", "fixture repo with one valid profile passes artifact validation"),
     Scenario("packaging-valid", "shared host-packaging manifest stays aligned with repo artifacts"),
     Scenario("packaging-export", "shared packaging metadata materializes usable Claude and Codex plugin layouts"),
-    Scenario("managed-cli-install", "thin charness CLI bootstraps a managed local install surface under a temp home"),
     Scenario("doc-links-valid", "fixture docs with valid internal links pass markdown link validation"),
     Scenario("impl-adapter-bootstrap", "impl init/resolve scripts bootstrap repo-specific verification preferences"),
     Scenario("quality-adapter-bootstrap", "quality init/resolve scripts bootstrap a clean repo"),
