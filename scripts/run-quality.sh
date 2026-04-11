@@ -7,10 +7,31 @@ cd "$REPO_ROOT"
 RUN_QUALITY_TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$RUN_QUALITY_TMPDIR"' EXIT
 
+RUN_QUALITY_VERBOSE="${CHARNESS_QUALITY_VERBOSE:-0}"
+RUN_QUALITY_START_NS="$(date +%s%N)"
+
 declare -a PHASE_LABELS=()
 declare -a PHASE_PIDS=()
 declare -a PHASE_LOGS=()
 declare -a PHASE_METAS=()
+declare -a COMPLETED_LABELS=()
+declare -a COMPLETED_ELAPSED_MS=()
+declare -a COMPLETED_STATUSES=()
+
+TOTAL_PASSES=0
+TOTAL_FAILURES=0
+OVERALL_RC=0
+
+format_elapsed() {
+  local elapsed_ms="$1"
+
+  if (( elapsed_ms >= 1000 )); then
+    printf '%s.%ss' "$((elapsed_ms / 1000))" "$(((elapsed_ms % 1000) / 100))"
+    return
+  fi
+
+  printf '%sms' "$elapsed_ms"
+}
 
 record_runtime() {
   local label="$1"
@@ -55,6 +76,24 @@ queue_timed() {
   PHASE_METAS+=("$meta_path")
 }
 
+print_phase_output() {
+  local label="$1"
+  local status="$2"
+  local elapsed_ms="$3"
+  local log_path="$4"
+
+  printf '%s %-24s %s\n' "${status^^}" "$label" "$(format_elapsed "$elapsed_ms")"
+
+  if [[ "$status" == "fail" || "$RUN_QUALITY_VERBOSE" == "1" ]]; then
+    if [[ -s "$log_path" ]]; then
+      printf -- '--- %s output ---\n' "$label"
+      cat "$log_path"
+    else
+      printf -- '--- %s output ---\n(no output)\n' "$label"
+    fi
+  fi
+}
+
 flush_phase() {
   local rc=0
   local pid label log_path meta_path elapsed_ms status timestamp cmd_rc
@@ -69,16 +108,23 @@ flush_phase() {
     log_path="${PHASE_LOGS[$i]}"
     meta_path="${PHASE_METAS[$i]}"
 
-    if [[ -s "$log_path" ]]; then
-      cat "$log_path"
-    fi
-
     mapfile -t meta_lines <"$meta_path"
     elapsed_ms="${meta_lines[0]}"
     status="${meta_lines[1]}"
     timestamp="${meta_lines[2]}"
     cmd_rc="${meta_lines[3]}"
     record_runtime "$label" "$elapsed_ms" "$status" "$timestamp"
+
+    print_phase_output "$label" "$status" "$elapsed_ms" "$log_path"
+    COMPLETED_LABELS+=("$label")
+    COMPLETED_ELAPSED_MS+=("$elapsed_ms")
+    COMPLETED_STATUSES+=("$status")
+    if [[ "$status" == "pass" ]]; then
+      TOTAL_PASSES=$((TOTAL_PASSES + 1))
+    else
+      TOTAL_FAILURES=$((TOTAL_FAILURES + 1))
+    fi
+
     if [[ "$cmd_rc" != "0" ]]; then
       rc="$cmd_rc"
     fi
@@ -89,6 +135,17 @@ flush_phase() {
   PHASE_LOGS=()
   PHASE_METAS=()
   return "$rc"
+}
+
+print_final_summary() {
+  local end_ns elapsed_ms
+
+  end_ns="$(date +%s%N)"
+  elapsed_ms="$(((end_ns - RUN_QUALITY_START_NS) / 1000000))"
+  printf 'Quality summary: %s passed, %s failed, total %s\n' \
+    "$TOTAL_PASSES" \
+    "$TOTAL_FAILURES" \
+    "$(format_elapsed "$elapsed_ms")"
 }
 
 queue_timed "validate-skills" python3 scripts/validate-skills.py --repo-root "$REPO_ROOT"
@@ -102,7 +159,7 @@ queue_timed "validate-maintainer-setup" python3 scripts/validate-maintainer-setu
 queue_timed "check-python-lengths" python3 scripts/check-python-lengths.py --repo-root "$REPO_ROOT"
 queue_timed "check-skill-contracts" python3 scripts/check-skill-contracts.py --repo-root "$REPO_ROOT"
 queue_timed "check-doc-links" python3 scripts/check-doc-links.py --repo-root "$REPO_ROOT"
-flush_phase
+flush_phase || OVERALL_RC=$?
 
 queue_timed "check-markdown" ./scripts/check-markdown.sh
 queue_timed "check-secrets" ./scripts/check-secrets.sh
@@ -118,9 +175,11 @@ python_files=(
 )
 queue_timed "py-compile" python3 -m py_compile "${python_files[@]}"
 queue_timed "ruff" ruff check scripts tests skills/public/*/scripts skills/support/*/scripts
-flush_phase
+flush_phase || OVERALL_RC=$?
 
 queue_timed "pytest" pytest -q
 queue_timed "run-evals" python3 scripts/run-evals.py --repo-root "$REPO_ROOT"
 queue_timed "check-duplicates" python3 scripts/check-duplicates.py --repo-root "$REPO_ROOT" --fail-on-match
-flush_phase
+flush_phase || OVERALL_RC=$?
+print_final_summary
+exit "$OVERALL_RC"

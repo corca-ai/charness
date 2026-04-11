@@ -42,6 +42,127 @@ def run_shell_script(
     )
 
 
+def write_executable(path: Path, content: str) -> None:
+    path.write_text(content, encoding="utf-8")
+    path.chmod(0o755)
+
+
+def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
+    repo = tmp_path / "repo"
+    scripts_dir = repo / "scripts"
+    bin_dir = repo / "bin"
+    scripts_dir.mkdir(parents=True)
+    bin_dir.mkdir()
+
+    shutil.copy2(ROOT / "scripts" / "run-quality.sh", scripts_dir / "run-quality.sh")
+    (scripts_dir / "run-quality.sh").chmod(0o755)
+
+    python_stubs = (
+        ("validate-skills", "validate-skills.py"),
+        ("validate-profiles", "validate-profiles.py"),
+        ("validate-presets", "validate-presets.py"),
+        ("validate-adapters", "validate-adapters.py"),
+        ("validate-integrations", "validate-integrations.py"),
+        ("validate-packaging", "validate-packaging.py"),
+        ("validate-quality-artifact", "validate-quality-artifact.py"),
+        ("validate-maintainer-setup", "validate-maintainer-setup.py"),
+        ("check-python-lengths", "check-python-lengths.py"),
+        ("check-skill-contracts", "check-skill-contracts.py"),
+        ("check-doc-links", "check-doc-links.py"),
+        ("check-supply-chain", "check-supply-chain.py"),
+        ("run-evals", "run-evals.py"),
+        ("check-duplicates", "check-duplicates.py"),
+    )
+    for label, filename in python_stubs:
+        write_executable(
+            scripts_dir / filename,
+            "\n".join(
+                [
+                    "#!/usr/bin/env python3",
+                    "import os",
+                    "import sys",
+                    f"LABEL = {label!r}",
+                    "if os.environ.get('QUALITY_FAIL_LABEL') == LABEL:",
+                    "    print(f'quality failure output from {LABEL}')",
+                    "    sys.exit(1)",
+                    "print(f'quality success output from {LABEL}')",
+                    "",
+                ]
+            ),
+        )
+
+    write_executable(
+        scripts_dir / "record_quality_runtime.py",
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "from pathlib import Path",
+                "import json",
+                "import sys",
+                "",
+                "args = sys.argv[1:]",
+                "repo_root = Path(args[args.index('--repo-root') + 1])",
+                "label = args[args.index('--label') + 1]",
+                "elapsed_ms = int(args[args.index('--elapsed-ms') + 1])",
+                "status = args[args.index('--status') + 1]",
+                "timestamp = args[args.index('--timestamp') + 1]",
+                "out_dir = repo_root / 'skill-outputs' / 'quality'",
+                "out_dir.mkdir(parents=True, exist_ok=True)",
+                "(out_dir / 'runtime-signals.json').write_text(",
+                "    json.dumps({'commands': {label: {'latest': {'elapsed_ms': elapsed_ms, 'status': status, 'timestamp': timestamp}}}}, indent=2) + '\\n',",
+                "    encoding='utf-8',",
+                ")",
+                "",
+            ]
+        ),
+    )
+
+    shell_stubs = (
+        ("check-markdown", "check-markdown.sh"),
+        ("check-secrets", "check-secrets.sh"),
+        ("check-shell", "check-shell.sh"),
+        ("check-links-external", "check-links-external.sh"),
+    )
+    for label, filename in shell_stubs:
+        write_executable(
+            scripts_dir / filename,
+            "\n".join(
+                [
+                    "#!/usr/bin/env bash",
+                    "set -euo pipefail",
+                    f"LABEL={label!r}",
+                    'if [[ "${QUALITY_FAIL_LABEL:-}" == "$LABEL" ]]; then',
+                    '  echo "quality failure output from $LABEL"',
+                    "  exit 1",
+                    "fi",
+                    'echo "quality success output from $LABEL"',
+                    "",
+                ]
+            ),
+        )
+
+    for label in ("ruff", "pytest"):
+        write_executable(
+            bin_dir / label,
+            "\n".join(
+                [
+                    "#!/usr/bin/env bash",
+                    "set -euo pipefail",
+                    f"LABEL={label!r}",
+                    'if [[ "${QUALITY_FAIL_LABEL:-}" == "$LABEL" ]]; then',
+                    '  echo "quality failure output from $LABEL"',
+                    "  exit 1",
+                    "fi",
+                    'echo "quality success output from $LABEL"',
+                    "",
+                ]
+            ),
+        )
+
+    env = {"PATH": f"{bin_dir}:/usr/bin:/bin"}
+    return repo, env
+
+
 def make_minimal_skill_repo(tmp_path: Path, description: str) -> Path:
     repo = tmp_path / "repo"
     skill_dir = repo / "skills" / "public" / "demo"
@@ -666,6 +787,41 @@ def test_record_quality_runtime_rotates_old_monthly_archives(tmp_path: Path) -> 
     assert len(archives) == 12
     assert "runtime-signals-2025-01.jsonl" not in archives
     assert "runtime-signals-2026-01.jsonl" in archives
+
+
+def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path) -> None:
+    repo, env = make_quality_runner_repo(tmp_path)
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+    assert result.returncode == 0, result.stderr
+    assert "PASS validate-skills" in result.stdout
+    assert "PASS check-markdown" in result.stdout
+    assert "PASS pytest" in result.stdout
+    assert "quality success output from validate-skills" not in result.stdout
+    assert "quality success output from check-markdown" not in result.stdout
+    assert "Quality summary: 21 passed, 0 failed" in result.stdout
+
+
+def test_run_quality_replays_only_failing_command_logs(tmp_path: Path) -> None:
+    repo, env = make_quality_runner_repo(tmp_path)
+    env["QUALITY_FAIL_LABEL"] = "check-markdown"
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+    assert result.returncode == 1
+    assert "FAIL check-markdown" in result.stdout
+    assert "--- check-markdown output ---" in result.stdout
+    assert "quality failure output from check-markdown" in result.stdout
+    assert "quality success output from validate-skills" not in result.stdout
+    assert "Quality summary: 20 passed, 1 failed" in result.stdout
+
+
+def test_run_quality_verbose_replays_success_logs(tmp_path: Path) -> None:
+    repo, env = make_quality_runner_repo(tmp_path)
+    env["CHARNESS_QUALITY_VERBOSE"] = "1"
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+    assert result.returncode == 0, result.stderr
+    assert "--- validate-skills output ---" in result.stdout
+    assert "quality success output from validate-skills" in result.stdout
+    assert "--- check-markdown output ---" in result.stdout
+    assert "quality success output from check-markdown" in result.stdout
 
 
 def test_install_git_hooks_sets_core_hookspath(tmp_path: Path) -> None:

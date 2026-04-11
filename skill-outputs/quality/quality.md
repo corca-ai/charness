@@ -1,5 +1,5 @@
 # Quality Review
-Date: 2026-04-10
+Date: 2026-04-11
 
 ## Scope
 
@@ -12,6 +12,9 @@ Current repo-wide quality posture after adding an offline supply-chain gate, cla
   `./scripts/install-git-hooks.sh`.
 - `./scripts/run-quality.sh` now runs independent validation phases in
   parallel while still recording per-command timing and fail/pass history.
+- `./scripts/run-quality.sh` now prints one concise pass/fail line per command,
+  replays full command output only for failures, and keeps full success logs as
+  an explicit `CHARNESS_QUALITY_VERBOSE=1` opt-in.
 - `scripts/check-secrets.sh` now prefers `gitleaks` with a checked-in `.gitleaks.toml` and falls back to repo-local `secretlint` when `gitleaks` is unavailable.
 - `scripts/check-supply-chain.py` now enforces repo-local manifest and
   lockfile alignment for npm/pnpm/yarn/bun surfaces plus `uv.lock`
@@ -22,9 +25,6 @@ Current repo-wide quality posture after adding an offline supply-chain gate, cla
   as a current snapshot instead of an ever-growing session log.
 - `scripts/validate-maintainer-setup.py` now fails closed when this clone has
   not actually activated the checked-in pre-push hook.
-- `scripts/check-doc-links.py` now owns two linked doc rules together:
-  referenced markdown targets must exist, and prose mentions of repo-owned
-  markdown docs must stay clickable instead of drifting into bare paths.
 - `scripts/check-links-external.sh` now scopes `lychee` to extracted external
   `http(s)` URLs instead of scanning repo-local absolute file links and
   reporting them all as excluded; online validation is now explicit opt-in via
@@ -42,6 +42,8 @@ Current repo-wide quality posture after adding an offline supply-chain gate, cla
 - standing pre-push quality time can now shrink without losing per-command
   timing fidelity because the runner records each command after its phase
   completes
+- pre-push output is now bounded on success while still preserving precise
+  failing-command diagnostics and total wall-clock time in the terminal
 - `quality` should now treat lint/test/runtime drift and bounded diagnostic
   retention as operability quality, not as an afterthought
 
@@ -60,6 +62,8 @@ Current repo-wide quality posture after adding an offline supply-chain gate, cla
 - the quality runner no longer serializes every independent gate; low-coupling
   validators and heavy test/eval seams now overlap by phase instead of paying
   unnecessary wall-clock cost in pre-push.
+- routine pre-push output is now agent-readable at a glance because passing
+  runs no longer replay linter/test stdout unless verbose mode was requested.
 - the control plane now tracks `cautilus` as a real external evaluator
   boundary instead of a deferred placeholder.
 - `spec` and `quality` now explicitly tell executable-spec repos to keep specs
@@ -75,7 +79,6 @@ Current repo-wide quality posture after adding an offline supply-chain gate, cla
 - `quality` now ships package-manager-specific security references for npm,
   pnpm, and uv instead of leaving supply-chain follow-up as handoff-only
   prose.
-- `quality` now also records a clearer secret-scanner choice: binary-first repos should start with `gitleaks`, while Node-heavy repos can still justify `secretlint` for pluggable rule depth.
 
 ## Weak
 
@@ -109,9 +112,9 @@ Current repo-wide quality posture after adding an offline supply-chain gate, cla
 ## Commands Run
 
 - `./scripts/run-quality.sh`
+- `pytest -q tests/test_quality_gates.py -k 'run_quality or record_quality_runtime'`
 - `./scripts/check-secrets.sh`
 - `python3 scripts/check-supply-chain.py --repo-root .`
-- `cat skill-outputs/quality/runtime-signals.json`
 - `pytest -q tests/test_quality_gates.py`
 
 ## Recommended Next Gates
