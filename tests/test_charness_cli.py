@@ -9,6 +9,17 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CLI = ROOT / "charness"
+REPO_COPY_IGNORE = shutil.ignore_patterns(
+    ".git",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".mypy_cache",
+    "__pycache__",
+    ".coverage",
+    ".venv",
+    "node_modules",
+    "history",
+)
 
 
 def run_cli(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
@@ -24,7 +35,7 @@ def run_cli(*args: str, env: dict[str, str] | None = None) -> subprocess.Complet
 
 def make_repo_copy(tmp_path: Path) -> Path:
     repo_copy = tmp_path / "repo"
-    shutil.copytree(ROOT, repo_copy)
+    shutil.copytree(ROOT, repo_copy, ignore=REPO_COPY_IGNORE)
     return repo_copy
 
 
