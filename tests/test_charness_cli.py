@@ -149,7 +149,8 @@ def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
     assert payload["checkout"]["repo_root"] == str(ROOT)
     assert (
         payload["next_steps"]["codex"]
-        == "Restart Codex from the home root so it reloads the personal marketplace. If `charness` is still unavailable, install or enable it from Plugin Directory."
+        == "Restart Codex from the home directory that owns "
+        f"`{home_root / '.agents' / 'plugins' / 'marketplace.json'}`. If `charness` is still not available, open Plugin Directory and install or enable the local `charness` entry."
     )
     assert payload["next_steps"]["claude"] == "Restart Claude Code to load charness."
     marketplace = json.loads((home_root / ".agents" / "plugins" / "marketplace.json").read_text(encoding="utf-8"))
@@ -198,6 +199,9 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path) -> None:
     assert payload["claude_wrapper_present"] is True
     assert payload["codex_marketplace_entry"]["name"] == "charness"
     assert payload["codex_marketplace_entry"]["source"]["path"] == "./.codex/plugins/charness"
+    assert payload["codex_source_version"] == "0.0.0-dev"
+    assert payload["codex_cache_manifest_version"] is None
+    assert payload["codex_source_cache_drift"] is False
     assert payload["codex_host_guidance"]["status"] == "needs-host-install"
     assert payload["codex_host_guidance"]["manual_action_required"] is True
     assert (
@@ -213,6 +217,93 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path) -> None:
     assert payload["claude_host_guidance"]["manual_action_required"] is False
     assert payload["claude_host_guidance"]["message"] == "Claude host install markers are present. Restart Claude Code to load or refresh charness."
     assert payload["plugin_preamble"]["update_hints"]["claude"] == "Run `charness update`, then restart Claude Code."
+
+
+def test_charness_doctor_reports_codex_version_drift(tmp_path: Path) -> None:
+    home_root = tmp_path / "home"
+    fake_claude = make_fake_claude(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
+    init_result = run_cli(
+        "init",
+        "--home-root",
+        str(home_root),
+        "--repo-root",
+        str(ROOT),
+        env=env,
+    )
+    assert init_result.returncode == 0, init_result.stderr
+    config_path = home_root / ".codex" / "config.toml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text('[plugins."charness@local"]\nenabled = true\n', encoding="utf-8")
+    cache_manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / "local" / ".codex-plugin" / "plugin.json"
+    cache_manifest.parent.mkdir(parents=True, exist_ok=True)
+    cache_manifest.write_text('{"version":"0.0.0-old"}', encoding="utf-8")
+
+    doctor_result = run_cli(
+        "doctor",
+        "--home-root",
+        str(home_root),
+        "--repo-root",
+        str(ROOT),
+        "--json",
+        env=env,
+    )
+    assert doctor_result.returncode == 0, doctor_result.stderr
+    payload = json.loads(doctor_result.stdout)
+    assert payload["codex_source_version"] == "0.0.0-dev"
+    assert payload["codex_cache_manifest_version"] == "0.0.0-old"
+    assert payload["codex_source_cache_drift"] is True
+    assert payload["codex_enabled_plugin_id"] == "charness@local"
+    assert payload["codex_host_guidance"]["status"] == "needs-refresh"
+    assert (
+        payload["codex_host_guidance"]["message"]
+        == "Codex still has installed charness cache version `0.0.0-old` while the source plugin root is `0.0.0-dev`. "
+        "Restart Codex first. If `charness doctor` still shows drift, reopen Plugin Directory and reinstall or disable/re-enable the local `charness` entry."
+    )
+
+
+def test_charness_update_reports_codex_version_drift(tmp_path: Path) -> None:
+    home_root = tmp_path / "home"
+    fake_claude = make_fake_claude(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
+    init_result = run_cli(
+        "init",
+        "--home-root",
+        str(home_root),
+        "--repo-root",
+        str(ROOT),
+        env=env,
+    )
+    assert init_result.returncode == 0, init_result.stderr
+    config_path = home_root / ".codex" / "config.toml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text('[plugins."charness@local"]\nenabled = true\n', encoding="utf-8")
+    cache_manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / "local" / ".codex-plugin" / "plugin.json"
+    cache_manifest.parent.mkdir(parents=True, exist_ok=True)
+    cache_manifest.write_text('{"version":"0.0.0-old"}', encoding="utf-8")
+
+    update_result = run_cli(
+        "update",
+        "--home-root",
+        str(home_root),
+        "--repo-root",
+        str(ROOT),
+        env=env,
+    )
+    assert update_result.returncode == 0, update_result.stderr
+    payload = json.loads(update_result.stdout)
+    assert payload["codex_source_version"] == "0.0.0-dev"
+    assert payload["codex_cache_manifest_version"] == "0.0.0-old"
+    assert payload["codex_source_cache_drift"] is True
+    assert (
+        payload["next_steps"]["codex"]
+        == "Codex still has installed charness cache version `0.0.0-old` while the source plugin root is `0.0.0-dev`. "
+        "Restart Codex first. If `charness doctor` still shows drift, reopen Plugin Directory and reinstall or disable/re-enable the local `charness` entry."
+    )
 
 
 def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path) -> None:

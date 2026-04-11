@@ -143,8 +143,8 @@ def run_managed_cli_install(
         if init_payload.get("plugin_root") != str(plugin_root):
             raise error_type(f"managed cli init: unexpected plugin_root {init_payload.get('plugin_root')!r}")
         expected_next_step = (
-            "Restart Codex from the home root so it reloads the personal marketplace. "
-            "If `charness` is still unavailable, install or enable it from Plugin Directory."
+            "Restart Codex from the home directory that owns "
+            f"`{marketplace_path}`. If `charness` is still not available, open Plugin Directory and install or enable the local `charness` entry."
         )
         if init_payload.get("next_steps", {}).get("codex") != expected_next_step:
             raise error_type(f"managed cli init: unexpected Codex next step {init_payload!r}")

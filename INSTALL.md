@@ -82,6 +82,10 @@ Recommended verification steps:
 2. Confirm that host guidance matches reality:
    - Codex should report whether cache/config markers are already present or a
      host install step is still required
+   - when Codex is already installed, compare `codex_source_version` and
+     `codex_cache_manifest_version`; if they differ, the installed Codex copy is
+     stale and `charness doctor` should tell the operator to restart Codex and,
+     if needed, reinstall or disable/re-enable the local plugin
    - Claude should report whether marketplace and installed-plugin markers are
      already present
 3. If the behavior is ambiguous, record the exact host output and treat that as

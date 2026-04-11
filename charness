@@ -389,15 +389,54 @@ def codex_cache_entries(cache_root: Path) -> list[dict[str, str]]:
         version_root = manifest_path.parents[1]
         plugin_root = manifest_path.parents[2]
         marketplace_root = manifest_path.parents[3]
+        manifest_version = None
+        try:
+            manifest_version_value = json.loads(manifest_path.read_text(encoding="utf-8")).get("version")
+            if isinstance(manifest_version_value, str):
+                manifest_version = manifest_version_value
+        except (OSError, json.JSONDecodeError):
+            manifest_version = None
         entries.append(
             {
                 "marketplace": marketplace_root.name,
                 "plugin": plugin_root.name,
                 "version": version_root.name,
                 "manifest_path": str(manifest_path),
+                "manifest_version": manifest_version or "",
             }
         )
     return entries
+
+
+def codex_source_manifest_path(plugin_root: Path) -> Path:
+    return plugin_root / ".codex-plugin" / "plugin.json"
+
+
+def codex_source_version(plugin_root: Path) -> str | None:
+    manifest_path = codex_source_manifest_path(plugin_root)
+    if not manifest_path.is_file():
+        return None
+    try:
+        version = json.loads(manifest_path.read_text(encoding="utf-8")).get("version")
+    except (OSError, json.JSONDecodeError):
+        return None
+    return version if isinstance(version, str) else None
+
+
+def codex_enabled_plugin_id(config_entries: list[dict[str, object]]) -> str | None:
+    for entry in config_entries:
+        if entry.get("enabled") is True:
+            plugin_id = entry.get("plugin_id")
+            if isinstance(plugin_id, str):
+                return plugin_id
+    return None
+
+
+def codex_primary_cache_entry(cache_entries: list[dict[str, str]]) -> dict[str, str] | None:
+    for entry in cache_entries:
+        if entry.get("plugin") == PACKAGE_ID:
+            return entry
+    return None
 
 
 def codex_config_entries(config_path: Path) -> list[dict[str, object]]:
@@ -418,11 +457,23 @@ def codex_config_entries(config_path: Path) -> list[dict[str, object]]:
 def build_codex_host_guidance(
     *,
     codex_marketplace_path: Path,
+    source_version: str | None,
     cache_entries: list[dict[str, str]],
     config_entries: list[dict[str, object]],
 ) -> dict[str, object]:
     if cache_entries:
         enabled_entries = [entry for entry in config_entries if entry.get("enabled") is True]
+        primary_cache = codex_primary_cache_entry(cache_entries)
+        cache_manifest_version = primary_cache.get("manifest_version") if isinstance(primary_cache, dict) else None
+        if enabled_entries and source_version and cache_manifest_version and cache_manifest_version != source_version:
+            return {
+                "status": "needs-refresh",
+                "manual_action_required": True,
+                "message": (
+                    f"Codex still has installed charness cache version `{cache_manifest_version}` while the source plugin root is `{source_version}`. "
+                    "Restart Codex first. If `charness doctor` still shows drift, reopen Plugin Directory and reinstall or disable/re-enable the local `charness` entry."
+                ),
+            }
         return {
             "status": "installed" if enabled_entries else "cached",
             "manual_action_required": not bool(enabled_entries),
@@ -603,6 +654,8 @@ def build_doctor_payload(
         "legacy_plugin_root_present": legacy_plugin_root(home_root).is_dir(),
         "codex_marketplace_path": str(codex_marketplace_path),
         "codex_marketplace_entry": codex_marketplace_entry(codex_marketplace_path),
+        "codex_source_manifest_path": str(codex_source_manifest_path(plugin_root)),
+        "codex_source_version": codex_source_version(plugin_root),
         "codex_config_path": str(default_codex_config_path(home_root)),
         "codex_config_entries": codex_config_entries(default_codex_config_path(home_root)),
         "codex_cache_root": str(default_codex_cache_root(home_root)),
@@ -651,8 +704,20 @@ def build_doctor_payload(
         payload["plugin_preamble"] = json.loads(preamble_output)
     else:
         payload["plugin_preamble"] = None
+    primary_cache = codex_primary_cache_entry(payload["codex_cache_entries"])
+    payload["codex_cache_manifest_version"] = (
+        primary_cache.get("manifest_version") if isinstance(primary_cache, dict) else None
+    )
+    payload["codex_enabled_plugin_id"] = codex_enabled_plugin_id(payload["codex_config_entries"])
+    payload["codex_source_cache_drift"] = bool(
+        payload["codex_enabled_plugin_id"]
+        and payload["codex_source_version"]
+        and payload["codex_cache_manifest_version"]
+        and payload["codex_source_version"] != payload["codex_cache_manifest_version"]
+    )
     payload["codex_host_guidance"] = build_codex_host_guidance(
         codex_marketplace_path=codex_marketplace_path,
+        source_version=payload["codex_source_version"],
         cache_entries=payload["codex_cache_entries"],
         config_entries=payload["codex_config_entries"],
     )
@@ -674,6 +739,8 @@ def print_human_summary(payload: dict[str, object]) -> None:
     if payload.get("checkout_git_head"):
         print(f"GIT_HEAD: {payload['checkout_git_head']}")
     print(f"PLUGIN_ROOT: {'present' if payload['plugin_root_present'] else 'missing'} {payload['plugin_root']}")
+    if payload.get("codex_source_version"):
+        print(f"CODEX_SOURCE_VERSION: {payload['codex_source_version']}")
     if payload.get("legacy_plugin_root_present"):
         print(f"LEGACY_PLUGIN_ROOT: present {payload['legacy_plugin_root']}")
     entry = payload.get("codex_marketplace_entry")
@@ -686,13 +753,16 @@ def print_human_summary(payload: dict[str, object]) -> None:
     cache_entries = payload.get("codex_cache_entries")
     if isinstance(cache_entries, list) and cache_entries:
         versions = ", ".join(
-            f"{entry['marketplace']}:{entry['version']}"
+            f"{entry['marketplace']}:{entry['version']} manifest={entry.get('manifest_version') or 'unknown'}"
             for entry in cache_entries
             if isinstance(entry, dict) and "marketplace" in entry and "version" in entry
         )
         print(f"CODEX_CACHE: present {versions}")
     else:
         print(f"CODEX_CACHE: missing {payload['codex_cache_root']}")
+    if payload.get("codex_cache_manifest_version"):
+        print(f"CODEX_CACHE_VERSION: {payload['codex_cache_manifest_version']}")
+    print(f"CODEX_SOURCE_CACHE_DRIFT: {'yes' if payload.get('codex_source_cache_drift') else 'no'}")
     config_entries = payload.get("codex_config_entries")
     if isinstance(config_entries, list) and config_entries:
         details = ", ".join(
@@ -773,6 +843,19 @@ def cmd_init(args: argparse.Namespace) -> int:
         cli_path=None if args.skip_cli_install else cli_path,
         update=False,
     )
+    doctor_payload = build_doctor_payload(
+        home_root=home_root,
+        repo_root=Path(checkout["repo_root"]),
+        managed_checkout=managed_checkout,
+        plugin_root=plugin_root,
+        codex_marketplace_path=codex_marketplace_path,
+        cli_path=cli_path,
+        claude_wrapper_path=claude_wrapper_path,
+    )
+    payload["next_steps"]["codex"] = doctor_payload["codex_host_guidance"]["message"]
+    payload["codex_source_version"] = doctor_payload["codex_source_version"]
+    payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
+    payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
     payload["checkout"] = checkout
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
@@ -799,6 +882,19 @@ def cmd_update(args: argparse.Namespace) -> int:
         cli_path=None if args.skip_cli_install else cli_path,
         update=True,
     )
+    doctor_payload = build_doctor_payload(
+        home_root=home_root,
+        repo_root=Path(checkout["repo_root"]),
+        managed_checkout=managed_checkout,
+        plugin_root=plugin_root,
+        codex_marketplace_path=codex_marketplace_path,
+        cli_path=cli_path,
+        claude_wrapper_path=claude_wrapper_path,
+    )
+    payload["next_steps"]["codex"] = doctor_payload["codex_host_guidance"]["message"]
+    payload["codex_source_version"] = doctor_payload["codex_source_version"]
+    payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
+    payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
     payload["checkout"] = checkout
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
