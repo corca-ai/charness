@@ -1,6 +1,6 @@
 # Sequence Discipline
 
-Use this when the contract has many open decisions and their order matters.
+This reference captures the sequence-discipline moves that matter to `spec`.
 
 ## Core Moves
 

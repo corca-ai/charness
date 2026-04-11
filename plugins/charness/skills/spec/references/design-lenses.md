@@ -1,6 +1,6 @@
 # Design Lenses
 
-Use these lenses only when they sharpen the current contract choice.
+This reference captures the Beck and Ousterhout moves that matter to `spec`.
 
 ## Kent Beck
 

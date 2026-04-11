@@ -131,7 +131,7 @@ Bad:
   retrieval benefit actually matters
 
 Keep the anchor sparse, factual, and attached to a concrete move. Put the
-source-faithful essence, nuance, and when-to-read guidance in `references/`.
+source-faithful essence, nuance, and reference contents in `references/`.
 
 If the same philosophy should shape several adjacent skills, encode the
 behavioral translation in each public core and keep only the anchors that
@@ -148,6 +148,15 @@ When you add a named anchor or expert reference:
 - compress to the few moves the skill really needs, not a mini-biography
 - verify fuzzy or non-obvious paraphrases before shipping them
 - prefer one strong anchor plus a behavior rule over a pile of overlapping names
+
+## Progressive Disclosure Rule
+
+Let `SKILL.md` own selection and sequencing.
+
+- put "when this matters" and "which reference to read" in the skill core
+- keep references focused on the payload: core moves, nuance, edge cases,
+  examples, and anti-overclaim
+- do not let a reference become a second workflow that re-decides when to act
 
 ## Runtime Capability Rule
 

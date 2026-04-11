@@ -1,7 +1,7 @@
 # Normalization Flow
 
-Use this when a repo already has some operating docs, but they are incomplete,
-duplicated, or inconsistent.
+This reference covers the normalization moves for repos whose operating docs are
+incomplete, duplicated, or inconsistent.
 
 ## Goal
 

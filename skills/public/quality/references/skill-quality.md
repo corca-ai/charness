@@ -21,6 +21,8 @@ Check for:
 - drift between what the skill promises and what shipped scripts can enforce
 - repeated documentation blocks that create copy-paste maintenance across skill
   bodies, references, or repo docs
+- selection logic that drifted out of `SKILL.md` core into references, turning
+  a reference into a second workflow instead of progressive disclosure
 
 Preferred deterministic gates:
 

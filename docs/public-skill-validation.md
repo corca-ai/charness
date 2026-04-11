@@ -18,6 +18,9 @@ bar.
 - every public skill must keep passing the repo-owned deterministic bar:
   package validation, adapter bootstrap checks, markdown and link checks, and
   smoke evals when the repo owns them
+- public-skill review should also inspect progressive disclosure honesty:
+  `SKILL.md` owns selection and sequencing, while references deepen the chosen
+  move without becoming a parallel workflow
 - the tier only describes extra validation beyond that baseline
 - until maintained `cautilus` scenarios land in this repo, any
   `evaluator-required` skill still falls back to smoke plus targeted HITL

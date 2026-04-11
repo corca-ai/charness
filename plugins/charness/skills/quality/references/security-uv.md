@@ -1,7 +1,7 @@
 # Supply-Chain Checklist: uv
 
-Use this when a repo keeps Python dependencies in `pyproject.toml` and expects
-`uv`-style lockfile discipline.
+This reference covers the `uv` lockfile and audit moves that matter to
+`quality`.
 
 ## Offline Gate
 

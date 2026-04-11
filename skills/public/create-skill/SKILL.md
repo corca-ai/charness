@@ -84,7 +84,7 @@ skill before writing from scratch.
      retrieval tool when they materially improve recall of a real reasoning
      frame
    - keep the behavior rule in core when the philosophy should shape repeated
-     moves; put factual essence, nuance, and when-to-read guidance in
+     moves; put factual essence, nuance, and reference contents in
      `references/`
    - move schemas, examples, and theory into `references/`
    - add scripts for deterministic repeated checks, adapter bootstrap, and
@@ -108,6 +108,8 @@ skill before writing from scratch.
 - When one philosophy should shape several adjacent skills, encode its
   behavioral translation in each core and keep only the anchors that materially
   improve retrieval.
+- Keep selection logic in `SKILL.md` core. References should deepen a chosen
+  move, not become a second workflow that re-decides when to act.
 - Keep expert references source-faithful and minimal. Verify fuzzy or
   non-obvious claims before compressing them into a public skill or reference.
 - Host-specific behavior belongs in adapters and presets, not in `SKILL.md`.

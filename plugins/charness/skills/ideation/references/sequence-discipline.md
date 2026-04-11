@@ -1,6 +1,7 @@
 # Sequence Discipline
 
-Use this when several plausible questions or moves exist and order matters.
+This reference captures the sequence-discipline moves that matter to
+`ideation`.
 
 ## Core Moves
 

@@ -1,7 +1,7 @@
 # Supply-Chain Checklist: pnpm
 
-Use this when a repo declares `packageManager: "pnpm@..."` or keeps
-`pnpm-lock.yaml`.
+This reference covers the pnpm lockfile and audit moves that matter to
+`quality`.
 
 ## Offline Gate
 

@@ -1,6 +1,7 @@
 # Greenfield Flow
 
-Use this when the repo has little or no durable operating surface.
+This reference covers the minimum honest flow for a repo with little or no
+durable operating surface.
 
 ## Goal
 

@@ -1,6 +1,6 @@
 # Design Lenses
 
-Use these lenses only when they sharpen the current implementation move.
+This reference captures the Beck and Ousterhout moves that matter to `impl`.
 
 ## Kent Beck
 

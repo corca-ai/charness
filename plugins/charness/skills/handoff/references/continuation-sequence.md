@@ -1,7 +1,6 @@
 # Continuation Sequence
 
-Use this when more than one pickup path is plausible and the next operator
-could misread the order.
+This reference captures the continuation-order moves that matter to `handoff`.
 
 ## Core Moves
 

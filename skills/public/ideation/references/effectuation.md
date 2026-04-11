@@ -1,7 +1,7 @@
 # Effectuation
 
-Use this lens when the idea is under-shaped enough that a full plan would be
-fictional.
+This reference captures the effectuation moves that matter to `ideation` when
+uncertainty is high.
 
 ## Core Moves
 
@@ -11,12 +11,6 @@ fictional.
 - treat early stakeholder commitments as shaping the opportunity, not merely
   validating a fixed plan
 - use surprises and constraints as inputs that can redirect the concept
-
-## Use It For
-
-- startup-like or internal-tool ideas with high uncertainty
-- concepts where the next honest move is a cheap commitment or probe
-- situations where waiting for a full plan would stall learning
 
 ## Do Not Overclaim
 

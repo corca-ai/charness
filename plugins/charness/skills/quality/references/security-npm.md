@@ -1,6 +1,7 @@
 # Supply-Chain Checklist: npm
 
-Use this when a repo keeps `package.json` and `package-lock.json`.
+This reference covers the npm lockfile and audit moves that matter to
+`quality`.
 
 ## Offline Gate
 

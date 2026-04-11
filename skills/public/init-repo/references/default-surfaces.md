@@ -19,6 +19,8 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
 - language or collaboration expectations
 - core repo memory surfaces
 - validation and commit discipline when the repo has them
+- selection rules in the core file, with deeper rationale pushed into linked
+  docs instead of turning `AGENTS.md` into a second handbook
 - avoid blanket external-link ignore defaults; if the repo later adopts
   `lychee`, prefer optional or tightly scoped checks before adding broad ignore
   rules

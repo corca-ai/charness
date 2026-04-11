@@ -1,6 +1,6 @@
 # Sequence Discipline
 
-Use this when several implementation slices are plausible and order matters.
+This reference captures the sequence-discipline moves that matter to `impl`.
 
 ## Core Moves
 
