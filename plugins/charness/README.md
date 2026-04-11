@@ -285,9 +285,9 @@ Official managed install path:
 
 - keep the source checkout under `~/.agents/src/charness`
 - keep the CLI on PATH at `~/.local/bin/charness`
-- export the install surface into `~/.agents/plugins/charness`
+- export the install surface into `~/.codex/plugins/charness`
 - keep a personal Codex marketplace file at `~/.agents/plugins/marketplace.json`
-- point `source.path` at `./.agents/plugins/charness`
+- point `source.path` at `./.codex/plugins/charness`
 
 Bootstrap:
 
@@ -305,8 +305,11 @@ fi
 Current status:
 
 - managed local CLI install is the official operator path
-- public GitHub-backed discover/install proof is still pending and should be
-  treated as an explicit follow-up check, not as a claimed guarantee
+- `charness init` deterministically prepares the local plugin source and
+  personal marketplace entry
+- Codex host install or enable still depends on Codex itself; use
+  `charness doctor` to see whether cache/config markers appeared and whether a
+  manual Plugin Directory step is still required
 
 Update model:
 
@@ -348,7 +351,7 @@ Current command intent:
 Recommended shared shape:
 
 1. Keep the source checkout at `~/.agents/src/charness`.
-2. Run `charness init` once to export the installed plugin surface to `~/.agents/plugins/charness`.
+2. Run `charness init` once to export the installed plugin surface to `~/.codex/plugins/charness`.
 3. Point Codex at that exported surface through `~/.agents/plugins/marketplace.json`.
 4. Use `claude-charness` so Claude always points at that same exported surface.
 5. Run `charness update` when you want both hosts to move together.

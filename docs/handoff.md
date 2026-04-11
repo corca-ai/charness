@@ -5,8 +5,8 @@
 - 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [charness](/home/ubuntu/charness/charness), [INSTALL.md](/home/ubuntu/charness/INSTALL.md), [UNINSTALL.md](/home/ubuntu/charness/UNINSTALL.md), [README.md](/home/ubuntu/charness/README.md), [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md), [docs/operator-acceptance.md](/home/ubuntu/charness/docs/operator-acceptance.md), [docs/public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md), [skills/public/init-repo/SKILL.md](/home/ubuntu/charness/skills/public/init-repo/SKILL.md), [skills/public/release/SKILL.md](/home/ubuntu/charness/skills/public/release/SKILL.md)을 읽고 thin CLI managed install proof와 남은 Codex interactive discovery proof를 같이 본다.
 - 이 머신에서는 `~/.agents/skills` source-checkout symlink가 이미 제거돼 있으니, 다시 생기지 않았는지만 짧게 확인한다.
 - Claude local proof는 끝났다. historical proof path는 `--plugin-dir /absolute/path/to/charness/plugins/charness`였고, parent `plugins/`를 주면 skill discovery proof가 되지 않았다.
-- Codex는 managed `~/.agents/plugins/marketplace.json` 경로에서 `INSTALLED_BY_DEFAULT`까지 올렸지만, `exec`만으로는 install/discovery proof가 약하니 interactive session 또는 다른 머신에서 실제 visibility proof를 이어서 본다.
-- Retro 2026-04-11: `INSTALLED_BY_DEFAULT`를 `~/.agents/plugins/marketplace.json`에 넣으면 다음 세션에서 plugin이 바로 세션 skill로 올라올 것이라고 가정한 건 과했다. 공식 문서는 personal marketplace가 Plugin Directory source가 된다고 설명하고, 실제 install은 `~/.codex/plugins/cache/...`에 생기며 enable state는 `~/.codex/config.toml`에 남는다고 구분한다. `~/.codex/plugins/charness` 부재나 config entry 부재는 install이 아직 안 된 신호로 취급해야 한다.
+- Codex는 managed `~/.agents/plugins/marketplace.json`를 source로 쓰되, operator-facing plugin root는 `~/.codex/plugins/charness`로 둔다. marketplace policy는 `AVAILABLE`로 두고, `exec`만으로는 install/discovery proof가 약하니 interactive session 또는 다른 머신에서 실제 visibility proof를 이어서 본다.
+- Retro 2026-04-11: `INSTALLED_BY_DEFAULT`를 `~/.agents/plugins/marketplace.json`에 넣으면 다음 세션에서 plugin이 바로 세션 skill로 올라올 것이라고 가정한 건 과했다. 공식 문서는 personal marketplace가 Plugin Directory source가 된다고 설명하고, 실제 install은 `~/.codex/plugins/cache/...`에 생기며 enable state는 `~/.codex/config.toml`에 남는다고 구분한다. `~/.codex/plugins/charness`는 source plugin root일 뿐, cache/config 흔적이 없으면 host install은 아직 안 된 신호로 취급해야 한다.
 
 ## Current State
 
@@ -20,8 +20,8 @@
 - 이 머신의 `~/.agents/skills` source-checkout symlink는 제거됐다.
 - Claude local dogfood는 exported plugin root 기준으로 확인됐다. `claude --plugin-dir /tmp/.../plugins/charness` debug log에서 `Loaded 14 skills from plugin charness`가 찍혔고, `/gather` 호출로 `TITLE:charness` 응답까지 확인했다.
 - root executable [charness](/home/ubuntu/charness/charness)를 추가했다. `init`, `update`, `doctor`, `uninstall`를 제공하고, checkout 기반 bootstrap일 때 `~/.local/bin/charness`에 자기 자신을 설치한다.
-- `./charness init`는 managed install surface를 만든다: `~/.agents/plugins/charness`, `~/.agents/plugins/marketplace.json`, `~/.local/bin/charness`, `~/.local/bin/claude-charness`.
-- `.agents/skills`는 checked-in 기본 install surface가 아니다. 이 repo는 thin CLI가 관리하는 `~/.agents/plugins/charness` exported surface와 `~/.agents/plugins/marketplace.json`를 operator install anchor로 쓰고, source checkout public skills를 별도 symlink로 노출하지 않는다.
+- `./charness init`는 managed install surface를 만든다: `~/.codex/plugins/charness`, `~/.agents/plugins/marketplace.json`, `~/.local/bin/charness`, `~/.local/bin/claude-charness`.
+- `.agents/skills`는 checked-in 기본 install surface가 아니다. 이 repo는 thin CLI가 관리하는 `~/.codex/plugins/charness` source plugin root와 `~/.agents/plugins/marketplace.json`를 operator install anchor로 쓰고, source checkout public skills를 별도 symlink로 노출하지 않는다.
 - `INSTALL.md`, `README.md`, `UNINSTALL.md`, `docs/host-packaging.md`, `docs/operator-acceptance.md`는 marketplace 설치를 primary path에서 내리고 thin CLI managed install을 공식 경로로 설명하도록 갱신했다.
 - `skills/public/release/*`와 `scripts/plugin_preamble.py`도 `charness update` / `claude-charness` 기준으로 갱신했다.
 - `scripts/run-evals.py`에 managed CLI install smoke가 추가됐다.

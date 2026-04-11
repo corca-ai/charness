@@ -229,7 +229,7 @@ def validate_root_install_artifacts(root: Path, data: dict[str, object]) -> None
                             "path": codex_marketplace["checked_in_source_path"],
                         },
                         "policy": {
-                            "installation": "INSTALLED_BY_DEFAULT",
+                            "installation": "AVAILABLE",
                             "authentication": "ON_INSTALL",
                         },
                         "category": codex_marketplace["category"],

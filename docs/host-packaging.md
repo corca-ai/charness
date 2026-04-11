@@ -146,11 +146,12 @@ explicitly different on purpose.
 Operationally this means:
 
 - the official operator install path is a thin `charness` CLI that manages one
-  machine-local exported plugin surface under `~/.agents/plugins/charness`
+  machine-local exported plugin surface under `~/.codex/plugins/charness`
 - Claude should prefer a managed wrapper such as `claude-charness`, which in
   turn points `--plugin-dir` at that managed exported surface
 - Codex personal installs may point `~/.agents/plugins/marketplace.json` at
-  `./.agents/plugins/charness` so `~/.agents` remains the machine-local anchor
+  `./.codex/plugins/charness` while keeping the marketplace file itself under
+  `~/.agents`
 - Codex local development should load `./plugins/charness` through the
   checked-in repo marketplace file
 - checked-in marketplace files remain generated compatibility artifacts rather

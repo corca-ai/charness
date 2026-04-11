@@ -50,7 +50,7 @@ Only delete files after explicit confirmation.
 
 Typical managed local paths:
 
-- `~/.agents/plugins/charness`
+- `~/.codex/plugins/charness`
 - `~/.agents/plugins/marketplace.json`
 - `~/.agents/src/charness`
 - `~/.local/bin/charness`

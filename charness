@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -29,11 +30,23 @@ def managed_checkout_root(home_root: Path) -> Path:
 
 
 def default_plugin_root(home_root: Path) -> Path:
+    return home_root / ".codex" / "plugins" / PACKAGE_ID
+
+
+def legacy_plugin_root(home_root: Path) -> Path:
     return home_root / ".agents" / "plugins" / PACKAGE_ID
 
 
 def default_codex_marketplace_path(home_root: Path) -> Path:
     return home_root / ".agents" / "plugins" / "marketplace.json"
+
+
+def default_codex_config_path(home_root: Path) -> Path:
+    return home_root / ".codex" / "config.toml"
+
+
+def default_codex_cache_root(home_root: Path) -> Path:
+    return home_root / ".codex" / "plugins" / "cache"
 
 
 def default_claude_wrapper_path(home_root: Path) -> Path:
@@ -189,6 +202,67 @@ def codex_marketplace_entry(path: Path) -> dict[str, object] | None:
     return None
 
 
+def codex_cache_entries(cache_root: Path) -> list[dict[str, str]]:
+    if not cache_root.is_dir():
+        return []
+    entries: list[dict[str, str]] = []
+    for manifest_path in sorted(cache_root.glob(f"*/{PACKAGE_ID}/*/.codex-plugin/plugin.json")):
+        version_root = manifest_path.parents[1]
+        plugin_root = manifest_path.parents[2]
+        marketplace_root = manifest_path.parents[3]
+        entries.append(
+            {
+                "marketplace": marketplace_root.name,
+                "plugin": plugin_root.name,
+                "version": version_root.name,
+                "manifest_path": str(manifest_path),
+            }
+        )
+    return entries
+
+
+def codex_config_entries(config_path: Path) -> list[dict[str, object]]:
+    if not config_path.is_file():
+        return []
+    text = config_path.read_text(encoding="utf-8")
+    pattern = re.compile(r'^\[plugins\."([^"]+)"\]\s*$([\s\S]*?)(?=^\[|\Z)', re.MULTILINE)
+    entries: list[dict[str, object]] = []
+    for plugin_id, body in pattern.findall(text):
+        if not plugin_id.startswith(f"{PACKAGE_ID}@"):
+            continue
+        enabled_match = re.search(r"^\s*enabled\s*=\s*(true|false)\s*$", body, re.MULTILINE)
+        enabled = None if enabled_match is None else enabled_match.group(1) == "true"
+        entries.append({"plugin_id": plugin_id, "enabled": enabled})
+    return entries
+
+
+def build_codex_host_guidance(
+    *,
+    codex_marketplace_path: Path,
+    cache_entries: list[dict[str, str]],
+    config_entries: list[dict[str, object]],
+) -> dict[str, object]:
+    if cache_entries:
+        enabled_entries = [entry for entry in config_entries if entry.get("enabled") is True]
+        return {
+            "status": "installed" if enabled_entries else "cached",
+            "manual_action_required": not bool(enabled_entries),
+            "message": (
+                "Codex has cached charness but no enabled config entry was found; reopen Codex and enable `charness` if it is still unavailable."
+                if not enabled_entries
+                else "Codex host install markers are present."
+            ),
+        }
+    return {
+        "status": "needs-host-install",
+        "manual_action_required": True,
+        "message": (
+            "Restart Codex from the home directory that owns "
+            f"`{codex_marketplace_path}`. If `charness` is still not available, open Plugin Directory and install or enable the local `charness` entry."
+        ),
+    }
+
+
 def remove_codex_marketplace_entry(path: Path) -> bool:
     if not path.is_file():
         return False
@@ -212,6 +286,9 @@ def install_surface(
     claude_wrapper_path: Path | None,
     cli_path: Path | None,
 ) -> dict[str, object]:
+    old_plugin_root = legacy_plugin_root(home_root)
+    if old_plugin_root != plugin_root and old_plugin_root.exists():
+        shutil.rmtree(old_plugin_root)
     invoke_repo_script(repo_root, "scripts/validate-packaging.py", "--repo-root", str(repo_root))
     invoke_repo_script(repo_root, "scripts/sync_root_plugin_manifests.py", "--repo-root", str(repo_root))
     install_output = invoke_repo_script(
@@ -259,8 +336,14 @@ def build_doctor_payload(
         "checkout_version": packaging_version(repo_root) if has_source_manifest(repo_root) else None,
         "plugin_root": str(plugin_root),
         "plugin_root_present": plugin_root.is_dir(),
+        "legacy_plugin_root": str(legacy_plugin_root(home_root)),
+        "legacy_plugin_root_present": legacy_plugin_root(home_root).is_dir(),
         "codex_marketplace_path": str(codex_marketplace_path),
         "codex_marketplace_entry": codex_marketplace_entry(codex_marketplace_path),
+        "codex_config_path": str(default_codex_config_path(home_root)),
+        "codex_config_entries": codex_config_entries(default_codex_config_path(home_root)),
+        "codex_cache_root": str(default_codex_cache_root(home_root)),
+        "codex_cache_entries": codex_cache_entries(default_codex_cache_root(home_root)),
         "cli_path": str(cli_path),
         "cli_present": cli_path.is_file(),
         "cli_in_path": wrapper_in_path(cli_path),
@@ -285,6 +368,11 @@ def build_doctor_payload(
         payload["plugin_preamble"] = json.loads(preamble_output)
     else:
         payload["plugin_preamble"] = None
+    payload["codex_host_guidance"] = build_codex_host_guidance(
+        codex_marketplace_path=codex_marketplace_path,
+        cache_entries=payload["codex_cache_entries"],
+        config_entries=payload["codex_config_entries"],
+    )
     return payload
 
 
@@ -296,6 +384,8 @@ def print_human_summary(payload: dict[str, object]) -> None:
     if payload.get("checkout_git_head"):
         print(f"GIT_HEAD: {payload['checkout_git_head']}")
     print(f"PLUGIN_ROOT: {'present' if payload['plugin_root_present'] else 'missing'} {payload['plugin_root']}")
+    if payload.get("legacy_plugin_root_present"):
+        print(f"LEGACY_PLUGIN_ROOT: present {payload['legacy_plugin_root']}")
     entry = payload.get("codex_marketplace_entry")
     if isinstance(entry, dict):
         source = entry.get("source", {})
@@ -303,6 +393,26 @@ def print_human_summary(payload: dict[str, object]) -> None:
         print(f"CODEX_MARKETPLACE: present {payload['codex_marketplace_path']} -> {path}")
     else:
         print(f"CODEX_MARKETPLACE: missing-entry {payload['codex_marketplace_path']}")
+    cache_entries = payload.get("codex_cache_entries")
+    if isinstance(cache_entries, list) and cache_entries:
+        versions = ", ".join(
+            f"{entry['marketplace']}:{entry['version']}"
+            for entry in cache_entries
+            if isinstance(entry, dict) and "marketplace" in entry and "version" in entry
+        )
+        print(f"CODEX_CACHE: present {versions}")
+    else:
+        print(f"CODEX_CACHE: missing {payload['codex_cache_root']}")
+    config_entries = payload.get("codex_config_entries")
+    if isinstance(config_entries, list) and config_entries:
+        details = ", ".join(
+            f"{entry['plugin_id']} enabled={entry['enabled']}"
+            for entry in config_entries
+            if isinstance(entry, dict) and "plugin_id" in entry and "enabled" in entry
+        )
+        print(f"CODEX_CONFIG: present {details}")
+    else:
+        print(f"CODEX_CONFIG: missing-entry {payload['codex_config_path']}")
     print(f"CLI: {'present' if payload['cli_present'] else 'missing'} {payload['cli_path']}")
     print(f"CLI_IN_PATH: {'yes' if payload['cli_in_path'] else 'no'}")
     print(
@@ -314,6 +424,9 @@ def print_human_summary(payload: dict[str, object]) -> None:
         root_surface = preamble.get("root_install_surface", {})
         ok = root_surface.get("ok")
         print(f"INSTALL_SURFACE: {'ok' if ok else 'warning'}")
+    host_guidance = payload.get("codex_host_guidance")
+    if isinstance(host_guidance, dict) and isinstance(host_guidance.get("message"), str):
+        print(f"CODEX_NEXT_STEP: {host_guidance['message']}")
 
 
 def resolve_runtime_paths(args: argparse.Namespace) -> tuple[Path, Path, Path, Path]:
@@ -405,14 +518,19 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
 def cmd_uninstall(args: argparse.Namespace) -> int:
     plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path = resolve_runtime_paths(args)
+    old_plugin_root = legacy_plugin_root(args.home_root.resolve())
     removed_marketplace = remove_codex_marketplace_entry(codex_marketplace_path)
     removed_plugin_root = False
+    removed_legacy_plugin_root = False
     removed_checkout = False
     removed_wrapper = False
     removed_cli = False
     if plugin_root.exists():
         shutil.rmtree(plugin_root)
         removed_plugin_root = True
+    if old_plugin_root != plugin_root and old_plugin_root.exists():
+        shutil.rmtree(old_plugin_root)
+        removed_legacy_plugin_root = True
     wrapper_path = claude_wrapper_path
     if wrapper_path.exists():
         wrapper_path.unlink()
@@ -430,6 +548,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
         "package_id": PACKAGE_ID,
         "removed_codex_marketplace_entry": removed_marketplace,
         "removed_plugin_root": removed_plugin_root,
+        "removed_legacy_plugin_root": removed_legacy_plugin_root,
         "removed_claude_wrapper": removed_wrapper,
         "removed_cli": removed_cli,
         "removed_checkout": removed_checkout,

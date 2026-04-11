@@ -152,7 +152,7 @@ def build_codex_marketplace(manifest: dict, *, source_path: str) -> dict:
                     "path": source_path,
                 },
                 "policy": {
-                    "installation": "INSTALLED_BY_DEFAULT",
+                    "installation": "AVAILABLE",
                     "authentication": "ON_INSTALL",
                 },
                 "category": repo_marketplace["category"],

@@ -29,14 +29,18 @@ def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["plugin_root"] == str(home_root / ".agents" / "plugins" / "charness")
+    assert payload["plugin_root"] == str(home_root / ".codex" / "plugins" / "charness")
     assert payload["cli_path"] == str(home_root / ".local" / "bin" / "charness")
     assert payload["claude_wrapper_path"] == str(home_root / ".local" / "bin" / "claude-charness")
     assert payload["checkout"]["repo_root"] == str(ROOT)
+    assert (
+        payload["next_steps"]["codex"]
+        == "Restart Codex from the home root so it reloads the personal marketplace. If `charness` is still unavailable, install or enable it from Plugin Directory."
+    )
     marketplace = json.loads((home_root / ".agents" / "plugins" / "marketplace.json").read_text(encoding="utf-8"))
     plugin_entry = marketplace["plugins"][0]
     assert plugin_entry["name"] == "charness"
-    assert plugin_entry["source"]["path"] == "./.agents/plugins/charness"
+    assert plugin_entry["source"]["path"] == "./.codex/plugins/charness"
     assert (home_root / ".local" / "bin" / "charness").is_file()
     assert (home_root / ".local" / "bin" / "claude-charness").is_file()
 
@@ -68,4 +72,12 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path) -> None:
     assert payload["cli_present"] is True
     assert payload["claude_wrapper_present"] is True
     assert payload["codex_marketplace_entry"]["name"] == "charness"
+    assert payload["codex_marketplace_entry"]["source"]["path"] == "./.codex/plugins/charness"
+    assert payload["codex_host_guidance"]["status"] == "needs-host-install"
+    assert payload["codex_host_guidance"]["manual_action_required"] is True
+    assert (
+        payload["codex_host_guidance"]["message"]
+        == "Restart Codex from the home directory that owns "
+        f"`{home_root / '.agents' / 'plugins' / 'marketplace.json'}`. If `charness` is still not available, open Plugin Directory and install or enable the local `charness` entry."
+    )
     assert payload["plugin_preamble"]["update_hints"]["claude"] == "Run `charness update`, then re-enter Claude through `claude-charness`."

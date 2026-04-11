@@ -30,7 +30,7 @@ def default_home_root() -> Path:
 
 
 def default_plugin_root(home_root: Path, package_id: str) -> Path:
-    return home_root / ".agents" / "plugins" / package_id
+    return home_root / ".codex" / "plugins" / package_id
 
 
 def default_codex_marketplace_path(home_root: Path) -> Path:
@@ -112,7 +112,7 @@ def ensure_source_checkout(repo_root: Path, package_id: str) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Export the checked-in charness plugin surface into a machine-local ~/.agents install root."
+        description="Export the checked-in charness plugin surface into a machine-local Codex plugin root and register it in the personal marketplace."
     )
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--package-id", default="charness")
@@ -175,7 +175,7 @@ def main() -> int:
                 "detected_hosts": detected_hosts,
                 "next_steps": {
                     "codex": (
-                        "Restart Codex from the home root so it reloads the personal marketplace and auto-installs charness by default."
+                        "Restart Codex from the home root so it reloads the personal marketplace. If `charness` is still unavailable, install or enable it from Plugin Directory."
                         if marketplace_path
                         else "Codex marketplace update skipped."
                     ),

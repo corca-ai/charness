@@ -63,9 +63,9 @@ After `charness init`, the managed install should look like:
 
 - source checkout at `~/.agents/src/charness`
 - installed CLI at `~/.local/bin/charness`
-- exported plugin root at `~/.agents/plugins/charness`
+- exported plugin root at `~/.codex/plugins/charness`
 - Codex personal marketplace at `~/.agents/plugins/marketplace.json`
-- Codex marketplace `source.path` pointing at `./.agents/plugins/charness`
+- Codex marketplace `source.path` pointing at `./.codex/plugins/charness`
 - Claude wrapper at `~/.local/bin/claude-charness`
 
 Claude should use the wrapper rather than ad hoc `--plugin-dir` calls:
@@ -84,9 +84,12 @@ Recommended verification steps:
 1. Run `charness doctor`.
 2. Restart Codex from the home directory that owns
    `~/.agents/plugins/marketplace.json`.
-3. Confirm that `charness` is present without a separate manual install step;
-   the managed marketplace marks it `INSTALLED_BY_DEFAULT`.
-4. If the behavior is ambiguous, record the exact host output and treat that as
+3. If `charness doctor` still reports `needs-host-install`, open Plugin
+   Directory and install or enable the local `charness` entry.
+4. Confirm that Codex host markers appear:
+   `~/.codex/plugins/cache/.../charness/...` and a `charness@...` plugin entry
+   in `~/.codex/config.toml`.
+5. If the behavior is ambiguous, record the exact host output and treat that as
    a proof gap to close, not as silent success.
 
 If you need to prove Claude skill runtime from the installed surface, prefer an
@@ -94,7 +97,7 @@ actual skill invocation such as:
 
 ```bash
 claude-charness --print \
-  "/gather Read ~/.agents/plugins/charness/README.md and return exactly TITLE:charness if the title is '# charness'."
+  "/gather Read ~/.codex/plugins/charness/README.md and return exactly TITLE:charness if the title is '# charness'."
 ```
 
 ## Step 4: Update Model

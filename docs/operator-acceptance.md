@@ -128,7 +128,9 @@ Suggested operator runs:
 
 - bootstrap or reuse the managed checkout, then run `./charness init`
 - verify Claude with `claude-charness`
-- verify Codex through `~/.agents/plugins/marketplace.json`
+- verify Codex through `~/.agents/plugins/marketplace.json`, then restart Codex
+  and install or enable the local `charness` entry from Plugin Directory if
+  `charness doctor` still reports `needs-host-install`
 - run `charness update` and confirm both hosts stay aligned after refresh
 - if the host output is ambiguous, record that ambiguity instead of claiming
   the install worked
@@ -136,6 +138,10 @@ Suggested operator runs:
 Acceptance:
 
 - install works from the documented managed local install surface
+- `charness init` deterministically creates the Codex source plugin root and
+  personal marketplace entry
+- `charness doctor` distinguishes “surface prepared” from “host install/enable
+  still required”
 - update behavior matches the documented single-path model
 - any required doc or manifest tweaks are committed back here
 
