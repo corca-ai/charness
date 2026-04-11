@@ -26,6 +26,7 @@
 - `skills/public/release/*`와 `scripts/plugin_preamble.py`도 `charness update` / Claude restart 기준으로 갱신했다.
 - `scripts/run-evals.py`에 managed CLI install smoke가 추가됐다.
 - 마지막 repo 검증은 managed CLI smoke 포함 `./scripts/run-quality.sh` 통과와 temp-home managed install eval이다.
+- Retro 2026-04-11 #3: `./charness init --repo-root /checkout`로 CLI를 설치해도 이후 `/home/ubuntu` 같은 repo 밖에서 `charness update`와 `charness doctor`를 실행할 수 있다고 착각했다. 실제로는 installed CLI가 managed checkout 기본값 `~/.agents/src/charness`만 찾았고, 그 경로가 없으면 `update`는 `missing source checkout`로 실패하고 `doctor`는 traceback을 냈다. 이제 CLI는 마지막 successful `init`/`update`의 source checkout을 `~/.local/share/charness/install-state.json`에 기억하고, source가 없을 때도 `doctor`가 `missing-source` guidance를 내도록 고쳤다.
 - Claude local marketplace update dogfood는 끝났다. temp checkout에서 `0.0.1-update-test -> 0.0.2-update-test`로 버전을 올리고 `charness update`를 돌렸을 때 `~/.claude/plugins/cache/corca-charness-update-test/charness/...` install path와 installed version이 같이 올라갔다.
 - 이 머신의 Codex는 이제 실제 host install 상태다. `~/.codex/config.toml`에는 `[plugins."charness@local"] enabled = true`가 있고, cache manifest는 `~/.codex/plugins/cache/local/charness/local/.codex-plugin/plugin.json`에 생긴다.
 - Retro 2026-04-11 #2: Codex host install이 끝난 뒤에도 source plugin root만 새 버전으로 덮어쓰고 `codex exec`를 새 프로세스로 띄우는 것만으로는 cache manifest version이 바뀌지 않았다. source는 `0.0.3-codex-test`로 올라갔지만 cache는 `0.0.0-dev`에 남았고, 원복 뒤에도 cache는 그대로였다. 즉 현재 증거로는 `charness update` + restart만으로 Codex installed cache가 자동 갱신된다고 말할 수 없다.

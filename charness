@@ -69,6 +69,10 @@ def default_cli_path(home_root: Path) -> Path:
     return home_root / ".local" / "bin" / "charness"
 
 
+def default_install_state_path(home_root: Path) -> Path:
+    return home_root / ".local" / "share" / PACKAGE_ID / "install-state.json"
+
+
 def shell_quote(value: str) -> str:
     return "'" + value.replace("'", "'\"'\"'") + "'"
 
@@ -123,11 +127,39 @@ def packaging_version(path: Path) -> str | None:
     return version if isinstance(version, str) else None
 
 
+def write_install_state(home_root: Path, *, repo_root: Path, managed_checkout: bool) -> None:
+    path = default_install_state_path(home_root)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "repo_root": str(repo_root),
+        "managed_checkout": managed_checkout,
+    }
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def read_install_state(home_root: Path) -> tuple[Path, bool] | None:
+    path = default_install_state_path(home_root)
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    repo_root = payload.get("repo_root")
+    managed_checkout = payload.get("managed_checkout")
+    if not isinstance(repo_root, str) or not isinstance(managed_checkout, bool):
+        return None
+    return Path(repo_root).resolve(), managed_checkout
+
+
 def resolve_repo_root(home_root: Path, explicit_repo_root: Path | None) -> tuple[Path, bool]:
     if explicit_repo_root is not None:
         return explicit_repo_root.resolve(), False
     if EMBEDDED_REPO_ROOT is not None:
         return EMBEDDED_REPO_ROOT, False
+    remembered = read_install_state(home_root)
+    if remembered is not None:
+        return remembered
     return managed_checkout_root(home_root), True
 
 
@@ -497,6 +529,7 @@ def build_claude_host_guidance(
     *,
     repo_root: Path,
     home_root: Path,
+    source_manifest_present: bool,
     marketplace_entry: dict[str, object] | None,
     installed_entry: dict[str, object] | None,
     enabled_status: dict[str, object] | None,
@@ -506,6 +539,12 @@ def build_claude_host_guidance(
             "status": "unavailable",
             "manual_action_required": False,
             "message": "Claude CLI not detected on this machine.",
+        }
+    if not source_manifest_present:
+        return {
+            "status": "missing-source",
+            "manual_action_required": True,
+            "message": "No charness source checkout was found for this CLI. Run `charness init --repo-root /absolute/path/to/charness` or reinstall from a checkout.",
         }
     plugin_ref = claude_plugin_ref(repo_root)
     if marketplace_entry is None:
@@ -641,13 +680,14 @@ def build_doctor_payload(
     cli_path: Path,
     claude_wrapper_path: Path,
 ) -> dict[str, object]:
+    source_manifest_present = has_source_manifest(repo_root)
     payload: dict[str, object] = {
         "package_id": PACKAGE_ID,
         "repo_root": str(repo_root),
         "managed_checkout": managed_checkout,
-        "checkout_present": has_source_manifest(repo_root),
-        "checkout_git_head": git_head(repo_root) if has_source_manifest(repo_root) else None,
-        "checkout_version": packaging_version(repo_root) if has_source_manifest(repo_root) else None,
+        "checkout_present": source_manifest_present,
+        "checkout_git_head": git_head(repo_root) if source_manifest_present else None,
+        "checkout_version": packaging_version(repo_root) if source_manifest_present else None,
         "plugin_root": str(plugin_root),
         "plugin_root_present": plugin_root.is_dir(),
         "legacy_plugin_root": str(legacy_plugin_root(home_root)),
@@ -673,14 +713,14 @@ def build_doctor_payload(
             "claude": shutil.which("claude") is not None,
         },
     }
-    payload["claude_marketplace_name"] = claude_marketplace_name(repo_root) if has_source_manifest(repo_root) else None
-    payload["claude_plugin_ref"] = claude_plugin_ref(repo_root) if has_source_manifest(repo_root) else None
+    payload["claude_marketplace_name"] = claude_marketplace_name(repo_root) if source_manifest_present else None
+    payload["claude_plugin_ref"] = claude_plugin_ref(repo_root) if source_manifest_present else None
     payload["claude_marketplace_entry"] = (
         claude_known_marketplace(default_claude_known_marketplaces_path(home_root), payload["claude_marketplace_name"])
         if payload["claude_marketplace_name"]
         else None
     )
-    payload["claude_enabled_status"] = claude_enabled_status(repo_root) if has_source_manifest(repo_root) else None
+    payload["claude_enabled_status"] = claude_enabled_status(repo_root) if source_manifest_present else None
     claude_listed = (
         payload["claude_enabled_status"].get("present")
         if isinstance(payload.get("claude_enabled_status"), dict)
@@ -691,7 +731,7 @@ def build_doctor_payload(
         if payload["claude_plugin_ref"] and claude_listed
         else None
     )
-    if has_source_manifest(repo_root):
+    if source_manifest_present:
         preamble_output = invoke_repo_script(
             repo_root,
             "scripts/plugin_preamble.py",
@@ -724,6 +764,7 @@ def build_doctor_payload(
     payload["claude_host_guidance"] = build_claude_host_guidance(
         repo_root=repo_root,
         home_root=home_root,
+        source_manifest_present=source_manifest_present,
         marketplace_entry=payload["claude_marketplace_entry"],
         installed_entry=payload["claude_installed_entry"],
         enabled_status=payload["claude_enabled_status"],
@@ -856,6 +897,7 @@ def cmd_init(args: argparse.Namespace) -> int:
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
+    write_install_state(home_root, repo_root=Path(checkout["repo_root"]), managed_checkout=managed_checkout)
     payload["checkout"] = checkout
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
@@ -895,6 +937,7 @@ def cmd_update(args: argparse.Namespace) -> int:
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
+    write_install_state(home_root, repo_root=Path(checkout["repo_root"]), managed_checkout=managed_checkout)
     payload["checkout"] = checkout
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0

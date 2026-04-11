@@ -306,6 +306,67 @@ def test_charness_update_reports_codex_version_drift(tmp_path: Path) -> None:
     )
 
 
+def test_installed_cli_remembers_explicit_repo_root(tmp_path: Path) -> None:
+    home_root = tmp_path / "home"
+    fake_claude = make_fake_claude(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
+    init_result = run_cli(
+        "init",
+        "--home-root",
+        str(home_root),
+        "--repo-root",
+        str(ROOT),
+        env=env,
+    )
+    assert init_result.returncode == 0, init_result.stderr
+    installed_cli = home_root / ".local" / "bin" / "charness"
+    doctor_result = subprocess.run(
+        ["python3", str(installed_cli), "doctor", "--home-root", str(home_root), "--json"],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert doctor_result.returncode == 0, doctor_result.stderr
+    payload = json.loads(doctor_result.stdout)
+    assert payload["repo_root"] == str(ROOT)
+    assert payload["checkout_present"] is True
+    assert payload["claude_host_guidance"]["status"] == "installed"
+
+
+def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path) -> None:
+    home_root = tmp_path / "home"
+    fake_claude = make_fake_claude(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
+    installed_cli = home_root / ".local" / "bin" / "charness"
+    installed_cli.parent.mkdir(parents=True, exist_ok=True)
+    installed_cli.write_text(CLI.read_text(encoding="utf-8"), encoding="utf-8")
+    installed_cli.chmod(0o755)
+
+    doctor_result = subprocess.run(
+        ["python3", str(installed_cli), "doctor", "--home-root", str(home_root), "--json"],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert doctor_result.returncode == 0, doctor_result.stderr
+    payload = json.loads(doctor_result.stdout)
+    assert payload["repo_root"] == str(home_root / ".agents" / "src" / "charness")
+    assert payload["checkout_present"] is False
+    assert payload["plugin_preamble"] is None
+    assert payload["claude_host_guidance"]["status"] == "missing-source"
+    assert payload["claude_host_guidance"]["message"] == (
+        "No charness source checkout was found for this CLI. Run `charness init --repo-root /absolute/path/to/charness` or reinstall from a checkout."
+    )
+
+
 def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path) -> None:
     home_root = tmp_path / "home"
     fake_claude = make_fake_claude(tmp_path)
