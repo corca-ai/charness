@@ -7,6 +7,8 @@ import subprocess
 import textwrap
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 CLI = ROOT / "charness"
 REPO_COPY_IGNORE = shutil.ignore_patterns(
@@ -87,6 +89,51 @@ def run_cli_in_repo(repo_root: Path, *args: str, env: dict[str, str] | None = No
         text=True,
         env=env,
     )
+
+
+def rewrite_seeded_home_paths(home_root: Path, *, old_home_root: Path) -> None:
+    old = str(old_home_root)
+    new = str(home_root)
+    text_paths = (
+        home_root / ".local" / "share" / "charness" / "install-state.json",
+        home_root / ".local" / "share" / "charness" / "host-state.json",
+        home_root / ".claude" / "plugins" / "known_marketplaces.json",
+        home_root / ".claude" / "plugins" / "installed_plugins.json",
+        home_root / ".local" / "bin" / "claude-charness",
+    )
+    for path in text_paths:
+        if not path.is_file():
+            continue
+        path.write_text(path.read_text(encoding="utf-8").replace(old, new), encoding="utf-8")
+
+
+@pytest.fixture(scope="module")
+def seeded_managed_home(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Path]:
+    seed_root = tmp_path_factory.mktemp("managed-home-seed")
+    home_root = seed_root / "home"
+    fake_claude = make_fake_claude(seed_root)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
+    init_result = run_cli(
+        "init",
+        "--home-root",
+        str(home_root),
+        env=env,
+    )
+    assert init_result.returncode == 0, init_result.stderr
+    return {"home_root": home_root}
+
+
+def clone_seeded_managed_home(tmp_path: Path, seeded_home_root: Path) -> tuple[Path, dict[str, str]]:
+    home_root = tmp_path / "home"
+    shutil.copytree(seeded_home_root, home_root)
+    rewrite_seeded_home_paths(home_root, old_home_root=seeded_home_root)
+    fake_claude = make_fake_claude(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
+    return home_root, env
 
 
 def make_fake_claude(tmp_path: Path) -> Path:
@@ -365,20 +412,8 @@ def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
     assert (home_root / ".local" / "bin" / "claude-charness").is_file()
 
 
-def test_charness_doctor_reports_managed_surface(tmp_path: Path) -> None:
-    home_root = tmp_path / "home"
-    fake_claude = make_fake_claude(tmp_path)
-    env = os.environ.copy()
-    env["HOME"] = str(home_root)
-    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
-    init_result = run_cli(
-        "init",
-        "--home-root",
-        str(home_root),
-        env=env,
-    )
-    assert init_result.returncode == 0, init_result.stderr
-
+def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
+    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     doctor_result = run_cli(
         "doctor",
         "--home-root",
@@ -424,19 +459,8 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path) -> None:
     assert isinstance(host_state["last_init"]["recorded_at"], str)
 
 
-def test_charness_doctor_reports_codex_version_drift(tmp_path: Path) -> None:
-    home_root = tmp_path / "home"
-    fake_claude = make_fake_claude(tmp_path)
-    env = os.environ.copy()
-    env["HOME"] = str(home_root)
-    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
-    init_result = run_cli(
-        "init",
-        "--home-root",
-        str(home_root),
-        env=env,
-    )
-    assert init_result.returncode == 0, init_result.stderr
+def test_charness_doctor_reports_codex_version_drift(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
+    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     config_path = home_root / ".codex" / "config.toml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text('[plugins."charness@local"]\nenabled = true\n', encoding="utf-8")
@@ -465,19 +489,8 @@ def test_charness_doctor_reports_codex_version_drift(tmp_path: Path) -> None:
     )
 
 
-def test_charness_update_reports_codex_version_drift(tmp_path: Path) -> None:
-    home_root = tmp_path / "home"
-    fake_claude = make_fake_claude(tmp_path)
-    env = os.environ.copy()
-    env["HOME"] = str(home_root)
-    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
-    init_result = run_cli(
-        "init",
-        "--home-root",
-        str(home_root),
-        env=env,
-    )
-    assert init_result.returncode == 0, init_result.stderr
+def test_charness_update_reports_codex_version_drift(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
+    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     config_path = home_root / ".codex" / "config.toml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text('[plugins."charness@local"]\nenabled = true\n', encoding="utf-8")
@@ -507,19 +520,8 @@ def test_charness_update_reports_codex_version_drift(tmp_path: Path) -> None:
     assert isinstance(host_state["last_update"]["recorded_at"], str)
 
 
-def test_installed_cli_remembers_managed_checkout(tmp_path: Path) -> None:
-    home_root = tmp_path / "home"
-    fake_claude = make_fake_claude(tmp_path)
-    env = os.environ.copy()
-    env["HOME"] = str(home_root)
-    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
-    init_result = run_cli(
-        "init",
-        "--home-root",
-        str(home_root),
-        env=env,
-    )
-    assert init_result.returncode == 0, init_result.stderr
+def test_installed_cli_remembers_managed_checkout(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
+    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     installed_cli = home_root / ".local" / "bin" / "charness"
     doctor_result = subprocess.run(
         ["python3", str(installed_cli), "doctor", "--home-root", str(home_root), "--json"],
@@ -537,20 +539,8 @@ def test_installed_cli_remembers_managed_checkout(tmp_path: Path) -> None:
     assert payload["claude_host_guidance"]["status"] == "installed"
 
 
-def test_doctor_can_write_host_state_snapshot(tmp_path: Path) -> None:
-    home_root = tmp_path / "home"
-    fake_claude = make_fake_claude(tmp_path)
-    env = os.environ.copy()
-    env["HOME"] = str(home_root)
-    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
-    init_result = run_cli(
-        "init",
-        "--home-root",
-        str(home_root),
-        env=env,
-    )
-    assert init_result.returncode == 0, init_result.stderr
-
+def test_doctor_can_write_host_state_snapshot(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
+    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     doctor_result = run_cli(
         "doctor",
         "--home-root",
@@ -618,19 +608,8 @@ def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path
     )
 
 
-def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path) -> None:
-    home_root = tmp_path / "home"
-    fake_claude = make_fake_claude(tmp_path)
-    env = os.environ.copy()
-    env["HOME"] = str(home_root)
-    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
-    init_result = run_cli(
-        "init",
-        "--home-root",
-        str(home_root),
-        env=env,
-    )
-    assert init_result.returncode == 0, init_result.stderr
+def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
+    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     config_path = home_root / ".codex" / "config.toml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text('[plugins."charness@charness"]\nenabled = true\n', encoding="utf-8")
