@@ -19,6 +19,7 @@ This happens after enforcement triage:
 - present but easy to game
 - too shallow for the claimed confidence
 - duplicated by a better existing gate
+- still paying standing runtime after a cheaper and more direct proof exists
 
 ## `missing`
 

@@ -23,6 +23,8 @@ Check for:
   bodies, references, or repo docs
 - selection logic that drifted out of `SKILL.md` core into references, turning
   a reference into a second workflow instead of progressive disclosure
+- stale E2E, eval, or smoke paths that still pay standing runtime after a
+  cheaper and more direct proof now covers the same seam
 
 Preferred deterministic gates:
 

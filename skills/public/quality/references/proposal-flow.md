@@ -31,6 +31,8 @@ Examples:
   same rules now exist in multiple docs and will drift
 - add one focused integration test because the failure path is user-visible and
   unit tests cannot prove it honestly
+- remove one broad E2E smoke because a cheaper direct proof now covers the same
+  seam and the old path only adds runtime cost
 - add dependency review in CI because supply-chain changes are currently
   invisible in pull requests
 - replace repeated documentation guidance with `markdownlint` or a repo-owned

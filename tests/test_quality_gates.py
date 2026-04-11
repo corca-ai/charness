@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 EVAL_REGISTRY = importlib.import_module("scripts.eval_registry")
@@ -174,6 +176,20 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         )
 
     env = {"PATH": f"{bin_dir}:/usr/bin:/bin"}
+    return repo, env
+
+
+@pytest.fixture(scope="module")
+def seeded_quality_runner_repo(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    seed_root = tmp_path_factory.mktemp("quality-runner-seed")
+    repo, _ = make_quality_runner_repo(seed_root)
+    return repo
+
+
+def clone_quality_runner_repo(tmp_path: Path, seeded_repo: Path) -> tuple[Path, dict[str, str]]:
+    repo = tmp_path / "repo"
+    shutil.copytree(seeded_repo, repo)
+    env = {"PATH": f"{repo / 'bin'}:/usr/bin:/bin"}
     return repo, env
 
 
@@ -841,8 +857,10 @@ def test_record_quality_runtime_rotates_old_monthly_archives(tmp_path: Path) -> 
     assert "runtime-signals-2026-01.jsonl" in archives
 
 
-def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path) -> None:
-    repo, env = make_quality_runner_repo(tmp_path)
+def test_run_quality_summarizes_success_without_replaying_logs(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
     assert result.returncode == 0, result.stderr
     assert "PASS validate-skills" in result.stdout
@@ -853,8 +871,10 @@ def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path) -
     assert "Quality summary: 23 passed, 0 failed" in result.stdout
 
 
-def test_run_quality_replays_only_failing_command_logs(tmp_path: Path) -> None:
-    repo, env = make_quality_runner_repo(tmp_path)
+def test_run_quality_replays_only_failing_command_logs(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     env["QUALITY_FAIL_LABEL"] = "check-markdown"
     result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
     assert result.returncode == 1
@@ -865,8 +885,10 @@ def test_run_quality_replays_only_failing_command_logs(tmp_path: Path) -> None:
     assert "Quality summary: 22 passed, 1 failed" in result.stdout
 
 
-def test_run_quality_verbose_replays_success_logs(tmp_path: Path) -> None:
-    repo, env = make_quality_runner_repo(tmp_path)
+def test_run_quality_verbose_replays_success_logs(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     env["CHARNESS_QUALITY_VERBOSE"] = "1"
     result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
     assert result.returncode == 0, result.stderr
@@ -1575,6 +1597,11 @@ def test_run_evals_passes_on_current_repo() -> None:
     result = run_script("scripts/run-evals.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
     assert f"Ran {len(EVAL_REGISTRY.SCENARIOS)} eval scenario(s)." in result.stdout
+
+
+def test_eval_registry_omits_redundant_current_repo_smokes() -> None:
+    scenario_ids = EVAL_REGISTRY.scenario_ids()
+    assert {"managed-cli-install", "packaging-valid", "packaging-export"}.isdisjoint(scenario_ids)
 
 
 def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) -> None:

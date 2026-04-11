@@ -23,8 +23,7 @@ drift check into `validate-packaging`.
 - `scripts/validate-packaging.py` now fails closed when the checked-in plugin
   tree drifts from the generated install surface, not only when manifest JSON
   or top-level marketplace artifacts drift.
-- `scripts/record_quality_runtime.py` keeps a compact current timing summary
-  plus rotated monthly archives.
+- `scripts/record_quality_runtime.py` keeps a compact current timing summary plus rotated monthly archives.
 - `scripts/validate-quality-artifact.py` keeps this file short and current.
 - `scripts/validate-maintainer-setup.py` now fails closed when this clone has
   not actually activated the checked-in pre-push hook.
@@ -37,8 +36,7 @@ drift check into `validate-packaging`.
   `skill-outputs/quality/runtime-signals.json`
 - the current runtime summary includes `check-supply-chain`, and older timing
   samples rotate into monthly `history/runtime-signals-YYYY-MM.jsonl` archives
-- success output stays bounded while preserving failing-command diagnostics and
-  per-command timing, so operability drift is visible without noisy happy-path logs
+- success output stays bounded while preserving failing-command diagnostics and timing
 - this session proved the local bar can catch install-surface drift before
   pre-push, because `run-quality` surfaced a managed-checkout update failure
   caused by an unsynced checked-in plugin export
@@ -59,16 +57,16 @@ drift check into `validate-packaging`.
 - `spec` and `quality` now explicitly tell executable-spec repos to keep specs
   at acceptance level, delete overlap, and move duplicated shell-heavy detail
   into cheaper lower layers.
-- the external-link gate checks real external URLs from maintained docs and
-  metadata without blocking routine pre-push runs on default unauthenticated network backoff.
-- internal markdown-link discipline now has a repo-owned deterministic owner
-  again instead of being implicitly delegated to a network-oriented link
-  checker that never enforced it.
-- checked-in plugin export drift is no longer only a pre-push concern: the
-  canonical packaging validator now compares the generated plugin tree against
-  the committed tree and fails on content drift.
+- the external-link gate now checks real external URLs without blocking routine
+  pre-push runs on default unauthenticated network backoff.
+- internal markdown-link discipline again has a repo-owned deterministic owner.
+- checked-in plugin export drift is no longer only a pre-push concern: the canonical packaging validator now compares the generated plugin tree against the committed tree and fails on content drift.
 - `quality` now ships package-manager-specific security references for npm,
   pnpm, and uv instead of leaving supply-chain follow-up as handoff-only prose.
+- the current dogfood also removed redundant standing proof: managed-install
+  eval smoke and current-repo packaging/export evals no longer pay runtime
+  after more direct CLI tests and packaging/export tests already covered those
+  seams.
 
 ## Weak
 
@@ -83,6 +81,7 @@ drift check into `validate-packaging`.
 - the current secret gate was validated through repo-owned tests and fallback
   logic, but `gitleaks` itself was not exercised live in this clone because
   the binary is not installed locally.
+- some `run-quality` behavioral tests still pay most of the real shell-runner cost.
 
 ## Missing
 
@@ -107,10 +106,10 @@ drift check into `validate-packaging`.
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
 - `python3 scripts/validate-packaging.py --repo-root .`
 - `pytest -q tests/test_quality_gates.py -k 'validate_packaging_passes_on_current_repo or validate_packaging_rejects_checked_in_plugin_tree_drift or sync_root_plugin_manifests_writes_install_surface'`
-- `pytest -q tests/test_quality_gates.py -k 'run_quality or record_quality_runtime'`
+- `pytest -q tests/test_quality_gates.py -k 'run_quality or record_quality_runtime or run_evals_passes_on_current_repo'`
+- `pytest -q tests/test_charness_cli.py`
 - `./scripts/check-secrets.sh`
 - `python3 scripts/check-supply-chain.py --repo-root .`
-- `pytest -q tests/test_quality_gates.py`
 
 ## Recommended Next Gates
 
@@ -128,9 +127,9 @@ drift check into `validate-packaging`.
 - `AUTO_CANDIDATE`: if a downstream repo does not already carry Node tooling,
   prefer `gitleaks` over `secretlint` for the first secret gate to avoid
   turning secret scanning into a package-manager adoption decision.
-- `AUTO_CANDIDATE`: add a deterministic smoke path for shipped support-sync
-  contracts so `agent-browser`-style upstream support references cannot drift
-  silently.
+- `AUTO_CANDIDATE`: add a deterministic smoke path for shipped support-sync contracts.
+- `AUTO_CANDIDATE`: keep pruning slow current-repo smokes from `run-evals`
+  whenever a narrower direct proof already exists in standing tests or validators.
 - `AUTO_CANDIDATE`: connect the new `cautilus` integration manifest to honest
   maintained scenarios for `evaluator-required` skills without pretending the
   current repo-local bar already has that depth.

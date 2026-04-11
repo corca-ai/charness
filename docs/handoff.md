@@ -34,7 +34,7 @@
 - `.agents/skills`는 checked-in 기본 install surface가 아니다. 이 repo는 thin CLI가 관리하는 `~/.codex/plugins/charness` source plugin root와 `~/.agents/plugins/marketplace.json`를 operator install anchor로 쓰고, source checkout public skills를 별도 symlink로 노출하지 않는다.
 - `INSTALL.md`, `README.md`, `UNINSTALL.md`, `docs/host-packaging.md`, `docs/operator-acceptance.md`는 marketplace 설치를 primary path에서 내리고 thin CLI managed install을 공식 경로로 설명하도록 갱신했다.
 - `skills/public/release/*`와 `scripts/plugin_preamble.py`도 `charness update` / Claude restart 기준으로 갱신했다.
-- `scripts/run-evals.py`에 managed CLI install smoke가 추가됐다.
+- `scripts/run-evals.py`에서는 historical current-repo smokes를 줄였다. `managed-cli-install`, `packaging-valid`, `packaging-export`는 더 직접적인 standing CLI tests/validators가 같은 seam을 이미 증명하므로 제거됐고, 남은 eval은 bootstrap/adapter/portability contract 위주로 유지한다.
 - 마지막 repo 검증은 managed CLI smoke 포함 `./scripts/run-quality.sh` 통과와 temp-home managed install eval이다.
 - public skill authoring contract도 보강됐다. `AGENTS.md`와 `create-skill`은 이제 sparse real-person anchor를 `SKILL.md` core의 의도적 retrieval technique로 취급하되, 행동 규칙에 연결되고 사실충실해야 하며 selection logic은 core에, nuance와 payload는 `references/`에 두라고 명시한다.
 - `ideation/spec/impl/handoff`는 Christopher Alexander-style sequence discipline을 core behavior로 갖고, `ideation`은 Saras Sarasvathy effectuation, `spec/impl`은 Kent Beck + John Ousterhout, `retro`는 named expert lens를 선호하되 direct counterfactual lens도 허용하는 쪽으로 정리됐다.

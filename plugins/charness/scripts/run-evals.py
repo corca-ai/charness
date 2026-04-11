@@ -74,83 +74,6 @@ def scenario_profile_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "profile-valid"
     result = run_command(["python3", "scripts/validate-profiles.py", "--repo-root", str(fixture)], cwd=root)
     expect_success(result, "profile-valid fixture")
-def scenario_packaging_valid(root: Path) -> None:
-    result = run_command(["python3", "scripts/validate-packaging.py", "--repo-root", str(root)], cwd=root)
-    expect_success(result, "packaging manifest validation")
-def scenario_packaging_export(root: Path) -> None:
-    with tempfile.TemporaryDirectory(prefix="charness-eval-packaging-codex-") as codex_tmpdir:
-        codex_root = Path(codex_tmpdir)
-        codex_result = run_command(
-            ["python3", "scripts/export-plugin.py", "--repo-root", str(root), "--host", "codex", "--output-root", str(codex_root), "--version-override", "9.9.9", "--with-marketplace"],
-            cwd=root,
-        )
-        expect_success(codex_result, "codex plugin export")
-        codex_plugin_root = codex_root / "plugins" / "charness"
-        codex_manifest_path = codex_plugin_root / ".codex-plugin" / "plugin.json"
-        codex_marketplace_path = codex_root / ".agents" / "plugins" / "marketplace.json"
-        for path, label in (
-            (codex_manifest_path, "generated plugin manifest"),
-            (codex_marketplace_path, "generated repo marketplace"),
-        ):
-            if not path.exists():
-                raise EvalError(f"codex plugin export: missing {label}")
-        codex_manifest = json.loads(codex_manifest_path.read_text(encoding="utf-8"))
-        if codex_manifest.get("skills") != "./skills/":
-            raise EvalError(f"codex plugin export: unexpected skills path {codex_manifest.get('skills')!r}")
-        if codex_manifest.get("version") != "9.9.9":
-            raise EvalError(f"codex plugin export: unexpected version {codex_manifest.get('version')!r}")
-        if codex_manifest.get("author", {}).get("name") != "Corca":
-            raise EvalError(f"codex plugin export: unexpected author payload {codex_manifest.get('author')!r}")
-        if codex_manifest.get("homepage") != "https://github.com/corca-ai/charness":
-            raise EvalError(f"codex plugin export: unexpected homepage {codex_manifest.get('homepage')!r}")
-        if codex_manifest.get("interface", {}).get("displayName") != "charness":
-            raise EvalError(
-                f"codex plugin export: unexpected interface payload {codex_manifest.get('interface')!r}"
-            )
-        codex_marketplace = json.loads(codex_marketplace_path.read_text(encoding="utf-8"))
-        plugin_entries = codex_marketplace.get("plugins", [])
-        if len(plugin_entries) != 1 or plugin_entries[0].get("source", {}).get("path") != "./plugins/charness":
-            raise EvalError(f"codex plugin export: unexpected marketplace payload {codex_marketplace!r}")
-
-    with tempfile.TemporaryDirectory(prefix="charness-eval-packaging-claude-") as claude_tmpdir:
-        claude_root = Path(claude_tmpdir)
-        claude_result = run_command(
-            ["python3", "scripts/export-plugin.py", "--repo-root", str(root), "--host", "claude", "--output-root", str(claude_root)],
-            cwd=root,
-        )
-        expect_success(claude_result, "claude plugin export")
-        claude_plugin_root = claude_root / "plugins" / "charness"
-        claude_manifest_path = claude_plugin_root / ".claude-plugin" / "plugin.json"
-        if not claude_manifest_path.exists():
-            raise EvalError("claude plugin export: missing generated plugin manifest")
-        claude_manifest = json.loads(claude_manifest_path.read_text(encoding="utf-8"))
-        if claude_manifest.get("repository") != "https://github.com/corca-ai/charness":
-            raise EvalError(
-                f"claude plugin export: unexpected repository {claude_manifest.get('repository')!r}"
-            )
-        if claude_manifest.get("author", {}).get("name") != "Corca":
-            raise EvalError(
-                f"claude plugin export: unexpected author payload {claude_manifest.get('author')!r}"
-            )
-        exported_readme = claude_plugin_root / "README.md"
-        exported_gather_skill = claude_plugin_root / "skills" / "gather" / "SKILL.md"
-        exported_support_skill = claude_plugin_root / "support" / "gather-slack" / "SKILL.md"
-        exported_generated_support = claude_plugin_root / "support" / "generated"
-        exported_helper_script = claude_plugin_root / "scripts" / "adapter_lib.py"
-        if not exported_readme.exists() or not exported_gather_skill.exists() or not exported_support_skill.exists() or not exported_helper_script.exists():
-            raise EvalError("claude plugin export: host-facing plugin tree was not materialized")
-        if exported_generated_support.exists():
-            raise EvalError("claude plugin export: machine-generated support artifacts leaked into the install surface")
-        resolve_result = run_command(
-            [
-                "python3",
-                str(claude_plugin_root / "skills" / "gather" / "scripts" / "resolve_adapter.py"),
-                "--repo-root",
-                str(root),
-            ],
-            cwd=root,
-        )
-        expect_success(resolve_result, "claude plugin export gather resolve")
 def scenario_doc_links_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "doc-links-valid"
     result = run_command(["python3", "scripts/check-doc-links.py", "--repo-root", str(fixture)], cwd=root)
@@ -321,8 +244,6 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
     handlers = {
         "skill-valid": scenario_skill_package_valid,
         "profile-valid": scenario_profile_valid,
-        "packaging-valid": scenario_packaging_valid,
-        "packaging-export": scenario_packaging_export,
         "doc-links-valid": scenario_doc_links_valid,
         "impl-adapter-bootstrap": scenario_impl_adapter_bootstrap,
         "quality-adapter-bootstrap": scenario_quality_adapter_bootstrap,

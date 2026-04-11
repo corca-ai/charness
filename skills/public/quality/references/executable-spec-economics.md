@@ -26,12 +26,15 @@ When a repo uses executable specs, inspect:
   boundary example
 - new specs add coverage by stacking more integration commands rather than
   pushing detail into unit tests
+- a historical E2E or smoke path remains in the standing bar after a narrower
+  direct proof already covers the same regression class
 - the suite relies on “broad equals safer” instead of measuring overlap and
   signal
 
 ## Preferred Fix Order
 
 1. delete duplicate or low-signal executable cases
+   - especially when a narrower direct test or validator already proves the seam
 2. move fine-grained assertions into unit tests or source-level checks
 3. replace repeated shell patterns with a direct adapter or check table
 4. optimize repeated command bodies with adapter-level caching or equivalent
