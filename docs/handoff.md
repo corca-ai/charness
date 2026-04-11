@@ -13,7 +13,7 @@
 - public skill `narrative`가 추가돼 source-of-truth doc alignment와 audience-facing brief derivation이 `announcement`와 분리됐다.
 - repo-owned release/install surface는 `plugins/charness` 아래 checked-in plugin bundle로 정리돼 있고, root marketplace files는 그 install surface만 advertise한다.
 - Ceal-era migration surface는 정리됐다. tracked tree에는 `Ceal`, `interview`, `concept-review`, `test-improvement`, `entity-stage-design`, `workbench` 같은 legacy naming이 남아 있지 않다.
-- [docs/master-plan.md](/home/ubuntu/charness/docs/master-plan.md)는 post-migration 기준의 현재 계획으로 다시 썼고, 옛 migration map은 삭제했다.
+- `master-plan`은 더 이상 기본 운영 표면이 아니다. 기존 `docs/master-plan.md` 파일은 제거했고, planning 문서는 필요할 때만 명시적으로 만들며 기본 경로에서는 `docs/operator-acceptance.md`와 선택적 `docs/roadmap.md`를 본다.
 - 이 머신의 `~/.agents/skills` source-checkout symlink는 제거됐다.
 - Claude local dogfood는 exported plugin root 기준으로 확인됐다. `claude --plugin-dir /tmp/.../plugins/charness` debug log에서 `Loaded 14 skills from plugin charness`가 찍혔고, `/gather` 호출로 `TITLE:charness` 응답까지 확인했다.
 - Claude local docs는 parent `plugins/` 경로를 가리키고 있었고, 그 경로는 plugin root가 아니라서 skill discovery proof가 되지 않았다. 이번 세션에서 관련 문서를 `plugins/charness` 기준으로 고친다.
@@ -41,7 +41,6 @@
 - [README.md](/home/ubuntu/charness/README.md)
 - [INSTALL.md](/home/ubuntu/charness/INSTALL.md)
 - [UNINSTALL.md](/home/ubuntu/charness/UNINSTALL.md)
-- [docs/master-plan.md](/home/ubuntu/charness/docs/master-plan.md)
 - [docs/public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)
 - [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md)
 - [packaging/charness.json](/home/ubuntu/charness/packaging/charness.json)

@@ -25,7 +25,7 @@ self-validation.
 ## Repo Memory
 
 - `docs/handoff.md`: next-session pickup and volatile repo state
-- `docs/master-plan.md`: session order and planned product boundary
+- `docs/roadmap.md`: optional roadmap when a repo explicitly chooses to keep one
 - `docs/operator-acceptance.md`: operator-facing takeover checklist for the
   remaining roadmap items
 - `docs/skill-migration-map.md`: migration intent and remaining destinations

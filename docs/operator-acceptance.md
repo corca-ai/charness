@@ -13,7 +13,7 @@ Run these first in `/home/ubuntu/charness`:
 ```bash
 git status --short
 sed -n '1,220p' docs/handoff.md
-sed -n '1,260p' docs/master-plan.md
+sed -n '1,260p' docs/roadmap.md 2>/dev/null || true
 ./scripts/run-quality.sh
 ```
 
@@ -37,16 +37,15 @@ Read first:
 
 - [docs/handoff.md](/home/ubuntu/charness/docs/handoff.md)
 - [docs/deferred-decisions.md](/home/ubuntu/charness/docs/deferred-decisions.md)
-- [docs/master-plan.md](/home/ubuntu/charness/docs/master-plan.md)
 - [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md)
 - [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md)
 
 Suggested agent prompt:
 
 ```text
-Read docs/deferred-decisions.md and docs/master-plan.md. If any reopen trigger
-is active, propose and record the minimum decision update needed; otherwise
-confirm closure and continue to cautilus integration work.
+Read docs/deferred-decisions.md and adjacent current planning docs. If any
+reopen trigger is active, propose and record the minimum decision update
+needed; otherwise confirm closure and continue to cautilus integration work.
 ```
 
 Acceptance:

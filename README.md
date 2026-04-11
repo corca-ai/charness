@@ -126,11 +126,13 @@ upstream skill instead of copying it into `charness`.
 
 ## Current Plan
 
-The detailed multi-session plan lives in:
+Current repo planning and takeover surfaces live in:
 
-- [docs/master-plan.md](docs/master-plan.md)
 - [docs/external-integrations.md](docs/external-integrations.md)
 - [docs/operator-acceptance.md](docs/operator-acceptance.md)
+
+If a repo later needs a dedicated roadmap document, create `docs/roadmap.md`
+explicitly instead of treating `master-plan` as a default required surface.
 
 ## Plugin Install Surface
 

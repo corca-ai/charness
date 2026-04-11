@@ -49,11 +49,10 @@ continuing.
 
 Pick the smallest honest path that matches the user's host:
 
-| Host | Install path | Current status |
-|------|--------------|----------------|
-| Claude Code | local checkout plugin root at `plugins/charness` | locally verified |
-| Claude Code | shared marketplace `corca-ai/charness` | documented and supported |
-| Codex | repo-scoped marketplace at `.agents/plugins/marketplace.json` | documented path, still needs continued real-host proof |
+- Claude Code local checkout: `plugins/charness` plugin root, locally verified
+- Claude Code shared marketplace: `corca-ai/charness`, documented and supported
+- Codex repo-scoped marketplace: `.agents/plugins/marketplace.json`, documented
+  path with continued real-host proof still needed
 
 ## Step 3: Claude Code
 

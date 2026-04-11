@@ -56,7 +56,6 @@ def _string_list(value: Any, field: str, errors: list[str]) -> list[str] | None:
 def _infer_source_documents(repo_root: Path) -> list[str]:
     candidates = [
         "README.md",
-        "docs/master-plan.md",
         "docs/roadmap.md",
         "docs/decisions.md",
         "docs/operator-acceptance.md",

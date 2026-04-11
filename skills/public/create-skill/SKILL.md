@@ -17,7 +17,8 @@ change.
 # Required Tools: rg
 # 1. charness boundary and current product context
 sed -n '1,220p' README.md
-sed -n '1,240p' docs/master-plan.md
+sed -n '1,220p' docs/handoff.md 2>/dev/null || true
+sed -n '1,240p' docs/roadmap.md 2>/dev/null || true
 
 # 2. existing target or source skill
 rg --files skills/public skills/support
