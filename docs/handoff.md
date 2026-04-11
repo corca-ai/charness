@@ -5,7 +5,7 @@
 - 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [charness](/home/ubuntu/charness/charness), [INSTALL.md](/home/ubuntu/charness/INSTALL.md), [UNINSTALL.md](/home/ubuntu/charness/UNINSTALL.md), [README.md](/home/ubuntu/charness/README.md), [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md), [docs/operator-acceptance.md](/home/ubuntu/charness/docs/operator-acceptance.md), [docs/public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md), [skills/public/init-repo/SKILL.md](/home/ubuntu/charness/skills/public/init-repo/SKILL.md), [skills/public/release/SKILL.md](/home/ubuntu/charness/skills/public/release/SKILL.md)을 읽고 thin CLI managed install proof와 남은 Codex interactive discovery proof를 같이 본다.
 - 이 머신에서는 `~/.agents/skills` source-checkout symlink가 이미 제거돼 있으니, 다시 생기지 않았는지만 짧게 확인한다.
 - Claude local proof는 끝났다. historical proof path는 `--plugin-dir /absolute/path/to/charness/plugins/charness`였고, parent `plugins/`를 주면 skill discovery proof가 되지 않았다.
-- Codex는 managed `~/.agents/plugins/marketplace.json` 경로도 `exec`만으로는 install/discovery proof가 약하니, interactive session 또는 다른 머신에서 실제 install/discovery proof를 이어서 본다.
+- Codex는 managed `~/.agents/plugins/marketplace.json` 경로에서 `INSTALLED_BY_DEFAULT`까지 올렸지만, `exec`만으로는 install/discovery proof가 약하니 interactive session 또는 다른 머신에서 실제 visibility proof를 이어서 본다.
 
 ## Current State
 

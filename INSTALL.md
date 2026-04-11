@@ -84,8 +84,8 @@ Recommended verification steps:
 1. Run `charness doctor`.
 2. Restart Codex from the home directory that owns
    `~/.agents/plugins/marketplace.json`.
-3. Confirm that discovery or install visibility comes from the exported
-   `~/.agents/plugins/charness` surface, not from the source checkout tree.
+3. Confirm that `charness` is present without a separate manual install step;
+   the managed marketplace marks it `INSTALLED_BY_DEFAULT`.
 4. If the behavior is ambiguous, record the exact host output and treat that as
    a proof gap to close, not as silent success.
 

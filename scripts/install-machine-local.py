@@ -175,7 +175,7 @@ def main() -> int:
                 "detected_hosts": detected_hosts,
                 "next_steps": {
                     "codex": (
-                        "Restart Codex from the home root so it reloads the personal marketplace."
+                        "Restart Codex from the home root so it reloads the personal marketplace and auto-installs charness by default."
                         if marketplace_path
                         else "Codex marketplace update skipped."
                     ),
