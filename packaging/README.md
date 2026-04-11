@@ -19,6 +19,8 @@ into host-specific plugin surfaces.
   - `plugins/charness/.codex-plugin/plugin.json`
   - `.claude-plugin/marketplace.json`
   - `.agents/plugins/marketplace.json`
+- those marketplace files are generated compatibility artifacts, not the
+  primary operator-facing install contract
 - `scripts/validate-packaging.py` proves contract shape and repo-path integrity
 - `scripts/export-plugin.py` materializes temporary Claude/Codex plugin layouts
   from the shared manifest

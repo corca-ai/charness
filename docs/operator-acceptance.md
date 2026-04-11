@@ -100,11 +100,12 @@ Acceptance:
   maintained scenario wiring honestly.
 - `./scripts/run-quality.sh` passes.
 
-### 3. Run Claude/Codex Direct-Install Experiments
+### 3. Run Managed CLI Install Experiments
 
 Why this exists:
 
 - a checked-in plugin install surface now exists under `plugins/charness`
+- the repo now claims one thin-CLI-managed install/update path across hosts
 - public install/update behavior still needs real-host confirmation
 
 Read first:
@@ -120,22 +121,22 @@ Useful local commands:
 ```bash
 python3 scripts/validate-packaging.py --repo-root .
 python3 scripts/sync_root_plugin_manifests.py --repo-root .
-python3 scripts/plugin_preamble.py --repo-root .
+./charness doctor
 ```
 
 Suggested operator runs:
 
-- Claude Code:
-  - try the shared marketplace path from `README.md`
-  - try local `--plugin-dir /absolute/path/to/charness/plugins/charness`
-- Codex:
-  - use the checked-in `.agents/plugins/marketplace.json`
-  - reload Codex after updating the checkout
+- bootstrap or reuse the managed checkout, then run `./charness init`
+- verify Claude with `claude-charness`
+- verify Codex through `~/.agents/plugins/marketplace.json`
+- run `charness update` and confirm both hosts stay aligned after refresh
+- if the host output is ambiguous, record that ambiguity instead of claiming
+  the install worked
 
 Acceptance:
 
-- install works from the documented checked-in install surface
-- update behavior matches the documented model
+- install works from the documented managed local install surface
+- update behavior matches the documented single-path model
 - any required doc or manifest tweaks are committed back here
 
 ### 4. Raise `create-skill` / `spec` Workflow Gates

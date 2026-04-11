@@ -145,15 +145,16 @@ explicitly different on purpose.
 
 Operationally this means:
 
-- Claude shared install can treat the repo as a single-plugin marketplace
-- Claude local development should point `--plugin-dir` at the checked-in
-  `plugins/charness` directory, not the repo root or the `plugins/` parent
-- machine-local operator installs may export the same plugin tree to
-  `~/.agents/plugins/charness` and reuse that one exported surface across hosts
+- the official operator install path is a thin `charness` CLI that manages one
+  machine-local exported plugin surface under `~/.agents/plugins/charness`
+- Claude should prefer a managed wrapper such as `claude-charness`, which in
+  turn points `--plugin-dir` at that managed exported surface
 - Codex personal installs may point `~/.agents/plugins/marketplace.json` at
   `./.agents/plugins/charness` so `~/.agents` remains the machine-local anchor
 - Codex local development should load `./plugins/charness` through the
   checked-in repo marketplace file
+- checked-in marketplace files remain generated compatibility artifacts rather
+  than the primary operator-facing install contract
 - public GitHub install remains a testable hypothesis, not an already-proven
   guarantee, until a pushed-repo experiment confirms it on both hosts
 

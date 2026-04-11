@@ -18,12 +18,12 @@ aligned with the new version.
 ## User Update Boundary
 
 `release` should tell users how to refresh installed state, but it must not
-edit host caches directly. Typical update steps remain human- or host-driven,
-for example:
+edit host caches directly. Typical update steps remain CLI- or host-driven, for
+example:
 
-- refresh the Claude marketplace catalog
-- reinstall or update the named plugin
-- restart or rediscover the Codex local marketplace surface when needed
+- run `charness update`
+- restart Codex when host visibility still depends on marketplace rediscovery
+- rerun `claude-charness` when needed
 
 ## Drift Rule
 

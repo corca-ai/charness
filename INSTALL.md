@@ -3,185 +3,109 @@
 This file is the canonical installation contract for `charness`.
 
 Use it when a human or an AI agent needs to install, verify, or refresh the
-checked-in `charness` plugin surface for Claude or Codex.
+managed `charness` install for Claude or Codex.
 
-`charness` installs as one plugin bundle. Do not install individual public
-skills à la carte.
+`charness` installs as one managed local plugin bundle. Do not install
+individual public skills à la carte.
 
 ## Guardrails
 
 - treat [packaging/charness.json](/home/ubuntu/charness/packaging/charness.json)
   as the source of truth
-- treat checked-in plugin manifests and marketplace files as derived artifacts
+- treat checked-in plugin manifests and compatibility marketplace files as
+  derived artifacts
 - do not add runtime self-update behavior to skills
-- prefer proving the documented install surface over inventing a fallback
+- prefer the documented `charness` CLI path over ad hoc host-specific install
+  commands
 - if a host behavior differs from the docs, record the exact behavior instead of
   silently changing the contract
 
 ## Prerequisites
 
 - the user asked to install or verify `charness`
-- you have a local checkout of this repository or a generated export root
+- you can either clone the source checkout or already have `charness` on PATH
 - you can run shell commands and read local files
-- for repo-checkout installs, you are working from the checkout root
+- for checkout bootstrap installs, you are working from the checkout root
 
-## Step 1: Verify And Refresh The Install Surface
+## Step 1: Bootstrap The Thin CLI
 
-From the repo root, run:
+The official install path is the managed `charness` CLI.
 
-```bash
-python3 scripts/validate-packaging.py --repo-root .
-python3 scripts/sync_root_plugin_manifests.py --repo-root .
-python3 scripts/plugin_preamble.py --repo-root .
-```
-
-Expected checked-in install-surface paths:
-
-- `plugins/charness/.claude-plugin/plugin.json`
-- `plugins/charness/.codex-plugin/plugin.json`
-- `.claude-plugin/marketplace.json`
-- `.agents/plugins/marketplace.json`
-
-If `validate-packaging.py` fails, stop and fix the packaging drift before
-continuing.
-
-## Step 2: Choose The Host Install Path
-
-Pick the smallest honest path that matches the user's host:
-
-- Claude Code local checkout: `plugins/charness` plugin root, locally verified
-- Claude Code shared marketplace: `corca-ai/charness`, documented and supported
-- Codex machine-local personal marketplace: `~/.agents/plugins/marketplace.json`
-  backed by `~/.agents/plugins/charness`, preferred operator path
-- Codex repo-scoped marketplace: `.agents/plugins/marketplace.json`, documented
-  path with continued real-host proof still needed
-
-## Step 3: Claude Code
-
-### Local checkout install
-
-Use the checked-in plugin root directly:
-
-```bash
-claude --plugin-dir /absolute/path/to/charness/plugins/charness
-```
-
-Smoke check:
-
-```bash
-claude --print --plugin-dir /absolute/path/to/charness/plugins/charness \
-  "Return exactly one line: charness-smoke"
-```
-
-If you need to prove skill runtime from the installed surface, prefer an actual
-skill invocation such as:
-
-```bash
-claude --print --plugin-dir /absolute/path/to/charness/plugins/charness \
-  "/gather Read plugins/charness/README.md and return exactly TITLE:charness if the title is '# charness'."
-```
-
-### Shared marketplace install
-
-Use Claude's marketplace flow:
-
-```text
-/plugin marketplace add corca-ai/charness
-/plugin install charness@corca-charness
-```
-
-Update path for a marketplace install:
-
-```text
-/plugin update charness@corca-charness
-```
-
-## Step 4: Codex
-
-Prefer the machine-local personal marketplace path for operator installs.
-
-### Machine-local personal install
-
-Recommended source checkout location:
+If `charness` is not already on PATH, bootstrap from a checkout:
 
 ```bash
 mkdir -p ~/.agents/src
 if [ -d ~/.agents/src/charness/.git ]; then
-  git -C ~/.agents/src/charness pull --ff-only
+  cd ~/.agents/src/charness
 else
   git clone https://github.com/corca-ai/charness ~/.agents/src/charness
+  cd ~/.agents/src/charness
 fi
-cd ~/.agents/src/charness
+./charness init
 ```
 
-Refresh the checked-in install surface, then export the machine-local install:
+That first run installs a reusable CLI copy at `~/.local/bin/charness` by
+default. If `~/.local/bin` is on PATH, later runs can use:
 
 ```bash
-python3 scripts/validate-packaging.py --repo-root .
-python3 scripts/sync_root_plugin_manifests.py --repo-root .
-python3 scripts/install-machine-local.py --repo-root .
+charness update
 ```
 
-Expected machine-local result:
+If you are deliberately proving the install from a non-managed checkout, use:
+
+```bash
+./charness init --repo-root /absolute/path/to/charness --skip-cli-install
+```
+
+## Step 2: Expected Managed Surface
+
+After `charness init`, the managed install should look like:
 
 - source checkout at `~/.agents/src/charness`
+- installed CLI at `~/.local/bin/charness`
 - exported plugin root at `~/.agents/plugins/charness`
-- personal Codex marketplace at `~/.agents/plugins/marketplace.json`
+- Codex personal marketplace at `~/.agents/plugins/marketplace.json`
 - Codex marketplace `source.path` pointing at `./.agents/plugins/charness`
+- Claude wrapper at `~/.local/bin/claude-charness`
 
-Recommended verification steps:
-
-1. Restart Codex from the home directory that owns
-   `~/.agents/plugins/marketplace.json`.
-2. Confirm that discovery or install visibility comes from the exported
-   `~/.agents/plugins/charness` surface, not from the source checkout tree.
-3. If the behavior is ambiguous, record the exact host output and treat that as
-   a proof gap to close, not as silent success.
-
-Claude can use the same exported surface:
+Claude should use the wrapper rather than ad hoc `--plugin-dir` calls:
 
 ```bash
-claude --plugin-dir ~/.agents/plugins/charness
+claude-charness
 ```
 
-### Repo-scoped development install
+The checked-in root marketplace files remain generated compatibility artifacts,
+not the official operator-facing install path.
 
-`charness` still keeps the repo-scoped marketplace path for local development
-and packaging proof.
-
-Required local surface:
-
-- keep `.agents/plugins/marketplace.json` in the checkout
-- keep `source.path` pointing at `./plugins/charness`
-- reload or restart Codex after updating the checkout
+## Step 3: Verify The Managed Install
 
 Recommended verification steps:
 
-1. Start Codex from the checkout root that contains `.agents/plugins/marketplace.json`.
-2. Confirm that discovery or install visibility comes from the checked-in plugin
-   surface, not from the source `skills/` tree.
-3. If the behavior is ambiguous, record the exact host output and treat that as
+1. Run `charness doctor`.
+2. Restart Codex from the home directory that owns
+   `~/.agents/plugins/marketplace.json`.
+3. Confirm that discovery or install visibility comes from the exported
+   `~/.agents/plugins/charness` surface, not from the source checkout tree.
+4. If the behavior is ambiguous, record the exact host output and treat that as
    a proof gap to close, not as silent success.
 
-Current honesty note:
+If you need to prove Claude skill runtime from the installed surface, prefer an
+actual skill invocation such as:
 
-- machine-local personal marketplace is the preferred operator path
-- repo-scoped marketplace usage remains the documented development path
-- public GitHub-backed install proof is still pending
-- `codex exec` alone may not be sufficient proof of local plugin discovery
+```bash
+claude-charness --print \
+  "/gather Read ~/.agents/plugins/charness/README.md and return exactly TITLE:charness if the title is '# charness'."
+```
 
-## Step 5: Update Model
+## Step 4: Update Model
 
-- machine-local install: update `~/.agents/src/charness`, then rerun
-  `python3 scripts/install-machine-local.py --repo-root ~/.agents/src/charness`
-- local checkout install: update the checkout, then rerun
-  `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- Claude marketplace install: use `/plugin update charness@corca-charness`
-- Codex repo-scoped marketplace install: update the checkout behind
-  `.agents/plugins/marketplace.json`, then reload Codex
+- run `charness update`
+- restart Codex after the update when the host still depends on marketplace
+  rediscovery
+- rerun `claude-charness` when needed
 - skill execution must stay read-only with respect to install/update state
 
-## Step 6: Report Back
+## Step 5: Report Back
 
 After installation or verification, report:
 

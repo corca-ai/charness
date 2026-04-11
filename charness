@@ -1,0 +1,526 @@
+#!/usr/bin/env python3
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+PACKAGE_ID = "charness"
+REPO_URL = "https://github.com/corca-ai/charness"
+SCRIPT_PATH = Path(__file__).resolve()
+EMBEDDED_REPO_ROOT = SCRIPT_PATH.parent if (SCRIPT_PATH.parent / "packaging" / f"{PACKAGE_ID}.json").is_file() else None
+
+
+class CharnessError(Exception):
+    pass
+
+
+def default_home_root() -> Path:
+    return Path.home().resolve()
+
+
+def managed_checkout_root(home_root: Path) -> Path:
+    return home_root / ".agents" / "src" / PACKAGE_ID
+
+
+def default_plugin_root(home_root: Path) -> Path:
+    return home_root / ".agents" / "plugins" / PACKAGE_ID
+
+
+def default_codex_marketplace_path(home_root: Path) -> Path:
+    return home_root / ".agents" / "plugins" / "marketplace.json"
+
+
+def default_claude_wrapper_path(home_root: Path) -> Path:
+    return home_root / ".local" / "bin" / "claude-charness"
+
+
+def default_cli_path(home_root: Path) -> Path:
+    return home_root / ".local" / "bin" / "charness"
+
+
+def shell_quote(value: str) -> str:
+    return "'" + value.replace("'", "'\"'\"'") + "'"
+
+
+def run(command: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        command,
+        cwd=cwd,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+
+def expect_success(result: subprocess.CompletedProcess[str], context: str) -> None:
+    if result.returncode != 0:
+        raise CharnessError(
+            f"{context} failed with exit code {result.returncode}\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+        )
+
+
+def is_git_checkout(path: Path) -> bool:
+    return (path / ".git").exists()
+
+
+def has_source_manifest(path: Path) -> bool:
+    return (path / "packaging" / f"{PACKAGE_ID}.json").is_file()
+
+
+def git_dirty(path: Path) -> bool:
+    result = run(["git", "status", "--short"], cwd=path)
+    expect_success(result, f"git status in `{path}`")
+    return any(line.strip() for line in result.stdout.splitlines())
+
+
+def git_head(path: Path) -> str | None:
+    if not is_git_checkout(path):
+        return None
+    result = run(["git", "rev-parse", "--short", "HEAD"], cwd=path)
+    if result.returncode != 0:
+        return None
+    head = result.stdout.strip()
+    return head or None
+
+
+def packaging_version(path: Path) -> str | None:
+    manifest_path = path / "packaging" / f"{PACKAGE_ID}.json"
+    if not manifest_path.is_file():
+        return None
+    data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    version = data.get("version")
+    return version if isinstance(version, str) else None
+
+
+def resolve_repo_root(home_root: Path, explicit_repo_root: Path | None) -> tuple[Path, bool]:
+    if explicit_repo_root is not None:
+        return explicit_repo_root.resolve(), False
+    if EMBEDDED_REPO_ROOT is not None:
+        return EMBEDDED_REPO_ROOT, False
+    return managed_checkout_root(home_root), True
+
+
+def ensure_checkout(repo_root: Path, *, managed: bool, repo_url: str, allow_clone: bool, allow_pull: bool) -> dict[str, object]:
+    if has_source_manifest(repo_root):
+        cloned = False
+        pulled = False
+        if allow_pull and managed:
+            if not is_git_checkout(repo_root):
+                raise CharnessError(f"`{repo_root}` contains a source manifest but is not a git checkout")
+            if git_dirty(repo_root):
+                raise CharnessError(
+                    f"managed checkout `{repo_root}` has local changes; stop and resolve them before `charness update`"
+                )
+            pull_result = run(["git", "pull", "--ff-only"], cwd=repo_root)
+            expect_success(pull_result, f"git pull in `{repo_root}`")
+            pulled = True
+        return {"repo_root": str(repo_root), "managed": managed, "cloned": cloned, "pulled": pulled}
+
+    if repo_root.exists():
+        if any(repo_root.iterdir()):
+            raise CharnessError(
+                f"`{repo_root}` exists but is not a charness source checkout; pass `--repo-root` or clean that path first"
+            )
+    elif not allow_clone:
+        raise CharnessError(f"missing source checkout `{repo_root}`")
+
+    if not managed and not allow_clone:
+        raise CharnessError(f"missing explicit source checkout `{repo_root}`")
+
+    repo_root.parent.mkdir(parents=True, exist_ok=True)
+    clone_result = run(["git", "clone", repo_url, str(repo_root)])
+    expect_success(clone_result, f"git clone into `{repo_root}`")
+    return {"repo_root": str(repo_root), "managed": managed, "cloned": True, "pulled": False}
+
+
+def invoke_repo_script(repo_root: Path, relative_script: str, *script_args: str) -> str:
+    result = run(["python3", relative_script, *script_args], cwd=repo_root)
+    expect_success(result, f"`{relative_script}` in `{repo_root}`")
+    return result.stdout.strip()
+
+
+def write_claude_wrapper(wrapper_path: Path, plugin_root: Path) -> None:
+    wrapper_path.parent.mkdir(parents=True, exist_ok=True)
+    wrapper_path.write_text(
+        "\n".join(
+            [
+                "#!/bin/sh",
+                f"exec claude --plugin-dir {shell_quote(str(plugin_root))} \"$@\"",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    wrapper_path.chmod(0o755)
+
+
+def install_cli_binary(target_path: Path) -> None:
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    if not target_path.exists() or SCRIPT_PATH != target_path.resolve():
+        shutil.copy2(SCRIPT_PATH, target_path)
+    target_path.chmod(0o755)
+
+
+def wrapper_in_path(wrapper_path: Path) -> bool:
+    path_entries = os.environ.get("PATH", "").split(os.pathsep)
+    return str(wrapper_path.parent) in path_entries
+
+
+def load_json(path: Path) -> dict[str, object]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def codex_marketplace_entry(path: Path) -> dict[str, object] | None:
+    if not path.is_file():
+        return None
+    data = load_json(path)
+    plugins = data.get("plugins", [])
+    if not isinstance(plugins, list):
+        return None
+    for plugin in plugins:
+        if isinstance(plugin, dict) and plugin.get("name") == PACKAGE_ID:
+            return plugin
+    return None
+
+
+def remove_codex_marketplace_entry(path: Path) -> bool:
+    if not path.is_file():
+        return False
+    data = load_json(path)
+    plugins = data.get("plugins", [])
+    if not isinstance(plugins, list):
+        raise CharnessError(f"`{path}` field `plugins` must be a list")
+    kept = [plugin for plugin in plugins if not (isinstance(plugin, dict) and plugin.get("name") == PACKAGE_ID)]
+    removed = len(kept) != len(plugins)
+    data["plugins"] = kept
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return removed
+
+
+def install_surface(
+    repo_root: Path,
+    *,
+    home_root: Path,
+    plugin_root: Path,
+    codex_marketplace_path: Path,
+    claude_wrapper_path: Path | None,
+    cli_path: Path | None,
+) -> dict[str, object]:
+    invoke_repo_script(repo_root, "scripts/validate-packaging.py", "--repo-root", str(repo_root))
+    invoke_repo_script(repo_root, "scripts/sync_root_plugin_manifests.py", "--repo-root", str(repo_root))
+    install_output = invoke_repo_script(
+        repo_root,
+        "scripts/install-machine-local.py",
+        "--repo-root",
+        str(repo_root),
+        "--home-root",
+        str(home_root),
+        "--plugin-root",
+        str(plugin_root),
+        "--codex-marketplace-path",
+        str(codex_marketplace_path),
+    )
+    payload = json.loads(install_output)
+    if cli_path is not None:
+        install_cli_binary(cli_path)
+        payload["cli_path"] = str(cli_path)
+    else:
+        payload["cli_path"] = None
+    if claude_wrapper_path is not None:
+        write_claude_wrapper(claude_wrapper_path, plugin_root)
+        payload["claude_wrapper_path"] = str(claude_wrapper_path)
+    else:
+        payload["claude_wrapper_path"] = None
+    return payload
+
+
+def build_doctor_payload(
+    *,
+    home_root: Path,
+    repo_root: Path,
+    managed_checkout: bool,
+    plugin_root: Path,
+    codex_marketplace_path: Path,
+    cli_path: Path,
+    claude_wrapper_path: Path,
+) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "package_id": PACKAGE_ID,
+        "repo_root": str(repo_root),
+        "managed_checkout": managed_checkout,
+        "checkout_present": has_source_manifest(repo_root),
+        "checkout_git_head": git_head(repo_root) if has_source_manifest(repo_root) else None,
+        "checkout_version": packaging_version(repo_root) if has_source_manifest(repo_root) else None,
+        "plugin_root": str(plugin_root),
+        "plugin_root_present": plugin_root.is_dir(),
+        "codex_marketplace_path": str(codex_marketplace_path),
+        "codex_marketplace_entry": codex_marketplace_entry(codex_marketplace_path),
+        "cli_path": str(cli_path),
+        "cli_present": cli_path.is_file(),
+        "cli_in_path": wrapper_in_path(cli_path),
+        "claude_wrapper_path": str(claude_wrapper_path),
+        "claude_wrapper_present": claude_wrapper_path.is_file(),
+        "claude_wrapper_in_path": wrapper_in_path(claude_wrapper_path),
+        "hosts": {
+            "codex": shutil.which("codex") is not None,
+            "claude": shutil.which("claude") is not None,
+        },
+    }
+    if has_source_manifest(repo_root):
+        preamble_output = invoke_repo_script(
+            repo_root,
+            "scripts/plugin_preamble.py",
+            "--repo-root",
+            str(repo_root),
+            "--consumer-root",
+            str(home_root),
+            "--json",
+        )
+        payload["plugin_preamble"] = json.loads(preamble_output)
+    else:
+        payload["plugin_preamble"] = None
+    return payload
+
+
+def print_human_summary(payload: dict[str, object]) -> None:
+    print(f"PACKAGE: {payload['package_id']}")
+    print(f"CHECKOUT: {'present' if payload['checkout_present'] else 'missing'} {payload['repo_root']}")
+    if payload.get("checkout_version"):
+        print(f"VERSION: {payload['checkout_version']}")
+    if payload.get("checkout_git_head"):
+        print(f"GIT_HEAD: {payload['checkout_git_head']}")
+    print(f"PLUGIN_ROOT: {'present' if payload['plugin_root_present'] else 'missing'} {payload['plugin_root']}")
+    entry = payload.get("codex_marketplace_entry")
+    if isinstance(entry, dict):
+        source = entry.get("source", {})
+        path = source.get("path") if isinstance(source, dict) else None
+        print(f"CODEX_MARKETPLACE: present {payload['codex_marketplace_path']} -> {path}")
+    else:
+        print(f"CODEX_MARKETPLACE: missing-entry {payload['codex_marketplace_path']}")
+    print(f"CLI: {'present' if payload['cli_present'] else 'missing'} {payload['cli_path']}")
+    print(f"CLI_IN_PATH: {'yes' if payload['cli_in_path'] else 'no'}")
+    print(
+        f"CLAUDE_WRAPPER: {'present' if payload['claude_wrapper_present'] else 'missing'} {payload['claude_wrapper_path']}"
+    )
+    print(f"CLAUDE_WRAPPER_IN_PATH: {'yes' if payload['claude_wrapper_in_path'] else 'no'}")
+    preamble = payload.get("plugin_preamble")
+    if isinstance(preamble, dict):
+        root_surface = preamble.get("root_install_surface", {})
+        ok = root_surface.get("ok")
+        print(f"INSTALL_SURFACE: {'ok' if ok else 'warning'}")
+
+
+def resolve_runtime_paths(args: argparse.Namespace) -> tuple[Path, Path, Path, Path]:
+    home_root = args.home_root.resolve()
+    plugin_root = args.plugin_root.resolve() if args.plugin_root else default_plugin_root(home_root)
+    codex_marketplace_path = (
+        args.codex_marketplace_path.resolve()
+        if args.codex_marketplace_path
+        else default_codex_marketplace_path(home_root)
+    )
+    claude_wrapper_path = (
+        args.claude_wrapper_path.resolve()
+        if args.claude_wrapper_path
+        else default_claude_wrapper_path(home_root)
+    )
+    cli_path = args.cli_path.resolve() if args.cli_path else default_cli_path(home_root)
+    return plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path
+
+
+def cmd_init(args: argparse.Namespace) -> int:
+    home_root = args.home_root.resolve()
+    repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path = resolve_runtime_paths(args)
+    checkout = ensure_checkout(
+        repo_root,
+        managed=managed_checkout,
+        repo_url=args.repo_url,
+        allow_clone=True,
+        allow_pull=False,
+    )
+    selected_wrapper_path = None if args.skip_claude_wrapper else claude_wrapper_path
+    payload = install_surface(
+        Path(checkout["repo_root"]),
+        home_root=home_root,
+        plugin_root=plugin_root,
+        codex_marketplace_path=codex_marketplace_path,
+        claude_wrapper_path=selected_wrapper_path,
+        cli_path=None if args.skip_cli_install else cli_path,
+    )
+    payload["checkout"] = checkout
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_update(args: argparse.Namespace) -> int:
+    home_root = args.home_root.resolve()
+    repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path = resolve_runtime_paths(args)
+    checkout = ensure_checkout(
+        repo_root,
+        managed=managed_checkout,
+        repo_url=args.repo_url,
+        allow_clone=False,
+        allow_pull=managed_checkout and not args.no_pull,
+    )
+    selected_wrapper_path = None if args.skip_claude_wrapper else claude_wrapper_path
+    payload = install_surface(
+        Path(checkout["repo_root"]),
+        home_root=home_root,
+        plugin_root=plugin_root,
+        codex_marketplace_path=codex_marketplace_path,
+        claude_wrapper_path=selected_wrapper_path,
+        cli_path=None if args.skip_cli_install else cli_path,
+    )
+    payload["checkout"] = checkout
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_doctor(args: argparse.Namespace) -> int:
+    home_root = args.home_root.resolve()
+    repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path = resolve_runtime_paths(args)
+    payload = build_doctor_payload(
+        home_root=home_root,
+        repo_root=repo_root,
+        managed_checkout=managed_checkout,
+        plugin_root=plugin_root,
+        codex_marketplace_path=codex_marketplace_path,
+        cli_path=cli_path,
+        claude_wrapper_path=claude_wrapper_path,
+    )
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print_human_summary(payload)
+    return 0
+
+
+def cmd_uninstall(args: argparse.Namespace) -> int:
+    plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path = resolve_runtime_paths(args)
+    removed_marketplace = remove_codex_marketplace_entry(codex_marketplace_path)
+    removed_plugin_root = False
+    removed_checkout = False
+    removed_wrapper = False
+    removed_cli = False
+    if plugin_root.exists():
+        shutil.rmtree(plugin_root)
+        removed_plugin_root = True
+    wrapper_path = claude_wrapper_path
+    if wrapper_path.exists():
+        wrapper_path.unlink()
+        removed_wrapper = True
+    if args.delete_cli and cli_path.exists():
+        cli_path.unlink()
+        removed_cli = True
+    if args.delete_checkout:
+        home_root = args.home_root.resolve()
+        repo_root, _managed_checkout = resolve_repo_root(home_root, args.repo_root)
+        if repo_root.exists():
+            shutil.rmtree(repo_root)
+            removed_checkout = True
+    payload = {
+        "package_id": PACKAGE_ID,
+        "removed_codex_marketplace_entry": removed_marketplace,
+        "removed_plugin_root": removed_plugin_root,
+        "removed_claude_wrapper": removed_wrapper,
+        "removed_cli": removed_cli,
+        "removed_checkout": removed_checkout,
+    }
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Thin charness CLI for managed local install, update, doctor, and uninstall flows."
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    def add_common_runtime_args(command: argparse.ArgumentParser) -> None:
+        command.add_argument("--home-root", type=Path, default=default_home_root())
+        command.add_argument("--repo-root", type=Path, help="Use an explicit existing source checkout instead of the managed default checkout.")
+        command.add_argument("--repo-url", default=REPO_URL)
+        command.add_argument("--plugin-root", type=Path)
+        command.add_argument(
+            "--codex-marketplace-path",
+            type=Path,
+        )
+        command.add_argument(
+            "--claude-wrapper-path",
+            type=Path,
+        )
+        command.add_argument("--cli-path", type=Path)
+        command.add_argument("--skip-cli-install", action="store_true")
+        command.add_argument("--skip-claude-wrapper", action="store_true")
+        command.add_argument("--json", action="store_true")
+
+    init_parser = subparsers.add_parser("init", help="Bootstrap or refresh the managed local install surface.")
+    add_common_runtime_args(init_parser)
+    init_parser.set_defaults(func=cmd_init)
+
+    update_parser = subparsers.add_parser("update", help="Refresh the installed surface, pulling the managed checkout first by default.")
+    add_common_runtime_args(update_parser)
+    update_parser.add_argument(
+        "--no-pull",
+        action="store_true",
+        help="Skip the default `git pull --ff-only` when the managed checkout already contains the exact source you want.",
+    )
+    update_parser.set_defaults(func=cmd_update)
+
+    doctor_parser = subparsers.add_parser("doctor", help="Inspect the managed install surface and host-facing wrappers.")
+    doctor_parser.add_argument("--home-root", type=Path, default=default_home_root())
+    doctor_parser.add_argument("--repo-root", type=Path, help="Inspect an explicit source checkout instead of the managed default checkout.")
+    doctor_parser.add_argument("--plugin-root", type=Path)
+    doctor_parser.add_argument(
+        "--codex-marketplace-path",
+        type=Path,
+    )
+    doctor_parser.add_argument(
+        "--claude-wrapper-path",
+        type=Path,
+    )
+    doctor_parser.add_argument("--cli-path", type=Path)
+    doctor_parser.add_argument("--json", action="store_true")
+    doctor_parser.set_defaults(func=cmd_doctor)
+
+    uninstall_parser = subparsers.add_parser("uninstall", help="Remove the managed local install surface.")
+    uninstall_parser.add_argument("--home-root", type=Path, default=default_home_root())
+    uninstall_parser.add_argument("--repo-root", type=Path, help="Use an explicit checkout path when `--delete-checkout` is set.")
+    uninstall_parser.add_argument("--plugin-root", type=Path)
+    uninstall_parser.add_argument(
+        "--codex-marketplace-path",
+        type=Path,
+    )
+    uninstall_parser.add_argument(
+        "--claude-wrapper-path",
+        type=Path,
+    )
+    uninstall_parser.add_argument("--cli-path", type=Path)
+    uninstall_parser.add_argument("--delete-checkout", action="store_true")
+    uninstall_parser.add_argument("--delete-cli", action="store_true")
+    uninstall_parser.add_argument("--json", action="store_true")
+    uninstall_parser.set_defaults(func=cmd_uninstall)
+
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except CharnessError as exc:
+        print(str(exc), file=sys.stderr)
+        raise SystemExit(1)

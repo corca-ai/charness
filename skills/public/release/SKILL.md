@@ -10,7 +10,7 @@ not just to describe recent changes.
 
 `release` is the maintainer-facing workflow for versioned plugin or package
 surfaces that ship checked-in install metadata. It should keep one repo's
-release contract honest instead of improvising version bumps, marketplace
+release contract honest instead of improvising version bumps, CLI update
 advice, or generated-file edits by hand.
 
 ## Bootstrap
@@ -49,7 +49,7 @@ sed -n '1,220p' <resolved-release-artifact> 2>/dev/null || true
 2. Read the current release surface before mutating it.
    - canonical package version
    - generated plugin manifest versions
-   - marketplace metadata version
+   - generated compatibility metadata version
    - dirty or drifted working tree state
 3. Choose the lightest honest bump.
    - patch for bug fixes, copy fixes, and behavior repairs
@@ -63,8 +63,8 @@ sed -n '1,220p' <resolved-release-artifact> 2>/dev/null || true
    - canonical quality gate passes
    - no generated install surface was left stale
 6. End with operator-facing update steps.
-   - how Claude users refresh marketplace state
-   - how Codex users refresh or rediscover the local install surface
+   - how operators refresh the managed `charness` install
+   - what Claude and Codex still need after `charness update`
    - what still requires manual human confirmation
 
 ## Output Shape

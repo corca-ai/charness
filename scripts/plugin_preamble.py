@@ -78,8 +78,8 @@ def build_payload(repo_root: Path, consumer_root: Path) -> dict[str, object]:
         "version": packaging["version"],
         "runtime_self_update": False,
         "update_hints": {
-            "claude": f"/plugin update {packaging['package_id']}@{packaging['claude']['marketplace']['name']}",
-            "codex": "Update the checkout behind `.agents/plugins/marketplace.json` and reload Codex.",
+            "claude": "Run `charness update`, then re-enter Claude through `claude-charness`.",
+            "codex": "Run `charness update`, then restart Codex.",
         },
         "root_install_surface": evaluate_root_install_surface(repo_root),
         "readiness": collect_readiness_summary(repo_root),

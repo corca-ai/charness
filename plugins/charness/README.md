@@ -167,12 +167,14 @@ That means:
 
 - the repo stays the host-neutral source of truth
 - host install surfaces are generated from one shared manifest
-- the same checkout can back both Claude and Codex
+- the same managed local install can back both Claude and Codex
 - public skills are flattened for host discovery under `plugins/charness/skills/`
 - support assets are packaged alongside them under `plugins/charness/support/`
 - runtime skill execution should not self-update the plugin
 
 Updates belong to the install or operator layer, not to individual skill runs.
+The generated marketplace files remain compatibility artifacts, not the
+official operator-facing install contract.
 
 ## Local Development Hooks
 
@@ -208,7 +210,7 @@ For hosts that want a shared startup advisory without embedding networked
 self-update logic into every skill run, use:
 
 ```bash
-python3 scripts/plugin_preamble.py --repo-root /absolute/path/to/charness
+./charness doctor
 ```
 
 This prints:
@@ -258,102 +260,103 @@ Expected non-bundled content:
 
 ### Claude Code Only
 
-Verified local development path:
+Official managed path:
 
 ```bash
-claude --plugin-dir /absolute/path/to/charness/plugins/charness
+./charness init
+claude-charness
 ```
 
-Verified smoke check:
+Managed smoke check:
 
 ```bash
-claude --print --plugin-dir /absolute/path/to/charness/plugins/charness \
+claude-charness --print \
   "Return exactly one line: charness-smoke"
-```
-
-Verified shared-install path:
-
-```bash
-/plugin marketplace add corca-ai/charness
-/plugin install charness@corca-charness
 ```
 
 Update model:
 
-- for a marketplace install, run `/plugin update charness@corca-charness`
-- for a local checkout install, update the checkout itself
+- run `charness update`
 - do not add runtime self-update checks to skills
 
 ### Codex Only
 
-Preferred machine-local install path:
+Official managed install path:
 
 - keep the source checkout under `~/.agents/src/charness`
+- keep the CLI on PATH at `~/.local/bin/charness`
 - export the install surface into `~/.agents/plugins/charness`
 - keep a personal Codex marketplace file at `~/.agents/plugins/marketplace.json`
 - point `source.path` at `./.agents/plugins/charness`
 
-Bootstrap and refresh:
+Bootstrap:
 
 ```bash
 mkdir -p ~/.agents/src
 if [ -d ~/.agents/src/charness/.git ]; then
-  git -C ~/.agents/src/charness pull --ff-only
+  cd ~/.agents/src/charness
 else
   git clone https://github.com/corca-ai/charness ~/.agents/src/charness
+  cd ~/.agents/src/charness
 fi
-cd ~/.agents/src/charness
-python3 scripts/validate-packaging.py --repo-root .
-python3 scripts/sync_root_plugin_manifests.py --repo-root .
-python3 scripts/install-machine-local.py --repo-root .
+./charness init
 ```
-
-Documented development path:
-
-- keep a marketplace file at `.agents/plugins/marketplace.json`
-- point `source.path` at the plugin directory with a `./`-prefixed relative
-  path
-
-This repo ships that marketplace file checked in, with `source.path` pointing
-at `./plugins/charness`. That keeps the source repo taxonomy separate from the
-host-facing flat skill layout.
 
 Current status:
 
-- machine-local personal marketplace is the preferred operator path
-- repo-scoped local marketplace remains the documented development path
+- managed local CLI install is the official operator path
 - public GitHub-backed discover/install proof is still pending and should be
   treated as an explicit follow-up check, not as a claimed guarantee
 
 Update model:
 
-- update `~/.agents/src/charness`, then rerun
-  `python3 scripts/install-machine-local.py --repo-root ~/.agents/src/charness`
-- update the checkout that `source.path` points to
+- run `charness update`
 - restart or reload Codex so the install sees the new files
 - do not check for updates during skill execution
 
-### Claude And Codex On One Checkout
+### Official Command Surface
 
-Recommended dual-host shape:
+In a source checkout:
 
-1. Clone `charness` once.
-2. Point Claude at that checkout with `claude --plugin-dir /absolute/path/to/charness/plugins/charness`.
-3. Point Codex at the same checkout through the checked-in `.agents/plugins/marketplace.json`.
-4. Update the checkout once when you want both hosts to move together.
+```bash
+./charness init
+./charness doctor
+./charness update
+./charness uninstall
+```
 
-Recommended machine-local shared install:
+After the first managed install puts the CLI on PATH:
+
+```bash
+charness init
+charness doctor
+charness update
+charness uninstall
+```
+
+Current command intent:
+
+- `init`: bootstrap or refresh the managed local install surface
+- `doctor`: inspect the managed install, wrapper, and marketplace visibility
+- `update`: refresh the installed surface and optionally advance the managed
+  checkout
+- `uninstall`: remove the managed host-facing install surface while preserving
+  the checkout unless explicitly asked otherwise
+
+### Claude And Codex On One Managed Install
+
+Recommended shared shape:
 
 1. Keep the source checkout at `~/.agents/src/charness`.
-2. Export the installed plugin surface to `~/.agents/plugins/charness` with `python3 scripts/install-machine-local.py --repo-root ~/.agents/src/charness`.
+2. Run `charness init` once to export the installed plugin surface to `~/.agents/plugins/charness`.
 3. Point Codex at that exported surface through `~/.agents/plugins/marketplace.json`.
-4. Point Claude at that same exported surface with `claude --plugin-dir ~/.agents/plugins/charness`.
-5. Update the source checkout once, then rerun the install helper when you want both hosts to move together.
+4. Use `claude-charness` so Claude always points at that same exported surface.
+5. Run `charness update` when you want both hosts to move together.
 
 Optional startup advisory:
 
 ```bash
-python3 scripts/plugin_preamble.py --repo-root /absolute/path/to/charness
+charness doctor
 ```
 
 This stays read-only and reports install-surface drift plus host-specific
