@@ -33,10 +33,10 @@ healthy posture. See `references/maintainer-local-enforcement.md`.
 `quality` and concept review are adjacent. Use `quality` for repo posture,
 drift, duplicated surfaces, weak gates, and the next concrete validation move.
 Use concept review when boundaries, ownership, or source-of-truth design stay
-unresolved without duplicate text or an obvious gate.
+unresolved without duplicate text or an obvious gate. Use named-expert lenses
+only when they sharpen the next gate choice. See `references/quality-lenses.md`.
 
 ## Bootstrap
-
 Resolve the adapter first, then inspect the current quality surface.
 
 Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
@@ -45,11 +45,7 @@ Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 ```
 
-By default, `quality` writes its durable artifact to
-`skill-outputs/quality/quality.md`. Repos can override the directory with
-`.agents/quality-adapter.yaml`.
-
-Keep `quality.md` short and current. Move older review detail into sibling
+Keep `quality.md` short and current; move older review detail into sibling
 `history/*.md` archives when today's posture starts getting buried.
 
 If the adapter is missing and the repo would benefit from explicit command
@@ -99,6 +95,7 @@ when the repo already has stable gate commands worth recording.
    - if the repo has executable-spec overlap or cost guards, run those before
      proposing more spec coverage
    - for timing/logs/retention signals, see `references/operability-signals.md`
+   - surface the current runtime hot spots from available timing or CI signals
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and
      ownership model
@@ -109,6 +106,10 @@ when the repo already has stable gate commands worth recording.
      sustain the quality bar
    - when the repo authors skills, include skill package quality, portable
      bootstrap seams, and shared-helper drift in these lenses
+   - make `behavior` explicit about whether coverage is standing-gated,
+     informally sampled, or absent
+   - make evaluator depth explicit: smoke only, maintained evaluator-backed,
+     or still smoke plus HITL
    - for docs-as-operating-surface, flag duplicated guidance, conflicting
      copies, source-of-truth drift, and bare repo-doc links in prose
    - for repo-owned source gates, prefer tracked or explicitly unignored files
@@ -141,29 +142,26 @@ when the repo already has stable gate commands worth recording.
 8. End with a quality posture summary.
    - what was actually run
    - what runtime or diagnostic signals were captured
+   - which runtime hot spots dominate the current bar
+   - whether coverage is standing-gated, indirect, or absent
+   - whether evaluator-backed depth exists, or whether the deeper bar is still smoke plus HITL
    - what the current bar proves
    - what it still does not prove
    - the next best gate or cleanup to add
 
-The result should usually include:
-
-- `Scope`
-- `Current Gates`
-- `Runtime Signals`
-- `Maintainer-Local Enforcement`
-- `Enforcement Triage`
-- `Healthy`
-- `Weak`
-- `Missing`
-- `Deferred`
-- `Commands Run`
-- `Recommended Next Gates`
+- `Scope`, `Current Gates`, `Runtime Signals`, `Coverage and Eval Depth`
+- `Maintainer-Local Enforcement`, `Enforcement Triage`
+- `Healthy`, `Weak`, `Missing`, `Deferred`, `Commands Run`, `Recommended Next Gates`
 
 - Do not reduce quality to one aggregate score.
 - Do not recommend gates the repo cannot realistically run without saying why.
 - Do not confuse gate presence with gate usefulness.
 - Do not ignore runtime drift just because a gate still passes functionally.
-- Do not treat slow or broad executable specs as automatically strong quality when they mostly duplicate cheaper deterministic coverage.
+- Do not wait for operator follow-up before stating current runtime hot spots,
+  coverage-gate presence or absence, and evaluator-depth status when the repo
+  signals are available.
+- Do not treat slow or broad executable specs as automatically strong quality
+  when they mostly duplicate cheaper deterministic coverage.
 - Do not recommend verbose or permanent logs without naming who will read them and how they stay bounded.
 - Do not leave an automatable quality rule as prose-only guidance when a linter, validator, test, hook, or script could own it.
 - If you stop short of an obvious repo-owned deterministic gate, name that as
@@ -171,8 +169,10 @@ The result should usually include:
 - Do not treat a passing final local gate as sufficient posture when clones
   have no repo-owned way to run it before push and no documented no-hook waiver.
 - Do not propose generic "add more tests" or "improve security" without naming
-  the actual seam, the next concrete setup, or whether the test surface now needs a maintainability gate.
-- If a gate already exists, prefer tightening or reusing it before adding a new parallel tool.
+  the actual seam, the next concrete setup, or whether the test surface now
+  needs a maintainability gate.
+- If a gate already exists, prefer tightening or reusing it before adding a new
+  parallel tool.
 - If a stronger check would require an external tool, support skill, or permission, say so explicitly.
 - If a missing binary or local setup step would materially improve confidence, recommend installing it with the reason and exact command or package family.
 - Do not let whole-worktree scans fail on gitignored runtime artifacts unless the gate explicitly exists to validate that machine-local state.

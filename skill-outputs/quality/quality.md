@@ -15,7 +15,8 @@ drift check into `validate-packaging`.
 - `./scripts/run-quality.sh` runs independent phases in parallel, records
   per-command timing, and keeps verbose success logs as an explicit
   `CHARNESS_QUALITY_VERBOSE=1` opt-in.
-- `scripts/check-secrets.sh` now prefers `gitleaks` with a checked-in `.gitleaks.toml` and falls back to repo-local `secretlint` when `gitleaks` is unavailable.
+- `scripts/check-secrets.sh` prefers `gitleaks` and falls back to repo-local
+  `secretlint` when `gitleaks` is unavailable.
 - `scripts/check-supply-chain.py` now enforces repo-local manifest and
   lockfile alignment for npm/pnpm/yarn/bun surfaces plus `uv.lock`
   presence when Python dependencies are declared.
@@ -27,10 +28,8 @@ drift check into `validate-packaging`.
 - `scripts/validate-quality-artifact.py` keeps this file short and current.
 - `scripts/validate-maintainer-setup.py` now fails closed when this clone has
   not actually activated the checked-in pre-push hook.
-- `scripts/check-links-external.sh` now scopes `lychee` to extracted external
-  `http(s)` URLs instead of scanning repo-local absolute file links and
-  reporting them all as excluded; online validation is now explicit opt-in via
-  `CHARNESS_LINK_CHECK_ONLINE=1`.
+- `scripts/check-links-external.sh` scopes `lychee` to extracted external
+  `http(s)` URLs, with online validation as an explicit `CHARNESS_LINK_CHECK_ONLINE=1` opt-in.
 
 ## Runtime Signals
 
@@ -51,9 +50,8 @@ drift check into `validate-packaging`.
 - maintainer-local hook drift is no longer invisible: the canonical quality
   runner now checks whether this clone actually points `core.hooksPath` at the
   checked-in `.githooks` directory.
-- the quality runner no longer serializes every independent gate; low-coupling
-  validators and heavy test/eval seams now overlap by phase instead of paying
-  unnecessary wall-clock cost in pre-push.
+- the quality runner overlaps low-coupling validators and heavy test/eval
+  seams by phase instead of paying unnecessary serial pre-push cost.
 - routine pre-push output is now agent-readable at a glance because passing
   runs no longer replay linter/test stdout unless verbose mode was requested.
 - the control plane now tracks `cautilus` as a real external evaluator
@@ -61,10 +59,8 @@ drift check into `validate-packaging`.
 - `spec` and `quality` now explicitly tell executable-spec repos to keep specs
   at acceptance level, delete overlap, and move duplicated shell-heavy detail
   into cheaper lower layers.
-- the external-link gate now checks real external URLs from maintained docs and
-  metadata instead of spending its budget excluding repo-local absolute paths,
-  and it no longer blocks routine pre-push runs on unauthenticated network
-  backoff by default.
+- the external-link gate checks real external URLs from maintained docs and
+  metadata without blocking routine pre-push runs on default unauthenticated network backoff.
 - internal markdown-link discipline now has a repo-owned deterministic owner
   again instead of being implicitly delegated to a network-oriented link
   checker that never enforced it.
@@ -76,6 +72,8 @@ drift check into `validate-packaging`.
 
 ## Weak
 
+- this dogfood exposed a reporting gap in `quality` itself: speed, coverage
+  absence, and evaluator-depth status were available but not surfaced first.
 - some public skills still have durable artifacts or onboarding seams without a
   checked-in adapter contract.
 - external-link validation still depends on network reachability and upstream
@@ -116,6 +114,8 @@ drift check into `validate-packaging`.
 
 ## Recommended Next Gates
 
+- `AUTO_CANDIDATE`: tighten the `quality` closeout contract so the first report
+  always states runtime hot spots, coverage-gate presence, and evaluator depth.
 - `AUTO_CANDIDATE`: classify which public skills require a checked-in adapter
   contract and fail closed when a durable-artifact or onboarding-heavy skill
   lacks one.

@@ -53,3 +53,16 @@ Check whether the quality bar can actually be maintained:
 - retention and rotation for long-lived logs or machine-readable diagnostics
 - refactor pressure from copied helper seams or skill-package drift
 - duplicated documentation that should collapse into one maintained surface
+
+## Named Expert Defaults
+
+Use named experts only when they sharpen the next quality move.
+
+- W. Edwards Deming: is the repo measuring the system it is trying to improve,
+  or only inspecting output after the fact?
+- Charity Majors: does the current bar fail early and emit diagnostics that a
+  maintainer can actually use under time pressure?
+- Kent Beck: are fast lower-layer checks carrying enough change-safety load, or
+  are slow broad checks covering for weak local feedback?
+- John Ousterhout: is quality complexity hiding design complexity, copied
+  helpers, or avoidable interface sprawl?
