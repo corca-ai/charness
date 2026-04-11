@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -6,6 +7,11 @@ import argparse
 import ast
 import sys
 from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.repo_file_listing import iter_matching_repo_files
 
 REPO_SCRIPT_FILE_MAX = 380
 SKILL_HELPER_FILE_MAX = 220
@@ -17,12 +23,13 @@ class ValidationError(Exception):
 
 
 def iter_python_targets(root: Path) -> list[Path]:
-    return sorted(
-        [
-            *root.glob("scripts/*.py"),
-            *root.glob("skills/public/*/scripts/*.py"),
-            *root.glob("skills/support/*/scripts/*.py"),
-        ]
+    return iter_matching_repo_files(
+        root,
+        (
+            "scripts/*.py",
+            "skills/public/*/scripts/*.py",
+            "skills/support/*/scripts/*.py",
+        ),
     )
 
 
@@ -56,7 +63,7 @@ def validate_function_lengths(path: Path) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     args = parser.parse_args()
 
     root = args.repo_root.resolve()

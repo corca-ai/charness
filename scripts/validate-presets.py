@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 
 from __future__ import annotations
 
 import argparse
 import sys
 from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.repo_file_listing import iter_matching_repo_files
 
 PRESET_NAME_RE = r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
 REQUIRED_FIELDS = ("name", "description", "preset_kind", "install_scope")
@@ -93,17 +99,14 @@ def validate_preset(path: Path) -> None:
 
 
 def iter_presets(root: Path) -> list[Path]:
-    presets_dir = root / "presets"
     return sorted(
-        path
-        for path in presets_dir.glob("*.md")
-        if path.name != "README.md"
+        path for path in iter_matching_repo_files(root, ("presets/*.md",)) if path.name != "README.md"
     )
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     args = parser.parse_args()
 
     root = args.repo_root.resolve()

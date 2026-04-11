@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -6,6 +7,11 @@ import argparse
 import re
 import sys
 from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.repo_file_listing import iter_matching_repo_files, iter_repo_files
 
 DOC_GLOBS = (
     "README.md",
@@ -28,20 +34,13 @@ class ValidationError(Exception):
 
 
 def iter_docs(root: Path) -> list[Path]:
-    seen: set[Path] = set()
-    files: list[Path] = []
-    for pattern in DOC_GLOBS:
-        for path in root.glob(pattern):
-            if path.is_file() and path not in seen:
-                seen.add(path)
-                files.append(path)
-    return sorted(files)
+    return iter_matching_repo_files(root, DOC_GLOBS)
 
 
 def iter_known_markdown_paths(root: Path) -> set[str]:
     known: set[str] = set()
-    for path in root.rglob("*.md"):
-        if not path.is_file():
+    for path in iter_repo_files(root):
+        if path.suffix != ".md":
             continue
         if any(part in SKIP_DIR_NAMES for part in path.parts):
             continue
@@ -96,7 +95,7 @@ def validate_link(root: Path, doc: Path, raw_target: str) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     args = parser.parse_args()
 
     root = args.repo_root.resolve()

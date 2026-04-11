@@ -47,6 +47,18 @@ def write_executable(path: Path, content: str) -> None:
     path.chmod(0o755)
 
 
+def init_git_repo(repo: Path, *tracked_paths: str) -> None:
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
+    if tracked_paths:
+        subprocess.run(
+            ["git", "add", *tracked_paths],
+            cwd=repo,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+
 def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     repo = tmp_path / "repo"
     scripts_dir = repo / "scripts"
@@ -1116,6 +1128,41 @@ def test_validate_presets_rejects_product_slice_without_exposure_contract(tmp_pa
     assert "product-slice presets must include an `## Exposure Contract` section" in result.stderr
 
 
+def test_validate_presets_ignores_gitignored_files(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    presets_dir = repo / "presets"
+    presets_dir.mkdir(parents=True)
+    (repo / ".gitignore").write_text("presets/generated-*.md\n", encoding="utf-8")
+    (presets_dir / "kept.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: kept",
+                'description: "Kept preset."',
+                "preset_kind: portable-defaults",
+                "install_scope: maintainer",
+                "---",
+                "",
+                "# kept",
+                "",
+                "## Intended Use",
+                "",
+                "Valid tracked preset.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (presets_dir / "generated-bad.md").write_text(
+        "# Missing frontmatter on ignored file.\n",
+        encoding="utf-8",
+    )
+    init_git_repo(repo, ".gitignore", "presets/kept.md")
+
+    result = run_script("scripts/validate-presets.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
 def test_check_python_lengths_rejects_too_long_function(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     scripts_dir = repo / "scripts"
@@ -1148,6 +1195,22 @@ def test_check_python_lengths_rejects_too_long_skill_helper_file(tmp_path: Path)
     result = run_script("scripts/check-python-lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "file length 221 exceeds limit 220" in result.stderr
+
+
+def test_check_python_lengths_ignores_gitignored_python_files(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True)
+    (repo / ".gitignore").write_text("scripts/generated_*.py\n", encoding="utf-8")
+    (scripts_dir / "kept.py").write_text("def short():\n    return 1\n", encoding="utf-8")
+    (scripts_dir / "generated_long.py").write_text(
+        "\n".join(f"print({i})" for i in range(381)) + "\n",
+        encoding="utf-8",
+    )
+    init_git_repo(repo, ".gitignore", "scripts/kept.py")
+
+    result = run_script("scripts/check-python-lengths.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
 
 
 def test_validate_profiles_rejects_unknown_smoke_scenario(tmp_path: Path) -> None:
@@ -1236,8 +1299,74 @@ def test_validate_profiles_rejects_unknown_top_level_field(tmp_path: Path) -> No
     assert "Additional properties are not allowed" in result.stderr
 
 
+def test_validate_profiles_ignores_gitignored_profiles(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    profiles_dir = repo / "profiles"
+    public_skill_dir = repo / "skills" / "public" / "handoff"
+    profiles_dir.mkdir(parents=True)
+    public_skill_dir.mkdir(parents=True)
+    (repo / ".gitignore").write_text("profiles/generated-*.json\n", encoding="utf-8")
+    (public_skill_dir / "SKILL.md").write_text(
+        "---\nname: handoff\ndescription: \"demo\"\n---\n\n# Handoff\n\n## References\n\n- `references/demo.md`\n",
+        encoding="utf-8",
+    )
+    (public_skill_dir / "references").mkdir(parents=True)
+    (public_skill_dir / "references" / "demo.md").write_text("# Demo\n", encoding="utf-8")
+    (profiles_dir / "kept.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "profile_id": "kept",
+                "display_name": "Kept",
+                "purpose": "Test",
+                "bundles": {"public_skills": ["handoff"]},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (profiles_dir / "generated-bad.json").write_text('{"profile_id":"generated-bad"}\n', encoding="utf-8")
+    init_git_repo(
+        repo,
+        ".gitignore",
+        "profiles/kept.json",
+        "skills/public/handoff/SKILL.md",
+        "skills/public/handoff/references/demo.md",
+    )
+
+    result = run_script("scripts/validate-profiles.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
 def test_validate_adapters_passes_on_current_repo() -> None:
     result = run_script("scripts/validate-adapters.py", "--repo-root", str(ROOT))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_adapters_ignores_gitignored_skills(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    kept_dir = repo / "skills" / "public" / "kept" / "scripts"
+    ignored_dir = repo / "skills" / "public" / "generated" / "scripts"
+    kept_dir.mkdir(parents=True)
+    ignored_dir.mkdir(parents=True)
+    (repo / ".gitignore").write_text("skills/public/generated/\n", encoding="utf-8")
+    (kept_dir / "resolve_adapter.py").write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import json",
+                'print(json.dumps({"valid": True, "artifact_filename": "kept.md", "artifact_path": "skill-outputs/kept/kept.md"}))',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (ignored_dir / "resolve_adapter.py").write_text(
+        "#!/usr/bin/env python3\nraise SystemExit(1)\n",
+        encoding="utf-8",
+    )
+    init_git_repo(repo, ".gitignore", "skills/public/kept/scripts/resolve_adapter.py")
+
+    result = run_script("scripts/validate-adapters.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -1298,6 +1427,26 @@ def test_check_doc_links_allows_internal_markdown_reference_in_code(tmp_path: Pa
     assert result.returncode == 0, result.stderr
 
 
+def test_check_doc_links_ignores_gitignored_markdown(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs_dir = repo / "docs"
+    docs_dir.mkdir(parents=True)
+    (repo / ".gitignore").write_text("docs/generated-*.md\n", encoding="utf-8")
+    (repo / "README.md").write_text(
+        "# Demo\n\nUse the linked guide: [guide](docs/guide.md).\n",
+        encoding="utf-8",
+    )
+    (docs_dir / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    (docs_dir / "generated-bad.md").write_text(
+        "[bad](/tmp/not-in-repo.md)\n",
+        encoding="utf-8",
+    )
+    init_git_repo(repo, ".gitignore", "README.md", "docs/guide.md")
+
+    result = run_script("scripts/check-doc-links.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
 def test_check_duplicates_passes_clean_repo() -> None:
     result = run_script("scripts/check-duplicates.py", "--repo-root", str(ROOT), "--json", "--fail-on-match")
     assert result.returncode == 0, result.stderr
@@ -1346,6 +1495,28 @@ def test_check_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:
     assert duplicates
     assert duplicates[0]["left"] == "docs/alpha.md"
     assert duplicates[0]["right"] == "docs/beta.md"
+
+
+def test_check_duplicates_ignores_gitignored_files(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs_dir = repo / "docs"
+    docs_dir.mkdir(parents=True)
+    repeated_lines = "\n".join(f"- repeated line {i}" for i in range(20))
+    (repo / ".gitignore").write_text("docs/generated-*.md\n", encoding="utf-8")
+    (docs_dir / "alpha.md").write_text(f"# Alpha\n\n{repeated_lines}\n", encoding="utf-8")
+    (docs_dir / "generated-beta.md").write_text(f"# Beta\n\n{repeated_lines}\n", encoding="utf-8")
+    init_git_repo(repo, ".gitignore", "docs/alpha.md")
+
+    result = run_script(
+        "scripts/check-duplicates.py",
+        "--repo-root",
+        str(repo),
+        "--fail-on-match",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    duplicates = json.loads(result.stdout)
+    assert duplicates == []
 
 
 def test_run_evals_passes_on_current_repo() -> None:

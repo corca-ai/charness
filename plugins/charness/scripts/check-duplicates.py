@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -7,6 +8,11 @@ import difflib
 import json
 import sys
 from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.repo_file_listing import iter_matching_repo_files
 
 DEFAULT_PATTERNS = (
     "scripts/*.py",
@@ -29,14 +35,7 @@ def is_substantive(path: Path, min_nonempty_lines: int) -> bool:
 
 
 def iter_files(root: Path, patterns: tuple[str, ...], min_nonempty_lines: int) -> list[Path]:
-    seen: set[Path] = set()
-    files: list[Path] = []
-    for pattern in patterns:
-        for path in root.glob(pattern):
-            if path.is_file() and path not in seen and is_substantive(path, min_nonempty_lines):
-                seen.add(path)
-                files.append(path)
-    return sorted(files)
+    return [path for path in iter_matching_repo_files(root, patterns) if is_substantive(path, min_nonempty_lines)]
 
 
 def find_duplicates(
@@ -73,7 +72,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Detect near-duplicate helper code and checked-in documentation."
     )
-    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--threshold", type=float, default=0.98)
     parser.add_argument("--min-nonempty-lines", type=int, default=DEFAULT_MIN_NONEMPTY_LINES)
     parser.add_argument("--json", action="store_true")

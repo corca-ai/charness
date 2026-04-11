@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -7,6 +8,11 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.repo_file_listing import iter_matching_repo_files
 
 
 class ValidationError(Exception):
@@ -52,13 +58,12 @@ def validate_resolver(path: Path, root: Path) -> None:
 
 
 def iter_resolvers(root: Path) -> list[Path]:
-    public_skills_dir = root / "skills" / "public"
-    return sorted(public_skills_dir.glob("*/scripts/resolve_adapter.py"))
+    return iter_matching_repo_files(root, ("skills/public/*/scripts/resolve_adapter.py",))
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     args = parser.parse_args()
 
     root = args.repo_root.resolve()

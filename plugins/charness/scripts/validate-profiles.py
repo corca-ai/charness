@@ -16,6 +16,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.eval_registry import scenario_ids
+from scripts.repo_file_listing import iter_matching_repo_files
 
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")
 PROFILE_SCHEMA_PATH = REPO_ROOT / "profiles" / "profile.schema.json"
@@ -175,9 +176,10 @@ def validate_profile(path: Path, root: Path) -> None:
 
 
 def iter_profile_files(root: Path) -> list[Path]:
-    profiles_dir = root / "profiles"
     return sorted(
-        path for path in profiles_dir.glob("*.json") if path.name != "profile.schema.json"
+        path
+        for path in iter_matching_repo_files(root, ("profiles/*.json",))
+        if path.name != "profile.schema.json"
     )
 
 
