@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import json
 import os
 import re
@@ -71,6 +72,10 @@ def default_cli_path(home_root: Path) -> Path:
 
 def default_install_state_path(home_root: Path) -> Path:
     return home_root / ".local" / "share" / PACKAGE_ID / "install-state.json"
+
+
+def default_host_state_path(home_root: Path) -> Path:
+    return home_root / ".local" / "share" / PACKAGE_ID / "host-state.json"
 
 
 def shell_quote(value: str) -> str:
@@ -150,6 +155,31 @@ def read_install_state(home_root: Path) -> tuple[Path, bool] | None:
     if not isinstance(repo_root, str) or not isinstance(managed_checkout, bool):
         return None
     return Path(repo_root).resolve(), managed_checkout
+
+
+def read_host_state(home_root: Path) -> dict[str, object]:
+    path = default_host_state_path(home_root)
+    if not path.is_file():
+        return {"state_version": 1}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {"state_version": 1}
+    if not isinstance(payload, dict):
+        return {"state_version": 1}
+    payload.setdefault("state_version", 1)
+    return payload
+
+
+def write_host_state(home_root: Path, *, key: str, payload: dict[str, object]) -> None:
+    path = default_host_state_path(home_root)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    state = read_host_state(home_root)
+    state[key] = {
+        "recorded_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "doctor": payload,
+    }
+    path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def resolve_repo_root(home_root: Path, explicit_repo_root: Path | None) -> tuple[Path, bool]:
@@ -707,6 +737,8 @@ def build_doctor_payload(
         "package_id": PACKAGE_ID,
         "repo_root": str(repo_root),
         "managed_checkout": managed_checkout,
+        "install_state_path": str(default_install_state_path(home_root)),
+        "host_state_path": str(default_host_state_path(home_root)),
         "checkout_present": source_manifest_present,
         "checkout_git_head": git_head(repo_root) if source_manifest_present else None,
         "checkout_version": packaging_version(repo_root) if source_manifest_present else None,
@@ -1107,6 +1139,7 @@ def cmd_init(args: argparse.Namespace) -> int:
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
     if managed_checkout:
         write_install_state(home_root, repo_root=Path(checkout["repo_root"]), managed_checkout=True)
+    write_host_state(home_root, key="last_init", payload=doctor_payload)
     payload["checkout"] = checkout
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
@@ -1154,6 +1187,7 @@ def cmd_update(args: argparse.Namespace) -> int:
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
     if managed_checkout:
         write_install_state(home_root, repo_root=Path(checkout["repo_root"]), managed_checkout=True)
+    write_host_state(home_root, key="last_update", payload=doctor_payload)
     payload["checkout"] = checkout
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
@@ -1172,6 +1206,8 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         cli_path=cli_path,
         claude_wrapper_path=claude_wrapper_path,
     )
+    if args.write_state:
+        write_host_state(home_root, key="last_doctor", payload=payload)
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
@@ -1194,6 +1230,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     removed_checkout = False
     removed_wrapper = False
     removed_cli = False
+    removed_host_state = False
     if plugin_root.exists():
         shutil.rmtree(plugin_root)
         removed_plugin_root = True
@@ -1215,6 +1252,10 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     if getattr(args, "delete_cli", False) and cli_path.exists():
         cli_path.unlink()
         removed_cli = True
+    host_state_path = default_host_state_path(home_root)
+    if host_state_path.exists():
+        host_state_path.unlink()
+        removed_host_state = True
     if getattr(args, "delete_checkout", False):
         if repo_root.exists():
             shutil.rmtree(repo_root)
@@ -1231,6 +1272,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
         "removed_claude_wrapper": removed_wrapper,
         "removed_cli": removed_cli,
         "removed_checkout": removed_checkout,
+        "removed_host_state": removed_host_state,
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
@@ -1479,6 +1521,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     doctor_parser.add_argument("--cli-path", type=Path)
     doctor_parser.add_argument("--json", action="store_true")
+    doctor_parser.add_argument(
+        "--write-state",
+        action="store_true",
+        help="Persist the current doctor snapshot to ~/.local/share/charness/host-state.json for later proof comparison.",
+    )
     doctor_parser.set_defaults(func=cmd_doctor)
 
     uninstall_parser = subparsers.add_parser("uninstall", help="Remove the managed local install surface.")

@@ -378,6 +378,8 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path) -> None:
     assert doctor_result.returncode == 0, doctor_result.stderr
     payload = json.loads(doctor_result.stdout)
     assert payload["package_id"] == "charness"
+    assert payload["install_state_path"] == str(home_root / ".local" / "share" / "charness" / "install-state.json")
+    assert payload["host_state_path"] == str(home_root / ".local" / "share" / "charness" / "host-state.json")
     assert payload["checkout_present"] is True
     assert payload["plugin_root_present"] is True
     assert payload["cli_present"] is True
@@ -404,6 +406,11 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path) -> None:
     assert payload["claude_host_guidance"]["manual_action_required"] is False
     assert payload["claude_host_guidance"]["message"] == "Claude host install markers are present. Restart Claude Code to load or refresh charness."
     assert payload["plugin_preamble"]["update_hints"]["claude"] == "Run `charness update`, then restart Claude Code."
+    host_state = json.loads((home_root / ".local" / "share" / "charness" / "host-state.json").read_text(encoding="utf-8"))
+    assert host_state["state_version"] == 1
+    assert host_state["last_init"]["doctor"]["codex_host_guidance"]["status"] == "needs-host-install"
+    assert host_state["last_init"]["doctor"]["repo_root"] == str(home_root / ".agents" / "src" / "charness")
+    assert isinstance(host_state["last_init"]["recorded_at"], str)
 
 
 def test_charness_doctor_reports_codex_version_drift(tmp_path: Path) -> None:
@@ -483,6 +490,10 @@ def test_charness_update_reports_codex_version_drift(tmp_path: Path) -> None:
         == "Codex still has installed charness cache version `0.0.0-old` while the source plugin root is `0.0.0-dev`. "
         "Restart Codex first. If `charness doctor` still shows drift, reopen Plugin Directory and reinstall or disable/re-enable the local `charness` entry."
     )
+    host_state = json.loads((home_root / ".local" / "share" / "charness" / "host-state.json").read_text(encoding="utf-8"))
+    assert host_state["last_update"]["doctor"]["codex_source_cache_drift"] is True
+    assert host_state["last_update"]["doctor"]["codex_cache_manifest_version"] == "0.0.0-old"
+    assert isinstance(host_state["last_update"]["recorded_at"], str)
 
 
 def test_installed_cli_remembers_managed_checkout(tmp_path: Path) -> None:
@@ -513,6 +524,36 @@ def test_installed_cli_remembers_managed_checkout(tmp_path: Path) -> None:
     assert payload["checkout_present"] is True
     assert payload["managed_checkout"] is True
     assert payload["claude_host_guidance"]["status"] == "installed"
+
+
+def test_doctor_can_write_host_state_snapshot(tmp_path: Path) -> None:
+    home_root = tmp_path / "home"
+    fake_claude = make_fake_claude(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
+    init_result = run_cli(
+        "init",
+        "--home-root",
+        str(home_root),
+        env=env,
+    )
+    assert init_result.returncode == 0, init_result.stderr
+
+    doctor_result = run_cli(
+        "doctor",
+        "--home-root",
+        str(home_root),
+        "--json",
+        "--write-state",
+        env=env,
+    )
+    assert doctor_result.returncode == 0, doctor_result.stderr
+    payload = json.loads(doctor_result.stdout)
+    host_state = json.loads((home_root / ".local" / "share" / "charness" / "host-state.json").read_text(encoding="utf-8"))
+    assert host_state["last_doctor"]["doctor"]["repo_root"] == payload["repo_root"]
+    assert host_state["last_doctor"]["doctor"]["codex_source_version"] == payload["codex_source_version"]
+    assert isinstance(host_state["last_doctor"]["recorded_at"], str)
 
 
 def test_non_managed_repo_root_requires_skip_cli_install(tmp_path: Path) -> None:
@@ -603,7 +644,9 @@ def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path) -> None
     assert payload["removed_claude_marketplace"] is True
     assert payload["removed_cli"] is False
     assert payload["removed_checkout"] is False
+    assert payload["removed_host_state"] is True
     assert (home_root / ".local" / "bin" / "charness").is_file()
+    assert not (home_root / ".local" / "share" / "charness" / "host-state.json").exists()
 
 
 def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path) -> None:

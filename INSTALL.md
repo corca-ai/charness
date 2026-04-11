@@ -90,7 +90,11 @@ Recommended verification steps:
      if needed, reinstall or disable/re-enable the local plugin
    - Claude should report whether marketplace and installed-plugin markers are
      already present
-3. If the behavior is ambiguous, record the exact host output and treat that as
+3. If you need a durable checkpoint before or after a host restart, run
+   `charness doctor --write-state`; `charness init` and `charness update`
+   already record their own post-command host snapshots to
+   `~/.local/share/charness/host-state.json`.
+4. If the behavior is ambiguous, record the exact host output and treat that as
    a proof gap to close, not as silent success.
 
 ## Step 4: Update Model
