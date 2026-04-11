@@ -4,5 +4,15 @@ set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 
+echo "charness pre-push: syncing checked-in plugin surface"
+python3 scripts/sync_root_plugin_manifests.py --repo-root "$REPO_ROOT" >/dev/null
+
+if ! git diff --quiet -- plugins/charness .claude-plugin/marketplace.json .agents/plugins/marketplace.json; then
+  echo "charness pre-push: checked-in plugin export drift detected"
+  echo "review and commit the regenerated plugin surface before pushing:"
+  git diff -- -- plugins/charness .claude-plugin/marketplace.json .agents/plugins/marketplace.json
+  exit 1
+fi
+
 echo "charness pre-push: running ./scripts/run-quality.sh"
 ./scripts/run-quality.sh

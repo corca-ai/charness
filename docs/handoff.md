@@ -25,7 +25,11 @@
 - official installed CLI source는 이제 managed checkout `~/.agents/src/charness`만 허용한다. repo 밖에서 쓰는 `charness`는 `~/.local/share/charness/install-state.json`을 통해 그 managed checkout을 기억한다. non-managed `--repo-root`는 proof/development path로만 남고 `--skip-cli-install`이 필요하다.
 - `charness tool doctor|install|update|sync-support`가 추가됐다. external integration lifecycle는 thin CLI에서 직접 호출할 수 있고, 결과는 `integrations/locks/*.json`과 `skills/support/generated/`에 agent-readable state로 남는다.
 - tool control-plane은 GitHub latest-release probe도 포함한다. `specdown`은 실제 latest release `v0.47.2`를 잡았고, `cautilus`는 current GitHub latest-release endpoint 기준으로 `no-release`(`http 404`)로 기록된다.
+- tool control-plane은 이제 install provenance도 lock/doctor output에 남긴다. `gws-cli`처럼 실제 설치 경로가 `npm`으로 판별되면 `charness tool update --dry-run`이 `npm install -g @googleworkspace/cli@latest` 같은 package-manager route로 승격된다. `specdown`처럼 provenance가 plain `path`면 release metadata를 붙인 manual guidance로 남는다.
 - public skill `create-cli`가 추가됐다. repo-owned CLI를 만들거나 손볼 때 command surface, install/update UX, machine-readable state, quality gate를 한 묶음으로 다루는 기본 참고 skill이다.
+- `create-cli` references는 `cautilus` 배포 메모를 반영해 release-first install contract, installer가 OS package manager를 직접 만지지 않는 원칙, provenance-aware update routing을 기본 guidance로 포함한다.
+- checked-in plugin export는 더 이상 machine-local `integrations/locks/*.json`를 복사하지 않는다. export surface에는 `lock.schema.json`, `README.md`, `.gitkeep`만 남는다.
+- `.githooks/pre-push`는 이제 `sync_root_plugin_manifests.py`를 먼저 돌리고, `plugins/charness` 또는 root marketplace artifacts에 drift가 생기면 push를 막은 뒤에만 `./scripts/run-quality.sh`를 실행한다.
 - `.agents/skills`는 checked-in 기본 install surface가 아니다. 이 repo는 thin CLI가 관리하는 `~/.codex/plugins/charness` source plugin root와 `~/.agents/plugins/marketplace.json`를 operator install anchor로 쓰고, source checkout public skills를 별도 symlink로 노출하지 않는다.
 - `INSTALL.md`, `README.md`, `UNINSTALL.md`, `docs/host-packaging.md`, `docs/operator-acceptance.md`는 marketplace 설치를 primary path에서 내리고 thin CLI managed install을 공식 경로로 설명하도록 갱신했다.
 - `skills/public/release/*`와 `scripts/plugin_preamble.py`도 `charness update` / Claude restart 기준으로 갱신했다.
@@ -40,7 +44,7 @@
 ## Next Session
 
 1. 실제 interactive Codex에서 installed `charness`를 source update 뒤 어떻게 refresh해야 cache가 갱신되는지 확인한다. restart만으로 되는지, Plugin Directory 재-install/re-enable이 필요한지 proof를 만든다.
-2. 새 `charness tool install/update/doctor` surface를 실제 다른 머신 또는 temp-home workflow로 한 번 더 dogfood한다. 특히 manual-mode tool(`cautilus`, `specdown`, `gws-cli`)에서 남는 lock/install guidance shape를 점검한다.
+2. 새 `charness tool install/update/doctor` surface를 실제 다른 머신 또는 temp-home workflow로 한 번 더 dogfood한다. 특히 provenance-aware route가 있는 tool(`gws-cli`, brew-installed `specdown`, brew-installed `gh`)과 manual-only tool(`cautilus`, release-installed `specdown`)에서 남는 lock/install guidance shape를 점검한다.
    - 현재 local proof는 `/home/ubuntu/charness` working tree에서 `--repo-root .`를 명시해 돌렸다. installed CLI default는 여전히 managed checkout을 보므로, unpushed local changes를 proof할 때는 그 차이를 의식한다.
 3. `charness reset`이 Codex/Claude host state를 충분히 clean하게 지우는지 다른 머신에서도 확인한다.
 4. `charness` single-file publish/bootstrap 경로를 어떻게 노출할지 결정한다.
