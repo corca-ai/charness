@@ -286,7 +286,29 @@ Update model:
 
 ### Codex Only
 
-Documented local install path:
+Preferred machine-local install path:
+
+- keep the source checkout under `~/.agents/src/charness`
+- export the install surface into `~/.agents/plugins/charness`
+- keep a personal Codex marketplace file at `~/.agents/plugins/marketplace.json`
+- point `source.path` at `./.agents/plugins/charness`
+
+Bootstrap and refresh:
+
+```bash
+mkdir -p ~/.agents/src
+if [ -d ~/.agents/src/charness/.git ]; then
+  git -C ~/.agents/src/charness pull --ff-only
+else
+  git clone https://github.com/corca-ai/charness ~/.agents/src/charness
+fi
+cd ~/.agents/src/charness
+python3 scripts/validate-packaging.py --repo-root .
+python3 scripts/sync_root_plugin_manifests.py --repo-root .
+python3 scripts/install-machine-local.py --repo-root .
+```
+
+Documented development path:
 
 - keep a marketplace file at `.agents/plugins/marketplace.json`
 - point `source.path` at the plugin directory with a `./`-prefixed relative
@@ -298,12 +320,15 @@ host-facing flat skill layout.
 
 Current status:
 
-- local marketplace-based testing is the documented path
+- machine-local personal marketplace is the preferred operator path
+- repo-scoped local marketplace remains the documented development path
 - public GitHub-backed discover/install proof is still pending and should be
   treated as an explicit follow-up check, not as a claimed guarantee
 
 Update model:
 
+- update `~/.agents/src/charness`, then rerun
+  `python3 scripts/install-machine-local.py --repo-root ~/.agents/src/charness`
 - update the checkout that `source.path` points to
 - restart or reload Codex so the install sees the new files
 - do not check for updates during skill execution
@@ -316,6 +341,14 @@ Recommended dual-host shape:
 2. Point Claude at that checkout with `claude --plugin-dir /absolute/path/to/charness/plugins/charness`.
 3. Point Codex at the same checkout through the checked-in `.agents/plugins/marketplace.json`.
 4. Update the checkout once when you want both hosts to move together.
+
+Recommended machine-local shared install:
+
+1. Keep the source checkout at `~/.agents/src/charness`.
+2. Export the installed plugin surface to `~/.agents/plugins/charness` with `python3 scripts/install-machine-local.py --repo-root ~/.agents/src/charness`.
+3. Point Codex at that exported surface through `~/.agents/plugins/marketplace.json`.
+4. Point Claude at that same exported surface with `claude --plugin-dir ~/.agents/plugins/charness`.
+5. Update the source checkout once, then rerun the install helper when you want both hosts to move together.
 
 Optional startup advisory:
 

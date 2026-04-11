@@ -51,6 +51,8 @@ Pick the smallest honest path that matches the user's host:
 
 - Claude Code local checkout: `plugins/charness` plugin root, locally verified
 - Claude Code shared marketplace: `corca-ai/charness`, documented and supported
+- Codex machine-local personal marketplace: `~/.agents/plugins/marketplace.json`
+  backed by `~/.agents/plugins/charness`, preferred operator path
 - Codex repo-scoped marketplace: `.agents/plugins/marketplace.json`, documented
   path with continued real-host proof still needed
 
@@ -96,7 +98,56 @@ Update path for a marketplace install:
 
 ## Step 4: Codex
 
-`charness` currently documents a repo-scoped local marketplace path for Codex.
+Prefer the machine-local personal marketplace path for operator installs.
+
+### Machine-local personal install
+
+Recommended source checkout location:
+
+```bash
+mkdir -p ~/.agents/src
+if [ -d ~/.agents/src/charness/.git ]; then
+  git -C ~/.agents/src/charness pull --ff-only
+else
+  git clone https://github.com/corca-ai/charness ~/.agents/src/charness
+fi
+cd ~/.agents/src/charness
+```
+
+Refresh the checked-in install surface, then export the machine-local install:
+
+```bash
+python3 scripts/validate-packaging.py --repo-root .
+python3 scripts/sync_root_plugin_manifests.py --repo-root .
+python3 scripts/install-machine-local.py --repo-root .
+```
+
+Expected machine-local result:
+
+- source checkout at `~/.agents/src/charness`
+- exported plugin root at `~/.agents/plugins/charness`
+- personal Codex marketplace at `~/.agents/plugins/marketplace.json`
+- Codex marketplace `source.path` pointing at `./.agents/plugins/charness`
+
+Recommended verification steps:
+
+1. Restart Codex from the home directory that owns
+   `~/.agents/plugins/marketplace.json`.
+2. Confirm that discovery or install visibility comes from the exported
+   `~/.agents/plugins/charness` surface, not from the source checkout tree.
+3. If the behavior is ambiguous, record the exact host output and treat that as
+   a proof gap to close, not as silent success.
+
+Claude can use the same exported surface:
+
+```bash
+claude --plugin-dir ~/.agents/plugins/charness
+```
+
+### Repo-scoped development install
+
+`charness` still keeps the repo-scoped marketplace path for local development
+and packaging proof.
 
 Required local surface:
 
@@ -114,16 +165,19 @@ Recommended verification steps:
 
 Current honesty note:
 
-- local marketplace usage is the documented path
+- machine-local personal marketplace is the preferred operator path
+- repo-scoped marketplace usage remains the documented development path
 - public GitHub-backed install proof is still pending
 - `codex exec` alone may not be sufficient proof of local plugin discovery
 
 ## Step 5: Update Model
 
+- machine-local install: update `~/.agents/src/charness`, then rerun
+  `python3 scripts/install-machine-local.py --repo-root ~/.agents/src/charness`
 - local checkout install: update the checkout, then rerun
   `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
 - Claude marketplace install: use `/plugin update charness@corca-charness`
-- Codex local marketplace install: update the checkout behind
+- Codex repo-scoped marketplace install: update the checkout behind
   `.agents/plugins/marketplace.json`, then reload Codex
 - skill execution must stay read-only with respect to install/update state
 

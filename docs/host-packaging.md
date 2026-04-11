@@ -148,6 +148,10 @@ Operationally this means:
 - Claude shared install can treat the repo as a single-plugin marketplace
 - Claude local development should point `--plugin-dir` at the checked-in
   `plugins/charness` directory, not the repo root or the `plugins/` parent
+- machine-local operator installs may export the same plugin tree to
+  `~/.agents/plugins/charness` and reuse that one exported surface across hosts
+- Codex personal installs may point `~/.agents/plugins/marketplace.json` at
+  `./.agents/plugins/charness` so `~/.agents` remains the machine-local anchor
 - Codex local development should load `./plugins/charness` through the
   checked-in repo marketplace file
 - public GitHub install remains a testable hypothesis, not an already-proven
