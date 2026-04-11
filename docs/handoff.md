@@ -13,6 +13,7 @@
 - `charness`는 portable Corca harness product로 정의됐다.
 - public skill / support skill / profile / integration 경계가 문서로 고정됐다.
 - `quality`는 public skill 하나로 두고, `hitl`은 collaboration profile에 두며, `ideation`이 `interview`를 흡수하고, `retro`는 mode로 확장한다는 결정이 반영됐다.
+- public skill [narrative](/home/ubuntu/charness/skills/public/narrative/SKILL.md)가 추가됐다. 이 skill은 source-of-truth doc alignment와 audience-facing brief derivation을 묶고, checked-in [.agents/narrative-adapter.yaml](/home/ubuntu/charness/.agents/narrative-adapter.yaml)로 charness truth surface를 고정한다.
 - repo-owned plugin version bump, install-surface sync, and user update guidance를 다루는 maintainer-facing public skill [release](/home/ubuntu/charness/skills/public/release/SKILL.md)가 추가됐다. charness에서는 checked-in [.agents/release-adapter.yaml](/home/ubuntu/charness/.agents/release-adapter.yaml)이 canonical release seam이다.
 - external binary는 `charness`가 vendor하지 않고 integration manifest와 sync/update/doctor flow로 다룬다는 정책이 고정됐다.
 - Session 2 산출물로 [manifest.schema.json](/home/ubuntu/charness/integrations/tools/manifest.schema.json), [profile.schema.json](/home/ubuntu/charness/profiles/profile.schema.json), [control-plane.md](/home/ubuntu/charness/docs/control-plane.md)가 추가됐다.

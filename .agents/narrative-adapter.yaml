@@ -1,0 +1,19 @@
+version: 1
+repo: charness
+language: en
+output_dir: skill-outputs/narrative
+preset_id: portable-defaults
+customized_from: portable-defaults
+source_documents:
+- README.md
+- docs/master-plan.md
+- docs/skill-migration-map.md
+- docs/operator-acceptance.md
+- docs/handoff.md
+mutable_documents:
+- README.md
+- docs/master-plan.md
+- docs/skill-migration-map.md
+- docs/operator-acceptance.md
+- docs/handoff.md
+remote_name: origin

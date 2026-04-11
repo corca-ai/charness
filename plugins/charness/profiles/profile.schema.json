@@ -47,6 +47,7 @@
             "enum": [
               "gather",
               "ideation",
+              "narrative",
               "spec",
               "impl",
               "debug",

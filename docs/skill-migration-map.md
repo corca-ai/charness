@@ -32,6 +32,9 @@ It is a durable memory surface for migration intent, not a historical diary.
 - `quality` is one public skill rather than separate `concept-review` and
   `test-improvement` skills.
 - `ideation` replaces and absorbs `interview`.
+- `narrative` is a new public skill for source-of-truth alignment plus
+  audience-facing briefs; it is not a mode inside `announcement` or
+  `ideation`.
 - `retro` stays one public skill with modes instead of split skills.
 - `hitl` belongs to the collaboration profile, not the constitutional core.
 - `workbench` is not a long-term `charness` public skill; generic evaluator

@@ -64,6 +64,7 @@ Public skills are user-facing concepts. One concept maps to one skill.
 
 #### Communicate → Coordinate
 
+- `narrative` — align source-of-truth docs and derive audience-specific briefs from the current story
 - `announcement` — human-to-human change communication with adapter-defined delivery backends
 - `handoff` — agent-to-agent continuation artifact for the next session or operator
 - `hitl` — agent-to-human bounded review loop with resumable state

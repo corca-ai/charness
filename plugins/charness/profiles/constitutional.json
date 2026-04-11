@@ -7,6 +7,7 @@
     "public_skills": [
       "gather",
       "ideation",
+      "narrative",
       "spec",
       "impl",
       "debug",
@@ -27,6 +28,7 @@
   },
   "notes": [
     "Excludes collaboration-only skills and engineering-quality overlays.",
+    "Includes the source-of-truth narrative alignment skill for repos that need durable docs plus human-facing briefs.",
     "Includes the local-first discovery skill for honest capability lookup.",
     "Does not include public skills that are planned but not shipped yet."
   ]

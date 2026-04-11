@@ -1,0 +1,13 @@
+version: 1
+repo: my-repo
+language: en
+output_dir: skill-outputs/narrative
+preset_id: portable-defaults
+customized_from: portable-defaults
+source_documents:
+- README.md
+- docs/handoff.md
+mutable_documents:
+- README.md
+- docs/handoff.md
+remote_name: origin

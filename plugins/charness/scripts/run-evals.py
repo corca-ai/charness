@@ -171,6 +171,15 @@ def scenario_quality_adapter_checked_in(root: Path) -> None:
         raise EvalError(f"checked-in quality adapter resolve: missing canonical gate command in {gate_commands!r}")
 
 
+def scenario_narrative_adapter_bootstrap(root: Path) -> None:
+    expect_adapter_bootstrap(
+        root,
+        skill_id="narrative",
+        adapter_name="narrative-adapter.yaml",
+        expected_artifact_path="skill-outputs/narrative/narrative.md",
+    )
+
+
 def scenario_release_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(
         root,
@@ -327,6 +336,7 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "impl-adapter-bootstrap": scenario_impl_adapter_bootstrap,
         "quality-adapter-bootstrap": scenario_quality_adapter_bootstrap,
         "quality-adapter-checked-in": scenario_quality_adapter_checked_in,
+        "narrative-adapter-bootstrap": scenario_narrative_adapter_bootstrap,
         "release-adapter-bootstrap": scenario_release_adapter_bootstrap,
         "handoff-adapter-bootstrap": scenario_handoff_adapter_bootstrap,
         "gather-adapter-bootstrap": scenario_gather_adapter_bootstrap,

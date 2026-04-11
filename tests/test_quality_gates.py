@@ -705,6 +705,17 @@ def test_release_current_release_reports_packaging_version() -> None:
     assert payload["checked_in_plugin_root"].endswith("plugins/charness")
 
 
+def test_narrative_map_sources_reports_checked_in_docs() -> None:
+    result = run_script("skills/public/narrative/scripts/map_sources.py", "--repo-root", str(ROOT))
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    source_paths = {entry["path"] for entry in payload["source_documents"]}
+    assert "README.md" in source_paths
+    assert "docs/handoff.md" in source_paths
+    assert payload["artifact_path"] == "skill-outputs/narrative/narrative.md"
+    assert payload["freshness"]["status"] in {"ahead", "current", "missing-remote", "not-git", "unavailable"}
+
+
 def test_release_bump_version_updates_manifest_and_runs_sync(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
@@ -1150,7 +1161,7 @@ def test_check_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:
 def test_run_evals_passes_on_current_repo() -> None:
     result = run_script("scripts/run-evals.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
-    assert "Ran 15 eval scenario(s)." in result.stdout
+    assert "Ran 16 eval scenario(s)." in result.stdout
 
 
 def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) -> None:

@@ -18,6 +18,7 @@ SCENARIOS = (
     Scenario("impl-adapter-bootstrap", "impl init/resolve scripts bootstrap repo-specific verification preferences"),
     Scenario("quality-adapter-bootstrap", "quality init/resolve scripts bootstrap a clean repo"),
     Scenario("quality-adapter-checked-in", "checked-in quality adapter resolves to the declared repo contract"),
+    Scenario("narrative-adapter-bootstrap", "narrative init/resolve scripts bootstrap the source-of-truth alignment contract"),
     Scenario("release-adapter-bootstrap", "release init/resolve scripts bootstrap the release artifact and adapter contract"),
     Scenario("handoff-adapter-bootstrap", "handoff adapter helpers bootstrap the durable handoff artifact path"),
     Scenario("gather-adapter-bootstrap", "gather adapter helpers bootstrap the durable gather artifact path"),

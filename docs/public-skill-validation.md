@@ -48,6 +48,7 @@ Current assignment:
 - `announcement`
 - `hitl`
 - `ideation`
+- `narrative`
 - `quality`
 - `release`
 - `retro`
@@ -71,9 +72,9 @@ Current assignment:
 
 ## Provisional Rationale
 
-- `announcement`, `ideation`, `quality`, `release`, and `retro` are valuable,
-  but their output quality still depends heavily on human judgment and context
-  setting.
+- `announcement`, `ideation`, `narrative`, `quality`, `release`, and `retro`
+  are valuable, but their output quality still depends heavily on human
+  judgment and context setting.
 - `hitl` already exists to insert human judgment into a bounded loop, so its
   own quality bar should emphasize operator review rather than pretending the
   whole workflow can be scored automatically.

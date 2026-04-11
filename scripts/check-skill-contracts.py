@@ -79,6 +79,13 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "when the automatable move is already clear and repo-owned, implement it in",
         "If you stop short of an obvious repo-owned deterministic gate",
     ),
+    "skills/public/narrative/SKILL.md": (
+        "map the current source-of-truth surface",
+        "rewrite the durable docs so the current story is honest in one place",
+        "If the idea is still under-shaped, use `ideation` first.",
+        "external or mixed audiences: self-contained by default",
+        "Hand off to `announcement` only when the user explicitly wants human-facing",
+    ),
     "skills/public/release/SKILL.md": (
         "maintainer-facing workflow",
         "Choose the lightest honest bump",

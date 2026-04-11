@@ -52,6 +52,7 @@ Corca harness product, then reconnects Ceal as one consumer of that product.
 - `debug`
 - `retro`
 - `quality`
+- `narrative`
 - `announcement`
 - `handoff`
 - `hitl`
@@ -75,6 +76,7 @@ Corca harness product, then reconnects Ceal as one consumer of that product.
   - `impl`
   - `debug`
   - `retro`
+  - `narrative`
   - `handoff`
   - `create-skill`
   - `find-skills`
