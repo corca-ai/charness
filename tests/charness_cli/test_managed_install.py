@@ -166,6 +166,61 @@ def test_charness_update_reports_codex_version_drift(tmp_path: Path, seeded_mana
     assert isinstance(host_state["last_update"]["recorded_at"], str)
 
 
+def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(tmp_path: Path) -> None:
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    source_repo = make_git_repo_copy(source_root)
+    home_root = tmp_path / "home"
+    fake_claude = make_fake_claude(tmp_path)
+    standalone_cli = tmp_path / "bin" / "charness"
+    standalone_cli.parent.mkdir(parents=True, exist_ok=True)
+    standalone_cli.write_text(CLI.read_text(encoding="utf-8"), encoding="utf-8")
+    standalone_cli.chmod(0o755)
+
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{fake_claude.parent}:{standalone_cli.parent}:{env.get('PATH', '')}"
+
+    init_result = subprocess.run(
+        ["python3", str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert init_result.returncode == 0, init_result.stderr
+
+    source_cli = source_repo / "charness"
+    original_text = source_cli.read_text(encoding="utf-8")
+    marker = "\nUPDATED_BINARY_MARKER = 'from-source-update-test'\n"
+    source_cli.write_text(original_text + marker, encoding="utf-8")
+    subprocess.run(["git", "add", "charness"], cwd=source_repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "update source binary marker"],
+        cwd=source_repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    installed_cli = home_root / ".local" / "bin" / "charness"
+    update_result = subprocess.run(
+        ["python3", str(installed_cli), "update", "--home-root", str(home_root)],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert update_result.returncode == 0, update_result.stderr
+
+    installed_text = installed_cli.read_text(encoding="utf-8")
+    managed_checkout_text = (home_root / ".agents" / "src" / "charness" / "charness").read_text(encoding="utf-8")
+    assert marker.strip() in installed_text
+    assert installed_text == managed_checkout_text
+
+
 def test_installed_cli_remembers_managed_checkout(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     installed_cli = home_root / ".local" / "bin" / "charness"

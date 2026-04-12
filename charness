@@ -559,10 +559,11 @@ def write_claude_wrapper(wrapper_path: Path, plugin_root: Path) -> None:
     wrapper_path.chmod(0o755)
 
 
-def install_cli_binary(target_path: Path) -> None:
+def install_cli_binary(target_path: Path, *, source_path: Path) -> None:
     target_path.parent.mkdir(parents=True, exist_ok=True)
-    if not target_path.exists() or SCRIPT_PATH != target_path.resolve():
-        shutil.copy2(SCRIPT_PATH, target_path)
+    source_resolved = source_path.resolve()
+    if not target_path.exists() or source_resolved != target_path.resolve():
+        shutil.copy2(source_resolved, target_path)
     target_path.chmod(0o755)
 
 
@@ -996,7 +997,7 @@ def install_surface(
     if removed_legacy_skills_symlink:
         completed_actions.append("legacy_skills_symlink_removed")
     if cli_path is not None:
-        install_cli_binary(cli_path)
+        install_cli_binary(cli_path, source_path=repo_root / "charness")
         payload["cli_path"] = str(cli_path)
     else:
         payload["cli_path"] = None
