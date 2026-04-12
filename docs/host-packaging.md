@@ -147,6 +147,9 @@ Operationally this means:
 
 - the official operator install path is a thin `charness` CLI rooted at the
   managed checkout `~/.agents/src/charness`
+- operators do not need to clone `charness` manually before first install when
+  they already have a usable `charness` binary; `charness init` may materialize
+  that managed checkout internally from its configured repo URL
 - that CLI manages one machine-local exported plugin surface under
   `~/.codex/plugins/charness`
 - Claude should prefer host-native marketplace and plugin installation driven by

@@ -20,8 +20,8 @@
 - `master-plan`은 더 이상 기본 운영 표면이 아니다. 기존 `docs/master-plan.md` 파일은 제거했고, planning 문서는 필요할 때만 명시적으로 만들며 기본 경로에서는 `docs/operator-acceptance.md`와 선택적 `docs/roadmap.md`를 본다.
 - 이 머신의 `~/.agents/skills` source-checkout symlink는 제거됐다.
 - Claude local dogfood는 exported plugin root 기준으로 확인됐다. `claude --plugin-dir /tmp/.../plugins/charness` debug log에서 `Loaded 14 skills from plugin charness`가 찍혔고, `/gather` 호출로 `TITLE:charness` 응답까지 확인했다.
-- root executable [charness](/home/ubuntu/charness/charness)를 추가했다. `init`, `update`, `doctor`, `reset`, `uninstall`를 제공하고, checkout 기반 bootstrap일 때 `~/.local/bin/charness`에 자기 자신을 설치한다.
-- root bootstrap script [init.sh](/home/ubuntu/charness/init.sh)를 추가했다. 공식 first-run entrypoint는 이제 `./init.sh`이고, 이 스크립트가 managed checkout `~/.agents/src/charness`를 만들거나 재사용한 뒤 `charness init`를 호출한다.
+- root executable [charness](/home/ubuntu/charness/charness)를 추가했다. `init`, `update`, `doctor`, `reset`, `uninstall`를 제공하고, standalone binary만 있어도 `charness init`가 managed checkout `~/.agents/src/charness`를 내부 clone으로 bootstrap할 수 있다.
+- root bootstrap script [init.sh](/home/ubuntu/charness/init.sh)를 추가했다. 이 스크립트는 checkout convenience wrapper이고, 내부적으로 managed checkout `~/.agents/src/charness`를 만들거나 재사용한 뒤 `charness init`를 호출한다.
 - `./charness init`는 managed install surface를 만든다: `~/.codex/plugins/charness`, `~/.agents/plugins/marketplace.json`, `~/.local/bin/charness`, optional `~/.local/bin/claude-charness`, plus Claude user-scope marketplace/plugin install.
 - official installed CLI source는 이제 managed checkout `~/.agents/src/charness`만 허용한다. repo 밖에서 쓰는 `charness`는 `~/.local/share/charness/install-state.json`을 통해 그 managed checkout을 기억한다. non-managed `--repo-root`는 proof/development path로만 남고 `--skip-cli-install`이 필요하다.
 - `charness tool doctor|install|update|sync-support`가 추가됐다. external integration lifecycle는 thin CLI에서 직접 호출할 수 있고, 결과는 `integrations/locks/*.json`과 `skills/support/generated/`에 agent-readable state로 남는다.
@@ -52,14 +52,14 @@
 2. 새 `charness tool install/update/doctor` surface를 실제 다른 머신 또는 temp-home workflow로 한 번 더 dogfood한다. 특히 provenance-aware route가 있는 tool(`gws-cli`, brew-installed `specdown`, brew-installed `gh`)과 manual-only tool(`cautilus`, release-installed `specdown`)에서 남는 lock/install guidance shape를 점검한다.
    - 현재 local proof는 `/home/ubuntu/charness` working tree에서 `--repo-root .`를 명시해 돌렸다. installed CLI default는 여전히 managed checkout을 보므로, unpushed local changes를 proof할 때는 그 차이를 의식한다.
 3. `charness reset`이 Codex/Claude host state를 충분히 clean하게 지우는지 다른 머신에서도 확인한다.
-4. `charness` single-file publish/bootstrap 경로를 어떻게 노출할지 결정한다.
+4. standalone `charness` binary 배포/bootstrap 경로를 어떻게 노출할지 결정한다.
 5. Codex proof와 추가 dogfood 결과를 바로 이 handoff나 별도 durable artifact에 남긴다.
 
 ## Discuss
 
 - Codex의 실제 interactive update proof가 가장 불확실한 표면이다. install 자체는 이 머신에서 끝났지만, 최소한 `codex exec` 새 프로세스만으로는 installed cache refresh proof가 되지 않았다.
 - Claude global install은 이제 primary path로 정리됐다. `claude-charness` wrapper는 fallback/proof 경로라 문서와 runtime hint가 다시 drift하지 않게 봐야 한다.
-- thin CLI는 들어갔고 managed path는 하나로 정리됐다. 남은 질문은 publish/bootstrap UX와 interactive Codex visibility proof다.
+- thin CLI는 들어갔고 managed path는 하나로 정리됐다. 남은 질문은 standalone binary distribution UX와 interactive Codex visibility proof다.
 
 ## References
 

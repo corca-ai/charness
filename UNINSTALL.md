@@ -19,7 +19,8 @@ source-of-truth repo unless the user explicitly asks for that.
 
 Possible install modes:
 
-- managed local install via `charness init`
+- managed local install via `charness init` or checkout convenience wrapper
+  `./init.sh`
 - proof-only checkout run via `./charness init --repo-root /absolute/path/to/charness --skip-cli-install`
 - generated export copy used as a disposable install surface
 

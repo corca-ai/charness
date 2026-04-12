@@ -596,7 +596,7 @@ def build_claude_host_guidance(
         return {
             "status": "missing-source",
             "manual_action_required": True,
-            "message": "No managed charness source checkout was found for this CLI. Run `charness init` from a checkout or bootstrap `~/.agents/src/charness` again.",
+            "message": "No managed charness source checkout was found for this CLI. Run `charness init` to recreate `~/.agents/src/charness` from the configured repo URL or local bootstrap source.",
         }
     plugin_ref = claude_plugin_ref(repo_root)
     if marketplace_entry is None:
@@ -1494,11 +1494,17 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("--skip-claude-wrapper", action="store_true")
         command.add_argument("--json", action="store_true")
 
-    init_parser = subparsers.add_parser("init", help="Bootstrap or refresh the managed local install surface.")
+    init_parser = subparsers.add_parser(
+        "init",
+        help="Bootstrap or refresh the managed local install surface, cloning the managed checkout first when it is missing.",
+    )
     add_common_runtime_args(init_parser)
     init_parser.set_defaults(func=cmd_init)
 
-    update_parser = subparsers.add_parser("update", help="Refresh the installed surface, pulling the managed checkout first by default.")
+    update_parser = subparsers.add_parser(
+        "update",
+        help="Refresh the installed surface, pulling the managed checkout first by default.",
+    )
     add_common_runtime_args(update_parser)
     update_parser.add_argument(
         "--no-pull",

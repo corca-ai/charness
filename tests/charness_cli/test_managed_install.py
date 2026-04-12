@@ -5,7 +5,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from .support import CLI, clone_seeded_managed_home, make_fake_claude, run_cli
+from .support import CLI, clone_seeded_managed_home, make_fake_claude, make_git_repo_copy, run_cli
 
 
 def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
@@ -37,6 +37,40 @@ def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
     assert "charness@corca-charness" in installed_plugins["plugins"]
     assert (home_root / ".local" / "bin" / "charness").is_file()
     assert (home_root / ".local" / "bin" / "claude-charness").is_file()
+
+
+def test_standalone_cli_bootstraps_managed_checkout_without_explicit_clone(tmp_path: Path) -> None:
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    source_repo = make_git_repo_copy(source_root)
+    home_root = tmp_path / "home"
+    fake_claude = make_fake_claude(tmp_path)
+    standalone_cli = tmp_path / "bin" / "charness"
+    standalone_cli.parent.mkdir(parents=True, exist_ok=True)
+    standalone_cli.write_text(CLI.read_text(encoding="utf-8"), encoding="utf-8")
+    standalone_cli.chmod(0o755)
+
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{fake_claude.parent}:{standalone_cli.parent}:{env.get('PATH', '')}"
+    result = subprocess.run(
+        ["python3", str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["checkout"]["managed"] is True
+    assert payload["checkout"]["cloned"] is True
+    assert payload["checkout"]["repo_root"] == str(home_root / ".agents" / "src" / "charness")
+    assert (home_root / ".agents" / "src" / "charness" / "packaging" / "charness.json").is_file()
+    assert (home_root / ".local" / "bin" / "charness").is_file()
+    install_state = json.loads((home_root / ".local" / "share" / "charness" / "install-state.json").read_text(encoding="utf-8"))
+    assert install_state["repo_root"] == str(home_root / ".agents" / "src" / "charness")
+    assert install_state["managed_checkout"] is True
 
 
 def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
@@ -180,6 +214,7 @@ def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path
     assert payload["checkout_present"] is False
     assert payload["plugin_preamble"] is None
     assert payload["claude_host_guidance"]["status"] == "missing-source"
+    assert "Run `charness init` to recreate" in payload["claude_host_guidance"]["message"]
 
 
 def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:

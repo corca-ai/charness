@@ -52,6 +52,28 @@ def make_repo_copy(tmp_path: Path) -> Path:
     return repo_copy
 
 
+def make_git_repo_copy(tmp_path: Path) -> Path:
+    repo_copy = make_repo_copy(tmp_path)
+    subprocess.run(["git", "init"], cwd=repo_copy, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo_copy, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "config", "user.email", "codex-test@example.com"],
+        cwd=repo_copy,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(["git", "add", "."], cwd=repo_copy, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "seed repo copy"],
+        cwd=repo_copy,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return repo_copy
+
+
 def make_release_fixture(tmp_path: Path) -> Path:
     fixture = tmp_path / "release-fixtures.json"
     fixture.write_text(

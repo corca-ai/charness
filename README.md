@@ -263,6 +263,12 @@ Expected non-bundled content:
 Official managed path:
 
 ```bash
+charness init
+```
+
+If `charness` is not yet on PATH, the checkout convenience wrapper is:
+
+```bash
 ./init.sh
 ```
 
@@ -285,12 +291,20 @@ Official managed install path:
 Bootstrap:
 
 ```bash
+charness init
+```
+
+If `charness` is not yet on PATH:
+
+```bash
 ./init.sh
 ```
 
-When run from another checkout, `./init.sh` seeds the managed checkout under
-`~/.agents/src/charness` and installs the reusable CLI from there. The
-installed CLI is not supposed to keep pointing at an arbitrary checkout.
+The operator does not need to clone `charness` manually. A standalone
+`charness` binary may seed the managed checkout under `~/.agents/src/charness`
+internally from its configured repo URL, and `./init.sh` is only a checkout
+convenience wrapper for that same flow. The installed CLI is not supposed to
+keep pointing at an arbitrary checkout.
 
 Current status:
 
@@ -309,18 +323,7 @@ Update model:
 
 ### Official Command Surface
 
-In a source checkout:
-
-```bash
-./init.sh
-./charness init
-./charness doctor
-./charness update
-./charness reset
-./charness uninstall
-```
-
-After the first managed install puts the CLI on PATH:
+Primary operator path once the binary is available:
 
 ```bash
 charness init
@@ -328,6 +331,22 @@ charness doctor
 charness update
 charness reset
 charness uninstall
+```
+
+Checkout convenience wrapper:
+
+```bash
+./init.sh
+```
+
+Repo-local development path:
+
+```bash
+./charness init
+./charness doctor
+./charness update
+./charness reset
+./charness uninstall
 ```
 
 Current command intent:

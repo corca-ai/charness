@@ -23,23 +23,32 @@ individual public skills à la carte.
 ## Prerequisites
 
 - the user asked to install or verify `charness`
-- you can either clone the source checkout or already have `charness` on PATH
+- you can either already have `charness` on PATH or have a checkout that still
+  carries `./init.sh`
 - you can run shell commands and read local files
-- for checkout bootstrap installs, you are working from the checkout root
+- explicit manual clone is optional; `charness init` may materialize the
+  managed checkout internally from `--repo-url`
 
-## Step 1: Bootstrap With `init.sh`
+## Step 1: Bootstrap With `charness init`
 
 The official install path is the managed `charness` CLI.
 
-If `charness` is not already on PATH, run the repo bootstrap script from any
-checkout:
+If `charness` is already on PATH, bootstrap directly:
+
+```bash
+charness init
+```
+
+If `charness` is not yet on PATH, use the checkout convenience wrapper from any
+checkout that still has `init.sh`:
 
 ```bash
 ./init.sh
 ```
 
-`init.sh` reuses `~/.agents/src/charness` when it already exists. Otherwise it
-creates that managed checkout first, then runs `charness init` from there.
+Both paths converge on the same contract: `charness init` reuses
+`~/.agents/src/charness` when it already exists. Otherwise it creates that
+managed checkout first, then installs from there.
 
 That first run materializes the official managed checkout at
 `~/.agents/src/charness`, exports the host install surfaces, and installs a

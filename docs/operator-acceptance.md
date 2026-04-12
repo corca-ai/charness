@@ -129,7 +129,9 @@ python3 scripts/sync_root_plugin_manifests.py --repo-root .
 
 Suggested operator runs:
 
-- bootstrap or reuse the managed checkout under `~/.agents/src/charness` with `./init.sh`
+- bootstrap or reuse the managed checkout under `~/.agents/src/charness` with
+  `charness init`; use `./init.sh` only when the binary is not already
+  available on PATH
 - verify Claude with `claude plugins list` or `charness doctor`
 - verify Codex through `~/.agents/plugins/marketplace.json`, then restart Codex
   and install or enable the local `charness` entry from Plugin Directory if
@@ -141,6 +143,8 @@ Suggested operator runs:
 Acceptance:
 
 - install works from the documented managed local install surface rooted at `~/.agents/src/charness`
+- explicit operator clone is not required when a standalone `charness` binary
+  is already available and can bootstrap that managed checkout internally
 - non-managed `--repo-root` runs stay proof/development-only and do not become the installed CLI source
 - `charness init` deterministically creates the Codex source plugin root and
   personal marketplace entry
