@@ -21,4 +21,6 @@ This reference covers the `uv` lockfile and audit moves that matter to
 - trust review for new package indexes, direct URLs, or publisher changes still
   needs human judgment
 - if a downstream repo wants a standing online audit command, make it explicit
-  which binary or service owns that check and where maintainers will read it
+  which binary or service owns that check and where maintainers will read it;
+  `scripts/check-supply-chain-online.py` now wraps that path explicitly with
+  `uv audit --frozen`
