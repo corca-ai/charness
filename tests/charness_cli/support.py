@@ -244,12 +244,15 @@ def make_fake_claude(tmp_path: Path) -> Path:
 @pytest.fixture(scope="module")
 def seeded_managed_home(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Path]:
     seed_root = tmp_path_factory.mktemp("managed-home-seed")
+    source_root = seed_root / "source"
+    source_root.mkdir()
+    source_repo = make_git_repo_copy(source_root)
     home_root = seed_root / "home"
     fake_claude = make_fake_claude(seed_root)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
     env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
-    init_result = run_cli("init", "--home-root", str(home_root), env=env)
+    init_result = run_cli("init", "--home-root", str(home_root), "--repo-url", str(source_repo), env=env)
     assert init_result.returncode == 0, init_result.stderr
     return {"home_root": home_root}
 

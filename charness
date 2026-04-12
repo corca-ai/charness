@@ -797,20 +797,50 @@ def codex_source_version(plugin_root: Path) -> str | None:
     return version if isinstance(version, str) else None
 
 
-def codex_enabled_plugin_id(config_entries: list[dict[str, object]]) -> str | None:
+def codex_enabled_plugin_ids(config_entries: list[dict[str, object]]) -> list[str]:
+    plugin_ids: list[str] = []
     for entry in config_entries:
         if entry.get("enabled") is True:
             plugin_id = entry.get("plugin_id")
             if isinstance(plugin_id, str):
-                return plugin_id
-    return None
+                plugin_ids.append(plugin_id)
+    return plugin_ids
 
 
-def codex_primary_cache_entry(cache_entries: list[dict[str, str]]) -> dict[str, str] | None:
+def codex_cache_entry_for_plugin_id(cache_entries: list[dict[str, str]], plugin_id: str) -> dict[str, str] | None:
+    if "@" not in plugin_id:
+        return None
+    plugin_name, marketplace = plugin_id.split("@", 1)
     for entry in cache_entries:
-        if entry.get("plugin") == PACKAGE_ID:
+        if entry.get("plugin") == plugin_name and entry.get("marketplace") == marketplace:
             return entry
     return None
+
+
+def codex_primary_cache_entry(
+    cache_entries: list[dict[str, str]],
+    *,
+    enabled_plugin_ids: list[str],
+    source_version: str | None,
+) -> tuple[dict[str, str] | None, str | None]:
+    enabled_matches: list[tuple[str, dict[str, str]]] = []
+    for plugin_id in enabled_plugin_ids:
+        entry = codex_cache_entry_for_plugin_id(cache_entries, plugin_id)
+        if entry is not None:
+            enabled_matches.append((plugin_id, entry))
+
+    if source_version:
+        for plugin_id, entry in enabled_matches:
+            if entry.get("manifest_version") == source_version:
+                return entry, plugin_id
+
+    if enabled_matches:
+        return enabled_matches[0][1], enabled_matches[0][0]
+
+    for entry in cache_entries:
+        if entry.get("plugin") == PACKAGE_ID:
+            return entry, None
+    return None, None
 
 
 def codex_config_entries(config_path: Path) -> list[dict[str, object]]:
@@ -836,10 +866,24 @@ def build_codex_host_guidance(
     config_entries: list[dict[str, object]],
 ) -> dict[str, object]:
     if cache_entries:
-        enabled_entries = [entry for entry in config_entries if entry.get("enabled") is True]
-        primary_cache = codex_primary_cache_entry(cache_entries)
+        enabled_plugin_ids = codex_enabled_plugin_ids(config_entries)
+        primary_cache, primary_plugin_id = codex_primary_cache_entry(
+            cache_entries,
+            enabled_plugin_ids=enabled_plugin_ids,
+            source_version=source_version,
+        )
         cache_manifest_version = primary_cache.get("manifest_version") if isinstance(primary_cache, dict) else None
-        if enabled_entries and source_version and cache_manifest_version and cache_manifest_version != source_version:
+        stale_enabled_ids: list[str] = []
+        for plugin_id in enabled_plugin_ids:
+            if plugin_id == primary_plugin_id:
+                continue
+            entry = codex_cache_entry_for_plugin_id(cache_entries, plugin_id)
+            if entry is None:
+                continue
+            manifest_version = entry.get("manifest_version")
+            if manifest_version and source_version and manifest_version != source_version:
+                stale_enabled_ids.append(plugin_id)
+        if enabled_plugin_ids and source_version and cache_manifest_version and cache_manifest_version != source_version:
             return {
                 "status": "needs-refresh",
                 "manual_action_required": True,
@@ -849,12 +893,18 @@ def build_codex_host_guidance(
                 ),
             }
         return {
-            "status": "installed" if enabled_entries else "cached",
-            "manual_action_required": not bool(enabled_entries),
+            "status": "installed" if enabled_plugin_ids else "cached",
+            "manual_action_required": not bool(enabled_plugin_ids),
             "message": (
                 "Codex has cached charness but no enabled config entry was found; reopen Codex and enable `charness` if it is still unavailable."
-                if not enabled_entries
-                else "Codex host install markers are present."
+                if not enabled_plugin_ids
+                else (
+                    "Codex host install markers are present."
+                    if not stale_enabled_ids
+                    else "Codex host install markers are present. Extra stale enabled cache entries remain: "
+                    + ", ".join(f"`{plugin_id}`" for plugin_id in stale_enabled_ids)
+                    + "."
+                )
             ),
         }
     return {
@@ -1108,13 +1158,18 @@ def build_doctor_payload(
         payload["plugin_preamble"] = json.loads(preamble_output)
     else:
         payload["plugin_preamble"] = None
-    primary_cache = codex_primary_cache_entry(payload["codex_cache_entries"])
+    payload["codex_enabled_plugin_ids"] = codex_enabled_plugin_ids(payload["codex_config_entries"])
+    primary_cache, primary_plugin_id = codex_primary_cache_entry(
+        payload["codex_cache_entries"],
+        enabled_plugin_ids=payload["codex_enabled_plugin_ids"],
+        source_version=payload["codex_source_version"],
+    )
     payload["codex_cache_manifest_version"] = (
         primary_cache.get("manifest_version") if isinstance(primary_cache, dict) else None
     )
-    payload["codex_enabled_plugin_id"] = codex_enabled_plugin_id(payload["codex_config_entries"])
+    payload["codex_enabled_plugin_id"] = primary_plugin_id
     payload["codex_source_cache_drift"] = bool(
-        payload["codex_enabled_plugin_id"]
+        payload["codex_enabled_plugin_ids"]
         and payload["codex_source_version"]
         and payload["codex_cache_manifest_version"]
         and payload["codex_source_version"] != payload["codex_cache_manifest_version"]
