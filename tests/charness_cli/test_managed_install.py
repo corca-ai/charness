@@ -5,7 +5,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from .support import CLI, clone_seeded_managed_home, make_fake_claude, run_cli
+from .support import CLI, clone_seeded_managed_home, make_fake_claude, make_release_fixture, run_cli
 
 
 def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
@@ -54,6 +54,7 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert payload["package_id"] == "charness"
     assert payload["install_state_path"] == str(home_root / ".local" / "share" / "charness" / "install-state.json")
     assert payload["host_state_path"] == str(home_root / ".local" / "share" / "charness" / "host-state.json")
+    assert payload["version_state_path"] == str(home_root / ".local" / "share" / "charness" / "version-state.json")
     assert payload["checkout_present"] is True
     assert payload["plugin_root_present"] is True
     assert payload["cli_present"] is True
@@ -75,6 +76,8 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert payload["claude_host_guidance"]["status"] == "installed"
     assert payload["claude_host_guidance"]["manual_action_required"] is False
     assert payload["plugin_preamble"]["update_hints"]["claude"] == "Run `charness update`, then restart Claude Code."
+    assert payload["version_provenance"]["invocation_kind"] == "custom-cli"
+    assert payload["latest_release_check"] is None
     host_state = json.loads((home_root / ".local" / "share" / "charness" / "host-state.json").read_text(encoding="utf-8"))
     assert host_state["state_version"] == 1
     assert host_state["last_init"]["doctor"]["codex_host_guidance"]["status"] == "needs-host-install"
@@ -139,6 +142,58 @@ def test_installed_cli_remembers_managed_checkout(tmp_path: Path, seeded_managed
     assert payload["checkout_present"] is True
     assert payload["managed_checkout"] is True
     assert payload["claude_host_guidance"]["status"] == "installed"
+
+
+def test_charness_version_can_refresh_latest_release_and_record_provenance(
+    tmp_path: Path, seeded_managed_home: dict[str, Path]
+) -> None:
+    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    release_fixture = make_release_fixture(tmp_path)
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+
+    installed_cli = home_root / ".local" / "bin" / "charness"
+    version_result = subprocess.run(
+        ["python3", str(installed_cli), "version", "--home-root", str(home_root), "--json", "--check"],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert version_result.returncode == 0, version_result.stderr
+    payload = json.loads(version_result.stdout)
+    assert payload["current_version"] == "0.0.0-dev"
+    assert payload["version_provenance"]["invocation_kind"] == "installed-cli"
+    assert payload["version_provenance"]["install_method"] == "managed-local-cli"
+    assert payload["latest_release_check"]["latest_tag"] == "v0.1.0"
+    assert payload["latest_release_check"]["update_available"] is True
+    assert payload["update_notice"] == (
+        "charness update available: `0.0.0-dev` -> `v0.1.0`. "
+        "Run `charness update`. https://github.com/corca-ai/charness/releases/tag/v0.1.0"
+    )
+    version_state = json.loads((home_root / ".local" / "share" / "charness" / "version-state.json").read_text(encoding="utf-8"))
+    assert version_state["version_provenance"]["invocation_kind"] == "installed-cli"
+    assert version_state["latest_release"]["latest_tag"] == "v0.1.0"
+    assert version_state["latest_release"]["current_version"] == "0.0.0-dev"
+
+
+def test_installed_cli_can_emit_auto_update_notice(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
+    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    release_fixture = make_release_fixture(tmp_path)
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+    env["CHARNESS_FORCE_UPDATE_CHECK"] = "1"
+
+    installed_cli = home_root / ".local" / "bin" / "charness"
+    doctor_result = subprocess.run(
+        ["python3", str(installed_cli), "doctor", "--home-root", str(home_root)],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert doctor_result.returncode == 0, doctor_result.stderr
+    assert "charness update available: `0.0.0-dev` -> `v0.1.0`." in doctor_result.stderr
 
 
 def test_doctor_can_write_host_state_snapshot(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
