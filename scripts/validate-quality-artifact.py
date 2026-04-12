@@ -35,6 +35,11 @@ REQUIRED_SECTIONS = (
     "## History",
 )
 HISTORY_LINK_RE = re.compile(r"\[.+\]\(history/[^)]+\.md\)")
+RUNTIME_SIGNAL_PREFIXES = (
+    "- runtime hot spots:",
+    "- coverage gate:",
+    "- evaluator depth:",
+)
 
 
 def validate_history_section(lines: list[str]) -> None:
@@ -46,6 +51,18 @@ def validate_history_section(lines: list[str]) -> None:
         raise ValidationError("`## History` must contain at least one `history/*.md` markdown link")
 
 
+def validate_runtime_signals_section(lines: list[str]) -> None:
+    start = find_index(lines, "## Runtime Signals") + 1
+    end = find_index(lines, "## Healthy")
+    section_lines = [line.strip() for line in lines[start:end] if line.strip()]
+    missing = [prefix for prefix in RUNTIME_SIGNAL_PREFIXES if not any(line.startswith(prefix) for line in section_lines)]
+    if missing:
+        raise ValidationError(
+            "`## Runtime Signals` must explicitly state runtime hot spots, coverage-gate status, "
+            "and evaluator depth"
+        )
+
+
 def validate_quality_artifact(path: Path) -> None:
     lines = read_lines(path)
     if not lines or lines[0].strip() != "# Quality Review":
@@ -54,6 +71,7 @@ def validate_quality_artifact(path: Path) -> None:
     validate_date_line(lines)
 
     validate_section_order(lines, REQUIRED_SECTIONS)
+    validate_runtime_signals_section(lines)
     validate_history_section(lines)
 
 

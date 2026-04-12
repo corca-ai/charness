@@ -60,7 +60,9 @@ def test_validate_quality_artifact_rejects_missing_history_section(tmp_path: Pat
                 "",
                 "## Runtime Signals",
                 "",
-                "- signal",
+                "- runtime hot spots: `pytest` 10s",
+                "- coverage gate: none",
+                "- evaluator depth: adapter bootstrap only",
                 "",
                 "## Healthy",
                 "",
@@ -113,7 +115,9 @@ def test_validate_quality_artifact_rejects_missing_history_link(tmp_path: Path) 
                 "",
                 "## Runtime Signals",
                 "",
-                "- signal",
+                "- runtime hot spots: `pytest` 10s",
+                "- coverage gate: none",
+                "- evaluator depth: adapter bootstrap only",
                 "",
                 "## Healthy",
                 "",
@@ -150,3 +154,61 @@ def test_validate_quality_artifact_rejects_missing_history_link(tmp_path: Path) 
     result = run_script("scripts/validate-quality-artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "history/*.md" in result.stderr
+
+
+def test_validate_quality_artifact_requires_runtime_closeout_fields(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        "\n".join(
+            [
+                "# Quality Review",
+                "Date: 2026-04-10",
+                "",
+                "## Scope",
+                "",
+                "- demo",
+                "",
+                "## Current Gates",
+                "",
+                "- gate",
+                "",
+                "## Runtime Signals",
+                "",
+                "- runtime hot spots: `pytest` 10s",
+                "- coverage gate: none",
+                "",
+                "## Healthy",
+                "",
+                "- healthy",
+                "",
+                "## Weak",
+                "",
+                "- weak",
+                "",
+                "## Missing",
+                "",
+                "- missing",
+                "",
+                "## Deferred",
+                "",
+                "- deferred",
+                "",
+                "## Commands Run",
+                "",
+                "- cmd",
+                "",
+                "## Recommended Next Gates",
+                "",
+                "- next",
+                "",
+                "## History",
+                "",
+                "- [archive](history/one.md)",
+                "",
+            ]
+        )
+        + "\n",
+    )
+    result = run_script("scripts/validate-quality-artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "Runtime Signals" in result.stderr

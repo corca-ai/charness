@@ -3,93 +3,117 @@ Date: 2026-04-12
 
 ## Scope
 
-Pre-skill-update classification pass for which verification surfaces should
-stay in the standing hook bar versus move to explicit on-demand
-self-validation.
+Repo-wide quality posture after a clean `./scripts/run-quality.sh` pass and a
+same-session tightening of the `quality` closeout contract. `Runtime Signals`
+is now required to state hot spots, coverage-gate status, and evaluator depth
+instead of leaving that as prose-only advice.
 
 ## Current Gates
 
-- `./scripts/run-quality.sh` is the canonical local gate.
-- `.githooks/pre-push` enforces that gate in clones that installed
-  `./scripts/install-git-hooks.sh`.
-- The standing bar currently includes direct validators, markdown/doc checks,
-  security and supply-chain checks, `run-evals`, `check-duplicates`, and a
-  monolithic `pytest -q`.
-- Runtime summaries land in `skill-outputs/quality/runtime-signals.json`.
+- `./scripts/run-quality.sh` is the canonical local bar.
+- `.githooks/pre-push` runs `scripts/sync_root_plugin_manifests.py` and then
+  `./scripts/run-quality.sh`; `scripts/install-git-hooks.sh` wires
+  `core.hooksPath`.
+- `scripts/validate-maintainer-setup.py` fails closed when this clone is not
+  actually using the checked-in `.githooks`.
+- `scripts/run-quality.sh` runs parallel phases, records per-command timing,
+  supports `CHARNESS_QUALITY_LABELS`, and only replays passing logs under
+  `CHARNESS_QUALITY_VERBOSE=1`.
+- `scripts/check-secrets.sh` prefers `gitleaks` and falls back to repo-local
+  `secretlint`.
+- `scripts/check-supply-chain.py` enforces manifest/lockfile alignment for
+  npm/pnpm/yarn/bun plus `uv.lock` when Python deps exist.
+- `scripts/validate-packaging.py` fails on checked-in plugin export drift.
+- `scripts/validate-quality-artifact.py` now requires explicit runtime hot
+  spots, coverage-gate status, and evaluator depth in this artifact.
+- `scripts/check-links-external.sh` scopes `lychee` to extracted external URLs,
+  with online validation behind `CHARNESS_LINK_CHECK_ONLINE=1`.
 
 ## Runtime Signals
 
-- The dominant local cost is still `pytest -q` at about `23-24s`.
-- The next most expensive standing commands are `check-secrets` at about `4s`
-  and `check-markdown` at about `2.4s`.
-- `run-evals` stays around `1.2s` and `check-duplicates` around `0.5s`.
-
-## Coverage and Eval Depth
-
-- Standing deterministic coverage exists for packaging, adapters, docs,
-  security, quality-runner behavior, managed CLI/control-plane seams, and
-  repo-owned smoke evals.
-- Real Claude/Codex install visibility and Codex cache refresh behavior remain
-  HITL/operator-run proof, not repo-local deterministic coverage.
-
-## Standing vs On-Demand Draft
-
-- `KEEP_IN_HOOK`: all direct validators already called by
-  `./scripts/run-quality.sh`, plus `run-evals` and `check-duplicates`.
-- `KEEP_IN_STANDING_PYTEST_SUBSET`: `tests/charness_cli/*`,
-  `tests/control_plane/*`, `tests/quality_gates/*`, and
-  `tests/test_plugin_preamble.py`.
-- `FIRST_ON_DEMAND_CANDIDATES`: `tests/test_gather_google_workspace.py`,
-  `tests/test_notion_support_export.py`, and
-  `tests/test_list_external_links.py`.
-- `HITL_ONLY`: interactive Codex cache refresh, Claude/Codex plugin
-  visibility after update, and multi-machine install/update dogfood.
-- `SPLIT_NEXT`: replace the single standing `pytest -q` label with an explicit
-  standing subset plus an explicit on-demand self-validation surface.
+- runtime hot spots: current latest timings are `pytest` 25.0s,
+  `check-secrets` 2.5s, `check-markdown` 1.9s; `run-evals` is 1.3s and
+  everything else is below that.
+- coverage gate: none; the local bar proves pass/fail across validators,
+  tests, and evals but does not measure line or branch coverage.
+- evaluator depth: `run-evals` covers adapter bootstrap, fixture portability,
+  support-sync contracts, and representative skill contracts, but not
+  maintained evaluator-backed `cautilus` scenarios for `evaluator-required`
+  skills.
+- runtime retention: per-command timings live in
+  `skill-outputs/quality/runtime-signals.json`, older samples rotate into
+  monthly `history/runtime-signals-YYYY-MM.jsonl`, and passing runs keep stdout
+  bounded.
 
 ## Healthy
 
-- Most repo contracts already have direct deterministic owners.
-- Maintainer-local enforcement is explicit: checked-in `pre-push`, installer,
-  and validator all exist.
-- `run-evals` and `check-duplicates` are cheap enough that they are not the
-  first demotion targets.
+- one repo-owned entrypoint covers validators, docs, lint, tests, evals,
+  duplicate detection, and supply-chain checks.
+- maintainer-local enforcement is honest: checked-in pre-push hook, repo-owned
+  installer, and standing validator all exist.
+- packaging drift is caught both before push and in standing validation.
+- internal markdown-link discipline and external URL health have separate
+  owners instead of one noisy mixed gate.
+- test suites are split by seam under
+  `tests/{quality_gates,charness_cli,control_plane}`, which keeps the
+  `500`-line test-file cap enforceable.
+- the quality artifact now has a deterministic closeout contract for speed,
+  coverage absence, and evaluator depth.
 
 ## Weak
 
-- The current standing `pytest` label hides a policy question because core
-  CLI/control-plane regressions are mixed together with narrower helper-script
-  proofs.
-- Some public skills still lack an adapter-requirement classification.
-- Real-host update proof and live advisory/audit behavior still sit outside the
-  deterministic local bar.
+- some public skills still have durable artifacts or onboarding seams without
+  checked-in adapter contracts.
+- external-link validation still depends on network reachability and upstream
+  host health when online mode is enabled.
+- the supply-chain gate proves manifest/lockfile discipline, not live advisory
+  visibility or triage behavior.
+- the secret gate fallback is tested, but the `gitleaks` binary path was not
+  exercised live in this clone because the binary is not installed.
 
 ## Missing
 
-- No repo-owned manifest yet records `reason`, `trigger`, and `owner` when a
-  test moves out of the hook.
-- No maintained evaluator-backed `cautilus` scenarios yet exist for the
-  `evaluator-required` skills.
+- no automated current-repo gate yet decides which public skills must ship
+  adapters versus which can stay adapter-free honestly.
+- no maintained evaluator-backed `cautilus` scenario path yet exists for
+  `evaluator-required` public skills.
+- no optional online advisory wrapper yet names the binary, flaky-host
+  behavior, and triage owner for npm/pnpm/uv surfaces.
+- no coverage gate yet if the repo decides it wants quantitative test-depth
+  enforcement rather than pass/fail only.
 
 ## Deferred
 
-- Any broader host-packaging strategy beyond the current checked-in install
-  surface.
-- Any online advisory gate that would add new flaky network/tooling ownership.
+- `profile extends`
+- preset structure depth beyond the current markdown-first contract
+- any stronger host packaging artifact strategy beyond the checked-in root
+  manifests
 
 ## Commands Run
 
 - `./scripts/run-quality.sh`
-- `pytest --durations=15 -q`
+- `git config --get core.hooksPath`
+- `find .git/hooks -maxdepth 1 -type f | sort`
+- `python3 scripts/validate-quality-artifact.py --repo-root .`
+- `pytest -q tests/test_quality_artifact.py`
 
 ## Recommended Next Gates
 
-- Add an explicit validation matrix for `standing` versus `on-demand`.
-- Split `pytest` into named subsets before removing any coverage from the hook.
-- If helper/support tests move out of the hook, give them a repo-owned home
-  such as `scripts/self-validate/` plus machine-readable metadata.
-- Keep real host proof in handoff/state artifacts instead of pretending it is
-  standing pre-push automation.
+- `AUTO_CANDIDATE`: classify adapter-required public skills and fail closed
+  when a durable-artifact or onboarding-heavy skill lacks a checked-in adapter
+  contract.
+- `AUTO_CANDIDATE`: add a read-only proof that `charness update` stays clean
+  against the current worktree or an ephemeral source bundle so local drift
+  cannot hide behind `git clone` semantics.
+- `AUTO_CANDIDATE`: add an optional networked advisory wrapper for npm/pnpm/uv
+  only if the repo is willing to own binary setup, flaky-host behavior, and
+  triage.
+- `AUTO_CANDIDATE`: if quantitative test depth becomes necessary, add a scoped
+  coverage gate around `tests/charness_cli` and `tests/control_plane` instead
+  of a blanket repo-wide percentage floor.
+- `AUTO_CANDIDATE`: connect the `cautilus` integration manifest to honest
+  maintained scenarios without pretending the current repo-local bar already
+  has that depth.
 
 ## History
 
