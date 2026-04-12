@@ -45,6 +45,8 @@ Preferred deterministic guards:
 - adapter- or runner-level caching for repeated command bodies
 - repo-owned scoped smoke plus a separate fuller boundary run when both are
   genuinely needed and clearly labeled
+- a scoped or filtered runner mode for debugging and runner-behavior tests when
+  the repo can narrow execution without lying about what the standing bar covers
 
 ## Logs And Diagnostics
 

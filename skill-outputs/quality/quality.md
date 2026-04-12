@@ -1,5 +1,5 @@
 # Quality Review
-Date: 2026-04-11
+Date: 2026-04-12
 
 ## Scope
 
@@ -15,6 +15,8 @@ drift check into `validate-packaging`.
 - `./scripts/run-quality.sh` runs independent phases in parallel, records
   per-command timing, and keeps verbose success logs as an explicit
   `CHARNESS_QUALITY_VERBOSE=1` opt-in.
+- `./scripts/run-quality.sh` also supports `CHARNESS_QUALITY_LABELS` for
+  scoped runner debugging and runner-behavior tests without changing the default full bar.
 - `scripts/check-secrets.sh` prefers `gitleaks` and falls back to repo-local
   `secretlint` when `gitleaks` is unavailable.
 - `scripts/check-supply-chain.py` now enforces repo-local manifest and
@@ -23,10 +25,9 @@ drift check into `validate-packaging`.
 - `scripts/validate-packaging.py` now fails closed when the checked-in plugin
   tree drifts from the generated install surface, not only when manifest JSON
   or top-level marketplace artifacts drift.
-- `scripts/record_quality_runtime.py` keeps a compact current timing summary plus rotated monthly archives.
+- `scripts/record_quality_runtime.py` keeps a compact timing summary plus rotated monthly archives.
 - `scripts/validate-quality-artifact.py` keeps this file short and current.
-- `scripts/validate-maintainer-setup.py` now fails closed when this clone has
-  not actually activated the checked-in pre-push hook.
+- `scripts/validate-maintainer-setup.py` now fails closed when this clone has not actually activated the checked-in pre-push hook.
 - `scripts/check-links-external.sh` scopes `lychee` to extracted external
   `http(s)` URLs, with online validation as an explicit `CHARNESS_LINK_CHECK_ONLINE=1` opt-in.
 
@@ -67,6 +68,7 @@ drift check into `validate-packaging`.
   eval smoke and current-repo packaging/export evals no longer pay runtime
   after more direct CLI tests and packaging/export tests already covered those
   seams.
+- test monoliths were split into seam-specific packages under `tests/{quality_gates,charness_cli,control_plane}`, which made a repo-wide `500`-line test-file max enforceable again and kept `run-quality` behavior tests at the cheaper scoped phase subset.
 
 ## Weak
 
@@ -81,7 +83,6 @@ drift check into `validate-packaging`.
 - the current secret gate was validated through repo-owned tests and fallback
   logic, but `gitleaks` itself was not exercised live in this clone because
   the binary is not installed locally.
-- some `run-quality` behavioral tests still pay most of the real shell-runner cost.
 
 ## Missing
 
@@ -104,10 +105,8 @@ drift check into `validate-packaging`.
 
 - `./scripts/run-quality.sh`
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- `python3 scripts/validate-packaging.py --repo-root .`
-- `pytest -q tests/test_quality_gates.py -k 'validate_packaging_passes_on_current_repo or validate_packaging_rejects_checked_in_plugin_tree_drift or sync_root_plugin_manifests_writes_install_surface'`
-- `pytest -q tests/test_quality_gates.py -k 'run_quality or record_quality_runtime or run_evals_passes_on_current_repo'`
-- `pytest -q tests/test_charness_cli.py`
+- `pytest -q tests/charness_cli tests/control_plane tests/quality_gates`
+- `pytest --durations=20 -q`
 - `./scripts/check-secrets.sh`
 - `python3 scripts/check-supply-chain.py --repo-root .`
 

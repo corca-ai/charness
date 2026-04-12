@@ -1,0 +1,311 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from .support import ADAPTER_LIB, ROOT, init_git_repo, run_script
+
+
+def test_release_current_release_reports_packaging_version() -> None:
+    result = run_script("skills/public/release/scripts/current_release.py", "--repo-root", str(ROOT))
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    expected = json.loads((ROOT / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
+    assert payload["package_id"] == "charness"
+    assert payload["surface_versions"]["packaging_manifest"] == expected
+    assert payload["checked_in_plugin_root"].endswith("plugins/charness")
+
+
+def test_narrative_map_sources_reports_checked_in_docs() -> None:
+    result = run_script("skills/public/narrative/scripts/map_sources.py", "--repo-root", str(ROOT))
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    source_paths = {entry["path"] for entry in payload["source_documents"]}
+    assert "README.md" in source_paths
+    assert "docs/handoff.md" in source_paths
+    assert payload["artifact_path"] == "skill-outputs/narrative/narrative.md"
+    assert payload["freshness"]["status"] in {"ahead", "current", "missing-remote", "not-git", "unavailable"}
+
+
+def test_release_bump_version_updates_manifest_and_runs_sync(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "packaging").mkdir(parents=True)
+    (repo / "scripts").mkdir(parents=True)
+
+    (repo / ".agents" / "release-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: skill-outputs/release",
+                "preset_id: portable-defaults",
+                "customized_from: portable-defaults",
+                "package_id: demo",
+                "packaging_manifest_path: packaging/demo.json",
+                "checked_in_plugin_root: plugins/demo",
+                "sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root .",
+                "quality_command: ./scripts/run-quality.sh",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (repo / "packaging" / "demo.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "package_id": "demo",
+                "display_name": "demo",
+                "version": "0.0.0-dev",
+                "summary": "Demo package.",
+                "author": {"name": "Demo"},
+                "homepage": "https://example.com/demo",
+                "repository": "https://example.com/demo",
+                "source": {
+                    "readme": "README.md",
+                    "skills_dir": "skills",
+                    "public_skills_dir": "skills/public",
+                    "support_skills_dir": "skills/support",
+                    "profiles_dir": "profiles",
+                    "presets_dir": "presets",
+                    "integrations_dir": "integrations/tools",
+                },
+                "codex": {"manifest": {"version": "0.0.0-dev"}},
+                "claude": {"manifest": {"version": "0.0.0-dev"}},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo / "scripts" / "sync_root_plugin_manifests.py").write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "from __future__ import annotations",
+                "import argparse",
+                "import json",
+                "from pathlib import Path",
+                "",
+                "parser = argparse.ArgumentParser()",
+                "parser.add_argument('--repo-root', type=Path, required=True)",
+                "args = parser.parse_args()",
+                "repo_root = args.repo_root.resolve()",
+                "version = json.loads((repo_root / 'packaging' / 'demo.json').read_text(encoding='utf-8'))['version']",
+                "(repo_root / 'sync-version.txt').write_text(version + '\\n', encoding='utf-8')",
+                "",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("skills/public/release/scripts/bump_version.py", "--repo-root", str(repo), "--part", "patch")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    manifest = json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))
+    assert payload["old_version"] == "0.0.0-dev"
+    assert payload["new_version"] == "0.0.1"
+    assert manifest["version"] == "0.0.1"
+    assert manifest["claude"]["manifest"]["version"] == "0.0.1"
+    assert manifest["codex"]["manifest"]["version"] == "0.0.1"
+    assert (repo / "sync-version.txt").read_text(encoding="utf-8").strip() == "0.0.1"
+
+
+def test_check_doc_links_rejects_foreign_absolute_path(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "README.md").write_text("[bad](/tmp/not-in-repo.md)\n", encoding="utf-8")
+    result = run_script("scripts/check-doc-links.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "foreign absolute link" in result.stderr
+
+
+def test_check_doc_links_rejects_bare_internal_markdown_reference(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs_dir = repo / "docs"
+    docs_dir.mkdir(parents=True)
+    (repo / "README.md").write_text("# Demo\n\nSee docs/guide.md before editing.\n", encoding="utf-8")
+    (docs_dir / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    result = run_script("scripts/check-doc-links.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "bare internal markdown reference" in result.stderr
+
+
+def test_check_doc_links_allows_internal_markdown_reference_in_code(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs_dir = repo / "docs"
+    docs_dir.mkdir(parents=True)
+    (repo / "README.md").write_text(
+        "\n".join(
+            [
+                "# Demo",
+                "",
+                "Use the linked guide: [guide](docs/guide.md).",
+                "",
+                "`docs/guide.md` can still appear in inline code.",
+                "",
+                "```bash",
+                "sed -n '1,20p' docs/guide.md",
+                "```",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (docs_dir / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    result = run_script("scripts/check-doc-links.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_check_doc_links_ignores_gitignored_markdown(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs_dir = repo / "docs"
+    docs_dir.mkdir(parents=True)
+    (repo / ".gitignore").write_text("docs/generated-*.md\n", encoding="utf-8")
+    (repo / "README.md").write_text("# Demo\n\nUse the linked guide: [guide](docs/guide.md).\n", encoding="utf-8")
+    (docs_dir / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    (docs_dir / "generated-bad.md").write_text("[bad](/tmp/not-in-repo.md)\n", encoding="utf-8")
+    init_git_repo(repo, ".gitignore", "README.md", "docs/guide.md")
+
+    result = run_script("scripts/check-doc-links.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_check_duplicates_passes_clean_repo() -> None:
+    result = run_script("scripts/check-duplicates.py", "--repo-root", str(ROOT), "--json", "--fail-on-match")
+    assert result.returncode == 0, result.stderr
+    duplicates = json.loads(result.stdout)
+    assert isinstance(duplicates, list)
+    assert duplicates == []
+
+
+def test_adapter_lib_renders_and_loads_simple_yaml_mapping() -> None:
+    rendered = ADAPTER_LIB.render_yaml_mapping(
+        [
+            ("version", 1),
+            ("repo", "demo"),
+            ("output_dir", "skill-outputs/demo"),
+            ("commands", ["pytest -q", "ruff check ."]),
+            ("empty", []),
+        ]
+    )
+    assert ADAPTER_LIB.load_yaml(rendered) == {
+        "version": 1,
+        "repo": "demo",
+        "output_dir": "skill-outputs/demo",
+        "commands": ["pytest -q", "ruff check ."],
+        "empty": [],
+    }
+
+
+def test_check_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs_dir = repo / "docs"
+    docs_dir.mkdir(parents=True)
+    repeated_lines = "\n".join(f"- repeated line {i}" for i in range(20))
+    (docs_dir / "alpha.md").write_text(f"# Alpha\n\n{repeated_lines}\n", encoding="utf-8")
+    (docs_dir / "beta.md").write_text(f"# Beta\n\n{repeated_lines}\n", encoding="utf-8")
+
+    result = run_script("scripts/check-duplicates.py", "--repo-root", str(repo), "--fail-on-match", "--json")
+    assert result.returncode == 1
+    duplicates = json.loads(result.stdout)
+    assert duplicates
+    assert duplicates[0]["left"] == "docs/alpha.md"
+    assert duplicates[0]["right"] == "docs/beta.md"
+
+
+def test_check_duplicates_ignores_gitignored_files(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs_dir = repo / "docs"
+    docs_dir.mkdir(parents=True)
+    repeated_lines = "\n".join(f"- repeated line {i}" for i in range(20))
+    (repo / ".gitignore").write_text("docs/generated-*.md\n", encoding="utf-8")
+    (docs_dir / "alpha.md").write_text(f"# Alpha\n\n{repeated_lines}\n", encoding="utf-8")
+    (docs_dir / "generated-beta.md").write_text(f"# Beta\n\n{repeated_lines}\n", encoding="utf-8")
+    init_git_repo(repo, ".gitignore", "docs/alpha.md")
+
+    result = run_script("scripts/check-duplicates.py", "--repo-root", str(repo), "--fail-on-match", "--json")
+    assert result.returncode == 0, result.stderr
+    duplicates = json.loads(result.stdout)
+    assert duplicates == []
+
+
+def test_find_skills_lists_adapter_configured_trusted_roots(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    local_skill_dir = repo / "skills" / "public" / "local-demo"
+    trusted_skill_dir = repo / "vendor" / "trusted-skills" / "trusted-demo"
+    adapter_dir = repo / ".agents"
+    local_skill_dir.mkdir(parents=True)
+    trusted_skill_dir.mkdir(parents=True)
+    adapter_dir.mkdir(parents=True)
+
+    (local_skill_dir / "SKILL.md").write_text(
+        "\n".join(["---", "name: local-demo", 'description: "Local demo skill."', "---", "", "# Local Demo"]),
+        encoding="utf-8",
+    )
+    (trusted_skill_dir / "SKILL.md").write_text(
+        "\n".join(["---", "name: trusted-demo", 'description: "Trusted demo skill."', "---", "", "# Trusted Demo"]),
+        encoding="utf-8",
+    )
+    (adapter_dir / "find-skills-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "language: en",
+                "output_dir: skill-outputs/find-skills",
+                "trusted_skill_roots:",
+                "- vendor/trusted-skills",
+                "prefer_local_first: true",
+                "allow_external_registry: false",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script("skills/public/find-skills/scripts/list_capabilities.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["public_skills"][0]["id"] == "local-demo"
+    assert payload["trusted_skills"][0]["id"] == "trusted-demo"
+
+
+def test_impl_survey_reports_broken_preferred_skill_symlink(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    adapter_dir = repo / ".agents"
+    skills_dir = adapter_dir / "skills"
+    adapter_dir.mkdir(parents=True)
+    skills_dir.mkdir(parents=True)
+
+    (adapter_dir / "impl-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "language: en",
+                "output_dir: skill-outputs/impl",
+                "verification_tools:",
+                "- cmd:python3",
+                "- skill:agent-browser",
+                "ui_verification_tools:",
+                "- skill:agent-browser",
+                "verification_install_proposals:",
+                "- Install the preferred browser verifier before closing UI work.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (skills_dir / "agent-browser").symlink_to(repo / "missing-agent-browser")
+
+    result = run_script("skills/public/impl/scripts/survey_verification.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["missing_tools"] == ["skill:agent-browser"]
+    assert payload["missing_ui_tools"] == ["skill:agent-browser"]
+    assert payload["tool_checks"][1]["warning"].startswith("Broken skill symlink:")
+    assert "Repo-specific verification install proposals are available." in payload["warnings"]

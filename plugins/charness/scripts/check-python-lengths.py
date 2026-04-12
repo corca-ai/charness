@@ -15,7 +15,7 @@ from scripts.repo_file_listing import iter_matching_repo_files
 
 REPO_SCRIPT_FILE_MAX = 380
 SKILL_HELPER_FILE_MAX = 220
-TEST_FILE_MAX = 2000
+TEST_FILE_MAX = 500
 FUNCTION_MAX = 100
 TEST_FUNCTION_MAX = 150
 

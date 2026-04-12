@@ -115,8 +115,8 @@ when the repo already has stable gate commands worth recording.
      over whole-worktree scans; inspect gitignored runtime state only when the check explicitly owns machine-local artifacts
    - treat external URL health separately from repo-local markdown-link
      discipline
-   - for executable specs, inspect boundary focus, lower-level duplication,
-     and shell-wrapper use where direct adapters would be clearer and faster
+   - for executable specs, inspect boundary focus, lower-level duplication, and shell-wrapper use where direct adapters would be clearer and faster
+   - if one test module has accumulated many unrelated seams, prefer splitting it by validator or behavior seam before it becomes normal to skim only partially
 5. Classify each issue by enforcement tier first.
    - `AUTO_EXISTING`: already enforced by a meaningful deterministic gate
    - `AUTO_CANDIDATE`: should be promoted into a linter, validator, test, hook,

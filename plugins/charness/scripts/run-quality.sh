@@ -8,6 +8,7 @@ RUN_QUALITY_TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$RUN_QUALITY_TMPDIR"' EXIT
 
 RUN_QUALITY_VERBOSE="${CHARNESS_QUALITY_VERBOSE:-0}"
+RUN_QUALITY_LABELS="${CHARNESS_QUALITY_LABELS:-}"
 RUN_QUALITY_START_NS="$(date +%s%N)"
 
 declare -a PHASE_LABELS=()
@@ -74,6 +75,37 @@ queue_timed() {
   PHASE_PIDS+=("$!")
   PHASE_LOGS+=("$log_path")
   PHASE_METAS+=("$meta_path")
+}
+
+label_is_selected() {
+  local label="$1"
+  local raw selected_label
+
+  if [[ -z "$RUN_QUALITY_LABELS" ]]; then
+    return 0
+  fi
+
+  IFS=',' read -r -a raw <<< "$RUN_QUALITY_LABELS"
+  for selected_label in "${raw[@]}"; do
+    selected_label="${selected_label#"${selected_label%%[![:space:]]*}"}"
+    selected_label="${selected_label%"${selected_label##*[![:space:]]}"}"
+    if [[ "$selected_label" == "$label" ]]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+queue_selected() {
+  local label="$1"
+  shift
+
+  if ! label_is_selected "$label"; then
+    return 0
+  fi
+
+  queue_timed "$label" "$@"
 }
 
 print_phase_output() {
@@ -148,26 +180,26 @@ print_final_summary() {
     "$(format_elapsed "$elapsed_ms")"
 }
 
-queue_timed "validate-skills" python3 scripts/validate-skills.py --repo-root "$REPO_ROOT"
-queue_timed "validate-profiles" python3 scripts/validate-profiles.py --repo-root "$REPO_ROOT"
-queue_timed "validate-presets" python3 scripts/validate-presets.py --repo-root "$REPO_ROOT"
-queue_timed "validate-adapters" python3 scripts/validate-adapters.py --repo-root "$REPO_ROOT"
-queue_timed "validate-integrations" python3 scripts/validate-integrations.py --repo-root "$REPO_ROOT"
-queue_timed "validate-packaging" python3 scripts/validate-packaging.py --repo-root "$REPO_ROOT"
-queue_timed "validate-handoff-artifact" python3 scripts/validate-handoff-artifact.py --repo-root "$REPO_ROOT"
-queue_timed "validate-debug-artifact" python3 scripts/validate-debug-artifact.py --repo-root "$REPO_ROOT"
-queue_timed "validate-quality-artifact" python3 scripts/validate-quality-artifact.py --repo-root "$REPO_ROOT"
-queue_timed "validate-maintainer-setup" python3 scripts/validate-maintainer-setup.py --repo-root "$REPO_ROOT"
-queue_timed "check-python-lengths" python3 scripts/check-python-lengths.py --repo-root "$REPO_ROOT"
-queue_timed "check-skill-contracts" python3 scripts/check-skill-contracts.py --repo-root "$REPO_ROOT"
-queue_timed "check-doc-links" python3 scripts/check-doc-links.py --repo-root "$REPO_ROOT"
+queue_selected "validate-skills" python3 scripts/validate-skills.py --repo-root "$REPO_ROOT"
+queue_selected "validate-profiles" python3 scripts/validate-profiles.py --repo-root "$REPO_ROOT"
+queue_selected "validate-presets" python3 scripts/validate-presets.py --repo-root "$REPO_ROOT"
+queue_selected "validate-adapters" python3 scripts/validate-adapters.py --repo-root "$REPO_ROOT"
+queue_selected "validate-integrations" python3 scripts/validate-integrations.py --repo-root "$REPO_ROOT"
+queue_selected "validate-packaging" python3 scripts/validate-packaging.py --repo-root "$REPO_ROOT"
+queue_selected "validate-handoff-artifact" python3 scripts/validate-handoff-artifact.py --repo-root "$REPO_ROOT"
+queue_selected "validate-debug-artifact" python3 scripts/validate-debug-artifact.py --repo-root "$REPO_ROOT"
+queue_selected "validate-quality-artifact" python3 scripts/validate-quality-artifact.py --repo-root "$REPO_ROOT"
+queue_selected "validate-maintainer-setup" python3 scripts/validate-maintainer-setup.py --repo-root "$REPO_ROOT"
+queue_selected "check-python-lengths" python3 scripts/check-python-lengths.py --repo-root "$REPO_ROOT"
+queue_selected "check-skill-contracts" python3 scripts/check-skill-contracts.py --repo-root "$REPO_ROOT"
+queue_selected "check-doc-links" python3 scripts/check-doc-links.py --repo-root "$REPO_ROOT"
 flush_phase || OVERALL_RC=$?
 
-queue_timed "check-markdown" ./scripts/check-markdown.sh
-queue_timed "check-secrets" ./scripts/check-secrets.sh
-queue_timed "check-supply-chain" python3 scripts/check-supply-chain.py --repo-root "$REPO_ROOT"
-queue_timed "check-shell" ./scripts/check-shell.sh
-queue_timed "check-links-external" ./scripts/check-links-external.sh
+queue_selected "check-markdown" ./scripts/check-markdown.sh
+queue_selected "check-secrets" ./scripts/check-secrets.sh
+queue_selected "check-supply-chain" python3 scripts/check-supply-chain.py --repo-root "$REPO_ROOT"
+queue_selected "check-shell" ./scripts/check-shell.sh
+queue_selected "check-links-external" ./scripts/check-links-external.sh
 shopt -s nullglob
 python_files=(
   scripts/*.py
@@ -175,13 +207,13 @@ python_files=(
   skills/support/*/scripts/*.py
   skills/support/*/vendor/*.py
 )
-queue_timed "py-compile" python3 -m py_compile "${python_files[@]}"
-queue_timed "ruff" ruff check scripts tests skills/public/*/scripts skills/support/*/scripts
+queue_selected "py-compile" python3 -m py_compile "${python_files[@]}"
+queue_selected "ruff" ruff check scripts tests skills/public/*/scripts skills/support/*/scripts
 flush_phase || OVERALL_RC=$?
 
-queue_timed "pytest" pytest -q
-queue_timed "run-evals" python3 scripts/run-evals.py --repo-root "$REPO_ROOT"
-queue_timed "check-duplicates" python3 scripts/check-duplicates.py --repo-root "$REPO_ROOT" --fail-on-match
+queue_selected "pytest" pytest -q
+queue_selected "run-evals" python3 scripts/run-evals.py --repo-root "$REPO_ROOT"
+queue_selected "check-duplicates" python3 scripts/check-duplicates.py --repo-root "$REPO_ROOT" --fail-on-match
 flush_phase || OVERALL_RC=$?
 print_final_summary
 exit "$OVERALL_RC"

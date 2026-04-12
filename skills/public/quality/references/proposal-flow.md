@@ -33,6 +33,8 @@ Examples:
   unit tests cannot prove it honestly
 - remove one broad E2E smoke because a cheaper direct proof now covers the same
   seam and the old path only adds runtime cost
+- split one oversized test module into seam-specific files because maintainers
+  and agents can no longer navigate or refactor it cheaply as one surface
 - add dependency review in CI because supply-chain changes are currently
   invisible in pull requests
 - replace repeated documentation guidance with `markdownlint` or a repo-owned
