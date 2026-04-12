@@ -106,7 +106,7 @@ Why this exists:
 
 - a checked-in plugin install surface now exists under `plugins/charness`
 - the repo now claims one thin-CLI-managed install/update path across hosts
-- public install/update behavior still needs real-host confirmation
+- initial install/bootstrap is largely proven; the remaining real-host question is whether `charness update` propagates upstream skill/plugin changes into the actually installed host-visible copy
 
 Read first:
 
@@ -132,13 +132,17 @@ Suggested operator runs:
 - bootstrap or reuse the managed checkout under `~/.agents/src/charness` with
   `charness init`; use `./init.sh` only when the binary is not already
   available on PATH
-- verify Claude with `claude plugins list` or `charness doctor`
+- treat initial install/enable as pre-proven unless the host reports otherwise
+- make an explicit upstream payload change that should be visible in a loaded
+  skill or plugin manifest
+- run `charness update`
+- verify Claude by checking that the changed payload is reflected in the
+  installed host copy after the documented restart/reload step
 - verify Codex through `~/.agents/plugins/marketplace.json`, then restart Codex
-  and install or enable the local `charness` entry from Plugin Directory if
-  `charness doctor` still reports `needs-host-install`
-- run `charness update` and confirm both hosts stay aligned after refresh
+  and use Plugin Directory re-enable or reinstall only if the changed payload
+  does not appear after restart
 - if the host output is ambiguous, record that ambiguity instead of claiming
-  the install worked
+  update propagation worked
 
 Acceptance:
 
@@ -152,7 +156,12 @@ Acceptance:
   still required”
 - `charness tool install/update/doctor` leave machine-readable lock state for
   external dependencies and any remaining manual steps
-- update behavior matches the documented single-path model
+- `charness update` refreshes the installed CLI itself before judging downstream
+  host behavior
+- an upstream skill/plugin payload change is actually observable in the
+  installed Claude or Codex host copy after the required refresh step
+- any extra Codex refresh requirement is classified honestly as restart-only,
+  re-enable, reinstall, or still unclear
 - any required doc or manifest tweaks are committed back here
 
 ### 4. Raise `create-skill` / `spec` Workflow Gates

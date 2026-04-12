@@ -2,11 +2,11 @@
 
 ## Workflow Trigger
 
-- 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [charness](../charness), [INSTALL.md](../INSTALL.md), [UNINSTALL.md](../UNINSTALL.md), [README.md](../README.md), [docs/host-packaging.md](host-packaging.md), [docs/operator-acceptance.md](operator-acceptance.md), [docs/public-skill-validation.md](public-skill-validation.md), [skills/public/init-repo/SKILL.md](../skills/public/init-repo/SKILL.md), [skills/public/release/SKILL.md](../skills/public/release/SKILL.md)을 읽고 Codex post-install update behavior proof를 먼저 본다.
+- 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [charness](../charness), [INSTALL.md](../INSTALL.md), [UNINSTALL.md](../UNINSTALL.md), [README.md](../README.md), [docs/host-packaging.md](host-packaging.md), [docs/operator-acceptance.md](operator-acceptance.md), [docs/public-skill-validation.md](public-skill-validation.md), [skills/public/init-repo/SKILL.md](../skills/public/init-repo/SKILL.md), [skills/public/release/SKILL.md](../skills/public/release/SKILL.md)을 읽고 "install succeeds"가 아니라 "upstream skill/plugin payload change가 `charness update` 뒤 host-visible installed copy까지 실제 전파되는가"를 먼저 본다.
 - 이 머신의 `~/.agents/skills` source-checkout symlink는 2026-04-12에 다시 확인했을 때 실제로 남아 있었고, 이후 다시 제거했다. 이제 `charness init/update/reset/uninstall`가 symlink일 때 자동 제거하므로 다음 세션에서는 재발 여부만 짧게 확인하면 된다.
 - `~/.local/share/charness/host-state.json`이 있으면 `last_update` 또는 `last_doctor` snapshot부터 보고, interactive Codex restart 전후 차이를 proof source로 쓴다.
 - Claude local proof는 끝났다. historical proof path는 `--plugin-dir /absolute/path/to/charness/plugins/charness`였고, parent `plugins/`를 주면 skill discovery proof가 되지 않았다. 이제 primary Claude path는 `charness init`가 marketplace add/install을 수행하는 global install이다.
-- Codex는 managed `~/.agents/plugins/marketplace.json`를 source로 쓰되, operator-facing plugin root는 `~/.codex/plugins/charness`로 둔다. marketplace policy는 `AVAILABLE`로 두고, `exec`만으로는 install/discovery proof가 약하니 interactive session 또는 다른 머신에서 실제 visibility proof를 이어서 본다.
+- Codex는 managed `~/.agents/plugins/marketplace.json`를 source로 쓰되, operator-facing plugin root는 `~/.codex/plugins/charness`로 둔다. marketplace policy는 `AVAILABLE`로 두고, install/discovery 자체는 이미 확인됐으니 남은 proof는 interactive session 또는 다른 머신에서 "`charness update` 뒤 upstream payload change가 installed cache/visible skills까지 반영되는가"에 집중한다.
 - Retro 2026-04-11: `INSTALLED_BY_DEFAULT`를 `~/.agents/plugins/marketplace.json`에 넣으면 다음 세션에서 plugin이 바로 세션 skill로 올라올 것이라고 가정한 건 과했다. 공식 문서는 personal marketplace가 Plugin Directory source가 된다고 설명하고, 실제 install은 `~/.codex/plugins/cache/...`에 생기며 enable state는 `~/.codex/config.toml`에 남는다고 구분한다. `~/.codex/plugins/charness`는 source plugin root일 뿐, cache/config 흔적이 없으면 host install은 아직 안 된 신호로 취급해야 한다.
 
 ## Current State
@@ -52,7 +52,7 @@
 
 ## Next Session
 
-1. 실제 interactive Codex에서 최신 pulled installed `charness`를 source update 뒤 어떻게 refresh해야 cache가 갱신되는지 확인한다. restart만으로 되는지, Plugin Directory 재-install/re-enable이 필요한지 proof를 만든다.
+1. 실제 interactive Codex에서 upstream skill/plugin payload를 의도적으로 바꾼 뒤 `charness update`가 그 변경을 installed cache와 visible skill surface까지 전파하는지 확인한다. restart만으로 되는지, Plugin Directory 재-install/re-enable이 필요한지 proof를 만든다.
    - 가능하면 restart 전 `host-state.json:last_update` 또는 `charness doctor --write-state` snapshot과, restart 뒤 새 `last_doctor` snapshot을 비교해 proof를 남긴다.
 2. 새 `charness tool install/update/doctor` surface를 실제 다른 머신 또는 temp-home workflow로 한 번 더 dogfood한다. 특히 provenance-aware route가 있는 tool(`gws-cli`, brew-installed `specdown`, brew-installed `gh`)과 manual-only tool(`cautilus`, release-installed `specdown`)에서 남는 lock/install guidance shape를 점검한다.
    - 현재 local proof는 `/home/ubuntu/charness` working tree에서 `--repo-root .`를 명시해 돌렸다. installed CLI default는 여전히 managed checkout을 보므로, unpushed local changes를 proof할 때는 그 차이를 의식한다.
@@ -62,9 +62,9 @@
 
 ## Discuss
 
-- Codex의 실제 interactive update proof가 가장 불확실한 표면이다. install 자체는 이 머신에서 끝났지만, 최소한 `codex exec` 새 프로세스만으로는 installed cache refresh proof가 되지 않았다.
+- Codex의 실제 interactive update propagation proof가 가장 불확실한 표면이다. install 자체는 이 머신에서 끝났고 plugin visibility도 어느 정도 확인됐지만, 최소한 `codex exec` 새 프로세스만으로는 upstream payload change가 installed cache/visible skills까지 반영된다는 proof가 되지 않았다.
 - Claude global install은 이제 primary path로 정리됐다. `claude-charness` wrapper는 fallback/proof 경로라 문서와 runtime hint가 다시 drift하지 않게 봐야 한다.
-- thin CLI는 들어갔고 managed path는 하나로 정리됐다. 남은 질문은 standalone binary distribution UX와 interactive Codex visibility proof다.
+- thin CLI는 들어갔고 managed path는 하나로 정리됐다. 남은 질문은 standalone binary distribution UX와 interactive Codex update propagation proof다.
 
 ## References
 
