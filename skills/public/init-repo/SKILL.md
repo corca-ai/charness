@@ -22,7 +22,18 @@ not the long-range planning skill, and not the repo-wide quality audit.
 
 ## Bootstrap
 
-Read the smallest context that reveals the repo state first.
+Resolve the adapter first, then read the smallest context that reveals the repo
+state.
+
+Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
+
+```bash
+python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+```
+
+By default, `init-repo` writes any durable normalization note to
+`skill-outputs/init-repo/init-repo.md`. Repos can override the directory with
+`.agents/init-repo-adapter.yaml`.
 
 ```bash
 # Required Tools: rg

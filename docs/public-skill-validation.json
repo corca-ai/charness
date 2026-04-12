@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "tiers": {
+    "smoke-only": [],
+    "hitl-recommended": [
+      "announcement",
+      "create-cli",
+      "hitl",
+      "ideation",
+      "narrative",
+      "quality",
+      "release",
+      "retro"
+    ],
+    "evaluator-required": [
+      "create-skill",
+      "debug",
+      "find-skills",
+      "gather",
+      "handoff",
+      "impl",
+      "init-repo",
+      "spec"
+    ]
+  },
+  "adapter_requirements": {
+    "required": [
+      "announcement",
+      "debug",
+      "find-skills",
+      "gather",
+      "handoff",
+      "hitl",
+      "impl",
+      "init-repo",
+      "narrative",
+      "quality",
+      "release",
+      "retro"
+    ],
+    "adapter-free": [
+      "create-cli",
+      "create-skill",
+      "ideation",
+      "spec"
+    ]
+  }
+}
