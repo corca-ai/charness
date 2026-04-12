@@ -82,6 +82,8 @@ def scenario_quality_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="quality", adapter_name="quality-adapter.yaml", expected_artifact_path="skill-outputs/quality/quality.md")
 def scenario_impl_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="impl", adapter_name="impl-adapter.yaml", expected_data={"output_dir": "skill-outputs/impl", "verification_tools": [], "ui_verification_tools": []})
+def scenario_debug_adapter_bootstrap(root: Path) -> None:
+    expect_adapter_bootstrap(root, skill_id="debug", adapter_name="debug-adapter.yaml", expected_artifact_path="skill-outputs/debug/debug.md")
 def scenario_quality_adapter_checked_in(root: Path) -> None:
     resolve_script = root / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py"
     resolve_result = run_command(["python3", str(resolve_script), "--repo-root", str(root)], cwd=root)
@@ -107,6 +109,8 @@ def scenario_handoff_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="handoff", adapter_name="handoff-adapter.yaml", expected_artifact_path="skill-outputs/handoff/handoff.md")
 def scenario_gather_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="gather", adapter_name="gather-adapter.yaml", expected_artifact_path="skill-outputs/gather/gather.md")
+def scenario_init_repo_adapter_bootstrap(root: Path) -> None:
+    expect_adapter_bootstrap(root, skill_id="init-repo", adapter_name="init-repo-adapter.yaml", expected_artifact_path="skill-outputs/init-repo/init-repo.md")
 def scenario_init_repo_inspect_states(root: Path) -> None:
     run_init_repo_inspect_states(root, run_command=run_command, expect_success=expect_success, error_type=EvalError)
 def scenario_handoff_relative_links(root: Path) -> None:
@@ -246,12 +250,14 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "profile-valid": scenario_profile_valid,
         "doc-links-valid": scenario_doc_links_valid,
         "impl-adapter-bootstrap": scenario_impl_adapter_bootstrap,
+        "debug-adapter-bootstrap": scenario_debug_adapter_bootstrap,
         "quality-adapter-bootstrap": scenario_quality_adapter_bootstrap,
         "quality-adapter-checked-in": scenario_quality_adapter_checked_in,
         "narrative-adapter-bootstrap": scenario_narrative_adapter_bootstrap,
         "release-adapter-bootstrap": scenario_release_adapter_bootstrap,
         "handoff-adapter-bootstrap": scenario_handoff_adapter_bootstrap,
         "gather-adapter-bootstrap": scenario_gather_adapter_bootstrap,
+        "init-repo-adapter-bootstrap": scenario_init_repo_adapter_bootstrap,
         "init-repo-inspect-states": scenario_init_repo_inspect_states,
         "handoff-relative-links": scenario_handoff_relative_links,
         "find-skills-local-first": scenario_find_skills_local_first,
@@ -275,16 +281,23 @@ def ensure_fixtures_present(root: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run repo-owned smoke scenarios under evals/.")
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument("--scenario-id", action="append", default=[])
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
     ensure_fixtures_present(root)
+    selected = [scenario for scenario in SCENARIOS if not args.scenario_id or scenario.scenario_id in args.scenario_id]
+    if args.scenario_id:
+        known = {scenario.scenario_id for scenario in SCENARIOS}
+        unknown = sorted(set(args.scenario_id) - known)
+        if unknown:
+            raise EvalError(f"unknown scenario id(s): {', '.join(unknown)}")
 
-    for scenario in SCENARIOS:
+    for scenario in selected:
         run_scenario(root, scenario)
         print(f"PASS {scenario.scenario_id}: {scenario.description}")
 
-    print(f"Ran {len(SCENARIOS)} eval scenario(s).")
+    print(f"Ran {len(selected)} eval scenario(s).")
     return 0
 
 
