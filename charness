@@ -262,9 +262,6 @@ def resolve_repo_root(home_root: Path, explicit_repo_root: Path | None) -> tuple
 
 
 def default_bootstrap_repo_url(home_root: Path, configured_repo_url: str) -> str:
-    remembered = read_install_state(home_root)
-    if (remembered is None or remembered[1] is False) and EMBEDDED_REPO_ROOT is not None and has_source_manifest(EMBEDDED_REPO_ROOT):
-        return str(EMBEDDED_REPO_ROOT)
     return configured_repo_url
 
 

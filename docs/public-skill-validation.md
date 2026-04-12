@@ -63,6 +63,7 @@ Current assignment:
 - `quality`
 - `release`
 - `retro`
+- `update-probe`
 
 ### `evaluator-required`
 
@@ -129,6 +130,7 @@ Current assignment:
 - `create-skill`
 - `ideation`
 - `spec`
+- `update-probe`
 
 ## Next Step
 

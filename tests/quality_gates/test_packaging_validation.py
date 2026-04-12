@@ -319,4 +319,4 @@ def test_export_plugin_allows_version_override(tmp_path: Path) -> None:
     assert json.loads(codex_marketplace.read_text(encoding="utf-8"))["plugins"][0]["name"] == "charness"
 
     shared_manifest = json.loads((ROOT / "packaging" / "charness.json").read_text(encoding="utf-8"))
-    assert shared_manifest["version"] == "0.0.0-dev"
+    assert shared_manifest["version"] != "1.2.3"

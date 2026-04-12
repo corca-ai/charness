@@ -7,3 +7,7 @@ description: "Use when verifying that charness update propagated a new upstream 
 
 Use this only to confirm that a newly added public skill became visible after
 `charness update` refreshed the installed plugin surface.
+
+## References
+
+- `references/purpose.md`

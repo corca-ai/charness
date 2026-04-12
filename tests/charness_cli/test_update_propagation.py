@@ -7,6 +7,8 @@ from pathlib import Path
 
 from .support import make_fake_claude, make_git_repo_copy
 
+PROBE_SKILL_ID = "update-probe-extra"
+
 
 def test_installed_cli_update_propagates_new_skill_into_exported_plugin_root(tmp_path: Path) -> None:
     source_root = tmp_path / "source"
@@ -33,17 +35,17 @@ def test_installed_cli_update_propagates_new_skill_into_exported_plugin_root(tmp
     )
     assert init_result.returncode == 0, init_result.stderr
 
-    exported_skill = home_root / ".codex" / "plugins" / "charness" / "skills" / "update-probe" / "SKILL.md"
-    managed_skill = home_root / ".agents" / "src" / "charness" / "skills" / "public" / "update-probe" / "SKILL.md"
+    exported_skill = home_root / ".codex" / "plugins" / "charness" / "skills" / PROBE_SKILL_ID / "SKILL.md"
+    managed_skill = home_root / ".agents" / "src" / "charness" / "skills" / "public" / PROBE_SKILL_ID / "SKILL.md"
     assert exported_skill.exists() is False
     assert managed_skill.exists() is False
 
-    source_skill_dir = source_repo / "skills" / "public" / "update-probe"
+    source_skill_dir = source_repo / "skills" / "public" / PROBE_SKILL_ID
     source_skill_dir.mkdir(parents=True, exist_ok=True)
     source_skill_dir.joinpath("SKILL.md").write_text(
-        """\
+        f"""\
 ---
-name: update-probe
+name: {PROBE_SKILL_ID}
 description: "Use when verifying that charness update propagated a new upstream skill into the installed host-visible plugin surface."
 ---
 
@@ -56,8 +58,11 @@ Use this only to confirm that a newly added public skill became visible after
     )
 
     packaging_path = source_repo / "packaging" / "charness.json"
-    packaging_text = packaging_path.read_text(encoding="utf-8")
-    packaging_path.write_text(packaging_text.replace("0.0.0-dev", "0.0.1-update-probe"), encoding="utf-8")
+    packaging = json.loads(packaging_path.read_text(encoding="utf-8"))
+    packaging["version"] = "0.0.1-update-probe"
+    packaging["codex"]["manifest"]["version"] = "0.0.1-update-probe"
+    packaging["claude"]["manifest"]["version"] = "0.0.1-update-probe"
+    packaging_path.write_text(json.dumps(packaging, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     sync_result = subprocess.run(
         ["python3", "scripts/sync_root_plugin_manifests.py", "--repo-root", "."],
         cwd=source_repo,
@@ -70,7 +75,7 @@ Use this only to confirm that a newly added public skill became visible after
         [
             "git",
             "add",
-            "skills/public/update-probe/SKILL.md",
+            f"skills/public/{PROBE_SKILL_ID}/SKILL.md",
             "packaging/charness.json",
             "plugins/charness",
             ".agents/plugins/marketplace.json",

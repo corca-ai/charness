@@ -14,6 +14,8 @@ from .support import (
     run_cli,
 )
 
+CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
+
 
 def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
     home_root = tmp_path / "home"
@@ -87,6 +89,77 @@ def test_standalone_cli_bootstraps_managed_checkout_without_explicit_clone(tmp_p
     assert install_state["managed_checkout"] is True
 
 
+def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_path: Path) -> None:
+    embedded_root = tmp_path / "embedded"
+    embedded_root.mkdir()
+    embedded_repo = make_git_repo_copy(embedded_root)
+    upstream_root = tmp_path / "upstream"
+    upstream_root.mkdir()
+    upstream_repo = make_git_repo_copy(upstream_root)
+
+    packaging_path = upstream_repo / "packaging" / "charness.json"
+    packaging = json.loads(packaging_path.read_text(encoding="utf-8"))
+    packaging["version"] = "0.0.1-upstream-test"
+    packaging["codex"]["manifest"]["version"] = "0.0.1-upstream-test"
+    packaging["claude"]["manifest"]["version"] = "0.0.1-upstream-test"
+    packaging_path.write_text(json.dumps(packaging, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    sync_result = subprocess.run(
+        ["python3", "scripts/sync_root_plugin_manifests.py", "--repo-root", "."],
+        cwd=upstream_repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert sync_result.returncode == 0, sync_result.stderr
+    subprocess.run(
+        ["git", "add", "packaging/charness.json", "plugins/charness", ".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"],
+        cwd=upstream_repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "mark upstream repo"],
+        cwd=upstream_repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    embedded_cli = embedded_repo / "charness"
+    embedded_text = embedded_cli.read_text(encoding="utf-8")
+    embedded_cli.write_text(
+        embedded_text.replace(
+            'REPO_URL = "https://github.com/corca-ai/charness"',
+            f'REPO_URL = "{upstream_repo}"',
+        ),
+        encoding="utf-8",
+    )
+
+    home_root = tmp_path / "home"
+    fake_claude = make_fake_claude(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
+    result = subprocess.run(
+        ["python3", str(embedded_cli), "init", "--home-root", str(home_root)],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["checkout"]["repo_root"] == str(home_root / ".agents" / "src" / "charness")
+    assert payload["checkout"]["cloned"] is True
+    assert payload["checkout"]["managed"] is True
+    assert payload["codex_source_version"] == "0.0.1-upstream-test"
+    install_state = json.loads((home_root / ".local" / "share" / "charness" / "install-state.json").read_text(encoding="utf-8"))
+    assert install_state["repo_root"] == str(home_root / ".agents" / "src" / "charness")
+    assert install_state["managed_checkout"] is True
+
+
 def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
@@ -103,7 +176,7 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert payload["codex_marketplace_entry"]["name"] == "charness"
     assert payload["codex_marketplace_entry"]["source"]["path"] == "./.codex/plugins/charness"
     assert payload["legacy_skills_symlink_present"] is False
-    assert payload["codex_source_version"] == "0.0.0-dev"
+    assert payload["codex_source_version"] == CURRENT_VERSION
     assert payload["codex_cache_manifest_version"] is None
     assert payload["codex_source_cache_drift"] is False
     assert payload["codex_host_guidance"]["status"] == "needs-host-install"
@@ -138,7 +211,7 @@ def test_charness_doctor_reports_codex_version_drift(tmp_path: Path, seeded_mana
     doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
     payload = json.loads(doctor_result.stdout)
-    assert payload["codex_source_version"] == "0.0.0-dev"
+    assert payload["codex_source_version"] == CURRENT_VERSION
     assert payload["codex_cache_manifest_version"] == "0.0.0-old"
     assert payload["codex_source_cache_drift"] is True
     assert payload["codex_enabled_plugin_id"] == "charness@local"
@@ -157,7 +230,7 @@ def test_charness_update_reports_codex_version_drift(tmp_path: Path, seeded_mana
     update_result = run_cli("update", "--home-root", str(home_root), env=env)
     assert update_result.returncode == 0, update_result.stderr
     payload = json.loads(update_result.stdout)
-    assert payload["codex_source_version"] == "0.0.0-dev"
+    assert payload["codex_source_version"] == CURRENT_VERSION
     assert payload["codex_cache_manifest_version"] == "0.0.0-old"
     assert payload["codex_source_cache_drift"] is True
     host_state = json.loads((home_root / ".local" / "share" / "charness" / "host-state.json").read_text(encoding="utf-8"))
@@ -258,19 +331,19 @@ def test_charness_version_can_refresh_latest_release_and_record_provenance(
     )
     assert version_result.returncode == 0, version_result.stderr
     payload = json.loads(version_result.stdout)
-    assert payload["current_version"] == "0.0.0-dev"
+    assert payload["current_version"] == CURRENT_VERSION
     assert payload["version_provenance"]["invocation_kind"] == "installed-cli"
     assert payload["version_provenance"]["install_method"] == "managed-local-cli"
     assert payload["latest_release_check"]["latest_tag"] == "v0.1.0"
     assert payload["latest_release_check"]["update_available"] is True
     assert payload["update_notice"] == (
-        "charness update available: `0.0.0-dev` -> `v0.1.0`. "
+        f"charness update available: `{CURRENT_VERSION}` -> `v0.1.0`. "
         "Run `charness update`. https://github.com/corca-ai/charness/releases/tag/v0.1.0"
     )
     version_state = json.loads((home_root / ".local" / "share" / "charness" / "version-state.json").read_text(encoding="utf-8"))
     assert version_state["version_provenance"]["invocation_kind"] == "installed-cli"
     assert version_state["latest_release"]["latest_tag"] == "v0.1.0"
-    assert version_state["latest_release"]["current_version"] == "0.0.0-dev"
+    assert version_state["latest_release"]["current_version"] == CURRENT_VERSION
 
 
 def test_installed_cli_can_emit_auto_update_notice(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
@@ -289,7 +362,7 @@ def test_installed_cli_can_emit_auto_update_notice(tmp_path: Path, seeded_manage
         env=env,
     )
     assert doctor_result.returncode == 0, doctor_result.stderr
-    assert "charness update available: `0.0.0-dev` -> `v0.1.0`." in doctor_result.stderr
+    assert f"charness update available: `{CURRENT_VERSION}` -> `v0.1.0`." in doctor_result.stderr
 
 
 def test_doctor_can_write_host_state_snapshot(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
