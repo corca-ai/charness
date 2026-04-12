@@ -560,6 +560,8 @@ def write_claude_wrapper(wrapper_path: Path, plugin_root: Path) -> None:
 
 
 def install_cli_binary(target_path: Path, *, source_path: Path) -> None:
+    if not source_path.is_file():
+        raise CharnessError(f"missing charness entrypoint `{source_path}`")
     target_path.parent.mkdir(parents=True, exist_ok=True)
     source_resolved = source_path.resolve()
     if not target_path.exists() or source_resolved != target_path.resolve():

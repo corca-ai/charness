@@ -303,6 +303,59 @@ def test_doctor_can_write_host_state_snapshot(tmp_path: Path, seeded_managed_hom
     assert isinstance(host_state["last_doctor"]["recorded_at"], str)
 
 
+def test_installed_cli_update_refreshes_the_cli_binary_from_managed_checkout(tmp_path: Path) -> None:
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    source_repo = make_git_repo_copy(source_root)
+    home_root = tmp_path / "home"
+    fake_claude = make_fake_claude(tmp_path)
+    standalone_cli = tmp_path / "bin" / "charness"
+    standalone_cli.parent.mkdir(parents=True, exist_ok=True)
+    standalone_cli.write_text((source_repo / "charness").read_text(encoding="utf-8"), encoding="utf-8")
+    standalone_cli.chmod(0o755)
+
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{fake_claude.parent}:{standalone_cli.parent}:{env.get('PATH', '')}"
+
+    init_result = subprocess.run(
+        ["python3", str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert init_result.returncode == 0, init_result.stderr
+
+    updated_checkout_cli = source_repo / "charness"
+    original_text = updated_checkout_cli.read_text(encoding="utf-8")
+    sentinel = "# update-refresh-sentinel\n"
+    assert sentinel not in original_text
+    updated_checkout_cli.write_text(sentinel + original_text, encoding="utf-8")
+    subprocess.run(["git", "add", "charness"], cwd=source_repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "Update CLI entrypoint"],
+        cwd=source_repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    installed_cli = home_root / ".local" / "bin" / "charness"
+    update_result = subprocess.run(
+        ["python3", str(installed_cli), "update", "--home-root", str(home_root)],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert update_result.returncode == 0, update_result.stderr
+    assert sentinel in installed_cli.read_text(encoding="utf-8")
+    assert sentinel in (home_root / ".agents" / "src" / "charness" / "charness").read_text(encoding="utf-8")
+
+
 def test_non_managed_repo_root_requires_skip_cli_install(tmp_path: Path) -> None:
     home_root = tmp_path / "home"
     fake_claude = make_fake_claude(tmp_path)
