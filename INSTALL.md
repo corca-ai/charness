@@ -50,6 +50,22 @@ Both paths converge on the same contract: `charness init` reuses
 `~/.agents/src/charness` when it already exists. Otherwise it creates that
 managed checkout first, then installs from there.
 
+One-time recovery note for older installs:
+
+- if your installed `~/.local/bin/charness` predates the installed-binary
+  self-refresh fix, `charness update` from PATH may leave the old CLI in place
+- in that case, run the managed checkout binary once:
+
+```bash
+~/.agents/src/charness/charness update
+```
+
+- then retry the PATH binary:
+
+```bash
+charness doctor --write-state
+```
+
 That first run materializes the official managed checkout at
 `~/.agents/src/charness`, exports the host install surfaces, and installs a
 reusable CLI copy at `~/.local/bin/charness`. If `~/.local/bin` is on PATH,

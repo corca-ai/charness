@@ -344,6 +344,16 @@ charness reset
 charness uninstall
 ```
 
+One-time recovery for older installed CLIs:
+
+```bash
+~/.agents/src/charness/charness update
+charness doctor --write-state
+```
+
+Use this when an older installed `~/.local/bin/charness` still lacks newer
+flags after `charness update` from PATH.
+
 Checkout convenience wrapper:
 
 ```bash
