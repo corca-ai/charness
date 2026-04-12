@@ -9,17 +9,23 @@ required_prerequisites:
   - install Python and Node dependencies before running repo quality gates
 preflight_commands:
   - python3 scripts/validate-adapters.py --repo-root .
+  - python3 scripts/validate-public-skill-validation.py --repo-root .
+  - python3 scripts/validate-cautilus-scenarios.py --repo-root .
+held_out_command_templates:
+  - python3 scripts/eval_cautilus_scenarios.py --repo-root . --mode held_out --profile {profile} --baseline-ref {baseline_ref} --samples {held_out_samples} --output-dir skill-outputs/cautilus/held-out
 full_gate_command_templates:
-  - ./scripts/run-quality.sh
+  - python3 scripts/eval_cautilus_scenarios.py --repo-root . --mode full_gate --profile {profile} --baseline-ref {baseline_ref} --samples {full_gate_samples} --output-dir skill-outputs/cautilus/full-gate
 artifact_paths:
-  - docs/master-plan.md
   - docs/public-skill-validation.md
+  - docs/public-skill-validation.json
+  - evals/cautilus/scenarios.json
   - skill-outputs/quality/quality.md
 report_paths:
-  - skill-outputs/quality/quality.md
+  - skill-outputs/cautilus/held-out/summary.json
+  - skill-outputs/cautilus/full-gate/summary.json
 comparison_questions:
-  - Which portability, validation, or packaging guarantees improved or regressed?
+  - Which evaluator-required skill scenario improved or regressed?
 human_review_prompts:
   - id: portability
     prompt: Where would a host repo still find charness brittle or unclear despite green repo-owned gates?
-profile_default: engineering-quality
+profile_default: evaluator-required

@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "profiles": {
+    "evaluator-required": {
+      "description": "Maintained repo-owned eval scenarios that back the evaluator-required public skill set.",
+      "skills": [
+        {
+          "skill_id": "create-skill",
+          "scenario_ids": [
+            "representative-skill-contracts"
+          ]
+        },
+        {
+          "skill_id": "debug",
+          "scenario_ids": [
+            "debug-adapter-bootstrap"
+          ]
+        },
+        {
+          "skill_id": "find-skills",
+          "scenario_ids": [
+            "find-skills-local-first"
+          ]
+        },
+        {
+          "skill_id": "gather",
+          "scenario_ids": [
+            "gather-adapter-bootstrap"
+          ]
+        },
+        {
+          "skill_id": "handoff",
+          "scenario_ids": [
+            "handoff-adapter-bootstrap"
+          ]
+        },
+        {
+          "skill_id": "impl",
+          "scenario_ids": [
+            "impl-adapter-bootstrap"
+          ]
+        },
+        {
+          "skill_id": "init-repo",
+          "scenario_ids": [
+            "init-repo-adapter-bootstrap",
+            "init-repo-inspect-states"
+          ]
+        },
+        {
+          "skill_id": "spec",
+          "scenario_ids": [
+            "representative-skill-contracts"
+          ]
+        }
+      ]
+    }
+  }
+}
