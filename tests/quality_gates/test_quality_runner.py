@@ -91,21 +91,22 @@ def test_record_quality_runtime_rotates_old_monthly_archives(tmp_path: Path) -> 
 
 def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
-    env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown,pytest"
+    env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown,pytest,check-coverage"
     result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
     assert result.returncode == 0, result.stderr
     assert "PASS validate-skills" in result.stdout
     assert "PASS check-markdown" in result.stdout
     assert "PASS pytest" in result.stdout
+    assert "PASS check-coverage" in result.stdout
     assert "validate-profiles" not in result.stdout
     assert "quality success output from validate-skills" not in result.stdout
     assert "quality success output from check-markdown" not in result.stdout
-    assert "Quality summary: 3 passed, 0 failed" in result.stdout
+    assert "Quality summary: 4 passed, 0 failed" in result.stdout
 
 
 def test_run_quality_replays_only_failing_command_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
-    env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown,pytest"
+    env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown,pytest,check-coverage"
     env["QUALITY_FAIL_LABEL"] = "check-markdown"
     result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
     assert result.returncode == 1
@@ -113,12 +114,12 @@ def test_run_quality_replays_only_failing_command_logs(tmp_path: Path, seeded_qu
     assert "--- check-markdown output ---" in result.stdout
     assert "quality failure output from check-markdown" in result.stdout
     assert "quality success output from validate-skills" not in result.stdout
-    assert "Quality summary: 2 passed, 1 failed" in result.stdout
+    assert "Quality summary: 3 passed, 1 failed" in result.stdout
 
 
 def test_run_quality_verbose_replays_success_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
-    env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown,pytest"
+    env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown,pytest,check-coverage"
     env["CHARNESS_QUALITY_VERBOSE"] = "1"
     result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
     assert result.returncode == 0, result.stderr
@@ -126,6 +127,8 @@ def test_run_quality_verbose_replays_success_logs(tmp_path: Path, seeded_quality
     assert "quality success output from validate-skills" in result.stdout
     assert "--- check-markdown output ---" in result.stdout
     assert "quality success output from check-markdown" in result.stdout
+    assert "--- check-coverage output ---" in result.stdout
+    assert "quality success output from check-coverage" in result.stdout
 
 
 def test_install_git_hooks_sets_core_hookspath(tmp_path: Path) -> None:

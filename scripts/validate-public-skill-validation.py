@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -9,7 +10,12 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.public_skill_validation_lib import POLICY_PATH, ValidationError, load_policy, validate_policy
+from scripts.public_skill_validation_lib import (
+    POLICY_PATH,
+    ValidationError,
+    load_policy,
+    validate_policy,
+)
 
 
 def validate_adapter_requirement(repo_root: Path, skill_id: str, *, required: bool) -> None:
