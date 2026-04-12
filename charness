@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 PACKAGE_ID = "charness"
@@ -36,6 +38,10 @@ def default_plugin_root(home_root: Path) -> Path:
 
 def legacy_plugin_root(home_root: Path) -> Path:
     return home_root / ".agents" / "plugins" / PACKAGE_ID
+
+
+def legacy_skills_path(home_root: Path) -> Path:
+    return home_root / ".agents" / "skills"
 
 
 def default_codex_marketplace_path(home_root: Path) -> Path:
@@ -76,6 +82,10 @@ def default_install_state_path(home_root: Path) -> Path:
 
 def default_host_state_path(home_root: Path) -> Path:
     return home_root / ".local" / "share" / PACKAGE_ID / "host-state.json"
+
+
+def default_version_state_path(home_root: Path) -> Path:
+    return home_root / ".local" / "share" / PACKAGE_ID / "version-state.json"
 
 
 def shell_quote(value: str) -> str:
@@ -132,6 +142,66 @@ def packaging_version(path: Path) -> str | None:
     return version if isinstance(version, str) else None
 
 
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def parse_iso_timestamp(value: object) -> datetime | None:
+    if not isinstance(value, str) or not value:
+        return None
+    normalized = value.replace("Z", "+00:00")
+    try:
+        return datetime.fromisoformat(normalized)
+    except ValueError:
+        return None
+
+
+def normalize_version_token(value: object) -> str | None:
+    if not isinstance(value, str):
+        return None
+    normalized = value.strip()
+    if not normalized:
+        return None
+    if normalized.startswith(("v", "V")) and len(normalized) > 1:
+        normalized = normalized[1:]
+    return normalized
+
+
+def bool_env(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def read_version_state(home_root: Path) -> dict[str, object]:
+    path = default_version_state_path(home_root)
+    if not path.is_file():
+        return {"state_version": 1}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {"state_version": 1}
+    if not isinstance(payload, dict):
+        return {"state_version": 1}
+    payload.setdefault("state_version", 1)
+    return payload
+
+
+def write_version_state(
+    home_root: Path,
+    *,
+    provenance: dict[str, object] | None = None,
+    latest_release: dict[str, object] | None = None,
+) -> dict[str, object]:
+    path = default_version_state_path(home_root)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    state = read_version_state(home_root)
+    if provenance is not None:
+        state["version_provenance"] = provenance
+    if latest_release is not None:
+        state["latest_release"] = latest_release
+    path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return state
+
+
 def write_install_state(home_root: Path, *, repo_root: Path, managed_checkout: bool) -> None:
     path = default_install_state_path(home_root)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -176,7 +246,7 @@ def write_host_state(home_root: Path, *, key: str, payload: dict[str, object]) -
     path.parent.mkdir(parents=True, exist_ok=True)
     state = read_host_state(home_root)
     state[key] = {
-        "recorded_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "recorded_at": now_iso(),
         "doctor": payload,
     }
     path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -196,6 +266,226 @@ def default_bootstrap_repo_url(home_root: Path, configured_repo_url: str) -> str
     if (remembered is None or remembered[1] is False) and EMBEDDED_REPO_ROOT is not None and has_source_manifest(EMBEDDED_REPO_ROOT):
         return str(EMBEDDED_REPO_ROOT)
     return configured_repo_url
+
+
+def self_release_repo() -> str:
+    match = re.search(r"github\.com/([^/]+/[^/]+?)(?:\.git)?$", REPO_URL)
+    return match.group(1) if match else "corca-ai/charness"
+
+
+def fixture_release(repo: str) -> dict[str, object] | None:
+    fixture_path = os.environ.get("CHARNESS_RELEASE_PROBE_FIXTURES")
+    if not fixture_path:
+        return None
+    data = json.loads(Path(fixture_path).read_text(encoding="utf-8"))
+    payload = data.get(repo)
+    return payload if isinstance(payload, dict) else None
+
+
+def extract_version(text: object) -> str | None:
+    if not isinstance(text, str):
+        return None
+    match = re.search(r"(?<!\d)\d+(?:\.\d+){1,}(?!\d)", text)
+    return match.group(0) if match else None
+
+
+def normalize_release_payload(repo: str, payload: dict[str, object]) -> dict[str, object]:
+    latest_tag = payload.get("tag_name")
+    html_url = payload.get("html_url")
+    published_at = payload.get("published_at")
+    assets = payload.get("assets", [])
+    asset_names = [
+        asset["name"]
+        for asset in assets
+        if isinstance(asset, dict) and isinstance(asset.get("name"), str)
+    ]
+    release = {
+        "provider": "github",
+        "repo": repo,
+        "status": "ok",
+        "api_url": f"https://api.github.com/repos/{repo}/releases/latest",
+        "html_url": html_url if isinstance(html_url, str) else None,
+        "latest_tag": latest_tag if isinstance(latest_tag, str) else None,
+        "latest_version": extract_version(latest_tag),
+        "published_at": published_at if isinstance(published_at, str) else None,
+        "asset_names": asset_names,
+        "error": None,
+    }
+    if isinstance(payload.get("status"), str):
+        release["status"] = payload["status"]
+    if isinstance(payload.get("error"), str):
+        release["error"] = payload["error"]
+    return release
+
+
+def probe_self_release() -> dict[str, object]:
+    repo = self_release_repo()
+    fixture = fixture_release(repo)
+    if fixture is not None:
+        return normalize_release_payload(repo, fixture)
+
+    request = urllib.request.Request(
+        f"https://api.github.com/repos/{repo}/releases/latest",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "charness-self-update-check",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        status = "no-release" if exc.code == 404 else "error"
+        return {
+            "provider": "github",
+            "repo": repo,
+            "status": status,
+            "api_url": f"https://api.github.com/repos/{repo}/releases/latest",
+            "html_url": None,
+            "latest_tag": None,
+            "latest_version": None,
+            "published_at": None,
+            "asset_names": [],
+            "error": f"http {exc.code}",
+        }
+    except (TimeoutError, urllib.error.URLError, json.JSONDecodeError) as exc:
+        return {
+            "provider": "github",
+            "repo": repo,
+            "status": "error",
+            "api_url": f"https://api.github.com/repos/{repo}/releases/latest",
+            "html_url": None,
+            "latest_tag": None,
+            "latest_version": None,
+            "published_at": None,
+            "asset_names": [],
+            "error": str(exc),
+        }
+    return normalize_release_payload(repo, payload)
+
+
+def build_version_provenance(
+    *,
+    home_root: Path,
+    repo_root: Path,
+    managed_checkout: bool,
+    cli_path: Path,
+) -> dict[str, object]:
+    runtime_path = SCRIPT_PATH.resolve()
+    configured_cli_path = cli_path.resolve()
+    checkout_present = has_source_manifest(repo_root)
+    invocation_kind = "custom-cli"
+    install_method: str | None = None
+
+    if runtime_path == configured_cli_path:
+        invocation_kind = "installed-cli"
+        install_method = "managed-local-cli" if managed_checkout else "custom-cli"
+    elif checkout_present and runtime_path == (repo_root / "charness").resolve():
+        invocation_kind = "source-checkout"
+        install_method = "checkout"
+
+    eligible = bool(
+        invocation_kind == "installed-cli"
+        and managed_checkout
+        and checkout_present
+        and packaging_version(repo_root)
+    )
+
+    return {
+        "checked_at": now_iso(),
+        "repo_root": str(repo_root),
+        "managed_checkout": managed_checkout,
+        "checkout_present": checkout_present,
+        "current_version": packaging_version(repo_root) if checkout_present else None,
+        "current_git_head": git_head(repo_root) if checkout_present else None,
+        "runtime_path": str(runtime_path),
+        "configured_cli_path": str(configured_cli_path),
+        "invocation_kind": invocation_kind,
+        "install_method": install_method,
+        "eligible_for_auto_update_check": eligible,
+    }
+
+
+def latest_release_cache_is_fresh(latest_release: dict[str, object], current_version: str | None) -> bool:
+    checked_at = parse_iso_timestamp(latest_release.get("checked_at"))
+    if checked_at is None:
+        return False
+    if checked_at < datetime.now(timezone.utc) - timedelta(hours=24):
+        return False
+    return normalize_version_token(latest_release.get("current_version")) == normalize_version_token(current_version)
+
+
+def compute_update_available(current_version: str | None, latest_version: object) -> bool | None:
+    current = normalize_version_token(current_version)
+    latest = normalize_version_token(latest_version)
+    if current is None or latest is None:
+        return None
+    return current != latest
+
+
+def refresh_self_release_state(
+    *,
+    home_root: Path,
+    current_version: str | None,
+) -> dict[str, object]:
+    latest_release = probe_self_release()
+    latest_release["checked_at"] = now_iso()
+    latest_release["current_version"] = current_version
+    latest_release["update_available"] = compute_update_available(current_version, latest_release.get("latest_version"))
+    return write_version_state(home_root, latest_release=latest_release)
+
+
+def build_self_update_notice(latest_release: object) -> str | None:
+    if not isinstance(latest_release, dict):
+        return None
+    if latest_release.get("status") != "ok" or latest_release.get("update_available") is not True:
+        return None
+    current_version = latest_release.get("current_version") or "unknown"
+    latest = latest_release.get("latest_tag") or latest_release.get("latest_version")
+    if not isinstance(latest, str) or not latest:
+        return None
+    url = latest_release.get("html_url")
+    suffix = f" {url}" if isinstance(url, str) and url else ""
+    return f"charness update available: `{current_version}` -> `{latest}`. Run `charness update`.{suffix}"
+
+
+def should_auto_refresh_self_release(args: argparse.Namespace, provenance: dict[str, object]) -> bool:
+    if provenance.get("eligible_for_auto_update_check") is not True:
+        return False
+    if bool_env("CHARNESS_NO_UPDATE_CHECK"):
+        return False
+    if bool_env("CI"):
+        return False
+    if getattr(args, "json", False):
+        return False
+    if getattr(args, "command", None) == "version" and getattr(args, "check", False):
+        return False
+    if bool_env("CHARNESS_FORCE_UPDATE_CHECK"):
+        return True
+    return sys.stdout.isatty() and sys.stderr.isatty()
+
+
+def maybe_record_self_version_state(args: argparse.Namespace) -> None:
+    home_root = getattr(args, "home_root", default_home_root()).resolve()
+    repo_root, managed_checkout = resolve_repo_root(home_root, getattr(args, "repo_root", None))
+    cli_arg = getattr(args, "cli_path", None)
+    cli_path = cli_arg.resolve() if isinstance(cli_arg, Path) else default_cli_path(home_root)
+    provenance = build_version_provenance(
+        home_root=home_root,
+        repo_root=repo_root,
+        managed_checkout=managed_checkout,
+        cli_path=cli_path,
+    )
+    state = write_version_state(home_root, provenance=provenance)
+    latest_release = state.get("latest_release")
+    current_version = provenance.get("current_version")
+    if should_auto_refresh_self_release(args, provenance):
+        if not isinstance(latest_release, dict) or not latest_release_cache_is_fresh(latest_release, current_version):
+            state = refresh_self_release_state(home_root=home_root, current_version=current_version if isinstance(current_version, str) else None)
+            latest_release = state.get("latest_release")
+        notice = build_self_update_notice(latest_release)
+        if notice:
+            print(notice, file=sys.stderr)
 
 
 def enforce_managed_cli_contract(
@@ -682,6 +972,11 @@ def install_surface(
     old_plugin_root = legacy_plugin_root(home_root)
     if old_plugin_root != plugin_root and old_plugin_root.exists():
         shutil.rmtree(old_plugin_root)
+    removed_legacy_skills_symlink = False
+    old_skills_path = legacy_skills_path(home_root)
+    if old_skills_path.is_symlink():
+        old_skills_path.unlink()
+        removed_legacy_skills_symlink = True
     invoke_repo_script(repo_root, "scripts/validate-packaging.py", "--repo-root", str(repo_root))
     invoke_repo_script(repo_root, "scripts/sync_root_plugin_manifests.py", "--repo-root", str(repo_root))
     install_output = invoke_repo_script(
@@ -698,6 +993,8 @@ def install_surface(
     )
     payload = json.loads(install_output)
     completed_actions = ["codex_source_prepared", "codex_marketplace_registered"]
+    if removed_legacy_skills_symlink:
+        completed_actions.append("legacy_skills_symlink_removed")
     if cli_path is not None:
         install_cli_binary(cli_path)
         payload["cli_path"] = str(cli_path)
@@ -719,6 +1016,7 @@ def install_surface(
     payload["completed_actions"] = completed_actions
     payload["next_steps"]["claude"] = claude_plugin_message
     payload["claude_marketplace_message"] = claude_marketplace_message
+    payload["removed_legacy_skills_symlink"] = removed_legacy_skills_symlink
     return payload
 
 
@@ -733,19 +1031,31 @@ def build_doctor_payload(
     claude_wrapper_path: Path,
 ) -> dict[str, object]:
     source_manifest_present = has_source_manifest(repo_root)
+    version_provenance = build_version_provenance(
+        home_root=home_root,
+        repo_root=repo_root,
+        managed_checkout=managed_checkout,
+        cli_path=cli_path,
+    )
+    version_state = read_version_state(home_root)
     payload: dict[str, object] = {
         "package_id": PACKAGE_ID,
         "repo_root": str(repo_root),
         "managed_checkout": managed_checkout,
         "install_state_path": str(default_install_state_path(home_root)),
         "host_state_path": str(default_host_state_path(home_root)),
+        "version_state_path": str(default_version_state_path(home_root)),
         "checkout_present": source_manifest_present,
         "checkout_git_head": git_head(repo_root) if source_manifest_present else None,
         "checkout_version": packaging_version(repo_root) if source_manifest_present else None,
+        "version_provenance": version_provenance,
+        "latest_release_check": version_state.get("latest_release"),
         "plugin_root": str(plugin_root),
         "plugin_root_present": plugin_root.is_dir(),
         "legacy_plugin_root": str(legacy_plugin_root(home_root)),
         "legacy_plugin_root_present": legacy_plugin_root(home_root).is_dir(),
+        "legacy_skills_path": str(legacy_skills_path(home_root)),
+        "legacy_skills_symlink_present": legacy_skills_path(home_root).is_symlink(),
         "codex_marketplace_path": str(codex_marketplace_path),
         "codex_marketplace_entry": codex_marketplace_entry(codex_marketplace_path),
         "codex_source_manifest_path": str(codex_source_manifest_path(plugin_root)),
@@ -833,11 +1143,28 @@ def print_human_summary(payload: dict[str, object]) -> None:
         print(f"VERSION: {payload['checkout_version']}")
     if payload.get("checkout_git_head"):
         print(f"GIT_HEAD: {payload['checkout_git_head']}")
+    version_provenance = payload.get("version_provenance")
+    if isinstance(version_provenance, dict):
+        print(
+            "VERSION_PROVENANCE: "
+            f"{version_provenance.get('invocation_kind')} "
+            f"{version_provenance.get('install_method') or ''}".rstrip()
+        )
+    latest_release = payload.get("latest_release_check")
+    if isinstance(latest_release, dict):
+        latest_tag = latest_release.get("latest_tag") or latest_release.get("latest_version")
+        latest_status = latest_release.get("status")
+        if latest_tag:
+            print(f"LATEST_RELEASE: {latest_status} {latest_tag}")
+        else:
+            print(f"LATEST_RELEASE: {latest_status}")
     print(f"PLUGIN_ROOT: {'present' if payload['plugin_root_present'] else 'missing'} {payload['plugin_root']}")
     if payload.get("codex_source_version"):
         print(f"CODEX_SOURCE_VERSION: {payload['codex_source_version']}")
     if payload.get("legacy_plugin_root_present"):
         print(f"LEGACY_PLUGIN_ROOT: present {payload['legacy_plugin_root']}")
+    if payload.get("legacy_skills_symlink_present"):
+        print(f"LEGACY_SKILLS_SYMLINK: present {payload['legacy_skills_path']}")
     entry = payload.get("codex_marketplace_entry")
     if isinstance(entry, dict):
         source = entry.get("source", {})
@@ -898,6 +1225,60 @@ def print_human_summary(payload: dict[str, object]) -> None:
     claude_guidance = payload.get("claude_host_guidance")
     if isinstance(claude_guidance, dict) and isinstance(claude_guidance.get("message"), str):
         print(f"CLAUDE_NEXT_STEP: {claude_guidance['message']}")
+
+
+def build_version_payload(
+    *,
+    home_root: Path,
+    repo_root: Path,
+    managed_checkout: bool,
+    cli_path: Path,
+    check: bool,
+) -> dict[str, object]:
+    provenance = build_version_provenance(
+        home_root=home_root,
+        repo_root=repo_root,
+        managed_checkout=managed_checkout,
+        cli_path=cli_path,
+    )
+    state = write_version_state(home_root, provenance=provenance)
+    if check:
+        state = refresh_self_release_state(
+            home_root=home_root,
+            current_version=provenance.get("current_version") if isinstance(provenance.get("current_version"), str) else None,
+        )
+    latest_release = state.get("latest_release")
+    payload = {
+        "package_id": PACKAGE_ID,
+        "current_version": provenance.get("current_version"),
+        "current_git_head": provenance.get("current_git_head"),
+        "repo_root": str(repo_root),
+        "managed_checkout": managed_checkout,
+        "version_state_path": str(default_version_state_path(home_root)),
+        "version_provenance": provenance,
+        "latest_release_check": latest_release,
+        "update_notice": build_self_update_notice(latest_release),
+    }
+    return payload
+
+
+def print_version_summary(payload: dict[str, object]) -> None:
+    print(f"VERSION: {payload.get('current_version') or 'unknown'}")
+    if payload.get("current_git_head"):
+        print(f"GIT_HEAD: {payload['current_git_head']}")
+    provenance = payload.get("version_provenance")
+    if isinstance(provenance, dict):
+        print(f"INVOCATION: {provenance.get('invocation_kind')}")
+        print(f"INSTALL_METHOD: {provenance.get('install_method') or 'unknown'}")
+        print(f"REPO_ROOT: {provenance.get('repo_root')}")
+    latest_release = payload.get("latest_release_check")
+    if isinstance(latest_release, dict):
+        latest_tag = latest_release.get("latest_tag") or latest_release.get("latest_version") or "unknown"
+        print(f"LATEST_RELEASE: {latest_release.get('status')} {latest_tag}".rstrip())
+        if latest_release.get("checked_at"):
+            print(f"LATEST_RELEASE_CHECKED_AT: {latest_release['checked_at']}")
+        if latest_release.get("update_available") is True:
+            print(f"NEXT: {payload.get('update_notice')}")
 
 
 def resolve_runtime_paths(args: argparse.Namespace) -> tuple[Path, Path, Path, Path]:
@@ -1139,6 +1520,15 @@ def cmd_init(args: argparse.Namespace) -> int:
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
     if managed_checkout:
         write_install_state(home_root, repo_root=Path(checkout["repo_root"]), managed_checkout=True)
+    write_version_state(
+        home_root,
+        provenance=build_version_provenance(
+            home_root=home_root,
+            repo_root=Path(checkout["repo_root"]),
+            managed_checkout=managed_checkout,
+            cli_path=cli_path,
+        ),
+    )
     write_host_state(home_root, key="last_init", payload=doctor_payload)
     payload["checkout"] = checkout
     print(json.dumps(payload, ensure_ascii=False, indent=2))
@@ -1187,6 +1577,15 @@ def cmd_update(args: argparse.Namespace) -> int:
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
     if managed_checkout:
         write_install_state(home_root, repo_root=Path(checkout["repo_root"]), managed_checkout=True)
+    write_version_state(
+        home_root,
+        provenance=build_version_provenance(
+            home_root=home_root,
+            repo_root=Path(checkout["repo_root"]),
+            managed_checkout=managed_checkout,
+            cli_path=cli_path,
+        ),
+    )
     write_host_state(home_root, key="last_update", payload=doctor_payload)
     payload["checkout"] = checkout
     print(json.dumps(payload, ensure_ascii=False, indent=2))
@@ -1215,6 +1614,26 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_version(args: argparse.Namespace) -> int:
+    home_root = args.home_root.resolve()
+    repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    cli_path = args.cli_path.resolve() if args.cli_path else default_cli_path(home_root)
+    payload = build_version_payload(
+        home_root=home_root,
+        repo_root=repo_root,
+        managed_checkout=managed_checkout,
+        cli_path=cli_path,
+        check=args.check,
+    )
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    elif args.verbose or args.check:
+        print_version_summary(payload)
+    else:
+        print(payload.get("current_version") or "unknown")
+    return 0
+
+
 def cmd_uninstall(args: argparse.Namespace) -> int:
     home_root = args.home_root.resolve()
     repo_root, _managed_checkout = resolve_repo_root(home_root, args.repo_root)
@@ -1223,6 +1642,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     removed_marketplace = remove_codex_marketplace_entry(codex_marketplace_path)
     removed_plugin_root = False
     removed_legacy_plugin_root = False
+    removed_legacy_skills_symlink = False
     removed_codex_cache = False
     removed_codex_config_entries: list[str] = []
     removed_claude_plugin = False
@@ -1237,6 +1657,10 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
     if old_plugin_root != plugin_root and old_plugin_root.exists():
         shutil.rmtree(old_plugin_root)
         removed_legacy_plugin_root = True
+    old_skills_path = legacy_skills_path(home_root)
+    if old_skills_path.is_symlink():
+        old_skills_path.unlink()
+        removed_legacy_skills_symlink = True
     codex_cache_path = default_codex_cache_root(home_root) / PACKAGE_ID
     if codex_cache_path.exists():
         shutil.rmtree(codex_cache_path)
@@ -1265,6 +1689,7 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
         "removed_codex_marketplace_entry": removed_marketplace,
         "removed_plugin_root": removed_plugin_root,
         "removed_legacy_plugin_root": removed_legacy_plugin_root,
+        "removed_legacy_skills_symlink": removed_legacy_skills_symlink,
         "removed_codex_cache": removed_codex_cache,
         "removed_codex_config_entries": removed_codex_config_entries,
         "removed_claude_plugin": removed_claude_plugin,
@@ -1534,6 +1959,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     doctor_parser.set_defaults(func=cmd_doctor)
 
+    version_parser = subparsers.add_parser("version", help="Report the current charness version and recorded install provenance.")
+    version_parser.add_argument("--home-root", type=Path, default=default_home_root())
+    version_parser.add_argument("--repo-root", type=Path, help="Inspect an explicit source checkout instead of the managed default checkout.")
+    version_parser.add_argument("--cli-path", type=Path)
+    version_parser.add_argument("--json", action="store_true")
+    version_parser.add_argument("--verbose", action="store_true")
+    version_parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Refresh the cached latest-release check now instead of only showing recorded state.",
+    )
+    version_parser.set_defaults(func=cmd_version)
+
     uninstall_parser = subparsers.add_parser("uninstall", help="Remove the managed local install surface.")
     uninstall_parser.add_argument("--home-root", type=Path, default=default_home_root())
     uninstall_parser.add_argument("--repo-root", type=Path, help="Use an explicit checkout path when `--delete-checkout` is set.")
@@ -1643,6 +2081,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
+    maybe_record_self_version_state(args)
     return args.func(args)
 
 

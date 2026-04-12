@@ -79,6 +79,12 @@ def make_release_fixture(tmp_path: Path) -> Path:
     fixture.write_text(
         json.dumps(
             {
+                "corca-ai/charness": {
+                    "tag_name": "v0.1.0",
+                    "html_url": "https://github.com/corca-ai/charness/releases/tag/v0.1.0",
+                    "published_at": "2026-04-12T00:00:00Z",
+                    "assets": [{"name": "charness"}],
+                },
                 "corca-ai/cautilus": {
                     "tag_name": "v1.2.3",
                     "html_url": "https://github.com/corca-ai/cautilus/releases/tag/v1.2.3",
@@ -119,6 +125,7 @@ def rewrite_seeded_home_paths(home_root: Path, *, old_home_root: Path) -> None:
     text_paths = (
         home_root / ".local" / "share" / "charness" / "install-state.json",
         home_root / ".local" / "share" / "charness" / "host-state.json",
+        home_root / ".local" / "share" / "charness" / "version-state.json",
         home_root / ".claude" / "plugins" / "known_marketplaces.json",
         home_root / ".claude" / "plugins" / "installed_plugins.json",
         home_root / ".local" / "bin" / "claude-charness",

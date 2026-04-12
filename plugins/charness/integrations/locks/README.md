@@ -2,7 +2,7 @@
 
 `integrations/locks/*.json` is generated state.
 
-Source policy still lives in [integrations/tools](/home/ubuntu/charness/integrations/tools).
+Source policy still lives in [integrations/tools](../tools).
 
 ## Purpose
 

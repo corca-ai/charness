@@ -14,6 +14,7 @@ Examples:
 - JSON output from `doctor`
 - lock files that record install/update/support results
 - generated references or wrappers under a predictable directory
+- user-scoped version provenance plus last successful update-check metadata
 
 Manual-only flows still need structured state.
 

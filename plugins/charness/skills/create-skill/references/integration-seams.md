@@ -12,10 +12,10 @@ fallback.
 - an upstream repo owns the support skill
 - the host needs detect, healthcheck, update, or degradation rules
 
-The canonical contract is [manifest.schema.json](/home/ubuntu/charness/integrations/tools/manifest.schema.json).
+The canonical contract is [manifest.schema.json](../../../../integrations/tools/manifest.schema.json).
 
 When `charness` owns the runtime itself, the canonical metadata contract is
-[capability.schema.json](/home/ubuntu/charness/skills/support/capability.schema.json)
+[capability.schema.json](../../../support/capability.schema.json)
 and the file should live next to the support skill as
 `skills/support/<skill-id>/capability.json`.
 

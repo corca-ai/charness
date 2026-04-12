@@ -10,7 +10,7 @@ individual public skills à la carte.
 
 ## Guardrails
 
-- treat [packaging/charness.json](/home/ubuntu/charness/packaging/charness.json)
+- treat [packaging/charness.json](packaging/charness.json)
   as the source of truth
 - treat checked-in plugin manifests and compatibility marketplace files as
   derived artifacts
@@ -105,6 +105,12 @@ Recommended verification steps:
    `~/.local/share/charness/host-state.json`.
 4. If the behavior is ambiguous, record the exact host output and treat that as
    a proof gap to close, not as silent success.
+
+Optional version inspection:
+
+- `charness version` keeps the shell-friendly current version path
+- `charness version --verbose` shows recorded provenance and cached latest-release state
+- `charness version --check` refreshes the latest-release cache explicitly
 
 ## Step 4: Update Model
 

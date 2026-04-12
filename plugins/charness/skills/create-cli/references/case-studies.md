@@ -27,6 +27,11 @@ Use nearby repos and tools as comparison points, not as cargo-cult templates.
 - release-first distribution with one checked-in `install.sh`
 - installer is intentionally scoped to the product itself, not OS dependency
   managers
+- version provenance and latest-release cache are a product-owned runtime
+  contract, not installer-only trivia
+- automatic update checks are scoped to interactive standalone-binary usage,
+  with a 24 hour TTL and explicit skip conditions for CI and non-interactive
+  runs
 - future Homebrew support is deferred until the artifact/runtime surface settles
 
 Design takeaway:

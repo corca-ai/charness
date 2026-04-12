@@ -109,7 +109,7 @@ def scenario_gather_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="gather", adapter_name="gather-adapter.yaml", expected_artifact_path="skill-outputs/gather/gather.md")
 def scenario_init_repo_inspect_states(root: Path) -> None:
     run_init_repo_inspect_states(root, run_command=run_command, expect_success=expect_success, error_type=EvalError)
-def scenario_handoff_absolute_links(root: Path) -> None:
+def scenario_handoff_relative_links(root: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="charness-eval-handoff-") as tmpdir:
         tmp = Path(tmpdir)
         (tmp / "docs").mkdir(parents=True)
@@ -119,14 +119,14 @@ def scenario_handoff_absolute_links(root: Path) -> None:
                 [
                     "# Demo Handoff",
                     "",
-                    f"[root]({tmp / 'README.md'})",
+                    "[root](../README.md)",
                     "",
                 ]
             ),
             encoding="utf-8",
         )
         result = run_command(["python3", "scripts/check-doc-links.py", "--repo-root", str(tmp)], cwd=root)
-        expect_success(result, "handoff absolute-link portability")
+        expect_success(result, "handoff relative-link portability")
 def seed_find_skills_fixture(tmp: Path) -> None:
     local_skill_dir = tmp / "skills" / "public" / "local-demo"
     trusted_skill_dir = tmp / "vendor" / "trusted-skills" / "trusted-demo"
@@ -253,7 +253,7 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "handoff-adapter-bootstrap": scenario_handoff_adapter_bootstrap,
         "gather-adapter-bootstrap": scenario_gather_adapter_bootstrap,
         "init-repo-inspect-states": scenario_init_repo_inspect_states,
-        "handoff-absolute-links": scenario_handoff_absolute_links,
+        "handoff-relative-links": scenario_handoff_relative_links,
         "find-skills-local-first": scenario_find_skills_local_first,
         "support-sync-contracts": scenario_support_sync_contracts,
         "representative-skill-contracts": scenario_representative_skill_contracts,

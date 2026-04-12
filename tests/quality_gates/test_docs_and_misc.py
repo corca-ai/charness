@@ -114,13 +114,27 @@ def test_release_bump_version_updates_manifest_and_runs_sync(tmp_path: Path) -> 
     assert (repo / "sync-version.txt").read_text(encoding="utf-8").strip() == "0.0.1"
 
 
-def test_check_doc_links_rejects_foreign_absolute_path(tmp_path: Path) -> None:
+def test_check_doc_links_rejects_absolute_path(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "README.md").write_text("[bad](/tmp/not-in-repo.md)\n", encoding="utf-8")
     result = run_script("scripts/check-doc-links.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "foreign absolute link" in result.stderr
+    assert "absolute link" in result.stderr
+
+
+def test_check_doc_links_rejects_repo_local_absolute_path(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs_dir = repo / "docs"
+    docs_dir.mkdir(parents=True)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (docs_dir / "handoff.md").write_text(
+        f"[root]({repo / 'README.md'})\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/check-doc-links.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "absolute link" in result.stderr
 
 
 def test_check_doc_links_rejects_bare_internal_markdown_reference(tmp_path: Path) -> None:

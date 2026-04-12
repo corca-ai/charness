@@ -31,6 +31,18 @@ Homebrew note:
 Use the same install method for updates unless the product owns a safer
 self-update path.
 
+Version provenance note:
+
+- when update guidance depends on how the tool was installed, persist current
+  version and install provenance in user-scoped state
+- if the runtime probes for newer releases automatically, keep that check
+  interactive-only, cached, non-fatal, and opt-out
+- a 24 hour TTL is a strong default for latest-release cache reuse
+- skip automatic checks in CI, non-TTY runs, obvious source-checkout paths, and
+  other contexts where the operator did not ask for networked advice
+- when provenance is unknown, degrade to honest manual guidance instead of
+  guessing `brew`, `npm`, release-installer, or package-manager commands
+
 Release-first note:
 
 - A release-first contract can be more honest than a Homebrew-first contract
