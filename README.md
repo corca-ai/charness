@@ -229,6 +229,17 @@ It stays read-only:
 - no project mutation
 - no host-specific routing or telemetry prompts
 
+The installed standalone CLI can still keep lightweight operator-facing version
+state under `~/.local/share/charness/version-state.json`.
+
+- it records current version provenance
+- it can show the cached latest-release result via `charness version --verbose`
+- `charness version --check` refreshes that cache explicitly
+- ordinary interactive installed-CLI runs may reuse a 24 hour cached
+  latest-release probe to print a non-fatal `charness update` notice
+- CI, non-interactive runs, source-checkout runs, and
+  `CHARNESS_NO_UPDATE_CHECK=1` skip that automatic probe
+
 ## Install And Update
 
 The install contract should be usable by both humans and agents. The commands

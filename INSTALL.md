@@ -97,6 +97,12 @@ Recommended verification steps:
 4. If the behavior is ambiguous, record the exact host output and treat that as
    a proof gap to close, not as silent success.
 
+Optional version inspection:
+
+- `charness version` keeps the shell-friendly current version path
+- `charness version --verbose` shows recorded provenance and cached latest-release state
+- `charness version --check` refreshes the latest-release cache explicitly
+
 ## Step 4: Update Model
 
 - run `charness update`
