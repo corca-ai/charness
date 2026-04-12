@@ -10,7 +10,7 @@ individual public skills à la carte.
 
 ## Guardrails
 
-- treat [packaging/charness.json](/home/ubuntu/charness/packaging/charness.json)
+- treat [packaging/charness.json](packaging/charness.json)
   as the source of truth
 - treat checked-in plugin manifests and compatibility marketplace files as
   derived artifacts

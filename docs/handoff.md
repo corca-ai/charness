@@ -2,7 +2,7 @@
 
 ## Workflow Trigger
 
-- 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [charness](/home/ubuntu/charness/charness), [INSTALL.md](/home/ubuntu/charness/INSTALL.md), [UNINSTALL.md](/home/ubuntu/charness/UNINSTALL.md), [README.md](/home/ubuntu/charness/README.md), [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md), [docs/operator-acceptance.md](/home/ubuntu/charness/docs/operator-acceptance.md), [docs/public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md), [skills/public/init-repo/SKILL.md](/home/ubuntu/charness/skills/public/init-repo/SKILL.md), [skills/public/release/SKILL.md](/home/ubuntu/charness/skills/public/release/SKILL.md)을 읽고 Codex post-install update behavior proof를 먼저 본다.
+- 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [charness](../charness), [INSTALL.md](../INSTALL.md), [UNINSTALL.md](../UNINSTALL.md), [README.md](../README.md), [docs/host-packaging.md](host-packaging.md), [docs/operator-acceptance.md](operator-acceptance.md), [docs/public-skill-validation.md](public-skill-validation.md), [skills/public/init-repo/SKILL.md](../skills/public/init-repo/SKILL.md), [skills/public/release/SKILL.md](../skills/public/release/SKILL.md)을 읽고 Codex post-install update behavior proof를 먼저 본다.
 - 이 머신의 `~/.agents/skills` source-checkout symlink는 2026-04-12에 다시 확인했을 때 실제로 남아 있었고, 이후 다시 제거했다. 이제 `charness init/update/reset/uninstall`가 symlink일 때 자동 제거하므로 다음 세션에서는 재발 여부만 짧게 확인하면 된다.
 - `~/.local/share/charness/host-state.json`이 있으면 `last_update` 또는 `last_doctor` snapshot부터 보고, interactive Codex restart 전후 차이를 proof source로 쓴다.
 - Claude local proof는 끝났다. historical proof path는 `--plugin-dir /absolute/path/to/charness/plugins/charness`였고, parent `plugins/`를 주면 skill discovery proof가 되지 않았다. 이제 primary Claude path는 `charness init`가 marketplace add/install을 수행하는 global install이다.
@@ -20,8 +20,8 @@
 - `master-plan`은 더 이상 기본 운영 표면이 아니다. 기존 `docs/master-plan.md` 파일은 제거했고, planning 문서는 필요할 때만 명시적으로 만들며 기본 경로에서는 `docs/operator-acceptance.md`와 선택적 `docs/roadmap.md`를 본다.
 - 이 머신의 `~/.agents/skills` source-checkout symlink는 2026-04-12에 다시 제거했고, charness CLI도 같은 잔재를 자동 정리하도록 보강했다.
 - Claude local dogfood는 exported plugin root 기준으로 확인됐다. `claude --plugin-dir /tmp/.../plugins/charness` debug log에서 `Loaded 14 skills from plugin charness`가 찍혔고, `/gather` 호출로 `TITLE:charness` 응답까지 확인했다.
-- root executable [charness](/home/ubuntu/charness/charness)를 추가했다. `init`, `update`, `doctor`, `reset`, `uninstall`를 제공하고, checkout 기반 bootstrap일 때 `~/.local/bin/charness`에 자기 자신을 설치한다.
-- root bootstrap script [init.sh](/home/ubuntu/charness/init.sh)를 추가했다. 공식 first-run entrypoint는 이제 `./init.sh`이고, 이 스크립트가 managed checkout `~/.agents/src/charness`를 만들거나 재사용한 뒤 `charness init`를 호출한다.
+- root executable [charness](../charness)를 추가했다. `init`, `update`, `doctor`, `reset`, `uninstall`를 제공하고, checkout 기반 bootstrap일 때 `~/.local/bin/charness`에 자기 자신을 설치한다.
+- root bootstrap script [init.sh](../init.sh)를 추가했다. 공식 first-run entrypoint는 이제 `./init.sh`이고, 이 스크립트가 managed checkout `~/.agents/src/charness`를 만들거나 재사용한 뒤 `charness init`를 호출한다.
 - `./charness init`는 managed install surface를 만든다: `~/.codex/plugins/charness`, `~/.agents/plugins/marketplace.json`, `~/.local/bin/charness`, optional `~/.local/bin/claude-charness`, plus Claude user-scope marketplace/plugin install.
 - official installed CLI source는 이제 managed checkout `~/.agents/src/charness`만 허용한다. repo 밖에서 쓰는 `charness`는 `~/.local/share/charness/install-state.json`을 통해 그 managed checkout을 기억한다. non-managed `--repo-root`는 proof/development path로만 남고 `--skip-cli-install`이 필요하다.
 - `charness tool doctor|install|update|sync-support`가 추가됐다. external integration lifecycle는 thin CLI에서 직접 호출할 수 있고, 결과는 `integrations/locks/*.json`과 `skills/support/generated/`에 agent-readable state로 남는다.
@@ -63,20 +63,20 @@
 
 ## References
 
-- [docs/handoff.md](/home/ubuntu/charness/docs/handoff.md)
-- [AGENTS.md](/home/ubuntu/charness/AGENTS.md)
-- [README.md](/home/ubuntu/charness/README.md)
-- [INSTALL.md](/home/ubuntu/charness/INSTALL.md)
-- [UNINSTALL.md](/home/ubuntu/charness/UNINSTALL.md)
-- [charness](/home/ubuntu/charness/charness)
-- [docs/public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)
-- [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md)
-- [docs/operator-acceptance.md](/home/ubuntu/charness/docs/operator-acceptance.md)
-- [packaging/charness.json](/home/ubuntu/charness/packaging/charness.json)
-- [plugins/charness/.claude-plugin/plugin.json](/home/ubuntu/charness/plugins/charness/.claude-plugin/plugin.json)
-- [plugins/charness/.codex-plugin/plugin.json](/home/ubuntu/charness/plugins/charness/.codex-plugin/plugin.json)
-- [.claude-plugin/marketplace.json](/home/ubuntu/charness/.claude-plugin/marketplace.json)
-- [.agents/plugins/marketplace.json](/home/ubuntu/charness/.agents/plugins/marketplace.json)
-- [skills/public/init-repo/SKILL.md](/home/ubuntu/charness/skills/public/init-repo/SKILL.md)
-- [skills/public/release/SKILL.md](/home/ubuntu/charness/skills/public/release/SKILL.md)
-- [skills/public/narrative/SKILL.md](/home/ubuntu/charness/skills/public/narrative/SKILL.md)
+- [docs/handoff.md](handoff.md)
+- [AGENTS.md](../AGENTS.md)
+- [README.md](../README.md)
+- [INSTALL.md](../INSTALL.md)
+- [UNINSTALL.md](../UNINSTALL.md)
+- [charness](../charness)
+- [docs/public-skill-validation.md](public-skill-validation.md)
+- [docs/host-packaging.md](host-packaging.md)
+- [docs/operator-acceptance.md](operator-acceptance.md)
+- [packaging/charness.json](../packaging/charness.json)
+- [plugins/charness/.claude-plugin/plugin.json](../plugins/charness/.claude-plugin/plugin.json)
+- [plugins/charness/.codex-plugin/plugin.json](../plugins/charness/.codex-plugin/plugin.json)
+- [.claude-plugin/marketplace.json](../.claude-plugin/marketplace.json)
+- [.agents/plugins/marketplace.json](../.agents/plugins/marketplace.json)
+- [skills/public/init-repo/SKILL.md](../skills/public/init-repo/SKILL.md)
+- [skills/public/release/SKILL.md](../skills/public/release/SKILL.md)
+- [skills/public/narrative/SKILL.md](../skills/public/narrative/SKILL.md)

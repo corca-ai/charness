@@ -78,14 +78,7 @@ def validate_link(root: Path, doc: Path, raw_target: str) -> None:
         return
 
     if target.startswith("/"):
-        path = Path(target)
-        try:
-            path.relative_to(root)
-        except ValueError as exc:
-            raise ValidationError(f"{doc}: foreign absolute link `{target}`") from exc
-        if not path.exists():
-            raise ValidationError(f"{doc}: broken absolute link `{target}`")
-        return
+        raise ValidationError(f"{doc}: absolute link `{target}`; use relative links")
 
     relative_target = target.split("#", 1)[0]
     candidate = (doc.parent / relative_target).resolve()

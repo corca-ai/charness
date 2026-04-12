@@ -44,6 +44,8 @@ steps call tools outside the baseline shell surface.
    - `doctor` stays read-only
    - install and update commands must say what they changed
    - partial manual steps should still leave machine-readable breadcrumbs
+   - when upgrade guidance depends on install channel, persist version
+     provenance and define when cached latest-version checks may run
 4. Pick the smallest honest distribution contract.
    - single checked-in entrypoint when possible
    - one canonical bootstrap script if first install is otherwise awkward
@@ -69,11 +71,16 @@ steps call tools outside the baseline shell surface.
 - Do not add a framework dependency just to avoid writing small parser glue.
 - Do not split install methods across multiple equally-primary paths unless the
   product truly supports them.
+- Do not run automatic update checks in CI or other non-interactive paths by
+  default.
+- Do not guess upgrade commands when the runtime has not recorded install
+  provenance honestly.
 
 ## References
 
 - `references/command-surface.md`
 - `references/install-update.md`
+- `references/version-provenance.md`
 - `references/machine-readable-state.md`
 - `references/code-shape.md`
 - `references/quality-gates.md`

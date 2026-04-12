@@ -15,10 +15,10 @@ layouts.
 
 ## Source Of Truth
 
-- source policy: [packaging/charness.json](/home/ubuntu/charness/packaging/charness.json)
-- source schema: [packaging/plugin.schema.json](/home/ubuntu/charness/packaging/plugin.schema.json)
-- validation entrypoint: [scripts/validate-packaging.py](/home/ubuntu/charness/scripts/validate-packaging.py)
-- export entrypoint: [scripts/export-plugin.py](/home/ubuntu/charness/scripts/export-plugin.py)
+- source policy: [packaging/charness.json](../packaging/charness.json)
+- source schema: [packaging/plugin.schema.json](../packaging/plugin.schema.json)
+- validation entrypoint: [scripts/validate-packaging.py](../scripts/validate-packaging.py)
+- export entrypoint: [scripts/export-plugin.py](../scripts/export-plugin.py)
 
 The shared packaging manifest is authoritative for:
 
@@ -168,7 +168,7 @@ Operationally this means:
 
 Instead, hosts may render a thin startup advisory from:
 
-- [scripts/plugin_preamble.py](/home/ubuntu/charness/scripts/plugin_preamble.py)
+- [scripts/plugin_preamble.py](../scripts/plugin_preamble.py)
 
 Current v1 output is intentionally read-only:
 

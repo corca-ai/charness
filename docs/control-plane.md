@@ -15,9 +15,9 @@ support-owned runtime capability metadata, and upstream support-skill reuse in
 ## Source Of Truth
 
 - external source policy: `integrations/tools/*.json`
-- external source schema: [manifest.schema.json](/home/ubuntu/charness/integrations/tools/manifest.schema.json)
+- external source schema: [manifest.schema.json](../integrations/tools/manifest.schema.json)
 - support capability source policy: `skills/support/*/capability.json`
-- support capability schema: [capability.schema.json](/home/ubuntu/charness/skills/support/capability.schema.json)
+- support capability schema: [capability.schema.json](../skills/support/capability.schema.json)
 - generated live state: `integrations/locks/*.json`
 - generated wrapper or synced support skills: `skills/support/generated/`
 

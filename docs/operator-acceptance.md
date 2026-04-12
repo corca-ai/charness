@@ -8,7 +8,7 @@ an agent to discover the whole repo state again.
 
 ## Shared Start
 
-Run these first in `/home/ubuntu/charness`:
+Run these first at the repo root:
 
 ```bash
 git status --short
@@ -31,14 +31,14 @@ sed -n '1,220p' docs/public-skill-validation.md
 Why this exists:
 
 - A deferred product-boundary backlog existed in `docs/handoff.md` `Discuss`.
-- It is now closed in [docs/deferred-decisions.md](/home/ubuntu/charness/docs/deferred-decisions.md) (2026-04-10 batch), and should only be reopened by explicit triggers.
+- It is now closed in [docs/deferred-decisions.md](deferred-decisions.md) (2026-04-10 batch), and should only be reopened by explicit triggers.
 
 Read first:
 
-- [docs/handoff.md](/home/ubuntu/charness/docs/handoff.md)
-- [docs/deferred-decisions.md](/home/ubuntu/charness/docs/deferred-decisions.md)
-- [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md)
-- [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md)
+- [docs/handoff.md](handoff.md)
+- [docs/deferred-decisions.md](deferred-decisions.md)
+- [docs/host-packaging.md](host-packaging.md)
+- [docs/control-plane.md](control-plane.md)
 
 Suggested agent prompt:
 
@@ -66,10 +66,10 @@ Why this exists:
 
 Read first:
 
-- [docs/public-skill-validation.md](/home/ubuntu/charness/docs/public-skill-validation.md)
-- [docs/control-plane.md](/home/ubuntu/charness/docs/control-plane.md)
-- [docs/handoff.md](/home/ubuntu/charness/docs/handoff.md)
-- [.agents/cautilus-adapter.yaml](/home/ubuntu/charness/.agents/cautilus-adapter.yaml)
+- [docs/public-skill-validation.md](public-skill-validation.md)
+- [docs/control-plane.md](control-plane.md)
+- [docs/handoff.md](handoff.md)
+- [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml)
 
 Useful local commands:
 
@@ -110,11 +110,11 @@ Why this exists:
 
 Read first:
 
-- [INSTALL.md](/home/ubuntu/charness/INSTALL.md)
-- [UNINSTALL.md](/home/ubuntu/charness/UNINSTALL.md)
-- [README.md](/home/ubuntu/charness/README.md)
-- [docs/host-packaging.md](/home/ubuntu/charness/docs/host-packaging.md)
-- [packaging/charness.json](/home/ubuntu/charness/packaging/charness.json)
+- [INSTALL.md](../INSTALL.md)
+- [UNINSTALL.md](../UNINSTALL.md)
+- [README.md](../README.md)
+- [docs/host-packaging.md](host-packaging.md)
+- [packaging/charness.json](../packaging/charness.json)
 
 Useful local commands:
 
@@ -159,10 +159,10 @@ Why this exists:
 
 Read first:
 
-- [skills/public/create-skill/SKILL.md](/home/ubuntu/charness/skills/public/create-skill/SKILL.md)
-- [skills/public/spec/SKILL.md](/home/ubuntu/charness/skills/public/spec/SKILL.md)
-- [scripts/check-skill-contracts.py](/home/ubuntu/charness/scripts/check-skill-contracts.py)
-- [scripts/run-evals.py](/home/ubuntu/charness/scripts/run-evals.py)
+- [skills/public/create-skill/SKILL.md](../skills/public/create-skill/SKILL.md)
+- [skills/public/spec/SKILL.md](../skills/public/spec/SKILL.md)
+- [scripts/check-skill-contracts.py](../scripts/check-skill-contracts.py)
+- [scripts/run-evals.py](../scripts/run-evals.py)
 
 Suggested agent prompt:
 
@@ -188,9 +188,9 @@ Why this exists:
 
 Read first:
 
-- [skills/public/impl/SKILL.md](/home/ubuntu/charness/skills/public/impl/SKILL.md)
-- [skills/public/quality/SKILL.md](/home/ubuntu/charness/skills/public/quality/SKILL.md)
-- [skill-outputs/quality/quality.md](/home/ubuntu/charness/skill-outputs/quality/quality.md)
+- [skills/public/impl/SKILL.md](../skills/public/impl/SKILL.md)
+- [skills/public/quality/SKILL.md](../skills/public/quality/SKILL.md)
+- [skill-outputs/quality/quality.md](../skill-outputs/quality/quality.md)
 
 Useful local commands:
 
@@ -221,5 +221,5 @@ For any accepted item:
 1. update the canonical doc(s)
 2. run the strongest honest local validation
 3. commit the work
-4. update [docs/handoff.md](/home/ubuntu/charness/docs/handoff.md) if the next
+4. update [docs/handoff.md](handoff.md) if the next
    operator's first move changed
