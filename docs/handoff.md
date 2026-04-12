@@ -40,6 +40,8 @@
 - `ideation/spec/impl/handoff`는 Christopher Alexander-style sequence discipline을 core behavior로 갖고, `ideation`은 Saras Sarasvathy effectuation, `spec/impl`은 Kent Beck + John Ousterhout, `retro`는 named expert lens를 선호하되 direct counterfactual lens도 허용하는 쪽으로 정리됐다.
 - `charness init`와 `charness update`는 이제 `~/.local/share/charness/host-state.json`에 post-command doctor snapshot을 남긴다. `charness doctor --write-state`로도 interactive restart 전후 proof snapshot을 수동 기록할 수 있다.
 - installed `charness` CLI는 이제 `~/.local/share/charness/version-state.json`에 current version provenance와 cached latest-release check를 남긴다. `charness version --check`가 explicit refresh surface고, interactive installed-CLI runs는 24시간 TTL cache를 써서 non-fatal update notice를 낼 수 있다.
+- 다른 머신 Claude Code dogfood에서 standalone `charness` binary만으로 manual clone 없이 `charness init` / `charness update`가 성공했다. `~/.agents/src/charness`, `~/.codex/plugins/charness`, `~/.agents/plugins/marketplace.json`도 기대한 위치에 생겼고, Claude visibility는 실제로 확인됐다.
+- 같은 dogfood 보고서의 `charness doctor --write-state` 미지원은 최신 `main`을 pull하기 전 binary로 실행했을 가능성이 높다. 현재 `main`에는 `--write-state`와 version-state surface가 이미 있으니, 다음 Codex proof는 최신 pulled binary 기준으로 다시 본다.
 - Retro 2026-04-11 #3: `./charness init --repo-root /checkout`로 CLI를 설치해도 이후 `/home/ubuntu` 같은 repo 밖에서 `charness update`와 `charness doctor`를 실행할 수 있다고 착각했다. 실제로는 installed CLI가 managed checkout 기본값 `~/.agents/src/charness`만 찾았고, 그 경로가 없으면 `update`는 `missing source checkout`로 실패하고 `doctor`는 traceback을 냈다. 이제 CLI는 마지막 successful `init`/`update`의 source checkout을 `~/.local/share/charness/install-state.json`에 기억하고, source가 없을 때도 `doctor`가 `missing-source` guidance를 내도록 고쳤다.
 - Claude local marketplace update dogfood는 끝났다. temp checkout에서 `0.0.1-update-test -> 0.0.2-update-test`로 버전을 올리고 `charness update`를 돌렸을 때 `~/.claude/plugins/cache/corca-charness-update-test/charness/...` install path와 installed version이 같이 올라갔다.
 - 이 머신의 Codex는 이제 실제 host install 상태다. `~/.codex/config.toml`에는 `[plugins."charness@local"] enabled = true`가 있고, cache manifest는 `~/.codex/plugins/cache/local/charness/local/.codex-plugin/plugin.json`에 생긴다.
@@ -48,7 +50,7 @@
 
 ## Next Session
 
-1. 실제 interactive Codex에서 installed `charness`를 source update 뒤 어떻게 refresh해야 cache가 갱신되는지 확인한다. restart만으로 되는지, Plugin Directory 재-install/re-enable이 필요한지 proof를 만든다.
+1. 실제 interactive Codex에서 최신 pulled installed `charness`를 source update 뒤 어떻게 refresh해야 cache가 갱신되는지 확인한다. restart만으로 되는지, Plugin Directory 재-install/re-enable이 필요한지 proof를 만든다.
    - 가능하면 restart 전 `host-state.json:last_update` 또는 `charness doctor --write-state` snapshot과, restart 뒤 새 `last_doctor` snapshot을 비교해 proof를 남긴다.
 2. 새 `charness tool install/update/doctor` surface를 실제 다른 머신 또는 temp-home workflow로 한 번 더 dogfood한다. 특히 provenance-aware route가 있는 tool(`gws-cli`, brew-installed `specdown`, brew-installed `gh`)과 manual-only tool(`cautilus`, release-installed `specdown`)에서 남는 lock/install guidance shape를 점검한다.
    - 현재 local proof는 `/home/ubuntu/charness` working tree에서 `--repo-root .`를 명시해 돌렸다. installed CLI default는 여전히 managed checkout을 보므로, unpushed local changes를 proof할 때는 그 차이를 의식한다.
