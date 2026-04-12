@@ -18,6 +18,7 @@ not a substitute for pnpm's live audit tooling.
 ## Manual Or Networked Follow-Up
 
 - run pnpm's audit flow only where the team is prepared to triage advisory
-  output
+  output; `scripts/check-supply-chain-online.py` now wraps that path
+  explicitly with `pnpm audit --json`
 - review new registries, overrides, or workspace-wide patching rules with human
   judgment because those choices are trust-boundary changes, not only syntax

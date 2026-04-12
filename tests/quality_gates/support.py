@@ -87,6 +87,7 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         ("check-skill-contracts", "check-skill-contracts.py"),
         ("check-doc-links", "check-doc-links.py"),
         ("check-supply-chain", "check-supply-chain.py"),
+        ("check-supply-chain-online", "check-supply-chain-online.py"),
         ("run-evals", "run-evals.py"),
         ("check-duplicates", "check-duplicates.py"),
     )

@@ -17,7 +17,8 @@ bar.
 ## Manual Or Networked Follow-Up
 
 - run npm's advisory flow when dependency changes matter enough to justify a
-  live registry lookup
+  live registry lookup; `scripts/check-supply-chain-online.py` now wraps that
+  path explicitly with `npm audit --json`
 - review new scopes or publishers before promoting them into standing runtime
   dependencies
 - keep high-noise online audit commands out of the default local gate unless
