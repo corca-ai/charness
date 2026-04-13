@@ -7,5 +7,8 @@ skill-outputs/quality/history/runtime-signals-*.jsonl
 integrations/locks/*.json
 !integrations/locks/.gitkeep
 !integrations/locks/lock.schema.json
+plugins/*/integrations/locks/*.json
+!plugins/*/integrations/locks/.gitkeep
+!plugins/*/integrations/locks/lock.schema.json
 skills/support/generated/*
 !skills/support/generated/.gitkeep
