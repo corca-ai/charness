@@ -1,3 +1,11 @@
+<!--
+generated_file: true
+source_path: README.md
+derived_path: plugins/charness/README.md
+generator: python3 scripts/sync_root_plugin_manifests.py --repo-root .
+sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root .
+-->
+
 # charness
 
 `charness` is the portable Corca harness layer.

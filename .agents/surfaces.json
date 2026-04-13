@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "surfaces": [
+    {
+      "surface_id": "checked-in-plugin-export",
+      "description": "Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.",
+      "source_paths": [
+        "README.md",
+        "packaging/**",
+        "skills/public/**",
+        "skills/support/**",
+        "profiles/**",
+        "presets/**",
+        "integrations/**",
+        "scripts/**"
+      ],
+      "derived_paths": [
+        "plugins/charness/**",
+        ".claude-plugin/marketplace.json",
+        ".agents/plugins/marketplace.json"
+      ],
+      "sync_commands": [
+        "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+      ],
+      "verify_commands": [
+        "python3 scripts/validate-packaging.py --repo-root ."
+      ],
+      "notes": [
+        "Edit the repo-owned source path, not the checked-in plugin export.",
+        "If a derived artifact changes, regenerate it and commit the result."
+      ],
+      "generated_markdown": [
+        {
+          "derived_path": "plugins/charness/README.md",
+          "source_path": "README.md",
+          "generator": "python3 scripts/sync_root_plugin_manifests.py --repo-root .",
+          "sync_command": "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+        }
+      ]
+    },
+    {
+      "surface_id": "repo-markdown",
+      "description": "Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.",
+      "source_paths": [
+        "AGENTS.md",
+        "README.md",
+        "INSTALL.md",
+        "UNINSTALL.md",
+        "docs/**/*.md",
+        "packaging/**/*.md",
+        "integrations/**/*.md",
+        "skills/**/*.md"
+      ],
+      "derived_paths": [
+        "plugins/charness/**/*.md"
+      ],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/check-doc-links.py --repo-root .",
+        "./scripts/check-markdown.sh",
+        "./scripts/check-secrets.sh"
+      ],
+      "notes": [
+        "Keep human-facing docs in sync with generated markdown copies.",
+        "Run the markdown and link checks before closeout."
+      ]
+    },
+    {
+      "surface_id": "skill-packages",
+      "description": "Public and support skill packages plus their helper scripts.",
+      "source_paths": [
+        "skills/public/**",
+        "skills/support/**"
+      ],
+      "derived_paths": [
+        "plugins/charness/skills/**",
+        "plugins/charness/support/**"
+      ],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/validate-skills.py --repo-root .",
+        "python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py"
+      ],
+      "notes": [
+        "Skill trigger contracts stay source-owned under skills/, not under plugins/."
+      ]
+    },
+    {
+      "surface_id": "profiles-and-presets",
+      "description": "Profile and preset bundles that define packaged defaults.",
+      "source_paths": [
+        "profiles/**",
+        "presets/**"
+      ],
+      "derived_paths": [
+        "plugins/charness/profiles/**",
+        "plugins/charness/presets/**"
+      ],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/validate-profiles.py --repo-root .",
+        "python3 scripts/validate-presets.py --repo-root ."
+      ],
+      "notes": [
+        "Do not leave packaged defaults pointing at missing artifacts."
+      ]
+    },
+    {
+      "surface_id": "adapters",
+      "description": "Repo-local adapter contracts and adapter helper libraries.",
+      "source_paths": [
+        ".agents/*-adapter.yaml",
+        "scripts/adapter*_lib.py",
+        "scripts/adapter_init_lib.py",
+        "scripts/simple_skill_adapter_lib.py"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/validate-adapters.py --repo-root ."
+      ],
+      "notes": [
+        "Adapter contracts should stay machine-readable and loadable."
+      ]
+    },
+    {
+      "surface_id": "integrations-and-control-plane",
+      "description": "Integration manifests and control-plane helper scripts.",
+      "source_paths": [
+        "integrations/**",
+        "scripts/control_plane_lib.py",
+        "scripts/control_plane_render.py",
+        "scripts/install_provenance_lib.py",
+        "scripts/install_tools.py",
+        "scripts/support_sync_lib.py",
+        "scripts/sync_support.py",
+        "scripts/update_tools.py",
+        "scripts/upstream_release_lib.py"
+      ],
+      "derived_paths": [
+        "plugins/charness/integrations/**",
+        "plugins/charness/scripts/**"
+      ],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/validate-integrations.py --repo-root .",
+        "python3 scripts/sync_support.py --repo-root . --json",
+        "python3 scripts/update_tools.py --repo-root . --json"
+      ],
+      "notes": [
+        "Prefer dry-run capable control-plane checks before claiming the integration surface is healthy."
+      ]
+    },
+    {
+      "surface_id": "maintainer-hooks",
+      "description": "Repo-owned maintainer hook and hook bootstrap validation.",
+      "source_paths": [
+        ".githooks/**",
+        "scripts/install-git-hooks.sh",
+        "scripts/validate-maintainer-setup.py"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/validate-maintainer-setup.py --repo-root ."
+      ],
+      "notes": [
+        "Maintainer-local hook enforcement should fail closed when the clone drifts."
+      ]
+    },
+    {
+      "surface_id": "repo-python",
+      "description": "Repo-owned Python code and tests.",
+      "source_paths": [
+        "scripts/**/*.py",
+        "tests/**/*.py"
+      ],
+      "derived_paths": [
+        "plugins/charness/scripts/**/*.py"
+      ],
+      "sync_commands": [],
+      "verify_commands": [
+        "ruff check scripts tests skills/public/*/scripts skills/support/*/scripts",
+        "pytest -q tests/quality_gates tests/control_plane tests/test_*.py tests/charness_cli/test_doctor_cache_selection.py tests/charness_cli/test_tool_lifecycle.py"
+      ],
+      "notes": [
+        "Use targeted tests when iterating, but close out on the strongest standing Python gates the slice touched."
+      ]
+    }
+  ]
+}

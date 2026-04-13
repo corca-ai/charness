@@ -283,6 +283,10 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     assert not (claude_root / "plugins" / "charness" / "skills" / "public").exists()
     assert not (claude_root / "plugins" / "charness" / "support" / "generated").exists()
     assert json.loads(claude_manifest.read_text(encoding="utf-8"))["repository"] == "https://github.com/corca-ai/charness"
+    exported_readme_text = exported_readme.read_text(encoding="utf-8")
+    assert exported_readme_text.startswith("<!--\ngenerated_file: true\n")
+    assert "source_path: README.md" in exported_readme_text
+    assert "sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root ." in exported_readme_text
 
     consumer_root = tmp_path / "consumer"
     consumer_root.mkdir()

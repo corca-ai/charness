@@ -72,6 +72,7 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
 
     python_stubs = (
         ("validate-skills", "validate-skills.py"),
+        ("validate-surfaces", "validate-surfaces.py"),
         ("validate-public-skill-validation", "validate-public-skill-validation.py"),
         ("validate-cautilus-scenarios", "validate-cautilus-scenarios.py"),
         ("validate-profiles", "validate-profiles.py"),

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -16,6 +17,13 @@ VALIDATE_PACKAGING_SPEC = importlib.util.spec_from_file_location(
 assert VALIDATE_PACKAGING_SPEC is not None and VALIDATE_PACKAGING_SPEC.loader is not None
 VALIDATE_PACKAGING = importlib.util.module_from_spec(VALIDATE_PACKAGING_SPEC)
 VALIDATE_PACKAGING_SPEC.loader.exec_module(VALIDATE_PACKAGING)
+
+from scripts.surfaces_lib import (
+    SURFACES_PATH,
+    apply_generated_markdown_header,
+    load_surfaces,
+    lookup_generated_markdown,
+)
 
 
 class PackagingError(Exception):
@@ -80,6 +88,20 @@ def copy_file(src: Path, dest: Path) -> None:
     shutil.copy2(src, dest)
 
 
+def copy_markdown_with_generated_header(
+    repo_root: Path,
+    src: Path,
+    dest: Path,
+    *,
+    derived_path: str,
+) -> None:
+    manifest = load_surfaces(repo_root, surfaces_path=SURFACES_PATH, required=False)
+    metadata = lookup_generated_markdown(manifest, derived_path)
+    body = src.read_text(encoding="utf-8")
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(apply_generated_markdown_header(body, metadata), encoding="utf-8")
+
+
 def export_lock_surface(src: Path, dest: Path) -> None:
     if dest.exists():
         shutil.rmtree(dest)
@@ -105,7 +127,13 @@ def checked_in_plugin_root(manifest: dict) -> Path:
 
 def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> None:
     source = manifest["source"]
-    copy_file(repo_root / source["readme"], plugin_root / source["readme"])
+    readme_rel = source["readme"]
+    copy_markdown_with_generated_header(
+        repo_root,
+        repo_root / readme_rel,
+        plugin_root / readme_rel,
+        derived_path=(checked_in_plugin_root(manifest) / readme_rel).as_posix(),
+    )
 
     public_skills_root = repo_root / source["public_skills_dir"]
     exported_skills_root = plugin_root / "skills"
