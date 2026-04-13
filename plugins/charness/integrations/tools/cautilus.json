@@ -10,7 +10,7 @@
     "linux",
     "macos"
   ],
-  "status": "experimental",
+  "status": "active",
   "lifecycle": {
     "install": {
       "mode": "manual",
