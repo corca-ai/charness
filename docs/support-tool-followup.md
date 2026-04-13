@@ -85,6 +85,14 @@ even if the next session only skims this document.
   detect repo-owned parallel hook runners or hook entrypoints, and run those
   directly without treating network mutation as the verification command.
 
+  Preserve the underlying lesson, though:
+
+  - verification-command selection is still too manual today
+  - the real follow-up is not "prefer push"
+  - the real follow-up is "prefer repo-owned verification bundles or explicit
+    hook entrypoints when they already exist, and otherwise fall back to
+    surface-based validator selection"
+
 ### Carry Forward
 
 - `corca-ai/charness#9`
@@ -290,6 +298,42 @@ The intended shape is small:
 - do not depend on `!` execution in portable skill bodies
 - do not treat `git push` as the generic local verification command
 - do not vendor upstream support-skill clones into the tracked repo
+
+## Verification Selection Note
+
+This session also surfaced a narrower verification problem that should stay
+attached to the support-tool follow-up context.
+
+Current honest state:
+
+- validation choice still depends partly on operator judgment plus `AGENTS.md`
+  conventions
+- this is better than ad hoc guessing, but it is not yet a strongly
+  repo-owned verifier-selection seam
+- the closed `git push` issue was really pointing at wasted manual verifier
+  selection, not at push itself
+
+What to preserve:
+
+- the next improvement should prefer repo-owned local verification bundles when
+  they already exist
+- examples:
+  - a checked-in `run-quality.sh`
+  - a checked-in hook runner entrypoint
+  - a repo-owned script that maps changed surfaces to the canonical validator
+    set
+- if the repo exposes only hook config, call the hook runner or hook entrypoint
+  directly; do not upgrade network mutation into the verification primitive
+- if no bundle exists yet, keep using surface-based validator choice, but name
+  the missing verifier bundle as a real repo-quality gap instead of silently
+  re-deciding it every session
+
+Not the next slice, but worth preserving as a probable later follow-on:
+
+- a repo-owned helper that maps changed files or declared surfaces to the
+  smallest honest validation bundle
+- optional reuse of existing hook-runner parallelism without equating that to
+  `git push`
 
 ## Suggested Order
 
