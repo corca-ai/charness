@@ -226,6 +226,7 @@ queue_selected "ruff" ruff check scripts tests skills/public/*/scripts skills/su
 flush_phase || OVERALL_RC=$?
 
 queue_selected "pytest" pytest -q "${STANDING_PYTEST_TARGETS[@]}"
+queue_selected "check-test-completeness" python3 scripts/check-test-completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
 queue_selected "run-evals" python3 scripts/run-evals.py --repo-root "$REPO_ROOT"
 queue_selected "check-duplicates" python3 scripts/check-duplicates.py --repo-root "$REPO_ROOT" --fail-on-match
 queue_selected "check-coverage" python3 scripts/check-coverage.py --repo-root "$REPO_ROOT"
