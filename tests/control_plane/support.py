@@ -7,13 +7,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+def run_script(*args: str, cwd: Path | None = None, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["python3", *args],
         cwd=cwd or ROOT,
         check=False,
         capture_output=True,
         text=True,
+        env=env,
     )
 
 
@@ -79,7 +80,6 @@ def seed_control_plane_repo(tmp_path: Path) -> Path:
                     "source_type": "local_wrapper",
                     "path": "docs/demo-tool-upstream.md",
                     "ref": "main",
-                    "sync_strategy": "generated_wrapper",
                     "wrapper_skill_id": "demo-tool-wrapper",
                 },
                 "degradation": {"when_missing": ["manual fallback"]},

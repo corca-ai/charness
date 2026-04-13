@@ -61,9 +61,8 @@
   },
   "support_skill_source": {
     "source_type": "upstream_repo",
-    "path": "skills/cautilus/SKILL.md",
+    "path": "skills/cautilus",
     "ref": "main",
-    "sync_strategy": "reference",
     "notes": [
       "Prefer the upstream bundled skill instead of copying evaluator workflow guidance into `charness`."
     ]

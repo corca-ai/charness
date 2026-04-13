@@ -62,9 +62,8 @@
   },
   "support_skill_source": {
     "source_type": "upstream_repo",
-    "path": ".agents/skills/crill-operator/SKILL.md",
+    "path": ".agents/skills/crill-operator",
     "ref": "main",
-    "sync_strategy": "reference",
     "notes": [
       "The upstream repo already carries operator guidance for real-device workflows."
     ]

@@ -2,22 +2,32 @@
 
 from __future__ import annotations
 
+import hashlib
+import io
+import json
+import os
 import shutil
+import tarfile
+import tempfile
+import urllib.error
+import urllib.request
 from pathlib import Path
 from typing import Any
 
+from scripts.repo_layout import support_skill_cache_dir
 
-def support_state_for_manifest(manifest: dict[str, Any], *, sync_strategy: str | None = None) -> str:
+SUPPORT_FIXTURES_ENV = "CHARNESS_SUPPORT_SYNC_FIXTURES"
+GITHUB_ARCHIVE_URL = "https://codeload.github.com/{repo}/tar.gz/{ref}"
+
+
+def support_state_for_manifest(manifest: dict[str, Any]) -> str:
     if manifest.get("kind") == "support_runtime":
         return "native-support"
     support = manifest.get("support_skill_source")
     if not support:
         return "integration-only"
-    strategy = sync_strategy or support["sync_strategy"]
-    if strategy == "generated_wrapper" or support["source_type"] == "local_wrapper":
+    if support["source_type"] == "local_wrapper":
         return "wrapped-upstream"
-    if strategy == "copy":
-        return "forked-local"
     return "upstream-consumed"
 
 
@@ -48,37 +58,6 @@ def parse_upstream_checkout(value: str) -> tuple[str, Path]:
     return upstream_repo.strip(), checkout_root
 
 
-def resolve_support_source_path(
-    repo_root: Path,
-    manifest: dict[str, Any],
-    *,
-    upstream_checkouts: dict[str, Path],
-) -> Path:
-    support = manifest.get("support_skill_source")
-    if not support:
-        raise ValueError(f"{manifest['tool_id']}: manifest has no support_skill_source")
-    relative_source_path = Path(support["path"])
-    source_type = support["source_type"]
-    if source_type == "local_wrapper":
-        source_path = repo_root / relative_source_path
-    elif source_type == "upstream_repo":
-        checkout_root = upstream_checkouts.get(manifest["upstream_repo"])
-        if checkout_root is None:
-            raise ValueError(
-                f"{manifest['tool_id']}: sync strategy `{support['sync_strategy']}` requires "
-                f"`--upstream-checkout {manifest['upstream_repo']}=/abs/path/to/checkout`"
-            )
-        source_path = checkout_root / relative_source_path
-    else:
-        raise ValueError(f"{manifest['tool_id']}: unsupported source_type `{source_type}`")
-    if not source_path.exists():
-        raise ValueError(
-            f"{manifest['tool_id']}: support source `{source_path}` does not exist "
-            f"for `{manifest['upstream_repo']}`"
-        )
-    return source_path
-
-
 def clear_materialized_target(path: Path) -> None:
     if path.is_symlink() or path.is_file():
         path.unlink()
@@ -87,39 +66,170 @@ def clear_materialized_target(path: Path) -> None:
         shutil.rmtree(path)
 
 
-def effective_sync_strategy(manifest: dict[str, Any], *, local_dev_symlink: bool) -> str:
-    support = manifest.get("support_skill_source")
-    if not support:
-        return "none"
-    declared = support["sync_strategy"]
-    if local_dev_symlink and declared == "copy":
-        return "symlink"
-    return declared
+def support_link_name(manifest: dict[str, Any]) -> str:
+    support = manifest.get("support_skill_source") or {}
+    if support.get("source_type") == "local_wrapper":
+        return support["wrapper_skill_id"]
+    return manifest["tool_id"]
 
 
-def materialize_copy(source_path: Path, dest_root: Path, repo_root: Path) -> list[str]:
-    if source_path.is_dir():
-        clear_materialized_target(dest_root)
-        dest_root.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(source_path, dest_root)
-        return [str(dest_root.relative_to(repo_root))]
+def _fixture_checkout_root(repo: str, ref: str | None) -> Path | None:
+    fixture_path = os.environ.get(SUPPORT_FIXTURES_ENV)
+    if not fixture_path:
+        return None
+    payload = json.loads(Path(fixture_path).read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"`{SUPPORT_FIXTURES_ENV}` must point at a JSON object")
+    lookup_keys = [f"{repo}@{ref}"] if ref else []
+    lookup_keys.append(repo)
+    for key in lookup_keys:
+        raw_path = payload.get(key)
+        if not raw_path:
+            continue
+        checkout_root = Path(raw_path).expanduser().resolve()
+        if not checkout_root.is_dir():
+            raise ValueError(f"`{SUPPORT_FIXTURES_ENV}` entry `{key}` points at missing directory `{checkout_root}`")
+        return checkout_root
+    return None
 
-    dest_path = dest_root / source_path.name
-    clear_materialized_target(dest_path)
-    dest_path.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(source_path, dest_path)
-    return [str(dest_path.relative_to(repo_root))]
+
+def _safe_extract_tarball(archive_bytes: bytes, destination: Path) -> Path:
+    with tarfile.open(fileobj=io.BytesIO(archive_bytes), mode="r:gz") as tar:
+        for member in tar.getmembers():
+            target = destination / member.name
+            resolved_target = target.resolve()
+            if destination.resolve() not in {resolved_target, *resolved_target.parents}:
+                raise ValueError(f"refusing to extract archive entry outside destination: `{member.name}`")
+        tar.extractall(destination)
+    roots = [path for path in destination.iterdir() if path.is_dir()]
+    if len(roots) != 1:
+        raise ValueError("expected a single extracted archive root")
+    return roots[0]
 
 
-def materialize_symlink(source_path: Path, dest_root: Path, repo_root: Path) -> list[str]:
-    if source_path.is_dir():
-        clear_materialized_target(dest_root)
-        dest_root.parent.mkdir(parents=True, exist_ok=True)
-        dest_root.symlink_to(source_path, target_is_directory=True)
-        return [str(dest_root.relative_to(repo_root))]
+def _fetch_upstream_archive(repo: str, ref: str) -> bytes:
+    archive_url = GITHUB_ARCHIVE_URL.format(repo=repo, ref=ref)
+    request = urllib.request.Request(
+        archive_url,
+        headers={"User-Agent": "charness-support-sync/1.0"},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return response.read()
+    except urllib.error.URLError as exc:
+        raise ValueError(f"failed to fetch upstream support archive `{archive_url}`: {exc}") from exc
 
-    dest_path = dest_root / source_path.name
-    clear_materialized_target(dest_path)
-    dest_path.parent.mkdir(parents=True, exist_ok=True)
-    dest_path.symlink_to(source_path)
-    return [str(dest_path.relative_to(repo_root))]
+
+def _compute_tree_digest(root: Path) -> str:
+    digest = hashlib.sha256()
+    for path in sorted(root.rglob("*")):
+        relative = path.relative_to(root).as_posix()
+        if path.is_symlink():
+            digest.update(f"symlink:{relative}->{os.readlink(path)}\n".encode("utf-8"))
+            continue
+        if path.is_dir():
+            digest.update(f"dir:{relative}\n".encode("utf-8"))
+            continue
+        digest.update(f"file:{relative}\n".encode("utf-8"))
+        digest.update(path.read_bytes())
+        digest.update(b"\n")
+    return digest.hexdigest()
+
+
+def _promote_tree_to_cache(source_root: Path, *, manifest: dict[str, Any], digest: str) -> Path:
+    cache_root = support_skill_cache_dir()
+    cache_root.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_root / manifest["tool_id"] / digest
+    if cache_path.exists():
+        return cache_path
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    temp_target = cache_path.parent / f".tmp-{digest}"
+    clear_materialized_target(temp_target)
+    shutil.copytree(source_root, temp_target, symlinks=True)
+    temp_target.replace(cache_path)
+    return cache_path
+
+
+def _resolve_upstream_source_path(
+    manifest: dict[str, Any],
+    *,
+    upstream_checkouts: dict[str, Path],
+) -> Path:
+    support = manifest["support_skill_source"]
+    relative_source_path = Path(support["path"])
+    fixture_root = _fixture_checkout_root(manifest["upstream_repo"], support.get("ref"))
+    checkout_root = upstream_checkouts.get(manifest["upstream_repo"]) or fixture_root
+    if checkout_root is not None:
+        source_path = checkout_root / relative_source_path
+        if not source_path.exists():
+            raise ValueError(
+                f"{manifest['tool_id']}: support source `{source_path}` does not exist "
+                f"for `{manifest['upstream_repo']}`"
+            )
+        return source_path
+
+    ref = support.get("ref")
+    if not ref:
+        raise ValueError(f"{manifest['tool_id']}: upstream_repo support source requires `ref`")
+    with tempfile.TemporaryDirectory(prefix="charness-support-sync-") as temp_dir:
+        temp_root = Path(temp_dir)
+        archive_root = _safe_extract_tarball(
+            _fetch_upstream_archive(manifest["upstream_repo"], ref),
+            temp_root,
+        )
+        source_path = archive_root / relative_source_path
+        if not source_path.exists():
+            raise ValueError(
+                f"{manifest['tool_id']}: upstream archive for `{manifest['upstream_repo']}@{ref}` "
+                f"does not contain `{support['path']}`"
+            )
+        extracted_copy = temp_root / "selected-support-root"
+        if source_path.is_dir():
+            shutil.copytree(source_path, extracted_copy, symlinks=True)
+        else:
+            extracted_copy.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_path, extracted_copy / source_path.name)
+        promoted_root = _promote_tree_to_cache(
+            extracted_copy,
+            manifest=manifest,
+            digest=_compute_tree_digest(extracted_copy),
+        )
+    return promoted_root
+
+
+def _write_local_wrapper_to_cache(repo_root: Path, manifest: dict[str, Any], wrapper_text: str) -> tuple[Path, str]:
+    digest = hashlib.sha256(wrapper_text.encode("utf-8")).hexdigest()
+    cache_root = support_skill_cache_dir() / manifest["tool_id"] / digest
+    if not cache_root.exists():
+        cache_root.mkdir(parents=True, exist_ok=True)
+        (cache_root / "SKILL.md").write_text(wrapper_text, encoding="utf-8")
+    source_path = repo_root / manifest["support_skill_source"]["path"]
+    if source_path.exists() and source_path.is_file():
+        (cache_root / "UPSTREAM_REFERENCE.txt").write_text(
+            str(source_path.relative_to(repo_root)) + "\n",
+            encoding="utf-8",
+        )
+    return cache_root, digest
+
+
+def materialize_repo_symlink(target_root: Path, dest_root: Path, repo_root: Path) -> list[str]:
+    clear_materialized_target(dest_root)
+    dest_root.parent.mkdir(parents=True, exist_ok=True)
+    dest_root.symlink_to(target_root, target_is_directory=True)
+    return [str(dest_root.relative_to(repo_root))]
+
+
+def materialize_upstream_support(
+    manifest: dict[str, Any],
+    *,
+    upstream_checkouts: dict[str, Path],
+) -> tuple[Path, str]:
+    source_path = _resolve_upstream_source_path(manifest, upstream_checkouts=upstream_checkouts)
+    if source_path.is_file():
+        raise ValueError(
+            f"{manifest['tool_id']}: upstream support source must point at a skill root directory, "
+            f"not a file (`{manifest['support_skill_source']['path']}`)"
+        )
+    digest = _compute_tree_digest(source_path)
+    cache_path = _promote_tree_to_cache(source_path, manifest=manifest, digest=digest)
+    return cache_path, digest

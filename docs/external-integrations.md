@@ -93,9 +93,13 @@ When an external tool repo already ships a support skill:
 3. Track it through an integration manifest.
 4. Provide sync/update/doctor flows from `charness`.
 
-For the current v1 seam, `reference` sync is still the default. That keeps
-upstream usage guidance visible, but does not yet mean `charness` can
-materialize the upstream executable scripts themselves.
+When `support_skill_source` is present, `charness` should materialize a real
+local skill surface instead of leaving only a pointer:
+
+- upstream-owned skills should be fetched into the user cache and exposed
+  through a repo-local symlink
+- charness-owned wrappers should be rendered into the user cache and exposed
+  through the same repo-local symlink pattern
 
 Fork only when:
 
@@ -158,7 +162,7 @@ These do not need implementation in session 1, but the plan assumes them.
 - `charness update-tools`
   - update integrated external tools where safe
 - `charness doctor`
-  - verify tool availability, version expectations, and skill references
+  - verify tool availability, version expectations, and support-skill materialization
 
 ## Scope Guardrails
 

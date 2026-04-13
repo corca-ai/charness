@@ -19,26 +19,36 @@ support-owned runtime capability metadata, and upstream support-skill reuse in
 - support capability source policy: `skills/support/*/capability.json`
 - support capability schema: [capability.schema.json](../skills/support/capability.schema.json)
 - generated live state: `integrations/locks/*.json`
-- generated wrapper or synced support skills: `skills/support/generated/`
+- repo-local generated support symlinks: `skills/support/generated/`
+- user-cache support payloads: `${XDG_CACHE_HOME:-~/.cache}/charness/support-skills/`
 
 External manifests are authoritative for external ownership intent. Support
 capability metadata is authoritative for `charness`-owned runtime capability
 that still needs machine-readable discovery and doctor context. Lock files are
 authoritative only for what was last synced or observed on one machine.
 
-For v1, `sync-support` should default to `reference` as the recommended
-strategy. That means `charness` records where the upstream support surface
-lives and can materialize a local generated reference artifact, but does not
-copy or fork the upstream content unless the manifest explicitly asks for a
-stronger strategy.
+Support skills are now always materialized. `reference` is no longer a sync
+strategy. If a manifest declares `support_skill_source`, `charness` should
+produce a real local skill surface:
+
+- `upstream_repo`: fetch or reuse the upstream skill root into the user cache,
+  then expose it through a repo-local symlink
+- `local_wrapper`: render a charness-owned wrapper skill into the user cache,
+  then expose it through a repo-local symlink
 
 Support capability state should stay explicit in doctor and lock output:
 
 - `native-support`
 - `upstream-consumed`
 - `wrapped-upstream`
-- `forked-local`
 - `integration-only`
+
+For this contract, `external_skill` and `external_binary_with_skill` both
+materialize a local skill surface. The difference is binary lifecycle:
+
+- `external_skill`: only the skill surface is required
+- `external_binary_with_skill`: the skill surface plus install/update/detect/
+  healthcheck/readiness contract
 
 ## Command Responsibilities
 
@@ -48,8 +58,8 @@ Control-plane actions should leave state that a later agent can continue from
 without re-deriving machine conditions.
 
 - command stdout should stay structured and machine-readable
-- mutations should persist under `integrations/locks/*.json` and
-  `skills/support/generated/` when relevant
+- mutations should persist under `integrations/locks/*.json`, the user cache,
+  and repo-local support symlinks when relevant
 - manual-only steps should still record explicit upstream docs and remaining
   guidance instead of disappearing into prose
 - when the manifest points at a GitHub repo, control-plane output should try to
@@ -71,27 +81,22 @@ Reads:
 Writes:
 
 - lock entry under one stable per-tool shape with a `support` section
-- generated wrapper content under `skills/support/generated/` when
-  `sync_strategy` is `generated_wrapper`
-- generated reference notes under `skills/support/generated/` when
-  `sync_strategy` is `reference`
-- local copy or symlink material only when the manifest declares that strategy
-- `copy` and `symlink` require an explicit upstream checkout mapping from the
-  operator, for example
+- cache-backed materialized support payload under the user cache
+- repo-local symlink under `skills/support/generated/`
+- explicit upstream checkout overrides may still be supplied for local
+  maintainer iteration or deterministic tests, for example
   `--upstream-checkout corca-ai/claude-plugins=/abs/path/to/claude-plugins`
 
 Rules:
 
 - never installs or updates the external binary itself
-- never copies an upstream skill unless the manifest explicitly says `copy`
-- `reference` is the default recommendation because it keeps the local taxonomy
-  honest while still leaving a durable breadcrumb for operators and later host
-  packaging
-- shared manifests should prefer `copy` when they need executable support
-  materialization; `--local-dev-symlink` is only a maintainer-local override
-  for repos that want faster iteration without changing the published contract
-- `copy` and `symlink` must fail closed when the requested upstream checkout is
-  not mapped or the referenced upstream path does not exist
+- upstream skill sources must point at a skill root directory, not only one
+  `SKILL.md` file
+- remote fetch is the default path for `upstream_repo`; an explicit local
+  checkout is only an override
+- materialization should use immutable-ish cache directories keyed by content
+  digest, then repoint the repo-local symlink instead of mutating the old
+  target in place
 - leaves public skill taxonomy untouched
 - should support `--dry-run` before any write mode exists
 
@@ -110,7 +115,7 @@ Writes:
 
 - lock entry with an `install` section capturing status, docs, executed
   commands, and post-attempt detect/healthcheck results
-- generated support references or wrappers when support sync is requested
+- refreshed support cache/symlink state when support sync is requested
 - refreshed doctor state so later agents can see what changed
 
 Rules:
@@ -163,7 +168,7 @@ Checks:
 - observed version satisfies `version_expectation`
 - healthcheck command returns the expected signal
 - optional manifest-declared `readiness_checks` succeed
-- declared support-skill reference exists or can be regenerated
+- declared repo-local support symlink still resolves
 
 Exit semantics:
 
@@ -185,8 +190,7 @@ Current v1 drift rule:
 - if a prior `tool sync-support` run recorded `materialized_paths`, `doctor` should
   verify those paths still exist and report `support-missing` when they do not
 - first-run repos without a prior support lock should not fail closed only
-  because generated wrapper or reference artifacts have not been materialized
-  yet
+  because support materialization has not run yet
 
 Current doctor payload also carries metadata-side capability context so setup
 and onboarding layers can inspect it without re-reading the source file:

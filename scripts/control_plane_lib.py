@@ -13,7 +13,7 @@ from typing import Any
 import jsonschema
 from packaging.version import InvalidVersion, Version
 
-from scripts.control_plane_render import render_generated_wrapper, render_reference_note
+from scripts.control_plane_render import render_generated_wrapper
 from scripts.repo_layout import (
     generated_support_dir,
     integrations_locks_dir,
@@ -22,11 +22,10 @@ from scripts.repo_layout import (
     support_capability_schema_path,
 )
 from scripts.support_sync_lib import (
-    effective_sync_strategy,
-    materialize_copy,
-    materialize_symlink,
-    resolve_support_source_path,
-    support_state_for_manifest,
+    _write_local_wrapper_to_cache,
+    materialize_repo_symlink,
+    materialize_upstream_support,
+    support_link_name,
 )
 
 MANIFEST_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "integrations" / "tools" / "manifest.schema.json"
@@ -57,8 +56,12 @@ def load_manifest(path: Path) -> dict[str, Any]:
 def validate_manifest_data(data: dict[str, Any], schema: dict[str, Any], path: Path) -> None:
     jsonschema.validate(data, schema)
     support = data.get("support_skill_source")
-    if support and support.get("sync_strategy") == "generated_wrapper" and not support.get("wrapper_skill_id"):
-        raise ValueError(f"{path}: generated_wrapper requires wrapper_skill_id")
+    if not support:
+        return
+    if support["source_type"] == "local_wrapper" and not support.get("wrapper_skill_id"):
+        raise ValueError(f"{path}: local_wrapper requires wrapper_skill_id")
+    if support["source_type"] == "upstream_repo" and Path(support["path"]).name == "SKILL.md":
+        raise ValueError(f"{path}: upstream_repo support path must point at a skill root directory, not `SKILL.md`")
 
 def validate_support_capability_data(data: dict[str, Any], schema: dict[str, Any], path: Path, repo_root: Path) -> None:
     jsonschema.validate(data, schema)
@@ -342,36 +345,29 @@ def materialize_support(
     manifest: dict[str, Any],
     *,
     upstream_checkouts: dict[str, Path],
-    local_dev_symlink: bool = False,
-) -> list[str]:
+) -> dict[str, Any]:
     support = manifest.get("support_skill_source")
     if not support:
-        return []
-    strategy = effective_sync_strategy(manifest, local_dev_symlink=local_dev_symlink)
-    if strategy == "generated_wrapper":
-        wrapper_id = support["wrapper_skill_id"]
-        skill_dir = generated_support_dir(repo_root) / wrapper_id
-        skill_dir.mkdir(parents=True, exist_ok=True)
-        skill_path = skill_dir / "SKILL.md"
-        skill_path.write_text(render_generated_wrapper(manifest), encoding="utf-8")
-        return [str(skill_path.relative_to(repo_root))]
-    if strategy == "reference":
-        reference_dir = generated_support_dir(repo_root) / manifest["tool_id"]
-        reference_dir.mkdir(parents=True, exist_ok=True)
-        reference_path = reference_dir / "REFERENCE.md"
-        reference_path.write_text(
-            render_reference_note(manifest, support_state=support_state_for_manifest(manifest)),
-            encoding="utf-8",
-        )
-        return [str(reference_path.relative_to(repo_root))]
-    if strategy in {"copy", "symlink"}:
-        source_path = resolve_support_source_path(
+        return {"materialized_paths": [], "cache_path": None, "content_digest": None}
+
+    if support["source_type"] == "local_wrapper":
+        cache_path, content_digest = _write_local_wrapper_to_cache(
             repo_root,
+            manifest,
+            render_generated_wrapper(manifest),
+        )
+    elif support["source_type"] == "upstream_repo":
+        cache_path, content_digest = materialize_upstream_support(
             manifest,
             upstream_checkouts=upstream_checkouts,
         )
-        dest_root = generated_support_dir(repo_root) / manifest["tool_id"]
-        if strategy == "copy":
-            return materialize_copy(source_path, dest_root, repo_root)
-        return materialize_symlink(source_path, dest_root, repo_root)
-    raise ValueError(f"unsupported sync strategy `{strategy}` for local materialization")
+    else:
+        raise ValueError(f"unsupported support source_type `{support['source_type']}`")
+
+    link_root = generated_support_dir(repo_root) / support_link_name(manifest)
+    materialized_paths = materialize_repo_symlink(cache_path, link_root, repo_root)
+    return {
+        "materialized_paths": materialized_paths,
+        "cache_path": str(cache_path),
+        "content_digest": content_digest,
+    }

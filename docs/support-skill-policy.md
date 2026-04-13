@@ -116,8 +116,11 @@ Session 12 should turn these rules into:
 - doctor checks
 - manifest instances for real tools
 
-For the current v1 seam, `reference` is the preferred default sync strategy:
+For the current seam, support skills should always be consumable locally:
 
-- keep the upstream support surface visible
-- generate a local reference artifact when needed
-- avoid copying or forking until a manifest explicitly asks for it
+- if the source is upstream-owned, fetch and materialize the skill root into a
+  user cache and expose it through a repo-local symlink
+- if the source is a charness-owned wrapper, generate it into the same cache
+  and expose it through the same repo-local symlink pattern
+- provenance should live in the manifest and lock state rather than in a
+  reference-only pseudo-skill

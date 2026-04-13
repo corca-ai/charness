@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 
@@ -39,3 +40,17 @@ def integrations_locks_dir(repo_root: Path) -> Path:
 def generated_support_dir(repo_root: Path) -> Path:
     support_root = support_dir(repo_root)
     return support_root / "generated"
+
+
+def resolve_cache_home() -> Path:
+    override = os.environ.get("CHARNESS_CACHE_HOME")
+    if override:
+        return Path(override).expanduser().resolve()
+    xdg_root = os.environ.get("XDG_CACHE_HOME")
+    if xdg_root:
+        return Path(xdg_root).expanduser().resolve()
+    return Path.home().resolve() / ".cache"
+
+
+def support_skill_cache_dir() -> Path:
+    return resolve_cache_home() / "charness" / "support-skills"

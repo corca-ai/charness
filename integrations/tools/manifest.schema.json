@@ -375,7 +375,7 @@
       "additionalProperties": false,
       "required": [
         "source_type",
-        "sync_strategy"
+        "path"
       ],
       "properties": {
         "source_type": {
@@ -392,15 +392,6 @@
         "ref": {
           "type": "string",
           "minLength": 1
-        },
-        "sync_strategy": {
-          "type": "string",
-          "enum": [
-            "reference",
-            "copy",
-            "symlink",
-            "generated_wrapper"
-          ]
         },
         "wrapper_skill_id": {
           "$ref": "#/definitions/slug"

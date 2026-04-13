@@ -237,9 +237,10 @@
       "required": [
         "synced_at",
         "support_state",
-        "sync_strategy",
         "source_type",
         "source_path",
+        "cache_path",
+        "content_digest",
         "materialized_paths"
       ],
       "properties": {
@@ -253,17 +254,7 @@
             "native-support",
             "upstream-consumed",
             "wrapped-upstream",
-            "forked-local",
             "integration-only"
-          ]
-        },
-        "sync_strategy": {
-          "type": "string",
-          "enum": [
-            "reference",
-            "copy",
-            "symlink",
-            "generated_wrapper"
           ]
         },
         "source_type": {
@@ -282,6 +273,14 @@
             "string",
             "null"
           ]
+        },
+        "cache_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content_digest": {
+          "type": "string",
+          "minLength": 1
         },
         "materialized_paths": {
           "type": "array",

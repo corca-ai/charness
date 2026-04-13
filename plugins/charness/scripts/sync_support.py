@@ -15,10 +15,9 @@ from scripts.control_plane_lib import (
     load_manifests,
     materialize_support,
     now_iso,
-    support_state_for_manifest,
     upsert_lock,
 )
-from scripts.support_sync_lib import effective_sync_strategy, parse_upstream_checkout
+from scripts.support_sync_lib import parse_upstream_checkout, support_state_for_manifest
 
 
 def sync_one(
@@ -27,7 +26,6 @@ def sync_one(
     *,
     execute: bool,
     upstream_checkouts: dict[str, Path],
-    local_dev_symlink: bool,
 ) -> dict[str, object]:
     support = manifest.get("support_skill_source")
     if not support:
@@ -37,34 +35,35 @@ def sync_one(
             "reason": "integration has no support_skill_source",
         }
 
-    sync_strategy = effective_sync_strategy(manifest, local_dev_symlink=local_dev_symlink)
-    state = support_state_for_manifest(manifest, sync_strategy=sync_strategy)
+    state = support_state_for_manifest(manifest)
     result = {
         "tool_id": manifest["tool_id"],
         "status": "dry-run" if not execute else "synced",
         "support_state": state,
-        "sync_strategy": sync_strategy,
         "source_type": support["source_type"],
         "source_path": support["path"],
         "materialized_paths": [],
+        "cache_path": None,
+        "content_digest": None,
     }
     if execute:
-        result["materialized_paths"] = materialize_support(
+        materialized = materialize_support(
             repo_root,
             manifest,
             upstream_checkouts=upstream_checkouts,
-            local_dev_symlink=local_dev_symlink,
         )
+        result.update(materialized)
         upsert_lock(
             repo_root,
             manifest,
             support={
                 "synced_at": now_iso(),
                 "support_state": state,
-                "sync_strategy": sync_strategy,
                 "source_type": support["source_type"],
                 "source_path": support["path"],
                 "ref": support.get("ref"),
+                "cache_path": result["cache_path"],
+                "content_digest": result["content_digest"],
                 "materialized_paths": result["materialized_paths"],
             },
         )
@@ -76,7 +75,6 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--tool-id", action="append", default=[])
     parser.add_argument("--upstream-checkout", action="append", default=[])
-    parser.add_argument("--local-dev-symlink", action="store_true")
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
@@ -91,7 +89,6 @@ def main() -> int:
             manifest,
             execute=args.execute,
             upstream_checkouts=upstream_checkouts,
-            local_dev_symlink=args.local_dev_symlink,
         )
         for manifest in selected
     ]

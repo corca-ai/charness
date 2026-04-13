@@ -10,6 +10,7 @@ from .support import (
     make_fake_npm_gws,
     make_release_fixture,
     make_repo_copy,
+    make_support_sync_fixture,
     run_cli_in_repo,
 )
 
@@ -18,9 +19,11 @@ def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path)
     repo_root = make_repo_copy(tmp_path)
     home_root = tmp_path / "home"
     release_fixture = make_release_fixture(tmp_path)
+    support_fixture = make_support_sync_fixture(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+    env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
 
     result = run_cli_in_repo(repo_root, "tool", "install", "--repo-root", str(repo_root), "--json", "cautilus", env=env)
     assert result.returncode == 0, result.stderr
@@ -30,15 +33,15 @@ def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path)
     assert cautilus["install"]["docs_url"] == "https://github.com/corca-ai/cautilus"
     assert cautilus["install"]["release"]["latest_tag"] == "v1.2.3"
     assert cautilus["support"]["status"] == "synced"
-    assert cautilus["support"]["materialized_paths"] == ["skills/support/generated/cautilus/REFERENCE.md"]
+    assert cautilus["support"]["materialized_paths"] == ["skills/support/generated/cautilus"]
     assert cautilus["doctor"]["doctor_status"] == "missing"
     assert cautilus["doctor"]["release"]["latest_version"] == "1.2.3"
     lock_payload = json.loads((repo_root / "integrations" / "locks" / "cautilus.json").read_text(encoding="utf-8"))
     assert lock_payload["release"]["latest_tag"] == "v1.2.3"
     assert lock_payload["install"]["install_status"] == "manual"
-    assert lock_payload["support"]["materialized_paths"] == ["skills/support/generated/cautilus/REFERENCE.md"]
+    assert lock_payload["support"]["materialized_paths"] == ["skills/support/generated/cautilus"]
     assert lock_payload["doctor"]["doctor_status"] == "missing"
-    assert (repo_root / "skills" / "support" / "generated" / "cautilus" / "REFERENCE.md").is_file()
+    assert (repo_root / "skills" / "support" / "generated" / "cautilus").is_symlink()
 
 
 def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Path) -> None:
@@ -46,10 +49,12 @@ def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Pa
     home_root = tmp_path / "home"
     fake_agent_browser = make_fake_agent_browser(tmp_path)
     release_fixture = make_release_fixture(tmp_path)
+    support_fixture = make_support_sync_fixture(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
     env["PATH"] = f"{fake_agent_browser.parent}:{env.get('PATH', '')}"
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+    env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
 
     result = run_cli_in_repo(repo_root, "tool", "update", "--repo-root", str(repo_root), "--json", "agent-browser", env=env)
     assert result.returncode == 0, result.stderr
@@ -62,7 +67,7 @@ def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Pa
     lock_payload = json.loads((repo_root / "integrations" / "locks" / "agent-browser.json").read_text(encoding="utf-8"))
     assert lock_payload["release"]["latest_tag"] == "v0.25.3"
     assert lock_payload["update"]["update_status"] == "updated"
-    assert lock_payload["support"]["materialized_paths"] == ["skills/support/generated/agent-browser/REFERENCE.md"]
+    assert lock_payload["support"]["materialized_paths"] == ["skills/support/generated/agent-browser"]
     assert lock_payload["doctor"]["doctor_status"] == "ok"
 
 

@@ -61,9 +61,8 @@
   },
   "support_skill_source": {
     "source_type": "upstream_repo",
-    "path": "skills/agent-browser/SKILL.md",
+    "path": "skills/agent-browser",
     "ref": "main",
-    "sync_strategy": "reference",
     "notes": [
       "Prefer the upstream support skill surface when the host runtime can consume it."
     ]

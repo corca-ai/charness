@@ -2043,7 +2043,7 @@ def tool_next_step(
     if support_result is not None and support_result.get("status") == "synced":
         paths = support_result.get("materialized_paths")
         if isinstance(paths, list) and paths:
-            return with_release(f"Support references for `{tool_id}` were refreshed under {', '.join(paths)}.")
+            return with_release(f"Support skill materialization for `{tool_id}` was refreshed under {', '.join(paths)}.")
     return with_release(f"Review the structured result for `{tool_id}` and follow the manifest guidance.")
 
 
@@ -2689,8 +2689,6 @@ def cmd_tool_sync_support(args: argparse.Namespace) -> int:
         script_args.extend(["--tool-id", tool_id])
     for upstream_checkout in args.upstream_checkout:
         script_args.extend(["--upstream-checkout", upstream_checkout])
-    if args.local_dev_symlink:
-        script_args.append("--local-dev-symlink")
     if not args.dry_run:
         script_args.append("--execute")
     support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *script_args, allow_failure=True)
@@ -2744,8 +2742,6 @@ def cmd_tool_install(args: argparse.Namespace) -> int:
             support_args.extend(["--tool-id", tool_id])
         for upstream_checkout in args.upstream_checkout:
             support_args.extend(["--upstream-checkout", upstream_checkout])
-        if args.local_dev_symlink:
-            support_args.append("--local-dev-symlink")
         if not args.dry_run:
             support_args.append("--execute")
         support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *support_args, allow_failure=True)
@@ -2801,8 +2797,6 @@ def cmd_tool_update(args: argparse.Namespace) -> int:
             support_args.extend(["--tool-id", tool_id])
         for upstream_checkout in args.upstream_checkout:
             support_args.extend(["--upstream-checkout", upstream_checkout])
-        if args.local_dev_symlink:
-            support_args.append("--local-dev-symlink")
         if not args.dry_run:
             support_args.append("--execute")
         support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *support_args, allow_failure=True)
@@ -3046,7 +3040,6 @@ def build_parser() -> argparse.ArgumentParser:
 
     def add_support_sync_args(command: argparse.ArgumentParser) -> None:
         command.add_argument("--upstream-checkout", action="append", default=[])
-        command.add_argument("--local-dev-symlink", action="store_true")
 
     tool_doctor_parser = tool_subparsers.add_parser(
         "doctor",
@@ -3062,7 +3055,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     tool_sync_support_parser = tool_subparsers.add_parser(
         "sync-support",
-        help="Refresh generated support references or wrappers for one or more external tools.",
+        help="Refresh cache-backed support skill materialization for one or more external tools.",
     )
     add_common_tool_args(tool_sync_support_parser)
     add_support_sync_args(tool_sync_support_parser)
@@ -3079,13 +3072,13 @@ def build_parser() -> argparse.ArgumentParser:
     tool_install_parser.add_argument(
         "--skip-sync-support",
         action="store_true",
-        help="Skip support reference regeneration after install guidance or execution.",
+        help="Skip support skill rematerialization after install guidance or execution.",
     )
     tool_install_parser.set_defaults(func=cmd_tool_install)
 
     tool_update_parser = tool_subparsers.add_parser(
         "update",
-        help="Attempt manifest-declared external tool updates, then refresh support references and doctor state.",
+        help="Attempt manifest-declared external tool updates, then refresh support skill materialization and doctor state.",
     )
     add_common_tool_args(tool_update_parser)
     add_support_sync_args(tool_update_parser)
@@ -3093,7 +3086,7 @@ def build_parser() -> argparse.ArgumentParser:
     tool_update_parser.add_argument(
         "--skip-sync-support",
         action="store_true",
-        help="Skip support reference regeneration after update.",
+        help="Skip support skill rematerialization after update.",
     )
     tool_update_parser.set_defaults(func=cmd_tool_update)
 

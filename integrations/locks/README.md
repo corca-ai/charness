@@ -22,19 +22,11 @@ without overwriting each other's state.
 
 The sections mean:
 
-- `support`: support capability state, sync strategy, source path, materialized
-  paths, and last sync timestamp
+- `support`: support capability state, source path, cache path, content digest,
+  materialized repo-local paths, and last sync timestamp
 - `doctor`: detect and healthcheck results, version evaluation, and current
   doctor status
 - `update`: last update attempt result plus post-update detect and healthcheck
-
-## Current Default
-
-For v1, the default recommended support sync strategy is `reference`.
-
-That means `sync-support` should prefer generating a local reference artifact
-that points at the upstream support surface instead of copying the upstream
-content into `charness`.
 
 ## Guardrails
 

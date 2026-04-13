@@ -49,10 +49,7 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
     provenance_result = detect_install_provenance(manifest)
     provenance_result["checked_at"] = now_iso()
     previous_lock = read_lock(repo_root, manifest["tool_id"])
-    synced_strategy = None
-    if previous_lock and isinstance(previous_lock.get("support"), dict):
-        synced_strategy = previous_lock["support"].get("sync_strategy")
-    support_state = support_state_for_manifest(manifest, sync_strategy=synced_strategy)
+    support_state = support_state_for_manifest(manifest)
     support_sync = inspect_support_sync(repo_root, previous_lock)
 
     if support_sync["status"] == "missing":

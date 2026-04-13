@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from .support import ROOT, run_script, seed_control_plane_repo
@@ -21,7 +22,7 @@ def test_validate_integrations_passes_on_current_repo() -> None:
     assert result.returncode == 0, result.stderr
 
 
-def test_validate_integrations_rejects_invalid_generated_wrapper(tmp_path: Path) -> None:
+def test_validate_integrations_rejects_invalid_local_wrapper(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     tools_dir = write_manifest_schema(repo)
     (tools_dir / "bad.json").write_text(
@@ -44,7 +45,6 @@ def test_validate_integrations_rejects_invalid_generated_wrapper(tmp_path: Path)
                     "source_type": "local_wrapper",
                     "path": "docs/bad.md",
                     "ref": "main",
-                    "sync_strategy": "generated_wrapper",
                 },
             }
         ),
@@ -52,7 +52,7 @@ def test_validate_integrations_rejects_invalid_generated_wrapper(tmp_path: Path)
     )
     result = run_script("scripts/validate-integrations.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "generated_wrapper requires wrapper_skill_id" in result.stderr
+    assert "local_wrapper requires wrapper_skill_id" in result.stderr
 
 
 def test_validate_integrations_rejects_unsorted_access_modes(tmp_path: Path) -> None:
@@ -146,17 +146,19 @@ def test_validate_integrations_rejects_unsorted_config_layers(tmp_path: Path) ->
 
 def test_doctor_detects_missing_materialized_support_from_previous_sync(tmp_path: Path) -> None:
     repo = seed_control_plane_repo(tmp_path)
-    sync = run_script("scripts/sync_support.py", "--repo-root", str(repo), "--execute", "--json")
+    env = os.environ.copy()
+    env["CHARNESS_CACHE_HOME"] = str(tmp_path / "cache-home")
+    sync = run_script("scripts/sync_support.py", "--repo-root", str(repo), "--execute", "--json", env=env)
     assert sync.returncode == 0, sync.stderr
-    generated_skill = repo / "skills" / "support" / "generated" / "demo-tool-wrapper" / "SKILL.md"
-    generated_skill.unlink()
+    generated_skill_root = repo / "skills" / "support" / "generated" / "demo-tool-wrapper"
+    generated_skill_root.unlink()
 
     doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--write-locks")
     assert doctor.returncode == 1, doctor.stderr
     doctor_payload = json.loads(doctor.stdout)
     assert doctor_payload[0]["doctor_status"] == "support-missing"
     assert doctor_payload[0]["support_sync"]["status"] == "missing"
-    assert doctor_payload[0]["support_sync"]["missing_paths"] == ["skills/support/generated/demo-tool-wrapper/SKILL.md"]
+    assert doctor_payload[0]["support_sync"]["missing_paths"] == ["skills/support/generated/demo-tool-wrapper"]
 
 
 def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path) -> None:
