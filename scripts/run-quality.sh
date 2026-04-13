@@ -8,8 +8,7 @@ STANDING_PYTEST_TARGETS=(
   tests/quality_gates
   tests/control_plane
   tests/test_*.py
-  tests/charness_cli/test_doctor_cache_selection.py
-  tests/charness_cli/test_tool_lifecycle.py
+  tests/charness_cli
 )
 
 RUN_QUALITY_TMPDIR="$(mktemp -d)"
