@@ -58,13 +58,23 @@ def iter_h2_headings(lines: Sequence[str]) -> list[str]:
     return [line.strip() for line in lines if H2_RE.match(line.strip())]
 
 
-def validate_exact_h2_sections(lines: Sequence[str], required_sections: Sequence[str]) -> None:
+def validate_exact_h2_sections(
+    lines: Sequence[str],
+    required_sections: Sequence[str],
+    *,
+    optional_sections: Sequence[str] = (),
+) -> None:
     headings = iter_h2_headings(lines)
-    if headings != list(required_sections):
-        raise ValidationError(
-            "artifact must use only the canonical sections: "
-            + ", ".join(f"`{heading}`" for heading in required_sections)
-        )
+    allowed = list(required_sections) + list(optional_sections)
+    for heading in headings:
+        if heading not in allowed:
+            raise ValidationError(
+                "artifact must use only the canonical sections: "
+                + ", ".join(f"`{heading}`" for heading in allowed)
+            )
+    for required in required_sections:
+        if required not in headings:
+            raise ValidationError(f"missing required section `{required}`")
 
 
 def validate_nonempty_sections(lines: Sequence[str], required_sections: Sequence[str]) -> None:

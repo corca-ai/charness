@@ -34,6 +34,9 @@ REQUIRED_SECTIONS = (
     "## Root Cause",
     "## Prevention",
 )
+OPTIONAL_SECTIONS = (
+    "## Related Prior Incidents",
+)
 
 
 def validate_candidate_causes(lines: list[str]) -> None:
@@ -53,7 +56,7 @@ def validate_debug_artifact(path: Path) -> None:
     )
     validate_date_line(lines)
     validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="debug artifact")
-    validate_exact_h2_sections(lines, REQUIRED_SECTIONS)
+    validate_exact_h2_sections(lines, REQUIRED_SECTIONS, optional_sections=OPTIONAL_SECTIONS)
     validate_nonempty_sections(lines, REQUIRED_SECTIONS)
     validate_candidate_causes(lines)
 
@@ -65,9 +68,17 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     adapter = load_adapter(repo_root)
-    artifact_path = repo_root / adapter["artifact_path"]
-    validate_debug_artifact(artifact_path)
-    print(f"Validated debug artifact {artifact_path.relative_to(repo_root)}.")
+    output_dir = repo_root / adapter["data"]["output_dir"]
+    if not output_dir.is_dir():
+        print(f"No debug output directory at {output_dir.relative_to(repo_root)}.", file=sys.stderr)
+        return 1
+    artifacts = sorted(output_dir.glob("debug*.md"))
+    if not artifacts:
+        print(f"No debug artifacts found in {output_dir.relative_to(repo_root)}.", file=sys.stderr)
+        return 1
+    for artifact_path in artifacts:
+        validate_debug_artifact(artifact_path)
+        print(f"Validated debug artifact {artifact_path.relative_to(repo_root)}.")
     return 0
 
 
@@ -77,4 +88,3 @@ if __name__ == "__main__":
     except ValidationError as exc:
         print(str(exc), file=sys.stderr)
         sys.exit(1)
-

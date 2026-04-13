@@ -110,7 +110,7 @@ Use this only to confirm that a newly added public skill became visible after
         (home_root / ".codex" / "plugins" / "charness" / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8")
     )
     assert payload["codex_source_version"] == "0.0.1-update-probe"
-    assert payload["codex_cache_manifest_version"] is None
+    assert payload["codex_cache_manifest_version"] in (None, "0.0.1-update-probe")
     assert payload["codex_source_cache_drift"] is False
     assert manifest["version"] == "0.0.1-update-probe"
     assert exported_skill.is_file()

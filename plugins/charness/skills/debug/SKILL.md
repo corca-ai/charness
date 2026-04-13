@@ -22,13 +22,14 @@ Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 ```
 
-By default, `debug` writes its durable artifact to
-`skill-outputs/debug/debug.md`. Repos can override the directory with
-`.agents/debug-adapter.yaml`.
+By default, `debug` writes durable artifacts to `skill-outputs/debug/`. Each
+investigation gets its own file: `debug-{date}-{slug}.md`. Repos can override
+the directory with `.agents/debug-adapter.yaml`.
 
-Keep the current debug artifact tight. If recurring incidents start turning it
-into a ledger, move older case detail into the repo's longer-lived debug or
-troubleshooting surfaces and keep this file focused on the current incident.
+Before writing a new artifact, read existing `debug-*.md` files in the output
+directory. If the current incident relates to a prior one, fill in the
+`## Related Prior Incidents` section with a filename reference and one-line
+summary.
 
 ```bash
 # Required Tools: rg
@@ -88,6 +89,8 @@ The durable debug artifact should usually include:
 - `Verification`
 - `Root Cause`
 - `Prevention`
+- `Related Prior Incidents` (optional — include when the incident connects to a
+  prior debug artifact)
 
 ## Guardrails
 
@@ -97,8 +100,6 @@ The durable debug artifact should usually include:
 - Do not stop at the first plausible cause; enumerate multiple candidates first.
 - Do not treat "cannot reproduce locally" as resolution. Record what was tried
   and what observation is still missing.
-- Do not let the current debug artifact accrete unrelated incidents or
-  free-form session logs.
 - Do not leave the learning only in chat when the repo has a durable debug
   artifact path or document style.
 - Web search is the default tool for any "gather more information" step.
