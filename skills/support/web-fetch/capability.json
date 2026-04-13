@@ -1,0 +1,87 @@
+{
+  "schema_version": "1",
+  "capability_id": "web-fetch",
+  "kind": "support_runtime",
+  "display_name": "Public web fetch routing",
+  "summary": "charness-owned public-web fetch routing and response classification support used by gather when plain direct fetch is weak, blocked, or ambiguous.",
+  "support_skill_path": "skills/support/web-fetch/SKILL.md",
+  "supports_public_skills": [
+    "gather"
+  ],
+  "checks": {
+    "detect": {
+      "commands": [
+        "command -v python3 >/dev/null"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Provide `python3` before using the web-fetch routing helpers."
+    },
+    "healthcheck": {
+      "commands": [
+        "python3 --version"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "The local Python 3 runtime exists but does not respond cleanly."
+    }
+  },
+  "access_modes": [
+    "grant",
+    "binary",
+    "public",
+    "human-only",
+    "degraded"
+  ],
+  "capability_requirements": {
+    "grant_ids": [
+      "web.fetch",
+      "web.search"
+    ]
+  },
+  "readiness_checks": [
+    {
+      "check_id": "web-fetch-python-runtime",
+      "summary": "The local Python 3 runtime needed by the routing helpers is available.",
+      "commands": [
+        "command -v python3 >/dev/null"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Install or expose `python3` before using the web-fetch routing helpers."
+    }
+  ],
+  "config_layers": [
+    {
+      "layer_id": "web-fetch-runtime-grant",
+      "layer_type": "grant",
+      "summary": "Prefer host-provided web fetch or web search grants when the runtime offers them."
+    },
+    {
+      "layer_id": "web-fetch-authenticated-binaries",
+      "layer_type": "authenticated-binary",
+      "summary": "Use authenticated or installed binaries such as `gh` or `yt-dlp` only when the selected route explicitly calls for them."
+    },
+    {
+      "layer_id": "web-fetch-operator-step",
+      "layer_type": "operator-step",
+      "summary": "When the route still lands on login walls, CAPTCHA, or private content, stop cleanly and leave the exact missing access path visible."
+    },
+    {
+      "layer_id": "web-fetch-public-fallback",
+      "layer_type": "public-fallback",
+      "summary": "Fall back to direct public fetch, public APIs, URL transforms, reader proxies, or archives when that still answers the request."
+    }
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer the checked-in charness web-fetch routing helpers."
+  },
+  "host_notes": [
+    "This support seam routes and classifies public-web access paths; it does not promise that a recommended route will always succeed live.",
+    "Optional binaries such as `gh` and `yt-dlp` remain external dependencies of specific routes, not hidden requirements of the support capability itself."
+  ]
+}

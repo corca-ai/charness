@@ -83,6 +83,7 @@ use specialized tools consistently.
 
 - `gather-slack`
 - `gather-notion`
+- `web-fetch`
 - generated upstream support references when an integration ships its own skill
   surface, such as `agent-browser` or `cautilus`
 
