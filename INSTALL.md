@@ -111,8 +111,7 @@ Recommended verification steps:
      host install step is still required
    - when Codex is already installed, compare `codex_source_version` and
      `codex_cache_manifest_version`; if they differ, the installed Codex copy is
-     stale and `charness doctor` should tell the operator to restart Codex and,
-     if needed, reinstall or disable/re-enable the local plugin
+     stale and `charness doctor` should tell the operator to rerun `charness update` first because it now retries the official Codex cache refresh, then restart Codex and, if needed, reinstall or disable/re-enable the local plugin
    - Claude should report whether marketplace and installed-plugin markers are
      already present
 3. If you need a durable checkpoint before or after a host restart, run
@@ -131,6 +130,7 @@ Optional version inspection:
 ## Step 4: Update Model
 
 - run `charness update`
+- for Codex, expect `charness update` to attempt the official local plugin cache refresh before falling back to manual host steps
 - follow the new `next_steps` output after the update
 - skill execution must stay read-only with respect to install/update state
 

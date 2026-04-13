@@ -79,7 +79,7 @@ def build_payload(repo_root: Path, consumer_root: Path) -> dict[str, object]:
         "runtime_self_update": False,
         "update_hints": {
             "claude": "Run `charness update`, then restart Claude Code.",
-            "codex": "Run `charness update`, then restart Codex.",
+            "codex": "Run `charness update`; it will try Codex's official plugin/install refresh for enabled local installs. Then restart Codex and only use Plugin Directory if drift remains.",
         },
         "root_install_surface": evaluate_root_install_surface(repo_root),
         "readiness": collect_readiness_summary(repo_root),

@@ -286,6 +286,7 @@ If `charness` is not yet on PATH, the checkout convenience wrapper is:
 Update model:
 
 - run `charness update`
+- for Codex, `charness update` now tries the official local plugin cache refresh for enabled installs before you fall back to Plugin Directory actions
 - restart Claude Code after `charness init` or `charness update`
 - do not add runtime self-update checks to skills
 

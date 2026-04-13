@@ -7,9 +7,11 @@ from datetime import datetime, timedelta, timezone
 import json
 import os
 import re
+import select
 import shutil
 import subprocess
 import sys
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -843,6 +845,169 @@ def codex_primary_cache_entry(
     return None, None
 
 
+def read_jsonrpc_line_with_deadline(stream: subprocess.Popen[str], *, timeout_seconds: float) -> dict[str, object]:
+    deadline = time.monotonic() + timeout_seconds
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise CharnessError("timed out while waiting for Codex app-server response")
+        ready, _, _ = select.select([stream.stdout], [], [], remaining)
+        if not ready:
+            raise CharnessError("timed out while waiting for Codex app-server response")
+        line = stream.stdout.readline()
+        if not line:
+            stderr_output = stream.stderr.read() if stream.stderr is not None else ""
+            raise CharnessError(
+                "Codex app-server exited before returning a response"
+                + (f"\nSTDERR:\n{stderr_output}" if stderr_output else "")
+            )
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise CharnessError(f"Codex app-server returned invalid JSON-RPC payload: {line.strip()}") from exc
+        if isinstance(payload, dict):
+            return payload
+
+
+def send_jsonrpc_message(stream: subprocess.Popen[str], payload: dict[str, object]) -> None:
+    if stream.stdin is None:
+        raise CharnessError("Codex app-server stdin is not available")
+    stream.stdin.write(json.dumps(payload) + "\n")
+    stream.stdin.flush()
+
+
+def refresh_codex_cache_via_app_server(
+    *,
+    home_root: Path,
+    codex_marketplace_path: Path,
+    plugin_name: str,
+    timeout_seconds: float = 10.0,
+) -> dict[str, object]:
+    codex_binary = shutil.which("codex")
+    if codex_binary is None:
+        return {"status": "skipped", "reason": "codex-cli-missing", "method": "codex-app-server-plugin-install"}
+    if not codex_marketplace_path.is_file():
+        return {"status": "skipped", "reason": "missing-marketplace", "method": "codex-app-server-plugin-install"}
+
+    env = os.environ.copy()
+    env["CODEX_HOME"] = str(home_root / ".codex")
+    proc = subprocess.Popen(
+        [codex_binary, "app-server", "--listen", "stdio://"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        cwd=home_root,
+        env=env,
+    )
+    try:
+        send_jsonrpc_message(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "clientInfo": {"name": "charness", "version": "0.1.0"},
+                    "capabilities": {"experimentalApi": True},
+                },
+            },
+        )
+        while True:
+            message = read_jsonrpc_line_with_deadline(proc, timeout_seconds=timeout_seconds)
+            if message.get("id") == 1:
+                if isinstance(message.get("error"), dict):
+                    raise CharnessError(f"Codex app-server initialize failed: {message['error'].get('message')}")
+                break
+        send_jsonrpc_message(proc, {"jsonrpc": "2.0", "method": "notifications/initialized", "params": {}})
+        send_jsonrpc_message(
+            proc,
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "plugin/install",
+                "params": {
+                    "marketplacePath": str(codex_marketplace_path),
+                    "pluginName": plugin_name,
+                    "forceRemoteSync": False,
+                },
+            },
+        )
+        while True:
+            message = read_jsonrpc_line_with_deadline(proc, timeout_seconds=timeout_seconds)
+            if message.get("id") != 2:
+                continue
+            if isinstance(message.get("error"), dict):
+                error_message = message["error"].get("message")
+                return {
+                    "status": "failed",
+                    "reason": "plugin-install-error",
+                    "method": "codex-app-server-plugin-install",
+                    "error": error_message if isinstance(error_message, str) else str(message["error"]),
+                }
+            result = message.get("result")
+            return {
+                "status": "attempted",
+                "reason": "plugin-install-succeeded",
+                "method": "codex-app-server-plugin-install",
+                "response": result if isinstance(result, dict) else {},
+            }
+    except CharnessError as exc:
+        return {
+            "status": "failed",
+            "reason": "app-server-error",
+            "method": "codex-app-server-plugin-install",
+            "error": str(exc),
+        }
+    finally:
+        if proc.stdin is not None:
+            proc.stdin.close()
+        if proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait(timeout=2)
+
+
+def maybe_refresh_codex_cache(
+    *,
+    home_root: Path,
+    codex_marketplace_path: Path,
+    doctor_payload: dict[str, object],
+    skip: bool,
+) -> dict[str, object]:
+    if skip:
+        return {"status": "skipped", "reason": "flag-disabled", "method": "codex-app-server-plugin-install"}
+    enabled_plugin_ids = doctor_payload.get("codex_enabled_plugin_ids")
+    if not isinstance(enabled_plugin_ids, list):
+        return {"status": "skipped", "reason": "missing-config", "method": "codex-app-server-plugin-install"}
+    target_plugin_ids = [
+        plugin_id
+        for plugin_id in enabled_plugin_ids
+        if isinstance(plugin_id, str) and plugin_id.startswith(f"{PACKAGE_ID}@")
+    ]
+    if not target_plugin_ids:
+        return {"status": "skipped", "reason": "plugin-not-enabled", "method": "codex-app-server-plugin-install"}
+    source_version = doctor_payload.get("codex_source_version")
+    cache_version = doctor_payload.get("codex_cache_manifest_version")
+    if isinstance(source_version, str) and isinstance(cache_version, str) and source_version == cache_version:
+        return {
+            "status": "skipped",
+            "reason": "already-current",
+            "method": "codex-app-server-plugin-install",
+            "plugin_id": target_plugin_ids[0],
+        }
+    result = refresh_codex_cache_via_app_server(
+        home_root=home_root,
+        codex_marketplace_path=codex_marketplace_path,
+        plugin_name=PACKAGE_ID,
+    )
+    result["plugin_id"] = target_plugin_ids[0]
+    return result
+
+
 def codex_config_entries(config_path: Path) -> list[dict[str, object]]:
     if not config_path.is_file():
         return []
@@ -889,7 +1054,7 @@ def build_codex_host_guidance(
                 "manual_action_required": True,
                 "message": (
                     f"Codex still has installed charness cache version `{cache_manifest_version}` while the source plugin root is `{source_version}`. "
-                    "Restart Codex first. If `charness doctor` still shows drift, reopen Plugin Directory and reinstall or disable/re-enable the local `charness` entry."
+                    "Run `charness update` to retry the official Codex cache refresh, then restart Codex. If `charness doctor` still shows drift, reopen Plugin Directory and reinstall or disable/re-enable the local `charness` entry."
                 ),
             }
         return {
@@ -1617,7 +1782,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         cli_path=None if args.skip_cli_install else cli_path,
         update=True,
     )
-    doctor_payload = build_doctor_payload(
+    initial_doctor_payload = build_doctor_payload(
         home_root=home_root,
         repo_root=Path(checkout["repo_root"]),
         managed_checkout=managed_checkout,
@@ -1626,6 +1791,35 @@ def cmd_update(args: argparse.Namespace) -> int:
         cli_path=cli_path,
         claude_wrapper_path=claude_wrapper_path,
     )
+    codex_cache_refresh = maybe_refresh_codex_cache(
+        home_root=home_root,
+        codex_marketplace_path=codex_marketplace_path,
+        doctor_payload=initial_doctor_payload,
+        skip=args.skip_codex_cache_refresh,
+    )
+    doctor_payload = initial_doctor_payload
+    if codex_cache_refresh.get("status") == "attempted":
+        doctor_payload = build_doctor_payload(
+            home_root=home_root,
+            repo_root=Path(checkout["repo_root"]),
+            managed_checkout=managed_checkout,
+            plugin_root=plugin_root,
+            codex_marketplace_path=codex_marketplace_path,
+            cli_path=cli_path,
+            claude_wrapper_path=claude_wrapper_path,
+        )
+        codex_cache_refresh["post_refresh_cache_manifest_version"] = doctor_payload.get("codex_cache_manifest_version")
+        codex_cache_refresh["post_refresh_drift"] = doctor_payload.get("codex_source_cache_drift")
+        if doctor_payload.get("codex_source_cache_drift"):
+            codex_cache_refresh["status"] = "failed"
+            codex_cache_refresh["reason"] = "cache-still-stale"
+            codex_cache_refresh["error"] = (
+                "Codex app-server plugin/install returned success, but the active cache version still does not match the source plugin root."
+            )
+        else:
+            codex_cache_refresh["status"] = "refreshed"
+            payload.setdefault("completed_actions", []).append("codex_cache_refreshed")
+    payload["codex_cache_refresh"] = codex_cache_refresh
     payload["next_steps"]["codex"] = doctor_payload["codex_host_guidance"]["message"]
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
@@ -1990,6 +2184,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-pull",
         action="store_true",
         help="Skip the default `git pull --ff-only` when the managed checkout already contains the exact source you want.",
+    )
+    update_parser.add_argument(
+        "--skip-codex-cache-refresh",
+        action="store_true",
+        help="Do not call Codex app-server `plugin/install` to refresh the enabled local plugin cache after updating the source plugin root.",
     )
     update_parser.set_defaults(func=cmd_update)
 

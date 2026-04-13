@@ -177,7 +177,7 @@ Current v1 output is intentionally read-only:
 
 - package version
 - root install-surface drift status
-- explicit update hints for Claude and Codex installs
+- explicit update hints for Claude and Codex installs, including the best-effort Codex cache refresh path
 - lock-based readiness summary for known integrations
 - vendored-copy warnings for consumer repos that still carry a local
   non-symlink `charness` copy

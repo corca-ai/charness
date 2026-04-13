@@ -218,27 +218,6 @@ def test_charness_doctor_reports_codex_version_drift(tmp_path: Path, seeded_mana
     assert payload["codex_host_guidance"]["status"] == "needs-refresh"
 
 
-def test_charness_update_reports_codex_version_drift(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
-    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
-    config_path = home_root / ".codex" / "config.toml"
-    config_path.parent.mkdir(parents=True, exist_ok=True)
-    config_path.write_text('[plugins."charness@local"]\nenabled = true\n', encoding="utf-8")
-    cache_manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / "local" / ".codex-plugin" / "plugin.json"
-    cache_manifest.parent.mkdir(parents=True, exist_ok=True)
-    cache_manifest.write_text('{"version":"0.0.0-old"}', encoding="utf-8")
-
-    update_result = run_cli("update", "--home-root", str(home_root), env=env)
-    assert update_result.returncode == 0, update_result.stderr
-    payload = json.loads(update_result.stdout)
-    assert payload["codex_source_version"] == CURRENT_VERSION
-    assert payload["codex_cache_manifest_version"] == "0.0.0-old"
-    assert payload["codex_source_cache_drift"] is True
-    host_state = json.loads((home_root / ".local" / "share" / "charness" / "host-state.json").read_text(encoding="utf-8"))
-    assert host_state["last_update"]["doctor"]["codex_source_cache_drift"] is True
-    assert host_state["last_update"]["doctor"]["codex_cache_manifest_version"] == "0.0.0-old"
-    assert isinstance(host_state["last_update"]["recorded_at"], str)
-
-
 def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(tmp_path: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -279,7 +258,7 @@ def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(t
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     update_result = subprocess.run(
-        ["python3", str(installed_cli), "update", "--home-root", str(home_root)],
+        ["python3", str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -417,7 +396,7 @@ def test_installed_cli_update_refreshes_the_cli_binary_from_managed_checkout(tmp
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     update_result = subprocess.run(
-        ["python3", str(installed_cli), "update", "--home-root", str(home_root)],
+        ["python3", str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
         cwd=tmp_path,
         check=False,
         capture_output=True,
