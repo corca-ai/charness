@@ -135,8 +135,7 @@ Typical outcomes:
   `~/.codex/plugins/charness` plus `~/.agents/plugins/marketplace.json`, then
   tries the official local `plugin/install` path so cache/config install
   markers appear without a manual Plugin Directory step; after a successful
-  install, start a new Codex session if `charness` is not visible in the
-  current session
+  install, start a new Codex session to load `charness`
 - Codex without the `codex` CLI available: `next_steps.codex` tells the
   operator that only the source and marketplace preparation was possible on
   that machine

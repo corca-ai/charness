@@ -1083,9 +1083,9 @@ def build_codex_host_guidance(
                 "Codex has cached charness but no enabled config entry was found; rerun `charness init` or `charness update` to retry the official install, then reopen Codex if it is still unavailable."
                 if not enabled_plugin_ids
                 else (
-                    "Codex host install markers are present. Start a new Codex session if charness is not visible in the current session."
+                    "Codex host install markers are present. Start a new Codex session to load charness."
                     if not stale_enabled_ids
-                    else "Codex host install markers are present. Start a new Codex session if charness is not visible in the current session. Extra stale enabled cache entries remain: "
+                    else "Codex host install markers are present. Start a new Codex session to load charness. Extra stale enabled cache entries remain: "
                     + ", ".join(f"`{plugin_id}`" for plugin_id in stale_enabled_ids)
                     + "."
                 )
