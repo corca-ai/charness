@@ -971,7 +971,7 @@ def refresh_codex_cache_via_app_server(
                 proc.wait(timeout=2)
 
 
-def maybe_refresh_codex_cache(
+def maybe_install_codex_host(
     *,
     home_root: Path,
     codex_marketplace_path: Path,
@@ -980,6 +980,9 @@ def maybe_refresh_codex_cache(
 ) -> dict[str, object]:
     if skip:
         return {"status": "skipped", "reason": "flag-disabled", "method": "codex-app-server-plugin-install"}
+    hosts = doctor_payload.get("hosts")
+    if not isinstance(hosts, dict) or hosts.get("codex") is not True:
+        return {"status": "skipped", "reason": "codex-cli-missing", "method": "codex-app-server-plugin-install"}
     enabled_plugin_ids = doctor_payload.get("codex_enabled_plugin_ids")
     if not isinstance(enabled_plugin_ids, list):
         return {"status": "skipped", "reason": "missing-config", "method": "codex-app-server-plugin-install"}
@@ -988,23 +991,32 @@ def maybe_refresh_codex_cache(
         for plugin_id in enabled_plugin_ids
         if isinstance(plugin_id, str) and plugin_id.startswith(f"{PACKAGE_ID}@")
     ]
-    if not target_plugin_ids:
-        return {"status": "skipped", "reason": "plugin-not-enabled", "method": "codex-app-server-plugin-install"}
+    action = "refresh" if target_plugin_ids else "install"
     source_version = doctor_payload.get("codex_source_version")
     cache_version = doctor_payload.get("codex_cache_manifest_version")
-    if isinstance(source_version, str) and isinstance(cache_version, str) and source_version == cache_version:
+    host_guidance = doctor_payload.get("codex_host_guidance")
+    host_status = host_guidance.get("status") if isinstance(host_guidance, dict) else None
+    if (
+        host_status == "installed"
+        and isinstance(source_version, str)
+        and isinstance(cache_version, str)
+        and source_version == cache_version
+    ):
         return {
             "status": "skipped",
             "reason": "already-current",
             "method": "codex-app-server-plugin-install",
-            "plugin_id": target_plugin_ids[0],
+            "action": action,
+            "plugin_id": target_plugin_ids[0] if target_plugin_ids else None,
         }
     result = refresh_codex_cache_via_app_server(
         home_root=home_root,
         codex_marketplace_path=codex_marketplace_path,
         plugin_name=PACKAGE_ID,
     )
-    result["plugin_id"] = target_plugin_ids[0]
+    result["action"] = action
+    if target_plugin_ids:
+        result["plugin_id"] = target_plugin_ids[0]
     return result
 
 
@@ -1025,11 +1037,18 @@ def codex_config_entries(config_path: Path) -> list[dict[str, object]]:
 
 def build_codex_host_guidance(
     *,
+    codex_available: bool,
     codex_marketplace_path: Path,
     source_version: str | None,
     cache_entries: list[dict[str, str]],
     config_entries: list[dict[str, object]],
 ) -> dict[str, object]:
+    if not codex_available:
+        return {
+            "status": "host-unavailable",
+            "manual_action_required": False,
+            "message": "Codex CLI not detected; charness prepared the local plugin source and personal marketplace only.",
+        }
     if cache_entries:
         enabled_plugin_ids = codex_enabled_plugin_ids(config_entries)
         primary_cache, primary_plugin_id = codex_primary_cache_entry(
@@ -1061,7 +1080,7 @@ def build_codex_host_guidance(
             "status": "installed" if enabled_plugin_ids else "cached",
             "manual_action_required": not bool(enabled_plugin_ids),
             "message": (
-                "Codex has cached charness but no enabled config entry was found; reopen Codex and enable `charness` if it is still unavailable."
+                "Codex has cached charness but no enabled config entry was found; rerun `charness init` or `charness update` to retry the official install, then reopen Codex if it is still unavailable."
                 if not enabled_plugin_ids
                 else (
                     "Codex host install markers are present."
@@ -1076,8 +1095,9 @@ def build_codex_host_guidance(
         "status": "needs-host-install",
         "manual_action_required": True,
         "message": (
-            "Restart Codex from the home directory that owns "
-            f"`{codex_marketplace_path}`. If `charness` is still not available, open Plugin Directory and install or enable the local `charness` entry."
+            "Codex CLI is available but charness is not installed yet. "
+            "Run `charness init` or `charness update` to retry the official local plugin install for "
+            f"`{codex_marketplace_path}`. If Codex still does not load charness after that, restart Codex and only then fall back to Plugin Directory recovery."
         ),
     }
 
@@ -1340,6 +1360,7 @@ def build_doctor_payload(
         and payload["codex_source_version"] != payload["codex_cache_manifest_version"]
     )
     payload["codex_host_guidance"] = build_codex_host_guidance(
+        codex_available=payload["hosts"]["codex"],
         codex_marketplace_path=codex_marketplace_path,
         source_version=payload["codex_source_version"],
         cache_entries=payload["codex_cache_entries"],
@@ -1725,7 +1746,7 @@ def cmd_init(args: argparse.Namespace) -> int:
         cli_path=None if args.skip_cli_install else cli_path,
         update=False,
     )
-    doctor_payload = build_doctor_payload(
+    initial_doctor_payload = build_doctor_payload(
         home_root=home_root,
         repo_root=Path(checkout["repo_root"]),
         managed_checkout=managed_checkout,
@@ -1734,6 +1755,44 @@ def cmd_init(args: argparse.Namespace) -> int:
         cli_path=cli_path,
         claude_wrapper_path=claude_wrapper_path,
     )
+    codex_host_install = maybe_install_codex_host(
+        home_root=home_root,
+        codex_marketplace_path=codex_marketplace_path,
+        doctor_payload=initial_doctor_payload,
+        skip=False,
+    )
+    doctor_payload = initial_doctor_payload
+    if codex_host_install.get("status") == "attempted":
+        doctor_payload = build_doctor_payload(
+            home_root=home_root,
+            repo_root=Path(checkout["repo_root"]),
+            managed_checkout=managed_checkout,
+            plugin_root=plugin_root,
+            codex_marketplace_path=codex_marketplace_path,
+            cli_path=cli_path,
+            claude_wrapper_path=claude_wrapper_path,
+        )
+        codex_host_install["post_install_cache_manifest_version"] = doctor_payload.get(
+            "codex_cache_manifest_version"
+        )
+        codex_host_install["post_install_host_status"] = doctor_payload.get("codex_host_guidance", {}).get(
+            "status"
+        )
+        if (
+            doctor_payload.get("codex_host_guidance", {}).get("status") != "installed"
+            or doctor_payload.get("codex_source_cache_drift")
+        ):
+            codex_host_install["status"] = "failed"
+            codex_host_install["reason"] = "install-incomplete"
+            codex_host_install["error"] = (
+                "Codex app-server plugin/install returned success, but charness still does not appear as an installed current local plugin."
+            )
+        else:
+            codex_host_install["status"] = "installed"
+            payload.setdefault("completed_actions", []).append("codex_host_installed")
+    payload["codex_host_install"] = codex_host_install
+    payload["codex_host_guidance"] = doctor_payload["codex_host_guidance"]
+    payload["claude_host_guidance"] = doctor_payload["claude_host_guidance"]
     payload["next_steps"]["codex"] = doctor_payload["codex_host_guidance"]["message"]
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
@@ -1791,7 +1850,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         cli_path=cli_path,
         claude_wrapper_path=claude_wrapper_path,
     )
-    codex_cache_refresh = maybe_refresh_codex_cache(
+    codex_cache_refresh = maybe_install_codex_host(
         home_root=home_root,
         codex_marketplace_path=codex_marketplace_path,
         doctor_payload=initial_doctor_payload,
@@ -1810,16 +1869,28 @@ def cmd_update(args: argparse.Namespace) -> int:
         )
         codex_cache_refresh["post_refresh_cache_manifest_version"] = doctor_payload.get("codex_cache_manifest_version")
         codex_cache_refresh["post_refresh_drift"] = doctor_payload.get("codex_source_cache_drift")
-        if doctor_payload.get("codex_source_cache_drift"):
+        post_status = doctor_payload.get("codex_host_guidance", {}).get("status")
+        codex_cache_refresh["post_refresh_host_status"] = post_status
+        if doctor_payload.get("codex_source_cache_drift") or post_status != "installed":
             codex_cache_refresh["status"] = "failed"
-            codex_cache_refresh["reason"] = "cache-still-stale"
+            codex_cache_refresh["reason"] = (
+                "install-incomplete"
+                if codex_cache_refresh.get("action") == "install"
+                else "cache-still-stale"
+            )
             codex_cache_refresh["error"] = (
-                "Codex app-server plugin/install returned success, but the active cache version still does not match the source plugin root."
+                "Codex app-server plugin/install returned success, but charness still does not appear as an installed current local plugin."
             )
         else:
-            codex_cache_refresh["status"] = "refreshed"
-            payload.setdefault("completed_actions", []).append("codex_cache_refreshed")
+            if codex_cache_refresh.get("action") == "install":
+                codex_cache_refresh["status"] = "installed"
+                payload.setdefault("completed_actions", []).append("codex_host_installed")
+            else:
+                codex_cache_refresh["status"] = "refreshed"
+                payload.setdefault("completed_actions", []).append("codex_cache_refreshed")
     payload["codex_cache_refresh"] = codex_cache_refresh
+    payload["codex_host_guidance"] = doctor_payload["codex_host_guidance"]
+    payload["claude_host_guidance"] = doctor_payload["claude_host_guidance"]
     payload["next_steps"]["codex"] = doctor_payload["codex_host_guidance"]["message"]
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]

@@ -3,10 +3,12 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 from .support import (
     CLI,
+    build_test_path,
     clone_seeded_managed_home,
     make_fake_claude,
     make_git_repo_copy,
@@ -25,7 +27,7 @@ def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
     legacy_skills.symlink_to(CLI.parents[1] / "skills" / "public", target_is_directory=True)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
-    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
+    env["PATH"] = build_test_path(fake_claude.parent)
     result = run_cli("init", "--home-root", str(home_root), env=env)
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -36,9 +38,10 @@ def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
     assert payload["checkout"]["managed"] is True
     assert (
         payload["next_steps"]["codex"]
-        == "Restart Codex from the home directory that owns "
-        f"`{home_root / '.agents' / 'plugins' / 'marketplace.json'}`. If `charness` is still not available, open Plugin Directory and install or enable the local `charness` entry."
+        == "Codex CLI not detected; charness prepared the local plugin source and personal marketplace only."
     )
+    assert payload["codex_host_install"]["status"] == "skipped"
+    assert payload["codex_host_install"]["reason"] == "codex-cli-missing"
     assert payload["next_steps"]["claude"] == "Restart Claude Code to load charness."
     assert payload["removed_legacy_skills_symlink"] is True
     assert "legacy_skills_symlink_removed" in payload["completed_actions"]
@@ -68,9 +71,9 @@ def test_standalone_cli_bootstraps_managed_checkout_without_explicit_clone(tmp_p
 
     env = os.environ.copy()
     env["HOME"] = str(home_root)
-    env["PATH"] = f"{fake_claude.parent}:{standalone_cli.parent}:{env.get('PATH', '')}"
+    env["PATH"] = build_test_path(fake_claude.parent, standalone_cli.parent)
     result = subprocess.run(
-        ["python3", str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
+        [sys.executable, str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -104,7 +107,7 @@ def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_p
     packaging["claude"]["manifest"]["version"] = "0.0.1-upstream-test"
     packaging_path.write_text(json.dumps(packaging, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     sync_result = subprocess.run(
-        ["python3", "scripts/sync_root_plugin_manifests.py", "--repo-root", "."],
+        [sys.executable, "scripts/sync_root_plugin_manifests.py", "--repo-root", "."],
         cwd=upstream_repo,
         check=False,
         capture_output=True,
@@ -140,9 +143,9 @@ def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_p
     fake_claude = make_fake_claude(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
-    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
+    env["PATH"] = build_test_path(fake_claude.parent)
     result = subprocess.run(
-        ["python3", str(embedded_cli), "init", "--home-root", str(home_root)],
+        [sys.executable, str(embedded_cli), "init", "--home-root", str(home_root)],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -179,8 +182,8 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert payload["codex_source_version"] == CURRENT_VERSION
     assert payload["codex_cache_manifest_version"] is None
     assert payload["codex_source_cache_drift"] is False
-    assert payload["codex_host_guidance"]["status"] == "needs-host-install"
-    assert payload["codex_host_guidance"]["manual_action_required"] is True
+    assert payload["codex_host_guidance"]["status"] == "host-unavailable"
+    assert payload["codex_host_guidance"]["manual_action_required"] is False
     assert payload["claude_marketplace_name"] == "corca-charness"
     assert payload["claude_plugin_ref"] == "charness@corca-charness"
     assert payload["repo_root"] == str(home_root / ".agents" / "src" / "charness")
@@ -194,30 +197,9 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert payload["latest_release_check"] is None
     host_state = json.loads((home_root / ".local" / "share" / "charness" / "host-state.json").read_text(encoding="utf-8"))
     assert host_state["state_version"] == 1
-    assert host_state["last_init"]["doctor"]["codex_host_guidance"]["status"] == "needs-host-install"
+    assert host_state["last_init"]["doctor"]["codex_host_guidance"]["status"] == "host-unavailable"
     assert host_state["last_init"]["doctor"]["repo_root"] == str(home_root / ".agents" / "src" / "charness")
     assert isinstance(host_state["last_init"]["recorded_at"], str)
-
-
-def test_charness_doctor_reports_codex_version_drift(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
-    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
-    config_path = home_root / ".codex" / "config.toml"
-    config_path.parent.mkdir(parents=True, exist_ok=True)
-    config_path.write_text('[plugins."charness@local"]\nenabled = true\n', encoding="utf-8")
-    cache_manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / "local" / ".codex-plugin" / "plugin.json"
-    cache_manifest.parent.mkdir(parents=True, exist_ok=True)
-    cache_manifest.write_text('{"version":"0.0.0-old"}', encoding="utf-8")
-
-    doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
-    assert doctor_result.returncode == 0, doctor_result.stderr
-    payload = json.loads(doctor_result.stdout)
-    assert payload["codex_source_version"] == CURRENT_VERSION
-    assert payload["codex_cache_manifest_version"] == "0.0.0-old"
-    assert payload["codex_source_cache_drift"] is True
-    assert payload["codex_enabled_plugin_id"] == "charness@local"
-    assert payload["codex_host_guidance"]["status"] == "needs-refresh"
-
-
 def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(tmp_path: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -231,10 +213,10 @@ def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(t
 
     env = os.environ.copy()
     env["HOME"] = str(home_root)
-    env["PATH"] = f"{fake_claude.parent}:{standalone_cli.parent}:{env.get('PATH', '')}"
+    env["PATH"] = build_test_path(fake_claude.parent, standalone_cli.parent)
 
     init_result = subprocess.run(
-        ["python3", str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
+        [sys.executable, str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -258,7 +240,7 @@ def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(t
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     update_result = subprocess.run(
-        ["python3", str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
+        [sys.executable, str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -277,7 +259,7 @@ def test_installed_cli_remembers_managed_checkout(tmp_path: Path, seeded_managed
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     installed_cli = home_root / ".local" / "bin" / "charness"
     doctor_result = subprocess.run(
-        ["python3", str(installed_cli), "doctor", "--home-root", str(home_root), "--json"],
+        [sys.executable, str(installed_cli), "doctor", "--home-root", str(home_root), "--json"],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -301,7 +283,7 @@ def test_charness_version_can_refresh_latest_release_and_record_provenance(
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     version_result = subprocess.run(
-        ["python3", str(installed_cli), "version", "--home-root", str(home_root), "--json", "--check"],
+        [sys.executable, str(installed_cli), "version", "--home-root", str(home_root), "--json", "--check"],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -333,7 +315,7 @@ def test_installed_cli_can_emit_auto_update_notice(tmp_path: Path, seeded_manage
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     doctor_result = subprocess.run(
-        ["python3", str(installed_cli), "doctor", "--home-root", str(home_root)],
+        [sys.executable, str(installed_cli), "doctor", "--home-root", str(home_root)],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -368,10 +350,10 @@ def test_installed_cli_update_refreshes_the_cli_binary_from_managed_checkout(tmp
 
     env = os.environ.copy()
     env["HOME"] = str(home_root)
-    env["PATH"] = f"{fake_claude.parent}:{standalone_cli.parent}:{env.get('PATH', '')}"
+    env["PATH"] = build_test_path(fake_claude.parent, standalone_cli.parent)
 
     init_result = subprocess.run(
-        ["python3", str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
+        [sys.executable, str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -396,7 +378,7 @@ def test_installed_cli_update_refreshes_the_cli_binary_from_managed_checkout(tmp
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     update_result = subprocess.run(
-        ["python3", str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
+        [sys.executable, str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
         cwd=tmp_path,
         check=False,
         capture_output=True,
@@ -413,7 +395,7 @@ def test_non_managed_repo_root_requires_skip_cli_install(tmp_path: Path) -> None
     fake_claude = make_fake_claude(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
-    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
+    env["PATH"] = build_test_path(fake_claude.parent)
     init_result = run_cli("init", "--home-root", str(home_root), "--repo-root", str(CLI.parents[0]), env=env)
     assert init_result.returncode != 0
     assert "official charness installs must use the managed checkout" in (init_result.stderr + init_result.stdout)
@@ -424,14 +406,14 @@ def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path
     fake_claude = make_fake_claude(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
-    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
+    env["PATH"] = build_test_path(fake_claude.parent)
     installed_cli = home_root / ".local" / "bin" / "charness"
     installed_cli.parent.mkdir(parents=True, exist_ok=True)
     installed_cli.write_text(CLI.read_text(encoding="utf-8"), encoding="utf-8")
     installed_cli.chmod(0o755)
 
     doctor_result = subprocess.run(
-        ["python3", str(installed_cli), "doctor", "--home-root", str(home_root), "--json"],
+        [sys.executable, str(installed_cli), "doctor", "--home-root", str(home_root), "--json"],
         cwd=tmp_path,
         check=False,
         capture_output=True,

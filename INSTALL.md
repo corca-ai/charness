@@ -131,10 +131,13 @@ Typical outcomes:
 
 - Claude: marketplace and plugin install complete during `charness init`, so
   the remaining step is usually just restarting Claude Code
-- Codex: `charness init` prepares `~/.codex/plugins/charness` plus
-  `~/.agents/plugins/marketplace.json`; if Codex has not yet installed the
-  plugin, `next_steps.codex` tells the operator to restart Codex and, if
-  needed, install or enable `charness` from Plugin Directory
+- Codex with the `codex` CLI available: `charness init` prepares
+  `~/.codex/plugins/charness` plus `~/.agents/plugins/marketplace.json`, then
+  tries the official local `plugin/install` path so cache/config install
+  markers appear without a manual Plugin Directory step
+- Codex without the `codex` CLI available: `next_steps.codex` tells the
+  operator that only the source and marketplace preparation was possible on
+  that machine
 
 The checked-in root marketplace files remain generated compatibility artifacts,
 not the official operator-facing install path.
@@ -145,11 +148,12 @@ Recommended verification steps:
 
 1. Run `charness doctor`.
 2. Confirm that host guidance matches reality:
-   - Codex should report whether cache/config markers are already present or a
-     host install step is still required
+   - Codex should report whether cache/config markers are already present,
+     whether the Codex CLI was unavailable on that machine, or whether a host
+     install step is still required after an attempted official install
    - when Codex is already installed, compare `codex_source_version` and
      `codex_cache_manifest_version`; if they differ, the installed Codex copy is
-     stale and `charness doctor` should tell the operator to rerun `charness update` first because it now retries the official Codex cache refresh, then restart Codex and, if needed, reinstall or disable/re-enable the local plugin
+     stale and `charness doctor` should tell the operator to rerun `charness update` first because it now retries the official Codex `plugin/install` path, then restart Codex and only if needed reinstall or disable/re-enable the local plugin
    - Claude should report whether marketplace and installed-plugin markers are
      already present
 3. If you need a durable checkpoint before or after a host restart, run

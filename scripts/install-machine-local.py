@@ -175,7 +175,7 @@ def main() -> int:
                 "detected_hosts": detected_hosts,
                 "next_steps": {
                     "codex": (
-                        "Restart Codex from the home root so it reloads the personal marketplace. If `charness` is still unavailable, install or enable it from Plugin Directory."
+                        "Codex local source and personal marketplace were prepared. `charness init` or `charness update` should finish the official local plugin install when the Codex CLI is available."
                         if marketplace_path
                         else "Codex marketplace update skipped."
                     ),

@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import textwrap
 from pathlib import Path
 
@@ -22,36 +23,42 @@ REPO_COPY_IGNORE = shutil.ignore_patterns(
     "node_modules",
     "history",
 )
-
-
 def run_cli(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        ["python3", str(CLI), *args],
+        [sys.executable, str(CLI), *args],
         cwd=ROOT,
         check=False,
         capture_output=True,
         text=True,
         env=env,
     )
-
-
 def run_cli_in_repo(repo_root: Path, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        ["python3", str(repo_root / "charness"), *args],
+        [sys.executable, str(repo_root / "charness"), *args],
         cwd=repo_root,
         check=False,
         capture_output=True,
         text=True,
         env=env,
     )
-
-
+def build_test_path(*bin_dirs: Path) -> str:
+    ordered = [*bin_dirs, Path(sys.executable).resolve().parent]
+    git_binary = shutil.which("git")
+    if git_binary is not None:
+        ordered.append(Path(git_binary).resolve().parent)
+    unique: list[str] = []
+    seen: set[str] = set()
+    for path in ordered:
+        value = str(path)
+        if value in seen:
+            continue
+        seen.add(value)
+        unique.append(value)
+    return os.pathsep.join(unique)
 def make_repo_copy(tmp_path: Path) -> Path:
     repo_copy = tmp_path / "repo"
     shutil.copytree(ROOT, repo_copy, ignore=REPO_COPY_IGNORE)
     return repo_copy
-
-
 def make_git_repo_copy(tmp_path: Path) -> Path:
     repo_copy = make_repo_copy(tmp_path)
     subprocess.run(["git", "init"], cwd=repo_copy, check=True, capture_output=True, text=True)
@@ -72,8 +79,6 @@ def make_git_repo_copy(tmp_path: Path) -> Path:
         text=True,
     )
     return repo_copy
-
-
 def make_release_fixture(tmp_path: Path) -> Path:
     fixture = tmp_path / "release-fixtures.json"
     fixture.write_text(
@@ -117,8 +122,6 @@ def make_release_fixture(tmp_path: Path) -> Path:
         encoding="utf-8",
     )
     return fixture
-
-
 def rewrite_seeded_home_paths(home_root: Path, *, old_home_root: Path) -> None:
     old = str(old_home_root)
     new = str(home_root)
@@ -134,8 +137,6 @@ def rewrite_seeded_home_paths(home_root: Path, *, old_home_root: Path) -> None:
         if not path.is_file():
             continue
         path.write_text(path.read_text(encoding="utf-8").replace(old, new), encoding="utf-8")
-
-
 def make_fake_claude(tmp_path: Path) -> Path:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
@@ -239,7 +240,6 @@ def make_fake_claude(tmp_path: Path) -> Path:
     )
     script.chmod(0o755)
     return script
-
 def make_fake_codex(tmp_path: Path, *, fail_plugin_install: bool = False) -> Path:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
@@ -333,9 +333,6 @@ raise SystemExit(0)
     script.write_text(template, encoding="utf-8")
     script.chmod(0o755)
     return script
-
-
-
 @pytest.fixture(scope="module")
 def seeded_managed_home(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Path]:
     seed_root = tmp_path_factory.mktemp("managed-home-seed")
@@ -346,12 +343,10 @@ def seeded_managed_home(tmp_path_factory: pytest.TempPathFactory) -> dict[str, P
     fake_claude = make_fake_claude(seed_root)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
-    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
+    env["PATH"] = build_test_path(fake_claude.parent)
     init_result = run_cli("init", "--home-root", str(home_root), "--repo-url", str(source_repo), env=env)
     assert init_result.returncode == 0, init_result.stderr
     return {"home_root": home_root}
-
-
 def clone_seeded_managed_home(tmp_path: Path, seeded_home_root: Path) -> tuple[Path, dict[str, str]]:
     home_root = tmp_path / "home"
     shutil.copytree(seeded_home_root, home_root)
@@ -359,10 +354,8 @@ def clone_seeded_managed_home(tmp_path: Path, seeded_home_root: Path) -> tuple[P
     fake_claude = make_fake_claude(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
-    env["PATH"] = f"{fake_claude.parent}:{env.get('PATH', '')}"
+    env["PATH"] = build_test_path(fake_claude.parent)
     return home_root, env
-
-
 def make_fake_agent_browser(tmp_path: Path) -> Path:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
@@ -390,8 +383,6 @@ def make_fake_agent_browser(tmp_path: Path) -> Path:
     )
     script.chmod(0o755)
     return script
-
-
 def make_fake_brew_specdown(tmp_path: Path) -> tuple[Path, Path]:
     brew_root = tmp_path / "linuxbrew"
     bin_dir = brew_root / "bin"
@@ -437,8 +428,6 @@ def make_fake_brew_specdown(tmp_path: Path) -> tuple[Path, Path]:
     )
     specdown_script.chmod(0o755)
     return brew_script, specdown_script
-
-
 def make_fake_npm_gws(tmp_path: Path) -> tuple[Path, Path]:
     npm_prefix = tmp_path / "npm-global"
     bin_dir = npm_prefix / "bin"

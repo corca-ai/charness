@@ -26,8 +26,8 @@ def test_plugin_preamble_json_output_includes_hints_and_readiness() -> None:
     assert payload["root_install_surface"]["ok"] is True
     assert payload["update_hints"]["claude"] == "Run `charness update`, then restart Claude Code."
     assert payload["update_hints"]["codex"] == (
-        "Run `charness update`; it will try Codex's official plugin/install refresh for enabled local installs. "
-        "Then restart Codex and only use Plugin Directory if drift remains."
+        "Run `charness init` or `charness update`; both try Codex's official plugin/install path when the Codex CLI is available. "
+        "Restart Codex only if the host state still needs to reload the installed plugin."
     )
     assert isinstance(payload["readiness"], list)
     assert any(entry["tool_id"] == "agent-browser" for entry in payload["readiness"])

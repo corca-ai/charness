@@ -319,7 +319,7 @@ If you already have a checkout, the convenience wrapper is:
 Update model:
 
 - run `charness update`
-- for Codex, `charness update` now tries the official local plugin cache refresh for enabled installs before you fall back to Plugin Directory actions
+- for Codex, both `charness init` and `charness update` now try the official local plugin install path when the Codex CLI is available
 - restart Claude Code after `charness init` or `charness update`
 - do not add runtime self-update checks to skills
 
@@ -358,14 +358,17 @@ Current status:
 
 - managed local CLI install is the official operator path
 - `charness init` deterministically prepares the local plugin source and
-  personal marketplace entry
-- Codex host install or enable may still depend on Codex itself; use
-  `charness doctor` to see whether cache/config markers appeared and whether a
-  manual Plugin Directory step is still required
+  personal marketplace entry, then tries Codex's official local plugin install
+  path when the Codex CLI is available
+- use `charness doctor` to see whether cache/config markers appeared, whether
+  Codex was unavailable on that machine, or whether a manual recovery step is
+  still needed after an attempted install
 
 Update model:
 
 - run `charness update`
+- `charness update` retries the same official Codex local plugin install path
+  before you fall back to manual recovery
 - restart or reload Codex so the install sees the new files
 - do not check for updates during skill execution
 

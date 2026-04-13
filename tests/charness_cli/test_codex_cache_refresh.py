@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .support import CLI, clone_seeded_managed_home, make_fake_codex, run_cli
+from .support import CLI, build_test_path, clone_seeded_managed_home, make_fake_codex, run_cli
 
 CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
 
@@ -36,7 +36,7 @@ def test_charness_update_refreshes_codex_cache_via_official_app_server(
 ) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     fake_codex = make_fake_codex(tmp_path)
-    env["PATH"] = f"{fake_codex.parent}:{env.get('PATH', '')}"
+    env["PATH"] = build_test_path(fake_codex.parent)
 
     config_path = home_root / ".codex" / "config.toml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
@@ -52,6 +52,7 @@ def test_charness_update_refreshes_codex_cache_via_official_app_server(
     refreshed_manifest = home_root / ".codex" / "plugins" / "cache" / "local" / "charness" / CURRENT_VERSION / ".codex-plugin" / "plugin.json"
     assert payload["codex_cache_refresh"]["status"] == "refreshed"
     assert payload["codex_cache_refresh"]["method"] == "codex-app-server-plugin-install"
+    assert payload["codex_cache_refresh"]["action"] == "refresh"
     assert payload["codex_cache_manifest_version"] == CURRENT_VERSION
     assert payload["codex_source_cache_drift"] is False
     assert "codex_cache_refreshed" in payload["completed_actions"]

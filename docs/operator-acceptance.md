@@ -138,9 +138,9 @@ Suggested operator runs:
 - run `charness update`
 - verify Claude by checking that the changed payload is reflected in the
   installed host copy after the documented restart/reload step
-- start from a clean installed Codex baseline; if needed, use `charness reset`, `charness init`, and one Plugin Directory install so `doctor` reports no drift before the update experiment
+- start from a clean installed Codex baseline; if needed, use `charness reset` followed by `charness init` on a machine where the `codex` CLI is available, and confirm `doctor` reports no drift before the update experiment
 - make a clearly visible payload delta, such as adding or removing a temporary skill or changing an obviously surfaced manifest/version string
-- run `charness update`, which now attempts the official Codex `plugin/install` refresh for enabled local plugins, then restart Codex and record whether the payload delta appears without any Plugin Directory action
+- run `charness update`, which now retries the official Codex `plugin/install` path for local installs, then restart Codex and record whether the payload delta appears without any Plugin Directory action
 - if restart-only fails, try Plugin Directory re-enable; if that still fails, try reinstall; record the first step that makes the payload delta appear
 - if the host output is ambiguous, record that ambiguity instead of claiming
   update propagation worked

@@ -3,12 +3,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .support import clone_seeded_managed_home, run_cli
+from .support import build_test_path, clone_seeded_managed_home, make_fake_codex, run_cli
 from .test_managed_install import CURRENT_VERSION
 
 
 def test_doctor_prefers_enabled_cache_matching_source_version(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    fake_codex = make_fake_codex(tmp_path)
+    env["PATH"] = build_test_path(fake_codex.parent)
     config_path = home_root / ".codex" / "config.toml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text(
