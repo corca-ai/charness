@@ -17,21 +17,59 @@ individual public skills à la carte.
 - do not add runtime self-update behavior to skills
 - prefer the documented `charness` CLI path over ad hoc host-specific install
   commands
-- if a host behavior differs from the docs, record the exact behavior instead of
-  silently changing the contract
+- `charness init` is the host detector; do not guess Claude versus Codex up
+  front when the machine state is unknown
+- if a host behavior differs from the docs, record the exact behavior instead
+  of silently changing the contract
 
 ## Prerequisites
 
+This contract is intended to work even when the machine starts in a zero-state
+install posture:
+
+- `charness` may or may not already be on PATH
+- a local `charness` checkout may or may not already exist
+- the host may be Claude, Codex, or still unknown
+
+Minimum bootstrap prerequisites:
+
 - the user asked to install or verify `charness`
-- you can either already have `charness` on PATH or have a checkout that still
-  carries `./init.sh`
 - you can run shell commands and read local files
-- explicit manual clone is optional; `charness init` may materialize the
-  managed checkout internally from `--repo-url`
+- `bash` and `git` are available
+- either `curl` is available or you can download the raw `init.sh` script
+- outbound network access to the `charness` repo is available for zero-state
+  bootstrap
 
-## Step 1: Bootstrap With `charness init`
+If one of those prerequisites is missing, stop and report the exact blocker.
+Do not invent a different host-specific install path.
 
-The official install path is the managed `charness` CLI.
+## Step 1: Bootstrap Into The Managed CLI
+
+All official install paths converge on `charness init`.
+
+### Zero-state machine: no PATH binary and no checkout
+
+Use the raw bootstrap script. Do not fetch the GitHub blob HTML page.
+
+Recommended path:
+
+```bash
+curl -fsSLo /tmp/charness-init.sh \
+  https://raw.githubusercontent.com/corca-ai/charness/main/init.sh
+bash /tmp/charness-init.sh
+```
+
+Equivalent fast path:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/corca-ai/charness/main/init.sh | bash
+```
+
+This bootstrap script clones the managed checkout to
+`~/.agents/src/charness` when it does not already exist, then delegates to
+`charness init`.
+
+### Existing installed CLI on PATH
 
 If `charness` is already on PATH, bootstrap directly:
 
@@ -39,16 +77,34 @@ If `charness` is already on PATH, bootstrap directly:
 charness init
 ```
 
-If `charness` is not yet on PATH, use the checkout convenience wrapper from any
-checkout that still has `init.sh`:
+### Existing checkout with `init.sh`
+
+If you already have a `charness` checkout that still carries `./init.sh`, that
+wrapper is a valid bootstrap path:
 
 ```bash
 ./init.sh
 ```
 
-Both paths converge on the same contract: `charness init` reuses
-`~/.agents/src/charness` when it already exists. Otherwise it creates that
-managed checkout first, then installs from there.
+### Proof-only non-managed checkout
+
+If you are deliberately proving the install from a non-managed checkout, keep
+that as a proof-only path and do not let it become the installed CLI source:
+
+```bash
+./charness init --repo-root /absolute/path/to/charness --skip-cli-install
+```
+
+The official installed CLI should always resolve back to
+`~/.agents/src/charness`.
+
+After a successful bootstrap, `charness` installs a reusable CLI copy at
+`~/.local/bin/charness`. If the current shell still cannot find `charness`,
+either refresh PATH or call the installed binary directly:
+
+```bash
+~/.local/bin/charness doctor
+```
 
 One-time recovery note for older installs:
 
@@ -65,24 +121,6 @@ One-time recovery note for older installs:
 ```bash
 charness doctor --write-state
 ```
-
-That first run materializes the official managed checkout at
-`~/.agents/src/charness`, exports the host install surfaces, and installs a
-reusable CLI copy at `~/.local/bin/charness`. If `~/.local/bin` is on PATH,
-later runs can use:
-
-```bash
-charness update
-```
-
-If you are deliberately proving the install from a non-managed checkout, keep
-that as a proof-only path and do not let it become the installed CLI source:
-
-```bash
-./charness init --repo-root /absolute/path/to/charness --skip-cli-install
-```
-
-The official installed CLI should always resolve back to `~/.agents/src/charness`.
 
 ## Step 2: Follow The `next_steps` Output
 
@@ -124,13 +162,15 @@ Recommended verification steps:
 Optional version inspection:
 
 - `charness version` keeps the shell-friendly current version path
-- `charness version --verbose` shows recorded provenance and cached latest-release state
+- `charness version --verbose` shows recorded provenance and cached
+  latest-release state
 - `charness version --check` refreshes the latest-release cache explicitly
 
 ## Step 4: Update Model
 
 - run `charness update`
-- for Codex, expect `charness update` to attempt the official local plugin cache refresh before falling back to manual host steps
+- for Codex, expect `charness update` to attempt the official local plugin
+  cache refresh before falling back to manual host steps
 - follow the new `next_steps` output after the update
 - skill execution must stay read-only with respect to install/update state
 
@@ -138,7 +178,8 @@ Optional version inspection:
 
 After installation or verification, report:
 
-1. which host path you used
+1. which bootstrap path you used: zero-state remote bootstrap, installed CLI,
+   checkout wrapper, or proof-only repo-root path
 2. which install surface was exercised
 3. which smoke or runtime proof passed
 4. whether this was a fresh install, a refresh, or a proof-only check

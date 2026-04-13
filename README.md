@@ -277,7 +277,16 @@ Official managed path:
 charness init
 ```
 
-If `charness` is not yet on PATH, the checkout convenience wrapper is:
+If the machine starts in a zero-state posture with no PATH binary and no local
+checkout, bootstrap from the raw script:
+
+```bash
+curl -fsSLo /tmp/charness-init.sh \
+  https://raw.githubusercontent.com/corca-ai/charness/main/init.sh
+bash /tmp/charness-init.sh
+```
+
+If you already have a checkout, the convenience wrapper is:
 
 ```bash
 ./init.sh
@@ -306,10 +315,13 @@ Bootstrap:
 charness init
 ```
 
-If `charness` is not yet on PATH:
+If the machine starts in a zero-state posture with no PATH binary and no local
+checkout:
 
 ```bash
-./init.sh
+curl -fsSLo /tmp/charness-init.sh \
+  https://raw.githubusercontent.com/corca-ai/charness/main/init.sh
+bash /tmp/charness-init.sh
 ```
 
 The operator does not need to clone `charness` manually. A standalone
