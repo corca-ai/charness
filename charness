@@ -1357,6 +1357,19 @@ def refresh_codex_cache_via_app_server(
                 proc.wait(timeout=2)
 
 
+def _last_installed_commit(home_root: Path) -> str | None:
+    state = read_host_state(home_root)
+    for key in ("last_update", "last_init"):
+        entry = state.get(key)
+        if isinstance(entry, dict):
+            doctor = entry.get("doctor")
+            if isinstance(doctor, dict):
+                commit = doctor.get("checkout_git_head")
+                if isinstance(commit, str):
+                    return commit
+    return None
+
+
 def maybe_install_codex_host(
     *,
     home_root: Path,
@@ -1382,11 +1395,15 @@ def maybe_install_codex_host(
     cache_version = doctor_payload.get("codex_cache_manifest_version")
     host_guidance = doctor_payload.get("codex_host_guidance")
     host_status = host_guidance.get("status") if isinstance(host_guidance, dict) else None
+    source_commit = doctor_payload.get("checkout_git_head")
+    last_installed_commit = _last_installed_commit(home_root)
     if (
         host_status == "installed"
         and isinstance(source_version, str)
         and isinstance(cache_version, str)
         and source_version == cache_version
+        and isinstance(source_commit, str)
+        and source_commit == last_installed_commit
     ):
         return {
             "status": "skipped",
