@@ -49,7 +49,10 @@ def test_charness_init_installs_codex_via_official_app_server(tmp_path: Path) ->
     assert payload["codex_host_install"]["action"] == "install"
     assert payload["codex_host_guidance"]["status"] == "installed"
     assert payload["codex_cache_manifest_version"] == CURRENT_VERSION
-    assert payload["next_steps"]["codex"] == "Codex host install markers are present."
+    assert (
+        payload["next_steps"]["codex"]
+        == "Codex host install markers are present. Start a new Codex session if charness is not visible in the current session."
+    )
     assert "codex_host_installed" in payload["completed_actions"]
     config_path = home_root / ".codex" / "config.toml"
     cache_manifest = (
