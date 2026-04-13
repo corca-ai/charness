@@ -4,6 +4,14 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
+STANDING_PYTEST_TARGETS=(
+  tests/quality_gates
+  tests/control_plane
+  tests/test_*.py
+  tests/charness_cli/test_doctor_cache_selection.py
+  tests/charness_cli/test_tool_lifecycle.py
+)
+
 RUN_QUALITY_TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$RUN_QUALITY_TMPDIR"' EXIT
 
@@ -216,7 +224,7 @@ queue_selected "py-compile" python3 -m py_compile "${python_files[@]}"
 queue_selected "ruff" ruff check scripts tests skills/public/*/scripts skills/support/*/scripts
 flush_phase || OVERALL_RC=$?
 
-queue_selected "pytest" pytest -q
+queue_selected "pytest" pytest -q "${STANDING_PYTEST_TARGETS[@]}"
 queue_selected "run-evals" python3 scripts/run-evals.py --repo-root "$REPO_ROOT"
 queue_selected "check-duplicates" python3 scripts/check-duplicates.py --repo-root "$REPO_ROOT" --fail-on-match
 queue_selected "check-coverage" python3 scripts/check-coverage.py --repo-root "$REPO_ROOT"

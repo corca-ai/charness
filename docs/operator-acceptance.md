@@ -144,6 +144,8 @@ Suggested operator runs:
 - if restart-only fails, try Plugin Directory re-enable; if that still fails, try reinstall; record the first step that makes the payload delta appear
 - if the host output is ambiguous, record that ambiguity instead of claiming
   update propagation worked
+- if you want the full local install/update regression suite before or after
+  host testing, run `./scripts/self-validate-install-update.sh`
 
 Acceptance:
 

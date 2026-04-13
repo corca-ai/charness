@@ -11,7 +11,8 @@ standing bar.
 
 ## Current Gates
 
-- `./scripts/run-quality.sh` is the canonical local bar.
+- `./scripts/run-quality.sh` is the canonical standing local bar, and `./scripts/self-validate-install-update.sh`
+  keeps install/update CLI regression proof as an on-demand maintainer check.
 - `.githooks/pre-push` runs `scripts/sync_root_plugin_manifests.py` and then
   `./scripts/run-quality.sh`; `scripts/install-git-hooks.sh` wires
   `core.hooksPath`.
@@ -61,8 +62,10 @@ standing bar.
 
 ## Healthy
 
-- one repo-owned entrypoint covers validators, docs, lint, tests, evals,
-  duplicate detection, and supply-chain checks.
+- one repo-owned standing entrypoint covers validators, docs, lint, the
+  standing pytest subset, evals, duplicate detection, and supply-chain checks,
+  while install/update regression proof still has an on-demand repo-owned
+  entrypoint.
 - maintainer-local enforcement is honest: checked-in pre-push hook, repo-owned
   installer, and standing validator all exist.
 - adapter-required public skills now fail closed when checked-in example or
