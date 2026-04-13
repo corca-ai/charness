@@ -67,6 +67,10 @@ Read the smallest memory surface that answers the current question.
 
 - Prefer `./scripts/run-quality.sh` as the canonical local quality entrypoint
   once the change touches multiple repo-owned quality surfaces.
+- Repo-owned diff obligations live in `.agents/surfaces.json`; use
+  `python3 scripts/check-changed-surfaces.py --repo-root .` to inspect them and
+  `python3 scripts/run-slice-closeout.py --repo-root .` before commit when the
+  slice spans generated surfaces or multiple validator families.
 - Use `python3 scripts/run-evals.py` when changing validator contracts,
   adapter bootstrap behavior, or portable markdown-link assumptions.
 - When editing skill packages, run `python3 scripts/validate-skills.py`.

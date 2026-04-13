@@ -10,6 +10,7 @@ python3 scripts/sync_root_plugin_manifests.py --repo-root "$REPO_ROOT" >/dev/nul
 if ! git diff --quiet -- plugins/charness .claude-plugin/marketplace.json .agents/plugins/marketplace.json; then
   echo "charness pre-push: checked-in plugin export drift detected"
   echo "review and commit the regenerated plugin surface before pushing:"
+  echo "tip: run \`python3 scripts/run-slice-closeout.py --repo-root .\` before commit when the diff spans generated surfaces"
   git diff -- -- plugins/charness .claude-plugin/marketplace.json .agents/plugins/marketplace.json
   exit 1
 fi

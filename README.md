@@ -163,6 +163,9 @@ generated files only advertise that install surface:
 These files are generated from [packaging/charness.json](packaging/charness.json)
 via `python3 scripts/sync_root_plugin_manifests.py --repo-root .`.
 
+Repo-owned change obligations for this surface live in
+`.agents/surfaces.json`.
+
 That means:
 
 - the repo stays the host-neutral source of truth
@@ -182,6 +185,19 @@ The canonical local quality gate is:
 
 ```bash
 ./scripts/run-quality.sh
+```
+
+For a diff-aware view of what a current slice still owes, use:
+
+```bash
+python3 scripts/check-changed-surfaces.py --repo-root .
+```
+
+For a repo-owned closeout path that runs the required sync and verification
+commands for the current diff, use:
+
+```bash
+python3 scripts/run-slice-closeout.py --repo-root .
 ```
 
 This repo also ships a checked-in pre-push hook at:
