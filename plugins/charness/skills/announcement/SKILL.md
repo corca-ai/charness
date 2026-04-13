@@ -79,6 +79,8 @@ config must not block drafting.
    - `none`: draft only
    - `release-notes`: update a checked-in markdown file
    - `human-backend`: deliver through an adapter-defined human-facing backend
+   - if the backend depends on reusable private access, prefer one logical
+     capability in `delivery_capability` over adapter-local secret plumbing
 8. Record the result after delivery or explicit draft finalization.
    - append a JSONL record so the next run can continue from the current head
 

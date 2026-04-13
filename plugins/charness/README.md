@@ -426,19 +426,24 @@ Current command intent:
 Capability resolution surface:
 
 ```bash
+charness capability init
 charness capability resolve slack.default
 charness capability doctor slack.default
 charness capability env slack.default
+charness capability explain gather
 ```
 
 Intent:
 
+- `capability init`: scaffold the machine-local config files for first use
 - `capability resolve`: map one repo-local logical capability to one
   machine-local profile and one provider id
 - `capability doctor`: reuse provider manifest/support metadata to inspect the
   resolved provider state
 - `capability env`: emit shell exports that alias runtime env names from
   machine-local source env names without storing secret values in repo config
+- `capability explain`: show which logical capabilities a public skill may need
+  and what the current repo adapter adds
 
 Machine-local capability config lives under `~/.config/charness/`:
 

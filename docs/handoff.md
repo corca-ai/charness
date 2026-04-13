@@ -32,6 +32,8 @@
 - tool control-plane은 이제 install provenance도 lock/doctor output에 남긴다. `gws-cli`처럼 실제 설치 경로가 `npm`으로 판별되면 `charness tool update --dry-run`이 `npm install -g @googleworkspace/cli@latest` 같은 package-manager route로 승격된다. `specdown`처럼 provenance가 plain `path`면 release metadata를 붙인 manual guidance로 남는다.
 - public skill `create-cli`가 추가됐다. repo-owned CLI를 만들거나 손볼 때 command surface, install/update UX, machine-readable state, quality gate를 한 묶음으로 다루는 기본 참고 skill이다.
 - machine-local capability resolution seam이 추가됐다. `charness capability resolve|doctor|env`는 `~/.config/charness/capability-profiles.json`과 `~/.config/charness/repo-bindings.json`을 읽어 repo-local logical capability를 machine-local profile과 provider manifest/support capability로 연결한다.
+- capability first-use 온보딩도 추가됐다. `charness capability init`가 machine-local scaffold를 만들고, `charness capability explain <skill-id>`가 public skill별 logical capability expectation을 보여준다.
+- `announcement` adapter는 이제 `delivery_capability`를 받을 수 있다. `delivery_kind: human-backend`일 때 reusable private backend access는 token path 대신 logical capability id로 연결한다.
 - installed CLI machine-local state는 이제 `~/.local/state/charness/` 아래에 모인다. `install-state.json`, `host-state.json`, `version-state.json`이 여기로 이동했고, capability config는 state가 아니라 config layer에 남긴다.
 - `create-cli` references는 `cautilus` 배포 메모를 반영해 release-first install contract, installer가 OS package manager를 직접 만지지 않는 원칙, provenance-aware update routing을 기본 guidance로 포함한다.
 - checked-in plugin export는 더 이상 machine-local `integrations/locks/*.json`를 복사하지 않는다. export surface에는 `lock.schema.json`, `README.md`, `.gitkeep`만 남는다.

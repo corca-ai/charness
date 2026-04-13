@@ -22,6 +22,7 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
         ("delivery_target", ""),
         ("release_notes_path", ""),
         ("post_command_template", ""),
+        ("delivery_capability", ""),
     ]
 
 

@@ -29,7 +29,8 @@ This slice covers:
 
 - machine-local capability profile config
 - machine-local repo binding config
-- CLI commands to resolve, inspect, and emit env alias exports
+- CLI commands to scaffold, resolve, inspect, explain, and emit env alias
+  exports
 - Slack gather runtime reuse through the new env export flow
 - XDG-style config/state directory helpers for machine-local `charness` state
 
@@ -104,6 +105,11 @@ This slice does not add:
   provider health using existing manifest/support metadata.
 - `charness capability env` can emit shell exports that alias runtime env names
   from machine-local source env names without printing secret values.
+- `charness capability init` can create the machine-local config files on first
+  use instead of requiring manual file creation first.
+- `charness capability explain <skill-id>` can show which logical capabilities
+  one public skill may need and, for `announcement`, which delivery capability
+  the current repo adapter configured.
 - Slack gather runtime can reuse that env export flow before falling back to its
   direct process-environment expectation.
 - first-run failure messages point to the exact config files and expected JSON
@@ -132,6 +138,6 @@ This slice does not add:
 
 1. add config/state path helpers and move existing machine-local state paths
 2. add capability profile and repo binding loaders
-3. add capability resolve / doctor / env CLI commands
+3. add capability init / resolve / doctor / env / explain CLI commands
 4. wire Slack gather export through `charness capability env`
 5. update docs, tests, and checked-in plugin export

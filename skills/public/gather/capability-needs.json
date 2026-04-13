@@ -1,0 +1,24 @@
+{
+  "schema_version": "1",
+  "skill_id": "gather",
+  "capability_needs": [
+    {
+      "logical_id": "github.default",
+      "summary": "Private GitHub gather through an authenticated provider path.",
+      "when": "when gather needs private GitHub repository or PR access"
+    },
+    {
+      "logical_id": "slack.default",
+      "summary": "Private Slack thread gather through the charness-owned Slack runtime.",
+      "when": "when gather needs private Slack thread access"
+    },
+    {
+      "logical_id": "gws.default",
+      "summary": "Private Google Workspace gather through an authenticated provider path.",
+      "when": "when gather needs private Docs, Drive, Sheets, or Slides access"
+    }
+  ],
+  "notes": [
+    "Public gather paths such as published Notion or generic web fetch do not require a private capability binding."
+  ]
+}

@@ -35,6 +35,7 @@ Search order:
 - `delivery_target`
 - `release_notes_path`
 - `post_command_template`
+- `delivery_capability`
 
 ## Defaults
 
@@ -45,6 +46,7 @@ Search order:
   field was unset or explicitly empty
 - `omission_lenses`: empty list
 - `delivery_kind`: `none`
+- `delivery_capability`: empty string
 
 ## Artifact Rule
 
@@ -67,3 +69,7 @@ host wants Slack, GitHub release publishing, email, or another backend,
 express that through a repo-owned backend seam or a downstream adapter/preset.
 One common implementation path is a repo-owned command template, but that
 implementation detail is not the public delivery kind.
+
+If one backend needs a reusable private provider, record the logical capability
+id in `delivery_capability`, for example `slack.default`, rather than putting a
+token path in the adapter.

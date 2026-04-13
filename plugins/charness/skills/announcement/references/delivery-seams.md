@@ -32,3 +32,7 @@ Supported placeholders:
 
 If a host wants a chat or SaaS backend, keep the public skill generic and route
 through a repo-owned backend seam.
+
+If that backend depends on reusable private access, keep the adapter-level
+binding portable by setting `delivery_capability` to one logical capability id
+such as `slack.default`.

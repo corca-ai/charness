@@ -42,6 +42,7 @@ STRING_FIELDS = (
     "delivery_target",
     "release_notes_path",
     "post_command_template",
+    "delivery_capability",
 )
 LIST_FIELDS = ("sections", "audience_tags", "omission_lenses")
 ARTIFACT_FILENAME = "announcement.md"
@@ -89,6 +90,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "delivery_target": "",
         "release_notes_path": "",
         "post_command_template": "",
+        "delivery_capability": "",
     }
 
 
@@ -129,6 +131,8 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         warnings.append("release-notes delivery_kind is set but release_notes_path is empty.")
     if validated["delivery_kind"] == "human-backend" and not validated["post_command_template"]:
         warnings.append("human-backend delivery_kind is set but post_command_template is empty.")
+    if validated["delivery_kind"] == "human-backend" and not validated["delivery_capability"]:
+        warnings.append("human-backend delivery_kind is set but delivery_capability is empty.")
 
     return validated, errors, warnings
 

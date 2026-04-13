@@ -361,6 +361,7 @@ def capability_setup_guidance(home_root: Path) -> list[str]:
     profiles_path = default_capability_profiles_path(home_root)
     bindings_path = default_repo_bindings_path(home_root)
     return [
+        f"Run `charness capability init --home-root {shell_quote(str(home_root))}` to scaffold the machine-local config files.",
         f"Create `{profiles_path}` with machine-local provider profiles.",
         f"Create `{bindings_path}` with repo-to-profile bindings.",
         'Example profile: {"schema_version":1,"profiles":{"slack.ceal-dev":{"provider":"gather-slack","access_mode_preference":["grant","env"],"env_bindings":{"SLACK_BOT_TOKEN":"SLACK_BOT_TOKEN_CEAL_DEV"}}}}',
@@ -430,6 +431,132 @@ def resolve_capability(
         "capability_profiles_path": profiles_payload["path"],
         "repo_bindings_path": bindings_payload["path"],
     }
+
+
+def capability_profiles_template() -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "profiles": {
+            "slack.change-me": {
+                "provider": "gather-slack",
+                "access_mode_preference": ["grant", "env"],
+                "env_bindings": {
+                    "SLACK_BOT_TOKEN": "SLACK_BOT_TOKEN_CHANGE_ME",
+                },
+            },
+            "github.change-me": {
+                "provider": "github-gh",
+                "access_mode_preference": ["binary", "public"],
+                "env_bindings": {},
+            },
+            "gws.change-me": {
+                "provider": "gws-cli",
+                "access_mode_preference": ["binary", "env"],
+                "env_bindings": {},
+            },
+        },
+        "notes": [
+            "Keep raw secret values out of this file.",
+            "Use profile ids to describe one reusable provider identity on this machine.",
+        ],
+    }
+
+
+def repo_bindings_template(target_repo_root: Path) -> dict[str, object]:
+    repo_keys = repo_binding_keys(target_repo_root)
+    primary_key = repo_keys[0]
+    return {
+        "schema_version": 1,
+        "repos": {
+            primary_key: {
+                "slack.default": "slack.change-me",
+                "github.default": "github.change-me",
+                "gws.default": "gws.change-me",
+            }
+        },
+        "notes": [
+            "Map repo-local logical capability ids to one machine-local profile id.",
+            "Repo keys prefer canonical git remote ids and fall back to absolute path ids.",
+        ],
+        "candidate_repo_keys": repo_keys,
+    }
+
+
+def write_json_scaffold(path: Path, payload: dict[str, object], *, force: bool) -> str:
+    if path.exists() and not force:
+        return "exists"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return "written"
+
+
+def load_skill_capability_needs(charness_repo_root: Path, skill_id: str) -> dict[str, object] | None:
+    path = charness_repo_root / "skills" / "public" / skill_id / "capability-needs.json"
+    if not path.is_file():
+        return None
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise CharnessError(f"`{path}` must contain a JSON object.")
+    return {"path": str(path), **payload}
+
+
+def explain_skill_capabilities(
+    *,
+    charness_repo_root: Path,
+    target_repo_root: Path,
+    skill_id: str,
+) -> dict[str, object]:
+    payload = load_skill_capability_needs(charness_repo_root, skill_id)
+    if payload is None:
+        return {
+            "skill_id": skill_id,
+            "skill_path": str(charness_repo_root / "skills" / "public" / skill_id),
+            "capability_needs": [],
+            "notes": ["No explicit capability requirements are recorded for this skill."],
+        }
+    capability_needs = payload.get("capability_needs", [])
+    if not isinstance(capability_needs, list):
+        raise CharnessError(f"`{payload['path']}` must keep `capability_needs` as a list.")
+    notes = payload.get("notes", [])
+    if not isinstance(notes, list):
+        raise CharnessError(f"`{payload['path']}` must keep `notes` as a list.")
+    response = {
+        "skill_id": skill_id,
+        "skill_path": str(charness_repo_root / "skills" / "public" / skill_id),
+        "metadata_path": payload["path"],
+        "capability_needs": capability_needs,
+        "notes": notes,
+    }
+    if skill_id == "announcement":
+        adapter_payload = invoke_repo_json_script(
+            charness_repo_root,
+            "skills/public/announcement/scripts/resolve_adapter.py",
+            "--repo-root",
+            str(target_repo_root),
+        )
+        adapter_data = adapter_payload["data"]
+        delivery_kind = adapter_data.get("delivery_kind")
+        delivery_capability = adapter_data.get("delivery_capability")
+        response["announcement_delivery"] = {
+            "delivery_kind": delivery_kind,
+            "delivery_capability": delivery_capability,
+        }
+        if delivery_kind == "human-backend":
+            if isinstance(delivery_capability, str) and delivery_capability:
+                response["capability_needs"] = [
+                    *capability_needs,
+                    {
+                        "logical_id": delivery_capability,
+                        "summary": "Repo-configured human-backend delivery capability for announcement.",
+                        "when": "when announcement delivers through the current repo adapter backend",
+                    },
+                ]
+            else:
+                response["notes"] = [
+                    *notes,
+                    "The current announcement adapter uses `human-backend` delivery but does not set `delivery_capability` yet.",
+                ]
+    return response
 
 
 def read_version_state(home_root: Path) -> dict[str, object]:
@@ -2344,6 +2471,66 @@ def print_capability_summary(payload: dict[str, object]) -> None:
         print(f"PROVIDER_DOCTOR: {doctor.get('doctor_status')} ({doctor.get('support_state')})")
 
 
+def print_capability_explain_summary(payload: dict[str, object]) -> None:
+    print(f"SKILL: {payload['skill_id']}")
+    metadata_path = payload.get("metadata_path")
+    if isinstance(metadata_path, str):
+        print(f"METADATA: {metadata_path}")
+    capability_needs = payload.get("capability_needs", [])
+    if isinstance(capability_needs, list) and capability_needs:
+        for need in capability_needs:
+            if not isinstance(need, dict):
+                continue
+            logical_id = need.get("logical_id")
+            summary = need.get("summary")
+            when = need.get("when")
+            print(f"NEEDS: {logical_id} - {summary}")
+            if isinstance(when, str) and when:
+                print(f"  WHEN: {when}")
+    else:
+        print("NEEDS: none")
+    notes = payload.get("notes", [])
+    if isinstance(notes, list):
+        for note in notes:
+            if isinstance(note, str):
+                print(f"NOTE: {note}")
+    announcement_delivery = payload.get("announcement_delivery")
+    if isinstance(announcement_delivery, dict):
+        print(
+            "ANNOUNCEMENT_DELIVERY: "
+            f"{announcement_delivery.get('delivery_kind')} "
+            f"{announcement_delivery.get('delivery_capability') or ''}".rstrip()
+        )
+
+
+def cmd_capability_init(args: argparse.Namespace) -> int:
+    home_root = args.home_root.resolve()
+    target_repo_root = resolve_target_repo_root(args.target_repo_root)
+    profiles_path = default_capability_profiles_path(home_root)
+    bindings_path = default_repo_bindings_path(home_root)
+    profiles_status = write_json_scaffold(profiles_path, capability_profiles_template(), force=args.force)
+    bindings_status = write_json_scaffold(bindings_path, repo_bindings_template(target_repo_root), force=args.force)
+    payload = {
+        "config_root": str(default_config_root(home_root)),
+        "profiles_path": str(profiles_path),
+        "repo_bindings_path": str(bindings_path),
+        "profiles_status": profiles_status,
+        "repo_bindings_status": bindings_status,
+        "target_repo_root": str(target_repo_root),
+        "candidate_repo_keys": repo_binding_keys(target_repo_root),
+        "next_steps": [
+            f"Edit `{profiles_path}` to replace `*.change-me` profiles with real provider identities.",
+            f"Edit `{bindings_path}` to bind the current repo keys to the real profile ids you want.",
+            "Run `charness capability explain gather` or `charness capability explain announcement` to see skill-facing logical capability expectations.",
+        ],
+    }
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    return 0
+
+
 def cmd_capability_resolve(args: argparse.Namespace) -> int:
     home_root = args.home_root.resolve()
     charness_repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
@@ -2443,6 +2630,28 @@ def cmd_capability_env(args: argparse.Namespace) -> int:
         )
     else:
         print("\n".join(shell_lines))
+    return 0
+
+
+def cmd_capability_explain(args: argparse.Namespace) -> int:
+    home_root = args.home_root.resolve()
+    charness_repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    charness_repo_root = ensure_checkout(
+        charness_repo_root,
+        managed=managed_checkout,
+        repo_url=getattr(args, "repo_url", REPO_URL),
+        allow_clone=False,
+        allow_pull=False,
+    )["repo_root"]
+    payload = explain_skill_capabilities(
+        charness_repo_root=Path(charness_repo_root),
+        target_repo_root=resolve_target_repo_root(args.target_repo_root),
+        skill_id=args.skill_id,
+    )
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print_capability_explain_summary(payload)
     return 0
 
 
@@ -2771,6 +2980,20 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("--json", action="store_true")
         command.add_argument("logical_id")
 
+    capability_init_parser = capability_subparsers.add_parser(
+        "init",
+        help="Scaffold machine-local capability profile and repo binding config files for first use.",
+    )
+    capability_init_parser.add_argument("--home-root", type=Path, default=default_home_root())
+    capability_init_parser.add_argument(
+        "--target-repo-root",
+        type=Path,
+        help="Seed repo-binding examples for this target repo. Defaults to the current working directory.",
+    )
+    capability_init_parser.add_argument("--force", action="store_true")
+    capability_init_parser.add_argument("--json", action="store_true")
+    capability_init_parser.set_defaults(func=cmd_capability_init)
+
     capability_resolve_parser = capability_subparsers.add_parser(
         "resolve",
         help="Resolve one logical capability for the current repo into a profile and provider.",
@@ -2791,6 +3014,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
     add_common_capability_args(capability_env_parser)
     capability_env_parser.set_defaults(func=cmd_capability_env)
+
+    capability_explain_parser = capability_subparsers.add_parser(
+        "explain",
+        help="Explain which logical capabilities a public skill may need and what the current repo adapter adds.",
+    )
+    capability_explain_parser.add_argument("--home-root", type=Path, default=default_home_root())
+    capability_explain_parser.add_argument("--repo-root", type=Path, help="Use an explicit charness source checkout instead of the managed default checkout.")
+    capability_explain_parser.add_argument("--repo-url", default=REPO_URL)
+    capability_explain_parser.add_argument(
+        "--target-repo-root",
+        type=Path,
+        help="Inspect repo-local adapter context for this target repo. Defaults to the current working directory.",
+    )
+    capability_explain_parser.add_argument("--json", action="store_true")
+    capability_explain_parser.add_argument("skill_id")
+    capability_explain_parser.set_defaults(func=cmd_capability_explain)
 
     tool_parser = subparsers.add_parser(
         "tool",
