@@ -37,11 +37,11 @@ plugin"), which added `maybe_install_codex_host()` to `cmd_init`.
 
 ## Candidate Causes
 
-1. **Stale installed CLI binary** — the `~/.local/bin/charness` binary is from
-   before the auto-install feature was added. The managed checkout pulled the
-   new source, but the installed binary was not updated.
-2. `maybe_install_codex_host` returned "skipped" for an init-specific reason.
-3. A code bug in the init path that silently drops the `codex_host_install` key.
+- Stale installed CLI binary — the `~/.local/bin/charness` binary is from
+  before the auto-install feature was added. The managed checkout pulled the
+  new source, but the installed binary was not updated.
+- `maybe_install_codex_host` returned "skipped" for an init-specific reason.
+- A code bug in the init path that silently drops the `codex_host_install` key.
 
 ## Hypothesis
 
@@ -82,14 +82,10 @@ calls `maybe_install_codex_host(skip=False)`.
 - `charness init` already self-installs the CLI binary from the managed
   checkout. The real gap was the user running a pre-existing stale binary that
   cloned a managed checkout at a version that also happened to be stale.
-- The `codex_source_cache_drift: false` despite mismatched versions is a
-  separate minor issue: drift is only flagged when `codex_enabled_plugin_ids` is
-  non-empty (line 1743), which is empty for a fresh install. This is technically
-  correct behavior but misleading in the output.
-
-## Prior Debug Entry (2026-04-11)
-
-Retained for reference: plugin export surface drift caused managed checkout
-dirt, which blocked `charness update`. That issue was the precursor to this
-one — the user hit the managed-checkout-dirty error, reset, re-ran init with the
-stale binary, and encountered this second issue.
+- The `codex_source_cache_drift: false` despite mismatched versions was a
+  separate minor issue: drift was only flagged when `codex_enabled_plugin_ids`
+  was non-empty. Fixed by removing that guard.
+- Prior incident (2026-04-11): plugin export surface drift caused managed
+  checkout dirt, which blocked `charness update`. That was the precursor — the
+  user hit the managed-checkout-dirty error, reset, re-ran init with the stale
+  binary, and encountered this second issue.
