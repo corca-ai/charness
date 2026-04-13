@@ -7,6 +7,7 @@
 - `~/.local/share/charness/host-state.json`이 있으면 `last_update` 또는 `last_doctor` snapshot부터 보고, interactive Codex restart 전후 차이를 proof source로 쓴다.
 - Claude local proof는 끝났다. historical proof path는 `--plugin-dir /absolute/path/to/charness/plugins/charness`였고, parent `plugins/`를 주면 skill discovery proof가 되지 않았다. 이제 primary Claude path는 `charness init`가 marketplace add/install을 수행하는 global install이다.
 - Codex는 managed `~/.agents/plugins/marketplace.json`를 source로 쓰되, operator-facing plugin root는 `~/.codex/plugins/charness`로 둔다. marketplace policy는 `AVAILABLE`로 두고, install/discovery 자체는 이미 확인됐으니 남은 proof는 interactive session 또는 다른 머신에서 "`charness update` 뒤 upstream payload change가 installed cache/visible skills까지 반영되는가"에 집중한다.
+- 다른 머신 Codex dogfood 추가 관찰: `charness update` 뒤 restart만으로는 cache refresh가 되지 않았다. 반면 `charness reset && charness init` 후 Plugin Directory에서 다시 설치하면 baseline은 깨끗하게 복구됐고, 이후 `doctor`는 drift 없이 install markers를 보고했다. 따라서 남은 proof는 "clean installed baseline에서 upstream-visible payload delta를 만든 뒤 `charness update` 후 restart만으로 반영되는지"이며, 실패 시 `re-enable`과 `reinstall`을 순서대로 분리 기록해야 한다.
 - Retro 2026-04-11: `INSTALLED_BY_DEFAULT`를 `~/.agents/plugins/marketplace.json`에 넣으면 다음 세션에서 plugin이 바로 세션 skill로 올라올 것이라고 가정한 건 과했다. 공식 문서는 personal marketplace가 Plugin Directory source가 된다고 설명하고, 실제 install은 `~/.codex/plugins/cache/...`에 생기며 enable state는 `~/.codex/config.toml`에 남는다고 구분한다. `~/.codex/plugins/charness`는 source plugin root일 뿐, cache/config 흔적이 없으면 host install은 아직 안 된 신호로 취급해야 한다.
 
 ## Current State
@@ -52,8 +53,8 @@
 
 ## Next Session
 
-1. 실제 interactive Codex에서 upstream skill/plugin payload를 의도적으로 바꾼 뒤 `charness update`가 그 변경을 installed cache와 visible skill surface까지 전파하는지 확인한다. restart만으로 되는지, Plugin Directory 재-install/re-enable이 필요한지 proof를 만든다.
-   - 가능하면 restart 전 `host-state.json:last_update` 또는 `charness doctor --write-state` snapshot과, restart 뒤 새 `last_doctor` snapshot을 비교해 proof를 남긴다.
+1. 실제 interactive Codex에서 clean installed baseline을 유지한 채 upstream skill/plugin payload를 의도적으로 바꾼 뒤 `charness update`가 그 변경을 installed cache와 visible skill surface까지 전파하는지 확인한다. 현재까지는 restart-only가 실패했고 reset/init + manual install baseline만 확인됐으므로, 다음 proof는 `restart-only -> Plugin Directory re-enable -> Plugin Directory reinstall` 순서로 최소 필요 refresh step을 분리 기록해야 한다.
+   - 가능하면 update 전 `charness doctor --write-state` snapshot과, restart/re-enable/reinstall 각 단계 뒤 새 snapshot을 비교해 proof를 남긴다. visible skill delta가 가장 판정이 쉬우면 임시 probe skill 추가/제거를 사용해도 된다.
 2. 새 `charness tool install/update/doctor` surface를 실제 다른 머신 또는 temp-home workflow로 한 번 더 dogfood한다. 특히 provenance-aware route가 있는 tool(`gws-cli`, brew-installed `specdown`, brew-installed `gh`)과 manual-only tool(`cautilus`, release-installed `specdown`)에서 남는 lock/install guidance shape를 점검한다.
    - 현재 local proof는 `/home/ubuntu/charness` working tree에서 `--repo-root .`를 명시해 돌렸다. installed CLI default는 여전히 managed checkout을 보므로, unpushed local changes를 proof할 때는 그 차이를 의식한다.
 3. `charness reset`이 Codex/Claude host state를 충분히 clean하게 지우는지 다른 머신에서도 확인한다.

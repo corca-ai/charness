@@ -138,9 +138,10 @@ Suggested operator runs:
 - run `charness update`
 - verify Claude by checking that the changed payload is reflected in the
   installed host copy after the documented restart/reload step
-- verify Codex through `~/.agents/plugins/marketplace.json`, then restart Codex
-  and use Plugin Directory re-enable or reinstall only if the changed payload
-  does not appear after restart
+- start from a clean installed Codex baseline; if needed, use `charness reset`, `charness init`, and one Plugin Directory install so `doctor` reports no drift before the update experiment
+- make a clearly visible payload delta, such as adding or removing a temporary skill or changing an obviously surfaced manifest/version string
+- run `charness update`, restart Codex, and record whether the payload delta appears without any Plugin Directory action
+- if restart-only fails, try Plugin Directory re-enable; if that still fails, try reinstall; record the first step that makes the payload delta appear
 - if the host output is ambiguous, record that ambiguity instead of claiming
   update propagation worked
 
@@ -162,6 +163,7 @@ Acceptance:
   installed Claude or Codex host copy after the required refresh step
 - any extra Codex refresh requirement is classified honestly as restart-only,
   re-enable, reinstall, or still unclear
+- a failed restart-only attempt is preserved as evidence when observed; do not collapse it into a generic "host refresh required" note
 - any required doc or manifest tweaks are committed back here
 
 ### 4. Raise `create-skill` / `spec` Workflow Gates
