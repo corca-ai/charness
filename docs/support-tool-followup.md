@@ -1,0 +1,209 @@
+# Support Tool Follow-Up
+
+This document captures the next `charness` workstream after the support-skill
+materialization redesign and the `cautilus` integration tightening pass.
+
+The goal is not to reopen the already-closed control-plane decision. The goal
+is to apply the portable lessons from that work to public skills, dogfood those
+skill changes inside `charness`, and keep issue triage explicit.
+
+## Scope
+
+- decision window: 2026-04-13 support-tool follow-up planning
+- upstream context: `cautilus` consumer-integration issues were picked up and
+  resolved upstream
+- local prerequisite already landed: cache-backed user-cache materialization +
+  repo-local support-skill symlink exposure
+
+## Current Decisions
+
+- Portable skill bodies should not depend on Claude-style `!` execution.
+- Support skills stay locally consumable through cache-backed materialization
+  plus repo-local symlinks.
+- `external_skill` and `external_binary_with_skill` both materialize a local
+  support-skill surface. The difference is binary lifecycle, not support-skill
+  discoverability.
+- Prefer upstream-provided support skills when their shape is usable as-is.
+  Keep `local_wrapper` as an exception path for oversized, host-specific, or
+  otherwise unsuitable upstream surfaces.
+- Every `charness` change in this area should end in both:
+  - source-of-truth skill updates
+  - `charness` dogfood on the changed skill surface
+
+## Issue Triage
+
+### Close Now
+
+- `corca-ai/cautilus#2`
+  Resolved upstream. The `--help` and probe-contract gaps were the real product
+  issue, and the old skill-discoverability concern is no longer a blocker on
+  the `charness` side because support skills are now always materialized.
+
+- `corca-ai/charness#12`
+  Close as declined in its current form. `charness` should not recommend
+  `git push` as the generic local verification primitive because push is an
+  external side effect, not a safe repo-local check. If this problem is worth
+  revisiting later, the portable shape is:
+  detect repo-owned parallel hook runners or hook entrypoints, and run those
+  directly without treating network mutation as the verification command.
+
+### Carry Forward
+
+- `corca-ai/charness#9`
+  Keep and implement next. This is the main place to generalize the `cautilus`
+  probe-contract lessons into a portable CLI-design skill.
+
+- `corca-ai/charness#10`
+  Keep and implement next. This is the quality-review side of the same lesson.
+
+- `corca-ai/charness#11`
+  Keep open, but not as the next slice. First land the stable probe-contract
+  language in `create-cli` and `quality`; then decide how much of that belongs
+  in `init-repo` bootstrap guidance.
+
+### Not In This Workstream
+
+- `corca-ai/charness#8`
+  Valid, but not the main support-tool follow-up slice.
+
+- `corca-ai/charness#7`
+  Valid, but separate from the probe-contract and recommendation/install work.
+
+## Planned Application
+
+### 1. `create-cli`: Split Probe Layers Explicitly
+
+Apply `#9`, but tighten it into a portable contract rather than a
+`cautilus`-specific anecdote.
+
+Required shape:
+
+- name the no-side-effect `subcommand --help` contract explicitly
+- distinguish machine-readable command discovery from help text
+- distinguish binary/runtime health from repo/install readiness
+- distinguish local agent/plugin/materialized-surface discoverability from
+  general binary health
+- explain when `doctor` should stay readiness-focused instead of absorbing all
+  probe semantics
+
+Expected repo changes:
+
+- update [skills/public/create-cli/SKILL.md](../skills/public/create-cli/SKILL.md)
+- strengthen the relevant `create-cli` references, especially command-surface
+  and quality-gate guidance
+- add or tighten a repo-owned smoke/eval check if `charness` now expects this
+  posture from installable CLIs
+
+Dogfood requirement:
+
+- re-read the root [charness](../charness) CLI and the `tool` subcommands
+  through the updated `create-cli` contract
+- if the strengthened skill exposes an honesty gap, fix the repo surface in the
+  same slice instead of leaving the gap as theory
+
+### 2. `quality`: Add Installable-CLI Probe-Contract Posture
+
+Apply `#10`, but keep it bounded to repos that actually ship an installable CLI
+or agent-facing command surface.
+
+Required shape:
+
+- inspect whether probe layers are separated honestly
+- treat local support-skill/materialization readiness as distinct from binary
+  health
+- inspect README / INSTALL / operator docs for probe-contract drift
+- recommend deterministic enforcement when the missing check is cheap enough to
+  own locally
+- if a missing binary or support tool materially weakens confidence, recommend
+  installation with an exact route instead of vague prose
+
+Expected repo changes:
+
+- update [skills/public/quality/SKILL.md](../skills/public/quality/SKILL.md)
+- strengthen or add `quality` references that encode this posture explicitly
+- add a cheap repo-owned gate only when the next deterministic move is clear
+
+Dogfood requirement:
+
+- run `quality` against `charness` after the skill update
+- update [skill-outputs/quality/quality.md](../skill-outputs/quality/quality.md)
+  with the new findings or confirmation that the new lens passes cleanly
+
+### 3. Recommendation And Install Flow
+
+This is the direct product requirement from the recent discussion, not only an
+issue-derived follow-up:
+
+If a public skill depends on, strongly benefits from, or should honestly
+recommend a support binary, `charness` should say so proactively, explain why,
+and surface the install/verify path instead of hiding it behind operator
+rediscovery.
+
+First implementation slice:
+
+- add one shared helper that combines manifest metadata with current
+  detect/healthcheck/readiness/support-sync state
+- return a structured recommendation payload rather than prose-only advice
+- consume that helper first from `find-skills`
+- then reuse it from `quality` when a missing tool blocks stronger local proof
+
+Required payload fields:
+
+- why this tool is recommended
+- current detect/healthcheck/readiness/support-sync status
+- supported install route or explicit manual path
+- post-install verification command
+- next public skill or workflow to continue with
+
+Likely touch points:
+
+- [skills/public/find-skills/SKILL.md](../skills/public/find-skills/SKILL.md)
+- [skills/public/find-skills/scripts/list_capabilities.py](../skills/public/find-skills/scripts/list_capabilities.py)
+- shared control-plane helpers under `scripts/`
+- possibly [docs/control-plane.md](control-plane.md) if the operator-facing
+  contract needs one small addition
+
+Dogfood requirement:
+
+- run the recommendation flow on `charness` for at least:
+  - one tool that is already installed
+  - one tool that is manual-only or currently missing
+- verify that the structured output and any persisted machine state stay honest
+
+### 4. `init-repo`: Follow-On, Not Next
+
+Transform `#11` into a follow-on that only lands after the first three slices.
+
+The intended shape is small:
+
+- when a repo actually ships an installable CLI or local agent/plugin surface,
+  `init-repo` may recommend a small probe-surface doc section
+- do not add boilerplate before the probe-contract language stabilizes in
+  `create-cli` and `quality`
+
+## Explicit Non-Goals For The Next Slice
+
+- do not reopen support-skill materialization unless a concrete regression
+  appears
+- do not reintroduce `reference` as an operator-facing support-sync mode
+- do not depend on `!` execution in portable skill bodies
+- do not treat `git push` as the generic local verification command
+- do not vendor upstream support-skill clones into the tracked repo
+
+## Suggested Order
+
+1. land `create-cli` probe-contract changes
+2. land `quality` posture changes and dogfood them
+3. land the shared recommendation/install helper and first consumers
+4. revisit `init-repo` only if the first three slices settled cleanly
+
+## Acceptance For The Next Session
+
+- update the source-of-truth skill files first
+- add or tighten repo-owned helpers or validators when the next deterministic
+  move is obvious
+- dogfood each changed public skill inside `charness`
+- record durable findings in the appropriate artifact instead of leaving them
+  only in chat
+- update [docs/handoff.md](handoff.md) again if the next first move changes
+- commit after each meaningful slice instead of batching the whole workstream

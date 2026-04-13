@@ -2,6 +2,7 @@
 
 ## Workflow Trigger
 
+- 다음 세션이 support-tool follow-up이면 먼저 [docs/support-tool-followup.md](support-tool-followup.md)를 읽고, 거기 적힌 issue triage와 slice order를 기준으로 `create-cli -> quality -> recommendation/install flow` 순서로 진행한다. 이 workstream에서는 각 slice마다 public skill source-of-truth 수정과 `charness` dogfood를 함께 끝내야 한다.
 - 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [charness](../charness), [INSTALL.md](../INSTALL.md), [UNINSTALL.md](../UNINSTALL.md), [README.md](../README.md), [docs/host-packaging.md](host-packaging.md), [docs/operator-acceptance.md](operator-acceptance.md), [docs/public-skill-validation.md](public-skill-validation.md), [skills/public/init-repo/SKILL.md](../skills/public/init-repo/SKILL.md), [skills/public/release/SKILL.md](../skills/public/release/SKILL.md)을 읽고 "install succeeds"가 아니라 "upstream skill/plugin payload change가 `charness update` 뒤 host-visible installed copy까지 실제 전파되는가"를 먼저 본다.
 - 이 머신의 `~/.agents/skills` source-checkout symlink는 2026-04-12에 다시 확인했을 때 실제로 남아 있었고, 이후 다시 제거했다. 이제 `charness init/update/reset/uninstall`가 symlink일 때 자동 제거하므로 다음 세션에서는 재발 여부만 짧게 확인하면 된다.
 - `~/.local/state/charness/host-state.json`이 있으면 `last_update` 또는 `last_doctor` snapshot부터 보고, interactive Codex restart 전후 차이를 proof source로 쓴다.
@@ -63,6 +64,7 @@
 
 ## Next Session
 
+0. support-tool follow-up을 이어갈 때는 [docs/support-tool-followup.md](support-tool-followup.md)를 먼저 읽고, 여기서 정한 issue triage와 dogfood acceptance를 그대로 따른다. 특히 `create-cli`, `quality`, `find-skills`/recommendation flow 변경은 모두 skill 수정 + `charness` repo dogfood까지 한 slice로 묶는다.
 1. 실제 interactive Codex에서 clean installed baseline을 유지한 채 upstream skill/plugin payload를 의도적으로 바꾼 뒤 `charness update`가 official app-server refresh까지 포함한 상태에서 그 변경을 installed cache와 visible skill surface까지 전파하는지 확인한다. cache refresh는 이제 자동 시도가 들어갔으므로, 다음 proof는 `update-only + restart-only -> Plugin Directory re-enable -> Plugin Directory reinstall` 순서로 최소 필요 refresh step을 분리 기록해야 한다.
    - 가능하면 update 전 `charness doctor --write-state` snapshot과, restart/re-enable/reinstall 각 단계 뒤 새 snapshot을 비교해 proof를 남긴다. visible skill delta가 가장 판정이 쉬우면 임시 probe skill 추가/제거를 사용해도 된다.
 2. 새 `charness tool install/update/doctor` surface를 실제 다른 머신 또는 temp-home workflow로 한 번 더 dogfood한다. 특히 provenance-aware route가 있는 tool(`gws-cli`, brew-installed `specdown`, brew-installed `gh`)과 manual-only tool(`cautilus`, release-installed `specdown`)에서 남는 lock/install guidance shape를 점검한다.
