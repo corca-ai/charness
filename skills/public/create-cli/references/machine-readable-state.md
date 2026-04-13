@@ -8,6 +8,9 @@ Prefer:
 - structured stdout for the current command
 - durable local state for the last observed machine condition
 - explicit paths for generated artifacts
+- enough provenance to tell which runtime binary actually handled the command
+- enough host state to tell whether the installed host-visible copy matched the
+  exported source
 
 Examples:
 
@@ -15,6 +18,8 @@ Examples:
 - lock files that record install/update/support results
 - generated references or wrappers under a predictable directory
 - user-scoped version provenance plus last successful update-check metadata
+- host-state snapshots that separate source version, runtime capability, and
+  installed host copy when those can drift
 
 Manual-only flows still need structured state.
 

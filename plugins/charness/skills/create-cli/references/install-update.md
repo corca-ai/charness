@@ -10,11 +10,23 @@ Prefer:
 - one honest story for what the installer owns vs what the operator or host
   package manager still owns
 
+When the product ships skills or plugins into a host, separate at least three
+surfaces:
+
+- source checkout or packaging manifest
+- runtime binary actually executing `install` or `update`
+- host-visible installed copy
+
+Do not assume these move together just because the checkout version changed.
+
 Be explicit about what the CLI can and cannot automate.
 
 - If the host or package manager owns the final activation step, say so.
 - If update depends on the original install method, persist that fact or leave
   enough structured guidance for the next agent.
+- If the runtime binary may lag the checkout, expose runtime capability through
+  the command surface itself, such as new `--help` flags, JSON fields, or
+  structured provenance, instead of inferring from source version alone.
 - If a CLI can probe upstream releases or package metadata, do it to improve
   guidance, but do not claim mutation happened when it did not.
 - If an installer script exists, prefer making it install only the product
@@ -30,6 +42,16 @@ Homebrew note:
 
 Use the same install method for updates unless the product owns a safer
 self-update path.
+
+Host-visible plugin or skill propagation note:
+
+- if the CLI owns plugin export or refresh, report whether that refresh was
+  attempted and what surface it touched
+- if the host still owns the last refresh step, classify it honestly as
+  restart-only, re-enable, reinstall, or unclear
+- keep standing local tests for deterministic source/runtime seams, and move
+  host-interactive proof into explicit on-demand validation when that is the
+  cheaper honest bar
 
 Version provenance note:
 

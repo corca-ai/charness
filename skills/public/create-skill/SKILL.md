@@ -78,6 +78,9 @@ skill before writing from scratch.
    - if the work is really a repo-owned command-line product, use
      `create-cli` instead of burying CLI lifecycle decisions inside a generic
      skill migration
+   - if the skill must ship inside a host plugin bundle, keep discovery,
+     manifest, and install-surface proof in packaging, integrations, or the
+     owning CLI contract rather than in the public skill body
 5. Implement the smallest coherent package.
    - `SKILL.md` contains trigger contract and decision skeleton only
    - treat sparse named person anchors in `SKILL.md` core as a deliberate
@@ -95,6 +98,9 @@ skill before writing from scratch.
    - trigger collision check against adjacent skills
    - path check for every file named in the skill
    - schema or example validation for any profile, preset, or manifest touched
+   - if the skill is meant to be deployable through Claude or Codex plugin
+     surfaces, prove the packaging layout and host-visible payload delta at the
+     install surface instead of claiming discovery from source-only inspection
 
 ## Rules
 
@@ -174,5 +180,6 @@ readiness probe.
 - `references/preset-conventions.md`
 - `references/integration-seams.md`
 - `references/runtime-capabilities.md`
+- `references/deployable-skill-packaging.md`
 - `references/binary-preflight.md`
 - `../create-cli/SKILL.md`
