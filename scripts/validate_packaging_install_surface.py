@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import tempfile
 from pathlib import Path
 from typing import Callable
@@ -102,7 +103,23 @@ def validate_checked_in_plugin_tree(
     validate_checked_in_plugin_tree_matches_generated(root, plugin_root, data)
 
 
-def collect_files(root: Path) -> set[Path]:
+def collect_files(root: Path, *, repo_root: Path | None = None) -> set[Path]:
+    if repo_root is not None:
+        prefix = str(root.relative_to(repo_root))
+        result = subprocess.run(
+            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", prefix],
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+        )
+        if result.returncode == 0:
+            prefix_path = Path(prefix)
+            entries = [rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel]
+            return {
+                Path(entry).relative_to(prefix_path)
+                for entry in entries
+                if (repo_root / entry).is_file()
+            }
     return {path.relative_to(root) for path in root.rglob("*") if path.is_file()}
 
 
@@ -114,7 +131,7 @@ def validate_checked_in_plugin_tree_matches_generated(root: Path, plugin_root: P
         export_plugin_tree(root, generated_plugin_root, data)
 
         expected_files = collect_files(generated_plugin_root)
-        actual_files = collect_files(plugin_root)
+        actual_files = collect_files(plugin_root, repo_root=root)
         if actual_files != expected_files:
             missing = sorted(str(path) for path in expected_files - actual_files)
             extra = sorted(str(path) for path in actual_files - expected_files)
