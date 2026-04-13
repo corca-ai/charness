@@ -106,6 +106,10 @@
     "constraint": "Prefer a recent upstream-supported gws release.",
     "detected_by": "stdout"
   },
+  "supports_public_skills": [
+    "gather"
+  ],
+  "recommendation_role": "runtime",
   "package_managers": {
     "npm": {
       "package_name": "@googleworkspace/cli",

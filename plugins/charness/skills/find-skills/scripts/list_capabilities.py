@@ -24,6 +24,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.control_plane_lib import load_support_capabilities  # noqa: E402
 from scripts.repo_layout import public_skills_dir, support_dir  # noqa: E402
+from scripts.tool_recommendation_lib import recommendations_for_public_skill  # noqa: E402
 from resolve_adapter import load_adapter  # noqa: E402
 
 
@@ -138,11 +139,23 @@ def integrations(root: Path) -> list[dict[str, object]]:
                     }
                     for check in data.get("readiness_checks", [])
                 ],
+                "supports_public_skills": data.get("supports_public_skills", []),
+                "recommendation_role": data.get("recommendation_role"),
                 "path": str(manifest.relative_to(root)),
                 "source": "local-integration",
                 "layer": "external integration",
             }
         )
+    return items
+
+
+def integration_manifests(root: Path) -> list[dict[str, object]]:
+    items: list[dict[str, object]] = []
+    for manifest in sorted((root / "integrations" / "tools").glob("*.json")):
+        if manifest.name == "manifest.schema.json":
+            continue
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+        items.append(data)
     return items
 
 
@@ -183,11 +196,13 @@ def support_capabilities(root: Path) -> list[dict[str, object]]:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--recommend-for-skill")
     args = parser.parse_args()
     root = args.repo_root.resolve()
     local_root = _local_surface_root(root)
     adapter = load_adapter(root)
     trusted_skill_roots = adapter["data"].get("trusted_skill_roots", [])
+    manifests = integration_manifests(local_root)
     payload = {
         "adapter": {
             "found": adapter["found"],
@@ -203,6 +218,11 @@ def main() -> None:
         "support_capabilities": support_capabilities(local_root),
         "integrations": integrations(local_root),
         "trusted_skills": trusted_skills(root, trusted_skill_roots),
+        "tool_recommendations": (
+            recommendations_for_public_skill(local_root, manifests, skill_id=args.recommend_for_skill)
+            if args.recommend_for_skill
+            else []
+        ),
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2))
 

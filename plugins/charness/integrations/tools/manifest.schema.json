@@ -143,6 +143,21 @@
     "support_skill_source": {
       "$ref": "#/definitions/supportSkillSource"
     },
+    "supports_public_skills": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/slug"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "recommendation_role": {
+      "type": "string",
+      "enum": [
+        "runtime",
+        "validation"
+      ]
+    },
     "degradation": {
       "$ref": "#/definitions/degradation"
     },

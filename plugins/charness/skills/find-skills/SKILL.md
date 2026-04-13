@@ -27,6 +27,7 @@ Start local-first:
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root .
+python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommend-for-skill <skill-id>
 sed -n '1,220p' docs/external-integrations.md 2>/dev/null || true
 sed -n '1,220p' docs/support-skill-policy.md 2>/dev/null || true
 ```
@@ -62,6 +63,9 @@ new local skill.
    - use a support capability through the right workflow
    - install or wire an external integration if the policy already supports it,
      and surface the supported access modes when that changes the next step
+   - when the best-match public skill has a declared external-tool route, use
+     the structured recommendation payload instead of prose-only install advice,
+     including whether the route is a runtime path or a validation path
    - if the capability is genuinely missing, say whether it belongs in a new
      public skill, support skill, or integration manifest
 6. Explain why.

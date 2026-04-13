@@ -12,82 +12,34 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.control_plane_lib import (
-    evaluate_version,
     load_capabilities,
     now_iso,
-    read_lock,
-    run_check,
     upsert_lock,
 )
+from scripts.doctor_lib import inspect_capability_state
 from scripts.install_provenance_lib import detect_install_provenance
-from scripts.support_sync_lib import inspect_support_sync, support_state_for_manifest
 from scripts.upstream_release_lib import probe_release
 
 
-def evaluate_readiness(manifest: dict[str, object], repo_root: Path) -> dict[str, object]:
-    checks: list[dict[str, object]] = []
-    for check in manifest.get("readiness_checks", []):
-        result = run_check(check, repo_root)
-        checks.append({"check_id": check["check_id"], "summary": check["summary"], **result})
-    return {
-        "ok": all(check["ok"] for check in checks),
-        "checks": checks,
-        "failed_checks": [check["check_id"] for check in checks if not check["ok"]],
-    }
-
-
 def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: bool) -> dict[str, object]:
-    detect_result = run_check(manifest["checks"]["detect"], repo_root)
-    healthcheck_result = run_check(manifest["checks"]["healthcheck"], repo_root) if detect_result["ok"] else {
-        "ok": False,
-        "results": [],
-        "failure_details": ["detect failed; healthcheck skipped"],
-        "failure_hint": manifest["checks"]["healthcheck"].get("failure_hint"),
-    }
-    readiness_result = evaluate_readiness(manifest, repo_root)
-    version_result = evaluate_version(manifest, detect_result)
+    state = inspect_capability_state(repo_root, manifest)
     provenance_result = detect_install_provenance(manifest)
     provenance_result["checked_at"] = now_iso()
-    previous_lock = read_lock(repo_root, manifest["tool_id"])
-    support_state = support_state_for_manifest(manifest)
-    support_sync = inspect_support_sync(repo_root, previous_lock)
-
-    if support_sync["status"] == "missing":
-        doctor_status = "support-missing"
-    elif not detect_result["ok"]:
-        doctor_status = "missing"
-    elif not healthcheck_result["ok"]:
-        doctor_status = "unhealthy"
-    elif not readiness_result["ok"]:
-        doctor_status = "not-ready"
-    elif version_result["status"] not in {"advisory", "matched", "unknown"}:
-        doctor_status = "version-mismatch"
-    else:
-        doctor_status = "ok"
-
     payload = {
         "checked_at": now_iso(),
-        "kind": manifest["kind"],
-        "access_modes": manifest["access_modes"],
-        "capability_requirements": manifest.get("capability_requirements", {}),
-        "support_state": support_state,
-        "detect": detect_result,
-        "healthcheck": healthcheck_result,
-        "readiness": readiness_result,
-        "version": version_result,
+        **state,
         "provenance": provenance_result,
-        "support_sync": support_sync,
-        "doctor_status": doctor_status,
     }
     release = probe_release(manifest)
     if release is not None:
         payload["release"] = release
     if write:
         lock_payload = dict(payload)
+        lock_payload.pop("previous_lock_present", None)
         lock_payload.pop("release", None)
         lock_payload.pop("provenance", None)
         upsert_lock(repo_root, manifest, doctor=lock_payload, release=release, provenance=provenance_result)
-    return {**payload, "tool_id": manifest["tool_id"], "previous_lock_present": previous_lock is not None}
+    return {**payload, "tool_id": manifest["tool_id"], "previous_lock_present": state["previous_lock_present"]}
 
 
 def main() -> int:

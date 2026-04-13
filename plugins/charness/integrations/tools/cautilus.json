@@ -59,6 +59,17 @@
     "constraint": "Prefer a recent upstream-supported release or checkout aligned with the checked-in consumer contract.",
     "detected_by": "stdout"
   },
+  "supports_public_skills": [
+    "create-skill",
+    "debug",
+    "find-skills",
+    "gather",
+    "handoff",
+    "impl",
+    "init-repo",
+    "spec"
+  ],
+  "recommendation_role": "validation",
   "support_skill_source": {
     "source_type": "upstream_repo",
     "path": "skills/cautilus",

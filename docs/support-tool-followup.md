@@ -119,6 +119,14 @@ even if the next session only skims this document.
 Apply `#9`, but tighten it into a portable contract rather than a
 `cautilus`-specific anecdote.
 
+Status:
+
+- Landed on 2026-04-13 in `charness`.
+- The public skill now explicitly separates help, command discovery, health,
+  readiness, and local discoverability.
+- `charness` CLI `--help` surfaces were re-checked against that stronger
+  contract in the same slice.
+
 Required shape:
 
 - name the no-side-effect `subcommand --help` contract explicitly
@@ -222,6 +230,23 @@ First implementation slice:
 - return a structured recommendation payload rather than prose-only advice
 - consume that helper first from `find-skills`
 - then reuse it from `quality` when a missing tool blocks stronger local proof
+
+Status:
+
+- The first code seam landed on 2026-04-13.
+- `find-skills` now has a structured recommendation payload through
+  `list_capabilities.py --recommend-for-skill <skill-id>`.
+- Integration manifests may now declare:
+  - `supports_public_skills`
+  - `recommendation_role` (`runtime` or `validation`)
+- Current dogfood proof in `charness`:
+  - `gather` surfaces `gws-cli` as `runtime` and `cautilus` as `validation`
+  - `spec` surfaces `cautilus` as `validation`
+- What still remains:
+  - route this payload through more public-skill flows, not only
+    `find-skills/scripts/list_capabilities.py`
+  - let `quality` reuse the same contract when stronger proof is blocked by a
+    missing tool
 
 Required payload fields:
 
