@@ -35,6 +35,13 @@ By default, `init-repo` writes any durable normalization note to
 `skill-outputs/init-repo/init-repo.md`. Repos can override the directory with
 `.agents/init-repo-adapter.yaml`.
 
+If the repo is mature and only `docs/operator-acceptance.md` is missing,
+synthesize a first draft from existing checks before hand-writing a template:
+
+```bash
+python3 "$SKILL_DIR/scripts/synthesize_operator_acceptance.py" --repo-root .
+```
+
 ```bash
 # Required Tools: rg
 # Missing-binary protocol: create-skill/references/binary-preflight.md
@@ -136,5 +143,7 @@ The result should usually include:
 - `references/normalization-flow.md`
 - `references/agent-docs-policy.md`
 - `references/default-surfaces.md`
+- `references/github-actions-defaults.md`
 - `references/operator-acceptance-synthesis.md`
 - `scripts/inspect_repo.py`
+- `scripts/synthesize_operator_acceptance.py`

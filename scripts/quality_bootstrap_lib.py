@@ -101,7 +101,12 @@ def detect_preflight_commands(repo_root: Path) -> list[str]:
 
 
 def detect_gate_commands(repo_root: Path) -> list[str]:
-    return ["./scripts/run-quality.sh"] if (repo_root / "scripts" / "run-quality.sh").is_file() else []
+    commands: list[str] = []
+    if (repo_root / "scripts" / "run-quality.sh").is_file():
+        commands.append("./scripts/run-quality.sh")
+    if (repo_root / "scripts" / "check-github-actions.py").is_file():
+        commands.append("python3 scripts/check-github-actions.py --repo-root .")
+    return commands
 
 
 def detect_security_commands(repo_root: Path) -> list[str]:

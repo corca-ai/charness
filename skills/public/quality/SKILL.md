@@ -68,7 +68,7 @@ sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 rg --files docs skills
 
 # 2. repo signals and maintainer-local enforcement surface
-rg -n "eslint|ruff|mypy|pyright|tsc|pytest|vitest|jest|coverage|deptry|knip|audit|sast|owasp|threat|architecture|concept|markdownlint|secretlint|shellcheck|lychee|gitleaks|trufflehog|pre-push|prepush|githook|husky|simple-git-hooks|lefthook|core\.hooksPath" .
+rg -n "eslint|ruff|mypy|pyright|tsc|pytest|vitest|jest|coverage|deptry|knip|audit|sast|owasp|threat|architecture|concept|markdownlint|secretlint|shellcheck|lychee|gitleaks|trufflehog|pre-push|prepush|githook|husky|simple-git-hooks|lefthook|core\.hooksPath|actions/checkout|actions/setup-node|actions/setup-go|actions/setup-python|actions/cache|actions/github-script|check-github-actions" .
 git config --get core.hooksPath || true
 find .git/hooks -maxdepth 1 -type f 2>/dev/null | sort
 
@@ -95,7 +95,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - prefer repo-native commands over hypothetical recommendations
    - keep the run bounded to the current scope when the task is not repo-wide
    - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage
-   - for timing/logs/retention signals, see `references/operability-signals.md`
+   - for timing/logs/retention signals, workflow-runtime drift, and retention signals, see `references/operability-signals.md`
    - surface the current runtime hot spots from available timing or CI signals
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model

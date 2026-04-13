@@ -149,6 +149,50 @@ def test_check_supply_chain_accepts_uv_lock_for_python_dependencies(tmp_path: Pa
     assert "uv:uv.lock" in result.stdout
 
 
+def test_check_github_actions_passes_without_workflows() -> None:
+    result = run_script("scripts/check-github-actions.py", "--repo-root", str(ROOT))
+    assert result.returncode == 0, result.stderr
+    assert "No GitHub Actions workflows detected." in result.stdout
+
+
+def test_check_github_actions_flags_outdated_node24_baselines(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    workflow_dir = repo / ".github" / "workflows"
+    workflow_dir.mkdir(parents=True)
+    (workflow_dir / "ci.yml").write_text(
+        "\n".join(
+            [
+                "name: ci",
+                "on: [push]",
+                "jobs:",
+                "  build:",
+                "    runs-on: ubuntu-latest",
+                "    steps:",
+                "      - uses: actions/checkout@v4",
+                "      - uses: actions/checkout@v5",
+                "      - uses: actions/setup-node@v4",
+                "      - uses: actions/cache/save@v5",
+                "      - uses: ./.github/actions/local-check",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/check-github-actions.py", "--repo-root", str(repo), "--json")
+    assert result.returncode == 1
+    payload = json.loads(result.stderr)
+    assert [finding["category"] for finding in payload["findings"]] == [
+        "node24_incompatible",
+        "baseline_lag",
+        "node24_incompatible",
+    ]
+    assert payload["findings"][0]["normalized_action"] == "actions/checkout"
+    assert payload["findings"][0]["recommended_reference"] == "v6"
+    assert payload["findings"][1]["normalized_action"] == "actions/checkout"
+    assert payload["findings"][2]["normalized_action"] == "actions/setup-node"
+
+
 def test_check_python_lengths_rejects_too_long_function(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     scripts_dir = repo / "scripts"

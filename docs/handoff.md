@@ -17,6 +17,8 @@
 - public skill `narrative`가 추가돼 source-of-truth doc alignment와 audience-neutral brief skeleton derivation이 `announcement`의 audience/channel adaptation과 분리됐다.
 - public skill `quality`는 이제 review posture뿐 아니라 explicit bootstrap posture도 가진다. [`bootstrap_adapter.py`](../skills/public/quality/scripts/bootstrap_adapter.py)가 `.agents/quality-adapter.yaml`을 idempotent하게 채우고 `installed/inferred/deferred` 상태를 JSON으로 남긴다.
 - public skill `init-repo`가 추가돼 greenfield bootstrap과 partial repo operating-surface normalization을 `README.md`, `AGENTS.md`, `CLAUDE.md` symlink policy, `docs/roadmap.md`, `docs/operator-acceptance.md` 기준으로 다루게 됐다. 이제 `PARTIAL` 안에서도 one-missing-surface targeted repair를 따로 감지하고, `operator-acceptance`는 기존 repo checks와 takeover steps에서 합성하는 기준을 가진다.
+- `init-repo`는 이제 [`synthesize_operator_acceptance.py`](../skills/public/init-repo/scripts/synthesize_operator_acceptance.py)로 functional-check style Markdown specs와 repo-owned command surface에서 `docs/operator-acceptance.md` 초안을 실제로 합성할 수 있다.
+- GitHub Actions workflow drift용 repo-owned checker `python3 scripts/check-github-actions.py --repo-root .`가 추가됐고, `init-repo`는 Node 24-ready first-party action majors baseline을 reference로 유지한다.
 - `init-repo`는 blanket `lychee` ignore를 기본 템플릿으로 넣지 않는다. external link 검사는 optional escalation으로 두고, broad ignore는 실제 필요가 확인된 뒤에만 좁게 추가한다.
 - repo-owned release/install surface는 `plugins/charness` 아래 checked-in plugin bundle로 정리돼 있고, root marketplace files는 compatibility artifact로만 남긴다.
 - Ceal-era migration surface는 정리됐다. tracked tree에는 `Ceal`, `interview`, `concept-review`, `test-improvement`, `entity-stage-design`, `workbench` 같은 legacy naming이 남아 있지 않다.

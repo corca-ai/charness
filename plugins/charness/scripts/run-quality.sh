@@ -209,6 +209,7 @@ flush_phase || OVERALL_RC=$?
 queue_selected "check-markdown" ./scripts/check-markdown.sh
 queue_selected "check-secrets" ./scripts/check-secrets.sh
 queue_selected "check-supply-chain" python3 scripts/check-supply-chain.py --repo-root "$REPO_ROOT"
+queue_selected "check-github-actions" python3 scripts/check-github-actions.py --repo-root "$REPO_ROOT"
 if [[ "${CHARNESS_SUPPLY_CHAIN_ONLINE:-0}" == "1" ]]; then
   queue_selected "check-supply-chain-online" python3 scripts/check-supply-chain-online.py --repo-root "$REPO_ROOT" --triage-owner "repo-maintainers"
 fi

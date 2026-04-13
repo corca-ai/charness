@@ -13,7 +13,10 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
-from scripts.eval_init_repo import run_init_repo_inspect_states
+from scripts.eval_init_repo import (
+    run_init_repo_inspect_states,
+    run_init_repo_operator_acceptance_synthesis,
+)
 from scripts.eval_registry import SCENARIOS, Scenario
 
 
@@ -30,9 +33,13 @@ def run_command(command: list[str], *, cwd: Path, env: dict[str, str] | None = N
         text=True,
         env=env,
     )
+
+
 def expect_success(result: subprocess.CompletedProcess[str], context: str) -> None:
     if result.returncode != 0:
         raise EvalError(f"{context}: exited with {result.returncode}\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}")
+
+
 def expect_adapter_bootstrap(
     root: Path,
     *,
@@ -149,6 +156,15 @@ def scenario_init_repo_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="init-repo", adapter_name="init-repo-adapter.yaml", expected_artifact_path="skill-outputs/init-repo/init-repo.md")
 def scenario_init_repo_inspect_states(root: Path) -> None:
     run_init_repo_inspect_states(root, run_command=run_command, expect_success=expect_success, error_type=EvalError)
+
+
+def scenario_init_repo_operator_acceptance_synthesis(root: Path) -> None:
+    run_init_repo_operator_acceptance_synthesis(
+        root,
+        run_command=run_command,
+        expect_success=expect_success,
+        error_type=EvalError,
+    )
 def scenario_handoff_relative_links(root: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="charness-eval-handoff-") as tmpdir:
         tmp = Path(tmpdir)
@@ -296,6 +312,7 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "gather-adapter-bootstrap": scenario_gather_adapter_bootstrap,
         "init-repo-adapter-bootstrap": scenario_init_repo_adapter_bootstrap,
         "init-repo-inspect-states": scenario_init_repo_inspect_states,
+        "init-repo-operator-acceptance-synthesis": scenario_init_repo_operator_acceptance_synthesis,
         "handoff-relative-links": scenario_handoff_relative_links,
         "find-skills-local-first": scenario_find_skills_local_first,
         "support-sync-contracts": scenario_support_sync_contracts,

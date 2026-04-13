@@ -67,3 +67,71 @@ def run_init_repo_inspect_states(
                 "init-repo targeted partial inspect: unexpected missing_surfaces "
                 f"{targeted.get('missing_surfaces')!r}"
             )
+
+
+def run_init_repo_operator_acceptance_synthesis(
+    root: Path,
+    *,
+    run_command: Callable[..., object],
+    expect_success: Callable[..., None],
+    error_type: type[Exception],
+) -> None:
+    with tempfile.TemporaryDirectory(prefix="charness-eval-init-repo-acceptance-") as tmpdir:
+        tmp = Path(tmpdir)
+        (tmp / "docs" / "specs").mkdir(parents=True)
+        (tmp / "scripts").mkdir(parents=True)
+        (tmp / "README.md").write_text("# Demo\n", encoding="utf-8")
+        (tmp / "docs" / "handoff.md").write_text("# Handoff\n", encoding="utf-8")
+        (tmp / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
+        (tmp / "pyproject.toml").write_text("[project]\nname='demo'\n", encoding="utf-8")
+        (tmp / "docs" / "specs" / "smoke.spec.md").write_text(
+            "\n".join(
+                [
+                    "# Demo Spec",
+                    "",
+                    "## CLI Smoke",
+                    "",
+                    "### Functional Check",
+                    "",
+                    "```bash",
+                    "./scripts/run-quality.sh",
+                    "```",
+                    "",
+                    "## Hosted Publish",
+                    "",
+                    "### Functional Check",
+                    "",
+                    "```bash",
+                    "gh workflow run release.yml",
+                    "```",
+                    "",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (tmp / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+
+        result = run_command(
+            [
+                "python3",
+                "skills/public/init-repo/scripts/synthesize_operator_acceptance.py",
+                "--repo-root",
+                str(tmp),
+                "--json",
+            ],
+            cwd=root,
+        )
+        expect_success(result, "init-repo operator acceptance synthesis")
+        payload = json.loads(result.stdout)
+        cheap = payload["acceptance_buckets"]["cheap_first"]
+        external = payload["acceptance_buckets"]["external_or_costly"]
+        human = payload["acceptance_buckets"]["human_judgment"]
+        if len(cheap) != 1 or cheap[0]["commands"] != "./scripts/run-quality.sh":
+            raise error_type(f"init-repo operator acceptance synthesis: unexpected cheap bucket {cheap!r}")
+        if len(external) != 1 or "gh workflow run" not in external[0]["commands"]:
+            raise error_type(f"init-repo operator acceptance synthesis: unexpected external bucket {external!r}")
+        if not human:
+            raise error_type(f"init-repo operator acceptance synthesis: expected human review items {payload!r}")
+        if "## Environment Prerequisites" not in payload["markdown"]:
+            raise error_type(f"init-repo operator acceptance synthesis: missing prerequisites section {payload!r}")

@@ -85,3 +85,17 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     resolved = json.loads(resolve_result.stdout)
     assert resolved["data"]["gate_commands"] == ["python3 -m pytest -q"]
     assert resolved["data"]["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
+
+
+def test_quality_bootstrap_detects_repo_owned_github_actions_check(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    (repo / "scripts" / "run-quality.sh").unlink()
+    (repo / "scripts" / "check-github-actions.py").write_text("print('ok')\n", encoding="utf-8")
+
+    result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+    resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
+    assert resolve_result.returncode == 0, resolve_result.stderr
+    resolved = json.loads(resolve_result.stdout)
+    assert resolved["data"]["gate_commands"] == ["python3 scripts/check-github-actions.py --repo-root ."]

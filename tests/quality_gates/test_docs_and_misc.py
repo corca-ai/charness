@@ -56,6 +56,64 @@ def test_init_repo_inspect_repo_flags_targeted_missing_surface(tmp_path: Path) -
     assert payload["missing_surfaces"] == ["operator_acceptance"]
 
 
+def test_init_repo_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "docs" / "specs").mkdir(parents=True)
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (repo / "docs" / "handoff.md").write_text("# Handoff\n", encoding="utf-8")
+    (repo / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
+    (repo / "pyproject.toml").write_text("[project]\nname='demo'\n", encoding="utf-8")
+    (repo / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    (repo / "docs" / "specs" / "demo.spec.md").write_text(
+        "\n".join(
+            [
+                "# Demo Spec",
+                "",
+                "## Local Smoke",
+                "",
+                "### Functional Check",
+                "",
+                "```bash",
+                "./scripts/run-quality.sh",
+                "```",
+                "",
+                "## Hosted Publish",
+                "",
+                "### Functional Check",
+                "",
+                "```bash",
+                "gh workflow run release.yml",
+                "```",
+                "",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/init-repo/scripts/synthesize_operator_acceptance.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["shared_start_commands"] == [
+        "git status --short",
+        "sed -n '1,220p' docs/handoff.md",
+        "sed -n '1,260p' docs/roadmap.md 2>/dev/null || true",
+        "./scripts/run-quality.sh",
+    ]
+    assert payload["acceptance_buckets"]["cheap_first"][0]["commands"] == "./scripts/run-quality.sh"
+    assert "gh workflow run release.yml" in payload["acceptance_buckets"]["external_or_costly"][0]["commands"]
+    assert payload["acceptance_buckets"]["human_judgment"][0]["source_path"] == "docs/handoff.md"
+    assert "## Cheap First" in payload["markdown"]
+    assert "## External Or Costly Checks" in payload["markdown"]
+    assert "## Human Judgment" in payload["markdown"]
+
+
 def test_release_bump_version_updates_manifest_and_runs_sync(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)

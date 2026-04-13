@@ -59,3 +59,10 @@ acceptance from them instead of inventing a disconnected checklist:
 
 Only scaffold `INSTALL.md` and `UNINSTALL.md` when the repo really exposes an
 installable surface such as a plugin, package, or operator-facing setup path.
+
+## GitHub Actions Defaults
+
+When the repo scaffolds GitHub-hosted workflows, pin maintained GitHub Actions
+to current Node 24-ready majors by default. Keep the maintained baseline in
+[`github-actions-defaults.md`](github-actions-defaults.md) and prefer direct
+major upgrades over compatibility env vars.

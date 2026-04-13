@@ -9,6 +9,12 @@ has a roadmap, install/update surface, or explicit maintainer handoff burden
 but no honest `docs/operator-acceptance.md`, classify that as `missing`
 operability posture rather than a doc-nice-to-have.
 
+Workflow runtime drift is also an operability signal. If the repo keeps GitHub
+Actions workflows, a cheap repo-owned checker such as
+`python3 scripts/check-github-actions.py --repo-root .` should flag outdated
+JavaScript action majors before hosted-runner deprecation notices become the
+first signal.
+
 ## Runtime Timing
 
 If the repo runs lint, test, eval, or quality commands regularly:
@@ -52,6 +58,8 @@ Preferred deterministic guards:
   genuinely needed and clearly labeled
 - a scoped or filtered runner mode for debugging and runner-behavior tests when
   the repo can narrow execution without lying about what the standing bar covers
+- a local GitHub Actions major drift check when the repo depends on hosted
+  workflows and wants runner-runtime changes caught before CI warnings
 
 ## Logs And Diagnostics
 

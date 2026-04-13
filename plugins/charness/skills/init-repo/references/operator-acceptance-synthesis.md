@@ -34,6 +34,10 @@ A good operator-acceptance section usually contains:
 - remaining items with read-first pointers
 - acceptance bullets that say what proves completion
 
+Use `scripts/synthesize_operator_acceptance.py` when the repo already has
+functional-check style Markdown specs or repo-owned command surfaces and needs
+the first honest draft before manual tightening.
+
 ## Avoid
 
 - copying the roadmap verbatim without runnable or reviewable acceptance steps
