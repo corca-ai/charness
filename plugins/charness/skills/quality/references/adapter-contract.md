@@ -29,6 +29,7 @@ Optional shared provenance:
 - `preset_id`
 - `preset_version`
 - `customized_from`
+- `preset_lineage`
 
 Quality-specific fields:
 
@@ -61,3 +62,8 @@ To change the location, override `output_dir` in the adapter.
 - prefer a small number of meaningful command groups over many tiny fields
 - use presets to suggest defaults, but keep the final command surface explicit
   in the adapter
+- keep `preset_id` as the primary bootstrap seed and use `preset_lineage` to
+  record multi-family repo ancestry such as Python plus monorepo or
+  TypeScript plus executable-spec surfaces
+- when bootstrap cannot honestly finish setup, leave the remaining operator
+  work in `skill-outputs/quality/bootstrap.json`

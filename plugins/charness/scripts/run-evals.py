@@ -99,6 +99,42 @@ def scenario_quality_adapter_checked_in(root: Path) -> None:
     if "./scripts/run-quality.sh" not in gate_commands:
         raise EvalError(f"checked-in quality adapter resolve: missing canonical gate command in {gate_commands!r}")
 
+
+def scenario_quality_bootstrap_posture(root: Path) -> None:
+    with tempfile.TemporaryDirectory(prefix="charness-eval-quality-bootstrap-") as tmpdir:
+        tmp = Path(tmpdir)
+        (tmp / "docs").mkdir(parents=True)
+        (tmp / "scripts").mkdir(parents=True)
+        (tmp / "README.md").write_text("# Demo\n", encoding="utf-8")
+        (tmp / "docs" / "handoff.md").write_text("# Handoff\n", encoding="utf-8")
+        (tmp / "pyproject.toml").write_text("[project]\nname='demo'\n", encoding="utf-8")
+        (tmp / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+        (tmp / "scripts" / "check-secrets.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+
+        bootstrap_result = run_command(
+            ["python3", "skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(tmp)],
+            cwd=root,
+        )
+        expect_success(bootstrap_result, "quality bootstrap posture")
+        payload = json.loads(bootstrap_result.stdout)
+        if payload["field_statuses"]["gate_commands"] != "installed":
+            raise EvalError(f"quality bootstrap posture: unexpected gate status {payload!r}")
+        if payload["field_statuses"]["preflight_commands"] != "deferred":
+            raise EvalError(f"quality bootstrap posture: unexpected preflight status {payload!r}")
+        if payload["preset_lineage"] != ["python-quality"]:
+            raise EvalError(f"quality bootstrap posture: unexpected preset lineage {payload!r}")
+        if not payload["deferred_setup"]:
+            raise EvalError(f"quality bootstrap posture: expected deferred setup report {payload!r}")
+
+        resolve_result = run_command(
+            ["python3", "skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(tmp)],
+            cwd=root,
+        )
+        expect_success(resolve_result, "quality bootstrap posture resolve")
+        resolved = json.loads(resolve_result.stdout)
+        if resolved["data"]["gate_commands"] != ["./scripts/run-quality.sh"]:
+            raise EvalError(f"quality bootstrap posture resolve: unexpected adapter payload {resolved!r}")
+
 def scenario_narrative_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="narrative", adapter_name="narrative-adapter.yaml", expected_artifact_path="skill-outputs/narrative/narrative.md")
 
@@ -253,6 +289,7 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "debug-adapter-bootstrap": scenario_debug_adapter_bootstrap,
         "quality-adapter-bootstrap": scenario_quality_adapter_bootstrap,
         "quality-adapter-checked-in": scenario_quality_adapter_checked_in,
+        "quality-bootstrap-posture": scenario_quality_bootstrap_posture,
         "narrative-adapter-bootstrap": scenario_narrative_adapter_bootstrap,
         "release-adapter-bootstrap": scenario_release_adapter_bootstrap,
         "handoff-adapter-bootstrap": scenario_handoff_adapter_bootstrap,

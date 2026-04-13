@@ -31,7 +31,7 @@ ADAPTER_CANDIDATES = (
 )
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
-LIST_FIELDS = ("concept_paths", "preflight_commands", "gate_commands", "security_commands")
+LIST_FIELDS = ("preset_lineage", "concept_paths", "preflight_commands", "gate_commands", "security_commands")
 ARTIFACT_FILENAME = "quality.md"
 
 
@@ -59,6 +59,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "repo": repo_root.name,
         "language": "en",
         "output_dir": "skill-outputs/quality",
+        "preset_lineage": [],
         "concept_paths": [],
         "preflight_commands": [],
         "gate_commands": [],

@@ -4,13 +4,18 @@ language: en
 output_dir: skill-outputs/quality
 preset_id: python-quality
 customized_from: python-quality
+preset_lineage:
+- python-quality
 concept_paths:
-- docs/master-plan.md
 - docs/control-plane.md
 - docs/public-skill-validation.md
+- docs/operator-acceptance.md
 - docs/handoff.md
 - skill-outputs/quality/quality.md
-preflight_commands: []
+- README.md
+preflight_commands:
+- python3 scripts/validate-maintainer-setup.py --repo-root .
+- python3 scripts/doctor.py --json
 gate_commands:
 - ./scripts/run-quality.sh
 security_commands:

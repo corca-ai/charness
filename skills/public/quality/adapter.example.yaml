@@ -4,6 +4,8 @@ language: en
 output_dir: skill-outputs/quality
 preset_id: typescript-quality
 customized_from: typescript-quality
+preset_lineage:
+- typescript-quality
 concept_paths: []
 preflight_commands: []
 gate_commands: []

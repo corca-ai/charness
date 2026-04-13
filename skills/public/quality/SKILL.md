@@ -15,6 +15,8 @@ package and maintenance drift review, and documentation drift review.
 The job is to understand the repo's current quality surface, run the
 meaningful gates that already exist, and propose the missing ones concretely.
 
+`quality` may also install or refresh the repo-local quality posture when the next move is deterministic setup work instead of only review. Keep this inside the same public concept: review posture and bootstrap posture are different execution states of `quality`, not separate skills.
+
 When the next quality move is repo-local, deterministic, and low-risk, prefer
 implementing that gate in the same turn. Stay review-only when the user asks
 or the tradeoff is genuinely product-defining.
@@ -30,9 +32,7 @@ repo-owned hook installer, or documented no-hook policy, `quality` must name
 that as a missing enforcement gap rather than treating the passing command as
 healthy posture. See `references/maintainer-local-enforcement.md`.
 
-`quality` and concept review are adjacent. Use `quality` for repo posture,
-drift, duplicated surfaces, weak gates, and the next concrete validation move.
-Use concept review when boundaries, ownership, or source-of-truth design stay unresolved without duplicate text or an obvious gate. Use named-expert lenses only when they sharpen the next gate choice. See `references/quality-lenses.md`.
+`quality` and concept review are adjacent. Use `quality` for repo posture, drift, duplicated surfaces, weak gates, and the next concrete validation move. Use concept review when boundaries, ownership, or source-of-truth design stay unresolved without duplicate text or an obvious gate. Use named-expert lenses only when they sharpen the next gate choice. See `references/quality-lenses.md`.
 
 ## Bootstrap
 
@@ -44,11 +44,16 @@ Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 ```
 
+If the repo already has repo-owned quality commands or needs a first-pass installed posture, bootstrap the adapter and capture deferred setup in a machine-readable report:
+
+```bash
+python3 "$SKILL_DIR/scripts/bootstrap_adapter.py" --repo-root .
+```
+
 Keep `quality.md` short and current; move older review detail into sibling
 `history/*.md` archives when today's posture starts getting buried.
 
-If the adapter is missing and the repo would benefit from explicit command
-groups, scaffold one:
+If the adapter is missing and the repo only needs a blank scaffold instead of detected bootstrap, scaffold one directly:
 
 ```bash
 python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root . --preset-id portable-defaults
@@ -71,8 +76,7 @@ find .git/hooks -maxdepth 1 -type f 2>/dev/null | sort
 git status --short
 ```
 
-If the adapter is missing, use inferred defaults and continue; scaffold one
-when the repo already has stable gate commands worth recording.
+If the adapter is missing, use inferred defaults and continue; scaffold one when the repo already has stable gate commands worth recording. Prefer `bootstrap_adapter.py` when the adapter should record installed command groups, inferred concept paths, preset lineage, or deferred setup in one pass.
 
 ## Workflow
 
@@ -83,46 +87,28 @@ when the repo already has stable gate commands worth recording.
    - local executable gates already present
    - current concept or architecture sources of truth
    - security and supply-chain signals already configured
-   - executable-spec frameworks, adapter depth, and overlap controls when the
-     repo keeps acceptance checks in specs
-   - maintainer-local enforcement for the final stop-before-finish gate: a
-     checked-in hook, installer, or explicit no-hook policy
+   - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
+   - maintainer-local enforcement for the final stop-before-finish gate: a checked-in hook, installer, or explicit no-hook policy
    - obvious blind spots where the repo has no gate at all
+   - whether the next move is review-only or a bounded bootstrap/install pass
 3. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
    - keep the run bounded to the current scope when the task is not repo-wide
-   - if the repo has executable-spec overlap or cost guards, run those before
-     proposing more spec coverage
+   - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage
    - for timing/logs/retention signals, see `references/operability-signals.md`
    - surface the current runtime hot spots from available timing or CI signals
 4. Inspect four quality lenses.
-   - `concept`: does the repo still match its claimed architecture and
-     ownership model
-   - `behavior`: do tests, evals, and checks say something falsifiable about
-     real behavior, and does the repo-owned test code stay maintainable
+   - `concept`: does the repo still match its claimed architecture and ownership model
+   - `behavior`: do tests, evals, and checks say something falsifiable about real behavior, and does the repo-owned test code stay maintainable
    - `security`: are there meaningful code, secret, or supply-chain risks
-   - `operability`: are setup, CI, and maintenance surfaces honest enough to
-     sustain the quality bar
-   - when the repo authors skills, include skill package quality, portable
-     bootstrap seams, and shared-helper drift in these lenses
-   - make `behavior` explicit about whether coverage is standing-gated,
-     informally sampled, or absent
-   - make evaluator depth explicit: smoke only, maintained evaluator-backed,
-     or still smoke plus HITL
-   - for docs-as-operating-surface, flag duplicated guidance, conflicting
-     copies, source-of-truth drift, and bare repo-doc links in prose
-   - for repo-owned source gates, prefer tracked or explicitly unignored files
-     over whole-worktree scans; inspect gitignored runtime state only when the check explicitly owns machine-local artifacts
-   - treat external URL health separately from repo-local markdown-link
-     discipline
-   - for executable specs, inspect boundary focus, lower-level duplication, and shell-wrapper use where direct adapters would be clearer and faster
-   - if one test module has accumulated many unrelated seams, prefer splitting it by validator or behavior seam before it becomes normal to skim only partially
+   - `operability`: are setup, CI, and maintenance surfaces honest enough to sustain the quality bar
+   - when the repo authors skills, include skill package quality, portable bootstrap seams, and shared-helper drift in these lenses
+   - make `behavior` explicit about whether coverage is standing-gated, informally sampled, or absent
+   - make evaluator depth explicit: smoke only, maintained evaluator-backed, or still smoke plus HITL
 5. Classify each issue by enforcement tier first.
    - `AUTO_EXISTING`: already enforced by a meaningful deterministic gate
-   - `AUTO_CANDIDATE`: should be promoted into a linter, validator, test, hook,
-     or script
-   - `NON_AUTOMATABLE`: still requires judgment, tradeoff analysis, or human
-     review
+   - `AUTO_CANDIDATE`: should be promoted into a linter, validator, test, hook, or script
+   - `NON_AUTOMATABLE`: still requires judgment, tradeoff analysis, or human review
 6. Classify gaps.
    - `healthy`: already enforced and useful
    - `weak`: present but low-signal or easy to game
@@ -135,9 +121,8 @@ when the repo already has stable gate commands worth recording.
    - when the problem is automatable, prefer a deterministic gate over prose
    - when the automatable move is already clear and repo-owned, implement it in
      the same turn unless the user asked to stay review-only
-   - if executable specs are slow or overlapping, delete duplicates, move
-     detail into unit-level checks, or add a direct adapter before widening
-     the spec bar
+   - when the next deterministic move is to install or refresh the repo-local quality surface itself, prefer the bootstrap posture and leave a machine-readable deferred-setup report
+   - if executable specs are slow or overlapping, delete duplicates, move detail into unit-level checks, or add a direct adapter before widening the spec bar
 8. End with a quality posture summary.
    - what was actually run
    - what runtime or diagnostic signals were captured
@@ -153,33 +138,24 @@ when the repo already has stable gate commands worth recording.
 - `Healthy`, `Weak`, `Missing`, `Deferred`, `Commands Run`, `Recommended Next Gates`
 
 - Do not reduce quality to one aggregate score.
+- Do not split quality bootstrap into a second public concept when the work is still bounded repo-local quality setup.
 - Do not recommend gates the repo cannot realistically run without saying why.
 - Do not confuse gate presence with gate usefulness.
 - Do not ignore runtime drift just because a gate still passes functionally.
-- Do not wait for operator follow-up before stating current runtime hot spots,
-  coverage-gate presence or absence, and evaluator-depth status when the repo
-  signals are available.
-- Do not treat slow or broad executable specs as automatically strong quality
-  when they mostly duplicate cheaper deterministic coverage.
+- Do not wait for operator follow-up before stating current runtime hot spots, coverage-gate presence or absence, and evaluator-depth status when the repo signals are available.
+- Do not treat slow or broad executable specs as automatically strong quality when they mostly duplicate cheaper deterministic coverage.
 - Do not recommend verbose or permanent logs without naming who will read them and how they stay bounded.
 - Do not leave an automatable quality rule as prose-only guidance when a linter, validator, test, hook, or script could own it.
-- If you stop short of an obvious repo-owned deterministic gate, name that as
-  an unresolved enforcement gap explicitly.
-- Do not treat a passing final local gate as sufficient posture when clones
-  have no repo-owned way to run it before push and no documented no-hook waiver.
-- Do not propose generic "add more tests" or "improve security" without naming
-  the actual seam, the next concrete setup, or whether the test surface now
-  needs a maintainability gate.
-- If a gate already exists, prefer tightening or reusing it before adding a new
-  parallel tool.
+- If you stop short of an obvious repo-owned deterministic gate, name that as an unresolved enforcement gap explicitly.
+- Do not treat a passing final local gate as sufficient posture when clones have no repo-owned way to run it before push and no documented no-hook waiver.
+- Do not propose generic "add more tests" or "improve security" without naming the actual seam, the next concrete setup, or whether the test surface now needs a maintainability gate.
+- If a gate already exists, prefer tightening or reusing it before adding a new parallel tool.
 - If a stronger check would require an external tool, support skill, or permission, say so explicitly.
 - If a missing binary or local setup step would materially improve confidence, recommend installing it with the reason and exact command or package family.
 - Do not let whole-worktree scans fail on gitignored runtime artifacts unless the gate explicitly exists to validate that machine-local state.
 - Keep repo-local markdown-link discipline separate from external URL health when the repo needs both.
 - Do not pretend a conceptual boundary problem is solved just because duplicate text was linted away; semantic boundary questions still need concept review.
-- If the repo is shipping a CLI or bootstrap command surface, inspect whether
-  install/update/doctor/reset behavior follows `create-cli`-level quality
-  expectations instead of treating the entrypoint as ordinary helper glue.
+- If the repo is shipping a CLI or bootstrap command surface, inspect whether install/update/doctor/reset behavior follows `create-cli`-level quality expectations instead of treating the entrypoint as ordinary helper glue.
 
 ## References
 
@@ -190,6 +166,7 @@ when the repo already has stable gate commands worth recording.
 - `references/proposal-flow.md`
 - `references/gate-classification.md`
 - `references/automation-promotion.md`
+- `references/bootstrap-posture.md`
 - `references/operability-signals.md`
 - `references/executable-spec-economics.md`
 - `references/sample-presets.md`

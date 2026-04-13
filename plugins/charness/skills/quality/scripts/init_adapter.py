@@ -19,6 +19,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
 def build_items(repo_name: str, args: argparse.Namespace) -> list[tuple[str, object]]:
     return [
         *base_adapter_items(repo_name, "skill-outputs/quality", preset_id=args.preset_id),
+        ("preset_lineage", [args.preset_id] if args.preset_id != "portable-defaults" else []),
         ("concept_paths", []),
         ("preflight_commands", []),
         ("gate_commands", []),
