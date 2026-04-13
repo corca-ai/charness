@@ -30,6 +30,44 @@ skill changes inside `charness`, and keep issue triage explicit.
   - source-of-truth skill updates
   - `charness` dogfood on the changed skill surface
 
+## Context To Preserve
+
+These points came from the full support-tool discussion and should not be lost
+even if the next session only skims this document.
+
+- The recent `cautilus` work was a trigger, not the product-specific center of
+  gravity. The intended output is a portable `charness` pattern for support
+  binaries and agent-facing command surfaces, not a one-off `cautilus`
+  accommodation.
+- The maintainer and the downstream `charness` user should see the same support
+  skill surface. If `charness` says a binary is supported-with-skill, the skill
+  must be locally readable and usable for both dogfood and downstream use.
+- That requirement does **not** justify vendoring upstream skill clones into
+  the tracked repo. The current answer is user-cache materialization plus
+  repo-local symlink exposure.
+- Prefer upstream-provided skill content when it is usable as-is. A
+  `charness`-owned wrapper is an exception path, not the new default.
+- The old `reference` support-sync model is intentionally gone from the active
+  plan. Provenance still matters, but not as a substitute for a consumable
+  local skill surface.
+- `external_skill` versus `external_binary_with_skill` should now be read as a
+  binary-lifecycle distinction:
+  - both materialize support skills locally
+  - only the latter adds install/update/detect/healthcheck/readiness contract
+- The recommendation/install requirement is stronger than passive discovery.
+  When a public skill genuinely depends on or materially benefits from an
+  external tool, `charness` should proactively surface that route, explain why,
+  and point to the exact install and verification path instead of leaving the
+  operator to rediscover it.
+- The rejected `!` plan is an intentional portability choice, not an accident
+  to revisit casually. The session conclusion was:
+  portable skill source should not depend on host-specific shell-execution
+  semantics inside `SKILL.md`.
+- The next slices should keep issue-driven work and dogfood tightly coupled.
+  This workstream is not complete when the skill prose changes; it is complete
+  when the changed skill has been run against `charness` itself and any exposed
+  repo-surface honesty gap is either fixed or recorded durably.
+
 ## Issue Triage
 
 ### Close Now
