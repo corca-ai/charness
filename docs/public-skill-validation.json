@@ -10,7 +10,8 @@
       "narrative",
       "quality",
       "release",
-      "retro"
+      "retro",
+      "update-probe"
     ],
     "evaluator-required": [
       "create-skill",
@@ -42,7 +43,8 @@
       "create-cli",
       "create-skill",
       "ideation",
-      "spec"
+      "spec",
+      "update-probe"
     ]
   }
 }
