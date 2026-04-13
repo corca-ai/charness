@@ -56,6 +56,11 @@ skill changes inside `charness`, and keep issue triage explicit.
 - `corca-ai/charness#10`
   Keep and implement next. This is the quality-review side of the same lesson.
 
+- `corca-ai/charness#13`
+  Keep, but treat it as the next `quality` deepening pass after `#10`. The
+  direction is good, but it is more specific and adapter-shaped than the core
+  installable-CLI probe-contract posture work.
+
 - `corca-ai/charness#11`
   Keep open, but not as the next slice. First land the stable probe-contract
   language in `create-cli` and `quality`; then decide how much of that belongs
@@ -129,6 +134,39 @@ Dogfood requirement:
 - update [skill-outputs/quality/quality.md](../skill-outputs/quality/quality.md)
   with the new findings or confirmation that the new lens passes cleanly
 
+### 2a. `quality`: Executable-Spec And Coverage Fragility Follow-On
+
+Treat `#13` as a second-wave `quality` slice after the probe-contract posture
+work is stable.
+
+Why it is valuable:
+
+- it sharpens executable-spec economics beyond the current generic overlap
+  guidance
+- it gives adapter-owned configuration a clean place to describe repo-specific
+  smoke patterns or fragile margins
+- it turns a real review miss into a portable follow-up instead of one repo's
+  private lore
+
+Why it is not first:
+
+- the immediate cross-repo lesson from the recent support-tool work is still
+  probe-contract posture, not specdown heuristics
+- the acceptance criteria in `#13` are more adapter-specific, so they should
+  build on a stable first-wave `quality` contract instead of landing mixed into
+  the first rewrite
+
+Expected shape when picked up:
+
+- extend `quality` behavior-lens guidance for executable-spec smoke vs
+  behavior classification
+- extend executable-spec references so explicit pytest/specdown delegation and
+  duplicate assertion patterns are called out directly
+- decide whether adapter schema should carry repo-specific smoke patterns and
+  fragile coverage margin thresholds
+- if those adapter knobs land, teach sample presets honest defaults instead of
+  pretending one repo's threshold is universal
+
 ### 3. Recommendation And Install Flow
 
 This is the direct product requirement from the recent discussion, not only an
@@ -195,7 +233,9 @@ The intended shape is small:
 1. land `create-cli` probe-contract changes
 2. land `quality` posture changes and dogfood them
 3. land the shared recommendation/install helper and first consumers
-4. revisit `init-repo` only if the first three slices settled cleanly
+4. land `quality` executable-spec / fragile-margin follow-on only after the
+   first-wave `quality` rewrite settles
+5. revisit `init-repo` only if the earlier slices settled cleanly
 
 ## Acceptance For The Next Session
 
