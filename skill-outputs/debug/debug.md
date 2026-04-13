@@ -1,78 +1,95 @@
 # Debug Review
-Date: 2026-04-11
+Date: 2026-04-13
 
 ## Problem
 
-`tests/test_charness_cli.py::test_charness_update_reports_codex_version_drift`
-failed because `charness update` stopped at `managed checkout ... has local
-changes` instead of reporting Codex cache drift.
+`charness init` does not install the Codex plugin via app-server, leaving the
+user with a stale cache and no enabled config entry. The user must manually run
+`/plugins` inside Codex to complete installation.
 
 ## Correct Behavior
 
-Given a fresh managed checkout created by `charness init`, when `charness
-update` runs immediately afterward, then the checkout should remain clean and
-the command should report Codex source/cache version drift rather than fail on
-repo dirt.
+Given a machine with Codex CLI available, when `charness init` runs, then
+`maybe_install_codex_host()` should send `plugin/install` to the Codex
+app-server, the output JSON should include a `codex_host_install` field, and
+`completed_actions` should include `codex_host_installed`.
 
 ## Observed Facts
 
-- A test-style repro (`init` into a temp home, then `git status --short` inside
-  the managed checkout) showed dirty files immediately after init.
-- The dirty paths were all under `plugins/charness/`, including an untracked
-  `plugins/charness/scripts/install_tools.py`.
-- `install_surface()` runs `scripts/sync_root_plugin_manifests.py` before
-  exporting the machine-local plugin root.
+- Init output JSON has no `codex_host_install` field at all.
+- `codex_source_version` is "0.0.4-dev", `codex_cache_manifest_version` is
+  "0.0.0-dev", yet `codex_source_cache_drift` is `false`.
+- `completed_actions` includes `codex_source_prepared` and
+  `codex_marketplace_registered` but not `codex_host_installed`.
+- `next_steps.codex` says "no enabled config entry was found".
+- The installed binary at `~/.local/bin/charness` is 1167 lines; the current
+  source is 3108 lines.
+- `grep` for `codex_host_install` and `maybe_install_codex_host` in the
+  installed binary returns zero matches.
+- The `cmd_init` in the installed binary (line 888-932) has no Codex app-server
+  integration — it goes straight from `build_doctor_payload` to printing output.
 
 ## Reproduction
 
-```bash
-python3 - <<'PY'
-import os, subprocess, tempfile
-from pathlib import Path
-from tests.test_charness_cli import make_fake_claude, run_cli
-
-tmp = Path(tempfile.mkdtemp(prefix='charness-debug-'))
-home_root = tmp / 'home'
-fake_claude = make_fake_claude(tmp)
-env = os.environ.copy()
-env['HOME'] = str(home_root)
-env['PATH'] = f"{fake_claude.parent}:{env.get('PATH', '')}"
-run_cli('init', '--home-root', str(home_root), env=env)
-repo = home_root / '.agents' / 'src' / 'charness'
-print(subprocess.run(['git', 'status', '--short'], cwd=repo, capture_output=True, text=True).stdout)
-PY
-```
+The user ran `charness init` using the stale installed CLI binary after a reset.
+The binary predates commit 8977955 ("Make charness init auto-install Codex local
+plugin"), which added `maybe_install_codex_host()` to `cmd_init`.
 
 ## Candidate Causes
 
-- checked-in `plugins/charness/` export drifted from the source checkout
-- `charness init` wrote host-local files into the source checkout by mistake
-- git dirty detection was counting harmless generated cache files that should be
-  ignored
+1. **Stale installed CLI binary** — the `~/.local/bin/charness` binary is from
+   before the auto-install feature was added. The managed checkout pulled the
+   new source, but the installed binary was not updated.
+2. `maybe_install_codex_host` returned "skipped" for an init-specific reason.
+3. A code bug in the init path that silently drops the `codex_host_install` key.
 
 ## Hypothesis
 
-If the checked-in plugin surface is stale, then `sync_root_plugin_manifests.py`
-will rewrite `plugins/charness/` during init/update, and a fresh git clone of
-the repo will become dirty before `git pull --ff-only`.
+If the installed binary predates 8977955, then it physically cannot call
+`maybe_install_codex_host` because that function does not exist in the binary.
+The `codex_host_install` field will be absent from the output, and plugin
+installation will not happen — matching all observed symptoms.
 
 ## Verification
 
-- Running `scripts/sync_root_plugin_manifests.py --repo-root .` reproduced the
-  same `plugins/charness/` changes in the current checkout.
-- After committing the refreshed `plugins/charness/` surface, the failing
-  managed-checkout drift test no longer depends on uncommitted local files.
+- Installed binary: 1167 lines, no `maybe_install_codex_host`, no
+  `codex_host_install`, `cmd_init` ends at line 932 with no app-server call.
+- Current source: 3108 lines, `maybe_install_codex_host` at line 1360,
+  `cmd_init` calls it at line 2144, writes `codex_host_install` at line 2179.
+- The installed binary's `cmd_init` (888-932) exactly matches the pre-8977955
+  version: `build_doctor_payload` → print JSON → return.
 
 ## Root Cause
 
-The repo's checked-in plugin export surface had drifted behind the source
-checkout. `charness init` correctly re-synced that surface, which made a fresh
-managed clone dirty and caused `charness update` to fail before reporting Codex
-cache drift.
+The user's installed CLI binary at `~/.local/bin/charness` was stale — it
+predated commit 8977955 which added auto-install. Running `charness init` with
+this binary successfully prepared the local plugin source and marketplace, but
+never called `maybe_install_codex_host()` because that code path did not exist
+in the binary.
+
+The `charness init` flow has a bootstrap ordering problem: the CLI binary it
+installs into `~/.local/bin/` is copied from the managed checkout, but if the
+managed checkout itself is cloned from a stale state, the newly installed binary
+is also stale. A subsequent `charness update` would install the newer binary,
+but the user hit a separate bug (managed checkout local changes) before update
+could run.
+
+**No code bug exists in the current source.** The current `cmd_init` correctly
+calls `maybe_install_codex_host(skip=False)`.
 
 ## Prevention
 
-- Commit refreshed `plugins/charness/` export changes whenever source packaging
-  surfaces change.
-- Keep the managed-checkout init/update test in the normal quality path because
-  it catches HEAD-vs-worktree export drift that repo-local validators can miss.
+- `charness init` already self-installs the CLI binary from the managed
+  checkout. The real gap was the user running a pre-existing stale binary that
+  cloned a managed checkout at a version that also happened to be stale.
+- The `codex_source_cache_drift: false` despite mismatched versions is a
+  separate minor issue: drift is only flagged when `codex_enabled_plugin_ids` is
+  non-empty (line 1743), which is empty for a fresh install. This is technically
+  correct behavior but misleading in the output.
+
+## Prior Debug Entry (2026-04-11)
+
+Retained for reference: plugin export surface drift caused managed checkout
+dirt, which blocked `charness update`. That issue was the precursor to this
+one — the user hit the managed-checkout-dirty error, reset, re-ran init with the
+stale binary, and encountered this second issue.
