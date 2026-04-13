@@ -40,9 +40,21 @@ steps call tools outside the baseline shell surface.
    - explicit `doctor`, `update`, `reset`, or `uninstall` commands when the
      product owns lifecycle state
    - `--json` or another structured mode when agents may consume the output
+   - public subcommands should expose a no-side-effect `--help` contract unless
+     there is a strong documented reason not to
+   - if wrappers or agents may probe the surface, separate machine-readable
+     command discovery such as `commands --json` or `capabilities --json` from
+     human help text
+   - separate binary/runtime health from repo- or install-readiness instead of
+     overloading one `doctor`
+   - if agent/plugin/materialized-surface discoverability matters, give it an
+     explicit readiness probe rather than smuggling it into generic health
 3. Decide mutation rules.
+   - help probes, command discovery, and healthchecks stay read-only
    - `doctor` stays read-only
    - install and update commands must say what they changed
+   - readiness commands may depend on repo or local install state, but they
+     should not pretend to be generic binary health probes
    - partial manual steps should still leave machine-readable breadcrumbs
    - when upgrade guidance depends on install channel, persist version
      provenance and define when cached latest-version checks may run
@@ -57,7 +69,12 @@ steps call tools outside the baseline shell surface.
    - keep environment detection and filesystem mutation explicit
 6. Add the right gates.
    - smoke tests for representative commands
+   - `--help` smoke for stable public subcommands
    - validation for generated machine-readable state
+   - JSON-shape tests for command discovery output when wrappers or agents
+     depend on it
+   - checks that docs and examples do not conflate help, healthcheck, and
+     readiness semantics
    - help text or JSON-shape checks when agents depend on them
 
 ## Guardrails
