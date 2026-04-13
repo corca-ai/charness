@@ -14,6 +14,9 @@ to become a durable local asset.
 
 - prefer a host-provided runtime grant when one exists
 - otherwise rely on a process environment `SLACK_BOT_TOKEN`
+- when `SLACK_BOT_TOKEN` is unset, prefer `charness capability env
+  slack.default` so one machine-local Slack profile can be reused across
+  support runtimes instead of hardcoding one token name per script
 - keep provider-specific fetching and markdown conversion in this package so
   consumer repos do not have to recreate them
 

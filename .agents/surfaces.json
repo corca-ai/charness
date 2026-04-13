@@ -46,6 +46,7 @@
         "README.md",
         "INSTALL.md",
         "UNINSTALL.md",
+        "docs/*.md",
         "docs/**/*.md",
         "packaging/**/*.md",
         "integrations/**/*.md",
@@ -124,6 +125,21 @@
       ]
     },
     {
+      "surface_id": "surface-obligations",
+      "description": "Repo-owned changed-surface manifest that drives slice closeout obligations.",
+      "source_paths": [
+        ".agents/surfaces.json"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/validate-surfaces.py --repo-root ."
+      ],
+      "notes": [
+        "Keep the surfaces manifest aligned with real repo-owned source and derived obligations."
+      ]
+    },
+    {
       "surface_id": "integrations-and-control-plane",
       "description": "Integration manifests and control-plane helper scripts.",
       "source_paths": [
@@ -172,6 +188,7 @@
       "surface_id": "repo-python",
       "description": "Repo-owned Python code and tests.",
       "source_paths": [
+        "charness",
         "scripts/**/*.py",
         "tests/**/*.py"
       ],

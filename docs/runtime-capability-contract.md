@@ -19,6 +19,13 @@ The preferred model is:
 3. `.env` or process environment fallback exists for ordinary local operator
    setups when no stronger runtime grant surface exists
 
+Machine-local provider choice should stay separate from repo portability:
+
+- machine-local capability profiles live in the config layer
+- machine-local repo bindings map one repo identity to one profile per logical
+  capability
+- machine-local install and doctor snapshots live in the state layer
+
 ## Access Modes
 
 External integrations should describe which access modes they can consume.
@@ -92,6 +99,27 @@ Bad public-skill phrasing:
 
 Raw credential mechanics belong in support skills, integration manifests, host
 setup, or adapter references.
+
+## Local Resolution Layer
+
+When one machine reuses the same private provider across multiple `charness`
+skills or scripts, model that reuse through:
+
+1. logical capability id, for example `slack.default`
+2. machine-local profile id, for example `slack.ceal-dev`
+3. provider id already modeled by manifests or support capability metadata, for
+   example `gather-slack`
+
+The profile may record non-secret env var aliases such as:
+
+- runtime env name expected by the provider
+- source env var name currently present on the machine
+
+It must not record:
+
+- the secret value itself
+- a copied token file
+- adapter-local secret plumbing
 
 ## Gather As Exemplar
 

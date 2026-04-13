@@ -87,7 +87,7 @@ def test_standalone_cli_bootstraps_managed_checkout_without_explicit_clone(tmp_p
     assert payload["checkout"]["repo_root"] == str(home_root / ".agents" / "src" / "charness")
     assert (home_root / ".agents" / "src" / "charness" / "packaging" / "charness.json").is_file()
     assert (home_root / ".local" / "bin" / "charness").is_file()
-    install_state = json.loads((home_root / ".local" / "share" / "charness" / "install-state.json").read_text(encoding="utf-8"))
+    install_state = json.loads((home_root / ".local" / "state" / "charness" / "install-state.json").read_text(encoding="utf-8"))
     assert install_state["repo_root"] == str(home_root / ".agents" / "src" / "charness")
     assert install_state["managed_checkout"] is True
 
@@ -158,7 +158,7 @@ def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_p
     assert payload["checkout"]["cloned"] is True
     assert payload["checkout"]["managed"] is True
     assert payload["codex_source_version"] == "0.0.1-upstream-test"
-    install_state = json.loads((home_root / ".local" / "share" / "charness" / "install-state.json").read_text(encoding="utf-8"))
+    install_state = json.loads((home_root / ".local" / "state" / "charness" / "install-state.json").read_text(encoding="utf-8"))
     assert install_state["repo_root"] == str(home_root / ".agents" / "src" / "charness")
     assert install_state["managed_checkout"] is True
 
@@ -169,9 +169,9 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert doctor_result.returncode == 0, doctor_result.stderr
     payload = json.loads(doctor_result.stdout)
     assert payload["package_id"] == "charness"
-    assert payload["install_state_path"] == str(home_root / ".local" / "share" / "charness" / "install-state.json")
-    assert payload["host_state_path"] == str(home_root / ".local" / "share" / "charness" / "host-state.json")
-    assert payload["version_state_path"] == str(home_root / ".local" / "share" / "charness" / "version-state.json")
+    assert payload["install_state_path"] == str(home_root / ".local" / "state" / "charness" / "install-state.json")
+    assert payload["host_state_path"] == str(home_root / ".local" / "state" / "charness" / "host-state.json")
+    assert payload["version_state_path"] == str(home_root / ".local" / "state" / "charness" / "version-state.json")
     assert payload["checkout_present"] is True
     assert payload["plugin_root_present"] is True
     assert payload["cli_present"] is True
@@ -195,7 +195,7 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert payload["plugin_preamble"]["update_hints"]["claude"] == "Run `charness update`, then restart Claude Code."
     assert payload["version_provenance"]["invocation_kind"] == "custom-cli"
     assert payload["latest_release_check"] is None
-    host_state = json.loads((home_root / ".local" / "share" / "charness" / "host-state.json").read_text(encoding="utf-8"))
+    host_state = json.loads((home_root / ".local" / "state" / "charness" / "host-state.json").read_text(encoding="utf-8"))
     assert host_state["state_version"] == 1
     assert host_state["last_init"]["doctor"]["codex_host_guidance"]["status"] == "host-unavailable"
     assert host_state["last_init"]["doctor"]["repo_root"] == str(home_root / ".agents" / "src" / "charness")
@@ -301,7 +301,7 @@ def test_charness_version_can_refresh_latest_release_and_record_provenance(
         f"charness update available: `{CURRENT_VERSION}` -> `v0.1.0`. "
         "Run `charness update`. https://github.com/corca-ai/charness/releases/tag/v0.1.0"
     )
-    version_state = json.loads((home_root / ".local" / "share" / "charness" / "version-state.json").read_text(encoding="utf-8"))
+    version_state = json.loads((home_root / ".local" / "state" / "charness" / "version-state.json").read_text(encoding="utf-8"))
     assert version_state["version_provenance"]["invocation_kind"] == "installed-cli"
     assert version_state["latest_release"]["latest_tag"] == "v0.1.0"
     assert version_state["latest_release"]["current_version"] == CURRENT_VERSION
@@ -331,7 +331,7 @@ def test_doctor_can_write_host_state_snapshot(tmp_path: Path, seeded_managed_hom
     doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", "--write-state", env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
     payload = json.loads(doctor_result.stdout)
-    host_state = json.loads((home_root / ".local" / "share" / "charness" / "host-state.json").read_text(encoding="utf-8"))
+    host_state = json.loads((home_root / ".local" / "state" / "charness" / "host-state.json").read_text(encoding="utf-8"))
     assert host_state["last_doctor"]["doctor"]["repo_root"] == payload["repo_root"]
     assert host_state["last_doctor"]["doctor"]["codex_source_version"] == payload["codex_source_version"]
     assert isinstance(host_state["last_doctor"]["recorded_at"], str)
@@ -452,4 +452,4 @@ def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path, seeded_
     assert payload["removed_checkout"] is False
     assert payload["removed_host_state"] is True
     assert (home_root / ".local" / "bin" / "charness").is_file()
-    assert not (home_root / ".local" / "share" / "charness" / "host-state.json").exists()
+    assert not (home_root / ".local" / "state" / "charness" / "host-state.json").exists()

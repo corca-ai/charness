@@ -246,7 +246,7 @@ It stays read-only:
 - no host-specific routing or telemetry prompts
 
 The installed standalone CLI can still keep lightweight operator-facing version
-state under `~/.local/share/charness/version-state.json`.
+state under `~/.local/state/charness/version-state.json`.
 
 - it records current version provenance
 - it can show the cached latest-release result via `charness version --verbose`
@@ -407,13 +407,35 @@ Current command intent:
 - `init`: bootstrap or refresh the managed local install surface
 - `doctor`: inspect the managed install plus host-native Codex and Claude state;
   add `--write-state` when you want to persist a proof snapshot to
-  `~/.local/share/charness/host-state.json`
+  `~/.local/state/charness/host-state.json`
 - `update`: refresh the installed surface and optionally advance the managed
   checkout; it also records the post-update host snapshot to
-  `~/.local/share/charness/host-state.json`
+  `~/.local/state/charness/host-state.json`
 - `reset`: remove host plugin state while keeping the managed checkout and CLI
 - `uninstall`: remove the managed host-facing install surface while preserving
   the checkout unless explicitly asked otherwise
+
+Capability resolution surface:
+
+```bash
+charness capability resolve slack.default
+charness capability doctor slack.default
+charness capability env slack.default
+```
+
+Intent:
+
+- `capability resolve`: map one repo-local logical capability to one
+  machine-local profile and one provider id
+- `capability doctor`: reuse provider manifest/support metadata to inspect the
+  resolved provider state
+- `capability env`: emit shell exports that alias runtime env names from
+  machine-local source env names without storing secret values in repo config
+
+Machine-local capability config lives under `~/.config/charness/`:
+
+- `capability-profiles.json`
+- `repo-bindings.json`
 
 External tool command surface:
 
@@ -482,7 +504,7 @@ charness doctor --write-state
 ```
 
 `charness init` and `charness update` already record their own post-command
-host snapshots to `~/.local/share/charness/host-state.json`.
+host snapshots to `~/.local/state/charness/host-state.json`.
 
 ## Repository Shape
 

@@ -8,6 +8,8 @@ VENDOR_DIR="$SKILL_DIR/vendor"
 THREAD_URL="${1:-}"
 OUTPUT_FILE="${2:-}"
 TITLE="${3:-Slack Thread}"
+CAPABILITY_LOGICAL_ID="${CHARNESS_SLACK_CAPABILITY:-slack.default}"
+TARGET_REPO_ROOT="${CHARNESS_CAPABILITY_REPO_ROOT:-$PWD}"
 
 if [[ -z "$THREAD_URL" || -z "$OUTPUT_FILE" ]]; then
   echo "Usage: $0 <slack_thread_url> <output_file> [title]" >&2
@@ -20,6 +22,11 @@ for tool in node jq perl; do
     exit 1
   fi
 done
+
+if [[ -z "${SLACK_BOT_TOKEN:-}" ]] && command -v charness >/dev/null 2>&1; then
+  ENV_EXPORTS="$(charness capability env "$CAPABILITY_LOGICAL_ID" --target-repo-root "$TARGET_REPO_ROOT")" || exit 1
+  eval "$ENV_EXPORTS"
+fi
 
 if [[ ! "$THREAD_URL" =~ ^https://([^.]+)\.slack\.com/archives/([^/]+)/p([0-9]+)$ ]]; then
   echo "Unsupported Slack thread URL: $THREAD_URL" >&2

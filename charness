@@ -30,6 +30,34 @@ def default_home_root() -> Path:
     return Path.home().resolve()
 
 
+def resolve_config_home(home_root: Path) -> Path:
+    override = os.environ.get("CHARNESS_CONFIG_HOME")
+    if override:
+        return Path(override).expanduser().resolve()
+    xdg_root = os.environ.get("XDG_CONFIG_HOME")
+    if xdg_root:
+        return Path(xdg_root).expanduser().resolve()
+    return home_root / ".config"
+
+
+def resolve_state_home(home_root: Path) -> Path:
+    override = os.environ.get("CHARNESS_STATE_HOME")
+    if override:
+        return Path(override).expanduser().resolve()
+    xdg_root = os.environ.get("XDG_STATE_HOME")
+    if xdg_root:
+        return Path(xdg_root).expanduser().resolve()
+    return home_root / ".local" / "state"
+
+
+def default_config_root(home_root: Path) -> Path:
+    return resolve_config_home(home_root) / PACKAGE_ID
+
+
+def default_state_root(home_root: Path) -> Path:
+    return resolve_state_home(home_root) / PACKAGE_ID
+
+
 def managed_checkout_root(home_root: Path) -> Path:
     return home_root / ".agents" / "src" / PACKAGE_ID
 
@@ -79,15 +107,23 @@ def default_cli_path(home_root: Path) -> Path:
 
 
 def default_install_state_path(home_root: Path) -> Path:
-    return home_root / ".local" / "share" / PACKAGE_ID / "install-state.json"
+    return default_state_root(home_root) / "install-state.json"
 
 
 def default_host_state_path(home_root: Path) -> Path:
-    return home_root / ".local" / "share" / PACKAGE_ID / "host-state.json"
+    return default_state_root(home_root) / "host-state.json"
 
 
 def default_version_state_path(home_root: Path) -> Path:
-    return home_root / ".local" / "share" / PACKAGE_ID / "version-state.json"
+    return default_state_root(home_root) / "version-state.json"
+
+
+def default_capability_profiles_path(home_root: Path) -> Path:
+    return default_config_root(home_root) / "capability-profiles.json"
+
+
+def default_repo_bindings_path(home_root: Path) -> Path:
+    return default_config_root(home_root) / "repo-bindings.json"
 
 
 def shell_quote(value: str) -> str:
@@ -171,6 +207,229 @@ def normalize_version_token(value: object) -> str | None:
 
 def bool_env(name: str) -> bool:
     return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def read_json_mapping(path: Path, *, default: dict[str, object]) -> dict[str, object]:
+    if not path.is_file():
+        return dict(default)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return dict(default)
+    if not isinstance(payload, dict):
+        return dict(default)
+    merged = dict(default)
+    merged.update(payload)
+    return merged
+
+
+def source_env_present(name: str) -> bool:
+    return bool(os.environ.get(name, ""))
+
+
+def load_capability_profiles(home_root: Path) -> dict[str, object]:
+    path = default_capability_profiles_path(home_root)
+    payload = read_json_mapping(path, default={"schema_version": 1, "profiles": {}})
+    profiles = payload.get("profiles")
+    if not isinstance(profiles, dict):
+        raise CharnessError(f"`{path}` must contain a top-level `profiles` object.")
+    normalized: dict[str, dict[str, object]] = {}
+    for profile_id, raw in profiles.items():
+        if not isinstance(profile_id, str) or not profile_id:
+            raise CharnessError(f"`{path}` contains an invalid profile id.")
+        if not isinstance(raw, dict):
+            raise CharnessError(f"`{path}` profile `{profile_id}` must be an object.")
+        provider = raw.get("provider")
+        if not isinstance(provider, str) or not provider:
+            raise CharnessError(f"`{path}` profile `{profile_id}` must declare a non-empty `provider`.")
+        access_mode_preference = raw.get("access_mode_preference", [])
+        if not isinstance(access_mode_preference, list) or not all(isinstance(item, str) for item in access_mode_preference):
+            raise CharnessError(f"`{path}` profile `{profile_id}` has an invalid `access_mode_preference` list.")
+        env_bindings = raw.get("env_bindings", {})
+        if not isinstance(env_bindings, dict) or not all(
+            isinstance(key, str) and key and isinstance(value, str) and value for key, value in env_bindings.items()
+        ):
+            raise CharnessError(f"`{path}` profile `{profile_id}` has invalid `env_bindings`.")
+        normalized[profile_id] = {
+            "provider": provider,
+            "access_mode_preference": access_mode_preference,
+            "env_bindings": env_bindings,
+        }
+    payload["profiles"] = normalized
+    payload["path"] = str(path)
+    return payload
+
+
+def load_repo_bindings(home_root: Path) -> dict[str, object]:
+    path = default_repo_bindings_path(home_root)
+    payload = read_json_mapping(path, default={"schema_version": 1, "repos": {}})
+    repos = payload.get("repos")
+    if not isinstance(repos, dict):
+        raise CharnessError(f"`{path}` must contain a top-level `repos` object.")
+    normalized: dict[str, dict[str, str]] = {}
+    for repo_id, raw in repos.items():
+        if not isinstance(repo_id, str) or not repo_id:
+            raise CharnessError(f"`{path}` contains an invalid repo binding key.")
+        if not isinstance(raw, dict):
+            raise CharnessError(f"`{path}` repo binding `{repo_id}` must be an object.")
+        binding_map: dict[str, str] = {}
+        for logical_id, profile_id in raw.items():
+            if not isinstance(logical_id, str) or not logical_id or not isinstance(profile_id, str) or not profile_id:
+                raise CharnessError(f"`{path}` repo binding `{repo_id}` must map string capability ids to string profile ids.")
+            binding_map[logical_id] = profile_id
+        normalized[repo_id] = binding_map
+    payload["repos"] = normalized
+    payload["path"] = str(path)
+    return payload
+
+
+def provider_index(repo_root: Path) -> dict[str, dict[str, object]]:
+    providers: dict[str, dict[str, object]] = {}
+    tools_dir = repo_root / "integrations" / "tools"
+    if tools_dir.is_dir():
+        for path in sorted(tools_dir.glob("*.json")):
+            if path.name == "manifest.schema.json":
+                continue
+            data = json.loads(path.read_text(encoding="utf-8"))
+            tool_id = data.get("tool_id")
+            if isinstance(tool_id, str) and tool_id:
+                providers[tool_id] = {
+                    "provider_id": tool_id,
+                    "kind": data.get("kind"),
+                    "manifest_path": str(path.relative_to(repo_root)),
+                }
+    support_root = repo_root / "skills" / "support"
+    if support_root.is_dir():
+        for path in sorted(support_root.glob("*/capability.json")):
+            data = json.loads(path.read_text(encoding="utf-8"))
+            capability_id = data.get("capability_id")
+            if isinstance(capability_id, str) and capability_id:
+                providers[capability_id] = {
+                    "provider_id": capability_id,
+                    "kind": data.get("kind"),
+                    "manifest_path": str(path.relative_to(repo_root)),
+                }
+    return providers
+
+
+def canonical_repo_remote_id(repo_root: Path) -> str | None:
+    if not is_git_checkout(repo_root):
+        return None
+    result = run(["git", "remote", "get-url", "origin"], cwd=repo_root)
+    if result.returncode != 0:
+        return None
+    raw = result.stdout.strip()
+    if not raw:
+        return None
+    ssh_match = re.match(r"^(?:[^@]+@)?([^:]+):/?(.+)$", raw)
+    if ssh_match and "://" not in raw:
+        host = ssh_match.group(1).lower()
+        path = ssh_match.group(2)
+        return f"{host}/{path.removesuffix('.git').strip('/')}"
+    scheme_match = re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://(?:[^@/]+@)?([^/]+)/(.+)$", raw)
+    if scheme_match:
+        host = scheme_match.group(1).lower()
+        path = scheme_match.group(2)
+        return f"{host}/{path.removesuffix('.git').strip('/')}"
+    local_path = Path(raw).expanduser()
+    if local_path.exists():
+        return f"path:{local_path.resolve()}"
+    return None
+
+
+def repo_binding_keys(target_repo_root: Path) -> list[str]:
+    keys: list[str] = []
+    remote_id = canonical_repo_remote_id(target_repo_root)
+    if remote_id is not None:
+        keys.append(remote_id)
+    keys.append(f"path:{target_repo_root.resolve()}")
+    unique: list[str] = []
+    seen: set[str] = set()
+    for key in keys:
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(key)
+    return unique
+
+
+def resolve_target_repo_root(target_repo_root: Path | None) -> Path:
+    return target_repo_root.resolve() if target_repo_root is not None else Path.cwd().resolve()
+
+
+def capability_setup_guidance(home_root: Path) -> list[str]:
+    profiles_path = default_capability_profiles_path(home_root)
+    bindings_path = default_repo_bindings_path(home_root)
+    return [
+        f"Create `{profiles_path}` with machine-local provider profiles.",
+        f"Create `{bindings_path}` with repo-to-profile bindings.",
+        'Example profile: {"schema_version":1,"profiles":{"slack.ceal-dev":{"provider":"gather-slack","access_mode_preference":["grant","env"],"env_bindings":{"SLACK_BOT_TOKEN":"SLACK_BOT_TOKEN_CEAL_DEV"}}}}',
+        'Example binding: {"schema_version":1,"repos":{"github.com/corca-ai/charness":{"slack.default":"slack.ceal-dev"}}}',
+    ]
+
+
+def resolve_capability(
+    *,
+    home_root: Path,
+    charness_repo_root: Path,
+    target_repo_root: Path,
+    logical_id: str,
+) -> dict[str, object]:
+    profiles_payload = load_capability_profiles(home_root)
+    bindings_payload = load_repo_bindings(home_root)
+    profiles = profiles_payload["profiles"]
+    bindings = bindings_payload["repos"]
+    binding_key = None
+    binding_map: dict[str, str] | None = None
+    for candidate in repo_binding_keys(target_repo_root):
+        repo_binding = bindings.get(candidate)
+        if isinstance(repo_binding, dict) and logical_id in repo_binding:
+            binding_key = candidate
+            binding_map = repo_binding
+            break
+    if binding_map is None or binding_key is None:
+        guidance = "\n".join(capability_setup_guidance(home_root))
+        raise CharnessError(
+            f"No repo binding for `{logical_id}` matched `{target_repo_root}`.\n"
+            f"Tried repo keys: {', '.join(repo_binding_keys(target_repo_root))}\n{guidance}"
+        )
+    profile_id = binding_map[logical_id]
+    profile = profiles.get(profile_id)
+    if not isinstance(profile, dict):
+        guidance = "\n".join(capability_setup_guidance(home_root))
+        raise CharnessError(
+            f"Repo binding `{binding_key}` points `{logical_id}` at unknown profile `{profile_id}`.\n{guidance}"
+        )
+    providers = provider_index(charness_repo_root)
+    provider_id = profile["provider"]
+    provider = providers.get(provider_id)
+    if provider is None:
+        raise CharnessError(
+            f"Profile `{profile_id}` points at unknown provider `{provider_id}` in `{charness_repo_root}`."
+        )
+    env_bindings = profile.get("env_bindings", {})
+    env_status = {
+        target_env: {
+            "source_env": source_env,
+            "present": source_env_present(source_env),
+        }
+        for target_env, source_env in env_bindings.items()
+    }
+    return {
+        "logical_id": logical_id,
+        "target_repo_root": str(target_repo_root),
+        "candidate_repo_keys": repo_binding_keys(target_repo_root),
+        "matched_repo_key": binding_key,
+        "profile_id": profile_id,
+        "provider_id": provider_id,
+        "provider_kind": provider.get("kind"),
+        "provider_manifest_path": provider.get("manifest_path"),
+        "access_mode_preference": profile.get("access_mode_preference", []),
+        "env_bindings": env_bindings,
+        "env_binding_status": env_status,
+        "capability_profiles_path": profiles_payload["path"],
+        "repo_bindings_path": bindings_payload["path"],
+    }
 
 
 def read_version_state(home_root: Path) -> dict[str, object]:
@@ -2027,6 +2286,166 @@ def cmd_reset(args: argparse.Namespace) -> int:
     return cmd_uninstall(args)
 
 
+def capability_doctor_payload(
+    *,
+    charness_repo_root: Path,
+    resolved: dict[str, object],
+) -> dict[str, object]:
+    provider_id = resolved["provider_id"]
+    doctor_results = invoke_repo_json_script(
+        charness_repo_root,
+        "scripts/doctor.py",
+        "--repo-root",
+        str(charness_repo_root),
+        "--json",
+        "--tool-id",
+        str(provider_id),
+        allow_failure=True,
+    )
+    provider_result = None
+    if isinstance(doctor_results, list):
+        for item in doctor_results:
+            if isinstance(item, dict) and item.get("tool_id") == provider_id:
+                provider_result = item
+                break
+    if provider_result is None:
+        raise CharnessError(
+            f"Provider `{provider_id}` did not resolve to a doctor payload in `{charness_repo_root}`."
+        )
+    missing_env_sources = [
+        status["source_env"]
+        for status in resolved["env_binding_status"].values()
+        if isinstance(status, dict) and status.get("present") is False
+    ]
+    return {
+        **resolved,
+        "provider_doctor": provider_result,
+        "missing_env_sources": missing_env_sources,
+    }
+
+
+def print_capability_summary(payload: dict[str, object]) -> None:
+    print(f"LOGICAL_ID: {payload['logical_id']}")
+    print(f"TARGET_REPO_ROOT: {payload['target_repo_root']}")
+    print(f"MATCHED_REPO_KEY: {payload['matched_repo_key']}")
+    print(f"PROFILE: {payload['profile_id']}")
+    print(f"PROVIDER: {payload['provider_id']} ({payload['provider_kind']})")
+    print(f"PROVIDER_MANIFEST: {payload['provider_manifest_path']}")
+    env_bindings = payload.get("env_bindings", {})
+    if isinstance(env_bindings, dict) and env_bindings:
+        for target_env, source_env in env_bindings.items():
+            status = payload.get("env_binding_status", {}).get(target_env, {})
+            present = "present" if isinstance(status, dict) and status.get("present") else "missing"
+            print(f"ENV_BINDING: {target_env} <- {source_env} ({present})")
+    else:
+        print("ENV_BINDING: none")
+    doctor = payload.get("provider_doctor")
+    if isinstance(doctor, dict):
+        print(f"PROVIDER_DOCTOR: {doctor.get('doctor_status')} ({doctor.get('support_state')})")
+
+
+def cmd_capability_resolve(args: argparse.Namespace) -> int:
+    home_root = args.home_root.resolve()
+    charness_repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    charness_repo_root = ensure_checkout(
+        charness_repo_root,
+        managed=managed_checkout,
+        repo_url=getattr(args, "repo_url", REPO_URL),
+        allow_clone=False,
+        allow_pull=False,
+    )["repo_root"]
+    resolved = resolve_capability(
+        home_root=home_root,
+        charness_repo_root=Path(charness_repo_root),
+        target_repo_root=resolve_target_repo_root(args.target_repo_root),
+        logical_id=args.logical_id,
+    )
+    if args.json:
+        print(json.dumps(resolved, ensure_ascii=False, indent=2))
+    else:
+        print_capability_summary(resolved)
+    return 0
+
+
+def cmd_capability_doctor(args: argparse.Namespace) -> int:
+    home_root = args.home_root.resolve()
+    charness_repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    charness_repo_root = ensure_checkout(
+        charness_repo_root,
+        managed=managed_checkout,
+        repo_url=getattr(args, "repo_url", REPO_URL),
+        allow_clone=False,
+        allow_pull=False,
+    )["repo_root"]
+    resolved = resolve_capability(
+        home_root=home_root,
+        charness_repo_root=Path(charness_repo_root),
+        target_repo_root=resolve_target_repo_root(args.target_repo_root),
+        logical_id=args.logical_id,
+    )
+    payload = capability_doctor_payload(charness_repo_root=Path(charness_repo_root), resolved=resolved)
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print_capability_summary(payload)
+    doctor = payload["provider_doctor"]
+    if doctor.get("doctor_status") in {"missing", "unhealthy", "not-ready", "version-mismatch", "support-missing"}:
+        return 1
+    if payload["missing_env_sources"]:
+        return 1
+    return 0
+
+
+def cmd_capability_env(args: argparse.Namespace) -> int:
+    home_root = args.home_root.resolve()
+    charness_repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    charness_repo_root = ensure_checkout(
+        charness_repo_root,
+        managed=managed_checkout,
+        repo_url=getattr(args, "repo_url", REPO_URL),
+        allow_clone=False,
+        allow_pull=False,
+    )["repo_root"]
+    resolved = resolve_capability(
+        home_root=home_root,
+        charness_repo_root=Path(charness_repo_root),
+        target_repo_root=resolve_target_repo_root(args.target_repo_root),
+        logical_id=args.logical_id,
+    )
+    env_bindings = resolved["env_bindings"]
+    if not env_bindings:
+        raise CharnessError(
+            f"Profile `{resolved['profile_id']}` for `{args.logical_id}` does not declare any `env_bindings`."
+        )
+    missing_sources = [
+        status["source_env"]
+        for status in resolved["env_binding_status"].values()
+        if isinstance(status, dict) and status.get("present") is False
+    ]
+    if missing_sources:
+        raise CharnessError(
+            f"Profile `{resolved['profile_id']}` is missing source env vars: {', '.join(missing_sources)}."
+        )
+    shell_lines = [
+        f'export {target_env}="${{{source_env}}}"'
+        for target_env, source_env in env_bindings.items()
+    ]
+    if args.json:
+        print(
+            json.dumps(
+                {
+                    **resolved,
+                    "shell_exports": shell_lines,
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+    else:
+        print("\n".join(shell_lines))
+    return 0
+
+
 def cmd_tool_doctor(args: argparse.Namespace) -> int:
     repo_root, managed_checkout = resolve_tool_repo_root(args)
     script_args = ["--repo-root", str(repo_root), "--json"]
@@ -2217,7 +2636,7 @@ def cmd_tool_update(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Thin charness CLI for managed local install plus external tool install/update/doctor flows."
+        description="Thin charness CLI for managed local install, capability resolution, and external tool install/update/doctor flows."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -2280,7 +2699,7 @@ def build_parser() -> argparse.ArgumentParser:
     doctor_parser.add_argument(
         "--write-state",
         action="store_true",
-        help="Persist the current doctor snapshot to ~/.local/share/charness/host-state.json for later proof comparison.",
+        help="Persist the current doctor snapshot to the machine-local charness state directory for later proof comparison.",
     )
     doctor_parser.set_defaults(func=cmd_doctor)
 
@@ -2333,6 +2752,45 @@ def build_parser() -> argparse.ArgumentParser:
     reset_parser.add_argument("--cli-path", type=Path)
     reset_parser.add_argument("--json", action="store_true")
     reset_parser.set_defaults(func=cmd_reset)
+
+    capability_parser = subparsers.add_parser(
+        "capability",
+        help="Resolve repo-local logical capabilities into machine-local provider profiles and inspect provider readiness.",
+    )
+    capability_subparsers = capability_parser.add_subparsers(dest="capability_command", required=True)
+
+    def add_common_capability_args(command: argparse.ArgumentParser) -> None:
+        command.add_argument("--home-root", type=Path, default=default_home_root())
+        command.add_argument("--repo-root", type=Path, help="Use an explicit charness source checkout instead of the managed default checkout.")
+        command.add_argument("--repo-url", default=REPO_URL)
+        command.add_argument(
+            "--target-repo-root",
+            type=Path,
+            help="Resolve repo bindings for this target repo. Defaults to the current working directory.",
+        )
+        command.add_argument("--json", action="store_true")
+        command.add_argument("logical_id")
+
+    capability_resolve_parser = capability_subparsers.add_parser(
+        "resolve",
+        help="Resolve one logical capability for the current repo into a profile and provider.",
+    )
+    add_common_capability_args(capability_resolve_parser)
+    capability_resolve_parser.set_defaults(func=cmd_capability_resolve)
+
+    capability_doctor_parser = capability_subparsers.add_parser(
+        "doctor",
+        help="Resolve one logical capability and inspect the underlying provider state.",
+    )
+    add_common_capability_args(capability_doctor_parser)
+    capability_doctor_parser.set_defaults(func=cmd_capability_doctor)
+
+    capability_env_parser = capability_subparsers.add_parser(
+        "env",
+        help="Emit shell exports that alias runtime env names from machine-local source env names.",
+    )
+    add_common_capability_args(capability_env_parser)
+    capability_env_parser.set_defaults(func=cmd_capability_env)
 
     tool_parser = subparsers.add_parser(
         "tool",

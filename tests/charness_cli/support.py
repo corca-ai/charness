@@ -126,9 +126,9 @@ def rewrite_seeded_home_paths(home_root: Path, *, old_home_root: Path) -> None:
     old = str(old_home_root)
     new = str(home_root)
     text_paths = (
-        home_root / ".local" / "share" / "charness" / "install-state.json",
-        home_root / ".local" / "share" / "charness" / "host-state.json",
-        home_root / ".local" / "share" / "charness" / "version-state.json",
+        home_root / ".local" / "state" / "charness" / "install-state.json",
+        home_root / ".local" / "state" / "charness" / "host-state.json",
+        home_root / ".local" / "state" / "charness" / "version-state.json",
         home_root / ".claude" / "plugins" / "known_marketplaces.json",
         home_root / ".claude" / "plugins" / "installed_plugins.json",
         home_root / ".local" / "bin" / "claude-charness",

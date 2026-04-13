@@ -16,6 +16,9 @@ This support package turns a Slack thread URL into a local markdown artifact.
 - `perl`
 - `SLACK_BOT_TOKEN` in the process environment when the host does not provide a
   stronger mediated grant path
+- if the runtime token name is repo- or workspace-specific, use
+  `charness capability env slack.default` to alias the runtime env name from a
+  machine-local source env name before invoking the wrapper
 
 ## Behavior
 

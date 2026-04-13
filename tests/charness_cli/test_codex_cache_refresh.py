@@ -25,7 +25,7 @@ def test_charness_update_reports_codex_version_drift(
     assert payload["codex_source_version"] == CURRENT_VERSION
     assert payload["codex_cache_manifest_version"] == "0.0.0-old"
     assert payload["codex_source_cache_drift"] is True
-    host_state = json.loads((home_root / ".local" / "share" / "charness" / "host-state.json").read_text(encoding="utf-8"))
+    host_state = json.loads((home_root / ".local" / "state" / "charness" / "host-state.json").read_text(encoding="utf-8"))
     assert host_state["last_update"]["doctor"]["codex_source_cache_drift"] is True
     assert host_state["last_update"]["doctor"]["codex_cache_manifest_version"] == "0.0.0-old"
     assert isinstance(host_state["last_update"]["recorded_at"], str)

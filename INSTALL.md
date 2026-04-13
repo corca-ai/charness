@@ -160,7 +160,7 @@ Recommended verification steps:
 3. If you need a durable checkpoint before or after a host restart, run
    `charness doctor --write-state`; `charness init` and `charness update`
    already record their own post-command host snapshots to
-   `~/.local/share/charness/host-state.json`.
+   `~/.local/state/charness/host-state.json`.
 4. If the behavior is ambiguous, record the exact host output and treat that as
    a proof gap to close, not as silent success.
 
