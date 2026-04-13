@@ -1740,8 +1740,7 @@ def build_doctor_payload(
     )
     payload["codex_enabled_plugin_id"] = primary_plugin_id
     payload["codex_source_cache_drift"] = bool(
-        payload["codex_enabled_plugin_ids"]
-        and payload["codex_source_version"]
+        payload["codex_source_version"]
         and payload["codex_cache_manifest_version"]
         and payload["codex_source_version"] != payload["codex_cache_manifest_version"]
     )
