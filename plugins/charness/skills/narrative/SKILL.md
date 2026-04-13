@@ -1,23 +1,25 @@
 ---
 name: narrative
-description: "Use when a repo's source-of-truth docs, current product or project story, and stakeholder-facing brief need to be aligned together. Tighten the durable narrative first, then derive a self-contained brief when an audience needs one."
+description: "Use when a repo's source-of-truth docs and current product or project story need to be aligned together. Tighten the durable narrative first, then derive one audience-neutral brief skeleton when a compressed handoff artifact would help."
 ---
 
 # Narrative
 
 Use this when the repo already has a product, project, or operating story, but
-that story needs to be created, realigned, or compressed into a human-facing
-brief without leaving the durable docs behind.
+that story needs to be created, realigned, or compressed into one portable
+brief skeleton without leaving the durable docs behind.
 
 `narrative` is one public concept:
 
 - map the current source-of-truth surface
 - surface contradictions, stale assumptions, and missing decisions
 - rewrite the durable docs so the current story is honest in one place
-- derive an audience-facing brief from that aligned story when useful
+- derive one audience-neutral brief skeleton from that aligned story when
+  useful
 
 If the idea is still under-shaped, use `ideation` first. If the docs are
-already aligned and the user only wants delivery-ready wording, use
+already aligned and the user mainly wants audience adaptation or delivery-ready
+wording, use
 `announcement`.
 If the repo has little or no durable truth surface yet, use `init-repo` to
 bootstrap that surface before treating the task as narrative alignment.
@@ -53,7 +55,7 @@ git status --short
 1. Restate the narrative goal.
    - bootstrap a new durable story surface
    - realign stale source-of-truth docs
-   - realign docs and also produce an audience-facing brief
+   - realign docs and also produce an audience-neutral brief skeleton
 2. Map the current truth surface.
    - read the source documents before inventing a fresh summary
    - check whether local context may be stale relative to git remote state
@@ -69,14 +71,14 @@ git status --short
    - keep README, roadmap, handoff, operator docs, and adjacent maintainer docs
      consistent enough that the next session does not inherit drift
 4. Derive the brief second.
-   - external or mixed audiences: self-contained by default
-   - internal audiences: pointers are allowed when they reduce repetition and
-     the reader is likely to open the repo
-   - keep audience, language, and ephemerality explicit when they affect the
-     artifact shape
+   - keep it audience-neutral by default
+   - prefer one self-contained compression layer that `announcement` can later
+     adapt for a concrete audience, language, tone, or channel
+   - when the repo adapter declares `brief_template`, use that ordered skeleton
+     instead of inventing a new brief shape in session
 5. Show the aligned edits and the brief draft before any delivery action.
 6. Hand off to `announcement` only when the user explicitly wants human-facing
-   backend delivery after the narrative itself is aligned.
+   adaptation or backend delivery after the narrative itself is aligned.
 
 ## Output Shape
 
@@ -98,10 +100,10 @@ The result should usually include:
   suggests the repo may have moved.
 - Do not collapse durable truth docs and audience-specific briefs into one file
   when their lifecycles differ.
-- Do not re-ask audience, language, channel, or ephemerality values the user
-  already fixed in the session.
-- For external or mixed audiences, do not rely on repo-internal paths, decision
-  numbers, or stage labels unless they are explained inline.
+- Do not let audience, language, tone, or channel adaptation pull `narrative`
+  into `announcement` territory.
+- Keep the brief portable enough that later audience adaptation does not require
+  re-aligning the durable truth from scratch.
 - If delivery backend execution is the only remaining task, prefer
   `announcement` rather than growing `narrative` into a transport skill.
 

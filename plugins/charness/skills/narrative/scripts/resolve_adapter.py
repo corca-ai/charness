@@ -31,7 +31,7 @@ ADAPTER_CANDIDATES = (
 )
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from", "remote_name")
-LIST_FIELDS = ("source_documents", "mutable_documents")
+LIST_FIELDS = ("source_documents", "mutable_documents", "brief_template")
 ARTIFACT_FILENAME = "narrative.md"
 
 
@@ -74,6 +74,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "output_dir": "skill-outputs/narrative",
         "source_documents": inferred_docs,
         "mutable_documents": inferred_docs,
+        "brief_template": [],
         "remote_name": "origin",
     }
 

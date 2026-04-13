@@ -10,4 +10,9 @@ source_documents:
 mutable_documents:
 - README.md
 - docs/handoff.md
+brief_template:
+- One-Line Summary
+- Current Story
+- What Changed
+- Open Questions
 remote_name: origin

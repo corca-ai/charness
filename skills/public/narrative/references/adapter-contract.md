@@ -24,6 +24,8 @@ Fallback lookup order:
 - `preset_id`, `preset_version`, `customized_from`: provenance metadata only
 - `source_documents`: ordered list of truth-surface docs to read first
 - `mutable_documents`: ordered list of docs the skill may realign directly
+- `brief_template`: ordered section labels for one audience-neutral brief
+  skeleton
 - `remote_name`: git remote to compare against when checking freshness
 
 ## Durable Artifact
@@ -34,3 +36,7 @@ The default artifact is:
 
 Keep the durable alignment artifact separate from any audience-specific brief
 when the brief is ephemeral or audience-local.
+
+`brief_template` should stay audience-neutral. It is the repo-specific skeleton
+for compressing the aligned story, not the place to encode language, tone,
+channel, or one delivery backend.

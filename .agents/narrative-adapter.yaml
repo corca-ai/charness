@@ -6,14 +6,19 @@ preset_id: portable-defaults
 customized_from: portable-defaults
 source_documents:
 - README.md
-- docs/master-plan.md
-- docs/skill-migration-map.md
+- docs/control-plane.md
+- docs/public-skill-validation.md
 - docs/operator-acceptance.md
 - docs/handoff.md
 mutable_documents:
 - README.md
-- docs/master-plan.md
-- docs/skill-migration-map.md
+- docs/control-plane.md
+- docs/public-skill-validation.md
 - docs/operator-acceptance.md
 - docs/handoff.md
+brief_template:
+- One-Line Summary
+- Current Contract
+- What Changed
+- Open Questions
 remote_name: origin

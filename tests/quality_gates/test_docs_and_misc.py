@@ -27,6 +27,20 @@ def test_narrative_map_sources_reports_checked_in_docs() -> None:
     assert payload["freshness"]["status"] in {"ahead", "current", "missing-remote", "not-git", "unavailable"}
 
 
+def test_narrative_resolve_adapter_reports_brief_template_for_current_repo() -> None:
+    result = run_script("skills/public/narrative/scripts/resolve_adapter.py", "--repo-root", str(ROOT))
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["valid"] is True
+    assert payload["data"]["brief_template"] == [
+        "One-Line Summary",
+        "Current Contract",
+        "What Changed",
+        "Open Questions",
+    ]
+    assert "docs/control-plane.md" in payload["data"]["source_documents"]
+
+
 def test_release_bump_version_updates_manifest_and_runs_sync(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)

@@ -16,6 +16,7 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
         *base_adapter_items(repo_name, "skill-outputs/narrative"),
         ("source_documents", ["README.md", "docs/handoff.md"]),
         ("mutable_documents", ["README.md", "docs/handoff.md"]),
+        ("brief_template", ["One-Line Summary", "Current Story", "What Changed", "Open Questions"]),
         ("remote_name", "origin"),
     ]
 

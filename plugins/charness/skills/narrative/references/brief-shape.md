@@ -1,23 +1,29 @@
 # Brief Shape
 
 Use the aligned source-of-truth docs as input, not as an excuse to dump repo
-paths into the audience-facing body.
+paths into a new audience-local body.
 
-## External or Mixed Audiences
+## Core Rule
 
-- self-contained by default
-- explain internal stage names inline or replace them
-- avoid `docs/...`, `src/...`, decision ids, or commit hashes unless the reader
-  can act on them
-- if the source brief is ephemeral, treat repo pointers as invalid by default
+The brief that `narrative` derives should be audience-neutral by default.
 
-## Internal Audiences
+- self-contained enough that `announcement` can adapt it later without
+  rediscovering the story
+- compressed enough that it does not fork a second durable truth surface
+- shaped by the repo adapter's `brief_template` when one exists
 
-- pointers are acceptable when the reader is likely to open the repo
-- keep the durable truth in the source docs; use the brief to compress, not to
-  fork a second reality
+## What To Avoid
+
+- do not bake in one concrete audience, language, or channel
+- do not dump repo paths, decision ids, or stage labels unless they are part of
+  the durable story and still readable without local context
+- do not use the brief to replace source-of-truth docs
 
 ## Relationship to `announcement`
 
-If the docs already align and the user mainly needs delivery wording or backend
-posting, hand off to `announcement`.
+`announcement` is the right next layer when the aligned story or neutral brief
+must be tailored for:
+
+- one concrete audience
+- one language or tone
+- one delivery target or backend
