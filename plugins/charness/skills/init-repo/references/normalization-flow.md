@@ -19,6 +19,8 @@ parallel templates.
 ## Decision Rule
 
 - missing surface: scaffold it
+- one missing core surface in an otherwise mature repo: do the smallest
+  targeted repair and keep the rest of the operating docs intact
 - stale but useful surface: rewrite it
 - duplicate surface: collapse it into the more honest source of truth
 

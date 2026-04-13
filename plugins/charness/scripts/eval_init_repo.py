@@ -45,3 +45,25 @@ def run_init_repo_inspect_states(
             )
         if partial.get("agent_docs", {}).get("claude_has_text") is not True:
             raise error_type("init-repo partial inspect: expected CLAUDE.md content to be detected")
+
+    with tempfile.TemporaryDirectory(prefix="charness-eval-init-repo-targeted-") as tmpdir:
+        tmp = Path(tmpdir)
+        (tmp / "docs").mkdir(parents=True)
+        (tmp / "README.md").write_text("# Demo\n", encoding="utf-8")
+        (tmp / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
+        (tmp / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
+        targeted_result = run_command(["python3", str(inspect_script), "--repo-root", str(tmp)], cwd=root)
+        expect_success(targeted_result, "init-repo targeted partial inspect")
+        targeted = json.loads(targeted_result.stdout)
+        if targeted.get("repo_mode") != "PARTIAL":
+            raise error_type(f"init-repo targeted partial inspect: unexpected repo_mode {targeted.get('repo_mode')!r}")
+        if targeted.get("partial_kind") != "targeted_missing_surface":
+            raise error_type(
+                "init-repo targeted partial inspect: unexpected partial_kind "
+                f"{targeted.get('partial_kind')!r}"
+            )
+        if targeted.get("missing_surfaces") != ["operator_acceptance"]:
+            raise error_type(
+                "init-repo targeted partial inspect: unexpected missing_surfaces "
+                f"{targeted.get('missing_surfaces')!r}"
+            )

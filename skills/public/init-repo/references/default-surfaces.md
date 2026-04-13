@@ -46,6 +46,15 @@ The operator takeover document, usually
 - what takeover or acceptance tasks remain
 - what counts as done for each item
 
+When the repo already has real functional checks, synthesize operator
+acceptance from them instead of inventing a disconnected checklist:
+
+- split machine-runnable checks from human judgment or external-system checks
+- separate cheap local commands from expensive or account-dependent runs
+- name environment prerequisites explicitly when a command needs credentials,
+  services, seeded data, or another repo state
+- prefer one honest "run this first" sequence over a long unordered dump
+
 ## Optional Install Docs
 
 Only scaffold `INSTALL.md` and `UNINSTALL.md` when the repo really exposes an

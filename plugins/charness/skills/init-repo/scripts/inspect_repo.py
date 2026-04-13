@@ -67,10 +67,32 @@ def detect_repo_mode(repo_root: Path) -> str:
     return "NORMALIZE"
 
 
+def detect_missing_surfaces(repo_root: Path) -> list[str]:
+    core = {
+        "readme": repo_root / "README.md",
+        "agents": repo_root / "AGENTS.md",
+        "roadmap": repo_root / "docs" / "roadmap.md",
+        "operator_acceptance": repo_root / "docs" / "operator-acceptance.md",
+    }
+    return [surface_id for surface_id, path in core.items() if not path.exists()]
+
+
+def detect_partial_kind(repo_root: Path, repo_mode: str) -> str | None:
+    if repo_mode != "PARTIAL":
+        return None
+    missing_surfaces = detect_missing_surfaces(repo_root)
+    if len(missing_surfaces) == 1:
+        return "targeted_missing_surface"
+    return "broad_partial"
+
+
 def build_payload(repo_root: Path) -> dict[str, object]:
+    repo_mode = detect_repo_mode(repo_root)
     return {
         "repo": repo_root.name,
-        "repo_mode": detect_repo_mode(repo_root),
+        "repo_mode": repo_mode,
+        "partial_kind": detect_partial_kind(repo_root, repo_mode),
+        "missing_surfaces": detect_missing_surfaces(repo_root),
         "agent_docs": detect_agent_docs(repo_root),
         "surfaces": {
             "readme": _file_state(repo_root / "README.md"),

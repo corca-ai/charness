@@ -63,6 +63,8 @@ Then load only the references needed for the detected state:
 1. Detect the current repo mode.
    - `GREENFIELD`: little or no durable operating surface exists yet
    - `PARTIAL`: some surface exists, but key files are missing or inconsistent
+     - if only one core operating surface is missing, treat this as a targeted
+       missing-surface repair instead of a broad scaffold rewrite
    - `NORMALIZE`: the core files exist, but their boundaries or ownership are drifting
 2. Stabilize the host-facing instruction surface first.
    - if both `AGENTS.md` and `CLAUDE.md` are missing, create `AGENTS.md` and
@@ -134,4 +136,5 @@ The result should usually include:
 - `references/normalization-flow.md`
 - `references/agent-docs-policy.md`
 - `references/default-surfaces.md`
+- `references/operator-acceptance-synthesis.md`
 - `scripts/inspect_repo.py`

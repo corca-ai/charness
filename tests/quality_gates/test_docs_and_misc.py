@@ -41,6 +41,21 @@ def test_narrative_resolve_adapter_reports_brief_template_for_current_repo() -> 
     assert "docs/control-plane.md" in payload["data"]["source_documents"]
 
 
+def test_init_repo_inspect_repo_flags_targeted_missing_surface(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
+    (repo / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
+
+    result = run_script("skills/public/init-repo/scripts/inspect_repo.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["repo_mode"] == "PARTIAL"
+    assert payload["partial_kind"] == "targeted_missing_surface"
+    assert payload["missing_surfaces"] == ["operator_acceptance"]
+
+
 def test_release_bump_version_updates_manifest_and_runs_sync(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
