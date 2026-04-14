@@ -66,8 +66,8 @@
   `skills/support/specdown/`, `skills/support/agent-browser/`는 이제
   authoritative tree에 포함된다.
 - 현재 standing concern은 install/update propagation이 아니라
-  public-skill omission을 얼마나 더 이른 narrow gate에서 잡을지와,
-  `quality` ergonomics를 advisory 이상으로 올릴지다. 자세한 구현 계약은
+  `quality` ergonomics를 advisory 이상으로 올릴지와, public-skill policy
+  omission을 surface-local guard 이상으로 더 좁힐지다. 자세한 구현 계약은
   [docs/retro-self-improvement-spec.md](retro-self-improvement-spec.md)에 있다.
 - 최신 weekly retro와 compact lesson digest는
   [skill-outputs/retro/weekly-2026-04-14.md](../skill-outputs/retro/weekly-2026-04-14.md),
@@ -82,12 +82,11 @@
    읽고, omission-prone seam을 먼저 체크한다. 특히 new public skill 추가 시
    `docs/public-skill-validation.json`과 checked-in plugin export sync를 함께
    본다.
-2. 가장 자연스러운 다음 작업은 public-skill policy omission을 더 일찍 잡는
-   guard를 추가하는 일이 좋다.
-   예: `run-slice-closeout.py` / `select_verifiers.py`가
-   `docs/public-skill-validation.json`을 explicit surface로 다루게 하거나,
-   새 public skill이 validation partition에 빠지면 더 빨리 실패시키는
-   narrower check.
+2. `select_verifiers.py` / `run-slice-closeout.py`는 이제
+   `docs/public-skill-validation.json`과 `skills/public/**`에서
+   `validate-public-skill-validation.py`를 바로 고른다. 다음 follow-on은
+   surface-local recommendation을 넘어, omission을 더 직접 설명하는
+   narrower diagnostic이나 fail message를 붙일지 결정하는 일이다.
 3. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
    surface를 다른 머신에서 한 번 더 확인한다. 특히 real binary install이
    PATH/non-PATH일 때 next-step honesty가 유지되는지 본다.
@@ -99,7 +98,7 @@
 
 - `#24`는 reopened 상태지만, repo-local skill contract 기준으로는 핵심
   follow-up이 landed했다. 남은 일은 issue close 자체보다 public-skill
-  omission을 더 이른 gate로 잡는 후속 slice가 더 자연스럽다.
+  omission을 더 direct한 diagnostic으로 좁히는 후속 slice가 더 자연스럽다.
 - ideal flow는 prose가 초반 행동을 좋게 유도하고 deterministic gate가
   omission/drift를 backstop하는 구조다. 지금 charness는 그 방향이지만, 몇몇
   omission-prone seam은 아직 broad gate에서 늦게 드러난다.

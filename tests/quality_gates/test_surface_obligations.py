@@ -65,6 +65,37 @@ def test_select_verifiers_returns_smallest_repo_owned_bundle_for_readme() -> Non
     assert "./scripts/check-markdown.sh" in verify_commands
 
 
+def test_select_verifiers_includes_public_skill_policy_for_public_skill_changes() -> None:
+    result = run_script(
+        "scripts/select_verifiers.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "skills/public/premortem/SKILL.md",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
+    assert "python3 scripts/validate-skills.py --repo-root ." in verify_commands
+    assert "python3 scripts/validate-public-skill-validation.py --repo-root ." in verify_commands
+
+
+def test_select_verifiers_includes_public_skill_policy_for_policy_json_changes() -> None:
+    result = run_script(
+        "scripts/select_verifiers.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "docs/public-skill-validation.json",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
+    assert "python3 scripts/validate-public-skill-validation.py --repo-root ." in verify_commands
+
+
 def test_select_verifiers_reports_missing_bundle_for_unmatched_paths() -> None:
     result = run_script(
         "scripts/select_verifiers.py",

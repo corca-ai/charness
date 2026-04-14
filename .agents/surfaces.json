@@ -87,6 +87,25 @@
       ]
     },
     {
+      "surface_id": "public-skill-policy",
+      "description": "Public skill classification policy and validator that must stay aligned with the current public skill set.",
+      "source_paths": [
+        "skills/public/**",
+        "docs/public-skill-validation.json",
+        "docs/public-skill-validation.md",
+        "scripts/public_skill_validation_lib.py",
+        "scripts/validate-public-skill-validation.py"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/validate-public-skill-validation.py --repo-root ."
+      ],
+      "notes": [
+        "New, renamed, or reclassified public skills must be reflected in `docs/public-skill-validation.json` before closeout."
+      ]
+    },
+    {
       "surface_id": "profiles-and-presets",
       "description": "Profile and preset bundles that define packaged defaults.",
       "source_paths": [
