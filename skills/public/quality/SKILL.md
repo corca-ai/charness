@@ -82,6 +82,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - inspect README / INSTALL / operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
    - if evaluator-backed review or prompt-sensitive output matters, inspect whether prompt/content bulk stays in checked-in assets or is still embedded inline in source files
+   - when skills are in scope, inventory skill ergonomics explicitly with `scripts/inventory_skill_ergonomics.py` instead of leaving concise-core, progressive-disclosure, or mode-pressure review as vague prose
    - when the adapter defines `prompt_asset_roots` or `prompt_asset_policy`, re-derive prompt/content bulk inventory from the current tree instead of trusting prior review prose
    - if the repo keeps standing coverage floors, tag seams within `coverage_fragile_margin_pp` as `FRAGILE` instead of burying near-miss risk in prose
    - for blind-spot prevention, apply `references/coverage-floor-policy.md`: adapter-owned `coverage_floor_policy`, real unfloored-file inventory, and `Covered by pytest:` reference validation when those notes exist
@@ -105,7 +106,8 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - `security`: are there meaningful code, secret, or supply-chain risks
    - `operability`: are setup, CI, install/update docs, and maintenance surfaces honest enough to sustain the quality bar
    - treat checked-in hook config, a repo-owned hook installer/checker, and repo-owned install paths for extra gate binaries as a first-class positive pattern, not only the absence of a missing gap
-   - when the repo authors skills, include skill package quality, portable bootstrap seams, and shared-helper drift in these lenses
+   - when the repo authors skills, include skill package quality, portable bootstrap seams, shared-helper drift, and explicit skill ergonomics review
+   - make skill ergonomics explicit: concise `SKILL.md` core, progressive disclosure honesty, unnecessary mode/option pressure, trigger overlap/undertrigger risk, and prose ritual that should become a helper script
    - make `behavior` explicit about whether coverage is standing-gated, informally sampled, or absent
    - make evaluator depth explicit: smoke only, maintained evaluator-backed, or still smoke plus HITL
    - if stronger local proof depends on an external binary or support tool, state whether it is currently installed and healthy, then surface the exact install and post-install verification path instead of vague prose
@@ -126,15 +128,13 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - prefer the smallest gate that materially improves confidence
    - do not force one stack's tooling when the repo does not use that stack
    - when the problem is automatable, prefer a deterministic gate over prose
-   - when the automatable move is already clear and repo-owned, implement it in
-     the same turn unless the user asked to stay review-only
+   - when the automatable move is already clear and repo-owned, implement it in the same turn unless the user asked to stay review-only
    - when the next deterministic move is to install or refresh the repo-local quality surface itself, prefer the bootstrap posture and leave a machine-readable deferred-setup report
    - if executable specs are slow or overlapping, delete duplicates, move detail into unit-level checks, or add a direct adapter before widening the spec bar
 8. Run one fresh-eye premortem on the drafted report.
    - use `references/fresh-eye-premortem.md`; if subagents are available and explicitly allowed, a fresh-eye subagent is ideal, otherwise do the challenge pass yourself without rereading the draft first
 9. End with a quality posture summary.
-   - what was actually run
-   - what runtime or diagnostic signals were captured
+   - what was actually run and what runtime or diagnostic signals were captured
    - which runtime hot spots dominate the current bar
    - whether coverage is standing-gated, indirect, or absent
    - whether evaluator-backed depth exists, or whether the deeper bar is still smoke plus HITL
@@ -167,6 +167,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not hide a missing evaluator or support binary behind "deeper validation recommended"; say whether the deeper bar is currently unavailable locally and how to enable it.
 - Keep repo-local markdown-link discipline separate from external URL health when the repo needs both.
 - Do not pretend a conceptual boundary problem is solved just because duplicate text was linted away; semantic boundary questions still need concept review.
+- Do not confuse skill ergonomics review with taste policing; advisory inventory should sharpen defaults, inference, and discoverability rather than enforce one writing style.
 - If the repo is shipping a CLI or bootstrap command surface, inspect whether install/update/doctor/reset behavior follows `create-cli`-level quality expectations instead of treating the entrypoint as ordinary helper glue.
 - For anti-anchoring, unfloored-file inventory, glob-vs-operational drift, and `Covered by pytest:` honesty limits, follow `references/coverage-floor-policy.md` and `references/fresh-eye-premortem.md` instead of improvising.
 - If a seam refactor improves maintainability but a focused gate regresses, rule out stale gate wiring before calling it product risk.
@@ -183,6 +184,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - `references/maintainer-local-enforcement.md`
 - `references/quality-lenses.md`
 - `references/skill-quality.md`
+- `references/skill-ergonomics.md`
 - `references/installable-cli-probes.md`
 - `references/proposal-flow.md`
 - `references/gate-classification.md`

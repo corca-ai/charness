@@ -30,10 +30,14 @@
 - `narrative`, `find-skills`, `announcement` bootstrap은 richer truth
   surface, first-run artifact path, does-not-do boundary를 더 직접 말한다.
 - `retro` self-improvement work는 지금 네 slice가 landed 상태다.
+- `retro` self-improvement work의 첫 배치는 사실상 landed 상태다.
   - `probe_host_logs.py`: Claude/Codex local log metric availability probe
   - `refresh_recent_lessons.py`: durable retro -> recent-lessons digest refresh
   - `seed_retro_memory.py`: init-repo retro memory seam scaffold
   - `persist_retro_artifact.py`: durable retro write 시 digest 자동 refresh
+- `quality`는 이제 skill ergonomics를 explicit lens로 본다.
+  `inventory_skill_ergonomics.py`가 concise core / progressive disclosure /
+  mode-pressure / prose-ritual risk를 advisory inventory로 surface한다.
 - `spec`는 이제 core에서 `premortem` 용어를 직접 쓰고, bounded fresh-eye
   review를 요구한다.
 - hidden support source-of-truth도 넓어졌다.
@@ -49,17 +53,13 @@
 
 1. retro self-improvement follow-up을 이어간다면 먼저
    [docs/retro-self-improvement-spec.md](retro-self-improvement-spec.md)를
-   읽고, 다음 slice로 `quality` skill-ergonomics explicit lens를 구현한다.
-2. `quality` slice에서는 최소한 아래를 결정한다.
-   - concise `SKILL.md` core / progressive disclosure honesty를 explicit lens로
-     올릴지
-   - unnecessary mode/option pressure와 trigger overlap/undertrigger risk를
-     advisory inventory로 볼지
-   - repeated prose ritual을 script/helper 후보로 surface할지
-3. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
+   읽고, 다음 slice를 truly behavioral follow-on으로 고른다.
+   예: ergonomics를 advisory에서 stronger gate로 올릴지, bounded
+   post-closeout retro trigger를 둘지.
+2. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
    surface를 다른 머신에서 한 번 더 확인한다. 특히 real binary install이
    PATH/non-PATH일 때 next-step honesty가 유지되는지 본다.
-4. 추가 retro를 남길 때는 ad hoc 파일 쓰기 대신
+3. 추가 retro를 남길 때는 ad hoc 파일 쓰기 대신
    `skills/public/retro/scripts/persist_retro_artifact.py`를 사용한다.
 
 ## Discuss

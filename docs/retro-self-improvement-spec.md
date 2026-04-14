@@ -22,18 +22,23 @@ explicitly ask for it or when a maintainer manually persists the lesson.
 
 ## Current Slice
 
-The first three portability-safe slices have landed:
+The first implementation batch has landed:
 
-- a standalone host-log probe helper now reports metric availability
-- a standalone digest helper now refreshes `recent-lessons.md` from the latest
+- `probe_host_logs.py` reports honest Claude/Codex metric availability
+- `refresh_recent_lessons.py` refreshes `recent-lessons.md` from the latest
   durable retro artifact
-- `init-repo` can now seed `.agents/retro-adapter.yaml` and
+- `persist_retro_artifact.py` now auto-refreshes the digest when a durable
+  retro artifact is written
+- `init-repo` can seed `.agents/retro-adapter.yaml` and
   `skill-outputs/retro/recent-lessons.md` for repos that opt into durable retro
   memory
+- `quality` now treats skill ergonomics as an explicit lens with an advisory
+  inventory helper
 
-The next slice should decide whether to deepen `quality` and retro orchestration
-around this seam without pretending that every host exposes the same metrics or
-that every task should pay the cost of a full retro.
+The next slice should only deepen this seam where it changes behavior rather
+than prose volume: for example making `quality` or public-skill validation more
+opinionated about ergonomics, or deciding whether some repos should opt into a
+bounded post-closeout retro trigger.
 
 ## Fixed Decisions
 
@@ -183,13 +188,15 @@ If this work is implemented badly, the likely failure modes are:
 
 1. Teach `quality` to call out skill ergonomics explicitly when skills are in
    scope, using existing `skill-quality` and `public-skill-validation`
-   posture as the base.
+   posture as the base. Landed.
 2. Decide whether a thin retro orchestration helper should call
    `refresh_recent_lessons.py` automatically when durable retro artifacts are
    updated, or whether the current explicit script boundary is the intended
-   product posture.
+   product posture. Landed in favor of auto-refresh through
+   `persist_retro_artifact.py`.
 3. Decide whether `init-repo` should also wire the recent-lessons seam into
    scaffolded `AGENTS.md` memory by default when retro memory is enabled.
+   Landed.
 
 ## Notes On Existing Signals
 
