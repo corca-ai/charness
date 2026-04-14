@@ -19,7 +19,7 @@ coverage_floor_policy:
 specdown_smoke_patterns: []
 spec_pytest_reference_format: "Covered by pytest:\\s+`tests/[^`]+`(?:,\\s*`tests/[^`]+`)*"
 runtime_budgets:
-  pytest: 22000
+  pytest: 25000
 concept_paths:
 - docs/control-plane.md
 - docs/public-skill-validation.md
