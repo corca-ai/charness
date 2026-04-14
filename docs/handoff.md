@@ -5,7 +5,7 @@
 - 다음 세션이 support-tool / external tool follow-up이면 먼저
   [docs/support-tool-followup.md](support-tool-followup.md)를 읽는다.
   `#10`, `#11`, `#13`, `#14`, `#6`, `#7`, `#8`, `#15`, `#16`, `#17`,
-  `#18`, `#19`, `#20`, `#21`, `#23`, `#22`, `#24`는 landed 상태다.
+  `#18`, `#19`, `#20`, `#21`, `#23`, `#22`는 landed 상태다.
 - 최근 repeat trap은
   [skill-outputs/retro/recent-lessons.md](../skill-outputs/retro/recent-lessons.md)
   에 축약해 두므로, install/update/export/support work 전엔 handoff와 함께
@@ -21,8 +21,8 @@
 
 - `charness`는 thin CLI + checked-in plugin export + managed checkout 모델로
   정리됐다. primary operator path는 `charness init/update/reset/uninstall`이다.
-- 열린 GitHub 이슈는 없다. 다음 work는 issue-driven이라기보다 follow-on
-  cleanup과 dogfood 쪽이다.
+- 열린 GitHub 이슈는 `#24` 하나다. 지금 구현은 directionally right지만
+  close가 과했다. 다음 work는 이 이슈를 제대로 닫는 쪽이 가장 자연스럽다.
 - support-tool control plane은 `tool doctor|install|update|sync-support`를
   제공하고, lock state / generated support / discovery stub / doctor
   next-step까지 agent-readable state를 남긴다.
@@ -34,12 +34,8 @@
 - `retro` self-improvement의 첫 배치는 landed 상태다.
   `probe_host_logs.py`, `refresh_recent_lessons.py`,
   `seed_retro_memory.py`, `persist_retro_artifact.py`까지 있다.
-- `quality`는 이제 skill ergonomics를 explicit lens로 본다.
-  `inventory_skill_ergonomics.py`가 concise core / progressive disclosure /
-  mode-pressure / prose-ritual risk를 advisory inventory로 surface한다.
-- `quality`는 이제 CLI ergonomics smells도 advisory inventory로 본다.
-  `inventory_cli_ergonomics.py`가 flat help-list와 cross-archetype schema
-  leakage를 surface한다.
+- `quality`는 skill ergonomics와 CLI ergonomics smells를 advisory inventory로
+  본다. `inventory_skill_ergonomics.py`, `inventory_cli_ergonomics.py`가 있다.
 - `narrative`는 이제 multi-use-case repo에서 scenario block guidance를
   explicit하게 가진다. `scenario_surfaces` / `scenario_block_template` adapter
   fields를 지원하고, main use-case docs에서 fixture-first scenario cards와
@@ -60,6 +56,10 @@
 - `spec`와 `narrative`는 이제 rejected alternatives를 durable doc에 남기는
   쪽으로 정리됐다. `quality`는 dual-implementation parity를 weak heuristic +
   explicit human review lens로 본다.
+- 다만 `#24`는 아직 fully done이 아니다. 남은 gap은:
+  `premortem`의 counterweight pass가 실제 reusable subroutine으로 caller
+  skill들에 더 분명히 연결되지 않았고, quality parity도 아직 weak heuristic
+  이상으로는 못 간다.
 - hidden support source-of-truth도 넓어졌다.
   `skills/support/specdown/`, `skills/support/agent-browser/`는 이제
   authoritative tree에 포함된다.
@@ -81,40 +81,33 @@
    읽고, omission-prone seam을 먼저 체크한다. 특히 new public skill 추가 시
    `docs/public-skill-validation.json`과 checked-in plugin export sync를 함께
    본다.
-2. 가장 자연스러운 follow-on은 public-skill policy omission을 더 일찍 잡는
-   guard를 추가하는 일이다.
+2. 가장 자연스러운 다음 작업은 `#24`를 실제로 마무리하는 일이다.
+   `premortem` counterweight prompt/template 구체화,
+   `impl`/`release`가 standalone `premortem`을 더 명시적으로 invoke하게 만들기,
+   quality parity detection의 honest-but-stronger contract 찾기가 남아 있다.
+3. 그 다음 follow-on으로는 public-skill policy omission을 더 일찍 잡는
+   guard를 추가하는 일이 좋다.
    예: `run-slice-closeout.py` / `select_verifiers.py`가
    `docs/public-skill-validation.json`을 explicit surface로 다루게 하거나,
    새 public skill이 validation partition에 빠지면 더 빨리 실패시키는
    narrower check.
-3. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
+4. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
    surface를 다른 머신에서 한 번 더 확인한다. 특히 real binary install이
    PATH/non-PATH일 때 next-step honesty가 유지되는지 본다.
-4. `quality` ergonomics를 advisory에서 stronger gate로 올릴지, 혹은 지금
-   수준의 advisory inventory를 유지할지 다시 결정한다.
-5. 추가 retro를 남길 때는 ad hoc 파일 쓰기 대신
+5. `quality` ergonomics를 advisory에서 stronger gate로 올릴지 다시 결정한다.
+6. 추가 retro를 남길 때는 ad hoc 파일 쓰기 대신
    `skills/public/retro/scripts/persist_retro_artifact.py`를 사용한다.
 
 ## Discuss
 
-- `support-backed`와 `recommendation_role`은 같은 층위가 아니다.
-  discoverability가 중요해도 모든 권장 tool이 support skill이어야 하는
-  것은 아니다.
-- Codex/Claude host-log metric은 asymmetric하다. Claude는 token count까지,
-  Codex는 default local log 기준 duration/turn/tool-call까지만 현재 proof가
-  있다.
-- PATH에 없는 package-manager install은 여전히 follow-up seam이다.
-  이 머신에서 `cautilus`는 brew cellar에는 있었지만 current PATH에 없어
-  `doctor` 기준 `missing`처럼 보였다.
+- `#24`는 reopened 상태다. directionally right한 첫 slice는 landed지만,
+  counterweight reusable step과 caller-skill integration은 아직 부족하다.
+- ideal flow는 prose가 초반 행동을 좋게 유도하고 deterministic gate가
+  omission/drift를 backstop하는 구조다. 지금 charness는 그 방향이지만, 몇몇
+  omission-prone seam은 아직 broad gate에서 늦게 드러난다.
 
 ## References
 
-- [AGENTS.md](../AGENTS.md)
-- [README.md](../README.md)
-- [INSTALL.md](../INSTALL.md)
-- [UNINSTALL.md](../UNINSTALL.md)
-- [docs/retro-self-improvement-spec.md](retro-self-improvement-spec.md)
 - [docs/support-tool-followup.md](support-tool-followup.md)
-- [docs/operator-acceptance.md](operator-acceptance.md)
-- [docs/public-skill-validation.md](public-skill-validation.md)
+- [docs/retro-self-improvement-spec.md](retro-self-improvement-spec.md)
 - [skill-outputs/retro/recent-lessons.md](../skill-outputs/retro/recent-lessons.md)
