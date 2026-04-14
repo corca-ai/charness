@@ -17,8 +17,7 @@ def _runtime_root() -> Path:
     return script_path.parents[4]
 
 REPO_ROOT = _runtime_root()
-sys.path.insert(0, str(REPO_ROOT))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path[:0] = [str(Path(__file__).resolve().parent), str(REPO_ROOT)]
 
 from adapter_validators import runtime_budgets as _runtime_budgets
 
