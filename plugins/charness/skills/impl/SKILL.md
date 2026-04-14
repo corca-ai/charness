@@ -16,6 +16,7 @@ slice instead of pretending the task is already well-defined.
 Use Gary Klein-style premortem discipline before closing a slice: ask what the
 next maintainer, operator, or user is most likely to misunderstand or break,
 then tighten the implementation or closeout around that failure.
+For non-trivial, cross-surface, breaking, or deletion/rename-heavy slices, use the standalone `premortem` skill and consume its four-bin triage in closeout.
 Keep Christopher Alexander-style sequence discipline for slice order: prefer
 the change that opens the next good move without prematurely freezing adjacent
 decisions. Use Kent Beck when the slice needs smaller feedback loops, and John
@@ -131,9 +132,11 @@ Adapter policy:
    - if the work uncovers concept-defining drift, send it back to `spec` or
      `ideation` instead of burying the change in code
 7. Run a Gary Klein-style premortem before stopping.
-   - ask what wrong next action a maintainer or operator is most likely to take
+   - for small local slices, ask what wrong next action a maintainer or
+     operator is most likely to take
    - ask which branch, recovery path, setup assumption, or ownership boundary
      is most likely to fail under normal pressure
+   - for non-trivial, cross-surface, breaking, or deletion/rename-heavy work, use the standalone `premortem` skill and carry back its four-bin triage
    - fix the highest-likelihood failure mode or record why it remains open
 8. Run a fresh-eye review before stopping.
    - review runtime behavior and branch reachability
@@ -183,6 +186,8 @@ The closeout should usually include:
 - If the change touches shared seams or architectural ownership, do not stop at
   same-context self-review alone.
 - Do not skip the bounded premortem just because the code looks locally clean.
+- Do not reinvent one-off premortem angle selection when standalone
+  `premortem` fits the slice.
 
 ## References
 

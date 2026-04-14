@@ -21,8 +21,9 @@
 
 - `charness`는 thin CLI + checked-in plugin export + managed checkout 모델로
   정리됐다. primary operator path는 `charness init/update/reset/uninstall`이다.
-- 열린 GitHub 이슈는 `#24` 하나다. 지금 구현은 directionally right지만
-  close가 과했다. 다음 work는 이 이슈를 제대로 닫는 쪽이 가장 자연스럽다.
+- 열린 GitHub 이슈는 `#24` 하나다. skill body 기준 남아 있던 contract gap은
+  이번 세션에서 좁혔다. `premortem` caller contract, `impl`/`release`의
+  standalone invocation, `quality`의 stronger parity triage를 정리했다.
 - support-tool control plane은 `tool doctor|install|update|sync-support`를
   제공하고, lock state / generated support / discovery stub / doctor
   next-step까지 agent-readable state를 남긴다.
@@ -56,18 +57,18 @@
 - `spec`와 `narrative`는 이제 rejected alternatives를 durable doc에 남기는
   쪽으로 정리됐다. `quality`는 dual-implementation parity를 weak heuristic +
   explicit human review lens로 본다.
-- 다만 `#24`는 아직 fully done이 아니다. 남은 gap은:
-  `premortem`의 counterweight pass가 실제 reusable subroutine으로 caller
-  skill들에 더 분명히 연결되지 않았고, quality parity도 아직 weak heuristic
-  이상으로는 못 간다.
+- `#24`의 핵심 contract gap은 이제 skill body에서 닫혔다.
+  `premortem`은 caller-consumable four-bin triage를 explicit하게 정의하고,
+  `impl`/`release`는 standalone invocation을 명시하며, `quality`는
+  dual-implementation을 parity harness / canonicalization / intentional
+  divergence 중 하나로 triage하도록 요구한다.
 - hidden support source-of-truth도 넓어졌다.
   `skills/support/specdown/`, `skills/support/agent-browser/`는 이제
   authoritative tree에 포함된다.
 - 현재 standing concern은 install/update propagation이 아니라
-  `quality`가 skill ergonomics를 얼마나 explicit하게 review contract로
-  올릴지다. 자세한 구현 계약은
-  [docs/retro-self-improvement-spec.md](retro-self-improvement-spec.md)에
-  있다.
+  public-skill omission을 얼마나 더 이른 narrow gate에서 잡을지와,
+  `quality` ergonomics를 advisory 이상으로 올릴지다. 자세한 구현 계약은
+  [docs/retro-self-improvement-spec.md](retro-self-improvement-spec.md)에 있다.
 - 최신 weekly retro와 compact lesson digest는
   [skill-outputs/retro/weekly-2026-04-14.md](../skill-outputs/retro/weekly-2026-04-14.md),
   [skill-outputs/retro/recent-lessons.md](../skill-outputs/retro/recent-lessons.md)에
@@ -81,27 +82,24 @@
    읽고, omission-prone seam을 먼저 체크한다. 특히 new public skill 추가 시
    `docs/public-skill-validation.json`과 checked-in plugin export sync를 함께
    본다.
-2. 가장 자연스러운 다음 작업은 `#24`를 실제로 마무리하는 일이다.
-   `premortem` counterweight prompt/template 구체화,
-   `impl`/`release`가 standalone `premortem`을 더 명시적으로 invoke하게 만들기,
-   quality parity detection의 honest-but-stronger contract 찾기가 남아 있다.
-3. 그 다음 follow-on으로는 public-skill policy omission을 더 일찍 잡는
+2. 가장 자연스러운 다음 작업은 public-skill policy omission을 더 일찍 잡는
    guard를 추가하는 일이 좋다.
    예: `run-slice-closeout.py` / `select_verifiers.py`가
    `docs/public-skill-validation.json`을 explicit surface로 다루게 하거나,
    새 public skill이 validation partition에 빠지면 더 빨리 실패시키는
    narrower check.
-4. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
+3. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
    surface를 다른 머신에서 한 번 더 확인한다. 특히 real binary install이
    PATH/non-PATH일 때 next-step honesty가 유지되는지 본다.
-5. `quality` ergonomics를 advisory에서 stronger gate로 올릴지 다시 결정한다.
-6. 추가 retro를 남길 때는 ad hoc 파일 쓰기 대신
+4. `quality` ergonomics를 advisory에서 stronger gate로 올릴지 다시 결정한다.
+5. 추가 retro를 남길 때는 ad hoc 파일 쓰기 대신
    `skills/public/retro/scripts/persist_retro_artifact.py`를 사용한다.
 
 ## Discuss
 
-- `#24`는 reopened 상태다. directionally right한 첫 slice는 landed지만,
-  counterweight reusable step과 caller-skill integration은 아직 부족하다.
+- `#24`는 reopened 상태지만, repo-local skill contract 기준으로는 핵심
+  follow-up이 landed했다. 남은 일은 issue close 자체보다 public-skill
+  omission을 더 이른 gate로 잡는 후속 slice가 더 자연스럽다.
 - ideal flow는 prose가 초반 행동을 좋게 유도하고 deterministic gate가
   omission/drift를 backstop하는 구조다. 지금 charness는 그 방향이지만, 몇몇
   omission-prone seam은 아직 broad gate에서 늦게 드러난다.

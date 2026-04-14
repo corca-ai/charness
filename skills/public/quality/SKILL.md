@@ -5,8 +5,7 @@ description: "Use when the goal is to understand and improve the repo's current 
 
 # Quality
 
-Use this when the task is overall quality posture, not only one narrow bug or
-one isolated test.
+Use this when the task is overall quality posture, not only one narrow bug or one isolated test.
 
 `quality` is one public concept. It absorbs concept integrity review, test confidence improvement, security and supply-chain posture review, skill package and maintenance drift review, and documentation drift review.
 The job is to understand the repo's current quality surface, run the meaningful gates that already exist, and propose the missing ones concretely.
@@ -18,9 +17,7 @@ Maintainer-local enforcement counts when the repo depends on it. When the repo h
 
 ## Bootstrap
 
-Resolve the adapter first, then inspect the current quality surface.
-
-Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
+Resolve the adapter first, then inspect the current quality surface. Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
@@ -78,7 +75,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - local executable gates already present
    - if the repo ships an installable CLI, bootstrap command, or operator-facing command surface, inspect whether help, command discovery, binary health, install/readiness, and local discoverability are separated honestly
    - when CLI ergonomics are in scope, inventory flat help-list and cross-archetype schema smells with `scripts/inventory_cli_ergonomics.py`
-   - when the repo may keep one shipped implementation beside a historical or alternate runtime path, inventory likely dual-implementation parity smells with `scripts/inventory_dual_implementation.py`
+   - when the repo may keep one shipped implementation beside a historical or alternate runtime path, inventory likely dual-implementation parity smells with `scripts/inventory_dual_implementation.py`, then decide whether the relationship is parity-enforced, canonical-plus-legacy, or intentional divergence
    - when first-touch operator/developer/agent docs are in scope, inventory entrypoint-doc ergonomics with `scripts/inventory_entrypoint_docs_ergonomics.py`
    - inspect README / INSTALL / operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
@@ -98,6 +95,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model
    - `behavior`: do tests, evals, checks, and command-surface probes say something falsifiable about real behavior, and does the repo-owned test code stay maintainable
+   - when dual-implementation smell is real, treat it as `weak` until the repo proves one honest contract: parity harness, canonical side plus deletion/wrapper plan, or intentional divergence backed by an assertion
    - if a fresh 5-minute reader could misread a present invariant as absent, treat that as a quality gap in declaration or gating rather than dismissing the reader
    - when the same confidence gap could be closed either by shrinking production branches/interfaces or by adding more tests, prefer the smaller production surface first if behavior and signal both improve
    - when executable specs exist, classify smoke vs behavior using the adapter's `specdown_smoke_patterns`, report the ratio, and treat bounded test-ratio posture as a named positive pattern when the repo constrains both under-testing and test-surface inflation
@@ -126,6 +124,8 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - when the automatable move is already clear and repo-owned, implement it in the same turn unless the user asked to stay review-only
    - when the next deterministic move is to install or refresh the repo-local quality surface itself, prefer the bootstrap posture and leave a machine-readable deferred-setup report
    - if executable specs are slow or overlapping, delete duplicates, move detail into unit-level checks, or add a direct adapter before widening the spec bar
+   - when dual-implementation smell is real, recommend exactly one next contract: add a parity harness, pick one side canonical and delete or wrap the other, or document intentional divergence with a test that asserts it
+   - do not leave "keep both for safety" as an unpriced middle state
 8. Run one fresh-eye premortem on the drafted report.
    - use `references/fresh-eye-premortem.md`; if subagents are available and explicitly allowed, a fresh-eye subagent is ideal, otherwise do the challenge pass yourself without rereading the draft first
 9. End with a quality posture summary.
@@ -138,7 +138,6 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - the next best gate or cleanup to add
 
 - `Scope`, `Current Gates`, `Runtime Signals`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Commands Run`, `Recommended Next Gates`
-
 - Do not reduce quality to one aggregate score.
 - Do not split quality bootstrap into a second public concept when the work is still bounded repo-local quality setup.
 - Do not recommend gates the repo cannot realistically run without saying why.
@@ -160,6 +159,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not collapse help, command discovery, healthcheck, readiness, and local discoverability into one generic "doctor passed" claim when the repo ships an installable CLI or plugin surface.
 - Do not ignore a 30-command flat help list or a subcommand that accepts multiple archetype schema namespaces; those are discoverability smells.
 - Do not treat a historical second implementation as a free safety oracle when no parity harness proves the two paths still agree.
+- Do not treat a historical second implementation as healthy unless the repo has enforced parity, an asserted intentional divergence, or an explicit canonicalization plan.
 - Do not treat support-skill materialization or host-visible plugin discovery as the same seam as generic binary health.
 - Do not hide a missing evaluator or support binary behind "deeper validation recommended"; say whether the deeper bar is currently unavailable locally and how to enable it.
 - Keep repo-local markdown-link discipline separate from external URL health when the repo needs both.

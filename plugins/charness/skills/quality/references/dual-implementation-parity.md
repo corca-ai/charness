@@ -29,5 +29,10 @@ When the smell is real, `quality` should recommend one of:
 - choose one side canonical and delete or wrap the other
 - document the divergence as intentional and add a test asserting it
 
+Treat anything outside those three states as a `weak` contract, not a harmless
+middle ground.
+`quality` should name that weakness plainly instead of stopping at
+"dual-implementation smell detected".
+
 Do not celebrate a duplicate implementation as a "free oracle" unless the repo
 is also willing to pay the permanent alignment cost.

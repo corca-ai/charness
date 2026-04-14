@@ -11,6 +11,17 @@ wrong decision or carrying the wrong fear into implementation.
 `premortem` is the structured before-the-fact counterpart to `retro`.
 It should stress a pending decision from distinct angles, then perform one
 counterweight pass so the findings become actionable instead of a paranoia pile.
+Caller skills should use it as the reusable subroutine for non-trivial
+decision review rather than rewriting angle selection or counterweight logic
+inline.
+
+Caller contract:
+
+- pass the pending decision artifact or a tight source summary
+- state success and out-of-scope lines up front
+- consume the returned four-bin triage directly:
+  `Act Before Ship`, `Bundle Anyway`, `Over-Worry`, `Valid but Defer`
+- write any decision-changing result back into the caller's durable contract
 
 ## Bootstrap
 
@@ -50,6 +61,8 @@ decision contract. Do not restate the whole project history.
    - act like a skeptical senior engineer pushing back on paranoia,
      speculative consumers, and expensive hypotheticals
    - triage each concern using `references/counterweight-triage.md`
+   - preserve the four bins explicitly so caller skills can consume the result
+     without re-triaging the same fear list
 6. Persist the decision memory.
    - if a concern changes the decision, tighten the spec, plan, or release
      contract immediately

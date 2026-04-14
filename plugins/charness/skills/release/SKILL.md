@@ -12,6 +12,9 @@ not just to describe recent changes.
 surfaces that ship checked-in install metadata. It should keep one repo's
 release contract honest instead of improvising version bumps, CLI update
 advice, or generated-file edits by hand.
+When the release decision is non-trivial, use the standalone `premortem`
+skill before mutating versions so compatibility, install/update fallout, and
+real-host proof requirements are triaged explicitly.
 
 ## Bootstrap
 
@@ -52,20 +55,27 @@ sed -n '1,220p' <resolved-release-artifact> 2>/dev/null || true
    - generated plugin manifest versions
    - generated compatibility metadata version
    - dirty or drifted working tree state
-3. Choose the lightest honest bump.
+3. Run a bounded premortem on non-trivial release decisions.
+   - use the standalone `premortem` skill when compatibility expectations,
+     install/update instructions, deletions, or real-host proof boundaries
+     could be misread
+   - carry back `Act Before Ship`, `Bundle Anyway`, `Over-Worry`, and
+     `Valid but Defer` into the release plan instead of keeping them as chat
+     debris
+4. Choose the lightest honest bump.
    - patch for bug fixes, copy fixes, and behavior repairs
    - minor for new maintained capability or additive operator surface
    - major only when compatibility or invocation expectations break
-4. Apply the release mutation through the repo helper.
+5. Apply the release mutation through the repo helper.
    - prefer the checked-in bump helper over manual JSON edits
    - sync generated install surfaces immediately after bumping
-5. Verify the release surface.
+6. Verify the release surface.
    - packaging and generated files agree on the same version
    - canonical quality gate passes
    - no generated install surface was left stale
    - if `check_real_host_proof.py` says release-time proof is required, carry
      that checklist into the closeout instead of claiming local CI replaced it
-6. End with operator-facing update steps.
+7. End with operator-facing update steps.
    - how operators refresh the managed `charness` install
    - what Claude and Codex still need after `charness update`
    - what still requires manual human confirmation
@@ -77,6 +87,7 @@ The result should usually include:
 - `Current Version`
 - `Target Version`
 - `Release Scope`
+- `Premortem` when the release decision was non-trivial
 - `Verification`
 - `User Update Steps`
 - `Real-Host Proof` when the adapter says a human-run smoke is required
@@ -92,6 +103,9 @@ The result should usually include:
 - Do not turn host-specific human proof into fake standing CI. If a support or
   install surface still depends on PATH, package managers, or host cache
   state, say so explicitly and carry a short checklist.
+- Do not skip the standalone `premortem` pass when a release changes
+  compatibility, install/update flow, or host-proof expectations in a way the
+  next maintainer could misread.
 - If the repo lacks the declared release files or sync script, stop cleanly and
   name the missing seam instead of inventing one.
 
