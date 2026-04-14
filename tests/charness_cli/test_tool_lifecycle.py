@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 
 from .support import (
+    build_test_path,
     make_fake_agent_browser,
     make_fake_brew_specdown,
     make_fake_npm_gws,
@@ -22,6 +23,7 @@ def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path)
     support_fixture = make_support_sync_fixture(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
+    env["PATH"] = build_test_path()
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
 

@@ -6,12 +6,6 @@ from pathlib import Path
 from .support import ROOT, run_script
 
 
-def test_validate_surfaces_passes_on_current_repo() -> None:
-    result = run_script("scripts/validate-surfaces.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-    assert "Validated surfaces manifest" in result.stdout
-
-
 def test_check_changed_surfaces_reports_expected_obligations_for_readme() -> None:
     result = run_script(
         "scripts/check-changed-surfaces.py",

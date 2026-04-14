@@ -34,13 +34,6 @@ def seed_repo(tmp_path: Path, artifact_body: str) -> Path:
     )
     (repo / "skill-outputs" / "debug" / "debug.md").write_text(artifact_body, encoding="utf-8")
     return repo
-
-
-def test_validate_debug_artifact_passes_on_current_repo() -> None:
-    result = run_script("scripts/validate-debug-artifact.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-
-
 def test_validate_debug_artifact_rejects_extra_top_level_section(tmp_path: Path) -> None:
     repo = seed_repo(
         tmp_path,

@@ -53,13 +53,6 @@ def seed_skill(repo: Path, skill_id: str, *, adapter: bool) -> None:
         scripts_dir.mkdir()
         shutil.copy2(ROOT / "skills" / "public" / "handoff" / "scripts" / "resolve_adapter.py", scripts_dir / "resolve_adapter.py")
         shutil.copy2(ROOT / "skills" / "public" / "handoff" / "scripts" / "init_adapter.py", scripts_dir / "init_adapter.py")
-
-
-def test_validate_public_skill_validation_passes_on_current_repo() -> None:
-    result = run_script("scripts/validate-public-skill-validation.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-
-
 def test_validate_public_skill_validation_requires_full_partition(tmp_path: Path) -> None:
     repo = seed_repo(
         tmp_path,

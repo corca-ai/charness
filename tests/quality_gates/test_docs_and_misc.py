@@ -286,16 +286,6 @@ def test_check_doc_links_ignores_gitignored_markdown(tmp_path: Path) -> None:
 
     result = run_script("scripts/check-doc-links.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-
-
-def test_check_duplicates_passes_clean_repo() -> None:
-    result = run_script("scripts/check-duplicates.py", "--repo-root", str(ROOT), "--json", "--fail-on-match")
-    assert result.returncode == 0, result.stderr
-    duplicates = json.loads(result.stdout)
-    assert isinstance(duplicates, list)
-    assert duplicates == []
-
-
 def test_adapter_lib_renders_and_loads_simple_yaml_mapping() -> None:
     rendered = ADAPTER_LIB.render_yaml_mapping(
         [

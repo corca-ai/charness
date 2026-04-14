@@ -35,13 +35,6 @@ def seed_repo(tmp_path: Path, artifact_body: str) -> Path:
     (repo / "skill-outputs" / "quality" / "quality.md").write_text(artifact_body, encoding="utf-8")
     (repo / "skill-outputs" / "quality" / "history" / "one.md").write_text("# One\n", encoding="utf-8")
     return repo
-
-
-def test_validate_quality_artifact_passes_on_current_repo() -> None:
-    result = run_script("scripts/validate-quality-artifact.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-
-
 def test_validate_quality_artifact_rejects_missing_history_section(tmp_path: Path) -> None:
     repo = seed_repo(
         tmp_path,

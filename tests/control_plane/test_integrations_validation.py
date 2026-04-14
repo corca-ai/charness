@@ -15,13 +15,6 @@ def write_manifest_schema(repo: Path) -> Path:
         encoding="utf-8",
     )
     return tools_dir
-
-
-def test_validate_integrations_passes_on_current_repo() -> None:
-    result = run_script("scripts/validate-integrations.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-
-
 def test_validate_integrations_rejects_invalid_local_wrapper(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     tools_dir = write_manifest_schema(repo)

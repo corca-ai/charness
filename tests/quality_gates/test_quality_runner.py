@@ -156,13 +156,6 @@ def test_install_git_hooks_sets_core_hookspath(tmp_path: Path) -> None:
         text=True,
     )
     assert hookspath.stdout.strip() == str((repo / ".githooks").resolve())
-
-
-def test_validate_maintainer_setup_passes_on_current_repo() -> None:
-    result = run_script("scripts/validate-maintainer-setup.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-
-
 def test_validate_maintainer_setup_requires_installed_hookspath(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)

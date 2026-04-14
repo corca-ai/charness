@@ -3,17 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .support import ROOT, init_git_repo, run_script
-
-
-def test_validate_profiles_passes_on_current_repo() -> None:
-    result = run_script("scripts/validate-profiles.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-
-
-def test_validate_presets_passes_on_current_repo() -> None:
-    result = run_script("scripts/validate-presets.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
+from .support import init_git_repo, run_script
 
 
 def test_validate_profiles_rejects_missing_skill_reference(tmp_path: Path) -> None:
@@ -249,13 +239,6 @@ def test_validate_profiles_ignores_gitignored_profiles(tmp_path: Path) -> None:
 
     result = run_script("scripts/validate-profiles.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-
-
-def test_validate_adapters_passes_on_current_repo() -> None:
-    result = run_script("scripts/validate-adapters.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-
-
 def test_validate_adapters_ignores_gitignored_skills(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     kept_dir = repo / "skills" / "public" / "kept" / "scripts"

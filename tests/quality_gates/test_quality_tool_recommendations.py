@@ -40,6 +40,15 @@ def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: 
         encoding="utf-8",
     )
 
+    import shutil
+    import sys
+
+    isolated_path_parts: list[str] = [str(Path(sys.executable).resolve().parent)]
+    git_binary = shutil.which("git")
+    if git_binary is not None:
+        isolated_path_parts.append(str(Path(git_binary).resolve().parent))
+    isolated_path = os.pathsep.join(dict.fromkeys(isolated_path_parts))
+
     result = subprocess.run(
         [
             "python3",
@@ -51,7 +60,7 @@ def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: 
         check=True,
         capture_output=True,
         text=True,
-        env={**os.environ, "PATH": os.environ.get("PATH", "")},
+        env={**os.environ, "PATH": isolated_path},
     )
 
     payload = json.loads(result.stdout)

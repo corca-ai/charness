@@ -95,13 +95,6 @@ def make_demo_packaging_repo(
         encoding="utf-8",
     )
     return repo
-
-
-def test_validate_packaging_passes_on_current_repo() -> None:
-    result = run_script("scripts/validate-packaging.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-
-
 def test_validate_packaging_rejects_checked_in_plugin_tree_drift(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     shutil.copytree(ROOT, repo)
@@ -206,14 +199,6 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
 
     validate = run_script("scripts/validate-packaging.py", "--repo-root", str(repo))
     assert validate.returncode == 0, validate.stderr
-
-
-def test_run_evals_passes_on_current_repo() -> None:
-    result = run_script("scripts/run-evals.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-    assert f"Ran {len(EVAL_REGISTRY.SCENARIOS)} eval scenario(s)." in result.stdout
-
-
 def test_eval_registry_omits_redundant_current_repo_smokes() -> None:
     scenario_ids = EVAL_REGISTRY.scenario_ids()
     assert {"managed-cli-install", "packaging-valid", "packaging-export"}.isdisjoint(scenario_ids)

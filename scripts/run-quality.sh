@@ -225,7 +225,15 @@ queue_selected "py-compile" python3 -m py_compile "${python_files[@]}"
 queue_selected "ruff" ruff check scripts tests skills/public/*/scripts skills/support/*/scripts
 flush_phase || OVERALL_RC=$?
 
-queue_selected "pytest" pytest -q "${STANDING_PYTEST_TARGETS[@]}"
+PYTEST_PARALLEL_FLAGS=()
+if python3 -c "import xdist" 2>/dev/null; then
+  PYTEST_PARALLEL_FLAGS=(-n auto)
+else
+  echo "run-quality: pytest-xdist not installed; pytest will run serially and may exceed runtime budgets. Install with: pip install pytest-xdist" >&2
+fi
+queue_selected "pytest" pytest -q "${PYTEST_PARALLEL_FLAGS[@]}" "${STANDING_PYTEST_TARGETS[@]}"
+flush_phase || OVERALL_RC=$?
+
 queue_selected "check-test-completeness" python3 scripts/check-test-completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
 queue_selected "run-evals" python3 scripts/run-evals.py --repo-root "$REPO_ROOT"
 queue_selected "check-duplicates" python3 scripts/check-duplicates.py --repo-root "$REPO_ROOT" --fail-on-match

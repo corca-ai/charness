@@ -7,11 +7,6 @@ from pathlib import Path
 from .support import ROOT, init_git_repo, run_script, run_shell_script
 
 
-def test_check_python_lengths_passes_on_current_repo() -> None:
-    result = run_script("scripts/check-python-lengths.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-
-
 def test_check_secrets_prefers_gitleaks_when_available(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     scripts_dir = repo / "scripts"
@@ -87,14 +82,6 @@ def test_check_secrets_requires_gitleaks_or_secretlint_runtime(tmp_path: Path) -
     result = run_shell_script(repo / "scripts" / "check-secrets.sh", cwd=repo, env=env)
     assert result.returncode == 1
     assert "requires either gitleaks or repo-local secretlint via npm" in result.stderr
-
-
-def test_check_supply_chain_passes_on_current_repo() -> None:
-    result = run_script("scripts/check-supply-chain.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-    assert "package-lock.json" in result.stdout
-
-
 def test_check_supply_chain_requires_javascript_lockfile(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

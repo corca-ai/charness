@@ -5,11 +5,6 @@ from pathlib import Path
 from .support import ROOT, make_minimal_skill_repo, run_script
 
 
-def test_validate_skills_passes_on_current_repo() -> None:
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-
-
 def test_validate_skills_rejects_unquoted_description(tmp_path: Path) -> None:
     repo = make_minimal_skill_repo(
         tmp_path,
@@ -264,13 +259,6 @@ def test_validate_skills_support_skill_skips_preflight_gate(tmp_path: Path) -> N
     (skill_dir / "references" / "runtime.md").write_text("# Runtime\n", encoding="utf-8")
     result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-
-
-def test_check_skill_contracts_passes_on_current_repo() -> None:
-    result = run_script("scripts/check-skill-contracts.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-
-
 def test_check_skill_contracts_rejects_missing_required_snippet(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     handoff_skill_dir = repo / "skills" / "public" / "handoff"

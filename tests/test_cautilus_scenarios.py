@@ -6,13 +6,6 @@ from pathlib import Path
 from .test_quality_artifact import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
-
-
-def test_validate_cautilus_scenarios_passes_on_current_repo() -> None:
-    result = run_script("scripts/validate-cautilus-scenarios.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-
-
 def test_run_evals_supports_scenario_filter() -> None:
     result = run_script(
         "scripts/run-evals.py",
