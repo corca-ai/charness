@@ -76,9 +76,8 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 2. Detect the current gate surface.
    - independently enumerate the current source, spec, and gate inventory before letting the previous quality artifact define scope
    - local executable gates already present
-   - current concept or architecture sources of truth
-   - security and supply-chain signals already configured
    - if the repo ships an installable CLI, bootstrap command, or operator-facing command surface, inspect whether help, command discovery, binary health, install/readiness, and local discoverability are separated honestly
+   - when CLI ergonomics are in scope, inventory flat help-list and cross-archetype schema smells with `scripts/inventory_cli_ergonomics.py`
    - inspect README / INSTALL / operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
    - if evaluator-backed review or prompt-sensitive output matters, inspect whether prompt/content bulk stays in checked-in assets or is still embedded inline in source files
@@ -87,7 +86,6 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - if the repo keeps standing coverage floors, tag seams within `coverage_fragile_margin_pp` as `FRAGILE` instead of burying near-miss risk in prose
    - for blind-spot prevention, apply `references/coverage-floor-policy.md`: adapter-owned `coverage_floor_policy`, real unfloored-file inventory, and `Covered by pytest:` reference validation when those notes exist
    - maintainer-local enforcement for the final stop-before-finish gate: a checked-in hook, installer, or explicit no-hook policy
-   - obvious blind spots where the repo has no gate at all
    - whether the next move is review-only or a bounded bootstrap/install pass
 3. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
@@ -163,6 +161,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - If a missing binary or local setup step would materially improve confidence, recommend installing it with the reason and exact command or package family.
 - Do not let whole-worktree scans fail on gitignored runtime artifacts unless the gate explicitly exists to validate that machine-local state.
 - Do not collapse help, command discovery, healthcheck, readiness, and local discoverability into one generic "doctor passed" claim when the repo ships an installable CLI or plugin surface.
+- Do not ignore a 30-command flat help list or a subcommand that accepts multiple archetype schema namespaces; those are discoverability smells.
 - Do not treat support-skill materialization or host-visible plugin discovery as the same seam as generic binary health.
 - Do not hide a missing evaluator or support binary behind "deeper validation recommended"; say whether the deeper bar is currently unavailable locally and how to enable it.
 - Keep repo-local markdown-link discipline separate from external URL health when the repo needs both.
@@ -186,6 +185,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - `references/skill-quality.md`
 - `references/skill-ergonomics.md`
 - `references/installable-cli-probes.md`
+- `references/cli-ergonomics-smells.md`
 - `references/proposal-flow.md`
 - `references/gate-classification.md`
 - `references/automation-promotion.md`

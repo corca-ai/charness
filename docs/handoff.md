@@ -38,6 +38,9 @@
 - `quality`는 이제 skill ergonomics를 explicit lens로 본다.
   `inventory_skill_ergonomics.py`가 concise core / progressive disclosure /
   mode-pressure / prose-ritual risk를 advisory inventory로 surface한다.
+- `quality`는 이제 CLI ergonomics smells도 advisory inventory로 본다.
+  `inventory_cli_ergonomics.py`가 flat help-list와 cross-archetype schema
+  leakage를 surface한다.
 - `spec`는 이제 core에서 `premortem` 용어를 직접 쓰고, bounded fresh-eye
   review를 요구한다.
 - hidden support source-of-truth도 넓어졌다.
@@ -56,10 +59,15 @@
    읽고, 다음 slice를 truly behavioral follow-on으로 고른다.
    예: ergonomics를 advisory에서 stronger gate로 올릴지, bounded
    post-closeout retro trigger를 둘지.
-2. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
+2. open issue follow-up을 이어간다면 `#22`부터 본다. `narrative`가
+   multi-use-case repo에서 scenario-block template
+   (`what you bring / input CLI / input for agent / what happens / what comes
+   back / next action`)와 coined-jargon first-use guidance를 explicit하게
+   다루게 하는 게 다음 자연스러운 slice다.
+3. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
    surface를 다른 머신에서 한 번 더 확인한다. 특히 real binary install이
    PATH/non-PATH일 때 next-step honesty가 유지되는지 본다.
-3. 추가 retro를 남길 때는 ad hoc 파일 쓰기 대신
+4. 추가 retro를 남길 때는 ad hoc 파일 쓰기 대신
    `skills/public/retro/scripts/persist_retro_artifact.py`를 사용한다.
 
 ## Discuss

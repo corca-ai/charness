@@ -24,3 +24,17 @@ def test_quality_skill_carries_explicit_skill_ergonomics_lens() -> None:
     assert "Treat these as prompts, not automatic failures." in ergonomics
     assert "trigger overlap or undertrigger risk" in skill_quality
     assert "repeated prose ritual" in skill_quality
+
+
+def test_quality_skill_carries_cli_ergonomics_smells_lens() -> None:
+    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    cli_smells = (
+        ROOT / "skills" / "public" / "quality" / "references" / "cli-ergonomics-smells.md"
+    ).read_text(encoding="utf-8")
+
+    assert "inventory_cli_ergonomics.py" in skill_text
+    assert "flat help-list" in skill_text
+    assert "multiple archetype schema namespaces" in skill_text
+    assert "Flat `--help` Lists" in cli_smells
+    assert "Cross-Archetype Schema Leakage" in cli_smells
+    assert "command-archetypes.json" in cli_smells
