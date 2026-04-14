@@ -39,6 +39,7 @@ STRING_FIELDS = (
     "customized_from",
     "default_mode",
     "snapshot_path",
+    "summary_path",
 )
 STRING_LIST_FIELDS = ("evidence_paths", "metrics_commands")
 
@@ -78,6 +79,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "output_dir": "skill-outputs/retro",
         "default_mode": "session",
         "weekly_window_days": 7,
+        "summary_path": "skill-outputs/retro/recent-lessons.md",
         "evidence_paths": [],
         "metrics_commands": [],
     }

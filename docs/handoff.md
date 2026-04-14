@@ -4,6 +4,7 @@
 
 - 다음 세션이 support-tool follow-up이면 먼저 [docs/support-tool-followup.md](support-tool-followup.md)를 읽는다. `create-cli` probe-layer slice, `find-skills` recommendation helper first slice, `quality` installable-CLI probe-contract posture(`#10`), `quality` executable-spec / fragile-margin pass(`#13`), shared recommendation/install payload의 `quality` 재사용 seam, `init-repo` probe-surface follow-on(`#11`), `quality` blind-spot / anti-anchoring / premortem follow-on(`#14`), `quality` code-reduction-first / adapter-driven gate pattern follow-on(`#6`), `impl` truth-surface sync closeout(`#8`), `impl` autonomous-continuation default(`#7`), `handoff` diary anti-pattern hygiene(`#15`), verifier-selection helper, `retro` `#16`, `quality` `#17`, `#18` follow-on, support skill vendoring `#20`, richer bootstrap truth-surface follow-on `#19`, bootstrap value/output visibility `#21`은 landed 상태다. 각 slice마다 public skill source-of-truth 수정과 `charness` dogfood를 함께 끝내야 한다.
 - verification command 선택은 더 이상 wholly manual은 아니다. `scripts/select_verifiers.py --repo-root .`가 `.agents/surfaces.json`을 통해 changed-surface → smallest repo-owned verifier bundle을 고르고, uncovered paths는 missing-bundle gap으로 남긴다. 관련 맥락은 [docs/support-tool-followup.md](support-tool-followup.md)의 `Verification Selection Note`에 남겨 뒀다.
+- 최근 workflow miss와 repeat trap은 [skill-outputs/retro/recent-lessons.md](../skill-outputs/retro/recent-lessons.md)에 축약해 두므로, 같은 계열의 install/update/export/support 작업 전엔 handoff와 함께 이 파일도 먼저 훑는다.
 - 다음 세션에서 이 문서를 멘션하면 `impl`로 이어서, 먼저 [charness](../charness), [INSTALL.md](../INSTALL.md), [UNINSTALL.md](../UNINSTALL.md), [README.md](../README.md), [docs/host-packaging.md](host-packaging.md), [docs/operator-acceptance.md](operator-acceptance.md), [docs/public-skill-validation.md](public-skill-validation.md), [skills/public/init-repo/SKILL.md](../skills/public/init-repo/SKILL.md), [skills/public/release/SKILL.md](../skills/public/release/SKILL.md)을 읽고 update propagation이 아니라 reset hygiene, standalone binary UX, external tool dogfood 쪽을 먼저 본다.
 - 이 머신의 `~/.agents/skills` source-checkout symlink는 2026-04-12에 다시 확인했을 때 실제로 남아 있었고, 이후 다시 제거했다. 이제 `charness init/update/reset/uninstall`가 symlink일 때 자동 제거하므로 다음 세션에서는 재발 여부만 짧게 확인하면 된다.
 - `~/.local/state/charness/host-state.json`이 있으면 `last_update` 또는 `last_doctor` snapshot부터 보고, interactive Codex restart 전후 차이를 proof source로 쓴다.
@@ -100,7 +101,6 @@
 
 ## References
 
-- [docs/handoff.md](handoff.md)
 - [AGENTS.md](../AGENTS.md)
 - [README.md](../README.md)
 - [INSTALL.md](../INSTALL.md)

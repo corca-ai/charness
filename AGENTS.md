@@ -31,6 +31,7 @@ self-validation.
 ## Repo Memory
 
 - `docs/handoff.md`: next-session pickup and volatile repo state
+- `skill-outputs/retro/recent-lessons.md`: compact recap of recent retrospective lessons and repeat traps
 - `docs/roadmap.md`: optional roadmap when a repo explicitly chooses to keep one
 - `docs/operator-acceptance.md`: operator-facing takeover checklist for the
   remaining roadmap items
