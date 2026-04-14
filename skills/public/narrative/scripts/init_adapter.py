@@ -17,6 +17,18 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
         ("source_documents", ["README.md", "docs/handoff.md"]),
         ("mutable_documents", ["README.md", "docs/handoff.md"]),
         ("brief_template", ["One-Line Summary", "Current Story", "What Changed", "Open Questions"]),
+        ("scenario_surfaces", []),
+        (
+            "scenario_block_template",
+            [
+                "What You Bring",
+                "Input (CLI)",
+                "Input (For Agent)",
+                "What Happens",
+                "What Comes Back",
+                "Next Action",
+            ],
+        ),
         ("remote_name", "origin"),
     ]
 

@@ -15,4 +15,12 @@ brief_template:
 - Current Story
 - What Changed
 - Open Questions
+scenario_surfaces: []
+scenario_block_template:
+- What You Bring
+- Input (CLI)
+- Input (For Agent)
+- What Happens
+- What Comes Back
+- Next Action
 remote_name: origin

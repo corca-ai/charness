@@ -31,7 +31,7 @@ ADAPTER_CANDIDATES = (
 )
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from", "remote_name")
-LIST_FIELDS = ("source_documents", "mutable_documents", "brief_template")
+LIST_FIELDS = ("source_documents", "mutable_documents", "brief_template", "scenario_surfaces", "scenario_block_template")
 ARTIFACT_FILENAME = "narrative.md"
 SOURCE_DOCUMENT_CANDIDATES = (
     "README.md",
@@ -81,6 +81,15 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "source_documents": inferred_docs,
         "mutable_documents": inferred_docs,
         "brief_template": [],
+        "scenario_surfaces": [],
+        "scenario_block_template": [
+            "What You Bring",
+            "Input (CLI)",
+            "Input (For Agent)",
+            "What Happens",
+            "What Comes Back",
+            "Next Action",
+        ],
         "remote_name": "origin",
     }
 

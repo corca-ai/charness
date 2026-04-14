@@ -26,6 +26,11 @@ Fallback lookup order:
 - `mutable_documents`: ordered list of docs the skill may realign directly
 - `brief_template`: ordered section labels for one audience-neutral brief
   skeleton
+- `scenario_surfaces`: optional ordered labels for main first-class use cases
+  or evaluation archetypes that should stay visible in the durable docs
+- `scenario_block_template`: optional ordered slot labels for scenario blocks;
+  keep this as a template, not a promise that every scenario must use every
+  slot
 - `remote_name`: git remote to compare against when checking freshness
 
 ## Durable Artifact
@@ -40,3 +45,7 @@ when the brief is ephemeral or audience-local.
 `brief_template` should stay audience-neutral. It is the repo-specific skeleton
 for compressing the aligned story, not the place to encode language, tone,
 channel, or one delivery backend.
+
+`scenario_block_template` should stay concrete and first-run oriented. It is a
+reader-scaffolding device for products with multiple first-class use cases, not
+an invitation to duplicate the whole contract in cards.

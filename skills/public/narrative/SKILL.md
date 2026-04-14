@@ -79,6 +79,14 @@ git status --short
      only into the brief
    - keep README, roadmap, handoff, operator docs, and adjacent maintainer docs
      consistent enough that the next session does not inherit drift
+   - when the repo has multiple first-class use cases or the adapter declares
+     `scenario_surfaces`, add short scenario blocks for the main use-case
+     paths; use the relevant subset of `references/scenario-blocks.md` instead
+     of forcing every slot
+   - prefer checked-in fixtures, schemas, or example files over abstract prose
+     when the block needs a concrete input example
+   - if the docs coin product-local jargon, define it inline at first use
+     instead of sending the reader to a later glossary
 4. Derive the brief second.
    - keep it audience-neutral by default
    - prefer one self-contained compression layer that `announcement` can later
@@ -121,4 +129,5 @@ The result should usually include:
 - `references/adapter-contract.md`
 - `references/source-map.md`
 - `references/brief-shape.md`
+- `references/scenario-blocks.md`
 - `scripts/map_sources.py`

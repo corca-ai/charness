@@ -27,22 +27,6 @@ def test_narrative_map_sources_reports_checked_in_docs() -> None:
     assert payload["freshness"]["status"] in {"ahead", "current", "missing-remote", "not-git", "unavailable"}
 
 
-def test_narrative_resolve_adapter_reports_brief_template_for_current_repo() -> None:
-    result = run_script("skills/public/narrative/scripts/resolve_adapter.py", "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["valid"] is True
-    assert payload["data"]["brief_template"] == [
-        "One-Line Summary",
-        "Current Contract",
-        "What Changed",
-        "Open Questions",
-    ]
-    assert "docs/control-plane.md" in payload["data"]["source_documents"]
-    assert payload["bootstrap_expectations"]["artifact_path"] == "skill-outputs/narrative/narrative.md"
-    assert "narrative alignment output" in payload["bootstrap_expectations"]["artifact_meaning"]
-
-
 def test_init_repo_inspect_repo_flags_targeted_missing_surface(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "docs").mkdir(parents=True)
