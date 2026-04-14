@@ -26,6 +26,21 @@ def test_quality_skill_carries_explicit_skill_ergonomics_lens() -> None:
     assert "repeated prose ritual" in skill_quality
 
 
+def test_quality_skill_carries_entrypoint_docs_ergonomics_lens() -> None:
+    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    ergonomics = (
+        ROOT / "skills" / "public" / "quality" / "references" / "entrypoint-docs-ergonomics.md"
+    ).read_text(encoding="utf-8")
+
+    assert "inventory_entrypoint_docs_ergonomics.py" in skill_text
+    assert "entrypoint-doc ergonomics" in skill_text
+    assert "smart agent/operator can infer safely" in skill_text
+    assert "less is more" in ergonomics
+    assert "progressive disclosure" in ergonomics
+    assert "Treat these as prompts, not automatic failures." in ergonomics
+    assert "doc-set dogma" in skill_text
+
+
 def test_quality_skill_carries_cli_ergonomics_smells_lens() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
     cli_smells = (
