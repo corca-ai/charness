@@ -11,6 +11,7 @@ from pathlib import Path
 REQUIRED_FRONTMATTER_KEYS = ("name", "description")
 SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 MAX_SKILL_MD_LINES = 200
+MAX_PUBLIC_FENCE_BLOCKS_WITHOUT_SCRIPTS = 2
 
 # CHARNESS_BASELINE: commands a public skill may call in its Bootstrap block
 # without declaring them. See create-skill/references/binary-preflight.md.
@@ -295,12 +296,19 @@ def validate_support_files(skill_dir: Path, kind: str) -> None:
 
     has_adapter_example = (skill_dir / "adapter.example.yaml").exists()
     has_scripts_dir = (skill_dir / "scripts").exists()
+    code_fence_blocks = sum(1 for line in lines if FENCE_OPEN_RE.match(line.strip()))
     if has_adapter_example and not has_scripts_dir:
         raise ValidationError("adapter.example.yaml exists but scripts/ is missing")
     if has_adapter_example:
         for required in ("resolve_adapter.py", "init_adapter.py"):
             if not (skill_dir / "scripts" / required).exists():
                 raise ValidationError(f"scripts/{required} is missing")
+
+    if kind == "public" and code_fence_blocks > MAX_PUBLIC_FENCE_BLOCKS_WITHOUT_SCRIPTS and not has_scripts_dir:
+        raise ValidationError(
+            "public SKILL.md with 3+ fenced examples should move repeated ritual into `scripts/`; "
+            "add a helper script or collapse the examples"
+        )
 
     if kind == "public":
         validate_bootstrap_binary_preflight(contents)

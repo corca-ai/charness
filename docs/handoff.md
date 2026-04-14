@@ -36,7 +36,10 @@
   `probe_host_logs.py`, `refresh_recent_lessons.py`,
   `seed_retro_memory.py`, `persist_retro_artifact.py`까지 있다.
 - `quality`는 skill ergonomics와 CLI ergonomics smells를 advisory inventory로
-  본다. `inventory_skill_ergonomics.py`, `inventory_cli_ergonomics.py`가 있다.
+  보지만, lowest-noise ergonomics 일부는 standing gate로 승격되기 시작했다.
+  `inventory_skill_ergonomics.py`, `inventory_cli_ergonomics.py`가 있고,
+  `validate-skills.py`는 oversized core와 public skill의 repeated fenced
+  ritual without scripts를 막는다.
 - `narrative`는 이제 multi-use-case repo에서 scenario block guidance를
   explicit하게 가진다. `scenario_surfaces` / `scenario_block_template` adapter
   fields를 지원하고, main use-case docs에서 fixture-first scenario cards와
@@ -66,7 +69,7 @@
   `skills/support/specdown/`, `skills/support/agent-browser/`는 이제
   authoritative tree에 포함된다.
 - 현재 standing concern은 install/update propagation이 아니라
-  `quality` ergonomics를 advisory 이상으로 올릴지와, public-skill policy
+  `quality` ergonomics에서 무엇을 standing gate로 더 올릴지와, public-skill policy
   omission을 지금의 direct fail message 이상으로 더 구조적으로 좁힐지다. 자세한 구현 계약은
   [docs/retro-self-improvement-spec.md](retro-self-improvement-spec.md)에 있다.
 - 최신 weekly retro와 compact lesson digest는
@@ -86,13 +89,14 @@
    `docs/public-skill-validation.json`과 `skills/public/**`에서
    `validate-public-skill-validation.py`를 바로 고르고,
    `validate-public-skill-validation.py`는 누락 skill을 어느 bucket에 넣어야
-   하는지 직접 말한다. 다음 로컬 follow-on은 `quality` ergonomics를 advisory
-   이상으로 올릴지 결정하는 일이다.
+   하는지 직접 말한다. 다음 로컬 follow-on은 `quality` ergonomics의 남은
+   advisory 항목 중 무엇을 standing gate로 올릴지 결정하는 일이다.
 3. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
    surface를 다른 머신에서 한 번 더 확인한다. 특히 real binary install이
    PATH/non-PATH일 때 next-step honesty가 유지되는지 본다.
-4. public-skill omission을 더 좁힌다면 다음 후보는 policy JSON 편집 자체를
-   helper나 autofix suggestion으로 더 기계적으로 만드는 것이다.
+4. ergonomics follow-on의 가장 자연스러운 후보는 mode/option pressure나
+   trigger overlap처럼 false positive 위험이 더 큰 항목을 여전히 advisory로
+   둘지, adapter/preset opt-in gate로만 올릴지 결정하는 일이다.
 5. 추가 retro를 남길 때는 ad hoc 파일 쓰기 대신
    `skills/public/retro/scripts/persist_retro_artifact.py`를 사용한다.
 
@@ -100,8 +104,8 @@
 
 - `#24`는 reopened 상태지만, repo-local skill contract 기준으로는 핵심
   follow-up이 landed했다. 남은 일은 issue close 자체보다 public-skill
-  omission을 helper/autofix 수준으로 더 기계화할지와 `quality` ergonomics를
-  stronger gate로 올릴지 정하는 일이다.
+  omission을 helper/autofix 수준으로 더 기계화할지와 `quality` ergonomics의
+  higher-noise rules를 어디까지 standing gate로 올릴지 정하는 일이다.
 - ideal flow는 prose가 초반 행동을 좋게 유도하고 deterministic gate가
   omission/drift를 backstop하는 구조다. 지금 charness는 그 방향이지만, 몇몇
   omission-prone seam은 아직 broad gate에서 늦게 드러난다.

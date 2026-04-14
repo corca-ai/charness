@@ -97,6 +97,92 @@ def test_validate_skills_accepts_support_skill_package(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_validate_skills_rejects_public_skill_with_many_fenced_examples_and_no_scripts(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    references_dir = skill_dir / "references"
+    references_dir.mkdir(parents=True)
+    (references_dir / "note.md").write_text("# Note\n", encoding="utf-8")
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "```bash",
+                "echo one",
+                "```",
+                "",
+                "```bash",
+                "echo two",
+                "```",
+                "",
+                "```bash",
+                "echo three",
+                "```",
+                "",
+                "## References",
+                "",
+                "- `references/note.md`",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "3+ fenced examples" in result.stderr
+    assert "`scripts/`" in result.stderr
+
+
+def test_validate_skills_accepts_public_skill_with_many_fenced_examples_when_scripts_exist(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    references_dir = skill_dir / "references"
+    scripts_dir = skill_dir / "scripts"
+    references_dir.mkdir(parents=True)
+    scripts_dir.mkdir()
+    (references_dir / "note.md").write_text("# Note\n", encoding="utf-8")
+    (scripts_dir / "helper.py").write_text("print('ok')\n", encoding="utf-8")
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "```bash",
+                "echo one",
+                "```",
+                "",
+                "```bash",
+                "echo two",
+                "```",
+                "",
+                "```bash",
+                "python3 scripts/helper.py",
+                "```",
+                "",
+                "## References",
+                "",
+                "- `references/note.md`",
+                "- `scripts/helper.py`",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
 def make_public_skill_with_bootstrap(
     tmp_path: Path,
     bootstrap_body: str,
