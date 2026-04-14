@@ -23,6 +23,18 @@ Ousterhout when complexity pressure points to a simpler interface or deeper
 seam. See `references/sequence-discipline.md` and
 `references/design-lenses.md`.
 
+## Continuation Default
+
+- WHEN THE USER EXPLICITLY ASKS FOR AUTONOMOUS CONTINUATION, DO NOT PAUSE AT
+  SLICE BOUNDARIES JUST TO REPORT COMPLETION.
+- Treat commits, verification, and contract updates as continuation
+  checkpoints, not default stop points.
+- After each checkpoint, continue into the next locally decidable slice.
+- Ask only when a real product or policy decision is required, an irreversible
+  external side effect needs confirmation, stronger honest verification needs
+  permission or setup you do not have, or new evidence creates a conflict you
+  cannot resolve locally.
+
 ## Bootstrap
 
 Read the current implementation contract before changing code. If no canonical
@@ -134,6 +146,8 @@ Adapter policy:
    - what the premortem found
    - what contract updates were made
    - what remains for the next slice
+   - if the user explicitly asked to keep going, treat this as a terse
+     progress checkpoint and continue into the next locally decidable slice
 
 ## Output Shape
 
@@ -155,6 +169,8 @@ The closeout should usually include:
   contract can be written inline.
 - Do not silently expand scope because the adjacent code makes it tempting.
 - Do not close the task without checking the named acceptance behaviors.
+- Do not treat commit, verification, or contract-sync completion as a default
+  pause when the user explicitly asked for autonomous continuation.
 - Do not stop after a user-visible change without checking whether `README.md`
   and adjacent durable truth surfaces are now stale.
 - Do not leave a resolved probe undocumented in the canonical artifact.
