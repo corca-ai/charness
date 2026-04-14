@@ -27,3 +27,14 @@ def test_retro_memory_surfaces_reference_recent_lessons_digest() -> None:
     assert "summary_path" in contract_text
     assert "Repeat Traps" in lessons_text
     assert "plugin export" in lessons_text
+
+
+def test_agents_keeps_dogfood_detail_in_development_doc() -> None:
+    agents_text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    development_text = (ROOT / "docs" / "development.md").read_text(encoding="utf-8")
+
+    assert "docs/development.md" in agents_text
+    assert "--skip-cli-install" not in agents_text
+    assert "~/.agents/src/charness/charness update" not in agents_text
+    assert "--skip-cli-install" in development_text
+    assert "~/.agents/src/charness/charness update" in development_text

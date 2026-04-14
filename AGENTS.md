@@ -13,12 +13,11 @@ self-validation.
   manifests, not in public skill bodies.
 - PREFER VALIDATORS AND SCRIPTS OVER PROSE RITUALS.
   If a repeated check matters, turn it into a repo-owned script.
-- LEAVE AGENT-READABLE STATE AFTER PARTIAL AUTOMATION.
-  If a tool cannot finish the job end-to-end, persist structured breadcrumbs so
-  the next agent can continue without rediscovering machine state.
 - LEAVE AGENT-READABLE STATE.
-  Install, update, and support-sync flows should emit structured output and
-  persist machine-readable state when they mutate the operator surface.
+  If a tool cannot finish the job end-to-end, persist structured breadcrumbs so
+  the next agent can continue without rediscovering machine state. Install,
+  update, and support-sync flows should emit structured output and persist
+  machine-readable state when they mutate the operator surface.
 - KEEP MANUALLY MAINTAINED REPO DOCS IN ENGLISH.
   `docs/handoff.md` may stay Korean when that makes the next session pickup
   sharper.
@@ -114,14 +113,9 @@ Read the smallest memory surface that answers the current question.
   this working tree. Editing `skills/public/<id>/SKILL.md` does **not** reach
   the next Claude/Codex session in this repo until the install path picks it
   up.
-- To dogfood unpushed skill changes locally, run
-  `charness update --repo-root . --no-pull --skip-cli-install` from this repo.
-  The working tree (incl. uncommitted edits) becomes the plugin source, but the
-  installed CLI still stays anchored to the managed checkout. Use this
-  proof-only path when dogfooding local skill/plugin changes; restart the
-  session to pick up the new SKILL.
-- If you need to refresh the installed CLI itself, use the managed checkout
-  path instead: `~/.agents/src/charness/charness update`.
+- Keep detailed dogfood procedures in [docs/development.md](docs/development.md),
+  not here. Use that doc for proof-only repo-local refresh and managed-checkout
+  CLI refresh paths.
 - After a release/dogfood cycle, `charness update` (no flags) restores the
   managed-checkout flow.
 
