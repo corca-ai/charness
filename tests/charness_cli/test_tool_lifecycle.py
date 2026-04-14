@@ -127,7 +127,19 @@ def test_installed_cli_tool_doctor_reports_ok_for_cautilus_with_binary_and_suppo
     assert cautilus["support_state"] == "upstream-consumed"
     assert cautilus["support_sync"]["status"] == "ok"
     assert cautilus["support_discovery"]["status"] == "materialized"
+    assert cautilus["support_discovery"]["intent_triggers"] == [
+        "verify",
+        "verification",
+        "evaluate",
+        "evaluation",
+        "review",
+        "behavior review",
+        "검증",
+        "평가",
+        "리뷰",
+    ]
     assert cautilus["support_discovery"]["support_skill_path"] == "skills/support/generated/cautilus/SKILL.md"
+    assert cautilus["support_discovery"]["discovery_stub_path"] == ".agents/charness-discovery/cautilus.md"
     assert cautilus["release"]["latest_tag"] == "v1.2.3"
 
 
@@ -147,19 +159,34 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
 
     assert cautilus["support"]["status"] == "synced"
     assert cautilus["support"]["materialized_paths"] == ["skills/support/generated/cautilus"]
+    assert cautilus["support"]["discovery_stub_path"] == ".agents/charness-discovery/cautilus.md"
+    assert cautilus["support"]["intent_triggers"] == [
+        "verify",
+        "verification",
+        "evaluate",
+        "evaluation",
+        "review",
+        "behavior review",
+        "검증",
+        "평가",
+        "리뷰",
+    ]
     assert cautilus["doctor"]["doctor_status"] == "missing"
     assert cautilus["doctor"]["install_route"]["mode"] == "manual"
     assert cautilus["doctor"]["install_route"]["docs_url"] == "https://github.com/corca-ai/cautilus"
     assert cautilus["doctor"]["install_route"]["install_url"] == "https://github.com/corca-ai/cautilus/blob/main/install.md"
     assert cautilus["doctor"]["support_discovery"]["status"] == "materialized"
     assert cautilus["doctor"]["support_discovery"]["support_skill_path"] == "skills/support/generated/cautilus/SKILL.md"
+    assert cautilus["doctor"]["support_discovery"]["discovery_stub_path"] == ".agents/charness-discovery/cautilus.md"
     assert cautilus["doctor"]["install_route"]["commands"] == []
     assert "Support skill materialization for `cautilus` was refreshed under skills/support/generated/cautilus" in cautilus["next_step"]
     assert "the standalone binary is still missing" in cautilus["next_step"]
     assert "Install docs: https://github.com/corca-ai/cautilus/blob/main/install.md" in cautilus["next_step"]
     assert "Docs: https://github.com/corca-ai/cautilus" in cautilus["next_step"]
     assert "Support skill is available at `skills/support/generated/cautilus/SKILL.md`." in cautilus["next_step"]
+    assert "Repo-local discovery stub is available at `.agents/charness-discovery/cautilus.md` for host-repo grep and cold-start pickup." in cautilus["next_step"]
     assert "Use `find-skills` to surface it on demand or inspect that path directly." in cautilus["next_step"]
+    assert "You can also grep the discovery stub from the host repo." in cautilus["next_step"]
 
 
 def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Path) -> None:

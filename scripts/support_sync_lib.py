@@ -14,7 +14,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from scripts.repo_layout import support_skill_cache_dir
+from scripts.repo_layout import discovery_stub_dir, support_skill_cache_dir
 
 SUPPORT_FIXTURES_ENV = "CHARNESS_SUPPORT_SYNC_FIXTURES"
 GITHUB_ARCHIVE_URL = "https://codeload.github.com/{repo}/tar.gz/{ref}"
@@ -233,3 +233,46 @@ def materialize_upstream_support(
     digest = _compute_tree_digest(source_path)
     cache_path = _promote_tree_to_cache(source_path, manifest=manifest, digest=digest)
     return cache_path, digest
+
+
+def discovery_stub_path(repo_root: Path, tool_id: str) -> Path:
+    return discovery_stub_dir(repo_root) / f"{tool_id}.md"
+
+
+def render_discovery_stub(
+    *,
+    manifest: dict[str, Any],
+    support_skill_path: str,
+) -> str:
+    install = manifest.get("lifecycle", {}).get("install", {})
+    intent_triggers = [item for item in manifest.get("intent_triggers", []) if isinstance(item, str) and item]
+    trigger_line = ", ".join(intent_triggers) if intent_triggers else "no explicit trigger hints recorded"
+    lines = [
+        f"# {manifest['tool_id']}",
+        "",
+        f"Use when task intent matches: {trigger_line}.",
+        "",
+        "This is a repo-local discovery pointer for a synced support skill.",
+        f"- support skill: `{support_skill_path}`",
+        f"- integration manifest: `integrations/tools/{manifest['tool_id']}.json`",
+    ]
+    install_url = install.get("install_url")
+    docs_url = install.get("docs_url")
+    if isinstance(install_url, str) and install_url:
+        lines.append(f"- install docs: {install_url}")
+    elif isinstance(docs_url, str) and docs_url:
+        lines.append(f"- docs: {docs_url}")
+    lines.extend(
+        [
+            "- discovery command: `python3 skills/public/find-skills/scripts/list_capabilities.py --repo-root .`",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def write_discovery_stub(repo_root: Path, manifest: dict[str, Any], *, support_skill_path: str) -> str:
+    path = discovery_stub_path(repo_root, manifest["tool_id"])
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(render_discovery_stub(manifest=manifest, support_skill_path=support_skill_path) + "\n", encoding="utf-8")
+    return str(path.relative_to(repo_root))

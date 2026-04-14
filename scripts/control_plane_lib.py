@@ -71,7 +71,6 @@ def validate_support_capability_data(data: dict[str, Any], schema: dict[str, Any
             f"{path}: support_skill_path must match colocated support skill `{expected_skill_path}`"
         )
 
-
 def normalize_support_capability(
     data: dict[str, Any],
     path: Path,
@@ -91,6 +90,7 @@ def normalize_support_capability(
         "host_notes": data.get("host_notes", []),
         "support_skill_path": data["support_skill_path"],
         "supports_public_skills": data.get("supports_public_skills", []),
+        "intent_triggers": data.get("intent_triggers", []),
         "_manifest_path": str(path.relative_to(repo_root)),
         "_capability_family": "support",
     }

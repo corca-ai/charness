@@ -151,6 +151,9 @@
       "minItems": 1,
       "uniqueItems": true
     },
+    "intent_triggers": {
+      "$ref": "#/definitions/stringList"
+    },
     "recommendation_role": {
       "type": "string",
       "enum": [

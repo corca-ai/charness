@@ -91,6 +91,7 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
                         "success_criteria": ["exit_code:0"],
                     }
                 ],
+                "intent_triggers": ["verify", "review"],
                 "version_expectation": {"policy": "advisory", "constraint": "latest"},
             },
             ensure_ascii=False,
@@ -99,7 +100,6 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
         + "\n",
         encoding="utf-8",
     )
-
     result = subprocess.run(
         [
             "python3",
@@ -112,7 +112,6 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
         capture_output=True,
         text=True,
     )
-
     payload = json.loads(result.stdout)
     assert payload["integrations"] == [
         {
@@ -121,11 +120,13 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
             "access_modes": ["grant", "binary", "degraded"],
             "support_state": "integration-only",
             "support_skill_path": None,
+            "discovery_stub_path": None,
             "capability_requirements": {
                 "grant_ids": ["github.repo.read"],
                 "env_vars": ["GITHUB_TOKEN"],
                 "permission_scopes": ["repo:read"],
             },
+            "intent_triggers": ["verify", "review"],
             "config_layers": [
                 {
                     "layer_id": "github-grant",
@@ -232,6 +233,7 @@ def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None
                     }
                 ],
                 "version_expectation": {"policy": "advisory", "constraint": "local"},
+                "intent_triggers": ["gather slack"],
             },
             ensure_ascii=False,
             indent=2,
@@ -257,7 +259,6 @@ def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None
         ),
         encoding="utf-8",
     )
-
     result = subprocess.run(
         [
             "python3",
@@ -270,7 +271,6 @@ def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None
         capture_output=True,
         text=True,
     )
-
     payload = json.loads(result.stdout)
     assert payload["support_capabilities"] == [
         {
@@ -281,6 +281,7 @@ def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None
                 "grant_ids": ["slack.history"],
                 "env_vars": ["SLACK_BOT_TOKEN"],
             },
+            "intent_triggers": ["gather slack"],
             "config_layers": [
                 {
                     "layer_id": "slack-grant",
@@ -306,8 +307,6 @@ def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None
             "layer": "support capability",
         }
     ]
-
-
 def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_path: Path) -> None:
     (tmp_path / "skills" / "public" / "gather").mkdir(parents=True)
     (tmp_path / "skills" / "public" / "gather" / "SKILL.md").write_text(

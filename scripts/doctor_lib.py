@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts.control_plane_lib import evaluate_version, read_lock, run_check
-from scripts.repo_layout import generated_support_dir
+from scripts.repo_layout import discovery_stub_dir, generated_support_dir
 from scripts.support_sync_lib import (
     inspect_support_sync,
     support_link_name,
@@ -60,6 +60,7 @@ def support_discovery_state(repo_root: Path, capability: dict[str, Any], support
             "status": "native",
             "support_skill_path": local_support_path,
             "layer": "support skill",
+            "intent_triggers": capability.get("intent_triggers", []),
             "guidance": guidance,
         }, [guidance]
 
@@ -71,16 +72,28 @@ def support_discovery_state(repo_root: Path, capability: dict[str, Any], support
         return None, []
 
     rendered_path = str(materialized_path.relative_to(repo_root))
-    guidance = (
-        f"Support skill is available at `{rendered_path}`. "
-        "Use `find-skills` to surface it on demand or inspect that path directly."
-    )
-    return {
+    discovery = {
         "status": "materialized",
         "support_skill_path": rendered_path,
         "layer": "synced support skill",
-        "guidance": guidance,
-    }, [guidance]
+        "intent_triggers": capability.get("intent_triggers", []),
+    }
+    guidance_parts = [f"Support skill is available at `{rendered_path}`."]
+    discovery_stub = discovery_stub_dir(repo_root) / f"{capability['tool_id']}.md"
+    if discovery_stub.is_file():
+        rendered_stub_path = str(discovery_stub.relative_to(repo_root))
+        discovery["discovery_stub_path"] = rendered_stub_path
+        guidance_parts.append(
+            f"Repo-local discovery stub is available at `{rendered_stub_path}` for host-repo grep and cold-start pickup."
+        )
+    guidance_parts.append(
+        "Use `find-skills` to surface it on demand or inspect that path directly."
+    )
+    if discovery.get("discovery_stub_path"):
+        guidance_parts.append("You can also grep the discovery stub from the host repo.")
+    guidance = " ".join(guidance_parts)
+    discovery["guidance"] = guidance
+    return discovery, [guidance]
 
 
 def evaluate_readiness(capability: dict[str, Any], repo_root: Path) -> dict[str, Any]:

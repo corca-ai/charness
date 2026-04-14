@@ -10,7 +10,6 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
-
 def _runtime_root() -> Path:
     script_path = Path(__file__).resolve()
     for ancestor in script_path.parents:
@@ -18,16 +17,14 @@ def _runtime_root() -> Path:
             return ancestor
     return script_path.parents[4]
 
-
 REPO_ROOT = _runtime_root()
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.control_plane_lib import load_support_capabilities  # noqa: E402
-from scripts.repo_layout import generated_support_dir, public_skills_dir, support_dir  # noqa: E402
+from scripts.repo_layout import discovery_stub_dir, generated_support_dir, public_skills_dir, support_dir  # noqa: E402
 from scripts.support_sync_lib import support_link_name, support_state_for_manifest  # noqa: E402
 from scripts.tool_recommendation_lib import recommendations_for_public_skill  # noqa: E402
 from resolve_adapter import load_adapter  # noqa: E402
-
 
 def _local_surface_root(target_root: Path) -> Path:
     return target_root if (REPO_ROOT / "skills" / "public").is_dir() else REPO_ROOT
@@ -48,13 +45,11 @@ def extract_frontmatter(path: Path) -> dict[str, str]:
         data[key.strip()] = value.strip().strip('"')
     return data
 
-
 def _render_path(path: Path, repo_root: Path) -> str:
     try:
         return str(path.relative_to(repo_root))
     except ValueError:
         return str(path)
-
 
 def _collect_skill_entries(
     skill_roots: list[tuple[str, Path]],
@@ -85,7 +80,6 @@ def _collect_skill_entries(
             )
     return items
 
-
 def materialized_support_skill_path(root: Path, manifest: dict[str, object]) -> str | None:
     support = manifest.get("support_skill_source")
     generated_skill = generated_support_dir(root) / support_link_name(manifest) / "SKILL.md"
@@ -93,6 +87,11 @@ def materialized_support_skill_path(root: Path, manifest: dict[str, object]) -> 
         return None
     return str(generated_skill.relative_to(root))
 
+def materialized_discovery_stub_path(root: Path, tool_id: str) -> str | None:
+    stub = discovery_stub_dir(root) / f"{tool_id}.md"
+    if not stub.is_file():
+        return None
+    return str(stub.relative_to(root))
 
 def integrations(root: Path) -> list[dict[str, object]]:
     items: list[dict[str, object]] = []
@@ -100,14 +99,17 @@ def integrations(root: Path) -> list[dict[str, object]]:
         if manifest.name == "manifest.schema.json":
             continue
         data = json.loads(manifest.read_text(encoding="utf-8"))
+        tool_id = data.get("tool_id", manifest.stem)
         items.append(
             {
-                "id": data.get("tool_id", manifest.stem),
+                "id": tool_id,
                 "kind": data.get("kind", "unknown"),
                 "access_modes": data.get("access_modes", []),
                 "support_state": support_state_for_manifest(data),
                 "support_skill_path": materialized_support_skill_path(root, data),
+                "discovery_stub_path": materialized_discovery_stub_path(root, tool_id),
                 "capability_requirements": data.get("capability_requirements", {}),
+                "intent_triggers": data.get("intent_triggers", []),
                 "config_layers": [
                     {
                         "layer_id": layer["layer_id"],
@@ -132,7 +134,6 @@ def integrations(root: Path) -> list[dict[str, object]]:
         )
     return items
 
-
 def support_capabilities(root: Path) -> list[dict[str, object]]:
     items: list[dict[str, object]] = []
     for capability in load_support_capabilities(root):
@@ -142,6 +143,7 @@ def support_capabilities(root: Path) -> list[dict[str, object]]:
                 "kind": capability["kind"],
                 "access_modes": capability.get("access_modes", []),
                 "capability_requirements": capability.get("capability_requirements", {}),
+                "intent_triggers": capability.get("intent_triggers", []),
                 "config_layers": [
                     {
                         "layer_id": layer["layer_id"],
@@ -165,7 +167,6 @@ def support_capabilities(root: Path) -> list[dict[str, object]]:
             }
         )
     return items
-
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -210,7 +211,6 @@ def main() -> None:
         ),
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2))
-
 
 if __name__ == "__main__":
     main()

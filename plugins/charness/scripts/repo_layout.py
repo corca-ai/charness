@@ -42,6 +42,10 @@ def generated_support_dir(repo_root: Path) -> Path:
     return support_root / "generated"
 
 
+def discovery_stub_dir(repo_root: Path) -> Path:
+    return repo_root / ".agents" / "charness-discovery"
+
+
 def resolve_cache_home() -> Path:
     override = os.environ.get("CHARNESS_CACHE_HOME")
     if override:

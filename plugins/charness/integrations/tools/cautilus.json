@@ -70,6 +70,17 @@
     "init-repo",
     "spec"
   ],
+  "intent_triggers": [
+    "verify",
+    "verification",
+    "evaluate",
+    "evaluation",
+    "review",
+    "behavior review",
+    "검증",
+    "평가",
+    "리뷰"
+  ],
   "recommendation_role": "validation",
   "support_skill_source": {
     "source_type": "upstream_repo",

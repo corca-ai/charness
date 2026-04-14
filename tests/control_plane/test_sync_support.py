@@ -53,6 +53,19 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     generated_skill_root = repo / "skills" / "support" / "generated" / "demo-tool-wrapper"
     assert generated_skill_root.is_symlink()
     assert (generated_skill_root / "SKILL.md").exists()
+    assert sync_payload["discovery_stub_path"] == ".agents/charness-discovery/demo-tool.md"
+    discovery_stub = repo / ".agents" / "charness-discovery" / "demo-tool.md"
+    assert discovery_stub.is_file()
+    discovery_text = discovery_stub.read_text(encoding="utf-8")
+    assert "support skill: `skills/support/generated/demo-tool-wrapper/SKILL.md`" in discovery_text
+    assert "install docs: https://example.com/demo-tool/install" in discovery_text
+    assert "no explicit trigger hints recorded" in discovery_text
+
+    doctor_after_sync = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--write-locks")
+    assert doctor_after_sync.returncode == 0, doctor_after_sync.stderr
+    doctor_after_sync_payload = json.loads(doctor_after_sync.stdout)
+    assert doctor_after_sync_payload[0]["support_discovery"]["discovery_stub_path"] == ".agents/charness-discovery/demo-tool.md"
+    assert "Repo-local discovery stub is available at `.agents/charness-discovery/demo-tool.md`" in doctor_after_sync_payload[0]["next_steps"][0]
 
     update = run_script("scripts/update_tools.py", "--repo-root", str(repo), "--execute", "--json")
     assert update.returncode == 0, update.stderr
@@ -64,7 +77,7 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     assert lock_payload["support"]["content_digest"]
     assert lock_payload["doctor"]["doctor_status"] == "ok"
     assert lock_payload["doctor"]["readiness"]["ok"] is True
-    assert lock_payload["doctor"]["support_sync"]["status"] == "not-tracked"
+    assert lock_payload["doctor"]["support_sync"]["status"] == "ok"
     assert "install_route" not in lock_payload["doctor"]
     assert "support_discovery" not in lock_payload["doctor"]
     assert lock_payload["update"]["update_status"] == "updated"

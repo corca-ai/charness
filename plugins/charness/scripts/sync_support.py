@@ -17,7 +17,11 @@ from scripts.control_plane_lib import (
     now_iso,
     upsert_lock,
 )
-from scripts.support_sync_lib import parse_upstream_checkout, support_state_for_manifest
+from scripts.support_sync_lib import (
+    parse_upstream_checkout,
+    support_state_for_manifest,
+    write_discovery_stub,
+)
 
 
 def sync_one(
@@ -40,11 +44,13 @@ def sync_one(
         "tool_id": manifest["tool_id"],
         "status": "dry-run" if not execute else "synced",
         "support_state": state,
+        "intent_triggers": manifest.get("intent_triggers", []),
         "source_type": support["source_type"],
         "source_path": support["path"],
         "materialized_paths": [],
         "cache_path": None,
         "content_digest": None,
+        "discovery_stub_path": None,
     }
     if execute:
         materialized = materialize_support(
@@ -53,6 +59,12 @@ def sync_one(
             upstream_checkouts=upstream_checkouts,
         )
         result.update(materialized)
+        if result["materialized_paths"]:
+            result["discovery_stub_path"] = write_discovery_stub(
+                repo_root,
+                manifest,
+                support_skill_path=f"{result['materialized_paths'][0]}/SKILL.md",
+            )
         upsert_lock(
             repo_root,
             manifest,
