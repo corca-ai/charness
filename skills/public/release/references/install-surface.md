@@ -25,6 +25,28 @@ example:
 - restart Codex when host visibility still depends on marketplace rediscovery
 - restart Claude Code when needed
 
+## Real-Host Proof
+
+Some release claims should stay release-time human proof instead of standing CI.
+This is especially true when the change touches:
+
+- external tool onboarding or support sync
+- install/update/reset flows that depend on host PATH, package managers, or
+  host cache state
+- support-backed tool readiness that a fixture can only approximate
+
+When that seam moved, surface a short real-host checklist in the release
+closeout instead of pretending repo-local tests replaced it.
+
+The adapter can declare that checklist through:
+
+- `real_host_required_surfaces`
+- `real_host_required_path_globs`
+- `real_host_checklist`
+
+Use `scripts/check_real_host_proof.py` to decide whether the current slice hit
+those seams.
+
 ## Drift Rule
 
 If the generated surfaces disagree with the packaging manifest version, treat

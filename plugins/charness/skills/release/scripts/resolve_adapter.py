@@ -43,7 +43,12 @@ STRING_FIELDS = (
     "sync_command",
     "quality_command",
 )
-LIST_FIELDS = ("update_instructions",)
+LIST_FIELDS = (
+    "update_instructions",
+    "real_host_required_surfaces",
+    "real_host_required_path_globs",
+    "real_host_checklist",
+)
 ARTIFACT_FILENAME = "release.md"
 
 
@@ -78,6 +83,9 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "sync_command": "python3 scripts/sync_root_plugin_manifests.py --repo-root .",
         "quality_command": "./scripts/run-quality.sh",
         "update_instructions": [],
+        "real_host_required_surfaces": [],
+        "real_host_required_path_globs": [],
+        "real_host_checklist": [],
     }
 
 

@@ -49,6 +49,10 @@
   지원한다. `check_auto_trigger.py`가 adapter의
   `auto_session_trigger_surfaces` / `auto_session_trigger_path_globs`를 읽고,
   `impl` / `retro`는 그 결과를 짧은 session retro trigger로 사용한다.
+- `release`는 이제 release-time real-host proof를 별도 seam으로 다룬다.
+  `check_real_host_proof.py`가 changed surface를 보고 human-run checklist가
+  필요한지 판정하고, charness는 `cautilus` install/doctor/sync-support smoke를
+  adapter-owned checklist로 들고 간다.
 - `spec`는 이제 core에서 `premortem` 용어를 직접 쓰고, bounded fresh-eye
   review를 요구한다.
 - hidden support source-of-truth도 넓어졌다.
@@ -62,18 +66,13 @@
 
 ## Next Session
 
-1. retro self-improvement follow-up을 이어간다면 먼저
-   [docs/retro-self-improvement-spec.md](retro-self-improvement-spec.md)를
-   읽고, 다음 slice를 truly behavioral follow-on으로 고른다.
-   예: ergonomics를 advisory에서 stronger gate로 올릴지, bounded
-   post-closeout retro trigger를 둘지.
-2. 다음 자연스러운 slice는 release-time real-host proof 정리다.
-   standing CI가 아니라 `release` acceptance나 checklist에
-   support-tool real-host smoke를 올리는 쪽이 현재 합의다.
-3. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
+1. 다음 공개 이슈는 `#24`다. standalone `premortem` skill과
+   `spec`/`narrative`/`quality` extension을 실제 `../cautilus` evidence와 함께
+   검토하는 흐름으로 이어가면 된다.
+2. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
    surface를 다른 머신에서 한 번 더 확인한다. 특히 real binary install이
    PATH/non-PATH일 때 next-step honesty가 유지되는지 본다.
-4. 추가 retro를 남길 때는 ad hoc 파일 쓰기 대신
+3. 추가 retro를 남길 때는 ad hoc 파일 쓰기 대신
    `skills/public/retro/scripts/persist_retro_artifact.py`를 사용한다.
 
 ## Discuss

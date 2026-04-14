@@ -12,3 +12,23 @@ quality_command: ./scripts/run-quality.sh
 update_instructions:
 - /plugin marketplace update corca-charness
 - /plugin install charness@corca-charness
+real_host_required_surfaces:
+- integrations-and-control-plane
+real_host_required_path_globs:
+- INSTALL.md
+- UNINSTALL.md
+- docs/host-packaging.md
+- integrations/tools/**
+- scripts/doctor.py
+- scripts/doctor_lib.py
+- scripts/install_provenance_lib.py
+- scripts/install_tools.py
+- scripts/support_sync_lib.py
+- scripts/sync_support.py
+- scripts/update_tools.py
+real_host_checklist:
+- On a second machine or a clean temp-home, refresh `charness` through the published operator path before claiming the release surface is ready.
+- Run `charness tool doctor cautilus --json` before installing `cautilus` and confirm the missing-binary state still surfaces an install document URL instead of a guessed package-manager command.
+- Follow the official Cautilus install guide at `https://github.com/corca-ai/cautilus/blob/main/install.md`, then verify `cautilus --version` and `cautilus version --verbose`.
+- Re-run `charness tool doctor cautilus --json` and confirm the binary is detected on PATH.
+- Run `charness tool sync-support cautilus --json`, then confirm the generated support surface exists and the doctor payload reports support as materialized.

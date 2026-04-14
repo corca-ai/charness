@@ -35,6 +35,7 @@ Then inspect current release state:
 
 ```bash
 python3 "$SKILL_DIR/scripts/current_release.py" --repo-root .
+python3 "$SKILL_DIR/scripts/check_real_host_proof.py" --repo-root .
 git status --short
 git log --oneline -5
 sed -n '1,220p' <resolved-release-artifact> 2>/dev/null || true
@@ -62,6 +63,8 @@ sed -n '1,220p' <resolved-release-artifact> 2>/dev/null || true
    - packaging and generated files agree on the same version
    - canonical quality gate passes
    - no generated install surface was left stale
+   - if `check_real_host_proof.py` says release-time proof is required, carry
+     that checklist into the closeout instead of claiming local CI replaced it
 6. End with operator-facing update steps.
    - how operators refresh the managed `charness` install
    - what Claude and Codex still need after `charness update`
@@ -76,6 +79,7 @@ The result should usually include:
 - `Release Scope`
 - `Verification`
 - `User Update Steps`
+- `Real-Host Proof` when the adapter says a human-run smoke is required
 - `Open Risks`
 
 ## Guardrails
@@ -85,6 +89,9 @@ The result should usually include:
 - Do not push, tag, or announce a release without explicit user confirmation.
 - Do not mutate installed host caches from inside the skill; update instructions
   belong in the closeout.
+- Do not turn host-specific human proof into fake standing CI. If a support or
+  install surface still depends on PATH, package managers, or host cache
+  state, say so explicitly and carry a short checklist.
 - If the repo lacks the declared release files or sync script, stop cleanly and
   name the missing seam instead of inventing one.
 
@@ -94,4 +101,5 @@ The result should usually include:
 - `references/version-policy.md`
 - `references/install-surface.md`
 - `scripts/current_release.py`
+- `scripts/check_real_host_proof.py`
 - `scripts/bump_version.py`

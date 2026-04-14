@@ -33,6 +33,9 @@ Search order:
 - `sync_command`
 - `quality_command`
 - `update_instructions`
+- `real_host_required_surfaces`
+- `real_host_required_path_globs`
+- `real_host_checklist`
 
 ## Defaults
 
@@ -44,6 +47,9 @@ Search order:
 - `sync_command`: `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
 - `quality_command`: `./scripts/run-quality.sh`
 - `update_instructions`: empty list
+- `real_host_required_surfaces`: empty list
+- `real_host_required_path_globs`: empty list
+- `real_host_checklist`: empty list
 
 ## Artifact Rule
 
@@ -54,3 +60,8 @@ The durable release artifact filename is fixed:
 `release` should treat the packaging manifest as the canonical mutable version
 source. Generated plugin manifests and marketplace files are derived surfaces
 and should be rewritten by the declared sync command, not edited by hand.
+
+`real_host_checklist` is optional and exists for proofs that should stay
+release-time and human-run rather than standing CI. Use it for support-tool or
+install/update smokes on a second machine or clean temp-home, not for generic
+repo validation already covered by `quality_command`.

@@ -12,3 +12,6 @@ quality_command: ./scripts/run-quality.sh
 update_instructions:
 - charness update
 - restart Codex if the host still needs marketplace rediscovery
+real_host_required_surfaces: []
+real_host_required_path_globs: []
+real_host_checklist: []
