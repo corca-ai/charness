@@ -22,9 +22,15 @@ explicitly ask for it or when a maintainer manually persists the lesson.
 
 ## Current Slice
 
-Design the next portability-safe step so `charness` can help repos learn from
-past sessions with less manual ceremony, without pretending that all hosts
-expose the same metrics or that every task should pay the cost of a full retro.
+Start with the thinnest portability-safe implementation slice:
+
+- add a standalone host-log probe helper that reports metric availability
+- keep it advisory rather than auto-wired into every retro
+- avoid claiming Codex token visibility until the default local logs prove it
+
+This keeps `charness` moving toward lower-ceremony retrospective accumulation
+without pretending that all hosts expose the same metrics or that every task
+should pay the cost of a full retro.
 
 ## Fixed Decisions
 
@@ -33,6 +39,9 @@ expose the same metrics or that every task should pay the cost of a full retro.
   outside declared adapter paths.
 - Keep `skill-outputs/retro/recent-lessons.md` as the stable compact digest path
   when a repo opts into this pattern.
+- Implement the host-log probe as a standalone helper first. `retro` may
+  consume it later, but this slice should not make host-log collection an
+  always-on retro dependency.
 - Extend `init-repo` so newly scaffolded repos can inherit the same memory seam:
   a retro adapter with `summary_path`, an AGENTS memory entry, and a lightweight
   digest file.
@@ -133,6 +142,8 @@ If this work is implemented badly, the likely failure modes are:
 - `retro` can optionally include an `Efficiency Signals` section when a
   declared local script returns real data, and can explicitly report
   `unavailable` when the host does not expose that data.
+- The first implementation slice ships a standalone helper at
+  `skills/public/retro/scripts/probe_host_logs.py`.
 - A repo-owned helper can probe Claude/Codex local logs and return structured
   availability status for:
   - duration
@@ -151,6 +162,9 @@ If this work is implemented badly, the likely failure modes are:
   `recent-lessons.md` deterministically from a bounded source artifact.
 - Host-log probe tests prove honest degradation:
   unavailable metrics return structured `unavailable`, not fake zeros.
+- `python3 skills/public/retro/scripts/probe_host_logs.py --home <fixture-home>`
+  returns structured per-host metric availability without requiring sibling
+  source trees or network access.
 - `quality` tests prove that skill ergonomics guidance is reachable through the
   current review contract when skill packages are touched.
 
@@ -160,12 +174,13 @@ If this work is implemented badly, the likely failure modes are:
 
 ## First Implementation Slice
 
-1. Extend `init-repo` so retro memory scaffolding is opt-in but first-class:
-   retro adapter `summary_path`, digest file, and AGENTS memory entry.
+1. Add `skills/public/retro/scripts/probe_host_logs.py` as a narrow standalone
+   helper that reports which efficiency metrics are actually available for the
+   current host and binary.
 2. Add a repo-owned retro helper that refreshes `recent-lessons.md` from the
    most recent durable retro artifact.
-3. Add a narrow host-log probe helper that reports which efficiency metrics are
-   actually available for the current host and binary.
+3. Extend `init-repo` so retro memory scaffolding is opt-in but first-class:
+   retro adapter `summary_path`, digest file, and AGENTS memory entry.
 4. Teach `quality` to call out skill ergonomics explicitly when skills are in
    scope, using existing `skill-quality` and `public-skill-validation`
    posture as the base.
