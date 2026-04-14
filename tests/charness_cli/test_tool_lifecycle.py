@@ -127,6 +127,31 @@ def test_installed_cli_tool_doctor_reports_ok_for_cautilus_with_binary_and_suppo
     assert cautilus["release"]["latest_tag"] == "v1.2.3"
 
 
+def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary_gap(
+    tmp_path: Path, seeded_managed_home: dict[str, Path]
+) -> None:
+    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    release_fixture = make_release_fixture(tmp_path)
+    support_fixture = make_support_sync_fixture(tmp_path)
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+    env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
+
+    sync_result = run_cli("tool", "sync-support", "--home-root", str(home_root), "--json", "cautilus", env=env)
+    assert sync_result.returncode == 1, sync_result.stderr
+    payload = json.loads(sync_result.stdout)
+    cautilus = payload["results"]["cautilus"]
+
+    assert cautilus["support"]["status"] == "synced"
+    assert cautilus["support"]["materialized_paths"] == ["skills/support/generated/cautilus"]
+    assert cautilus["doctor"]["doctor_status"] == "missing"
+    assert cautilus["doctor"]["install_route"]["mode"] == "manual"
+    assert cautilus["doctor"]["install_route"]["docs_url"] == "https://github.com/corca-ai/cautilus"
+    assert cautilus["doctor"]["install_route"]["commands"] == []
+    assert "Support skill materialization for `cautilus` was refreshed under skills/support/generated/cautilus" in cautilus["next_step"]
+    assert "the standalone binary is still missing" in cautilus["next_step"]
+    assert "Docs: https://github.com/corca-ai/cautilus" in cautilus["next_step"]
+
+
 def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Path) -> None:
     repo_root = make_repo_copy(tmp_path)
     home_root = tmp_path / "home"

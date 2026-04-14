@@ -9,6 +9,16 @@ from scripts.control_plane_lib import evaluate_version, read_lock, run_check
 from scripts.support_sync_lib import inspect_support_sync, support_state_for_manifest
 
 
+def install_route_for_manifest(capability: dict[str, Any]) -> dict[str, Any]:
+    install = capability.get("lifecycle", {}).get("install", {})
+    return {
+        "mode": install.get("mode"),
+        "commands": install.get("commands", []),
+        "docs_url": install.get("docs_url"),
+        "notes": install.get("notes", []),
+    }
+
+
 def support_sync_guidance(capability: dict[str, Any], support_state: str, support_sync: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     status = support_sync["status"]
     if support_state not in {"upstream-consumed", "wrapped-upstream"} or status not in {"not-tracked", "missing"}:
@@ -77,6 +87,7 @@ def inspect_capability_state(repo_root: Path, capability: dict[str, Any]) -> dic
         "kind": capability["kind"],
         "access_modes": capability["access_modes"],
         "capability_requirements": capability.get("capability_requirements", {}),
+        "install_route": install_route_for_manifest(capability),
         "support_state": support_state,
         "detect": detect_result,
         "healthcheck": healthcheck_result,

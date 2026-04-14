@@ -23,6 +23,7 @@ from scripts.upstream_release_lib import probe_release
 
 def lock_safe_doctor_payload(payload: dict[str, object]) -> dict[str, object]:
     lock_payload = dict(payload)
+    lock_payload.pop("install_route", None)
     lock_payload.pop("previous_lock_present", None)
     lock_payload.pop("release", None)
     lock_payload.pop("provenance", None)
