@@ -21,7 +21,12 @@ def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: 
                 "upstream_repo": "corca-ai/cautilus",
                 "homepage": "https://github.com/corca-ai/cautilus",
                 "lifecycle": {
-                    "install": {"mode": "manual", "docs_url": "https://github.com/corca-ai/cautilus", "notes": ["Install cautilus."]},
+                    "install": {
+                        "mode": "manual",
+                        "docs_url": "https://github.com/corca-ai/cautilus",
+                        "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.md",
+                        "notes": ["Install cautilus."],
+                    },
                     "update": {"mode": "manual", "docs_url": "https://github.com/corca-ai/cautilus/releases", "notes": ["Update cautilus."]},
                 },
                 "checks": {
@@ -87,6 +92,7 @@ def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: 
                     "mode": "manual",
                     "commands": [],
                     "docs_url": "https://github.com/corca-ai/cautilus",
+                    "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.md",
                     "notes": ["Install cautilus."],
                 },
                 "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id cautilus",

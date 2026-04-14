@@ -15,6 +15,7 @@
     "install": {
       "mode": "manual",
       "docs_url": "https://github.com/vercel-labs/agent-browser",
+      "install_url": "https://github.com/vercel-labs/agent-browser#installation",
       "notes": [
         "Recommended install paths are npm, Homebrew, or Cargo.",
         "Run `agent-browser install` after installing the CLI so Chrome for Testing or an existing browser runtime is available."

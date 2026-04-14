@@ -60,7 +60,13 @@ def seed_control_plane_repo(tmp_path: Path) -> Path:
                 "display_name": "demo-tool",
                 "upstream_repo": "example/demo-tool",
                 "homepage": "https://example.com/demo-tool",
-                "lifecycle": {"install": {"mode": "manual"}, "update": {"mode": "script", "commands": ["./bin/demo-tool update"]}},
+                "lifecycle": {
+                    "install": {
+                        "mode": "manual",
+                        "install_url": "https://example.com/demo-tool/install",
+                    },
+                    "update": {"mode": "script", "commands": ["./bin/demo-tool update"]},
+                },
                 "checks": {
                     "detect": {"commands": ["./bin/demo-tool version"], "success_criteria": ["exit_code:0", "stdout_contains:1.2.3"]},
                     "healthcheck": {"commands": ["./bin/demo-tool help"], "success_criteria": ["exit_code:0", "stdout_contains:help"]},

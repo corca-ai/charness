@@ -15,6 +15,7 @@
     "install": {
       "mode": "manual",
       "docs_url": "https://github.com/corca-ai/cautilus",
+      "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.md",
       "notes": [
         "Install from a tagged GitHub release with the upstream install script or keep a checked-out upstream repo with its runtime dependencies installed.",
         "Consumer repos keep `cautilus-adapter.yaml` and named adapters locally; `charness` only points at the product boundary."

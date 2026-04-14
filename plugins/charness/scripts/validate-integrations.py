@@ -87,6 +87,26 @@ def validate_config_layers(manifest: dict[str, object], path: Path) -> None:
         raise ValidationError(f"{path}: env config layer requires capability_requirements.env_vars")
 
 
+def validate_support_install_entrypoint(manifest: dict[str, object], path: Path) -> None:
+    support = manifest.get("support_skill_source")
+    if not isinstance(support, dict):
+        return
+    lifecycle = manifest.get("lifecycle")
+    if not isinstance(lifecycle, dict):
+        return
+    install = lifecycle.get("install")
+    if not isinstance(install, dict):
+        return
+    if install.get("mode") == "none":
+        return
+    install_url = install.get("install_url")
+    if not isinstance(install_url, str) or not install_url:
+        raise ValidationError(
+            f"{path}: integrations with support_skill_source must declare lifecycle.install.install_url "
+            "so agents have an exact install-doc entrypoint."
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
@@ -102,6 +122,7 @@ def main() -> int:
             validate_access_mode_order(manifest, manifest_path)
             validate_capability_requirements(manifest, manifest_path)
             validate_config_layers(manifest, manifest_path)
+            validate_support_install_entrypoint(manifest, manifest_path)
         for capability_path in sorted((repo_root / "skills" / "support").glob("*/capability.json")):
             capability = json.loads(capability_path.read_text(encoding="utf-8"))
             validate_access_mode_order(capability, capability_path)

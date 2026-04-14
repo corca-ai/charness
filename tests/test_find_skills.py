@@ -440,6 +440,7 @@ def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_pa
                 "mode": "manual",
                 "commands": [],
                 "docs_url": "https://github.com/googleworkspace/cli",
+                "install_url": None,
                 "notes": ["Install gws."],
             },
             "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id gws-cli",

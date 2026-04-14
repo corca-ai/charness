@@ -15,6 +15,7 @@
     "install": {
       "mode": "manual",
       "docs_url": "https://github.com/corca-ai/crill",
+      "install_url": "https://github.com/corca-ai/crill",
       "notes": [
         "Current install path is repo-oriented: clone the upstream repo, then run `uv sync`.",
         "Platform-specific mobile automation prerequisites stay in the upstream setup flow."

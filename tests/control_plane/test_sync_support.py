@@ -35,6 +35,7 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     assert doctor_payload[0]["support_sync"]["action_required"] is True
     assert doctor_payload[0]["support_sync"]["suggested_command"] == "charness tool sync-support demo-tool"
     assert doctor_payload[0]["install_route"]["mode"] == "manual"
+    assert doctor_payload[0]["install_route"]["install_url"] == "https://example.com/demo-tool/install"
     assert "Local support skill surface is not materialized yet." in doctor_payload[0]["next_steps"][0]
 
     sync = run_script(
@@ -91,7 +92,10 @@ def test_sync_support_materializes_upstream_checkout_into_cache_and_repo_symlink
                 "display_name": "demo-copy",
                 "upstream_repo": "example/demo-copy",
                 "homepage": "https://example.com/demo-copy",
-                "lifecycle": {"install": {"mode": "manual"}, "update": {"mode": "manual"}},
+                "lifecycle": {
+                    "install": {"mode": "manual", "install_url": "https://example.com/demo-copy/install"},
+                    "update": {"mode": "manual"},
+                },
                 "checks": {
                     "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
                     "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
@@ -163,7 +167,10 @@ def test_sync_support_uses_fixture_checkout_without_explicit_override(tmp_path: 
                 "display_name": "fixture-skill",
                 "upstream_repo": "example/fixture-repo",
                 "homepage": "https://example.com/fixture-skill",
-                "lifecycle": {"install": {"mode": "manual"}, "update": {"mode": "manual"}},
+                "lifecycle": {
+                    "install": {"mode": "manual", "install_url": "https://example.com/fixture-skill/install"},
+                    "update": {"mode": "manual"},
+                },
                 "checks": {
                     "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
                     "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
@@ -213,7 +220,10 @@ def test_sync_support_rejects_upstream_skill_file_path(tmp_path: Path) -> None:
                 "display_name": "bad",
                 "upstream_repo": "example/bad",
                 "homepage": "https://example.com/bad",
-                "lifecycle": {"install": {"mode": "manual"}, "update": {"mode": "manual"}},
+                "lifecycle": {
+                    "install": {"mode": "manual", "install_url": "https://example.com/bad/install"},
+                    "update": {"mode": "manual"},
+                },
                 "checks": {
                     "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
                     "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},

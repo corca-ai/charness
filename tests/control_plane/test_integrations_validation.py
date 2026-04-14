@@ -27,7 +27,10 @@ def test_validate_integrations_rejects_invalid_local_wrapper(tmp_path: Path) -> 
                 "display_name": "bad",
                 "upstream_repo": "example/bad",
                 "homepage": "https://example.com/bad",
-                "lifecycle": {"install": {"mode": "manual"}, "update": {"mode": "manual"}},
+                "lifecycle": {
+                    "install": {"mode": "manual", "install_url": "https://example.com/bad/install"},
+                    "update": {"mode": "manual"},
+                },
                 "checks": {
                     "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
                     "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
@@ -46,6 +49,39 @@ def test_validate_integrations_rejects_invalid_local_wrapper(tmp_path: Path) -> 
     result = run_script("scripts/validate-integrations.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "local_wrapper requires wrapper_skill_id" in result.stderr
+
+
+def test_validate_integrations_requires_install_entrypoint_for_support_backed_tools(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    tools_dir = write_manifest_schema(repo)
+    (tools_dir / "missing-install-url.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "tool_id": "missing-install-url",
+                "kind": "external_binary_with_skill",
+                "display_name": "missing-install-url",
+                "upstream_repo": "example/missing-install-url",
+                "homepage": "https://example.com/missing-install-url",
+                "lifecycle": {"install": {"mode": "manual"}, "update": {"mode": "manual"}},
+                "checks": {
+                    "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                    "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+                },
+                "access_modes": ["binary"],
+                "version_expectation": {"policy": "advisory", "constraint": "latest"},
+                "support_skill_source": {
+                    "source_type": "upstream_repo",
+                    "path": "skills/missing-install-url",
+                    "ref": "main",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    result = run_script("scripts/validate-integrations.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "must declare lifecycle.install.install_url" in result.stderr
 
 
 def test_validate_integrations_rejects_unsorted_access_modes(tmp_path: Path) -> None:

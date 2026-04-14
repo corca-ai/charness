@@ -50,6 +50,7 @@ def base_result(
         "status": status,
         "mode": mode,
         "docs_url": install_action.get("docs_url"),
+        "install_url": install_action.get("install_url"),
         "notes": install_action.get("notes", []),
         "commands": commands,
     }

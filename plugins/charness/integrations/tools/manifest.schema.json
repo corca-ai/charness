@@ -215,6 +215,10 @@
           "type": "string",
           "format": "uri"
         },
+        "install_url": {
+          "type": "string",
+          "format": "uri"
+        },
         "notes": {
           "$ref": "#/definitions/stringList"
         }

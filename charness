@@ -2024,6 +2024,7 @@ def tool_next_step(
         route = result.get("install_route")
         if not isinstance(route, dict):
             return ""
+        install_url = route.get("install_url")
         docs_url = route.get("docs_url")
         notes = route.get("notes")
         details: list[str] = []
@@ -2031,10 +2032,15 @@ def tool_next_step(
             first_note = notes[0]
             if isinstance(first_note, str) and first_note:
                 details.append(first_note)
+        if isinstance(install_url, str) and install_url:
+            details.append(f"Install docs: {install_url}")
         if isinstance(docs_url, str) and docs_url:
+            if docs_url == install_url:
+                return " ".join(details)
             details.append(f"Docs: {docs_url}")
         return " ".join(details)
     if action_result is not None and action_result.get("status") == "manual":
+        install_url = action_result.get("install_url")
         docs_url = action_result.get("docs_url")
         notes = action_result.get("notes")
         first_note = notes[0] if isinstance(notes, list) and notes and isinstance(notes[0], str) else None
@@ -2044,7 +2050,9 @@ def tool_next_step(
             manager = provenance.get("install_method")
             if isinstance(manager, str) and manager in {"brew", "npm", "cargo", "go"}:
                 guidance = f"`{tool_id}` is already installed via `{manager}`."
-        if isinstance(docs_url, str) and docs_url:
+        if isinstance(install_url, str) and install_url:
+            guidance = f"{guidance} Install docs: {install_url}"
+        if isinstance(docs_url, str) and docs_url and docs_url != install_url:
             guidance = f"{guidance} Docs: {docs_url}"
         return with_release(guidance)
     if isinstance(action_result, dict) and action_result.get("mode") == "package_manager":

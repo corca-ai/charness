@@ -15,5 +15,7 @@
 - source policy lives in manifests; live state belongs in generated lock files
 - `support_skill_source` is optional and should be absent when no upstream skill
   is reused
+- integrations that declare `support_skill_source` should also declare
+  `lifecycle.install.install_url` so agents get one exact install-doc entrypoint
 - wrapper skills should be generated or declared explicitly instead of silently
   copied into the public taxonomy

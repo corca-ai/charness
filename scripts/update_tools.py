@@ -63,6 +63,7 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
             "status": "manual",
             "mode": mode,
             "docs_url": update_action.get("docs_url"),
+            "install_url": update_action.get("install_url"),
             "notes": update_action.get("notes", []),
             "commands": [],
             "detect": detect_result,

@@ -15,6 +15,7 @@ def install_route_for_manifest(capability: dict[str, Any]) -> dict[str, Any]:
         "mode": install.get("mode"),
         "commands": install.get("commands", []),
         "docs_url": install.get("docs_url"),
+        "install_url": install.get("install_url"),
         "notes": install.get("notes", []),
     }
 
