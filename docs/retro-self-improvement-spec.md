@@ -22,14 +22,14 @@ explicitly ask for it or when a maintainer manually persists the lesson.
 
 ## Current Slice
 
-Start with the thinnest portability-safe implementation slice:
+The first two portability-safe slices have landed:
 
-- add a standalone host-log probe helper that reports metric availability
-- keep it advisory rather than auto-wired into every retro
-- avoid claiming Codex token visibility until the default local logs prove it
+- a standalone host-log probe helper now reports metric availability
+- a standalone digest helper now refreshes `recent-lessons.md` from the latest
+  durable retro artifact
 
-This keeps `charness` moving toward lower-ceremony retrospective accumulation
-without pretending that all hosts expose the same metrics or that every task
+The next slice should extend that seam into new repos through `init-repo`
+without pretending that every host exposes the same metrics or that every task
 should pay the cost of a full retro.
 
 ## Fixed Decisions
@@ -144,6 +144,8 @@ If this work is implemented badly, the likely failure modes are:
   `unavailable` when the host does not expose that data.
 - The first implementation slice ships a standalone helper at
   `skills/public/retro/scripts/probe_host_logs.py`.
+- The second implementation slice ships a standalone helper at
+  `skills/public/retro/scripts/refresh_recent_lessons.py`.
 - A repo-owned helper can probe Claude/Codex local logs and return structured
   availability status for:
   - duration
@@ -174,16 +176,15 @@ If this work is implemented badly, the likely failure modes are:
 
 ## First Implementation Slice
 
-1. Add `skills/public/retro/scripts/probe_host_logs.py` as a narrow standalone
-   helper that reports which efficiency metrics are actually available for the
-   current host and binary.
-2. Add a repo-owned retro helper that refreshes `recent-lessons.md` from the
-   most recent durable retro artifact.
-3. Extend `init-repo` so retro memory scaffolding is opt-in but first-class:
+1. Extend `init-repo` so retro memory scaffolding is opt-in but first-class:
    retro adapter `summary_path`, digest file, and AGENTS memory entry.
-4. Teach `quality` to call out skill ergonomics explicitly when skills are in
+2. Teach `quality` to call out skill ergonomics explicitly when skills are in
    scope, using existing `skill-quality` and `public-skill-validation`
    posture as the base.
+3. Decide whether a thin retro orchestration helper should call
+   `refresh_recent_lessons.py` automatically when durable retro artifacts are
+   updated, or whether the current explicit script boundary is the intended
+   product posture.
 
 ## Notes On Existing Signals
 

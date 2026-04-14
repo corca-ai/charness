@@ -77,7 +77,7 @@ Adapter policy:
 5. Persist when there is a durable home.
    - if `output_dir` exists or the adapter defines one, update the retro artifact
    - if `weekly` and the adapter defines `snapshot_path`, write a compact machine-readable snapshot with the window, evidence sources, and any real metrics or deltas you used
-   - if the adapter defines `summary_path`, refresh a compact recent-lessons digest that future sessions can read before repeating the same miss
+   - if the adapter defines `summary_path`, refresh a compact recent-lessons digest with `scripts/refresh_recent_lessons.py` so future sessions can read the latest durable lesson
    - otherwise still give the user a concise retro in chat
    - never stop without stating `Persisted: yes <path>` or `Persisted: no <reason>`
 

@@ -2,31 +2,25 @@
 
 ## Current Focus
 
-- Treat adjacent install surfaces as separate contracts, not as implied mirrors.
-- Sync generated/plugin surfaces before packaging or closeout verification.
-- Declare vendored-surface policy at intake time, not after standing validation fails.
+- This retro reviews the work from 2026-04-07 through 2026-04-14, when the repo closed the open support-tool and bootstrap guidance issues, tightened the tool control plane, and released `charness 0.0.6`.
+- The important question is not whether work shipped, but where our process still created avoidable waste even while the repo was moving quickly.
 
 ## Repeat Traps
 
-- Source checkout, managed checkout, installed CLI, checked-in plugin export, and host cache can drift independently.
-- A lint/config change is incomplete until the checked-in plugin export has been regenerated.
-- A gate exclusion only counts if it is wired into the command that actually gathers the file list.
-
-## Latest Concrete Misses
-
-- Running `run-quality` and `run-slice-closeout` in parallel corrupted the plugin export view and created false broken-import noise.
-- Excluding vendored `specdown` docs in `.markdownlint-cli2.jsonc` was insufficient because `scripts/check-markdown.sh` decides the tracked file set first.
-- Changing `scripts/check-markdown.sh` without resyncing the checked-in plugin export caused late packaging drift and managed-install test failures.
+- We repeatedly treated adjacent surfaces as if they guaranteed each other: source checkout vs managed checkout vs installed PATH binary vs checked-in plugin export vs host cache. That caused stale-binary, export-drift, and stale-lock failures to surface late.
+- We still let some generated or vendored surfaces reach standing validation before their policy was explicit. The `specdown` markdown burst and the late-discovered plugin export drift were both examples of "ship the surface, then discover the gate semantics afterward."
+- We sometimes verified the right thing too late or in the wrong order. Running sync/closeout concurrently and only then discovering plugin-tree corruption is a process smell, not just a one-off mistake.
+- We were too loose about discovery semantics while tightening support-tool flows. "Support-backed", "integration-only", "host-visible", and "repo-local support surface" were distinct ideas in code, but not always in our working mental model.
 
 ## Next-Time Checklist
 
-- For install/update/support slices, check source checkout, managed checkout, installed CLI, plugin export, PATH visibility, and host cache separately.
-- After editing any exported script or root marketplace artifact, run `python3 scripts/sync_root_plugin_manifests.py --repo-root .` before broad validation.
-- Keep sync-producing commands out of parallel closeout/packaging runs.
-- If a surface still needs human interpretation to know the next step, push that guidance into structured output before calling it done.
+- keep a default review checklist for any install/update/support change that explicitly covers source checkout, managed checkout, installed CLI, checked-in plugin export, host cache, and PATH visibility as separate seams.
+- do not run sync-producing commands in parallel with closeout or packaging verification. Generate first, verify second.
+- keep pushing "next action" into structured output. Any `doctor`/`install`/`sync-support` surface that still requires prose interpretation should be treated as incomplete.
+- add one repo-owned validator for vendored-surface policy so markdown or packaging exceptions are declared at intake time instead of discovered at standing-quality time.
+- consider a surface-separation helper or checklist for support discoverability so "host-visible", "repo-local generated", and "integration-only" cannot be conflated while implementing follow-ons.
 
 ## Sources
 
 - `skill-outputs/retro/weekly-2026-04-14.md`
-- `skill-outputs/retro/weekly-latest.json`
-- `docs/handoff.md`
+
