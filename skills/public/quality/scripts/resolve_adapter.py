@@ -25,6 +25,7 @@ from scripts.quality_bootstrap_lib import (
     DEFAULT_COVERAGE_FLOOR_POLICY,
     DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
 )
+from skills.public.quality.scripts.adapter_validators import runtime_budgets as _runtime_budgets
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
 LIST_FIELDS = ("preset_lineage", "concept_paths", "preflight_commands", "gate_commands", "security_commands")
@@ -110,6 +111,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "coverage_floor_policy": dict(DEFAULT_COVERAGE_FLOOR_POLICY),
         "specdown_smoke_patterns": [],
         "spec_pytest_reference_format": DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
+        "runtime_budgets": {},
         "concept_paths": [],
         "preflight_commands": [],
         "gate_commands": [],
@@ -139,17 +141,17 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
     coverage_floor_policy = _coverage_floor_policy(data.get("coverage_floor_policy"), errors)
     if coverage_floor_policy is not None:
         validated["coverage_floor_policy"] = coverage_floor_policy
-
     specdown_smoke_patterns = _string_list(data.get("specdown_smoke_patterns"), "specdown_smoke_patterns", errors)
     if specdown_smoke_patterns is not None:
         validated["specdown_smoke_patterns"] = specdown_smoke_patterns
-
     spec_pytest_reference_format = _string(
         data.get("spec_pytest_reference_format"), "spec_pytest_reference_format", errors
     )
     if spec_pytest_reference_format is not None:
         validated["spec_pytest_reference_format"] = spec_pytest_reference_format
-
+    runtime_budgets_value = _runtime_budgets(data.get("runtime_budgets"), errors)
+    if runtime_budgets_value is not None:
+        validated["runtime_budgets"] = runtime_budgets_value
     for field in LIST_FIELDS:
         items = _string_list(data.get(field), field, errors)
         if items is not None:
@@ -164,9 +166,6 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
 def find_adapter(repo_root: Path) -> Path | None:
     return next((path for candidate in ADAPTER_CANDIDATES if (path := repo_root / candidate).is_file()), None)
 
-def _artifact_path(output_dir: str) -> str:
-    return str(Path(output_dir) / ARTIFACT_FILENAME)
-
 def load_adapter(repo_root: Path) -> dict[str, Any]:
     searched_paths = [str((repo_root / candidate).resolve()) for candidate in ADAPTER_CANDIDATES]
     adapter_path = find_adapter(repo_root)
@@ -178,7 +177,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "path": None,
             "data": data,
             "artifact_filename": ARTIFACT_FILENAME,
-            "artifact_path": _artifact_path(data["output_dir"]),
+            "artifact_path": str(Path(data["output_dir"]) / ARTIFACT_FILENAME),
             "errors": [],
             "warnings": [
                 "No quality adapter found. Using default durable artifact location.",
@@ -203,7 +202,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "path": str(adapter_path),
         "data": data,
         "artifact_filename": ARTIFACT_FILENAME,
-        "artifact_path": _artifact_path(data["output_dir"]),
+        "artifact_path": str(Path(data["output_dir"]) / ARTIFACT_FILENAME),
         "errors": errors,
         "warnings": warnings,
         "searched_paths": searched_paths,

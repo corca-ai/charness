@@ -18,6 +18,8 @@ coverage_floor_policy:
   ci_workflow_glob: .github/workflows/*.yml
 specdown_smoke_patterns: []
 spec_pytest_reference_format: "Covered by pytest:\\s+`tests/[^`]+`(?:,\\s*`tests/[^`]+`)*"
+runtime_budgets:
+  pytest: 22000
 concept_paths:
 - docs/control-plane.md
 - docs/public-skill-validation.md

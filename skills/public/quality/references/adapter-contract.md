@@ -37,6 +37,7 @@ Quality-specific fields:
 - `coverage_floor_policy`
 - `specdown_smoke_patterns`
 - `spec_pytest_reference_format`
+- `runtime_budgets`
 - `concept_paths`
 - `preflight_commands`
 - `gate_commands`
@@ -60,6 +61,14 @@ Recommended `coverage_floor_policy` fields:
 
 `spec_pytest_reference_format` should hold the repo's canonical prose-note
 format when specs use `Covered by pytest:` style references.
+
+`runtime_budgets` is a mapping of standing-gate label → max elapsed
+milliseconds. Labels must match the labels recorded in
+`<output_dir>/runtime-signals.json` by the standing gate runner. Add
+`scripts/check-runtime-budget.py` to the standing gate to fail the run when
+`latest.elapsed_ms` exceeds the budget. Labels with no recorded sample yet
+are warnings, not failures, so a budget can be defined before its first run.
+Omit the field entirely (or leave the mapping empty) to opt out.
 
 ## Artifact Rule
 

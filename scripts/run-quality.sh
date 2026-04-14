@@ -239,5 +239,8 @@ queue_selected "run-evals" python3 scripts/run-evals.py --repo-root "$REPO_ROOT"
 queue_selected "check-duplicates" python3 scripts/check-duplicates.py --repo-root "$REPO_ROOT" --fail-on-match
 queue_selected "check-coverage" python3 scripts/check-coverage.py --repo-root "$REPO_ROOT"
 flush_phase || OVERALL_RC=$?
+
+queue_selected "check-runtime-budget" python3 skills/public/quality/scripts/check-runtime-budget.py --repo-root "$REPO_ROOT"
+flush_phase || OVERALL_RC=$?
 print_final_summary
 exit "$OVERALL_RC"
