@@ -27,8 +27,9 @@ def _runtime_root() -> Path:
 
 REPO_ROOT_FOR_IMPORT = _runtime_root()
 sys.path.insert(0, str(REPO_ROOT_FOR_IMPORT))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from skills.public.quality.scripts.resolve_adapter import load_adapter
+from resolve_adapter import load_adapter
 
 
 def _load_signals(signals_path: Path) -> dict[str, Any]:
