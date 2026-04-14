@@ -40,6 +40,11 @@ def _normalized_skill_list(value: object, *, field: str) -> list[str]:
     return sorted(value)
 
 
+def _render_expected_locations(field: str, categories: tuple[str, ...]) -> str:
+    rendered = ", ".join(f"`{field}.{category}`" for category in categories)
+    return f"Add each missing skill to exactly one of {rendered} in `{POLICY_PATH}`"
+
+
 def _validate_partition(
     assignments: dict[str, list[str]],
     *,
@@ -67,7 +72,10 @@ def _validate_partition(
     missing = sorted(set(all_skills) - set(seen))
     if missing:
         rendered = ", ".join(f"`{skill_id}`" for skill_id in missing)
-        raise ValidationError(f"{field} does not classify every public skill; missing {rendered}")
+        guidance = _render_expected_locations(field, expected_categories)
+        raise ValidationError(
+            f"{field} does not classify every public skill; missing {rendered}. {guidance}."
+        )
 
 
 def validate_policy(data: dict[str, object], repo_root: Path) -> dict[str, dict[str, list[str]]]:

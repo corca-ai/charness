@@ -53,6 +53,8 @@ def seed_skill(repo: Path, skill_id: str, *, adapter: bool) -> None:
         scripts_dir.mkdir()
         shutil.copy2(ROOT / "skills" / "public" / "handoff" / "scripts" / "resolve_adapter.py", scripts_dir / "resolve_adapter.py")
         shutil.copy2(ROOT / "skills" / "public" / "handoff" / "scripts" / "init_adapter.py", scripts_dir / "init_adapter.py")
+
+
 def test_validate_public_skill_validation_requires_full_partition(tmp_path: Path) -> None:
     repo = seed_repo(
         tmp_path,
@@ -75,6 +77,37 @@ def test_validate_public_skill_validation_requires_full_partition(tmp_path: Path
     result = run_script("scripts/validate-public-skill-validation.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "does not classify every public skill" in result.stderr
+    assert "`demo-b`" in result.stderr
+    assert "`tiers.smoke-only`" in result.stderr
+    assert "`tiers.hitl-recommended`" in result.stderr
+    assert "`tiers.evaluator-required`" in result.stderr
+
+
+def test_validate_public_skill_validation_reports_missing_adapter_requirement_bucket(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        policy={
+            "schema_version": 1,
+            "tiers": {
+                "smoke-only": [],
+                "hitl-recommended": ["demo-a", "demo-b"],
+                "evaluator-required": [],
+            },
+            "adapter_requirements": {
+                "required": ["demo-a"],
+                "adapter-free": [],
+            },
+        },
+    )
+    seed_skill(repo, "demo-a", adapter=True)
+    seed_skill(repo, "demo-b", adapter=False)
+
+    result = run_script("scripts/validate-public-skill-validation.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "adapter_requirements does not classify every public skill" in result.stderr
+    assert "`demo-b`" in result.stderr
+    assert "`adapter_requirements.required`" in result.stderr
+    assert "`adapter_requirements.adapter-free`" in result.stderr
 
 
 def test_validate_public_skill_validation_requires_adapter_contract_for_required_skill(tmp_path: Path) -> None:
