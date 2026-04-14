@@ -107,6 +107,19 @@ Read the smallest memory surface that answers the current question.
   explicit in structured output and lock state so a later agent can continue
   without rediscovering the machine.
 
+### Skill Dogfood Discipline
+
+- Loaded SKILLs come from `~/.agents/src/charness/`, a separate clone from
+  this working tree. Editing `skills/public/<id>/SKILL.md` does **not** reach
+  the next Claude/Codex session in this repo until the install path picks it
+  up.
+- To dogfood unpushed skill changes locally, run
+  `charness update --repo-root . --no-pull` from this repo. The flag pair
+  uses the working tree (incl. uncommitted edits) as the source and skips
+  `git pull`. Restart the session to pick up the new SKILL.
+- After a release/dogfood cycle, `charness update` (no flags) restores the
+  managed-checkout flow.
+
 ### Session Discipline
 
 - Update `docs/handoff.md` when the next session's first move changed.

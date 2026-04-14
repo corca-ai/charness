@@ -1,0 +1,85 @@
+{
+  "schema_version": "1",
+  "tool_id": "gitleaks",
+  "kind": "external_binary",
+  "display_name": "gitleaks",
+  "summary": "Fast Go-based secret scanner. Preferred over the secretlint fallback by `scripts/check-secrets.sh`; sub-second on the charness tree vs ~5s for the npm secretlint path.",
+  "upstream_repo": "gitleaks/gitleaks",
+  "homepage": "https://github.com/gitleaks/gitleaks",
+  "platforms": [
+    "linux",
+    "macos"
+  ],
+  "status": "active",
+  "lifecycle": {
+    "install": {
+      "mode": "manual",
+      "docs_url": "https://github.com/gitleaks/gitleaks#installing",
+      "notes": [
+        "Preferred install paths stay host-controlled: `brew install gitleaks` on macOS/Linux, or download a tagged release from GitHub.",
+        "When `gitleaks` is missing, `scripts/check-secrets.sh` falls back to the secretlint npm path with a stderr warning. The fallback is correct but ~5s slower per run."
+      ]
+    },
+    "update": {
+      "mode": "manual",
+      "docs_url": "https://github.com/gitleaks/gitleaks/releases",
+      "notes": [
+        "Update through the same package manager or release path that originally installed `gitleaks`."
+      ]
+    }
+  },
+  "checks": {
+    "detect": {
+      "commands": [
+        "gitleaks version"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Install `gitleaks` to take the fast secret-scan branch in `scripts/check-secrets.sh`; the secretlint fallback still works but is much slower."
+    },
+    "healthcheck": {
+      "commands": [
+        "gitleaks help"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:gitleaks"
+      ],
+      "failure_hint": "The binary exists but its help surface is broken. Reinstall `gitleaks` from a clean upstream release."
+    }
+  },
+  "access_modes": [
+    "binary",
+    "degraded"
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer a recent upstream-supported gitleaks release.",
+    "detected_by": "stdout"
+  },
+  "package_managers": {
+    "brew": {
+      "package_name": "gitleaks",
+      "notes": [
+        "Upstream-recommended install path on macOS and Linux."
+      ]
+    }
+  },
+  "supports_public_skills": [
+    "quality"
+  ],
+  "recommendation_role": "validation",
+  "degradation": {
+    "when_missing": [
+      "`scripts/check-secrets.sh` falls back to the secretlint npm path. The fallback is correct but ~5s slower; it also requires `npm` and the local secretlint package to be present.",
+      "If neither `gitleaks` nor secretlint is available, the secret-scan gate fails closed."
+    ],
+    "when_version_mismatch": [
+      "Treat new rule classes or config syntax that older releases reject as a manual review point before suppressing findings."
+    ]
+  },
+  "host_notes": [
+    "The repo's `.gitleaks.toml` controls scan rules and exemptions. Keep that config aligned with `.secretlintignore` so the two paths report consistently."
+  ]
+}
