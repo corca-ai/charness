@@ -41,7 +41,12 @@ STRING_FIELDS = (
     "snapshot_path",
     "summary_path",
 )
-STRING_LIST_FIELDS = ("evidence_paths", "metrics_commands")
+STRING_LIST_FIELDS = (
+    "evidence_paths",
+    "metrics_commands",
+    "auto_session_trigger_surfaces",
+    "auto_session_trigger_path_globs",
+)
 
 
 def _string(value: Any, field: str, errors: list[str]) -> str | None:
@@ -82,6 +87,8 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "summary_path": "skill-outputs/retro/recent-lessons.md",
         "evidence_paths": [],
         "metrics_commands": [],
+        "auto_session_trigger_surfaces": [],
+        "auto_session_trigger_path_globs": [],
     }
 
 
@@ -146,6 +153,8 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "field_state": {
                 "evidence_paths": "unset",
                 "metrics_commands": "unset",
+                "auto_session_trigger_surfaces": "unset",
+                "auto_session_trigger_path_globs": "unset",
             },
             "errors": [],
             "warnings": [
@@ -173,6 +182,8 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "field_state": {
             "evidence_paths": _list_field_state(raw_data, "evidence_paths"),
             "metrics_commands": _list_field_state(raw_data, "metrics_commands"),
+            "auto_session_trigger_surfaces": _list_field_state(raw_data, "auto_session_trigger_surfaces"),
+            "auto_session_trigger_path_globs": _list_field_state(raw_data, "auto_session_trigger_path_globs"),
         },
         "errors": errors,
         "warnings": warnings,

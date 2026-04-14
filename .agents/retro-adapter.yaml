@@ -13,3 +13,14 @@ evidence_paths:
   - skill-outputs/debug
   - skill-outputs/quality/quality.md
 metrics_commands: []
+auto_session_trigger_surfaces:
+  - checked-in-plugin-export
+  - integrations-and-control-plane
+auto_session_trigger_path_globs:
+  - skills/public/find-skills/**
+  - skills/public/release/**
+  - skills/support/**
+  - README.md
+  - INSTALL.md
+  - UNINSTALL.md
+  - docs/host-packaging.md

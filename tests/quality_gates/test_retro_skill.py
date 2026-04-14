@@ -12,4 +12,6 @@ def test_retro_skill_triggers_on_present_but_undeclared_invariants() -> None:
     ).read_text(encoding="utf-8")
 
     assert "fresh-eye reader misread an invariant" in skill_text
+    assert "check_auto_trigger.py" in skill_text
+    assert "auto_session_trigger_surfaces" in skill_text
     assert "present invariant as absent" in reference_text

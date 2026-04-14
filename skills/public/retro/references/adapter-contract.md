@@ -41,6 +41,8 @@ Retro-specific fields:
 - `weekly_window_days`
 - `evidence_paths`
 - `metrics_commands`
+- `auto_session_trigger_surfaces`
+- `auto_session_trigger_path_globs`
 
 ## Example
 
@@ -58,6 +60,8 @@ summary_path: skill-outputs/retro/recent-lessons.md
 evidence_paths:
   - docs/handoff.md
 metrics_commands: []
+auto_session_trigger_surfaces: []
+auto_session_trigger_path_globs: []
 ```
 
 ## Field Semantics
@@ -71,6 +75,10 @@ metrics_commands: []
 - `evidence_paths` are additional local sources worth reading for retros.
 - `metrics_commands` are optional. If they are absent, weekly mode may still
   run narratively.
+- `auto_session_trigger_surfaces` are optional changed-surface ids that should
+  trigger a short `session` retro after closeout.
+- `auto_session_trigger_path_globs` are optional repo-relative glob patterns for
+  the same purpose when surface ids alone are too coarse.
 
 ## Design Rules
 
@@ -81,4 +89,6 @@ metrics_commands: []
 - `summary_path` should stay stable when used so `AGENTS.md` and handoff can
   treat it as a repeatable memory surface instead of a one-off artifact
 - `metrics_commands` must be real commands with real sources; never placeholders
+- auto-trigger lists should stay bounded to repeat-trap seams such as
+  install/update/support/export/discovery, not every code change
 - use explicit empty lists to record intentional opt-out from evidence or metrics

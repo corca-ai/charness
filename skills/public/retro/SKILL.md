@@ -100,11 +100,18 @@ The result should usually include:
 
 - Trigger a short `session` retro automatically when a user correction exposes a
   real miss in the workflow, not just a preference difference.
+- Also trigger a short `session` retro after slice closeout when
+  `scripts/check_auto_trigger.py` reports `triggered: true` for the current
+  repo (for example via `python3 scripts/check_auto_trigger.py --repo-root .`).
+  Keep this bounded to the configured repeat-trap seam rather than turning
+  every slice into a postmortem.
 - Treat valid examples such as:
   - missing local enforcement that the agent claimed existed
   - a wrong ownership or source-of-truth assumption
   - a broken or missing gate that should have been checked
   - a fresh-eye reader misread an invariant that is present in the code, revealing that the invariant still relies on convention rather than declaration
+  - install/update/support/export/discovery slices that match the adapter's
+    `auto_session_trigger_surfaces` or `auto_session_trigger_path_globs`
 - Do not trigger the full retro flow for:
   - wording preferences
   - open product tradeoffs the agent already marked as unresolved

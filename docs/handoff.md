@@ -45,6 +45,10 @@
   explicit하게 가진다. `scenario_surfaces` / `scenario_block_template` adapter
   fields를 지원하고, main use-case docs에서 fixture-first scenario cards와
   coined-jargon first-use inline definition을 유도한다.
+- `retro`는 이제 configured repeat-trap seam에서 bounded auto-trigger를
+  지원한다. `check_auto_trigger.py`가 adapter의
+  `auto_session_trigger_surfaces` / `auto_session_trigger_path_globs`를 읽고,
+  `impl` / `retro`는 그 결과를 짧은 session retro trigger로 사용한다.
 - `spec`는 이제 core에서 `premortem` 용어를 직접 쓰고, bounded fresh-eye
   review를 요구한다.
 - hidden support source-of-truth도 넓어졌다.
@@ -63,9 +67,9 @@
    읽고, 다음 slice를 truly behavioral follow-on으로 고른다.
    예: ergonomics를 advisory에서 stronger gate로 올릴지, bounded
    post-closeout retro trigger를 둘지.
-2. 다음 자연스러운 slice는 bounded auto-retro trigger다.
-   전면 auto-retro가 아니라 `install/update/support/export/discovery`
-   changed-surface에서만 짧은 post-closeout retro를 당기는 쪽이 현재 합의다.
+2. 다음 자연스러운 slice는 release-time real-host proof 정리다.
+   standing CI가 아니라 `release` acceptance나 checklist에
+   support-tool real-host smoke를 올리는 쪽이 현재 합의다.
 3. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
    surface를 다른 머신에서 한 번 더 확인한다. 특히 real binary install이
    PATH/non-PATH일 때 next-step honesty가 유지되는지 본다.

@@ -146,6 +146,8 @@ Adapter policy:
    - what the premortem found
    - what contract updates were made
    - what remains for the next slice
+   - if `../retro/scripts/check_auto_trigger.py` reports `triggered: true`
+     for the current repo, run a short `session` retro before the final stop
    - if the user explicitly asked to keep going, treat this as a terse
      progress checkpoint and continue into the next locally decidable slice
 

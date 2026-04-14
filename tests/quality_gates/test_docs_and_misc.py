@@ -481,3 +481,4 @@ def test_impl_skill_defaults_to_autonomous_continuation() -> None:
     assert "continuation" in skill_text and "checkpoints" in skill_text
     assert "irreversible" in skill_text and "external side effect" in skill_text
     assert "next locally decidable slice" in skill_text
+    assert "check_auto_trigger.py" in skill_text

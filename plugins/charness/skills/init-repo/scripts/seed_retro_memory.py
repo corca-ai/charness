@@ -30,6 +30,8 @@ def adapter_text(repo_name: str) -> str:
             "summary_path: skill-outputs/retro/recent-lessons.md",
             "evidence_paths: []",
             "metrics_commands: []",
+            "auto_session_trigger_surfaces: []",
+            "auto_session_trigger_path_globs: []",
             "",
         ]
     )

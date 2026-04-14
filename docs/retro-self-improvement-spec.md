@@ -34,11 +34,13 @@ The first implementation batch has landed:
   memory
 - `quality` now treats skill ergonomics as an explicit lens with an advisory
   inventory helper
+- `retro` can now auto-trigger a bounded `session` retro for configured
+  repeat-trap seams via adapter-declared surface ids and path globs
 
 The next slice should only deepen this seam where it changes behavior rather
-than prose volume: for example making `quality` or public-skill validation more
-opinionated about ergonomics, or deciding whether some repos should opt into a
-bounded post-closeout retro trigger.
+than prose volume: for example making ergonomics stronger than advisory in some
+repos, or deciding how release-time real-host proof should feed back into retro
+memory.
 
 ## Fixed Decisions
 
