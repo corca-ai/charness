@@ -15,8 +15,6 @@ def _runtime_root() -> Path:
         if (ancestor / "scripts" / "adapter_lib.py").is_file():
             return ancestor
     return script_path.parents[4]
-
-
 REPO_ROOT = _runtime_root()
 sys.path.insert(0, str(REPO_ROOT))
 
@@ -30,20 +28,7 @@ ADAPTER_CANDIDATES = (
     Path("announcement-adapter.yaml"),
 )
 
-STRING_FIELDS = (
-    "repo",
-    "language",
-    "output_dir",
-    "preset_id",
-    "preset_version",
-    "customized_from",
-    "product_name",
-    "delivery_kind",
-    "delivery_target",
-    "release_notes_path",
-    "post_command_template",
-    "delivery_capability",
-)
+STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from", "product_name", "delivery_kind", "delivery_target", "release_notes_path", "post_command_template", "delivery_capability")
 LIST_FIELDS = ("sections", "audience_tags", "omission_lenses")
 ARTIFACT_FILENAME = "announcement.md"
 RECORD_FILENAME = "announcements.jsonl"
@@ -138,19 +123,53 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
 
 
 def find_adapter(repo_root: Path) -> Path | None:
-    for candidate in ADAPTER_CANDIDATES:
-        path = repo_root / candidate
-        if path.is_file():
-            return path
-    return None
+    return next((path for candidate in ADAPTER_CANDIDATES if (path := repo_root / candidate).is_file()), None)
 
 
-def _artifact_path(output_dir: str) -> str:
-    return str(Path(output_dir) / ARTIFACT_FILENAME)
+def _output_path(output_dir: str, filename: str) -> str:
+    return str(Path(output_dir) / filename)
 
 
-def _record_path(output_dir: str) -> str:
-    return str(Path(output_dir) / RECORD_FILENAME)
+def _bootstrap_expectations(data: dict[str, Any]) -> dict[str, str]:
+    delivery_note = (
+        "Delivery stays draft-only until the adapter declares a backend and the user confirms posting."
+        if data["delivery_kind"] == "none"
+        else "Delivery still requires explicit user confirmation even when the adapter declares a backend."
+    )
+    return {
+        "artifact_path": _output_path(data["output_dir"], ARTIFACT_FILENAME),
+        "record_path": _output_path(data["output_dir"], RECORD_FILENAME),
+        "what_you_get_after_one_run": "A human-facing draft that explains recent repo value in a stable shape.",
+        "artifact_meaning": "The markdown artifact is the visible announcement draft; the JSONL record tracks finalized heads across runs.",
+        "what_this_does_not_do": delivery_note,
+    }
+
+
+def _field_state_map(raw_data: dict[str, Any]) -> dict[str, str]:
+    return {"audience_tags": _list_field_state(raw_data, "audience_tags"), "omission_lenses": _list_field_state(raw_data, "omission_lenses")}
+
+
+def _missing_adapter_payload(data: dict[str, Any], searched_paths: list[str]) -> dict[str, Any]:
+    return {
+        "found": False,
+        "valid": True,
+        "path": None,
+        "data": data,
+        "field_state": _field_state_map({}),
+        "artifact_filename": ARTIFACT_FILENAME,
+        "artifact_path": _output_path(data["output_dir"], ARTIFACT_FILENAME),
+        "record_path": _output_path(data["output_dir"], RECORD_FILENAME),
+        "bootstrap_expectations": _bootstrap_expectations(data),
+        "errors": [],
+        "warnings": [
+            "No announcement adapter found. Using draft-first defaults.",
+            f"First run leaves `{_output_path(data['output_dir'], ARTIFACT_FILENAME)}` as the visible draft artifact.",
+            f"`{_output_path(data['output_dir'], RECORD_FILENAME)}` only advances after explicit draft finalization or delivery.",
+            "delivery_kind defaults to `none`, so bootstrap is intentionally draft-only until a repo chooses a backend seam.",
+            "Create .agents/announcement-adapter.yaml to record section order, audience tags, and human-facing delivery seams.",
+        ],
+        "searched_paths": searched_paths,
+    }
 
 
 def load_adapter(repo_root: Path) -> dict[str, Any]:
@@ -158,25 +177,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
     adapter_path = find_adapter(repo_root)
     if adapter_path is None:
         data = infer_repo_defaults(repo_root)
-        return {
-            "found": False,
-            "valid": True,
-            "path": None,
-            "data": data,
-            "field_state": {
-                "audience_tags": "unset",
-                "omission_lenses": "unset",
-            },
-            "artifact_filename": ARTIFACT_FILENAME,
-            "artifact_path": _artifact_path(data["output_dir"]),
-            "record_path": _record_path(data["output_dir"]),
-            "errors": [],
-            "warnings": [
-                "No announcement adapter found. Using draft-first defaults.",
-                "Create .agents/announcement-adapter.yaml to record section order, audience tags, and human-facing delivery seams.",
-            ],
-            "searched_paths": searched_paths,
-        }
+        return _missing_adapter_payload(data, searched_paths)
 
     raw = load_yaml_file(adapter_path)
     raw_data = raw if isinstance(raw, dict) else {}
@@ -193,13 +194,11 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "valid": not errors,
         "path": str(adapter_path),
         "data": data,
-        "field_state": {
-            "audience_tags": _list_field_state(raw_data, "audience_tags"),
-            "omission_lenses": _list_field_state(raw_data, "omission_lenses"),
-        },
+        "field_state": _field_state_map(raw_data),
         "artifact_filename": ARTIFACT_FILENAME,
-        "artifact_path": _artifact_path(data["output_dir"]),
-        "record_path": _record_path(data["output_dir"]),
+        "artifact_path": _output_path(data["output_dir"], ARTIFACT_FILENAME),
+        "record_path": _output_path(data["output_dir"], RECORD_FILENAME),
+        "bootstrap_expectations": _bootstrap_expectations(data),
         "errors": errors,
         "warnings": warnings,
         "searched_paths": searched_paths,

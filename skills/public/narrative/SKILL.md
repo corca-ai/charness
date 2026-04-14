@@ -36,6 +36,15 @@ Default durable artifact:
 
 - `skill-outputs/narrative/narrative.md`
 
+What you get after one run:
+
+- one aligned truth-surface artifact anchored to the repo's durable docs
+- one audience-neutral brief skeleton that later delivery work can adapt
+
+What this does not do:
+
+- audience-specific adaptation or delivery transport; that belongs to `announcement`
+
 If the repo would benefit from an explicit truth surface, scaffold an adapter:
 
 ```bash

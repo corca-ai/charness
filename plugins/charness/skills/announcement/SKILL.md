@@ -31,6 +31,16 @@ Default delivery log:
 
 - `skill-outputs/announcement/announcements.jsonl`
 
+What you get after one run:
+
+- `skill-outputs/announcement/announcement.md` as the visible draft artifact
+- `skill-outputs/announcement/announcements.jsonl` only after explicit draft finalization or delivery
+
+What this does not do:
+
+- backend posting without explicit confirmation
+- any delivery at all when the adapter still uses `delivery_kind: none`
+
 If the adapter is missing but the repo would benefit from explicit section
 order, audience tags, or delivery defaults, scaffold one:
 

@@ -126,6 +126,15 @@ def _artifact_path(output_dir: str) -> str:
     return str(Path(output_dir) / ARTIFACT_FILENAME)
 
 
+def _bootstrap_expectations(data: dict[str, Any]) -> dict[str, str]:
+    return {
+        "artifact_path": _artifact_path(data["output_dir"]),
+        "what_you_get_after_one_run": "A local-first capability inventory plus the smallest next usable path.",
+        "artifact_meaning": "The artifact shows what this repo can already do today across public skills, support skills, synced support, and integrations.",
+        "what_this_does_not_do": "It does not search arbitrary external registries unless trusted roots or registry access are explicitly configured.",
+    }
+
+
 def load_adapter(repo_root: Path) -> dict[str, Any]:
     searched_paths = [str((repo_root / candidate).resolve()) for candidate in ADAPTER_CANDIDATES]
     adapter_path = find_adapter(repo_root)
@@ -138,9 +147,12 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "data": data,
             "artifact_filename": ARTIFACT_FILENAME,
             "artifact_path": _artifact_path(data["output_dir"]),
+            "bootstrap_expectations": _bootstrap_expectations(data),
             "errors": [],
             "warnings": [
                 "No find-skills adapter found. Using local-first discovery defaults.",
+                f"First run leaves `{_artifact_path(data['output_dir'])}` as the current capability inventory artifact.",
+                "With no trusted roots configured, discovery stays inside this repo and its declared integrations only.",
                 "Create .agents/find-skills-adapter.yaml to declare trusted skill roots or registry policy.",
             ],
             "searched_paths": searched_paths,
@@ -163,6 +175,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "data": data,
         "artifact_filename": ARTIFACT_FILENAME,
         "artifact_path": _artifact_path(data["output_dir"]),
+        "bootstrap_expectations": _bootstrap_expectations(data),
         "errors": errors,
         "warnings": warnings,
         "searched_paths": searched_paths,

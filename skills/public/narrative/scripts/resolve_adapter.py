@@ -33,6 +33,19 @@ ADAPTER_CANDIDATES = (
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from", "remote_name")
 LIST_FIELDS = ("source_documents", "mutable_documents", "brief_template")
 ARTIFACT_FILENAME = "narrative.md"
+SOURCE_DOCUMENT_CANDIDATES = (
+    "README.md",
+    "docs/master-plan.md",
+    "docs/specs/index.spec.md",
+    "docs/specs/current-product.spec.md",
+    "docs/consumer-readiness.md",
+    "docs/external-consumer-onboarding.md",
+    "docs/roadmap.md",
+    "docs/decisions.md",
+    "docs/control-plane.md",
+    "docs/operator-acceptance.md",
+    "docs/handoff.md",
+)
 
 
 def _string(value: Any, field: str, errors: list[str]) -> str | None:
@@ -54,14 +67,7 @@ def _string_list(value: Any, field: str, errors: list[str]) -> list[str] | None:
 
 
 def _infer_source_documents(repo_root: Path) -> list[str]:
-    candidates = [
-        "README.md",
-        "docs/roadmap.md",
-        "docs/decisions.md",
-        "docs/operator-acceptance.md",
-        "docs/handoff.md",
-    ]
-    inferred = [path for path in candidates if (repo_root / path).is_file()]
+    inferred = [path for path in SOURCE_DOCUMENT_CANDIDATES if (repo_root / path).is_file()]
     return inferred or ["README.md"]
 
 
@@ -123,6 +129,15 @@ def _artifact_path(output_dir: str) -> str:
     return str(Path(output_dir) / ARTIFACT_FILENAME)
 
 
+def _bootstrap_expectations(data: dict[str, Any]) -> dict[str, str]:
+    return {
+        "artifact_path": _artifact_path(data["output_dir"]),
+        "what_you_get_after_one_run": "A durable truth-surface alignment artifact plus one audience-neutral brief skeleton.",
+        "artifact_meaning": "The artifact is a maintained narrative alignment output, not generic writing scratch space.",
+        "what_this_does_not_do": "It does not handle audience-specific adaptation or delivery transport; hand off to announcement for that.",
+    }
+
+
 def load_adapter(repo_root: Path) -> dict[str, Any]:
     searched_paths = [str((repo_root / candidate).resolve()) for candidate in ADAPTER_CANDIDATES]
     adapter_path = find_adapter(repo_root)
@@ -135,9 +150,12 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "data": data,
             "artifact_filename": ARTIFACT_FILENAME,
             "artifact_path": _artifact_path(data["output_dir"]),
+            "bootstrap_expectations": _bootstrap_expectations(data),
             "errors": [],
             "warnings": [
                 "No narrative adapter found. Using inferred source-of-truth defaults.",
+                f"First run leaves `{_artifact_path(data['output_dir'])}` as the durable truth-surface alignment artifact.",
+                "When the repo has richer product or operating truth docs, pin .agents/narrative-adapter.yaml instead of relying on fallback inference.",
                 "Create .agents/narrative-adapter.yaml to pin the truth surface and mutable documents.",
             ],
             "searched_paths": searched_paths,
@@ -160,6 +178,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "data": data,
         "artifact_filename": ARTIFACT_FILENAME,
         "artifact_path": _artifact_path(data["output_dir"]),
+        "bootstrap_expectations": _bootstrap_expectations(data),
         "errors": errors,
         "warnings": warnings,
         "searched_paths": searched_paths,

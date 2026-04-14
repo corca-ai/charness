@@ -39,6 +39,8 @@ def test_narrative_resolve_adapter_reports_brief_template_for_current_repo() -> 
         "Open Questions",
     ]
     assert "docs/control-plane.md" in payload["data"]["source_documents"]
+    assert payload["bootstrap_expectations"]["artifact_path"] == "skill-outputs/narrative/narrative.md"
+    assert "narrative alignment output" in payload["bootstrap_expectations"]["artifact_meaning"]
 
 
 def test_init_repo_inspect_repo_flags_targeted_missing_surface(tmp_path: Path) -> None:

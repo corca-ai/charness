@@ -40,6 +40,19 @@ integration manifests before proposing a new public skill.
 If the adapter advertises trusted skill roots, search those before proposing a
 new local skill.
 
+Default durable artifact:
+
+- `skill-outputs/find-skills/find-skills.md`
+
+What you get after one run:
+
+- a local-first capability inventory
+- the smallest next usable path across public skills, support seams, and integrations
+
+What this does not do:
+
+- arbitrary external skill marketplace search unless the adapter explicitly allows it
+
 ## Workflow
 
 1. Restate the capability need.
