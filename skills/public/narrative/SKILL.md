@@ -87,6 +87,9 @@ git status --short
      when the block needs a concrete input example
    - if the docs coin product-local jargon, define it inline at first use
      instead of sending the reader to a later glossary
+   - when the repo is aligning around a non-trivial design decision, keep one
+     short rejected-alternative or `Deliberately Not Doing` block in the
+     durable docs instead of leaving that memory in chat or handoff only
 4. Derive the brief second.
    - keep it audience-neutral by default
    - prefer one self-contained compression layer that `announcement` can later
@@ -117,6 +120,8 @@ The result should usually include:
   suggests the repo may have moved.
 - Do not collapse durable truth docs and audience-specific briefs into one file
   when their lifecycles differ.
+- Do not strip away the short "why not this other path" note when that note is
+  what keeps the next reader from reopening the same design debate.
 - Do not let audience, language, tone, or channel adaptation pull `narrative`
   into `announcement` territory.
 - Keep the brief portable enough that later audience adaptation does not require

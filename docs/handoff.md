@@ -5,7 +5,7 @@
 - 다음 세션이 support-tool / external tool follow-up이면 먼저
   [docs/support-tool-followup.md](support-tool-followup.md)를 읽는다.
   `#10`, `#11`, `#13`, `#14`, `#6`, `#7`, `#8`, `#15`, `#16`, `#17`,
-  `#18`, `#19`, `#20`, `#21`은 landed 상태다.
+  `#18`, `#19`, `#20`, `#21`, `#23`, `#22`, `#24`는 landed 상태다.
 - 최근 repeat trap은
   [skill-outputs/retro/recent-lessons.md](../skill-outputs/retro/recent-lessons.md)
   에 축약해 두므로, install/update/export/support work 전엔 handoff와 함께
@@ -55,6 +55,12 @@
   adapter-owned checklist로 들고 간다.
 - `spec`는 이제 core에서 `premortem` 용어를 직접 쓰고, bounded fresh-eye
   review를 요구한다.
+- `premortem`은 이제 standalone public skill이다. angle selection,
+  counterweight triage, `Deliberately Not Doing` memory를 one seam으로
+  가져간다.
+- `spec`와 `narrative`는 이제 rejected alternatives를 durable doc에 남기는
+  쪽으로 정리됐다. `quality`는 dual-implementation parity를 weak heuristic +
+  explicit human review lens로 본다.
 - hidden support source-of-truth도 넓어졌다.
   `skills/support/specdown/`, `skills/support/agent-browser/`는 이제
   authoritative tree에 포함된다.
@@ -66,12 +72,11 @@
 
 ## Next Session
 
-1. 다음 공개 이슈는 `#24`다. standalone `premortem` skill과
-   `spec`/`narrative`/`quality` extension을 실제 `../cautilus` evidence와 함께
-   검토하는 흐름으로 이어가면 된다.
-2. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
+1. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
    surface를 다른 머신에서 한 번 더 확인한다. 특히 real binary install이
    PATH/non-PATH일 때 next-step honesty가 유지되는지 본다.
+2. `quality` ergonomics를 advisory에서 stronger gate로 올릴지, 혹은 지금
+   수준의 advisory inventory를 유지할지 다시 결정한다.
 3. 추가 retro를 남길 때는 ad hoc 파일 쓰기 대신
    `skills/public/retro/scripts/persist_retro_artifact.py`를 사용한다.
 

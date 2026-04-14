@@ -1,0 +1,91 @@
+---
+name: premortem
+description: "Use when a non-trivial design, deletion, rename, release, or workflow decision needs a before-the-fact failure review. Probe distinct failure angles, then run a counterweight pass that separates real blockers from over-worry before the caller locks the decision."
+---
+
+# Premortem
+
+Use this when the next risk is not implementation detail alone, but locking the
+wrong decision or carrying the wrong fear into implementation.
+
+`premortem` is the structured before-the-fact counterpart to `retro`.
+It should stress a pending decision from distinct angles, then perform one
+counterweight pass so the findings become actionable instead of a paranoia pile.
+
+## Bootstrap
+
+Read only the smallest decision surface that makes the choice legible.
+
+```bash
+# Required Tools: rg
+# Missing-binary protocol: create-skill/references/binary-preflight.md
+rg --files docs skills
+sed -n '1,220p' docs/handoff.md 2>/dev/null || true
+rg -n "spec|decision|follow-up|non-goal|out of scope|acceptance|risk|rename|delete|remove|migration" .
+```
+
+If a current spec, plan, PR proposal, or issue already exists, use that as the
+decision contract. Do not restate the whole project history.
+
+## Workflow
+
+1. Restate the pending decision.
+   - what is being changed, removed, or locked
+   - what would count as success
+   - what is explicitly out of scope for this pass
+2. Pick a bounded set of contrasting angles.
+   - default to three to five angles
+   - choose angles that can disagree meaningfully, not five near-duplicates
+   - see `references/angle-selection.md`
+3. Run the angle pass.
+   - if subagents are available and explicitly allowed, use bounded fresh-eye
+     subagents with one angle each
+   - otherwise run the same angle pass locally and keep the findings separated
+     by angle
+4. Collapse the findings into one candidate concern list.
+   - deduplicate overlap
+   - keep evidence and cited source paths with each concern when available
+   - prefer concerns that would change the next move, not generic worry
+5. Run one counterweight pass.
+   - act like a skeptical senior engineer pushing back on paranoia,
+     speculative consumers, and expensive hypotheticals
+   - triage each concern using `references/counterweight-triage.md`
+6. Persist the decision memory.
+   - if a concern changes the decision, tighten the spec, plan, or release
+     contract immediately
+   - if a rejected concern matters to future readers, write it into a short
+     `Deliberately Not Doing` or equivalent section in the durable artifact
+7. End with the next move.
+   - what must change before implementation or release
+   - what can be bundled cheaply
+   - what is over-worry and should be ignored
+   - what is valid but explicitly deferred
+
+## Output Shape
+
+The result should usually include:
+
+- `Decision`
+- `Angles`
+- `Findings`
+- `Counterweight Triage`
+- `Deliberately Not Doing`
+- `Next Move`
+
+## Guardrails
+
+- Do not turn premortem into broad ideation. Start from an actual pending
+  decision.
+- Do not open more angles than you can triage honestly.
+- Do not keep rejected alternatives only in chat when the same debate will
+  likely recur.
+- Do not treat every surfaced concern as equally important.
+- Do not skip the counterweight pass; a paranoia backlog without triage is not
+  decision support.
+- If subagents are unavailable or not explicitly allowed, do the same workflow
+  locally instead of pretending the fresh-eye pass happened.
+
+## References
+
+- `references/angle-selection.md`
+- `references/counterweight-triage.md`

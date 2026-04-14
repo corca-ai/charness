@@ -1,0 +1,40 @@
+from __future__ import annotations
+
+from .support import ROOT
+
+
+def test_premortem_skill_surfaces_counterweight_and_deliberately_not_doing() -> None:
+    skill_text = (ROOT / "skills" / "public" / "premortem" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    angle_text = (
+        ROOT / "skills" / "public" / "premortem" / "references" / "angle-selection.md"
+    ).read_text(encoding="utf-8")
+    counterweight_text = (
+        ROOT / "skills" / "public" / "premortem" / "references" / "counterweight-triage.md"
+    ).read_text(encoding="utf-8")
+
+    assert "counterweight" in skill_text
+    assert "Deliberately Not Doing" in skill_text
+    assert "subagents are available and explicitly allowed" in skill_text
+    assert "blast-radius" in angle_text
+    assert "future maintainer" in angle_text
+    assert "Act Before Ship" in counterweight_text
+    assert "Over-Worry" in counterweight_text
+
+
+def test_spec_and_narrative_preserve_rejected_alternatives() -> None:
+    spec_text = (ROOT / "skills" / "public" / "spec" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    rejected = (
+        ROOT / "skills" / "public" / "spec" / "references" / "rejected-alternatives.md"
+    ).read_text(encoding="utf-8")
+    narrative_text = (ROOT / "skills" / "public" / "narrative" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "standalone `premortem` skill" in spec_text
+    assert "Deliberately Not Doing" in spec_text
+    assert "rejected alternatives" in rejected
+    assert "Deliberately Not Doing" in narrative_text

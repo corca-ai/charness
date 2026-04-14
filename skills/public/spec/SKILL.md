@@ -34,14 +34,11 @@ sed -n '1,220p' skills/public/impl/SKILL.md 2>/dev/null || true
 
 If an ideation document already exists, refine it into a spec. Do not restate
 the entire discovery history from scratch.
-
 If the repo already has executable acceptance artifacts, treat them as part of
 the spec surface rather than as a separate world.
-
 When the repo uses executable specs, inspect whether they stay at the
 acceptance boundary or whether they have started duplicating low-level test
 detail and runtime cost.
-
 Borrow Ward Cunningham-style executable-spec discipline when the repo uses
 tools such as `specdown`: executable acceptance artifacts should make the
 contract concrete at the boundary, not replace the unit suite or hide low-level
@@ -56,10 +53,8 @@ for simpler interfaces and deeper seams. See
 ## Contract Shaping
 
 Choose the lightest honest contract shape.
-
 When implementation churn would be expensive, reduce ambiguity earlier and make
 the slice more explicit before coding starts.
-
 If some answers will emerge only while building, keep the contract
 probe-friendly and visible instead of inventing a user-facing mode choice.
 
@@ -76,7 +71,9 @@ five-minute implementer, reviewer, or operator would most likely misread, and
 tighten only the lines that create real ambiguity. If the runtime supports
 subagents and the session explicitly allows them, use one fresh-eye subagent
 with a contrasting lens; otherwise do the challenge pass yourself. See
-`references/premortem-loop.md`.
+`references/premortem-loop.md`. When the decision is non-trivial, use the
+standalone `premortem` skill as the subroutine rather than reinventing angle
+selection and triage inline.
 
 ## Workflow
 
@@ -98,6 +95,8 @@ with a contrasting lens; otherwise do the challenge pass yourself. See
 4. Define the current execution contract.
    - current slice
    - non-goals
+   - deliberately not doing or rejected alternatives when future readers are
+     likely to reopen the same branch
    - constraints
    - success criteria
    - acceptance checks
@@ -128,6 +127,8 @@ with a contrasting lens; otherwise do the challenge pass yourself. See
      acceptance checks that look stronger than they really are
    - if subagents are available and explicitly allowed, use one fresh-eye
      subagent or contrasting reviewer lens; otherwise do the same pass locally
+   - keep future re-litigation low by writing the important rejected paths into
+     the spec itself instead of leaving them in chat-only memory
    - tighten only the lines that change the likely next action; do not reopen
      broad ideation
 8. End with the next execution state.
@@ -145,6 +146,7 @@ The final spec should usually include:
 - `Probe Questions`
 - `Deferred Decisions`
 - `Non-Goals`
+- `Deliberately Not Doing`
 - `Constraints`
 - `Success Criteria`
 - `Acceptance Checks`
@@ -165,6 +167,8 @@ If the idea depends on durable structure or flow, reuse ideation outputs such as
   check.
 - Do not skip the bounded premortem on a risky or cross-surface contract just
   because the document reads clearly to the current author.
+- Do not leave important rejected alternatives only in chat when the same
+  branch is likely to be reopened by the next maintainer.
 - Do not let acceptance checks become a second copy of the unit suite just
   because the repo already has executable specs.
 - Do not silently assume implementation details when they materially change
@@ -187,6 +191,7 @@ If the idea depends on durable structure or flow, reuse ideation outputs such as
 - `references/acceptance-checks.md`
 - `references/executable-spec-cost.md`
 - `references/premortem-loop.md`
+- `references/rejected-alternatives.md`
 - `references/design-lenses.md`
 - `references/sequence-discipline.md`
 - `references/ambiguity-rules.md`

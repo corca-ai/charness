@@ -78,6 +78,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - local executable gates already present
    - if the repo ships an installable CLI, bootstrap command, or operator-facing command surface, inspect whether help, command discovery, binary health, install/readiness, and local discoverability are separated honestly
    - when CLI ergonomics are in scope, inventory flat help-list and cross-archetype schema smells with `scripts/inventory_cli_ergonomics.py`
+   - when the repo may keep one shipped implementation beside a historical or alternate runtime path, inventory likely dual-implementation parity smells with `scripts/inventory_dual_implementation.py`
    - inspect README / INSTALL / operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
    - if evaluator-backed review or prompt-sensitive output matters, inspect whether prompt/content bulk stays in checked-in assets or is still embedded inline in source files
@@ -92,7 +93,6 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - keep the run bounded to the current scope when the task is not repo-wide
    - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage
    - for timing/logs/retention signals, workflow-runtime drift, and retention signals, see `references/operability-signals.md`
-   - surface the current runtime hot spots from available timing or CI signals
    - when a hot spot becomes the standing single dominator, define a `runtime_budgets` entry in the adapter and call `scripts/check-runtime-budget.py` from the repo's standing gate; budgets fail the gate when `runtime-signals.json` records latest > budget
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model
@@ -106,11 +106,8 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - treat checked-in hook config, a repo-owned hook installer/checker, and repo-owned install paths for extra gate binaries as a first-class positive pattern, not only the absence of a missing gap
    - when the repo authors skills, include skill package quality, portable bootstrap seams, shared-helper drift, and explicit skill ergonomics review
    - make skill ergonomics explicit: concise `SKILL.md` core, progressive disclosure honesty, unnecessary mode/option pressure, trigger overlap/undertrigger risk, and prose ritual that should become a helper script
-   - make `behavior` explicit about whether coverage is standing-gated, informally sampled, or absent
    - make evaluator depth explicit: smoke only, maintained evaluator-backed, or still smoke plus HITL
    - if stronger local proof depends on an external binary or support tool, state whether it is currently installed and healthy, then surface the exact install and post-install verification path instead of vague prose
-   - prefer the shared recommendation payload when a validation tool is missing instead of hand-writing install guidance from scratch
-   - keep prompt/content bulk findings advisory unless the repo already chose a stricter local policy; some inline strings are legitimate
 5. Classify each issue by enforcement tier first.
    - `AUTO_EXISTING`: already enforced by a meaningful deterministic gate
    - `AUTO_CANDIDATE`: should be promoted into a linter, validator, test, hook, or script
@@ -162,6 +159,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not let whole-worktree scans fail on gitignored runtime artifacts unless the gate explicitly exists to validate that machine-local state.
 - Do not collapse help, command discovery, healthcheck, readiness, and local discoverability into one generic "doctor passed" claim when the repo ships an installable CLI or plugin surface.
 - Do not ignore a 30-command flat help list or a subcommand that accepts multiple archetype schema namespaces; those are discoverability smells.
+- Do not treat a historical second implementation as a free safety oracle when no parity harness proves the two paths still agree.
 - Do not treat support-skill materialization or host-visible plugin discovery as the same seam as generic binary health.
 - Do not hide a missing evaluator or support binary behind "deeper validation recommended"; say whether the deeper bar is currently unavailable locally and how to enable it.
 - Keep repo-local markdown-link discipline separate from external URL health when the repo needs both.
@@ -186,13 +184,14 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - `references/skill-ergonomics.md`
 - `references/installable-cli-probes.md`
 - `references/cli-ergonomics-smells.md`
+- `references/dual-implementation-parity.md`
 - `references/proposal-flow.md`
 - `references/gate-classification.md`
 - `references/automation-promotion.md`
 - `references/bootstrap-posture.md`
 - `references/operability-signals.md`
-- `references/executable-spec-economics.md`
 - `references/sample-presets.md`
+- `references/executable-spec-economics.md`
 - `references/security-overview.md`
 - `references/security-npm.md`
 - `references/security-pnpm.md`
