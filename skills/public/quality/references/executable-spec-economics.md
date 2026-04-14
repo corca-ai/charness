@@ -11,6 +11,9 @@ wrappers, or spend large runtime on repeated coverage.
 When a repo uses executable specs, inspect:
 
 - whether the spec suite stays at acceptance level or drifts into unit detail
+- how much of the suite is still smoke/existence proof versus real behavior
+  proof, and whether the repo has adapter-owned smoke patterns to keep that
+  classification honest
 - whether the same test file or broad command is invoked from many specs
 - whether shell blocks are doing parsing or orchestration that should live in a
   direct adapter
@@ -22,8 +25,11 @@ When a repo uses executable specs, inspect:
 ## Common Failure Modes
 
 - shell-only adapters become a universal escape hatch for every check
+- a large smoke/existence slice is reported as if it were behavior coverage
 - each spec re-runs a large shared test target instead of one representative
   boundary example
+- specs delegate straight to `pytest -k ...` or duplicate pytest assertions
+  without adding an independent contract boundary
 - new specs add coverage by stacking more integration commands rather than
   pushing detail into unit tests
 - a historical E2E or smoke path remains in the standing bar after a narrower

@@ -102,9 +102,12 @@ def scenario_quality_adapter_checked_in(root: Path) -> None:
         raise EvalError(
             f"checked-in quality adapter resolve: unexpected artifact_path {payload.get('artifact_path')!r}"
         )
-    gate_commands = payload.get("data", {}).get("gate_commands", [])
+    data = payload.get("data", {})
+    gate_commands = data.get("gate_commands", [])
     if "./scripts/run-quality.sh" not in gate_commands:
         raise EvalError(f"checked-in quality adapter resolve: missing canonical gate command in {gate_commands!r}")
+    if data.get("coverage_fragile_margin_pp") != 1.0:
+        raise EvalError(f"checked-in quality adapter resolve: unexpected coverage fragile margin {data!r}")
 
 
 def scenario_quality_bootstrap_posture(root: Path) -> None:
@@ -141,6 +144,8 @@ def scenario_quality_bootstrap_posture(root: Path) -> None:
         resolved = json.loads(resolve_result.stdout)
         if resolved["data"]["gate_commands"] != ["./scripts/run-quality.sh"]:
             raise EvalError(f"quality bootstrap posture resolve: unexpected adapter payload {resolved!r}")
+        if resolved["data"]["coverage_fragile_margin_pp"] != 1.0:
+            raise EvalError(f"quality bootstrap posture resolve: unexpected fragile margin {resolved!r}")
 
 def scenario_narrative_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="narrative", adapter_name="narrative-adapter.yaml", expected_artifact_path="skill-outputs/narrative/narrative.md")

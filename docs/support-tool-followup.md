@@ -77,6 +77,23 @@ even if the next session only skims this document.
   issue, and the old skill-discoverability concern is no longer a blocker on
   the `charness` side because support skills are now always materialized.
 
+- `corca-ai/charness#9`
+  Landed. `create-cli` now separates no-side-effect help, machine-readable
+  command discovery, binary/runtime health, repo/install readiness, and local
+  discoverability directly in the public skill contract.
+
+- `corca-ai/charness#10`
+  Landed. `quality` now inspects installable CLI probe layers explicitly,
+  checks README / INSTALL / operator docs for probe-contract drift, and
+  requires exact install/verify guidance when a missing external tool blocks
+  deeper local proof.
+
+- `corca-ai/charness#13`
+  Landed as the second-wave `quality` follow-on. The quality adapter now has
+  `specdown_smoke_patterns` and `coverage_fragile_margin_pp`, and the public
+  skill now calls out executable-spec smoke-vs-behavior ratios, pytest/specdown
+  overlap, and fragile coverage-floor tagging.
+
 - `corca-ai/charness#12`
   Close as declined in its current form. `charness` should not recommend
   `git push` as the generic local verification primitive because push is an
@@ -95,22 +112,10 @@ even if the next session only skims this document.
 
 ### Carry Forward
 
-- `corca-ai/charness#9`
-  Keep and implement next. This is the main place to generalize the `cautilus`
-  probe-contract lessons into a portable CLI-design skill.
-
-- `corca-ai/charness#10`
-  Keep and implement next. This is the quality-review side of the same lesson.
-
-- `corca-ai/charness#13`
-  Keep, but treat it as the next `quality` deepening pass after `#10`. The
-  direction is good, but it is more specific and adapter-shaped than the core
-  installable-CLI probe-contract posture work.
-
 - `corca-ai/charness#11`
-  Keep open, but not as the next slice. First land the stable probe-contract
-  language in `create-cli` and `quality`; then decide how much of that belongs
-  in `init-repo` bootstrap guidance.
+  Keep open, but not as the next slice. The stable probe-contract language in
+  `create-cli` and `quality` is now landed; the remaining question is how much
+  of that should move into `init-repo` bootstrap guidance without boilerplate.
 
 ### Not In This Workstream
 

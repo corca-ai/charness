@@ -7,6 +7,13 @@ from typing import Any
 from scripts.adapter_lib import load_yaml_file, render_yaml_mapping
 
 LINEAGE_ORDER = ("python-quality", "typescript-quality", "specdown-quality", "monorepo-quality")
+DEFAULT_COVERAGE_FRAGILE_MARGIN_PP = 1.0
+DEFAULT_SPECDOWN_SMOKE_PATTERNS = [
+    r"\bgrep\s+-q\b",
+    r"\[pycheck\]",
+    r"\b(?:uv\s+run\s+)?python\s+-m\s+pytest\b",
+    r"\bpytest\b.*\s-k\s+",
+]
 ADAPTER_CANDIDATES = (
     Path(".agents/quality-adapter.yaml"),
     Path(".codex/quality-adapter.yaml"),
@@ -154,6 +161,8 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "preset_id": "portable-defaults",
         "customized_from": "portable-defaults",
         "preset_lineage": [],
+        "coverage_fragile_margin_pp": DEFAULT_COVERAGE_FRAGILE_MARGIN_PP,
+        "specdown_smoke_patterns": [],
         "concept_paths": [],
         "preflight_commands": [],
         "gate_commands": [],
@@ -161,19 +170,34 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _default_specdown_smoke_patterns(preset_lineage: list[str]) -> list[str]:
+    if "specdown-quality" not in preset_lineage:
+        return []
+    return list(DEFAULT_SPECDOWN_SMOKE_PATTERNS)
+
+
 def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
     defaults = _infer_defaults(repo_root)
     adapter_path = next((repo_root / candidate for candidate in ADAPTER_CANDIDATES if (repo_root / candidate).is_file()), None)
     if adapter_path is None:
+        defaults["_explicit_fields"] = set()
         return defaults
     raw = load_yaml_file(adapter_path)
     if not isinstance(raw, dict):
+        defaults["_explicit_fields"] = set()
         return defaults
     data = dict(defaults)
+    data["_explicit_fields"] = set(raw.keys())
     for field in ("version", "repo", "language", "output_dir", "preset_id", "preset_version", "customized_from"):
         value = raw.get(field)
         if value is not None:
             data[field] = value
+    coverage_fragile_margin_pp = raw.get("coverage_fragile_margin_pp")
+    if isinstance(coverage_fragile_margin_pp, (int, float)):
+        data["coverage_fragile_margin_pp"] = float(coverage_fragile_margin_pp)
+    specdown_smoke_patterns = raw.get("specdown_smoke_patterns")
+    if isinstance(specdown_smoke_patterns, list) and all(isinstance(item, str) for item in specdown_smoke_patterns):
+        data["specdown_smoke_patterns"] = list(specdown_smoke_patterns)
     for field in ("preset_lineage", "concept_paths", "preflight_commands", "gate_commands", "security_commands"):
         value = raw.get(field)
         if isinstance(value, list) and all(isinstance(item, str) for item in value):
@@ -183,6 +207,7 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
 
 def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, str], list[dict[str, Any]]]:
     existing = _load_existing_adapter_data(repo_root)
+    explicit_fields = existing.get("_explicit_fields", set())
     detected_lineage = detect_preset_lineage(repo_root)
     field_statuses: dict[str, str] = {}
     deferred_setup: list[dict[str, Any]] = []
@@ -207,6 +232,22 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
         merged_lineage = []
         field_statuses["preset_lineage"] = "deferred"
     final["preset_lineage"] = merged_lineage
+
+    if "coverage_fragile_margin_pp" in explicit_fields:
+        final["coverage_fragile_margin_pp"] = existing["coverage_fragile_margin_pp"]
+        field_statuses["coverage_fragile_margin_pp"] = "preserved"
+    else:
+        final["coverage_fragile_margin_pp"] = DEFAULT_COVERAGE_FRAGILE_MARGIN_PP
+        field_statuses["coverage_fragile_margin_pp"] = "defaulted"
+
+    existing_patterns = existing.get("specdown_smoke_patterns", [])
+    if "specdown_smoke_patterns" in explicit_fields:
+        final["specdown_smoke_patterns"] = list(existing_patterns)
+        field_statuses["specdown_smoke_patterns"] = "preserved"
+    else:
+        inferred_patterns = _default_specdown_smoke_patterns(merged_lineage)
+        final["specdown_smoke_patterns"] = inferred_patterns
+        field_statuses["specdown_smoke_patterns"] = "inferred" if inferred_patterns else "defaulted"
 
     concept_paths = detect_concept_paths(repo_root)
     existing_concepts = [path for path in existing.get("concept_paths", []) if (repo_root / path).is_file()]
@@ -256,6 +297,8 @@ def render_bootstrap_adapter(data: dict[str, Any]) -> str:
     items.extend(
         [
             ("preset_lineage", data["preset_lineage"]),
+            ("coverage_fragile_margin_pp", data["coverage_fragile_margin_pp"]),
+            ("specdown_smoke_patterns", data["specdown_smoke_patterns"]),
             ("concept_paths", data["concept_paths"]),
             ("preflight_commands", data["preflight_commands"]),
             ("gate_commands", data["gate_commands"]),

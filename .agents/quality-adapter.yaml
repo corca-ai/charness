@@ -6,6 +6,8 @@ preset_id: python-quality
 customized_from: python-quality
 preset_lineage:
 - python-quality
+coverage_fragile_margin_pp: 1.0
+specdown_smoke_patterns: []
 concept_paths:
 - docs/control-plane.md
 - docs/public-skill-validation.md

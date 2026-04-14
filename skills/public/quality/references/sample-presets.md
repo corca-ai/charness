@@ -19,3 +19,6 @@ The adapter should still record the actual commands and the preset lineage.
   spans more than one family
 - bootstrap should prefer honest multi-family lineage over pretending one
   sample preset fully explains the repo
+- `specdown-quality` should also seed executable-spec-specific adapter defaults
+  such as `specdown_smoke_patterns`; `coverage_fragile_margin_pp` defaults to
+  `1.0` unless the repo needs a stricter or looser threshold

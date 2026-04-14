@@ -17,9 +17,19 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
 
 
 def build_items(repo_name: str, args: argparse.Namespace) -> list[tuple[str, object]]:
+    specdown_smoke_patterns = []
+    if args.preset_id == "specdown-quality":
+        specdown_smoke_patterns = [
+            r"\bgrep\s+-q\b",
+            r"\[pycheck\]",
+            r"\b(?:uv\s+run\s+)?python\s+-m\s+pytest\b",
+            r"\bpytest\b.*\s-k\s+",
+        ]
     return [
         *base_adapter_items(repo_name, "skill-outputs/quality", preset_id=args.preset_id),
         ("preset_lineage", [args.preset_id] if args.preset_id != "portable-defaults" else []),
+        ("coverage_fragile_margin_pp", 1.0),
+        ("specdown_smoke_patterns", specdown_smoke_patterns),
         ("concept_paths", []),
         ("preflight_commands", []),
         ("gate_commands", []),

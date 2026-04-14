@@ -22,6 +22,12 @@ letting them absorb unit-test detail.
 - canonical adapter directory: `.agents/`
 - canonical durable output root: `skill-outputs/`
 - quality output directory: `skill-outputs/quality`
+- `coverage_fragile_margin_pp`: `1.0`
+- `specdown_smoke_patterns`:
+  - `\\bgrep\\s+-q\\b`
+  - `\\[pycheck\\]`
+  - `\\b(?:uv\\s+run\\s+)?python\\s+-m\\s+pytest\\b`
+  - `\\bpytest\\b.*\\s-k\\s+`
 
 ## Suggested Gate Vocabulary
 

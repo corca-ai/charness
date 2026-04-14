@@ -33,12 +33,15 @@ Optional shared provenance:
 
 Quality-specific fields:
 
+- `coverage_fragile_margin_pp`
+- `specdown_smoke_patterns`
 - `concept_paths`
 - `preflight_commands`
 - `gate_commands`
 - `security_commands`
 
 Use explicit empty lists to record an intentional opt-out.
+Keep `coverage_fragile_margin_pp` numeric; `1.0` is the portable default.
 
 ## Artifact Rule
 
@@ -59,6 +62,8 @@ To change the location, override `output_dir` in the adapter.
 ## Design Rules
 
 - keep repo-specific commands in the adapter, not in the skill body
+- keep repo-specific executable-spec smoke patterns and fragile coverage
+  thresholds in the adapter, not in the public skill body
 - prefer a small number of meaningful command groups over many tiny fields
 - use presets to suggest defaults, but keep the final command surface explicit
   in the adapter

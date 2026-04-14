@@ -31,10 +31,12 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     payload = json.loads(result.stdout)
     assert payload["adapter_status"] == "written"
     assert payload["field_statuses"] == {
+        "coverage_fragile_margin_pp": "defaulted",
         "concept_paths": "inferred",
         "gate_commands": "installed",
         "preflight_commands": "installed",
         "preset_lineage": "inferred",
+        "specdown_smoke_patterns": "defaulted",
         "security_commands": "installed",
     }
     assert payload["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
@@ -46,6 +48,8 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     assert resolve_result.returncode == 0, resolve_result.stderr
     resolved = json.loads(resolve_result.stdout)
     assert resolved["data"]["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
+    assert resolved["data"]["coverage_fragile_margin_pp"] == 1.0
+    assert resolved["data"]["specdown_smoke_patterns"] == []
     assert resolved["data"]["gate_commands"] == ["./scripts/run-quality.sh"]
     assert resolved["data"]["preflight_commands"] == ["python3 scripts/validate-maintainer-setup.py --repo-root ."]
 
@@ -63,6 +67,8 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
                 "customized_from: python-quality",
                 "preset_lineage:",
                 "- python-quality",
+                "coverage_fragile_margin_pp: 0.5",
+                "specdown_smoke_patterns: []",
                 "gate_commands:",
                 "- python3 -m pytest -q",
                 "preflight_commands: []",
@@ -79,11 +85,15 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     payload = json.loads(result.stdout)
     assert payload["adapter_status"] == "updated"
     assert payload["field_statuses"]["gate_commands"] == "preserved"
+    assert payload["field_statuses"]["coverage_fragile_margin_pp"] == "preserved"
+    assert payload["field_statuses"]["specdown_smoke_patterns"] == "preserved"
 
     resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
     resolved = json.loads(resolve_result.stdout)
     assert resolved["data"]["gate_commands"] == ["python3 -m pytest -q"]
+    assert resolved["data"]["coverage_fragile_margin_pp"] == 0.5
+    assert resolved["data"]["specdown_smoke_patterns"] == []
     assert resolved["data"]["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
 
 
@@ -99,3 +109,51 @@ def test_quality_bootstrap_detects_repo_owned_github_actions_check(tmp_path: Pat
     assert resolve_result.returncode == 0, resolve_result.stderr
     resolved = json.loads(resolve_result.stdout)
     assert resolved["data"]["gate_commands"] == ["python3 scripts/check-github-actions.py --repo-root ."]
+
+
+def test_quality_bootstrap_infers_specdown_defaults(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    (repo / ".specdown").mkdir()
+
+    result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["field_statuses"]["specdown_smoke_patterns"] == "inferred"
+    assert "specdown-quality" in payload["preset_lineage"]
+
+    resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
+    assert resolve_result.returncode == 0, resolve_result.stderr
+    resolved = json.loads(resolve_result.stdout)
+    assert resolved["data"]["coverage_fragile_margin_pp"] == 1.0
+    assert resolved["data"]["specdown_smoke_patterns"] == [
+        r"\bgrep\s+-q\b",
+        r"\[pycheck\]",
+        r"\b(?:uv\s+run\s+)?python\s+-m\s+pytest\b",
+        r"\bpytest\b.*\s-k\s+",
+    ]
+
+
+def test_quality_init_adapter_seeds_specdown_defaults(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    result = run_script(
+        "skills/public/quality/scripts/init_adapter.py",
+        "--repo-root",
+        str(repo),
+        "--preset-id",
+        "specdown-quality",
+    )
+    assert result.returncode == 0, result.stderr
+
+    resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
+    assert resolve_result.returncode == 0, resolve_result.stderr
+    resolved = json.loads(resolve_result.stdout)
+    assert resolved["data"]["preset_lineage"] == ["specdown-quality"]
+    assert resolved["data"]["coverage_fragile_margin_pp"] == 1.0
+    assert resolved["data"]["specdown_smoke_patterns"] == [
+        r"\bgrep\s+-q\b",
+        r"\[pycheck\]",
+        r"\b(?:uv\s+run\s+)?python\s+-m\s+pytest\b",
+        r"\bpytest\b.*\s-k\s+",
+    ]

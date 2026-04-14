@@ -53,6 +53,19 @@ def _string_list(value: Any, field: str, errors: list[str]) -> list[str] | None:
     return list(value)
 
 
+def _float_value(value: Any, field: str, errors: list[str]) -> float | None:
+    if value is None:
+        return None
+    if not isinstance(value, (int, float)):
+        errors.append(f"{field} must be a number")
+        return None
+    result = float(value)
+    if result < 0:
+        errors.append(f"{field} must be greater than or equal to 0")
+        return None
+    return result
+
+
 def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
     return {
         "version": 1,
@@ -60,6 +73,8 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "language": "en",
         "output_dir": "skill-outputs/quality",
         "preset_lineage": [],
+        "coverage_fragile_margin_pp": 1.0,
+        "specdown_smoke_patterns": [],
         "concept_paths": [],
         "preflight_commands": [],
         "gate_commands": [],
@@ -83,6 +98,14 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         value = _string(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
+
+    coverage_fragile_margin_pp = _float_value(data.get("coverage_fragile_margin_pp"), "coverage_fragile_margin_pp", errors)
+    if coverage_fragile_margin_pp is not None:
+        validated["coverage_fragile_margin_pp"] = coverage_fragile_margin_pp
+
+    specdown_smoke_patterns = _string_list(data.get("specdown_smoke_patterns"), "specdown_smoke_patterns", errors)
+    if specdown_smoke_patterns is not None:
+        validated["specdown_smoke_patterns"] = specdown_smoke_patterns
 
     for field in LIST_FIELDS:
         items = _string_list(data.get(field), field, errors)

@@ -6,6 +6,8 @@ preset_id: typescript-quality
 customized_from: typescript-quality
 preset_lineage:
 - typescript-quality
+coverage_fragile_margin_pp: 1.0
+specdown_smoke_patterns: []
 concept_paths: []
 preflight_commands: []
 gate_commands: []

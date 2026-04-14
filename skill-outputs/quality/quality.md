@@ -27,6 +27,7 @@ Repo-wide quality posture after landing the `quality` installable-CLI probe-cont
 - maintainer-local enforcement is honest: checked-in pre-push hook, repo-owned installer, and standing validator all exist.
 - adapter-required public skills fail closed when bootstrap artifacts drift, and evaluator-required skills keep a maintained cautilus scenario registry.
 - the installable-CLI probe lens passes on the checked-out repo: `charness` keeps `--help`, `doctor`, `update`, `reset`, and `tool doctor` as distinct seams.
+- the quality adapter now carries `coverage_fragile_margin_pp` and `specdown_smoke_patterns`, so executable-spec smoke classification and fragile coverage-floor tagging have repo-owned config instead of prose-only thresholds.
 - `README.md`, `INSTALL.md`, `UNINSTALL.md`, and `docs/host-packaging.md` stay aligned with that split and keep managed install, refresh, and host-visible plugin state separate.
 - the recommendation flow is specific enough to use operationally: `gws-cli` reports `doctor_status = ok` with provenance and readiness, while `cautilus` reports `install-needed` plus upstream docs and a repo-owned verify command.
 - packaging drift, markdown-link discipline, and external URL health are checked by separate owners instead of one noisy mixed gate.
@@ -38,6 +39,7 @@ Repo-wide quality posture after landing the `quality` installable-CLI probe-cont
 - the `gitleaks`-installed branch was not exercised live in this clone.
 - the coverage gate is honest but intentionally scoped; several control-plane modules still sit below `60%` even though the aggregate floor passes.
 - the installed managed checkout on this machine may lag the current source checkout, so `--repo-root .` proofs and managed-install proofs should stay separate.
+- `charness` itself does not keep a standing specdown smoke surface, so the new smoke-vs-behavior ratio path is adapter-backed and tested but not heavily exercised by the current repo artifact.
 
 ## Missing
 
