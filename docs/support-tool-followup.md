@@ -94,6 +94,13 @@ even if the next session only skims this document.
   skill now calls out executable-spec smoke-vs-behavior ratios, pytest/specdown
   overlap, and fragile coverage-floor tagging.
 
+- `corca-ai/charness#11`
+  Landed. `init-repo` now points installable-surface repos at an explicit probe
+  surface, keeps that guidance narrow, and teaches `README.md` / `INSTALL.md`
+  to name install, healthcheck, discovery, readiness, and local
+  discoverability semantics without forcing boilerplate onto repos that do not
+  ship installable surfaces.
+
 - `corca-ai/charness#12`
   Close as declined in its current form. `charness` should not recommend
   `git push` as the generic local verification primitive because push is an
@@ -111,11 +118,6 @@ even if the next session only skims this document.
     surface-based validator selection"
 
 ### Carry Forward
-
-- `corca-ai/charness#11`
-  Keep open, but not as the next slice. The stable probe-contract language in
-  `create-cli` and `quality` is now landed; the remaining question is how much
-  of that should move into `init-repo` bootstrap guidance without boilerplate.
 
 ### Not In This Workstream
 

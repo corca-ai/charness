@@ -11,6 +11,9 @@ parallel templates.
 ## Checks
 
 - is `README.md` current and minimally honest
+- if the repo ships an installable surface, do `README.md` and `INSTALL.md`
+  name probe semantics without collapsing health, readiness, and
+  discoverability into one command
 - do `AGENTS.md` and `CLAUDE.md` express one clear host-facing contract
 - does `docs/roadmap.md` exist when the repo needs short-horizon planning
 - can a human operator tell what to do from `docs/operator-acceptance.md`

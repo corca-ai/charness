@@ -30,3 +30,12 @@ re-ask them.
 
 Add `INSTALL.md` and `UNINSTALL.md` only when the repo actually exposes an
 installable plugin, package, or operator-facing install contract.
+
+If those docs are needed, seed a small explicit probe surface early so future
+wrappers or operators do not have to reverse-engineer:
+
+- install or update path
+- binary healthcheck
+- machine-readable discovery if it exists
+- repo or install readiness
+- local discoverability or materialization step

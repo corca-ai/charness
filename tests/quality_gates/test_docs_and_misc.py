@@ -56,6 +56,19 @@ def test_init_repo_inspect_repo_flags_targeted_missing_surface(tmp_path: Path) -
     assert payload["missing_surfaces"] == ["operator_acceptance"]
 
 
+def test_init_repo_skill_bootstraps_probe_surface_guidance() -> None:
+    skill_text = (ROOT / "skills" / "public" / "init-repo" / "SKILL.md").read_text(encoding="utf-8")
+    probe_reference = (
+        ROOT / "skills" / "public" / "init-repo" / "references" / "probe-surface.md"
+    ).read_text(encoding="utf-8")
+
+    assert "probe surface" in skill_text
+    assert "installable CLI" in skill_text
+    assert "binary healthcheck" in probe_reference
+    assert "machine-readable command discovery" in probe_reference
+    assert "local discoverability" in probe_reference
+
+
 def test_init_repo_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "docs" / "specs").mkdir(parents=True)

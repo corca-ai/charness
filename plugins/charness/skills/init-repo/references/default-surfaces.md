@@ -10,6 +10,8 @@ The repo root [README.md](../../../../README.md) should answer:
 - who it is for
 - what the current scope is
 - where the next planning and operator docs live
+- when the repo ships an installable surface, where the canonical install and
+  probe-surface guidance lives
 
 ## AGENTS
 
@@ -59,6 +61,16 @@ acceptance from them instead of inventing a disconnected checklist:
 
 Only scaffold `INSTALL.md` and `UNINSTALL.md` when the repo really exposes an
 installable surface such as a plugin, package, or operator-facing setup path.
+
+When `INSTALL.md` exists for that reason, it should also keep a small explicit
+probe surface honest:
+
+- install or update path
+- binary healthcheck
+- machine-readable discovery if it exists
+- repo or install readiness
+- local discoverability or materialization step when agents or plugins depend
+  on it
 
 ## GitHub Actions Defaults
 

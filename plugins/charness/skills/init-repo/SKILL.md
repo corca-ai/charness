@@ -64,6 +64,7 @@ Then load only the references needed for the detected state:
 - partially initialized repo: `references/normalization-flow.md`
 - any `AGENTS.md` / `CLAUDE.md` ambiguity: `references/agent-docs-policy.md`
 - scaffolding or rewriting the basic docs: `references/default-surfaces.md`
+- installable CLI / plugin / agent-facing local surface: `references/probe-surface.md`
 
 ## Workflow
 
@@ -93,11 +94,23 @@ Then load only the references needed for the detected state:
    - `docs/operator-acceptance.md`
    - optionally `INSTALL.md` and `UNINSTALL.md` only when the repo actually
      ships an installable surface
+   - when the repo ships an installable CLI, plugin, package, or local
+     agent-facing integration surface, make `README.md` and/or `INSTALL.md`
+     name a small probe surface explicitly instead of collapsing everything into
+     one vague "run doctor" instruction
 5. Keep the boundaries honest.
    - `README.md`: current repo story and user-facing orientation
+     - if the repo ships an installable surface, README should point at the
+       canonical install path and the probe-surface doc section without trying
+       to explain every command inline
    - `AGENTS.md`: agent operating contract for this repo
    - `docs/roadmap.md`: near-term work direction and ordered priorities
    - `docs/operator-acceptance.md`: what a human maintainer must do to take over
+   - `INSTALL.md`: install/update/probe semantics for repos that really expose
+     an install contract
+     - the minimum honest probe surface is usually: install/update path,
+       binary healthcheck, machine-readable discovery if it exists, repo
+       readiness, and any local discoverability/materialization step
    - do not create `docs/handoff.md` by default; use `handoff` only when the
      next session truly needs a baton-pass artifact
    - do not create `docs/master-plan.md` unless the user explicitly asks for it
@@ -143,6 +156,7 @@ The result should usually include:
 - `references/normalization-flow.md`
 - `references/agent-docs-policy.md`
 - `references/default-surfaces.md`
+- `references/probe-surface.md`
 - `references/github-actions-defaults.md`
 - `references/operator-acceptance-synthesis.md`
 - `scripts/inspect_repo.py`
