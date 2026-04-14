@@ -17,6 +17,7 @@ Examples:
 - assuming a checked-in hook was active without checking clone-local git config
 - missing an obvious repo-owned validator that should have existed
 - treating a repo shape or contract as enforced when it was only documented
+- treating a present invariant as absent because no single gate, type, or doc made the invariant easy for a fresh reader to verify
 
 Do not trigger on:
 

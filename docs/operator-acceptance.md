@@ -138,12 +138,11 @@ Suggested operator runs:
 - run `charness update`
 - verify Claude by checking that the changed payload is reflected in the
   installed host copy after the documented restart/reload step
-- start from a clean installed Codex baseline; if needed, use `charness reset` followed by `charness init` on a machine where the `codex` CLI is available, and confirm `doctor` reports no drift before the update experiment
-- make a clearly visible payload delta, such as adding or removing a temporary skill or changing an obviously surfaced manifest/version string
-- run `charness update`, which now retries the official Codex `plugin/install` path for local installs, then restart Codex and record whether the payload delta appears without any Plugin Directory action
-- if restart-only fails, try Plugin Directory re-enable; if that still fails, try reinstall; record the first step that makes the payload delta appear
-- if the host output is ambiguous, record that ambiguity instead of claiming
-  update propagation worked
+- Codex update propagation is already operator-proven; keep any future rerun as
+  an on-demand regression check rather than a standing acceptance blocker
+- if you need to rerun the update-propagation experiment locally, prefer
+  `pytest -q tests/charness_cli/test_update_propagation.py` plus a human host
+  spot-check instead of turning it back into a default every-session task
 - if you want the full local install/update regression suite before or after
   host testing, run `./scripts/self-validate-install-update.sh`
 
@@ -163,9 +162,6 @@ Acceptance:
   host behavior
 - an upstream skill/plugin payload change is actually observable in the
   installed Claude or Codex host copy after the required refresh step
-- any extra Codex refresh requirement is classified honestly as restart-only,
-  re-enable, reinstall, or still unclear
-- a failed restart-only attempt is preserved as evidence when observed; do not collapse it into a generic "host refresh required" note
 - any required doc or manifest tweaks are committed back here
 
 ### 4. Raise `create-skill` / `spec` Workflow Gates

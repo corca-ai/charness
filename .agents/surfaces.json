@@ -190,6 +190,7 @@
       "source_paths": [
         "charness",
         "scripts/**/*.py",
+        "tests/*.py",
         "tests/**/*.py"
       ],
       "derived_paths": [

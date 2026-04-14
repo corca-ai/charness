@@ -22,14 +22,17 @@ sys.path[:0] = [str(Path(__file__).resolve().parent), str(REPO_ROOT)]
 from adapter_validators import runtime_budgets as _runtime_budgets
 
 from scripts.adapter_lib import load_yaml_file
-from scripts.quality_bootstrap_lib import (
-    ADAPTER_CANDIDATES,
+from scripts.quality_bootstrap_lib import ADAPTER_CANDIDATES
+from scripts.quality_policy_defaults import (
     DEFAULT_COVERAGE_FLOOR_POLICY,
+    DEFAULT_PROMPT_ASSET_POLICY,
     DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
+    validate_coverage_floor_policy,
+    validate_prompt_asset_policy,
 )
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
-LIST_FIELDS = ("preset_lineage", "concept_paths", "preflight_commands", "gate_commands", "security_commands")
+LIST_FIELDS = ("preset_lineage", "prompt_asset_roots", "concept_paths", "preflight_commands", "gate_commands", "security_commands")
 ARTIFACT_FILENAME = "quality.md"
 
 def _string(value: Any, field: str, errors: list[str]) -> str | None:
@@ -60,47 +63,6 @@ def _float_value(value: Any, field: str, errors: list[str]) -> float | None:
     errors.append(f"{field} must be greater than or equal to 0")
     return None
 
-def _coverage_floor_policy(value: Any, errors: list[str]) -> dict[str, Any] | None:
-    if value is None:
-        return None
-    if not isinstance(value, dict):
-        errors.append("coverage_floor_policy must be a mapping")
-        return None
-    validated = dict(DEFAULT_COVERAGE_FLOOR_POLICY)
-    for field in ("exemption_list_path", "gate_script_pattern", "lefthook_path", "ci_workflow_glob"):
-        raw = value.get(field)
-        if raw is None:
-            continue
-        if isinstance(raw, str):
-            validated[field] = raw
-        else:
-            errors.append(f"coverage_floor_policy.{field} must be a string")
-    for field in ("min_statements_threshold",):
-        raw = value.get(field)
-        if raw is None:
-            continue
-        if isinstance(raw, int):
-            validated[field] = raw
-        else:
-            errors.append(f"coverage_floor_policy.{field} must be an integer")
-    for field in ("fail_below_pct", "warn_ceiling_pct", "floor_drift_lock_pp"):
-        raw = value.get(field)
-        if raw is None:
-            continue
-        if isinstance(raw, (int, float)):
-            validated[field] = float(raw)
-        else:
-            errors.append(f"coverage_floor_policy.{field} must be a number")
-    if validated["min_statements_threshold"] < 0:
-        errors.append("coverage_floor_policy.min_statements_threshold must be greater than or equal to 0")
-    if validated["fail_below_pct"] < 0:
-        errors.append("coverage_floor_policy.fail_below_pct must be greater than or equal to 0")
-    if validated["warn_ceiling_pct"] < validated["fail_below_pct"]:
-        errors.append("coverage_floor_policy.warn_ceiling_pct must be greater than or equal to fail_below_pct")
-    if validated["floor_drift_lock_pp"] < 0:
-        errors.append("coverage_floor_policy.floor_drift_lock_pp must be greater than or equal to 0")
-    return validated
-
 def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
     return {
         "version": 1,
@@ -112,6 +74,8 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "coverage_floor_policy": dict(DEFAULT_COVERAGE_FLOOR_POLICY),
         "specdown_smoke_patterns": [],
         "spec_pytest_reference_format": DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
+        "prompt_asset_roots": [],
+        "prompt_asset_policy": dict(DEFAULT_PROMPT_ASSET_POLICY),
         "runtime_budgets": {},
         "concept_paths": [],
         "preflight_commands": [],
@@ -139,7 +103,7 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
     if coverage_fragile_margin_pp is not None:
         validated["coverage_fragile_margin_pp"] = coverage_fragile_margin_pp
 
-    coverage_floor_policy = _coverage_floor_policy(data.get("coverage_floor_policy"), errors)
+    coverage_floor_policy = validate_coverage_floor_policy(data.get("coverage_floor_policy"), errors)
     if coverage_floor_policy is not None:
         validated["coverage_floor_policy"] = coverage_floor_policy
     specdown_smoke_patterns = _string_list(data.get("specdown_smoke_patterns"), "specdown_smoke_patterns", errors)
@@ -150,6 +114,9 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
     )
     if spec_pytest_reference_format is not None:
         validated["spec_pytest_reference_format"] = spec_pytest_reference_format
+    prompt_asset_policy = validate_prompt_asset_policy(data.get("prompt_asset_policy"), errors)
+    if prompt_asset_policy is not None:
+        validated["prompt_asset_policy"] = prompt_asset_policy
     runtime_budgets_value = _runtime_budgets(data.get("runtime_budgets"), errors)
     if runtime_budgets_value is not None:
         validated["runtime_budgets"] = runtime_budgets_value

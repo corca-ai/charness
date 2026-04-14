@@ -2032,6 +2032,15 @@ def tool_next_step(
             first_note = notes[0]
             if isinstance(first_note, str) and first_note:
                 details.append(first_note)
+        repo_followup = route.get("repo_followup")
+        if isinstance(repo_followup, dict):
+            rendered_command = repo_followup.get("rendered_command")
+            summary = repo_followup.get("summary")
+            if isinstance(rendered_command, str) and rendered_command:
+                if isinstance(summary, str) and summary:
+                    details.append(f"{summary} Follow-up command: `{rendered_command}`")
+                else:
+                    details.append(f"Follow-up command: `{rendered_command}`")
         if isinstance(install_url, str) and install_url:
             details.append(f"Install docs: {install_url}")
         if isinstance(docs_url, str) and docs_url:
@@ -2057,6 +2066,7 @@ def tool_next_step(
         install_url = action_result.get("install_url")
         docs_url = action_result.get("docs_url")
         notes = action_result.get("notes")
+        repo_followup = action_result.get("repo_followup")
         first_note = notes[0] if isinstance(notes, list) and notes and isinstance(notes[0], str) else None
         guidance = first_note or f"Follow the upstream install flow for `{tool_id}`."
         provenance = action_result.get("provenance")
@@ -2064,6 +2074,14 @@ def tool_next_step(
             manager = provenance.get("install_method")
             if isinstance(manager, str) and manager in {"brew", "npm", "cargo", "go"}:
                 guidance = f"`{tool_id}` is already installed via `{manager}`."
+        if isinstance(repo_followup, dict):
+            rendered_command = repo_followup.get("rendered_command")
+            summary = repo_followup.get("summary")
+            if isinstance(rendered_command, str) and rendered_command:
+                if isinstance(summary, str) and summary:
+                    guidance = f"{guidance} {summary} Follow-up command: `{rendered_command}`"
+                else:
+                    guidance = f"{guidance} Follow-up command: `{rendered_command}`"
         if isinstance(install_url, str) and install_url:
             guidance = f"{guidance} Install docs: {install_url}"
         if isinstance(docs_url, str) and docs_url and docs_url != install_url:

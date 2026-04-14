@@ -100,6 +100,7 @@ The result should usually include:
   - missing local enforcement that the agent claimed existed
   - a wrong ownership or source-of-truth assumption
   - a broken or missing gate that should have been checked
+  - a fresh-eye reader misread an invariant that is present in the code, revealing that the invariant still relies on convention rather than declaration
 - Do not trigger the full retro flow for:
   - wording preferences
   - open product tradeoffs the agent already marked as unresolved

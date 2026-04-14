@@ -66,7 +66,13 @@ def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path)
     assert cautilus["support"]["status"] == "synced"
     assert cautilus["support"]["materialized_paths"] == ["skills/support/generated/cautilus"]
     assert cautilus["doctor"]["doctor_status"] == "missing"
+    assert cautilus["doctor"]["doctor_disposition"] == "advisory-install-needed"
+    assert cautilus["install"]["repo_followup"]["rendered_command"] == f"cautilus install --repo-root {repo_root}"
+    assert cautilus["doctor"]["install_route"]["repo_followup"]["rendered_command"] == (
+        f"cautilus install --repo-root {repo_root}"
+    )
     assert cautilus["doctor"]["release"]["latest_version"] == "1.2.3"
+    assert "Follow-up command: `cautilus install --repo-root" in cautilus["next_step"]
     lock_payload = json.loads((repo_root / "integrations" / "locks" / "cautilus.json").read_text(encoding="utf-8"))
     assert lock_payload["release"]["latest_tag"] == "v1.2.3"
     assert lock_payload["install"]["install_status"] == "manual"
@@ -172,9 +178,13 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
         "리뷰",
     ]
     assert cautilus["doctor"]["doctor_status"] == "missing"
+    assert cautilus["doctor"]["doctor_disposition"] == "advisory-install-needed"
     assert cautilus["doctor"]["install_route"]["mode"] == "manual"
     assert cautilus["doctor"]["install_route"]["docs_url"] == "https://github.com/corca-ai/cautilus"
     assert cautilus["doctor"]["install_route"]["install_url"] == "https://github.com/corca-ai/cautilus/blob/main/install.md"
+    assert cautilus["doctor"]["install_route"]["repo_followup"]["rendered_command"] == (
+        f"cautilus install --repo-root {home_root / '.agents' / 'src' / 'charness'}"
+    )
     assert cautilus["doctor"]["support_discovery"]["status"] == "materialized"
     assert cautilus["doctor"]["support_discovery"]["support_skill_path"] == "skills/support/generated/cautilus/SKILL.md"
     assert cautilus["doctor"]["support_discovery"]["discovery_stub_path"] == ".agents/charness-discovery/cautilus.md"
@@ -187,6 +197,7 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
     assert "Repo-local discovery stub is available at `.agents/charness-discovery/cautilus.md` for host-repo grep and cold-start pickup." in cautilus["next_step"]
     assert "Use `find-skills` to surface it on demand or inspect that path directly." in cautilus["next_step"]
     assert "You can also grep the discovery stub from the host repo." in cautilus["next_step"]
+    assert "Follow-up command: `cautilus install --repo-root" in cautilus["next_step"]
 
 
 def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Path) -> None:

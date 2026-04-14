@@ -222,8 +222,44 @@
           "type": "string",
           "format": "uri"
         },
+        "repo_followup": {
+          "$ref": "#/definitions/repoFollowup"
+        },
         "notes": {
           "$ref": "#/definitions/stringList"
+        }
+      }
+    },
+    "repoFollowup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary",
+        "command_template"
+      ],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "command_template": {
+          "type": "string",
+          "minLength": 1
+        },
+        "docs_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "when": {
+          "type": "string",
+          "enum": [
+            "after-binary-install",
+            "after-install",
+            "manual-followup"
+          ]
+        },
+        "optional": {
+          "type": "boolean"
         }
       }
     },

@@ -38,6 +38,8 @@ Quality-specific fields:
 - `specdown_smoke_patterns`
 - `spec_pytest_reference_format`
 - `runtime_budgets`
+- `prompt_asset_roots`
+- `prompt_asset_policy`
 - `concept_paths`
 - `preflight_commands`
 - `gate_commands`
@@ -69,6 +71,21 @@ milliseconds. Labels must match the labels recorded in
 `latest.elapsed_ms` exceeds the budget. Labels with no recorded sample yet
 are warnings, not failures, so a budget can be defined before its first run.
 Omit the field entirely (or leave the mapping empty) to opt out.
+
+`prompt_asset_roots` is the repo's declared checked-in asset surface for
+prompt- or content-heavy material such as `.md`, `.prompt`, or template files.
+Keep it empty when the repo has not chosen a dedicated asset root yet.
+
+`prompt_asset_policy` is an advisory inventory policy for inline prompt/content
+bulk in source files. Recommended fields:
+
+- `source_globs`
+- `min_multiline_chars`
+- `exemption_globs`
+
+Leave `source_globs` empty to opt out honestly. Prefer checked-in asset roots
+over inline multi-line strings when evaluator-backed review needs prompt bytes
+to drift independently from code bytes.
 
 ## Artifact Rule
 

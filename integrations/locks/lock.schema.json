@@ -305,7 +305,8 @@
         "readiness",
         "version",
         "support_sync",
-        "doctor_status"
+        "doctor_status",
+        "doctor_disposition"
       ],
       "properties": {
         "checked_at": {
@@ -383,6 +384,16 @@
             "not-ready",
             "version-mismatch",
             "support-missing"
+          ]
+        },
+        "doctor_disposition": {
+          "type": "string",
+          "enum": [
+            "ready",
+            "advisory-install-needed",
+            "blocking-install-needed",
+            "blocking-support-sync-needed",
+            "blocking-failure"
           ]
         }
       }

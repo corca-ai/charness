@@ -36,6 +36,8 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     assert doctor_payload[0]["support_sync"]["suggested_command"] == "charness tool sync-support demo-tool"
     assert doctor_payload[0]["install_route"]["mode"] == "manual"
     assert doctor_payload[0]["install_route"]["install_url"] == "https://example.com/demo-tool/install"
+    assert doctor_payload[0]["install_route"]["repo_followup"] is None
+    assert doctor_payload[0]["doctor_disposition"] == "ready"
     assert doctor_payload[0]["support_discovery"] is None
     assert "Local support skill surface is not materialized yet." in doctor_payload[0]["next_steps"][0]
 

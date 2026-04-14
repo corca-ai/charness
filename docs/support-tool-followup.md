@@ -332,6 +332,13 @@ Current honest state:
 - the closed `git push` issue was really pointing at wasted manual verifier
   selection, not at push itself
 
+Status:
+
+- landed on 2026-04-14 as `scripts/select_verifiers.py`
+- the helper now maps changed paths through `.agents/surfaces.json`, returns
+  the smallest repo-owned sync/verify bundle, and names uncovered paths as a
+  real missing-bundle gap instead of silently re-deciding verification in chat
+
 What to preserve:
 
 - the next improvement should prefer repo-owned local verification bundles when

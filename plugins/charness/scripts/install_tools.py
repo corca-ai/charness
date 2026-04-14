@@ -16,6 +16,24 @@ from scripts.install_provenance_lib import detect_install_provenance
 from scripts.upstream_release_lib import probe_release
 
 
+def render_repo_followup(repo_root: Path, install_action: dict[str, object]) -> dict[str, object] | None:
+    repo_followup = install_action.get("repo_followup")
+    if not isinstance(repo_followup, dict):
+        return None
+    command_template = repo_followup.get("command_template")
+    if not isinstance(command_template, str) or not command_template:
+        return None
+    rendered_command = command_template.format(repo_root=str(repo_root))
+    return {
+        "summary": repo_followup.get("summary"),
+        "command_template": command_template,
+        "rendered_command": rendered_command,
+        "docs_url": repo_followup.get("docs_url"),
+        "when": repo_followup.get("when"),
+        "optional": repo_followup.get("optional", False),
+    }
+
+
 def failed_healthcheck(manifest: dict[str, object], *, reason: str) -> dict[str, object]:
     return {
         "ok": False,
@@ -36,6 +54,7 @@ def detect_and_healthcheck(repo_root: Path, manifest: dict[str, object], *, fail
 
 
 def base_result(
+    repo_root: Path,
     manifest: dict[str, object],
     install_action: dict[str, object],
     *,
@@ -51,6 +70,7 @@ def base_result(
         "mode": mode,
         "docs_url": install_action.get("docs_url"),
         "install_url": install_action.get("install_url"),
+        "repo_followup": render_repo_followup(repo_root, install_action),
         "notes": install_action.get("notes", []),
         "commands": commands,
     }
@@ -128,6 +148,38 @@ def execute_install_commands(repo_root: Path, commands: list[str]) -> list[dict[
     ]
 
 
+def finish_nonexecuting_install(
+    repo_root: Path,
+    manifest: dict[str, object],
+    install_action: dict[str, object],
+    *,
+    mode: str,
+    status: str,
+    release: dict[str, object] | None,
+    provenance: dict[str, object],
+) -> dict[str, object]:
+    detect_result, healthcheck_result = detect_and_healthcheck(
+        repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
+    )
+    if status == "manual":
+        status = "already-installed" if detect_result["ok"] and healthcheck_result["ok"] else "manual"
+    persistable = {
+        "status": status,
+        "mode": mode,
+        "commands": [],
+        "detect": detect_result,
+        "healthcheck": healthcheck_result,
+        "release": release,
+        "provenance": provenance,
+    }
+    return {
+        "status": status,
+        "detect": detect_result,
+        "healthcheck": healthcheck_result,
+        "persistable": persistable,
+    }
+
+
 def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -> dict[str, object]:
     install_action = manifest["lifecycle"]["install"]
     mode = install_action["mode"]
@@ -135,63 +187,36 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
     release = probe_release(manifest)
     provenance = capture_provenance(manifest)
 
-    if mode == "none":
-        detect_result, healthcheck_result = detect_and_healthcheck(
-            repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
+    if mode in {"none", "manual"}:
+        outcome = finish_nonexecuting_install(
+            repo_root,
+            manifest,
+            install_action,
+            mode=mode,
+            status="noop" if mode == "none" else "manual",
+            release=release,
+            provenance=provenance,
         )
         if execute:
             persist_install_lock(
                 repo_root,
                 manifest,
                 install_action,
-                status="noop",
-                mode=mode,
-                commands=[],
-                detect=detect_result,
-                healthcheck=healthcheck_result,
-                release=release,
-                provenance=provenance,
+                **outcome["persistable"],
             )
         result = base_result(
+            repo_root,
             manifest,
             install_action,
-            status="noop",
+            status=outcome["status"],
             mode=mode,
             commands=[],
-            detect=detect_result,
-            healthcheck=healthcheck_result,
-        )
-        return attach_metadata(result, provenance=provenance, release=release)
-    if mode == "manual":
-        detect_result, healthcheck_result = detect_and_healthcheck(
-            repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
-        )
-        status = "already-installed" if detect_result["ok"] and healthcheck_result["ok"] else "manual"
-        if execute:
-            persist_install_lock(
-                repo_root,
-                manifest,
-                install_action,
-                status=status,
-                mode=mode,
-                commands=[],
-                detect=detect_result,
-                healthcheck=healthcheck_result,
-                release=release,
-                provenance=provenance,
-            )
-        result = base_result(
-            manifest,
-            install_action,
-            status=status,
-            mode=mode,
-            commands=[],
-            detect=detect_result,
-            healthcheck=healthcheck_result,
+            detect=outcome["detect"],
+            healthcheck=outcome["healthcheck"],
         )
         return attach_metadata(result, provenance=provenance, release=release)
     if not execute:
-        result = base_result(manifest, install_action, status="dry-run", mode=mode, commands=commands)
+        result = base_result(repo_root, manifest, install_action, status="dry-run", mode=mode, commands=commands)
         return attach_metadata(result, provenance=provenance, release=release)
 
     command_results = execute_install_commands(repo_root, commands)
@@ -217,6 +242,7 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
         provenance=provenance,
     )
     result = base_result(
+        repo_root,
         manifest,
         install_action,
         status=status,

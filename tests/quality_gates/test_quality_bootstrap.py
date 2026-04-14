@@ -37,6 +37,8 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
         "gate_commands": "installed",
         "preflight_commands": "installed",
         "preset_lineage": "inferred",
+        "prompt_asset_policy": "defaulted",
+        "prompt_asset_roots": "defaulted",
         "specdown_smoke_patterns": "defaulted",
         "spec_pytest_reference_format": "defaulted",
         "security_commands": "installed",
@@ -65,6 +67,12 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     assert resolved["data"]["spec_pytest_reference_format"] == (
         r"Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*"
     )
+    assert resolved["data"]["prompt_asset_roots"] == []
+    assert resolved["data"]["prompt_asset_policy"] == {
+        "source_globs": [],
+        "min_multiline_chars": 400,
+        "exemption_globs": [],
+    }
     assert resolved["data"]["gate_commands"] == ["./scripts/run-quality.sh"]
     assert resolved["data"]["preflight_commands"] == ["python3 scripts/validate-maintainer-setup.py --repo-root ."]
 
@@ -94,6 +102,14 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
                 "  ci_workflow_glob: .github/workflows/quality-*.yml",
                 "specdown_smoke_patterns: []",
                 "spec_pytest_reference_format: \"Covered by pytest:\\s+`tests/custom[^`]+`\"",
+                "prompt_asset_roots:",
+                "- prompts",
+                "prompt_asset_policy:",
+                "  source_globs:",
+                "  - src/**/*.py",
+                "  min_multiline_chars: 256",
+                "  exemption_globs:",
+                "  - tests/**",
                 "gate_commands:",
                 "- python3 -m pytest -q",
                 "preflight_commands: []",
@@ -114,6 +130,8 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     assert payload["field_statuses"]["coverage_floor_policy"] == "preserved"
     assert payload["field_statuses"]["specdown_smoke_patterns"] == "preserved"
     assert payload["field_statuses"]["spec_pytest_reference_format"] == "preserved"
+    assert payload["field_statuses"]["prompt_asset_roots"] == "preserved"
+    assert payload["field_statuses"]["prompt_asset_policy"] == "preserved"
 
     resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
@@ -132,6 +150,12 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     }
     assert resolved["data"]["specdown_smoke_patterns"] == []
     assert resolved["data"]["spec_pytest_reference_format"] == r"Covered by pytest:\s+`tests/custom[^`]+`"
+    assert resolved["data"]["prompt_asset_roots"] == ["prompts"]
+    assert resolved["data"]["prompt_asset_policy"] == {
+        "source_globs": ["src/**/*.py"],
+        "min_multiline_chars": 256,
+        "exemption_globs": ["tests/**"],
+    }
     assert resolved["data"]["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
 
 

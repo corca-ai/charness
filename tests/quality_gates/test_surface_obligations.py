@@ -41,6 +41,47 @@ def test_check_changed_surfaces_reports_unmatched_paths() -> None:
     assert payload["unmatched_paths"] == ["notes/private-plan.txt"]
 
 
+def test_select_verifiers_returns_smallest_repo_owned_bundle_for_readme() -> None:
+    result = run_script(
+        "scripts/select_verifiers.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "README.md",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["bundle_status"] == "repo-owned-bundle"
+    recommendations = payload["recommended_commands"]
+    assert recommendations[0] == {
+        "phase": "sync",
+        "command": "python3 scripts/sync_root_plugin_manifests.py --repo-root .",
+        "reason_surface_ids": ["checked-in-plugin-export"],
+    }
+    verify_commands = {item["command"] for item in recommendations if item["phase"] == "verify"}
+    assert "python3 scripts/validate-packaging.py --repo-root ." in verify_commands
+    assert "python3 scripts/check-doc-links.py --repo-root ." in verify_commands
+    assert "./scripts/check-markdown.sh" in verify_commands
+
+
+def test_select_verifiers_reports_missing_bundle_for_unmatched_paths() -> None:
+    result = run_script(
+        "scripts/select_verifiers.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "notes/private-plan.txt",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["bundle_status"] == "missing-bundle"
+    assert payload["recommended_commands"] == []
+    assert any("not covered by `.agents/surfaces.json`" in note for note in payload["notes"])
+    assert any("No repo-owned verifier bundle matched these changes" in note for note in payload["notes"])
+
+
 def test_validate_surfaces_rejects_duplicate_ids(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)

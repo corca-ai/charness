@@ -327,15 +327,24 @@ def test_quality_skill_carries_blind_spot_policy_and_premortem_refs() -> None:
     premortem = (
         ROOT / "skills" / "public" / "quality" / "references" / "fresh-eye-premortem.md"
     ).read_text(encoding="utf-8")
+    prompt_policy = (
+        ROOT / "skills" / "public" / "quality" / "references" / "prompt-asset-policy.md"
+    ).read_text(encoding="utf-8")
 
     assert "prior `quality.md` is history" in skill_text
     assert "fresh-eye premortem" in skill_text
     assert "active` or `passive" in skill_text
+    assert "prompt/content bulk" in skill_text
+    assert "fresh 5-minute reader" in skill_text
     assert "coverage_floor_policy" in adapter_contract
     assert "spec_pytest_reference_format" in adapter_contract
+    assert "prompt_asset_policy" in adapter_contract
     assert "gate_script_pattern" in floor_policy
     assert "warn band" in floor_policy
     assert "authoritative universe" in premortem
+    assert "misclassify as absent" in premortem
+    assert "prompt/content bulk" in prompt_policy
+    assert "find_inline_prompt_bulk.py" in prompt_policy
 
 
 def test_quality_skill_carries_code_reduction_and_ratio_patterns() -> None:

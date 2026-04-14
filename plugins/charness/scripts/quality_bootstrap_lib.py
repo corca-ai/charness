@@ -5,26 +5,17 @@ from pathlib import Path
 from typing import Any
 
 from scripts.adapter_lib import load_yaml_file, render_yaml_mapping
+from scripts.quality_policy_defaults import (
+    DEFAULT_COVERAGE_FLOOR_POLICY,
+    DEFAULT_COVERAGE_FRAGILE_MARGIN_PP,
+    DEFAULT_PROMPT_ASSET_POLICY,
+    DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
+    default_specdown_smoke_patterns,
+    merge_coverage_floor_policy,
+    merge_prompt_asset_policy,
+)
 
 LINEAGE_ORDER = ("python-quality", "typescript-quality", "specdown-quality", "monorepo-quality")
-DEFAULT_COVERAGE_FRAGILE_MARGIN_PP = 1.0
-DEFAULT_SPECDOWN_SMOKE_PATTERNS = [
-    r"\bgrep\s+-q\b",
-    r"\[pycheck\]",
-    r"\b(?:uv\s+run\s+)?python\s+-m\s+pytest\b",
-    r"\bpytest\b.*\s-k\s+",
-]
-DEFAULT_COVERAGE_FLOOR_POLICY = {
-    "min_statements_threshold": 30,
-    "fail_below_pct": 80.0,
-    "warn_ceiling_pct": 95.0,
-    "floor_drift_lock_pp": 1.0,
-    "exemption_list_path": "scripts/coverage-floor-exemptions.txt",
-    "gate_script_pattern": "*-quality-gate.sh",
-    "lefthook_path": "lefthook.yml",
-    "ci_workflow_glob": ".github/workflows/*.yml",
-}
-DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT = r"Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*"
 ADAPTER_CANDIDATES = (Path(".agents/quality-adapter.yaml"), Path(".codex/quality-adapter.yaml"), Path(".claude/quality-adapter.yaml"), Path("docs/quality-adapter.yaml"), Path("quality-adapter.yaml"))
 
 
@@ -151,6 +142,15 @@ def _classify_command_deferral(field: str, preset_lineage: list[str]) -> dict[st
     return {"field": field, "status": "deferred", "reason": reason, "suggested_families": families}
 
 
+def _merge_existing_paths(existing: list[str], detected: list[str]) -> tuple[list[str], str]:
+    if existing:
+        merged = _merge_unique(existing, detected)
+        return merged, "augmented" if merged != existing else "preserved"
+    if detected:
+        return detected, "inferred"
+    return [], "deferred"
+
+
 def _infer_defaults(repo_root: Path) -> dict[str, Any]:
     return {
         "version": 1,
@@ -164,16 +164,13 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "coverage_floor_policy": dict(DEFAULT_COVERAGE_FLOOR_POLICY),
         "specdown_smoke_patterns": [],
         "spec_pytest_reference_format": DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
+        "prompt_asset_roots": [],
+        "prompt_asset_policy": dict(DEFAULT_PROMPT_ASSET_POLICY),
         "concept_paths": [],
         "preflight_commands": [],
         "gate_commands": [],
         "security_commands": [],
     }
-
-
-def _default_specdown_smoke_patterns(preset_lineage: list[str]) -> list[str]:
-    return list(DEFAULT_SPECDOWN_SMOKE_PATTERNS) if "specdown-quality" in preset_lineage else []
-
 
 def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
     defaults = _infer_defaults(repo_root)
@@ -194,25 +191,17 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
     coverage_fragile_margin_pp = raw.get("coverage_fragile_margin_pp")
     if isinstance(coverage_fragile_margin_pp, (int, float)):
         data["coverage_fragile_margin_pp"] = float(coverage_fragile_margin_pp)
-    coverage_floor_policy = raw.get("coverage_floor_policy")
-    if isinstance(coverage_floor_policy, dict):
-        merged_policy = dict(DEFAULT_COVERAGE_FLOOR_POLICY)
-        for key, default_value in DEFAULT_COVERAGE_FLOOR_POLICY.items():
-            value = coverage_floor_policy.get(key)
-            if isinstance(default_value, str) and isinstance(value, str):
-                merged_policy[key] = value
-            elif isinstance(default_value, float) and isinstance(value, (int, float)):
-                merged_policy[key] = float(value)
-            elif isinstance(default_value, int) and isinstance(value, int):
-                merged_policy[key] = value
-        data["coverage_floor_policy"] = merged_policy
+    if isinstance(raw.get("coverage_floor_policy"), dict):
+        data["coverage_floor_policy"] = merge_coverage_floor_policy(raw.get("coverage_floor_policy"))
     specdown_smoke_patterns = raw.get("specdown_smoke_patterns")
     if isinstance(specdown_smoke_patterns, list) and all(isinstance(item, str) for item in specdown_smoke_patterns):
         data["specdown_smoke_patterns"] = list(specdown_smoke_patterns)
     spec_pytest_reference_format = raw.get("spec_pytest_reference_format")
     if isinstance(spec_pytest_reference_format, str):
         data["spec_pytest_reference_format"] = spec_pytest_reference_format
-    for field in ("preset_lineage", "concept_paths", "preflight_commands", "gate_commands", "security_commands"):
+    if isinstance(raw.get("prompt_asset_policy"), dict):
+        data["prompt_asset_policy"] = merge_prompt_asset_policy(raw.get("prompt_asset_policy"))
+    for field in ("preset_lineage", "prompt_asset_roots", "concept_paths", "preflight_commands", "gate_commands", "security_commands"):
         value = raw.get(field)
         if isinstance(value, list) and all(isinstance(item, str) for item in value):
             data[field] = list(value)
@@ -266,7 +255,7 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
         final["specdown_smoke_patterns"] = list(existing_patterns)
         field_statuses["specdown_smoke_patterns"] = "preserved"
     else:
-        inferred_patterns = _default_specdown_smoke_patterns(merged_lineage)
+        inferred_patterns = default_specdown_smoke_patterns(merged_lineage)
         final["specdown_smoke_patterns"] = inferred_patterns
         field_statuses["specdown_smoke_patterns"] = "inferred" if inferred_patterns else "defaulted"
 
@@ -277,17 +266,23 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
         final["spec_pytest_reference_format"] = DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT
         field_statuses["spec_pytest_reference_format"] = "defaulted"
 
+    if "prompt_asset_roots" in explicit_fields:
+        final["prompt_asset_roots"] = list(existing.get("prompt_asset_roots", []))
+        field_statuses["prompt_asset_roots"] = "preserved"
+    else:
+        final["prompt_asset_roots"] = []
+        field_statuses["prompt_asset_roots"] = "defaulted"
+
+    if "prompt_asset_policy" in explicit_fields:
+        final["prompt_asset_policy"] = dict(existing["prompt_asset_policy"])
+        field_statuses["prompt_asset_policy"] = "preserved"
+    else:
+        final["prompt_asset_policy"] = dict(DEFAULT_PROMPT_ASSET_POLICY)
+        field_statuses["prompt_asset_policy"] = "defaulted"
+
     concept_paths = detect_concept_paths(repo_root)
     existing_concepts = [path for path in existing.get("concept_paths", []) if (repo_root / path).is_file()]
-    if existing_concepts:
-        merged_concepts = _merge_unique(existing_concepts, concept_paths)
-        field_statuses["concept_paths"] = "augmented" if merged_concepts != existing_concepts else "preserved"
-    elif concept_paths:
-        merged_concepts = concept_paths
-        field_statuses["concept_paths"] = "inferred"
-    else:
-        merged_concepts = []
-        field_statuses["concept_paths"] = "deferred"
+    merged_concepts, field_statuses["concept_paths"] = _merge_existing_paths(existing_concepts, concept_paths)
     final["concept_paths"] = merged_concepts
 
     for field, detected in (
@@ -329,6 +324,8 @@ def render_bootstrap_adapter(data: dict[str, Any]) -> str:
             ("coverage_floor_policy", data["coverage_floor_policy"]),
             ("specdown_smoke_patterns", data["specdown_smoke_patterns"]),
             ("spec_pytest_reference_format", data["spec_pytest_reference_format"]),
+            ("prompt_asset_roots", data["prompt_asset_roots"]),
+            ("prompt_asset_policy", data["prompt_asset_policy"]),
             ("concept_paths", data["concept_paths"]),
             ("preflight_commands", data["preflight_commands"]),
             ("gate_commands", data["gate_commands"]),

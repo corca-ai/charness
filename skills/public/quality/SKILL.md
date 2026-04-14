@@ -9,17 +9,11 @@ Use this when the task is overall quality posture, not only one narrow bug or
 one isolated test.
 
 `quality` is one public concept. It absorbs concept integrity review, test confidence improvement, security and supply-chain posture review, skill package and maintenance drift review, and documentation drift review.
-
 The job is to understand the repo's current quality surface, run the meaningful gates that already exist, and propose the missing ones concretely.
-
 `quality` may also install or refresh the repo-local quality posture when the next move is deterministic setup work instead of only review. Keep this inside the same public concept: review posture and bootstrap posture are different execution states of `quality`, not separate skills.
-
 When the next quality move is repo-local, deterministic, and low-risk, prefer implementing that gate in the same turn. Stay review-only when the user asks or the tradeoff is genuinely product-defining.
-
-Deterministic gates should define pass/fail authority wherever possible. If a quality concern can be enforced by a linter, validator, test, hook, or script, `quality` should prefer promoting it into that gate instead of leaving it as repeated prose advice.
-
-Maintainer-local enforcement counts when the repo depends on it. When the repo has an obvious final stop-before-finish gate with no checked-in hook, repo-owned hook installer, or documented no-hook policy, `quality` must name that as a missing enforcement gap rather than treating the passing command as healthy posture. See `references/maintainer-local-enforcement.md`.
-
+Deterministic gates should define pass/fail authority wherever possible. If a quality concern can be enforced by a linter, validator, test, hook, or script, promote it into that gate instead of leaving it as repeated prose advice.
+Maintainer-local enforcement counts when the repo depends on it. When the repo has an obvious final stop-before-finish gate with no checked-in hook, repo-owned hook installer, or documented no-hook policy, name that as a missing enforcement gap. See `references/maintainer-local-enforcement.md`.
 `quality` and concept review are adjacent. Use `quality` for repo posture, drift, duplicated surfaces, weak gates, and the next concrete validation move. Use concept review when boundaries, ownership, or source-of-truth design stay unresolved without duplicate text or an obvious gate. Use named-expert lenses only when they sharpen the next gate choice. See `references/quality-lenses.md`.
 
 ## Bootstrap
@@ -44,9 +38,7 @@ When stronger local proof depends on a missing validation tool, reuse the shared
 python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root .
 ```
 
-Keep `quality.md` short and current; move older review detail into sibling `history/*.md` archives when today's posture starts getting buried.
-
-If the adapter is missing and the repo only needs a blank scaffold instead of detected bootstrap, scaffold one directly:
+Keep `quality.md` short and current; move older review detail into sibling `history/*.md` archives when today's posture starts getting buried. If the adapter is missing and the repo only needs a blank scaffold instead of detected bootstrap, scaffold one directly:
 
 ```bash
 python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root . --preset-id portable-defaults
@@ -89,6 +81,8 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - if the repo ships an installable CLI, bootstrap command, or operator-facing command surface, inspect whether help, command discovery, binary health, install/readiness, and local discoverability are separated honestly
    - inspect README / INSTALL / operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
+   - if evaluator-backed review or prompt-sensitive output matters, inspect whether prompt/content bulk stays in checked-in assets or is still embedded inline in source files
+   - when the adapter defines `prompt_asset_roots` or `prompt_asset_policy`, re-derive prompt/content bulk inventory from the current tree instead of trusting prior review prose
    - if the repo keeps standing coverage floors, tag seams within `coverage_fragile_margin_pp` as `FRAGILE` instead of burying near-miss risk in prose
    - for blind-spot prevention, apply `references/coverage-floor-policy.md`: adapter-owned `coverage_floor_policy`, real unfloored-file inventory, and `Covered by pytest:` reference validation when those notes exist
    - maintainer-local enforcement for the final stop-before-finish gate: a checked-in hook, installer, or explicit no-hook policy
@@ -104,6 +98,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model
    - `behavior`: do tests, evals, checks, and command-surface probes say something falsifiable about real behavior, and does the repo-owned test code stay maintainable
+   - if a fresh 5-minute reader could misread a present invariant as absent, treat that as a quality gap in declaration or gating rather than dismissing the reader
    - when the same confidence gap could be closed either by shrinking production branches/interfaces or by adding more tests, prefer the smaller production surface first if behavior and signal both improve
    - when executable specs exist, classify smoke vs behavior using the adapter's `specdown_smoke_patterns`, report the ratio, and flag pytest-delegation or duplicate-assertion overlap candidates directly
    - treat bounded test-ratio posture as a named positive pattern when the repo constrains both under-testing and test-surface inflation
@@ -115,6 +110,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - make evaluator depth explicit: smoke only, maintained evaluator-backed, or still smoke plus HITL
    - if stronger local proof depends on an external binary or support tool, state whether it is currently installed and healthy, then surface the exact install and post-install verification path instead of vague prose
    - prefer the shared recommendation payload when a validation tool is missing instead of hand-writing install guidance from scratch
+   - keep prompt/content bulk findings advisory unless the repo already chose a stricter local policy; some inline strings are legitimate
 5. Classify each issue by enforcement tier first.
    - `AUTO_EXISTING`: already enforced by a meaningful deterministic gate
    - `AUTO_CANDIDATE`: should be promoted into a linter, validator, test, hook, or script
@@ -160,6 +156,8 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - If you stop short of an obvious repo-owned deterministic gate, name that as an unresolved enforcement gap explicitly.
 - Do not treat a passing final local gate as sufficient posture when clones have no repo-owned way to run it before push and no documented no-hook waiver.
 - Do not propose generic "add more tests" or "improve security" without naming the actual seam, the next concrete setup, or whether the test surface now needs a maintainability gate.
+- Do not dismiss a fresh-eye misread of a present invariant as reader noise when the real problem is undeclared enforcement or scattered evidence.
+- Do not treat inline prompt/content bulk as automatically wrong; flag it as advisory inventory unless the repo already made it a standing local policy.
 - If a gate already exists, prefer tightening or reusing it before adding a new parallel tool.
 - If a stronger check would require an external tool, support skill, or permission, say so explicitly.
 - If a missing binary or local setup step would materially improve confidence, recommend installing it with the reason and exact command or package family.
@@ -179,7 +177,9 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - `references/coverage-floor-exemptions.txt`
 - `references/coverage-floor-inventory.py`
 - `references/coverage-floor-policy.md`
+- `references/find_inline_prompt_bulk.py`
 - `references/fresh-eye-premortem.md`
+- `references/prompt-asset-policy.md`
 - `references/maintainer-local-enforcement.md`
 - `references/quality-lenses.md`
 - `references/skill-quality.md`

@@ -14,13 +14,32 @@ from scripts.support_sync_lib import (
 )
 
 
-def install_route_for_manifest(capability: dict[str, Any]) -> dict[str, Any]:
+def repo_followup_for_manifest(repo_root: Path, capability: dict[str, Any]) -> dict[str, Any] | None:
+    install = capability.get("lifecycle", {}).get("install", {})
+    repo_followup = install.get("repo_followup")
+    if not isinstance(repo_followup, dict):
+        return None
+    command_template = repo_followup.get("command_template")
+    if not isinstance(command_template, str) or not command_template:
+        return None
+    return {
+        "summary": repo_followup.get("summary"),
+        "command_template": command_template,
+        "rendered_command": command_template.format(repo_root=str(repo_root)),
+        "docs_url": repo_followup.get("docs_url"),
+        "when": repo_followup.get("when"),
+        "optional": repo_followup.get("optional", False),
+    }
+
+
+def install_route_for_manifest(repo_root: Path, capability: dict[str, Any]) -> dict[str, Any]:
     install = capability.get("lifecycle", {}).get("install", {})
     return {
         "mode": install.get("mode"),
         "commands": install.get("commands", []),
         "docs_url": install.get("docs_url"),
         "install_url": install.get("install_url"),
+        "repo_followup": repo_followup_for_manifest(repo_root, capability),
         "notes": install.get("notes", []),
     }
 
@@ -125,6 +144,8 @@ def inspect_capability_state(repo_root: Path, capability: dict[str, Any]) -> dic
     support_discovery, discovery_steps = support_discovery_state(repo_root, capability, support_state)
     next_steps.extend(discovery_steps)
 
+    install_route = install_route_for_manifest(repo_root, capability)
+
     if support_sync["status"] == "missing":
         doctor_status = "support-missing"
     elif not detect_result["ok"]:
@@ -138,11 +159,22 @@ def inspect_capability_state(repo_root: Path, capability: dict[str, Any]) -> dic
     else:
         doctor_status = "ok"
 
+    if doctor_status == "ok":
+        doctor_disposition = "ready"
+    elif doctor_status == "missing" and install_route.get("mode") == "manual":
+        doctor_disposition = "advisory-install-needed"
+    elif doctor_status == "support-missing":
+        doctor_disposition = "blocking-support-sync-needed"
+    elif doctor_status == "missing":
+        doctor_disposition = "blocking-install-needed"
+    else:
+        doctor_disposition = "blocking-failure"
+
     return {
         "kind": capability["kind"],
         "access_modes": capability["access_modes"],
         "capability_requirements": capability.get("capability_requirements", {}),
-        "install_route": install_route_for_manifest(capability),
+        "install_route": install_route,
         "support_state": support_state,
         "detect": detect_result,
         "healthcheck": healthcheck_result,
@@ -151,6 +183,7 @@ def inspect_capability_state(repo_root: Path, capability: dict[str, Any]) -> dic
         "support_sync": support_sync,
         "support_discovery": support_discovery,
         "doctor_status": doctor_status,
+        "doctor_disposition": doctor_disposition,
         "next_steps": next_steps,
         "previous_lock_present": previous_lock is not None,
     }
