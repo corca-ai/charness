@@ -22,15 +22,18 @@ explicitly ask for it or when a maintainer manually persists the lesson.
 
 ## Current Slice
 
-The first two portability-safe slices have landed:
+The first three portability-safe slices have landed:
 
 - a standalone host-log probe helper now reports metric availability
 - a standalone digest helper now refreshes `recent-lessons.md` from the latest
   durable retro artifact
+- `init-repo` can now seed `.agents/retro-adapter.yaml` and
+  `skill-outputs/retro/recent-lessons.md` for repos that opt into durable retro
+  memory
 
-The next slice should extend that seam into new repos through `init-repo`
-without pretending that every host exposes the same metrics or that every task
-should pay the cost of a full retro.
+The next slice should decide whether to deepen `quality` and retro orchestration
+around this seam without pretending that every host exposes the same metrics or
+that every task should pay the cost of a full retro.
 
 ## Fixed Decisions
 
@@ -146,6 +149,8 @@ If this work is implemented badly, the likely failure modes are:
   `skills/public/retro/scripts/probe_host_logs.py`.
 - The second implementation slice ships a standalone helper at
   `skills/public/retro/scripts/refresh_recent_lessons.py`.
+- The third implementation slice ships `skills/public/init-repo/scripts/seed_retro_memory.py`
+  so new repos can opt into the same seam without hand-writing it.
 - A repo-owned helper can probe Claude/Codex local logs and return structured
   availability status for:
   - duration
@@ -176,15 +181,15 @@ If this work is implemented badly, the likely failure modes are:
 
 ## First Implementation Slice
 
-1. Extend `init-repo` so retro memory scaffolding is opt-in but first-class:
-   retro adapter `summary_path`, digest file, and AGENTS memory entry.
-2. Teach `quality` to call out skill ergonomics explicitly when skills are in
+1. Teach `quality` to call out skill ergonomics explicitly when skills are in
    scope, using existing `skill-quality` and `public-skill-validation`
    posture as the base.
-3. Decide whether a thin retro orchestration helper should call
+2. Decide whether a thin retro orchestration helper should call
    `refresh_recent_lessons.py` automatically when durable retro artifacts are
    updated, or whether the current explicit script boundary is the intended
    product posture.
+3. Decide whether `init-repo` should also wire the recent-lessons seam into
+   scaffolded `AGENTS.md` memory by default when retro memory is enabled.
 
 ## Notes On Existing Signals
 

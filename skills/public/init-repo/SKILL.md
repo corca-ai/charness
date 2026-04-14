@@ -65,6 +65,7 @@ Then load only the references needed for the detected state:
 - any `AGENTS.md` / `CLAUDE.md` ambiguity: `references/agent-docs-policy.md`
 - scaffolding or rewriting the basic docs: `references/default-surfaces.md`
 - installable CLI / plugin / agent-facing local surface: `references/probe-surface.md`
+- repo wants durable retrospective pickup: `references/retro-memory-seam.md`
 
 ## Workflow
 
@@ -98,6 +99,12 @@ Then load only the references needed for the detected state:
      agent-facing integration surface, make `README.md` and/or `INSTALL.md`
      name a small probe surface explicitly instead of collapsing everything into
      one vague "run doctor" instruction
+   - when the repo wants durable retrospective memory, seed
+     `.agents/retro-adapter.yaml` and `skill-outputs/retro/recent-lessons.md`
+     with `scripts/seed_retro_memory.py` instead of hand-writing the seam
+   - when that seam is enabled, make `AGENTS.md` name
+     `skill-outputs/retro/recent-lessons.md` as a repo memory surface so future
+     sessions can actually discover it
 5. Keep the boundaries honest.
    - `README.md`: current repo story and user-facing orientation
      - if the repo ships an installable surface, README should point at the
@@ -157,7 +164,9 @@ The result should usually include:
 - `references/agent-docs-policy.md`
 - `references/default-surfaces.md`
 - `references/probe-surface.md`
+- `references/retro-memory-seam.md`
 - `references/github-actions-defaults.md`
 - `references/operator-acceptance-synthesis.md`
 - `scripts/inspect_repo.py`
+- `scripts/seed_retro_memory.py`
 - `scripts/synthesize_operator_acceptance.py`

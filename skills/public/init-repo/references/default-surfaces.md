@@ -20,6 +20,8 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
 - how an agent should operate in this repo
 - language or collaboration expectations
 - core repo memory surfaces
+- when retro memory is enabled, include `skill-outputs/retro/recent-lessons.md`
+  in those memory surfaces
 - validation and commit discipline when the repo has them
 - selection rules in the core file, with deeper rationale pushed into linked
   docs instead of turning `AGENTS.md` into a second handbook
@@ -71,6 +73,17 @@ probe surface honest:
 - repo or install readiness
 - local discoverability or materialization step when agents or plugins depend
   on it
+
+## Optional Retro Memory Seam
+
+Only scaffold retro memory when the repo actually wants durable retrospective
+pickup between sessions.
+
+When enabled, keep the seam small and explicit:
+
+- `.agents/retro-adapter.yaml`
+- `skill-outputs/retro/recent-lessons.md`
+- one stable `summary_path` instead of many ad hoc notes
 
 ## GitHub Actions Defaults
 

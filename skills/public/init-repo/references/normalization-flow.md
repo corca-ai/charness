@@ -14,6 +14,8 @@ parallel templates.
 - if the repo ships an installable surface, do `README.md` and `INSTALL.md`
   name probe semantics without collapsing health, readiness, and
   discoverability into one command
+- if the repo wants durable retrospective pickup, is there one stable retro
+  memory seam instead of scattered weekly/session notes
 - do `AGENTS.md` and `CLAUDE.md` express one clear host-facing contract
 - does `docs/roadmap.md` exist when the repo needs short-horizon planning
 - can a human operator tell what to do from `docs/operator-acceptance.md`
