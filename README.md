@@ -393,15 +393,8 @@ Checkout convenience wrapper:
 ./init.sh
 ```
 
-Repo-local development path:
-
-```bash
-./charness init
-./charness doctor
-./charness update
-./charness reset
-./charness uninstall
-```
+Repo-local development and proof-only paths are collected in
+[docs/development.md](docs/development.md).
 
 Current command intent:
 
@@ -485,14 +478,9 @@ Recommended shared shape:
    manager, then restart Claude Code when `next_steps.claude` asks for it.
 5. Run `charness update` when you want both hosts to move together.
 
-Proof-only local checkout path:
-
-```bash
-./charness init --repo-root /absolute/path/to/charness --skip-cli-install
-```
-
-Use that only for development or packaging proof. It is not the official
-installed-CLI source.
+Development-only proof routes, including non-managed `--repo-root` flows, live
+in [docs/development.md](docs/development.md). Keep them separate from the
+official operator install path.
 
 Optional startup advisory:
 

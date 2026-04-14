@@ -396,6 +396,8 @@ def make_fake_agent_browser(tmp_path: Path) -> Path:
     )
     script.chmod(0o755)
     return script
+
+
 def make_fake_brew_specdown(tmp_path: Path) -> tuple[Path, Path]:
     brew_root = tmp_path / "linuxbrew"
     bin_dir = brew_root / "bin"

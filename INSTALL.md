@@ -86,17 +86,9 @@ wrapper is a valid bootstrap path:
 ./init.sh
 ```
 
-### Proof-only non-managed checkout
-
-If you are deliberately proving the install from a non-managed checkout, keep
-that as a proof-only path and do not let it become the installed CLI source:
-
-```bash
-./charness init --repo-root /absolute/path/to/charness --skip-cli-install
-```
-
-The official installed CLI should always resolve back to
-`~/.agents/src/charness`.
+Development-only and proof-only non-managed checkout paths live in
+[docs/development.md](docs/development.md). They are useful for packaging or
+repo-local dogfood, but they are not part of the operator install contract.
 
 After a successful bootstrap, `charness` installs a reusable CLI copy at
 `~/.local/bin/charness`. If the current shell still cannot find `charness`,
@@ -184,8 +176,8 @@ Optional version inspection:
 After installation or verification, report:
 
 1. which bootstrap path you used: zero-state remote bootstrap, installed CLI,
-   checkout wrapper, or proof-only repo-root path
+   or checkout wrapper
 2. which install surface was exercised
 3. which smoke or runtime proof passed
-4. whether this was a fresh install, a refresh, or a proof-only check
+4. whether this was a fresh install or a refresh
 5. any unresolved host-specific gaps
