@@ -12,9 +12,12 @@ from statistics import median
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+_RESOLVER_DIR = REPO_ROOT / "skills" / "public" / "quality" / "scripts"
+if not _RESOLVER_DIR.is_dir():
+    _RESOLVER_DIR = REPO_ROOT / "skills" / "quality" / "scripts"
+sys.path[:0] = [str(_RESOLVER_DIR), str(REPO_ROOT)]
 
-from skills.public.quality.scripts.resolve_adapter import load_adapter
+from resolve_adapter import load_adapter
 
 SUMMARY_FILENAME = "runtime-signals.json"
 ARCHIVE_PREFIX = "runtime-signals-"
