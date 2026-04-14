@@ -71,6 +71,13 @@ standing acceptance bar stays honest about cost. Keep executable examples at
 the boundary and push duplicated unit-detail coverage downward instead of
 celebrating broad slow coverage.
 
+Before locking the contract, run one bounded premortem. Ask what a fresh
+five-minute implementer, reviewer, or operator would most likely misread, and
+tighten only the lines that create real ambiguity. If the runtime supports
+subagents and the session explicitly allows them, use one fresh-eye subagent
+with a contrasting lens; otherwise do the challenge pass yourself. See
+`references/premortem-loop.md`.
+
 ## Workflow
 
 1. Ingest the current artifact.
@@ -114,7 +121,16 @@ celebrating broad slow coverage.
      executable contract artifacts
    - if implementation discovers a fact that changes scope or acceptance, update
      the spec instead of leaving chat-only drift
-7. End with the next execution state.
+7. Run a bounded premortem before finalizing.
+   - ask what a fresh five-minute reader would most likely implement or approve
+     incorrectly from this contract
+   - focus on missing invariants, overloaded examples, hidden sequencing, and
+     acceptance checks that look stronger than they really are
+   - if subagents are available and explicitly allowed, use one fresh-eye
+     subagent or contrasting reviewer lens; otherwise do the same pass locally
+   - tighten only the lines that change the likely next action; do not reopen
+     broad ideation
+8. End with the next execution state.
    - whether the current contract is ready for `impl`
    - what the first or next implementation slice should be
    - which artifact is canonical during implementation
@@ -132,6 +148,7 @@ The final spec should usually include:
 - `Constraints`
 - `Success Criteria`
 - `Acceptance Checks`
+- `Premortem`
 - `Canonical Artifact`
 - `First Implementation Slice`
 
@@ -146,6 +163,8 @@ If the idea depends on durable structure or flow, reuse ideation outputs such as
 - Do not leave success criteria as vague aspirations.
 - Do not allow an important success criterion without at least one acceptance
   check.
+- Do not skip the bounded premortem on a risky or cross-surface contract just
+  because the document reads clearly to the current author.
 - Do not let acceptance checks become a second copy of the unit suite just
   because the repo already has executable specs.
 - Do not silently assume implementation details when they materially change
@@ -167,6 +186,7 @@ If the idea depends on durable structure or flow, reuse ideation outputs such as
 - `references/success-criteria.md`
 - `references/acceptance-checks.md`
 - `references/executable-spec-cost.md`
+- `references/premortem-loop.md`
 - `references/design-lenses.md`
 - `references/sequence-discipline.md`
 - `references/ambiguity-rules.md`

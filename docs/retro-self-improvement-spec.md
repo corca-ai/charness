@@ -78,9 +78,9 @@ If this work is implemented badly, the likely failure modes are:
 
 ## Probe Questions
 
-- Which local Claude or Codex logs, if any, stably expose duration, turn,
-  token, or tool-call counts in a way that can be parsed by a repo-owned helper
-  script without relying on internal unsupported formats?
+- Should the host-log probe read Codex's SQLite-backed runtime logs directly,
+  or shell out to the repo-owned `codex-state-logs` helper when the sibling
+  source tree is available?
 - Should `impl` trigger a short session retro only on explicit misses and
   corrections, or also after bounded slice closeout when the repo opted into
   automatic retrospective accumulation?
@@ -183,3 +183,74 @@ That means `charness` should copy the honesty pattern, not the full stack:
 - stable explicit file paths
 - structured `available` vs `unavailable`
 - no claims beyond the actual host logs
+
+## Confirmed Local Host-Log Surfaces
+
+Inspection on this machine found a sharper split than the earlier generic note
+implied.
+
+### Claude
+
+- Thin history file:
+  `~/.claude/history.jsonl`
+  This appears to be navigation / prompt history only and is not a trustworthy
+  source for efficiency metrics.
+- Rich project logs:
+  `~/.claude/projects/<project>/<session>.jsonl`
+  These logs do expose structured assistant usage. On this machine they include:
+  - `message.usage.input_tokens`
+  - `message.usage.cache_creation_input_tokens`
+  - `message.usage.cache_read_input_tokens`
+  - `message.usage.output_tokens`
+  - `message.usage.server_tool_use.web_search_requests`
+  - `message.usage.server_tool_use.web_fetch_requests`
+  - message content items of type `tool_use`
+
+Implication:
+
+- token counts: available
+- server web-tool counts: available
+- generic tool-call counts: probably derivable by counting `tool_use` items
+- turn counts: derivable, but not via one stable top-level field
+
+### Codex
+
+- Thin prompt history:
+  `~/.codex/history.jsonl`
+  This looks like prompt history, not reliable efficiency telemetry.
+- Runtime TUI log:
+  `~/.codex/log/codex-tui.log`
+  On this machine it clearly contains timestamps, `turn.id=...`, and
+  `ToolCall: ...` lines.
+- Runtime SQLite log store:
+  `~/.codex/logs_2.sqlite`
+  This stores rendered runtime log lines, including thread ids and the same
+  textual bodies visible in the TUI log.
+- Sibling source tree:
+  `../codex`
+  Source inspection confirms that Codex has a real token-usage event in the
+  app-server protocol (`ThreadTokenUsageUpdatedNotification`) and a repo-owned
+  log client (`codex-state-logs`) for the SQLite log store.
+
+Implication:
+
+- timestamps / coarse duration: available from TUI log or SQLite log store
+- turn counts: available from `turn.id=` lines
+- tool-call counts: available from `ToolCall:` lines
+- token counts: supported in Codex internals, but not yet proven to be emitted
+  into the default local logs inspected here; treat as `unavailable` until the
+  probe proves a stable local path
+
+## Probe Design Consequences
+
+The host-log probe should therefore report per-host, per-metric availability
+instead of one blanket "metrics supported" answer.
+
+- Claude probe:
+  prefer project JSONL over history JSONL
+- Codex probe:
+  prefer the SQLite/TUI runtime logs and classify token counts separately from
+  turn/tool-call counts
+- Cross-host contract:
+  return structured `available`, `derivable`, or `unavailable` with the source
+  path or helper name that justified the status
