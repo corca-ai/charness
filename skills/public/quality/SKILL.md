@@ -50,6 +50,13 @@ If the repo already has repo-owned quality commands or needs a first-pass instal
 python3 "$SKILL_DIR/scripts/bootstrap_adapter.py" --repo-root .
 ```
 
+When stronger local proof depends on a missing validation tool, reuse the shared
+recommendation/install payload instead of inventing prose-only install advice:
+
+```bash
+python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root .
+```
+
 Keep `quality.md` short and current; move older review detail into sibling
 `history/*.md` archives when today's posture starts getting buried.
 
@@ -110,6 +117,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - make `behavior` explicit about whether coverage is standing-gated, informally sampled, or absent
    - make evaluator depth explicit: smoke only, maintained evaluator-backed, or still smoke plus HITL
    - if stronger local proof depends on an external binary or support tool, state whether it is currently installed and healthy, then surface the exact install and post-install verification path instead of vague prose
+   - prefer the shared recommendation payload when a validation tool is missing instead of hand-writing install guidance from scratch
 5. Classify each issue by enforcement tier first.
    - `AUTO_EXISTING`: already enforced by a meaningful deterministic gate
    - `AUTO_CANDIDATE`: should be promoted into a linter, validator, test, hook, or script

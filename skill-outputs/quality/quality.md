@@ -30,6 +30,7 @@ Repo-wide quality posture after landing the `quality` installable-CLI probe-cont
 - the quality adapter now carries `coverage_fragile_margin_pp` and `specdown_smoke_patterns`, so executable-spec smoke classification and fragile coverage-floor tagging have repo-owned config instead of prose-only thresholds.
 - `README.md`, `INSTALL.md`, `UNINSTALL.md`, and `docs/host-packaging.md` stay aligned with that split and keep managed install, refresh, and host-visible plugin state separate.
 - the recommendation flow is specific enough to use operationally: `gws-cli` reports `doctor_status = ok` with provenance and readiness, while `cautilus` reports `install-needed` plus upstream docs and a repo-owned verify command.
+- `quality` now reuses that same structured recommendation payload through `skills/public/quality/scripts/list_tool_recommendations.py` instead of re-deriving missing validation-tool guidance as prose.
 - packaging drift, markdown-link discipline, and external URL health are checked by separate owners instead of one noisy mixed gate.
 
 ## Weak
@@ -71,6 +72,7 @@ Repo-wide quality posture after landing the `quality` installable-CLI probe-cont
 - `python3 scripts/doctor.py --repo-root . --json --tool-id gws-cli`
 - `python3 scripts/doctor.py --repo-root . --json --tool-id cautilus`
 - `python3 skills/public/find-skills/scripts/list_capabilities.py --repo-root . --recommend-for-skill gather`
+- `python3 skills/public/quality/scripts/list_tool_recommendations.py --repo-root .`
 
 ## Recommended Next Gates
 

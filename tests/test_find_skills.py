@@ -426,6 +426,7 @@ def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_pa
             "display_name": "Google Workspace CLI (gws)",
             "kind": "external_binary",
             "summary": "Private Google Workspace gather provider.",
+            "why_recommended": "Recommended because `gather` can use this tool as a supported runtime path.",
             "supports_public_skills": ["gather"],
             "recommendation_role": "runtime",
             "recommendation_status": "ready",
@@ -442,5 +443,6 @@ def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_pa
                 "notes": ["Install gws."],
             },
             "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id gws-cli",
+            "next_skill_id": "gather",
         }
     ]

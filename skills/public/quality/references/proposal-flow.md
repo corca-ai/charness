@@ -20,6 +20,8 @@ Good proposals name:
 - whether the proposal is `AUTO_CANDIDATE` or `NON_AUTOMATABLE`
 - what local install or permission is required when the gate depends on an
   external binary or service
+- the exact verification command when a repo-owned doctor or recommendation
+  helper already exposes one
 
 Examples:
 
