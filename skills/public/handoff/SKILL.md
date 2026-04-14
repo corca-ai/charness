@@ -30,15 +30,19 @@ By default, `handoff` writes its durable artifact to
 `skill-outputs/handoff/handoff.md`. Repos can override the directory with
 `.agents/handoff-adapter.yaml`.
 
-Keep the handoff inside the repo-owned size and shape gate. If it starts
-growing into an archive, move durable detail into the right repo doc before
-adding more prose here.
+Keep the handoff inside the repo-owned size and shape gate. Default to roughly
+200 lines unless the repo already names a different gate. If the current
+handoff exceeds that size or accumulates multiple dated `## This Session
+(<date>)` sections, prune or spill durable detail before appending more prose
+here. See `references/spill-targets.md` for the default spill destinations.
 
 ```bash
 # Required Tools: rg
 # Missing-binary protocol: create-skill/references/binary-preflight.md
 # 1. current handoff and adjacent plan or roadmap context
 sed -n '1,220p' <resolved-handoff-artifact> 2>/dev/null || true
+wc -l <resolved-handoff-artifact> 2>/dev/null || true
+if test -f <resolved-handoff-artifact>; then rg -n "^## This Session \\(" <resolved-handoff-artifact>; fi
 rg -n "Session|Goal|Deliverables|Exit criteria|Next Session|Discuss" docs skill-outputs .agents
 
 # 2. current repo state
@@ -58,6 +62,8 @@ the `Workflow Trigger` first and continue with that workflow.
    - for pickup, treat the workflow trigger as authoritative next-step
      instruction
    - for refresh, inspect only the live state that changes the next action
+   - if the current handoff exceeds the size gate or stacks dated `This
+     Session` sections, prune or spill before adding new prose
 2. Identify the canonical handoff artifact.
    - default to the adapter-resolved artifact path
    - if the repo already has a checked-in handoff surface, point the adapter
@@ -96,6 +102,8 @@ The handoff should usually contain:
 ## Guardrails
 
 - Do not preserve stale detail that no longer changes the next action.
+- Do not accumulate dated `This Session (<date>)` sections across sessions;
+  replace the old one or spill durable detail into the right sibling artifact.
 - Do not hide the real next workflow behind vague prose.
 - Do not write unverified state as fact.
 - Do not let the handoff drift away from the current repo state.
@@ -114,3 +122,4 @@ The handoff should usually contain:
 - `references/state-selection.md`
 - `references/document-seams.md`
 - `references/premortem-loop.md`
+- `references/spill-targets.md`
