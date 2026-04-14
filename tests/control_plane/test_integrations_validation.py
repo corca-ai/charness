@@ -152,6 +152,9 @@ def test_doctor_detects_missing_materialized_support_from_previous_sync(tmp_path
     assert doctor_payload[0]["doctor_status"] == "support-missing"
     assert doctor_payload[0]["support_sync"]["status"] == "missing"
     assert doctor_payload[0]["support_sync"]["missing_paths"] == ["skills/support/generated/demo-tool-wrapper"]
+    assert doctor_payload[0]["support_sync"]["action_required"] is True
+    assert doctor_payload[0]["support_sync"]["suggested_command"] == "charness tool sync-support demo-tool"
+    assert "Previously materialized support skill paths are missing." in doctor_payload[0]["next_steps"][0]
 
 
 def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path) -> None:

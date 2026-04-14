@@ -153,3 +153,57 @@ def validate_checked_in_plugin_tree_matches_generated(root: Path, plugin_root: P
                     "checked-in plugin tree does not match the generated install surface "
                     f"(drift at `{(plugin_root / rel_path).relative_to(root)}`)"
                 )
+
+
+_IMPORT_SMOKE_SCRIPT = r"""
+import importlib.util, pathlib, sys
+
+plugin_root = pathlib.Path(sys.argv[1])
+sys.path.insert(0, str(plugin_root))
+errors = []
+for py_path in sorted(plugin_root.rglob("*.py")):
+    if "__pycache__" in py_path.parts:
+        continue
+    rel = py_path.relative_to(plugin_root)
+    module_name = "smoke_" + str(rel).replace("/", "_").replace(".", "_").replace("-", "_")
+    try:
+        spec = importlib.util.spec_from_file_location(module_name, py_path)
+        if spec is None or spec.loader is None:
+            continue
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
+    except SystemExit:
+        continue
+    except BaseException as exc:  # noqa: BLE001
+        errors.append(f"{rel}: {type(exc).__name__}: {exc}")
+if errors:
+    for line in errors:
+        print(line, file=sys.stderr)
+    sys.exit(1)
+"""
+
+
+def smoke_exported_plugin_imports(plugin_root: Path) -> None:
+    """Exec every .py in the exported plugin tree as a module to detect
+    dev-tree-only imports that survive export but fail with
+    ModuleNotFoundError when the plugin actually runs (e.g.,
+    `from skills.public.X import Y`).
+
+    Modules are loaded via `importlib.util.spec_from_file_location`, which
+    runs top-level statements (imports, constants) but skips any
+    `if __name__ == '__main__':` block, so argparse.parse_args() and CLI
+    side effects do not fire. `SystemExit` is swallowed because a few
+    helpers call `sys.exit` during module body when imported standalone.
+    """
+    result = subprocess.run(
+        ["python3", "-c", _IMPORT_SMOKE_SCRIPT, str(plugin_root)],
+        check=False,
+        capture_output=True,
+        timeout=30,
+    )
+    if result.returncode != 0:
+        stderr = result.stderr.decode("utf-8", errors="replace").strip()
+        raise RuntimeError(
+            "exported plugin tree has modules that fail at import time:\n" + stderr
+        )

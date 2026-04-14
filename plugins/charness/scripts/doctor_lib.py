@@ -9,6 +9,30 @@ from scripts.control_plane_lib import evaluate_version, read_lock, run_check
 from scripts.support_sync_lib import inspect_support_sync, support_state_for_manifest
 
 
+def support_sync_guidance(capability: dict[str, Any], support_state: str, support_sync: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    status = support_sync["status"]
+    if support_state not in {"upstream-consumed", "wrapped-upstream"} or status not in {"not-tracked", "missing"}:
+        return support_sync, []
+
+    suggested_command = f"charness tool sync-support {capability['tool_id']}"
+    if status == "not-tracked":
+        guidance = (
+            "Local support skill surface is not materialized yet. "
+            f"Run `{suggested_command}` if you want the upstream or wrapper support skill available in this repo."
+        )
+    else:
+        guidance = (
+            "Previously materialized support skill paths are missing. "
+            f"Run `{suggested_command}` to rematerialize the local support surface."
+        )
+    return {
+        **support_sync,
+        "action_required": True,
+        "suggested_command": suggested_command,
+        "guidance": guidance,
+    }, [guidance]
+
+
 def evaluate_readiness(capability: dict[str, Any], repo_root: Path) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
     for check in capability.get("readiness_checks", []):
@@ -34,6 +58,7 @@ def inspect_capability_state(repo_root: Path, capability: dict[str, Any]) -> dic
     previous_lock = read_lock(repo_root, capability["tool_id"])
     support_state = support_state_for_manifest(capability)
     support_sync = inspect_support_sync(repo_root, previous_lock)
+    support_sync, next_steps = support_sync_guidance(capability, support_state, support_sync)
 
     if support_sync["status"] == "missing":
         doctor_status = "support-missing"
@@ -59,5 +84,6 @@ def inspect_capability_state(repo_root: Path, capability: dict[str, Any]) -> dic
         "version": version_result,
         "support_sync": support_sync,
         "doctor_status": doctor_status,
+        "next_steps": next_steps,
         "previous_lock_present": previous_lock is not None,
     }

@@ -32,6 +32,9 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     assert doctor_payload[0]["doctor_status"] == "ok"
     assert doctor_payload[0]["support_state"] == "wrapped-upstream"
     assert doctor_payload[0]["support_sync"]["status"] == "not-tracked"
+    assert doctor_payload[0]["support_sync"]["action_required"] is True
+    assert doctor_payload[0]["support_sync"]["suggested_command"] == "charness tool sync-support demo-tool"
+    assert "Local support skill surface is not materialized yet." in doctor_payload[0]["next_steps"][0]
 
     sync = run_script(
         "scripts/sync_support.py",

@@ -202,6 +202,8 @@ queue_selected "validate-quality-artifact" python3 scripts/validate-quality-arti
 queue_selected "validate-maintainer-setup" python3 scripts/validate-maintainer-setup.py --repo-root "$REPO_ROOT"
 queue_selected "check-python-lengths" python3 scripts/check-python-lengths.py --repo-root "$REPO_ROOT"
 queue_selected "check-skill-contracts" python3 scripts/check-skill-contracts.py --repo-root "$REPO_ROOT"
+queue_selected "check-export-safe-imports" python3 scripts/check-export-safe-imports.py --repo-root "$REPO_ROOT"
+queue_selected "check-plugin-import-smoke" python3 scripts/check-plugin-import-smoke.py --repo-root "$REPO_ROOT"
 queue_selected "check-doc-links" python3 scripts/check-doc-links.py --repo-root "$REPO_ROOT"
 flush_phase || OVERALL_RC=$?
 

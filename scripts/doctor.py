@@ -21,6 +21,22 @@ from scripts.install_provenance_lib import detect_install_provenance
 from scripts.upstream_release_lib import probe_release
 
 
+def lock_safe_doctor_payload(payload: dict[str, object]) -> dict[str, object]:
+    lock_payload = dict(payload)
+    lock_payload.pop("previous_lock_present", None)
+    lock_payload.pop("release", None)
+    lock_payload.pop("provenance", None)
+    lock_payload.pop("next_steps", None)
+    support_sync = lock_payload.get("support_sync")
+    if isinstance(support_sync, dict):
+        lock_payload["support_sync"] = {
+            "status": support_sync["status"],
+            "expected_paths": support_sync["expected_paths"],
+            "missing_paths": support_sync["missing_paths"],
+        }
+    return lock_payload
+
+
 def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: bool) -> dict[str, object]:
     state = inspect_capability_state(repo_root, manifest)
     provenance_result = detect_install_provenance(manifest)
@@ -34,11 +50,13 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
     if release is not None:
         payload["release"] = release
     if write:
-        lock_payload = dict(payload)
-        lock_payload.pop("previous_lock_present", None)
-        lock_payload.pop("release", None)
-        lock_payload.pop("provenance", None)
-        upsert_lock(repo_root, manifest, doctor=lock_payload, release=release, provenance=provenance_result)
+        upsert_lock(
+            repo_root,
+            manifest,
+            doctor=lock_safe_doctor_payload(payload),
+            release=release,
+            provenance=provenance_result,
+        )
     return {**payload, "tool_id": manifest["tool_id"], "previous_lock_present": state["previous_lock_present"]}
 
 
