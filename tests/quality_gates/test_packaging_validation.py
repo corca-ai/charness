@@ -258,12 +258,16 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     exported_profiles = claude_root / "plugins" / "charness" / "profiles"
     exported_gather_skill = claude_root / "plugins" / "charness" / "skills" / "gather" / "SKILL.md"
     exported_support_skill = claude_root / "plugins" / "charness" / "support" / "gather-slack" / "SKILL.md"
+    exported_agent_browser = claude_root / "plugins" / "charness" / "support" / "agent-browser" / "SKILL.md"
+    exported_specdown = claude_root / "plugins" / "charness" / "support" / "specdown" / "SKILL.md"
     exported_helper_script = claude_root / "plugins" / "charness" / "scripts" / "adapter_lib.py"
     assert claude_manifest.is_file()
     assert exported_readme.is_file()
     assert exported_profiles.is_dir()
     assert exported_gather_skill.is_file()
     assert exported_support_skill.is_file()
+    assert exported_agent_browser.is_file()
+    assert exported_specdown.is_file()
     assert exported_helper_script.is_file()
     assert not (claude_root / "plugins" / "charness" / "skills" / "public").exists()
     assert not (claude_root / "plugins" / "charness" / "support" / "generated").exists()
