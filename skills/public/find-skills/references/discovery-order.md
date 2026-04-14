@@ -4,14 +4,17 @@
 
 1. local public skills
 2. local support skills
-3. local external integration manifests
-4. adapter-configured trusted skill roots
-5. missing capability classification
+3. local synced support skills
+4. local external integration manifests
+5. adapter-configured trusted skill roots
+6. missing capability classification
 
 Reason:
 
 - users should prefer what already ships in the current harness
 - support skills are not the product's public concept layer
+- synced support skills are already materialized locally, but still belong below
+  the public concept layer
 - external integrations may require install/update/doctor flows that are not yet
   active
 - trusted skill roots are host-trusted extension surfaces, not local product

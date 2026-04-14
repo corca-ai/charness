@@ -251,6 +251,8 @@ def test_doctor_reads_support_owned_capability_metadata(tmp_path: Path) -> None:
     assert payload[0]["tool_id"] == "gather-slack"
     assert payload[0]["kind"] == "support_runtime"
     assert payload[0]["support_state"] == "native-support"
+    assert payload[0]["support_discovery"]["status"] == "native"
+    assert payload[0]["support_discovery"]["support_skill_path"] == "skills/support/gather-slack/SKILL.md"
     assert payload[0]["doctor_status"] == "ok"
     assert payload[0]["access_modes"] == ["grant", "env", "degraded"]
 

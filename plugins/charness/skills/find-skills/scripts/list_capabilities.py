@@ -23,15 +23,14 @@ REPO_ROOT = _runtime_root()
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.control_plane_lib import load_support_capabilities  # noqa: E402
-from scripts.repo_layout import public_skills_dir, support_dir  # noqa: E402
+from scripts.repo_layout import generated_support_dir, public_skills_dir, support_dir  # noqa: E402
+from scripts.support_sync_lib import support_link_name, support_state_for_manifest  # noqa: E402
 from scripts.tool_recommendation_lib import recommendations_for_public_skill  # noqa: E402
 from resolve_adapter import load_adapter  # noqa: E402
 
 
 def _local_surface_root(target_root: Path) -> Path:
-    if (REPO_ROOT / "skills" / "public").is_dir():
-        return target_root
-    return REPO_ROOT
+    return target_root if (REPO_ROOT / "skills" / "public").is_dir() else REPO_ROOT
 
 
 def extract_frontmatter(path: Path) -> dict[str, str]:
@@ -87,6 +86,14 @@ def _collect_skill_entries(
     return items
 
 
+def materialized_support_skill_path(root: Path, manifest: dict[str, object]) -> str | None:
+    support = manifest.get("support_skill_source")
+    generated_skill = generated_support_dir(root) / support_link_name(manifest) / "SKILL.md"
+    if not isinstance(support, dict) or not generated_skill.is_file():
+        return None
+    return str(generated_skill.relative_to(root))
+
+
 def integrations(root: Path) -> list[dict[str, object]]:
     items: list[dict[str, object]] = []
     for manifest in sorted((root / "integrations" / "tools").glob("*.json")):
@@ -98,6 +105,8 @@ def integrations(root: Path) -> list[dict[str, object]]:
                 "id": data.get("tool_id", manifest.stem),
                 "kind": data.get("kind", "unknown"),
                 "access_modes": data.get("access_modes", []),
+                "support_state": support_state_for_manifest(data),
+                "support_skill_path": materialized_support_skill_path(root, data),
                 "capability_requirements": data.get("capability_requirements", {}),
                 "config_layers": [
                     {
@@ -167,11 +176,9 @@ def main() -> None:
     local_root = _local_surface_root(root)
     adapter = load_adapter(root)
     trusted_skill_roots = adapter["data"].get("trusted_skill_roots", [])
-    trusted_entries = _collect_skill_entries(
-        [(f"trusted-root-{index + 1}", (root / skill_root).resolve()) for index, skill_root in enumerate(trusted_skill_roots)],
-        repo_root=root,
-        layer="trusted skill",
-    )
+    trusted_entries = _collect_skill_entries([(f"trusted-root-{index + 1}", (root / skill_root).resolve()) for index, skill_root in enumerate(trusted_skill_roots)], repo_root=root, layer="trusted skill")
+    support_entries = _collect_skill_entries([("local-support", support_dir(local_root))], repo_root=local_root, layer="support skill")
+    support_entries += _collect_skill_entries([("synced-support", generated_support_dir(local_root))], repo_root=local_root, layer="synced support skill")
     manifests = [
         json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((local_root / "integrations" / "tools").glob("*.json"))
@@ -192,11 +199,7 @@ def main() -> None:
             repo_root=local_root,
             layer="public skill",
         ),
-        "support_skills": _collect_skill_entries(
-            [("local-support", support_dir(local_root))],
-            repo_root=local_root,
-            layer="support skill",
-        ),
+        "support_skills": support_entries,
         "support_capabilities": support_capabilities(local_root),
         "integrations": integrations(local_root),
         "trusted_skills": trusted_entries,

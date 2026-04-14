@@ -119,6 +119,8 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
             "id": "example",
             "kind": "external_binary",
             "access_modes": ["grant", "binary", "degraded"],
+            "support_state": "integration-only",
+            "support_skill_path": None,
             "capability_requirements": {
                 "grant_ids": ["github.repo.read"],
                 "env_vars": ["GITHUB_TOKEN"],
@@ -154,7 +156,6 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
             "layer": "external integration",
         }
     ]
-
 
 def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None:
     (tmp_path / "skills" / "public" / "gather").mkdir(parents=True)

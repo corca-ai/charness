@@ -6,7 +6,12 @@ from pathlib import Path
 from typing import Any
 
 from scripts.control_plane_lib import evaluate_version, read_lock, run_check
-from scripts.support_sync_lib import inspect_support_sync, support_state_for_manifest
+from scripts.repo_layout import generated_support_dir
+from scripts.support_sync_lib import (
+    inspect_support_sync,
+    support_link_name,
+    support_state_for_manifest,
+)
 
 
 def install_route_for_manifest(capability: dict[str, Any]) -> dict[str, Any]:
@@ -44,6 +49,40 @@ def support_sync_guidance(capability: dict[str, Any], support_state: str, suppor
     }, [guidance]
 
 
+def support_discovery_state(repo_root: Path, capability: dict[str, Any], support_state: str) -> tuple[dict[str, Any] | None, list[str]]:
+    local_support_path = capability.get("support_skill_path")
+    if isinstance(local_support_path, str) and local_support_path and (repo_root / local_support_path).is_file():
+        guidance = (
+            f"Support skill is available at `{local_support_path}`. "
+            "Use `find-skills` to surface it on demand or inspect that path directly."
+        )
+        return {
+            "status": "native",
+            "support_skill_path": local_support_path,
+            "layer": "support skill",
+            "guidance": guidance,
+        }, [guidance]
+
+    if support_state not in {"upstream-consumed", "wrapped-upstream"}:
+        return None, []
+
+    materialized_path = generated_support_dir(repo_root) / support_link_name(capability) / "SKILL.md"
+    if not materialized_path.is_file():
+        return None, []
+
+    rendered_path = str(materialized_path.relative_to(repo_root))
+    guidance = (
+        f"Support skill is available at `{rendered_path}`. "
+        "Use `find-skills` to surface it on demand or inspect that path directly."
+    )
+    return {
+        "status": "materialized",
+        "support_skill_path": rendered_path,
+        "layer": "synced support skill",
+        "guidance": guidance,
+    }, [guidance]
+
+
 def evaluate_readiness(capability: dict[str, Any], repo_root: Path) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
     for check in capability.get("readiness_checks", []):
@@ -70,6 +109,8 @@ def inspect_capability_state(repo_root: Path, capability: dict[str, Any]) -> dic
     support_state = support_state_for_manifest(capability)
     support_sync = inspect_support_sync(repo_root, previous_lock)
     support_sync, next_steps = support_sync_guidance(capability, support_state, support_sync)
+    support_discovery, discovery_steps = support_discovery_state(repo_root, capability, support_state)
+    next_steps.extend(discovery_steps)
 
     if support_sync["status"] == "missing":
         doctor_status = "support-missing"
@@ -95,6 +136,7 @@ def inspect_capability_state(repo_root: Path, capability: dict[str, Any]) -> dic
         "readiness": readiness_result,
         "version": version_result,
         "support_sync": support_sync,
+        "support_discovery": support_discovery,
         "doctor_status": doctor_status,
         "next_steps": next_steps,
         "previous_lock_present": previous_lock is not None,

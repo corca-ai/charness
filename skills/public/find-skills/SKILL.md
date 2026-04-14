@@ -18,6 +18,8 @@ Use this when the user is asking:
 - prefer local native skills first
 - expand to adapter-configured trusted skill roots before treating a gap as new
 - distinguish public skills, support skills, and external integrations honestly
+- surface synced support skills separately when an external integration has
+  already materialized one locally
 - show the next usable path instead of only saying "not found"
 
 ## Bootstrap
@@ -45,7 +47,7 @@ new local skill.
    - whether they need a workflow, a tool-use seam, or a new extension point
 2. Search local native capabilities first.
    - public skills for user-facing workflow concepts
-   - support skills for tool-usage helpers
+   - support skills and synced support skills for tool-usage helpers
    - integration manifests for external binaries or upstream support skills
 3. Expand to trusted skill roots when the adapter provides them.
    - host-trusted skill packs
@@ -55,6 +57,7 @@ new local skill.
    - `public skill`
    - `trusted skill`
    - `support skill`
+   - `synced support skill`
    - `external integration`
    - `missing capability`
 5. Recommend the smallest usable next step.

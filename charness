@@ -2039,6 +2039,20 @@ def tool_next_step(
                 return " ".join(details)
             details.append(f"Docs: {docs_url}")
         return " ".join(details)
+
+    def support_discovery_suffix(result: dict[str, object] | None) -> str:
+        if not isinstance(result, dict):
+            return ""
+        discovery = result.get("support_discovery")
+        if not isinstance(discovery, dict):
+            return ""
+        guidance = discovery.get("guidance")
+        if isinstance(guidance, str) and guidance:
+            return guidance
+        path = discovery.get("support_skill_path")
+        if isinstance(path, str) and path:
+            return f"Support skill is available at `{path}`."
+        return ""
     if action_result is not None and action_result.get("status") == "manual":
         install_url = action_result.get("install_url")
         docs_url = action_result.get("docs_url")
@@ -2054,6 +2068,9 @@ def tool_next_step(
             guidance = f"{guidance} Install docs: {install_url}"
         if isinstance(docs_url, str) and docs_url and docs_url != install_url:
             guidance = f"{guidance} Docs: {docs_url}"
+        discovery_suffix = support_discovery_suffix(doctor_result)
+        if discovery_suffix:
+            guidance = f"{guidance} {discovery_suffix}"
         return with_release(guidance)
     if isinstance(action_result, dict) and action_result.get("mode") == "package_manager":
         package_manager = action_result.get("package_manager")
@@ -2071,11 +2088,20 @@ def tool_next_step(
                 manager = provenance.get("install_method")
                 package_name = provenance.get("package_name")
                 if isinstance(manager, str) and manager in {"brew", "npm", "cargo", "go"} and isinstance(package_name, str):
-                    return with_release(f"`{tool_id}` is ready via `{manager}` package `{package_name}`.")
-            return with_release(f"`{tool_id}` is ready.")
+                    message = f"`{tool_id}` is ready via `{manager}` package `{package_name}`."
+                    discovery_suffix = support_discovery_suffix(doctor_result)
+                    if discovery_suffix:
+                        message = f"{message} {discovery_suffix}"
+                    return with_release(message)
+            message = f"`{tool_id}` is ready."
+            discovery_suffix = support_discovery_suffix(doctor_result)
+            if discovery_suffix:
+                message = f"{message} {discovery_suffix}"
+            return with_release(message)
         if doctor_status == "missing":
             hint = doctor_result.get("detect", {}).get("failure_hint")
             install_suffix = install_route_suffix(doctor_result)
+            discovery_suffix = support_discovery_suffix(doctor_result)
             if support_result is not None and support_result.get("status") == "synced":
                 paths = support_result.get("materialized_paths")
                 if isinstance(paths, list) and paths:
@@ -2087,19 +2113,31 @@ def tool_next_step(
                         message = f"{message} {hint}"
                     if install_suffix:
                         message = f"{message} {install_suffix}"
+                    if discovery_suffix:
+                        message = f"{message} {discovery_suffix}"
                     return with_release(message)
             if isinstance(hint, str) and hint:
                 if install_suffix:
                     hint = f"{hint} {install_suffix}"
+                if discovery_suffix:
+                    hint = f"{hint} {discovery_suffix}"
                 return with_release(hint)
         if doctor_status == "support-missing" and support_result is not None:
             paths = support_result.get("materialized_paths")
             if isinstance(paths, list) and paths:
-                return with_release(f"Regenerated support artifacts for `{tool_id}` under {', '.join(paths)}.")
+                message = f"Regenerated support artifacts for `{tool_id}` under {', '.join(paths)}."
+                discovery_suffix = support_discovery_suffix(doctor_result)
+                if discovery_suffix:
+                    message = f"{message} {discovery_suffix}"
+                return with_release(message)
     if support_result is not None and support_result.get("status") == "synced":
         paths = support_result.get("materialized_paths")
         if isinstance(paths, list) and paths:
-            return with_release(f"Support skill materialization for `{tool_id}` was refreshed under {', '.join(paths)}.")
+            message = f"Support skill materialization for `{tool_id}` was refreshed under {', '.join(paths)}."
+            discovery_suffix = support_discovery_suffix(doctor_result)
+            if discovery_suffix:
+                message = f"{message} {discovery_suffix}"
+            return with_release(message)
     return with_release(f"Review the structured result for `{tool_id}` and follow the manifest guidance.")
 
 
