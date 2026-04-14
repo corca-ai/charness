@@ -20,13 +20,14 @@ REPO_ROOT = _runtime_root()
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from adapter_validators import runtime_budgets as _runtime_budgets
+
 from scripts.adapter_lib import load_yaml_file
 from scripts.quality_bootstrap_lib import (
     ADAPTER_CANDIDATES,
     DEFAULT_COVERAGE_FLOOR_POLICY,
     DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
 )
-from adapter_validators import runtime_budgets as _runtime_budgets
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
 LIST_FIELDS = ("preset_lineage", "concept_paths", "preflight_commands", "gate_commands", "security_commands")
