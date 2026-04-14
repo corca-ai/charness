@@ -11,13 +11,20 @@
     "skill-outputs/debug/debug-2026-04-13-stale-init-binary.md",
     "skill-outputs/debug/debug-2026-04-14-lock-schema-drift.md",
     "skill-outputs/quality/quality.md",
-    "skill-outputs/retro/session-2026-04-10.md",
-    "git log --oneline --since='2026-04-07'",
-    "gh issue list --repo corca-ai/charness --state closed --search 'closed:>=2026-04-07' --limit 50"
+    "git rev-list --count --since='2026-04-07T00:00:00Z' HEAD",
+    "gh issue list --repo corca-ai/charness --state closed --search 'closed:>=2026-04-07' --limit 100 --json number",
+    "python3 scripts/run-slice-closeout.py --repo-root . --allow-unmatched",
+    "./scripts/run-quality.sh"
   ],
   "metrics": {
-    "commit_count_since_2026_04_07": 252,
-    "closed_issue_count_since_2026_04_07": 21,
+    "commit_count_since_2026_04_07": 267,
+    "closed_issue_count_since_2026_04_07": 24,
     "debug_incidents_used": 3
-  }
+  },
+  "repeat_traps": [
+    "multi-surface sequencing errors",
+    "late public-skill policy updates",
+    "plugin export sync after skill-doc edits",
+    "issue close before full green"
+  ]
 }
