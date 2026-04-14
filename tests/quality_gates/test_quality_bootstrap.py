@@ -32,11 +32,13 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     assert payload["adapter_status"] == "written"
     assert payload["field_statuses"] == {
         "coverage_fragile_margin_pp": "defaulted",
+        "coverage_floor_policy": "defaulted",
         "concept_paths": "inferred",
         "gate_commands": "installed",
         "preflight_commands": "installed",
         "preset_lineage": "inferred",
         "specdown_smoke_patterns": "defaulted",
+        "spec_pytest_reference_format": "defaulted",
         "security_commands": "installed",
     }
     assert payload["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
@@ -49,7 +51,20 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     resolved = json.loads(resolve_result.stdout)
     assert resolved["data"]["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
     assert resolved["data"]["coverage_fragile_margin_pp"] == 1.0
+    assert resolved["data"]["coverage_floor_policy"] == {
+        "min_statements_threshold": 30,
+        "fail_below_pct": 80.0,
+        "warn_ceiling_pct": 95.0,
+        "floor_drift_lock_pp": 1.0,
+        "exemption_list_path": "scripts/coverage-floor-exemptions.txt",
+        "gate_script_pattern": "*-quality-gate.sh",
+        "lefthook_path": "lefthook.yml",
+        "ci_workflow_glob": ".github/workflows/*.yml",
+    }
     assert resolved["data"]["specdown_smoke_patterns"] == []
+    assert resolved["data"]["spec_pytest_reference_format"] == (
+        r"Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*"
+    )
     assert resolved["data"]["gate_commands"] == ["./scripts/run-quality.sh"]
     assert resolved["data"]["preflight_commands"] == ["python3 scripts/validate-maintainer-setup.py --repo-root ."]
 
@@ -68,7 +83,17 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
                 "preset_lineage:",
                 "- python-quality",
                 "coverage_fragile_margin_pp: 0.5",
+                "coverage_floor_policy:",
+                "  min_statements_threshold: 45",
+                "  fail_below_pct: 82.0",
+                "  warn_ceiling_pct: 96.0",
+                "  floor_drift_lock_pp: 0.5",
+                "  exemption_list_path: scripts/custom-exemptions.txt",
+                "  gate_script_pattern: \"*-boundary-gate.sh\"",
+                "  lefthook_path: config/lefthook.yml",
+                "  ci_workflow_glob: .github/workflows/quality-*.yml",
                 "specdown_smoke_patterns: []",
+                "spec_pytest_reference_format: \"Covered by pytest:\\s+`tests/custom[^`]+`\"",
                 "gate_commands:",
                 "- python3 -m pytest -q",
                 "preflight_commands: []",
@@ -86,14 +111,27 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     assert payload["adapter_status"] == "updated"
     assert payload["field_statuses"]["gate_commands"] == "preserved"
     assert payload["field_statuses"]["coverage_fragile_margin_pp"] == "preserved"
+    assert payload["field_statuses"]["coverage_floor_policy"] == "preserved"
     assert payload["field_statuses"]["specdown_smoke_patterns"] == "preserved"
+    assert payload["field_statuses"]["spec_pytest_reference_format"] == "preserved"
 
     resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
     resolved = json.loads(resolve_result.stdout)
     assert resolved["data"]["gate_commands"] == ["python3 -m pytest -q"]
     assert resolved["data"]["coverage_fragile_margin_pp"] == 0.5
+    assert resolved["data"]["coverage_floor_policy"] == {
+        "min_statements_threshold": 45,
+        "fail_below_pct": 82.0,
+        "warn_ceiling_pct": 96.0,
+        "floor_drift_lock_pp": 0.5,
+        "exemption_list_path": "scripts/custom-exemptions.txt",
+        "gate_script_pattern": "*-boundary-gate.sh",
+        "lefthook_path": "config/lefthook.yml",
+        "ci_workflow_glob": ".github/workflows/quality-*.yml",
+    }
     assert resolved["data"]["specdown_smoke_patterns"] == []
+    assert resolved["data"]["spec_pytest_reference_format"] == r"Covered by pytest:\s+`tests/custom[^`]+`"
     assert resolved["data"]["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
 
 
@@ -125,12 +163,16 @@ def test_quality_bootstrap_infers_specdown_defaults(tmp_path: Path) -> None:
     assert resolve_result.returncode == 0, resolve_result.stderr
     resolved = json.loads(resolve_result.stdout)
     assert resolved["data"]["coverage_fragile_margin_pp"] == 1.0
+    assert resolved["data"]["coverage_floor_policy"]["min_statements_threshold"] == 30
     assert resolved["data"]["specdown_smoke_patterns"] == [
         r"\bgrep\s+-q\b",
         r"\[pycheck\]",
         r"\b(?:uv\s+run\s+)?python\s+-m\s+pytest\b",
         r"\bpytest\b.*\s-k\s+",
     ]
+    assert resolved["data"]["spec_pytest_reference_format"] == (
+        r"Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*"
+    )
 
 
 def test_quality_init_adapter_seeds_specdown_defaults(tmp_path: Path) -> None:
@@ -151,9 +193,13 @@ def test_quality_init_adapter_seeds_specdown_defaults(tmp_path: Path) -> None:
     resolved = json.loads(resolve_result.stdout)
     assert resolved["data"]["preset_lineage"] == ["specdown-quality"]
     assert resolved["data"]["coverage_fragile_margin_pp"] == 1.0
+    assert resolved["data"]["coverage_floor_policy"]["gate_script_pattern"] == "*-quality-gate.sh"
     assert resolved["data"]["specdown_smoke_patterns"] == [
         r"\bgrep\s+-q\b",
         r"\[pycheck\]",
         r"\b(?:uv\s+run\s+)?python\s+-m\s+pytest\b",
         r"\bpytest\b.*\s-k\s+",
     ]
+    assert resolved["data"]["spec_pytest_reference_format"] == (
+        r"Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*"
+    )

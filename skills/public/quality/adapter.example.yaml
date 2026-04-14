@@ -7,7 +7,17 @@ customized_from: typescript-quality
 preset_lineage:
 - typescript-quality
 coverage_fragile_margin_pp: 1.0
+coverage_floor_policy:
+  min_statements_threshold: 30
+  fail_below_pct: 80.0
+  warn_ceiling_pct: 95.0
+  floor_drift_lock_pp: 1.0
+  exemption_list_path: scripts/coverage-floor-exemptions.txt
+  gate_script_pattern: *-quality-gate.sh
+  lefthook_path: lefthook.yml
+  ci_workflow_glob: .github/workflows/*.yml
 specdown_smoke_patterns: []
+spec_pytest_reference_format: Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*
 concept_paths: []
 preflight_commands: []
 gate_commands: []

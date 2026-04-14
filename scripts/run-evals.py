@@ -108,6 +108,11 @@ def scenario_quality_adapter_checked_in(root: Path) -> None:
         raise EvalError(f"checked-in quality adapter resolve: missing canonical gate command in {gate_commands!r}")
     if data.get("coverage_fragile_margin_pp") != 1.0:
         raise EvalError(f"checked-in quality adapter resolve: unexpected coverage fragile margin {data!r}")
+    floor_policy = data.get("coverage_floor_policy", {})
+    if floor_policy.get("min_statements_threshold") != 30:
+        raise EvalError(f"checked-in quality adapter resolve: unexpected coverage floor policy {data!r}")
+    if data.get("spec_pytest_reference_format") != r"Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*":
+        raise EvalError(f"checked-in quality adapter resolve: unexpected pytest reference format {data!r}")
 
 
 def scenario_quality_bootstrap_posture(root: Path) -> None:
@@ -146,6 +151,8 @@ def scenario_quality_bootstrap_posture(root: Path) -> None:
             raise EvalError(f"quality bootstrap posture resolve: unexpected adapter payload {resolved!r}")
         if resolved["data"]["coverage_fragile_margin_pp"] != 1.0:
             raise EvalError(f"quality bootstrap posture resolve: unexpected fragile margin {resolved!r}")
+        if resolved["data"]["coverage_floor_policy"]["gate_script_pattern"] != "*-quality-gate.sh":
+            raise EvalError(f"quality bootstrap posture resolve: unexpected floor policy {resolved!r}")
 
 def scenario_narrative_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="narrative", adapter_name="narrative-adapter.yaml", expected_artifact_path="skill-outputs/narrative/narrative.md")

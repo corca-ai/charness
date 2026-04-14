@@ -24,43 +24,104 @@ def _coerce_scalar(value: str) -> Any:
         return float(value)
     except ValueError:
         pass
-    if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+    if value.startswith('"') and value.endswith('"'):
+        return value[1:-1].replace('\\"', '"').replace("\\\\", "\\")
+    if value.startswith("'") and value.endswith("'"):
         return value[1:-1]
     return value
 
 
-def load_yaml(text: str) -> dict[str, Any]:
-    result: dict[str, Any] = {}
-    current_key: str | None = None
-    current_list: list[Any] | None = None
+def _next_meaningful_line(lines: list[str], start: int) -> tuple[int, str] | None:
+    for index in range(start, len(lines)):
+        stripped = lines[index].strip()
+        if stripped and not stripped.startswith("#"):
+            return index, lines[index]
+    return None
 
-    for raw in text.splitlines():
+
+def _parse_block(lines: list[str], start: int, indent: int) -> tuple[dict[str, Any], int]:
+    result: dict[str, Any] = {}
+    index = start
+
+    while index < len(lines):
+        raw = lines[index]
         stripped = raw.strip()
+        current_indent = len(raw) - len(raw.lstrip(" "))
+
         if not stripped or stripped.startswith("#"):
+            index += 1
             continue
-        if stripped.startswith("- ") and current_key is not None:
-            if current_list is None:
-                current_list = []
-                result[current_key] = current_list
-            current_list.append(_coerce_scalar(stripped[2:].strip()))
+        if current_indent < indent:
+            break
+        if current_indent > indent:
+            index += 1
             continue
-        if ":" not in stripped:
+        if stripped.startswith("- ") or ":" not in stripped:
+            index += 1
             continue
+
         key, _, value = stripped.partition(":")
         key = key.strip()
         value = value.strip()
-        current_list = None
-        if not value:
-            current_key = key
-            continue
-        if value == "[]":
-            result[key] = []
-            current_key = key
-            continue
-        result[key] = _coerce_scalar(value)
-        current_key = key
 
-    return result
+        if value:
+            if value == "[]":
+                result[key] = []
+            else:
+                result[key] = _coerce_scalar(value)
+            index += 1
+            continue
+
+        next_item = _next_meaningful_line(lines, index + 1)
+        if next_item is None:
+            result[key] = {}
+            index += 1
+            continue
+
+        next_index, next_raw = next_item
+        next_stripped = next_raw.strip()
+        next_indent = len(next_raw) - len(next_raw.lstrip(" "))
+        if next_stripped.startswith("- "):
+            if next_indent < current_indent:
+                result[key] = {}
+                index += 1
+                continue
+            items: list[Any] = []
+            list_index = next_index
+            while list_index < len(lines):
+                list_raw = lines[list_index]
+                list_stripped = list_raw.strip()
+                list_indent = len(list_raw) - len(list_raw.lstrip(" "))
+                if not list_stripped or list_stripped.startswith("#"):
+                    list_index += 1
+                    continue
+                if list_indent < next_indent:
+                    break
+                if list_indent == next_indent:
+                    if not list_stripped.startswith("- "):
+                        break
+                    items.append(_coerce_scalar(list_stripped[2:].strip()))
+                    list_index += 1
+                    continue
+                list_index += 1
+            result[key] = items
+            index = list_index
+            continue
+        if next_indent <= current_indent:
+            result[key] = {}
+            index += 1
+            continue
+
+        nested, next_after_nested = _parse_block(lines, index + 1, current_indent + 2)
+        result[key] = nested
+        index = next_after_nested
+
+    return result, index
+
+
+def load_yaml(text: str) -> dict[str, Any]:
+    parsed, _ = _parse_block(text.splitlines(), 0, 0)
+    return parsed
 
 
 def load_yaml_file(path: Path) -> dict[str, Any]:
@@ -72,21 +133,40 @@ def _yaml_scalar(value: Any) -> str:
         return "null"
     if isinstance(value, bool):
         return "true" if value else "false"
+    if isinstance(value, str):
+        if (
+            value == ""
+            or value[0] in "*&!@`#{}[],:>|-'\""
+            or any(char in value for char in ("\n", ": ", "#", "\\"))
+            or value != value.strip()
+        ):
+            escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+            return f'"{escaped}"'
     return str(value)
+
+
+def _render_yaml_value(lines: list[str], key: str, value: Any, *, indent: int) -> None:
+    prefix = " " * indent
+    if isinstance(value, dict):
+        lines.append(f"{prefix}{key}:")
+        for nested_key, nested_value in value.items():
+            _render_yaml_value(lines, nested_key, nested_value, indent=indent + 2)
+        return
+    if isinstance(value, list):
+        if not value:
+            lines.append(f"{prefix}{key}: []")
+            return
+        lines.append(f"{prefix}{key}:")
+        for item in value:
+            lines.append(f"{prefix}  - {_yaml_scalar(item)}")
+        return
+    lines.append(f"{prefix}{key}: {_yaml_scalar(value)}")
 
 
 def render_yaml_mapping(items: list[tuple[str, Any]]) -> str:
     lines: list[str] = []
     for key, value in items:
-        if isinstance(value, list):
-            if not value:
-                lines.append(f"{key}: []")
-                continue
-            lines.append(f"{key}:")
-            for item in value:
-                lines.append(f"- {_yaml_scalar(item)}")
-            continue
-        lines.append(f"{key}: {_yaml_scalar(value)}")
+        _render_yaml_value(lines, key, value, indent=0)
     return "\n".join(lines) + "\n"
 
 

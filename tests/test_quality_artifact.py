@@ -86,7 +86,7 @@ def test_validate_quality_artifact_rejects_missing_history_section(tmp_path: Pat
                 "",
                 "## Recommended Next Gates",
                 "",
-                "- next",
+                "- active AUTO_CANDIDATE: next",
                 "",
             ]
         )
@@ -141,7 +141,7 @@ def test_validate_quality_artifact_rejects_missing_history_link(tmp_path: Path) 
                 "",
                 "## Recommended Next Gates",
                 "",
-                "- next",
+                "- active AUTO_CANDIDATE: next",
                 "",
                 "## History",
                 "",
@@ -199,7 +199,7 @@ def test_validate_quality_artifact_requires_runtime_closeout_fields(tmp_path: Pa
                 "",
                 "## Recommended Next Gates",
                 "",
-                "- next",
+                "- active AUTO_CANDIDATE: next",
                 "",
                 "## History",
                 "",

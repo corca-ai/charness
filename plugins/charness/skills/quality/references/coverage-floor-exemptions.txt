@@ -1,0 +1,9 @@
+# Paths listed here are excluded from the coverage-floor-inventory gate.
+#
+# Add an entry only when a declared floor is genuinely not viable.
+# Keep one exact repo-relative path per line, with a nearby `# why:` rationale
+# so future reviewers can challenge the exemption later.
+
+# why: example path for a thin CLI wiring module whose delegated boundary
+# modules already carry stronger floors.
+src/example/cli.py

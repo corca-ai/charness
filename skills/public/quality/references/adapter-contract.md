@@ -34,7 +34,9 @@ Optional shared provenance:
 Quality-specific fields:
 
 - `coverage_fragile_margin_pp`
+- `coverage_floor_policy`
 - `specdown_smoke_patterns`
+- `spec_pytest_reference_format`
 - `concept_paths`
 - `preflight_commands`
 - `gate_commands`
@@ -42,6 +44,22 @@ Quality-specific fields:
 
 Use explicit empty lists to record an intentional opt-out.
 Keep `coverage_fragile_margin_pp` numeric; `1.0` is the portable default.
+Keep `coverage_floor_policy` as an adapter-owned mapping so repos can tune
+inventory thresholds without forking the public skill body.
+
+Recommended `coverage_floor_policy` fields:
+
+- `min_statements_threshold`
+- `fail_below_pct`
+- `warn_ceiling_pct`
+- `floor_drift_lock_pp`
+- `exemption_list_path`
+- `gate_script_pattern`
+- `lefthook_path`
+- `ci_workflow_glob`
+
+`spec_pytest_reference_format` should hold the repo's canonical prose-note
+format when specs use `Covered by pytest:` style references.
 
 ## Artifact Rule
 

@@ -40,6 +40,7 @@ RUNTIME_SIGNAL_PREFIXES = (
     "- coverage gate:",
     "- evaluator depth:",
 )
+RECOMMENDED_GATE_PREFIXES = ("- active ", "- passive ")
 
 
 def validate_history_section(lines: list[str]) -> None:
@@ -63,6 +64,20 @@ def validate_runtime_signals_section(lines: list[str]) -> None:
         )
 
 
+def validate_recommended_next_gates_section(lines: list[str]) -> None:
+    start = find_index(lines, "## Recommended Next Gates") + 1
+    end = find_index(lines, "## History")
+    section_lines = [line.strip() for line in lines[start:end] if line.strip()]
+    bullets = [line for line in section_lines if line.startswith("- ")]
+    if not bullets:
+        raise ValidationError("`## Recommended Next Gates` must contain at least one bullet")
+    if any(not line.startswith(RECOMMENDED_GATE_PREFIXES) for line in bullets):
+        raise ValidationError("recommended next gates must start with `- active ` or `- passive `")
+    for line in bullets:
+        if line.startswith("- passive ") and " because" not in line and " until" not in line:
+            raise ValidationError("passive recommended next gates must explain why they are passive")
+
+
 def validate_quality_artifact(path: Path) -> None:
     lines = read_lines(path)
     if not lines or lines[0].strip() != "# Quality Review":
@@ -72,6 +87,7 @@ def validate_quality_artifact(path: Path) -> None:
 
     validate_section_order(lines, REQUIRED_SECTIONS)
     validate_runtime_signals_section(lines)
+    validate_recommended_next_gates_section(lines)
     validate_history_section(lines)
 
 

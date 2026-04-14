@@ -22,3 +22,9 @@ The adapter should still record the actual commands and the preset lineage.
 - `specdown-quality` should also seed executable-spec-specific adapter defaults
   such as `specdown_smoke_patterns`; `coverage_fragile_margin_pp` defaults to
   `1.0` unless the repo needs a stricter or looser threshold
+- bootstrap should also seed portable blind-spot defaults rather than leaving
+  them prose-only:
+  `coverage_floor_policy.min_statements_threshold = 30`,
+  `fail_below_pct = 80`, `warn_ceiling_pct = 95`,
+  `gate_script_pattern = "*-quality-gate.sh"`, and a default
+  `spec_pytest_reference_format` for `Covered by pytest:` notes

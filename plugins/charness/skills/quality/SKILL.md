@@ -8,12 +8,9 @@ description: "Use when the goal is to understand and improve the repo's current 
 Use this when the task is overall quality posture, not only one narrow bug or
 one isolated test.
 
-`quality` is one public concept. It absorbs concept integrity review, test
-confidence improvement, security and supply-chain posture review, skill
-package and maintenance drift review, and documentation drift review.
+`quality` is one public concept. It absorbs concept integrity review, test confidence improvement, security and supply-chain posture review, skill package and maintenance drift review, and documentation drift review.
 
-The job is to understand the repo's current quality surface, run the
-meaningful gates that already exist, and propose the missing ones concretely.
+The job is to understand the repo's current quality surface, run the meaningful gates that already exist, and propose the missing ones concretely.
 
 `quality` may also install or refresh the repo-local quality posture when the next move is deterministic setup work instead of only review. Keep this inside the same public concept: review posture and bootstrap posture are different execution states of `quality`, not separate skills.
 
@@ -26,11 +23,7 @@ quality concern can be enforced by a linter, validator, test, hook, or script,
 `quality` should prefer promoting it into that gate instead of leaving it as
 repeated prose advice.
 
-Maintainer-local enforcement counts when the repo depends on it. When the
-repo has an obvious final stop-before-finish gate with no checked-in hook,
-repo-owned hook installer, or documented no-hook policy, `quality` must name
-that as a missing enforcement gap rather than treating the passing command as
-healthy posture. See `references/maintainer-local-enforcement.md`.
+Maintainer-local enforcement counts when the repo depends on it. When the repo has an obvious final stop-before-finish gate with no checked-in hook, repo-owned hook installer, or documented no-hook policy, `quality` must name that as a missing enforcement gap rather than treating the passing command as healthy posture. See `references/maintainer-local-enforcement.md`.
 
 `quality` and concept review are adjacent. Use `quality` for repo posture, drift, duplicated surfaces, weak gates, and the next concrete validation move. Use concept review when boundaries, ownership, or source-of-truth design stay unresolved without duplicate text or an obvious gate. Use named-expert lenses only when they sharpen the next gate choice. See `references/quality-lenses.md`.
 
@@ -57,8 +50,7 @@ recommendation/install payload instead of inventing prose-only install advice:
 python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root .
 ```
 
-Keep `quality.md` short and current; move older review detail into sibling
-`history/*.md` archives when today's posture starts getting buried.
+Keep `quality.md` short and current; move older review detail into sibling `history/*.md` archives when today's posture starts getting buried.
 
 If the adapter is missing and the repo only needs a blank scaffold instead of detected bootstrap, scaffold one directly:
 
@@ -66,20 +58,25 @@ If the adapter is missing and the repo only needs a blank scaffold instead of de
 python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root . --preset-id portable-defaults
 ```
 
+The prior `quality.md` is history, not the authoritative universe. Re-derive the current source, spec, and gate surface before trusting what the last artifact happened to mention.
+
 ```bash
 # Required Tools: rg
 # Missing-binary protocol: create-skill/references/binary-preflight.md
-# 1. current quality artifact and adjacent contracts
+# 1. fresh inventory before the prior artifact can anchor scope
+rg --files .
+
+# 2. current quality artifact and adjacent contracts
 sed -n '1,220p' <resolved-quality-artifact> 2>/dev/null || true
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 rg --files docs skills
 
-# 2. repo signals and maintainer-local enforcement surface
+# 3. repo signals and maintainer-local enforcement surface
 rg -n "eslint|ruff|mypy|pyright|tsc|pytest|vitest|jest|coverage|deptry|knip|audit|sast|owasp|threat|architecture|concept|markdownlint|secretlint|shellcheck|lychee|gitleaks|trufflehog|pre-push|prepush|githook|husky|simple-git-hooks|lefthook|core\.hooksPath|actions/checkout|actions/setup-node|actions/setup-go|actions/setup-python|actions/cache|actions/github-script|check-github-actions" .
 git config --get core.hooksPath || true
 find .git/hooks -maxdepth 1 -type f 2>/dev/null | sort
 
-# 3. current repo state
+# 4. current repo state
 git status --short
 ```
 
@@ -91,6 +88,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - what the user wants checked or improved
    - whether the scope is repo-wide, one seam, or one proposed change
 2. Detect the current gate surface.
+   - independently enumerate the current source, spec, and gate inventory before letting the previous quality artifact define scope
    - local executable gates already present
    - current concept or architecture sources of truth
    - security and supply-chain signals already configured
@@ -98,6 +96,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - inspect README / INSTALL / operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
    - if the repo keeps standing coverage floors, tag seams within `coverage_fragile_margin_pp` as `FRAGILE` instead of burying near-miss risk in prose
+   - for blind-spot prevention, apply `references/coverage-floor-policy.md`: adapter-owned `coverage_floor_policy`, real unfloored-file inventory, and `Covered by pytest:` reference validation when those notes exist
    - maintainer-local enforcement for the final stop-before-finish gate: a checked-in hook, installer, or explicit no-hook policy
    - obvious blind spots where the repo has no gate at all
    - whether the next move is review-only or a bounded bootstrap/install pass
@@ -129,6 +128,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - `defer`: useful later, but not the next highest-leverage gate
 7. Propose the next quality moves concretely.
    - for missing or weak gates, name the exact setup or command family to add
+   - tag every recommended next gate as `active` or `passive`; passive entries require an explicit reason such as future-tool dependency, broader product decision, or runtime budget tradeoff
    - prefer the smallest gate that materially improves confidence
    - do not force one stack's tooling when the repo does not use that stack
    - when the problem is automatable, prefer a deterministic gate over prose
@@ -136,7 +136,9 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
      the same turn unless the user asked to stay review-only
    - when the next deterministic move is to install or refresh the repo-local quality surface itself, prefer the bootstrap posture and leave a machine-readable deferred-setup report
    - if executable specs are slow or overlapping, delete duplicates, move detail into unit-level checks, or add a direct adapter before widening the spec bar
-8. End with a quality posture summary.
+8. Run one fresh-eye premortem on the drafted report.
+   - use `references/fresh-eye-premortem.md`; if subagents are available and explicitly allowed, a fresh-eye subagent is ideal, otherwise do the challenge pass yourself without rereading the draft first
+9. End with a quality posture summary.
    - what was actually run
    - what runtime or diagnostic signals were captured
    - which runtime hot spots dominate the current bar
@@ -146,9 +148,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - what it still does not prove
    - the next best gate or cleanup to add
 
-- `Scope`, `Current Gates`, `Runtime Signals`, `Coverage and Eval Depth`
-- `Maintainer-Local Enforcement`, `Enforcement Triage`
-- `Healthy`, `Weak`, `Missing`, `Deferred`, `Commands Run`, `Recommended Next Gates`
+- `Scope`, `Current Gates`, `Runtime Signals`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Commands Run`, `Recommended Next Gates`
 
 - Do not reduce quality to one aggregate score.
 - Do not split quality bootstrap into a second public concept when the work is still bounded repo-local quality setup.
@@ -172,10 +172,15 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Keep repo-local markdown-link discipline separate from external URL health when the repo needs both.
 - Do not pretend a conceptual boundary problem is solved just because duplicate text was linted away; semantic boundary questions still need concept review.
 - If the repo is shipping a CLI or bootstrap command surface, inspect whether install/update/doctor/reset behavior follows `create-cli`-level quality expectations instead of treating the entrypoint as ordinary helper glue.
+- For anti-anchoring, unfloored-file inventory, glob-vs-operational drift, and `Covered by pytest:` honesty limits, follow `references/coverage-floor-policy.md` and `references/fresh-eye-premortem.md` instead of improvising.
 
 ## References
 
 - `references/adapter-contract.md`
+- `references/coverage-floor-exemptions.txt`
+- `references/coverage-floor-inventory.py`
+- `references/coverage-floor-policy.md`
+- `references/fresh-eye-premortem.md`
 - `references/maintainer-local-enforcement.md`
 - `references/quality-lenses.md`
 - `references/skill-quality.md`
@@ -191,3 +196,4 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - `references/security-npm.md`
 - `references/security-pnpm.md`
 - `references/security-uv.md`
+- `references/validate-spec-pytest-references.py`

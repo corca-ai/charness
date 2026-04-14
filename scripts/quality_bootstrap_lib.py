@@ -14,13 +14,18 @@ DEFAULT_SPECDOWN_SMOKE_PATTERNS = [
     r"\b(?:uv\s+run\s+)?python\s+-m\s+pytest\b",
     r"\bpytest\b.*\s-k\s+",
 ]
-ADAPTER_CANDIDATES = (
-    Path(".agents/quality-adapter.yaml"),
-    Path(".codex/quality-adapter.yaml"),
-    Path(".claude/quality-adapter.yaml"),
-    Path("docs/quality-adapter.yaml"),
-    Path("quality-adapter.yaml"),
-)
+DEFAULT_COVERAGE_FLOOR_POLICY = {
+    "min_statements_threshold": 30,
+    "fail_below_pct": 80.0,
+    "warn_ceiling_pct": 95.0,
+    "floor_drift_lock_pp": 1.0,
+    "exemption_list_path": "scripts/coverage-floor-exemptions.txt",
+    "gate_script_pattern": "*-quality-gate.sh",
+    "lefthook_path": "lefthook.yml",
+    "ci_workflow_glob": ".github/workflows/*.yml",
+}
+DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT = r"Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*"
+ADAPTER_CANDIDATES = (Path(".agents/quality-adapter.yaml"), Path(".codex/quality-adapter.yaml"), Path(".claude/quality-adapter.yaml"), Path("docs/quality-adapter.yaml"), Path("quality-adapter.yaml"))
 
 
 def _repo_has_any(repo_root: Path, *relative_paths: str) -> bool:
@@ -99,30 +104,24 @@ def detect_concept_paths(repo_root: Path) -> list[str]:
 
 
 def detect_preflight_commands(repo_root: Path) -> list[str]:
-    commands: list[str] = []
-    if (repo_root / "scripts" / "validate-maintainer-setup.py").is_file():
-        commands.append("python3 scripts/validate-maintainer-setup.py --repo-root .")
-    if (repo_root / "scripts" / "doctor.py").is_file():
-        commands.append("python3 scripts/doctor.py --json")
-    return commands
+    return [cmd for exists, cmd in (
+        ((repo_root / "scripts" / "validate-maintainer-setup.py").is_file(), "python3 scripts/validate-maintainer-setup.py --repo-root ."),
+        ((repo_root / "scripts" / "doctor.py").is_file(), "python3 scripts/doctor.py --json"),
+    ) if exists]
 
 
 def detect_gate_commands(repo_root: Path) -> list[str]:
-    commands: list[str] = []
-    if (repo_root / "scripts" / "run-quality.sh").is_file():
-        commands.append("./scripts/run-quality.sh")
-    if (repo_root / "scripts" / "check-github-actions.py").is_file():
-        commands.append("python3 scripts/check-github-actions.py --repo-root .")
-    return commands
+    return [cmd for exists, cmd in (
+        ((repo_root / "scripts" / "run-quality.sh").is_file(), "./scripts/run-quality.sh"),
+        ((repo_root / "scripts" / "check-github-actions.py").is_file(), "python3 scripts/check-github-actions.py --repo-root ."),
+    ) if exists]
 
 
 def detect_security_commands(repo_root: Path) -> list[str]:
-    commands: list[str] = []
-    if (repo_root / "scripts" / "check-secrets.sh").is_file():
-        commands.append("./scripts/check-secrets.sh")
-    if (repo_root / "scripts" / "check-supply-chain.py").is_file():
-        commands.append("python3 scripts/check-supply-chain.py --repo-root .")
-    return commands
+    return [cmd for exists, cmd in (
+        ((repo_root / "scripts" / "check-secrets.sh").is_file(), "./scripts/check-secrets.sh"),
+        ((repo_root / "scripts" / "check-supply-chain.py").is_file(), "python3 scripts/check-supply-chain.py --repo-root ."),
+    ) if exists]
 
 
 def _merge_unique(existing: list[str], inferred: list[str]) -> list[str]:
@@ -162,7 +161,9 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "customized_from": "portable-defaults",
         "preset_lineage": [],
         "coverage_fragile_margin_pp": DEFAULT_COVERAGE_FRAGILE_MARGIN_PP,
+        "coverage_floor_policy": dict(DEFAULT_COVERAGE_FLOOR_POLICY),
         "specdown_smoke_patterns": [],
+        "spec_pytest_reference_format": DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
         "concept_paths": [],
         "preflight_commands": [],
         "gate_commands": [],
@@ -171,9 +172,7 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
 
 
 def _default_specdown_smoke_patterns(preset_lineage: list[str]) -> list[str]:
-    if "specdown-quality" not in preset_lineage:
-        return []
-    return list(DEFAULT_SPECDOWN_SMOKE_PATTERNS)
+    return list(DEFAULT_SPECDOWN_SMOKE_PATTERNS) if "specdown-quality" in preset_lineage else []
 
 
 def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
@@ -195,9 +194,24 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
     coverage_fragile_margin_pp = raw.get("coverage_fragile_margin_pp")
     if isinstance(coverage_fragile_margin_pp, (int, float)):
         data["coverage_fragile_margin_pp"] = float(coverage_fragile_margin_pp)
+    coverage_floor_policy = raw.get("coverage_floor_policy")
+    if isinstance(coverage_floor_policy, dict):
+        merged_policy = dict(DEFAULT_COVERAGE_FLOOR_POLICY)
+        for key, default_value in DEFAULT_COVERAGE_FLOOR_POLICY.items():
+            value = coverage_floor_policy.get(key)
+            if isinstance(default_value, str) and isinstance(value, str):
+                merged_policy[key] = value
+            elif isinstance(default_value, float) and isinstance(value, (int, float)):
+                merged_policy[key] = float(value)
+            elif isinstance(default_value, int) and isinstance(value, int):
+                merged_policy[key] = value
+        data["coverage_floor_policy"] = merged_policy
     specdown_smoke_patterns = raw.get("specdown_smoke_patterns")
     if isinstance(specdown_smoke_patterns, list) and all(isinstance(item, str) for item in specdown_smoke_patterns):
         data["specdown_smoke_patterns"] = list(specdown_smoke_patterns)
+    spec_pytest_reference_format = raw.get("spec_pytest_reference_format")
+    if isinstance(spec_pytest_reference_format, str):
+        data["spec_pytest_reference_format"] = spec_pytest_reference_format
     for field in ("preset_lineage", "concept_paths", "preflight_commands", "gate_commands", "security_commands"):
         value = raw.get(field)
         if isinstance(value, list) and all(isinstance(item, str) for item in value):
@@ -240,6 +254,13 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
         final["coverage_fragile_margin_pp"] = DEFAULT_COVERAGE_FRAGILE_MARGIN_PP
         field_statuses["coverage_fragile_margin_pp"] = "defaulted"
 
+    if "coverage_floor_policy" in explicit_fields:
+        final["coverage_floor_policy"] = dict(existing["coverage_floor_policy"])
+        field_statuses["coverage_floor_policy"] = "preserved"
+    else:
+        final["coverage_floor_policy"] = dict(DEFAULT_COVERAGE_FLOOR_POLICY)
+        field_statuses["coverage_floor_policy"] = "defaulted"
+
     existing_patterns = existing.get("specdown_smoke_patterns", [])
     if "specdown_smoke_patterns" in explicit_fields:
         final["specdown_smoke_patterns"] = list(existing_patterns)
@@ -248,6 +269,13 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
         inferred_patterns = _default_specdown_smoke_patterns(merged_lineage)
         final["specdown_smoke_patterns"] = inferred_patterns
         field_statuses["specdown_smoke_patterns"] = "inferred" if inferred_patterns else "defaulted"
+
+    if "spec_pytest_reference_format" in explicit_fields:
+        final["spec_pytest_reference_format"] = existing["spec_pytest_reference_format"]
+        field_statuses["spec_pytest_reference_format"] = "preserved"
+    else:
+        final["spec_pytest_reference_format"] = DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT
+        field_statuses["spec_pytest_reference_format"] = "defaulted"
 
     concept_paths = detect_concept_paths(repo_root)
     existing_concepts = [path for path in existing.get("concept_paths", []) if (repo_root / path).is_file()]
@@ -298,7 +326,9 @@ def render_bootstrap_adapter(data: dict[str, Any]) -> str:
         [
             ("preset_lineage", data["preset_lineage"]),
             ("coverage_fragile_margin_pp", data["coverage_fragile_margin_pp"]),
+            ("coverage_floor_policy", data["coverage_floor_policy"]),
             ("specdown_smoke_patterns", data["specdown_smoke_patterns"]),
+            ("spec_pytest_reference_format", data["spec_pytest_reference_format"]),
             ("concept_paths", data["concept_paths"]),
             ("preflight_commands", data["preflight_commands"]),
             ("gate_commands", data["gate_commands"]),

@@ -30,3 +30,10 @@ This happens after enforcement triage:
 
 - would be useful later
 - not the next highest-leverage gate for the current repo state
+
+## Recommended Next Gates
+
+Every recommended next gate should also carry an execution posture tag:
+
+- `active`: install or change now as the next bounded proof move
+- `passive`: monitor, wait, or defer with an explicit reason

@@ -3,7 +3,9 @@ Date: 2026-04-14
 
 ## Scope
 
-Repo-wide quality posture after landing the `quality` installable-CLI probe-contract rewrite and dogfooding it against `charness` install/update/doctor/tool surfaces, operator docs, and tool recommendation flow.
+Repo-wide quality posture after landing `quality` blind-spot prevention follow-on
+(`coverage_floor_policy`, anti-anchoring bootstrap, fresh-eye premortem, and
+pytest-reference validator guidance) and dogfooding it against `charness`.
 
 ## Current Gates
 
@@ -13,6 +15,9 @@ Repo-wide quality posture after landing the `quality` installable-CLI probe-cont
 - `validate-packaging`, `check-coverage`, `check-secrets`, `check-supply-chain`, and `check-links-external` cover install-surface drift, scoped control-plane coverage, secret posture, supply chain, and external URL health.
 - `./charness --help`, `./charness doctor --help`, `./charness update --help`, `./charness reset --help`, and `./charness tool doctor --help` now serve as the concrete probe-layer honesty sample for `quality`.
 - `python3 skills/public/find-skills/scripts/list_capabilities.py --repo-root . --recommend-for-skill gather` is the repo-owned exact install/recommendation path for missing-tool follow-up.
+- `.agents/quality-adapter.yaml` now carries a portable `coverage_floor_policy`
+  block and `spec_pytest_reference_format`, so blind-spot thresholds live in
+  adapter data instead of prose-only review habits.
 
 ## Runtime Signals
 
@@ -28,10 +33,16 @@ Repo-wide quality posture after landing the `quality` installable-CLI probe-cont
 - adapter-required public skills fail closed when bootstrap artifacts drift, and evaluator-required skills keep a maintained cautilus scenario registry.
 - the installable-CLI probe lens passes on the checked-out repo: `charness` keeps `--help`, `doctor`, `update`, `reset`, and `tool doctor` as distinct seams.
 - the quality adapter now carries `coverage_fragile_margin_pp` and `specdown_smoke_patterns`, so executable-spec smoke classification and fragile coverage-floor tagging have repo-owned config instead of prose-only thresholds.
+- the quality adapter now also carries `coverage_floor_policy` and
+  `spec_pytest_reference_format`, so unfloored-file inventory and
+  `Covered by pytest:` note shape are explicit adapter knobs.
 - `README.md`, `INSTALL.md`, `UNINSTALL.md`, and `docs/host-packaging.md` stay aligned with that split and keep managed install, refresh, and host-visible plugin state separate.
 - the recommendation flow is specific enough to use operationally: `gws-cli` reports `doctor_status = ok` with provenance and readiness, while `cautilus` reports `install-needed` plus upstream docs and a repo-owned verify command.
 - `quality` now reuses that same structured recommendation payload through `skills/public/quality/scripts/list_tool_recommendations.py` instead of re-deriving missing validation-tool guidance as prose.
 - packaging drift, markdown-link discipline, and external URL health are checked by separate owners instead of one noisy mixed gate.
+- the bootstrap posture now says the previous `quality.md` is history rather
+  than authoritative scope, and the workflow requires a fresh-eye premortem
+  before finalizing a report.
 
 ## Weak
 
@@ -76,19 +87,29 @@ Repo-wide quality posture after landing the `quality` installable-CLI probe-cont
 
 ## Recommended Next Gates
 
-- `AUTO_CANDIDATE`: add one repo-owned doc/help drift check for the install/update/doctor/reset contract so probe-layer semantics cannot slide in docs or help text independently.
-- `AUTO_CANDIDATE`: install `cautilus` on at least one standing maintainer machine and keep the exact install plus verify path in the quality artifact honest when evaluator-backed depth is locally unavailable.
-- `AUTO_CANDIDATE`: add one or two traced flows that exercise
+- active `AUTO_CANDIDATE`: add one repo-owned doc/help drift check for the install/update/doctor/reset contract so probe-layer semantics cannot slide in docs or help text independently.
+- active `AUTO_CANDIDATE`: dogfood the new `coverage_floor_policy` reference
+  implementation on one repo that already keeps per-file floors so the glob +
+  operational meta-check path gets live proof.
+- active `AUTO_CANDIDATE`: add one or two traced flows that exercise
   `support_sync_lib.py`, `install_tools.py`, and release-provenance branches
   before raising the `60%` control-plane floor.
-- `AUTO_CANDIDATE`: add an opt-in CI or maintainer profile that installs the
-  required binaries and runs `check-supply-chain-online` with an explicit
-  flaky-host policy.
-- `AUTO_CANDIDATE`: exercise the `gitleaks`-installed branch in at least one
-  standing environment instead of proving only the fallback path.
-- `AUTO_CANDIDATE`: if evaluator depth needs model-backed variance rather than
-  repo-local `run-evals`, connect the cautilus scenario runner to a maintained
-  external execution surface and artifact contract.
+- passive `AUTO_CANDIDATE`: install `cautilus` because evaluator-backed depth
+  is useful but not the
+  highest-leverage blocker for this repo's current support-tool slice.
+- passive `AUTO_CANDIDATE`: add an opt-in CI or maintainer profile because
+  online advisory reachability is still costlier and noisier than the repo's
+  default offline bar; that profile should install the required binaries and run `check-supply-chain-online` with an explicit
+  flaky-host policy because online advisory reachability is still costlier and
+  noisier than the repo's default offline bar.
+- passive `AUTO_CANDIDATE`: exercise the `gitleaks`-installed branch because
+  the fallback path already proves repo-owned
+  behavior and the missing branch does not block current local confidence.
+- passive `AUTO_CANDIDATE`: defer model-backed evaluator variance because it
+  needs an external execution owner;
+  connect the cautilus scenario runner to a maintained
+  external execution surface and artifact contract because that depends on an
+  external execution owner, not only this repo.
 
 ## History
 

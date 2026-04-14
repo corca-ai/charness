@@ -302,6 +302,13 @@ def test_adapter_lib_renders_and_loads_simple_yaml_mapping() -> None:
             ("version", 1),
             ("repo", "demo"),
             ("output_dir", "skill-outputs/demo"),
+            (
+                "policy",
+                {
+                    "glob": "*-quality-gate.sh",
+                    "threshold": 30,
+                },
+            ),
             ("commands", ["pytest -q", "ruff check ."]),
             ("empty", []),
         ]
@@ -310,9 +317,35 @@ def test_adapter_lib_renders_and_loads_simple_yaml_mapping() -> None:
         "version": 1,
         "repo": "demo",
         "output_dir": "skill-outputs/demo",
+        "policy": {
+            "glob": "*-quality-gate.sh",
+            "threshold": 30,
+        },
         "commands": ["pytest -q", "ruff check ."],
         "empty": [],
     }
+
+
+def test_quality_skill_carries_blind_spot_policy_and_premortem_refs() -> None:
+    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    adapter_contract = (
+        ROOT / "skills" / "public" / "quality" / "references" / "adapter-contract.md"
+    ).read_text(encoding="utf-8")
+    floor_policy = (
+        ROOT / "skills" / "public" / "quality" / "references" / "coverage-floor-policy.md"
+    ).read_text(encoding="utf-8")
+    premortem = (
+        ROOT / "skills" / "public" / "quality" / "references" / "fresh-eye-premortem.md"
+    ).read_text(encoding="utf-8")
+
+    assert "prior `quality.md` is history" in skill_text
+    assert "fresh-eye premortem" in skill_text
+    assert "active` or `passive" in skill_text
+    assert "coverage_floor_policy" in adapter_contract
+    assert "spec_pytest_reference_format" in adapter_contract
+    assert "gate_script_pattern" in floor_policy
+    assert "warn band" in floor_policy
+    assert "authoritative universe" in premortem
 
 
 def test_check_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:

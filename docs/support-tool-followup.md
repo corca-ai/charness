@@ -101,6 +101,17 @@ even if the next session only skims this document.
   discoverability semantics without forcing boilerplate onto repos that do not
   ship installable surfaces.
 
+- `corca-ai/charness#14`
+  Landed. `quality` now treats prior artifacts as non-authoritative scope,
+  adds a fresh-eye premortem step, carries adapter-owned blind-spot policy
+  (`coverage_floor_policy`, `spec_pytest_reference_format`), and ships
+  reference implementations for unfloored-file inventory and
+  `Covered by pytest:` note validation. The second premortem refinements also
+  shaped the reference posture: glob-based gate discovery, lefthook/CI
+  meta-checks, contradiction detection, exemption-path existence checks, and
+  an explicit honesty note that pytest-reference validation proves collection,
+  not behavior binding.
+
 - `corca-ai/charness#12`
   Close as declined in its current form. `charness` should not recommend
   `git push` as the generic local verification primitive because push is an
@@ -116,8 +127,6 @@ even if the next session only skims this document.
   - the real follow-up is "prefer repo-owned verification bundles or explicit
     hook entrypoints when they already exist, and otherwise fall back to
     surface-based validator selection"
-
-### Carry Forward
 
 ### Not In This Workstream
 
