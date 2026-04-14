@@ -15,11 +15,20 @@ If you changed this checkout locally and want the installed host surface to
 exercise those unpushed edits, update from this repo without pulling:
 
 ```bash
-charness update --repo-root . --no-pull
+charness update --repo-root . --no-pull --skip-cli-install
 ```
 
 Use this when the managed checkout already contains the exact source you want
-to dogfood and an implicit `git pull --ff-only` would be wrong.
+to dogfood and an implicit `git pull --ff-only` would be wrong. This is a
+proof-only path: it updates the host-visible plugin surface from the working
+tree, but keeps the installed CLI pinned to the managed checkout.
+
+If you need to refresh the installed CLI itself, run the managed checkout
+entrypoint directly:
+
+```bash
+~/.agents/src/charness/charness update
+```
 
 After a release or normal operator cycle, go back to the default managed flow:
 
