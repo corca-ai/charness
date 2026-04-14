@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+# ruff: noqa: E402
+"""Validate opt-in higher-noise skill ergonomics rules from the quality adapter."""
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+from typing import Any
+
+
+def _runtime_root() -> Path:
+    script_path = Path(__file__).resolve()
+    for ancestor in script_path.parents:
+        if (ancestor / "scripts" / "adapter_lib.py").is_file():
+            return ancestor
+    return script_path.parents[4]
+
+
+REPO_ROOT_FOR_IMPORT = _runtime_root()
+sys.path.insert(0, str(REPO_ROOT_FOR_IMPORT))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from inventory_skill_ergonomics import inventory_skill, iter_skill_paths
+from resolve_adapter import load_adapter
+
+
+def evaluate(repo_root: Path) -> dict[str, Any]:
+    adapter = load_adapter(repo_root)
+    rules: list[str] = adapter["data"].get("skill_ergonomics_gate_rules", []) or []
+    if not rules:
+        return {
+            "adapter_path": adapter.get("path"),
+            "rules": [],
+            "checked_skills": [],
+            "violations": [],
+        }
+
+    checked_skills: list[dict[str, Any]] = []
+    violations: list[dict[str, Any]] = []
+    for skill_path in iter_skill_paths(repo_root, []):
+        if not skill_path.is_file():
+            continue
+        item = inventory_skill(repo_root, skill_path, max_core_lines=160)
+        checked_skills.append(
+            {
+                "skill_id": item["skill_id"],
+                "skill_type": item["skill_type"],
+                "skill_path": item["skill_path"],
+                "heuristics": item["heuristics"],
+            }
+        )
+        if item["skill_type"] != "public":
+            continue
+        if "mode_option_pressure_terms" in rules and (
+            "mode_pressure_terms_present" in item["heuristics"]
+            or "option_pressure_terms_present" in item["heuristics"]
+        ):
+            violations.append(
+                {
+                    "rule": "mode_option_pressure_terms",
+                    "skill_id": item["skill_id"],
+                    "skill_path": item["skill_path"],
+                    "heuristics": item["heuristics"],
+                    "message": (
+                        "Public skill shows repeated `mode`/`option` pressure terms. "
+                        "Prefer stronger defaults and inference, or disable the opt-in rule."
+                    ),
+                }
+            )
+
+    return {
+        "adapter_path": adapter.get("path"),
+        "rules": rules,
+        "checked_skills": checked_skills,
+        "violations": violations,
+    }
+
+
+def _format_human(report: dict[str, Any]) -> str:
+    if not report["rules"]:
+        return "No skill_ergonomics_gate_rules configured; nothing to check."
+    if not report["violations"]:
+        return (
+            "Skill ergonomics gate passed for rules: "
+            + ", ".join(report["rules"])
+        )
+    lines = []
+    for violation in report["violations"]:
+        lines.append(
+            f"{violation['rule']}: {violation['skill_path']} "
+            f"({', '.join(violation['heuristics'])})"
+        )
+    return "\n".join(lines)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument("--json", action="store_true")
+    args = parser.parse_args()
+
+    report = evaluate(args.repo_root.resolve())
+    if args.json:
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    else:
+        print(_format_human(report))
+    return 1 if report["violations"] else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

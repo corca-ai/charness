@@ -37,6 +37,7 @@ Quality-specific fields:
 - `coverage_floor_policy`
 - `specdown_smoke_patterns`
 - `spec_pytest_reference_format`
+- `skill_ergonomics_gate_rules`
 - `runtime_budgets`
 - `prompt_asset_roots`
 - `prompt_asset_policy`
@@ -86,6 +87,14 @@ bulk in source files. Recommended fields:
 Leave `source_globs` empty to opt out honestly. Prefer checked-in asset roots
 over inline multi-line strings when evaluator-backed review needs prompt bytes
 to drift independently from code bytes.
+
+`skill_ergonomics_gate_rules` is an opt-in list of higher-noise ergonomics
+rules that should fail standing validation only in repos that explicitly want
+them. Leave it empty by default. Current supported rules:
+
+- `mode_option_pressure_terms`
+  Fail when a public skill accumulates repeated `mode` / `option` pressure
+  terms that likely signal avoidable user-facing branching.
 
 ## Artifact Rule
 

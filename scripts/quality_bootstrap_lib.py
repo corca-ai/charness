@@ -9,6 +9,7 @@ from scripts.quality_policy_defaults import (
     DEFAULT_COVERAGE_FLOOR_POLICY,
     DEFAULT_COVERAGE_FRAGILE_MARGIN_PP,
     DEFAULT_PROMPT_ASSET_POLICY,
+    DEFAULT_SKILL_ERGONOMICS_GATE_RULES,
     DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
     default_specdown_smoke_patterns,
     merge_coverage_floor_policy,
@@ -166,6 +167,7 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "spec_pytest_reference_format": DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
         "prompt_asset_roots": [],
         "prompt_asset_policy": dict(DEFAULT_PROMPT_ASSET_POLICY),
+        "skill_ergonomics_gate_rules": list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES),
         "concept_paths": [],
         "preflight_commands": [],
         "gate_commands": [],
@@ -201,6 +203,11 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
         data["spec_pytest_reference_format"] = spec_pytest_reference_format
     if isinstance(raw.get("prompt_asset_policy"), dict):
         data["prompt_asset_policy"] = merge_prompt_asset_policy(raw.get("prompt_asset_policy"))
+    skill_ergonomics_gate_rules = raw.get("skill_ergonomics_gate_rules")
+    if isinstance(skill_ergonomics_gate_rules, list) and all(
+        isinstance(item, str) for item in skill_ergonomics_gate_rules
+    ):
+        data["skill_ergonomics_gate_rules"] = list(skill_ergonomics_gate_rules)
     for field in ("preset_lineage", "prompt_asset_roots", "concept_paths", "preflight_commands", "gate_commands", "security_commands"):
         value = raw.get(field)
         if isinstance(value, list) and all(isinstance(item, str) for item in value):
@@ -280,6 +287,13 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
         final["prompt_asset_policy"] = dict(DEFAULT_PROMPT_ASSET_POLICY)
         field_statuses["prompt_asset_policy"] = "defaulted"
 
+    if "skill_ergonomics_gate_rules" in explicit_fields:
+        final["skill_ergonomics_gate_rules"] = list(existing.get("skill_ergonomics_gate_rules", []))
+        field_statuses["skill_ergonomics_gate_rules"] = "preserved"
+    else:
+        final["skill_ergonomics_gate_rules"] = list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES)
+        field_statuses["skill_ergonomics_gate_rules"] = "defaulted"
+
     concept_paths = detect_concept_paths(repo_root)
     existing_concepts = [path for path in existing.get("concept_paths", []) if (repo_root / path).is_file()]
     merged_concepts, field_statuses["concept_paths"] = _merge_existing_paths(existing_concepts, concept_paths)
@@ -326,6 +340,7 @@ def render_bootstrap_adapter(data: dict[str, Any]) -> str:
             ("spec_pytest_reference_format", data["spec_pytest_reference_format"]),
             ("prompt_asset_roots", data["prompt_asset_roots"]),
             ("prompt_asset_policy", data["prompt_asset_policy"]),
+            ("skill_ergonomics_gate_rules", data["skill_ergonomics_gate_rules"]),
             ("concept_paths", data["concept_paths"]),
             ("preflight_commands", data["preflight_commands"]),
             ("gate_commands", data["gate_commands"]),

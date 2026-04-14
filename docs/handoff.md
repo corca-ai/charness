@@ -40,6 +40,10 @@
   `inventory_skill_ergonomics.py`, `inventory_cli_ergonomics.py`가 있고,
   `validate-skills.py`는 oversized core와 public skill의 repeated fenced
   ritual without scripts를 막는다.
+- higher-noise ergonomics는 repo-wide default gate로 올리지 않았다.
+  대신 quality adapter의 `skill_ergonomics_gate_rules` opt-in seam과
+  `validate_skill_ergonomics.py`를 추가해, repo가 원할 때만
+  `mode_option_pressure_terms` 같은 규칙을 fail-closed 할 수 있게 했다.
 - `narrative`는 이제 multi-use-case repo에서 scenario block guidance를
   explicit하게 가진다. `scenario_surfaces` / `scenario_block_template` adapter
   fields를 지원하고, main use-case docs에서 fixture-first scenario cards와
@@ -89,14 +93,15 @@
    `docs/public-skill-validation.json`과 `skills/public/**`에서
    `validate-public-skill-validation.py`를 바로 고르고,
    `validate-public-skill-validation.py`는 누락 skill을 어느 bucket에 넣어야
-   하는지 직접 말한다. 다음 로컬 follow-on은 `quality` ergonomics의 남은
-   advisory 항목 중 무엇을 standing gate로 올릴지 결정하는 일이다.
+   하는지 직접 말한다. 다음 로컬 follow-on은 public-skill omission을
+   helper/autofix 수준으로 더 기계화할지 결정하는 일이다.
 3. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
    surface를 다른 머신에서 한 번 더 확인한다. 특히 real binary install이
    PATH/non-PATH일 때 next-step honesty가 유지되는지 본다.
-4. ergonomics follow-on의 가장 자연스러운 후보는 mode/option pressure나
-   trigger overlap처럼 false positive 위험이 더 큰 항목을 여전히 advisory로
-   둘지, adapter/preset opt-in gate로만 올릴지 결정하는 일이다.
+4. ergonomics follow-on의 가장 자연스러운 후보는
+   `skill_ergonomics_gate_rules`에 둘 다음 opt-in rule을 고르는 일이다.
+   현재는 `mode_option_pressure_terms`만 지원하고, trigger overlap은 여전히
+   advisory다.
 5. 추가 retro를 남길 때는 ad hoc 파일 쓰기 대신
    `skills/public/retro/scripts/persist_retro_artifact.py`를 사용한다.
 
@@ -104,8 +109,8 @@
 
 - `#24`는 reopened 상태지만, repo-local skill contract 기준으로는 핵심
   follow-up이 landed했다. 남은 일은 issue close 자체보다 public-skill
-  omission을 helper/autofix 수준으로 더 기계화할지와 `quality` ergonomics의
-  higher-noise rules를 어디까지 standing gate로 올릴지 정하는 일이다.
+  omission을 helper/autofix 수준으로 더 기계화할지와,
+  `skill_ergonomics_gate_rules`에 둘 다음 opt-in rule을 정하는 일이다.
 - ideal flow는 prose가 초반 행동을 좋게 유도하고 deterministic gate가
   omission/drift를 backstop하는 구조다. 지금 charness는 그 방향이지만, 몇몇
   omission-prone seam은 아직 broad gate에서 늦게 드러난다.

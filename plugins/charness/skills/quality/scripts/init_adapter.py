@@ -13,6 +13,7 @@ from scripts.adapter_init_lib import base_adapter_items, run_init_adapter
 from scripts.quality_policy_defaults import (
     DEFAULT_COVERAGE_FLOOR_POLICY,
     DEFAULT_PROMPT_ASSET_POLICY,
+    DEFAULT_SKILL_ERGONOMICS_GATE_RULES,
     DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
     default_specdown_smoke_patterns,
 )
@@ -33,6 +34,7 @@ def build_items(repo_name: str, args: argparse.Namespace) -> list[tuple[str, obj
         ("spec_pytest_reference_format", DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT),
         ("prompt_asset_roots", []),
         ("prompt_asset_policy", DEFAULT_PROMPT_ASSET_POLICY),
+        ("skill_ergonomics_gate_rules", DEFAULT_SKILL_ERGONOMICS_GATE_RULES),
         ("concept_paths", []),
         ("preflight_commands", []),
         ("gate_commands", []),

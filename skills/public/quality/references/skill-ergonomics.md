@@ -41,3 +41,5 @@ Treat these as prompts, not automatic failures.
 Some repos may still promote the lowest-noise cases into standing validation,
 for example an oversized `SKILL.md` core or a public skill that accumulates
 multiple fenced examples without any repo-owned helper script.
+Higher-noise rules such as mode/option pressure should stay advisory unless the
+repo explicitly opts in through `skill_ergonomics_gate_rules`.

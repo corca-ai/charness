@@ -39,6 +39,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
         "preset_lineage": "inferred",
         "prompt_asset_policy": "defaulted",
         "prompt_asset_roots": "defaulted",
+        "skill_ergonomics_gate_rules": "defaulted",
         "specdown_smoke_patterns": "defaulted",
         "spec_pytest_reference_format": "defaulted",
         "security_commands": "installed",
@@ -73,6 +74,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
         "min_multiline_chars": 400,
         "exemption_globs": [],
     }
+    assert resolved["data"]["skill_ergonomics_gate_rules"] == []
     assert resolved["data"]["gate_commands"] == ["./scripts/run-quality.sh"]
     assert resolved["data"]["preflight_commands"] == ["python3 scripts/validate-maintainer-setup.py --repo-root ."]
 
@@ -110,6 +112,8 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
                 "  min_multiline_chars: 256",
                 "  exemption_globs:",
                 "  - tests/**",
+                "skill_ergonomics_gate_rules:",
+                "  - mode_option_pressure_terms",
                 "gate_commands:",
                 "- python3 -m pytest -q",
                 "preflight_commands: []",
@@ -132,6 +136,7 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     assert payload["field_statuses"]["spec_pytest_reference_format"] == "preserved"
     assert payload["field_statuses"]["prompt_asset_roots"] == "preserved"
     assert payload["field_statuses"]["prompt_asset_policy"] == "preserved"
+    assert payload["field_statuses"]["skill_ergonomics_gate_rules"] == "preserved"
 
     resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
@@ -156,6 +161,7 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
         "min_multiline_chars": 256,
         "exemption_globs": ["tests/**"],
     }
+    assert resolved["data"]["skill_ergonomics_gate_rules"] == ["mode_option_pressure_terms"]
     assert resolved["data"]["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
 
 
@@ -197,6 +203,7 @@ def test_quality_bootstrap_infers_specdown_defaults(tmp_path: Path) -> None:
     assert resolved["data"]["spec_pytest_reference_format"] == (
         r"Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*"
     )
+    assert resolved["data"]["skill_ergonomics_gate_rules"] == []
 
 
 def test_quality_init_adapter_seeds_specdown_defaults(tmp_path: Path) -> None:

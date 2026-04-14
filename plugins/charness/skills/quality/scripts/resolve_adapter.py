@@ -19,13 +19,19 @@ def _runtime_root() -> Path:
 REPO_ROOT = _runtime_root()
 sys.path[:0] = [str(Path(__file__).resolve().parent), str(REPO_ROOT)]
 
-from adapter_validators import runtime_budgets as _runtime_budgets
+from adapter_validators import (
+    runtime_budgets as _runtime_budgets,
+)
+from adapter_validators import (
+    skill_ergonomics_gate_rules as _skill_ergonomics_gate_rules,
+)
 
 from scripts.adapter_lib import load_yaml_file
 from scripts.quality_bootstrap_lib import ADAPTER_CANDIDATES
 from scripts.quality_policy_defaults import (
     DEFAULT_COVERAGE_FLOOR_POLICY,
     DEFAULT_PROMPT_ASSET_POLICY,
+    DEFAULT_SKILL_ERGONOMICS_GATE_RULES,
     DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
     validate_coverage_floor_policy,
     validate_prompt_asset_policy,
@@ -76,6 +82,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "spec_pytest_reference_format": DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
         "prompt_asset_roots": [],
         "prompt_asset_policy": dict(DEFAULT_PROMPT_ASSET_POLICY),
+        "skill_ergonomics_gate_rules": list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES),
         "runtime_budgets": {},
         "concept_paths": [],
         "preflight_commands": [],
@@ -117,6 +124,11 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
     prompt_asset_policy = validate_prompt_asset_policy(data.get("prompt_asset_policy"), errors)
     if prompt_asset_policy is not None:
         validated["prompt_asset_policy"] = prompt_asset_policy
+    skill_ergonomics_gate_rules = _skill_ergonomics_gate_rules(
+        data.get("skill_ergonomics_gate_rules"), errors
+    )
+    if skill_ergonomics_gate_rules is not None:
+        validated["skill_ergonomics_gate_rules"] = skill_ergonomics_gate_rules
     runtime_budgets_value = _runtime_budgets(data.get("runtime_budgets"), errors)
     if runtime_budgets_value is not None:
         validated["runtime_budgets"] = runtime_budgets_value

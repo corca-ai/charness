@@ -25,6 +25,7 @@ DEFAULT_PROMPT_ASSET_POLICY = {
     "min_multiline_chars": 400,
     "exemption_globs": [],
 }
+DEFAULT_SKILL_ERGONOMICS_GATE_RULES: list[str] = []
 
 
 def default_specdown_smoke_patterns(preset_lineage: list[str]) -> list[str]:
