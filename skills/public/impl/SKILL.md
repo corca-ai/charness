@@ -105,24 +105,32 @@ Adapter policy:
      unproven
    - keep a clear record of what was verified, what required extra permission,
      and what still remains open
-5. Update the contract when reality changes it.
+5. Sync truth surfaces before closeout.
+   - if the slice changed user-visible capability, operating philosophy,
+     supported integrations, install/usage surface, or honest stage claims,
+     check `README.md` and the adapter's `truth_surfaces`
+   - update the relevant truth surfaces before stopping
+   - if no truth-surface update is needed, say why in the closeout instead of
+     silently skipping it
+6. Update the contract when reality changes it.
    - if implementation resolves a probe, update the canonical artifact
    - if implementation reveals a scope or acceptance change, update the
      contract before stopping
    - if the work uncovers concept-defining drift, send it back to `spec` or
      `ideation` instead of burying the change in code
-6. Run a Gary Klein-style premortem before stopping.
+7. Run a Gary Klein-style premortem before stopping.
    - ask what wrong next action a maintainer or operator is most likely to take
    - ask which branch, recovery path, setup assumption, or ownership boundary
      is most likely to fail under normal pressure
    - fix the highest-likelihood failure mode or record why it remains open
-7. Run a fresh-eye review before stopping.
+8. Run a fresh-eye review before stopping.
    - review runtime behavior and branch reachability
    - review boundary honesty and ownership
    - review docs/spec synchronization
-8. End with execution status.
+9. End with execution status.
    - what changed
    - what was verified
+   - what truth surfaces were updated, or why none changed
    - what the premortem found
    - what contract updates were made
    - what remains for the next slice
@@ -134,6 +142,7 @@ The closeout should usually include:
 - `Implemented`
 - `Contract Source`
 - `Verification`
+- `Truth Surface Sync`
 - `Premortem`
 - `Contract Updates`
 - `Residual Risks`
@@ -146,6 +155,8 @@ The closeout should usually include:
   contract can be written inline.
 - Do not silently expand scope because the adjacent code makes it tempting.
 - Do not close the task without checking the named acceptance behaviors.
+- Do not stop after a user-visible change without checking whether `README.md`
+  and adjacent durable truth surfaces are now stale.
 - Do not leave a resolved probe undocumented in the canonical artifact.
 - If a branch or fallback matters to users or operators, prove it with the best
   available verification capability instead of relying on code inspection alone.

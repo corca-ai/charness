@@ -18,6 +18,7 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
             ("verification_tools", []),
             ("ui_verification_tools", []),
             ("verification_install_proposals", []),
+            ("truth_surfaces", []),
         ]
     )
     return items

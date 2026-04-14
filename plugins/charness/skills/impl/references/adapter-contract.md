@@ -35,6 +35,7 @@ Impl-specific fields:
 - `verification_tools`
 - `ui_verification_tools`
 - `verification_install_proposals`
+- `truth_surfaces`
 
 ## Example
 
@@ -54,6 +55,10 @@ ui_verification_tools:
   - cmd:playwright
 verification_install_proposals:
   - Install the repo-preferred browser verification skill or binary before closing UI work.
+truth_surfaces:
+  - README.md
+  - docs/operator-acceptance.md
+  - INSTALL.md
 ```
 
 ## Tool Spec Format
@@ -77,6 +82,9 @@ adapters should always use an explicit prefix.
   operator-visible presentation.
 - `verification_install_proposals` are plain-language install or setup prompts
   to surface when preferred verification tools are missing.
+- `truth_surfaces` are the durable docs that should be re-checked when the
+  slice changes user-visible capability, positioning, install/usage surface, or
+  honest current-stage claims.
 
 ## Design Rules
 
@@ -85,5 +93,7 @@ adapters should always use an explicit prefix.
   a capability exists
 - if the repo has a stronger preferred proof path, record it here instead of
   burying it in the main skill body
+- if the repo has a few durable truth surfaces, record them here instead of
+  hoping `README.md` drift is remembered ad hoc at closeout
 - use explicit empty lists to record intentional opt-out from repo-specific
   verification preferences

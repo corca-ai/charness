@@ -7,3 +7,4 @@ customized_from: portable-defaults
 verification_tools: []
 ui_verification_tools: []
 verification_install_proposals: []
+truth_surfaces: []

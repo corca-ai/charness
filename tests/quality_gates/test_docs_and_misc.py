@@ -481,3 +481,15 @@ def test_impl_survey_reports_broken_preferred_skill_symlink(tmp_path: Path) -> N
     assert payload["missing_ui_tools"] == ["skill:agent-browser"]
     assert payload["tool_checks"][1]["warning"].startswith("Broken skill symlink:")
     assert "Repo-specific verification install proposals are available." in payload["warnings"]
+
+
+def test_impl_skill_carries_truth_surface_sync_guardrail() -> None:
+    skill_text = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
+    adapter_contract = (
+        ROOT / "skills" / "public" / "impl" / "references" / "adapter-contract.md"
+    ).read_text(encoding="utf-8")
+
+    assert "Sync truth surfaces before closeout." in skill_text
+    assert "Truth Surface Sync" in skill_text
+    assert "truth_surfaces" in adapter_contract
+    assert "README.md" in adapter_contract

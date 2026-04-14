@@ -49,8 +49,7 @@ def load_support_capability_schema() -> dict[str, Any]:
     return json.loads(support_capability_schema_path(Path(__file__).resolve().parent.parent).read_text(encoding="utf-8"))
 
 def manifest_paths(repo_root: Path) -> list[Path]:
-    manifests = sorted(integrations_tools_dir(repo_root).glob("*.json"))
-    return [path for path in manifests if path.name != "manifest.schema.json"]
+    return [path for path in sorted(integrations_tools_dir(repo_root).glob("*.json")) if path.name != "manifest.schema.json"]
 def load_manifest(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 

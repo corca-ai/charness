@@ -88,7 +88,12 @@ def scenario_doc_links_valid(root: Path) -> None:
 def scenario_quality_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="quality", adapter_name="quality-adapter.yaml", expected_artifact_path="skill-outputs/quality/quality.md")
 def scenario_impl_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(root, skill_id="impl", adapter_name="impl-adapter.yaml", expected_data={"output_dir": "skill-outputs/impl", "verification_tools": [], "ui_verification_tools": []})
+    expect_adapter_bootstrap(
+        root,
+        skill_id="impl",
+        adapter_name="impl-adapter.yaml",
+        expected_data={"output_dir": "skill-outputs/impl", "verification_tools": [], "ui_verification_tools": [], "truth_surfaces": []},
+    )
 def scenario_debug_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="debug", adapter_name="debug-adapter.yaml", expected_artifact_path="skill-outputs/debug/debug.md")
 def scenario_quality_adapter_checked_in(root: Path) -> None:
@@ -153,7 +158,6 @@ def scenario_quality_bootstrap_posture(root: Path) -> None:
             raise EvalError(f"quality bootstrap posture resolve: unexpected fragile margin {resolved!r}")
         if resolved["data"]["coverage_floor_policy"]["gate_script_pattern"] != "*-quality-gate.sh":
             raise EvalError(f"quality bootstrap posture resolve: unexpected floor policy {resolved!r}")
-
 def scenario_narrative_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="narrative", adapter_name="narrative-adapter.yaml", expected_artifact_path="skill-outputs/narrative/narrative.md")
 

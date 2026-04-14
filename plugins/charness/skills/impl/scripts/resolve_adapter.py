@@ -42,6 +42,7 @@ STRING_LIST_FIELDS = (
     "verification_tools",
     "ui_verification_tools",
     "verification_install_proposals",
+    "truth_surfaces",
 )
 
 
@@ -81,6 +82,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "verification_tools": [],
         "ui_verification_tools": [],
         "verification_install_proposals": [],
+        "truth_surfaces": [],
     }
 
 
@@ -138,6 +140,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
                 "verification_tools": "unset",
                 "ui_verification_tools": "unset",
                 "verification_install_proposals": "unset",
+                "truth_surfaces": "unset",
             },
             "errors": [],
             "warnings": [
@@ -166,6 +169,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "verification_tools": _list_field_state(raw_data, "verification_tools"),
             "ui_verification_tools": _list_field_state(raw_data, "ui_verification_tools"),
             "verification_install_proposals": _list_field_state(raw_data, "verification_install_proposals"),
+            "truth_surfaces": _list_field_state(raw_data, "truth_surfaces"),
         },
         "errors": errors,
         "warnings": warnings,
