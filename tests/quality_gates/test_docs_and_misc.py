@@ -348,6 +348,31 @@ def test_quality_skill_carries_blind_spot_policy_and_premortem_refs() -> None:
     assert "authoritative universe" in premortem
 
 
+def test_quality_skill_carries_code_reduction_and_ratio_patterns() -> None:
+    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    automation = (
+        ROOT / "skills" / "public" / "quality" / "references" / "automation-promotion.md"
+    ).read_text(encoding="utf-8")
+    economics = (
+        ROOT / "skills" / "public" / "quality" / "references" / "executable-spec-economics.md"
+    ).read_text(encoding="utf-8")
+    lenses = (
+        ROOT / "skills" / "public" / "quality" / "references" / "quality-lenses.md"
+    ).read_text(encoding="utf-8")
+    enforcement = (
+        ROOT / "skills" / "public" / "quality" / "references" / "maintainer-local-enforcement.md"
+    ).read_text(encoding="utf-8")
+
+    assert "prefer the smaller production surface first" in skill_text
+    assert "bounded test-ratio posture" in skill_text
+    assert "stale gate wiring" in skill_text
+    assert "shrinking production\nsurface" in automation
+    assert "changed-file router" in economics
+    assert "bounded test-ratio posture" in lenses
+    assert "adapter-driven local enforcement as a positive pattern" in lenses
+    assert "strong positive pattern" in enforcement
+
+
 def test_check_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     docs_dir = repo / "docs"

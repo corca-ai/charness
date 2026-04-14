@@ -30,6 +30,9 @@ pytest-reference validator guidance) and dogfooding it against `charness`.
 
 - one repo-owned standing entrypoint still covers validators, docs, lint, pytest, evals, duplicate detection, and supply-chain checks.
 - maintainer-local enforcement is honest: checked-in pre-push hook, repo-owned installer, and standing validator all exist.
+- this repo already demonstrates the adapter-driven local-enforcement pattern
+  that `quality` should praise: checked-in hook config, repo-owned hook
+  installer/checker, and repo-owned install/update surface for extra binaries.
 - adapter-required public skills fail closed when bootstrap artifacts drift, and evaluator-required skills keep a maintained cautilus scenario registry.
 - the installable-CLI probe lens passes on the checked-out repo: `charness` keeps `--help`, `doctor`, `update`, `reset`, and `tool doctor` as distinct seams.
 - the quality adapter now carries `coverage_fragile_margin_pp` and `specdown_smoke_patterns`, so executable-spec smoke classification and fragile coverage-floor tagging have repo-owned config instead of prose-only thresholds.
@@ -52,6 +55,8 @@ pytest-reference validator guidance) and dogfooding it against `charness`.
 - the coverage gate is honest but intentionally scoped; several control-plane modules still sit below `60%` even though the aggregate floor passes.
 - the installed managed checkout on this machine may lag the current source checkout, so `--repo-root .` proofs and managed-install proofs should stay separate.
 - `charness` itself does not keep a standing specdown smoke surface, so the new smoke-vs-behavior ratio path is adapter-backed and tested but not heavily exercised by the current repo artifact.
+- `charness` does not yet keep a bounded lower+upper test-ratio gate, so test
+  maintenance cost is still judged indirectly rather than by one named signal.
 
 ## Missing
 
@@ -94,6 +99,10 @@ pytest-reference validator guidance) and dogfooding it against `charness`.
 - active `AUTO_CANDIDATE`: add one or two traced flows that exercise
   `support_sync_lib.py`, `install_tools.py`, and release-provenance branches
   before raising the `60%` control-plane floor.
+- passive `AUTO_CANDIDATE`: add a bounded lower+upper test-ratio signal because
+  this repo should only need it if test/support surface starts growing faster than `src`; the
+  pattern is useful but not yet the highest-leverage missing proof for
+  `charness`.
 - passive `AUTO_CANDIDATE`: install `cautilus` because evaluator-backed depth
   is useful but not the
   highest-leverage blocker for this repo's current support-tool slice.

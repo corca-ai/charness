@@ -14,14 +14,9 @@ The job is to understand the repo's current quality surface, run the meaningful 
 
 `quality` may also install or refresh the repo-local quality posture when the next move is deterministic setup work instead of only review. Keep this inside the same public concept: review posture and bootstrap posture are different execution states of `quality`, not separate skills.
 
-When the next quality move is repo-local, deterministic, and low-risk, prefer
-implementing that gate in the same turn. Stay review-only when the user asks
-or the tradeoff is genuinely product-defining.
+When the next quality move is repo-local, deterministic, and low-risk, prefer implementing that gate in the same turn. Stay review-only when the user asks or the tradeoff is genuinely product-defining.
 
-Deterministic gates should define pass/fail authority wherever possible. If a
-quality concern can be enforced by a linter, validator, test, hook, or script,
-`quality` should prefer promoting it into that gate instead of leaving it as
-repeated prose advice.
+Deterministic gates should define pass/fail authority wherever possible. If a quality concern can be enforced by a linter, validator, test, hook, or script, `quality` should prefer promoting it into that gate instead of leaving it as repeated prose advice.
 
 Maintainer-local enforcement counts when the repo depends on it. When the repo has an obvious final stop-before-finish gate with no checked-in hook, repo-owned hook installer, or documented no-hook policy, `quality` must name that as a missing enforcement gap rather than treating the passing command as healthy posture. See `references/maintainer-local-enforcement.md`.
 
@@ -43,8 +38,7 @@ If the repo already has repo-owned quality commands or needs a first-pass instal
 python3 "$SKILL_DIR/scripts/bootstrap_adapter.py" --repo-root .
 ```
 
-When stronger local proof depends on a missing validation tool, reuse the shared
-recommendation/install payload instead of inventing prose-only install advice:
+When stronger local proof depends on a missing validation tool, reuse the shared recommendation/install payload instead of inventing prose-only install advice:
 
 ```bash
 python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root .
@@ -109,9 +103,12 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model
    - `behavior`: do tests, evals, checks, and command-surface probes say something falsifiable about real behavior, and does the repo-owned test code stay maintainable
+   - when the same confidence gap could be closed either by shrinking production branches/interfaces or by adding more tests, prefer the smaller production surface first if behavior and signal both improve
    - when executable specs exist, classify smoke vs behavior using the adapter's `specdown_smoke_patterns`, report the ratio, and flag pytest-delegation or duplicate-assertion overlap candidates directly
+   - treat bounded test-ratio posture as a named positive pattern when the repo constrains both under-testing and test-surface inflation
    - `security`: are there meaningful code, secret, or supply-chain risks
    - `operability`: are setup, CI, install/update docs, and maintenance surfaces honest enough to sustain the quality bar
+   - treat checked-in hook config, a repo-owned hook installer/checker, and repo-owned install paths for extra gate binaries as a first-class positive pattern, not only the absence of a missing gap
    - when the repo authors skills, include skill package quality, portable bootstrap seams, and shared-helper drift in these lenses
    - make `behavior` explicit about whether coverage is standing-gated, informally sampled, or absent
    - make evaluator depth explicit: smoke only, maintained evaluator-backed, or still smoke plus HITL
@@ -173,6 +170,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not pretend a conceptual boundary problem is solved just because duplicate text was linted away; semantic boundary questions still need concept review.
 - If the repo is shipping a CLI or bootstrap command surface, inspect whether install/update/doctor/reset behavior follows `create-cli`-level quality expectations instead of treating the entrypoint as ordinary helper glue.
 - For anti-anchoring, unfloored-file inventory, glob-vs-operational drift, and `Covered by pytest:` honesty limits, follow `references/coverage-floor-policy.md` and `references/fresh-eye-premortem.md` instead of improvising.
+- If a seam refactor improves maintainability but a focused gate regresses, rule out stale gate wiring before calling it product risk.
 
 ## References
 

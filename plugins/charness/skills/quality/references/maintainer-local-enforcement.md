@@ -38,6 +38,12 @@ Acceptable answers:
 
 If none of these hold, the gap is `missing`, not implicit.
 
+When all three exist together, treat that as a strong positive pattern:
+
+- checked-in hook config
+- repo-owned hook installer or clone validator
+- repo-owned install path for extra quality binaries the local bar depends on
+
 ## Probe commands
 
 Run these during `quality` bootstrap whenever the repo has, or is likely to
@@ -86,6 +92,9 @@ over leaving a prose recommendation. The smallest honest slice is usually:
 Leave it as a recommendation only when hook installation cannot be owned
 honestly by the repo (for example, because maintainers deliberately run a
 shared team tool that owns this concern).
+
+When the repo already owns that full pattern, say so explicitly in the
+artifact instead of only staying silent because no missing gap was found.
 
 ## Artifact output expectation
 

@@ -53,3 +53,8 @@ These belong in prose findings and proposals.
 
 If a concern is `AUTO_CANDIDATE`, prefer promoting it into a deterministic gate
 before adding more policy text.
+
+When the same confidence gap can be closed either by shrinking production
+surface or by adding more tests, prefer the smaller production surface first if
+behavior and signal both improve. Test growth is not the default answer when
+design simplification removes the risk more directly.

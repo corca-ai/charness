@@ -19,6 +19,8 @@ When a repo uses executable specs, inspect:
   direct adapter
 - whether the repo already has overlap or duplication guards and whether they
   are strict enough
+- whether a changed-file router or spec-smoke selector exists, and whether
+  seam refactors left it pointing at the right acceptance slices
 - whether spec filters, scoped runs, or source guards could keep the standing
   bar fast
 
@@ -32,6 +34,8 @@ When a repo uses executable specs, inspect:
   without adding an independent contract boundary
 - new specs add coverage by stacking more integration commands rather than
   pushing detail into unit tests
+- a helper or test split improves maintainability, but the changed-file router,
+  smoke selector, or focused gate still points at the pre-refactor evidence
 - a historical E2E or smoke path remains in the standing bar after a narrower
   direct proof already covers the same regression class
 - the suite relies on “broad equals safer” instead of measuring overlap and
@@ -45,9 +49,11 @@ When a repo uses executable specs, inspect:
 3. replace repeated shell patterns with a direct adapter or check table
 4. optimize repeated command bodies with adapter-level caching or equivalent
    runtime reuse when the repo can do so honestly
-5. use bounded parallelism or scoped execution where the runner supports it
-6. keep one thin repo-level executable-spec smoke for the contract boundary
-7. only then widen standing spec coverage if the cheaper layers still miss a
+5. rewire changed-file routers, smoke selectors, or focused-gate evidence maps
+   after seam refactors before treating regressions as product-risk evidence
+6. use bounded parallelism or scoped execution where the runner supports it
+7. keep one thin repo-level executable-spec smoke for the contract boundary
+8. only then widen standing spec coverage if the cheaper layers still miss a
    meaningful regression class
 
 ## Principle

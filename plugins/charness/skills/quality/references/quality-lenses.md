@@ -30,6 +30,15 @@ Use a behavior-confidence lens:
 - duplicate-pressure and missing seam coverage
 - helper scripts that actually prove the skill can cold-start and resolve its
   adapter seams
+- code-reduction-first: if a confidence gap can be closed either by shrinking
+  production branches/interfaces or by adding more tests, prefer the smaller
+  production surface first when it preserves behavior
+- bounded test-ratio posture: a lower bound to prevent test-surface collapse
+  and an upper bound to prevent quality work from defaulting to ever-growing
+  test code; count executable spec surface separately when the repo uses it
+- focused-gate evidence drift: after helpers or tests move to cleaner seam
+  files, verify focused coverage gates, changed-file routers, and smoke maps
+  still point at the new evidence
 
 ## Security
 
@@ -53,6 +62,9 @@ Check whether the quality bar can actually be maintained:
 - retention and rotation for long-lived logs or machine-readable diagnostics
 - refactor pressure from copied helper seams or skill-package drift
 - duplicated documentation that should collapse into one maintained surface
+- adapter-driven local enforcement as a positive pattern: checked-in hook
+  config, repo-owned installer/checker, and repo-owned binary install path when
+  the gate depends on extra tools
 
 ## Named Expert Defaults
 
