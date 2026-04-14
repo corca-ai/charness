@@ -87,31 +87,6 @@ def _collect_skill_entries(
     return items
 
 
-def public_skills(root: Path) -> list[dict[str, str]]:
-    return _collect_skill_entries(
-        [("local-public", public_skills_dir(root))],
-        repo_root=root,
-        layer="public skill",
-    )
-
-
-def support_skills(root: Path) -> list[dict[str, str]]:
-    return _collect_skill_entries(
-        [("local-support", support_dir(root))],
-        repo_root=root,
-        layer="support skill",
-    )
-
-
-def trusted_skills(root: Path, skill_roots: list[str]) -> list[dict[str, str]]:
-    configured_roots = [(f"trusted-root-{index + 1}", (root / skill_root).resolve()) for index, skill_root in enumerate(skill_roots)]
-    return _collect_skill_entries(
-        configured_roots,
-        repo_root=root,
-        layer="trusted skill",
-    )
-
-
 def integrations(root: Path) -> list[dict[str, object]]:
     items: list[dict[str, object]] = []
     for manifest in sorted((root / "integrations" / "tools").glob("*.json")):
@@ -146,16 +121,6 @@ def integrations(root: Path) -> list[dict[str, object]]:
                 "layer": "external integration",
             }
         )
-    return items
-
-
-def integration_manifests(root: Path) -> list[dict[str, object]]:
-    items: list[dict[str, object]] = []
-    for manifest in sorted((root / "integrations" / "tools").glob("*.json")):
-        if manifest.name == "manifest.schema.json":
-            continue
-        data = json.loads(manifest.read_text(encoding="utf-8"))
-        items.append(data)
     return items
 
 
@@ -202,7 +167,16 @@ def main() -> None:
     local_root = _local_surface_root(root)
     adapter = load_adapter(root)
     trusted_skill_roots = adapter["data"].get("trusted_skill_roots", [])
-    manifests = integration_manifests(local_root)
+    trusted_entries = _collect_skill_entries(
+        [(f"trusted-root-{index + 1}", (root / skill_root).resolve()) for index, skill_root in enumerate(trusted_skill_roots)],
+        repo_root=root,
+        layer="trusted skill",
+    )
+    manifests = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted((local_root / "integrations" / "tools").glob("*.json"))
+        if path.name != "manifest.schema.json"
+    ]
     payload = {
         "adapter": {
             "found": adapter["found"],
@@ -213,11 +187,19 @@ def main() -> None:
             "allow_external_registry": adapter["data"].get("allow_external_registry", False),
             "prefer_local_first": adapter["data"].get("prefer_local_first", True),
         },
-        "public_skills": public_skills(local_root),
-        "support_skills": support_skills(local_root),
+        "public_skills": _collect_skill_entries(
+            [("local-public", public_skills_dir(local_root))],
+            repo_root=local_root,
+            layer="public skill",
+        ),
+        "support_skills": _collect_skill_entries(
+            [("local-support", support_dir(local_root))],
+            repo_root=local_root,
+            layer="support skill",
+        ),
         "support_capabilities": support_capabilities(local_root),
         "integrations": integrations(local_root),
-        "trusted_skills": trusted_skills(root, trusted_skill_roots),
+        "trusted_skills": trusted_entries,
         "tool_recommendations": (
             recommendations_for_public_skill(local_root, manifests, skill_id=args.recommend_for_skill)
             if args.recommend_for_skill

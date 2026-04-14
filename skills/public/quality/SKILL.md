@@ -87,6 +87,8 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - local executable gates already present
    - current concept or architecture sources of truth
    - security and supply-chain signals already configured
+   - if the repo ships an installable CLI, bootstrap command, or operator-facing command surface, inspect whether help, command discovery, binary health, install/readiness, and local discoverability are separated honestly
+   - inspect README / INSTALL / operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
    - maintainer-local enforcement for the final stop-before-finish gate: a checked-in hook, installer, or explicit no-hook policy
    - obvious blind spots where the repo has no gate at all
@@ -99,12 +101,13 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - surface the current runtime hot spots from available timing or CI signals
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model
-   - `behavior`: do tests, evals, and checks say something falsifiable about real behavior, and does the repo-owned test code stay maintainable
+   - `behavior`: do tests, evals, checks, and command-surface probes say something falsifiable about real behavior, and does the repo-owned test code stay maintainable
    - `security`: are there meaningful code, secret, or supply-chain risks
-   - `operability`: are setup, CI, and maintenance surfaces honest enough to sustain the quality bar
+   - `operability`: are setup, CI, install/update docs, and maintenance surfaces honest enough to sustain the quality bar
    - when the repo authors skills, include skill package quality, portable bootstrap seams, and shared-helper drift in these lenses
    - make `behavior` explicit about whether coverage is standing-gated, informally sampled, or absent
    - make evaluator depth explicit: smoke only, maintained evaluator-backed, or still smoke plus HITL
+   - if stronger local proof depends on an external binary or support tool, state whether it is currently installed and healthy, then surface the exact install and post-install verification path instead of vague prose
 5. Classify each issue by enforcement tier first.
    - `AUTO_EXISTING`: already enforced by a meaningful deterministic gate
    - `AUTO_CANDIDATE`: should be promoted into a linter, validator, test, hook, or script
@@ -153,6 +156,9 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - If a stronger check would require an external tool, support skill, or permission, say so explicitly.
 - If a missing binary or local setup step would materially improve confidence, recommend installing it with the reason and exact command or package family.
 - Do not let whole-worktree scans fail on gitignored runtime artifacts unless the gate explicitly exists to validate that machine-local state.
+- Do not collapse help, command discovery, healthcheck, readiness, and local discoverability into one generic "doctor passed" claim when the repo ships an installable CLI or plugin surface.
+- Do not treat support-skill materialization or host-visible plugin discovery as the same seam as generic binary health.
+- Do not hide a missing evaluator or support binary behind "deeper validation recommended"; say whether the deeper bar is currently unavailable locally and how to enable it.
 - Keep repo-local markdown-link discipline separate from external URL health when the repo needs both.
 - Do not pretend a conceptual boundary problem is solved just because duplicate text was linted away; semantic boundary questions still need concept review.
 - If the repo is shipping a CLI or bootstrap command surface, inspect whether install/update/doctor/reset behavior follows `create-cli`-level quality expectations instead of treating the entrypoint as ordinary helper glue.
@@ -163,6 +169,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - `references/maintainer-local-enforcement.md`
 - `references/quality-lenses.md`
 - `references/skill-quality.md`
+- `references/installable-cli-probes.md`
 - `references/proposal-flow.md`
 - `references/gate-classification.md`
 - `references/automation-promotion.md`

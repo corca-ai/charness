@@ -1,106 +1,48 @@
 # Quality Review
-Date: 2026-04-12
+Date: 2026-04-14
 
 ## Scope
 
-Repo-wide quality posture after tightening four previously missing gates:
-public-skill adapter classification, evaluator-required cautilus scenario
-contracts, optional online supply-chain audits, and scoped control-plane
-coverage. `./scripts/run-quality.sh` now passes clean with all four in the
-standing bar.
+Repo-wide quality posture after landing the `quality` installable-CLI probe-contract rewrite and dogfooding it against `charness` install/update/doctor/tool surfaces, operator docs, and tool recommendation flow.
 
 ## Current Gates
 
-- `./scripts/run-quality.sh` is the canonical standing local bar, and `./scripts/self-validate-install-update.sh`
-  keeps install/update CLI regression proof as an on-demand maintainer check.
-- `.githooks/pre-push` runs `scripts/sync_root_plugin_manifests.py` and then
-  `./scripts/run-quality.sh`; `scripts/install-git-hooks.sh` wires
-  `core.hooksPath`.
-- `scripts/validate-maintainer-setup.py` fails closed when this clone is not
-  actually using the checked-in `.githooks`.
-- `scripts/run-quality.sh` runs parallel phases, records per-command timing,
-  supports `CHARNESS_QUALITY_LABELS`, and only replays passing logs under
-  `CHARNESS_QUALITY_VERBOSE=1`.
-- `scripts/validate-public-skill-validation.py` fails when the current repo
-  drifts on evaluator tiers or on adapter-required versus adapter-free public
-  skill assignments.
-- `scripts/validate-cautilus-scenarios.py` and
-  `scripts/eval_cautilus_scenarios.py` keep the evaluator-required skill
-  registry tied to maintained `run-evals` scenario IDs.
-- `scripts/check-secrets.sh` prefers `gitleaks` and falls back to repo-local
-  `secretlint`.
-- `scripts/check-supply-chain.py` enforces manifest/lockfile alignment for
-  npm/pnpm/yarn/bun plus `uv.lock` when Python deps exist, and
-  `scripts/check-supply-chain-online.py` adds optional npm/pnpm/uv advisory
-  probes with explicit binary and triage-owner reporting.
-- `scripts/validate-packaging.py` fails on checked-in plugin export drift.
-- `scripts/validate-quality-artifact.py` now requires explicit runtime hot
-  spots, coverage-gate status, and evaluator depth in this artifact.
-- `scripts/check-coverage.py` enforces a scoped control-plane coverage floor by
-  tracing representative `charness`, `doctor`, `sync_support`, `update_tools`,
-  and `install_tools` entrypoints against an ephemeral repo copy.
-- `scripts/check-links-external.sh` scopes `lychee` to extracted external URLs,
-  with online validation behind `CHARNESS_LINK_CHECK_ONLINE=1`.
+- `./scripts/run-quality.sh` is the canonical standing bar, and `./scripts/self-validate-install-update.sh` remains the on-demand install/update proof.
+- `.githooks/pre-push` plus `scripts/validate-maintainer-setup.py` make the maintainer-local gate explicit instead of implied.
+- `validate-public-skill-validation`, `validate-cautilus-scenarios`, and `run-evals` keep evaluator-required skill policy tied to maintained scenarios.
+- `validate-packaging`, `check-coverage`, `check-secrets`, `check-supply-chain`, and `check-links-external` cover install-surface drift, scoped control-plane coverage, secret posture, supply chain, and external URL health.
+- `./charness --help`, `./charness doctor --help`, `./charness update --help`, `./charness reset --help`, and `./charness tool doctor --help` now serve as the concrete probe-layer honesty sample for `quality`.
+- `python3 skills/public/find-skills/scripts/list_capabilities.py --repo-root . --recommend-for-skill gather` is the repo-owned exact install/recommendation path for missing-tool follow-up.
 
 ## Runtime Signals
 
-- runtime hot spots: current latest timings are `pytest` 36.4s,
-  `check-coverage` 8.8s, `check-secrets` 2.6s, `check-markdown` 1.9s, and
-  `run-evals` 1.5s.
-- coverage gate: `python3 scripts/check-coverage.py --repo-root . --json`
-  currently reports `62.9%` (`741/1178`) across the scoped control-plane target
-  set with a required floor of `60.0%`; lowest modules are
-  `support_sync_lib.py` `30.6%`, `install_provenance_lib.py` `55.9%`,
-  `install_tools.py` `57.7%`, and `upstream_release_lib.py` `57.0%`.
-- evaluator depth: `evals/cautilus/scenarios.json` now maps all
-  `evaluator-required` public skills to maintained `run-evals` scenario IDs,
-  and the cautilus adapter runs that registry in held-out and full-gate modes.
-- runtime retention: per-command timings live in
-  `skill-outputs/quality/runtime-signals.json`, older samples rotate into
-  monthly `history/runtime-signals-YYYY-MM.jsonl`, and passing runs keep stdout
-  bounded.
+- runtime hot spots: `pytest` 56.5s, `check-coverage` 8.9s, `check-secrets` 5.1s, `check-markdown` 2.7s, and `run-evals` 1.8s.
+- coverage gate: `python3 scripts/check-coverage.py --repo-root . --json` reports `62.9%` (`741/1178`) against a `60.0%` floor; weakest modules are `support_sync_lib.py` `30.6%`, `install_provenance_lib.py` `55.9%`, `install_tools.py` `57.7%`, and `upstream_release_lib.py` `57.0%`.
+- evaluator depth: the maintained cautilus scenario registry exists, but deeper local proof is unavailable in this clone because `cautilus` is missing (`python3 scripts/doctor.py --repo-root . --json --tool-id cautilus`).
+- runtime retention: timings stay in `skill-outputs/quality/runtime-signals.json` and rotate into monthly `history/runtime-signals-YYYY-MM.jsonl`.
 
 ## Healthy
 
-- one repo-owned standing entrypoint covers validators, docs, lint, the
-  standing pytest subset, evals, duplicate detection, and supply-chain checks,
-  while install/update regression proof still has an on-demand repo-owned
-  entrypoint.
-- maintainer-local enforcement is honest: checked-in pre-push hook, repo-owned
-  installer, and standing validator all exist.
-- adapter-required public skills now fail closed when checked-in example or
-  bootstrap resolver artifacts are missing, and adapter-free skills cannot ship
-  hidden adapter scaffolding.
-- evaluator-required public skills now have a maintained scenario registry
-  instead of prose-only cautilus depth claims.
-- the online advisory wrapper names the binary surface, network dependency, and
-  triage owner instead of pretending live supply-chain visibility is free.
-- packaging drift is caught both before push and in standing validation.
-- internal markdown-link discipline and external URL health have separate
-  owners instead of one noisy mixed gate.
-- test suites are split by seam under
-  `tests/{quality_gates,charness_cli,control_plane}`, which keeps the
-  `500`-line test-file cap enforceable.
-- the quality artifact now has a deterministic closeout contract for speed,
-  coverage status, and evaluator depth.
+- one repo-owned standing entrypoint still covers validators, docs, lint, pytest, evals, duplicate detection, and supply-chain checks.
+- maintainer-local enforcement is honest: checked-in pre-push hook, repo-owned installer, and standing validator all exist.
+- adapter-required public skills fail closed when bootstrap artifacts drift, and evaluator-required skills keep a maintained cautilus scenario registry.
+- the installable-CLI probe lens passes on the checked-out repo: `charness` keeps `--help`, `doctor`, `update`, `reset`, and `tool doctor` as distinct seams.
+- `README.md`, `INSTALL.md`, `UNINSTALL.md`, and `docs/host-packaging.md` stay aligned with that split and keep managed install, refresh, and host-visible plugin state separate.
+- the recommendation flow is specific enough to use operationally: `gws-cli` reports `doctor_status = ok` with provenance and readiness, while `cautilus` reports `install-needed` plus upstream docs and a repo-owned verify command.
+- packaging drift, markdown-link discipline, and external URL health are checked by separate owners instead of one noisy mixed gate.
 
 ## Weak
 
-- external-link validation still depends on network reachability and upstream
-  host health when online mode is enabled.
-- live advisory coverage is opt-in and only as strong as the locally installed
-  npm/pnpm/uv binaries plus registry reachability.
-- the secret gate fallback is tested, but the `gitleaks` binary path was not
-  exercised live in this clone because the binary is not installed.
-- the coverage gate is honest but intentionally scoped; several control-plane
-  modules still sit below `60%` even though the aggregate floor passes.
+- external-link validation still depends on network reachability and upstream host health when online mode is enabled.
+- live advisory coverage is opt-in and only as strong as the locally installed npm/pnpm/uv binaries plus registry reachability.
+- the `gitleaks`-installed branch was not exercised live in this clone.
+- the coverage gate is honest but intentionally scoped; several control-plane modules still sit below `60%` even though the aggregate floor passes.
+- the installed managed checkout on this machine may lag the current source checkout, so `--repo-root .` proofs and managed-install proofs should stay separate.
 
 ## Missing
 
-- no read-only proof yet shows that `charness update` stays clean against the
-  current worktree or an ephemeral source bundle.
-- no checked-in maintainer or CI profile currently exercises the optional
-  online audit path with required binaries installed.
+- no repo-owned deterministic gate yet checks that install/update docs and CLI help stay probe-contract aligned when command semantics change.
+- no local `cautilus` install exists in this clone, so evaluator-backed depth remains unavailable here beyond repo-local smoke plus the maintained scenario registry.
 
 ## Deferred
 
@@ -117,12 +59,21 @@ standing bar.
 - `python3 scripts/check-coverage.py --repo-root . --json`
 - `python3 scripts/validate-quality-artifact.py --repo-root .`
 - `python3 scripts/validate-packaging.py --repo-root .`
+- `./charness --help`
+- `./charness doctor --help`
+- `./charness update --help`
+- `./charness reset --help`
+- `./charness tool doctor --help`
+- `./charness doctor --repo-root . --json`
+- `python3 scripts/plugin_preamble.py --repo-root . --json`
+- `python3 scripts/doctor.py --repo-root . --json --tool-id gws-cli`
+- `python3 scripts/doctor.py --repo-root . --json --tool-id cautilus`
+- `python3 skills/public/find-skills/scripts/list_capabilities.py --repo-root . --recommend-for-skill gather`
 
 ## Recommended Next Gates
 
-- `AUTO_CANDIDATE`: add a read-only proof that `charness update` stays clean
-  against the current worktree or an ephemeral source bundle so local drift
-  cannot hide behind `git clone` semantics.
+- `AUTO_CANDIDATE`: add one repo-owned doc/help drift check for the install/update/doctor/reset contract so probe-layer semantics cannot slide in docs or help text independently.
+- `AUTO_CANDIDATE`: install `cautilus` on at least one standing maintainer machine and keep the exact install plus verify path in the quality artifact honest when evaluator-backed depth is locally unavailable.
 - `AUTO_CANDIDATE`: add one or two traced flows that exercise
   `support_sync_lib.py`, `install_tools.py`, and release-provenance branches
   before raising the `60%` control-plane floor.
