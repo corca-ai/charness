@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -287,7 +288,14 @@ def read_lock(repo_root: Path, tool_id: str) -> dict[str, Any] | None:
     if not path.exists():
         return None
     data = json.loads(path.read_text(encoding="utf-8"))
-    validate_lock_data(data, load_lock_schema(), path)
+    try:
+        validate_lock_data(data, load_lock_schema(), path)
+    except jsonschema.ValidationError as exc:
+        sys.stderr.write(
+            f"[charness] stale lock at {path} fails schema validation ({exc.message}); "
+            "treating as missing so the next writer can regenerate it.\n"
+        )
+        return None
     return data
 
 
