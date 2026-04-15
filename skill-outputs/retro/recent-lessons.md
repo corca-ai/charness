@@ -9,6 +9,7 @@
 
 - We still treated adjacent surfaces as if they guaranteed each other: source checkout vs managed checkout vs installed PATH binary vs checked-in plugin export vs host cache. The repo now has better helpers for this, but the working habit still lagged behind the architecture.
 - We kept discovering predictable misses only after broad validation.
+- Managed-checkout dirtiness is not one thing: tracked edits should block `charness update`, but stray untracked runtime files should usually be tolerated and left to `git pull` to reject only on real path collisions.
 - New public skill `premortem` was added without updating `docs/public-skill-validation.json`.
 - `quality` and `spec` crossed the `SKILL.md` concise-length gate and only `validate-skills` forced the trim.
 
@@ -23,4 +24,3 @@
 ## Sources
 
 - `skill-outputs/retro/weekly-2026-04-14.md`
-

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timedelta, timezone
 import json
 import os
 import re
@@ -14,6 +13,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 PACKAGE_ID = "charness"
@@ -155,8 +155,8 @@ def has_source_manifest(path: Path) -> bool:
     return (path / "packaging" / f"{PACKAGE_ID}.json").is_file()
 
 
-def git_dirty(path: Path) -> bool:
-    result = run(["git", "status", "--short"], cwd=path)
+def git_has_tracked_changes(path: Path) -> bool:
+    result = run(["git", "status", "--short", "--untracked-files=no"], cwd=path)
     expect_success(result, f"git status in `{path}`")
     return any(line.strip() for line in result.stdout.splitlines())
 
@@ -897,9 +897,9 @@ def ensure_checkout(repo_root: Path, *, managed: bool, repo_url: str, allow_clon
         if allow_pull and managed:
             if not is_git_checkout(repo_root):
                 raise CharnessError(f"`{repo_root}` contains a source manifest but is not a git checkout")
-            if git_dirty(repo_root):
+            if git_has_tracked_changes(repo_root):
                 raise CharnessError(
-                    f"managed checkout `{repo_root}` has local changes; stop and resolve them before `charness update`"
+                    f"managed checkout `{repo_root}` has tracked local changes; stop and resolve them before `charness update`"
                 )
             pull_result = run(["git", "pull", "--ff-only"], cwd=repo_root)
             expect_success(pull_result, f"git pull in `{repo_root}`")

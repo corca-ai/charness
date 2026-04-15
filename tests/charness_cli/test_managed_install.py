@@ -255,6 +255,92 @@ def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(t
     assert installed_text == managed_checkout_text
 
 
+def test_installed_cli_update_allows_untracked_files_in_managed_checkout(tmp_path: Path) -> None:
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    source_repo = make_git_repo_copy(source_root)
+    home_root = tmp_path / "home"
+    fake_claude = make_fake_claude(tmp_path)
+    standalone_cli = tmp_path / "bin" / "charness"
+    standalone_cli.parent.mkdir(parents=True, exist_ok=True)
+    standalone_cli.write_text((source_repo / "charness").read_text(encoding="utf-8"), encoding="utf-8")
+    standalone_cli.chmod(0o755)
+
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = build_test_path(fake_claude.parent, standalone_cli.parent)
+
+    init_result = subprocess.run(
+        [sys.executable, str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert init_result.returncode == 0, init_result.stderr
+
+    managed_checkout = home_root / ".agents" / "src" / "charness"
+    untracked = managed_checkout / "untracked-update-sentinel.txt"
+    untracked.write_text("runtime cache placeholder\n", encoding="utf-8")
+
+    installed_cli = home_root / ".local" / "bin" / "charness"
+    update_result = subprocess.run(
+        [sys.executable, str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh", "--json"],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert update_result.returncode == 0, update_result.stderr
+    payload = json.loads(update_result.stdout)
+    assert payload["checkout"]["pulled"] is True
+    assert untracked.read_text(encoding="utf-8") == "runtime cache placeholder\n"
+
+
+def test_installed_cli_update_blocks_tracked_changes_in_managed_checkout(tmp_path: Path) -> None:
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    source_repo = make_git_repo_copy(source_root)
+    home_root = tmp_path / "home"
+    fake_claude = make_fake_claude(tmp_path)
+    standalone_cli = tmp_path / "bin" / "charness"
+    standalone_cli.parent.mkdir(parents=True, exist_ok=True)
+    standalone_cli.write_text((source_repo / "charness").read_text(encoding="utf-8"), encoding="utf-8")
+    standalone_cli.chmod(0o755)
+
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = build_test_path(fake_claude.parent, standalone_cli.parent)
+
+    init_result = subprocess.run(
+        [sys.executable, str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert init_result.returncode == 0, init_result.stderr
+
+    managed_checkout = home_root / ".agents" / "src" / "charness"
+    readme_path = managed_checkout / "README.md"
+    readme_path.write_text(readme_path.read_text(encoding="utf-8") + "\ntracked edit\n", encoding="utf-8")
+
+    installed_cli = home_root / ".local" / "bin" / "charness"
+    update_result = subprocess.run(
+        [sys.executable, str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert update_result.returncode != 0
+    assert "has tracked local changes" in (update_result.stderr + update_result.stdout)
+
+
 def test_installed_cli_remembers_managed_checkout(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     installed_cli = home_root / ".local" / "bin" / "charness"
