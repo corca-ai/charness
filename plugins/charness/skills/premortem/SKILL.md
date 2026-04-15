@@ -47,12 +47,18 @@ decision contract. Do not restate the whole project history.
    - what would count as success
    - what is explicitly out of scope for this pass
 2. Pick a bounded set of contrasting angles.
-   - default to three to five angles
+   - when subagents are available and explicitly allowed, always use them
+   - use at least two angle subagents plus one separate counterweight subagent
+   - default to three angle subagents for a normal non-trivial decision
+   - expand to four angle subagents only when the change is clearly broad:
+     cross-surface, breaking, migration-heavy, or release plus doc cascade
    - choose angles that can disagree meaningfully, not five near-duplicates
    - see `references/angle-selection.md`
 3. Run the angle pass.
    - if subagents are available and explicitly allowed, use bounded fresh-eye
      subagents with one angle each
+   - do not collapse the counterweight into one of the angle subagents; keep it
+     as a separate skeptical pass
    - otherwise run the same angle pass locally and keep the findings separated
      by angle
 4. Collapse the findings into one candidate concern list.

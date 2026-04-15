@@ -17,8 +17,11 @@ def test_premortem_skill_surfaces_counterweight_and_deliberately_not_doing() -> 
     assert "counterweight" in skill_text
     assert "Deliberately Not Doing" in skill_text
     assert "subagents are available and explicitly allowed" in skill_text
+    assert "at least two angle subagents plus one separate counterweight subagent" in skill_text
+    assert "default to three angle subagents" in skill_text
     assert "blast-radius" in angle_text
     assert "future maintainer" in angle_text
+    assert "minimum: two contrasting angle subagents plus one separate counterweight" in angle_text
     assert "Act Before Ship" in counterweight_text
     assert "Over-Worry" in counterweight_text
 

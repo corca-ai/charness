@@ -13,6 +13,16 @@ Good default angles for a non-trivial decision:
   mirrors become misleading after the change
 - `devil's advocate`: strongest argument for keeping the current design
 
+Subagent sizing when the runtime supports them:
+
+- minimum: two contrasting angle subagents plus one separate counterweight
+  subagent
+- default: three angle subagents plus one counterweight subagent
+- widen to four angle subagents only when the decision spans multiple durable
+  surfaces, a breaking migration, or a release/install/doc cascade
+- if you cannot name four meaningfully different angles, stay at two or three
+  instead of inventing filler
+
 Rotate or swap angles when the decision is narrower:
 
 - breaking change boundary
