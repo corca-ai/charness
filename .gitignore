@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 node_modules/
 .pytest_cache/
+plugins/charness/support/gather-slack/.cache/
 skill-outputs/quality/runtime-signals.json
 skill-outputs/quality/history/runtime-signals-*.jsonl
 integrations/locks/*.json
