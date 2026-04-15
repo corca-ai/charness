@@ -131,7 +131,7 @@ def main() -> int:
         lock_schema = load_lock_schema()
         lock_files = lock_paths(repo_root)
         for path in lock_files:
-            validate_lock_data(json.loads(path.read_text(encoding="utf-8")), lock_schema, path)
+            validate_lock_data(json.loads(path.read_text(encoding="utf-8")), lock_schema)
     except Exception as exc:  # pragma: no cover - surfaced via CLI tests
         raise ValidationError(str(exc)) from exc
     print(

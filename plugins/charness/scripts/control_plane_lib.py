@@ -12,21 +12,14 @@ from pathlib import Path
 from typing import Any
 
 import jsonschema
+from packaging.specifiers import InvalidSpecifier, SpecifierSet
 from packaging.version import InvalidVersion, Version
 
-from scripts.control_plane_render import render_generated_wrapper
 from scripts.repo_layout import (
-    generated_support_dir,
     integrations_locks_dir,
     integrations_tools_dir,
     support_capability_paths,
     support_capability_schema_path,
-)
-from scripts.support_sync_lib import (
-    _write_local_wrapper_to_cache,
-    materialize_repo_symlink,
-    materialize_upstream_support,
-    support_link_name,
 )
 
 MANIFEST_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "integrations" / "tools" / "manifest.schema.json"
@@ -138,10 +131,6 @@ def load_capabilities(repo_root: Path) -> list[dict[str, Any]]:
     return items
 
 
-def manifest_by_tool_id(repo_root: Path) -> dict[str, dict[str, Any]]:
-    return {manifest["tool_id"]: manifest for manifest in load_manifests(repo_root)}
-
-
 def run_shell(command: str, cwd: Path) -> CommandResult:
     completed = subprocess.run(
         command,
@@ -235,9 +224,7 @@ def evaluate_version(manifest: dict[str, Any], detect_result: dict[str, Any]) ->
             "observed_version": observed_version,
         }
 
-    try:
-        observed = Version(observed_version)
-    except InvalidVersion:
+    if policy not in {"exact", "minimum", "range"}:
         return {
             "status": "unknown",
             "constraint": version_expectation["constraint"],
@@ -245,32 +232,24 @@ def evaluate_version(manifest: dict[str, Any], detect_result: dict[str, Any]) ->
         }
 
     constraint = version_expectation["constraint"]
-    if policy == "exact":
-        expected = constraint.removeprefix("==")
-        status = "matched" if observed == Version(expected) else "mismatched"
-    elif policy == "minimum":
-        expected = constraint.removeprefix(">=")
-        status = "matched" if observed >= Version(expected) else "mismatched"
-    elif policy == "range":
-        lower, _, upper = constraint.partition(",")
-        lower_ok = True
-        upper_ok = True
-        if lower:
-            lower_ok = observed >= Version(lower.strip().removeprefix(">="))
-        if upper:
-            upper_ok = observed <= Version(upper.strip().removeprefix("<="))
-        status = "matched" if lower_ok and upper_ok else "mismatched"
-    else:
-        status = "unknown"
+    try:
+        observed = Version(observed_version)
+        specifier = SpecifierSet(constraint)
+    except (InvalidVersion, InvalidSpecifier):
+        return {
+            "status": "unknown",
+            "constraint": constraint,
+            "observed_version": observed_version,
+        }
 
     return {
-        "status": status,
+        "status": "matched" if observed in specifier else "mismatched",
         "constraint": constraint,
         "observed_version": observed_version,
     }
 
 
-def validate_lock_data(data: dict[str, Any], schema: dict[str, Any], path: Path) -> None:
+def validate_lock_data(data: dict[str, Any], schema: dict[str, Any]) -> None:
     jsonschema.validate(data, schema)
 
 
@@ -288,7 +267,7 @@ def read_lock(repo_root: Path, tool_id: str) -> dict[str, Any] | None:
         return None
     data = json.loads(path.read_text(encoding="utf-8"))
     try:
-        validate_lock_data(data, load_lock_schema(), path)
+        validate_lock_data(data, load_lock_schema())
     except jsonschema.ValidationError as exc:
         sys.stderr.write(
             f"[charness] stale lock at {path} fails schema validation ({exc.message}); "
@@ -296,14 +275,6 @@ def read_lock(repo_root: Path, tool_id: str) -> dict[str, Any] | None:
         )
         return None
     return data
-
-
-def base_lock_payload(manifest: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "schema_version": "1",
-        "tool_id": manifest["tool_id"],
-        "manifest_path": manifest["_manifest_path"],
-    }
 
 
 def upsert_lock(
@@ -317,7 +288,7 @@ def upsert_lock(
     install: dict[str, Any] | None = None,
     update: dict[str, Any] | None = None,
 ) -> Path:
-    payload = read_lock(repo_root, manifest["tool_id"]) or base_lock_payload(manifest)
+    payload = read_lock(repo_root, manifest["tool_id"]) or {}
     payload["schema_version"] = "1"
     payload["tool_id"] = manifest["tool_id"]
     payload["manifest_path"] = manifest["_manifest_path"]
@@ -333,48 +304,8 @@ def upsert_lock(
         payload["install"] = install
     if update is not None:
         payload["update"] = update
-    validate_lock_data(payload, load_lock_schema(), lock_path(repo_root, manifest["tool_id"]))
+    validate_lock_data(payload, load_lock_schema())
     path = lock_path(repo_root, manifest["tool_id"])
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return path
-
-
-def selected_manifests(repo_root: Path, tool_ids: list[str]) -> list[dict[str, Any]]:
-    manifests = manifest_by_tool_id(repo_root)
-    if not tool_ids:
-        return list(manifests.values())
-    return [manifests[tool_id] for tool_id in tool_ids if tool_id in manifests]
-
-
-def materialize_support(
-    repo_root: Path,
-    manifest: dict[str, Any],
-    *,
-    upstream_checkouts: dict[str, Path],
-) -> dict[str, Any]:
-    support = manifest.get("support_skill_source")
-    if not support:
-        return {"materialized_paths": [], "cache_path": None, "content_digest": None}
-
-    if support["source_type"] == "local_wrapper":
-        cache_path, content_digest = _write_local_wrapper_to_cache(
-            repo_root,
-            manifest,
-            render_generated_wrapper(manifest),
-        )
-    elif support["source_type"] == "upstream_repo":
-        cache_path, content_digest = materialize_upstream_support(
-            manifest,
-            upstream_checkouts=upstream_checkouts,
-        )
-    else:
-        raise ValueError(f"unsupported support source_type `{support['source_type']}`")
-
-    link_root = generated_support_dir(repo_root) / support_link_name(manifest)
-    materialized_paths = materialize_repo_symlink(cache_path, link_root, repo_root)
-    return {
-        "materialized_paths": materialized_paths,
-        "cache_path": str(cache_path),
-        "content_digest": content_digest,
-    }

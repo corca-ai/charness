@@ -13,12 +13,12 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.control_plane_lib import (
     load_manifests,
-    materialize_support,
     now_iso,
     upsert_lock,
 )
 from scripts.control_plane_lifecycle_lib import print_tool_statuses, select_by_tool_id
 from scripts.support_sync_lib import (
+    materialize_support,
     parse_upstream_checkout,
     support_state_for_manifest,
     write_discovery_stub,

@@ -132,20 +132,16 @@ def exercise_control_plane_scenarios() -> None:
         {**manifest, "version_expectation": {"policy": "minimum", "constraint": ">=1.0.0", "detected_by": "manual"}},
     ):
         control.evaluate_version(version_manifest, {"results": [{"stdout": "demo not-a-version"}]})
-    control.base_lock_payload(manifest)
     with tempfile.TemporaryDirectory(prefix="charness-control-plane-") as temp_dir:
         repo = Path(temp_dir)
         (repo / "integrations" / "locks").mkdir(parents=True)
         control.lock_paths(repo)
-        with mock.patch.object(control, "manifest_by_tool_id", return_value={"demo": manifest}):
-            control.selected_manifests(repo, [])
-            control.selected_manifests(repo, ["demo", "missing"])
         with mock.patch.object(control, "load_lock_schema", return_value={"type": "object", "additionalProperties": False}):
             (repo / "integrations" / "locks" / "demo.json").write_text('{"unexpected": true}\n', encoding="utf-8")
             with mock.patch.object(control.sys.stderr, "write"):
                 control.read_lock(repo, "demo")
         with suppress(jsonschema.ValidationError):
-            control.validate_lock_data({"unexpected": True}, {"type": "object", "additionalProperties": False}, repo / "lock.json")
+            control.validate_lock_data({"unexpected": True}, {"type": "object", "additionalProperties": False})
 
 
 def exercise_install_provenance_scenarios() -> None:

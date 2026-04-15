@@ -2,7 +2,7 @@
 
 ## Current Focus
 
-- This slice continued the quality ratchet after the per-file `80.0%` coverage floor landed.
+- The user pointed out that `docs/handoff.md` was preserving too much process history.
 
 ## Repeat Traps
 
@@ -10,10 +10,10 @@
 
 ## Next-Time Checklist
 
-- workflow: check helper-file length before the full review when coverage trace scenarios grow.
-- capability: continue using `run-slice-closeout.py` after plugin export changes; it caught all relevant surface obligations in one pass.
-- memory: keep `control_plane_lib.py` as the next cleanup target in handoff and quality artifacts.
+- workflow: before updating handoff, delete any completed history that does not change the next action.
+- capability: tighten the handoff skill or its references to prefer a smaller practical target than the current broad 200-line size gate.
+- memory: keep `install_tools.py` and `support_sync_lib.py` as the next cleanup targets while avoiding detailed process replay in handoff.
 
 ## Sources
 
-- `charness-artifacts/retro/2026-04-15-install-tools-floor-cleanup.md`
+- `charness-artifacts/retro/2026-04-15-handoff-signal-trim.md`

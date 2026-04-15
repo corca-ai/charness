@@ -6,8 +6,8 @@ Date: 2026-04-15
 Repo-wide quality posture for the current `charness` tree. This pass promoted
 control-plane coverage from aggregate-only to an enforced per-file floor,
 trimmed duplicated lifecycle helper code, lifted `sync_support.py` and
-`install_tools.py` off the floor, added a test-production ratio gate, and kept
-the HITL handoff inventory advisory.
+`install_tools.py` off the floor, simplified `control_plane_lib.py`, added a
+test-production ratio gate, and kept the HITL handoff inventory advisory.
 
 ## Current Gates
 
@@ -31,31 +31,31 @@ the HITL handoff inventory advisory.
 
 ## Runtime Signals
 
-- Latest full review after this slice: `36 passed, 0 failed`, total `41.9s`.
-- runtime hot spots: `pytest` `25.7s`, `check-coverage` `8.9s`,
-  `check-markdown` `3.7s`, `check-secrets` `2.7s`, external links `2.4s`.
-- current budgeted phases: `pytest` `25.7s / 40.0s`, `check-coverage`
-  `8.9s / 15.0s`, `check-secrets` `2.7s / 5.0s`, `run-evals` `1.7s / 5.0s`.
-- online external links: `30 Total`, `30 OK`, `0 Errors`.
+- Latest successful full review after this slice: `36 passed, 0 failed`, total
+  `44.2s`.
+- A later full replay hit a transient pytest runtime spike (`50.8s / 40.0s`);
+  remeasuring `pytest,check-runtime-budget` immediately after passed.
+- runtime hot spots: `pytest` `27.4s`, `check-coverage` `10.2s`,
+  `check-markdown` `6.9s`, `check-secrets` `5.0s`, external links `2.6s`.
+- current budgeted phases: `pytest` `27.4s / 40.0s`, `check-coverage`
+  `10.2s / 15.0s`, `check-secrets` `5.0s / 5.0s`, `run-evals` `2.5s / 5.0s`.
 - coverage gate: present and passing.
 - evaluator depth: maintained repo-local eval scenarios pass.
 - runtime signals continue to persist under `.charness/quality/`.
 
 ## Coverage and Eval Depth
 
-- coverage gate: `87.3%` (`1138/1304`) against the `60.0%` aggregate
+- coverage gate: `88.1%` (`1125/1277`) against the `60.0%` aggregate
   floor and `80.0%` per-file floor.
-- weakest tracked files are `control_plane_lib.py` `82.2%`,
-  `install_tools.py` `84.2%`, and `sync_support.py` `86.5%`; these are
+- weakest tracked files are `install_tools.py` `84.2%`,
+  `support_sync_lib.py` `84.6%`, and `sync_support.py` `86.5%`; these are
   above the floor but still ratchet candidates.
 - direct trace scenarios now cover lifecycle helpers, install provenance,
   support sync, update/install lifecycle branches, and upstream release errors.
-- test-production ratio is `0.53` (`9240/17443` Python lines), under the `1.00`
+- test-production ratio is `0.53` (`9240/17404` Python lines), under the `1.00`
   ceiling.
 - `check-test-completeness` verifies that standing pytest targets collect all tests.
 - maintained eval depth exists: `run-evals` passes 19 repo-local scenarios.
-- no `specs/` tree exists for `Covered by pytest:` reference validation in this
-  repo snapshot.
 
 ## Healthy
 
@@ -67,6 +67,9 @@ the HITL handoff inventory advisory.
   boilerplate and moved from exactly `80.0%` to `86.5%`.
 - `install_tools.py` shed one-use nonexecuting-install wrapper code and moved
   from `81.5%` to `84.2%`.
+- `control_plane_lib.py` shed unused helper exports, moved support
+  materialization ownership to `support_sync_lib.py`, and moved from `82.2%`
+  to `88.1%`.
 - Every tracked control-plane file now has an enforced `80.0%` floor.
 - Test-surface growth now has a hard ratio ceiling.
 - The full review path exposes PASS-phase diagnostics instead of relying on
@@ -82,8 +85,8 @@ the HITL handoff inventory advisory.
 
 ## Weak
 
-- Several control-plane files sit close to the `80.0%` floor; `control_plane_lib.py`
-  is the next cleanup target.
+- Several control-plane files sit close to the `80.0%` floor; `install_tools.py`
+  and `support_sync_lib.py` are the next cleanup targets.
 - Skill ergonomics inventory is advisory only. It still flags long public cores
   for `create-skill`, `impl`, `quality`, and `spec`, plus mode/option pressure
   in several public skills.
@@ -113,14 +116,12 @@ the HITL handoff inventory advisory.
 - quality adapter/bootstrap/tool-recommendation scripts and advisory inventories
 - maintainer preflight, `doctor.py --json`, full review, coverage, reference
   probes, and local tool version probes
-- targeted pytest for upstream release probing, coverage floor, ratio, and HITL
-  handoff inventory
 
 ## Recommended Next Gates
 
-- active `AUTO_CANDIDATE`: refactor or delete code around `control_plane_lib.py`
-  before adding more tests; it is now the weakest tracked file near the
-  enforced `80.0%` floor.
+- active `AUTO_CANDIDATE`: refactor or delete code around `install_tools.py`
+  and `support_sync_lib.py` before adding more tests; they are now the weakest
+  tracked files near the enforced `80.0%` floor.
 - active `AUTO_CANDIDATE`: ratchet per-file floors above `80.0%` only after the
   near-floor files have been simplified enough to make the higher bar honest.
 - passive `NON_AUTOMATABLE`: because this needs maintainer judgment, decide

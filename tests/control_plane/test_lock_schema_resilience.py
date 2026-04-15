@@ -86,7 +86,7 @@ def test_doctor_regenerates_over_stale_lock(tmp_path: Path) -> None:
     assert "stale lock" in result.stderr
 
     fresh = json.loads(lock_path.read_text(encoding="utf-8"))
-    validate_lock_data(fresh, load_lock_schema(), lock_path)
+    validate_lock_data(fresh, load_lock_schema())
     assert "sync_strategy" not in fresh.get("support", {})
     assert fresh["doctor"]["doctor_status"]
 

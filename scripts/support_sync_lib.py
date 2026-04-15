@@ -14,7 +14,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from scripts.repo_layout import discovery_stub_dir, support_skill_cache_dir
+from scripts.control_plane_render import render_generated_wrapper
+from scripts.repo_layout import discovery_stub_dir, generated_support_dir, support_skill_cache_dir
 
 SUPPORT_FIXTURES_ENV = "CHARNESS_SUPPORT_SYNC_FIXTURES"
 GITHUB_ARCHIVE_URL = "https://codeload.github.com/{repo}/tar.gz/{ref}"
@@ -233,6 +234,39 @@ def materialize_upstream_support(
     digest = _compute_tree_digest(source_path)
     cache_path = _promote_tree_to_cache(source_path, manifest=manifest, digest=digest)
     return cache_path, digest
+
+
+def materialize_support(
+    repo_root: Path,
+    manifest: dict[str, Any],
+    *,
+    upstream_checkouts: dict[str, Path],
+) -> dict[str, Any]:
+    support = manifest.get("support_skill_source")
+    if not support:
+        return {"materialized_paths": [], "cache_path": None, "content_digest": None}
+
+    if support["source_type"] == "local_wrapper":
+        cache_path, content_digest = _write_local_wrapper_to_cache(
+            repo_root,
+            manifest,
+            render_generated_wrapper(manifest),
+        )
+    elif support["source_type"] == "upstream_repo":
+        cache_path, content_digest = materialize_upstream_support(
+            manifest,
+            upstream_checkouts=upstream_checkouts,
+        )
+    else:
+        raise ValueError(f"unsupported support source_type `{support['source_type']}`")
+
+    link_root = generated_support_dir(repo_root) / support_link_name(manifest)
+    materialized_paths = materialize_repo_symlink(cache_path, link_root, repo_root)
+    return {
+        "materialized_paths": materialized_paths,
+        "cache_path": str(cache_path),
+        "content_digest": content_digest,
+    }
 
 
 def discovery_stub_path(repo_root: Path, tool_id: str) -> Path:
