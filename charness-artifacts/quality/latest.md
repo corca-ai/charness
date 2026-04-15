@@ -59,7 +59,8 @@ probes to use authenticated GitHub access when available.
   pre-push.
 - `upstream_release_lib.py` is now a more important seam and has the weakest
   control-plane coverage in the current report.
-- `check-supply-chain-online` is still opt-in rather than part of `--review`.
+- Supply-chain online probing is intentionally kept out of default review
+  because registry reachability remains an operator-triggered diagnostic.
 
 ## Missing
 
@@ -70,8 +71,9 @@ probes to use authenticated GitHub access when available.
 
 ## Deferred
 
-- Decide whether `check-supply-chain-online` belongs in `--review` by default
-  or in a separately named online-advisory profile.
+- Keep `check-supply-chain-online` as an operator-triggered only diagnostic.
+  Do not add it to default `--review` unless a future policy change assigns
+  explicit triage ownership for registry or provider outages.
 - Reintroduce `crill` only after the product and support surface stabilize.
 
 ## Commands Run
@@ -95,7 +97,7 @@ probes to use authenticated GitHub access when available.
   redirects a named advisory threshold.
 - active `AUTO_CANDIDATE`: add one repo-owned doc/help drift check for the
   install/update/doctor/reset contract.
-- passive `AUTO_CANDIDATE`: defer `check-supply-chain-online` default inclusion because registry reachability needs explicit triage ownership; decide whether it belongs in `--review` or a separate online-advisory profile.
+- passive `AUTO_CANDIDATE`: keep `check-supply-chain-online` out of default `--review` because registry reachability is an operator-triggered diagnostic by policy; future work should only document the on-demand command and expected triage owner.
 
 ## History
 
