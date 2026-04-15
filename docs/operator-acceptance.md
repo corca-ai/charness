@@ -121,10 +121,10 @@ Useful local commands:
 ```bash
 python3 scripts/validate-packaging.py --repo-root .
 python3 scripts/sync_root_plugin_manifests.py --repo-root .
-./charness doctor
-./charness tool doctor cautilus
-./charness tool install cautilus
-./charness tool update agent-browser
+charness doctor
+charness tool doctor cautilus
+charness tool install cautilus
+charness tool update agent-browser
 ```
 
 Suggested operator runs:

@@ -88,9 +88,11 @@
    `validate-packaging.py`도 policy file이 있을 때 이 검사를 같이 수행하므로
    checked-in plugin export 경로에서도 drift가 늦게 빠지지 않는다.
 3. 다음 세션 수동 테스트 우선순위:
-   다른 머신에서 `./charness tool sync-support --json cautilus`,
-   `./charness tool doctor --json cautilus`, 가능하면 `tool install/update`
-   까지 한 번 더 돌려 PATH/non-PATH honesty를 본다. 이어서 `cautilus`로
+   다른 머신에서 설치형 PATH binary 기준으로
+   `charness tool sync-support --json cautilus`,
+   `charness tool doctor --json cautilus`, 가능하면
+   `charness tool install cautilus` / `charness tool update cautilus`
+   까지 한 번 더 돌려 operator 경로 안내와 recovery가 정직한지 본다. 이어서 `cautilus`로
    실제 skill 성능도 테스트해, `find-skills`/support discovery/verification
    guidance가 operator 입장에서 자연스럽게 이어지는지 본다.
 4. ergonomics follow-on은 trigger overlap 같은 higher-noise rule을 계속
