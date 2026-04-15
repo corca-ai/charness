@@ -114,10 +114,12 @@ One-time recovery note for older installs:
 charness doctor --write-state
 ```
 
-## Step 2: Follow The `next_steps` Output
+## Step 2: Follow The `next_action` Output
 
 `charness init` is the canonical host detector. Do not guess which host action
-still needs to happen. Read the emitted `next_steps` and follow them exactly.
+still needs to happen. Read the emitted `next_action` first, then use
+`next_steps` for host-specific detail when you need to compare Codex and Claude
+state.
 
 Typical outcomes:
 
@@ -128,9 +130,10 @@ Typical outcomes:
   tries the official local `plugin/install` path so cache/config install
   markers appear without a manual Plugin Directory step; after a successful
   install, start a new Codex session to load `charness`
-- Codex without the `codex` CLI available: `next_steps.codex` tells the
-  operator that only the source and marketplace preparation was possible on
-  that machine
+- Codex without the `codex` CLI available: `next_steps.codex` still records
+  that only the source and marketplace preparation was possible on that
+  machine, but `next_action` can point at another actionable host step when one
+  exists
 
 The checked-in root marketplace files remain generated compatibility artifacts,
 not the official operator-facing install path.
@@ -168,7 +171,8 @@ Optional version inspection:
 - run `charness update`
 - for Codex, expect `charness update` to attempt the official local plugin
   cache refresh before falling back to manual host steps
-- follow the new `next_steps` output after the update
+- follow the new `next_action` output after the update, then inspect
+  `next_steps` when host-specific status matters
 - skill execution must stay read-only with respect to install/update state
 
 ## Step 5: Report Back

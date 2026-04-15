@@ -61,6 +61,7 @@ commands:
       - --json
     required_doc_contains:
       - It stays read-only
+      - next_action
       - charness doctor --write-state
       - persist a proof snapshot
   update:

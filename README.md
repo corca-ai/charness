@@ -400,7 +400,8 @@ Current command intent:
 
 - `init`: bootstrap or refresh the managed local install surface
 - `doctor`: inspect the managed install plus host-native Codex and Claude state;
-  add `--write-state` when you want to persist a proof snapshot to
+  read `next_action` first for the primary operator move, and add
+  `--write-state` when you want to persist a proof snapshot to
   `~/.local/state/charness/host-state.json`
 - `update`: refresh the installed surface and optionally advance the managed
   checkout; it also records the post-update host snapshot to
@@ -498,7 +499,8 @@ Recommended shared shape:
 2. Run `charness init` once to export the installed plugin surface to `~/.codex/plugins/charness`.
 3. Point Codex at that exported surface through `~/.agents/plugins/marketplace.json`.
 4. Let `charness init` install the Claude plugin through Claude's own plugin
-   manager, then restart Claude Code when `next_steps.claude` asks for it.
+   manager, then restart Claude Code when `next_action` or `next_steps.claude`
+   asks for it.
 5. Run `charness update` when you want both hosts to move together.
 
 Development-only proof routes, including non-managed `--repo-root` flows, live
@@ -512,7 +514,9 @@ charness doctor
 ```
 
 This stays read-only and reports install-surface drift plus host-specific
-update hints.
+update hints. The JSON payload keeps host-specific `next_steps` and also emits
+one primary `next_action` so an operator or agent can act without guessing
+which host message is first.
 
 When you need a durable before/after proof around a Codex restart, use:
 

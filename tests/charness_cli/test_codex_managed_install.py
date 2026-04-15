@@ -92,3 +92,6 @@ def test_charness_doctor_reports_codex_version_drift(
     assert payload["codex_source_cache_drift"] is True
     assert payload["codex_enabled_plugin_id"] == "charness@local"
     assert payload["codex_host_guidance"]["status"] == "needs-refresh"
+    assert payload["next_action"]["kind"] == "manual"
+    assert payload["next_action"]["host"] == "codex"
+    assert payload["next_action"]["message"] == payload["codex_host_guidance"]["message"]

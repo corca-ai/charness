@@ -1569,6 +1569,58 @@ def build_host_next_steps(doctor_payload: dict[str, object]) -> dict[str, str]:
     return next_steps
 
 
+def build_doctor_next_action(doctor_payload: dict[str, object]) -> dict[str, object]:
+    candidates: list[tuple[int, int, dict[str, object]]] = []
+    for host_index, host in enumerate(("codex", "claude")):
+        guidance = doctor_payload.get(f"{host}_host_guidance")
+        if not isinstance(guidance, dict):
+            continue
+        message = guidance.get("message")
+        status = guidance.get("status")
+        if not isinstance(message, str) or not message:
+            continue
+        if not isinstance(status, str) or not status:
+            status = "unknown"
+        manual_action_required = guidance.get("manual_action_required") is True
+        if manual_action_required:
+            priority = 100
+            kind = "manual"
+        elif status == "installed":
+            priority = 50
+            kind = "restart"
+        elif status in {"host-unavailable", "unavailable"}:
+            priority = 0
+            kind = "none"
+        else:
+            priority = 20
+            kind = "inspect"
+        candidates.append(
+            (
+                priority,
+                -host_index,
+                {
+                    "kind": kind,
+                    "host": host,
+                    "status": status,
+                    "manual_action_required": manual_action_required,
+                    "message": message,
+                    "source": f"{host}_host_guidance",
+                },
+            )
+        )
+    actionable = [candidate for candidate in candidates if candidate[0] > 0]
+    if actionable:
+        return max(actionable, key=lambda candidate: (candidate[0], candidate[1]))[2]
+    return {
+        "kind": "none",
+        "host": None,
+        "status": "no-action",
+        "manual_action_required": False,
+        "message": "No manual host action is currently required. See `next_steps` for host-specific status.",
+        "source": "next_steps",
+    }
+
+
 def remove_codex_marketplace_entry(path: Path) -> bool:
     if not path.is_file():
         return False
@@ -1792,6 +1844,7 @@ def build_doctor_payload(
         enabled_status=payload["claude_enabled_status"],
     )
     payload["next_steps"] = build_host_next_steps(payload)
+    payload["next_action"] = build_doctor_next_action(payload)
     return payload
 
 
@@ -1878,6 +1931,11 @@ def print_human_summary(payload: dict[str, object]) -> None:
         root_surface = preamble.get("root_install_surface", {})
         ok = root_surface.get("ok")
         print(f"INSTALL_SURFACE: {'ok' if ok else 'warning'}")
+    next_action = payload.get("next_action")
+    if isinstance(next_action, dict) and isinstance(next_action.get("message"), str):
+        host = next_action.get("host")
+        prefix = f"{host}: " if isinstance(host, str) and host else ""
+        print(f"NEXT_ACTION: {prefix}{next_action['message']}")
     host_guidance = payload.get("codex_host_guidance")
     if isinstance(host_guidance, dict) and isinstance(host_guidance.get("message"), str):
         print(f"CODEX_NEXT_STEP: {host_guidance['message']}")
@@ -2535,6 +2593,7 @@ def cmd_init(args: argparse.Namespace) -> int:
     payload["codex_host_guidance"] = doctor_payload["codex_host_guidance"]
     payload["claude_host_guidance"] = doctor_payload["claude_host_guidance"]
     payload["next_steps"]["codex"] = doctor_payload["next_steps"]["codex"]
+    payload["next_action"] = doctor_payload["next_action"]
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
@@ -2633,6 +2692,7 @@ def cmd_update(args: argparse.Namespace) -> int:
     payload["codex_host_guidance"] = doctor_payload["codex_host_guidance"]
     payload["claude_host_guidance"] = doctor_payload["claude_host_guidance"]
     payload["next_steps"]["codex"] = doctor_payload["next_steps"]["codex"]
+    payload["next_action"] = doctor_payload["next_action"]
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
