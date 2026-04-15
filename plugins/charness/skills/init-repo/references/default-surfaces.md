@@ -2,6 +2,21 @@
 
 `init-repo` uses these as the default operating surfaces.
 
+Existing repos may already keep equivalent surfaces under local names. Declare
+those names in `.agents/init-repo-adapter.yaml` instead of renaming mature repo
+docs only to satisfy the inspector:
+
+```yaml
+surfaces:
+  roadmap: docs/master-plan.md
+  install: install.md
+  uninstall: null
+```
+
+The inspector matches default paths case-insensitively. A `null` surface value
+means the repo deliberately does not carry that surface and should not be
+reported as missing.
+
 ## README
 
 The repo root [README.md](../../../../README.md) should answer:

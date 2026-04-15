@@ -5,7 +5,44 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
+
+SCRIPT_PATH = Path(__file__).resolve()
+sys.path[:0] = [str(SCRIPT_PATH.parents[4]), str(SCRIPT_PATH.parents[3])]
+
+from scripts.adapter_lib import load_yaml_file  # noqa: E402
+
+ADAPTER_CANDIDATES = (
+    Path(".agents/init-repo-adapter.yaml"),
+    Path(".codex/init-repo-adapter.yaml"),
+    Path(".claude/init-repo-adapter.yaml"),
+    Path("docs/init-repo-adapter.yaml"),
+    Path("init-repo-adapter.yaml"),
+)
+
+DEFAULT_SURFACES = {
+    "readme": Path("README.md"),
+    "agents": Path("AGENTS.md"),
+    "roadmap": Path("docs/roadmap.md"),
+    "operator_acceptance": Path("docs/operator-acceptance.md"),
+    "install": Path("INSTALL.md"),
+    "uninstall": Path("UNINSTALL.md"),
+    "handoff": Path("docs/handoff.md"),
+}
+
+CORE_SURFACES = ("readme", "agents", "roadmap", "operator_acceptance")
+
+
+@dataclass(frozen=True)
+class SurfaceSpec:
+    surface_id: str
+    configured_path: Path
+    path: Path
+    source: str
+    acknowledged_missing: bool = False
 
 
 def _file_state(path: Path) -> dict[str, object]:
@@ -24,9 +61,88 @@ def _text_present(path: Path) -> bool:
     return path.is_file() and path.read_text(encoding="utf-8", errors="replace").strip() != ""
 
 
+def _case_insensitive_path(repo_root: Path, relative_path: Path) -> Path:
+    current = repo_root
+    for part in relative_path.parts:
+        exact = current / part
+        if exact.exists() or exact.is_symlink():
+            current = exact
+            continue
+        if not current.is_dir():
+            return exact
+        matches = sorted(child for child in current.iterdir() if child.name.lower() == part.lower())
+        current = matches[0] if matches else exact
+    return current
+
+
+def _load_adapter_data(repo_root: Path) -> tuple[dict[str, Any], str | None]:
+    adapter_path = next((repo_root / candidate for candidate in ADAPTER_CANDIDATES if (repo_root / candidate).is_file()), None)
+    if adapter_path is None:
+        return {}, None
+    raw = load_yaml_file(adapter_path)
+    return (raw if isinstance(raw, dict) else {}), str(adapter_path)
+
+
+def _surface_overrides(adapter_data: dict[str, Any]) -> dict[str, Any]:
+    surfaces = adapter_data.get("surfaces")
+    return surfaces if isinstance(surfaces, dict) else {}
+
+
+def _surface_spec(repo_root: Path, surface_id: str, overrides: dict[str, Any]) -> SurfaceSpec:
+    default_path = DEFAULT_SURFACES[surface_id]
+    raw_override = overrides.get(surface_id, "__missing__")
+    source = "default"
+    configured_path = default_path
+    acknowledged_missing = False
+
+    if raw_override != "__missing__":
+        source = "adapter"
+        if raw_override is None:
+            acknowledged_missing = True
+        elif isinstance(raw_override, str):
+            configured_path = Path(raw_override)
+        elif isinstance(raw_override, dict):
+            acknowledged_missing = raw_override.get("acknowledged_missing") is True
+            raw_path = raw_override.get("path")
+            if isinstance(raw_path, str):
+                configured_path = Path(raw_path)
+
+    path = _case_insensitive_path(repo_root, configured_path)
+    return SurfaceSpec(
+        surface_id=surface_id,
+        configured_path=configured_path,
+        path=path,
+        source=source,
+        acknowledged_missing=acknowledged_missing,
+    )
+
+
+def _surface_specs(repo_root: Path, overrides: dict[str, Any]) -> dict[str, SurfaceSpec]:
+    return {surface_id: _surface_spec(repo_root, surface_id, overrides) for surface_id in DEFAULT_SURFACES}
+
+
+def _surface_state(repo_root: Path, spec: SurfaceSpec) -> dict[str, object]:
+    if spec.acknowledged_missing:
+        state: dict[str, object] = {"exists": False, "kind": "acknowledged_missing"}
+    else:
+        state = _file_state(spec.path)
+    state["path"] = _relative(spec.path, repo_root)
+    if spec.configured_path != Path(state["path"]):
+        state["configured_path"] = spec.configured_path.as_posix()
+    state["source"] = spec.source
+    return state
+
+
+def _relative(path: Path, repo_root: Path) -> str:
+    try:
+        return path.relative_to(repo_root).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def detect_agent_docs(repo_root: Path) -> dict[str, object]:
-    agents = repo_root / "AGENTS.md"
-    claude = repo_root / "CLAUDE.md"
+    agents = _case_insensitive_path(repo_root, Path("AGENTS.md"))
+    claude = _case_insensitive_path(repo_root, Path("CLAUDE.md"))
     agents_state = _file_state(agents)
     claude_state = _file_state(claude)
 
@@ -52,56 +168,48 @@ def detect_agent_docs(repo_root: Path) -> dict[str, object]:
     }
 
 
-def detect_repo_mode(repo_root: Path) -> str:
-    core = [
-        repo_root / "README.md",
-        repo_root / "AGENTS.md",
-        repo_root / "docs" / "roadmap.md",
-        repo_root / "docs" / "operator-acceptance.md",
-    ]
-    present = sum(1 for path in core if path.exists())
+def _surface_present(spec: SurfaceSpec) -> bool:
+    return spec.acknowledged_missing or spec.path.exists() or spec.path.is_symlink()
+
+
+def detect_repo_mode(specs: dict[str, SurfaceSpec]) -> str:
+    present = sum(1 for surface_id in CORE_SURFACES if _surface_present(specs[surface_id]))
+    required = len(CORE_SURFACES)
     if present == 0:
         return "GREENFIELD"
-    if present < len(core):
+    if present < required:
         return "PARTIAL"
     return "NORMALIZE"
 
 
-def detect_missing_surfaces(repo_root: Path) -> list[str]:
-    core = {
-        "readme": repo_root / "README.md",
-        "agents": repo_root / "AGENTS.md",
-        "roadmap": repo_root / "docs" / "roadmap.md",
-        "operator_acceptance": repo_root / "docs" / "operator-acceptance.md",
-    }
-    return [surface_id for surface_id, path in core.items() if not path.exists()]
+def detect_missing_surfaces(specs: dict[str, SurfaceSpec]) -> list[str]:
+    return [surface_id for surface_id in CORE_SURFACES if not _surface_present(specs[surface_id])]
 
 
-def detect_partial_kind(repo_root: Path, repo_mode: str) -> str | None:
+def detect_partial_kind(specs: dict[str, SurfaceSpec], repo_mode: str) -> str | None:
     if repo_mode != "PARTIAL":
         return None
-    missing_surfaces = detect_missing_surfaces(repo_root)
+    missing_surfaces = detect_missing_surfaces(specs)
     if len(missing_surfaces) == 1:
         return "targeted_missing_surface"
     return "broad_partial"
 
 
 def build_payload(repo_root: Path) -> dict[str, object]:
-    repo_mode = detect_repo_mode(repo_root)
+    adapter_data, adapter_path = _load_adapter_data(repo_root)
+    specs = _surface_specs(repo_root, _surface_overrides(adapter_data))
+    repo_mode = detect_repo_mode(specs)
     return {
         "repo": repo_root.name,
         "repo_mode": repo_mode,
-        "partial_kind": detect_partial_kind(repo_root, repo_mode),
-        "missing_surfaces": detect_missing_surfaces(repo_root),
-        "agent_docs": detect_agent_docs(repo_root),
-        "surfaces": {
-            "readme": _file_state(repo_root / "README.md"),
-            "roadmap": _file_state(repo_root / "docs" / "roadmap.md"),
-            "operator_acceptance": _file_state(repo_root / "docs" / "operator-acceptance.md"),
-            "install": _file_state(repo_root / "INSTALL.md"),
-            "uninstall": _file_state(repo_root / "UNINSTALL.md"),
-            "handoff": _file_state(repo_root / "docs" / "handoff.md"),
+        "partial_kind": detect_partial_kind(specs, repo_mode),
+        "missing_surfaces": detect_missing_surfaces(specs),
+        "adapter": {
+            "found": adapter_path is not None,
+            "path": adapter_path,
         },
+        "agent_docs": detect_agent_docs(repo_root),
+        "surfaces": {surface_id: _surface_state(repo_root, spec) for surface_id, spec in specs.items()},
     }
 
 

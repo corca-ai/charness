@@ -4,3 +4,7 @@ language: en
 output_dir: charness-artifacts/init-repo
 preset_id: portable-defaults
 customized_from: portable-defaults
+surfaces:
+  roadmap: docs/roadmap.md
+  install: INSTALL.md
+  uninstall: null

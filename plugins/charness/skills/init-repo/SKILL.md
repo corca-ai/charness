@@ -75,6 +75,9 @@ Then load only the references needed for the detected state:
      - if only one core operating surface is missing, treat this as a targeted
        missing-surface repair instead of a broad scaffold rewrite
    - `NORMALIZE`: the core files exist, but their boundaries or ownership are drifting
+   - if a mature repo uses equivalent local names, prefer
+     `.agents/init-repo-adapter.yaml` `surfaces` overrides over asking the repo
+     to rename docs only to satisfy the inspector
 2. Stabilize the host-facing instruction surface first.
    - if both `AGENTS.md` and `CLAUDE.md` are missing, create `AGENTS.md` and
      make `CLAUDE.md` a symlink to it
