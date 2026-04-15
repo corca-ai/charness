@@ -26,8 +26,12 @@ if [[ "${CHARNESS_LINK_CHECK_ONLINE:-0}" != "1" ]]; then
   exit 0
 fi
 
+if [[ -z "${GITHUB_TOKEN:-}" ]] && command -v gh >/dev/null 2>&1; then
+  GITHUB_TOKEN="$(gh auth token 2>/dev/null || true)"
+  export GITHUB_TOKEN
+fi
+
 lychee \
-  --cache \
   --no-progress \
   --include-fragments \
-  --files-from "$tmp_links"
+  - <"$tmp_links"

@@ -82,9 +82,11 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "prompt_asset_roots": [],
         "prompt_asset_policy": dict(DEFAULT_PROMPT_ASSET_POLICY),
         "skill_ergonomics_gate_rules": list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES),
+        "runtime_budgets": {},
         "concept_paths": [],
         "preflight_commands": [],
         "gate_commands": [],
+        "review_commands": [],
         "security_commands": [],
     }
 
@@ -130,11 +132,94 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
         data["prompt_asset_policy"] = merge_prompt_asset_policy(raw.get("prompt_asset_policy"))
     if validated_skill_rules is not None:
         data["skill_ergonomics_gate_rules"] = validated_skill_rules
-    for field in ("preset_lineage", "prompt_asset_roots", "concept_paths", "preflight_commands", "gate_commands", "security_commands"):
+    runtime_budgets = raw.get("runtime_budgets")
+    if isinstance(runtime_budgets, dict) and all(
+        isinstance(label, str)
+        and label
+        and isinstance(value, int)
+        and not isinstance(value, bool)
+        and value > 0
+        for label, value in runtime_budgets.items()
+    ):
+        data["runtime_budgets"] = dict(runtime_budgets)
+    for field in (
+        "preset_lineage",
+        "prompt_asset_roots",
+        "concept_paths",
+        "preflight_commands",
+        "gate_commands",
+        "review_commands",
+        "security_commands",
+    ):
         value = raw.get(field)
         if isinstance(value, list) and all(isinstance(item, str) for item in value):
             data[field] = list(value)
     return data
+
+
+def _merge_lineage(
+    existing: dict[str, Any], detected_lineage: list[str], field_statuses: dict[str, str]
+) -> list[str]:
+    existing_lineage = existing.get("preset_lineage", [])
+    if existing_lineage:
+        merged = _merge_unique(existing_lineage, detected_lineage)
+        field_statuses["preset_lineage"] = "augmented" if merged != existing_lineage else "preserved"
+        return merged
+    if detected_lineage:
+        field_statuses["preset_lineage"] = "inferred"
+        return detected_lineage
+    field_statuses["preset_lineage"] = "deferred"
+    return []
+
+
+def _add_adapter_policy_fields(
+    final: dict[str, Any], existing: dict[str, Any], explicit_fields: set[str], merged_lineage: list[str], field_statuses: dict[str, str]
+) -> None:
+    preserve_coverage_margin = "coverage_fragile_margin_pp" in explicit_fields
+    final["coverage_fragile_margin_pp"] = (
+        existing["coverage_fragile_margin_pp"] if preserve_coverage_margin else DEFAULT_COVERAGE_FRAGILE_MARGIN_PP
+    )
+    field_statuses["coverage_fragile_margin_pp"] = "preserved" if preserve_coverage_margin else "defaulted"
+
+    preserve_coverage_policy = "coverage_floor_policy" in explicit_fields
+    final["coverage_floor_policy"] = dict(
+        existing["coverage_floor_policy"] if preserve_coverage_policy else DEFAULT_COVERAGE_FLOOR_POLICY
+    )
+    field_statuses["coverage_floor_policy"] = "preserved" if preserve_coverage_policy else "defaulted"
+
+    existing_patterns = existing.get("specdown_smoke_patterns", [])
+    if "specdown_smoke_patterns" in explicit_fields:
+        final["specdown_smoke_patterns"] = list(existing_patterns)
+        field_statuses["specdown_smoke_patterns"] = "preserved"
+    else:
+        inferred_patterns = default_specdown_smoke_patterns(merged_lineage)
+        final["specdown_smoke_patterns"] = inferred_patterns
+        field_statuses["specdown_smoke_patterns"] = "inferred" if inferred_patterns else "defaulted"
+
+    preserve_spec_format = "spec_pytest_reference_format" in explicit_fields
+    final["spec_pytest_reference_format"] = (
+        existing["spec_pytest_reference_format"] if preserve_spec_format else DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT
+    )
+    field_statuses["spec_pytest_reference_format"] = "preserved" if preserve_spec_format else "defaulted"
+
+
+def _add_prompt_and_runtime_fields(
+    final: dict[str, Any], existing: dict[str, Any], explicit_fields: set[str], field_statuses: dict[str, str]
+) -> None:
+    final["prompt_asset_roots"] = list(existing.get("prompt_asset_roots", [])) if "prompt_asset_roots" in explicit_fields else []
+    field_statuses["prompt_asset_roots"] = "preserved" if "prompt_asset_roots" in explicit_fields else "defaulted"
+    final["prompt_asset_policy"] = (
+        dict(existing["prompt_asset_policy"]) if "prompt_asset_policy" in explicit_fields else dict(DEFAULT_PROMPT_ASSET_POLICY)
+    )
+    field_statuses["prompt_asset_policy"] = "preserved" if "prompt_asset_policy" in explicit_fields else "defaulted"
+    final["skill_ergonomics_gate_rules"] = (
+        list(existing.get("skill_ergonomics_gate_rules", []))
+        if "skill_ergonomics_gate_rules" in explicit_fields
+        else list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES)
+    )
+    field_statuses["skill_ergonomics_gate_rules"] = "preserved" if "skill_ergonomics_gate_rules" in explicit_fields else "defaulted"
+    final["runtime_budgets"] = dict(existing.get("runtime_budgets", {})) if "runtime_budgets" in explicit_fields else {}
+    field_statuses["runtime_budgets"] = "preserved" if "runtime_budgets" in explicit_fields else "defaulted"
 
 
 def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, str], list[dict[str, Any]]]:
@@ -153,59 +238,11 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
         "preset_version": existing.get("preset_version"),
     }
 
-    existing_lineage = existing.get("preset_lineage", [])
-    if existing_lineage:
-        merged_lineage = _merge_unique(existing_lineage, detected_lineage)
-        field_statuses["preset_lineage"] = "augmented" if merged_lineage != existing_lineage else "preserved"
-    elif detected_lineage:
-        merged_lineage = detected_lineage
-        field_statuses["preset_lineage"] = "inferred"
-    else:
-        merged_lineage = []
-        field_statuses["preset_lineage"] = "deferred"
+    merged_lineage = _merge_lineage(existing, detected_lineage, field_statuses)
     final["preset_lineage"] = merged_lineage
 
-    preserve_coverage_margin = "coverage_fragile_margin_pp" in explicit_fields
-    final["coverage_fragile_margin_pp"] = existing["coverage_fragile_margin_pp"] if preserve_coverage_margin else DEFAULT_COVERAGE_FRAGILE_MARGIN_PP
-    field_statuses["coverage_fragile_margin_pp"] = "preserved" if preserve_coverage_margin else "defaulted"
-
-    preserve_coverage_policy = "coverage_floor_policy" in explicit_fields
-    final["coverage_floor_policy"] = dict(existing["coverage_floor_policy"] if preserve_coverage_policy else DEFAULT_COVERAGE_FLOOR_POLICY)
-    field_statuses["coverage_floor_policy"] = "preserved" if preserve_coverage_policy else "defaulted"
-
-    existing_patterns = existing.get("specdown_smoke_patterns", [])
-    if "specdown_smoke_patterns" in explicit_fields:
-        final["specdown_smoke_patterns"] = list(existing_patterns)
-        field_statuses["specdown_smoke_patterns"] = "preserved"
-    else:
-        inferred_patterns = default_specdown_smoke_patterns(merged_lineage)
-        final["specdown_smoke_patterns"] = inferred_patterns
-        field_statuses["specdown_smoke_patterns"] = "inferred" if inferred_patterns else "defaulted"
-
-    preserve_spec_format = "spec_pytest_reference_format" in explicit_fields
-    final["spec_pytest_reference_format"] = existing["spec_pytest_reference_format"] if preserve_spec_format else DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT
-    field_statuses["spec_pytest_reference_format"] = "preserved" if preserve_spec_format else "defaulted"
-
-    if "prompt_asset_roots" in explicit_fields:
-        final["prompt_asset_roots"] = list(existing.get("prompt_asset_roots", []))
-        field_statuses["prompt_asset_roots"] = "preserved"
-    else:
-        final["prompt_asset_roots"] = []
-        field_statuses["prompt_asset_roots"] = "defaulted"
-
-    if "prompt_asset_policy" in explicit_fields:
-        final["prompt_asset_policy"] = dict(existing["prompt_asset_policy"])
-        field_statuses["prompt_asset_policy"] = "preserved"
-    else:
-        final["prompt_asset_policy"] = dict(DEFAULT_PROMPT_ASSET_POLICY)
-        field_statuses["prompt_asset_policy"] = "defaulted"
-
-    if "skill_ergonomics_gate_rules" in explicit_fields:
-        final["skill_ergonomics_gate_rules"] = list(existing.get("skill_ergonomics_gate_rules", []))
-        field_statuses["skill_ergonomics_gate_rules"] = "preserved"
-    else:
-        final["skill_ergonomics_gate_rules"] = list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES)
-        field_statuses["skill_ergonomics_gate_rules"] = "defaulted"
+    _add_adapter_policy_fields(final, existing, explicit_fields, merged_lineage, field_statuses)
+    _add_prompt_and_runtime_fields(final, existing, explicit_fields, field_statuses)
 
     concept_paths = detect_concept_paths(repo_root)
     existing_concepts = [path for path in existing.get("concept_paths", []) if (repo_root / path).is_file()]
@@ -229,6 +266,15 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
         final[field] = []
         field_statuses[field] = "deferred"
         deferred_setup.append(_classify_command_deferral(field, merged_lineage))
+    if existing.get("review_commands"):
+        final["review_commands"] = list(existing["review_commands"])
+        field_statuses["review_commands"] = "preserved"
+    elif final["gate_commands"] == ["./scripts/run-quality.sh"]:
+        final["review_commands"] = ["./scripts/run-quality.sh --review"]
+        field_statuses["review_commands"] = "inferred"
+    else:
+        final["review_commands"] = []
+        field_statuses["review_commands"] = "deferred"
 
     return final, field_statuses, deferred_setup
 
@@ -254,9 +300,11 @@ def render_bootstrap_adapter(data: dict[str, Any]) -> str:
             ("prompt_asset_roots", data["prompt_asset_roots"]),
             ("prompt_asset_policy", data["prompt_asset_policy"]),
             ("skill_ergonomics_gate_rules", data["skill_ergonomics_gate_rules"]),
+            ("runtime_budgets", data["runtime_budgets"]),
             ("concept_paths", data["concept_paths"]),
             ("preflight_commands", data["preflight_commands"]),
             ("gate_commands", data["gate_commands"]),
+            ("review_commands", data["review_commands"]),
             ("security_commands", data["security_commands"]),
         ]
     )

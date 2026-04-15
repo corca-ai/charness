@@ -113,7 +113,6 @@ Examples:
 
 - `agent-browser`
 - `specdown`
-- `crill`
 - `cautilus`
 
 ## External Tool Policy

@@ -131,6 +131,20 @@ def test_run_quality_verbose_replays_success_logs(tmp_path: Path, seeded_quality
     assert "quality success output from check-coverage" in result.stdout
 
 
+def test_run_quality_review_replays_logs_and_enables_online_links(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-links-external"
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--review", cwd=repo, env=env)
+    assert result.returncode == 0, result.stderr
+    assert "--- validate-skills output ---" in result.stdout
+    assert "--- check-links-external output ---" in result.stdout
+    assert "quality success output from check-links-external" in result.stdout
+    assert "link online=1" in result.stdout
+    assert "Quality summary: 2 passed, 0 failed" in result.stdout
+
+
 def test_install_git_hooks_sets_core_hookspath(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)

@@ -21,6 +21,9 @@ spec_pytest_reference_format: "Covered by pytest:\\s+`tests/[^`]+`(?:,\\s*`tests
 skill_ergonomics_gate_rules: []
 runtime_budgets:
   pytest: 40000
+  check-coverage: 15000
+  check-secrets: 5000
+  run-evals: 5000
 concept_paths:
 - docs/control-plane.md
 - docs/public-skill-validation.md
@@ -33,6 +36,8 @@ preflight_commands:
 - python3 scripts/doctor.py --json
 gate_commands:
 - ./scripts/run-quality.sh
+review_commands:
+- ./scripts/run-quality.sh --review
 security_commands:
 - ./scripts/check-secrets.sh
 - python3 scripts/check-supply-chain.py --repo-root .

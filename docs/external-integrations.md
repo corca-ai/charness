@@ -16,7 +16,6 @@ Examples:
 
 - `agent-browser`
 - `specdown`
-- `crill`
 - `gws-cli`
 - `cautilus`
 

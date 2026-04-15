@@ -44,6 +44,7 @@ Quality-specific fields:
 - `concept_paths`
 - `preflight_commands`
 - `gate_commands`
+- `review_commands`
 - `security_commands`
 
 Use explicit empty lists to record an intentional opt-out.
@@ -72,6 +73,12 @@ milliseconds. Labels must match the labels recorded in
 `latest.elapsed_ms` exceeds the budget. Labels with no recorded sample yet
 are warnings, not failures, so a budget can be defined before its first run.
 Omit the field entirely (or leave the mapping empty) to opt out.
+
+`gate_commands` should stay suitable for quiet maintainer-local enforcement
+such as pre-push. `review_commands` should hold the fuller quality-review path
+that an agent or maintainer runs when they need diagnostic detail, online
+checks, and hidden PASS-phase output. For this repo that is
+`./scripts/run-quality.sh --review`.
 
 `prompt_asset_roots` is the repo's declared checked-in asset surface for
 prompt- or content-heavy material such as `.md`, `.prompt`, or template files.

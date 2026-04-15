@@ -39,7 +39,15 @@ from scripts.quality_policy_defaults import (
 )
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
-LIST_FIELDS = ("preset_lineage", "prompt_asset_roots", "concept_paths", "preflight_commands", "gate_commands", "security_commands")
+LIST_FIELDS = (
+    "preset_lineage",
+    "prompt_asset_roots",
+    "concept_paths",
+    "preflight_commands",
+    "gate_commands",
+    "review_commands",
+    "security_commands",
+)
 ARTIFACT_FILENAME = "latest.md"
 
 def _string(value: Any, field: str, errors: list[str]) -> str | None:
@@ -88,6 +96,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "concept_paths": [],
         "preflight_commands": [],
         "gate_commands": [],
+        "review_commands": [],
         "security_commands": [],
     }
 

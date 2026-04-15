@@ -9,6 +9,7 @@ paths = [
   '''(^|/)node_modules/''',
   '''(^|/)\.git/''',
   '''(^|/)\.pytest_cache/''',
+  '''(^|/)\.lycheecache$''',
   '''(^|/)skill-outputs/''',
   '''(^|/)package-lock\.json$''',
 ]

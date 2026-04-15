@@ -11,12 +11,35 @@ STANDING_PYTEST_TARGETS=(
   tests/charness_cli
 )
 
+RUN_QUALITY_REVIEW=0
+for arg in "$@"; do
+  case "$arg" in
+    --review)
+      RUN_QUALITY_REVIEW=1
+      ;;
+    --help|-h)
+      echo "Usage: ./scripts/run-quality.sh [--review]"
+      echo "  --review  replay passing phase logs and validate external links online"
+      exit 0
+      ;;
+    *)
+      echo "run-quality: unknown argument $arg" >&2
+      exit 2
+      ;;
+  esac
+done
+
 RUN_QUALITY_TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$RUN_QUALITY_TMPDIR"' EXIT
 
 RUN_QUALITY_VERBOSE="${CHARNESS_QUALITY_VERBOSE:-0}"
 RUN_QUALITY_LABELS="${CHARNESS_QUALITY_LABELS:-}"
 RUN_QUALITY_START_NS="$(date +%s%N)"
+
+if [[ "$RUN_QUALITY_REVIEW" == "1" ]]; then
+  RUN_QUALITY_VERBOSE=1
+  export CHARNESS_LINK_CHECK_ONLINE=1
+fi
 
 declare -a PHASE_LABELS=()
 declare -a PHASE_PIDS=()

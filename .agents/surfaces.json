@@ -43,6 +43,8 @@
       "description": "Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.",
       "source_paths": [
         "AGENTS.md",
+        ".gitleaks.toml",
+        ".secretlintignore",
         "README.md",
         "INSTALL.md",
         "UNINSTALL.md",

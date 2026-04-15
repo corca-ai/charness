@@ -206,7 +206,6 @@ The first manifest wave should cover:
 
 - `agent-browser`
 - `specdown`
-- `crill`
 - `gws-cli`
 - `cautilus`
 

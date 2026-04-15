@@ -31,10 +31,10 @@ def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProce
 
 
 def run_shell_script(
-    script: Path, *, cwd: Path | None = None, env: dict[str, str] | None = None
+    script: Path, *args: str, cwd: Path | None = None, env: dict[str, str] | None = None
 ) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        ["/bin/bash", str(script)],
+        ["/bin/bash", str(script), *args],
         cwd=cwd or ROOT,
         check=False,
         capture_output=True,
@@ -158,6 +158,9 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
                     "  exit 1",
                     "fi",
                     'echo "quality success output from $LABEL"',
+                    'if [[ "$LABEL" == "check-links-external" ]]; then',
+                    '  echo "link online=${CHARNESS_LINK_CHECK_ONLINE:-0}"',
+                    "fi",
                     "",
                 ]
             ),

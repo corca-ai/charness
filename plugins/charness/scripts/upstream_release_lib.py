@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
+import subprocess
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -59,17 +61,50 @@ def normalize_release_payload(repo: str, payload: dict[str, Any]) -> dict[str, A
     return release
 
 
+def _github_api_headers() -> dict[str, str]:
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "charness-release-probe",
+    }
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    return headers
+
+
+def _probe_github_release_with_gh(repo: str) -> dict[str, Any] | None:
+    if os.environ.get("CHARNESS_RELEASE_PROBE_NO_GH") == "1":
+        return None
+    if shutil.which("gh") is None:
+        return None
+    completed = subprocess.run(
+        ["gh", "api", f"/repos/{repo}/releases/latest"],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    if completed.returncode != 0:
+        return None
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError:
+        return None
+    return normalize_release_payload(repo, payload)
+
+
 def probe_github_release(repo: str) -> dict[str, Any]:
     fixture = fixture_release(repo)
     if fixture is not None:
         return normalize_release_payload(repo, fixture)
 
+    gh_release = _probe_github_release_with_gh(repo)
+    if gh_release is not None:
+        return gh_release
+
     request = urllib.request.Request(
         GITHUB_API_TEMPLATE.format(repo=repo),
-        headers={
-            "Accept": "application/vnd.github+json",
-            "User-Agent": "charness-release-probe",
-        },
+        headers=_github_api_headers(),
     )
     try:
         with urllib.request.urlopen(request, timeout=10) as response:

@@ -39,6 +39,8 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
         "preset_lineage": "inferred",
         "prompt_asset_policy": "defaulted",
         "prompt_asset_roots": "defaulted",
+        "review_commands": "inferred",
+        "runtime_budgets": "defaulted",
         "skill_ergonomics_gate_rules": "defaulted",
         "specdown_smoke_patterns": "defaulted",
         "spec_pytest_reference_format": "defaulted",
@@ -75,7 +77,9 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
         "exemption_globs": [],
     }
     assert resolved["data"]["skill_ergonomics_gate_rules"] == []
+    assert resolved["data"]["runtime_budgets"] == {}
     assert resolved["data"]["gate_commands"] == ["./scripts/run-quality.sh"]
+    assert resolved["data"]["review_commands"] == ["./scripts/run-quality.sh --review"]
     assert resolved["data"]["preflight_commands"] == ["python3 scripts/validate-maintainer-setup.py --repo-root ."]
 
 
