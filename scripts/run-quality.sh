@@ -228,6 +228,7 @@ queue_selected "check-python-lengths" python3 scripts/check-python-lengths.py --
 queue_selected "check-skill-contracts" python3 scripts/check-skill-contracts.py --repo-root "$REPO_ROOT"
 queue_selected "check-export-safe-imports" python3 scripts/check-export-safe-imports.py --repo-root "$REPO_ROOT"
 queue_selected "check-plugin-import-smoke" python3 scripts/check-plugin-import-smoke.py --repo-root "$REPO_ROOT"
+queue_selected "check-command-docs" python3 scripts/check-command-docs.py --repo-root "$REPO_ROOT"
 queue_selected "check-doc-links" python3 scripts/check-doc-links.py --repo-root "$REPO_ROOT"
 flush_phase || OVERALL_RC=$?
 

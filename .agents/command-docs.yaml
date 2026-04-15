@@ -1,0 +1,114 @@
+version: 1
+commands:
+  root:
+    help_command: ./charness --help
+    doc_paths:
+      - README.md
+    required_help_contains:
+      - init
+      - doctor
+      - update
+      - reset
+      - uninstall
+      - capability
+      - tool
+    required_doc_contains:
+      - Primary operator path once the binary is available
+      - charness init
+      - charness doctor
+      - charness update
+      - charness reset
+      - charness uninstall
+  init:
+    help_command: ./charness init --help
+    doc_paths:
+      - README.md
+      - INSTALL.md
+    required_help_contains:
+      - --skip-cli-install
+      - --skip-claude-wrapper
+      - --json
+    required_doc_contains:
+      - All official install paths converge on `charness init`
+      - managed local install
+      - host detector
+  doctor:
+    help_command: ./charness doctor --help
+    doc_paths:
+      - README.md
+      - INSTALL.md
+    required_help_contains:
+      - --write-state
+      - --json
+    required_doc_contains:
+      - It stays read-only
+      - charness doctor --write-state
+      - persist a proof snapshot
+  update:
+    help_command: ./charness update --help
+    doc_paths:
+      - README.md
+      - INSTALL.md
+    required_help_contains:
+      - --no-pull
+      - --skip-codex-cache-refresh
+      - --json
+    required_doc_contains:
+      - run `charness update`
+      - refresh the installed surface
+      - skill execution must stay read-only with respect to install/update state
+  reset:
+    help_command: ./charness reset --help
+    doc_paths:
+      - README.md
+      - UNINSTALL.md
+    required_help_contains:
+      - --json
+    required_doc_contains:
+      - remove host plugin state while keeping the managed checkout and CLI
+      - charness reset
+  uninstall:
+    help_command: ./charness uninstall --help
+    doc_paths:
+      - README.md
+      - UNINSTALL.md
+    required_help_contains:
+      - --delete-checkout
+      - --delete-cli
+      - --json
+    required_doc_contains:
+      - preserving the source checkout and CLI unless explicit delete flags are passed
+      - charness uninstall --delete-checkout
+      - charness uninstall --delete-cli
+  capability:
+    help_command: ./charness capability --help
+    doc_paths:
+      - README.md
+      - docs/capability-resolution.md
+    required_help_contains:
+      - init
+      - resolve
+      - doctor
+      - env
+      - explain
+    required_doc_contains:
+      - charness capability init
+      - charness capability resolve slack.default
+      - charness capability doctor slack.default
+      - Machine-local capability config
+  tool:
+    help_command: ./charness tool --help
+    doc_paths:
+      - README.md
+      - docs/control-plane.md
+    required_help_contains:
+      - doctor
+      - sync-support
+      - install
+      - update
+    required_doc_contains:
+      - charness tool doctor cautilus
+      - charness tool install cautilus
+      - charness tool update agent-browser
+      - charness tool sync-support cautilus
+      - persist manual install guidance

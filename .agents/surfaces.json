@@ -43,6 +43,7 @@
       "description": "Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.",
       "source_paths": [
         "AGENTS.md",
+        ".agents/command-docs.yaml",
         ".gitleaks.toml",
         ".secretlintignore",
         "README.md",
@@ -61,6 +62,7 @@
       "sync_commands": [],
       "verify_commands": [
         "python3 scripts/check-doc-links.py --repo-root .",
+        "python3 scripts/check-command-docs.py --repo-root .",
         "./scripts/check-markdown.sh",
         "./scripts/check-secrets.sh"
       ],

@@ -117,6 +117,16 @@ def test_run_quality_replays_only_failing_command_logs(tmp_path: Path, seeded_qu
     assert "Quality summary: 3 passed, 1 failed" in result.stdout
 
 
+def test_run_quality_can_select_command_docs_gate(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = "check-command-docs"
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+    assert result.returncode == 0, result.stderr
+    assert "PASS check-command-docs" in result.stdout
+    assert "quality success output from check-command-docs" not in result.stdout
+    assert "Quality summary: 1 passed, 0 failed" in result.stdout
+
+
 def test_run_quality_verbose_replays_success_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown,pytest,check-coverage"
