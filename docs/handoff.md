@@ -106,14 +106,7 @@
 
 ## Discuss
 
-- `#24`는 closed-ready 상태였고, 이번 세션에서 helper/gate/dogfood까지
-  묶어서 실제 close 기준으로 정리했다. 남은 일은 trigger overlap처럼
-  higher-noise ergonomics를 계속 advisory로 둘지, support-tool real-host
-  dogfood를 어느 cadence로 반복할지에 가깝다.
-- public-skill validation tier는 현재 metadata/routing layer이지, skill별로
-  서로 다른 standing CI mode가 이미 존재한다는 뜻은 아니다. maintained
-  evaluator가 landed하기 전까지 `evaluator-required`도 smoke + targeted HITL로
-  읽어야 한다.
+- standing concern은 trigger overlap 같은 higher-noise ergonomics의 advisory 유지 여부와 support-tool real-host dogfood cadence다.
 
 ## References
 

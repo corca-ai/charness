@@ -19,6 +19,33 @@ from .support import (
 CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
 
 
+def init_managed_home_from_repo(
+    tmp_path: Path,
+    source_repo: Path,
+    *,
+    cli_source: Path | None = None,
+) -> tuple[Path, dict[str, str]]:
+    home_root = tmp_path / "home"
+    fake_claude = make_fake_claude(tmp_path)
+    standalone_cli = tmp_path / "bin" / "charness"
+    standalone_cli.parent.mkdir(parents=True, exist_ok=True)
+    standalone_cli.write_text((cli_source or source_repo / "charness").read_text(encoding="utf-8"), encoding="utf-8")
+    standalone_cli.chmod(0o755)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = build_test_path(fake_claude.parent, standalone_cli.parent)
+    init_result = subprocess.run(
+        [sys.executable, str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert init_result.returncode == 0, init_result.stderr
+    return home_root, env
+
+
 def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
     home_root = tmp_path / "home"
     fake_claude = make_fake_claude(tmp_path)
@@ -204,26 +231,7 @@ def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(t
     source_root = tmp_path / "source"
     source_root.mkdir()
     source_repo = make_git_repo_copy(source_root)
-    home_root = tmp_path / "home"
-    fake_claude = make_fake_claude(tmp_path)
-    standalone_cli = tmp_path / "bin" / "charness"
-    standalone_cli.parent.mkdir(parents=True, exist_ok=True)
-    standalone_cli.write_text(CLI.read_text(encoding="utf-8"), encoding="utf-8")
-    standalone_cli.chmod(0o755)
-
-    env = os.environ.copy()
-    env["HOME"] = str(home_root)
-    env["PATH"] = build_test_path(fake_claude.parent, standalone_cli.parent)
-
-    init_result = subprocess.run(
-        [sys.executable, str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
-        cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
-    assert init_result.returncode == 0, init_result.stderr
+    home_root, env = init_managed_home_from_repo(tmp_path, source_repo, cli_source=CLI)
 
     source_cli = source_repo / "charness"
     original_text = source_cli.read_text(encoding="utf-8")
@@ -259,26 +267,7 @@ def test_installed_cli_update_allows_untracked_files_in_managed_checkout(tmp_pat
     source_root = tmp_path / "source"
     source_root.mkdir()
     source_repo = make_git_repo_copy(source_root)
-    home_root = tmp_path / "home"
-    fake_claude = make_fake_claude(tmp_path)
-    standalone_cli = tmp_path / "bin" / "charness"
-    standalone_cli.parent.mkdir(parents=True, exist_ok=True)
-    standalone_cli.write_text((source_repo / "charness").read_text(encoding="utf-8"), encoding="utf-8")
-    standalone_cli.chmod(0o755)
-
-    env = os.environ.copy()
-    env["HOME"] = str(home_root)
-    env["PATH"] = build_test_path(fake_claude.parent, standalone_cli.parent)
-
-    init_result = subprocess.run(
-        [sys.executable, str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
-        cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
-    assert init_result.returncode == 0, init_result.stderr
+    home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
 
     managed_checkout = home_root / ".agents" / "src" / "charness"
     untracked = managed_checkout / "untracked-update-sentinel.txt"
@@ -303,26 +292,7 @@ def test_installed_cli_update_blocks_tracked_changes_in_managed_checkout(tmp_pat
     source_root = tmp_path / "source"
     source_root.mkdir()
     source_repo = make_git_repo_copy(source_root)
-    home_root = tmp_path / "home"
-    fake_claude = make_fake_claude(tmp_path)
-    standalone_cli = tmp_path / "bin" / "charness"
-    standalone_cli.parent.mkdir(parents=True, exist_ok=True)
-    standalone_cli.write_text((source_repo / "charness").read_text(encoding="utf-8"), encoding="utf-8")
-    standalone_cli.chmod(0o755)
-
-    env = os.environ.copy()
-    env["HOME"] = str(home_root)
-    env["PATH"] = build_test_path(fake_claude.parent, standalone_cli.parent)
-
-    init_result = subprocess.run(
-        [sys.executable, str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
-        cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
-    assert init_result.returncode == 0, init_result.stderr
+    home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
 
     managed_checkout = home_root / ".agents" / "src" / "charness"
     readme_path = managed_checkout / "README.md"
@@ -427,26 +397,7 @@ def test_installed_cli_update_refreshes_the_cli_binary_from_managed_checkout(tmp
     source_root = tmp_path / "source"
     source_root.mkdir()
     source_repo = make_git_repo_copy(source_root)
-    home_root = tmp_path / "home"
-    fake_claude = make_fake_claude(tmp_path)
-    standalone_cli = tmp_path / "bin" / "charness"
-    standalone_cli.parent.mkdir(parents=True, exist_ok=True)
-    standalone_cli.write_text((source_repo / "charness").read_text(encoding="utf-8"), encoding="utf-8")
-    standalone_cli.chmod(0o755)
-
-    env = os.environ.copy()
-    env["HOME"] = str(home_root)
-    env["PATH"] = build_test_path(fake_claude.parent, standalone_cli.parent)
-
-    init_result = subprocess.run(
-        [sys.executable, str(standalone_cli), "init", "--home-root", str(home_root), "--repo-url", str(source_repo)],
-        cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
-    assert init_result.returncode == 0, init_result.stderr
+    home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
 
     updated_checkout_cli = source_repo / "charness"
     original_text = updated_checkout_cli.read_text(encoding="utf-8")
