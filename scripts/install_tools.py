@@ -11,7 +11,12 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.control_plane_lib import load_manifests, now_iso, run_check, run_shell, upsert_lock
+from scripts.control_plane_lib import load_manifests, now_iso, upsert_lock
+from scripts.control_plane_lifecycle_lib import (
+    attach_release_metadata,
+    detect_and_healthcheck,
+    run_command_payloads,
+)
 from scripts.install_provenance_lib import detect_install_provenance
 from scripts.upstream_release_lib import probe_release
 
@@ -32,25 +37,6 @@ def render_repo_followup(repo_root: Path, install_action: dict[str, object]) -> 
         "when": repo_followup.get("when"),
         "optional": repo_followup.get("optional", False),
     }
-
-
-def failed_healthcheck(manifest: dict[str, object], *, reason: str) -> dict[str, object]:
-    return {
-        "ok": False,
-        "results": [],
-        "failure_details": [reason],
-        "failure_hint": manifest["checks"]["healthcheck"].get("failure_hint"),
-    }
-
-
-def detect_and_healthcheck(repo_root: Path, manifest: dict[str, object], *, failure_reason: str) -> tuple[dict[str, object], dict[str, object]]:
-    detect_result = run_check(manifest["checks"]["detect"], repo_root)
-    healthcheck_result = (
-        run_check(manifest["checks"]["healthcheck"], repo_root)
-        if detect_result["ok"]
-        else failed_healthcheck(manifest, reason=failure_reason)
-    )
-    return detect_result, healthcheck_result
 
 
 def base_result(
@@ -79,22 +65,6 @@ def base_result(
     if healthcheck is not None:
         result["healthcheck"] = healthcheck
     return result
-
-
-def attach_release(result: dict[str, object], release: dict[str, object] | None) -> dict[str, object]:
-    if release is not None:
-        result["release"] = release
-    return result
-
-
-def attach_metadata(
-    result: dict[str, object],
-    *,
-    provenance: dict[str, object],
-    release: dict[str, object] | None,
-) -> dict[str, object]:
-    result["provenance"] = provenance
-    return attach_release(result, release)
 
 
 def capture_provenance(manifest: dict[str, object]) -> dict[str, object]:
@@ -134,18 +104,6 @@ def persist_install_lock(
             "notes": install_action.get("notes", []),
         },
     )
-
-
-def execute_install_commands(repo_root: Path, commands: list[str]) -> list[dict[str, object]]:
-    return [
-        {
-            "command": result.command,
-            "exit_code": result.exit_code,
-            "stdout": result.stdout.strip(),
-            "stderr": result.stderr.strip(),
-        }
-        for result in [run_shell(command, repo_root) for command in commands]
-    ]
 
 
 def finish_nonexecuting_install(
@@ -214,12 +172,12 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
             detect=outcome["detect"],
             healthcheck=outcome["healthcheck"],
         )
-        return attach_metadata(result, provenance=provenance, release=release)
+        return attach_release_metadata(result, provenance=provenance, release=release)
     if not execute:
         result = base_result(repo_root, manifest, install_action, status="dry-run", mode=mode, commands=commands)
-        return attach_metadata(result, provenance=provenance, release=release)
+        return attach_release_metadata(result, provenance=provenance, release=release)
 
-    command_results = execute_install_commands(repo_root, commands)
+    command_results = run_command_payloads(commands, repo_root)
     detect_result, healthcheck_result = detect_and_healthcheck(
         repo_root, manifest, failure_reason="detect failed after install"
     )
@@ -251,7 +209,7 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
         detect=detect_result,
         healthcheck=healthcheck_result,
     )
-    return attach_metadata(result, provenance=provenance, release=release)
+    return attach_release_metadata(result, provenance=provenance, release=release)
 
 
 def main() -> int:

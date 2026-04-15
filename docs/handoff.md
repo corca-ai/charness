@@ -19,13 +19,17 @@
   [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)를
   갱신했다. `upstream_release_lib.py` focused coverage follow-up은 완료되어
   coverage가 `48.8%`에서 `87.6%`로 올랐고, `check-coverage.py`는
-  unfloored-file inventory를 advisory로 출력한다.
+  이제 `60.0%` aggregate floor와 `80.0%` per-file floor를 모두 enforce한다.
+- 2026-04-15 후속 품질 slice에서 `install_tools.py`/`update_tools.py`의
+  lifecycle helper 중복을 `control_plane_lifecycle_lib.py`로 줄였고,
+  `check-test-production-ratio`를 추가했다. 현재 ratio는 `0.53`
+  (`9240/17454` Python lines), 기본 상한은 `1.00`이다.
 - `inventory-quality-handoff`가 `./scripts/run-quality.sh`에 추가됐다.
   `NON_AUTOMATABLE` 추천 항목에 HITL handoff 필드가 없으면 advisory로
   보고하지만 아직 hard gate는 아니다.
-- `./scripts/run-quality.sh --review` 재실행은 `35 passed, 0 failed`,
-  total `39.9s`로 통과했다. 직전 한 번의 runtime-budget 초과는 재현되지
-  않았다.
+- `./scripts/run-quality.sh --review` 재실행은 `36 passed, 0 failed`,
+  total `52.1s`로 통과했다. 새 `check-test-production-ratio`와 per-file
+  coverage floor가 standing quality path에 포함됐다.
 - 이번 pass에서 `recent-lessons.md`가 최신 retro digest로 갱신되는 계약과
   충돌하던 오래된 `plugin export` 테스트 앵커를 구조 검증으로 바꿨다.
   상세 원인은
@@ -49,11 +53,8 @@
 ## Next Session
 
 1. 먼저 `git status --short`를 확인한다. 이 handoff가 커밋된 상태라면 새 첫
-   작업은 `charness-artifacts/quality/latest.md`의
-   Recommended Next Gates 중 unfloored-file inventory에서 다음 focused
-   coverage 대상을 고르는 일이다. 후보는 `install_provenance_lib.py`,
-   `install_tools.py`, `support_sync_lib.py`, `update_tools.py`,
-   `control_plane_lib.py`다.
+   품질 작업은 `sync_support.py`를 리팩터링하거나 죽은 코드를 지우는 것이다.
+   이 파일은 현재 per-file coverage floor에 정확히 걸쳐 있다.
 2. artifact naming을 더 밀면 stale artifact 처리 정책을 별도 결정한다.
    이번 slice는 자동 삭제 정책을 추가하지 않았고, 기존 기록을 보존하는 방향만
    적용했다.

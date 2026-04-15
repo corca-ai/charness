@@ -20,14 +20,18 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.check_coverage_lib import (
-    UNFLOORED_FAIL_BELOW,
-    UNFLOORED_WARN_BELOW,
-    build_unfloored_file_inventory,
+    PER_FILE_WARN_BELOW,
+    build_per_file_floor_report,
+    exercise_control_plane_scenarios,
+    exercise_install_provenance_scenarios,
+    exercise_lifecycle_scenarios,
+    exercise_support_sync_scenarios,
     exercise_upstream_release_scenarios,
 )
 
 TARGET_FILES = (
     Path("scripts/control_plane_lib.py"),
+    Path("scripts/control_plane_lifecycle_lib.py"),
     Path("scripts/doctor.py"),
     Path("scripts/install_provenance_lib.py"),
     Path("scripts/install_tools.py"),
@@ -37,6 +41,7 @@ TARGET_FILES = (
     Path("scripts/upstream_release_lib.py"),
 )
 MIN_COVERAGE = 0.60
+MIN_FILE_COVERAGE = 0.80
 COPY_IGNORE = shutil.ignore_patterns(
     ".git",
     ".pytest_cache",
@@ -184,9 +189,17 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
             (repo_root / "scripts" / "install_tools.py", ["--repo-root", str(repo_copy), "--execute", "--json", "--tool-id", "agent-browser"]),
             (repo_root / "scripts" / "install_tools.py", ["--repo-root", str(repo_copy), "--execute", "--json", "--tool-id", "cautilus"]),
         )
+        scenario_functions = (
+            exercise_control_plane_scenarios,
+            exercise_install_provenance_scenarios,
+            exercise_support_sync_scenarios,
+            exercise_lifecycle_scenarios,
+            exercise_upstream_release_scenarios,
+        )
+        for function in scenario_functions:
+            run_traced_function(tracer, function)
         for script_path, argv in entries:
             run_traced_entry(tracer, script_path, argv=argv, cwd=repo_root, env_overrides=env)
-        run_traced_function(tracer, exercise_upstream_release_scenarios)
 
         counts = tracer.results().counts
         aggregated: dict[Path, set[int]] = {}
@@ -198,7 +211,12 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
         return aggregated
 
 
-def summarize(repo_root: Path, counts: dict[Path, set[int]]) -> dict[str, object]:
+def summarize(
+    repo_root: Path,
+    counts: dict[Path, set[int]],
+    *,
+    min_file_coverage: float = MIN_FILE_COVERAGE,
+) -> dict[str, object]:
     files: list[dict[str, object]] = []
     executed_total = 0
     possible_total = 0
@@ -228,7 +246,7 @@ def summarize(repo_root: Path, counts: dict[Path, set[int]]) -> dict[str, object
         "total": possible_total,
         "coverage": round(overall, 4),
     }
-    summary["unfloored_file_inventory"] = build_unfloored_file_inventory(files)
+    summary["per_file_floor"] = build_per_file_floor_report(files, floor=min_file_coverage)
     return summary
 
 
@@ -236,11 +254,12 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--min-coverage", type=float, default=MIN_COVERAGE)
+    parser.add_argument("--min-file-coverage", type=float, default=MIN_FILE_COVERAGE)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    summary = summarize(repo_root, collect_counts(repo_root))
+    summary = summarize(repo_root, collect_counts(repo_root), min_file_coverage=args.min_file_coverage)
     if args.json:
         print(json.dumps(summary, ensure_ascii=False, indent=2))
     else:
@@ -254,23 +273,34 @@ def main() -> int:
                 f"- {item['path']}: {item['coverage'] * 100:.1f}% "
                 f"({item['covered']}/{item['total']})"
             )
-        inventory = summary["unfloored_file_inventory"]
-        assert isinstance(inventory, dict)
-        below_fail = inventory["below_fail"]
-        warn_band = inventory["warn_band"]
-        assert isinstance(below_fail, list)
+        floor_report = summary["per_file_floor"]
+        assert isinstance(floor_report, dict)
+        violations = floor_report["violations"]
+        warn_band = floor_report["warn_band"]
+        assert isinstance(violations, list)
         assert isinstance(warn_band, list)
         print(
-            "Unfloored-file inventory: "
-            f"{len(below_fail)} below {UNFLOORED_FAIL_BELOW * 100:.1f}%, "
-            f"{len(warn_band)} in {UNFLOORED_FAIL_BELOW * 100:.1f}-"
-            f"{UNFLOORED_WARN_BELOW * 100:.1f}% warn band "
-            "(advisory, aggregate floor only)"
+            "Per-file floor: "
+            f"{len(violations)} below {args.min_file_coverage * 100:.1f}%, "
+            f"{len(warn_band)} in {args.min_file_coverage * 100:.1f}-"
+            f"{PER_FILE_WARN_BELOW * 100:.1f}% warn band"
         )
 
     if summary["coverage"] < args.min_coverage:
         raise CoverageError(
             f"control-plane coverage {summary['coverage']:.3f} is below required floor {args.min_coverage:.3f}"
+        )
+    floor_report = summary["per_file_floor"]
+    assert isinstance(floor_report, dict)
+    violations = [
+        item
+        for item in floor_report["violations"]
+        if isinstance(item, dict) and float(item["coverage"]) < args.min_file_coverage
+    ]
+    if violations:
+        details = ", ".join(f"{item['path']}={float(item['coverage']) * 100:.1f}%" for item in violations)
+        raise CoverageError(
+            f"control-plane per-file coverage below required floor {args.min_file_coverage:.3f}: {details}"
         )
     return 0
 
