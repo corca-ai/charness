@@ -53,12 +53,29 @@ def normalize_release_payload(repo: str, payload: dict[str, Any]) -> dict[str, A
         "published_at": published_at if isinstance(published_at, str) else None,
         "asset_names": asset_names,
         "error": None,
+        "reason": payload["reason"] if isinstance(payload.get("reason"), str) else None,
     }
     if isinstance(payload.get("status"), str):
         release["status"] = payload["status"]
     if isinstance(payload.get("error"), str):
         release["error"] = payload["error"]
     return release
+
+
+def error_release(repo: str, *, status: str, reason: str, error: str) -> dict[str, Any]:
+    return {
+        "provider": "github",
+        "repo": repo,
+        "status": status,
+        "reason": reason,
+        "api_url": GITHUB_API_TEMPLATE.format(repo=repo),
+        "html_url": None,
+        "latest_tag": None,
+        "latest_version": None,
+        "published_at": None,
+        "asset_names": [],
+        "error": error,
+    }
 
 
 def _github_api_headers() -> dict[str, str]:
@@ -110,32 +127,15 @@ def probe_github_release(repo: str) -> dict[str, Any]:
         with urllib.request.urlopen(request, timeout=10) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
-        status = "no-release" if exc.code == 404 else "error"
-        return {
-            "provider": "github",
-            "repo": repo,
-            "status": status,
-            "api_url": GITHUB_API_TEMPLATE.format(repo=repo),
-            "html_url": None,
-            "latest_tag": None,
-            "latest_version": None,
-            "published_at": None,
-            "asset_names": [],
-            "error": f"http {exc.code}",
-        }
-    except (TimeoutError, urllib.error.URLError, json.JSONDecodeError) as exc:
-        return {
-            "provider": "github",
-            "repo": repo,
-            "status": "error",
-            "api_url": GITHUB_API_TEMPLATE.format(repo=repo),
-            "html_url": None,
-            "latest_tag": None,
-            "latest_version": None,
-            "published_at": None,
-            "asset_names": [],
-            "error": str(exc),
-        }
+        if exc.code == 404:
+            return error_release(repo, status="no-release", reason="github-no-release", error="http 404")
+        if exc.code == 403:
+            return error_release(repo, status="error", reason="github-forbidden", error="http 403")
+        return error_release(repo, status="error", reason=f"github-http-{exc.code}", error=f"http {exc.code}")
+    except json.JSONDecodeError as exc:
+        return error_release(repo, status="error", reason="github-invalid-json", error=str(exc))
+    except (TimeoutError, urllib.error.URLError) as exc:
+        return error_release(repo, status="error", reason="github-network-error", error=str(exc))
     return normalize_release_payload(repo, payload)
 
 

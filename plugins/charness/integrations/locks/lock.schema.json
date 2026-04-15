@@ -472,6 +472,12 @@
             "string",
             "null"
           ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
