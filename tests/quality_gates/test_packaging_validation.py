@@ -218,6 +218,19 @@ def test_validate_packaging_rejects_unknown_top_level_field(tmp_path: Path) -> N
     assert "Additional properties are not allowed" in result.stderr
 
 
+def test_validate_packaging_rejects_invalid_public_skill_policy_when_present(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    shutil.copytree(ROOT, repo)
+    policy_path = repo / "docs" / "public-skill-validation.json"
+    policy = json.loads(policy_path.read_text(encoding="utf-8"))
+    policy["tiers"]["hitl-recommended"].remove("premortem")
+    policy_path.write_text(json.dumps(policy, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    result = run_script("scripts/validate-packaging.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "does not classify every public skill" in result.stderr
+
+
 def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> None:
     codex_root = tmp_path / "codex-export"
     claude_root = tmp_path / "claude-export"

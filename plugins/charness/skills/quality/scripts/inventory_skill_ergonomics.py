@@ -4,8 +4,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
+import sys
 from pathlib import Path
 from typing import Iterable
+
+SCRIPT_PATH = Path(__file__).resolve()
+sys.path[:0] = [str(SCRIPT_PATH.parents[4]), str(SCRIPT_PATH.parents[3])]
+
+from scripts.skill_markdown_lib import count_fence_blocks, extract_h2_section_lines, strip_fenced_lines, strip_frontmatter
 
 DEFAULT_REVIEW_PROMPTS = [
     "Keep `SKILL.md` core concise; push nuance and payload into references or scripts.",
@@ -14,6 +21,9 @@ DEFAULT_REVIEW_PROMPTS = [
     "Check trigger overlap or undertrigger risk against nearby public skills; a smart model still needs an honest invocation boundary.",
     "When the skill repeats prose ritual, prefer a repo-owned helper script over another paragraph.",
 ]
+
+MODE_TERMS_RE = re.compile(r"\bmode(?:s)?\b", re.IGNORECASE)
+OPTION_TERMS_RE = re.compile(r"\boption(?:s)?\b", re.IGNORECASE)
 
 
 def parse_args() -> argparse.Namespace:
@@ -43,16 +53,6 @@ def iter_skill_paths(repo_root: Path, requested: list[str]) -> Iterable[Path]:
                 continue
             yield skill_path
 
-
-def strip_frontmatter(text: str) -> str:
-    lines = text.splitlines()
-    if len(lines) >= 3 and lines[0].strip() == "---":
-        for index in range(1, len(lines)):
-            if lines[index].strip() == "---":
-                return "\n".join(lines[index + 1 :])
-    return text
-
-
 def count_files(directory: Path) -> int:
     if not directory.is_dir():
         return 0
@@ -70,8 +70,11 @@ def inventory_skill(
     body = strip_frontmatter(skill_path.read_text(encoding="utf-8"))
     body_lines = body.splitlines()
     nonempty_lines = [line for line in body_lines if line.strip()]
-    lowered = body.lower()
+    prose_lines = strip_fenced_lines(body_lines)
+    prose = "\n".join(prose_lines)
+    bootstrap_lines = extract_h2_section_lines(body, "Bootstrap")
     code_fence_count = sum(1 for line in body_lines if line.strip().startswith("```"))
+    bootstrap_fence_count = count_fence_blocks(bootstrap_lines)
     reference_count = count_files(skill_dir / "references")
     script_count = count_files(skill_dir / "scripts")
     heuristics: list[str] = []
@@ -79,11 +82,11 @@ def inventory_skill(
         heuristics.append("long_core")
     if reference_count == 0 and script_count == 0 and len(nonempty_lines) > 80:
         heuristics.append("progressive_disclosure_risk")
-    if lowered.count(" mode") + lowered.count(" modes") >= 2:
+    if len(MODE_TERMS_RE.findall(prose)) >= 2:
         heuristics.append("mode_pressure_terms_present")
-    if lowered.count(" option") + lowered.count(" options") >= 2:
+    if len(OPTION_TERMS_RE.findall(prose)) >= 2:
         heuristics.append("option_pressure_terms_present")
-    if code_fence_count >= 4 and script_count == 0:
+    if bootstrap_fence_count >= 3 and script_count == 0:
         heuristics.append("code_fence_without_helper_script")
 
     skill_type = "support" if "support" in relative_skill.parts else "public"
@@ -95,6 +98,7 @@ def inventory_skill(
         "reference_file_count": reference_count,
         "script_file_count": script_count,
         "code_fence_count": code_fence_count,
+        "bootstrap_fence_count": bootstrap_fence_count,
         "heuristics": heuristics,
         "review_prompts": DEFAULT_REVIEW_PROMPTS,
     }

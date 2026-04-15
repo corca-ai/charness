@@ -25,12 +25,18 @@ def test_inventory_skill_ergonomics_reports_advisory_flags(tmp_path: Path) -> No
         "This option should probably be inference instead of an option.",
         "A second option mention keeps option pressure visible.",
         "",
+        "## Bootstrap",
+        "",
         "```bash",
         "echo first",
         "```",
         "",
         "```bash",
         "echo second",
+        "```",
+        "",
+        "```bash",
+        "echo third",
         "```",
         "",
     ]
@@ -58,4 +64,5 @@ def test_inventory_skill_ergonomics_reports_advisory_flags(tmp_path: Path) -> No
         "option_pressure_terms_present",
         "code_fence_without_helper_script",
     }
+    assert skill["bootstrap_fence_count"] == 3
     assert skill["review_prompts"]

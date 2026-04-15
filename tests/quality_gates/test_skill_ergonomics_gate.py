@@ -94,3 +94,53 @@ def test_skill_ergonomics_gate_fails_when_opted_in_rule_matches(tmp_path: Path) 
     assert plain.returncode == 1
     assert "mode_option_pressure_terms" in plain.stdout
     assert "skills/public/demo/SKILL.md" in plain.stdout
+
+
+def test_skill_ergonomics_gate_ignores_mode_option_terms_inside_fences(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    skill_dir = repo / "skills" / "public" / "demo"
+    references_dir = skill_dir / "references"
+    references_dir.mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: skill-outputs/quality",
+                "skill_ergonomics_gate_rules:",
+                "  - mode_option_pressure_terms",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (references_dir / "note.md").write_text("# Note\n", encoding="utf-8")
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "## Bootstrap",
+                "",
+                "```bash",
+                "echo mode option mode option",
+                "```",
+                "",
+                "## References",
+                "",
+                "- `references/note.md`",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["violations"] == []

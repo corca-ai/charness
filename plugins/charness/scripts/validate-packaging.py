@@ -13,6 +13,12 @@ import jsonschema
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
+from scripts.public_skill_validation_lib import (
+    POLICY_PATH as PUBLIC_SKILL_POLICY_PATH,
+    ValidationError as PublicSkillPolicyValidationError,
+    load_policy,
+    validate_policy,
+)
 from scripts.validate_packaging_install_surface import validate_checked_in_plugin_tree
 
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")
@@ -338,6 +344,11 @@ def validate_packaging_manifest(path: Path, root: Path, *, validate_root_artifac
     validate_source_paths(root, data.get("source"))
     validate_codex(package_id, version, summary, author, homepage, repository, data.get("codex"))
     validate_claude(package_id, version, summary, repository, author, data.get("claude"))
+    if (root / PUBLIC_SKILL_POLICY_PATH).is_file():
+        try:
+            validate_policy(load_policy(root), root)
+        except PublicSkillPolicyValidationError as exc:
+            raise ValidationError(str(exc)) from exc
     if validate_root_artifacts:
         validate_root_install_artifacts(root, data)
 
