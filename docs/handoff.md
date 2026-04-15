@@ -83,8 +83,7 @@
 2. `select_verifiers.py` / `run-slice-closeout.py`는 이제
    `docs/public-skill-validation.json`과 `skills/public/**`에서
    `validate-public-skill-validation.py`를 바로 고르고,
-   `validate-public-skill-validation.py`는 누락 skill을 어느 bucket에 넣어야
-   하는지 직접 말한다. `scripts/suggest-public-skill-validation.py`는
+   `validate-public-skill-validation.py`는 누락 skill을 어느 bucket에 넣어야 하는지 직접 말한다. `scripts/suggest-public-skill-validation.py`는
    missing skill별 bucket choice를 machine-readable helper로 준다.
    `validate-packaging.py`도 policy file이 있을 때 이 검사를 같이 수행하므로
    checked-in plugin export 경로에서도 drift가 늦게 빠지지 않는다.
@@ -113,6 +112,7 @@
   서로 다른 standing CI mode가 이미 존재한다는 뜻은 아니다. maintained
   evaluator가 landed하기 전까지 `evaluator-required`도 smoke + targeted HITL로
   읽어야 한다.
+
 ## References
 
 - [docs/support-tool-followup.md](support-tool-followup.md)
