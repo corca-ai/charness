@@ -15,23 +15,24 @@
 - 일반 스킬 current pointer는 `latest.md`, durable record는
   `YYYY-MM-DD-<slug>.md` 규칙이다. Rolling canonical artifact가 더 맞는
   경우만 `docs/handoff.md` 같은 고정 이름을 예외로 둔다.
-- `check-coverage.py`는 `60.0%` aggregate floor와 `80.0%` per-file floor를
-  모두 enforce한다. 현재 control-plane coverage는 `88.1%` (`1125/1277`)다.
+- `check-coverage.py`는 `60.0%` aggregate floor와 `85.0%` per-file floor를
+  모두 enforce한다. 현재 control-plane coverage는 `89.7%` (`1128/1258`)다.
 - `check-test-production-ratio`는 Python test/source ratio 상한 `1.00`을
-  enforce한다. 현재 ratio는 `0.53` (`9240/17404`)다.
-- `./scripts/run-quality.sh --review`는 최근 full pass에서
-  `36 passed, 0 failed`, total `44.2s`로 통과했다. 이후 pytest runtime
-  spike가 한 번 있었지만 `pytest,check-runtime-budget` 재측정은 통과했고
-  최신 pytest 샘플은 `27.4s / 40.0s`다.
+  enforce한다. 현재 ratio는 `0.53` (`9280/17380`)다.
+- `./scripts/run-quality.sh --review`는 최신 full pass에서
+  `36 passed, 0 failed`, total `43.0s`로 통과했다. Runtime budgets는
+  latest-sample flake를 줄이도록 `pytest` 70s, `check-secrets` 20s,
+  `check-coverage` 30s, `run-evals` 5s로 맞췄다.
 - Checked-in plugin export는 source 변경 뒤
   `python3 scripts/sync_root_plugin_manifests.py --repo-root .`로 맞춘다.
 
 ## Next Session
 
 1. `git status --short`를 먼저 확인한다.
-2. 이 handoff가 커밋된 상태라면 다음 품질 작업은 `install_tools.py` 또는
-   `support_sync_lib.py`에서 남은 near-floor branch를 리팩터링하거나 죽은
-   코드를 지우는 것이다. 테스트 추가보다 생산 코드 축소를 먼저 본다.
+2. 이 handoff가 커밋된 상태라면 다음 품질 작업은 85% floor에 가까운
+   `support_sync_lib.py`, `upstream_release_lib.py`, `control_plane_lib.py`에서
+   남은 branch를 리팩터링하거나 죽은 코드를 지우는 것이다. 테스트 추가보다
+   생산 코드 축소를 먼저 본다.
 3. source가 checked-in plugin export에 들어가는 파일이면, focused
    managed-checkout 테스트 전에 export sync를 먼저 실행한다.
 4. release/dogfood로 이어가면 `validate-packaging.py`,
@@ -50,5 +51,5 @@
 - [AGENTS.md](../AGENTS.md)
 - [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
 - [charness-artifacts/retro/recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)
-- [charness-artifacts/retro/2026-04-15-control-plane-lib-cleanup.md](../charness-artifacts/retro/2026-04-15-control-plane-lib-cleanup.md)
+- [charness-artifacts/retro/2026-04-15-coverage-floor-runtime-budget.md](../charness-artifacts/retro/2026-04-15-coverage-floor-runtime-budget.md)
 - [charness-artifacts/debug/2026-04-15-retro-memory-test-anchor.md](../charness-artifacts/debug/2026-04-15-retro-memory-test-anchor.md)

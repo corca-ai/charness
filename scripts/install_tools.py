@@ -11,38 +11,33 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
+import scripts.control_plane_lifecycle_lib as lifecycle
 from scripts.control_plane_lib import load_manifests, now_iso, upsert_lock
-from scripts.control_plane_lifecycle_lib import (
-    attach_release_metadata,
-    detect_and_healthcheck,
-    has_any_status,
-    print_tool_statuses,
-    render_repo_followup,
-    run_command_payloads,
-    select_by_tool_id,
-)
 from scripts.install_provenance_lib import detect_install_provenance
 from scripts.upstream_release_lib import probe_release
+
+Payload = dict[str, object]
+CommandList = list[Payload] | list[str]
 
 
 def base_result(
     repo_root: Path,
-    manifest: dict[str, object],
-    install_action: dict[str, object],
+    manifest: Payload,
+    install_action: Payload,
     *,
     status: str,
     mode: str,
-    commands: list[dict[str, object]] | list[str],
-    detect: dict[str, object] | None = None,
-    healthcheck: dict[str, object] | None = None,
-) -> dict[str, object]:
+    commands: CommandList,
+    detect: Payload | None = None,
+    healthcheck: Payload | None = None,
+) -> Payload:
     result = {
         "tool_id": manifest["tool_id"],
         "status": status,
         "mode": mode,
         "docs_url": install_action.get("docs_url"),
         "install_url": install_action.get("install_url"),
-        "repo_followup": render_repo_followup(repo_root, install_action),
+        "repo_followup": lifecycle.render_repo_followup(repo_root, install_action),
         "notes": install_action.get("notes", []),
         "commands": commands,
     }
@@ -53,7 +48,7 @@ def base_result(
     return result
 
 
-def capture_provenance(manifest: dict[str, object]) -> dict[str, object]:
+def capture_provenance(manifest: Payload) -> Payload:
     provenance = detect_install_provenance(manifest)
     provenance["checked_at"] = now_iso()
     return provenance
@@ -61,16 +56,16 @@ def capture_provenance(manifest: dict[str, object]) -> dict[str, object]:
 
 def persist_install_lock(
     repo_root: Path,
-    manifest: dict[str, object],
-    install_action: dict[str, object],
+    manifest: Payload,
+    install_action: Payload,
     *,
     status: str,
     mode: str,
-    commands: list[dict[str, object]],
-    detect: dict[str, object],
-    healthcheck: dict[str, object],
-    release: dict[str, object] | None,
-    provenance: dict[str, object],
+    commands: list[Payload],
+    detect: Payload,
+    healthcheck: Payload,
+    release: Payload | None,
+    provenance: Payload,
 ) -> None:
     upsert_lock(
         repo_root,
@@ -92,7 +87,7 @@ def persist_install_lock(
     )
 
 
-def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -> dict[str, object]:
+def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload:
     install_action = manifest["lifecycle"]["install"]
     mode = install_action["mode"]
     commands = install_action.get("commands", [])
@@ -100,7 +95,7 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
     provenance = capture_provenance(manifest)
 
     if mode in {"none", "manual"}:
-        detect_result, healthcheck_result = detect_and_healthcheck(
+        detect_result, healthcheck_result = lifecycle.detect_and_healthcheck(
             repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
         )
         status = "noop" if mode == "none" else "manual"
@@ -129,13 +124,13 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
             detect=detect_result,
             healthcheck=healthcheck_result,
         )
-        return attach_release_metadata(result, provenance=provenance, release=release)
+        return lifecycle.attach_release_metadata(result, provenance=provenance, release=release)
     if not execute:
         result = base_result(repo_root, manifest, install_action, status="dry-run", mode=mode, commands=commands)
-        return attach_release_metadata(result, provenance=provenance, release=release)
+        return lifecycle.attach_release_metadata(result, provenance=provenance, release=release)
 
-    command_results = run_command_payloads(commands, repo_root)
-    detect_result, healthcheck_result = detect_and_healthcheck(
+    command_results = lifecycle.run_command_payloads(commands, repo_root)
+    detect_result, healthcheck_result = lifecycle.detect_and_healthcheck(
         repo_root, manifest, failure_reason="detect failed after install"
     )
     provenance = capture_provenance(manifest)
@@ -166,7 +161,7 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
         detect=detect_result,
         healthcheck=healthcheck_result,
     )
-    return attach_release_metadata(result, provenance=provenance, release=release)
+    return lifecycle.attach_release_metadata(result, provenance=provenance, release=release)
 
 
 def main() -> int:
@@ -178,13 +173,13 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    selected = select_by_tool_id(load_manifests(repo_root), args.tool_id)
+    selected = lifecycle.select_by_tool_id(load_manifests(repo_root), args.tool_id)
     results = [install_one(repo_root, manifest, execute=args.execute) for manifest in selected]
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))
     else:
-        print_tool_statuses(results)
-    if has_any_status(results, status_key="status", statuses={"failed"}):
+        lifecycle.print_tool_statuses(results)
+    if lifecycle.has_any_status(results, status_key="status", statuses={"failed"}):
         return 1
     return 0
 

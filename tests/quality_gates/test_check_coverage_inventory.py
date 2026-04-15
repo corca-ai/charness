@@ -44,6 +44,7 @@ def test_per_file_floor_report_classifies_floor_violations() -> None:
 
     assert report["status"] == "enforced"
     assert report["relationship"] == "per-file-floor"
+    assert report["floor"] == 0.85
     assert [item["path"] for item in report["violations"]] == ["scripts/weak.py"]
     assert [item["path"] for item in report["warn_band"]] == ["scripts/warn.py"]
 
@@ -54,3 +55,4 @@ def test_check_coverage_json_includes_per_file_floor() -> None:
     assert result.returncode == 0, result.stderr
     assert '"per_file_floor"' in result.stdout
     assert '"relationship": "per-file-floor"' in result.stdout
+    assert '"floor": 0.85' in result.stdout

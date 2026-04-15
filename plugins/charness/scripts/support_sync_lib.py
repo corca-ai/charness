@@ -179,21 +179,15 @@ def _resolve_upstream_source_path(
             temp_root,
         )
         source_path = archive_root / relative_source_path
-        if not source_path.exists():
+        if not source_path.is_dir():
             raise ValueError(
                 f"{manifest['tool_id']}: upstream archive for `{manifest['upstream_repo']}@{ref}` "
-                f"does not contain `{support['path']}`"
+                f"does not contain skill root `{support['path']}`"
             )
-        extracted_copy = temp_root / "selected-support-root"
-        if source_path.is_dir():
-            shutil.copytree(source_path, extracted_copy, symlinks=True)
-        else:
-            extracted_copy.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source_path, extracted_copy / source_path.name)
         promoted_root = _promote_tree_to_cache(
-            extracted_copy,
+            source_path,
             manifest=manifest,
-            digest=_compute_tree_digest(extracted_copy),
+            digest=_compute_tree_digest(source_path),
         )
     return promoted_root
 
@@ -242,9 +236,7 @@ def materialize_support(
     *,
     upstream_checkouts: dict[str, Path],
 ) -> dict[str, Any]:
-    support = manifest.get("support_skill_source")
-    if not support:
-        return {"materialized_paths": [], "cache_path": None, "content_digest": None}
+    support = manifest["support_skill_source"]
 
     if support["source_type"] == "local_wrapper":
         cache_path, content_digest = _write_local_wrapper_to_cache(
@@ -257,8 +249,6 @@ def materialize_support(
             manifest,
             upstream_checkouts=upstream_checkouts,
         )
-    else:
-        raise ValueError(f"unsupported support source_type `{support['source_type']}`")
 
     link_root = generated_support_dir(repo_root) / support_link_name(manifest)
     materialized_paths = materialize_repo_symlink(cache_path, link_root, repo_root)

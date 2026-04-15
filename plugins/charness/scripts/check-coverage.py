@@ -41,7 +41,7 @@ TARGET_FILES = (
     Path("scripts/upstream_release_lib.py"),
 )
 MIN_COVERAGE = 0.60
-MIN_FILE_COVERAGE = 0.80
+MIN_FILE_COVERAGE = 0.85
 COPY_IGNORE = shutil.ignore_patterns(
     ".git",
     ".pytest_cache",

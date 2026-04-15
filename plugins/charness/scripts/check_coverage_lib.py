@@ -13,7 +13,7 @@ from pathlib import Path
 from unittest import mock
 
 PER_FILE_MIN_STATEMENTS = 30
-PER_FILE_MIN_COVERAGE = 0.80
+PER_FILE_MIN_COVERAGE = 0.85
 PER_FILE_WARN_BELOW = 0.95
 
 
@@ -254,19 +254,18 @@ def exercise_support_sync_scenarios() -> None:
         source.joinpath("SKILL.md").write_text("# demo\n", encoding="utf-8")
         source.joinpath("linked").symlink_to(source / "SKILL.md")
         support._compute_tree_digest(source)
-        manifest = {
-            "tool_id": "demo",
-            "support_skill_source": {
-                "source_type": "local_wrapper",
-                "path": "docs/demo.md",
-                "wrapper_skill_id": "demo-wrapper",
-            },
-        }
+        support_source = {"source_type": "local_wrapper", "path": "docs/demo.md", "wrapper_skill_id": "demo-wrapper"}
+        manifest = {"tool_id": "demo", "upstream_repo": "example/demo", "homepage": "https://example.com/demo", "support_skill_source": support_source}
         (repo / "docs").mkdir()
         (repo / "docs" / "demo.md").write_text("# upstream\n", encoding="utf-8")
         with mock.patch.object(support, "support_skill_cache_dir", return_value=root / "cache"):
             cache_root, _digest = support._write_local_wrapper_to_cache(repo, manifest, "# wrapper\n")
             support.materialize_repo_symlink(cache_root, repo / "skills" / "support" / "generated" / "demo-wrapper", repo)
+            support.materialize_support(repo, manifest, upstream_checkouts={})
+        install_manifest = {"tool_id": "demo-install-url", "intent_triggers": [], "lifecycle": {"install": {"install_url": "https://example.com/install"}}}
+        support.render_discovery_stub(
+            manifest=install_manifest, support_skill_path="skills/support/demo-install-url/SKILL.md"
+        )
         upstream_manifest = {
             "tool_id": "demo-upstream",
             "upstream_repo": "example/demo",
@@ -299,14 +298,14 @@ def exercise_lifecycle_scenarios() -> None:
         release = {"status": "ok", "latest_version": "1.0.0"}
         with mock.patch.object(install_tools, "probe_release", return_value=release):
             with mock.patch.object(install_tools, "capture_provenance", return_value=dict(provenance)):
-                with mock.patch.object(install_tools, "detect_and_healthcheck", return_value=(detect_ok, health_ok)):
+                with mock.patch.object(install_tools.lifecycle, "detect_and_healthcheck", return_value=(detect_ok, health_ok)):
                     with mock.patch.object(install_tools, "persist_install_lock"):
                         install_tools.install_one(repo, none_manifest, execute=True)
                         install_tools.install_one(repo, manual_manifest, execute=True)
                         install_tools.install_one(repo, manifest, execute=False)
-                        with mock.patch.object(install_tools, "run_command_payloads", return_value=install_ok):
+                        with mock.patch.object(install_tools.lifecycle, "run_command_payloads", return_value=install_ok):
                             install_tools.install_one(repo, manifest, execute=True)
-                        with mock.patch.object(install_tools, "run_command_payloads", return_value=install_failed):
+                        with mock.patch.object(install_tools.lifecycle, "run_command_payloads", return_value=install_failed):
                             install_tools.install_one(repo, manifest, execute=True)
         with mock.patch.object(install_tools, "load_manifests", return_value=[manifest]):
             with mock.patch.object(install_tools, "install_one", return_value={"tool_id": "demo", "status": "failed"}):
@@ -324,7 +323,7 @@ def exercise_lifecycle_scenarios() -> None:
                                 update_tools.update_one(repo, manifest, execute=True)
         no_support = {"tool_id": "no-support"}
         sync_support.sync_one(repo, no_support, execute=False, upstream_checkouts={})
-        with mock.patch.object(sync_support, "parse_upstream_checkout", return_value=("example/demo", repo)):
+        with mock.patch.object(sync_support.support_sync, "parse_upstream_checkout", return_value=("example/demo", repo)):
             with mock.patch.object(sync_support, "load_manifests", return_value=[no_support]):
                 with mock.patch.object(sys, "argv", ["sync_support.py", "--repo-root", str(repo)]):
                     sync_support.main()

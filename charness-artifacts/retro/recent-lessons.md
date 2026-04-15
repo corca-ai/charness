@@ -2,7 +2,7 @@
 
 ## Current Focus
 
-- The user pointed out that `docs/handoff.md` was preserving too much process history.
+- This slice followed the handoff cleanup by simplifying exported control-plane code enough to raise the enforced per-file coverage floor from 80% to 85%.
 
 ## Repeat Traps
 
@@ -10,10 +10,10 @@
 
 ## Next-Time Checklist
 
-- workflow: before updating handoff, delete any completed history that does not change the next action.
-- capability: tighten the handoff skill or its references to prefer a smaller practical target than the current broad 200-line size gate.
-- memory: keep `install_tools.py` and `support_sync_lib.py` as the next cleanup targets while avoiding detailed process replay in handoff.
+- workflow: do not run plugin-export sync/closeout concurrently with full quality review; serialize those gates when the plugin tree is in scope.
+- capability: if runtime budgets keep needing manual interpretation, replace latest-sample-only enforcement with a small report over recent samples.
+- memory: next coverage cleanup targets are `support_sync_lib.py`, `upstream_release_lib.py`, and `control_plane_lib.py` near the 85% floor.
 
 ## Sources
 
-- `charness-artifacts/retro/2026-04-15-handoff-signal-trim.md`
+- `charness-artifacts/retro/2026-04-15-coverage-floor-runtime-budget.md`
