@@ -53,8 +53,19 @@ semantics, and cleanup/release behavior.
 
 ### `specdown`
 
-The strongest reusable pattern is Markdown that is both readable contract and
-runnable acceptance surface:
+`charness` already consumes `specdown` as support-skill and external-binary
+context. The current support surface is not the gap:
+
+- `skills/support/specdown/` carries the vendored support skill and references.
+- `integrations/tools/specdown.json` records the external binary contract.
+- `integrations/locks/specdown.json` records the last observed local readiness.
+
+The next dogfood step is narrower: use `specdown` only for stable
+operator-facing behavior where an executable acceptance check adds signal
+without duplicating lower-level pytest coverage.
+
+The strongest reusable pattern in upstream `specdown` is Markdown that is both
+readable contract and runnable acceptance surface:
 
 - Specs mix prose, executable blocks, doctest-style command/output examples,
   check tables, variables, hooks, and frontmatter.
@@ -71,10 +82,11 @@ runnable acceptance surface:
   cases.
 - The repo dogfoods its own specs and example project in the pre-commit hook.
 
-What matters for `charness` is not adopting specdown everywhere. The
-transferable invariant is: durable behavioral claims should have a readable
-contract artifact and a runnable, acceptance-level check, with traceability when
-documents start forming a graph.
+What matters for `charness` is not adopting specdown everywhere or rediscovering
+the support skill it already has. The transferable invariant is: selected
+durable behavioral claims should have a readable contract artifact and a
+runnable, acceptance-level check, with traceability only when documents start
+forming a real graph.
 
 ## Candidate Charness Adaptations
 
@@ -106,6 +118,12 @@ dependent on ad hoc prompt discipline.
 
 Classification: `AUTO_CANDIDATE`, active after the next spec target is chosen.
 
+Best first behavior:
+
+- `charness tool doctor specdown --json`: prove the `specdown` integration stays
+  `integration-only`, binary detect/healthcheck pass, install provenance stays
+  visible, release metadata is preserved, and the next action is stable.
+
 Best first targets:
 
 - `docs/control-plane.md`: manifest lifecycle commands, lock sections, support
@@ -126,7 +144,8 @@ Why:
 
 `charness` has many validators and good docs, but the reader still has to infer
 which doc claims are executable. A small specdown layer would make selected
-contracts discoverable as runnable acceptance specs.
+contracts discoverable as runnable acceptance specs. The first slice should
+stay on the external-tool operator surface, not on internal helper branches.
 
 ### 3. Add document traceability only where the graph is real
 
@@ -183,6 +202,9 @@ guess whether a partially processed chunk is still owned.
 - This pass did not build a `charness` agent-task helper yet.
 - This pass did not add a `specdown.json` or any `*.spec.md` files to
   `charness`.
+- Follow-up exploration clarified that `specdown` itself was not new to
+  `charness`; the missing step is dogfooding a small stable operator-facing
+  behavior such as `tool doctor specdown`.
 - The next implementation should decide whether agent-task execution belongs
   under evaluator/Cautilus support, HITL, or a more general control-plane
   helper before creating a new command surface.
