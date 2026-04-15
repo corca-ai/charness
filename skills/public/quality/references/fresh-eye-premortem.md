@@ -17,6 +17,9 @@ Focus questions:
   those references?
 - Which recommendations are truly `active` now, and which are `passive`
   because they depend on future tooling, budget, or product decisions?
+- Which finding rests on a plausible convention, expert memory, or inherited
+  best practice instead of repo evidence, source citation, or an executable
+  gate?
 - Which invariants might a fresh 5-minute reader misclassify as absent because
   they are spread across implementation sites instead of declared with one
   gate, type, or durable source-of-truth pointer?

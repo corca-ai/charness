@@ -39,6 +39,9 @@ Use a behavior-confidence lens:
 - focused-gate evidence drift: after helpers or tests move to cleaner seam
   files, verify focused coverage gates, changed-file routers, and smoke maps
   still point at the new evidence
+- authority-only belief check: repeated practices, conventional advice, or
+  expert-sounding claims should not pass as behavior evidence unless a
+  repo-local gate, source pointer, or measured observation supports them
 
 ## Security
 

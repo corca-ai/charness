@@ -57,6 +57,13 @@ That distinction matters:
 - `runtime dependency`: the thing the consumer must actually install or sync to
   make the feature work
 
+When using a reference implementation, separate:
+
+- `Core Practice`: the invariant that creates the useful behavior and should be
+  preserved in the local design
+- `Peripheral Practice`: host, packaging, credential, adapter, or UI details
+  that should be adapted to `charness` instead of copied
+
 `charness` must not model a reference implementation repo as the runtime owner
 unless the consumer is truly expected to install or sync that repo at runtime.
 

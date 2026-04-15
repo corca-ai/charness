@@ -22,6 +22,9 @@ Good proposals name:
   external binary or service
 - the exact verification command when a repo-owned doctor or recommendation
   helper already exposes one
+- for `NON_AUTOMATABLE` recommendations, the smallest experiment or review loop
+  that would produce better evidence, including the observation point and
+  revisit cadence
 
 Examples:
 
@@ -41,6 +44,9 @@ Examples:
   invisible in pull requests
 - replace repeated documentation guidance with `markdownlint` or a repo-owned
   validator because the rule is deterministic and repeated manually today
+- run a one-week HITL review over three real handoffs because the issue is
+  judgment quality rather than a deterministic lint rule, and record which
+  observations would justify automation later
 
 ## Bad Proposals
 

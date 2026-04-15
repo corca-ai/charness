@@ -26,6 +26,9 @@ and the file should live next to the support skill as
 - another repo can be a useful reference implementation without becoming the
   runtime owner; model external ownership only when the consumer really needs
   that external runtime installed or synced
+- when learning from a reference implementation, preserve the `Core Practice`
+  that creates the value and adapt only the `Peripheral Practice` that reflects
+  host, packaging, credential, or adapter details
 - a thin local wrapper is acceptable only when the upstream skill is missing,
   incompatible, or too broad for the harness
 - public skills own the capability requirement, not the secret plumbing

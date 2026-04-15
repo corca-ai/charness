@@ -9,6 +9,8 @@ State:
 - what unit of work is under review
 - why it mattered
 - which evidence sources are trustworthy for this retro
+- when conclusions mix hard local proof with weaker judgment, tag the claim
+  strength inline as `strong`, `moderate`, `weak`, or `contested`
 
 Do not repeat the entire session transcript.
 
@@ -56,6 +58,8 @@ Ask:
 - what would a strong expert in this domain have done differently?
 - what question would they have forced earlier?
 - what evidence would they have demanded before acting?
+- where would they downgrade a confident story because the available evidence
+  is only anecdotal or authority-based?
 
 Prefer named experts with distinct lenses.
 

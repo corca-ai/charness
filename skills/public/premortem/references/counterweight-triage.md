@@ -17,6 +17,17 @@ Use four bins:
 - `Valid but Defer`
   The concern is real, but deferring it is the honest tradeoff for this slice.
 
+When a concern's evidence basis is easy to overstate, tag it before triage:
+
+- `strong`: current source, a failing or passing gate, measured behavior, or a
+  durable artifact directly supports the concern
+- `moderate`: repeated local observations or adjacent repo evidence support it,
+  but no standing gate owns it yet
+- `weak`: the concern is expert judgment, plausible practice, or analogy and
+  needs a small experiment before it can drive expensive work
+- `contested`: available evidence points in different directions and the next
+  move should reduce uncertainty before broad implementation
+
 Counterweight prompts should push especially hard on:
 
 - speculative consumers with no reported user
@@ -24,6 +35,8 @@ Counterweight prompts should push especially hard on:
 - aesthetic claims disguised as contract needs
 - "reversal is expensive" when version control or a thinner wrapper would make
   reversal cheap
+- authority-only concerns that sound senior but cannot name the repo evidence
+  they depend on
 
 The purpose is not bravado.
 The purpose is to stop a good premortem from turning into an unowned paranoia
