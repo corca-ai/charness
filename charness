@@ -1554,6 +1554,18 @@ def build_claude_host_guidance(
     }
 
 
+def build_host_next_steps(doctor_payload: dict[str, object]) -> dict[str, str]:
+    next_steps: dict[str, str] = {}
+    for host in ("codex", "claude"):
+        guidance = doctor_payload.get(f"{host}_host_guidance")
+        if not isinstance(guidance, dict):
+            continue
+        message = guidance.get("message")
+        if isinstance(message, str) and message:
+            next_steps[host] = message
+    return next_steps
+
+
 def remove_codex_marketplace_entry(path: Path) -> bool:
     if not path.is_file():
         return False
@@ -1776,6 +1788,7 @@ def build_doctor_payload(
         installed_entry=payload["claude_installed_entry"],
         enabled_status=payload["claude_enabled_status"],
     )
+    payload["next_steps"] = build_host_next_steps(payload)
     return payload
 
 
@@ -2299,7 +2312,7 @@ def cmd_init(args: argparse.Namespace) -> int:
     payload["codex_host_install"] = codex_host_install
     payload["codex_host_guidance"] = doctor_payload["codex_host_guidance"]
     payload["claude_host_guidance"] = doctor_payload["claude_host_guidance"]
-    payload["next_steps"]["codex"] = doctor_payload["codex_host_guidance"]["message"]
+    payload["next_steps"]["codex"] = doctor_payload["next_steps"]["codex"]
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
@@ -2397,7 +2410,7 @@ def cmd_update(args: argparse.Namespace) -> int:
     payload["codex_cache_refresh"] = codex_cache_refresh
     payload["codex_host_guidance"] = doctor_payload["codex_host_guidance"]
     payload["claude_host_guidance"] = doctor_payload["claude_host_guidance"]
-    payload["next_steps"]["codex"] = doctor_payload["codex_host_guidance"]["message"]
+    payload["next_steps"]["codex"] = doctor_payload["next_steps"]["codex"]
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]

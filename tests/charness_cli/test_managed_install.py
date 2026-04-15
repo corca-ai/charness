@@ -63,10 +63,7 @@ def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
     assert payload["claude_wrapper_path"] == str(home_root / ".local" / "bin" / "claude-charness")
     assert payload["checkout"]["repo_root"] == str(home_root / ".agents" / "src" / "charness")
     assert payload["checkout"]["managed"] is True
-    assert (
-        payload["next_steps"]["codex"]
-        == "Codex CLI not detected; charness prepared the local plugin source and personal marketplace only."
-    )
+    assert payload["next_steps"]["codex"] == payload["codex_host_guidance"]["message"]
     assert payload["codex_host_install"]["status"] == "skipped"
     assert payload["codex_host_install"]["reason"] == "codex-cli-missing"
     assert payload["next_steps"]["claude"] == "Restart Claude Code to load charness."
@@ -211,6 +208,10 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert payload["codex_source_cache_drift"] is False
     assert payload["codex_host_guidance"]["status"] == "host-unavailable"
     assert payload["codex_host_guidance"]["manual_action_required"] is False
+    assert (
+        payload["next_steps"]["codex"]
+        == "Codex CLI not detected; charness prepared the local plugin source and personal marketplace only."
+    )
     assert payload["claude_marketplace_name"] == "corca-charness"
     assert payload["claude_plugin_ref"] == "charness@corca-charness"
     assert payload["repo_root"] == str(home_root / ".agents" / "src" / "charness")
@@ -219,6 +220,7 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert payload["claude_installed_entry"]["version"] == "local"
     assert payload["claude_host_guidance"]["status"] == "installed"
     assert payload["claude_host_guidance"]["manual_action_required"] is False
+    assert payload["next_steps"]["claude"] == payload["claude_host_guidance"]["message"]
     assert payload["plugin_preamble"]["update_hints"]["claude"] == "Run `charness update`, then restart Claude Code."
     assert payload["version_provenance"]["invocation_kind"] == "custom-cli"
     assert payload["latest_release_check"] is None
@@ -464,6 +466,7 @@ def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path
     assert payload["plugin_preamble"] is None
     assert payload["claude_host_guidance"]["status"] == "missing-source"
     assert "Run `charness init` to recreate" in payload["claude_host_guidance"]["message"]
+    assert payload["next_steps"]["claude"] == payload["claude_host_guidance"]["message"]
 
 
 def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
