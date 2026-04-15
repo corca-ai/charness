@@ -10,5 +10,7 @@ When the user gives a stable rule:
 - apply it to remaining chunks
 - revisit already reviewed material only if the new rule actually changes the
   judgment
+- if the rule came from repeated observations in a `quality` handoff loop,
+  record whether it should become an `automation_candidate`
 
 Do not keep the rule only in conversational memory.

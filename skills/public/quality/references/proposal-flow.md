@@ -48,6 +48,24 @@ Examples:
   judgment quality rather than a deterministic lint rule, and record which
   observations would justify automation later
 
+## HITL Handoff
+
+When a `NON_AUTOMATABLE` proposal needs deliberate human judgment, shape it so
+`hitl` can start a bounded review loop without rediscovering the problem.
+
+Include:
+
+- `target`: the bounded artifacts, diffs, conversations, or decisions to review
+- `review_question`: the question human judgment must answer
+- `decision_needed`: what the reviewer must approve, reject, classify, or
+  refine
+- `must_not_auto_decide`: what should remain human-governed during this loop
+- `observation_point`: what evidence would change the next move
+- `revisit_cadence`: after how many items, days, or events the loop should be
+  evaluated
+- `automation_candidate`: what repeated rule, if observed, might later become a
+  validator, script, or gate
+
 ## Bad Proposals
 
 Bad proposals sound like:

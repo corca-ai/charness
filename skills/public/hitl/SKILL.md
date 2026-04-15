@@ -49,6 +49,8 @@ python3 "$SKILL_DIR/scripts/bootstrap_review.py" --repo-root .
    - what human judgment is needed
    - what target is under review
    - what must not be auto-decided
+   - if the input came from a `quality` `NON_AUTOMATABLE` proposal, preserve
+     its review loop, observation point, and revisit cadence
 2. Resolve the target surface.
    - branch diff
    - one file or doc

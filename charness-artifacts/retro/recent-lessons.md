@@ -2,19 +2,18 @@
 
 ## Current Focus
 
-- This session adapted the gathered expert-panel prompt lessons into `charness` skill guidance.
+- This session connected `quality` `NON_AUTOMATABLE` recommendations to `hitl` review loops.
 
 ## Repeat Traps
 
-- `quality/SKILL.md` initially took the authority-only guidance directly in the public core. `validate-skills` caught that the core had grown too long, so the detail moved into `quality/references/quality-lenses.md`.
-- I used a broad `find ..` to locate the auto-retro helper and hit unrelated permission-denied paths. The repo-local script path was already knowable from `skills/public/retro/scripts/`.
+- No material backtracking. The prior slice's concise-core lesson held: the `hitl` public core only gained one small routing line, while the detailed handoff contract lives in references.
 
 ## Next-Time Checklist
 
-- workflow: when adapting external prompts into skills, start by naming which parts are core practice versus peripheral practice before editing.
-- capability: consider a small validator or inventory for overlong public `SKILL.md` files before edits, not only after.
-- memory: keep the export-sync and concise-core trap visible in recent retro lessons.
+- workflow: dogfood the HITL handoff on the next real `NON_AUTOMATABLE` quality finding before adding more fields.
+- capability: if two or three dogfood runs show stable handoff shape, add a helper or validator that checks for missing `review_question`, `decision_needed`, and `revisit_cadence`.
+- memory: keep the "gate after dogfood" sequencing explicit for evidence posture work.
 
 ## Sources
 
-- `charness-artifacts/retro/2026-04-15-evidence-panel-adaptation.md`
+- `charness-artifacts/retro/2026-04-15-hitl-quality-handoff.md`
