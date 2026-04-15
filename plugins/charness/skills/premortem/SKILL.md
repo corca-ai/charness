@@ -14,6 +14,8 @@ counterweight pass so the findings become actionable instead of a paranoia pile.
 Caller skills should use it as the reusable subroutine for non-trivial
 decision review rather than rewriting angle selection or counterweight logic
 inline.
+Routine slices do not need a standalone `premortem` invocation when the caller
+can do a short bounded local pass honestly.
 
 Caller contract:
 

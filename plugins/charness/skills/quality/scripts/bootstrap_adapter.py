@@ -10,7 +10,7 @@ from pathlib import Path
 SCRIPT_PATH = Path(__file__).resolve()
 sys.path[:0] = [str(SCRIPT_PATH.parents[4]), str(SCRIPT_PATH.parents[3])]
 
-from scripts.quality_bootstrap_lib import bootstrap_quality_adapter
+from scripts.quality_bootstrap_lib import BootstrapValidationError, bootstrap_quality_adapter
 
 
 def main() -> None:
@@ -31,4 +31,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except BootstrapValidationError as exc:
+        print(str(exc), file=sys.stderr)
+        raise SystemExit(1)

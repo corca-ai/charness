@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
+# ruff: noqa: E402, I001
 
 from __future__ import annotations
 
@@ -13,11 +13,9 @@ import jsonschema
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
-from scripts.public_skill_validation_lib import (
-    POLICY_PATH as PUBLIC_SKILL_POLICY_PATH,
-    ValidationError as PublicSkillPolicyValidationError,
-    load_policy,
-    validate_policy,
+from scripts.packaging_policy_validators import (
+    PackagingPolicyValidationError,
+    validate_optional_public_skill_policy,
 )
 from scripts.validate_packaging_install_surface import validate_checked_in_plugin_tree
 
@@ -28,18 +26,15 @@ PACKAGING_SCHEMA_PATH = REPO_ROOT / "packaging" / "plugin.schema.json"
 class ValidationError(Exception):
     pass
 
-
 def validate_slug(value: object, field: str) -> str:
     if not isinstance(value, str) or not SLUG_RE.fullmatch(value):
         raise ValidationError(f"`{field}` must be a slug string")
     return value
 
-
 def validate_string(value: object, field: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValidationError(f"`{field}` must be a non-empty string")
     return value
-
 
 def validate_version(value: object, field: str) -> str:
     value = validate_string(value, field)
@@ -47,23 +42,19 @@ def validate_version(value: object, field: str) -> str:
         raise ValidationError(f"`{field}` must be a semver-like string")
     return value
 
-
 def validate_relative_path(value: object, field: str) -> str:
     value = validate_string(value, field)
     if value.startswith("/") or value.startswith("../") or "/../" in value:
         raise ValidationError(f"`{field}` must stay within the repo")
     return value
 
-
 def require_file(path: Path, field: str) -> None:
     if not path.is_file():
         raise ValidationError(f"`{field}` references missing file `{path}`")
 
-
 def require_dir(path: Path, field: str) -> None:
     if not path.is_dir():
         raise ValidationError(f"`{field}` references missing directory `{path}`")
-
 
 def require_json_matches(path: Path, expected: dict, field: str) -> None:
     if not path.is_file():
@@ -77,10 +68,8 @@ def require_json_matches(path: Path, expected: dict, field: str) -> None:
             f"`{field}` does not match generated content from the shared packaging manifest"
         )
 
-
 def load_packaging_schema() -> dict[str, object]:
     return json.loads(PACKAGING_SCHEMA_PATH.read_text(encoding="utf-8"))
-
 
 def validate_source_paths(root: Path, source: object) -> None:
     if not isinstance(source, dict):
@@ -344,11 +333,10 @@ def validate_packaging_manifest(path: Path, root: Path, *, validate_root_artifac
     validate_source_paths(root, data.get("source"))
     validate_codex(package_id, version, summary, author, homepage, repository, data.get("codex"))
     validate_claude(package_id, version, summary, repository, author, data.get("claude"))
-    if (root / PUBLIC_SKILL_POLICY_PATH).is_file():
-        try:
-            validate_policy(load_policy(root), root)
-        except PublicSkillPolicyValidationError as exc:
-            raise ValidationError(str(exc)) from exc
+    try:
+        validate_optional_public_skill_policy(root)
+    except PackagingPolicyValidationError as exc:
+        raise ValidationError(str(exc)) from exc
     if validate_root_artifacts:
         validate_root_install_artifacts(root, data)
 

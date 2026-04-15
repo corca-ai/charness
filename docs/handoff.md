@@ -39,11 +39,15 @@
   보지만, lowest-noise ergonomics 일부는 standing gate로 승격되기 시작했다.
   `inventory_skill_ergonomics.py`, `inventory_cli_ergonomics.py`가 있고,
   `validate-skills.py`는 oversized core와 public skill의 repeated fenced
-  ritual without scripts를 막는다.
+  Bootstrap ritual without scripts를 막는다.
 - higher-noise ergonomics는 repo-wide default gate로 올리지 않았다.
   대신 quality adapter의 `skill_ergonomics_gate_rules` opt-in seam과
   `validate_skill_ergonomics.py`를 추가해, repo가 원할 때만
   `mode_option_pressure_terms` 같은 규칙을 fail-closed 할 수 있게 했다.
+  canonical quality path는 이제 root wrapper
+  `scripts/validate-skill-ergonomics.py`를 통해 이 opt-in gate를 함께 돈다.
+  invalid `skill_ergonomics_gate_rules`는 bootstrap이 더 이상 조용히 `[]`로
+  되돌리지 않고, adapter repair를 요구하며 멈춘다.
 - `narrative`는 이제 multi-use-case repo에서 scenario block guidance를
   explicit하게 가진다. `scenario_surfaces` / `scenario_block_template` adapter
   fields를 지원하고, main use-case docs에서 fixture-first scenario cards와
@@ -64,23 +68,10 @@
 - `spec`와 `narrative`는 이제 rejected alternatives를 durable doc에 남기는
   쪽으로 정리됐다. `quality`는 dual-implementation parity를 weak heuristic +
   explicit human review lens로 본다.
-- `#24`의 핵심 contract gap은 이제 skill body에서 닫혔다.
-  `premortem`은 caller-consumable four-bin triage를 explicit하게 정의하고,
-  `impl`/`release`는 standalone invocation을 명시하며, `quality`는
-  dual-implementation을 parity harness / canonicalization / intentional
-  divergence 중 하나로 triage하도록 요구한다.
-- hidden support source-of-truth도 넓어졌다.
-  `skills/support/specdown/`, `skills/support/agent-browser/`는 이제
-  authoritative tree에 포함된다.
 - 현재 standing concern은 install/update propagation이 아니라
-  `quality` ergonomics에서 무엇을 standing gate로 더 올릴지와, public-skill policy
-  omission을 지금의 direct fail message 이상으로 더 구조적으로 좁힐지다. 자세한 구현 계약은
+  `quality` ergonomics에서 무엇을 standing gate로 더 올릴지와, public-skill
+  omission을 helper/autofix 수준으로 더 기계화할지다. 자세한 구현 계약은
   [docs/retro-self-improvement-spec.md](retro-self-improvement-spec.md)에 있다.
-- 최신 weekly retro와 compact lesson digest는
-  [skill-outputs/retro/weekly-2026-04-14.md](../skill-outputs/retro/weekly-2026-04-14.md),
-  [skill-outputs/retro/recent-lessons.md](../skill-outputs/retro/recent-lessons.md)에
-  갱신돼 있다. 이번 세션의 핵심 교훈은 multi-surface sequencing miss를 더
-  일찍 막는 것이다.
 
 ## Next Session
 
@@ -93,15 +84,18 @@
    `docs/public-skill-validation.json`과 `skills/public/**`에서
    `validate-public-skill-validation.py`를 바로 고르고,
    `validate-public-skill-validation.py`는 누락 skill을 어느 bucket에 넣어야
-   하는지 직접 말한다. 다음 로컬 follow-on은 public-skill omission을
-   helper/autofix 수준으로 더 기계화할지 결정하는 일이다.
+   하는지 직접 말한다. `validate-packaging.py`도 policy file이 있을 때 이 검사를
+   같이 수행하므로 checked-in plugin export 경로에서도 drift가 늦게 빠지지
+   않는다. 다음 로컬 follow-on은 omission helper/autofix를 정할지 결정하는 일이다.
 3. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
    surface를 다른 머신에서 한 번 더 확인한다. 특히 real binary install이
    PATH/non-PATH일 때 next-step honesty가 유지되는지 본다.
 4. ergonomics follow-on의 가장 자연스러운 후보는
    `skill_ergonomics_gate_rules`에 둘 다음 opt-in rule을 고르는 일이다.
-   현재는 `mode_option_pressure_terms`만 지원하고, trigger overlap은 여전히
-   advisory다.
+   현재는 `mode_option_pressure_terms`만 지원하고, trigger overlap은 advisory다.
+   fail-closed now vs advisory only는
+   [skills/public/quality/references/skill-ergonomics.md](../skills/public/quality/references/skill-ergonomics.md)에
+   분리해 뒀다.
 5. 추가 retro를 남길 때는 ad hoc 파일 쓰기 대신
    `skills/public/retro/scripts/persist_retro_artifact.py`를 사용한다.
 
@@ -114,6 +108,10 @@
 - ideal flow는 prose가 초반 행동을 좋게 유도하고 deterministic gate가
   omission/drift를 backstop하는 구조다. 지금 charness는 그 방향이지만, 몇몇
   omission-prone seam은 아직 broad gate에서 늦게 드러난다.
+- public-skill validation tier는 현재 metadata/routing layer이지, skill별로
+  서로 다른 standing CI mode가 이미 존재한다는 뜻은 아니다. maintained
+  evaluator가 landed하기 전까지 `evaluator-required`도 smoke + targeted HITL로
+  읽어야 한다.
 
 ## References
 

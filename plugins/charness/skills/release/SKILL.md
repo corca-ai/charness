@@ -15,6 +15,8 @@ advice, or generated-file edits by hand.
 When the release decision is non-trivial, use the standalone `premortem`
 skill before mutating versions so compatibility, install/update fallout, and
 real-host proof requirements are triaged explicitly.
+Routine release hygiene does not need a standalone session when the release
+caller can do a short bounded local premortem honestly.
 
 ## Bootstrap
 

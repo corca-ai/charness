@@ -41,7 +41,9 @@ def test_installed_cli_update_propagates_new_skill_into_exported_plugin_root(tmp
     assert managed_skill.exists() is False
 
     source_skill_dir = source_repo / "skills" / "public" / PROBE_SKILL_ID
-    source_skill_dir.mkdir(parents=True, exist_ok=True)
+    references_dir = source_skill_dir / "references"
+    references_dir.mkdir(parents=True, exist_ok=True)
+    references_dir.joinpath("note.md").write_text("# Note\n", encoding="utf-8")
     source_skill_dir.joinpath("SKILL.md").write_text(
         f"""\
 ---
@@ -53,9 +55,21 @@ description: "Use when verifying that charness update propagated a new upstream 
 
 Use this only to confirm that a newly added public skill became visible after
 `charness update` refreshed the installed plugin surface.
+
+## References
+
+- `references/note.md`
 """,
         encoding="utf-8",
     )
+
+    policy_path = source_repo / "docs" / "public-skill-validation.json"
+    policy = json.loads(policy_path.read_text(encoding="utf-8"))
+    policy["tiers"]["hitl-recommended"].append(PROBE_SKILL_ID)
+    policy["tiers"]["hitl-recommended"].sort()
+    policy["adapter_requirements"]["adapter-free"].append(PROBE_SKILL_ID)
+    policy["adapter_requirements"]["adapter-free"].sort()
+    policy_path.write_text(json.dumps(policy, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     packaging_path = source_repo / "packaging" / "charness.json"
     packaging = json.loads(packaging_path.read_text(encoding="utf-8"))
@@ -76,6 +90,8 @@ Use this only to confirm that a newly added public skill became visible after
             "git",
             "add",
             f"skills/public/{PROBE_SKILL_ID}/SKILL.md",
+            f"skills/public/{PROBE_SKILL_ID}/references/note.md",
+            "docs/public-skill-validation.json",
             "packaging/charness.json",
             "plugins/charness",
             ".agents/plugins/marketplace.json",

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402, I001
 
 from __future__ import annotations
 
@@ -8,8 +9,9 @@ import shlex
 import sys
 from pathlib import Path
 
-from skill_markdown_lib import count_fence_blocks, extract_h2_section_lines
-
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+from scripts.skill_markdown_lib import count_fence_blocks, extract_h2_section_lines
 REQUIRED_FRONTMATTER_KEYS = ("name", "description")
 SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 MAX_SKILL_MD_LINES = 200

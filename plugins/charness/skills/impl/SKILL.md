@@ -2,7 +2,6 @@
 name: impl
 description: "Use when work should move into code, config, tests, or operator-facing artifacts. Consume the current implementation contract when it exists, bootstrap a small honest contract inline when it does not, implement the smallest meaningful slice, verify it aggressively, and keep the contract synchronized when reality changes it."
 ---
-
 # Impl
 
 Use this when the work should move from contract into code, config, tests, or
@@ -15,14 +14,15 @@ slice instead of pretending the task is already well-defined.
 
 Use Gary Klein-style premortem discipline before closing a slice: ask what the
 next maintainer, operator, or user is most likely to misunderstand or break,
-then tighten the implementation or closeout around that failure.
-For non-trivial, cross-surface, breaking, or deletion/rename-heavy slices, use the standalone `premortem` skill and consume its four-bin triage in closeout.
+then tighten the implementation or closeout around that failure. For non-trivial,
+cross-surface, breaking, or deletion/rename-heavy slices, use the standalone
+`premortem` skill and consume its four-bin triage in closeout; routine local
+slices only need a short bounded pass inside `impl`.
 Keep Christopher Alexander-style sequence discipline for slice order: prefer
 the change that opens the next good move without prematurely freezing adjacent
 decisions. Use Kent Beck when the slice needs smaller feedback loops, and John
-Ousterhout when complexity pressure points to a simpler interface or deeper
-seam. See `references/sequence-discipline.md` and
-`references/design-lenses.md`.
+Ousterhout when complexity pressure points to a simpler interface or deeper seam.
+See `references/sequence-discipline.md` and `references/design-lenses.md`.
 
 ## Continuation Default
 

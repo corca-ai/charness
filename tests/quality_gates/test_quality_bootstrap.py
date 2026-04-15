@@ -165,6 +165,30 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     assert resolved["data"]["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
 
 
+def test_quality_bootstrap_rejects_invalid_explicit_skill_ergonomics_rules(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: skill-outputs/quality",
+                "preset_id: python-quality",
+                "customized_from: python-quality",
+                "skill_ergonomics_gate_rules: invalid",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "invalid `skill_ergonomics_gate_rules`" in result.stderr
+    assert "Repair the adapter before rerunning bootstrap" in result.stderr
+
+
 def test_quality_bootstrap_detects_repo_owned_github_actions_check(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
     (repo / "scripts" / "run-quality.sh").unlink()

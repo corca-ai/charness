@@ -29,6 +29,8 @@ same assignments.
   `SKILL.md` owns selection and sequencing, while references deepen the chosen
   move without becoming a parallel workflow
 - the tier only describes extra validation beyond that baseline
+- the tier is routing metadata, not a claim that local CI already runs a
+  distinct standing evaluator path for that skill today
 - until maintained `cautilus` scenarios land in this repo, any
   `evaluator-required` skill still falls back to smoke plus targeted HITL
   sampling

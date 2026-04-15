@@ -26,6 +26,9 @@ DEFAULT_PROMPT_ASSET_POLICY = {
     "exemption_globs": [],
 }
 DEFAULT_SKILL_ERGONOMICS_GATE_RULES: list[str] = []
+VALID_SKILL_ERGONOMICS_GATE_RULES = frozenset({
+    "mode_option_pressure_terms",
+})
 
 
 def default_specdown_smoke_patterns(preset_lineage: list[str]) -> list[str]:
@@ -106,4 +109,26 @@ def validate_prompt_asset_policy(value: Any, errors: list[str]) -> dict[str, Any
         errors.append("prompt_asset_policy.min_multiline_chars must be an integer")
     if validated["min_multiline_chars"] < 0:
         errors.append("prompt_asset_policy.min_multiline_chars must be greater than or equal to 0")
+    return validated
+
+
+def validate_skill_ergonomics_gate_rules(value: Any, errors: list[str]) -> list[str] | None:
+    if value is None:
+        return None
+    if not isinstance(value, list):
+        errors.append("skill_ergonomics_gate_rules must be a list")
+        return None
+    validated: list[str] = []
+    for item in value:
+        if not isinstance(item, str) or not item:
+            errors.append("skill_ergonomics_gate_rules entries must be non-empty strings")
+            continue
+        if item not in VALID_SKILL_ERGONOMICS_GATE_RULES:
+            rendered = ", ".join(sorted(VALID_SKILL_ERGONOMICS_GATE_RULES))
+            errors.append(
+                f"skill_ergonomics_gate_rules contains unknown rule `{item}`; valid rules: {rendered}"
+            )
+            continue
+        if item not in validated:
+            validated.append(item)
     return validated

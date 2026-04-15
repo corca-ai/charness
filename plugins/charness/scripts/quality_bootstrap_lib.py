@@ -5,6 +5,13 @@ from pathlib import Path
 from typing import Any
 
 from scripts.adapter_lib import load_yaml_file, render_yaml_mapping
+from scripts.quality_bootstrap_detect import (
+    detect_concept_paths,
+    detect_gate_commands,
+    detect_preflight_commands,
+    detect_preset_lineage,
+    detect_security_commands,
+)
 from scripts.quality_policy_defaults import (
     DEFAULT_COVERAGE_FLOOR_POLICY,
     DEFAULT_COVERAGE_FRAGILE_MARGIN_PP,
@@ -14,107 +21,14 @@ from scripts.quality_policy_defaults import (
     default_specdown_smoke_patterns,
     merge_coverage_floor_policy,
     merge_prompt_asset_policy,
+    validate_skill_ergonomics_gate_rules,
 )
 
-LINEAGE_ORDER = ("python-quality", "typescript-quality", "specdown-quality", "monorepo-quality")
 ADAPTER_CANDIDATES = (Path(".agents/quality-adapter.yaml"), Path(".codex/quality-adapter.yaml"), Path(".claude/quality-adapter.yaml"), Path("docs/quality-adapter.yaml"), Path("quality-adapter.yaml"))
 
 
-def _repo_has_any(repo_root: Path, *relative_paths: str) -> bool:
-    return any((repo_root / rel_path).exists() for rel_path in relative_paths)
-
-
-def _load_json(path: Path) -> dict[str, Any] | None:
-    if not path.is_file():
-        return None
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return None
-    return data if isinstance(data, dict) else None
-
-
-def _package_json_has_workspaces(path: Path) -> bool:
-    data = _load_json(path)
-    if data is None:
-        return False
-    workspaces = data.get("workspaces")
-    if isinstance(workspaces, list):
-        return bool(workspaces)
-    return isinstance(workspaces, dict) and isinstance(workspaces.get("packages"), list) and bool(workspaces["packages"])
-
-
-def _package_json_signals_typescript(path: Path) -> bool:
-    data = _load_json(path)
-    if data is None:
-        return False
-    dependencies: dict[str, Any] = {}
-    for field in ("dependencies", "devDependencies", "peerDependencies"):
-        value = data.get(field)
-        if isinstance(value, dict):
-            dependencies.update(value)
-    if "typescript" in dependencies:
-        return True
-    scripts = data.get("scripts")
-    if not isinstance(scripts, dict):
-        return False
-    return any(isinstance(command, str) and "tsc" in command for command in scripts.values())
-
-
-def detect_preset_lineage(repo_root: Path) -> list[str]:
-    detected: list[str] = []
-    if _repo_has_any(repo_root, "pyproject.toml", "requirements.txt", "requirements-dev.txt", "uv.lock", "poetry.lock"):
-        detected.append("python-quality")
-    if _repo_has_any(repo_root, "tsconfig.json", "tsconfig.base.json") or _package_json_signals_typescript(
-        repo_root / "package.json"
-    ):
-        detected.append("typescript-quality")
-    if (
-        (repo_root / "pnpm-workspace.yaml").is_file()
-        or _package_json_has_workspaces(repo_root / "package.json")
-        or any((repo_root / "packages").glob("*/package.json"))
-    ):
-        detected.append("monorepo-quality")
-    if (repo_root / ".specdown").exists() or (repo_root / "specdown.json").is_file() or any(
-        repo_root.rglob("*.spec.md")
-    ):
-        detected.append("specdown-quality")
-    return [preset_id for preset_id in LINEAGE_ORDER if preset_id in detected]
-
-
-def detect_concept_paths(repo_root: Path) -> list[str]:
-    candidates = (
-        "README.md",
-        "docs/control-plane.md",
-        "docs/public-skill-validation.md",
-        "docs/operator-acceptance.md",
-        "docs/handoff.md",
-        "docs/roadmap.md",
-        "skill-outputs/quality/quality.md",
-    )
-    return [path for path in candidates if (repo_root / path).is_file()]
-
-
-def detect_preflight_commands(repo_root: Path) -> list[str]:
-    return [cmd for exists, cmd in (
-        ((repo_root / "scripts" / "validate-maintainer-setup.py").is_file(), "python3 scripts/validate-maintainer-setup.py --repo-root ."),
-        ((repo_root / "scripts" / "doctor.py").is_file(), "python3 scripts/doctor.py --json"),
-    ) if exists]
-
-
-def detect_gate_commands(repo_root: Path) -> list[str]:
-    return [cmd for exists, cmd in (
-        ((repo_root / "scripts" / "run-quality.sh").is_file(), "./scripts/run-quality.sh"),
-        ((repo_root / "scripts" / "check-github-actions.py").is_file(), "python3 scripts/check-github-actions.py --repo-root ."),
-    ) if exists]
-
-
-def detect_security_commands(repo_root: Path) -> list[str]:
-    return [cmd for exists, cmd in (
-        ((repo_root / "scripts" / "check-secrets.sh").is_file(), "./scripts/check-secrets.sh"),
-        ((repo_root / "scripts" / "check-supply-chain.py").is_file(), "python3 scripts/check-supply-chain.py --repo-root ."),
-    ) if exists]
-
+class BootstrapValidationError(Exception):
+    pass
 
 def _merge_unique(existing: list[str], inferred: list[str]) -> list[str]:
     merged = list(existing)
@@ -184,6 +98,17 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
     if not isinstance(raw, dict):
         defaults["_explicit_fields"] = set()
         return defaults
+    skill_rule_errors: list[str] = []
+    validated_skill_rules = validate_skill_ergonomics_gate_rules(
+        raw.get("skill_ergonomics_gate_rules"),
+        skill_rule_errors,
+    )
+    if "skill_ergonomics_gate_rules" in raw and skill_rule_errors:
+        rendered = "; ".join(skill_rule_errors)
+        raise BootstrapValidationError(
+            f"{adapter_path}: invalid `skill_ergonomics_gate_rules`; {rendered}. "
+            "Repair the adapter before rerunning bootstrap."
+        )
     data = dict(defaults)
     data["_explicit_fields"] = set(raw.keys())
     for field in ("version", "repo", "language", "output_dir", "preset_id", "preset_version", "customized_from"):
@@ -203,11 +128,8 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
         data["spec_pytest_reference_format"] = spec_pytest_reference_format
     if isinstance(raw.get("prompt_asset_policy"), dict):
         data["prompt_asset_policy"] = merge_prompt_asset_policy(raw.get("prompt_asset_policy"))
-    skill_ergonomics_gate_rules = raw.get("skill_ergonomics_gate_rules")
-    if isinstance(skill_ergonomics_gate_rules, list) and all(
-        isinstance(item, str) for item in skill_ergonomics_gate_rules
-    ):
-        data["skill_ergonomics_gate_rules"] = list(skill_ergonomics_gate_rules)
+    if validated_skill_rules is not None:
+        data["skill_ergonomics_gate_rules"] = validated_skill_rules
     for field in ("preset_lineage", "prompt_asset_roots", "concept_paths", "preflight_commands", "gate_commands", "security_commands"):
         value = raw.get(field)
         if isinstance(value, list) and all(isinstance(item, str) for item in value):
@@ -243,19 +165,13 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
         field_statuses["preset_lineage"] = "deferred"
     final["preset_lineage"] = merged_lineage
 
-    if "coverage_fragile_margin_pp" in explicit_fields:
-        final["coverage_fragile_margin_pp"] = existing["coverage_fragile_margin_pp"]
-        field_statuses["coverage_fragile_margin_pp"] = "preserved"
-    else:
-        final["coverage_fragile_margin_pp"] = DEFAULT_COVERAGE_FRAGILE_MARGIN_PP
-        field_statuses["coverage_fragile_margin_pp"] = "defaulted"
+    preserve_coverage_margin = "coverage_fragile_margin_pp" in explicit_fields
+    final["coverage_fragile_margin_pp"] = existing["coverage_fragile_margin_pp"] if preserve_coverage_margin else DEFAULT_COVERAGE_FRAGILE_MARGIN_PP
+    field_statuses["coverage_fragile_margin_pp"] = "preserved" if preserve_coverage_margin else "defaulted"
 
-    if "coverage_floor_policy" in explicit_fields:
-        final["coverage_floor_policy"] = dict(existing["coverage_floor_policy"])
-        field_statuses["coverage_floor_policy"] = "preserved"
-    else:
-        final["coverage_floor_policy"] = dict(DEFAULT_COVERAGE_FLOOR_POLICY)
-        field_statuses["coverage_floor_policy"] = "defaulted"
+    preserve_coverage_policy = "coverage_floor_policy" in explicit_fields
+    final["coverage_floor_policy"] = dict(existing["coverage_floor_policy"] if preserve_coverage_policy else DEFAULT_COVERAGE_FLOOR_POLICY)
+    field_statuses["coverage_floor_policy"] = "preserved" if preserve_coverage_policy else "defaulted"
 
     existing_patterns = existing.get("specdown_smoke_patterns", [])
     if "specdown_smoke_patterns" in explicit_fields:
@@ -266,12 +182,9 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
         final["specdown_smoke_patterns"] = inferred_patterns
         field_statuses["specdown_smoke_patterns"] = "inferred" if inferred_patterns else "defaulted"
 
-    if "spec_pytest_reference_format" in explicit_fields:
-        final["spec_pytest_reference_format"] = existing["spec_pytest_reference_format"]
-        field_statuses["spec_pytest_reference_format"] = "preserved"
-    else:
-        final["spec_pytest_reference_format"] = DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT
-        field_statuses["spec_pytest_reference_format"] = "defaulted"
+    preserve_spec_format = "spec_pytest_reference_format" in explicit_fields
+    final["spec_pytest_reference_format"] = existing["spec_pytest_reference_format"] if preserve_spec_format else DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT
+    field_statuses["spec_pytest_reference_format"] = "preserved" if preserve_spec_format else "defaulted"
 
     if "prompt_asset_roots" in explicit_fields:
         final["prompt_asset_roots"] = list(existing.get("prompt_asset_roots", []))

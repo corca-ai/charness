@@ -96,6 +96,10 @@ them. Leave it empty by default. Current supported rules:
   Fail when a public skill accumulates repeated `mode` / `option` pressure
   terms that likely signal avoidable user-facing branching.
 
+The canonical quality path runs these opt-in rules through
+`scripts/validate-skill-ergonomics.py`. Bootstrap also treats invalid explicit
+rule values as an error instead of silently rewriting them to `[]`.
+
 ## Artifact Rule
 
 The durable quality artifact filename is fixed:

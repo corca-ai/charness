@@ -38,8 +38,19 @@ quality pass:
 - multiple code fences without helper scripts, which can signal prose ritual
 
 Treat these as prompts, not automatic failures.
-Some repos may still promote the lowest-noise cases into standing validation,
-for example an oversized `SKILL.md` core or a public skill that accumulates
-multiple fenced examples without any repo-owned helper script.
-Higher-noise rules such as mode/option pressure should stay advisory unless the
-repo explicitly opts in through `skill_ergonomics_gate_rules`.
+
+Fail-closed now:
+
+- oversized `SKILL.md` core
+- public `## Bootstrap` with 3+ fenced examples and no repo-owned helper script
+
+Advisory only unless the repo explicitly opts in:
+
+- mode/option pressure terms
+- trigger overlap / undertrigger review
+- broader progressive-disclosure judgment
+
+When a repo opts into `skill_ergonomics_gate_rules`, keep the rule values valid
+and machine-readable. `bootstrap_adapter.py` will refuse to rewrite an adapter
+that sets invalid ergonomics rules, because silently clearing them would hide
+operator intent.
