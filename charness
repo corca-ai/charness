@@ -20,6 +20,7 @@ PACKAGE_ID = "charness"
 REPO_URL = "https://github.com/corca-ai/charness"
 SCRIPT_PATH = Path(__file__).resolve()
 EMBEDDED_REPO_ROOT = SCRIPT_PATH.parent if (SCRIPT_PATH.parent / "packaging" / f"{PACKAGE_ID}.json").is_file() else None
+TASK_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 
 class CharnessError(Exception):
@@ -851,6 +852,8 @@ def should_auto_refresh_self_release(args: argparse.Namespace, provenance: dict[
 
 
 def maybe_record_self_version_state(args: argparse.Namespace) -> None:
+    if getattr(args, "command", None) == "task":
+        return
     home_root = getattr(args, "home_root", default_home_root()).resolve()
     repo_root, managed_checkout = resolve_repo_root(home_root, getattr(args, "repo_root", None))
     cli_arg = getattr(args, "cli_path", None)
@@ -1965,6 +1968,225 @@ def resolve_tool_repo_root(args: argparse.Namespace) -> tuple[Path, bool]:
         allow_pull=False,
     )
     return repo_root, managed_checkout
+
+
+def resolve_task_repo_root(args: argparse.Namespace) -> Path:
+    return (args.repo_root or Path.cwd()).resolve()
+
+
+def validate_task_id(task_id: str) -> str:
+    if not TASK_ID_RE.fullmatch(task_id):
+        raise CharnessError(
+            "task_id must start with an ASCII letter or digit and contain only ASCII letters, digits, dot, underscore, or dash"
+        )
+    return task_id
+
+
+def task_dir(repo_root: Path) -> Path:
+    return repo_root / ".charness" / "tasks"
+
+
+def task_path(repo_root: Path, task_id: str) -> Path:
+    return task_dir(repo_root) / f"{validate_task_id(task_id)}.json"
+
+
+def relative_task_path(repo_root: Path, path: Path) -> str:
+    try:
+        return str(path.relative_to(repo_root))
+    except ValueError:
+        return str(path)
+
+
+def read_task(repo_root: Path, task_id: str) -> dict[str, object] | None:
+    path = task_path(repo_root, task_id)
+    if not path.is_file():
+        return None
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise CharnessError(f"task state `{path}` must contain a JSON object")
+    return payload
+
+
+def write_task(repo_root: Path, task: dict[str, object]) -> Path:
+    task_id = str(task["task_id"])
+    path = task_path(repo_root, task_id)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    task["updated_at"] = now_iso()
+    path.write_text(json.dumps(task, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
+def default_agent_id() -> str:
+    for name in ("CHARNESS_AGENT_ID", "CODEX_SESSION_ID", "USER"):
+        value = os.environ.get(name)
+        if value:
+            return value
+    return "agent"
+
+
+def task_payload(repo_root: Path, task: dict[str, object], event: str, *, task_file: Path | None = None) -> dict[str, object]:
+    path = task_file or task_path(repo_root, str(task["task_id"]))
+    return {
+        "schema_version": 1,
+        "event": event,
+        "repo_root": str(repo_root),
+        "task_path": relative_task_path(repo_root, path),
+        "task": task,
+    }
+
+
+def task_failure(
+    args: argparse.Namespace,
+    *,
+    repo_root: Path,
+    task_id: str,
+    status: str,
+    reason: str,
+    task: dict[str, object] | None = None,
+) -> int:
+    payload = {
+        "schema_version": 1,
+        "event": "rejected",
+        "repo_root": str(repo_root),
+        "task_path": relative_task_path(repo_root, task_path(repo_root, task_id)),
+        "task_id": task_id,
+        "status": status,
+        "reason": reason,
+    }
+    if task is not None:
+        payload["task"] = task
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print(f"TASK_REJECTED: {task_id} {status}: {reason}", file=sys.stderr)
+    return 1
+
+
+def print_task_summary(payload: dict[str, object]) -> None:
+    task = payload.get("task")
+    if isinstance(task, dict):
+        print(f"TASK: {task.get('task_id')}")
+        print(f"STATUS: {task.get('status')}")
+        print(f"AGENT: {task.get('agent_id')}")
+        print(f"PATH: {payload.get('task_path')}")
+        next_step = payload.get("next_step")
+        if isinstance(next_step, str) and next_step:
+            print(f"NEXT: {next_step}")
+
+
+def cmd_task_claim(args: argparse.Namespace) -> int:
+    repo_root = resolve_task_repo_root(args)
+    task_id = validate_task_id(args.task_id)
+    agent_id = args.agent or default_agent_id()
+    existing = read_task(repo_root, task_id)
+    if existing is not None:
+        existing_status = existing.get("status")
+        existing_agent = existing.get("agent_id")
+        if existing_status == "claimed" and existing_agent == agent_id:
+            payload = task_payload(repo_root, existing, "claim-existing")
+            payload["next_step"] = f"Continue task `{task_id}`, then submit or abort it."
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+            else:
+                print_task_summary(payload)
+            return 0
+        return task_failure(
+            args,
+            repo_root=repo_root,
+            task_id=task_id,
+            status="already-owned",
+            reason=f"task is already {existing_status} by {existing_agent}",
+            task=existing,
+        )
+    task = {
+        "schema_version": 1,
+        "task_id": task_id,
+        "status": "claimed",
+        "agent_id": agent_id,
+        "summary": args.summary or "",
+        "claimed_at": now_iso(),
+        "updated_at": now_iso(),
+    }
+    path = write_task(repo_root, task)
+    payload = task_payload(repo_root, task, "claimed", task_file=path)
+    payload["next_step"] = f"Work in the repo, then run `charness task submit {task_id} --summary ...` or `charness task abort {task_id} --reason ...`."
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print_task_summary(payload)
+    return 0
+
+
+def cmd_task_submit(args: argparse.Namespace) -> int:
+    repo_root = resolve_task_repo_root(args)
+    task_id = validate_task_id(args.task_id)
+    task = read_task(repo_root, task_id)
+    if task is None:
+        return task_failure(args, repo_root=repo_root, task_id=task_id, status="missing", reason="task has not been claimed")
+    if task.get("status") != "claimed":
+        return task_failure(args, repo_root=repo_root, task_id=task_id, status="closed", reason=f"task is already {task.get('status')}", task=task)
+    if not args.summary and not args.artifacts:
+        return task_failure(args, repo_root=repo_root, task_id=task_id, status="missing-result", reason="submit requires --summary or --artifact", task=task)
+    task["status"] = "submitted"
+    task["submission"] = {
+        "submitted_at": now_iso(),
+        "summary": args.summary or "",
+        "artifacts": args.artifacts,
+    }
+    path = write_task(repo_root, task)
+    payload = task_payload(repo_root, task, "submitted", task_file=path)
+    payload["next_step"] = f"Task `{task_id}` is submitted; the next agent can read `{payload['task_path']}`."
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print_task_summary(payload)
+    return 0
+
+
+def cmd_task_abort(args: argparse.Namespace) -> int:
+    repo_root = resolve_task_repo_root(args)
+    task_id = validate_task_id(args.task_id)
+    task = read_task(repo_root, task_id)
+    if task is None:
+        return task_failure(args, repo_root=repo_root, task_id=task_id, status="missing", reason="task has not been claimed")
+    if task.get("status") != "claimed":
+        return task_failure(args, repo_root=repo_root, task_id=task_id, status="closed", reason=f"task is already {task.get('status')}", task=task)
+    task["status"] = "aborted"
+    task["abort"] = {"aborted_at": now_iso(), "reason": args.reason}
+    path = write_task(repo_root, task)
+    payload = task_payload(repo_root, task, "aborted", task_file=path)
+    payload["next_step"] = f"Task `{task_id}` is aborted with a structured reason in `{payload['task_path']}`."
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print_task_summary(payload)
+    return 0
+
+
+def cmd_task_status(args: argparse.Namespace) -> int:
+    repo_root = resolve_task_repo_root(args)
+    if args.task_id:
+        task_id = validate_task_id(args.task_id)
+        task = read_task(repo_root, task_id)
+        if task is None:
+            return task_failure(args, repo_root=repo_root, task_id=task_id, status="missing", reason="task state does not exist")
+        payload = task_payload(repo_root, task, "status")
+    else:
+        tasks = []
+        for path in sorted(task_dir(repo_root).glob("*.json")) if task_dir(repo_root).is_dir() else []:
+            item = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(item, dict):
+                tasks.append(item)
+        payload = {"schema_version": 1, "event": "status-list", "repo_root": str(repo_root), "tasks": tasks}
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        if "task" in payload:
+            print_task_summary(payload)
+        else:
+            for task in payload["tasks"]:
+                print(f"{task.get('task_id')}: {task.get('status')} ({task.get('agent_id')})")
+    return 0
 
 
 def invoke_repo_json_script(
@@ -3088,6 +3310,58 @@ def build_parser() -> argparse.ArgumentParser:
     reset_parser.add_argument("--cli-path", type=Path)
     reset_parser.add_argument("--json", action="store_true")
     reset_parser.set_defaults(func=cmd_reset)
+
+    task_parser = subparsers.add_parser(
+        "task",
+        help="Claim, submit, abort, or inspect a repo-local agent task envelope.",
+    )
+    task_parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repo where .charness/tasks/*.json task state is stored. Defaults to the current working directory.",
+    )
+    task_parser.add_argument("--json", action="store_true")
+    task_subparsers = task_parser.add_subparsers(dest="task_command", required=True)
+
+    def add_task_identity_args(command: argparse.ArgumentParser) -> None:
+        command.add_argument("task_id")
+        command.add_argument(
+            "--agent",
+            help="Agent identity recorded in the task. Defaults to CHARNESS_AGENT_ID, CODEX_SESSION_ID, USER, then `agent`.",
+        )
+
+    task_claim_parser = task_subparsers.add_parser(
+        "claim",
+        help="Create a claimed task envelope unless another agent already owns it.",
+    )
+    add_task_identity_args(task_claim_parser)
+    task_claim_parser.add_argument("--summary", default="")
+    task_claim_parser.set_defaults(func=cmd_task_claim)
+
+    task_submit_parser = task_subparsers.add_parser(
+        "submit",
+        help="Mark a claimed task as submitted with structured result metadata.",
+    )
+    task_submit_parser.add_argument("task_id")
+    task_submit_parser.add_argument("--summary", default="")
+    task_submit_parser.add_argument("--artifact", action="append", default=[], dest="artifacts")
+    task_submit_parser.set_defaults(func=cmd_task_submit)
+
+    task_abort_parser = task_subparsers.add_parser(
+        "abort",
+        help="Mark a claimed task as aborted with a required reason.",
+    )
+    task_abort_parser.add_argument("task_id")
+    task_abort_parser.add_argument("--reason", required=True)
+    task_abort_parser.set_defaults(func=cmd_task_abort)
+
+    task_status_parser = task_subparsers.add_parser(
+        "status",
+        help="Show one task envelope, or list all repo-local task envelopes.",
+    )
+    task_status_parser.add_argument("task_id", nargs="?")
+    task_status_parser.set_defaults(func=cmd_task_status)
 
     capability_parser = subparsers.add_parser(
         "capability",

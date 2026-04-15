@@ -10,6 +10,7 @@ commands:
       - update
       - reset
       - uninstall
+      - task
       - capability
       - tool
     required_doc_contains:
@@ -19,6 +20,24 @@ commands:
       - charness update
       - charness reset
       - charness uninstall
+      - charness task claim
+  task:
+    help_command: ./charness task --help
+    doc_paths:
+      - README.md
+      - docs/agent-task-envelope.md
+    required_help_contains:
+      - claim
+      - submit
+      - abort
+      - status
+      - --json
+      - --repo-root
+    required_doc_contains:
+      - charness task claim slice-1
+      - charness task submit slice-1
+      - charness task abort slice-1
+      - .charness/tasks/
   init:
     help_command: ./charness init --help
     doc_paths:

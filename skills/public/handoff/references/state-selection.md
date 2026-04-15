@@ -9,6 +9,8 @@ Handoffs should include only the facts that change the next action.
 - the first recommended next action and its prerequisite checks
 - unresolved product or ops decisions
 - one pointer to the artifact that owns detailed evidence
+- a repo-local task id or task-state path when the repo ships a structured
+  claim/submit/abort envelope for bounded agent work
 
 ## Drop
 

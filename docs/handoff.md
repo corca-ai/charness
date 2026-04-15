@@ -23,19 +23,23 @@
   fail 기준으로 쓴다. 현재 예산은 `pytest` 40s, `check-secrets` 5s,
   `check-coverage` 15s, `run-evals` 5s, `specdown` 5s다.
 - `run-quality.sh`는 이제 `specdown run -quiet -no-report`를 실행한다. 첫
-  스펙은 `tool doctor specdown --json`의 operator-facing e2e 계약만
-  다루며, adapter는 아직 만들지 않았다.
+  스펙은 `tool doctor specdown --json`과 `charness task` envelope의
+  operator-facing e2e 계약을 다루며, adapter는 아직 만들지 않았다.
+- `charness task`는 현재 작업 리포의 `.charness/tasks/*.json`에
+  claim/submit/abort/status 상태를 남긴다. 이 리포에서는
+  `.charness/tasks/`를 runtime state로 gitignore한다.
+- 현재 로컬 runtime state에는 `sah-task-envelope` submitted task record가
+  있다. 같은 workspace에서 이어가면 `charness task status
+  sah-task-envelope`로 확인할 수 있다.
 - Checked-in plugin export는 source 변경 뒤
   `python3 scripts/sync_root_plugin_manifests.py --repo-root .`로 맞춘다.
 
 ## Next Session
 
 1. `git status --short`를 먼저 확인한다.
-2. sah/specdown lesson line을 이어간다면 specdown 스펙을 넓히기 전에
-   작은 operator behavior를 하나 더 고른다. 후보는 `sah-cli`에서 배운
-   claim/submit/abort agent-task envelope 또는 doctor next-action UX다.
-   반복 setup/JSON 추출이 두세 번 생기기 전에는 specdown adapter를 만들지
-   않는다.
+2. sah/specdown lesson line을 이어간다면 다음 작은 CLI 후보는 doctor
+   next-action UX다. 스펙다운은 반복 setup/JSON 추출이 두세 번 생기기
+   전에는 adapter를 만들지 않는다.
 3. 이 handoff가 커밋된 상태라면 다음 품질 작업은 85% floor에 가까운
    `upstream_release_lib.py`, `control_plane_lib.py`, `install_tools.py`에서
    남은 branch를 리팩터링하거나 죽은 코드를 지우는 것이다. 테스트 추가보다

@@ -380,6 +380,7 @@ Primary operator path once the binary is available:
 charness init
 charness doctor
 charness update
+charness task claim slice-1 --summary "..."
 charness reset
 charness uninstall
 ```
@@ -412,9 +413,32 @@ Current command intent:
 - `update`: refresh the installed surface and optionally advance the managed
   checkout; it also records the post-update host snapshot to
   `~/.local/state/charness/host-state.json`
+- `task`: leave repo-local claim, submit, abort, or status state under
+  `.charness/tasks/` so another agent can continue without scraping chat
 - `reset`: remove host plugin state while keeping the managed checkout and CLI
 - `uninstall`: remove the managed host-facing install surface while preserving
   the checkout unless explicitly asked otherwise
+
+Agent task envelope surface:
+
+```bash
+charness task claim slice-1 --summary "Implement the first slice"
+charness task submit slice-1 --summary "Finished with tests" --artifact tests/example_test.py
+charness task abort slice-1 --reason "blocked by missing fixture"
+charness task status slice-1
+```
+
+Intent:
+
+- `task claim`: create a repo-local task record unless another agent already
+  owns that task id
+- `task submit`: close a claimed task with structured result metadata
+- `task abort`: close a claimed task with a required structured reason
+- `task status`: inspect one task or list the repo-local task records
+
+Task state is stored in `.charness/tasks/*.json` in the target repo. The command
+defaults to the current working directory and accepts `--repo-root` for explicit
+targeting. See [docs/agent-task-envelope.md](docs/agent-task-envelope.md).
 
 Capability resolution surface:
 

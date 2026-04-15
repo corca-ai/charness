@@ -7,6 +7,7 @@ plugins/charness/support/gather-slack/.cache/
 .charness/quality/bootstrap.json
 .charness/quality/runtime-signals.json
 .charness/quality/history/runtime-signals-*.jsonl
+.charness/tasks/
 .charness/hitl/runtime/
 integrations/locks/*.json
 !integrations/locks/.gitkeep

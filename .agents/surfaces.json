@@ -165,6 +165,22 @@
       ]
     },
     {
+      "surface_id": "executable-specs",
+      "description": "Repo-owned specdown executable acceptance specs and their config.",
+      "source_paths": [
+        "specdown.json",
+        "specs/**"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "specdown run -quiet -no-report"
+      ],
+      "notes": [
+        "Keep executable specs focused on stable operator-facing behavior; avoid adding adapters until setup or JSON extraction repeats."
+      ]
+    },
+    {
       "surface_id": "integrations-and-control-plane",
       "description": "Integration manifests and control-plane helper scripts.",
       "source_paths": [

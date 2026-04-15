@@ -16,6 +16,8 @@ Examples:
 
 - JSON output from `doctor`
 - lock files that record install/update/support results
+- repo-local task envelopes that record claim/submit/abort state for bounded
+  agent work
 - generated references or wrappers under a predictable directory
 - user-scoped version provenance plus last successful update-check metadata
 - host-state snapshots that separate source version, runtime capability, and
@@ -28,3 +30,14 @@ Manual-only flows still need structured state.
 - record what remains for the operator
 
 This lets a later agent continue from facts instead of rediscovering the host.
+
+For agent task envelopes, keep the contract deliberately small:
+
+- `claim` should refuse to overwrite a task already owned by another agent or
+  already closed
+- `submit` should include a summary or artifact pointer
+- `abort` should require a reason
+- `status` should be read-only and structured
+
+Do not turn this into a scheduler unless the repo already has real queue
+semantics to preserve.

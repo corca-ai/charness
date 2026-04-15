@@ -18,9 +18,8 @@ budgets, first-pass specdown dogfood, and advisory HITL handoff inventory.
 - `check-test-production-ratio` enforces a Python test/source ratio ceiling of
   `1.00` using source-of-truth Python files, excluding generated plugin exports.
 - `specdown run -quiet -no-report` is now part of the quiet quality gate. The
-  first spec covers the external-tool operator contract for
-  `charness tool doctor specdown --json` by delegating to the focused pytest e2e
-  instead of introducing a custom adapter.
+  first spec covers stable CLI operator contracts by delegating to focused
+  pytest e2e targets instead of introducing a custom adapter.
 - `inventory-quality-handoff` is now part of `run-quality.sh`; it is advisory
   and reports missing HITL handoff fields for `NON_AUTOMATABLE`
   recommendations.
@@ -30,12 +29,12 @@ budgets, first-pass specdown dogfood, and advisory HITL handoff inventory.
 ## Runtime Signals
 
 - Latest local quality gate after this slice: `37 passed, 0 failed`, total
-  `43.1s`; runtime budgets fail on recent-median drift.
-- runtime hot spots: `pytest` `25.5s`, `check-coverage` `10.2s`, `specdown` `4.6s`,
-  `check-markdown` `3.7s`, `check-secrets` `2.6s`, external links `2.5s`.
-- Budgeted phases: `pytest` median `26.8s / 40.0s`,
-  `check-coverage` median `9.3s / 15.0s`, `check-secrets` median `2.7s / 5.0s`,
-  `run-evals` median `1.7s / 5.0s`, `specdown` latest `4.6s / 5.0s`.
+  `53.1s`; runtime budgets fail on recent-median drift.
+- runtime hot spots: `pytest` `30.4s`, `check-coverage` `14.5s`,
+  `run-evals` `4.5s`, `specdown` `4.1s`, `check-markdown` `4.0s`.
+- Budgeted phases: `pytest` median `27.4s / 40.0s`,
+  `check-coverage` median `9.6s / 15.0s`, `check-secrets` median `2.8s / 5.0s`,
+  `run-evals` median `1.9s / 5.0s`, `specdown` median `4.4s / 5.0s`.
 - runtime signals continue to persist under `.charness/quality/`.
 
 ## Coverage and Eval Depth
@@ -47,8 +46,9 @@ budgets, first-pass specdown dogfood, and advisory HITL handoff inventory.
   above the floor but still ratchet candidates.
 - direct trace scenarios cover lifecycle helpers, install provenance,
   support sync, update/install lifecycle branches, and upstream release errors.
-- `specs/tool-doctor.spec.md` covers the stable specdown doctor contract at the
-  operator behavior level; fixture-heavy branch assertions remain in pytest.
+- `specs/tool-doctor.spec.md` covers the stable specdown doctor contract and
+  repo-local task envelope at the operator behavior level; fixture-heavy branch
+  assertions remain in pytest.
 - test-production ratio is `0.54` (`9345/17425` Python lines), under the `1.00`
   ceiling.
 - `check-test-completeness` verifies that standing pytest targets collect all tests.
@@ -61,8 +61,10 @@ budgets, first-pass specdown dogfood, and advisory HITL handoff inventory.
 - Every tracked control-plane file has an enforced `85.0%` floor and
   test-surface growth has a hard ratio ceiling.
 - Specdown dogfood is now executable but intentionally narrow: one stable
-  external-tool readiness behavior, no custom adapter, and no duplicated shell
-  fixture setup.
+  external-tool readiness behavior plus one task-envelope behavior, no custom
+  adapter, and no duplicated shell fixture setup.
+- `charness task` now provides a repo-local claim/submit/abort/status envelope
+  under `.charness/tasks/` for bounded agent continuation.
 - `gitleaks` `8.30.1`, `go` `1.26.2`, `specdown` `0.47.2`, and `cautilus`
   `0.2.4` are detected and healthy locally.
 
@@ -76,8 +78,8 @@ budgets, first-pass specdown dogfood, and advisory HITL handoff inventory.
 - `agent-browser` is installed at `0.25.3` while latest is `0.25.4`;
   `cautilus` is installed at `0.2.4` while latest is `0.4.0`; `gws` is
   installed at `0.18.1` while latest is `0.22.5`.
-- The next sah-inspired improvement is still unimplemented: a bounded agent-task
-  envelope with claim/submit/abort semantics and structured outputs.
+- The task envelope is intentionally local state only; it is not yet integrated
+  into handoff, HITL, or any multi-agent scheduler.
 
 ## Missing
 
@@ -108,9 +110,9 @@ budgets, first-pass specdown dogfood, and advisory HITL handoff inventory.
   are now the weakest tracked files near the enforced `85.0%` floor.
 - active `AUTO_CANDIDATE`: add a small ratchet-planning report if future floor
   moves keep depending on manual inspection of the warn band.
-- active `AUTO_CANDIDATE`: add the next sah-derived CLI behavior as a small
-  operator-facing contract before broadening specdown coverage; likely candidates
-  are doctor next-action ergonomics or an agent-task envelope.
+- active `AUTO_CANDIDATE`: dogfood `charness task` in one real repo slice before
+  broadening its semantics; the next separate sah-derived candidate is doctor
+  next-action ergonomics.
 - passive `NON_AUTOMATABLE`: because this needs maintainer judgment, decide
   whether `recent-lessons.md` should become a bounded rolling digest. HITL handoff: `target=recent-lessons.md`,
   `review_question=should recurring traps be retained beyond the latest
