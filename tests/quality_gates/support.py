@@ -84,6 +84,7 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         ("validate-handoff-artifact", "validate-handoff-artifact.py"),
         ("validate-debug-artifact", "validate-debug-artifact.py"),
         ("validate-quality-artifact", "validate-quality-artifact.py"),
+        ("inventory-quality-handoff", "inventory_quality_handoff.py"),
         ("validate-maintainer-setup", "validate-maintainer-setup.py"),
         ("check-python-lengths", "check-python-lengths.py"),
         ("check-skill-contracts", "check-skill-contracts.py"),

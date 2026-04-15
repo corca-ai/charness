@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -16,6 +17,14 @@ import trace
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.check_coverage_lib import (
+    UNFLOORED_FAIL_BELOW,
+    UNFLOORED_WARN_BELOW,
+    build_unfloored_file_inventory,
+    exercise_upstream_release_scenarios,
+)
 
 TARGET_FILES = (
     Path("scripts/control_plane_lib.py"),
@@ -142,6 +151,11 @@ def run_traced_entry(
         os.environ.update(old_env)
 
 
+def run_traced_function(tracer: trace.Trace, function: object) -> None:
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        tracer.runfunc(function)
+
+
 def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
     with tempfile.TemporaryDirectory(prefix="charness-coverage-") as tmpdir:
         tmp = Path(tmpdir)
@@ -172,6 +186,7 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
         )
         for script_path, argv in entries:
             run_traced_entry(tracer, script_path, argv=argv, cwd=repo_root, env_overrides=env)
+        run_traced_function(tracer, exercise_upstream_release_scenarios)
 
         counts = tracer.results().counts
         aggregated: dict[Path, set[int]] = {}
@@ -205,7 +220,7 @@ def summarize(repo_root: Path, counts: dict[Path, set[int]]) -> dict[str, object
         executed_total += covered
         possible_total += total
     overall = executed_total / possible_total if possible_total else 1.0
-    return {
+    summary = {
         "schema_version": 1,
         "scope": "control-plane",
         "files": files,
@@ -213,6 +228,8 @@ def summarize(repo_root: Path, counts: dict[Path, set[int]]) -> dict[str, object
         "total": possible_total,
         "coverage": round(overall, 4),
     }
+    summary["unfloored_file_inventory"] = build_unfloored_file_inventory(files)
+    return summary
 
 
 def main() -> int:
@@ -237,6 +254,19 @@ def main() -> int:
                 f"- {item['path']}: {item['coverage'] * 100:.1f}% "
                 f"({item['covered']}/{item['total']})"
             )
+        inventory = summary["unfloored_file_inventory"]
+        assert isinstance(inventory, dict)
+        below_fail = inventory["below_fail"]
+        warn_band = inventory["warn_band"]
+        assert isinstance(below_fail, list)
+        assert isinstance(warn_band, list)
+        print(
+            "Unfloored-file inventory: "
+            f"{len(below_fail)} below {UNFLOORED_FAIL_BELOW * 100:.1f}%, "
+            f"{len(warn_band)} in {UNFLOORED_FAIL_BELOW * 100:.1f}-"
+            f"{UNFLOORED_WARN_BELOW * 100:.1f}% warn band "
+            "(advisory, aggregate floor only)"
+        )
 
     if summary["coverage"] < args.min_coverage:
         raise CoverageError(

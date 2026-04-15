@@ -15,10 +15,17 @@
 
 ## Current State
 
-- 2026-04-15 `quality` dogfood pass가
+- 2026-04-15 두 번째 `quality` dogfood pass가
   [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)를
-  갱신했다. `./scripts/run-quality.sh --review`는 `34 passed, 0 failed`,
-  total `40.2s`로 통과했고, runtime budget도 모두 예산 안에 있다.
+  갱신했다. `upstream_release_lib.py` focused coverage follow-up은 완료되어
+  coverage가 `48.8%`에서 `87.6%`로 올랐고, `check-coverage.py`는
+  unfloored-file inventory를 advisory로 출력한다.
+- `inventory-quality-handoff`가 `./scripts/run-quality.sh`에 추가됐다.
+  `NON_AUTOMATABLE` 추천 항목에 HITL handoff 필드가 없으면 advisory로
+  보고하지만 아직 hard gate는 아니다.
+- `./scripts/run-quality.sh --review` 재실행은 `35 passed, 0 failed`,
+  total `39.9s`로 통과했다. 직전 한 번의 runtime-budget 초과는 재현되지
+  않았다.
 - 이번 pass에서 `recent-lessons.md`가 최신 retro digest로 갱신되는 계약과
   충돌하던 오래된 `plugin export` 테스트 앵커를 구조 검증으로 바꿨다.
   상세 원인은
@@ -42,9 +49,11 @@
 ## Next Session
 
 1. 먼저 `git status --short`를 확인한다. 이 handoff가 커밋된 상태라면 새 첫
-   작업은 `charness-artifacts/quality/latest.md`의 Recommended Next Gates 중
-   `upstream_release_lib.py` focused coverage 또는 coverage unfloored-file
-   inventory를 이어갈지 판단하는 것이다.
+   작업은 `charness-artifacts/quality/latest.md`의
+   Recommended Next Gates 중 unfloored-file inventory에서 다음 focused
+   coverage 대상을 고르는 일이다. 후보는 `install_provenance_lib.py`,
+   `install_tools.py`, `support_sync_lib.py`, `update_tools.py`,
+   `control_plane_lib.py`다.
 2. artifact naming을 더 밀면 stale artifact 처리 정책을 별도 결정한다.
    이번 slice는 자동 삭제 정책을 추가하지 않았고, 기존 기록을 보존하는 방향만
    적용했다.

@@ -89,6 +89,17 @@ def _github_api_headers() -> dict[str, str]:
     return headers
 
 
+def _release_from_payload(repo: str, payload: Any, *, source: str) -> dict[str, Any]:
+    if not isinstance(payload, dict):
+        return error_release(
+            repo,
+            status="error",
+            reason="github-malformed-release",
+            error=f"{source} response was not a JSON object",
+        )
+    return normalize_release_payload(repo, payload)
+
+
 def _probe_github_release_with_gh(repo: str) -> dict[str, Any] | None:
     if os.environ.get("CHARNESS_RELEASE_PROBE_NO_GH") == "1":
         return None
@@ -107,7 +118,7 @@ def _probe_github_release_with_gh(repo: str) -> dict[str, Any] | None:
         payload = json.loads(completed.stdout)
     except json.JSONDecodeError:
         return None
-    return normalize_release_payload(repo, payload)
+    return _release_from_payload(repo, payload, source="gh")
 
 
 def probe_github_release(repo: str) -> dict[str, Any]:
@@ -136,7 +147,7 @@ def probe_github_release(repo: str) -> dict[str, Any]:
         return error_release(repo, status="error", reason="github-invalid-json", error=str(exc))
     except (TimeoutError, urllib.error.URLError) as exc:
         return error_release(repo, status="error", reason="github-network-error", error=str(exc))
-    return normalize_release_payload(repo, payload)
+    return _release_from_payload(repo, payload, source="github api")
 
 
 def probe_release(manifest: dict[str, Any]) -> dict[str, Any] | None:

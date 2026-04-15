@@ -223,6 +223,7 @@ queue_selected "validate-packaging" python3 scripts/validate-packaging.py --repo
 queue_selected "validate-handoff-artifact" python3 scripts/validate-handoff-artifact.py --repo-root "$REPO_ROOT"
 queue_selected "validate-debug-artifact" python3 scripts/validate-debug-artifact.py --repo-root "$REPO_ROOT"
 queue_selected "validate-quality-artifact" python3 scripts/validate-quality-artifact.py --repo-root "$REPO_ROOT"
+queue_selected "inventory-quality-handoff" python3 scripts/inventory_quality_handoff.py --repo-root "$REPO_ROOT"
 queue_selected "validate-maintainer-setup" python3 scripts/validate-maintainer-setup.py --repo-root "$REPO_ROOT"
 queue_selected "check-python-lengths" python3 scripts/check-python-lengths.py --repo-root "$REPO_ROOT"
 queue_selected "check-skill-contracts" python3 scripts/check-skill-contracts.py --repo-root "$REPO_ROOT"

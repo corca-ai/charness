@@ -95,6 +95,56 @@ def test_probe_github_release_falls_back_to_urllib_when_gh_disabled(
     assert captured["request"].full_url == "https://api.github.com/repos/example/tool/releases/latest"
 
 
+def test_probe_github_release_falls_back_when_gh_is_unavailable(monkeypatch) -> None:
+    captured: dict[str, urllib.request.Request] = {}
+
+    def fake_urlopen(request: urllib.request.Request, *, timeout: int) -> FakeResponse:
+        captured["request"] = request
+        return FakeResponse({"tag_name": "v2.1.0", "assets": []})
+
+    def fail_run(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("gh should not run when it is not on PATH")
+
+    monkeypatch.delenv("CHARNESS_RELEASE_PROBE_NO_GH", raising=False)
+    monkeypatch.delenv("CHARNESS_RELEASE_PROBE_FIXTURES", raising=False)
+    monkeypatch.setattr(upstream.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(upstream.subprocess, "run", fail_run)
+    monkeypatch.setattr(upstream.urllib.request, "urlopen", fake_urlopen)
+
+    release = probe_github_release("example/tool")
+
+    assert release["status"] == "ok"
+    assert release["latest_version"] == "2.1.0"
+    assert captured["request"].full_url == "https://api.github.com/repos/example/tool/releases/latest"
+
+
+def test_probe_github_release_falls_back_when_gh_is_unauthenticated(
+    monkeypatch,
+) -> None:
+    captured: dict[str, urllib.request.Request] = {}
+
+    class Completed:
+        returncode = 1
+        stdout = ""
+        stderr = "gh auth required"
+
+    def fake_urlopen(request: urllib.request.Request, *, timeout: int) -> FakeResponse:
+        captured["request"] = request
+        return FakeResponse({"tag_name": "v2.2.0", "assets": []})
+
+    monkeypatch.delenv("CHARNESS_RELEASE_PROBE_NO_GH", raising=False)
+    monkeypatch.delenv("CHARNESS_RELEASE_PROBE_FIXTURES", raising=False)
+    monkeypatch.setattr(upstream.shutil, "which", lambda _name: "/usr/bin/gh")
+    monkeypatch.setattr(upstream.subprocess, "run", lambda *_args, **_kwargs: Completed())
+    monkeypatch.setattr(upstream.urllib.request, "urlopen", fake_urlopen)
+
+    release = probe_github_release("example/tool")
+
+    assert release["status"] == "ok"
+    assert release["latest_version"] == "2.2.0"
+    assert captured["request"].full_url == "https://api.github.com/repos/example/tool/releases/latest"
+
+
 def test_probe_github_release_adds_token_header_to_urllib_fallback(monkeypatch) -> None:
     captured: dict[str, urllib.request.Request] = {}
 
@@ -157,3 +207,40 @@ def test_probe_github_release_reports_invalid_json(monkeypatch) -> None:
 
     assert release["status"] == "error"
     assert release["reason"] == "github-invalid-json"
+
+
+def test_probe_github_release_reports_malformed_json_payload(monkeypatch) -> None:
+    def fake_urlopen(request: urllib.request.Request, *, timeout: int) -> FakeResponse:
+        return FakeResponse("[]")
+
+    monkeypatch.setenv("CHARNESS_RELEASE_PROBE_NO_GH", "1")
+    monkeypatch.delenv("CHARNESS_RELEASE_PROBE_FIXTURES", raising=False)
+    monkeypatch.setattr(upstream.urllib.request, "urlopen", fake_urlopen)
+
+    release = probe_github_release("example/malformed")
+
+    assert release["status"] == "error"
+    assert release["reason"] == "github-malformed-release"
+    assert release["error"] == "github api response was not a JSON object"
+
+
+def test_probe_github_release_reports_malformed_gh_payload(monkeypatch) -> None:
+    class Completed:
+        returncode = 0
+        stdout = "[]"
+        stderr = ""
+
+    def fail_urlopen(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("malformed gh payload should not fall back to urllib")
+
+    monkeypatch.delenv("CHARNESS_RELEASE_PROBE_NO_GH", raising=False)
+    monkeypatch.delenv("CHARNESS_RELEASE_PROBE_FIXTURES", raising=False)
+    monkeypatch.setattr(upstream.shutil, "which", lambda _name: "/usr/bin/gh")
+    monkeypatch.setattr(upstream.subprocess, "run", lambda *_args, **_kwargs: Completed())
+    monkeypatch.setattr(upstream.urllib.request, "urlopen", fail_urlopen)
+
+    release = probe_github_release("example/malformed-gh")
+
+    assert release["status"] == "error"
+    assert release["reason"] == "github-malformed-release"
+    assert release["error"] == "gh response was not a JSON object"
