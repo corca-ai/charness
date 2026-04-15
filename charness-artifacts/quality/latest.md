@@ -5,8 +5,8 @@ Date: 2026-04-15
 
 Repo-wide quality posture for the current `charness` tree. This pass promoted
 control-plane coverage from aggregate-only to an enforced per-file floor,
-trimmed duplicated lifecycle helper code, added a test-production ratio gate,
-and kept the HITL handoff inventory advisory.
+trimmed duplicated lifecycle helper code, lifted `sync_support.py` off the floor,
+added a test-production ratio gate, and kept the HITL handoff inventory advisory.
 
 ## Current Gates
 
@@ -30,11 +30,11 @@ and kept the HITL handoff inventory advisory.
 
 ## Runtime Signals
 
-- Latest full review after this slice: `36 passed, 0 failed`, total `52.1s`.
-- runtime hot spots: `pytest` `30.0s`, `check-coverage` `9.8s`,
-  `check-markdown` `6.8s`, `check-secrets` `4.8s`, external links `3.1s`.
-- current budgeted phases: `pytest` `30.0s / 40.0s`, `check-coverage`
-  `9.8s / 15.0s`, `check-secrets` `4.8s / 5.0s`, `run-evals` `2.6s / 5.0s`.
+- Latest full review after this slice: `36 passed, 0 failed`, total `43.2s`.
+- runtime hot spots: `pytest` `25.5s`, `check-coverage` `10.2s`,
+  `check-markdown` `3.8s`, `check-secrets` `2.9s`, external links `2.5s`.
+- current budgeted phases: `pytest` `25.5s / 40.0s`, `check-coverage`
+  `10.2s / 15.0s`, `check-secrets` `2.9s / 5.0s`, `run-evals` `1.7s / 5.0s`.
 - online external links: `30 Total`, `30 OK`, `0 Errors`.
 - coverage gate: present and passing.
 - evaluator depth: maintained repo-local eval scenarios pass.
@@ -42,14 +42,14 @@ and kept the HITL handoff inventory advisory.
 
 ## Coverage and Eval Depth
 
-- coverage gate: `86.4%` (`1137/1316`) against the `60.0%` aggregate
+- coverage gate: `86.7%` (`1150/1327`) against the `60.0%` aggregate
   floor and `80.0%` per-file floor.
-- weakest tracked files are `sync_support.py` `80.0%`,
-  `control_plane_lib.py` `82.2%`, and `install_tools.py` `82.5%`; these are
-  fragile but no longer unfloored.
+- weakest tracked files are `install_tools.py` `81.5%`,
+  `control_plane_lib.py` `82.2%`, and `sync_support.py` `86.5%`; these are
+  above the floor but still ratchet candidates.
 - direct trace scenarios now cover lifecycle helpers, install provenance,
   support sync, update/install lifecycle branches, and upstream release errors.
-- test-production ratio is `0.53` (`9240/17454` Python lines), under the `1.00`
+- test-production ratio is `0.53` (`9240/17482` Python lines), under the `1.00`
   ceiling.
 - `check-test-completeness` verifies that standing pytest targets collect all tests.
 - maintained eval depth exists: `run-evals` passes 19 repo-local scenarios.
@@ -62,6 +62,8 @@ and kept the HITL handoff inventory advisory.
   seam; focused failure-mode tests are in place.
 - `install_tools.py` and `update_tools.py` no longer duplicate lifecycle
   metadata/healthcheck serialization helpers.
+- `sync_support.py` no longer carries local tool selection/status-printing
+  boilerplate and moved from exactly `80.0%` to `86.5%`.
 - Every tracked control-plane file now has an enforced `80.0%` floor.
 - Test-surface growth now has a hard ratio ceiling.
 - The full review path exposes PASS-phase diagnostics instead of relying on
@@ -77,8 +79,8 @@ and kept the HITL handoff inventory advisory.
 
 ## Weak
 
-- Several control-plane files sit close to the `80.0%` floor; `sync_support.py`
-  is exactly on the threshold and should be the next cleanup target.
+- Several control-plane files sit close to the `80.0%` floor; `install_tools.py`
+  and `control_plane_lib.py` are the next cleanup targets.
 - Skill ergonomics inventory is advisory only. It still flags long public cores
   for `create-skill`, `impl`, `quality`, and `spec`, plus mode/option pressure
   in several public skills.
@@ -113,8 +115,9 @@ and kept the HITL handoff inventory advisory.
 
 ## Recommended Next Gates
 
-- active `AUTO_CANDIDATE`: refactor or delete code around `sync_support.py`
-  before adding more tests; it is exactly at the enforced `80.0%` floor.
+- active `AUTO_CANDIDATE`: refactor or delete code around `install_tools.py`
+  and `control_plane_lib.py` before adding more tests; both are close to the
+  enforced `80.0%` floor.
 - active `AUTO_CANDIDATE`: ratchet per-file floors above `80.0%` only after the
   near-floor files have been simplified enough to make the higher bar honest.
 - passive `NON_AUTOMATABLE`: because this needs maintainer judgment, decide

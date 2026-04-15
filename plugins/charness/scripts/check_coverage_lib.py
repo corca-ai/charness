@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import sys
 import tarfile
 import tempfile
 import urllib.error
@@ -110,6 +111,9 @@ def exercise_control_plane_scenarios() -> None:
     manifest = _basic_manifest()
     lifecycle.failed_healthcheck(manifest, reason="detect failed")
     lifecycle.attach_release_metadata({}, provenance={"status": "detected"}, release={"status": "ok"})
+    selected = lifecycle.select_by_tool_id([manifest, _basic_manifest("other")], ["demo"])
+    lifecycle.print_tool_statuses([{"tool_id": "demo", "status": "ok"}])
+    lifecycle.has_any_status(selected, status_key="tool_id", statuses={"demo"})
     with mock.patch.object(lifecycle, "run_check", return_value={"ok": False}):
         lifecycle.detect_and_healthcheck(Path("."), manifest, failure_reason="detect failed")
     with mock.patch.object(lifecycle, "run_shell", return_value=result):
@@ -272,6 +276,7 @@ def exercise_support_sync_scenarios() -> None:
 
 def exercise_lifecycle_scenarios() -> None:
     import scripts.install_tools as install_tools
+    import scripts.sync_support as sync_support
     import scripts.update_tools as update_tools
     from scripts.control_plane_lib import CommandResult
 
@@ -311,6 +316,12 @@ def exercise_lifecycle_scenarios() -> None:
                             update_tools.update_one(repo, manifest, execute=False)
                             with mock.patch.object(update_tools, "run_shell", return_value=CommandResult("demo update", 0, "ok\n", "")):
                                 update_tools.update_one(repo, manifest, execute=True)
+        no_support = {"tool_id": "no-support"}
+        sync_support.sync_one(repo, no_support, execute=False, upstream_checkouts={})
+        with mock.patch.object(sync_support, "parse_upstream_checkout", return_value=("example/demo", repo)):
+            with mock.patch.object(sync_support, "load_manifests", return_value=[no_support]):
+                with mock.patch.object(sys, "argv", ["sync_support.py", "--repo-root", str(repo)]):
+                    sync_support.main()
 
 
 def exercise_upstream_release_scenarios() -> None:

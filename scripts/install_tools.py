@@ -15,7 +15,10 @@ from scripts.control_plane_lib import load_manifests, now_iso, upsert_lock
 from scripts.control_plane_lifecycle_lib import (
     attach_release_metadata,
     detect_and_healthcheck,
+    has_any_status,
+    print_tool_statuses,
     run_command_payloads,
+    select_by_tool_id,
 )
 from scripts.install_provenance_lib import detect_install_provenance
 from scripts.upstream_release_lib import probe_release
@@ -221,15 +224,13 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    manifests = load_manifests(repo_root)
-    selected = [manifest for manifest in manifests if not args.tool_id or manifest["tool_id"] in args.tool_id]
+    selected = select_by_tool_id(load_manifests(repo_root), args.tool_id)
     results = [install_one(repo_root, manifest, execute=args.execute) for manifest in selected]
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))
     else:
-        for result in results:
-            print(f"{result['tool_id']}: {result['status']}")
-    if any(result["status"] == "failed" for result in results):
+        print_tool_statuses(results)
+    if has_any_status(results, status_key="status", statuses={"failed"}):
         return 1
     return 0
 

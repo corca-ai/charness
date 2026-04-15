@@ -17,6 +17,7 @@ from scripts.control_plane_lib import (
     now_iso,
     upsert_lock,
 )
+from scripts.control_plane_lifecycle_lib import print_tool_statuses, select_by_tool_id
 from scripts.support_sync_lib import (
     parse_upstream_checkout,
     support_state_for_manifest,
@@ -93,8 +94,7 @@ def main() -> int:
 
     repo_root = args.repo_root.resolve()
     upstream_checkouts = dict(parse_upstream_checkout(value) for value in args.upstream_checkout)
-    manifests = load_manifests(repo_root)
-    selected = [manifest for manifest in manifests if not args.tool_id or manifest["tool_id"] in args.tool_id]
+    selected = select_by_tool_id(load_manifests(repo_root), args.tool_id)
     results = [
         sync_one(
             repo_root,
@@ -107,8 +107,7 @@ def main() -> int:
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))
     else:
-        for result in results:
-            print(f"{result['tool_id']}: {result['status']}")
+        print_tool_statuses(results)
     return 0
 
 
