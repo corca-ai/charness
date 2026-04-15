@@ -36,8 +36,8 @@
 - `retro` self-improvement의 첫 배치는 landed 상태다.
   `probe_host_logs.py`, `refresh_recent_lessons.py`,
   `seed_retro_memory.py`, `persist_retro_artifact.py`까지 있다.
-- `quality`는 skill ergonomics와 CLI ergonomics smells를 advisory inventory로
-  보지만, lowest-noise ergonomics 일부는 standing gate로 승격되기 시작했다.
+- `quality`는 skill ergonomics와 CLI ergonomics smells를 advisory inventory로 보지만,
+  lowest-noise ergonomics 일부는 standing gate로 승격되기 시작했다.
   `inventory_skill_ergonomics.py`, `inventory_cli_ergonomics.py`가 있고,
   `validate-skills.py`는 oversized core와 public skill의 repeated fenced
   Bootstrap ritual without scripts를 막는다.
@@ -67,12 +67,11 @@
 - `premortem`은 이제 standalone public skill이다. angle selection,
   counterweight triage, `Deliberately Not Doing` memory를 one seam으로
   가져간다.
-- `spec`와 `narrative`는 이제 rejected alternatives를 durable doc에 남기는
-  쪽으로 정리됐다. `quality`는 dual-implementation parity를 weak heuristic +
-  explicit human review lens로 본다.
-- 현재 standing concern은 install/update propagation이 아니라
-  trigger overlap처럼 higher-noise ergonomics를 계속 advisory로 둘지와,
-  support-tool real-host dogfood cadence를 얼마나 자주 가져갈지다.
+- `spec`와 `narrative`는 이제 rejected alternatives를 durable doc에 남기는 쪽으로
+  정리됐다. `quality`는 dual-implementation parity를 weak heuristic + explicit
+  human review lens로 본다.
+- 현재 standing concern은 install/update propagation이 아니라 trigger overlap 같은
+  higher-noise ergonomics를 계속 advisory로 둘지와, real-host dogfood cadence다.
 
 ## Next Session
 
@@ -89,9 +88,12 @@
    missing skill별 bucket choice를 machine-readable helper로 준다.
    `validate-packaging.py`도 policy file이 있을 때 이 검사를 같이 수행하므로
    checked-in plugin export 경로에서도 drift가 늦게 빠지지 않는다.
-3. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
-   surface를 다른 머신에서 한 번 더 확인한다. 특히 real binary install이
-   PATH/non-PATH일 때 next-step honesty가 유지되는지 본다.
+3. 다음 세션 수동 테스트 우선순위:
+   다른 머신에서 `./charness tool sync-support --json cautilus`,
+   `./charness tool doctor --json cautilus`, 가능하면 `tool install/update`
+   까지 한 번 더 돌려 PATH/non-PATH honesty를 본다. 이어서 `cautilus`로
+   실제 skill 성능도 테스트해, `find-skills`/support discovery/verification
+   guidance가 operator 입장에서 자연스럽게 이어지는지 본다.
 4. ergonomics follow-on은 trigger overlap 같은 higher-noise rule을 계속
    advisory로 둘지, 더 나은 opt-in heuristic이 생겼는지 다시 보는 일이다.
    현재는 `mode_option_pressure_terms`, `progressive_disclosure_risk`를
@@ -111,7 +113,6 @@
   서로 다른 standing CI mode가 이미 존재한다는 뜻은 아니다. maintained
   evaluator가 landed하기 전까지 `evaluator-required`도 smoke + targeted HITL로
   읽어야 한다.
-
 ## References
 
 - [docs/support-tool-followup.md](support-tool-followup.md)
