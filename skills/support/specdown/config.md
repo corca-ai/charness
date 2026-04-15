@@ -88,7 +88,7 @@ the user adapter takes precedence over the built-in.
 ## Built-in jq Check
 
 The `check:jq` check is built into specdown. It evaluates
-[jq](https://jqlang.github.io/jq/) expressions against JSON data and
+[jq](https://jqlang.org/) expressions against JSON data and
 compares the result with an expected value. No adapter configuration is
 required.
 

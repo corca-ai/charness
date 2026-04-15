@@ -30,7 +30,7 @@ probes to use authenticated GitHub access when available.
 - `./scripts/run-quality.sh --review`: `33 passed, 0 failed`, total `39.2s`.
 - current budgeted phases: `pytest` `23.8s / 40.0s`, `check-coverage`
   `8.8s / 15.0s`, `check-secrets` `2.6s / 5.0s`, `run-evals` `1.7s / 5.0s`.
-- online external links: `30 Total`, `29 OK`, `0 Errors`, `1 Redirect`.
+- online external links: `30 Total`, `30 OK`, `0 Errors`.
 - coverage gate: `65.9%` (`877/1330`) against the `60.0%` aggregate floor.
   Weakest control-plane modules are `upstream_release_lib.py` `46.7%`,
   `install_provenance_lib.py` `55.9%`, `install_tools.py` `64.4%`, and
@@ -53,8 +53,8 @@ probes to use authenticated GitHub access when available.
 
 ## Weak
 
-- Online link checking still has one redirect to clean up and remains dependent
-  on upstream host behavior.
+- Online link checking remains dependent on upstream host behavior, but the
+  current declared URL set resolves without errors or redirects.
 - `check-markdown` verbose output is large; useful for review, too noisy for
   pre-push.
 - `upstream_release_lib.py` is now a more important seam and has the weakest
@@ -93,8 +93,6 @@ probes to use authenticated GitHub access when available.
 - active `AUTO_CANDIDATE`: add focused tests around `upstream_release_lib.py`
   failure modes, especially `gh` unavailable, `gh` unauthenticated, and 404
   no-release behavior.
-- active `AUTO_CANDIDATE`: clean up the remaining online-link redirect or make
-  redirects a named advisory threshold.
 - active `AUTO_CANDIDATE`: add one repo-owned doc/help drift check for the
   install/update/doctor/reset contract.
 - passive `AUTO_CANDIDATE`: keep `check-supply-chain-online` out of default `--review` because registry reachability is an operator-triggered diagnostic by policy; future work should only document the on-demand command and expected triage owner.
