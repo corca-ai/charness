@@ -128,6 +128,24 @@ def load_yaml_file(path: Path) -> dict[str, Any]:
     return load_yaml(path.read_text(encoding="utf-8"))
 
 
+def optional_string(value: Any, field: str, errors: list[str]) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        errors.append(f"{field} must be a string")
+        return None
+    return value
+
+
+def optional_string_list(value: Any, field: str, errors: list[str]) -> list[str] | None:
+    if value is None:
+        return None
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        errors.append(f"{field} must be a list of strings")
+        return None
+    return list(value)
+
+
 def _yaml_scalar(value: Any) -> str:
     if value is None:
         return "null"
