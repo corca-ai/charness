@@ -27,6 +27,7 @@ from adapter_validators import (
 )
 
 from scripts.adapter_lib import load_yaml_file
+from scripts.artifact_naming_lib import RECORD_PATTERN
 from scripts.quality_bootstrap_lib import ADAPTER_CANDIDATES
 from scripts.quality_policy_defaults import (
     DEFAULT_COVERAGE_FLOOR_POLICY,
@@ -39,7 +40,7 @@ from scripts.quality_policy_defaults import (
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
 LIST_FIELDS = ("preset_lineage", "prompt_asset_roots", "concept_paths", "preflight_commands", "gate_commands", "security_commands")
-ARTIFACT_FILENAME = "quality.md"
+ARTIFACT_FILENAME = "latest.md"
 
 def _string(value: Any, field: str, errors: list[str]) -> str | None:
     if value is None:
@@ -146,6 +147,12 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
 def find_adapter(repo_root: Path) -> Path | None:
     return next((path for candidate in ADAPTER_CANDIDATES if (path := repo_root / candidate).is_file()), None)
 
+def _artifact_path(output_dir: str) -> str:
+    return str(Path(output_dir) / ARTIFACT_FILENAME)
+
+def _record_artifact_pattern(output_dir: str) -> str:
+    return str(Path(output_dir) / RECORD_PATTERN)
+
 def load_adapter(repo_root: Path) -> dict[str, Any]:
     searched_paths = [str((repo_root / candidate).resolve()) for candidate in ADAPTER_CANDIDATES]
     adapter_path = find_adapter(repo_root)
@@ -157,7 +164,8 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "path": None,
             "data": data,
             "artifact_filename": ARTIFACT_FILENAME,
-            "artifact_path": str(Path(data["output_dir"]) / ARTIFACT_FILENAME),
+            "artifact_path": _artifact_path(data["output_dir"]),
+            "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
             "errors": [],
             "warnings": [
                 "No quality adapter found. Using default durable artifact location.",
@@ -182,7 +190,8 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "path": str(adapter_path),
         "data": data,
         "artifact_filename": ARTIFACT_FILENAME,
-        "artifact_path": str(Path(data["output_dir"]) / ARTIFACT_FILENAME),
+        "artifact_path": _artifact_path(data["output_dir"]),
+        "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
         "errors": errors,
         "warnings": warnings,
         "searched_paths": searched_paths,

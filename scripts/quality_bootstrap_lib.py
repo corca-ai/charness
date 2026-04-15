@@ -287,7 +287,7 @@ def bootstrap_quality_adapter(
     report = {
         "adapter_path": str(adapter_path),
         "adapter_status": adapter_status,
-        "artifact_path": str(Path(final_data["output_dir"]) / "quality.md"),
+        "artifact_path": str(Path(final_data["output_dir"]) / "latest.md"),
         "report_path": str(resolved_report_path),
         "preset_lineage": final_data["preset_lineage"],
         "field_statuses": field_statuses,

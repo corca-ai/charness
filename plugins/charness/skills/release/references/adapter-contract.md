@@ -55,7 +55,9 @@ Search order:
 
 The durable release artifact filename is fixed:
 
-- `release.md`
+- `latest.md`
+
+Dated release records should use `charness-artifacts/release/YYYY-MM-DD-<slug>.md`.
 
 `release` should treat the packaging manifest as the canonical mutable version
 source. Generated plugin manifests and marketplace files are derived surfaces

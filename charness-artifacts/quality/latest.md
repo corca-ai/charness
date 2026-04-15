@@ -43,7 +43,7 @@ pytest-reference validator guidance) and dogfooding it against `charness`.
 - the recommendation flow is specific enough to use operationally: `gws-cli` reports `doctor_status = ok` with provenance and readiness, while `cautilus` reports `install-needed` plus upstream docs and a repo-owned verify command.
 - `quality` now reuses that same structured recommendation payload through `skills/public/quality/scripts/list_tool_recommendations.py` instead of re-deriving missing validation-tool guidance as prose.
 - packaging drift, markdown-link discipline, and external URL health are checked by separate owners instead of one noisy mixed gate.
-- the bootstrap posture now says the previous `quality.md` is history rather
+- the bootstrap posture now says the previous quality artifact is history rather
   than authoritative scope, and the workflow requires a fresh-eye premortem
   before finalizing a report.
 

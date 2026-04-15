@@ -26,5 +26,5 @@ def test_narrative_resolve_adapter_reports_brief_template_for_current_repo() -> 
         "Next Action",
     ]
     assert "docs/control-plane.md" in payload["data"]["source_documents"]
-    assert payload["bootstrap_expectations"]["artifact_path"] == "charness-artifacts/narrative/narrative.md"
+    assert payload["bootstrap_expectations"]["artifact_path"] == "charness-artifacts/narrative/latest.md"
     assert "narrative alignment output" in payload["bootstrap_expectations"]["artifact_meaning"]

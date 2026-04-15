@@ -21,6 +21,7 @@ REPO_ROOT = _runtime_root()
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.adapter_lib import load_yaml_file
+from scripts.artifact_naming_lib import RECORD_PATTERN
 
 ADAPTER_CANDIDATES = (
     Path(".agents/narrative-adapter.yaml"),
@@ -32,7 +33,7 @@ ADAPTER_CANDIDATES = (
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from", "remote_name")
 LIST_FIELDS = ("source_documents", "mutable_documents", "brief_template", "scenario_surfaces", "scenario_block_template")
-ARTIFACT_FILENAME = "narrative.md"
+ARTIFACT_FILENAME = "latest.md"
 SOURCE_DOCUMENT_CANDIDATES = (
     "README.md",
     "docs/master-plan.md",
@@ -138,6 +139,10 @@ def _artifact_path(output_dir: str) -> str:
     return str(Path(output_dir) / ARTIFACT_FILENAME)
 
 
+def _record_artifact_pattern(output_dir: str) -> str:
+    return str(Path(output_dir) / RECORD_PATTERN)
+
+
 def _bootstrap_expectations(data: dict[str, Any]) -> dict[str, str]:
     return {
         "artifact_path": _artifact_path(data["output_dir"]),
@@ -159,6 +164,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "data": data,
             "artifact_filename": ARTIFACT_FILENAME,
             "artifact_path": _artifact_path(data["output_dir"]),
+            "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
             "bootstrap_expectations": _bootstrap_expectations(data),
             "errors": [],
             "warnings": [
@@ -187,6 +193,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "data": data,
         "artifact_filename": ARTIFACT_FILENAME,
         "artifact_path": _artifact_path(data["output_dir"]),
+        "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
         "bootstrap_expectations": _bootstrap_expectations(data),
         "errors": errors,
         "warnings": warnings,

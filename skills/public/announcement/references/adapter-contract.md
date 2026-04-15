@@ -50,9 +50,13 @@ Search order:
 
 ## Artifact Rule
 
-The durable draft artifact filename is fixed:
+The current draft pointer filename is fixed:
 
-- `announcement.md`
+- `latest.md`
+
+Dated draft records should use:
+
+- `YYYY-MM-DD-<slug>.md`
 
 The default delivery record is hidden state under the repo root:
 

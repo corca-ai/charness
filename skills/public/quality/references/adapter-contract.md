@@ -105,13 +105,15 @@ rule values as an error instead of silently rewriting them to `[]`.
 
 ## Artifact Rule
 
-The durable quality artifact filename is fixed:
+The current quality pointer filename is fixed:
 
-- `quality.md`
+- `latest.md`
 
 Default path:
 
-- `charness-artifacts/quality/quality.md`
+- `charness-artifacts/quality/latest.md`
+
+Dated quality records should use `charness-artifacts/quality/YYYY-MM-DD-<slug>.md`.
 
 Recommended sibling history path:
 

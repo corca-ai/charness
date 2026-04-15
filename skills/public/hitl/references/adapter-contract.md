@@ -42,7 +42,9 @@ Search order:
 
 The summary artifact filename is fixed:
 
-- `hitl.md`
+- `latest.md`
+
+Dated HITL review records should use `charness-artifacts/hitl/YYYY-MM-DD-<slug>.md`.
 
 The runtime state directory defaults to:
 

@@ -25,7 +25,7 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 
 Default durable artifact:
 
-- `charness-artifacts/announcement/announcement.md`
+- `charness-artifacts/announcement/latest.md`
 
 Default delivery log:
 
@@ -33,7 +33,7 @@ Default delivery log:
 
 What you get after one run:
 
-- `charness-artifacts/announcement/announcement.md` as the visible draft artifact
+- `charness-artifacts/announcement/latest.md` as the visible draft artifact
 - `.charness/announcement/announcements.jsonl` only after explicit draft finalization or delivery
 
 What this does not do:

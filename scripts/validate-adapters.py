@@ -12,6 +12,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.artifact_naming_lib import current_artifact_filename
 from scripts.repo_file_listing import iter_matching_repo_files
 
 
@@ -20,7 +21,7 @@ class ValidationError(Exception):
 
 
 def expected_artifact_filename(skill_id: str) -> str:
-    return f"{skill_id}.md"
+    return current_artifact_filename(skill_id)
 
 
 def validate_resolver(path: Path, root: Path) -> None:

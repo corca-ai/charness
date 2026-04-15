@@ -37,7 +37,9 @@ Fallback lookup order:
 
 The default artifact is:
 
-- `charness-artifacts/narrative/narrative.md`
+- `charness-artifacts/narrative/latest.md`
+
+Dated narrative records should use `charness-artifacts/narrative/YYYY-MM-DD-<slug>.md`.
 
 Keep the durable alignment artifact separate from any audience-specific brief
 when the brief is ephemeral or audience-local.

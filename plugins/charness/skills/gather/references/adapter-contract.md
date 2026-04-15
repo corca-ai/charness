@@ -34,10 +34,12 @@ Optional shared provenance:
 
 The durable gather artifact filename is fixed:
 
-- `gather.md`
+- `latest.md`
 
 Default path:
 
-- `charness-artifacts/gather/gather.md`
+- `charness-artifacts/gather/latest.md`
+
+Dated knowledge records should use `charness-artifacts/gather/YYYY-MM-DD-<slug>.md`.
 
 To change the location, override `output_dir` in the adapter.

@@ -76,7 +76,7 @@ def main() -> int:
     if not output_dir.is_dir():
         print(f"No debug output directory at {output_dir.relative_to(repo_root)}.", file=sys.stderr)
         return 1
-    artifacts = sorted(output_dir.glob("debug*.md"))
+    artifacts = sorted(output_dir.glob("*.md"))
     if not artifacts:
         print(f"No debug artifacts found in {output_dir.relative_to(repo_root)}.", file=sys.stderr)
         return 1

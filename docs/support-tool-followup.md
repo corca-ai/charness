@@ -201,7 +201,7 @@ Expected repo changes:
 Dogfood requirement:
 
 - run `quality` against `charness` after the skill update
-- update [charness-artifacts/quality/quality.md](../charness-artifacts/quality/quality.md)
+- update [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
   with the new findings or confirmation that the new lens passes cleanly
 
 ### 2a. `quality`: Executable-Spec And Coverage Fragility Follow-On

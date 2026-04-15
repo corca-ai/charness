@@ -11,7 +11,7 @@ summary_path: charness-artifacts/retro/recent-lessons.md
 evidence_paths:
   - docs/handoff.md
   - charness-artifacts/debug
-  - charness-artifacts/quality/quality.md
+  - charness-artifacts/quality/latest.md
 metrics_commands: []
 auto_session_trigger_surfaces:
   - checked-in-plugin-export

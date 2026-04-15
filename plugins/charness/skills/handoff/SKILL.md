@@ -27,7 +27,7 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 ```
 
 By default, `handoff` writes its durable artifact to
-`charness-artifacts/handoff/handoff.md`. Repos can override the directory with
+`docs/handoff.md`. Repos can override the directory with
 `.agents/handoff-adapter.yaml`.
 
 Keep the handoff inside the repo-owned size and shape gate. Default to roughly

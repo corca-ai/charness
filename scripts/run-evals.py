@@ -86,7 +86,7 @@ def scenario_doc_links_valid(root: Path) -> None:
     result = run_command(["python3", "scripts/check-doc-links.py", "--repo-root", str(fixture)], cwd=root)
     expect_success(result, "doc-links-valid fixture")
 def scenario_quality_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(root, skill_id="quality", adapter_name="quality-adapter.yaml", expected_artifact_path="charness-artifacts/quality/quality.md")
+    expect_adapter_bootstrap(root, skill_id="quality", adapter_name="quality-adapter.yaml", expected_artifact_path="charness-artifacts/quality/latest.md")
 def scenario_impl_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(
         root,
@@ -95,7 +95,7 @@ def scenario_impl_adapter_bootstrap(root: Path) -> None:
         expected_data={"output_dir": "charness-artifacts/impl", "verification_tools": [], "ui_verification_tools": [], "truth_surfaces": []},
     )
 def scenario_debug_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(root, skill_id="debug", adapter_name="debug-adapter.yaml", expected_artifact_path="charness-artifacts/debug/debug.md")
+    expect_adapter_bootstrap(root, skill_id="debug", adapter_name="debug-adapter.yaml", expected_artifact_path="charness-artifacts/debug/latest.md")
 def scenario_quality_adapter_checked_in(root: Path) -> None:
     resolve_script = root / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py"
     resolve_result = run_command(["python3", str(resolve_script), "--repo-root", str(root)], cwd=root)
@@ -103,7 +103,7 @@ def scenario_quality_adapter_checked_in(root: Path) -> None:
     payload = json.loads(resolve_result.stdout)
     if payload.get("found") is not True or payload.get("valid") is not True:
         raise EvalError(f"checked-in quality adapter resolve: unexpected payload {payload!r}")
-    if payload.get("artifact_path") != "charness-artifacts/quality/quality.md":
+    if payload.get("artifact_path") != "charness-artifacts/quality/latest.md":
         raise EvalError(
             f"checked-in quality adapter resolve: unexpected artifact_path {payload.get('artifact_path')!r}"
         )
@@ -159,17 +159,17 @@ def scenario_quality_bootstrap_posture(root: Path) -> None:
         if resolved["data"]["coverage_floor_policy"]["gate_script_pattern"] != "*-quality-gate.sh":
             raise EvalError(f"quality bootstrap posture resolve: unexpected floor policy {resolved!r}")
 def scenario_narrative_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(root, skill_id="narrative", adapter_name="narrative-adapter.yaml", expected_artifact_path="charness-artifacts/narrative/narrative.md")
+    expect_adapter_bootstrap(root, skill_id="narrative", adapter_name="narrative-adapter.yaml", expected_artifact_path="charness-artifacts/narrative/latest.md")
 
 def scenario_release_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(root, skill_id="release", adapter_name="release-adapter.yaml", expected_artifact_path="charness-artifacts/release/release.md")
+    expect_adapter_bootstrap(root, skill_id="release", adapter_name="release-adapter.yaml", expected_artifact_path="charness-artifacts/release/latest.md")
 
 def scenario_handoff_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(root, skill_id="handoff", adapter_name="handoff-adapter.yaml", expected_artifact_path="charness-artifacts/handoff/handoff.md")
+    expect_adapter_bootstrap(root, skill_id="handoff", adapter_name="handoff-adapter.yaml", expected_artifact_path="docs/handoff.md")
 def scenario_gather_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(root, skill_id="gather", adapter_name="gather-adapter.yaml", expected_artifact_path="charness-artifacts/gather/gather.md")
+    expect_adapter_bootstrap(root, skill_id="gather", adapter_name="gather-adapter.yaml", expected_artifact_path="charness-artifacts/gather/latest.md")
 def scenario_init_repo_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(root, skill_id="init-repo", adapter_name="init-repo-adapter.yaml", expected_artifact_path="charness-artifacts/init-repo/init-repo.md")
+    expect_adapter_bootstrap(root, skill_id="init-repo", adapter_name="init-repo-adapter.yaml", expected_artifact_path="charness-artifacts/init-repo/latest.md")
 def scenario_init_repo_inspect_states(root: Path) -> None:
     run_init_repo_inspect_states(root, run_command=run_command, expect_success=expect_success, error_type=EvalError)
 

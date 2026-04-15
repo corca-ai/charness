@@ -203,7 +203,7 @@ Read first:
 
 - [skills/public/impl/SKILL.md](../skills/public/impl/SKILL.md)
 - [skills/public/quality/SKILL.md](../skills/public/quality/SKILL.md)
-- [charness-artifacts/quality/quality.md](../charness-artifacts/quality/quality.md)
+- [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
 
 Useful local commands:
 

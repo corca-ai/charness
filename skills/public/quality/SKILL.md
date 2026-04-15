@@ -30,13 +30,13 @@ When stronger local proof depends on a missing validation tool, reuse the shared
 python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root .
 ```
 
-Keep `quality.md` short and current; move older review detail into sibling `history/*.md` archives when today's posture starts getting buried. If the adapter is missing and the repo only needs a blank scaffold instead of detected bootstrap, scaffold one directly:
+Keep `latest.md` short and current; move older review detail into sibling `history/*.md` archives when today's posture starts getting buried. If the adapter is missing and the repo only needs a blank scaffold instead of detected bootstrap, scaffold one directly:
 
 ```bash
 python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root . --preset-id portable-defaults
 ```
 
-The prior `quality.md` is history, not the authoritative universe. Re-derive the current source, spec, and gate surface before trusting what the last artifact happened to mention.
+The prior quality artifact is history, not the authoritative universe. Re-derive the current source, spec, and gate surface before trusting what the last artifact happened to mention.
 
 ```bash
 # Required Tools: rg

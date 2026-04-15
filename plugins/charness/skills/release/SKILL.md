@@ -28,7 +28,7 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 
 Default durable artifact:
 
-- `charness-artifacts/release/release.md`
+- `charness-artifacts/release/latest.md`
 
 If the repo has no checked-in release adapter yet, scaffold one:
 

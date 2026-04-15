@@ -35,7 +35,7 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 ```
 
 By default, `gather` writes its durable artifact to
-`charness-artifacts/gather/gather.md`. Repos can override the directory with
+`charness-artifacts/gather/latest.md`. Repos can override the directory with
 `.agents/gather-adapter.yaml`.
 
 ```bash

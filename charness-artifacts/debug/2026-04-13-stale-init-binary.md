@@ -65,7 +65,7 @@ process was still the old binary without `maybe_install_codex_host`.
 
 ## Related Prior Incidents
 
-- `debug-2026-04-11-plugin-export-drift.md` — plugin export surface drift
+- `2026-04-11-plugin-export-drift.md` — plugin export surface drift
   caused managed checkout dirt, which blocked `charness update`. That was the
   direct precursor: the user hit the dirty-checkout error, ran reset, then
   re-ran init with the stale binary and encountered this issue.

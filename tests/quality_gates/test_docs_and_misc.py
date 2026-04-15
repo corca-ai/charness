@@ -23,7 +23,7 @@ def test_narrative_map_sources_reports_checked_in_docs() -> None:
     source_paths = {entry["path"] for entry in payload["source_documents"]}
     assert "README.md" in source_paths
     assert "docs/handoff.md" in source_paths
-    assert payload["artifact_path"] == "charness-artifacts/narrative/narrative.md"
+    assert payload["artifact_path"] == "charness-artifacts/narrative/latest.md"
     assert payload["freshness"]["status"] in {"ahead", "current", "missing-remote", "not-git", "unavailable"}
 
 
@@ -317,7 +317,7 @@ def test_quality_skill_carries_blind_spot_policy_and_premortem_refs() -> None:
         ROOT / "skills" / "public" / "quality" / "references" / "prompt-asset-policy.md"
     ).read_text(encoding="utf-8")
 
-    assert "prior `quality.md` is history" in skill_text
+    assert "prior quality artifact is history" in skill_text
     assert "fresh-eye premortem" in skill_text
     assert "active` or `passive" in skill_text
     assert "prompt/content bulk" in skill_text

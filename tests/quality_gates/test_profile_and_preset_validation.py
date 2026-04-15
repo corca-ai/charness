@@ -251,7 +251,7 @@ def test_validate_adapters_ignores_gitignored_skills(tmp_path: Path) -> None:
             [
                 "#!/usr/bin/env python3",
                 "import json",
-                'print(json.dumps({"valid": True, "artifact_filename": "kept.md", "artifact_path": "charness-artifacts/kept/kept.md"}))',
+                'print(json.dumps({"valid": True, "artifact_filename": "latest.md", "artifact_path": "charness-artifacts/kept/latest.md"}))',
                 "",
             ]
         ),

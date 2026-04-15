@@ -14,7 +14,7 @@ def main() -> None:
     parser.add_argument("--head-commit", required=True)
     parser.add_argument("--delivery-kind", default="none")
     parser.add_argument("--delivery-target", default="")
-    parser.add_argument("--artifact-path", default="charness-artifacts/announcement/announcement.md")
+    parser.add_argument("--artifact-path", default="charness-artifacts/announcement/latest.md")
     parser.add_argument("--commits", nargs="*", default=[])
     args = parser.parse_args()
 

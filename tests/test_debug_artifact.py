@@ -32,7 +32,7 @@ def seed_repo(tmp_path: Path, artifact_body: str) -> Path:
         ),
         encoding="utf-8",
     )
-    (repo / "charness-artifacts" / "debug" / "debug.md").write_text(artifact_body, encoding="utf-8")
+    (repo / "charness-artifacts" / "debug" / "latest.md").write_text(artifact_body, encoding="utf-8")
     return repo
 def test_validate_debug_artifact_rejects_extra_top_level_section(tmp_path: Path) -> None:
     repo = seed_repo(

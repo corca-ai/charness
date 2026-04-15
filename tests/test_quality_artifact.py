@@ -32,7 +32,7 @@ def seed_repo(tmp_path: Path, artifact_body: str) -> Path:
         ),
         encoding="utf-8",
     )
-    (repo / "charness-artifacts" / "quality" / "quality.md").write_text(artifact_body, encoding="utf-8")
+    (repo / "charness-artifacts" / "quality" / "latest.md").write_text(artifact_body, encoding="utf-8")
     (repo / "charness-artifacts" / "quality" / "history" / "one.md").write_text("# One\n", encoding="utf-8")
     return repo
 def test_validate_quality_artifact_rejects_missing_history_section(tmp_path: Path) -> None:

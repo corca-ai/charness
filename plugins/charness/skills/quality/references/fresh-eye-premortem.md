@@ -1,6 +1,6 @@
 # Fresh-Eye Premortem
 
-The prior `quality.md` is a historical artifact, not the authoritative universe.
+The prior quality artifact is historical, not the authoritative universe.
 
 Before finalizing a report:
 

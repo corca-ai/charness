@@ -21,6 +21,7 @@ REPO_ROOT = _runtime_root()
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.adapter_lib import load_yaml_file
+from scripts.artifact_naming_lib import RECORD_PATTERN
 
 ADAPTER_CANDIDATES = (
     Path(".agents/gather-adapter.yaml"),
@@ -31,7 +32,7 @@ ADAPTER_CANDIDATES = (
 )
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
-ARTIFACT_FILENAME = "gather.md"
+ARTIFACT_FILENAME = "latest.md"
 
 
 def _string(value: Any, field: str, errors: list[str]) -> str | None:
@@ -87,6 +88,10 @@ def _artifact_path(output_dir: str) -> str:
     return str(Path(output_dir) / ARTIFACT_FILENAME)
 
 
+def _record_artifact_pattern(output_dir: str) -> str:
+    return str(Path(output_dir) / RECORD_PATTERN)
+
+
 def load_adapter(repo_root: Path) -> dict[str, Any]:
     searched_paths = [str((repo_root / candidate).resolve()) for candidate in ADAPTER_CANDIDATES]
     adapter_path = find_adapter(repo_root)
@@ -99,6 +104,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "data": data,
             "artifact_filename": ARTIFACT_FILENAME,
             "artifact_path": _artifact_path(data["output_dir"]),
+            "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
             "errors": [],
             "warnings": [
                 "No gather adapter found. Using default durable artifact location.",
@@ -124,6 +130,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "data": data,
         "artifact_filename": ARTIFACT_FILENAME,
         "artifact_path": _artifact_path(data["output_dir"]),
+        "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
         "errors": errors,
         "warnings": warnings,
         "searched_paths": searched_paths,

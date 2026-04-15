@@ -58,6 +58,9 @@ Prefer repo-owned adapter paths first:
 - Keep the skill body generic.
 - Store durable repo outputs under `charness-artifacts/<skill-id>/` unless the repo
   already has a better checked-in home.
+- Use `latest.md` as the current artifact pointer and
+  `YYYY-MM-DD-<slug>.md` for durable records. Rolling canonical artifacts may
+  keep a clearer fixed filename, such as `docs/handoff.md`.
 - Auto-create missing adapters only when the defaults are low risk.
 - Distinguish `unset` from `explicitly empty` for optional list-like fields.
 - Keep official presets separate from adapters. The adapter records which preset

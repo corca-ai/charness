@@ -26,7 +26,7 @@ concept_paths:
 - docs/public-skill-validation.md
 - docs/operator-acceptance.md
 - docs/handoff.md
-- charness-artifacts/quality/quality.md
+- charness-artifacts/quality/latest.md
 - README.md
 preflight_commands:
 - python3 scripts/validate-maintainer-setup.py --repo-root .

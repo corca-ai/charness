@@ -36,7 +36,7 @@ self-validation.
   remaining roadmap items
 - `docs/skill-migration-map.md`: migration intent and remaining destinations
 - `docs/control-plane.md`: external integration contract
-- `charness-artifacts/quality/quality.md`: current dogfood quality findings and next
+- `charness-artifacts/quality/latest.md`: current dogfood quality findings and next
   gates
 
 Read the smallest memory surface that answers the current question.

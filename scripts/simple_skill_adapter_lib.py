@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts.adapter_lib import load_yaml_file
+from scripts.artifact_naming_lib import RECORD_PATTERN
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
 
@@ -78,6 +79,7 @@ def load_simple_adapter(
             "data": data,
             "artifact_filename": artifact_filename,
             "artifact_path": str(Path(data["output_dir"]) / artifact_filename),
+            "record_artifact_pattern": str(Path(data["output_dir"]) / RECORD_PATTERN),
             "errors": [],
             "warnings": list(missing_warnings),
             "searched_paths": searched_paths,
@@ -100,6 +102,7 @@ def load_simple_adapter(
         "data": data,
         "artifact_filename": artifact_filename,
         "artifact_path": str(Path(data["output_dir"]) / artifact_filename),
+        "record_artifact_pattern": str(Path(data["output_dir"]) / RECORD_PATTERN),
         "errors": errors,
         "warnings": warnings,
         "searched_paths": searched_paths,

@@ -34,11 +34,13 @@ Optional shared provenance:
 
 The durable debug artifact filename is fixed:
 
-- `debug.md`
+- `latest.md`
 
 Default path:
 
-- `charness-artifacts/debug/debug.md`
+- `charness-artifacts/debug/latest.md`
+
+Dated debug records should use `charness-artifacts/debug/YYYY-MM-DD-<slug>.md`.
 
 To change the location, override `output_dir` in the adapter.
 

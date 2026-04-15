@@ -103,8 +103,8 @@ fallback, so the stale support block from one day earlier is enough to abort
 `charness update` before any update work runs.
 
 This is the same class of failure as
-`debug-2026-04-13-stale-init-binary.md` (stale generated artifact vs new
-code) and `debug-2026-04-11-plugin-export-drift.md` (generated surface drift
+`2026-04-13-stale-init-binary.md` (stale generated artifact vs new
+code) and `2026-04-11-plugin-export-drift.md` (generated surface drift
 blocking `update` before it can report the real state).
 
 ## Prevention
@@ -130,7 +130,7 @@ Structural options to keep this from recurring:
 
 ## Related Prior Incidents
 
-- `debug-2026-04-13-stale-init-binary.md` — same family: stale generated
+- `2026-04-13-stale-init-binary.md` — same family: stale generated
   artifact (installed CLI binary) vs new source code.
-- `debug-2026-04-11-plugin-export-drift.md` — same family: generated
+- `2026-04-11-plugin-export-drift.md` — same family: generated
   surface drift blocking `charness update` before it can do useful work.

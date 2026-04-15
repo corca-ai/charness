@@ -19,6 +19,7 @@ REPO_ROOT = _runtime_root()
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.adapter_lib import load_yaml_file
+from scripts.artifact_naming_lib import RECORD_PATTERN
 
 ADAPTER_CANDIDATES = (
     Path(".agents/announcement-adapter.yaml"),
@@ -30,7 +31,7 @@ ADAPTER_CANDIDATES = (
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from", "product_name", "delivery_kind", "delivery_target", "release_notes_path", "post_command_template", "delivery_capability")
 LIST_FIELDS = ("sections", "audience_tags", "omission_lenses")
-ARTIFACT_FILENAME = "announcement.md"
+ARTIFACT_FILENAME = "latest.md"
 RECORD_FILENAME = "announcements.jsonl"
 
 
@@ -134,6 +135,10 @@ def _record_path() -> str:
     return str(Path(".charness") / "announcement" / RECORD_FILENAME)
 
 
+def _record_artifact_pattern(output_dir: str) -> str:
+    return str(Path(output_dir) / RECORD_PATTERN)
+
+
 def _bootstrap_expectations(data: dict[str, Any]) -> dict[str, str]:
     delivery_note = (
         "Delivery stays draft-only until the adapter declares a backend and the user confirms posting."
@@ -162,6 +167,7 @@ def _missing_adapter_payload(data: dict[str, Any], searched_paths: list[str]) ->
         "field_state": _field_state_map({}),
         "artifact_filename": ARTIFACT_FILENAME,
         "artifact_path": _output_path(data["output_dir"], ARTIFACT_FILENAME),
+        "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
         "record_path": _record_path(),
         "bootstrap_expectations": _bootstrap_expectations(data),
         "errors": [],
@@ -201,6 +207,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "field_state": _field_state_map(raw_data),
         "artifact_filename": ARTIFACT_FILENAME,
         "artifact_path": _output_path(data["output_dir"], ARTIFACT_FILENAME),
+        "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
         "record_path": _record_path(),
         "bootstrap_expectations": _bootstrap_expectations(data),
         "errors": errors,

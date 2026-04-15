@@ -9,7 +9,9 @@ Examples:
 - a knowledge or research folder
 - a task-local gathered artifact
 
-If no durable surface exists yet, default to `charness-artifacts/gather/gather.md`.
+If no durable surface exists yet, default to `charness-artifacts/gather/latest.md`
+for the current pointer and `charness-artifacts/gather/YYYY-MM-DD-<slug>.md`
+for dated records.
 
 If the repo has a better checked-in home, move the directory choice into the
 gather adapter rather than the skill body.
