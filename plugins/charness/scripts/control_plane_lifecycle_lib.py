@@ -38,6 +38,23 @@ def run_command_payloads(commands: list[str], repo_root: Path) -> list[dict[str,
     return [command_result_payload(run_shell(command, repo_root)) for command in commands]
 
 
+def render_repo_followup(repo_root: Path, install_action: dict[str, Any]) -> dict[str, Any] | None:
+    repo_followup = install_action.get("repo_followup")
+    if not isinstance(repo_followup, dict):
+        return None
+    command_template = repo_followup.get("command_template")
+    if not isinstance(command_template, str) or not command_template:
+        return None
+    return {
+        "summary": repo_followup.get("summary"),
+        "command_template": command_template,
+        "rendered_command": command_template.format(repo_root=str(repo_root)),
+        "docs_url": repo_followup.get("docs_url"),
+        "when": repo_followup.get("when"),
+        "optional": repo_followup.get("optional", False),
+    }
+
+
 def select_by_tool_id(items: list[dict[str, Any]], tool_ids: list[str]) -> list[dict[str, Any]]:
     if not tool_ids:
         return list(items)

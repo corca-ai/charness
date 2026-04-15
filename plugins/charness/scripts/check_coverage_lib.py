@@ -111,6 +111,12 @@ def exercise_control_plane_scenarios() -> None:
     manifest = _basic_manifest()
     lifecycle.failed_healthcheck(manifest, reason="detect failed")
     lifecycle.attach_release_metadata({}, provenance={"status": "detected"}, release={"status": "ok"})
+    lifecycle.render_repo_followup(Path("."), {})
+    lifecycle.render_repo_followup(Path("."), {"repo_followup": {"command_template": ""}})
+    lifecycle.render_repo_followup(
+        Path("/repo"),
+        {"repo_followup": {"summary": "demo", "command_template": "demo --repo-root {repo_root}"}},
+    )
     selected = lifecycle.select_by_tool_id([manifest, _basic_manifest("other")], ["demo"])
     lifecycle.print_tool_statuses([{"tool_id": "demo", "status": "ok"}])
     lifecycle.has_any_status(selected, status_key="tool_id", statuses={"demo"})
@@ -290,6 +296,8 @@ def exercise_lifecycle_scenarios() -> None:
     detect_ok = {"ok": True, "results": [], "failure_details": [], "failure_hint": None}
     health_ok = {"ok": True, "results": [], "failure_details": [], "failure_hint": None}
     provenance = {"status": "detected", "install_method": "path", "package_name": None}
+    install_ok = [{"command": "demo install", "exit_code": 0, "stdout": "", "stderr": ""}]
+    install_failed = [{"command": "demo install", "exit_code": 1, "stdout": "", "stderr": "boom"}]
     with tempfile.TemporaryDirectory(prefix="charness-lifecycle-") as temp_dir:
         repo = Path(temp_dir)
         release = {"status": "ok", "latest_version": "1.0.0"}
@@ -300,12 +308,14 @@ def exercise_lifecycle_scenarios() -> None:
                         install_tools.install_one(repo, none_manifest, execute=True)
                         install_tools.install_one(repo, manual_manifest, execute=True)
                         install_tools.install_one(repo, manifest, execute=False)
-                        with mock.patch.object(
-                            install_tools,
-                            "run_command_payloads",
-                            return_value=[{"command": "demo install", "exit_code": 0, "stdout": "", "stderr": ""}],
-                        ):
+                        with mock.patch.object(install_tools, "run_command_payloads", return_value=install_ok):
                             install_tools.install_one(repo, manifest, execute=True)
+                        with mock.patch.object(install_tools, "run_command_payloads", return_value=install_failed):
+                            install_tools.install_one(repo, manifest, execute=True)
+        with mock.patch.object(install_tools, "load_manifests", return_value=[manifest]):
+            with mock.patch.object(install_tools, "install_one", return_value={"tool_id": "demo", "status": "failed"}):
+                with mock.patch.object(sys, "argv", ["install_tools.py", "--repo-root", str(repo)]):
+                    install_tools.main()
         with mock.patch.object(update_tools, "probe_release", return_value=release):
             with mock.patch.object(update_tools, "detect_install_provenance", return_value=dict(provenance)):
                 with mock.patch.object(update_tools, "package_manager_update_action", return_value=None):
@@ -333,9 +343,7 @@ def exercise_upstream_release_scenarios() -> None:
         return FakeUrlResponse({"tag_name": "v9.9.9", "assets": []})
 
     class FailedGh:
-        returncode = 1
-        stdout = ""
-        stderr = "not authenticated"
+        returncode, stdout, stderr = 1, "", "not authenticated"
 
     release_env = {
         "CHARNESS_RELEASE_PROBE_FIXTURES": "",
@@ -353,7 +361,6 @@ def exercise_upstream_release_scenarios() -> None:
                     upstream.probe_github_release("example/failed-gh")
         with mock.patch.object(upstream.shutil, "which", return_value=None):
             for code in (403, 500):
-
                 def http_error_urlopen(request: urllib.request.Request, *, timeout: int, code: int = code) -> FakeUrlResponse:
                     raise urllib.error.HTTPError(request.full_url, code, "error", hdrs=None, fp=None)
 

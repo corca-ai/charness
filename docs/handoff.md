@@ -24,13 +24,14 @@
   lifecycle helper 중복을 `control_plane_lifecycle_lib.py`로 줄였고,
   `check-test-production-ratio`를 추가했다. `sync_support.py`의 반복
   selection/status 출력도 같은 helper로 줄여 coverage가 `80.0%`에서
-  `86.5%`로 올라갔다. 현재 ratio는 `0.53` (`9240/17482` Python lines),
-  기본 상한은 `1.00`이다.
+  `86.5%`로 올라갔다. `install_tools.py`는 one-use wrapper를 접어
+  `81.5%`에서 `84.2%`로 올라갔다. 현재 ratio는 `0.53`
+  (`9240/17443` Python lines), 기본 상한은 `1.00`이다.
 - `inventory-quality-handoff`가 `./scripts/run-quality.sh`에 추가됐다.
   `NON_AUTOMATABLE` 추천 항목에 HITL handoff 필드가 없으면 advisory로
   보고하지만 아직 hard gate는 아니다.
 - `./scripts/run-quality.sh --review` 재실행은 `36 passed, 0 failed`,
-  total `43.2s`로 통과했다. 새 `check-test-production-ratio`와 per-file
+  total `41.9s`로 통과했다. 새 `check-test-production-ratio`와 per-file
   coverage floor가 standing quality path에 포함됐다.
 - 이번 pass에서 `recent-lessons.md`가 최신 retro digest로 갱신되는 계약과
   충돌하던 오래된 `plugin export` 테스트 앵커를 구조 검증으로 바꿨다.
@@ -55,8 +56,8 @@
 ## Next Session
 
 1. 먼저 `git status --short`를 확인한다. 이 handoff가 커밋된 상태라면 새 첫
-   품질 작업은 `install_tools.py` 또는 `control_plane_lib.py`를 리팩터링하거나
-   죽은 코드를 지우는 것이다. 둘 다 아직 per-file floor 근처에 있다.
+   품질 작업은 `control_plane_lib.py`를 리팩터링하거나 죽은 코드를 지우는
+   것이다. 현재 가장 약한 tracked file이다.
 2. artifact naming을 더 밀면 stale artifact 처리 정책을 별도 결정한다.
    이번 slice는 자동 삭제 정책을 추가하지 않았고, 기존 기록을 보존하는 방향만
    적용했다.

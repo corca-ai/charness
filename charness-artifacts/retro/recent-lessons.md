@@ -2,18 +2,18 @@
 
 ## Current Focus
 
-- This slice followed the per-file coverage floor work by lifting `sync_support.py` off the exact `80.0%` threshold.
+- This slice continued the quality ratchet after the per-file `80.0%` coverage floor landed.
 
 ## Repeat Traps
 
-- Some remaining weak lines are trace-shape artifacts around imports and function signatures rather than user-visible behavior. The useful fix was not to chase those directly, but to remove wrapper repetition and cover missing behavioral branches.
+- No repeat traps extracted from source retro.
 
 ## Next-Time Checklist
 
-- workflow: when a file sits exactly on a floor, inspect whether uncovered lines are real behavior before adding tests.
-- capability: the next cleanup target should be `install_tools.py`, now the weakest tracked file at `81.5%`.
-- memory: shared lifecycle wrapper helpers now live in `scripts/control_plane_lifecycle_lib.py`.
+- workflow: check helper-file length before the full review when coverage trace scenarios grow.
+- capability: continue using `run-slice-closeout.py` after plugin export changes; it caught all relevant surface obligations in one pass.
+- memory: keep `control_plane_lib.py` as the next cleanup target in handoff and quality artifacts.
 
 ## Sources
 
-- `charness-artifacts/retro/2026-04-15-sync-support-floor-cleanup.md`
+- `charness-artifacts/retro/2026-04-15-install-tools-floor-cleanup.md`

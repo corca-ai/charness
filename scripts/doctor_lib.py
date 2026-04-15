@@ -6,30 +6,13 @@ from pathlib import Path
 from typing import Any
 
 from scripts.control_plane_lib import evaluate_version, read_lock, run_check
+from scripts.control_plane_lifecycle_lib import render_repo_followup
 from scripts.repo_layout import discovery_stub_dir, generated_support_dir
 from scripts.support_sync_lib import (
     inspect_support_sync,
     support_link_name,
     support_state_for_manifest,
 )
-
-
-def repo_followup_for_manifest(repo_root: Path, capability: dict[str, Any]) -> dict[str, Any] | None:
-    install = capability.get("lifecycle", {}).get("install", {})
-    repo_followup = install.get("repo_followup")
-    if not isinstance(repo_followup, dict):
-        return None
-    command_template = repo_followup.get("command_template")
-    if not isinstance(command_template, str) or not command_template:
-        return None
-    return {
-        "summary": repo_followup.get("summary"),
-        "command_template": command_template,
-        "rendered_command": command_template.format(repo_root=str(repo_root)),
-        "docs_url": repo_followup.get("docs_url"),
-        "when": repo_followup.get("when"),
-        "optional": repo_followup.get("optional", False),
-    }
 
 
 def install_route_for_manifest(repo_root: Path, capability: dict[str, Any]) -> dict[str, Any]:
@@ -39,7 +22,7 @@ def install_route_for_manifest(repo_root: Path, capability: dict[str, Any]) -> d
         "commands": install.get("commands", []),
         "docs_url": install.get("docs_url"),
         "install_url": install.get("install_url"),
-        "repo_followup": repo_followup_for_manifest(repo_root, capability),
+        "repo_followup": render_repo_followup(repo_root, install),
         "notes": install.get("notes", []),
     }
 

@@ -17,29 +17,12 @@ from scripts.control_plane_lifecycle_lib import (
     detect_and_healthcheck,
     has_any_status,
     print_tool_statuses,
+    render_repo_followup,
     run_command_payloads,
     select_by_tool_id,
 )
 from scripts.install_provenance_lib import detect_install_provenance
 from scripts.upstream_release_lib import probe_release
-
-
-def render_repo_followup(repo_root: Path, install_action: dict[str, object]) -> dict[str, object] | None:
-    repo_followup = install_action.get("repo_followup")
-    if not isinstance(repo_followup, dict):
-        return None
-    command_template = repo_followup.get("command_template")
-    if not isinstance(command_template, str) or not command_template:
-        return None
-    rendered_command = command_template.format(repo_root=str(repo_root))
-    return {
-        "summary": repo_followup.get("summary"),
-        "command_template": command_template,
-        "rendered_command": rendered_command,
-        "docs_url": repo_followup.get("docs_url"),
-        "when": repo_followup.get("when"),
-        "optional": repo_followup.get("optional", False),
-    }
 
 
 def base_result(
@@ -109,38 +92,6 @@ def persist_install_lock(
     )
 
 
-def finish_nonexecuting_install(
-    repo_root: Path,
-    manifest: dict[str, object],
-    install_action: dict[str, object],
-    *,
-    mode: str,
-    status: str,
-    release: dict[str, object] | None,
-    provenance: dict[str, object],
-) -> dict[str, object]:
-    detect_result, healthcheck_result = detect_and_healthcheck(
-        repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
-    )
-    if status == "manual":
-        status = "already-installed" if detect_result["ok"] and healthcheck_result["ok"] else "manual"
-    persistable = {
-        "status": status,
-        "mode": mode,
-        "commands": [],
-        "detect": detect_result,
-        "healthcheck": healthcheck_result,
-        "release": release,
-        "provenance": provenance,
-    }
-    return {
-        "status": status,
-        "detect": detect_result,
-        "healthcheck": healthcheck_result,
-        "persistable": persistable,
-    }
-
-
 def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -> dict[str, object]:
     install_action = manifest["lifecycle"]["install"]
     mode = install_action["mode"]
@@ -149,31 +100,34 @@ def install_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) 
     provenance = capture_provenance(manifest)
 
     if mode in {"none", "manual"}:
-        outcome = finish_nonexecuting_install(
-            repo_root,
-            manifest,
-            install_action,
-            mode=mode,
-            status="noop" if mode == "none" else "manual",
-            release=release,
-            provenance=provenance,
+        detect_result, healthcheck_result = detect_and_healthcheck(
+            repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
         )
+        status = "noop" if mode == "none" else "manual"
+        if status == "manual" and detect_result["ok"] and healthcheck_result["ok"]:
+            status = "already-installed"
         if execute:
             persist_install_lock(
                 repo_root,
                 manifest,
                 install_action,
-                **outcome["persistable"],
+                status=status,
+                mode=mode,
+                commands=[],
+                detect=detect_result,
+                healthcheck=healthcheck_result,
+                release=release,
+                provenance=provenance,
             )
         result = base_result(
             repo_root,
             manifest,
             install_action,
-            status=outcome["status"],
+            status=status,
             mode=mode,
             commands=[],
-            detect=outcome["detect"],
-            healthcheck=outcome["healthcheck"],
+            detect=detect_result,
+            healthcheck=healthcheck_result,
         )
         return attach_release_metadata(result, provenance=provenance, release=release)
     if not execute:
