@@ -16,8 +16,8 @@ def test_init_repo_seed_retro_memory_writes_adapter_and_digest(tmp_path: Path) -
     assert payload["created"] == {"adapter": True, "summary": True}
 
     adapter_text = (repo / ".agents" / "retro-adapter.yaml").read_text(encoding="utf-8")
-    summary_text = (repo / "skill-outputs" / "retro" / "recent-lessons.md").read_text(encoding="utf-8")
-    assert "summary_path: skill-outputs/retro/recent-lessons.md" in adapter_text
+    summary_text = (repo / "charness-artifacts" / "retro" / "recent-lessons.md").read_text(encoding="utf-8")
+    assert "summary_path: charness-artifacts/retro/recent-lessons.md" in adapter_text
     assert "auto_session_trigger_surfaces: []" in adapter_text
     assert "auto_session_trigger_path_globs: []" in adapter_text
     assert "repo: repo" in adapter_text

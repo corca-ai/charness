@@ -2,7 +2,7 @@ version: 1
 repo: charness
 product_name: charness
 language: en
-output_dir: skill-outputs/announcement
+output_dir: charness-artifacts/announcement
 preset_id: portable-defaults
 customized_from: portable-defaults
 sections:

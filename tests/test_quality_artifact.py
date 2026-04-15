@@ -19,21 +19,21 @@ def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProce
 def seed_repo(tmp_path: Path, artifact_body: str) -> Path:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
-    (repo / "skill-outputs" / "quality" / "history").mkdir(parents=True)
+    (repo / "charness-artifacts" / "quality" / "history").mkdir(parents=True)
     (repo / ".agents" / "quality-adapter.yaml").write_text(
         "\n".join(
             [
                 "version: 1",
                 "repo: demo",
                 "language: en",
-                "output_dir: skill-outputs/quality",
+                "output_dir: charness-artifacts/quality",
                 "",
             ]
         ),
         encoding="utf-8",
     )
-    (repo / "skill-outputs" / "quality" / "quality.md").write_text(artifact_body, encoding="utf-8")
-    (repo / "skill-outputs" / "quality" / "history" / "one.md").write_text("# One\n", encoding="utf-8")
+    (repo / "charness-artifacts" / "quality" / "quality.md").write_text(artifact_body, encoding="utf-8")
+    (repo / "charness-artifacts" / "quality" / "history" / "one.md").write_text("# One\n", encoding="utf-8")
     return repo
 def test_validate_quality_artifact_rejects_missing_history_section(tmp_path: Path) -> None:
     repo = seed_repo(

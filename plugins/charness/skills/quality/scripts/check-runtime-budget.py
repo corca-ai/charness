@@ -4,7 +4,7 @@
 
 Reads the adapter's `runtime_budgets` mapping (label -> max_elapsed_ms) and
 compares it against the latest elapsed_ms recorded under
-`<output_dir>/runtime-signals.json`. Exits non-zero on any violation.
+`.charness/quality/runtime-signals.json`. Exits non-zero on any violation.
 Labels without a recorded sample are reported as warnings, not failures,
 so a budget can be defined before its first observed run.
 """
@@ -31,6 +31,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from resolve_adapter import load_adapter
 
+SIGNALS_PATH = Path(".charness") / "quality" / "runtime-signals.json"
+
 
 def _load_signals(signals_path: Path) -> dict[str, Any]:
     if not signals_path.is_file():
@@ -45,7 +47,7 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
     adapter = load_adapter(repo_root)
     data = adapter["data"]
     budgets: dict[str, int] = data.get("runtime_budgets", {}) or {}
-    signals_path = repo_root / data["output_dir"] / "runtime-signals.json"
+    signals_path = repo_root / SIGNALS_PATH
     signals = _load_signals(signals_path)
     commands = signals.get("commands", {}) if isinstance(signals, dict) else {}
 

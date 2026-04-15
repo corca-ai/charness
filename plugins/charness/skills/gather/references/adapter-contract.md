@@ -38,6 +38,6 @@ The durable gather artifact filename is fixed:
 
 Default path:
 
-- `skill-outputs/gather/gather.md`
+- `charness-artifacts/gather/gather.md`
 
 To change the location, override `output_dir` in the adapter.

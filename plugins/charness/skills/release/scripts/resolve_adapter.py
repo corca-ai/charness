@@ -76,7 +76,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "version": 1,
         "repo": repo_root.name,
         "language": "en",
-        "output_dir": "skill-outputs/release",
+        "output_dir": "charness-artifacts/release",
         "package_id": package_id,
         "packaging_manifest_path": f"packaging/{package_id}.json",
         "checked_in_plugin_root": f"plugins/{package_id}",

@@ -20,7 +20,7 @@
 
 ## Canonical Asset
 
-- `skill-outputs/gather/gather.md`
+- `charness-artifacts/gather/gather.md`
 
 ## Freshness
 

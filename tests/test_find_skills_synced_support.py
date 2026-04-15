@@ -34,7 +34,7 @@ def test_list_capabilities_cross_links_materialized_support_and_discovery_stub(t
                 "version: 1",
                 "repo: demo",
                 "language: en",
-                "output_dir: skill-outputs/find-skills",
+                "output_dir: charness-artifacts/find-skills",
                 "preset_id: portable-defaults",
                 "customized_from: portable-defaults",
                 "trusted_skill_roots: []",

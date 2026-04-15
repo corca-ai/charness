@@ -14,7 +14,7 @@ host-specific presets appear.
 
 - language: `en`
 - canonical adapter directory: `.agents/`
-- canonical durable output root: `skill-outputs/`
+- canonical durable output root: `charness-artifacts/`
 - prefer checked-in profile ids and integration manifests over host-specific
   hidden defaults
 - record opt-outs explicitly when optional fields stay empty

@@ -17,7 +17,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, default=Path(".agents/quality-adapter.yaml"))
-    parser.add_argument("--report-path", type=Path, default=Path("skill-outputs/quality/bootstrap.json"))
+    parser.add_argument("--report-path", type=Path, default=Path(".charness/quality/bootstrap.json"))
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 

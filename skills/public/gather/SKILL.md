@@ -35,7 +35,7 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 ```
 
 By default, `gather` writes its durable artifact to
-`skill-outputs/gather/gather.md`. Repos can override the directory with
+`charness-artifacts/gather/gather.md`. Repos can override the directory with
 `.agents/gather-adapter.yaml`.
 
 ```bash
@@ -47,7 +47,7 @@ sed -n '1,220p' <resolved-gather-artifact> 2>/dev/null || true
 rg -n "knowledge|source|reference|vendor|upstream|artifact|gather" .
 
 # 2. optional adjacent handoff or task context
-rg -n "Workflow Trigger|Current State|Next Session|Current Slice|Success Criteria" docs skill-outputs .agents
+rg -n "Workflow Trigger|Current State|Next Session|Current Slice|Success Criteria" docs charness-artifacts .agents
 
 # 3. direct local targets when the user named a path
 rg -n "" <named-path>

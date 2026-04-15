@@ -32,7 +32,7 @@ Every retro must tell the operator whether it persisted.
 
 Allowed forms:
 
-- `Persisted: yes: skill-outputs/retro/retro.md`
+- `Persisted: yes: charness-artifacts/retro/retro.md`
 - `Persisted: no: chat-only quick retro`
 - `Persisted: no: user asked to skip durable artifact update`
 

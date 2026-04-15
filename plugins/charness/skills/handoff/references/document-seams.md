@@ -6,7 +6,7 @@ host.
 ## Canonical Rule
 
 If no host-specific decision exists yet, default to
-`skill-outputs/handoff/handoff.md`.
+`charness-artifacts/handoff/handoff.md`.
 
 If a repo already uses a better durable handoff surface, move that choice into
 the handoff adapter instead of the skill body.

@@ -20,7 +20,7 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
 - how an agent should operate in this repo
 - language or collaboration expectations
 - core repo memory surfaces
-- when retro memory is enabled, include `skill-outputs/retro/recent-lessons.md`
+- when retro memory is enabled, include `charness-artifacts/retro/recent-lessons.md`
   in those memory surfaces
 - validation and commit discipline when the repo has them
 - selection rules in the core file, with deeper rationale pushed into linked
@@ -82,7 +82,7 @@ pickup between sessions.
 When enabled, keep the seam small and explicit:
 
 - `.agents/retro-adapter.yaml`
-- `skill-outputs/retro/recent-lessons.md`
+- `charness-artifacts/retro/recent-lessons.md`
 - one stable `summary_path` instead of many ad hoc notes
 
 ## GitHub Actions Defaults

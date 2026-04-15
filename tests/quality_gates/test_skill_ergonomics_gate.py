@@ -16,7 +16,7 @@ def _seed_repo(tmp_path: Path, *, rules: list[str]) -> Path:
     adapter_lines = [
         "version: 1",
         "repo: testrepo",
-        "output_dir: skill-outputs/quality",
+        "output_dir: charness-artifacts/quality",
     ]
     if rules:
         adapter_lines.append("skill_ergonomics_gate_rules:")
@@ -107,7 +107,7 @@ def test_skill_ergonomics_gate_ignores_mode_option_terms_inside_fences(tmp_path:
             [
                 "version: 1",
                 "repo: testrepo",
-                "output_dir: skill-outputs/quality",
+                "output_dir: charness-artifacts/quality",
                 "skill_ergonomics_gate_rules:",
                 "  - mode_option_pressure_terms",
             ]
@@ -156,7 +156,7 @@ def test_skill_ergonomics_gate_fails_when_opted_in_progressive_disclosure_risk_m
             [
                 "version: 1",
                 "repo: testrepo",
-                "output_dir: skill-outputs/quality",
+                "output_dir: charness-artifacts/quality",
                 "skill_ergonomics_gate_rules:",
                 "  - progressive_disclosure_risk",
             ]

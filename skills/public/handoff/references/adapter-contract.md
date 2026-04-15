@@ -38,6 +38,6 @@ The durable handoff artifact filename is fixed:
 
 Default path:
 
-- `skill-outputs/handoff/handoff.md`
+- `charness-artifacts/handoff/handoff.md`
 
 To change the location, override `output_dir` in the adapter.

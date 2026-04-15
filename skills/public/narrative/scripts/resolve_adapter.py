@@ -77,7 +77,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "version": 1,
         "repo": repo_root.name,
         "language": "en",
-        "output_dir": "skill-outputs/narrative",
+        "output_dir": "charness-artifacts/narrative",
         "source_documents": inferred_docs,
         "mutable_documents": inferred_docs,
         "brief_template": [],

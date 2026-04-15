@@ -23,4 +23,4 @@
 
 ## Sources
 
-- `skill-outputs/retro/weekly-2026-04-14.md`
+- `charness-artifacts/retro/weekly-2026-04-14.md`

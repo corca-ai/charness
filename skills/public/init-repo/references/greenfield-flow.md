@@ -32,7 +32,7 @@ Add `INSTALL.md` and `UNINSTALL.md` only when the repo actually exposes an
 installable plugin, package, or operator-facing install contract.
 
 Add retro memory only when the repo wants that seam from day one. When it does,
-seed `.agents/retro-adapter.yaml` and `skill-outputs/retro/recent-lessons.md`
+seed `.agents/retro-adapter.yaml` and `charness-artifacts/retro/recent-lessons.md`
 with `scripts/seed_retro_memory.py` rather than hand-writing them.
 
 If those docs are needed, seed a small explicit probe surface early so future

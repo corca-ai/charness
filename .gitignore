@@ -3,8 +3,10 @@ __pycache__/
 node_modules/
 .pytest_cache/
 plugins/charness/support/gather-slack/.cache/
-skill-outputs/quality/runtime-signals.json
-skill-outputs/quality/history/runtime-signals-*.jsonl
+.charness/quality/bootstrap.json
+.charness/quality/runtime-signals.json
+.charness/quality/history/runtime-signals-*.jsonl
+.charness/hitl/runtime/
 integrations/locks/*.json
 !integrations/locks/.gitkeep
 !integrations/locks/lock.schema.json

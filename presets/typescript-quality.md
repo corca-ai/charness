@@ -18,8 +18,8 @@ adapter needs a sane starting vocabulary.
 
 - language: `en`
 - canonical adapter directory: `.agents/`
-- canonical durable output root: `skill-outputs/`
-- quality output directory: `skill-outputs/quality`
+- canonical durable output root: `charness-artifacts/`
+- quality output directory: `charness-artifacts/quality`
 
 ## Suggested Gate Vocabulary
 

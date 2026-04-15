@@ -38,7 +38,7 @@ The durable debug artifact filename is fixed:
 
 Default path:
 
-- `skill-outputs/debug/debug.md`
+- `charness-artifacts/debug/debug.md`
 
 To change the location, override `output_dir` in the adapter.
 
@@ -48,7 +48,7 @@ To change the location, override `output_dir` in the adapter.
 version: 1
 repo: my-repo
 language: en
-output_dir: skill-outputs/debug
+output_dir: charness-artifacts/debug
 preset_id: portable-defaults
 customized_from: portable-defaults
 ```

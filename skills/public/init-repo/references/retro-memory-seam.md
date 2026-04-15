@@ -11,7 +11,7 @@ forcing a full weekly retro every time.
 ## Seeded Files
 
 - `.agents/retro-adapter.yaml`
-- `skill-outputs/retro/recent-lessons.md`
+- `charness-artifacts/retro/recent-lessons.md`
 
 ## Preferred Path
 
@@ -23,10 +23,10 @@ python3 "$SKILL_DIR/scripts/seed_retro_memory.py" --repo-root .
 
 This seeds:
 
-- `summary_path: skill-outputs/retro/recent-lessons.md`
+- `summary_path: charness-artifacts/retro/recent-lessons.md`
 - a stable `snapshot_path`
 - empty `evidence_paths` and `metrics_commands` that the repo can tighten later
-- an expectation that `AGENTS.md` should list `skill-outputs/retro/recent-lessons.md`
+- an expectation that `AGENTS.md` should list `charness-artifacts/retro/recent-lessons.md`
   in repo memory when the seam is enabled
 
 ## Guardrails

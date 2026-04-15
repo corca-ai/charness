@@ -12,17 +12,17 @@ preflight_commands:
   - python3 scripts/validate-public-skill-validation.py --repo-root .
   - python3 scripts/validate-cautilus-scenarios.py --repo-root .
 held_out_command_templates:
-  - python3 scripts/eval_cautilus_scenarios.py --repo-root . --mode held_out --profile {profile} --baseline-ref {baseline_ref} --samples {held_out_samples} --output-dir skill-outputs/cautilus/held-out
+  - python3 scripts/eval_cautilus_scenarios.py --repo-root . --mode held_out --profile {profile} --baseline-ref {baseline_ref} --samples {held_out_samples} --output-dir charness-artifacts/cautilus/held-out
 full_gate_command_templates:
-  - python3 scripts/eval_cautilus_scenarios.py --repo-root . --mode full_gate --profile {profile} --baseline-ref {baseline_ref} --samples {full_gate_samples} --output-dir skill-outputs/cautilus/full-gate
+  - python3 scripts/eval_cautilus_scenarios.py --repo-root . --mode full_gate --profile {profile} --baseline-ref {baseline_ref} --samples {full_gate_samples} --output-dir charness-artifacts/cautilus/full-gate
 artifact_paths:
   - docs/public-skill-validation.md
   - docs/public-skill-validation.json
   - evals/cautilus/scenarios.json
-  - skill-outputs/quality/quality.md
+  - charness-artifacts/quality/quality.md
 report_paths:
-  - skill-outputs/cautilus/held-out/summary.json
-  - skill-outputs/cautilus/full-gate/summary.json
+  - charness-artifacts/cautilus/held-out/summary.json
+  - charness-artifacts/cautilus/full-gate/summary.json
 comparison_questions:
   - Which evaluator-required skill scenario improved or regressed?
 human_review_prompts:

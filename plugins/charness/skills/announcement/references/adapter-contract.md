@@ -40,7 +40,7 @@ Search order:
 ## Defaults
 
 - `language`: `en`
-- `output_dir`: `skill-outputs/announcement`
+- `output_dir`: `charness-artifacts/announcement`
 - `sections`: `["Highlights", "Changes", "Fixes"]`
 - `audience_tags`: empty list in data, but resolver should expose whether the
   field was unset or explicitly empty
@@ -54,9 +54,9 @@ The durable draft artifact filename is fixed:
 
 - `announcement.md`
 
-The default delivery record lives beside it:
+The default delivery record is hidden state under the repo root:
 
-- `announcements.jsonl`
+- `.charness/announcement/announcements.jsonl`
 
 ## Delivery Kinds
 

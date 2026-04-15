@@ -36,7 +36,7 @@ def test_narrative_resolve_adapter_preserves_scenario_surface_fields(tmp_path: P
                 "version: 1",
                 "repo: demo",
                 "language: en",
-                "output_dir: skill-outputs/narrative",
+                "output_dir: charness-artifacts/narrative",
                 "source_documents:",
                 "- README.md",
                 "mutable_documents:",

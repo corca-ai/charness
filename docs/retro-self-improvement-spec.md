@@ -30,7 +30,7 @@ The first implementation batch has landed:
 - `persist_retro_artifact.py` now auto-refreshes the digest when a durable
   retro artifact is written
 - `init-repo` can seed `.agents/retro-adapter.yaml` and
-  `skill-outputs/retro/recent-lessons.md` for repos that opt into durable retro
+  `charness-artifacts/retro/recent-lessons.md` for repos that opt into durable retro
   memory
 - `quality` now treats skill ergonomics as an explicit lens with an advisory
   inventory helper
@@ -47,7 +47,7 @@ memory.
 - Keep retrospective memory local-first and explicit. No mandatory remote
   telemetry, no hidden background services, and no host-specific global writes
   outside declared adapter paths.
-- Keep `skill-outputs/retro/recent-lessons.md` as the stable compact digest path
+- Keep `charness-artifacts/retro/recent-lessons.md` as the stable compact digest path
   when a repo opts into this pattern.
 - Implement the host-log probe as a standalone helper first. `retro` may
   consume it later, but this slice should not make host-log collection an
@@ -144,7 +144,7 @@ If this work is implemented badly, the likely failure modes are:
 ## Success Criteria
 
 - `init-repo` can scaffold a repo with a retro adapter that includes
-  `summary_path: skill-outputs/retro/recent-lessons.md`.
+  `summary_path: charness-artifacts/retro/recent-lessons.md`.
 - `init-repo` also scaffolds AGENTS memory that points at the recent-lessons
   digest when retro memory is enabled.
 - `retro` owns a helper that refreshes `summary_path` from the latest durable

@@ -67,7 +67,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "repo": repo_root.name,
         "product_name": repo_root.name,
         "language": "en",
-        "output_dir": "skill-outputs/announcement",
+        "output_dir": "charness-artifacts/announcement",
         "sections": ["Highlights", "Changes", "Fixes"],
         "audience_tags": [],
         "omission_lenses": [],
@@ -130,6 +130,10 @@ def _output_path(output_dir: str, filename: str) -> str:
     return str(Path(output_dir) / filename)
 
 
+def _record_path() -> str:
+    return str(Path(".charness") / "announcement" / RECORD_FILENAME)
+
+
 def _bootstrap_expectations(data: dict[str, Any]) -> dict[str, str]:
     delivery_note = (
         "Delivery stays draft-only until the adapter declares a backend and the user confirms posting."
@@ -138,9 +142,9 @@ def _bootstrap_expectations(data: dict[str, Any]) -> dict[str, str]:
     )
     return {
         "artifact_path": _output_path(data["output_dir"], ARTIFACT_FILENAME),
-        "record_path": _output_path(data["output_dir"], RECORD_FILENAME),
+        "record_path": _record_path(),
         "what_you_get_after_one_run": "A human-facing draft that explains recent repo value in a stable shape.",
-        "artifact_meaning": "The markdown artifact is the visible announcement draft; the JSONL record tracks finalized heads across runs.",
+        "artifact_meaning": "The markdown artifact is the visible announcement draft; the hidden JSONL record tracks finalized heads across runs.",
         "what_this_does_not_do": delivery_note,
     }
 
@@ -158,13 +162,13 @@ def _missing_adapter_payload(data: dict[str, Any], searched_paths: list[str]) ->
         "field_state": _field_state_map({}),
         "artifact_filename": ARTIFACT_FILENAME,
         "artifact_path": _output_path(data["output_dir"], ARTIFACT_FILENAME),
-        "record_path": _output_path(data["output_dir"], RECORD_FILENAME),
+        "record_path": _record_path(),
         "bootstrap_expectations": _bootstrap_expectations(data),
         "errors": [],
         "warnings": [
             "No announcement adapter found. Using draft-first defaults.",
             f"First run leaves `{_output_path(data['output_dir'], ARTIFACT_FILENAME)}` as the visible draft artifact.",
-            f"`{_output_path(data['output_dir'], RECORD_FILENAME)}` only advances after explicit draft finalization or delivery.",
+            f"`{_record_path()}` only advances after explicit draft finalization or delivery.",
             "delivery_kind defaults to `none`, so bootstrap is intentionally draft-only until a repo chooses a backend seam.",
             "Create .agents/announcement-adapter.yaml to record section order, audience tags, and human-facing delivery seams.",
         ],
@@ -197,7 +201,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "field_state": _field_state_map(raw_data),
         "artifact_filename": ARTIFACT_FILENAME,
         "artifact_path": _output_path(data["output_dir"], ARTIFACT_FILENAME),
-        "record_path": _output_path(data["output_dir"], RECORD_FILENAME),
+        "record_path": _record_path(),
         "bootstrap_expectations": _bootstrap_expectations(data),
         "errors": errors,
         "warnings": warnings,

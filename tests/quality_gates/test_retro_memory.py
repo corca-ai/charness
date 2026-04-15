@@ -9,7 +9,7 @@ def test_retro_adapter_exposes_recent_lessons_summary_path() -> None:
     result = run_script("skills/public/retro/scripts/resolve_adapter.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["data"]["summary_path"] == "skill-outputs/retro/recent-lessons.md"
+    assert payload["data"]["summary_path"] == "charness-artifacts/retro/recent-lessons.md"
 
 
 def test_retro_memory_surfaces_reference_recent_lessons_digest() -> None:
@@ -19,9 +19,9 @@ def test_retro_memory_surfaces_reference_recent_lessons_digest() -> None:
     contract_text = (
         ROOT / "skills" / "public" / "retro" / "references" / "adapter-contract.md"
     ).read_text(encoding="utf-8")
-    lessons_text = (ROOT / "skill-outputs" / "retro" / "recent-lessons.md").read_text(encoding="utf-8")
+    lessons_text = (ROOT / "charness-artifacts" / "retro" / "recent-lessons.md").read_text(encoding="utf-8")
 
-    assert "skill-outputs/retro/recent-lessons.md" in agents_text
+    assert "charness-artifacts/retro/recent-lessons.md" in agents_text
     assert "recent-lessons.md" in handoff_text
     assert "summary_path" in skill_text
     assert "summary_path" in contract_text

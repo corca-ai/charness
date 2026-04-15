@@ -14,14 +14,14 @@ def main() -> None:
     parser.add_argument("--head-commit", required=True)
     parser.add_argument("--delivery-kind", default="none")
     parser.add_argument("--delivery-target", default="")
-    parser.add_argument("--artifact-path", default="skill-outputs/announcement/announcement.md")
+    parser.add_argument("--artifact-path", default="charness-artifacts/announcement/announcement.md")
     parser.add_argument("--commits", nargs="*", default=[])
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    output_dir = repo_root / "skill-outputs" / "announcement"
-    output_dir.mkdir(parents=True, exist_ok=True)
-    record_path = output_dir / "announcements.jsonl"
+    state_dir = repo_root / ".charness" / "announcement"
+    state_dir.mkdir(parents=True, exist_ok=True)
+    record_path = state_dir / "announcements.jsonl"
     record = {
         "recorded_at": datetime.now(timezone.utc).isoformat(),
         "head_commit": args.head_commit,

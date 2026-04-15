@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-EXCLUDED_DIRS = {".git", ".codex", ".claude", "node_modules", "plugins", "skill-outputs", ".venv", "venv"}
+EXCLUDED_DIRS = {".git", ".codex", ".claude", ".charness", "node_modules", "plugins", "charness-artifacts", ".venv", "venv"}
 FUNCTIONAL_HEADING_RE = re.compile(r"^#{2,6}\s+.*functional check", re.IGNORECASE)
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
 FENCE_RE = re.compile(r"^```([A-Za-z0-9_-]+)?\s*$")

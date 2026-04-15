@@ -11,15 +11,15 @@ SCRIPT = "skills/public/quality/scripts/check-runtime-budget.py"
 def _seed_repo(tmp_path: Path, *, budgets: dict[str, int] | None, signals: dict | None) -> Path:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
-    (repo / "skill-outputs" / "quality").mkdir(parents=True)
-    adapter_lines = ["version: 1", "repo: testrepo", "output_dir: skill-outputs/quality"]
+    (repo / ".charness" / "quality").mkdir(parents=True)
+    adapter_lines = ["version: 1", "repo: testrepo", "output_dir: charness-artifacts/quality"]
     if budgets is not None:
         adapter_lines.append("runtime_budgets:")
         for label, ms in budgets.items():
             adapter_lines.append(f"  {label}: {ms}")
     (repo / ".agents" / "quality-adapter.yaml").write_text("\n".join(adapter_lines) + "\n", encoding="utf-8")
     if signals is not None:
-        (repo / "skill-outputs" / "quality" / "runtime-signals.json").write_text(
+        (repo / ".charness" / "quality" / "runtime-signals.json").write_text(
             json.dumps(signals), encoding="utf-8"
         )
     return repo

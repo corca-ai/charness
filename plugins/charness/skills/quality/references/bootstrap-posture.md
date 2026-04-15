@@ -13,7 +13,7 @@ The bootstrap helper should:
 
 Default report path:
 
-- `skill-outputs/quality/bootstrap.json`
+- `.charness/quality/bootstrap.json`
 
 Status meanings:
 

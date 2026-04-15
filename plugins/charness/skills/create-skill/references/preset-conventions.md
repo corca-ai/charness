@@ -40,7 +40,7 @@ not public skills and they are not mandatory runtime config.
 
 - default language: `en`
 - canonical adapter directory: `.agents/`
-- canonical durable output root: `skill-outputs/`
+- canonical durable output root: `charness-artifacts/`
 - explicit manifest/profile references instead of hidden host assumptions
 
 Use a host-specific preset only when a real host repeatedly needs different

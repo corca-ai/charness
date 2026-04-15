@@ -1,7 +1,7 @@
 version: 1
 repo: charness
 language: en
-output_dir: skill-outputs/hitl
+output_dir: charness-artifacts/hitl
 preset_id: portable-defaults
 customized_from: portable-defaults
 default_scope: all

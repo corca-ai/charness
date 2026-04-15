@@ -50,13 +50,13 @@ Retro-specific fields:
 version: 1
 repo: my-repo
 language: en
-output_dir: skill-outputs/retro
+output_dir: charness-artifacts/retro
 preset_id: portable-defaults
 customized_from: portable-defaults
 default_mode: session
 weekly_window_days: 7
-snapshot_path: skill-outputs/retro/weekly-latest.json
-summary_path: skill-outputs/retro/recent-lessons.md
+snapshot_path: .charness/retro/weekly-latest.json
+summary_path: charness-artifacts/retro/recent-lessons.md
 evidence_paths:
   - docs/handoff.md
 metrics_commands: []

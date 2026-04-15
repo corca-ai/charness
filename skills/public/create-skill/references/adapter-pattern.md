@@ -11,7 +11,7 @@ skills/public/<skill-id>/
   references/
   scripts/
 .agents/<skill-id>-adapter.yaml
-skill-outputs/<skill-id>/
+charness-artifacts/<skill-id>/
 ```
 
 The adapter lives in the repo, not in the installed skill bundle.
@@ -56,7 +56,7 @@ Prefer repo-owned adapter paths first:
 ## Design Rules
 
 - Keep the skill body generic.
-- Store durable repo outputs under `skill-outputs/<skill-id>/` unless the repo
+- Store durable repo outputs under `charness-artifacts/<skill-id>/` unless the repo
   already has a better checked-in home.
 - Auto-create missing adapters only when the defaults are low risk.
 - Distinguish `unset` from `explicitly empty` for optional list-like fields.

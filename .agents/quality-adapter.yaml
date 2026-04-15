@@ -1,7 +1,7 @@
 version: 1
 repo: charness
 language: en
-output_dir: skill-outputs/quality
+output_dir: charness-artifacts/quality
 preset_id: python-quality
 customized_from: python-quality
 preset_lineage:
@@ -26,7 +26,7 @@ concept_paths:
 - docs/public-skill-validation.md
 - docs/operator-acceptance.md
 - docs/handoff.md
-- skill-outputs/quality/quality.md
+- charness-artifacts/quality/quality.md
 - README.md
 preflight_commands:
 - python3 scripts/validate-maintainer-setup.py --repo-root .

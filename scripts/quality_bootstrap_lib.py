@@ -71,7 +71,7 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "version": 1,
         "repo": repo_root.name,
         "language": "en",
-        "output_dir": "skill-outputs/quality",
+        "output_dir": "charness-artifacts/quality",
         "preset_id": "portable-defaults",
         "customized_from": "portable-defaults",
         "preset_lineage": [],

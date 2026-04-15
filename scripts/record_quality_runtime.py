@@ -23,6 +23,7 @@ SUMMARY_FILENAME = "runtime-signals.json"
 ARCHIVE_PREFIX = "runtime-signals-"
 MAX_RECENT_SAMPLES = 20
 MAX_ARCHIVE_FILES = 12
+STATE_DIR = Path(".charness") / "quality"
 
 
 def parse_args() -> argparse.Namespace:
@@ -122,9 +123,9 @@ def append_archive(history_dir: Path, record: dict[str, Any]) -> Path:
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
-    adapter = load_adapter(repo_root)
-    output_dir = repo_root / adapter["data"]["output_dir"]
-    output_dir.mkdir(parents=True, exist_ok=True)
+    load_adapter(repo_root)
+    state_dir = repo_root / STATE_DIR
+    state_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = parse_timestamp(args.timestamp).isoformat().replace("+00:00", "Z")
     record = {
@@ -134,8 +135,8 @@ def main() -> int:
         "status": args.status,
     }
 
-    summary_path = output_dir / SUMMARY_FILENAME
-    archive_path = append_archive(output_dir / "history", record)
+    summary_path = state_dir / SUMMARY_FILENAME
+    archive_path = append_archive(state_dir / "history", record)
     update_summary(summary_path, record)
     print(
         json.dumps(

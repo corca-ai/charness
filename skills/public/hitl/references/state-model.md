@@ -6,7 +6,7 @@ directory, not a host-specific global location.
 Recommended runtime layout:
 
 ```text
-<output_dir>/runtime/<session-id>/
+.charness/hitl/runtime/<session-id>/
   hitl-scratchpad.md
   state.yaml
   rules.yaml

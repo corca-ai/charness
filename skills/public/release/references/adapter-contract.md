@@ -40,7 +40,7 @@ Search order:
 ## Defaults
 
 - `language`: `en`
-- `output_dir`: `skill-outputs/release`
+- `output_dir`: `charness-artifacts/release`
 - `package_id`: repo directory name
 - `packaging_manifest_path`: `packaging/<repo>.json`
 - `checked_in_plugin_root`: `plugins/<package_id>`

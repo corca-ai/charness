@@ -9,7 +9,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 TEXT_SUFFIXES = {".md", ".json", ".yaml", ".yml", ".jsonc", ".toml"}
-SKIP_DIR_NAMES = {".git", "node_modules", ".pytest_cache", "skill-outputs", "__pycache__"}
+SKIP_DIR_NAMES = {".git", ".charness", "node_modules", ".pytest_cache", "charness-artifacts", "__pycache__"}
 SKIP_FILE_NAMES = {"package-lock.json"}
 SKIP_HOSTS = {"example.com", "example.org", "example.net"}
 URL_PATTERN = re.compile(r"https?://[^\s<>'\"\\]+")

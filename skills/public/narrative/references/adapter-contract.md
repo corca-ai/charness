@@ -20,7 +20,7 @@ Fallback lookup order:
 - `version`: adapter schema version, currently `1`
 - `repo`: repo display name for artifact labeling
 - `language`: default durable artifact language
-- `output_dir`: durable artifact directory, default `skill-outputs/narrative`
+- `output_dir`: durable artifact directory, default `charness-artifacts/narrative`
 - `preset_id`, `preset_version`, `customized_from`: provenance metadata only
 - `source_documents`: ordered list of truth-surface docs to read first
 - `mutable_documents`: ordered list of docs the skill may realign directly
@@ -37,7 +37,7 @@ Fallback lookup order:
 
 The default artifact is:
 
-- `skill-outputs/narrative/narrative.md`
+- `charness-artifacts/narrative/narrative.md`
 
 Keep the durable alignment artifact separate from any audience-specific brief
 when the brief is ephemeral or audience-local.

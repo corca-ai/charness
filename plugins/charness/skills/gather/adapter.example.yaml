@@ -1,6 +1,6 @@
 version: 1
 repo: my-repo
 language: en
-output_dir: skill-outputs/gather
+output_dir: charness-artifacts/gather
 preset_id: portable-defaults
 customized_from: portable-defaults

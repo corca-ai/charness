@@ -67,7 +67,7 @@ def detect_concept_paths(repo_root: Path) -> list[str]:
         "docs/operator-acceptance.md",
         "docs/handoff.md",
         "docs/roadmap.md",
-        "skill-outputs/quality/quality.md",
+        "charness-artifacts/quality/quality.md",
     )
     return [path for path in candidates if (repo_root / path).is_file()]
 

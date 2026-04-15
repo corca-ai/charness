@@ -11,7 +11,8 @@ fi
 
 mapfile -t markdown_files < <(
   git ls-files -- '*.md' \
-    ':(exclude)skill-outputs/**' \
+    ':(exclude)charness-artifacts/**' \
+    ':(exclude).charness/**' \
     ':(exclude)skills/support/specdown/**' \
     ':(exclude)plugins/charness/support/specdown/**' \
     ':(exclude).pytest_cache/**'

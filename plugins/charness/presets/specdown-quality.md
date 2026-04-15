@@ -20,8 +20,8 @@ letting them absorb unit-test detail.
 
 - language: `en`
 - canonical adapter directory: `.agents/`
-- canonical durable output root: `skill-outputs/`
-- quality output directory: `skill-outputs/quality`
+- canonical durable output root: `charness-artifacts/`
+- quality output directory: `charness-artifacts/quality`
 - `coverage_fragile_margin_pp`: `1.0`
 - `specdown_smoke_patterns`:
   - `\\bgrep\\s+-q\\b`

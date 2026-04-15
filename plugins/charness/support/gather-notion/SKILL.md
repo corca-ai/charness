@@ -22,7 +22,7 @@ Use the wrapper:
 ```bash
 python3 scripts/export-page.py \
   "https://www.notion.so/Example-0123456789abcdef0123456789abcdef" \
-  skill-outputs/gather/notion-page.md
+  charness-artifacts/gather/notion-page.md
 ```
 
 ## Guardrails

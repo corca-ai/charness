@@ -8,7 +8,7 @@ from .support import run_script
 
 def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    output_dir = repo / "skill-outputs" / "retro"
+    output_dir = repo / "charness-artifacts" / "retro"
     output_dir.mkdir(parents=True)
     (repo / ".agents").mkdir()
     (repo / ".agents" / "retro-adapter.yaml").write_text(
@@ -17,9 +17,9 @@ def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(tmp_
                 "version: 1",
                 "repo: demo",
                 "language: en",
-                "output_dir: skill-outputs/retro",
-                "snapshot_path: skill-outputs/retro/weekly-latest.json",
-                "summary_path: skill-outputs/retro/recent-lessons.md",
+                "output_dir: charness-artifacts/retro",
+                "snapshot_path: .charness/retro/weekly-latest.json",
+                "summary_path: charness-artifacts/retro/recent-lessons.md",
                 "evidence_paths: []",
                 "metrics_commands: []",
             ]
@@ -68,9 +68,9 @@ def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(tmp_
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["artifact_path"] == "skill-outputs/retro/weekly-2026-04-14.md"
-    assert payload["snapshot_path"] == "skill-outputs/retro/weekly-latest.json"
-    assert payload["summary_path"] == "skill-outputs/retro/recent-lessons.md"
+    assert payload["artifact_path"] == "charness-artifacts/retro/weekly-2026-04-14.md"
+    assert payload["snapshot_path"] == ".charness/retro/weekly-latest.json"
+    assert payload["summary_path"] == "charness-artifacts/retro/recent-lessons.md"
     assert payload["summary_refreshed"] is True
 
     summary_text = (output_dir / "recent-lessons.md").read_text(encoding="utf-8")
@@ -80,7 +80,7 @@ def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(tmp_
 
 def test_persist_retro_artifact_skips_self_refresh_for_summary_target(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    output_dir = repo / "skill-outputs" / "retro"
+    output_dir = repo / "charness-artifacts" / "retro"
     output_dir.mkdir(parents=True)
     (repo / ".agents").mkdir()
     (repo / ".agents" / "retro-adapter.yaml").write_text(
@@ -89,8 +89,8 @@ def test_persist_retro_artifact_skips_self_refresh_for_summary_target(tmp_path: 
                 "version: 1",
                 "repo: demo",
                 "language: en",
-                "output_dir: skill-outputs/retro",
-                "summary_path: skill-outputs/retro/recent-lessons.md",
+                "output_dir: charness-artifacts/retro",
+                "summary_path: charness-artifacts/retro/recent-lessons.md",
                 "evidence_paths: []",
                 "metrics_commands: []",
             ]
@@ -112,5 +112,5 @@ def test_persist_retro_artifact_skips_self_refresh_for_summary_target(tmp_path: 
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["artifact_path"] == "skill-outputs/retro/recent-lessons.md"
+    assert payload["artifact_path"] == "charness-artifacts/retro/recent-lessons.md"
     assert payload["summary_refreshed"] is False

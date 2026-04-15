@@ -30,13 +30,13 @@ self-validation.
 ## Repo Memory
 
 - `docs/handoff.md`: next-session pickup and volatile repo state
-- `skill-outputs/retro/recent-lessons.md`: compact recap of recent retrospective lessons and repeat traps
+- `charness-artifacts/retro/recent-lessons.md`: compact recap of recent retrospective lessons and repeat traps
 - `docs/roadmap.md`: optional roadmap when a repo explicitly chooses to keep one
 - `docs/operator-acceptance.md`: operator-facing takeover checklist for the
   remaining roadmap items
 - `docs/skill-migration-map.md`: migration intent and remaining destinations
 - `docs/control-plane.md`: external integration contract
-- `skill-outputs/quality/quality.md`: current dogfood quality findings and next
+- `charness-artifacts/quality/quality.md`: current dogfood quality findings and next
   gates
 
 Read the smallest memory surface that answers the current question.
@@ -122,7 +122,7 @@ Read the smallest memory surface that answers the current question.
 ### Session Discipline
 
 - Update `docs/handoff.md` when the next session's first move changed.
-- Keep durable review findings in `skill-outputs/` when a skill is designed to
+- Keep durable review findings in `charness-artifacts/` when a skill is designed to
   accumulate them.
 - If the user correctly points out a missed issue, broken assumption, or
   missing gate that should likely have been caught, run a brief retro before

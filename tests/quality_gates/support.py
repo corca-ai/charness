@@ -128,7 +128,7 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
                 "elapsed_ms = int(args[args.index('--elapsed-ms') + 1])",
                 "status = args[args.index('--status') + 1]",
                 "timestamp = args[args.index('--timestamp') + 1]",
-                "out_dir = repo_root / 'skill-outputs' / 'quality'",
+                "out_dir = repo_root / '.charness' / 'quality'",
                 "out_dir.mkdir(parents=True, exist_ok=True)",
                 "(out_dir / 'runtime-signals.json').write_text(",
                 "    json.dumps({'commands': {label: {'latest': {'elapsed_ms': elapsed_ms, 'status': status, 'timestamp': timestamp}}}}, indent=2) + '\\n',",

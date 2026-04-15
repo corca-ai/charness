@@ -74,7 +74,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "version": 1,
         "repo": repo_root.name,
         "language": "en",
-        "output_dir": "skill-outputs/quality",
+        "output_dir": "charness-artifacts/quality",
         "preset_lineage": [],
         "coverage_fragile_margin_pp": 1.0,
         "coverage_floor_policy": dict(DEFAULT_COVERAGE_FLOOR_POLICY),

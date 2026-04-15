@@ -36,7 +36,7 @@ def load_last_head(record_path: Path) -> str | None:
 
 
 def collect_commits(repo_root: Path, limit: int) -> dict[str, object]:
-    record_path = repo_root / "skill-outputs" / "announcement" / "announcements.jsonl"
+    record_path = repo_root / ".charness" / "announcement" / "announcements.jsonl"
     last_head = load_last_head(record_path)
     revision_range = f"{last_head}..HEAD" if last_head else f"-n {limit}"
     if last_head:

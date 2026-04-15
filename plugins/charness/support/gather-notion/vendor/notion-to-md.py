@@ -474,7 +474,7 @@ def resolve_workspace_root() -> str:
 def resolve_default_output_dir() -> str:
     """Default output dir for CLI usage without explicit output path."""
     workspace_root = resolve_workspace_root()
-    return os.path.join(workspace_root, "skill-outputs", "gather")
+    return os.path.join(workspace_root, "charness-artifacts", "gather")
 
 
 def main():

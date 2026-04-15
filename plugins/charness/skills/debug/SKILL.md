@@ -22,7 +22,7 @@ Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 ```
 
-By default, `debug` writes durable artifacts to `skill-outputs/debug/`. Each
+By default, `debug` writes durable artifacts to `charness-artifacts/debug/`. Each
 investigation gets its own file: `debug-{date}-{slug}.md`. Repos can override
 the directory with `.agents/debug-adapter.yaml`.
 

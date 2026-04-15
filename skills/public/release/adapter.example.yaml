@@ -1,7 +1,7 @@
 version: 1
 repo: charness
 language: en
-output_dir: skill-outputs/release
+output_dir: charness-artifacts/release
 preset_id: portable-defaults
 customized_from: portable-defaults
 package_id: charness

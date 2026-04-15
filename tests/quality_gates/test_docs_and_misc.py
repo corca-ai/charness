@@ -23,7 +23,7 @@ def test_narrative_map_sources_reports_checked_in_docs() -> None:
     source_paths = {entry["path"] for entry in payload["source_documents"]}
     assert "README.md" in source_paths
     assert "docs/handoff.md" in source_paths
-    assert payload["artifact_path"] == "skill-outputs/narrative/narrative.md"
+    assert payload["artifact_path"] == "charness-artifacts/narrative/narrative.md"
     assert payload["freshness"]["status"] in {"ahead", "current", "missing-remote", "not-git", "unavailable"}
 
 
@@ -125,7 +125,7 @@ def test_release_bump_version_updates_manifest_and_runs_sync(tmp_path: Path) -> 
                 "version: 1",
                 "repo: demo",
                 "language: en",
-                "output_dir: skill-outputs/release",
+                "output_dir: charness-artifacts/release",
                 "preset_id: portable-defaults",
                 "customized_from: portable-defaults",
                 "package_id: demo",
@@ -277,7 +277,7 @@ def test_adapter_lib_renders_and_loads_simple_yaml_mapping() -> None:
         [
             ("version", 1),
             ("repo", "demo"),
-            ("output_dir", "skill-outputs/demo"),
+            ("output_dir", "charness-artifacts/demo"),
             (
                 "policy",
                 {
@@ -292,7 +292,7 @@ def test_adapter_lib_renders_and_loads_simple_yaml_mapping() -> None:
     assert ADAPTER_LIB.load_yaml(rendered) == {
         "version": 1,
         "repo": "demo",
-        "output_dir": "skill-outputs/demo",
+        "output_dir": "charness-artifacts/demo",
         "policy": {
             "glob": "*-quality-gate.sh",
             "threshold": 30,
@@ -413,7 +413,7 @@ def test_find_skills_lists_adapter_configured_trusted_roots(tmp_path: Path) -> N
                 "version: 1",
                 "repo: repo",
                 "language: en",
-                "output_dir: skill-outputs/find-skills",
+                "output_dir: charness-artifacts/find-skills",
                 "trusted_skill_roots:",
                 "- vendor/trusted-skills",
                 "prefer_local_first: true",
@@ -444,7 +444,7 @@ def test_impl_survey_reports_broken_preferred_skill_symlink(tmp_path: Path) -> N
                 "version: 1",
                 "repo: repo",
                 "language: en",
-                "output_dir: skill-outputs/impl",
+                "output_dir: charness-artifacts/impl",
                 "verification_tools:",
                 "- cmd:python3",
                 "- skill:agent-browser",

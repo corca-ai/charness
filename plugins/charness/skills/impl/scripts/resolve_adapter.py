@@ -78,7 +78,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "version": 1,
         "repo": repo_root.name,
         "language": "en",
-        "output_dir": "skill-outputs/impl",
+        "output_dir": "charness-artifacts/impl",
         "verification_tools": [],
         "ui_verification_tools": [],
         "verification_install_proposals": [],

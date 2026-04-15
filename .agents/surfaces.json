@@ -46,6 +46,7 @@
         "README.md",
         "INSTALL.md",
         "UNINSTALL.md",
+        "charness-artifacts/**/*.md",
         "docs/*.md",
         "docs/**/*.md",
         "packaging/**/*.md",
@@ -174,6 +175,7 @@
         "scripts/upstream_release_lib.py"
       ],
       "derived_paths": [
+        ".charness/**/*.json",
         "plugins/charness/integrations/**",
         "plugins/charness/scripts/**"
       ],
@@ -208,6 +210,8 @@
       "surface_id": "repo-python",
       "description": "Repo-owned Python code and tests.",
       "source_paths": [
+        ".gitignore",
+        "pyproject.toml",
         "charness",
         "scripts/**/*.py",
         "tests/*.py",

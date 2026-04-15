@@ -27,7 +27,7 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 ```
 
 By default, `handoff` writes its durable artifact to
-`skill-outputs/handoff/handoff.md`. Repos can override the directory with
+`charness-artifacts/handoff/handoff.md`. Repos can override the directory with
 `.agents/handoff-adapter.yaml`.
 
 Keep the handoff inside the repo-owned size and shape gate. Default to roughly
@@ -43,7 +43,7 @@ here. See `references/spill-targets.md` for the default spill destinations.
 sed -n '1,220p' <resolved-handoff-artifact> 2>/dev/null || true
 wc -l <resolved-handoff-artifact> 2>/dev/null || true
 if test -f <resolved-handoff-artifact>; then rg -n "^## This Session \\(" <resolved-handoff-artifact>; fi
-rg -n "Session|Goal|Deliverables|Exit criteria|Next Session|Discuss" docs skill-outputs .agents
+rg -n "Session|Goal|Deliverables|Exit criteria|Next Session|Discuss" docs charness-artifacts .agents
 
 # 2. current repo state
 git status --short

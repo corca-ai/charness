@@ -32,7 +32,7 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 ```
 
 By default, `init-repo` writes any durable normalization note to
-`skill-outputs/init-repo/init-repo.md`. Repos can override the directory with
+`charness-artifacts/init-repo/init-repo.md`. Repos can override the directory with
 `.agents/init-repo-adapter.yaml`.
 
 If the repo is mature and only `docs/operator-acceptance.md` is missing,
@@ -100,10 +100,10 @@ Then load only the references needed for the detected state:
      name a small probe surface explicitly instead of collapsing everything into
      one vague "run doctor" instruction
    - when the repo wants durable retrospective memory, seed
-     `.agents/retro-adapter.yaml` and `skill-outputs/retro/recent-lessons.md`
+     `.agents/retro-adapter.yaml` and `charness-artifacts/retro/recent-lessons.md`
      with `scripts/seed_retro_memory.py` instead of hand-writing the seam
    - when that seam is enabled, make `AGENTS.md` name
-     `skill-outputs/retro/recent-lessons.md` as a repo memory surface so future
+     `charness-artifacts/retro/recent-lessons.md` as a repo memory surface so future
      sessions can actually discover it
 5. Keep the boundaries honest.
    - `README.md`: current repo story and user-facing orientation

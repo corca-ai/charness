@@ -67,7 +67,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "version": 1,
         "repo": repo_root.name,
         "language": "en",
-        "output_dir": "skill-outputs/find-skills",
+        "output_dir": "charness-artifacts/find-skills",
         "trusted_skill_roots": [],
         "prefer_local_first": True,
         "allow_external_registry": False,

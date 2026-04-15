@@ -67,7 +67,7 @@ format when specs use `Covered by pytest:` style references.
 
 `runtime_budgets` is a mapping of standing-gate label → max elapsed
 milliseconds. Labels must match the labels recorded in
-`<output_dir>/runtime-signals.json` by the standing gate runner. Add
+`.charness/quality/runtime-signals.json` by the standing gate runner. Add
 `scripts/check-runtime-budget.py` to the standing gate to fail the run when
 `latest.elapsed_ms` exceeds the budget. Labels with no recorded sample yet
 are warnings, not failures, so a budget can be defined before its first run.
@@ -111,11 +111,11 @@ The durable quality artifact filename is fixed:
 
 Default path:
 
-- `skill-outputs/quality/quality.md`
+- `charness-artifacts/quality/quality.md`
 
 Recommended sibling history path:
 
-- `skill-outputs/quality/history/*.md`
+- `charness-artifacts/quality/history/*.md`
 
 To change the location, override `output_dir` in the adapter.
 
@@ -131,4 +131,4 @@ To change the location, override `output_dir` in the adapter.
   record multi-family repo ancestry such as Python plus monorepo or
   TypeScript plus executable-spec surfaces
 - when bootstrap cannot honestly finish setup, leave the remaining operator
-  work in `skill-outputs/quality/bootstrap.json`
+  work in `.charness/quality/bootstrap.json`

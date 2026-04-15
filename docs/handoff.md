@@ -7,7 +7,7 @@
   `#10`, `#11`, `#13`, `#14`, `#6`, `#7`, `#8`, `#15`, `#16`, `#17`,
   `#18`, `#19`, `#20`, `#21`, `#23`, `#22`는 landed 상태다.
 - 최근 repeat trap은
-  [skill-outputs/retro/recent-lessons.md](../skill-outputs/retro/recent-lessons.md)
+  [charness-artifacts/retro/recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)
   에 축약해 두므로, install/update/export/support work 전엔 handoff와 함께
   먼저 훑는다.
 - verification command 선택은 더 이상 wholly manual이 아니다.
@@ -76,7 +76,7 @@
 ## Next Session
 
 1. 먼저
-   [skill-outputs/retro/recent-lessons.md](../skill-outputs/retro/recent-lessons.md)를
+   [charness-artifacts/retro/recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)를
    읽고, omission-prone seam을 먼저 체크한다. 특히 new public skill 추가 시
    `docs/public-skill-validation.json`과 checked-in plugin export sync를 함께
    본다.
@@ -112,4 +112,4 @@
 
 - [docs/support-tool-followup.md](support-tool-followup.md)
 - [docs/retro-self-improvement-spec.md](retro-self-improvement-spec.md)
-- [skill-outputs/retro/recent-lessons.md](../skill-outputs/retro/recent-lessons.md)
+- [charness-artifacts/retro/recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)

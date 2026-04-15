@@ -48,7 +48,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "version": 1,
         "repo": repo_root.name,
         "language": "en",
-        "output_dir": "skill-outputs/hitl",
+        "output_dir": "charness-artifacts/hitl",
         "default_scope": "all",
         "chunk_target_lines": 100,
         "require_explicit_apply": True,
@@ -108,7 +108,7 @@ def _artifact_path(output_dir: str) -> str:
 
 
 def _runtime_dir(output_dir: str) -> str:
-    return str(Path(output_dir) / "runtime")
+    return str(Path(".charness") / "hitl" / "runtime")
 
 
 def load_adapter(repo_root: Path) -> dict[str, Any]:

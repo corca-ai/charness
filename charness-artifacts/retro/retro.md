@@ -17,11 +17,11 @@
 
 - Durable sources used:
   - `docs/handoff.md`
-  - `skill-outputs/debug/debug-2026-04-11-plugin-export-drift.md`
-  - `skill-outputs/debug/debug-2026-04-13-stale-init-binary.md`
-  - `skill-outputs/debug/debug-2026-04-14-lock-schema-drift.md`
-  - `skill-outputs/quality/quality.md`
-  - prior session retro in `skill-outputs/retro/session-2026-04-10.md`
+  - `charness-artifacts/debug/debug-2026-04-11-plugin-export-drift.md`
+  - `charness-artifacts/debug/debug-2026-04-13-stale-init-binary.md`
+  - `charness-artifacts/debug/debug-2026-04-14-lock-schema-drift.md`
+  - `charness-artifacts/quality/quality.md`
+  - prior session retro in `charness-artifacts/retro/session-2026-04-10.md`
 - Commands used:
   - `git log --oneline --since='2026-04-07'`
   - `gh issue list --repo corca-ai/charness --state closed --search 'closed:>=2026-04-07' --limit 50`
@@ -117,6 +117,6 @@
 
 ## Persisted
 
-- yes `skill-outputs/retro/retro.md`
-- yes `skill-outputs/retro/weekly-2026-04-14.md`
-- yes `skill-outputs/retro/weekly-latest.json`
+- yes `charness-artifacts/retro/retro.md`
+- yes `charness-artifacts/retro/weekly-2026-04-14.md`
+- yes `.charness/retro/weekly-latest.json`

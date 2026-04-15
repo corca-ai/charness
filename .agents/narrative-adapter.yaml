@@ -1,7 +1,7 @@
 version: 1
 repo: charness
 language: en
-output_dir: skill-outputs/narrative
+output_dir: charness-artifacts/narrative
 preset_id: portable-defaults
 customized_from: portable-defaults
 source_documents:

@@ -25,7 +25,7 @@ Use the wrapper:
 ```bash
 ./scripts/export-thread.sh \
   "https://workspace.slack.com/archives/C123/p1234567890123456" \
-  skill-outputs/gather/slack-thread.md \
+  charness-artifacts/gather/slack-thread.md \
   "Slack Thread"
 ```
 

@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 ADAPTER_RELATIVE_PATH = Path(".agents/retro-adapter.yaml")
-SUMMARY_RELATIVE_PATH = Path("skill-outputs/retro/recent-lessons.md")
+SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
 
 
 def parse_args() -> argparse.Namespace:
@@ -21,13 +21,13 @@ def adapter_text(repo_name: str) -> str:
             "version: 1",
             f"repo: {repo_name}",
             "language: en",
-            "output_dir: skill-outputs/retro",
+            "output_dir: charness-artifacts/retro",
             "preset_id: portable-defaults",
             "customized_from: portable-defaults",
             "default_mode: session",
             "weekly_window_days: 7",
-            "snapshot_path: skill-outputs/retro/weekly-latest.json",
-            "summary_path: skill-outputs/retro/recent-lessons.md",
+            "snapshot_path: .charness/retro/weekly-latest.json",
+            "summary_path: charness-artifacts/retro/recent-lessons.md",
             "evidence_paths: []",
             "metrics_commands: []",
             "auto_session_trigger_surfaces: []",

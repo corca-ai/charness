@@ -43,7 +43,7 @@ Impl-specific fields:
 version: 1
 repo: my-repo
 language: en
-output_dir: skill-outputs/impl
+output_dir: charness-artifacts/impl
 preset_id: portable-defaults
 customized_from: portable-defaults
 verification_tools:

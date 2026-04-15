@@ -28,7 +28,7 @@ def utc_now() -> str:
 
 
 def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: str, scope: str) -> dict[str, str]:
-    output_dir = repo_root / "skill-outputs" / "hitl" / "runtime" / session_id
+    output_dir = repo_root / ".charness" / "hitl" / "runtime" / session_id
     output_dir.mkdir(parents=True, exist_ok=True)
 
     (output_dir / "hitl-scratchpad.md").write_text(

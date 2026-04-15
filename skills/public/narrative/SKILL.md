@@ -34,7 +34,7 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 
 Default durable artifact:
 
-- `skill-outputs/narrative/narrative.md`
+- `charness-artifacts/narrative/narrative.md`
 
 What you get after one run:
 
@@ -54,7 +54,7 @@ python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .
 Then inspect current state:
 
 ```bash
-sed -n '1,220p' skill-outputs/narrative/narrative.md 2>/dev/null || true
+sed -n '1,220p' charness-artifacts/narrative/narrative.md 2>/dev/null || true
 python3 "$SKILL_DIR/scripts/map_sources.py" --repo-root .
 git status --short
 ```

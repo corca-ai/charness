@@ -42,7 +42,7 @@ new local skill.
 
 Default durable artifact:
 
-- `skill-outputs/find-skills/find-skills.md`
+- `charness-artifacts/find-skills/find-skills.md`
 
 What you get after one run:
 

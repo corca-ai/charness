@@ -24,11 +24,11 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 
 Default durable artifact:
 
-- `skill-outputs/hitl/hitl.md`
+- `charness-artifacts/hitl/hitl.md`
 
 Default runtime directory:
 
-- `skill-outputs/hitl/runtime`
+- `.charness/hitl/runtime`
 
 If the adapter is missing but the repo would benefit from explicit chunking or
 state location, scaffold one:

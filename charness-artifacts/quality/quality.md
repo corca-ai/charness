@@ -24,7 +24,7 @@ pytest-reference validator guidance) and dogfooding it against `charness`.
 - runtime hot spots: `pytest` 56.5s, `check-coverage` 8.9s, `check-secrets` 5.1s, `check-markdown` 2.7s, and `run-evals` 1.8s.
 - coverage gate: `python3 scripts/check-coverage.py --repo-root . --json` reports `62.9%` (`741/1178`) against a `60.0%` floor; weakest modules are `support_sync_lib.py` `30.6%`, `install_provenance_lib.py` `55.9%`, `install_tools.py` `57.7%`, and `upstream_release_lib.py` `57.0%`.
 - evaluator depth: the maintained cautilus scenario registry exists, but deeper local proof is unavailable in this clone because `cautilus` is missing (`python3 scripts/doctor.py --repo-root . --json --tool-id cautilus`).
-- runtime retention: timings stay in `skill-outputs/quality/runtime-signals.json` and rotate into monthly `history/runtime-signals-YYYY-MM.jsonl`.
+- runtime retention: timings stay in `.charness/quality/runtime-signals.json` and rotate into monthly `.charness/quality/history/runtime-signals-YYYY-MM.jsonl`.
 
 ## Healthy
 

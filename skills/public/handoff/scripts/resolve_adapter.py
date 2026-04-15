@@ -18,7 +18,7 @@ def load_adapter(repo_root: Path) -> dict[str, object]:
         repo_root,
         skill_id="handoff",
         artifact_filename="handoff.md",
-        default_output_dir="skill-outputs/handoff",
+        default_output_dir="charness-artifacts/handoff",
         missing_warnings=(
             "No handoff adapter found. Using default durable artifact location.",
             "Create .agents/handoff-adapter.yaml to move the artifact path or record preset provenance.",

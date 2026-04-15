@@ -8,7 +8,7 @@ from .support import run_script
 
 def test_refresh_recent_lessons_from_latest_retro_artifact(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    output_dir = repo / "skill-outputs" / "retro"
+    output_dir = repo / "charness-artifacts" / "retro"
     output_dir.mkdir(parents=True)
     (repo / ".agents").mkdir()
     (repo / ".agents" / "retro-adapter.yaml").write_text(
@@ -17,8 +17,8 @@ def test_refresh_recent_lessons_from_latest_retro_artifact(tmp_path: Path) -> No
                 "version: 1",
                 "repo: demo",
                 "language: en",
-                "output_dir: skill-outputs/retro",
-                "summary_path: skill-outputs/retro/recent-lessons.md",
+                "output_dir: charness-artifacts/retro",
+                "summary_path: charness-artifacts/retro/recent-lessons.md",
                 "evidence_paths: []",
                 "metrics_commands: []",
             ]
@@ -58,8 +58,8 @@ def test_refresh_recent_lessons_from_latest_retro_artifact(tmp_path: Path) -> No
     result = run_script("skills/public/retro/scripts/refresh_recent_lessons.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["summary_path"] == "skill-outputs/retro/recent-lessons.md"
-    assert payload["source_path"] == "skill-outputs/retro/weekly-2026-04-14.md"
+    assert payload["summary_path"] == "charness-artifacts/retro/recent-lessons.md"
+    assert payload["source_path"] == "charness-artifacts/retro/weekly-2026-04-14.md"
     summary_text = (output_dir / "recent-lessons.md").read_text(encoding="utf-8")
     assert "The repo should stop relearning sync boundaries." in summary_text
     assert "Source and installed surfaces drifted independently." in summary_text
@@ -68,7 +68,7 @@ def test_refresh_recent_lessons_from_latest_retro_artifact(tmp_path: Path) -> No
 
 def test_refresh_recent_lessons_accepts_explicit_source(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    output_dir = repo / "skill-outputs" / "retro"
+    output_dir = repo / "charness-artifacts" / "retro"
     output_dir.mkdir(parents=True)
     (repo / ".agents").mkdir()
     (repo / ".agents" / "retro-adapter.yaml").write_text(
@@ -77,8 +77,8 @@ def test_refresh_recent_lessons_accepts_explicit_source(tmp_path: Path) -> None:
                 "version: 1",
                 "repo: demo",
                 "language: en",
-                "output_dir: skill-outputs/retro",
-                "summary_path: skill-outputs/retro/recent-lessons.md",
+                "output_dir: charness-artifacts/retro",
+                "summary_path: charness-artifacts/retro/recent-lessons.md",
                 "evidence_paths: []",
                 "metrics_commands: []",
             ]
@@ -109,10 +109,10 @@ def test_refresh_recent_lessons_accepts_explicit_source(tmp_path: Path) -> None:
         "--repo-root",
         str(repo),
         "--source",
-        "skill-outputs/retro/session-2026-04-15.md",
+        "charness-artifacts/retro/session-2026-04-15.md",
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["source_path"] == "skill-outputs/retro/session-2026-04-15.md"
+    assert payload["source_path"] == "charness-artifacts/retro/session-2026-04-15.md"
     summary_text = (output_dir / "recent-lessons.md").read_text(encoding="utf-8")
     assert "Explicit source should win." in summary_text

@@ -44,8 +44,8 @@ def test_record_quality_runtime_writes_summary_and_archive(tmp_path: Path) -> No
     )
     assert second.returncode == 0, second.stderr
 
-    summary_path = repo / "skill-outputs" / "quality" / "runtime-signals.json"
-    archive_path = repo / "skill-outputs" / "quality" / "history" / "runtime-signals-2026-04.jsonl"
+    summary_path = repo / ".charness" / "quality" / "runtime-signals.json"
+    archive_path = repo / ".charness" / "quality" / "history" / "runtime-signals-2026-04.jsonl"
     assert summary_path.exists()
     assert archive_path.exists()
 
@@ -63,7 +63,7 @@ def test_record_quality_runtime_writes_summary_and_archive(tmp_path: Path) -> No
 
 def test_record_quality_runtime_rotates_old_monthly_archives(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    history_dir = repo / "skill-outputs" / "quality" / "history"
+    history_dir = repo / ".charness" / "quality" / "history"
     history_dir.mkdir(parents=True)
 
     for month in range(1, 14):

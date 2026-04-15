@@ -13,7 +13,7 @@ from scripts.adapter_init_lib import base_adapter_items, run_init_adapter
 
 def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
     return [
-        *base_adapter_items(repo_name, "skill-outputs/retro"),
+        *base_adapter_items(repo_name, "charness-artifacts/retro"),
         ("default_mode", "session"),
         ("weekly_window_days", 7),
         ("evidence_paths", []),

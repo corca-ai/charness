@@ -46,7 +46,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     }
     assert payload["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
     assert payload["deferred_setup"] == []
-    report_path = repo / "skill-outputs" / "quality" / "bootstrap.json"
+    report_path = repo / ".charness" / "quality" / "bootstrap.json"
     assert report_path.is_file()
 
     resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
@@ -87,7 +87,7 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
                 "version: 1",
                 "repo: demo",
                 "language: en",
-                "output_dir: skill-outputs/quality",
+                "output_dir: charness-artifacts/quality",
                 "preset_id: python-quality",
                 "customized_from: python-quality",
                 "preset_lineage:",
@@ -173,7 +173,7 @@ def test_quality_bootstrap_rejects_invalid_explicit_skill_ergonomics_rules(tmp_p
                 "version: 1",
                 "repo: demo",
                 "language: en",
-                "output_dir: skill-outputs/quality",
+                "output_dir: charness-artifacts/quality",
                 "preset_id: python-quality",
                 "customized_from: python-quality",
                 "skill_ergonomics_gate_rules: invalid",

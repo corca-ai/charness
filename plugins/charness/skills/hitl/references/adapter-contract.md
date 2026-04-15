@@ -33,7 +33,7 @@ Search order:
 
 ## Defaults
 
-- `output_dir`: `skill-outputs/hitl`
+- `output_dir`: `charness-artifacts/hitl`
 - `default_scope`: `all`
 - `chunk_target_lines`: `100`
 - `require_explicit_apply`: `true`
@@ -46,4 +46,4 @@ The summary artifact filename is fixed:
 
 The runtime state directory defaults to:
 
-- `<output_dir>/runtime`
+- `.charness/hitl/runtime`
