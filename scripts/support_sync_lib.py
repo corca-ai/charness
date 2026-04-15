@@ -162,9 +162,9 @@ def _resolve_upstream_source_path(
     checkout_root = upstream_checkouts.get(manifest["upstream_repo"]) or fixture_root
     if checkout_root is not None:
         source_path = checkout_root / relative_source_path
-        if not source_path.exists():
+        if not source_path.is_dir():
             raise ValueError(
-                f"{manifest['tool_id']}: support source `{source_path}` does not exist "
+                f"{manifest['tool_id']}: support source `{source_path}` must be a skill root directory "
                 f"for `{manifest['upstream_repo']}`"
             )
         return source_path
@@ -220,11 +220,6 @@ def materialize_upstream_support(
     upstream_checkouts: dict[str, Path],
 ) -> tuple[Path, str]:
     source_path = _resolve_upstream_source_path(manifest, upstream_checkouts=upstream_checkouts)
-    if source_path.is_file():
-        raise ValueError(
-            f"{manifest['tool_id']}: upstream support source must point at a skill root directory, "
-            f"not a file (`{manifest['support_skill_source']['path']}`)"
-        )
     digest = _compute_tree_digest(source_path)
     cache_path = _promote_tree_to_cache(source_path, manifest=manifest, digest=digest)
     return cache_path, digest

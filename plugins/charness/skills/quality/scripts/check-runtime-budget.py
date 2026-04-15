@@ -3,9 +3,10 @@
 """Enforce per-command runtime budgets recorded in runtime-signals.json.
 
 Reads the adapter's `runtime_budgets` mapping (label -> max_elapsed_ms) and
-compares it against the latest elapsed_ms recorded under
-`.charness/quality/runtime-signals.json`. Exits non-zero on any violation.
-Labels without a recorded sample are reported as warnings, not failures,
+compares it against recent runtime samples recorded under
+`.charness/quality/runtime-signals.json`. When a command has recent summary
+stats, the gate fails on recent median drift instead of a single latest-sample
+spike. Labels without a recorded sample are reported as warnings, not failures,
 so a budget can be defined before its first observed run.
 """
 from __future__ import annotations
@@ -52,6 +53,7 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
     commands = signals.get("commands", {}) if isinstance(signals, dict) else {}
 
     violations: list[dict[str, Any]] = []
+    latest_spikes: list[dict[str, Any]] = []
     missing_samples: list[str] = []
     checked: list[dict[str, Any]] = []
 
@@ -61,12 +63,51 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
         elapsed = latest.get("elapsed_ms") if isinstance(latest, dict) else None
         if not isinstance(elapsed, int):
             missing_samples.append(label)
-            checked.append({"label": label, "budget_ms": max_ms, "elapsed_ms": None, "status": "no-sample"})
+            checked.append(
+                {
+                    "label": label,
+                    "budget_ms": max_ms,
+                    "latest_elapsed_ms": None,
+                    "median_recent_elapsed_ms": None,
+                    "max_recent_elapsed_ms": None,
+                    "status": "no-sample",
+                }
+            )
             continue
-        status = "ok" if elapsed <= max_ms else "exceeded"
-        checked.append({"label": label, "budget_ms": max_ms, "elapsed_ms": elapsed, "status": status})
+
+        median_recent = entry.get("median_recent_elapsed_ms") if isinstance(entry, dict) else None
+        max_recent = entry.get("max_recent_elapsed_ms") if isinstance(entry, dict) else None
+        basis_elapsed = median_recent if isinstance(median_recent, int) else elapsed
+        status = "ok" if basis_elapsed <= max_ms else "exceeded"
+        if status == "ok" and elapsed > max_ms:
+            status = "latest-spike"
+            latest_spikes.append(
+                {
+                    "label": label,
+                    "budget_ms": max_ms,
+                    "latest_elapsed_ms": elapsed,
+                    "median_recent_elapsed_ms": basis_elapsed,
+                }
+            )
+        checked.append(
+            {
+                "label": label,
+                "budget_ms": max_ms,
+                "latest_elapsed_ms": elapsed,
+                "median_recent_elapsed_ms": basis_elapsed,
+                "max_recent_elapsed_ms": max_recent if isinstance(max_recent, int) else None,
+                "status": status,
+            }
+        )
         if status == "exceeded":
-            violations.append({"label": label, "budget_ms": max_ms, "elapsed_ms": elapsed})
+            violations.append(
+                {
+                    "label": label,
+                    "budget_ms": max_ms,
+                    "median_recent_elapsed_ms": basis_elapsed,
+                    "latest_elapsed_ms": elapsed,
+                }
+            )
 
     return {
         "signals_path": str(signals_path),
@@ -74,6 +115,7 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
         "budgets_configured": len(budgets),
         "checked": checked,
         "violations": violations,
+        "latest_spikes": latest_spikes,
         "missing_samples": missing_samples,
     }
 
@@ -90,7 +132,13 @@ def _format_human(report: dict[str, Any]) -> str:
         if status == "no-sample":
             lines.append(f"WARN  {label}: no sample yet (budget {budget}ms)")
             continue
-        lines.append(f"{status.upper():<8} {label}: {entry['elapsed_ms']}ms (budget {budget}ms)")
+        latest = entry["latest_elapsed_ms"]
+        median = entry["median_recent_elapsed_ms"]
+        max_recent = entry["max_recent_elapsed_ms"]
+        detail = f"latest {latest}ms, median {median}ms"
+        if max_recent is not None:
+            detail += f", max {max_recent}ms"
+        lines.append(f"{status.upper():<12} {label}: {detail} (budget {budget}ms)")
     return "\n".join(lines)
 
 
@@ -112,7 +160,9 @@ def main() -> int:
         if not args.json:
             for v in report["violations"]:
                 print(
-                    f"runtime budget exceeded: {v['label']} took {v['elapsed_ms']}ms (budget {v['budget_ms']}ms)",
+                    "runtime budget exceeded: "
+                    f"{v['label']} recent median {v['median_recent_elapsed_ms']}ms "
+                    f"(latest {v['latest_elapsed_ms']}ms, budget {v['budget_ms']}ms)",
                     file=sys.stderr,
                 )
         return 1

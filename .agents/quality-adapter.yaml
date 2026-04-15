@@ -25,9 +25,9 @@ prompt_asset_policy:
   exemption_globs: []
 skill_ergonomics_gate_rules: []
 runtime_budgets:
-  pytest: 70000
-  check-coverage: 30000
-  check-secrets: 20000
+  pytest: 40000
+  check-coverage: 15000
+  check-secrets: 5000
   run-evals: 5000
 concept_paths:
   - docs/control-plane.md

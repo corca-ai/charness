@@ -69,10 +69,12 @@ format when specs use `Covered by pytest:` style references.
 `runtime_budgets` is a mapping of standing-gate label → max elapsed
 milliseconds. Labels must match the labels recorded in
 `.charness/quality/runtime-signals.json` by the standing gate runner. Add
-`scripts/check-runtime-budget.py` to the standing gate to fail the run when
-`latest.elapsed_ms` exceeds the budget. Labels with no recorded sample yet
-are warnings, not failures, so a budget can be defined before its first run.
-Omit the field entirely (or leave the mapping empty) to opt out.
+`scripts/check-runtime-budget.py` to the standing gate to fail the run when the
+recent median exceeds the budget. A single latest sample above budget is
+reported as a spike when the recent median is still inside budget. Labels with
+no recorded sample yet are warnings, not failures, so a budget can be defined
+before its first run. Omit the field entirely (or leave the mapping empty) to
+opt out.
 
 `gate_commands` should stay suitable for quiet maintainer-local enforcement
 such as pre-push. `review_commands` should hold the fuller quality-review path

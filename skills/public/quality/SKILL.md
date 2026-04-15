@@ -88,7 +88,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage
    - for timing/logs/retention signals, workflow-runtime drift, and retention signals, see `references/operability-signals.md`
    - when a standing gate already exists, prefer compact default phase output plus a verbose-on-demand escape hatch over always-on chatter; see `references/standing-gate-verbosity.md`
-   - when a hot spot becomes the standing single dominator, define a `runtime_budgets` entry in the adapter and call `scripts/check-runtime-budget.py` from the repo's standing gate; budgets fail the gate when `runtime-signals.json` records latest > budget
+   - when a hot spot becomes the standing single dominator, define a `runtime_budgets` entry in the adapter and call `scripts/check-runtime-budget.py` from the repo's standing gate; budgets fail the gate on recent-median drift and report single latest-sample spikes separately
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model
    - `behavior`: do tests, evals, checks, and command-surface probes say something falsifiable about real behavior, and does the repo-owned test code stay maintainable
