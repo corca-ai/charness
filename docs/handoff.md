@@ -15,6 +15,15 @@
 
 ## Current State
 
+- 2026-04-15 `quality` dogfood pass가
+  [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)를
+  갱신했다. `./scripts/run-quality.sh --review`는 `34 passed, 0 failed`,
+  total `40.2s`로 통과했고, runtime budget도 모두 예산 안에 있다.
+- 이번 pass에서 `recent-lessons.md`가 최신 retro digest로 갱신되는 계약과
+  충돌하던 오래된 `plugin export` 테스트 앵커를 구조 검증으로 바꿨다.
+  상세 원인은
+  [charness-artifacts/debug/2026-04-15-retro-memory-test-anchor.md](../charness-artifacts/debug/2026-04-15-retro-memory-test-anchor.md)에
+  남겼다.
 - `skill-outputs/`는 repo-facing public output root에서 제거됐고,
   public artifacts는 `charness-artifacts/`로 정리됐다.
 - `handoff` adapter fallback은 `docs/handoff.md`를 가리킨다. repo-local
@@ -33,7 +42,9 @@
 ## Next Session
 
 1. 먼저 `git status --short`를 확인한다. 이 handoff가 커밋된 상태라면 새 첫
-   작업은 artifact naming policy의 dogfood/release 여부 판단이다.
+   작업은 `charness-artifacts/quality/latest.md`의 Recommended Next Gates 중
+   `upstream_release_lib.py` focused coverage 또는 coverage unfloored-file
+   inventory를 이어갈지 판단하는 것이다.
 2. artifact naming을 더 밀면 stale artifact 처리 정책을 별도 결정한다.
    이번 slice는 자동 삭제 정책을 추가하지 않았고, 기존 기록을 보존하는 방향만
    적용했다.

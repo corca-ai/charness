@@ -5,7 +5,7 @@ output_dir: charness-artifacts/quality
 preset_id: python-quality
 customized_from: python-quality
 preset_lineage:
-- python-quality
+  - python-quality
 coverage_fragile_margin_pp: 1.0
 coverage_floor_policy:
   min_statements_threshold: 30
@@ -18,6 +18,11 @@ coverage_floor_policy:
   ci_workflow_glob: .github/workflows/*.yml
 specdown_smoke_patterns: []
 spec_pytest_reference_format: "Covered by pytest:\\s+`tests/[^`]+`(?:,\\s*`tests/[^`]+`)*"
+prompt_asset_roots: []
+prompt_asset_policy:
+  source_globs: []
+  min_multiline_chars: 400
+  exemption_globs: []
 skill_ergonomics_gate_rules: []
 runtime_budgets:
   pytest: 40000
@@ -25,19 +30,19 @@ runtime_budgets:
   check-secrets: 5000
   run-evals: 5000
 concept_paths:
-- docs/control-plane.md
-- docs/public-skill-validation.md
-- docs/operator-acceptance.md
-- docs/handoff.md
-- charness-artifacts/quality/latest.md
-- README.md
+  - docs/control-plane.md
+  - docs/public-skill-validation.md
+  - docs/operator-acceptance.md
+  - docs/handoff.md
+  - charness-artifacts/quality/latest.md
+  - README.md
 preflight_commands:
-- python3 scripts/validate-maintainer-setup.py --repo-root .
-- python3 scripts/doctor.py --json
+  - python3 scripts/validate-maintainer-setup.py --repo-root .
+  - python3 scripts/doctor.py --json
 gate_commands:
-- ./scripts/run-quality.sh
+  - ./scripts/run-quality.sh
 review_commands:
-- ./scripts/run-quality.sh --review
+  - ./scripts/run-quality.sh --review
 security_commands:
-- ./scripts/check-secrets.sh
-- python3 scripts/check-supply-chain.py --repo-root .
+  - ./scripts/check-secrets.sh
+  - python3 scripts/check-supply-chain.py --repo-root .

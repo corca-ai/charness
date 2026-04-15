@@ -26,7 +26,9 @@ def test_retro_memory_surfaces_reference_recent_lessons_digest() -> None:
     assert "summary_path" in skill_text
     assert "summary_path" in contract_text
     assert "Repeat Traps" in lessons_text
-    assert "plugin export" in lessons_text
+    assert "Next-Time Checklist" in lessons_text
+    assert "## Sources" in lessons_text
+    assert "charness-artifacts/retro/" in lessons_text
 
 
 def test_agents_keeps_dogfood_detail_in_development_doc() -> None:

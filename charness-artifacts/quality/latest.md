@@ -3,99 +3,133 @@ Date: 2026-04-15
 
 ## Scope
 
-Repo-wide quality posture after separating quiet pre-push enforcement from the
-full `quality` review path, installing the preferred local security/runtime
-tooling, removing the experimental `crill` integration, and fixing release
-probes to use authenticated GitHub access when available.
+Repo-wide quality posture for the current `charness` tree. This pass re-ran the
+adapter bootstrap, preflight checks, advisory inventories, the full
+`./scripts/run-quality.sh --review` gate, and one fresh-eye challenge pass
+against coverage/spec/hook seams.
 
 ## Current Gates
 
+- `.agents/quality-adapter.yaml` is valid and records gate, review, preflight,
+  security, runtime-budget, concept-path, and prompt-asset policy fields.
 - `./scripts/run-quality.sh` remains the quiet maintainer-local/pre-push gate.
-- `./scripts/run-quality.sh --review` is now the fuller quality-review command:
-  it replays PASS-phase logs and validates declared external links online.
-- `.agents/quality-adapter.yaml` records both `gate_commands` and
-  `review_commands`, plus runtime budgets for `pytest`, `check-secrets`,
-  `check-coverage`, and `run-evals`.
-- `check-secrets` now exercises the installed `gitleaks` fast path on this
-  machine instead of falling back to npm `secretlint`.
-- `check-links-external` validates only the repo-declared URL list in online
-  mode instead of treating each URL as a page to crawl.
-- release/tool probes now prefer authenticated `gh api` before falling back to
-  unauthenticated GitHub REST calls.
+- `./scripts/run-quality.sh --review` is the full quality-review gate: it
+  replays PASS logs and enables online declared-link validation.
+- `.githooks/pre-push` syncs checked-in plugin exports, fails on generated
+  export drift, then runs the quiet quality gate.
+- `core.hooksPath` points at `/home/ubuntu/charness/.githooks`.
+- `check-command-docs` validates 8 command surfaces; install/update/doctor/
+  reset doc drift is no longer an ungated missing item.
 
 ## Runtime Signals
 
-- runtime hot spots: `pytest` `23.8s`, `check-coverage` `8.8s`,
-  `check-markdown` `3.6s`, `check-secrets` `2.6s`, and `run-evals` `1.7s`.
-- `./scripts/run-quality.sh --review`: `33 passed, 0 failed`, total `39.2s`.
-- current budgeted phases: `pytest` `23.8s / 40.0s`, `check-coverage`
-  `8.8s / 15.0s`, `check-secrets` `2.6s / 5.0s`, `run-evals` `1.7s / 5.0s`.
+- `./scripts/run-quality.sh --review`: `34 passed, 0 failed`, total `41.9s`.
+- current budgeted phases: `pytest` `25.9s / 40.0s`, `check-coverage`
+  `8.7s / 15.0s`, `check-secrets` `2.6s / 5.0s`, `run-evals` `1.7s / 5.0s`.
+- runtime hot spots: `pytest` `25.9s`, `check-coverage` `8.7s`,
+  `check-markdown` `3.7s`, `check-secrets` `2.6s`, and external links `2.9s`.
 - online external links: `30 Total`, `30 OK`, `0 Errors`.
-- coverage gate: `65.9%` (`877/1330`) against the `60.0%` aggregate floor.
-  Weakest control-plane modules are `upstream_release_lib.py` `46.7%`,
+- coverage gate: present and passing.
+- evaluator depth: maintained repo-local eval scenarios pass.
+- runtime signals continue to persist under `.charness/quality/`.
+
+## Coverage and Eval Depth
+
+- coverage gate: `66.1%` (`879/1329`) against the `60.0%` aggregate
+  control-plane floor.
+- weakest control-plane modules are `upstream_release_lib.py` `48.8%`,
   `install_provenance_lib.py` `55.9%`, `install_tools.py` `64.4%`, and
   `support_sync_lib.py` `65.3%`.
-- evaluator depth: maintained repo-local eval scenarios pass; Cautilus is
-  installed and its scenario registry remains validation-gated.
-- runtime signals continue to persist under `.charness/quality/`.
+- `check-test-completeness` verifies that standing pytest targets collect all
+  discoverable tests.
+- maintained eval depth exists: `run-evals` passes 19 repo-local scenarios.
+- no `specs/` tree exists for `Covered by pytest:` reference validation in this
+  repo snapshot.
+
+## Maintainer-Local Enforcement
+
+- `python3 scripts/validate-maintainer-setup.py --repo-root .` passed.
+- `.githooks/pre-push` is installed through `core.hooksPath` and runs the
+  canonical quiet quality gate before push.
+- No GitHub Actions workflows are present; the enforced stop-before-finish path
+  is maintainer-local.
+
+## Enforcement Triage
+
+- `AUTO_EXISTING`: validator/artifact/doc/security/style/test/eval/coverage/
+  runtime-budget gates, plus plugin-export drift and maintainer hook setup.
+- `AUTO_CANDIDATE`: strengthen focused tests around
+  `scripts/upstream_release_lib.py`; add a bounded upper test-maintenance ratio
+  or surface-size signal; decide whether repo-specific unfloored-file inventory
+  should graduate from reference sample to an adapted local gate.
+- `NON_AUTOMATABLE`: whether `recent-lessons.md` should remain latest-retro
+  only or become a bounded rolling digest that preserves selected recurring
+  traps; whether `gws` and `agent-browser` patch drift is worth updating now.
 
 ## Healthy
 
-- Pre-push stays compact while `quality` review now exposes hidden PASS logs,
-  online-link status, and runtime budget output.
-- `gitleaks` `8.30.1` and `go` `1.26.2` are installed through Homebrew and
-  exposed on this machine through `~/.local/bin`.
-- `crill` is no longer a tracked `charness` integration while it remains a
-  future paid-product candidate.
-- GitHub release metadata probes no longer burn the unauthenticated 60/hour API
-  bucket when `gh` auth is available.
-- Generated plugin export is synchronized with the source tree.
+- The full review path now exposes PASS-phase diagnostics instead of relying on
+  quiet pre-push output.
+- `gitleaks` `8.30.1`, `go` `1.26.2`, `specdown` `0.47.2`, and `cautilus`
+  `0.2.4` are detected and healthy locally.
+- `doctor.py --json` reports support-skill readiness and materialized Cautilus
+  support discovery.
+- No dual-implementation parity candidates were found by the advisory inventory.
+- Standing gate verbosity inventory is healthy: compact phase-level signal plus
+  `--review`/verbose escape hatch.
+- The stale retro-memory test anchor was corrected and documented in
+  `charness-artifacts/debug/2026-04-15-retro-memory-test-anchor.md`.
 
 ## Weak
 
-- Online link checking remains dependent on upstream host behavior, but the
-  current declared URL set resolves without errors or redirects.
-- `check-markdown` verbose output is large; useful for review, too noisy for
-  pre-push.
-- `upstream_release_lib.py` is now a more important seam and has the weakest
-  control-plane coverage in the current report.
-- Supply-chain online probing is intentionally kept out of default review
-  because registry reachability remains an operator-triggered diagnostic.
+- `upstream_release_lib.py` remains the weakest covered control-plane seam at
+  `48.8%`, while release metadata probing is operationally important.
+- Skill ergonomics inventory is advisory only. It still flags long public cores
+  for `create-skill`, `impl`, `quality`, and `spec`, plus mode/option pressure
+  in several public skills.
+- Entrypoint-doc ergonomics inventory flags `README.md` and
+  `docs/operator-acceptance.md` as long first-touch docs; this is advisory, not
+  a failing gate.
+- `agent-browser` is installed at `0.25.3` while `doctor` observed latest
+  `0.25.4`; `gws` is installed at `0.18.1` while latest is `0.22.5`.
+- The coverage-floor reference inventory sample is not adapted to this repo's
+  custom `scripts/check-coverage.py` gate shape.
 
 ## Missing
 
-- No deterministic doc/help drift gate yet checks install/update/doctor/reset
-  command semantics against first-touch docs.
-- No bounded lower+upper test-ratio signal exists yet; test maintenance cost is
-  still judged indirectly.
+- No bounded upper test-maintenance ratio signal exists yet; test breadth is
+  controlled by completeness and runtime budgets, not by a ratio/size ceiling.
+- No repo-specific unfloored-file inventory gate exists beyond the custom
+  aggregate control-plane coverage floor.
 
 ## Deferred
 
-- Keep `check-supply-chain-online` as an operator-triggered only diagnostic.
-  Do not add it to default `--review` unless a future policy change assigns
-  explicit triage ownership for registry or provider outages.
-- Reintroduce `crill` only after the product and support surface stabilize.
+- Keep `check-supply-chain-online` out of default `--review`; registry
+  reachability remains an operator-triggered diagnostic until a triage owner is
+  assigned for provider outages.
+- Do not update `gws` or `agent-browser` automatically from quality review; both
+  are host-local tools and should move through the control-plane update flow.
+- Do not turn skill ergonomics inventory into a hard gate until specific rules
+  are selected in `skill_ergonomics_gate_rules`.
 
 ## Commands Run
 
-- `brew install gitleaks`
-- `brew install go`
-- `./scripts/check-secrets.sh`
-- `CHARNESS_LINK_CHECK_ONLINE=1 ./scripts/check-links-external.sh`
-- `python3 scripts/update_tools.py --repo-root . --json`
-- `python3 scripts/validate-integrations.py --repo-root .`
-- `python3 -m pytest tests/quality_gates/test_quality_runner.py tests/quality_gates/test_quality_bootstrap.py::test_quality_bootstrap_adapter_records_installed_and_inferred_fields tests/control_plane/test_upstream_release.py`
-- `python3 -m pytest tests/quality_gates tests/control_plane tests/test_*.py tests/charness_cli/test_doctor_cache_selection.py tests/charness_cli/test_tool_lifecycle.py`
-- `./scripts/run-quality.sh --review`
+- quality adapter/bootstrap/tool-recommendation scripts and advisory inventories
+- maintainer preflight, `doctor.py --json`, full review, coverage, reference
+  probes, and local tool version probes
 
 ## Recommended Next Gates
 
 - active `AUTO_CANDIDATE`: add focused tests around `upstream_release_lib.py`
-  failure modes, especially `gh` unavailable, `gh` unauthenticated, and 404
-  no-release behavior.
-- active `AUTO_CANDIDATE`: add one repo-owned doc/help drift check for the
-  install/update/doctor/reset contract.
-- passive `AUTO_CANDIDATE`: keep `check-supply-chain-online` out of default `--review` because registry reachability is an operator-triggered diagnostic by policy; future work should only document the on-demand command and expected triage owner.
+  failure modes, especially `gh` unavailable, `gh` unauthenticated, 404
+  no-release behavior, and malformed release payloads.
+- active `AUTO_CANDIDATE`: adapt the unfloored-file inventory idea to the
+  existing `scripts/check-coverage.py` report shape, or explicitly document that
+  the repo intentionally uses only an aggregate control-plane floor.
+- passive `AUTO_CANDIDATE`: add an upper test-maintenance ratio because the
+  repo still needs to decide what cost ceiling should mean.
+- passive `NON_AUTOMATABLE`: because current behavior is latest-retro only,
+  decide whether `recent-lessons.md` should become a bounded rolling digest.
 
 ## History
 
