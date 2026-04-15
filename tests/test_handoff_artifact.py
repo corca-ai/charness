@@ -110,3 +110,39 @@ def test_validate_handoff_artifact_rejects_missing_reference_link(tmp_path: Path
     assert result.returncode == 1
     assert "at least one markdown link" in result.stderr
 
+
+def test_validate_handoff_artifact_rejects_overlong_handoff(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        "\n".join(
+            [
+                "# Demo Handoff",
+                "",
+                "## Workflow Trigger",
+                "",
+                "- do the thing",
+                "",
+                "## Current State",
+                "",
+                *[f"- stale detail {index}" for index in range(65)],
+                "",
+                "## Next Session",
+                "",
+                "- next",
+                "",
+                "## Discuss",
+                "",
+                "- discuss",
+                "",
+                "## References",
+                "",
+                "- [guide](docs/guide.md)",
+                "",
+            ]
+        )
+        + "\n",
+    )
+    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    result = run_script("scripts/validate-handoff-artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "80 lines" in result.stderr

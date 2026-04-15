@@ -26,7 +26,7 @@ from scripts.artifact_validator import (
     validate_title,
 )
 
-MAX_ARTIFACT_LINES = 120
+MAX_ARTIFACT_LINES = 80
 REQUIRED_SECTIONS = (
     "## Workflow Trigger",
     "## Current State",
@@ -76,4 +76,3 @@ if __name__ == "__main__":
     except ValidationError as exc:
         print(str(exc), file=sys.stderr)
         sys.exit(1)
-

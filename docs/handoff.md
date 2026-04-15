@@ -44,10 +44,6 @@
   frontmatter만 도입할지 아직 정책으로 잠그지 않았다.
 - singleton 성격이 강한 스킬도 dated record를 항상 남길지, 일부는 current
   pointer만 둘지에 대한 UX 판단은 dogfood 후 다시 볼 수 있다.
-- `handoff` 스킬은 현재 “diary를 남기지 말라”고 말하지만 size gate가
-  관대하다. 다음 개선 때는 “다음 첫 행동을 바꾸는 정보만 handoff에 남기고
-  세부 이력은 quality/retro/debug로 spill”하도록 더 강하게 유도하는 편이
-  낫다.
 
 ## References
 

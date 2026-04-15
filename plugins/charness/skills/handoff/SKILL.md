@@ -30,11 +30,13 @@ By default, `handoff` writes its durable artifact to
 `docs/handoff.md`. Repos can override the directory with
 `.agents/handoff-adapter.yaml`.
 
-Keep the handoff inside the repo-owned size and shape gate. Default to roughly
-200 lines unless the repo already names a different gate. If the current
-handoff exceeds that size or accumulates multiple dated `## This Session
-(<date>)` sections, prune or spill durable detail before appending more prose
-here. See `references/spill-targets.md` for the default spill destinations.
+Keep the handoff inside the repo-owned size and shape gate. Default to a
+signal target of 40-70 lines and treat 80 lines as the usual hard stop unless
+the repo names a different gate. If the current handoff approaches that range,
+preserve only information that changes the next action and spill durable detail
+before appending more prose. Multiple dated `## This Session (<date>)` sections
+are a hard diary smell. See `references/spill-targets.md` for the default spill
+destinations.
 
 ```bash
 # Required Tools: rg
@@ -70,10 +72,12 @@ the `Workflow Trigger` first and continue with that workflow.
      there instead of hardcoding the host choice into the skill
 3. Rewrite the handoff around continuation, not history.
    - exact workflow trigger
-   - current state facts that matter
+   - current state facts that change the next action
    - ordered next actions
    - open decisions that still need user input
    - tight reference list
+   - one reference to the owning artifact for historical detail, not a replay
+     of that detail
 4. Keep the trigger explicit.
    - if a named workflow or skill should run next, say it directly
    - if the next pickup depends on reading specific files first, name them
@@ -102,6 +106,8 @@ The handoff should usually contain:
 ## Guardrails
 
 - Do not preserve stale detail that no longer changes the next action.
+- Do not copy quality, retro, debug, changelog, or commit-history detail into
+  the handoff when a link to the owning artifact is enough.
 - Do not accumulate dated `This Session (<date>)` sections across sessions;
   replace the old one or spill durable detail into the right sibling artifact.
 - Do not hide the real next workflow behind vague prose.
@@ -109,6 +115,8 @@ The handoff should usually contain:
 - Do not let the handoff drift away from the current repo state.
 - Do not add new top-level sections just to preserve history; prune or move the
   durable detail instead.
+- Do not use the line budget as permission to keep process narrative; the
+  budget is a failure guard, not a target.
 - Do not assume your own interpretation of the handoff is the only plausible
   one when a bounded premortem could catch a likely misread.
 - If the handoff changed materially, treat it as a real artifact update rather
