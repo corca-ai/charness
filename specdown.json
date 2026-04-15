@@ -1,0 +1,9 @@
+{
+  "entry": "specs/index.spec.md",
+  "adapters": [],
+  "reporters": [
+    { "builtin": "html", "outFile": ".charness/specdown/report" },
+    { "builtin": "json", "outFile": ".charness/specdown/report.json" }
+  ],
+  "defaultTimeoutMsec": 120000
+}
