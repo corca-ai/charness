@@ -9,6 +9,8 @@ A repo-owned CLI should usually have:
   the command registry
 - file-mutation tests for install/update/reset commands
 - validation for any persisted lock or manifest schema
+- command-docs drift checks that compare no-side-effect `--help` output with
+  first-touch install, update, doctor, reset, or uninstall docs
 - cheap syntax smoke such as `py_compile` for Python entrypoints
 
 When the CLI owns lifecycle state, test both:
@@ -28,3 +30,10 @@ Quality review should ask:
 - does `update` report drift honestly
 - does the CLI keep one source of truth for installed state
 - can a later agent tell what changed without re-running everything
+- are stable command names, options, and lifecycle invariants protected by a
+  repo-local command-docs contract instead of recurring manual review
+
+Command-docs drift gates should stay narrow. Check command existence, stable
+option anchors, and crisp invariants such as "doctor is read-only" or
+"delete-checkout requires an explicit flag." Leave broad documentation style,
+progressive disclosure, and naming judgment to human or agent review.

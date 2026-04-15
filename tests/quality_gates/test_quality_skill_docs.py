@@ -38,6 +38,9 @@ def test_quality_skill_carries_entrypoint_docs_ergonomics_lens() -> None:
     assert "less is more" in ergonomics
     assert "progressive disclosure" in ergonomics
     assert "Treat these as prompts, not automatic failures." in ergonomics
+    assert "Command Docs Drift Gate" in ergonomics
+    assert ".agents/command-docs.yaml" in ergonomics
+    assert "required help anchors" in ergonomics
     assert "doc-set dogma" in skill_text
 
 
@@ -67,3 +70,23 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
     assert "Test-runner reporter" in verbosity
     assert "Orchestrator output mode" in verbosity
     assert "quiet defaults and failure detail" in verbosity.lower()
+
+
+def test_quality_and_create_cli_carry_command_docs_drift_pattern() -> None:
+    quality_skill = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    automation = (
+        ROOT / "skills" / "public" / "quality" / "references" / "automation-promotion.md"
+    ).read_text(encoding="utf-8")
+    adapter_contract = (
+        ROOT / "skills" / "public" / "quality" / "references" / "adapter-contract.md"
+    ).read_text(encoding="utf-8")
+    create_cli = (ROOT / "skills" / "public" / "create-cli" / "SKILL.md").read_text(encoding="utf-8")
+    create_cli_quality = (
+        ROOT / "skills" / "public" / "create-cli" / "references" / "quality-gates.md"
+    ).read_text(encoding="utf-8")
+
+    assert "command-docs drift gate" in quality_skill
+    assert "stable CLI command docs" in automation
+    assert ".agents/command-docs.yaml" in adapter_contract
+    assert "command-docs drift gate" in create_cli
+    assert "repo-local command-docs contract" in create_cli_quality

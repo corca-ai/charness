@@ -75,6 +75,8 @@ steps call tools outside the baseline shell surface.
      depend on it
    - checks that docs and examples do not conflate help, healthcheck, and
      readiness semantics
+   - a command-docs drift gate when install/update/doctor/reset/uninstall
+     semantics are part of the operator contract
    - help text or JSON-shape checks when agents depend on them
 
 ## Guardrails

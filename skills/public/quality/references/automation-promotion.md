@@ -30,6 +30,8 @@ Examples:
 - secret-bearing text that should be checked by `gitleaks`, `secretlint`, or another repo-native secret scanner
 - markdown portability rules that should be checked by markdown lint or link
   validation
+- stable CLI command docs that should be checked against no-side-effect
+  `--help` output and a repo-local command-docs contract
 
 Preferred outputs:
 

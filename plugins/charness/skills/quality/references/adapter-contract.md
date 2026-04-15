@@ -80,6 +80,11 @@ that an agent or maintainer runs when they need diagnostic detail, online
 checks, and hidden PASS-phase output. For this repo that is
 `./scripts/run-quality.sh --review`.
 
+Command-docs drift checks should usually live in their own repo-local contract
+such as `.agents/command-docs.yaml`, then be invoked from `gate_commands` or a
+repo-owned quality runner. Keep command names, doc paths, required help
+anchors, and required/forbidden doc phrases out of the public skill body.
+
 `prompt_asset_roots` is the repo's declared checked-in asset surface for
 prompt- or content-heavy material such as `.md`, `.prompt`, or template files.
 Keep it empty when the repo has not chosen a dedicated asset root yet.

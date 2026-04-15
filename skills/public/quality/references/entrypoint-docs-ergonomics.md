@@ -43,3 +43,31 @@ It only inventories signals that deserve a human quality pass:
   trying to carry too much procedural detail itself
 
 Treat these as prompts, not automatic failures.
+
+## Command Docs Drift Gate
+
+When a repo owns an installable CLI, bootstrap script, or operator command
+surface, `quality` should ask whether the first-touch docs are close enough to
+the real command surface for a later agent to act without rediscovery.
+
+Promote the concern into a deterministic gate when the command surface is
+stable enough to name. A portable gate should usually:
+
+- run no-side-effect help commands such as `<cli> --help` and
+  `<cli> <subcommand> --help`
+- declare the first-touch docs that own each command's operator contract
+- check required help anchors for stable options or subcommands
+- check required doc phrases for behavioral invariants such as read-only
+  doctor behavior, explicit delete flags, managed install ownership, or
+  machine-readable output
+- check forbidden doc phrases when a deprecated path must not reappear
+
+Do not try to prove broad prose quality with substring checks. The gate should
+only protect command existence, option visibility, and crisp semantic
+invariants. Keep taste, structure, and progressive-disclosure review in the
+advisory inventory above.
+
+Keep repo-specific command names and doc ownership in a repo-local contract
+such as `.agents/command-docs.yaml`, then call the checker from the standing
+quality gate. The public skill should carry the pattern; the adapter or
+repo-local contract should carry the actual CLI surface.
