@@ -21,9 +21,10 @@
 
 - `charness`는 thin CLI + checked-in plugin export + managed checkout 모델로
   정리됐다. primary operator path는 `charness init/update/reset/uninstall`이다.
-- 열린 GitHub 이슈는 `#24` 하나다. skill body 기준 남아 있던 contract gap은
-  이번 세션에서 좁혔다. `premortem` caller contract, `impl`/`release`의
-  standalone invocation, `quality`의 stronger parity triage를 정리했다.
+- `#24`는 repo-local contract 기준으로 닫혔다. `premortem` caller contract,
+  `impl`/`release`의 standalone invocation, `quality`의 stronger parity
+  triage, public-skill omission helper, opt-in ergonomics gate seam까지
+  landed했다.
 - support-tool control plane은 `tool doctor|install|update|sync-support`를
   제공하고, lock state / generated support / discovery stub / doctor
   next-step까지 agent-readable state를 남긴다.
@@ -43,7 +44,8 @@
 - higher-noise ergonomics는 repo-wide default gate로 올리지 않았다.
   대신 quality adapter의 `skill_ergonomics_gate_rules` opt-in seam과
   `validate_skill_ergonomics.py`를 추가해, repo가 원할 때만
-  `mode_option_pressure_terms` 같은 규칙을 fail-closed 할 수 있게 했다.
+  `mode_option_pressure_terms`, `progressive_disclosure_risk` 같은 규칙을
+  fail-closed 할 수 있게 했다.
   canonical quality path는 이제 root wrapper
   `scripts/validate-skill-ergonomics.py`를 통해 이 opt-in gate를 함께 돈다.
   invalid `skill_ergonomics_gate_rules`는 bootstrap이 더 이상 조용히 `[]`로
@@ -69,9 +71,8 @@
   쪽으로 정리됐다. `quality`는 dual-implementation parity를 weak heuristic +
   explicit human review lens로 본다.
 - 현재 standing concern은 install/update propagation이 아니라
-  `quality` ergonomics에서 무엇을 standing gate로 더 올릴지와, public-skill
-  omission을 helper/autofix 수준으로 더 기계화할지다. 자세한 구현 계약은
-  [docs/retro-self-improvement-spec.md](retro-self-improvement-spec.md)에 있다.
+  trigger overlap처럼 higher-noise ergonomics를 계속 advisory로 둘지와,
+  support-tool real-host dogfood cadence를 얼마나 자주 가져갈지다.
 
 ## Next Session
 
@@ -84,16 +85,17 @@
    `docs/public-skill-validation.json`과 `skills/public/**`에서
    `validate-public-skill-validation.py`를 바로 고르고,
    `validate-public-skill-validation.py`는 누락 skill을 어느 bucket에 넣어야
-   하는지 직접 말한다. `validate-packaging.py`도 policy file이 있을 때 이 검사를
-   같이 수행하므로 checked-in plugin export 경로에서도 drift가 늦게 빠지지
-   않는다. 다음 로컬 follow-on은 omission helper/autofix를 정할지 결정하는 일이다.
+   하는지 직접 말한다. `scripts/suggest-public-skill-validation.py`는
+   missing skill별 bucket choice를 machine-readable helper로 준다.
+   `validate-packaging.py`도 policy file이 있을 때 이 검사를 같이 수행하므로
+   checked-in plugin export 경로에서도 drift가 늦게 빠지지 않는다.
 3. support-tool dogfood를 이어간다면 새 `tool doctor/install/sync-support`
    surface를 다른 머신에서 한 번 더 확인한다. 특히 real binary install이
    PATH/non-PATH일 때 next-step honesty가 유지되는지 본다.
-4. ergonomics follow-on의 가장 자연스러운 후보는
-   `skill_ergonomics_gate_rules`에 둘 다음 opt-in rule을 고르는 일이다.
-   현재는 `mode_option_pressure_terms`만 지원하고, trigger overlap은 advisory다.
-   fail-closed now vs advisory only는
+4. ergonomics follow-on은 trigger overlap 같은 higher-noise rule을 계속
+   advisory로 둘지, 더 나은 opt-in heuristic이 생겼는지 다시 보는 일이다.
+   현재는 `mode_option_pressure_terms`, `progressive_disclosure_risk`를
+   지원하고, trigger overlap은 advisory다. fail-closed now vs advisory only는
    [skills/public/quality/references/skill-ergonomics.md](../skills/public/quality/references/skill-ergonomics.md)에
    분리해 뒀다.
 5. 추가 retro를 남길 때는 ad hoc 파일 쓰기 대신
@@ -101,13 +103,10 @@
 
 ## Discuss
 
-- `#24`는 reopened 상태지만, repo-local skill contract 기준으로는 핵심
-  follow-up이 landed했다. 남은 일은 issue close 자체보다 public-skill
-  omission을 helper/autofix 수준으로 더 기계화할지와,
-  `skill_ergonomics_gate_rules`에 둘 다음 opt-in rule을 정하는 일이다.
-- ideal flow는 prose가 초반 행동을 좋게 유도하고 deterministic gate가
-  omission/drift를 backstop하는 구조다. 지금 charness는 그 방향이지만, 몇몇
-  omission-prone seam은 아직 broad gate에서 늦게 드러난다.
+- `#24`는 closed-ready 상태였고, 이번 세션에서 helper/gate/dogfood까지
+  묶어서 실제 close 기준으로 정리했다. 남은 일은 trigger overlap처럼
+  higher-noise ergonomics를 계속 advisory로 둘지, support-tool real-host
+  dogfood를 어느 cadence로 반복할지에 가깝다.
 - public-skill validation tier는 현재 metadata/routing layer이지, skill별로
   서로 다른 standing CI mode가 이미 존재한다는 뜻은 아니다. maintained
   evaluator가 landed하기 전까지 `evaluator-required`도 smoke + targeted HITL로

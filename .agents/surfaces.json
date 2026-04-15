@@ -94,7 +94,8 @@
         "docs/public-skill-validation.json",
         "docs/public-skill-validation.md",
         "scripts/public_skill_validation_lib.py",
-        "scripts/validate-public-skill-validation.py"
+        "scripts/validate-public-skill-validation.py",
+        "scripts/suggest-public-skill-validation.py"
       ],
       "derived_paths": [],
       "sync_commands": [],

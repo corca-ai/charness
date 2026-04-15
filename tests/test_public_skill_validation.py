@@ -81,6 +81,7 @@ def test_validate_public_skill_validation_requires_full_partition(tmp_path: Path
     assert "`tiers.smoke-only`" in result.stderr
     assert "`tiers.hitl-recommended`" in result.stderr
     assert "`tiers.evaluator-required`" in result.stderr
+    assert "suggest-public-skill-validation.py" in result.stderr
 
 
 def test_validate_public_skill_validation_reports_missing_adapter_requirement_bucket(tmp_path: Path) -> None:
@@ -108,6 +109,7 @@ def test_validate_public_skill_validation_reports_missing_adapter_requirement_bu
     assert "`demo-b`" in result.stderr
     assert "`adapter_requirements.required`" in result.stderr
     assert "`adapter_requirements.adapter-free`" in result.stderr
+    assert "suggest-public-skill-validation.py" in result.stderr
 
 
 def test_validate_public_skill_validation_requires_adapter_contract_for_required_skill(tmp_path: Path) -> None:
@@ -154,3 +156,52 @@ def test_validate_public_skill_validation_rejects_adapter_helpers_for_adapter_fr
     result = run_script("scripts/validate-public-skill-validation.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "adapter-free skill should not ship `adapter.example.yaml`" in result.stderr
+
+
+def test_suggest_public_skill_validation_reports_missing_bucket_choices(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        policy={
+            "schema_version": 1,
+            "tiers": {
+                "smoke-only": [],
+                "hitl-recommended": ["demo-a"],
+                "evaluator-required": [],
+            },
+            "adapter_requirements": {
+                "required": ["demo-a"],
+                "adapter-free": [],
+            },
+        },
+    )
+    seed_skill(repo, "demo-a", adapter=True)
+    seed_skill(repo, "demo-b", adapter=False)
+
+    result = run_script("scripts/suggest-public-skill-validation.py", "--repo-root", str(repo), "--json")
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["missing_tiers"] == ["demo-b"]
+    assert payload["missing_adapter_requirements"] == ["demo-b"]
+    assert payload["suggestions"] == [
+        {
+            "skill_id": "demo-b",
+            "missing_fields": {"tiers": True, "adapter_requirements": True},
+            "choose_one_of": {
+                "tiers": [
+                    "tiers.smoke-only",
+                    "tiers.hitl-recommended",
+                    "tiers.evaluator-required",
+                ],
+                "adapter_requirements": [
+                    "adapter_requirements.required",
+                    "adapter_requirements.adapter-free",
+                ],
+            },
+        }
+    ]
+
+    human = run_script("scripts/suggest-public-skill-validation.py", "--repo-root", str(repo))
+    assert human.returncode == 1
+    assert "`demo-b`" in human.stdout
+    assert "`tiers.hitl-recommended`" in human.stdout
+    assert "`adapter_requirements.adapter-free`" in human.stdout

@@ -95,6 +95,9 @@ them. Leave it empty by default. Current supported rules:
 - `mode_option_pressure_terms`
   Fail when a public skill accumulates repeated `mode` / `option` pressure
   terms that likely signal avoidable user-facing branching.
+- `progressive_disclosure_risk`
+  Fail when a large skill core still keeps durable nuance out of `references/`
+  and `scripts/`.
 
 The canonical quality path runs these opt-in rules through
 `scripts/validate-skill-ergonomics.py`. Bootstrap also treats invalid explicit

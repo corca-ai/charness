@@ -45,6 +45,17 @@ def _render_expected_locations(field: str, categories: tuple[str, ...]) -> str:
     return f"Add each missing skill to exactly one of {rendered} in `{POLICY_PATH}`"
 
 
+def partition_missing_skills(
+    assignments: dict[str, list[str]],
+    *,
+    all_skills: list[str],
+) -> list[str]:
+    seen: set[str] = set()
+    for skill_ids in assignments.values():
+        seen.update(skill_ids)
+    return sorted(set(all_skills) - seen)
+
+
 def _validate_partition(
     assignments: dict[str, list[str]],
     *,
@@ -69,7 +80,7 @@ def _validate_partition(
                 )
             seen[skill_id] = category
 
-    missing = sorted(set(all_skills) - set(seen))
+    missing = partition_missing_skills(assignments, all_skills=all_skills)
     if missing:
         rendered = ", ".join(f"`{skill_id}`" for skill_id in missing)
         guidance = _render_expected_locations(field, expected_categories)

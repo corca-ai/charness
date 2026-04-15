@@ -144,3 +144,48 @@ def test_skill_ergonomics_gate_ignores_mode_option_terms_inside_fences(tmp_path:
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["violations"] == []
+
+
+def test_skill_ergonomics_gate_fails_when_opted_in_progressive_disclosure_risk_matches(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    skill_dir = repo / "skills" / "public" / "demo"
+    skill_dir.mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: skill-outputs/quality",
+                "skill_ergonomics_gate_rules:",
+                "  - progressive_disclosure_risk",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    filler = [f"filler line {index}" for index in range(90)]
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                *filler,
+                "",
+                "## References",
+                "",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["rules"] == ["progressive_disclosure_risk"]
+    assert payload["violations"][0]["rule"] == "progressive_disclosure_risk"

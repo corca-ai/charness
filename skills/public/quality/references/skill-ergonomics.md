@@ -47,6 +47,7 @@ Fail-closed now:
 Advisory only unless the repo explicitly opts in:
 
 - mode/option pressure terms
+- progressive-disclosure risk
 - trigger overlap / undertrigger review
 - broader progressive-disclosure judgment
 

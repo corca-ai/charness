@@ -69,6 +69,21 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
                     ),
                 }
             )
+        if "progressive_disclosure_risk" in rules and (
+            "progressive_disclosure_risk" in item["heuristics"]
+        ):
+            violations.append(
+                {
+                    "rule": "progressive_disclosure_risk",
+                    "skill_id": item["skill_id"],
+                    "skill_path": item["skill_path"],
+                    "heuristics": item["heuristics"],
+                    "message": (
+                        "Skill core is large while references/scripts stay absent. "
+                        "Move nuance into repo-owned references or scripts, or disable the opt-in rule."
+                    ),
+                }
+            )
 
     return {
         "adapter_path": adapter.get("path"),

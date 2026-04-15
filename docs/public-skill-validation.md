@@ -9,6 +9,9 @@ Canonical machine-readable policy lives in
 [docs/public-skill-validation.json](public-skill-validation.json). This
 markdown file stays as the human-readable narrative and rationale layer for the
 same assignments.
+When a new public skill is missing from the policy, run
+`python3 scripts/suggest-public-skill-validation.py --repo-root .` to list the
+bucket choices before editing the JSON.
 
 ## Purpose
 

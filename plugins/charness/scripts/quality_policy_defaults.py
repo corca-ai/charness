@@ -28,6 +28,7 @@ DEFAULT_PROMPT_ASSET_POLICY = {
 DEFAULT_SKILL_ERGONOMICS_GATE_RULES: list[str] = []
 VALID_SKILL_ERGONOMICS_GATE_RULES = frozenset({
     "mode_option_pressure_terms",
+    "progressive_disclosure_risk",
 })
 
 
