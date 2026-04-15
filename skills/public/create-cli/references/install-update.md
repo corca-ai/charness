@@ -65,6 +65,19 @@ Version provenance note:
 - when provenance is unknown, degrade to honest manual guidance instead of
   guessing `brew`, `npm`, release-installer, or package-manager commands
 
+Authenticated upstream release probe note:
+
+- when a GitHub-hosted upstream release probe is useful, prefer an already
+  authenticated provider path such as `gh api` before public HTTP
+- if `gh` is unavailable, attach `GH_TOKEN` or `GITHUB_TOKEN` to the HTTP
+  fallback when present
+- keep public unauthenticated HTTP as a final fallback only
+- persist structured `status`, `reason`, and `error` fields so later agents can
+  distinguish `no-release`, `github-forbidden`, invalid JSON, and network
+  failure without rediscovering the machine state
+- do not make `gh` a hard dependency for non-GitHub repos or machines that only
+  need public metadata
+
 Release-first note:
 
 - A release-first contract can be more honest than a Homebrew-first contract

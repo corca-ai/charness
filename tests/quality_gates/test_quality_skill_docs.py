@@ -90,3 +90,20 @@ def test_quality_and_create_cli_carry_command_docs_drift_pattern() -> None:
     assert ".agents/command-docs.yaml" in adapter_contract
     assert "command-docs drift gate" in create_cli
     assert "repo-local command-docs contract" in create_cli_quality
+
+
+def test_create_cli_and_create_skill_carry_authenticated_release_probe_pattern() -> None:
+    install_update = (
+        ROOT / "skills" / "public" / "create-cli" / "references" / "install-update.md"
+    ).read_text(encoding="utf-8")
+    integration_seams = (
+        ROOT / "skills" / "public" / "create-skill" / "references" / "integration-seams.md"
+    ).read_text(encoding="utf-8")
+
+    assert "Authenticated upstream release probe note" in install_update
+    assert "authenticated provider path such as `gh api`" in install_update
+    assert "`GH_TOKEN` or `GITHUB_TOKEN`" in install_update
+    assert "structured `status`, `reason`, and `error` fields" in install_update
+    assert "GitHub-Hosted Release Metadata" in integration_seams
+    assert "use authenticated `gh api` first" in integration_seams
+    assert "github-forbidden" in integration_seams

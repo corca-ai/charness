@@ -55,6 +55,16 @@ def test_init_repo_skill_bootstraps_probe_surface_guidance() -> None:
     assert "local discoverability" in probe_reference
 
 
+def test_control_plane_documents_authenticated_release_probe_contract() -> None:
+    control_plane = (ROOT / "docs" / "control-plane.md").read_text(encoding="utf-8")
+
+    assert "authenticated `gh api`" in control_plane
+    assert "`GH_TOKEN` or `GITHUB_TOKEN`" in control_plane
+    assert "public unauthenticated HTTP" in control_plane
+    assert "`status`, `reason`, and" in control_plane
+    assert "github-forbidden" in control_plane
+
+
 def test_init_repo_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "docs" / "specs").mkdir(parents=True)

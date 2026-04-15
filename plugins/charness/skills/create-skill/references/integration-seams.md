@@ -47,6 +47,25 @@ and the file should live next to the support skill as
   never make sync strategy implicit
 - do not use adapters or presets as secret transport
 
+## GitHub-Hosted Release Metadata
+
+When an integration manifest points at a GitHub-hosted upstream repo and
+operator guidance benefits from current release metadata, model that probe as
+part of the integration seam instead of hiding a best-effort web call in prose.
+
+Preferred behavior:
+
+- use authenticated `gh api` first when an already authenticated GitHub CLI is
+  available
+- fall back to HTTP with `GH_TOKEN` or `GITHUB_TOKEN` before public
+  unauthenticated HTTP
+- keep `gh` optional unless the integration truly requires private GitHub
+  access
+- persist `status`, `reason`, and `error` in lock or state output so
+  `no-release`, `github-forbidden`, invalid JSON, and network failure are
+  operationally distinct
+- do not turn release probing into silent install or update mutation
+
 ## Review Questions
 
 - can this dependency be represented as a manifest instead of a copied skill?

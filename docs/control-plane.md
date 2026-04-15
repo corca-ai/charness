@@ -63,7 +63,12 @@ without re-deriving machine conditions.
 - manual-only steps should still record explicit upstream docs and remaining
   guidance instead of disappearing into prose
 - when the manifest points at a GitHub repo, control-plane output should try to
-  record the latest release metadata so manual guidance can stay current
+  record the latest release metadata so manual guidance can stay current; the
+  probe should prefer authenticated `gh api`, fall back to tokened HTTP via
+  `GH_TOKEN` or `GITHUB_TOKEN`, and only then use public unauthenticated HTTP
+- release probe output should persist structured `status`, `reason`, and
+  `error` fields so `no-release`, `github-forbidden`, invalid JSON, and network
+  failure remain distinguishable in lock state
 - when the host install path can be inferred safely, control-plane output
   should record install provenance so later updates can route through the same
   package manager instead of guessing
