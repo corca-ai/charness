@@ -235,7 +235,7 @@ For hosts that want a shared startup advisory without embedding networked
 self-update logic into every skill run, use:
 
 ```bash
-./charness doctor
+charness doctor
 ```
 
 This prints:

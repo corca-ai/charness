@@ -5,15 +5,10 @@ description: "Use when the goal is to understand and improve the repo's current 
 
 # Quality
 
-Use this when the task is overall quality posture, not only one narrow bug or one isolated test.
-
-`quality` is one public concept. It absorbs concept integrity review, test confidence improvement, security and supply-chain posture review, skill package and maintenance drift review, and documentation drift review.
-The job is to understand the repo's current quality surface, run the meaningful gates that already exist, and propose the missing ones concretely.
-`quality` may also install or refresh the repo-local quality posture when the next move is deterministic setup work instead of only review. Keep this inside the same public concept: review posture and bootstrap posture are different execution states of `quality`, not separate skills.
-When the next quality move is repo-local, deterministic, and low-risk, prefer implementing that gate in the same turn. Stay review-only when the user asks or the tradeoff is genuinely product-defining.
-Deterministic gates should define pass/fail authority wherever possible. If a quality concern can be enforced by a linter, validator, test, hook, or script, promote it into that gate instead of leaving it as repeated prose advice.
-Maintainer-local enforcement counts when the repo depends on it. When the repo has an obvious final stop-before-finish gate with no checked-in hook, repo-owned hook installer, or documented no-hook policy, name that as a missing enforcement gap. See `references/maintainer-local-enforcement.md`.
-`quality` and concept review are adjacent. Use `quality` for repo posture, drift, duplicated surfaces, weak gates, and the next concrete validation move. Use concept review when boundaries, ownership, or source-of-truth design stay unresolved without duplicate text or an obvious gate. Use named-expert lenses only when they sharpen the next gate choice. See `references/quality-lenses.md`.
+Use this when the task is overall quality posture, not only one narrow bug or one isolated test. `quality` is one public concept. It absorbs concept integrity review, test confidence improvement, security and supply-chain posture review, skill package and maintenance drift review, and documentation drift review. The job is to understand the repo's current quality surface, run the meaningful gates that already exist, and propose the missing ones concretely.
+`quality` may also install or refresh the repo-local quality posture when the next move is deterministic setup work instead of only review. Keep this inside the same public concept: review posture and bootstrap posture are different execution states of `quality`, not separate skills. When the next quality move is repo-local, deterministic, and low-risk, prefer implementing that gate in the same turn.
+Deterministic gates should define pass/fail authority wherever possible. If a quality concern can be enforced by a linter, validator, test, hook, or script, promote it into that gate instead of leaving it as repeated prose advice. Stay review-only when the user asks or the tradeoff is genuinely product-defining.
+Maintainer-local enforcement counts when the repo depends on it. When the repo has an obvious final stop-before-finish gate with no checked-in hook, repo-owned hook installer, or documented no-hook policy, name that as a missing enforcement gap. See `references/maintainer-local-enforcement.md`. `quality` and concept review are adjacent; use concept review when boundaries, ownership, or source-of-truth design stay unresolved without duplicate text or an obvious gate. See `references/quality-lenses.md`.
 
 ## Bootstrap
 
@@ -75,6 +70,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - local executable gates already present
    - if the repo ships an installable CLI, bootstrap command, or operator-facing command surface, inspect whether help, command discovery, binary health, install/readiness, and local discoverability are separated honestly
    - when CLI ergonomics are in scope, inventory flat help-list and cross-archetype schema smells with `scripts/inventory_cli_ergonomics.py`
+   - when a standing local gate exists, inventory quiet-default vs verbose-on-demand posture with `scripts/inventory_standing_gate_verbosity.py`
    - when the repo may keep one shipped implementation beside a historical or alternate runtime path, inventory likely dual-implementation parity smells with `scripts/inventory_dual_implementation.py`, then decide whether the relationship is parity-enforced, canonical-plus-legacy, or intentional divergence
    - when first-touch operator/developer/agent docs are in scope, inventory entrypoint-doc ergonomics with `scripts/inventory_entrypoint_docs_ergonomics.py`
    - inspect README / INSTALL / operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist
@@ -91,6 +87,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - keep the run bounded to the current scope when the task is not repo-wide
    - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage
    - for timing/logs/retention signals, workflow-runtime drift, and retention signals, see `references/operability-signals.md`
+   - when a standing gate already exists, prefer compact default phase output plus a verbose-on-demand escape hatch over always-on chatter; see `references/standing-gate-verbosity.md`
    - when a hot spot becomes the standing single dominator, define a `runtime_budgets` entry in the adapter and call `scripts/check-runtime-budget.py` from the repo's standing gate; budgets fail the gate when `runtime-signals.json` records latest > budget
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model
@@ -146,6 +143,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not wait for operator follow-up before stating current runtime hot spots, coverage-gate presence or absence, and evaluator-depth status when the repo signals are available.
 - Do not treat slow or broad executable specs as automatically strong quality when they mostly duplicate cheaper deterministic coverage.
 - Do not recommend verbose or permanent logs without naming who will read them and how they stay bounded.
+- Do not leave loud default test reporters or interleaved parallel hook output unpriced when they hide which standing gate failed.
 - Do not leave an automatable quality rule as prose-only guidance when a linter, validator, test, hook, or script could own it.
 - If you stop short of an obvious repo-owned deterministic gate, name that as an unresolved enforcement gap explicitly.
 - Do not treat a passing final local gate as sufficient posture when clones have no repo-owned way to run it before push and no documented no-hook waiver.
@@ -185,6 +183,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - `references/entrypoint-docs-ergonomics.md`
 - `references/installable-cli-probes.md`
 - `references/cli-ergonomics-smells.md`
+- `references/standing-gate-verbosity.md`
 - `references/dual-implementation-parity.md`
 - `references/proposal-flow.md`
 - `references/gate-classification.md`

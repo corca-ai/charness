@@ -68,6 +68,9 @@ operation or debugging:
 
 - check whether the useful signal appears early enough for an agent or operator
   to act on it
+- keep the default standing-gate stream compact enough that phase-level signal
+  is still visible on green; use `standing-gate-verbosity.md` when the default
+  gate is getting noisy
 - prefer logs that reveal the failing seam, command, boundary, or recovery path
   without forcing a full repro first
 - check whether the format is stable enough that future automation can inspect

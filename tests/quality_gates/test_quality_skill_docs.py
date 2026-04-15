@@ -53,3 +53,17 @@ def test_quality_skill_carries_cli_ergonomics_smells_lens() -> None:
     assert "Flat `--help` Lists" in cli_smells
     assert "Cross-Archetype Schema Leakage" in cli_smells
     assert "command-archetypes.json" in cli_smells
+
+
+def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
+    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    verbosity = (
+        ROOT / "skills" / "public" / "quality" / "references" / "standing-gate-verbosity.md"
+    ).read_text(encoding="utf-8")
+
+    assert "inventory_standing_gate_verbosity.py" in skill_text
+    assert "verbose-on-demand escape hatch" in skill_text
+    assert "standing-gate-verbosity.md" in skill_text
+    assert "Test-runner reporter" in verbosity
+    assert "Orchestrator output mode" in verbosity
+    assert "quiet defaults and failure detail" in verbosity.lower()
