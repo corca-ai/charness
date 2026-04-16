@@ -51,7 +51,9 @@
 2. Agent Harness Guide adaptation을 이어가면 먼저
    [charness-artifacts/spec/agent-harness-guide-adaptation.md](../charness-artifacts/spec/agent-harness-guide-adaptation.md)를
    읽고 `Slice 1`부터 시작한다. 첫 구현 범위는 `docs/harness-composition.md`,
-   `docs/artifact-policy.md`, 그리고 최소 handoff cross-link다.
+   `docs/artifact-policy.md`, 그리고 최소 handoff cross-link다. 이 slice에서
+   proof target도 같이 고른다. 기본값은 새 계약을 반영한 `quality` artifact
+   refresh 또는 관련 reviewed dogfood case 하나다.
 3. Dogfood 개선으로 이어가면 이제 registry 확장보다 reviewed case 강화가
    다음 move다. 먼저 `hitl`이나 `ideation`처럼 근거가 policy-heavy한 case를
    골라 실제 consumer prompt replay와 stronger acceptance evidence를

@@ -51,6 +51,10 @@ incrementally:
   `knowledge`, `controls`, and `execution` just to match the article.
 - Do not add new user-facing modes. The adaptation must preserve the current
   strong-default stance.
+- Treat the new composition doc as an index and boundary map, not as a second
+  full architecture narrative. Canonical details should stay in the existing
+  owning docs and references, with the composition doc linking outward instead
+  of restating all nuance.
 - Keep the public skill core lean. Nuanced layer mapping, evidence-bundle
   details, and artifact taxonomy belong in repo docs and references unless they
   clearly change trigger or workflow selection.
@@ -60,6 +64,9 @@ incrementally:
 - Treat instruction precedence and context assembly as distinct contracts.
   Precedence answers "which source wins when guidance conflicts"; assembly
   answers "what context is collected and in what order."
+- Keep precedence explicitly `charness`-local. The doc should explain repo and
+  harness composition order, not pretend to redefine host runtime
+  system/developer/user precedence outside the repo's control.
 - Start the artifact taxonomy as a documentation contract, not a new adapter
   schema field. Promote to schema only if repeated ambiguity remains after the
   policy doc lands.
@@ -68,6 +75,8 @@ incrementally:
 - Require one consumer-visible proof path. At least one reviewed dogfood or
   quality artifact should show that the new contracts affect real review
   behavior rather than staying architecture prose.
+- Pull that proof forward. Selecting the proof target is part of the first
+  implementation slice, not a late optional follow-up after all docs land.
 
 ## Probe Questions
 
@@ -157,6 +166,8 @@ incrementally:
 5. At least one reviewed proof surface shows the new contract in use: either a
    refreshed dogfood case, a quality artifact, or a closeout rule that cites
    the new contract directly.
+6. The new docs do not create a second conflicting truth surface. Each one
+   explicitly names where detailed owning guidance still lives.
 
 ## Acceptance Checks
 
@@ -165,9 +176,13 @@ incrementally:
   - instruction precedence order
   - context assembly order
   - examples using existing `charness` surfaces
+  - explicit "authoritative detail lives in ..." cross-links so the doc acts as
+    a boundary map rather than a duplicate handbook
 - `docs/artifact-policy.md` exists and maps committed docs, `latest.md`, dated
   records, and hidden runtime state to durability classes with current repo
   examples
+  - including explicit exceptions where current skill behavior intentionally
+    diverges from the default pattern
 - `skills/public/quality/` guidance explicitly asks for:
   - the decision/review question
   - fresh source inventory
@@ -179,6 +194,10 @@ incrementally:
   propagate across multiple surfaces
 - `docs/handoff.md` points the next implementation session at this spec when the
   adaptation is the active workstream
+- the first implementation slice names one concrete proof target up front:
+  - refreshed `quality` artifact
+  - reviewed public-skill dogfood case
+  - or one focused closeout rule tied to the new docs
 - Validation passes:
   - `./scripts/check-markdown.sh`
   - `./scripts/check-secrets.sh`
@@ -202,6 +221,13 @@ incrementally:
 - The biggest false sense of completion would be landing only docs with no
   proof surface. At least one review-facing artifact or dogfood case must show
   the design changed actual maintenance behavior.
+- Another likely miss is writing precedence as if `charness` controls the whole
+  host instruction stack. The contract must stay scoped to repo-owned guidance
+  composition and explicitly avoid claims about host/runtime layers it does not
+  own.
+- A more subtle failure is creating a clean boundary map that no current review
+  workflow actually consumes. The first slice should therefore choose a proof
+  target immediately so the design cannot end as passive documentation alone.
 
 ## Canonical Artifact
 
@@ -228,19 +254,25 @@ Land the lowest-risk, highest-leverage clarification first:
    - separate instruction precedence from context assembly
    - include one or two concrete examples using current `quality`, `gather`, or
      adapter workflows
+   - keep the doc pointer-heavy: link to owning docs instead of duplicating
+     detailed policy text already maintained elsewhere
 2. Add `docs/artifact-policy.md`.
    - define fixed / semi-fixed / variable knowledge
    - map each class to current repo surfaces
    - record the current exceptions intentionally rather than pretending one rule
      fits every skill
-3. Update `docs/handoff.md` to point future work at this spec when this
-   adaptation is active.
-4. Run doc validation:
+3. Choose the first proof target immediately.
+   - default recommendation: refresh one `quality` review or one reviewed
+     dogfood case after the docs land so the new contracts affect a real
+     maintenance workflow
+4. Update `docs/handoff.md` to point future work at this spec when this
+   adaptation is active and name the chosen proof target.
+5. Run doc validation:
    - `./scripts/check-markdown.sh`
    - `./scripts/check-secrets.sh`
    - `python3 scripts/check-doc-links.py --repo-root .`
 
 `Slice 2` should then tighten `quality` and adjacent review references around
-the evidence bundle and ownership audit. `Slice 3` can add proof via dogfood or
-quality artifact refresh. `Slice 4` should revisit whether any of the new
-contracts justify a validator or changed-surface rule.
+the evidence bundle and ownership audit. `Slice 3` should land the chosen proof
+path if it did not already fit into Slice 2. `Slice 4` should revisit whether
+any of the new contracts justify a validator or changed-surface rule.
