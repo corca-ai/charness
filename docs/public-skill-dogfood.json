@@ -2,14 +2,18 @@
   "schema_version": 1,
   "review_required_skills": [
     "announcement",
+    "create-cli",
     "create-skill",
     "debug",
     "find-skills",
     "gather",
     "handoff",
+    "hitl",
+    "ideation",
     "impl",
     "init-repo",
     "narrative",
+    "premortem",
     "quality",
     "release",
     "retro",
@@ -35,6 +39,27 @@
         "The checked-in public core keeps `announcement` draft-first, explicitly separating human-facing communication from delivery backends and from `narrative` source-of-truth alignment work.",
         "The adapter resolver already pins the visible draft artifact to `charness-artifacts/announcement/latest.md` and the hidden delivery record to `.charness/announcement/announcements.jsonl`, with draft-only defaults when no delivery config exists.",
         "Repo-owned tests already cover both seams: `test_announcement_resolve_adapter_explains_draft_only_defaults` guards the draft-only fallback and `test_capability_explain_reports_skill_needs_and_announcement_adapter_binding` proves adapter-defined delivery capability binding."
+      ]
+    },
+    {
+      "skill_id": "create-cli",
+      "prompt": "We keep adding ad hoc scripts here; normalize this into one repo-owned CLI before the command surface sprawls further.",
+      "repo_shape": "tooling repo where ad hoc shell or Python entrypoints already exist and the command surface needs to be normalized",
+      "expected_skill": "create-cli",
+      "expected_artifact": null,
+      "validation_tier": "hitl-recommended",
+      "adapter_requirement": "adapter-free",
+      "acceptance_evidence": [
+        "routes the prompt to `create-cli` instead of an adjacent public skill",
+        "does not invent host-specific adapter state when repo inspection alone should be enough",
+        "produces an output that a maintainer could review directly without re-deriving the whole request"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The checked-in public core frames `create-cli` as command-surface normalization before ad hoc entrypoints sprawl, keeping operator contract, lifecycle commands, and machine-readable output ahead of implementation detail.",
+        "The current validation policy already classifies `create-cli` as `hitl-recommended` and `adapter-free`, which matches a repo-inspection-first planning skill instead of a durable-artifact or adapter-owned workflow.",
+        "Repo-owned tests already pin the most load-bearing seam here: `test_quality_and_create_cli_carry_command_docs_drift_pattern` and `test_create_cli_and_create_skill_carry_authenticated_release_probe_pattern` preserve the command-doc drift and authenticated release-probe contracts."
       ]
     },
     {
@@ -167,6 +192,27 @@
       ]
     },
     {
+      "skill_id": "premortem",
+      "prompt": "Stress this pending decision before we lock it in and separate real blockers from over-worry.",
+      "repo_shape": "repo with a non-trivial pending decision whose main risk is choosing the wrong plan too early",
+      "expected_skill": "premortem",
+      "expected_artifact": null,
+      "validation_tier": "hitl-recommended",
+      "adapter_requirement": "adapter-free",
+      "acceptance_evidence": [
+        "routes the prompt to `premortem` instead of an adjacent public skill",
+        "does not invent host-specific adapter state when repo inspection alone should be enough",
+        "produces an output that a maintainer could review directly without re-deriving the whole request"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The checked-in public core frames `premortem` as a standalone before-the-fact decision review rather than broad ideation or implementation cleanup, with a required four-bin counterweight triage for caller skills to consume.",
+        "Repo-owned tests already pin the highest-signal reasoning seam: `test_premortem_skill_surfaces_counterweight_and_deliberately_not_doing` guards contrasting angle selection, separate counterweight review, and explicit `Deliberately Not Doing` capture.",
+        "Adjacent checked-in skills already depend on this boundary: `spec` preserves the standalone premortem loop and rejected-alternative handling instead of re-implementing the same decision-triage logic inline."
+      ]
+    },
+    {
       "skill_id": "quality",
       "prompt": "Review the current quality posture and install the next deterministic gate if the move is obvious.",
       "repo_shape": "mature repo with standing local gates, some drift or fragility, and at least one final stop-before-finish command",
@@ -230,6 +276,48 @@
         "The current handoff is a checked-in canonical artifact and the adapter resolves directly to `docs/handoff.md`.",
         "The public core says mention-only pickup should continue the workflow named in the trigger rather than re-deriving state from scratch.",
         "The size gate and continuation-first rewrite rules keep the pickup path explicit, which matches the repo's current use of handoff as the first read surface."
+      ]
+    },
+    {
+      "skill_id": "hitl",
+      "prompt": "Set up a bounded human review loop for this target so the agent does not auto-decide the final judgment.",
+      "repo_shape": "repo with a bounded review target and a decision that must stay explicitly human-owned",
+      "expected_skill": "hitl",
+      "expected_artifact": "charness-artifacts/hitl/latest.md",
+      "validation_tier": "hitl-recommended",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `hitl` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/hitl/latest.md` when the skill persists durable state",
+        "produces an output that a maintainer could review directly without re-deriving the whole request"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The checked-in public core keeps `hitl` narrowly scoped to bounded human review, explicitly preserving what must not be auto-decided and routing state through resumable review artifacts rather than chat-only judgment.",
+        "The current adapter resolver already pins the visible artifact to `charness-artifacts/hitl/latest.md` and the runtime directory to `.charness/hitl/runtime`, with portable defaults when no adapter is present.",
+        "Repo-owned helper scripts make the review loop concrete: `bootstrap_review.py` creates scratchpad, state, queue, rules, and event-log files for a new session, which is the current best local evidence that resumable HITL state is a maintained seam rather than prose-only guidance."
+      ]
+    },
+    {
+      "skill_id": "ideation",
+      "prompt": "The concept is still fuzzy; help shape the workflow before we commit to a spec or implementation.",
+      "repo_shape": "minimal or loosely defined repo context where the request is still concept-shaping rather than implementation-ready",
+      "expected_skill": "ideation",
+      "expected_artifact": null,
+      "validation_tier": "hitl-recommended",
+      "adapter_requirement": "adapter-free",
+      "acceptance_evidence": [
+        "routes the prompt to `ideation` instead of an adjacent public skill",
+        "does not invent host-specific adapter state when repo inspection alone should be enough",
+        "produces an output that a maintainer could review directly without re-deriving the whole request"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The checked-in public core keeps `ideation` upstream of `spec` and `impl`, forcing a living concept model, dependency-ordered questions, and explicit demand/wedge/feedback checks before downstream contract work starts.",
+        "The current validation policy already classifies `ideation` as `hitl-recommended` and `adapter-free`, which matches the repo's present stance that concept-shaping quality is better judged through review than through adapter or artifact enforcement.",
+        "Deferred decision D10 deliberately preserves a lightweight ideation core with detailed world-model and effectuation playbooks in references, which is the strongest current local evidence that the public trigger stays concise without losing its reasoning boundary."
       ]
     },
     {

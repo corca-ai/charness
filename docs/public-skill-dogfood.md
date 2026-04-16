@@ -16,14 +16,18 @@ stays as the short human-readable contract for the same reviewed cases.
 ## Current Required Reviewed Skills
 
 - `announcement`
+- `create-cli`
 - `create-skill`
 - `debug`
 - `find-skills`
 - `gather`
 - `handoff`
+- `hitl`
+- `ideation`
 - `impl`
 - `init-repo`
 - `narrative`
+- `premortem`
 - `quality`
 - `release`
 - `retro`
@@ -40,6 +44,7 @@ stays as the short human-readable contract for the same reviewed cases.
 
 ## Next Step
 
-Add more reviewed cases only after a real consumer-style prompt exposes a
-useful routing or artifact behavior seam. Do not turn speculative prompts into
-standing required coverage just to satisfy the registry.
+Add more reviewed cases only when a new public skill lands or an existing one
+changes enough that the current reviewed prompt is no longer load-bearing.
+The next leverage is stronger proof for the weakest reviewed cases, not more
+registry rows for their own sake.
