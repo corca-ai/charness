@@ -34,21 +34,27 @@
   이어가면 `charness task status <task-id>`로 확인할 수 있다.
 - Checked-in plugin export는 source 변경 뒤
   `python3 scripts/sync_root_plugin_manifests.py --repo-root .`로 맞춘다.
+- GitHub 이슈 #25-#31 대응 로컬 커밋 7개가 `main` 위에 쌓여 있다:
+  `17efb07`, `a3d627f`, `422e793`, `1229a7c`, `6284a4f`,
+  `6463391`, `8da1d62`. 각 slice는 `run-slice-closeout.py`까지 통과했다.
 
 ## Next Session
 
 1. `git status --short`를 먼저 확인한다.
-2. sah/specdown lesson line을 이어간다면 다음 작은 CLI 후보는 task
+2. 이 handoff 커밋까지 포함해 깨끗하면, #25-#31 대응 branch를 push하고
+   PR/이슈 closeout 본문을 준비한다. 아직 GitHub 이슈에는 comment/close를
+   남기지 않았다.
+3. sah/specdown lesson line을 이어간다면 다음 작은 CLI 후보는 task
    envelope와 doctor `next_action`을 실제 멀티에이전트 세션에서 dogfood한
    뒤, 필요한 경우 task list/status summary를 다듬는 것이다. 스펙다운은
    반복 setup/JSON 추출이 두세 번 생기기 전에는 adapter를 만들지 않는다.
-3. 이 handoff가 커밋된 상태라면 다음 품질 작업은 85% floor에 가까운
+4. 이 handoff가 커밋된 상태라면 다음 품질 작업은 85% floor에 가까운
    `upstream_release_lib.py`, `control_plane_lib.py`, `install_tools.py`에서
    남은 branch를 리팩터링하거나 죽은 코드를 지우는 것이다. 테스트 추가보다
    생산 코드 축소를 먼저 본다.
-4. source가 checked-in plugin export에 들어가는 파일이면, focused
+5. source가 checked-in plugin export에 들어가는 파일이면, focused
    managed-checkout 테스트 전에 export sync를 먼저 실행한다.
-5. release/dogfood로 이어가면
+6. release/dogfood로 이어가면
    [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md)에서
    clean temp-home proof와 남은 real-host proof를 먼저 확인한다.
 
