@@ -21,7 +21,7 @@
   enforce한다. 현재 ratio는 `0.54` (`9345/17425`)다.
 - Runtime budget gate는 latest 단일 샘플이 아니라 recent median drift를
   fail 기준으로 쓴다. 현재 예산은 `pytest` 40s, `check-secrets` 5s,
-  `check-coverage` 15s, `run-evals` 5s, `specdown` 5s다.
+  `check-coverage` 15s, `run-evals` 5s, `specdown` 8s다.
 - `run-quality.sh`는 이제 `specdown run -quiet -no-report`를 실행한다. 첫
   스펙은 `tool doctor specdown --json`, `charness task` envelope, 그리고
   root `doctor`의 primary `next_action` 출력 계약을 다루며, adapter는 아직
@@ -34,30 +34,28 @@
   이어가면 `charness task status <task-id>`로 확인할 수 있다.
 - Checked-in plugin export는 source 변경 뒤
   `python3 scripts/sync_root_plugin_manifests.py --repo-root .`로 맞춘다.
-- GitHub 이슈 #25-#31 대응 로컬 커밋 8개가 `main` 위에 쌓여 있다.
-  Fresh-eye premortem 보강 뒤 최종 `./scripts/run-quality.sh`는
-  `37 passed, 0 failed`, `run-slice-closeout.py`도 통과했다.
+- GitHub 이슈 #25-#31은 `main`에 반영했고 모두 close했다. Retro 결론은
+  producer-side gate만으로는 부족하고 consumer-side dogfood matrix가 필요하다는
+  것이다.
+- Packaging/plugin release surface는 `0.0.7`로 bump 중이다.
 
 ## Next Session
 
 1. `git status --short`를 먼저 확인한다.
-2. 이 handoff 커밋까지 포함해 깨끗하면, #25-#31 대응 branch를 push하고
-   PR/이슈 closeout 본문을 준비한다. 아직 GitHub 이슈에는 comment/close를
-   남기지 않았다. #28은 support skills를 `find-skills` routing으로 대표시키는
-   의도적 범위만 closeout 본문에 짧게 적으면 된다.
-3. sah/specdown lesson line을 이어간다면 다음 작은 CLI 후보는 task
+2. Release bump가 이어지는 중이면 `charness-artifacts/release/latest.md`,
+   `packaging/charness.json`, `python3 skills/public/release/scripts/current_release.py --repo-root .`를 확인한 뒤 quality와 push 상태를 본다.
+3. Dogfood 개선으로 이어가면 `charness-artifacts/retro/recent-lessons.md`의
+   consumer-side dogfood matrix 항목을 먼저 구현 후보로 본다.
+4. sah/specdown lesson line을 이어간다면 다음 작은 CLI 후보는 task
    envelope와 doctor `next_action`을 실제 멀티에이전트 세션에서 dogfood한
    뒤, 필요한 경우 task list/status summary를 다듬는 것이다. 스펙다운은
    반복 setup/JSON 추출이 두세 번 생기기 전에는 adapter를 만들지 않는다.
-4. 이 handoff가 커밋된 상태라면 다음 품질 작업은 85% floor에 가까운
+5. 이 handoff가 커밋된 상태라면 다음 품질 작업은 85% floor에 가까운
    `upstream_release_lib.py`, `control_plane_lib.py`, `install_tools.py`에서
    남은 branch를 리팩터링하거나 죽은 코드를 지우는 것이다. 테스트 추가보다
    생산 코드 축소를 먼저 본다.
-5. source가 checked-in plugin export에 들어가는 파일이면, focused
+6. source가 checked-in plugin export에 들어가는 파일이면, focused
    managed-checkout 테스트 전에 export sync를 먼저 실행한다.
-6. release/dogfood로 이어가면
-   [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md)에서
-   clean temp-home proof와 남은 real-host proof를 먼저 확인한다.
 
 ## Discuss
 
