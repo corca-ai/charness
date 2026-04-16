@@ -4,6 +4,7 @@ Every meaningful implementation slice needs a review pass before stopping.
 
 ## Minimum Lenses
 
+- contract closeout honesty
 - runtime behavior and branch reachability
 - boundary honesty and ownership
 - docs/spec synchronization
@@ -29,3 +30,13 @@ It is not a decorative reread.
 
 Fresh-eye review is the default. The stronger gate adds depth, not the existence
 of review itself.
+
+## Contract Re-read
+
+When a canonical artifact or inline current-slice contract exists:
+
+- re-read `Fixed Decisions` and named acceptance checks before stopping
+- confirm each item is reflected in the delivered slice or explicitly deferred
+  or reclassified in the contract
+- if the review finds drift, update code or contract before closeout instead of
+  leaving chat-only explanation
