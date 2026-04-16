@@ -2,22 +2,34 @@
 
 ## Current Focus
 
-- This session closed GitHub issues #25-#31 after implementing the local fixes, running fresh-eye premortem agents, pushing `main`, and closing the remote issues.
+- This session closed GitHub issues #25-#31, then corrected the retro scope:
+  the key lesson is how charness development should have discovered those
+  dogfood failures before sibling repos exposed them.
 
 ## Repeat Traps
 
-- The first implementation pass worked mostly from issue summaries and local intent, not from a full issue body plus comment acceptance matrix. That meant follow-up comments on #26, #27, and #31 were discovered late.
-- Slice closeout was treated as enough evidence after the tree was clean. For a close-readiness decision, the standing gate mattered more than a clean-tree no-op closeout.
-- Fresh-eye review happened after the seven issue slices were already committed. It still caught the blockers, but only after we had created extra cleanup and handoff churn.
-- The handoff update crossed its own concise limit and was caught only by the push hook. That repeated a known class of artifact-size misses.
+- Charness tested many scripts as producers, but not enough skills as products
+  consumed by an agent under realistic prompts.
+- Greenfield/bootstrap paths got more validation than mature-repo sanity-check
+  paths, which delayed #30.
+- Public skill frontmatter was treated as documentation rather than classifier
+  input, which delayed #28, #29, and #31.
+- Quality contracts lacked hostile prose/source mutation fixtures, which delayed
+  #27.
+- Narrative dogfood did not use charness's own first-touch surfaces enough,
+  which delayed #26.
 
 ## Next-Time Checklist
 
-- workflow: For multi-issue batches, create a compact acceptance matrix from each issue body and all comments before implementation starts. Treat comments as first-class acceptance input.
-- workflow: Run fresh-eye premortem before the first "ready to close" claim, not after all slices are committed.
-- workflow: Use full `./scripts/run-quality.sh` for close-readiness, even when `run-slice-closeout.py` reports no changed surfaces.
-- capability: Add an issue-batch triage helper or checklist that emits issue/comment acceptance rows and closeout commands.
-- memory: Keep this as a repeat trap in the retro digest: issue closeout is not ready until issue comments, standing quality, and fresh-eye premortem have all been consumed.
+- workflow: before closing a skill-behavior slice, run one realistic consumer
+  prompt using only the surfaces an agent would actually see.
+- workflow: keep a mature-repo fixture corpus for `init-repo` and `quality`.
+- workflow: test concrete prompt routing against public skill descriptions and
+  generated AGENTS hints.
+- capability: add a dogfood matrix helper for prompt/repo shape, expected skill,
+  expected artifact, and acceptance evidence.
+- memory: producer-side gates are not enough; charness also needs
+  consumer-side dogfood.
 
 ## Sources
 

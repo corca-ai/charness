@@ -1,72 +1,100 @@
-# Issue Closeout Premortem Retro
+# Issue Discovery Dogfood Retro
 
 ## Context
 
-This session closed GitHub issues #25-#31 after implementing the local fixes,
-running fresh-eye premortem agents, pushing `main`, and closing the remote
-issues. The user asked how we could have learned about those issue risks earlier
-while working in this repo.
+This retro corrects the scope of the previous closeout retro. The real question
+is not only how to close GitHub issues #25-#31 safely. Those issues were found
+while dogfooding charness skills in other repos. The sharper question is: how
+should charness development have surfaced those same failures earlier, before
+external dogfood made them obvious?
 
 ## Evidence Summary
 
-- GitHub issues and comments #25-#31 fetched before final closeout.
-- Commits `17efb07` through `04dcf01` on `main`.
-- Fresh-eye premortem agents found real gaps in #27 and #31 before close.
-- `./scripts/run-quality.sh` and the pre-push hook both passed with
+- Issues #25-#31 covered failures in `quality`, `narrative`, `init-repo`,
+  `gather`, and `find-skills`.
+- The failures were mostly agent-behavior and mature-repo-fit gaps, not pure
+  unit-test bugs.
+- Final fixes landed on `main` through `04dcf01`; the retro was first persisted
+  too narrowly and corrected after the user pointed out the scope mismatch.
+- `./scripts/run-quality.sh` and push-time pre-push passed with
   `37 passed, 0 failed`.
-- Earlier retro memory already named the same pattern: run premortem before
-  assuming a slice is close-ready.
 
 ## Waste
 
-- The first implementation pass worked mostly from issue summaries and local
-  intent, not from a full issue body plus comment acceptance matrix. That meant
-  follow-up comments on #26, #27, and #31 were discovered late.
-- Slice closeout was treated as enough evidence after the tree was clean. For a
-  close-readiness decision, the standing gate mattered more than a clean-tree
-  no-op closeout.
-- Fresh-eye review happened after the seven issue slices were already committed.
-  It still caught the blockers, but only after we had created extra cleanup and
-  handoff churn.
-- The handoff update crossed its own concise limit and was caught only by the
-  push hook. That repeated a known class of artifact-size misses.
+- Charness development tested many scripts as producers, but not enough skills
+  as products used by an agent under messy prompts. The missing layer was
+  prompt-to-skill and repo-context dogfood.
+- We validated greenfield/bootstrap paths more than mature-repo sanity-check
+  paths. That let #30 survive until `init-repo` was run on a real mature repo
+  with local naming conventions.
+- We treated public skill descriptions as documentation, not as routing
+  classifiers. That let #28, #29, and #31 survive until a live agent picked
+  WebFetch or Bash instead of the intended skill.
+- We did not run hostile prose/source mutation checks against quality contracts.
+  That let #27 survive until a real README rewrite hit hard-wrap plus fixed
+  substring guards.
+- We used narrative less often on charness's own first-touch surfaces than on
+  sibling repo landing surfaces. That let #26 surface during a cautilus README
+  rewrite instead of a charness README/docs rewrite.
+
+## Earlier Discovery Points
+
+- #25 would likely have surfaced from a standing-gate operability review of
+  charness and sibling-style fixtures: run the quality skill in review mode, not
+  only the quiet pre-push gate, and inventory runner reporter, orchestrator
+  output, per-gate chatter, phase signal, and verbose escape hatch.
+- #26 would likely have surfaced from using `narrative` on charness's own README
+  or plugin landing surface with a declared audience, comparables, claim audit,
+  and compression metric before applying it to cautilus.
+- #27 would likely have surfaced from a quality mutation fixture that inserts a
+  fixed-string source guard over hard-wrapped prose, then asks whether the
+  bootstrap policy makes that fragile pair constructible.
+- #28 and #29 would likely have surfaced from prompt-routing drills using only
+  installed skill descriptions and generated AGENTS hints: Slack URL, Notion
+  page, Google Doc, arbitrary URL, and "which skill handles this?" prompts.
+- #30 would likely have surfaced from an `init-repo` fixture corpus of mature
+  repos with legitimate naming divergence: lowercase `install.md`, roadmap as
+  `docs/master-plan.md`, and intentionally absent uninstall docs.
+- #31 would likely have surfaced from a Bash-biased adversarial drill: "specdown
+  support skill 있죠?" should call `find-skills` before filesystem search, and
+  one discovery call should return enough metadata to be more useful than `ls`.
 
 ## Critical Decisions
 
-- Asking for subagent premortem before remote close was the decisive recovery
-  point. It found #27's missing init-repo prevention half and #31's runtime/test
-  gaps before the issues were closed.
-- Running full `./scripts/run-quality.sh` instead of relying on focused tests
-  exposed length, plugin import, ruff, and handoff-size failures that would have
-  made the closeout untrustworthy.
-- Closing only after push-time pre-push passed kept the remote issue state honest:
-  the comments reference code that is actually on `main`.
+- The useful recovery was fresh-eye premortem before remote close, but the
+  better upstream fix is earlier dogfood fixtures that encode these lived
+  failure modes.
+- The durable change should not be "remember to be more careful." It should be a
+  small dogfood matrix that exercises skill selection, mature repo inspection,
+  first-touch narrative rewrite, and quality fragility inventory.
 
 ## Expert Counterfactuals
 
-- Gary Klein's premortem lens would have started the issue batch with: "If a
-  maintainer reopens this issue after close, which exact acceptance sentence or
-  comment did we fail to satisfy?" That would have forced issue comments into
-  the acceptance matrix before implementation.
-- Atul Gawande's checklist lens would have used a short closeout checklist for
-  every issue batch: fetch body and comments, write acceptance rows, run standing
-  quality, run fresh-eye premortem, then push and close. The missed steps here
-  were checklist-class misses, not deep design uncertainty.
+- Gary Klein's premortem lens would have asked during charness development:
+  "If this skill fails in a sibling repo, what exact prompt or repo shape will
+  make it fail?" That points to prompt-routing and mature-repo fixtures, not
+  more implementation-only unit tests.
+- Atul Gawande's checklist lens would have required a small release/dogfood
+  checklist before considering a skill improvement complete: one messy prompt,
+  one mature repo fixture, one generated AGENTS surface, and one full standing
+  quality pass.
 
 ## Next Improvements
 
-- workflow: For multi-issue batches, create a compact acceptance matrix from
-  each issue body and all comments before implementation starts. Treat comments
-  as first-class acceptance input.
-- workflow: Run fresh-eye premortem before the first "ready to close" claim, not
-  after all slices are committed.
-- workflow: Use full `./scripts/run-quality.sh` for close-readiness, even when
-  `run-slice-closeout.py` reports no changed surfaces.
-- capability: Add an issue-batch triage helper or checklist that emits
-  issue/comment acceptance rows and closeout commands.
-- memory: Keep this as a repeat trap in the retro digest: issue closeout is not
-  ready until issue comments, standing quality, and fresh-eye premortem have all
-  been consumed.
+- workflow: Before closing a skill-behavior slice, run a "consumer dogfood"
+  check: give the skill a realistic user prompt and only the surfaces an agent
+  would actually see.
+- workflow: Maintain a small mature-repo fixture corpus for `init-repo` and
+  `quality`, including divergent but valid naming and intentionally absent
+  optional surfaces.
+- workflow: For public skill descriptions, treat frontmatter as classifier
+  training data. Test concrete prompts against the expected skill route.
+- capability: Add an issue-batch or dogfood helper that emits a matrix:
+  prompt/repo shape, expected skill, expected artifact, and acceptance evidence.
+- capability: Add adversarial fixtures for "Bash is easier than the skill" so
+  `find-skills` must beat filesystem search for named support capabilities.
+- memory: Keep this as the repeat trap: charness can pass producer-side gates
+  while still failing consumer-side dogfood.
 
 ## Persisted
 
