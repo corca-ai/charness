@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
 import argparse
 import importlib.util
 import json
-import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.control_plane_lib import load_capabilities, read_lock
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
+load_capabilities = _scripts_control_plane_lib_module.load_capabilities
+read_lock = _scripts_control_plane_lib_module.read_lock
 
 VALIDATE_PACKAGING_PATH = REPO_ROOT / "scripts" / "validate-packaging.py"
 VALIDATE_PACKAGING_SPEC = importlib.util.spec_from_file_location(

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import sys
 from pathlib import Path
+
+from runtime_bootstrap import load_path_module
 
 
 def _runtime_root() -> Path:
@@ -35,10 +35,7 @@ def _helper_path(repo_root: Path) -> Path:
 
 REPO_ROOT = _runtime_root()
 HELPER_PATH = _helper_path(REPO_ROOT)
-SPEC = importlib.util.spec_from_file_location("validate_skill_ergonomics_entrypoint", HELPER_PATH)
-assert SPEC is not None and SPEC.loader is not None
-HELPER = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(HELPER)
+HELPER = load_path_module("validate_skill_ergonomics_entrypoint", HELPER_PATH)
 
 
 def main() -> int:

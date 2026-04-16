@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -11,13 +10,15 @@ import sys
 import tempfile
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
-from scripts.eval_init_repo import (
-    run_init_repo_inspect_states,
-    run_init_repo_operator_acceptance_synthesis,
-)
-from scripts.eval_registry import SCENARIOS, Scenario
+from runtime_bootstrap import import_repo_module, repo_root_from_script
+
+REPO_ROOT = repo_root_from_script(__file__)
+_scripts_eval_init_repo_module = import_repo_module(__file__, "scripts.eval_init_repo")
+run_init_repo_inspect_states = _scripts_eval_init_repo_module.run_init_repo_inspect_states
+run_init_repo_operator_acceptance_synthesis = _scripts_eval_init_repo_module.run_init_repo_operator_acceptance_synthesis
+_scripts_eval_registry_module = import_repo_module(__file__, "scripts.eval_registry")
+SCENARIOS = _scripts_eval_registry_module.SCENARIOS
+Scenario = _scripts_eval_registry_module.Scenario
 
 
 class EvalError(Exception):

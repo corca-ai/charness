@@ -1,24 +1,22 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.public_skill_validation_lib import (
-    POLICY_PATH,
-    VALID_ADAPTER_REQUIREMENTS,
-    VALID_TIERS,
-    load_policy,
-    partition_missing_skills,
-    public_skill_ids,
-)
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_public_skill_validation_lib_module = import_repo_module(__file__, "scripts.public_skill_validation_lib")
+POLICY_PATH = _scripts_public_skill_validation_lib_module.POLICY_PATH
+VALID_ADAPTER_REQUIREMENTS = _scripts_public_skill_validation_lib_module.VALID_ADAPTER_REQUIREMENTS
+VALID_TIERS = _scripts_public_skill_validation_lib_module.VALID_TIERS
+load_policy = _scripts_public_skill_validation_lib_module.load_policy
+partition_missing_skills = _scripts_public_skill_validation_lib_module.partition_missing_skills
+public_skill_ids = _scripts_public_skill_validation_lib_module.public_skill_ids
 
 
 def build_report(repo_root: Path) -> dict[str, object]:

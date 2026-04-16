@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402, I001
 
 from __future__ import annotations
 
@@ -9,10 +8,14 @@ import shlex
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
-from scripts.skill_markdown_lib import count_fence_blocks, extract_h2_section_lines
-from scripts.skill_portability_lib import find_portability_errors
+from runtime_bootstrap import import_repo_module, repo_root_from_script
+
+REPO_ROOT = repo_root_from_script(__file__)
+_scripts_skill_markdown_lib_module = import_repo_module(__file__, "scripts.skill_markdown_lib")
+count_fence_blocks = _scripts_skill_markdown_lib_module.count_fence_blocks
+extract_h2_section_lines = _scripts_skill_markdown_lib_module.extract_h2_section_lines
+_scripts_skill_portability_lib_module = import_repo_module(__file__, "scripts.skill_portability_lib")
+find_portability_errors = _scripts_skill_portability_lib_module.find_portability_errors
 REQUIRED_FRONTMATTER_KEYS = ("name", "description")
 SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 MAX_SKILL_MD_LINES = 200

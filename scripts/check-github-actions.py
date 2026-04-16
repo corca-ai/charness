@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -8,10 +7,13 @@ import json
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.github_actions_lib import collect_github_actions_drift, render_github_actions_report
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_github_actions_lib_module = import_repo_module(__file__, "scripts.github_actions_lib")
+collect_github_actions_drift = _scripts_github_actions_lib_module.collect_github_actions_drift
+render_github_actions_report = _scripts_github_actions_lib_module.render_github_actions_report
 
 
 def main() -> int:

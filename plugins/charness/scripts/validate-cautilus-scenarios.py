@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -7,11 +6,15 @@ import argparse
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.cautilus_scenarios_lib import REGISTRY_PATH, validate_registry
-from scripts.public_skill_validation_lib import ValidationError
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_cautilus_scenarios_lib_module = import_repo_module(__file__, "scripts.cautilus_scenarios_lib")
+REGISTRY_PATH = _scripts_cautilus_scenarios_lib_module.REGISTRY_PATH
+validate_registry = _scripts_cautilus_scenarios_lib_module.validate_registry
+_scripts_public_skill_validation_lib_module = import_repo_module(__file__, "scripts.public_skill_validation_lib")
+ValidationError = _scripts_public_skill_validation_lib_module.ValidationError
 
 
 def main() -> int:

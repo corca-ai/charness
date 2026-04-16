@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -8,20 +7,27 @@ import json
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.control_plane_lib import load_manifests, now_iso, run_shell, upsert_lock
-from scripts.control_plane_lifecycle_lib import (
-    attach_release_metadata,
-    command_result_payload,
-    detect_and_healthcheck,
-    has_any_status,
-    print_tool_statuses,
-    select_by_tool_id,
-)
-from scripts.install_provenance_lib import detect_install_provenance, package_manager_update_action
-from scripts.upstream_release_lib import probe_release
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
+load_manifests = _scripts_control_plane_lib_module.load_manifests
+now_iso = _scripts_control_plane_lib_module.now_iso
+run_shell = _scripts_control_plane_lib_module.run_shell
+upsert_lock = _scripts_control_plane_lib_module.upsert_lock
+_scripts_control_plane_lifecycle_lib_module = import_repo_module(__file__, "scripts.control_plane_lifecycle_lib")
+attach_release_metadata = _scripts_control_plane_lifecycle_lib_module.attach_release_metadata
+command_result_payload = _scripts_control_plane_lifecycle_lib_module.command_result_payload
+detect_and_healthcheck = _scripts_control_plane_lifecycle_lib_module.detect_and_healthcheck
+has_any_status = _scripts_control_plane_lifecycle_lib_module.has_any_status
+print_tool_statuses = _scripts_control_plane_lifecycle_lib_module.print_tool_statuses
+select_by_tool_id = _scripts_control_plane_lifecycle_lib_module.select_by_tool_id
+_scripts_install_provenance_lib_module = import_repo_module(__file__, "scripts.install_provenance_lib")
+detect_install_provenance = _scripts_install_provenance_lib_module.detect_install_provenance
+package_manager_update_action = _scripts_install_provenance_lib_module.package_manager_update_action
+_scripts_upstream_release_lib_module = import_repo_module(__file__, "scripts.upstream_release_lib")
+probe_release = _scripts_upstream_release_lib_module.probe_release
 
 
 def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -> dict[str, object]:

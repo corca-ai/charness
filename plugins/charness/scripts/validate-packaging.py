@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402, I001
 
 from __future__ import annotations
 
@@ -10,14 +9,14 @@ import sys
 from pathlib import Path
 
 import jsonschema
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
-from scripts.packaging_policy_validators import (
-    PackagingPolicyValidationError,
-    validate_optional_public_skill_policy,
-)
-from scripts.validate_packaging_install_surface import validate_checked_in_plugin_tree
+REPO_ROOT = repo_root_from_script(__file__)
+_scripts_packaging_policy_validators_module = import_repo_module(__file__, "scripts.packaging_policy_validators")
+PackagingPolicyValidationError = _scripts_packaging_policy_validators_module.PackagingPolicyValidationError
+validate_optional_public_skill_policy = _scripts_packaging_policy_validators_module.validate_optional_public_skill_policy
+_scripts_validate_packaging_install_surface_module = import_repo_module(__file__, "scripts.validate_packaging_install_surface")
+validate_checked_in_plugin_tree = _scripts_validate_packaging_install_surface_module.validate_checked_in_plugin_tree
 
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")
 VERSION_RE = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$")

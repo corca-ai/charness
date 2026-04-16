@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -16,18 +15,18 @@ import tempfile
 import trace
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.check_coverage_lib import (
-    PER_FILE_WARN_BELOW,
-    build_per_file_floor_report,
-    exercise_control_plane_scenarios,
-    exercise_install_provenance_scenarios,
-    exercise_lifecycle_scenarios,
-    exercise_support_sync_scenarios,
-    exercise_upstream_release_scenarios,
-)
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_check_coverage_lib_module = import_repo_module(__file__, "scripts.check_coverage_lib")
+PER_FILE_WARN_BELOW = _scripts_check_coverage_lib_module.PER_FILE_WARN_BELOW
+build_per_file_floor_report = _scripts_check_coverage_lib_module.build_per_file_floor_report
+exercise_control_plane_scenarios = _scripts_check_coverage_lib_module.exercise_control_plane_scenarios
+exercise_install_provenance_scenarios = _scripts_check_coverage_lib_module.exercise_install_provenance_scenarios
+exercise_lifecycle_scenarios = _scripts_check_coverage_lib_module.exercise_lifecycle_scenarios
+exercise_support_sync_scenarios = _scripts_check_coverage_lib_module.exercise_support_sync_scenarios
+exercise_upstream_release_scenarios = _scripts_check_coverage_lib_module.exercise_upstream_release_scenarios
 
 TARGET_FILES = (
     Path("scripts/control_plane_lib.py"),

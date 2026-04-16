@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -9,16 +8,16 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.surfaces_lib import (
-    SURFACES_PATH,
-    SurfaceError,
-    collect_changed_paths,
-    load_surfaces,
-    match_surfaces,
-)
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_lib")
+SURFACES_PATH = _scripts_surfaces_lib_module.SURFACES_PATH
+SurfaceError = _scripts_surfaces_lib_module.SurfaceError
+collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
+load_surfaces = _scripts_surfaces_lib_module.load_surfaces
+match_surfaces = _scripts_surfaces_lib_module.match_surfaces
 
 
 def run_command(repo_root: Path, command: str, phase: str) -> dict[str, object]:

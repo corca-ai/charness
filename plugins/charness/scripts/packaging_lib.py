@@ -1,29 +1,21 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import shutil
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-VALIDATE_PACKAGING_PATH = REPO_ROOT / "scripts" / "validate-packaging.py"
-VALIDATE_PACKAGING_SPEC = importlib.util.spec_from_file_location(
-    "validate_packaging",
-    VALIDATE_PACKAGING_PATH,
-)
-assert VALIDATE_PACKAGING_SPEC is not None and VALIDATE_PACKAGING_SPEC.loader is not None
-VALIDATE_PACKAGING = importlib.util.module_from_spec(VALIDATE_PACKAGING_SPEC)
-VALIDATE_PACKAGING_SPEC.loader.exec_module(VALIDATE_PACKAGING)
+from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
 
-from scripts.surfaces_lib import (
-    SURFACES_PATH,
-    apply_generated_markdown_header,
-    load_surfaces,
-    lookup_generated_markdown,
-)
+REPO_ROOT = repo_root_from_script(__file__)
+VALIDATE_PACKAGING_PATH = REPO_ROOT / "scripts" / "validate-packaging.py"
+VALIDATE_PACKAGING = load_path_module("validate_packaging", VALIDATE_PACKAGING_PATH)
+_scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_lib")
+SURFACES_PATH = _scripts_surfaces_lib_module.SURFACES_PATH
+apply_generated_markdown_header = _scripts_surfaces_lib_module.apply_generated_markdown_header
+load_surfaces = _scripts_surfaces_lib_module.load_surfaces
+lookup_generated_markdown = _scripts_surfaces_lib_module.lookup_generated_markdown
 
 
 class PackagingError(Exception):
@@ -171,6 +163,9 @@ def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> No
     scripts_root = repo_root / "scripts"
     exported_scripts_root = plugin_root / "scripts"
     replace_tree_if_present(scripts_root, exported_scripts_root)
+    runtime_bootstrap_path = repo_root / "runtime_bootstrap.py"
+    if runtime_bootstrap_path.is_file():
+        copy_file(runtime_bootstrap_path, plugin_root / "runtime_bootstrap.py")
 
     write_json(plugin_root / manifest["claude"]["manifest_path"], manifest["claude"]["manifest"])
     write_json(plugin_root / manifest["codex"]["manifest_path"], manifest["codex"]["manifest"])

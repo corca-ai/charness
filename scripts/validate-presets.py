@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -7,10 +6,12 @@ import argparse
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.repo_file_listing import iter_matching_repo_files
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
+iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
 
 PRESET_NAME_RE = r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
 REQUIRED_FIELDS = ("name", "description", "preset_kind", "install_scope")

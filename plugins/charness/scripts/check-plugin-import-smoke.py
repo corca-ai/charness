@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 """Exec every .py in the checked-in plugin tree to catch broken imports.
 
 Companion gate to `check-export-safe-imports.py`. That lint rejects a known
@@ -19,10 +18,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.validate_packaging_install_surface import smoke_exported_plugin_imports
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_validate_packaging_install_surface_module = import_repo_module(__file__, "scripts.validate_packaging_install_surface")
+smoke_exported_plugin_imports = _scripts_validate_packaging_install_surface_module.smoke_exported_plugin_imports
 
 PACKAGING_MANIFEST = REPO_ROOT / "packaging" / "charness.json"
 

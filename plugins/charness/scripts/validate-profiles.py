@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -11,12 +10,14 @@ from pathlib import Path
 
 import jsonschema
 from jsonschema import ValidationError as JsonSchemaValidationError
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+REPO_ROOT = repo_root_from_script(__file__)
 
-from scripts.eval_registry import scenario_ids
-from scripts.repo_file_listing import iter_matching_repo_files
+_scripts_eval_registry_module = import_repo_module(__file__, "scripts.eval_registry")
+scenario_ids = _scripts_eval_registry_module.scenario_ids
+_scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
+iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
 
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")
 PROFILE_SCHEMA_PATH = REPO_ROOT / "profiles" / "profile.schema.json"

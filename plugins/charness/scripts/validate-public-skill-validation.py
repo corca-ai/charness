@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -7,15 +6,15 @@ import argparse
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.public_skill_validation_lib import (
-    POLICY_PATH,
-    ValidationError,
-    load_policy,
-    validate_policy,
-)
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_public_skill_validation_lib_module = import_repo_module(__file__, "scripts.public_skill_validation_lib")
+POLICY_PATH = _scripts_public_skill_validation_lib_module.POLICY_PATH
+ValidationError = _scripts_public_skill_validation_lib_module.ValidationError
+load_policy = _scripts_public_skill_validation_lib_module.load_policy
+validate_policy = _scripts_public_skill_validation_lib_module.validate_policy
 
 
 def validate_adapter_requirement(repo_root: Path, skill_id: str, *, required: bool) -> None:

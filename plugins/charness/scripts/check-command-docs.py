@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -11,10 +10,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.adapter_lib import load_yaml_file
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_adapter_lib_module = import_repo_module(__file__, "scripts.adapter_lib")
+load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
 
 DEFAULT_CONTRACT = Path(".agents/command-docs.yaml")
 

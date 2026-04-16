@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -7,24 +6,33 @@ import argparse
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-_RESOLVER_DIR = REPO_ROOT / "skills" / "public" / "debug" / "scripts"
-if not _RESOLVER_DIR.is_dir():
-    _RESOLVER_DIR = REPO_ROOT / "skills" / "debug" / "scripts"
-sys.path[:0] = [str(_RESOLVER_DIR), str(REPO_ROOT)]
+from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
 
-from resolve_adapter import load_adapter
+REPO_ROOT = repo_root_from_script(__file__)
 
-from scripts.artifact_validator import (
-    ValidationError,
-    find_index,
-    read_lines,
-    validate_date_line,
-    validate_exact_h2_sections,
-    validate_max_lines,
-    validate_nonempty_sections,
-    validate_title,
-)
+
+def _resolver_path(repo_root: Path) -> Path:
+    candidates = (
+        repo_root / "skills" / "public" / "debug" / "scripts" / "resolve_adapter.py",
+        repo_root / "skills" / "debug" / "scripts" / "resolve_adapter.py",
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise FileNotFoundError("debug resolve_adapter.py not found")
+
+
+_debug_resolve_adapter = load_path_module("debug_resolve_adapter", _resolver_path(REPO_ROOT))
+load_adapter = _debug_resolve_adapter.load_adapter
+_scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
+ValidationError = _scripts_artifact_validator_module.ValidationError
+find_index = _scripts_artifact_validator_module.find_index
+read_lines = _scripts_artifact_validator_module.read_lines
+validate_date_line = _scripts_artifact_validator_module.validate_date_line
+validate_exact_h2_sections = _scripts_artifact_validator_module.validate_exact_h2_sections
+validate_max_lines = _scripts_artifact_validator_module.validate_max_lines
+validate_nonempty_sections = _scripts_artifact_validator_module.validate_nonempty_sections
+validate_title = _scripts_artifact_validator_module.validate_title
 
 MAX_ARTIFACT_LINES = 140
 REQUIRED_SECTIONS = (

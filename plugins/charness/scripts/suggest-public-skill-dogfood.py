@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402, I001
 
 from __future__ import annotations
 
@@ -8,13 +7,14 @@ import json
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.public_skill_dogfood_lib import (
-    build_matrix,
-)
-from scripts.public_skill_validation_lib import public_skill_ids
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_public_skill_dogfood_lib_module = import_repo_module(__file__, "scripts.public_skill_dogfood_lib")
+build_matrix = _scripts_public_skill_dogfood_lib_module.build_matrix
+_scripts_public_skill_validation_lib_module = import_repo_module(__file__, "scripts.public_skill_validation_lib")
+public_skill_ids = _scripts_public_skill_validation_lib_module.public_skill_ids
 
 
 def parse_args() -> argparse.Namespace:

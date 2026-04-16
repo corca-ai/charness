@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -9,18 +8,18 @@ import shutil
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.packaging_lib import (
-    PackagingError,
-    build_codex_marketplace,
-    checked_in_plugin_root,
-    export_plugin_tree,
-    load_manifest,
-    manifest_with_version_override,
-    write_json,
-)
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_packaging_lib_module = import_repo_module(__file__, "scripts.packaging_lib")
+PackagingError = _scripts_packaging_lib_module.PackagingError
+build_codex_marketplace = _scripts_packaging_lib_module.build_codex_marketplace
+checked_in_plugin_root = _scripts_packaging_lib_module.checked_in_plugin_root
+export_plugin_tree = _scripts_packaging_lib_module.export_plugin_tree
+load_manifest = _scripts_packaging_lib_module.load_manifest
+manifest_with_version_override = _scripts_packaging_lib_module.manifest_with_version_override
+write_json = _scripts_packaging_lib_module.write_json
 
 
 class ExportError(Exception):

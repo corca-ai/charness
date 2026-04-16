@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -7,10 +6,13 @@ import argparse
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.supply_chain_lib import ValidationError, collect_offline_findings
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_supply_chain_lib_module = import_repo_module(__file__, "scripts.supply_chain_lib")
+ValidationError = _scripts_supply_chain_lib_module.ValidationError
+collect_offline_findings = _scripts_supply_chain_lib_module.collect_offline_findings
 
 
 def main() -> int:

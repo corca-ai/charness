@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -8,12 +7,16 @@ import json
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-import scripts.control_plane_lifecycle_lib as lifecycle
-import scripts.support_sync_lib as support_sync
-from scripts.control_plane_lib import load_manifests, now_iso, upsert_lock
+REPO_ROOT = repo_root_from_script(__file__)
+
+lifecycle = import_repo_module(__file__, "scripts.control_plane_lifecycle_lib")
+support_sync = import_repo_module(__file__, "scripts.support_sync_lib")
+_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
+load_manifests = _scripts_control_plane_lib_module.load_manifests
+now_iso = _scripts_control_plane_lib_module.now_iso
+upsert_lock = _scripts_control_plane_lib_module.upsert_lock
 
 Payload = dict[str, object]
 

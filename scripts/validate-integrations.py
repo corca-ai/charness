@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -8,16 +7,16 @@ import json
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.control_plane_lib import (
-    load_lock_schema,
-    load_manifests,
-    load_support_capabilities,
-    lock_paths,
-    validate_lock_data,
-)
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
+load_lock_schema = _scripts_control_plane_lib_module.load_lock_schema
+load_manifests = _scripts_control_plane_lib_module.load_manifests
+load_support_capabilities = _scripts_control_plane_lib_module.load_support_capabilities
+lock_paths = _scripts_control_plane_lib_module.lock_paths
+validate_lock_data = _scripts_control_plane_lib_module.validate_lock_data
 
 
 class ValidationError(Exception):

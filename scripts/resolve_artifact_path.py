@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 from __future__ import annotations
 
 import argparse
 import json
 import subprocess
-import sys
 from datetime import date
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.artifact_naming_lib import current_artifact_filename, dated_artifact_filename, slugify
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_artifact_naming_lib_module = import_repo_module(__file__, "scripts.artifact_naming_lib")
+current_artifact_filename = _scripts_artifact_naming_lib_module.current_artifact_filename
+dated_artifact_filename = _scripts_artifact_naming_lib_module.dated_artifact_filename
+slugify = _scripts_artifact_naming_lib_module.slugify
 
 
 def parse_args() -> argparse.Namespace:

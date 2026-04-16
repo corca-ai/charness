@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -8,17 +7,20 @@ import json
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.control_plane_lib import (
-    load_capabilities,
-    now_iso,
-    upsert_lock,
-)
-from scripts.doctor_lib import inspect_capability_state
-from scripts.install_provenance_lib import detect_install_provenance
-from scripts.upstream_release_lib import probe_release
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
+load_capabilities = _scripts_control_plane_lib_module.load_capabilities
+now_iso = _scripts_control_plane_lib_module.now_iso
+upsert_lock = _scripts_control_plane_lib_module.upsert_lock
+_scripts_doctor_lib_module = import_repo_module(__file__, "scripts.doctor_lib")
+inspect_capability_state = _scripts_doctor_lib_module.inspect_capability_state
+_scripts_install_provenance_lib_module = import_repo_module(__file__, "scripts.install_provenance_lib")
+detect_install_provenance = _scripts_install_provenance_lib_module.detect_install_provenance
+_scripts_upstream_release_lib_module = import_repo_module(__file__, "scripts.upstream_release_lib")
+probe_release = _scripts_upstream_release_lib_module.probe_release
 
 
 def lock_safe_doctor_payload(payload: dict[str, object]) -> dict[str, object]:

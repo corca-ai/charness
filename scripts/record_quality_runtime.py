@@ -1,23 +1,32 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
 import argparse
 import json
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from statistics import median
 from typing import Any
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-_RESOLVER_DIR = REPO_ROOT / "skills" / "public" / "quality" / "scripts"
-if not _RESOLVER_DIR.is_dir():
-    _RESOLVER_DIR = REPO_ROOT / "skills" / "quality" / "scripts"
-sys.path[:0] = [str(_RESOLVER_DIR), str(REPO_ROOT)]
+from runtime_bootstrap import load_path_module, repo_root_from_script
 
-from resolve_adapter import load_adapter
+REPO_ROOT = repo_root_from_script(__file__)
+
+
+def _resolver_path(repo_root: Path) -> Path:
+    candidates = (
+        repo_root / "skills" / "public" / "quality" / "scripts" / "resolve_adapter.py",
+        repo_root / "skills" / "quality" / "scripts" / "resolve_adapter.py",
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise FileNotFoundError("quality resolve_adapter.py not found")
+
+
+_quality_resolve_adapter = load_path_module("quality_resolve_adapter", _resolver_path(REPO_ROOT))
+load_adapter = _quality_resolve_adapter.load_adapter
 
 SUMMARY_FILENAME = "runtime-signals.json"
 ARCHIVE_PREFIX = "runtime-signals-"

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -10,10 +9,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
-from scripts.supply_chain_lib import ValidationError, detect_online_audit_surfaces
+REPO_ROOT = repo_root_from_script(__file__)
+
+_scripts_supply_chain_lib_module = import_repo_module(__file__, "scripts.supply_chain_lib")
+ValidationError = _scripts_supply_chain_lib_module.ValidationError
+detect_online_audit_surfaces = _scripts_supply_chain_lib_module.detect_online_audit_surfaces
 
 DEFAULT_TRIAGE_OWNER = "repo-maintainers"
 
