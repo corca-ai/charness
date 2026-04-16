@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402, I001
+# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 from scripts.skill_markdown_lib import count_fence_blocks, extract_h2_section_lines
+from scripts.skill_portability_lib import find_portability_errors
 REQUIRED_FRONTMATTER_KEYS = ("name", "description")
 SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 MAX_SKILL_MD_LINES = 200
@@ -44,19 +45,10 @@ SCRIPT_EXTENSION_RE = re.compile(r"\.(sh|bash|zsh|py|js|ts|rb|pl|lua|rs|go|json|
 REDIRECT_PREFIX_RE = re.compile(r"^[0-9]*[<>&]")
 NUMERIC_RE = re.compile(r"^[0-9]+$")
 COMMAND_SEPARATORS = frozenset({"|", "||", "&&", ";", "&"})
-INLINE_COMMAND_RE = re.compile(r"`([^`\n]+)`")
-BARE_RUNTIME_SCRIPT_INVOCATION_RE = re.compile(
-    r"\b(?:python3|python|bash|sh|zsh)\s+scripts/(?P<rel>[A-Za-z0-9._/-]+\.[A-Za-z0-9]+)\b"
-)
-SOURCE_TREE_SKILL_INVOCATION_RE = re.compile(
-    r"\b(?:python3|python|bash|sh|zsh|sed|cat|head|tail|rg|find)\b[^`\n]*"
-    r"(?P<rel>skills/(?:public|support)/[A-Za-z0-9._-]+/[^\s`]+)"
-)
 
 
 class ValidationError(Exception):
     pass
-
 
 def extract_frontmatter(contents: str) -> list[str]:
     lines = contents.splitlines()
@@ -71,8 +63,6 @@ def extract_frontmatter(contents: str) -> list[str]:
             return frontmatter
         frontmatter.append(line)
     raise ValidationError("frontmatter is missing closing --- delimiter")
-
-
 def parse_frontmatter(path: Path) -> dict[str, str]:
     contents = path.read_text(encoding="utf-8")
     lines = extract_frontmatter(contents)
@@ -94,15 +84,11 @@ def parse_frontmatter(path: Path) -> dict[str, str]:
         if key not in data:
             raise ValidationError(f"missing field `{key}`")
     return data
-
-
 def validate_quoted_string(field: str, value: str) -> None:
     if len(value) < 2 or not (value.startswith('"') and value.endswith('"')):
         raise ValidationError(
             f"`{field}` must be double-quoted so standard YAML parsers accept punctuation safely"
         )
-
-
 def validate_frontmatter(path: Path) -> None:
     data = parse_frontmatter(path)
     name = data["name"]
@@ -112,8 +98,6 @@ def validate_frontmatter(path: Path) -> None:
         raise ValidationError(f"`name` must match directory name `{path.parent.name}`")
 
     validate_quoted_string("description", data["description"])
-
-
 def extract_bootstrap_fences(contents: str) -> list[tuple[int, list[str]]]:
     """Return `(first_line_index, lines_inside_fence)` tuples for the fenced
     code blocks under the `## Bootstrap` heading. Line indices are 1-based.
@@ -144,15 +128,11 @@ def extract_bootstrap_fences(contents: str) -> list[tuple[int, list[str]]]:
         else:
             i += 1
     return fences
-
-
 def tokenize_shell_line(line: str) -> list[str]:
     try:
         return shlex.split(line, comments=False, posix=True)
     except ValueError:
         return line.split()
-
-
 def classify_command_token(tok: str) -> str | None:
     """Return a baseline-comparable command name, or None for non-commands."""
     if not tok:
@@ -172,8 +152,6 @@ def classify_command_token(tok: str) -> str | None:
             return None
         return base or None
     return tok
-
-
 def non_baseline_commands_in_line(line: str) -> set[str]:
     tokens = tokenize_shell_line(line)
     if not tokens:
@@ -191,8 +169,6 @@ def non_baseline_commands_in_line(line: str) -> set[str]:
         if tok in COMMAND_SEPARATORS:
             expect_command = True
     return non_base
-
-
 def has_swallow_pattern(line: str) -> bool:
     """Detect `2>/dev/null` or `|| true` / `|| :` shell-operator swallows."""
     if "2>/dev/null" in line:
@@ -269,36 +245,10 @@ def validate_bootstrap_binary_preflight(contents: str) -> None:
         )
 
 
-def iter_command_like_snippets(contents: str) -> list[tuple[int, str]]:
-    snippets: list[tuple[int, str]] = []
-    for line_no, line in enumerate(contents.splitlines(), start=1):
-        snippets.append((line_no, line))
-        for match in INLINE_COMMAND_RE.finditer(line):
-            snippets.append((line_no, match.group(1)))
-    return snippets
-
-
 def validate_portable_skill_invocations(root: Path, skill_dir: Path, contents: str) -> None:
-    for line_no, snippet in iter_command_like_snippets(contents):
-        bare_script_match = BARE_RUNTIME_SCRIPT_INVOCATION_RE.search(snippet)
-        if bare_script_match:
-            rel = bare_script_match.group("rel")
-            runtime_candidate = root / "scripts" / rel
-            skill_candidate = skill_dir / "scripts" / rel
-            if runtime_candidate.is_file() or skill_candidate.is_file():
-                raise ValidationError(
-                    f"line {line_no}: runtime helper invocation `scripts/{rel}` is cwd-relative; "
-                    "use `$SKILL_DIR/...` for skill-bundled helpers or a portable sibling-skill path instead"
-                )
-
-        source_tree_match = SOURCE_TREE_SKILL_INVOCATION_RE.search(snippet)
-        if source_tree_match:
-            rel = source_tree_match.group("rel")
-            if (root / rel).exists():
-                raise ValidationError(
-                    f"line {line_no}: source-tree skill path `{rel}` is not portable in execution examples; "
-                    "use `$SKILL_DIR/...` or a portable sibling-skill path instead"
-                )
+    errors = find_portability_errors(root, skill_dir, contents)
+    if errors:
+        raise ValidationError("; ".join(errors))
 
 
 def validate_support_files(root: Path, skill_dir: Path, kind: str) -> None:
