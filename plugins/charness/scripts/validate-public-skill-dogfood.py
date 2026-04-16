@@ -10,8 +10,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.public_skill_dogfood_lib import (
-    DOGFOOD_PATH,
+from scripts.public_skill_dogfood_lib import DOGFOOD_PATH
+from scripts.public_skill_dogfood_validation_lib import (
     ValidationError,
     load_registry,
     validate_registry,
