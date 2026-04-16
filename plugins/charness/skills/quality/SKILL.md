@@ -73,6 +73,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - when a standing local gate exists, inventory quiet-default vs verbose-on-demand posture with `scripts/inventory_standing_gate_verbosity.py`
    - when the repo may keep one shipped implementation beside a historical or alternate runtime path, inventory likely dual-implementation parity smells with `scripts/inventory_dual_implementation.py`, then decide whether the relationship is parity-enforced, canonical-plus-legacy, or intentional divergence
    - when first-touch operator/developer/agent docs are in scope, inventory entrypoint-doc ergonomics with `scripts/inventory_entrypoint_docs_ergonomics.py`
+   - when fixed-string source guards touch prose, inventory hard-wrap fragility with `scripts/inventory_brittle_source_guards.py`; see `references/brittle-source-guards.md`
    - inspect README / INSTALL / operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist; when the CLI surface is stable, prefer a deterministic command-docs drift gate over repeated prose review
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
    - if evaluator-backed review or prompt-sensitive output matters, inspect whether prompt/content bulk stays in checked-in assets or is still embedded inline in source files
@@ -138,7 +139,6 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not reduce quality to one aggregate score.
 - Do not split quality bootstrap into a second public concept when the work is still bounded repo-local quality setup.
 - Do not recommend gates the repo cannot realistically run without saying why.
-- Do not confuse gate presence with gate usefulness.
 - Do not ignore runtime drift just because a gate still passes functionally.
 - Do not wait for operator follow-up before stating current runtime hot spots, coverage-gate presence or absence, and evaluator-depth status when the repo signals are available.
 - Do not treat slow or broad executable specs as automatically strong quality when they mostly duplicate cheaper deterministic coverage.
@@ -190,6 +190,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - `references/automation-promotion.md`
 - `references/bootstrap-posture.md`
 - `references/operability-signals.md`
+- `references/brittle-source-guards.md`
 - `references/sample-presets.md`
 - `references/executable-spec-economics.md`
 - `references/security-overview.md`

@@ -4,6 +4,7 @@ language: en
 output_dir: charness-artifacts/init-repo
 preset_id: portable-defaults
 customized_from: portable-defaults
+prose_wrap_policy: semantic
 surfaces:
   roadmap: docs/roadmap.md
   install: INSTALL.md

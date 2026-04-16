@@ -42,6 +42,9 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
   concrete request shapes such as Slack thread, named support helper,
   unexpected behavior, or quality gate review rather than abstract capability
   labels
+- prose wrap policy when the repo uses fixed-string source guards; default to
+  semantic line breaks, and require whitespace-normalized matching before
+  accepting column-wrapped prose
 - selection rules in the core file, with deeper rationale pushed into linked
   docs instead of turning `AGENTS.md` into a second handbook
 - avoid blanket external-link ignore defaults; if the repo later adopts
