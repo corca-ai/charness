@@ -47,6 +47,7 @@ python3 "$SKILL_DIR/scripts/synthesize_operator_acceptance.py" --repo-root .
 # Missing-binary protocol: create-skill/references/binary-preflight.md
 # 1. current repo surface
 python3 "$SKILL_DIR/scripts/inspect_repo.py" --repo-root .
+python3 "$SKILL_DIR/scripts/render_skill_routing.py" --repo-root . --json
 git status --short
 rg --files . | sed -n '1,200p'
 
@@ -108,6 +109,10 @@ Then load only the references needed for the detected state:
    - when that seam is enabled, make `AGENTS.md` name
      `charness-artifacts/retro/recent-lessons.md` as a repo memory surface so future
      sessions can actually discover it
+   - add a compact `Skill Routing` block to `AGENTS.md` when installed
+     charness skills provide high-signal routing hints; use
+     `scripts/render_skill_routing.py` so mature repos get an add-block
+     suggestion instead of a silent rewrite
 5. Keep the boundaries honest.
    - `README.md`: current repo story and user-facing orientation
      - if the repo ships an installable surface, README should point at the
@@ -171,5 +176,6 @@ The result should usually include:
 - `references/github-actions-defaults.md`
 - `references/operator-acceptance-synthesis.md`
 - `scripts/inspect_repo.py`
+- `scripts/render_skill_routing.py`
 - `scripts/seed_retro_memory.py`
 - `scripts/synthesize_operator_acceptance.py`

@@ -123,6 +123,41 @@ def test_init_repo_inspect_repo_excludes_acknowledged_missing_core_surface(tmp_p
     assert payload["surfaces"]["roadmap"]["kind"] == "acknowledged_missing"
 
 
+def test_init_repo_render_skill_routing_names_concrete_triggers(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    result = run_script(
+        "skills/public/init-repo/scripts/render_skill_routing.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["recommended_action"] == "create_agents_with_skill_routing"
+    assert "gather" in payload["public_skills"]
+    assert "find-skills" in payload["public_skills"]
+    assert "- external source fetch (Slack thread, Notion page, Google Docs, GitHub content, arbitrary URL) -> `gather`" in payload["markdown"]
+    assert "- unclear skill choice, named support/helper, or hidden capability lookup -> `find-skills`" in payload["markdown"]
+
+
+def test_init_repo_render_skill_routing_suggests_add_block_for_mature_agents(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "AGENTS.md").write_text("# Agents\n\nExisting policy.\n", encoding="utf-8")
+
+    result = run_script(
+        "skills/public/init-repo/scripts/render_skill_routing.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["agents_has_skill_routing"] is False
+    assert payload["recommended_action"] == "add_skill_routing_block"
+
+
 def test_init_repo_skill_bootstraps_probe_surface_guidance() -> None:
     skill_text = (ROOT / "skills" / "public" / "init-repo" / "SKILL.md").read_text(encoding="utf-8")
     probe_reference = (

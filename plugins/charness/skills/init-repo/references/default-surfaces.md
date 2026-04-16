@@ -38,11 +38,19 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
 - when retro memory is enabled, include `charness-artifacts/retro/recent-lessons.md`
   in those memory surfaces
 - validation and commit discipline when the repo has them
+- a compact `Skill Routing` block for installed charness skills, using
+  concrete request shapes such as Slack thread, named support helper,
+  unexpected behavior, or quality gate review rather than abstract capability
+  labels
 - selection rules in the core file, with deeper rationale pushed into linked
   docs instead of turning `AGENTS.md` into a second handbook
 - avoid blanket external-link ignore defaults; if the repo later adopts
   `lychee`, prefer optional or tightly scoped checks before adding broad ignore
   rules
+
+Use `scripts/render_skill_routing.py` to render the block. On a mature repo
+whose `AGENTS.md` lacks it, propose adding the block instead of rewriting the
+whole instruction file.
 
 ## Roadmap
 
