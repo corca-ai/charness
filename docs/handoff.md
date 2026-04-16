@@ -49,10 +49,10 @@
 
 1. `git status --short`를 먼저 확인한다.
 2. Dogfood 개선으로 이어가면 이제 registry 확장보다 reviewed case 강화가
-   다음 move다. `create-cli`, `ideation`, `premortem`, `hitl` 같은
-   HITL-heavy skill 중 하나를 골라 실제 consumer prompt replay, stronger
-   acceptance evidence, 또는 tier 재검토 근거를 추가한다. 새 public skill이
-   생기면 그때만 `suggest-public-skill-dogfood.py` scaffold를 다시 추가한다.
+   다음 move다. 먼저 `hitl`이나 `ideation`처럼 근거가 policy-heavy한 case를
+   골라 실제 consumer prompt replay와 stronger acceptance evidence를
+   추가한다. tier 재검토는 그 뒤에 한다. 새 public skill이 생기면 그때만
+   `suggest-public-skill-dogfood.py` scaffold를 다시 추가한다.
 3. Release follow-up이 필요하면 `charness-artifacts/release/latest.md`와
    `current_release.py` 상태를 먼저 확인한다. `0.0.7` 태그/게시 릴리스는 아직 만들지 않았다.
 4. sah/specdown lesson line을 이어간다면 다음 작은 CLI 후보는 task
