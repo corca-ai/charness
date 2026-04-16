@@ -78,3 +78,11 @@ def test_advise_google_workspace_path_reports_missing_gws_cli(tmp_path: Path) ->
     payload = json.loads(result.stdout)
     assert payload["doctor_status"] == "missing"
     assert any("Install `gws`" in step for step in payload["next_steps"])
+
+
+def test_gather_skill_description_names_concrete_source_triggers() -> None:
+    skill_text = (ROOT / "skills" / "public" / "gather" / "SKILL.md").read_text(encoding="utf-8")
+    description = next(line for line in skill_text.splitlines() if line.startswith("description: "))
+
+    for trigger in ("Slack thread", "Notion page", "Google Docs", "GitHub content", "arbitrary URL"):
+        assert trigger in description
