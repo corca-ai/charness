@@ -8,7 +8,6 @@ from pathlib import Path
 
 from scripts.public_skill_validation_lib import (
     load_policy,
-    public_skill_ids,
     validate_policy,
 )
 
@@ -189,8 +188,3 @@ def build_matrix(repo_root: Path, skill_ids: list[str]) -> dict[str, object]:
         "repo_root": str(repo_root),
         "matrix": matrix,
     }
-from scripts.public_skill_dogfood_validation_lib import (  # noqa: E402
-    ValidationError,
-    load_registry,
-    validate_registry,
-)

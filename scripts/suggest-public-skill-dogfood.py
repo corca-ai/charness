@@ -13,8 +13,8 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.public_skill_dogfood_lib import (
     build_matrix,
-    public_skill_ids,
 )
+from scripts.public_skill_validation_lib import public_skill_ids
 
 
 def parse_args() -> argparse.Namespace:
