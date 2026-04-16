@@ -21,10 +21,15 @@ DEFAULT_REVIEW_PROMPTS = [
     "Treat unnecessary user-facing modes or options as pressure to simplify with stronger defaults and inference.",
     "Check trigger overlap or undertrigger risk against nearby public skills; a smart model still needs an honest invocation boundary.",
     "When the skill repeats prose ritual, prefer a repo-owned helper script over another paragraph.",
+    "Check installed-bundle portability: prose helper paths should not read like cwd-relative runtime commands when `$SKILL_DIR` is required.",
 ]
 
 MODE_TERMS_RE = re.compile(r"\bmode(?:s)?\b", re.IGNORECASE)
 OPTION_TERMS_RE = re.compile(r"\boption(?:s)?\b", re.IGNORECASE)
+BARE_HELPER_PATH_RE = re.compile(r"`scripts/[A-Za-z0-9._/-]+\.(?:py|sh|bash|zsh|js|ts|rb|pl|lua)`")
+SOURCE_TREE_FILE_PATH_RE = re.compile(
+    r"`skills/(?:public|support)/[A-Za-z0-9._-]+/[A-Za-z0-9._/-]+\.(?:md|py|sh|bash|zsh|js|ts|rb|pl|lua|yaml|yml|json)`"
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -60,6 +65,18 @@ def count_files(directory: Path) -> int:
     return sum(1 for path in directory.rglob("*") if path.is_file())
 
 
+def has_portable_path_ambiguity(lines: list[str]) -> bool:
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("- `scripts/"):
+            continue
+        if "$SKILL_DIR/scripts/" in line or "$SKILL_DIR/../" in line:
+            continue
+        if BARE_HELPER_PATH_RE.search(line) or SOURCE_TREE_FILE_PATH_RE.search(line):
+            return True
+    return False
+
+
 def inventory_skill(
     repo_root: Path,
     skill_path: Path,
@@ -89,6 +106,8 @@ def inventory_skill(
         heuristics.append("option_pressure_terms_present")
     if bootstrap_fence_count >= 3 and script_count == 0:
         heuristics.append("code_fence_without_helper_script")
+    if has_portable_path_ambiguity(prose_lines):
+        heuristics.append("portable_helper_path_ambiguity")
 
     skill_type = "support" if "support" in relative_skill.parts else "public"
     return {

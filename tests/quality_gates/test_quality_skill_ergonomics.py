@@ -66,3 +66,44 @@ def test_inventory_skill_ergonomics_reports_advisory_flags(tmp_path: Path) -> No
     }
     assert skill["bootstrap_fence_count"] == 3
     assert skill["review_prompts"]
+
+
+def test_inventory_skill_ergonomics_flags_portable_helper_path_ambiguity(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo" / "references"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "note.md").write_text("# Note\n", encoding="utf-8")
+    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "Use `scripts/helper.py` before stopping.",
+                "Cross-check `skills/public/other/SKILL.md` if the seam is ambiguous.",
+                "",
+                "## References",
+                "",
+                "- `references/note.md`",
+                "- `scripts/helper.py`",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    skill = payload["skills"][0]
+    assert "portable_helper_path_ambiguity" in skill["heuristics"]
+    assert any("installed-bundle portability" in item for item in skill["review_prompts"])

@@ -36,6 +36,8 @@ quality pass:
 - repeated `mode` / `option` language that may signal unnecessary user-facing
   branching
 - multiple code fences without helper scripts, which can signal prose ritual
+- prose helper-path ambiguity where bare `scripts/...` or source-tree file paths
+  can be misread as runtime instructions outside the source checkout
 
 Treat these as prompts, not automatic failures.
 
@@ -48,6 +50,7 @@ Advisory only unless the repo explicitly opts in:
 
 - mode/option pressure terms
 - progressive-disclosure risk
+- installed-bundle helper-path ambiguity review
 - trigger overlap / undertrigger review
 - broader progressive-disclosure judgment
 
