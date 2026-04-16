@@ -8,7 +8,8 @@ bar.
 Canonical machine-readable policy lives in
 [docs/public-skill-validation.json](public-skill-validation.json). This
 markdown file stays as the human-readable narrative and rationale layer for the
-same assignments.
+same assignments. Reviewed consumer-dogfood cases live in
+[docs/public-skill-dogfood.json](public-skill-dogfood.json).
 When a new public skill is missing from the policy, run
 `python3 scripts/suggest-public-skill-validation.py --repo-root .` to list the
 bucket choices before editing the JSON.
@@ -31,6 +32,9 @@ bucket choices before editing the JSON.
 - public-skill review should also inspect progressive disclosure honesty:
   `SKILL.md` owns selection and sequencing, while references deepen the chosen
   move without becoming a parallel workflow
+- load-bearing reviewed consumer prompts should stay explicit in
+  `docs/public-skill-dogfood.json`; that registry is operator-reviewed evidence,
+  not a fake claim of fully automated routing proof
 - the tier only describes extra validation beyond that baseline
 - the tier is routing metadata, not a claim that local CI already runs a
   distinct standing evaluator path for that skill today

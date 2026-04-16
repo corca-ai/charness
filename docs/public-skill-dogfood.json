@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "review_required_skills": [
+    "create-skill",
+    "handoff",
+    "quality"
+  ],
+  "cases": [
+    {
+      "skill_id": "create-skill",
+      "prompt": "Improve this skill package first so the trigger, references, and helper surface stay portable.",
+      "repo_shape": "skills repo with adjacent public/support surfaces, references, and packaging constraints already present",
+      "expected_skill": "create-skill",
+      "expected_artifact": null,
+      "validation_tier": "evaluator-required",
+      "adapter_requirement": "adapter-free",
+      "acceptance_evidence": [
+        "routes the prompt to `create-skill` instead of an adjacent public skill",
+        "does not invent host-specific adapter state when repo inspection alone should be enough",
+        "handles the skill's load-bearing contract without needing the user to restate obvious repo context",
+        "treats the public skill frontmatter and core trigger as classifier input, not only documentation",
+        "keeps `SKILL.md` as selection/sequence core and pushes bulky nuance into references or scripts"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The prompt asks to improve a skill package directly, which matches `create-skill` instead of generic implementation or release work.",
+        "The checked-in core now explicitly requires one realistic consumer prompt for public-skill changes and treats frontmatter plus generated AGENTS hints as classifier input.",
+        "The current scaffold resolves no adapter artifact for `create-skill`, which matches the adapter-free contract instead of inventing repo-local state."
+      ]
+    },
+    {
+      "skill_id": "quality",
+      "prompt": "Review the current quality posture and install the next deterministic gate if the move is obvious.",
+      "repo_shape": "mature repo with standing local gates, some drift or fragility, and at least one final stop-before-finish command",
+      "expected_skill": "quality",
+      "expected_artifact": "charness-artifacts/quality/latest.md",
+      "validation_tier": "hitl-recommended",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `quality` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/quality/latest.md` when the skill persists durable state",
+        "produces an output that a maintainer could review directly without re-deriving the whole request",
+        "runs or names the existing repo-owned quality gates before proposing new ones",
+        "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The checked-in adapter resolves the durable artifact to `charness-artifacts/quality/latest.md` and records the current gate commands under `.agents/quality-adapter.yaml`.",
+        "The public core now tells quality review to scaffold one consumer-side dogfood case when public-skill behavior or routing is in scope.",
+        "The current repo already has a standing quiet gate, runtime-budget policy, and maintainer-local enforcement surface, so the prompt lands on quality posture rather than a narrow bug skill."
+      ]
+    },
+    {
+      "skill_id": "handoff",
+      "prompt": "Use docs/handoff.md as the pickup surface and continue the next highest-leverage workflow from there.",
+      "repo_shape": "mature repo with an existing handoff artifact and enough adjacent state that the next pickup path can be ambiguous",
+      "expected_skill": "handoff",
+      "expected_artifact": "docs/handoff.md",
+      "validation_tier": "evaluator-required",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `handoff` instead of an adjacent public skill",
+        "names or refreshes `docs/handoff.md` when the skill persists durable state",
+        "handles the skill's load-bearing contract without needing the user to restate obvious repo context",
+        "reads the current workflow trigger before broad repo exploration and keeps the baton pass continuation-first"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The current handoff is a checked-in canonical artifact and the adapter resolves directly to `docs/handoff.md`.",
+        "The public core says mention-only pickup should continue the workflow named in the trigger rather than re-deriving state from scratch.",
+        "The size gate and continuation-first rewrite rules keep the pickup path explicit, which matches the repo's current use of handoff as the first read surface."
+      ]
+    }
+  ]
+}

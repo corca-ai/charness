@@ -174,8 +174,10 @@ Read first:
 
 - [skills/public/create-skill/SKILL.md](../skills/public/create-skill/SKILL.md)
 - [skills/public/spec/SKILL.md](../skills/public/spec/SKILL.md)
+- [docs/public-skill-dogfood.md](public-skill-dogfood.md)
 - [scripts/check-skill-contracts.py](../scripts/check-skill-contracts.py)
 - [scripts/run-evals.py](../scripts/run-evals.py)
+- [scripts/validate-public-skill-dogfood.py](../scripts/validate-public-skill-dogfood.py)
 
 Suggested agent prompt:
 

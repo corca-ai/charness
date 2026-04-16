@@ -112,6 +112,26 @@
       ]
     },
     {
+      "surface_id": "public-skill-dogfood",
+      "description": "Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.",
+      "source_paths": [
+        "skills/public/**",
+        "docs/public-skill-dogfood.json",
+        "docs/public-skill-dogfood.md",
+        "scripts/public_skill_dogfood_lib.py",
+        "scripts/suggest-public-skill-dogfood.py",
+        "scripts/validate-public-skill-dogfood.py"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/validate-public-skill-dogfood.py --repo-root ."
+      ],
+      "notes": [
+        "When a reviewed consumer dogfood case drifts from current skill contracts, refresh the scaffold first and only then update the checked-in review observations."
+      ]
+    },
+    {
       "surface_id": "profiles-and-presets",
       "description": "Profile and preset bundles that define packaged defaults.",
       "source_paths": [

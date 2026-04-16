@@ -75,6 +75,7 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         ("validate-skill-ergonomics", "validate_skill_ergonomics.py"),
         ("validate-surfaces", "validate-surfaces.py"),
         ("validate-public-skill-validation", "validate-public-skill-validation.py"),
+        ("validate-public-skill-dogfood", "validate-public-skill-dogfood.py"),
         ("validate-cautilus-scenarios", "validate-cautilus-scenarios.py"),
         ("validate-profiles", "validate-profiles.py"),
         ("validate-presets", "validate-presets.py"),
