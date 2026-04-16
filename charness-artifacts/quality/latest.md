@@ -1,125 +1,126 @@
 # Quality Review
-Date: 2026-04-15
+Date: 2026-04-16
 
 ## Scope
 
-Repo-wide quality posture for the current `charness` tree. Current gates enforce
-aggregate and per-file coverage, test-production ratio, recent-median runtime
-budgets, first-pass specdown dogfood, and advisory HITL handoff inventory.
+Repo-wide quality posture for the current `charness` tree, with emphasis on
+turning existing standing-gate failures and nearby advisory pressure into
+maintainable structural fixes rather than one-off bypasses.
 
 ## Current Gates
 
 - `.agents/quality-adapter.yaml` records gate, review, preflight, security,
   runtime-budget, concept-path, and prompt-asset policy fields.
-- `./scripts/run-quality.sh` is the quiet maintainer-local/pre-push gate;
-  `--review` replays PASS logs and enables online declared-link validation.
-- `check-coverage` now enforces both the `60.0%` aggregate control-plane floor
-  and an `85.0%` per-file floor for every tracked control-plane file.
+- `./scripts/run-quality.sh` is the canonical local quality gate; `--review`
+  replays PASS logs and enables online declared-link validation.
+- `check-coverage` enforces both the `60.0%` aggregate control-plane floor and
+  an `85.0%` per-file floor for every tracked control-plane file.
 - `check-test-production-ratio` enforces a Python test/source ratio ceiling of
   `1.00` using source-of-truth Python files, excluding generated plugin exports.
-- `specdown run -quiet -no-report` is now part of the quiet quality gate. The
-  first spec covers stable CLI operator contracts by delegating to focused
-  pytest e2e targets instead of introducing a custom adapter.
-- `inventory-quality-handoff` is now part of `run-quality.sh`; it is advisory
-  and reports missing HITL handoff fields for `NON_AUTOMATABLE`
-  recommendations.
+- `check-python-lengths` and `check-duplicates --fail-on-match` now matter
+  operationally: this slice had to satisfy them through seam extraction and
+  wrapper reduction, not through threshold changes.
+- `specdown run -quiet -no-report` remains part of the quiet quality gate.
+- `inventory-quality-handoff` remains advisory and reports missing HITL handoff
+  fields for `NON_AUTOMATABLE` recommendations.
 - `.githooks/pre-push` syncs checked-in plugin exports, fails on generated
   export drift, then runs the quiet quality gate.
 
 ## Runtime Signals
 
-- Latest local quality gate after this slice: `37 passed, 0 failed`, total
-  `53.1s`; runtime budgets fail on recent-median drift.
-- runtime hot spots: `pytest` `30.4s`, `check-coverage` `14.5s`,
-  `run-evals` `4.5s`, `specdown` `4.1s`, `check-markdown` `4.0s`.
-- Budgeted phases: `pytest` median `27.4s / 40.0s`,
-  `check-coverage` median `9.6s / 15.0s`, `check-secrets` median `2.8s / 5.0s`,
-  `run-evals` median `1.9s / 5.0s`, `specdown` median `4.4s / 5.0s`.
-- runtime signals continue to persist under `.charness/quality/`.
+- Latest local review gate after this slice: `38 passed, 0 failed`, total
+  `49.1s`.
+- runtime hot spots: `pytest` `29.6s`, `check-coverage` `11.2s`,
+  `specdown` `7.8s`, `check-secrets` `3.2s`, `run-evals` `2.4s`.
+- coverage gate: enforced and passing at aggregate `60.0%` plus per-file
+  `85.0%`; current result is `90.6%` (`1152/1272`).
+- evaluator depth: `run-evals` passes 19 repo-local scenarios, so the bar is
+  stronger than smoke-only review.
+- Budgeted phases: `pytest` median `28.1s / 40.0s`,
+  `check-coverage` median `9.9s / 15.0s`, `check-secrets` median `3.0s / 5.0s`,
+  `run-evals` median `2.3s / 5.0s`, `specdown` median `7.3s / 8.0s`.
+- Runtime signals continue to persist under `.charness/quality/`.
 
 ## Coverage and Eval Depth
 
-- coverage gate: `89.9%` (`1127/1254`) against the `60.0%` aggregate
-  floor and `85.0%` per-file floor.
-- weakest tracked files are `upstream_release_lib.py` `87.6%`,
-  `control_plane_lib.py` `88.1%`, and `install_tools.py` `88.2%`; these are
-  above the floor but still ratchet candidates.
-- direct trace scenarios cover lifecycle helpers, install provenance,
-  support sync, update/install lifecycle branches, and upstream release errors.
-- `specs/tool-doctor.spec.md` covers the stable specdown doctor contract and
-  repo-local task envelope at the operator behavior level; fixture-heavy branch
-  assertions remain in pytest.
-- test-production ratio is `0.54` (`9345/17425` Python lines), under the `1.00`
-  ceiling.
-- `check-test-completeness` verifies that standing pytest targets collect all tests.
-- evaluator depth: `run-evals` passes 19 repo-local scenarios.
+- Coverage gate: `90.6%` (`1152/1272`) against the `60.0%` aggregate floor and
+  `85.0%` per-file floor.
+- Test-production ratio is `0.52` (`10253/19626` Python lines), under the
+  `1.00` ceiling.
+- Standing pytest passes at `287 passed`; `run-evals` passes 19 repo-local
+  scenarios.
+- Weakest tracked files are still warn-band candidates:
+  `support_sync_lib.py` `87.7%`, `upstream_release_lib.py` `87.6%`,
+  `control_plane_lib.py` `88.1%`, `install_tools.py` `88.6%`.
+- Specdown remains intentionally narrow and honest; the current bar is stronger
+  than smoke-only but still not broad behavioral parity coverage.
 
 ## Healthy
 
-- Runtime budget enforcement now distinguishes latest-sample spikes from
-  recent-median drift.
-- Every tracked control-plane file has an enforced `85.0%` floor and
-  test-surface growth has a hard ratio ceiling.
-- Specdown dogfood is now executable but intentionally narrow: one stable
-  external-tool readiness behavior plus one task-envelope behavior, no custom
-  adapter, and no duplicated shell fixture setup.
-- `charness task` now provides a repo-local claim/submit/abort/status envelope
-  under `.charness/tasks/` for bounded agent continuation.
-- `gitleaks` `8.30.1`, `go` `1.26.2`, `specdown` `0.47.2`, and `cautilus`
-  `0.2.4` are detected and healthy locally.
+- Standing gate failures were removed through structural simplification:
+  `docs/handoff.md` was tightened below the enforced artifact limit, overlong
+  skill-side helper scripts were split through repo-level helper libs, and
+  duplicate `init_adapter.py` helpers were collapsed into thin wrappers.
+- Thin skill-side wrappers now preserve path-loaded compatibility for
+  `load_adapter` callers while keeping the actual adapter logic in repo-level
+  seams that are easier to test and reuse.
+- Plugin exports were resynced so the repo and shipped plugin tree now agree on
+  the new helper seams.
+- Lint-ignore inventory is currently clean: no blanket, file-level, or inline
+  suppression debt was needed to make this slice pass.
 
 ## Weak
 
-- Several control-plane files sit close to the `85.0%` floor;
-  `upstream_release_lib.py`, `control_plane_lib.py`, and `install_tools.py` are
-  the next cleanup targets.
-- Skill and entrypoint-doc ergonomics inventories remain advisory; they still
-  flag long public cores, mode/option pressure, and long first-touch docs.
-- `agent-browser` is installed at `0.25.3` while latest is `0.25.4`;
-  `cautilus` is installed at `0.2.4` while latest is `0.4.0`; `gws` is
-  installed at `0.18.1` while latest is `0.22.5`.
-- The task envelope is intentionally local state only; it is not yet integrated
-  into handoff, HITL, or any multi-agent scheduler.
+- Entry-point doc ergonomics remain advisory pressure, not hard failures:
+  `README.md` still flags `long_entrypoint` and mode-pressure terms,
+  `docs/operator-acceptance.md` still flags `long_entrypoint`,
+  `AGENTS.md` and `UNINSTALL.md` still flag mode/option-pressure wording.
+- Skill ergonomics remain advisory pressure in a few large public cores:
+  `create-skill`, `quality`, and `spec` still flag `long_core`,
+  while `create-skill`, `init-repo`, `quality`, `retro`, and `spec` still flag
+  mode-pressure terms.
+- Coverage warn-band files remain above the floor but are still the most honest
+  next cleanup targets; more tests are not automatically the right move if the
+  branches can be deleted or simplified first.
 
 ## Missing
 
 - No automated ratchet planner exists yet for deciding when the next per-file
-  floor increase is honest.
-- No dedicated specdown adapter exists yet. That remains acceptable until
-  multiple specs start repeating the same setup or JSON extraction.
+  coverage floor increase is honest.
+- No hard gate yet exists for the current skill or entrypoint-doc ergonomics
+  inventories; they still depend on maintainer judgment.
 
 ## Deferred
 
-- Keep `check-supply-chain-online` out of default `--review`; registry
-  reachability remains an operator-triggered diagnostic until a triage owner is
-  assigned for provider outages.
-- Do not update `gws` or `agent-browser` automatically from quality review; both
-  are host-local tools and should move through the control-plane update flow.
-- Do not turn skill ergonomics inventory into a hard gate until specific rules
-  are selected in `skill_ergonomics_gate_rules`.
+- Do not promote skill or entrypoint-doc ergonomics into a hard gate until the
+  repo selects a narrower rule subset that reflects actual portability and
+  discoverability goals rather than generic prose taste.
+- Do not add a dedicated specdown adapter until multiple specs start repeating
+  the same setup or extraction work.
+- Do not solve warn-band coverage mechanically with more tests if the better
+  next move is deletion or branch flattening in the underlying code.
 
 ## Commands Run
 
-- quality gate, specdown acceptance, adapter/package/doc validators, and local
-  tool probes
+- focused structural validators, focused pytest around the touched seams, and
+  full `./scripts/run-quality.sh --review`
 
 ## Recommended Next Gates
 
-- active `AUTO_CANDIDATE`: refactor or delete code around `upstream_release_lib.py`,
-  `control_plane_lib.py`, and `install_tools.py` before adding more tests; they
-  are now the weakest tracked files near the enforced `85.0%` floor.
-- active `AUTO_CANDIDATE`: add a small ratchet-planning report if future floor
-  moves keep depending on manual inspection of the warn band.
-- active `AUTO_CANDIDATE`: dogfood `charness task` in one real repo slice before
-  broadening its semantics; the next separate sah-derived candidate is doctor
-  next-action ergonomics.
-- passive `NON_AUTOMATABLE`: because this needs maintainer judgment, decide
-  whether `recent-lessons.md` should become a bounded rolling digest. HITL handoff: `target=recent-lessons.md`,
-  `review_question=should recurring traps be retained beyond the latest
-  retro`, `decision_needed=latest-only vs bounded rolling digest`,
-  `must_not_auto_decide=true`, `observation_point=after next retro-producing
-  session`, `revisit_cadence=after meaningful work units`,
-  `automation_candidate=only after the human selects retention rules`.
+- active `AUTO_CANDIDATE`: reduce complexity in `support_sync_lib.py`,
+  `upstream_release_lib.py`, `control_plane_lib.py`, and `install_tools.py`
+  before widening tests again; the warn band is now the sharpest deterministic
+  signal.
+- active `AUTO_CANDIDATE`: tighten `README.md` and
+  `docs/operator-acceptance.md` so first-touch docs orient and link rather than
+  carry the whole procedure inline.
+- active `AUTO_CANDIDATE`: shrink long public skill cores in `create-skill`,
+  `quality`, and `spec` by moving repeated rationale into references or helper
+  scripts.
+- passive `NON_AUTOMATABLE`: because these heuristics should stay advisory
+  until a narrower, defensible rule set is chosen, decide which ergonomics
+  heuristics are strong enough to graduate from advisory inventory to a real
+  gate.
 
 ## History
 

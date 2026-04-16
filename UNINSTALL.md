@@ -6,6 +6,11 @@ surface.
 The goal is to remove the host integration, not to mutate the `charness`
 source-of-truth repo unless the user explicitly asks for that.
 
+Related install-surface owners:
+
+- [INSTALL.md](INSTALL.md) for the managed install/update contract
+- [docs/host-packaging.md](docs/host-packaging.md) for host surface ownership
+
 ## Guardrails
 
 - do not delete tracked repo manifests from the `charness` source checkout just
