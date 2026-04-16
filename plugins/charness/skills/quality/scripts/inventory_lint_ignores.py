@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import re
+import tokenize
 from pathlib import Path
 from typing import Any
 
@@ -86,10 +88,84 @@ def _record_finding(
     )
 
 
+def _inventory_python_comments(repo_root: Path, path: Path, text: str, findings: list[dict[str, Any]]) -> bool:
+    try:
+        tokens = tokenize.generate_tokens(io.StringIO(text).readline)
+    except tokenize.TokenError:
+        return False
+
+    for token in tokens:
+        if token.type != tokenize.COMMENT:
+            continue
+        line_no, column = token.start
+        comment = token.string
+        raw = token.line
+        if match := PYTHON_RUFF_FILE_RE.match(comment):
+            _record_finding(
+                findings,
+                repo_root=repo_root,
+                path=path,
+                line_no=line_no,
+                tool="ruff",
+                scope="file",
+                codes=_parse_codes(match.group("codes")),
+                raw=raw,
+            )
+        for match in PYTHON_PYLINT_RE.finditer(comment):
+            _record_finding(
+                findings,
+                repo_root=repo_root,
+                path=path,
+                line_no=line_no,
+                tool="pylint",
+                scope="file" if column == 0 else "inline",
+                codes=_parse_codes(match.group("codes")),
+                raw=raw,
+            )
+        for match in PYTHON_NOQA_RE.finditer(comment):
+            if "ruff:" in comment[: match.start()].lower():
+                continue
+            scope = "file" if column == 0 and comment.lstrip().lower().startswith("# noqa") else "inline"
+            _record_finding(
+                findings,
+                repo_root=repo_root,
+                path=path,
+                line_no=line_no,
+                tool="noqa",
+                scope=scope,
+                codes=_parse_codes(match.group("codes")),
+                raw=raw,
+            )
+    return True
+
+
+def _inventory_text_lines(repo_root: Path, path: Path, text: str, findings: list[dict[str, Any]]) -> None:
+    for line_no, line in enumerate(text.splitlines(), start=1):
+        for match in ESLINT_RE.finditer(line):
+            _record_finding(
+                findings,
+                repo_root=repo_root,
+                path=path,
+                line_no=line_no,
+                tool="eslint",
+                scope="file" if match.group("scope") is None else "inline",
+                codes=_parse_codes(match.group("codes")),
+                raw=line,
+            )
+
+
 def inventory(repo_root: Path) -> dict[str, Any]:
     findings: list[dict[str, Any]] = []
     for path in _iter_candidate_files(repo_root):
         text = path.read_text(encoding="utf-8", errors="replace")
+        handled_python = path.suffix.lower() in {".py", ".pyi"} and _inventory_python_comments(repo_root, path, text, findings)
+        if handled_python:
+            _inventory_text_lines(repo_root, path, text, findings)
+            continue
+
+        _inventory_text_lines(repo_root, path, text, findings)
+        if path.suffix.lower() not in {".py", ".pyi"}:
+            continue
         for line_no, line in enumerate(text.splitlines(), start=1):
             if match := PYTHON_RUFF_FILE_RE.match(line):
                 _record_finding(
@@ -125,17 +201,6 @@ def inventory(repo_root: Path) -> dict[str, Any]:
                     line_no=line_no,
                     tool="noqa",
                     scope=scope,
-                    codes=_parse_codes(match.group("codes")),
-                    raw=line,
-                )
-            for match in ESLINT_RE.finditer(line):
-                _record_finding(
-                    findings,
-                    repo_root=repo_root,
-                    path=path,
-                    line_no=line_no,
-                    tool="eslint",
-                    scope="file" if match.group("scope") is None else "inline",
                     codes=_parse_codes(match.group("codes")),
                     raw=line,
                 )

@@ -175,7 +175,7 @@ for py_path in sorted(plugin_root.rglob("*.py")):
         spec.loader.exec_module(module)
     except SystemExit:
         continue
-    except BaseException as exc:  # noqa: BLE001
+    except Exception as exc:
         errors.append(f"{rel}: {type(exc).__name__}: {exc}")
 if errors:
     for line in errors:

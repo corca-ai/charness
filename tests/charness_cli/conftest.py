@@ -1,1 +1,1 @@
-from .support import seeded_managed_home  # noqa: F401
+pytest_plugins = ["tests.charness_cli.support"]

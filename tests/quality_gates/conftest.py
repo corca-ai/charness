@@ -1,1 +1,1 @@
-from .support import seeded_quality_runner_repo  # noqa: F401
+pytest_plugins = ["tests.quality_gates.support"]

@@ -1,19 +1,15 @@
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
-from .support import run_script, seed_control_plane_repo
-
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
-
-from scripts.control_plane_lib import (  # noqa: E402
+from scripts.control_plane_lib import (
     load_lock_schema,
     read_lock,
     validate_lock_data,
 )
+
+from .support import run_script, seed_control_plane_repo
 
 
 def _seed_tools_dir(repo: Path) -> None:

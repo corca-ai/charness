@@ -61,3 +61,31 @@ def test_inventory_lint_ignores_reports_file_level_and_inline_suppressions(tmp_p
     assert ("web/demo.ts", "eslint", "file", ("no-console",), False) in findings
     assert ("web/demo.ts", "eslint", "inline", ("no-alert",), False) in findings
     assert any("structural seam" in item for item in payload["review_prompts"])
+
+
+def test_inventory_lint_ignores_skips_python_string_literals(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "scripts" / "demo.py").write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                'PATTERN = r"# noqa(?:: (?P<codes>.*))?"',
+                'TEXT = "import sys  # noqa: F401"',
+                'COMMENT = "/* eslint-disable no-console */"',
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_lint_ignores.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["summary"]["ignore_count"] == 0
+    assert payload["findings"] == []

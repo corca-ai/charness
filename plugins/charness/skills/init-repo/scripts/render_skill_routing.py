@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-# ruff: noqa: T201
 
 from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 CURATED_HINTS = {
@@ -95,9 +95,9 @@ def main() -> int:
     args = parser.parse_args()
     payload = build_payload(args.repo_root.resolve())
     if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
     else:
-        print(payload["markdown"], end="")
+        sys.stdout.write(str(payload["markdown"]))
     return 0
 
 

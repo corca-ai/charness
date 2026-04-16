@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# ruff: noqa: T201
 
 from __future__ import annotations
 
 import argparse
 import importlib.util
 import json
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -220,7 +220,7 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, required=True)
     args = parser.parse_args()
     payload = build_payload(args.repo_root.resolve())
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
     return 0
 
 
