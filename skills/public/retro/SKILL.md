@@ -101,8 +101,8 @@ The result should usually include:
 - Trigger a short `session` retro automatically when a user correction exposes a
   real miss in the workflow, not just a preference difference.
 - Also trigger a short `session` retro after slice closeout when
-  `scripts/check_auto_trigger.py` reports `triggered: true` for the current
-  repo (for example via `python3 scripts/check_auto_trigger.py --repo-root .`).
+  `$SKILL_DIR/scripts/check_auto_trigger.py` reports `triggered: true` for the current
+  repo (for example via `python3 "$SKILL_DIR/scripts/check_auto_trigger.py" --repo-root .`).
   Keep this bounded to the configured repeat-trap seam rather than turning
   every slice into a postmortem.
 - Treat valid examples such as:

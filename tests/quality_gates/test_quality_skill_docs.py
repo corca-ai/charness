@@ -14,7 +14,7 @@ def test_quality_skill_carries_explicit_skill_ergonomics_lens() -> None:
         ROOT / "skills" / "public" / "quality" / "references" / "skill-quality.md"
     ).read_text(encoding="utf-8")
 
-    assert "inventory_skill_ergonomics.py" in skill_text
+    assert "$SKILL_DIR/scripts/inventory_skill_ergonomics.py" in skill_text
     assert "skill ergonomics" in skill_text
     assert "mode/option pressure" in skill_text
     assert "taste policing" in skill_text
@@ -32,7 +32,7 @@ def test_quality_skill_carries_entrypoint_docs_ergonomics_lens() -> None:
         ROOT / "skills" / "public" / "quality" / "references" / "entrypoint-docs-ergonomics.md"
     ).read_text(encoding="utf-8")
 
-    assert "inventory_entrypoint_docs_ergonomics.py" in skill_text
+    assert "$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py" in skill_text
     assert "entrypoint-doc ergonomics" in skill_text
     assert "smart agent/operator can infer safely" in skill_text
     assert "less is more" in ergonomics
@@ -50,7 +50,7 @@ def test_quality_skill_carries_cli_ergonomics_smells_lens() -> None:
         ROOT / "skills" / "public" / "quality" / "references" / "cli-ergonomics-smells.md"
     ).read_text(encoding="utf-8")
 
-    assert "inventory_cli_ergonomics.py" in skill_text
+    assert "$SKILL_DIR/scripts/inventory_cli_ergonomics.py" in skill_text
     assert "flat help-list" in skill_text
     assert "multiple archetype schema namespaces" in skill_text
     assert "Flat `--help` Lists" in cli_smells
@@ -64,7 +64,7 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
         ROOT / "skills" / "public" / "quality" / "references" / "standing-gate-verbosity.md"
     ).read_text(encoding="utf-8")
 
-    assert "inventory_standing_gate_verbosity.py" in skill_text
+    assert "$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py" in skill_text
     assert "verbose-on-demand escape hatch" in skill_text
     assert "standing-gate-verbosity.md" in skill_text
     assert "Test-runner reporter" in verbosity

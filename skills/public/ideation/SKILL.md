@@ -27,14 +27,14 @@ Read only the context that reduces uncertainty for the current idea.
 # Missing-binary protocol: create-skill/references/binary-preflight.md
 # 1. repo and adjacent design context
 rg --files docs skills
-sed -n '1,220p' docs/handoff.md
+sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 
 # 2. existing concept or design files when they exist
 rg -n "idea|concept|design|entity|stage|workflow|user|customer|problem" .
 
 # 3. adjacent charness skill boundaries
-sed -n '1,220p' skills/public/create-skill/SKILL.md
-sed -n '1,220p' skills/public/retro/SKILL.md
+sed -n '1,220p' "$SKILL_DIR/../create-skill/SKILL.md" 2>/dev/null || true
+sed -n '1,220p' "$SKILL_DIR/../retro/SKILL.md" 2>/dev/null || true
 ```
 
 If the repo already contains a design or concept doc, preserve it and sharpen it

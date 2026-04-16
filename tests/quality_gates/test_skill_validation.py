@@ -171,7 +171,7 @@ def test_validate_skills_accepts_public_skill_with_many_fenced_examples_when_scr
                 "```",
                 "",
                 "```bash",
-                "python3 scripts/helper.py",
+                'python3 "$SKILL_DIR/scripts/helper.py"',
                 "```",
                 "",
                 "## References",
@@ -358,6 +358,29 @@ def test_validate_skills_allows_local_script_invocation(tmp_path: Path) -> None:
     )
     result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
+
+
+def test_validate_skills_rejects_cwd_relative_runtime_script_invocation(tmp_path: Path) -> None:
+    repo = make_public_skill_with_bootstrap(
+        tmp_path,
+        "python3 scripts/helper.py --repo-root .",
+    )
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir()
+    (scripts_dir / "helper.py").write_text("print('ok')\n", encoding="utf-8")
+    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "cwd-relative" in result.stderr
+
+
+def test_validate_skills_rejects_source_tree_skill_invocation(tmp_path: Path) -> None:
+    repo = make_public_skill_with_bootstrap(
+        tmp_path,
+        "sed -n '1,220p' skills/public/demo/SKILL.md",
+    )
+    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "source-tree skill path" in result.stderr
 
 
 def test_validate_skills_support_skill_skips_preflight_gate(tmp_path: Path) -> None:
