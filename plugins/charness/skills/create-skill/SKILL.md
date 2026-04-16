@@ -95,6 +95,7 @@ skill before writing from scratch.
      repeated steps
 6. Verify before stopping.
    - cold-start test from repo root
+   - for public-skill changes, run one realistic consumer prompt instead of stopping at producer-side validators; use `python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id <skill-id>` to scaffold prompt, repo shape, expected artifact, and acceptance evidence
    - trigger collision check against adjacent skills
    - path check for every file named in the skill
    - schema or example validation for any profile, preset, or manifest touched
@@ -134,6 +135,9 @@ skill before writing from scratch.
 - If a skill needs the same bootstrap, adapter resolution, artifact upsert, or
   recovery step more than once, ship a helper script instead of leaving the
   behavior as prose-only ritual.
+- Treat public-skill frontmatter and generated AGENTS hints as classifier input,
+  not only documentation; prove at least one realistic consumer prompt for the
+  changed skill before calling the slice done.
 - When adding a high-leverage reasoning or review pattern to one public skill,
   inspect adjacent public skills for obvious propagation opportunities before
   stopping.

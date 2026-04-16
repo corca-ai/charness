@@ -44,6 +44,8 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "metadata rich enough to reveal capability kind and supported access modes",
         "express them as manifest readiness checks",
         "If a skill needs the same bootstrap, adapter resolution, artifact upsert, or",
+        "Treat public-skill frontmatter and generated AGENTS hints as classifier input",
+        "python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id <skill-id>",
         # Binary Preflight Philosophy — pins the lazy-preflight contract so
         # that future edits cannot silently drop the "declare, detect, ask"
         # loop or the CHARNESS_BASELINE / CHARNESS_BINARY_PREFLIGHT names.
@@ -78,6 +80,8 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "implementing that gate in the same turn",
         "when the automatable move is already clear and repo-owned, implement it in",
         "If you stop short of an obvious repo-owned deterministic gate",
+        "scaffold one consumer-side dogfood case with `python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id <skill-id>`",
+        "Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior",
     ),
     "skills/public/narrative/SKILL.md": (
         "map the current source-of-truth surface",

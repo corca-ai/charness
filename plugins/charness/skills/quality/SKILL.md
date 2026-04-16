@@ -78,11 +78,11 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
    - if evaluator-backed review or prompt-sensitive output matters, inspect whether prompt/content bulk stays in checked-in assets or is still embedded inline in source files
    - when skills are in scope, inventory skill ergonomics explicitly with `scripts/inventory_skill_ergonomics.py` instead of leaving concise-core, progressive-disclosure, or mode-pressure review as vague prose
+   - when public-skill behavior or routing is in scope, scaffold one consumer-side dogfood case with `python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id <skill-id>` so the review names prompt, repo shape, expected artifact, and acceptance evidence explicitly
    - when the adapter defines `prompt_asset_roots` or `prompt_asset_policy`, re-derive prompt/content bulk inventory from the current tree instead of trusting prior review prose
    - if the repo keeps standing coverage floors, tag seams within `coverage_fragile_margin_pp` as `FRAGILE` instead of burying near-miss risk in prose
    - for blind-spot prevention, apply `references/coverage-floor-policy.md`: adapter-owned `coverage_floor_policy`, real unfloored-file inventory, and `Covered by pytest:` reference validation when those notes exist
-   - maintainer-local enforcement for the final stop-before-finish gate: a checked-in hook, installer, or explicit no-hook policy
-   - whether the next move is review-only or a bounded bootstrap/install pass
+   - maintainer-local enforcement for the final stop-before-finish gate: a checked-in hook, installer, or explicit no-hook policy, and whether the next move is review-only or a bounded bootstrap/install pass
 3. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
    - keep the run bounded to the current scope when the task is not repo-wide
@@ -131,8 +131,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - which runtime hot spots dominate the current bar
    - whether coverage is standing-gated, indirect, or absent
    - whether evaluator-backed depth exists, or whether the deeper bar is still smoke plus HITL
-   - what the current bar proves
-   - what it still does not prove
+   - what the current bar proves and still does not prove
    - the next best gate or cleanup to add
 
 - `Scope`, `Current Gates`, `Runtime Signals`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Commands Run`, `Recommended Next Gates`
@@ -154,6 +153,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - If a stronger check would require an external tool, support skill, or permission, say so explicitly.
 - If a missing binary or local setup step would materially improve confidence, recommend installing it with the reason and exact command or package family.
 - Do not let whole-worktree scans fail on gitignored runtime artifacts unless the gate explicitly exists to validate that machine-local state.
+- Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior; run one realistic consumer prompt and name the expected artifact.
 - Do not collapse help, command discovery, healthcheck, readiness, and local discoverability into one generic "doctor passed" claim when the repo ships an installable CLI or plugin surface.
 - Do not ignore a 30-command flat help list or a subcommand that accepts multiple archetype schema namespaces; those are discoverability smells.
 - Do not treat a historical second implementation as a free safety oracle when no parity harness proves the two paths still agree.

@@ -37,13 +37,20 @@
 - GitHub 이슈 #25-#31은 `main`에 반영했고 모두 close했다. Retro 결론은
   producer-side gate만으로는 부족하고 consumer-side dogfood matrix가 필요하다는
   것이다.
+- `scripts/suggest-public-skill-dogfood.py`가 public skill별
+  prompt/repo shape/expected artifact/acceptance evidence matrix를
+  scaffold한다. `create-skill`과 `quality`는 이제 public-skill 변경 시 이
+  helper로 최소 1개 consumer prompt를 잡게 되어 있다.
 - Packaging/plugin release surface는 `0.0.7`로 bump되어 `main`에 push됐다.
 
 ## Next Session
 
 1. `git status --short`를 먼저 확인한다.
-2. Dogfood 개선으로 이어가면 `charness-artifacts/retro/recent-lessons.md`의
-   consumer-side dogfood matrix 항목을 먼저 구현 후보로 본다.
+2. Dogfood 개선으로 이어가면 `python3 scripts/suggest-public-skill-dogfood.py
+   --repo-root . --skill-id <skill-id>`로 실제 consumer prompt를 뽑아
+   `create-skill`, `quality`, `handoff` 같은 load-bearing skill부터 real
+   prompt dogfood를 실행한다. 다음 작은 목표는 helper 자체가 아니라 실제
+   acceptance evidence를 남기는 것이다.
 3. Release follow-up이 필요하면 `charness-artifacts/release/latest.md`와
    `current_release.py` 상태를 먼저 확인한다. `0.0.7` 태그/게시 릴리스는 아직 만들지 않았다.
 4. sah/specdown lesson line을 이어간다면 다음 작은 CLI 후보는 task
@@ -71,4 +78,3 @@
 - [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md)
 - [charness-artifacts/retro/recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)
 - [charness-artifacts/retro/2026-04-15-coverage-floor-runtime-budget.md](../charness-artifacts/retro/2026-04-15-coverage-floor-runtime-budget.md)
-- [charness-artifacts/debug/2026-04-15-retro-memory-test-anchor.md](../charness-artifacts/debug/2026-04-15-retro-memory-test-anchor.md)
