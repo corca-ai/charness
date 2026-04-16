@@ -74,6 +74,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - when the repo may keep one shipped implementation beside a historical or alternate runtime path, inventory likely dual-implementation parity smells with `$SKILL_DIR/scripts/inventory_dual_implementation.py`, then decide whether the relationship is parity-enforced, canonical-plus-legacy, or intentional divergence
    - when first-touch operator/developer/agent docs are in scope, inventory entrypoint-doc ergonomics with `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py`
    - when fixed-string source guards touch prose, inventory hard-wrap fragility with `$SKILL_DIR/scripts/inventory_brittle_source_guards.py`; see `references/brittle-source-guards.md`
+   - when lint suppressions start to accumulate, inventory lint suppression pressure with `$SKILL_DIR/scripts/inventory_lint_ignores.py`; blanket or file-level ignores should be explicit review targets, not invisible background debt
    - inspect README / INSTALL / operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist; when the CLI surface is stable, prefer a deterministic command-docs drift gate over repeated prose review
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
    - if evaluator-backed review or prompt-sensitive output matters, inspect whether prompt/content bulk stays in checked-in assets or is still embedded inline in source files
@@ -85,9 +86,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - maintainer-local enforcement for the final stop-before-finish gate: a checked-in hook, installer, or explicit no-hook policy, and whether the next move is review-only or a bounded bootstrap/install pass
 3. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
-   - keep the run bounded to the current scope when the task is not repo-wide
    - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage
-   - for timing/logs/retention signals, workflow-runtime drift, and retention signals, see `references/operability-signals.md`
    - when a standing gate already exists, prefer compact default phase output plus a verbose-on-demand escape hatch over always-on chatter; see `references/standing-gate-verbosity.md`
    - when a hot spot becomes the standing single dominator, define a `runtime_budgets` entry in the adapter and call `$SKILL_DIR/scripts/check-runtime-budget.py` from the repo's standing gate; budgets fail the gate on recent-median drift and report single latest-sample spikes separately
 4. Inspect four quality lenses.
@@ -99,7 +98,6 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - when executable specs exist, classify smoke vs behavior using the adapter's `specdown_smoke_patterns`, report the ratio, and treat bounded test-ratio posture as a named positive pattern when the repo constrains both under-testing and test-surface inflation
    - `security`: are there meaningful code, secret, or supply-chain risks
    - `operability`: are setup, CI, install/update docs, and maintenance surfaces honest enough to sustain the quality bar
-   - treat checked-in hook config, a repo-owned hook installer/checker, and repo-owned install paths for extra gate binaries as a first-class positive pattern, not only the absence of a missing gap
    - make skill ergonomics explicit: concise `SKILL.md` core, progressive disclosure honesty, unnecessary mode/option pressure, trigger overlap/undertrigger risk, and prose ritual that should become a helper script
    - when the repo keeps major entrypoint docs, include entrypoint-doc ergonomics review: concise first-touch ownership, progressive disclosure into deeper owners, duplicate pressure between nearby entry docs, and whether the prose overexplains branches a smart agent/operator can infer safely
    - make evaluator depth explicit: smoke only, maintained evaluator-backed, or still smoke plus HITL
@@ -144,6 +142,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not recommend verbose or permanent logs without naming who will read them and how they stay bounded.
 - Do not leave loud default test reporters or interleaved parallel hook output unpriced when they hide which standing gate failed.
 - Do not leave an automatable quality rule as prose-only guidance when a linter, validator, test, hook, or script could own it.
+- Do not normalize growing lint suppressions as harmless cleanup debt; inventory them and ask whether structure should absorb the rule instead.
 - If you stop short of an obvious repo-owned deterministic gate, name that as an unresolved enforcement gap explicitly.
 - Do not treat a passing final local gate as sufficient posture when clones have no repo-owned way to run it before push and no documented no-hook waiver.
 - Do not propose generic "add more tests" or "improve security" without naming the actual seam, the next concrete setup, or whether the test surface now needs a maintainability gate.
@@ -191,6 +190,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - `references/bootstrap-posture.md`
 - `references/operability-signals.md`
 - `references/brittle-source-guards.md`
+- `references/lint-ignore-discipline.md`
 - `references/sample-presets.md`
 - `references/executable-spec-economics.md`
 - `references/security-overview.md`

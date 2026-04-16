@@ -24,6 +24,22 @@ def test_quality_skill_carries_explicit_skill_ergonomics_lens() -> None:
     assert "Treat these as prompts, not automatic failures." in ergonomics
     assert "trigger overlap or undertrigger risk" in skill_quality
     assert "repeated prose ritual" in skill_quality
+    assert "growing lint suppressions" in skill_quality
+
+
+def test_quality_skill_carries_lint_ignore_lens() -> None:
+    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    lint_ignore = (
+        ROOT / "skills" / "public" / "quality" / "references" / "lint-ignore-discipline.md"
+    ).read_text(encoding="utf-8")
+
+    assert "$SKILL_DIR/scripts/inventory_lint_ignores.py" in skill_text
+    assert "lint suppressions start to accumulate" in skill_text
+    assert "lint suppression pressure" in skill_text
+    assert "growing lint suppressions" in skill_text
+    assert "inventory_lint_ignores.py" in lint_ignore
+    assert "Treat these as prompts, not automatic failures." in lint_ignore
+    assert "structural seam" in lint_ignore
 
 
 def test_quality_skill_carries_entrypoint_docs_ergonomics_lens() -> None:

@@ -26,6 +26,7 @@ Check for:
 - durable artifact seams that are explicit and overridable
 - repeated helper logic that should move to a shared seam
 - repeated prose ritual that should become a helper script
+- growing lint suppressions that indicate missing entrypoint, packaging, or helper seams
 - drift between what the skill promises and what shipped scripts can enforce
 - repeated documentation blocks that create copy-paste maintenance across skill
   bodies, references, or repo docs
