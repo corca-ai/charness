@@ -77,6 +77,9 @@ incrementally:
   behavior rather than staying architecture prose.
 - Pull that proof forward. Selecting the proof target is part of the first
   implementation slice, not a late optional follow-up after all docs land.
+- First proof target: refresh `charness-artifacts/quality/latest.md` after the
+  evidence-bundle and ownership-audit guidance lands, so the new contracts are
+  exercised through a real review artifact instead of only through design prose.
 
 ## Probe Questions
 
