@@ -3,10 +3,12 @@
   "review_required_skills": [
     "create-skill",
     "find-skills",
+    "gather",
     "handoff",
     "init-repo",
     "narrative",
-    "quality"
+    "quality",
+    "release"
   ],
   "cases": [
     {
@@ -52,6 +54,27 @@
         "The checked-in public core explicitly says capability phrases like `X skill`, `support/X`, and `X integration` should invoke `find-skills` before filesystem discovery.",
         "The adapter resolves the durable artifact to `charness-artifacts/find-skills/latest.md`, which matches the current reviewed expectation for persisted capability discovery output.",
         "Repo-owned eval and tests already exercise local-first discovery through `find-skills-local-first`, confirming that named capability lookup stays ahead of broad search and still exposes trusted roots and integrations honestly."
+      ]
+    },
+    {
+      "skill_id": "gather",
+      "prompt": "Fetch this external source into a durable local artifact instead of giving me a one-turn summary.",
+      "repo_shape": "repo that already keeps gathered artifacts and a source identity that may need refresh-in-place behavior",
+      "expected_skill": "gather",
+      "expected_artifact": "charness-artifacts/gather/latest.md",
+      "validation_tier": "evaluator-required",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `gather` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/gather/latest.md` when the skill persists durable state",
+        "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The public core frames `gather` as durable knowledge production and explicitly says to read existing local assets before widening into external fetch or search.",
+        "The adapter resolver falls back to `charness-artifacts/gather/latest.md`, which matches the reviewed expectation for the canonical gathered asset path even when no repo-local adapter is configured.",
+        "Repo-owned support boundaries already separate Slack and Notion into support skills and route private Google Workspace access through `advise_google_workspace_path.py`, which is enough local evidence that provider mechanics stay below the public gather concept."
       ]
     },
     {
@@ -117,6 +140,27 @@
         "The checked-in adapter resolves the durable artifact to `charness-artifacts/quality/latest.md` and records the current gate commands under `.agents/quality-adapter.yaml`.",
         "The public core now tells quality review to scaffold one consumer-side dogfood case when public-skill behavior or routing is in scope.",
         "The current repo already has a standing quiet gate, runtime-budget policy, and maintainer-local enforcement surface, so the prompt lands on quality posture rather than a narrow bug skill."
+      ]
+    },
+    {
+      "skill_id": "release",
+      "prompt": "Verify and advance the checked-in release surface without hand-editing generated packaging artifacts.",
+      "repo_shape": "repo with checked-in version or packaging surfaces and a maintainer-facing release workflow",
+      "expected_skill": "release",
+      "expected_artifact": "charness-artifacts/release/latest.md",
+      "validation_tier": "hitl-recommended",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `release` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/release/latest.md` when the skill persists durable state",
+        "produces an output that a maintainer could review directly without re-deriving the whole request"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The public core tells release work to inspect `current_release.py`, `check_real_host_proof.py`, git state, and the current release artifact before mutating anything.",
+        "The current repo state already reports a coherent `0.0.7` release surface across packaging and checked-in manifests through `current_release.py`, and no extra release-time host-proof trigger is active for the current slice.",
+        "The checked-in release artifact at `charness-artifacts/release/latest.md` records the same `0.0.7` surface and the guardrails explicitly ban hand-editing generated plugin manifests, which matches the reviewed maintainer-facing release path."
       ]
     },
     {

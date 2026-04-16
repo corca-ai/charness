@@ -17,10 +17,12 @@ stays as the short human-readable contract for the same reviewed cases.
 
 - `create-skill`
 - `find-skills`
+- `gather`
+- `handoff`
 - `init-repo`
 - `narrative`
 - `quality`
-- `handoff`
+- `release`
 
 ## Review Posture
 
