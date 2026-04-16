@@ -65,6 +65,8 @@ git status --short
    - bootstrap a new durable story surface
    - realign stale source-of-truth docs
    - realign docs and also produce an audience-neutral brief skeleton
+   - state the primary reader context before rewriting a first-touch surface;
+     if the user wants delivery-local adaptation, keep that for `announcement`
 2. Map the current truth surface.
    - read the source documents before inventing a fresh summary
    - check whether local context may be stale relative to git remote state
@@ -73,7 +75,13 @@ git status --short
    - if the source map is effectively empty or only placeholder-level, stop and
      recommend `init-repo` rather than pretending there is already a narrative
      surface to align
-3. Tighten the durable story first.
+3. Run the landing rewrite loop when the target is a high-leverage first-touch
+   surface.
+   - use `references/landing-rewrite-loop.md` for comparables, tension log,
+     decision log, compression metric, claim audit, and self-premortem
+   - resolve research/source-truth tensions before editing
+   - keep a claim-to-acceptance/spec matrix before calling the rewrite done
+4. Tighten the durable story first.
    - rewrite contradictions instead of layering parallel narratives
    - propagate user-confirmed direction changes into source-of-truth docs, not
      only into the brief
@@ -90,14 +98,15 @@ git status --short
    - when the repo is aligning around a non-trivial design decision, keep one
      short rejected-alternative or `Deliberately Not Doing` block in the
      durable docs instead of leaving that memory in chat or handoff only
-4. Derive the brief second.
+5. Derive the brief second.
    - keep it audience-neutral by default
    - prefer one self-contained compression layer that `announcement` can later
      adapt for a concrete audience, language, tone, or channel
    - when the repo adapter declares `brief_template`, use that ordered skeleton
      instead of inventing a new brief shape in session
-5. Show the aligned edits and the brief draft before any delivery action.
-6. Hand off to `announcement` only when the user explicitly wants human-facing
+6. Show the aligned edits, claim audit, compression metric, and brief draft
+   before any delivery action.
+7. Hand off to `announcement` only when the user explicitly wants human-facing
    adaptation or backend delivery after the narrative itself is aligned.
 
 ## Output Shape
@@ -108,6 +117,8 @@ The result should usually include:
 - `Narrative Drift`
 - `Updated Truth`
 - `Brief`
+- `Claim Audit`
+- `Compression`
 - `Open Questions`
 - `Next Step`
 
@@ -135,4 +146,5 @@ The result should usually include:
 - `references/source-map.md`
 - `references/brief-shape.md`
 - `references/scenario-blocks.md`
+- `references/landing-rewrite-loop.md`
 - `scripts/map_sources.py`

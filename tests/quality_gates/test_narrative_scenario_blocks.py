@@ -27,6 +27,21 @@ def test_narrative_skill_carries_scenario_block_guidance() -> None:
     assert "scenario_block_template" in adapter_contract
 
 
+def test_narrative_skill_carries_landing_rewrite_contract() -> None:
+    skill_text = (ROOT / "skills" / "public" / "narrative" / "SKILL.md").read_text(encoding="utf-8")
+    landing_loop = (
+        ROOT / "skills" / "public" / "narrative" / "references" / "landing-rewrite-loop.md"
+    ).read_text(encoding="utf-8")
+
+    assert "primary reader context" in skill_text
+    assert "claim-to-acceptance/spec matrix" in skill_text
+    assert "Compression" in skill_text
+    assert "comparables" in landing_loop
+    assert "Tension And Decision Logs" in landing_loop
+    assert "narrative -> operator acceptance -> executable spec -> implementation" in landing_loop
+    assert "Do any two sections assert contradictory requirements?" in landing_loop
+
+
 def test_narrative_resolve_adapter_preserves_scenario_surface_fields(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
