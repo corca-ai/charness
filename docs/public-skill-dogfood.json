@@ -5,6 +5,7 @@
     "find-skills",
     "handoff",
     "init-repo",
+    "narrative",
     "quality"
   ],
   "cases": [
@@ -72,6 +73,27 @@
         "The checked-in public core distinguishes greenfield bootstrap from partial and normalize states, so a mature repo cleanup prompt does not get collapsed into generic ideation or quality work.",
         "The adapter resolves the durable normalization artifact to `charness-artifacts/init-repo/latest.md`, which matches the reviewed expectation for a persisted repo-normalization note.",
         "Repo-owned eval coverage already exercises `init-repo-inspect-states` and `init-repo-operator-acceptance-synthesis`, which is the current best local evidence that mature-repo normalization behavior is treated as a first-class path rather than a greenfield-only scaffold."
+      ]
+    },
+    {
+      "skill_id": "narrative",
+      "prompt": "Tighten the repo's durable story first, then derive one concise brief from that source of truth.",
+      "repo_shape": "repo with existing source-of-truth docs that drift from the current product or project story",
+      "expected_skill": "narrative",
+      "expected_artifact": "charness-artifacts/narrative/latest.md",
+      "validation_tier": "hitl-recommended",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `narrative` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/narrative/latest.md` when the skill persists durable state",
+        "produces an output that a maintainer could review directly without re-deriving the whole request"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The checked-in public core keeps durable truth alignment separate from audience adaptation and explicitly hands delivery-only work to `announcement`.",
+        "The adapter resolves the durable artifact to `charness-artifacts/narrative/latest.md`, which matches the reviewed expectation for the aligned truth-surface output.",
+        "Repo-owned tests and docs already exercise the narrative adapter, source-map path, and narrative versus announcement boundary, which is enough local evidence to treat first-touch story alignment as a real maintained seam."
       ]
     },
     {

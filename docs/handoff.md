@@ -38,7 +38,8 @@
   producer-side gate만으로는 부족하고 consumer-side dogfood matrix가 필요하다는
   것이다.
 - `docs/public-skill-dogfood.json`가 현재 reviewed consumer dogfood registry다.
-  지금은 `create-skill`, `find-skills`, `init-repo`, `quality`, `handoff`를
+  지금은 `create-skill`, `find-skills`, `init-repo`, `narrative`, `quality`,
+  `handoff`를
   커버하고,
   `suggest-public-skill-dogfood.py`와 `validate-public-skill-dogfood.py`가
   scaffold drift를 잡는다.
@@ -47,8 +48,8 @@
 ## Next Session
 
 1. `git status --short`를 먼저 확인한다.
-2. Dogfood 개선으로 이어가면 다음 후보는 `narrative`처럼 아직 reviewed
-   set 밖에 있는 mature-repo first-touch prompt다.
+2. Dogfood 개선으로 이어가면 다음 후보는 `release`나 `gather`처럼 아직
+   reviewed set 밖에 있는 durable-artifact prompt다.
    `python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id
    <skill-id>`로 scaffold를 뽑고, `docs/public-skill-dogfood.json`에
    reviewed evidence를 추가한다.
@@ -75,6 +76,5 @@
 ## References
 
 - [AGENTS.md](../AGENTS.md)
-- [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
 - [charness-artifacts/retro/recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)
 - [public-skill-dogfood.md](public-skill-dogfood.md)
