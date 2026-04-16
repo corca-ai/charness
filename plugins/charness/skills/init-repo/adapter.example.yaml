@@ -5,6 +5,8 @@ output_dir: charness-artifacts/init-repo
 preset_id: portable-defaults
 customized_from: portable-defaults
 prose_wrap_policy: semantic
+# If prose_wrap_policy is column and fixed-string source guards exist, declare
+# source_guard_matcher.normalize_whitespace: true or an explicit override.
 surfaces:
   roadmap: docs/roadmap.md
   install: INSTALL.md

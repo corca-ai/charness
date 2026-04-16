@@ -8,6 +8,103 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
+def _write_example_integration(root: Path) -> None:
+    (root / "integrations" / "tools").mkdir(parents=True)
+    payload = {
+        "schema_version": "1",
+        "tool_id": "example",
+        "kind": "external_binary",
+        "display_name": "example",
+        "upstream_repo": "https://example.com/tool",
+        "homepage": "https://example.com/tool",
+        "lifecycle": {"install": {"commands": ["tool install"], "notes": "Install the tool."}},
+        "checks": {
+            "detect": {"commands": ["tool --version"], "success_criteria": ["exit_code:0"]},
+            "healthcheck": {"commands": ["tool health"], "success_criteria": ["exit_code:0"]},
+        },
+        "access_modes": ["grant", "binary", "degraded"],
+        "capability_requirements": {
+            "grant_ids": ["github.repo.read"],
+            "env_vars": ["GITHUB_TOKEN"],
+            "permission_scopes": ["repo:read"],
+        },
+        "config_layers": [
+            {"layer_id": "github-grant", "layer_type": "grant", "summary": "Use a host-provided GitHub read grant first."},
+            {"layer_id": "github-cli", "layer_type": "authenticated-binary", "summary": "Reuse authenticated gh CLI state when available."},
+            {"layer_id": "github-env", "layer_type": "env", "summary": "Fallback to GITHUB_TOKEN in ordinary local setups."},
+        ],
+        "readiness_checks": [
+            {"check_id": "github-auth", "summary": "GitHub auth is configured.", "commands": ["gh auth status"], "success_criteria": ["exit_code:0"]}
+        ],
+        "intent_triggers": ["verify", "review"],
+        "version_expectation": {"policy": "advisory", "constraint": "latest"},
+    }
+    (root / "integrations" / "tools" / "example.json").write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _write_gather_support_capability(root: Path) -> None:
+    (root / "skills" / "public" / "gather").mkdir(parents=True)
+    (root / "skills" / "public" / "gather" / "SKILL.md").write_text(
+        "\n".join(["---", "name: gather", 'description: "Gather skill."', "---", "", "# Gather"]) + "\n",
+        encoding="utf-8",
+    )
+    support = root / "skills" / "support" / "gather-slack"
+    (support / "references").mkdir(parents=True)
+    (support / "references" / "runtime.md").write_text("# Runtime\n", encoding="utf-8")
+    (support / "SKILL.md").write_text(
+        "\n".join(["---", "name: gather-slack", 'description: "Slack support."', "---", "", "# Gather Slack", "", "- `references/runtime.md`"]) + "\n",
+        encoding="utf-8",
+    )
+    (root / "skills" / "support" / "capability.schema.json").write_text(
+        (REPO_ROOT / "skills" / "support" / "capability.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    capability = {
+        "schema_version": "1",
+        "capability_id": "gather-slack",
+        "kind": "support_runtime",
+        "display_name": "Slack gather",
+        "summary": "Support-owned Slack runtime.",
+        "support_skill_path": "skills/support/gather-slack/SKILL.md",
+        "supports_public_skills": ["gather"],
+        "checks": {
+            "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+            "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
+        },
+        "access_modes": ["grant", "env", "degraded"],
+        "capability_requirements": {"grant_ids": ["slack.history"], "env_vars": ["SLACK_BOT_TOKEN"]},
+        "config_layers": [
+            {"layer_id": "slack-grant", "layer_type": "grant", "summary": "Prefer runtime grant first."},
+            {"layer_id": "slack-env", "layer_type": "env", "summary": "Fallback to env."},
+        ],
+        "readiness_checks": [
+            {"check_id": "slack-ready", "summary": "Slack runtime is ready.", "commands": ["true"], "success_criteria": ["exit_code:0"]}
+        ],
+        "version_expectation": {"policy": "advisory", "constraint": "local"},
+        "intent_triggers": ["gather slack"],
+    }
+    (support / "capability.json").write_text(json.dumps(capability, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (root / ".agents").mkdir(parents=True)
+    (root / ".agents" / "find-skills-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: charness-artifacts/find-skills",
+                "trusted_skill_roots: []",
+                "prefer_local_first: true",
+                "allow_external_registry: false",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
 def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> None:
     (tmp_path / "skills" / "public" / "demo").mkdir(parents=True)
     (tmp_path / "skills" / "public" / "demo" / "SKILL.md").write_text(
@@ -42,64 +139,7 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
         ),
         encoding="utf-8",
     )
-    (tmp_path / "integrations" / "tools").mkdir(parents=True)
-    (tmp_path / "integrations" / "tools" / "example.json").write_text(
-        json.dumps(
-            {
-                "schema_version": "1",
-                "tool_id": "example",
-                "kind": "external_binary",
-                "display_name": "example",
-                "upstream_repo": "https://example.com/tool",
-                "homepage": "https://example.com/tool",
-                "lifecycle": {
-                    "install": {"commands": ["tool install"], "notes": "Install the tool."},
-                    "update": {"commands": ["tool update"], "notes": "Update the tool."},
-                },
-                "checks": {
-                    "detect": {"commands": ["tool --version"], "success_criteria": ["exit_code:0"]},
-                    "healthcheck": {"commands": ["tool health"], "success_criteria": ["exit_code:0"]},
-                },
-                "access_modes": ["grant", "binary", "degraded"],
-                "capability_requirements": {
-                    "grant_ids": ["github.repo.read"],
-                    "env_vars": ["GITHUB_TOKEN"],
-                    "permission_scopes": ["repo:read"],
-                },
-                "config_layers": [
-                    {
-                        "layer_id": "github-grant",
-                        "layer_type": "grant",
-                        "summary": "Use a host-provided GitHub read grant first.",
-                    },
-                    {
-                        "layer_id": "github-cli",
-                        "layer_type": "authenticated-binary",
-                        "summary": "Reuse authenticated gh CLI state when available.",
-                    },
-                    {
-                        "layer_id": "github-env",
-                        "layer_type": "env",
-                        "summary": "Fallback to GITHUB_TOKEN in ordinary local setups.",
-                    },
-                ],
-                "readiness_checks": [
-                    {
-                        "check_id": "github-auth",
-                        "summary": "GitHub auth is configured.",
-                        "commands": ["gh auth status"],
-                        "success_criteria": ["exit_code:0"],
-                    }
-                ],
-                "intent_triggers": ["verify", "review"],
-                "version_expectation": {"policy": "advisory", "constraint": "latest"},
-            },
-            ensure_ascii=False,
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    _write_example_integration(tmp_path)
     result = subprocess.run(
         [
             "python3",
@@ -167,113 +207,7 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
     ]
 
 def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None:
-    (tmp_path / "skills" / "public" / "gather").mkdir(parents=True)
-    (tmp_path / "skills" / "public" / "gather" / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: gather",
-                'description: "Gather skill."',
-                "---",
-                "",
-                "# Gather",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    (tmp_path / "skills" / "support" / "gather-slack").mkdir(parents=True)
-    (tmp_path / "skills" / "support" / "gather-slack" / "references").mkdir(parents=True)
-    (tmp_path / "skills" / "support" / "gather-slack" / "references" / "runtime.md").write_text(
-        "# Runtime\n",
-        encoding="utf-8",
-    )
-    (tmp_path / "skills" / "support" / "gather-slack" / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: gather-slack",
-                'description: "Slack support."',
-                "---",
-                "",
-                "# Gather Slack",
-                "",
-                "- `references/runtime.md`",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    (tmp_path / "skills" / "support" / "capability.schema.json").write_text(
-        (REPO_ROOT / "skills" / "support" / "capability.schema.json").read_text(encoding="utf-8"),
-        encoding="utf-8",
-    )
-    (tmp_path / "skills" / "support" / "gather-slack" / "capability.json").write_text(
-        json.dumps(
-            {
-                "schema_version": "1",
-                "capability_id": "gather-slack",
-                "kind": "support_runtime",
-                "display_name": "Slack gather",
-                "summary": "Support-owned Slack runtime.",
-                "support_skill_path": "skills/support/gather-slack/SKILL.md",
-                "supports_public_skills": ["gather"],
-                "checks": {
-                    "detect": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
-                    "healthcheck": {"commands": ["true"], "success_criteria": ["exit_code:0"]},
-                },
-                "access_modes": ["grant", "env", "degraded"],
-                "capability_requirements": {
-                    "grant_ids": ["slack.history"],
-                    "env_vars": ["SLACK_BOT_TOKEN"],
-                },
-                "config_layers": [
-                    {
-                        "layer_id": "slack-grant",
-                        "layer_type": "grant",
-                        "summary": "Prefer runtime grant first.",
-                    },
-                    {
-                        "layer_id": "slack-env",
-                        "layer_type": "env",
-                        "summary": "Fallback to env.",
-                    },
-                ],
-                "readiness_checks": [
-                    {
-                        "check_id": "slack-ready",
-                        "summary": "Slack runtime is ready.",
-                        "commands": ["true"],
-                        "success_criteria": ["exit_code:0"],
-                    }
-                ],
-                "version_expectation": {"policy": "advisory", "constraint": "local"},
-                "intent_triggers": ["gather slack"],
-            },
-            ensure_ascii=False,
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    (tmp_path / ".agents").mkdir(parents=True)
-    (tmp_path / ".agents" / "find-skills-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/find-skills",
-                "preset_id: portable-defaults",
-                "customized_from: portable-defaults",
-                "trusted_skill_roots: []",
-                "prefer_local_first: true",
-                "allow_external_registry: false",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
+    _write_gather_support_capability(tmp_path)
     result = subprocess.run(
         [
             "python3",

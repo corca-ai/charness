@@ -21,9 +21,8 @@ def _runtime_root() -> Path:
 REPO_ROOT = _runtime_root()
 sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.control_plane_lib import load_support_capabilities  # noqa: E402
-from scripts.repo_layout import discovery_stub_dir, generated_support_dir, public_skills_dir, support_dir  # noqa: E402
-from scripts.support_sync_lib import support_link_name, support_state_for_manifest  # noqa: E402
+from capability_sources import integrations, support_capabilities  # noqa: E402
+from scripts.repo_layout import generated_support_dir, public_skills_dir, support_dir  # noqa: E402
 from scripts.tool_recommendation_lib import recommendations_for_public_skill  # noqa: E402
 from resolve_adapter import load_adapter  # noqa: E402
 
@@ -105,6 +104,8 @@ def _collect_skill_entries(
 ) -> list[dict[str, str]]:
     items: list[dict[str, str]] = []
     seen_paths: set[Path] = set()
+    seen_ids: set[str] = set()
+    seen_names: set[str] = set()
     for source_id, skill_root in skill_roots:
         if not skill_root.is_dir():
             continue
@@ -115,6 +116,10 @@ def _collect_skill_entries(
             seen_paths.add(resolved)
             frontmatter = extract_frontmatter(skill_md)
             name = frontmatter.get("name", skill_md.parent.name)
+            if skill_md.parent.name in seen_ids or name in seen_names:
+                continue
+            seen_ids.add(skill_md.parent.name)
+            seen_names.add(name)
             description = frontmatter.get("description", "")
             items.append(
                 {
@@ -133,105 +138,12 @@ def _collect_skill_entries(
             )
     return items
 
-def materialized_support_skill_path(root: Path, manifest: dict[str, object]) -> str | None:
-    support = manifest.get("support_skill_source")
-    generated_skill = generated_support_dir(root) / support_link_name(manifest) / "SKILL.md"
-    if not isinstance(support, dict) or not generated_skill.is_file():
-        return None
-    return str(generated_skill.relative_to(root))
 
-def materialized_discovery_stub_path(root: Path, tool_id: str) -> str | None:
-    stub = discovery_stub_dir(root) / f"{tool_id}.md"
-    if not stub.is_file():
-        return None
-    return str(stub.relative_to(root))
+def _filter_shadowed(entries: list[dict[str, str]], preferred: list[dict[str, str]]) -> list[dict[str, str]]:
+    preferred_ids = {entry["id"] for entry in preferred}
+    preferred_names = {entry["name"] for entry in preferred}
+    return [entry for entry in entries if entry["id"] not in preferred_ids and entry["name"] not in preferred_names]
 
-def integrations(root: Path) -> list[dict[str, object]]:
-    items: list[dict[str, object]] = []
-    for manifest in sorted((root / "integrations" / "tools").glob("*.json")):
-        if manifest.name == "manifest.schema.json":
-            continue
-        data = json.loads(manifest.read_text(encoding="utf-8"))
-        tool_id = data.get("tool_id", manifest.stem)
-        items.append(
-            {
-                "id": tool_id,
-                "kind": data.get("kind", "unknown"),
-                "access_modes": data.get("access_modes", []),
-                "support_state": support_state_for_manifest(data),
-                "support_skill_path": materialized_support_skill_path(root, data),
-                "discovery_stub_path": materialized_discovery_stub_path(root, tool_id),
-                "capability_requirements": data.get("capability_requirements", {}),
-                "intent_triggers": data.get("intent_triggers", []),
-                "config_layers": [
-                    {
-                        "layer_id": layer["layer_id"],
-                        "layer_type": layer["layer_type"],
-                        "summary": layer["summary"],
-                    }
-                    for layer in data.get("config_layers", [])
-                ],
-                "readiness_checks": [
-                    {
-                        "check_id": check["check_id"],
-                        "summary": check["summary"],
-                    }
-                    for check in data.get("readiness_checks", [])
-                ],
-                "supports_public_skills": data.get("supports_public_skills", []),
-                "recommendation_role": data.get("recommendation_role"),
-                "path": str(manifest.relative_to(root)),
-                "source": "local-integration",
-                "layer": "external integration",
-            }
-        )
-    return items
-
-def support_capabilities(root: Path) -> list[dict[str, object]]:
-    items: list[dict[str, object]] = []
-    for capability in load_support_capabilities(root):
-        items.append(
-            {
-                "id": capability["tool_id"],
-                "kind": capability["kind"],
-                "display_name": capability.get("display_name", capability["tool_id"]),
-                "summary": capability.get("summary", ""),
-                "access_modes": capability.get("access_modes", []),
-                "capability_requirements": capability.get("capability_requirements", {}),
-                "intent_triggers": capability.get("intent_triggers", []),
-                "trigger_phrases": _dedupe(
-                    [
-                        capability["tool_id"],
-                        capability.get("display_name", ""),
-                        f"{capability['tool_id']} support",
-                        f"{capability['tool_id']} support skill",
-                        f"support/{capability['tool_id']}",
-                        *capability.get("intent_triggers", []),
-                    ]
-                ),
-                "config_layers": [
-                    {
-                        "layer_id": layer["layer_id"],
-                        "layer_type": layer["layer_type"],
-                        "summary": layer["summary"],
-                    }
-                    for layer in capability.get("config_layers", [])
-                ],
-                "readiness_checks": [
-                    {
-                        "check_id": check["check_id"],
-                        "summary": check["summary"],
-                    }
-                    for check in capability.get("readiness_checks", [])
-                ],
-                "path": capability["_manifest_path"],
-                "support_skill_path": capability["support_skill_path"],
-                "supports_public_skills": capability.get("supports_public_skills", []),
-                "source": "local-support-capability",
-                "layer": "support capability",
-            }
-        )
-    return items
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -242,9 +154,19 @@ def main() -> None:
     local_root = _local_surface_root(root)
     adapter = load_adapter(root)
     trusted_skill_roots = adapter["data"].get("trusted_skill_roots", [])
-    trusted_entries = _collect_skill_entries([(f"trusted-root-{index + 1}", (root / skill_root).resolve()) for index, skill_root in enumerate(trusted_skill_roots)], repo_root=root, layer="trusted skill")
     support_entries = _collect_skill_entries([("local-support", support_dir(local_root))], repo_root=local_root, layer="support skill")
     support_entries += _collect_skill_entries([("synced-support", generated_support_dir(local_root))], repo_root=local_root, layer="synced support skill")
+    public_entries = _collect_skill_entries(
+        [("local-public", public_skills_dir(local_root))],
+        repo_root=local_root,
+        layer="public skill",
+    )
+    trusted_entries = _collect_skill_entries(
+        [(f"trusted-root-{index + 1}", (root / skill_root).resolve()) for index, skill_root in enumerate(trusted_skill_roots)],
+        repo_root=root,
+        layer="trusted skill",
+    )
+    trusted_entries = _filter_shadowed(trusted_entries, [*public_entries, *support_entries])
     manifests = [
         json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((local_root / "integrations" / "tools").glob("*.json"))
@@ -260,11 +182,7 @@ def main() -> None:
             "allow_external_registry": adapter["data"].get("allow_external_registry", False),
             "prefer_local_first": adapter["data"].get("prefer_local_first", True),
         },
-        "public_skills": _collect_skill_entries(
-            [("local-public", public_skills_dir(local_root))],
-            repo_root=local_root,
-            layer="public skill",
-        ),
+        "public_skills": public_entries,
         "support_skills": support_entries,
         "support_capabilities": support_capabilities(local_root),
         "integrations": integrations(local_root),

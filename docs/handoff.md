@@ -37,13 +37,19 @@
 - GitHub 이슈 #25-#31 대응 로컬 커밋 7개가 `main` 위에 쌓여 있다:
   `17efb07`, `a3d627f`, `422e793`, `1229a7c`, `6284a4f`,
   `6463391`, `8da1d62`. 각 slice는 `run-slice-closeout.py`까지 통과했다.
+- 이후 fresh-eye premortem에서 #27 init-repo 예방 로직, #31 find-skills
+  payload/length guard, exported plugin import smoke 문제가 발견되어 로컬에서
+  보강했다. 최종 `./scripts/run-quality.sh`는 `37 passed, 0 failed`로
+  통과했고, `run-slice-closeout.py`도 통과했다.
 
 ## Next Session
 
 1. `git status --short`를 먼저 확인한다.
 2. 이 handoff 커밋까지 포함해 깨끗하면, #25-#31 대응 branch를 push하고
    PR/이슈 closeout 본문을 준비한다. 아직 GitHub 이슈에는 comment/close를
-   남기지 않았다.
+   남기지 않았다. #28은 support skills를 markdown에 전부 노출하지 않고
+   `find-skills` routing으로 대표시키는 의도적 범위만 closeout 본문에 짧게
+   적으면 된다.
 3. sah/specdown lesson line을 이어간다면 다음 작은 CLI 후보는 task
    envelope와 doctor `next_action`을 실제 멀티에이전트 세션에서 dogfood한
    뒤, 필요한 경우 task list/status summary를 다듬는 것이다. 스펙다운은

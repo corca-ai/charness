@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# ruff: noqa: T201
+# ruff: noqa: T201, E402, I001
 
 from __future__ import annotations
 
@@ -11,17 +11,9 @@ from pathlib import Path
 from typing import Any
 
 SCRIPT_PATH = Path(__file__).resolve()
-sys.path[:0] = [str(SCRIPT_PATH.parents[4]), str(SCRIPT_PATH.parents[3])]
+sys.path[:0] = [str(SCRIPT_PATH.parent), str(SCRIPT_PATH.parents[4]), str(SCRIPT_PATH.parents[3])]
 
-from scripts.adapter_lib import load_yaml_file  # noqa: E402
-
-ADAPTER_CANDIDATES = (
-    Path(".agents/init-repo-adapter.yaml"),
-    Path(".codex/init-repo-adapter.yaml"),
-    Path(".claude/init-repo-adapter.yaml"),
-    Path("docs/init-repo-adapter.yaml"),
-    Path("init-repo-adapter.yaml"),
-)
+from init_repo_adapter import load_init_repo_adapter, prose_wrap_state, surface_overrides  # noqa: E402
 
 DEFAULT_SURFACES = {
     "readme": Path("README.md"),
@@ -73,19 +65,6 @@ def _case_insensitive_path(repo_root: Path, relative_path: Path) -> Path:
         matches = sorted(child for child in current.iterdir() if child.name.lower() == part.lower())
         current = matches[0] if matches else exact
     return current
-
-
-def _load_adapter_data(repo_root: Path) -> tuple[dict[str, Any], str | None]:
-    adapter_path = next((repo_root / candidate for candidate in ADAPTER_CANDIDATES if (repo_root / candidate).is_file()), None)
-    if adapter_path is None:
-        return {}, None
-    raw = load_yaml_file(adapter_path)
-    return (raw if isinstance(raw, dict) else {}), str(adapter_path)
-
-
-def _surface_overrides(adapter_data: dict[str, Any]) -> dict[str, Any]:
-    surfaces = adapter_data.get("surfaces")
-    return surfaces if isinstance(surfaces, dict) else {}
 
 
 def _surface_spec(repo_root: Path, surface_id: str, overrides: dict[str, Any]) -> SurfaceSpec:
@@ -196,8 +175,8 @@ def detect_partial_kind(specs: dict[str, SurfaceSpec], repo_mode: str) -> str | 
 
 
 def build_payload(repo_root: Path) -> dict[str, object]:
-    adapter_data, adapter_path = _load_adapter_data(repo_root)
-    specs = _surface_specs(repo_root, _surface_overrides(adapter_data))
+    adapter_data, adapter_path, adapter_warnings = load_init_repo_adapter(repo_root)
+    specs = _surface_specs(repo_root, surface_overrides(adapter_data))
     repo_mode = detect_repo_mode(specs)
     return {
         "repo": repo_root.name,
@@ -207,8 +186,11 @@ def build_payload(repo_root: Path) -> dict[str, object]:
         "adapter": {
             "found": adapter_path is not None,
             "path": adapter_path,
+            "valid": not adapter_warnings,
+            "warnings": adapter_warnings,
         },
         "agent_docs": detect_agent_docs(repo_root),
+        "prose_wrap": prose_wrap_state(repo_root, adapter_data),
         "surfaces": {surface_id: _surface_state(repo_root, spec) for surface_id, spec in specs.items()},
     }
 

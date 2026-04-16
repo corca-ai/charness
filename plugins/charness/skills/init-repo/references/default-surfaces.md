@@ -44,7 +44,11 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
   labels
 - prose wrap policy when the repo uses fixed-string source guards; default to
   semantic line breaks, and require whitespace-normalized matching before
-  accepting column-wrapped prose
+  accepting column-wrapped prose. In `.agents/init-repo-adapter.yaml`, a repo
+  that deliberately keeps column wrapping must set
+  `source_guard_matcher.normalize_whitespace: true` or
+  `allow_column_wrap_fixed_guards: true`; otherwise the inspector reports a
+  `requires_override` warning.
 - selection rules in the core file, with deeper rationale pushed into linked
   docs instead of turning `AGENTS.md` into a second handbook
 - avoid blanket external-link ignore defaults; if the repo later adopts
