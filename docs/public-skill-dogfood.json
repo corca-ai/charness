@@ -4,6 +4,7 @@
     "create-skill",
     "find-skills",
     "handoff",
+    "init-repo",
     "quality"
   ],
   "cases": [
@@ -50,6 +51,27 @@
         "The checked-in public core explicitly says capability phrases like `X skill`, `support/X`, and `X integration` should invoke `find-skills` before filesystem discovery.",
         "The adapter resolves the durable artifact to `charness-artifacts/find-skills/latest.md`, which matches the current reviewed expectation for persisted capability discovery output.",
         "Repo-owned eval and tests already exercise local-first discovery through `find-skills-local-first`, confirming that named capability lookup stays ahead of broad search and still exposes trusted roots and integrations honestly."
+      ]
+    },
+    {
+      "skill_id": "init-repo",
+      "prompt": "Normalize this partially initialized repo without pretending it needs a greenfield rewrite.",
+      "repo_shape": "partially initialized mature repo with divergent but valid naming and intentionally missing optional surfaces",
+      "expected_skill": "init-repo",
+      "expected_artifact": "charness-artifacts/init-repo/latest.md",
+      "validation_tier": "evaluator-required",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `init-repo` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/init-repo/latest.md` when the skill persists durable state",
+        "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The checked-in public core distinguishes greenfield bootstrap from partial and normalize states, so a mature repo cleanup prompt does not get collapsed into generic ideation or quality work.",
+        "The adapter resolves the durable normalization artifact to `charness-artifacts/init-repo/latest.md`, which matches the reviewed expectation for a persisted repo-normalization note.",
+        "Repo-owned eval coverage already exercises `init-repo-inspect-states` and `init-repo-operator-acceptance-synthesis`, which is the current best local evidence that mature-repo normalization behavior is treated as a first-class path rather than a greenfield-only scaffold."
       ]
     },
     {

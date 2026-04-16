@@ -17,6 +17,7 @@ stays as the short human-readable contract for the same reviewed cases.
 
 - `create-skill`
 - `find-skills`
+- `init-repo`
 - `quality`
 - `handoff`
 
