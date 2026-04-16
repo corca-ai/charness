@@ -33,3 +33,28 @@ def test_public_skill_dogfood_matrix_reports_prompt_artifact_and_evidence() -> N
     assert quality["validation_tier"] == "hitl-recommended"
     assert quality["adapter_requirement"] == "required"
     assert any("consumer prompt" in item for item in quality["acceptance_evidence"])
+
+
+def test_public_skill_dogfood_wrappers_match_root_script() -> None:
+    commands = [
+        "scripts/suggest-public-skill-dogfood.py",
+        "skills/public/quality/scripts/suggest_public_skill_dogfood.py",
+        "plugins/charness/skills/quality/scripts/suggest_public_skill_dogfood.py",
+    ]
+    payloads = []
+    for command in commands:
+        result = run_script(
+            command,
+            "--repo-root",
+            str(ROOT),
+            "--skill-id",
+            "handoff",
+            "--skill-id",
+            "quality",
+            "--json",
+        )
+        assert result.returncode == 0, result.stderr
+        payloads.append(json.loads(result.stdout))
+
+    assert payloads[1] == payloads[0]
+    assert payloads[2] == payloads[0]

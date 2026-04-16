@@ -105,13 +105,13 @@ Then load only the references needed for the detected state:
      one vague "run doctor" instruction
    - when the repo wants durable retrospective memory, seed
      `.agents/retro-adapter.yaml` and `charness-artifacts/retro/recent-lessons.md`
-     with `scripts/seed_retro_memory.py` instead of hand-writing the seam
+     with `$SKILL_DIR/scripts/seed_retro_memory.py` instead of hand-writing the seam
    - when that seam is enabled, make `AGENTS.md` name
      `charness-artifacts/retro/recent-lessons.md` as a repo memory surface so future
      sessions can actually discover it
    - add a compact `Skill Routing` block to `AGENTS.md` when installed
      charness skills provide high-signal routing hints; use
-     `scripts/render_skill_routing.py` so mature repos get an add-block
+     `$SKILL_DIR/scripts/render_skill_routing.py` so mature repos get an add-block
      suggestion instead of a silent rewrite
 5. Keep the boundaries honest.
    - `README.md`: current repo story and user-facing orientation
