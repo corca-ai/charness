@@ -25,7 +25,7 @@ Use this lens to keep public/support skills aligned with:
 
 ## Advisory Inventory
 
-Use `scripts/inventory_skill_ergonomics.py` when skills are in scope.
+Use `$SKILL_DIR/scripts/inventory_skill_ergonomics.py` when skills are in scope.
 
 The helper stays advisory on purpose. It does not claim to prove good taste or
 correct trigger boundaries. It only inventories signals that deserve a human

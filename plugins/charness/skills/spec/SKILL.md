@@ -21,15 +21,15 @@ Read the current concept artifacts before inventing new structure.
 # Missing-binary protocol: create-skill/references/binary-preflight.md
 # 1. current concept and adjacent context
 rg --files docs skills
-sed -n '1,220p' docs/handoff.md
-sed -n '1,220p' skills/public/ideation/SKILL.md
+sed -n '1,220p' docs/handoff.md 2>/dev/null || true
+sed -n '1,220p' "$SKILL_DIR/../ideation/SKILL.md" 2>/dev/null || true
 
 # 2. existing concept/spec/design docs
 rg -n "concept|spec|requirements|success criteria|acceptance|entity|stage|constraint" .
 
 # 3. implementation-side neighbors
-sed -n '1,220p' skills/public/create-skill/SKILL.md
-sed -n '1,220p' skills/public/impl/SKILL.md 2>/dev/null || true
+sed -n '1,220p' "$SKILL_DIR/../create-skill/SKILL.md" 2>/dev/null || true
+sed -n '1,220p' "$SKILL_DIR/../impl/SKILL.md" 2>/dev/null || true
 ```
 
 If an ideation document already exists, refine it into a spec. Do not restate

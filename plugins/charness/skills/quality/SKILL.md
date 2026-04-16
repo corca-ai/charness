@@ -69,16 +69,16 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - independently enumerate the current source, spec, and gate inventory before letting the previous quality artifact define scope
    - local executable gates already present
    - if the repo ships an installable CLI, bootstrap command, or operator-facing command surface, inspect whether help, command discovery, binary health, install/readiness, and local discoverability are separated honestly
-   - when CLI ergonomics are in scope, inventory flat help-list and cross-archetype schema smells with `scripts/inventory_cli_ergonomics.py`
-   - when a standing local gate exists, inventory quiet-default vs verbose-on-demand posture with `scripts/inventory_standing_gate_verbosity.py`
-   - when the repo may keep one shipped implementation beside a historical or alternate runtime path, inventory likely dual-implementation parity smells with `scripts/inventory_dual_implementation.py`, then decide whether the relationship is parity-enforced, canonical-plus-legacy, or intentional divergence
-   - when first-touch operator/developer/agent docs are in scope, inventory entrypoint-doc ergonomics with `scripts/inventory_entrypoint_docs_ergonomics.py`
-   - when fixed-string source guards touch prose, inventory hard-wrap fragility with `scripts/inventory_brittle_source_guards.py`; see `references/brittle-source-guards.md`
+   - when CLI ergonomics are in scope, inventory flat help-list and cross-archetype schema smells with `$SKILL_DIR/scripts/inventory_cli_ergonomics.py`
+   - when a standing local gate exists, inventory quiet-default vs verbose-on-demand posture with `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`
+   - when the repo may keep one shipped implementation beside a historical or alternate runtime path, inventory likely dual-implementation parity smells with `$SKILL_DIR/scripts/inventory_dual_implementation.py`, then decide whether the relationship is parity-enforced, canonical-plus-legacy, or intentional divergence
+   - when first-touch operator/developer/agent docs are in scope, inventory entrypoint-doc ergonomics with `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py`
+   - when fixed-string source guards touch prose, inventory hard-wrap fragility with `$SKILL_DIR/scripts/inventory_brittle_source_guards.py`; see `references/brittle-source-guards.md`
    - inspect README / INSTALL / operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist; when the CLI surface is stable, prefer a deterministic command-docs drift gate over repeated prose review
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
    - if evaluator-backed review or prompt-sensitive output matters, inspect whether prompt/content bulk stays in checked-in assets or is still embedded inline in source files
-   - when skills are in scope, inventory skill ergonomics explicitly with `scripts/inventory_skill_ergonomics.py` instead of leaving concise-core, progressive-disclosure, or mode-pressure review as vague prose
-   - when public-skill behavior or routing is in scope, scaffold one consumer-side dogfood case with `python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id <skill-id>` so the review names prompt, repo shape, expected artifact, and acceptance evidence explicitly
+   - when skills are in scope, inventory skill ergonomics explicitly with `$SKILL_DIR/scripts/inventory_skill_ergonomics.py` instead of leaving concise-core, progressive-disclosure, or mode-pressure review as vague prose
+   - when public-skill behavior or routing is in scope, scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` so the review names prompt, repo shape, expected artifact, and acceptance evidence explicitly
    - when the adapter defines `prompt_asset_roots` or `prompt_asset_policy`, re-derive prompt/content bulk inventory from the current tree instead of trusting prior review prose
    - if the repo keeps standing coverage floors, tag seams within `coverage_fragile_margin_pp` as `FRAGILE` instead of burying near-miss risk in prose
    - for blind-spot prevention, apply `references/coverage-floor-policy.md`: adapter-owned `coverage_floor_policy`, real unfloored-file inventory, and `Covered by pytest:` reference validation when those notes exist
@@ -89,7 +89,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage
    - for timing/logs/retention signals, workflow-runtime drift, and retention signals, see `references/operability-signals.md`
    - when a standing gate already exists, prefer compact default phase output plus a verbose-on-demand escape hatch over always-on chatter; see `references/standing-gate-verbosity.md`
-   - when a hot spot becomes the standing single dominator, define a `runtime_budgets` entry in the adapter and call `scripts/check-runtime-budget.py` from the repo's standing gate; budgets fail the gate on recent-median drift and report single latest-sample spikes separately
+   - when a hot spot becomes the standing single dominator, define a `runtime_budgets` entry in the adapter and call `$SKILL_DIR/scripts/check-runtime-budget.py` from the repo's standing gate; budgets fail the gate on recent-median drift and report single latest-sample spikes separately
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model
    - `behavior`: do tests, evals, checks, and command-surface probes say something falsifiable about real behavior, and does the repo-owned test code stay maintainable

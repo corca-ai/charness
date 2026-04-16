@@ -22,8 +22,8 @@ sed -n '1,240p' docs/roadmap.md 2>/dev/null || true
 
 # 2. existing target or source skill
 rg --files skills/public skills/support
-sed -n '1,240p' skills/public/<skill-id>/SKILL.md
-sed -n '1,240p' skills/support/<skill-id>/SKILL.md
+sed -n '1,240p' "$SKILL_DIR/../<skill-id>/SKILL.md"
+sed -n '1,240p' "$SKILL_DIR/../../support/<skill-id>/SKILL.md"
 
 # 3. external-tool or profile context when relevant
 sed -n '1,240p' docs/control-plane.md
@@ -95,7 +95,7 @@ skill before writing from scratch.
      repeated steps
 6. Verify before stopping.
    - cold-start test from repo root
-   - for public-skill changes, run one realistic consumer prompt instead of stopping at producer-side validators; use `python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id <skill-id>` to scaffold prompt, repo shape, expected artifact, and acceptance evidence
+   - for public-skill changes, run one realistic consumer prompt instead of stopping at producer-side validators; use `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` to scaffold prompt, repo shape, expected artifact, and acceptance evidence
    - trigger collision check against adjacent skills
    - path check for every file named in the skill
    - schema or example validation for any profile, preset, or manifest touched
