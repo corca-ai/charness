@@ -164,7 +164,7 @@ def _chatter_axis(snippets: list[dict[str, str]]) -> dict[str, Any]:
     findings, specs = [], [
         ("pylint", lambda s: bool(re.search(r"\bpylint\b", s)), lambda s: "--score=n" in s or "--score=no" in s or bool(re.search(r"(^|\s)-sn(\s|$)", s)), "Run `pylint` with `-sn --score=n` or equivalent quiet defaults in the standing gate."),
         ("coverage report", lambda s: "coverage report" in s, lambda s: "--skip-covered" in s or "--skip-empty" in s, "Prefer `coverage report --skip-covered` or another bounded summary in the default gate."),
-        ("specdown", lambda s: bool(re.search(r"(^|&&\s*|\|\|\s*|;\s*|\(\s*|\s)specdown\b", s)), lambda s: bool(re.search(r"(^|\s)(-q|--quiet)(\s|$)", s)), "Gate `specdown` behind a quieter default or a repo-owned `VERBOSE=1` escape hatch."),
+        ("specdown", lambda s: bool(re.search(r"(^|&&\s*|\|\|\s*|;\s*|\(\s*|\s)specdown\b", s)), lambda s: bool(re.search(r"(^|\s)(-q|-quiet|--quiet)(\s|$)", s)), "Gate `specdown` behind a quieter default or a repo-owned `VERBOSE=1` escape hatch."),
     ]
     for item in snippets:
         lowered = item["snippet"].lower()

@@ -103,5 +103,6 @@ def test_inventory_standing_gate_verbosity_recognizes_charness_quiet_default() -
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["axes"]["test_runner_reporter"]["status"] == "healthy"
+    assert payload["axes"]["per_gate_chatter"]["status"] == "healthy"
     assert payload["axes"]["phase_level_signal"]["status"] == "healthy"
     assert payload["axes"]["escape_hatch"]["status"] == "healthy"
