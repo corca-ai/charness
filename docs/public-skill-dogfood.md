@@ -15,15 +15,18 @@ stays as the short human-readable contract for the same reviewed cases.
 
 ## Current Required Reviewed Skills
 
+- `announcement`
 - `create-skill`
 - `debug`
 - `find-skills`
 - `gather`
 - `handoff`
+- `impl`
 - `init-repo`
 - `narrative`
 - `quality`
 - `release`
+- `retro`
 - `spec`
 
 ## Review Posture

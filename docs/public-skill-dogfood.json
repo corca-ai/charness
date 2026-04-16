@@ -1,18 +1,42 @@
 {
   "schema_version": 1,
   "review_required_skills": [
+    "announcement",
     "create-skill",
     "debug",
     "find-skills",
     "gather",
     "handoff",
+    "impl",
     "init-repo",
     "narrative",
     "quality",
     "release",
+    "retro",
     "spec"
   ],
   "cases": [
+    {
+      "skill_id": "announcement",
+      "prompt": "Summarize the latest repo changes into a chat-ready update and keep the draft scoped to what changed.",
+      "repo_shape": "repo with recent checked-in changes and one clear delivery context such as release notes or a team update",
+      "expected_skill": "announcement",
+      "expected_artifact": "charness-artifacts/announcement/latest.md",
+      "validation_tier": "hitl-recommended",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `announcement` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/announcement/latest.md` when the skill persists durable state",
+        "produces an output that a maintainer could review directly without re-deriving the whole request"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The checked-in public core keeps `announcement` draft-first, explicitly separating human-facing communication from delivery backends and from `narrative` source-of-truth alignment work.",
+        "The adapter resolver already pins the visible draft artifact to `charness-artifacts/announcement/latest.md` and the hidden delivery record to `.charness/announcement/announcements.jsonl`, with draft-only defaults when no delivery config exists.",
+        "Repo-owned tests already cover both seams: `test_announcement_resolve_adapter_explains_draft_only_defaults` guards the draft-only fallback and `test_capability_explain_reports_skill_needs_and_announcement_adapter_binding` proves adapter-defined delivery capability binding."
+      ]
+    },
     {
       "skill_id": "create-skill",
       "prompt": "Improve this skill package first so the trigger, references, and helper surface stay portable.",
@@ -209,6 +233,27 @@
       ]
     },
     {
+      "skill_id": "impl",
+      "prompt": "Implement the smallest meaningful slice now and verify it against the current repo contract.",
+      "repo_shape": "repo with an active build slice, existing code or config surfaces, and at least one verification path",
+      "expected_skill": "impl",
+      "expected_artifact": "charness-artifacts/impl",
+      "validation_tier": "evaluator-required",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `impl` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/impl` when the skill persists durable state",
+        "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The checked-in public core keeps `impl` downstream of `spec` while still requiring an inline honest contract when no separate spec exists, which matches a direct build-slice prompt instead of collapsing into `spec` or `quality`.",
+        "Repo-owned eval coverage already exercises `impl-adapter-bootstrap`, pinning the inferred adapter defaults for `charness-artifacts/impl` and the verification/truth-surface fields that bootstrap expects.",
+        "Repo-owned tests preserve the operational seams that matter most here: verification survey warnings for missing preferred tools, the explicit `Truth Surface Sync` closeout contract, and the autonomous-continuation rule for locally decidable next slices."
+      ]
+    },
+    {
       "skill_id": "spec",
       "prompt": "Turn this vague request into a living implementation contract before code changes spread.",
       "repo_shape": "repo with an under-specified change request and enough current docs or code to refine a build contract",
@@ -227,6 +272,27 @@
         "The checked-in public core frames `spec` as turning an under-specified request into the current build contract, which keeps this prompt out of `ideation` and `impl` unless the concept or execution state changes materially.",
         "Representative contract pins in `scripts/check-skill-contracts.py` keep the Contract Shaping section and the `Fixed Decisions`/`Probe Questions`/`Deferred Decisions`/`Acceptance Checks`/`First Implementation Slice` skeleton load-bearing.",
         "Repo-owned tests preserve the higher-cost reasoning seams around `spec`, including the premortem loop, fresh-eye review, and rejected-alternative capture, while the current scaffold remains adapter-free."
+      ]
+    },
+    {
+      "skill_id": "retro",
+      "prompt": "Run a short retro on this slice and persist the repeat trap if the workflow should have caught it.",
+      "repo_shape": "repo that just completed a meaningful slice or exposed a missed issue that should feed repeat-trap memory",
+      "expected_skill": "retro",
+      "expected_artifact": "charness-artifacts/retro/recent-lessons.md",
+      "validation_tier": "hitl-recommended",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `retro` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/retro/recent-lessons.md` when the skill persists durable state",
+        "produces an output that a maintainer could review directly without re-deriving the whole request"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The checked-in public core keeps `retro` bounded to a session or weekly review, requires an explicit `Persisted` status, and auto-triggers a short session retro when a real workflow miss is exposed.",
+        "The adapter resolver already exposes `summary_path: charness-artifacts/retro/recent-lessons.md`, and the current repo treats that digest as a first-class memory surface from both `AGENTS.md` and `docs/handoff.md`.",
+        "Repo-owned tests prove the durable-memory seam end to end: `test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons` verifies artifact plus digest refresh, and `test_retro_memory_surfaces_reference_recent_lessons_digest` guards the checked-in recent-lessons contract."
       ]
     }
   ]

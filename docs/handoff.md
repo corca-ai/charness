@@ -38,17 +38,17 @@
   producer-side gate만으로는 부족하고 consumer-side dogfood matrix가 필요하다는
   것이다.
 - `docs/public-skill-dogfood.json`가 현재 reviewed consumer dogfood registry다.
-  지금은 `create-skill`, `debug`, `find-skills`, `gather`, `init-repo`,
-  `narrative`, `quality`, `release`, `spec`, `handoff`를 커버하고,
-  `suggest-public-skill-dogfood.py`와 `validate-public-skill-dogfood.py`가
-  scaffold drift를 잡는다.
+  지금은 `announcement`, `create-skill`, `debug`, `find-skills`, `gather`,
+  `impl`, `init-repo`, `narrative`, `quality`, `release`, `retro`, `spec`,
+  `handoff`를 커버하고, `suggest-public-skill-dogfood.py`와
+  `validate-public-skill-dogfood.py`가 scaffold drift를 잡는다.
 - Packaging/plugin release surface는 `0.0.7`로 bump되어 `main`에 push됐다.
 
 ## Next Session
 
 1. `git status --short`를 먼저 확인한다.
 2. Dogfood 개선으로 이어가면 다음 후보는 아직 reviewed set 밖에 있는
-   `announcement`, `impl`, `retro` 같은 delivery/execution-closeout prompt다.
+   `create-cli`, `ideation`, `premortem`, `hitl` 같은 planning/review prompt다.
    `python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id
    <skill-id>`로 scaffold를 뽑고, `docs/public-skill-dogfood.json`에
    reviewed evidence를 추가한다.
