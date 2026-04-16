@@ -22,36 +22,36 @@ maintainable structural fixes rather than one-off bypasses.
   wrapper reduction, not through threshold changes.
 - `specdown run -quiet -no-report` remains part of the quiet quality gate.
 - `inventory-quality-handoff` remains advisory and reports missing HITL handoff
-  fields for `NON_AUTOMATABLE` recommendations.
+  fields for `NON_AUTOMATABLE` recommendations when the artifact omits them.
 - `.githooks/pre-push` syncs checked-in plugin exports, fails on generated
   export drift, then runs the quiet quality gate.
 
 ## Runtime Signals
 
 - Latest local review gate after this slice: `38 passed, 0 failed`, total
-  `49.1s`.
-- runtime hot spots: `pytest` `29.6s`, `check-coverage` `11.2s`,
-  `specdown` `7.8s`, `check-secrets` `3.2s`, `run-evals` `2.4s`.
+  `56.7s`.
+- runtime hot spots: `pytest` `37.3s`, `check-coverage` `10.1s`,
+  `specdown` `4.6s`, `check-secrets` `3.8s`, `run-evals` `2.4s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
-  `85.0%`; current result is `90.6%` (`1152/1272`).
+  `85.0%`; current result is `92.1%` (`1172/1272`).
 - evaluator depth: `run-evals` passes 19 repo-local scenarios, so the bar is
   stronger than smoke-only review.
-- Budgeted phases: `pytest` median `28.1s / 40.0s`,
-  `check-coverage` median `9.9s / 15.0s`, `check-secrets` median `3.0s / 5.0s`,
-  `run-evals` median `2.3s / 5.0s`, `specdown` median `7.3s / 8.0s`.
+- Budgeted phases: `pytest` median `29.2s / 40.0s`,
+  `check-coverage` median `10.1s / 15.0s`, `check-secrets` median `3.1s / 5.0s`,
+  `run-evals` median `2.4s / 5.0s`, `specdown` median `7.7s / 8.0s`.
 - Runtime signals continue to persist under `.charness/quality/`.
 
 ## Coverage and Eval Depth
 
-- Coverage gate: `90.6%` (`1152/1272`) against the `60.0%` aggregate floor and
+- Coverage gate: `92.1%` (`1172/1272`) against the `60.0%` aggregate floor and
   `85.0%` per-file floor.
-- Test-production ratio is `0.52` (`10253/19626` Python lines), under the
+- Test-production ratio is `0.54` (`10749/19860` Python lines), under the
   `1.00` ceiling.
-- Standing pytest passes at `287 passed`; `run-evals` passes 19 repo-local
+- Standing pytest passes at `302 passed`; `run-evals` passes 19 repo-local
   scenarios.
 - Weakest tracked files are still warn-band candidates:
-  `support_sync_lib.py` `87.7%`, `upstream_release_lib.py` `87.6%`,
-  `control_plane_lib.py` `88.1%`, `install_tools.py` `88.6%`.
+  `install_tools.py` `88.6%`, `control_plane_lib.py` `89.7%`,
+  `install_provenance_lib.py` `90.0%`, `support_sync_lib.py` `90.2%`.
 - Specdown remains intentionally narrow and honest; the current bar is stronger
   than smoke-only but still not broad behavioral parity coverage.
 
@@ -66,6 +66,10 @@ maintainable structural fixes rather than one-off bypasses.
   seams that are easier to test and reuse.
 - Plugin exports were resynced so the repo and shipped plugin tree now agree on
   the new helper seams.
+- Control-plane traced coverage scenarios now include helper-contract branches
+  for support sync, release probing, manifest/capability validation, and
+  install helper lock-writing paths, so the coverage gate better reflects real
+  maintained behavior instead of only top-level command flows.
 - Lint-ignore inventory is currently clean: no blanket, file-level, or inline
   suppression debt was needed to make this slice pass.
 
@@ -108,7 +112,7 @@ maintainable structural fixes rather than one-off bypasses.
 ## Recommended Next Gates
 
 - active `AUTO_CANDIDATE`: reduce complexity in `support_sync_lib.py`,
-  `upstream_release_lib.py`, `control_plane_lib.py`, and `install_tools.py`
+  `control_plane_lib.py`, `install_tools.py`, and `install_provenance_lib.py`
   before widening tests again; the warn band is now the sharpest deterministic
   signal.
 - active `AUTO_CANDIDATE`: tighten `README.md` and
@@ -120,7 +124,14 @@ maintainable structural fixes rather than one-off bypasses.
 - passive `NON_AUTOMATABLE`: because these heuristics should stay advisory
   until a narrower, defensible rule set is chosen, decide which ergonomics
   heuristics are strong enough to graduate from advisory inventory to a real
-  gate.
+  gate. HITL handoff: `target=entrypoint-doc and skill-ergonomics heuristics`,
+  `review_question=which heuristics are strong enough to become a hard gate
+  without turning prose review into taste policing`,
+  `decision_needed=select promotable heuristics vs keep inventory-only posture`,
+  `must_not_auto_decide=true`,
+  `observation_point=after one more cleanup pass on README/operator docs and long skill cores`,
+  `revisit_cadence=after meaningful quality cleanup slices`,
+  `automation_candidate=promote only the narrowed rule subset that survives maintainer review`.
 
 ## History
 

@@ -20,6 +20,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_check_coverage_lib_module = import_repo_module(__file__, "scripts.check_coverage_lib")
+_scripts_check_coverage_extra_lib_module = import_repo_module(__file__, "scripts.check_coverage_extra_lib")
 PER_FILE_WARN_BELOW = _scripts_check_coverage_lib_module.PER_FILE_WARN_BELOW
 build_per_file_floor_report = _scripts_check_coverage_lib_module.build_per_file_floor_report
 exercise_control_plane_scenarios = _scripts_check_coverage_lib_module.exercise_control_plane_scenarios
@@ -27,6 +28,10 @@ exercise_install_provenance_scenarios = _scripts_check_coverage_lib_module.exerc
 exercise_lifecycle_scenarios = _scripts_check_coverage_lib_module.exercise_lifecycle_scenarios
 exercise_support_sync_scenarios = _scripts_check_coverage_lib_module.exercise_support_sync_scenarios
 exercise_upstream_release_scenarios = _scripts_check_coverage_lib_module.exercise_upstream_release_scenarios
+exercise_control_plane_helper_scenarios = _scripts_check_coverage_extra_lib_module.exercise_control_plane_helper_scenarios
+exercise_install_tool_helper_scenarios = _scripts_check_coverage_extra_lib_module.exercise_install_tool_helper_scenarios
+exercise_support_sync_helper_scenarios = _scripts_check_coverage_extra_lib_module.exercise_support_sync_helper_scenarios
+exercise_upstream_release_helper_scenarios = _scripts_check_coverage_extra_lib_module.exercise_upstream_release_helper_scenarios
 
 TARGET_FILES = (
     Path("scripts/control_plane_lib.py"),
@@ -190,10 +195,14 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
         )
         scenario_functions = (
             exercise_control_plane_scenarios,
+            exercise_control_plane_helper_scenarios,
             exercise_install_provenance_scenarios,
+            exercise_install_tool_helper_scenarios,
             exercise_support_sync_scenarios,
+            exercise_support_sync_helper_scenarios,
             exercise_lifecycle_scenarios,
             exercise_upstream_release_scenarios,
+            exercise_upstream_release_helper_scenarios,
         )
         for function in scenario_functions:
             run_traced_function(tracer, function)
