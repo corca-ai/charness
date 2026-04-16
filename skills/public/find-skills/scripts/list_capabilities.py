@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -25,6 +26,8 @@ from scripts.repo_layout import discovery_stub_dir, generated_support_dir, publi
 from scripts.support_sync_lib import support_link_name, support_state_for_manifest  # noqa: E402
 from scripts.tool_recommendation_lib import recommendations_for_public_skill  # noqa: E402
 from resolve_adapter import load_adapter  # noqa: E402
+
+REFERENCE_TOKEN_RE = re.compile(r"`([^`]+)`")
 
 def _local_surface_root(target_root: Path) -> Path:
     return target_root if (REPO_ROOT / "skills" / "public").is_dir() else REPO_ROOT
@@ -51,6 +54,49 @@ def _render_path(path: Path, repo_root: Path) -> str:
     except ValueError:
         return str(path)
 
+def _dedupe(items: list[str]) -> list[str]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for item in items:
+        if item and item not in seen:
+            seen.add(item)
+            result.append(item)
+    return result
+
+def _skill_trigger_phrases(name: str, layer: str) -> list[str]:
+    phrases = [
+        name,
+        f"{name} skill",
+        f"{name} 스킬",
+        f"charness:{name}",
+    ]
+    if "support" in layer:
+        phrases.extend(
+            [
+                f"support/{name}",
+                f"{name} support",
+                f"{name} support skill",
+                f"{name} helper",
+            ]
+        )
+    return _dedupe(phrases)
+
+def _referenced_skill_paths(skill_md: Path, repo_root: Path) -> list[str]:
+    text = skill_md.read_text(encoding="utf-8")
+    paths: list[str] = []
+    for match in REFERENCE_TOKEN_RE.findall(text):
+        token = match.strip()
+        if not (
+            token == "adapter.example.yaml"
+            or token.startswith("references/")
+            or token.startswith("scripts/")
+        ):
+            continue
+        candidate = skill_md.parent / token
+        if candidate.is_file():
+            paths.append(_render_path(candidate, repo_root))
+    return _dedupe(paths)
+
 def _collect_skill_entries(
     skill_roots: list[tuple[str, Path]],
     *,
@@ -68,12 +114,19 @@ def _collect_skill_entries(
                 continue
             seen_paths.add(resolved)
             frontmatter = extract_frontmatter(skill_md)
+            name = frontmatter.get("name", skill_md.parent.name)
+            description = frontmatter.get("description", "")
             items.append(
                 {
                     "id": skill_md.parent.name,
-                    "name": frontmatter.get("name", skill_md.parent.name),
-                    "description": frontmatter.get("description", ""),
+                    "name": name,
+                    "description": description,
+                    "summary": description,
                     "path": _render_path(skill_md, repo_root),
+                    "skill_dir": _render_path(skill_md.parent, repo_root),
+                    "canonical_path": _render_path(skill_md, repo_root),
+                    "trigger_phrases": _skill_trigger_phrases(name, layer),
+                    "referenced_paths": _referenced_skill_paths(skill_md, repo_root),
                     "source": source_id,
                     "layer": layer,
                 }
@@ -141,9 +194,21 @@ def support_capabilities(root: Path) -> list[dict[str, object]]:
             {
                 "id": capability["tool_id"],
                 "kind": capability["kind"],
+                "display_name": capability.get("display_name", capability["tool_id"]),
+                "summary": capability.get("summary", ""),
                 "access_modes": capability.get("access_modes", []),
                 "capability_requirements": capability.get("capability_requirements", {}),
                 "intent_triggers": capability.get("intent_triggers", []),
+                "trigger_phrases": _dedupe(
+                    [
+                        capability["tool_id"],
+                        capability.get("display_name", ""),
+                        f"{capability['tool_id']} support",
+                        f"{capability['tool_id']} support skill",
+                        f"support/{capability['tool_id']}",
+                        *capability.get("intent_triggers", []),
+                    ]
+                ),
                 "config_layers": [
                     {
                         "layer_id": layer["layer_id"],

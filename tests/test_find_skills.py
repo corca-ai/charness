@@ -113,6 +113,14 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
         text=True,
     )
     payload = json.loads(result.stdout)
+    assert payload["public_skills"][0]["summary"] == "Demo skill."
+    assert payload["public_skills"][0]["canonical_path"] == "skills/public/demo/SKILL.md"
+    assert payload["public_skills"][0]["trigger_phrases"] == [
+        "demo",
+        "demo skill",
+        "demo 스킬",
+        "charness:demo",
+    ]
     assert payload["integrations"] == [
         {
             "id": "example",
@@ -175,6 +183,11 @@ def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None
         encoding="utf-8",
     )
     (tmp_path / "skills" / "support" / "gather-slack").mkdir(parents=True)
+    (tmp_path / "skills" / "support" / "gather-slack" / "references").mkdir(parents=True)
+    (tmp_path / "skills" / "support" / "gather-slack" / "references" / "runtime.md").write_text(
+        "# Runtime\n",
+        encoding="utf-8",
+    )
     (tmp_path / "skills" / "support" / "gather-slack" / "SKILL.md").write_text(
         "\n".join(
             [
@@ -184,6 +197,8 @@ def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None
                 "---",
                 "",
                 "# Gather Slack",
+                "",
+                "- `references/runtime.md`",
             ]
         )
         + "\n",
@@ -272,16 +287,50 @@ def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None
         text=True,
     )
     payload = json.loads(result.stdout)
+    assert payload["support_skills"] == [
+        {
+            "id": "gather-slack",
+            "name": "gather-slack",
+            "description": "Slack support.",
+            "summary": "Slack support.",
+            "path": "skills/support/gather-slack/SKILL.md",
+            "skill_dir": "skills/support/gather-slack",
+            "canonical_path": "skills/support/gather-slack/SKILL.md",
+            "trigger_phrases": [
+                "gather-slack",
+                "gather-slack skill",
+                "gather-slack 스킬",
+                "charness:gather-slack",
+                "support/gather-slack",
+                "gather-slack support",
+                "gather-slack support skill",
+                "gather-slack helper",
+            ],
+            "referenced_paths": ["skills/support/gather-slack/references/runtime.md"],
+            "source": "local-support",
+            "layer": "support skill",
+        }
+    ]
     assert payload["support_capabilities"] == [
         {
             "id": "gather-slack",
             "kind": "support_runtime",
+            "display_name": "Slack gather",
+            "summary": "Support-owned Slack runtime.",
             "access_modes": ["grant", "env", "degraded"],
             "capability_requirements": {
                 "grant_ids": ["slack.history"],
                 "env_vars": ["SLACK_BOT_TOKEN"],
             },
             "intent_triggers": ["gather slack"],
+            "trigger_phrases": [
+                "gather-slack",
+                "Slack gather",
+                "gather-slack support",
+                "gather-slack support skill",
+                "support/gather-slack",
+                "gather slack",
+            ],
             "config_layers": [
                 {
                     "layer_id": "slack-grant",

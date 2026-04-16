@@ -1,6 +1,6 @@
 ---
 name: find-skills
-description: "Use when the user wants to discover which skill, support capability, or integration should handle a task. Search the current harness first, expand to adapter-configured trusted skill roots when available, and explain the next usable path without hiding missing capability gaps."
+description: "Use when the user asks which skill, support capability, or integration should handle a task, or names a skill/support/capability such as `X skill`, `X 스킬`, `support/X`, or `X integration`. Call this before filesystem search for named capabilities; support skills are intentionally hidden from the default skill list."
 ---
 
 # Find Skills
@@ -8,9 +8,16 @@ description: "Use when the user wants to discover which skill, support capabilit
 Use this when the user is asking:
 
 - what skill should handle a task
+- whether a named skill, support skill, helper, or integration exists
 - whether the current harness can do something
 - whether a capability is native, support-driven, or external
 - how to extend the harness for a recurring task
+
+When the user names a capability directly, including phrases like `X skill`,
+`X 스킬`, `X support`, `support/X`, `X helper`, or `X integration`, run
+`find-skills` before `find`, `ls`, or `grep` filesystem discovery. Support
+skills are intentionally hidden from the default public skill list; this is the
+canonical discovery path for them.
 
 `find-skills` is one public concept:
 
@@ -47,6 +54,8 @@ Default durable artifact:
 What you get after one run:
 
 - a local-first capability inventory
+- public/support skill descriptions, canonical paths, trigger phrases, and
+  directly referenced skill files
 - the smallest next usable path across public skills, support seams, and integrations
 
 What this does not do:
