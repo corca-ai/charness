@@ -2,6 +2,7 @@
   "schema_version": 1,
   "review_required_skills": [
     "create-skill",
+    "find-skills",
     "handoff",
     "quality"
   ],
@@ -27,6 +28,28 @@
         "The prompt asks to improve a skill package directly, which matches `create-skill` instead of generic implementation or release work.",
         "The checked-in core now explicitly requires one realistic consumer prompt for public-skill changes and treats frontmatter plus generated AGENTS hints as classifier input.",
         "The current scaffold resolves no adapter artifact for `create-skill`, which matches the adapter-free contract instead of inventing repo-local state."
+      ]
+    },
+    {
+      "skill_id": "find-skills",
+      "prompt": "Which skill should handle this named capability, and what existing support surface already covers it?",
+      "repo_shape": "repo with multiple public and support skills where the user names a capability instead of a file path",
+      "expected_skill": "find-skills",
+      "expected_artifact": "charness-artifacts/find-skills/latest.md",
+      "validation_tier": "evaluator-required",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `find-skills` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/find-skills/latest.md` when the skill persists durable state",
+        "handles the skill's load-bearing contract without needing the user to restate obvious repo context",
+        "uses the named skill or capability lookup path before falling back to broad filesystem search"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The checked-in public core explicitly says capability phrases like `X skill`, `support/X`, and `X integration` should invoke `find-skills` before filesystem discovery.",
+        "The adapter resolves the durable artifact to `charness-artifacts/find-skills/latest.md`, which matches the current reviewed expectation for persisted capability discovery output.",
+        "Repo-owned eval and tests already exercise local-first discovery through `find-skills-local-first`, confirming that named capability lookup stays ahead of broad search and still exposes trusted roots and integrations honestly."
       ]
     },
     {

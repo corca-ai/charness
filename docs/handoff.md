@@ -38,7 +38,7 @@
   producer-side gate만으로는 부족하고 consumer-side dogfood matrix가 필요하다는
   것이다.
 - `docs/public-skill-dogfood.json`가 현재 reviewed consumer dogfood registry다.
-  지금은 `create-skill`, `quality`, `handoff`를 커버하고,
+  지금은 `create-skill`, `find-skills`, `quality`, `handoff`를 커버하고,
   `suggest-public-skill-dogfood.py`와 `validate-public-skill-dogfood.py`가
   scaffold drift를 잡는다.
 - Packaging/plugin release surface는 `0.0.7`로 bump되어 `main`에 push됐다.
@@ -46,10 +46,11 @@
 ## Next Session
 
 1. `git status --short`를 먼저 확인한다.
-2. Dogfood 개선으로 이어가면 기존 reviewed set 바깥에서 다음 real consumer
-   prompt 하나를 골라 `python3 scripts/suggest-public-skill-dogfood.py
-   --repo-root . --skill-id <skill-id>`로 scaffold를 뽑고,
-   `docs/public-skill-dogfood.json`에 reviewed evidence를 추가한다.
+2. Dogfood 개선으로 이어가면 다음 후보는 `init-repo`나 `narrative`처럼
+   아직 reviewed set 밖에 있는 mature-repo consumer prompt다.
+   `python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id
+   <skill-id>`로 scaffold를 뽑고, `docs/public-skill-dogfood.json`에
+   reviewed evidence를 추가한다.
 3. Release follow-up이 필요하면 `charness-artifacts/release/latest.md`와
    `current_release.py` 상태를 먼저 확인한다. `0.0.7` 태그/게시 릴리스는 아직 만들지 않았다.
 4. sah/specdown lesson line을 이어간다면 다음 작은 CLI 후보는 task
@@ -76,5 +77,4 @@
 - [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
 - [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md)
 - [charness-artifacts/retro/recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)
-- [charness-artifacts/retro/2026-04-15-coverage-floor-runtime-budget.md](../charness-artifacts/retro/2026-04-15-coverage-floor-runtime-budget.md)
 - [public-skill-dogfood.md](public-skill-dogfood.md)

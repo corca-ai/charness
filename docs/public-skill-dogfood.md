@@ -16,6 +16,7 @@ stays as the short human-readable contract for the same reviewed cases.
 ## Current Required Reviewed Skills
 
 - `create-skill`
+- `find-skills`
 - `quality`
 - `handoff`
 
