@@ -16,6 +16,7 @@ stays as the short human-readable contract for the same reviewed cases.
 ## Current Required Reviewed Skills
 
 - `create-skill`
+- `debug`
 - `find-skills`
 - `gather`
 - `handoff`
@@ -23,6 +24,7 @@ stays as the short human-readable contract for the same reviewed cases.
 - `narrative`
 - `quality`
 - `release`
+- `spec`
 
 ## Review Posture
 

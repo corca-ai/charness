@@ -2,13 +2,15 @@
   "schema_version": 1,
   "review_required_skills": [
     "create-skill",
+    "debug",
     "find-skills",
     "gather",
     "handoff",
     "init-repo",
     "narrative",
     "quality",
-    "release"
+    "release",
+    "spec"
   ],
   "cases": [
     {
@@ -32,6 +34,27 @@
         "The prompt asks to improve a skill package directly, which matches `create-skill` instead of generic implementation or release work.",
         "The checked-in core now explicitly requires one realistic consumer prompt for public-skill changes and treats frontmatter plus generated AGENTS hints as classifier input.",
         "The current scaffold resolves no adapter artifact for `create-skill`, which matches the adapter-free contract instead of inventing repo-local state."
+      ]
+    },
+    {
+      "skill_id": "debug",
+      "prompt": "Investigate this regression and leave a durable record of what actually failed before changing code.",
+      "repo_shape": "active repo slice with a reproducible failure, existing logs or tests, and enough local state to preserve a durable debug artifact",
+      "expected_skill": "debug",
+      "expected_artifact": "charness-artifacts/debug/latest.md",
+      "validation_tier": "evaluator-required",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `debug` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/debug/latest.md` when the skill persists durable state",
+        "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The checked-in public core explicitly keeps `debug` in diagnosis-before-repair mode, preserving the exact symptom, a falsifiable hypothesis, and at least three candidate causes before implementation work starts.",
+        "Repo-owned eval coverage already exercises `debug-adapter-bootstrap`, which pins the current adapter bootstrap and canonical artifact path at `charness-artifacts/debug/latest.md`.",
+        "The committed `validate-debug-artifact.py` gate plus `tests/test_debug_artifact.py` enforce the durable artifact shape, including canonical sections and the minimum three plausible causes requirement."
       ]
     },
     {
@@ -183,6 +206,27 @@
         "The current handoff is a checked-in canonical artifact and the adapter resolves directly to `docs/handoff.md`.",
         "The public core says mention-only pickup should continue the workflow named in the trigger rather than re-deriving state from scratch.",
         "The size gate and continuation-first rewrite rules keep the pickup path explicit, which matches the repo's current use of handoff as the first read surface."
+      ]
+    },
+    {
+      "skill_id": "spec",
+      "prompt": "Turn this vague request into a living implementation contract before code changes spread.",
+      "repo_shape": "repo with an under-specified change request and enough current docs or code to refine a build contract",
+      "expected_skill": "spec",
+      "expected_artifact": null,
+      "validation_tier": "evaluator-required",
+      "adapter_requirement": "adapter-free",
+      "acceptance_evidence": [
+        "routes the prompt to `spec` instead of an adjacent public skill",
+        "does not invent host-specific adapter state when repo inspection alone should be enough",
+        "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-04-16",
+      "observed_evidence": [
+        "The checked-in public core frames `spec` as turning an under-specified request into the current build contract, which keeps this prompt out of `ideation` and `impl` unless the concept or execution state changes materially.",
+        "Representative contract pins in `scripts/check-skill-contracts.py` keep the Contract Shaping section and the `Fixed Decisions`/`Probe Questions`/`Deferred Decisions`/`Acceptance Checks`/`First Implementation Slice` skeleton load-bearing.",
+        "Repo-owned tests preserve the higher-cost reasoning seams around `spec`, including the premortem loop, fresh-eye review, and rejected-alternative capture, while the current scaffold remains adapter-free."
       ]
     }
   ]
