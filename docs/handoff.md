@@ -48,22 +48,26 @@
 ## Next Session
 
 1. `git status --short`를 먼저 확인한다.
-2. Dogfood 개선으로 이어가면 이제 registry 확장보다 reviewed case 강화가
+2. Agent Harness Guide adaptation을 이어가면 먼저
+   [charness-artifacts/spec/agent-harness-guide-adaptation.md](../charness-artifacts/spec/agent-harness-guide-adaptation.md)를
+   읽고 `Slice 1`부터 시작한다. 첫 구현 범위는 `docs/harness-composition.md`,
+   `docs/artifact-policy.md`, 그리고 최소 handoff cross-link다.
+3. Dogfood 개선으로 이어가면 이제 registry 확장보다 reviewed case 강화가
    다음 move다. 먼저 `hitl`이나 `ideation`처럼 근거가 policy-heavy한 case를
    골라 실제 consumer prompt replay와 stronger acceptance evidence를
    추가한다. tier 재검토는 그 뒤에 한다. 새 public skill이 생기면 그때만
    `suggest-public-skill-dogfood.py` scaffold를 다시 추가한다.
-3. Release follow-up이 필요하면 `charness-artifacts/release/latest.md`와
+4. Release follow-up이 필요하면 `charness-artifacts/release/latest.md`와
    `current_release.py` 상태를 먼저 확인한다. `0.0.7` 태그/게시 릴리스는 아직 만들지 않았다.
-4. sah/specdown lesson line을 이어간다면 다음 작은 CLI 후보는 task
+5. sah/specdown lesson line을 이어간다면 다음 작은 CLI 후보는 task
    envelope와 doctor `next_action`을 실제 멀티에이전트 세션에서 dogfood한
    뒤, 필요한 경우 task list/status summary를 다듬는 것이다. 스펙다운은
    반복 setup/JSON 추출이 두세 번 생기기 전에는 adapter를 만들지 않는다.
-5. 이 handoff가 커밋된 상태라면 다음 품질 작업은 85% floor에 가까운
+6. 이 handoff가 커밋된 상태라면 다음 품질 작업은 85% floor에 가까운
    `upstream_release_lib.py`, `control_plane_lib.py`, `install_tools.py`에서
    남은 branch를 리팩터링하거나 죽은 코드를 지우는 것이다. 테스트 추가보다
    생산 코드 축소를 먼저 본다.
-6. source가 checked-in plugin export에 들어가는 파일이면, focused
+7. source가 checked-in plugin export에 들어가는 파일이면, focused
    managed-checkout 테스트 전에 export sync를 먼저 실행한다.
 
 ## Discuss
