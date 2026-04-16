@@ -37,15 +37,15 @@
 - GitHub 이슈 #25-#31은 `main`에 반영했고 모두 close했다. Retro 결론은
   producer-side gate만으로는 부족하고 consumer-side dogfood matrix가 필요하다는
   것이다.
-- Packaging/plugin release surface는 `0.0.7`로 bump 중이다.
+- Packaging/plugin release surface는 `0.0.7`로 bump되어 `main`에 push됐다.
 
 ## Next Session
 
 1. `git status --short`를 먼저 확인한다.
-2. Release bump가 이어지는 중이면 `charness-artifacts/release/latest.md`,
-   `packaging/charness.json`, `python3 skills/public/release/scripts/current_release.py --repo-root .`를 확인한 뒤 quality와 push 상태를 본다.
-3. Dogfood 개선으로 이어가면 `charness-artifacts/retro/recent-lessons.md`의
+2. Dogfood 개선으로 이어가면 `charness-artifacts/retro/recent-lessons.md`의
    consumer-side dogfood matrix 항목을 먼저 구현 후보로 본다.
+3. Release follow-up이 필요하면 `charness-artifacts/release/latest.md`와
+   `current_release.py` 상태를 먼저 확인한다. `0.0.7` 태그/게시 릴리스는 아직 만들지 않았다.
 4. sah/specdown lesson line을 이어간다면 다음 작은 CLI 후보는 task
    envelope와 doctor `next_action`을 실제 멀티에이전트 세션에서 dogfood한
    뒤, 필요한 경우 task list/status summary를 다듬는 것이다. 스펙다운은
