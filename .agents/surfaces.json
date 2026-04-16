@@ -12,7 +12,9 @@
         "profiles/**",
         "presets/**",
         "integrations/**",
-        "scripts/**"
+        "scripts/**",
+        "runtime_bootstrap.py",
+        "skill_runtime_bootstrap.py"
       ],
       "derived_paths": [
         "plugins/charness/**",
@@ -255,7 +257,9 @@
         "charness",
         "scripts/**/*.py",
         "tests/*.py",
-        "tests/**/*.py"
+        "tests/**/*.py",
+        "runtime_bootstrap.py",
+        "skill_runtime_bootstrap.py"
       ],
       "derived_paths": [
         "plugins/charness/scripts/**/*.py"

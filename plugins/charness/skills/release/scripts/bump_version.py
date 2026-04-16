@@ -1,18 +1,35 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 import subprocess
-import sys
 from pathlib import Path
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(SCRIPT_DIR))
 
-from resolve_adapter import load_adapter
+def _load_skill_runtime_bootstrap():
+    script_path = Path(__file__).resolve()
+    for ancestor in script_path.parents:
+        candidate = ancestor / "skill_runtime_bootstrap.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("skill_runtime_bootstrap", candidate)
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("skill_runtime_bootstrap.py not found")
+
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
+
+
+
+
+_resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
+load_adapter = _resolve_adapter_module.load_adapter
 
 VERSION_RE = re.compile(r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(?:-[0-9A-Za-z.-]+)?$")
 

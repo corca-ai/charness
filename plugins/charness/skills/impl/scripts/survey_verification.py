@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import shutil
 import sys
@@ -10,20 +10,30 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 
-def _runtime_root() -> Path:
+def _load_skill_runtime_bootstrap():
     script_path = Path(__file__).resolve()
     for ancestor in script_path.parents:
-        if (ancestor / "scripts" / "adapter_lib.py").is_file():
-            return ancestor
-    return script_path.parents[4]
+        candidate = ancestor / "skill_runtime_bootstrap.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("skill_runtime_bootstrap", candidate)
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("skill_runtime_bootstrap.py not found")
+
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 
-REPO_ROOT = _runtime_root()
-SKILL_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(REPO_ROOT))
-sys.path.insert(0, str(SKILL_DIR))
 
-from resolve_adapter import load_adapter
+
+
+
+
+_resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
+load_adapter = _resolve_adapter_module.load_adapter
 
 SKILL_DIR_CANDIDATES = (
     Path(".agents/skills"),

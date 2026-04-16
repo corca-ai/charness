@@ -166,6 +166,9 @@ def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> No
     runtime_bootstrap_path = repo_root / "runtime_bootstrap.py"
     if runtime_bootstrap_path.is_file():
         copy_file(runtime_bootstrap_path, plugin_root / "runtime_bootstrap.py")
+    skill_runtime_bootstrap_path = repo_root / "skill_runtime_bootstrap.py"
+    if skill_runtime_bootstrap_path.is_file():
+        copy_file(skill_runtime_bootstrap_path, plugin_root / "skill_runtime_bootstrap.py")
 
     write_json(plugin_root / manifest["claude"]["manifest_path"], manifest["claude"]["manifest"])
     write_json(plugin_root / manifest["codex"]["manifest_path"], manifest["codex"]["manifest"])

@@ -2,11 +2,29 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import subprocess
 from pathlib import Path
 
-import resolve_adapter
+
+def _load_skill_runtime_bootstrap():
+    script_path = Path(__file__).resolve()
+    for ancestor in script_path.parents:
+        candidate = ancestor / "skill_runtime_bootstrap.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("skill_runtime_bootstrap", candidate)
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("skill_runtime_bootstrap.py not found")
+
+
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+_resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
+load_adapter = _resolve_adapter_module.load_adapter
 
 
 def _run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -68,7 +86,7 @@ def main() -> None:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    adapter = resolve_adapter.load_adapter(repo_root)
+    adapter = load_adapter(repo_root)
     data = adapter["data"]
     source_documents = list(data.get("source_documents", []))
     mutable_documents = set(data.get("mutable_documents", []))

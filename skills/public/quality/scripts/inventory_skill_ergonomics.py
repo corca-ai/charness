@@ -1,19 +1,39 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402, I001
 
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
-import sys
 from pathlib import Path
 from typing import Iterable
 
-SCRIPT_PATH = Path(__file__).resolve()
-sys.path[:0] = [str(SCRIPT_PATH.parents[4]), str(SCRIPT_PATH.parents[3])]
 
-from scripts.skill_markdown_lib import count_fence_blocks, extract_h2_section_lines, strip_fenced_lines, strip_frontmatter
+def _load_skill_runtime_bootstrap():
+    script_path = Path(__file__).resolve()
+    for ancestor in script_path.parents:
+        candidate = ancestor / "skill_runtime_bootstrap.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("skill_runtime_bootstrap", candidate)
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("skill_runtime_bootstrap.py not found")
+
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
+
+
+
+
+_scripts_skill_markdown_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.skill_markdown_lib")
+count_fence_blocks = _scripts_skill_markdown_lib_module.count_fence_blocks
+extract_h2_section_lines = _scripts_skill_markdown_lib_module.extract_h2_section_lines
+strip_fenced_lines = _scripts_skill_markdown_lib_module.strip_fenced_lines
+strip_frontmatter = _scripts_skill_markdown_lib_module.strip_frontmatter
 
 DEFAULT_REVIEW_PROMPTS = [
     "Keep `SKILL.md` core concise; push nuance and payload into references or scripts.",

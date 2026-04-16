@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 """Enforce per-command runtime budgets recorded in runtime-signals.json.
 
 Reads the adapter's `runtime_budgets` mapping (label -> max_elapsed_ms) and
@@ -12,25 +11,32 @@ so a budget can be defined before its first observed run.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import sys
 from pathlib import Path
 from typing import Any
 
 
-def _runtime_root() -> Path:
+def _load_skill_runtime_bootstrap():
     script_path = Path(__file__).resolve()
     for ancestor in script_path.parents:
-        if (ancestor / "scripts" / "adapter_lib.py").is_file():
-            return ancestor
-    return script_path.parents[4]
+        candidate = ancestor / "skill_runtime_bootstrap.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("skill_runtime_bootstrap", candidate)
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("skill_runtime_bootstrap.py not found")
 
 
-REPO_ROOT_FOR_IMPORT = _runtime_root()
-sys.path.insert(0, str(REPO_ROOT_FOR_IMPORT))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
-from resolve_adapter import load_adapter
+_resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
+load_adapter = _resolve_adapter_module.load_adapter
 
 SIGNALS_PATH = Path(".charness") / "quality" / "runtime-signals.json"
 

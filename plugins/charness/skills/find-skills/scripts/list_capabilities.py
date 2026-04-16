@@ -1,30 +1,45 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402, I001
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
-import sys
 from pathlib import Path
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(SCRIPT_DIR))
 
-def _runtime_root() -> Path:
+def _load_skill_runtime_bootstrap():
     script_path = Path(__file__).resolve()
     for ancestor in script_path.parents:
-        if (ancestor / "scripts" / "adapter_lib.py").is_file():
-            return ancestor
-    return script_path.parents[4]
+        candidate = ancestor / "skill_runtime_bootstrap.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("skill_runtime_bootstrap", candidate)
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("skill_runtime_bootstrap.py not found")
 
-REPO_ROOT = _runtime_root()
-sys.path.insert(0, str(REPO_ROOT))
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
-from capability_sources import integrations, support_capabilities  # noqa: E402
-from scripts.repo_layout import generated_support_dir, public_skills_dir, support_dir  # noqa: E402
-from scripts.tool_recommendation_lib import recommendations_for_public_skill  # noqa: E402
-from resolve_adapter import load_adapter  # noqa: E402
+
+
+
+
+
+_capability_sources_module = SKILL_RUNTIME.load_local_skill_module(__file__, "capability_sources")
+integrations = _capability_sources_module.integrations
+support_capabilities = _capability_sources_module.support_capabilities
+_scripts_repo_layout_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.repo_layout")
+generated_support_dir = _scripts_repo_layout_module.generated_support_dir
+public_skills_dir = _scripts_repo_layout_module.public_skills_dir
+support_dir = _scripts_repo_layout_module.support_dir
+_scripts_tool_recommendation_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.tool_recommendation_lib")
+recommendations_for_public_skill = _scripts_tool_recommendation_lib_module.recommendations_for_public_skill
+_resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
+load_adapter = _resolve_adapter_module.load_adapter
 
 REFERENCE_TOKEN_RE = re.compile(r"`([^`]+)`")
 

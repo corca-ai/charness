@@ -127,6 +127,9 @@ Read the smallest memory surface that answers the current question.
 - Prefer deleting drift over documenting drift.
 - If the same helper shape appears twice, factor it before spreading it to a
   third place.
+- When a repo-local structural fix can also improve the installed charness user
+  surface, inspect whether a public skill, reference, packaging contract, or
+  this `AGENTS.md` should absorb the lesson before stopping.
 - If a public skill needs repeated bootstrap, adapter resolution, artifact
   naming, or recovery behavior, ship a helper script instead of leaving it as
   prose-only guidance.

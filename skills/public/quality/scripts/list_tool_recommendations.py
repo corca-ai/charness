@@ -1,25 +1,37 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import sys
 from pathlib import Path
 
 
-def _runtime_root() -> Path:
+def _load_skill_runtime_bootstrap():
     script_path = Path(__file__).resolve()
     for ancestor in script_path.parents:
-        if (ancestor / "scripts" / "adapter_lib.py").is_file():
-            return ancestor
-    return script_path.parents[4]
+        candidate = ancestor / "skill_runtime_bootstrap.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("skill_runtime_bootstrap", candidate)
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("skill_runtime_bootstrap.py not found")
+
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 
-REPO_ROOT = _runtime_root()
-sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.tool_recommendation_lib import recommendations_for_role
+
+
+
+
+_scripts_tool_recommendation_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.tool_recommendation_lib")
+recommendations_for_role = _scripts_tool_recommendation_lib_module.recommendations_for_role
 
 
 def _load_manifests(root: Path) -> list[dict[str, object]]:

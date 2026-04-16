@@ -1,16 +1,35 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import sys
 from pathlib import Path
 
-SCRIPT_PATH = Path(__file__).resolve()
-sys.path[:0] = [str(SCRIPT_PATH.parents[4]), str(SCRIPT_PATH.parents[3])]
 
-from scripts.quality_bootstrap_lib import BootstrapValidationError, bootstrap_quality_adapter
+def _load_skill_runtime_bootstrap():
+    script_path = Path(__file__).resolve()
+    for ancestor in script_path.parents:
+        candidate = ancestor / "skill_runtime_bootstrap.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("skill_runtime_bootstrap", candidate)
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("skill_runtime_bootstrap.py not found")
+
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
+
+
+
+
+_scripts_quality_bootstrap_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_bootstrap_lib")
+BootstrapValidationError = _scripts_quality_bootstrap_lib_module.BootstrapValidationError
+bootstrap_quality_adapter = _scripts_quality_bootstrap_lib_module.bootstrap_quality_adapter
 
 
 def main() -> None:

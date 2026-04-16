@@ -1,42 +1,53 @@
 #!/usr/bin/env python3
-# ruff: noqa: E402
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import sys
 from pathlib import Path
 from typing import Any
 
 
-def _runtime_root() -> Path:
+def _load_skill_runtime_bootstrap():
     script_path = Path(__file__).resolve()
     for ancestor in script_path.parents:
-        if (ancestor / "scripts" / "adapter_lib.py").is_file():
-            return ancestor
-    return script_path.parents[4]
+        candidate = ancestor / "skill_runtime_bootstrap.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("skill_runtime_bootstrap", candidate)
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("skill_runtime_bootstrap.py not found")
 
-REPO_ROOT = _runtime_root()
-sys.path[:0] = [str(Path(__file__).resolve().parent), str(REPO_ROOT)]
+SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
-from adapter_validators import (
-    runtime_budgets as _runtime_budgets,
-)
-from adapter_validators import (
-    skill_ergonomics_gate_rules as _skill_ergonomics_gate_rules,
-)
 
-from scripts.adapter_lib import load_yaml_file
-from scripts.artifact_naming_lib import RECORD_PATTERN
-from scripts.quality_bootstrap_lib import ADAPTER_CANDIDATES
-from scripts.quality_policy_defaults import (
-    DEFAULT_COVERAGE_FLOOR_POLICY,
-    DEFAULT_PROMPT_ASSET_POLICY,
-    DEFAULT_SKILL_ERGONOMICS_GATE_RULES,
-    DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
-    validate_coverage_floor_policy,
-    validate_prompt_asset_policy,
-)
+
+
+
+
+_adapter_validators_module = SKILL_RUNTIME.load_local_skill_module(__file__, "adapter_validators")
+_runtime_budgets = _adapter_validators_module.runtime_budgets
+_adapter_validators_module = SKILL_RUNTIME.load_local_skill_module(__file__, "adapter_validators")
+_skill_ergonomics_gate_rules = _adapter_validators_module.skill_ergonomics_gate_rules
+
+_scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
+load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
+_scripts_artifact_naming_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.artifact_naming_lib")
+RECORD_PATTERN = _scripts_artifact_naming_lib_module.RECORD_PATTERN
+_scripts_quality_bootstrap_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_bootstrap_lib")
+ADAPTER_CANDIDATES = _scripts_quality_bootstrap_lib_module.ADAPTER_CANDIDATES
+_scripts_quality_policy_defaults_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_policy_defaults")
+DEFAULT_COVERAGE_FLOOR_POLICY = _scripts_quality_policy_defaults_module.DEFAULT_COVERAGE_FLOOR_POLICY
+DEFAULT_PROMPT_ASSET_POLICY = _scripts_quality_policy_defaults_module.DEFAULT_PROMPT_ASSET_POLICY
+DEFAULT_SKILL_ERGONOMICS_GATE_RULES = _scripts_quality_policy_defaults_module.DEFAULT_SKILL_ERGONOMICS_GATE_RULES
+DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT = _scripts_quality_policy_defaults_module.DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT
+validate_coverage_floor_policy = _scripts_quality_policy_defaults_module.validate_coverage_floor_policy
+validate_prompt_asset_policy = _scripts_quality_policy_defaults_module.validate_prompt_asset_policy
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
 LIST_FIELDS = (
