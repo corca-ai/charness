@@ -141,3 +141,16 @@ This slice does not add:
 3. add capability init / resolve / doctor / env / explain CLI commands
 4. wire Slack gather export through `charness capability env`
 5. update docs, tests, and checked-in plugin export
+
+## Command Surface
+
+Machine-local capability config lives under `~/.config/charness/` and stays
+separate from repo-checked-in adapter state.
+
+```bash
+charness capability init
+charness capability resolve slack.default
+charness capability doctor slack.default
+charness capability env slack.default
+charness capability explain gather
+```

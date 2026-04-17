@@ -29,23 +29,23 @@ maintainable structural fixes rather than one-off bypasses.
 ## Runtime Signals
 
 - Latest local review gate after this slice: `38 passed, 0 failed`, total
-  `68.4s`.
-- runtime hot spots: `pytest` `43.4s`, `check-coverage` `11.4s`,
-  `specdown` `8.3s`, `check-secrets` `6.3s`, `run-evals` `2.3s`.
+  `48.2s`.
+- runtime hot spots: `pytest` `31.8s`, `check-coverage` `10.9s`,
+  `specdown` `7.8s`, `check-markdown` `3.8s`, `check-secrets` `3.2s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
   `85.0%`; current result is `98.0%` (`1196/1221`).
 - evaluator depth: `run-evals` passes 19 repo-local scenarios, so the bar is
   stronger than smoke-only review.
-- Budgeted phases: `pytest` median `30.1s / 40.0s`,
-  `check-coverage` median `10.4s / 15.0s`, `check-secrets` median `3.3s / 5.0s`,
-  `run-evals` median `2.5s / 5.0s`, `specdown` median `7.4s / 8.0s`.
+- Budgeted phases: `pytest` median `30.4s / 40.0s`,
+  `check-coverage` median `10.7s / 15.0s`, `check-secrets` median `3.3s / 5.0s`,
+  `run-evals` median `2.5s / 5.0s`, `specdown` median `7.8s / 8.0s`.
 - Runtime signals continue to persist under `.charness/quality/`.
 
 ## Coverage and Eval Depth
 
 - Coverage gate: `98.0%` (`1196/1221`) against the `60.0%` aggregate floor and
   `85.0%` per-file floor.
-- Test-production ratio is `0.54` (`10749/19860` Python lines), under the
+- Test-production ratio is `0.54` (`10749/19905` Python lines), under the
   `1.00` ceiling.
 - Standing pytest passes at `302 passed`; `run-evals` passes 19 repo-local
   scenarios.
@@ -66,6 +66,11 @@ maintainable structural fixes rather than one-off bypasses.
   seams that are easier to test and reuse.
 - Plugin exports were resynced so the repo and shipped plugin tree now agree on
   the new helper seams.
+- `README.md` was reduced into a short operator orienter while keeping the
+  command-doc contract intact, so the root entrypoint doc now clears the
+  length-pressure heuristic instead of acting like a second install manual.
+- `docs/capability-resolution.md` and `docs/control-plane.md` now carry thin
+  command-surface anchors, which keeps ownership closer to the actual seam.
 - Control-plane traced coverage scenarios now include helper-contract branches
   for support sync, release probing, manifest/capability validation, and
   install helper lock-writing paths, so the coverage gate better reflects real
@@ -77,63 +82,59 @@ maintainable structural fixes rather than one-off bypasses.
 
 ## Weak
 
-- Entry-point doc ergonomics remain advisory pressure, not hard failures:
-  `README.md` still flags `long_entrypoint` and mode-pressure terms, while
-  `AGENTS.md` and `UNINSTALL.md` still flag mode/option-pressure wording.
+- Entry-point doc ergonomics remain advisory pressure, not hard failures.
+  `README.md` no longer flags `long_entrypoint`, but it still carries
+  `option_pressure_terms_present` because standing command-doc anchors require
+  literal flag-bearing examples. `AGENTS.md` and `UNINSTALL.md` still flag
+  mode/option-pressure wording.
 - Skill ergonomics remain advisory pressure in two public cores:
   `init-repo`, `retro`, and `spec` still flag mode-pressure terms.
-- The recent cleanup pass removed `docs/operator-acceptance.md`,
-  `create-skill`, and `quality` from the advisory list, so remaining
-  ergonomics pressure is now concentrated in README plus a smaller set of
-  existing docs/skills. `spec` still trips the mode-pressure heuristic because
-  a checked-in contract test currently requires the exact phrase
-  `user-facing mode choice`.
+- The recent cleanup pass removed `docs/operator-acceptance.md`, README length
+  pressure, `create-skill`, and `quality` from the advisory list, so remaining
+  ergonomics pressure is now concentrated in a smaller set of docs/skills.
+  `spec` still trips the mode-pressure heuristic because a checked-in contract
+  test currently requires the exact phrase `user-facing mode choice`.
 
 ## Missing
 
 - No automated ratchet planner exists yet for deciding when the next per-file
-  coverage floor increase is honest.
-- No hard gate yet exists for the current skill or entrypoint-doc ergonomics
-  inventories; they still depend on maintainer judgment.
+  coverage floor increase is honest, and ergonomics inventories are still advisory.
 
 ## Deferred
 
-- Do not promote skill or entrypoint-doc ergonomics into a hard gate until the
-  repo selects a narrower rule subset that reflects actual portability and
-  discoverability goals rather than generic prose taste.
+- Do not promote ergonomics inventory into a hard gate until the repo narrows
+  it to portability/discoverability rules instead of generic prose taste.
 - Do not add a dedicated specdown adapter until multiple specs start repeating
   the same setup or extraction work.
-- Do not promote prose heuristics into a hard gate before the repo narrows them
-  to rules that actually reflect portability and discoverability goals.
 
 ## Commands Run
-
-- focused structural validators, focused pytest around the touched seams, and
-  full `./scripts/run-quality.sh --review`
+- `python3 scripts/check-command-docs.py --repo-root .`,
+  `python3 scripts/check-doc-links.py --repo-root .`,
+  `./scripts/check-markdown.sh`, `python3 scripts/sync_root_plugin_manifests.py --repo-root .`,
+  and full `./scripts/run-quality.sh --review`
 
 ## Recommended Next Gates
 
-- active `AUTO_CANDIDATE`: tighten `README.md` so the first-touch doc orients
-  and links rather than carrying the whole procedure inline.
 - active `AUTO_CANDIDATE`: decide whether the remaining mode/option-pressure
-  wording in `AGENTS.md`, `UNINSTALL.md`, `init-repo`, `retro`, and the
-  contract-constrained `spec` phrase reflects real product distinctions or
-  should be simplified into stronger defaults.
+  wording in `AGENTS.md`, `README.md`, `UNINSTALL.md`, `init-repo`, `retro`,
+  and the contract-constrained `spec` phrase reflects real distinctions or
+  should collapse into stronger defaults.
+- active `AUTO_CANDIDATE`: decide whether command-doc-required flag examples in
+  first-touch docs should stay inline, move behind owner-doc links, or gain a
+  small inventory exemption so README/UNINSTALL pressure tracks real prose clutter.
 - active `AUTO_CANDIDATE`: if the repo wants another deterministic ratchet
   after coverage cleanup, decide whether entrypoint-doc or skill-ergonomics
   inventories should graduate into a narrow hard gate.
-- passive `NON_AUTOMATABLE`: because these heuristics should stay advisory
-  until a narrower, defensible rule set is chosen, decide which ergonomics
-  heuristics are strong enough to graduate from advisory inventory to a real
-  gate. HITL handoff: `target=entrypoint-doc and skill-ergonomics heuristics`,
+- passive `NON_AUTOMATABLE`: keep this passive because gate promotion still
+  needs maintainer judgment on which heuristics are defensible. HITL handoff:
+  `target=entrypoint-doc and skill-ergonomics heuristics`,
   `review_question=which heuristics are strong enough to become a hard gate
   without turning prose review into taste policing`,
   `decision_needed=select promotable heuristics vs keep inventory-only posture`,
   `must_not_auto_decide=true`,
-  `observation_point=after one more cleanup pass on README and remaining mode-pressure docs/skills`,
+  `observation_point=after one more cleanup pass on remaining mode-pressure docs/skills and command-anchor tension`,
   `revisit_cadence=after meaningful quality cleanup slices`,
   `automation_candidate=promote only the narrowed rule subset that survives maintainer review`.
 
 ## History
-
 - [2026-04-09 through 2026-04-10 archive](history/2026-04-09-through-2026-04-10.md)

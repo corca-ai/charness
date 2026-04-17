@@ -218,6 +218,16 @@ These are now concrete manifest instances. The evaluator boundary is no longer
 deferred: `cautilus` is the tracked standalone evaluation product, while
 consumer-owned adapters remain local repo assets.
 
+## Command Surface
+
+Representative operator path:
+`charness tool doctor cautilus`, `charness tool install cautilus`,
+`charness tool update agent-browser`, `charness tool sync-support cautilus`.
+
+Manual-mode install flows should persist manual install guidance, latest
+observed release metadata when available, and refreshed doctor state instead of
+claiming that the host was mutated.
+
 ## Non-Goals
 
 - generic SaaS connector registry

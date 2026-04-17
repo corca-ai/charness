@@ -153,9 +153,10 @@ Recommended verification steps:
    - Claude should report whether marketplace and installed-plugin markers are
      already present
 3. If you need a durable checkpoint before or after a host restart, run
-   `charness doctor --write-state`; `charness init` and `charness update`
-   already record their own post-command host snapshots to
-   `~/.local/state/charness/host-state.json`.
+   `charness doctor --write-state`; use it when you want to persist a proof
+   snapshot to `~/.local/state/charness/host-state.json`. `charness init` and
+   `charness update` already record their own post-command host snapshots
+   there.
 4. If the behavior is ambiguous, record the exact host output and treat that as
    a proof gap to close, not as silent success.
 
