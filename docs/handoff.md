@@ -16,12 +16,13 @@
 - `docs/public-skill-dogfood.json`는 현재 17개 public skill 전체를 커버하는 reviewed consumer dogfood registry다.
 - Packaging/plugin release surface는 이제 `0.0.8` 기준이고, 태그/게시 release는 아직 만들지 않았다.
 - `#33`/`#34` 방향의 public spec boundary 정리는 이번 슬라이스에서 반영됐다. `spec`은 public executable contract vs implementation guard를 명시하고, `quality`는 proof layering inventory를 새로 갖는다.
+- `#35`의 첫 구현으로 `skills/support/markdown-preview/`가 landed 했다. `render_markdown_preview.py`는 `glow`가 있으면 폭별 `.artifacts/markdown-preview/*.txt` snapshot과 `manifest.json`을 만들고, 없으면 degraded artifact를 남긴다. repo-local scope는 `.agents/markdown-preview.yaml` 같은 config search path로 열어뒀고 hard gate나 command surface는 아직 없다.
 
 ## Next Session
 
 1. `git status --short`를 먼저 확인한다.
 2. public-spec executable proof 약점은 이번 slice에서 정리됐다. `inventory_public_spec_quality.py`는 실제 `run:shell` fence를 읽고, `specs/index.spec.md`/`specs/tool-doctor.spec.md`는 direct CLI proof로 바뀌어 현재 flagged spec이 없다.
-3. 다음 품질 cleanup 우선순위는 다시 ergonomics advisory다. 잔여 항목은 `AGENTS.md`, `README.md`의 command-anchor 기인 option pressure, `UNINSTALL.md`, `init-repo`, `retro`, 그리고 contract snippet 때문에 heuristic이 남아 있는 `spec`이다. entrypoint/skill ergonomics를 hard gate로 올릴지는 아직 결정하지 않았고, 다음 판단은 남은 advisory를 더 줄여본 뒤 어떤 rule만 남길지 maintainer가 고르는 순서가 맞다.
+3. `markdown-preview` 후속 우선순위는 command surface나 workflow integration을 붙일지 판단하는 것이다. 지금은 support helper + artifact까지만 landed 했으니, 다음 slice는 `narrative`/`announcement`/`quality` 중 어디가 이 helper를 실제 호출해야 하는지, 그리고 `docs:preview`류 command surface를 만들 가치가 있는지 결정하면 된다.
 4. Agent Harness Guide adaptation을 이어가면 [charness-artifacts/spec/agent-harness-guide-adaptation.md](../charness-artifacts/spec/agent-harness-guide-adaptation.md)를 읽고 `Slice 1`부터 시작한다. 첫 범위는 `docs/harness-composition.md`, `docs/artifact-policy.md`, 최소 handoff cross-link다.
 5. Dogfood 개선은 registry 확장보다 reviewed case 강화가 다음 move다. `hitl` 또는 `ideation`처럼 policy-heavy한 case 하나를 골라 실제 consumer prompt replay와 stronger acceptance evidence를 추가한다.
 6. sah/specdown lesson line을 이어가면 task envelope와 doctor `next_action`을 실제 멀티에이전트 세션에서 dogfood한 뒤 필요하면 task list/status summary만 다듬는다. 반복 setup/JSON 추출이 두세 번 생기기 전에는 specdown adapter를 만들지 않는다.

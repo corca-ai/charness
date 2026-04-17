@@ -1,0 +1,94 @@
+{
+  "schema_version": "1",
+  "capability_id": "markdown-preview",
+  "kind": "support_runtime",
+  "display_name": "Markdown preview artifacts",
+  "summary": "charness-owned markdown preview support that renders checked-in Markdown into width-specific text artifacts for doc-facing workflows.",
+  "support_skill_path": "support/markdown-preview/SKILL.md",
+  "supports_public_skills": [
+    "announcement",
+    "narrative",
+    "quality"
+  ],
+  "intent_triggers": [
+    "rendered markdown review",
+    "markdown preview",
+    "README readability",
+    "docs preview artifacts"
+  ],
+  "checks": {
+    "detect": {
+      "commands": [
+        "command -v python3 >/dev/null"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Provide `python3` before using the markdown preview helper."
+    },
+    "healthcheck": {
+      "commands": [
+        "python3 --version"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "The local Python 3 runtime exists but does not respond cleanly."
+    }
+  },
+  "access_modes": [
+    "binary",
+    "human-only",
+    "degraded"
+  ],
+  "readiness_checks": [
+    {
+      "check_id": "markdown-preview-python-runtime",
+      "summary": "The local Python 3 runtime needed by the markdown preview helper is available.",
+      "commands": [
+        "command -v python3 >/dev/null"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Install or expose `python3` before using markdown preview."
+    },
+    {
+      "check_id": "markdown-preview-glow-backend",
+      "summary": "The preferred `glow` backend is available for real terminal rendering.",
+      "commands": [
+        "command -v glow >/dev/null"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Without `glow`, markdown preview falls back to degraded source snapshots."
+    }
+  ],
+  "config_layers": [
+    {
+      "layer_id": "markdown-preview-authenticated-binary",
+      "layer_type": "authenticated-binary",
+      "summary": "Prefer a locally installed `glow` binary for real terminal rendering."
+    },
+    {
+      "layer_id": "markdown-preview-operator-step",
+      "layer_type": "operator-step",
+      "summary": "Pin repo-local preview scope, widths, and artifact path through a checked-in markdown preview config when the defaults are too broad."
+    },
+    {
+      "layer_id": "markdown-preview-public-fallback",
+      "layer_type": "public-fallback",
+      "summary": "When `glow` is missing, emit degraded artifacts that say rendered review did not happen."
+    }
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer the checked-in charness markdown preview helper; `glow` should be any working local release.",
+    "detected_by": "stdout"
+  },
+  "host_notes": [
+    "This support seam is artifact-first: later sessions should inspect generated preview snapshots instead of guessing from raw markdown alone.",
+    "A degraded run is useful bookkeeping but weaker than a real rendered review."
+  ]
+}
