@@ -26,16 +26,15 @@ maintainable structural fixes rather than one-off bypasses.
 
 ## Runtime Signals
 
-- Latest local review gate after this slice: `38 passed, 0 failed`, total
-  `48.2s`.
-- runtime hot spots: `pytest` `31.8s`, `check-coverage` `10.9s`, `specdown`
-  `6.9s`, `check-markdown` `4.1s`, `check-secrets` `3.3s`.
+- Latest local review gate after this slice: `38 passed, 0 failed`, total `46.7s`.
+- runtime hot spots: `pytest` `28.3s`, `check-coverage` `10.6s`, `specdown`
+  `5.3s`, `check-markdown` `3.7s`, `check-secrets` `3.3s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
   `85.0%`; current result is `98.0%` (`1196/1221`).
 - evaluator depth: `run-evals` passes 19 repo-local scenarios, so the bar is
   stronger than smoke-only review.
 - Budgeted phases: `pytest` median `31.7s / 40.0s`,
-  `check-coverage` median `10.9s / 15.0s`, `check-secrets` median `3.3s / 5.0s`,
+  `check-coverage` median `10.9s / 15.0s`, `check-secrets` median `3.4s / 5.0s`,
   `run-evals` median `2.5s / 5.0s`, `specdown` median `6.9s / 8.0s`.
 - Runtime signals continue to persist under `.charness/quality/`.
 
@@ -90,7 +89,10 @@ maintainable structural fixes rather than one-off bypasses.
 - Skill ergonomics remain advisory pressure in two public cores:
   `init-repo`, `retro`, and `spec` still flag mode-pressure terms.
 - `spec` still trips the mode-pressure heuristic because a checked-in contract
-  test currently requires the exact phrase `user-facing mode choice`.
+  test currently requires the exact phrase `user-facing mode choice`. Public
+  spec layering is not duplicating smoke/E2E proof, but `specs/index.spec.md`
+  and `specs/tool-doctor.spec.md` still flag `no_executable_proof_blocks`, and
+  `tool-doctor` also carries `implementation_guard_pressure`.
 
 ## Missing
 
@@ -107,9 +109,9 @@ maintainable structural fixes rather than one-off bypasses.
 ## Commands Run
 - `python3 scripts/check-command-docs.py --repo-root .`,
   `python3 scripts/check-doc-links.py --repo-root .`,
-  `./scripts/check-markdown.sh`, `python3 scripts/sync_root_plugin_manifests.py --repo-root .`,
-  targeted quality-gate pytest, repeated `specdown run -quiet -no-report`
-  timing refresh, and full `./scripts/run-quality.sh --review`
+  `./scripts/check-markdown.sh`,
+  `python3 skills/public/quality/scripts/inventory_* --repo-root . --json`,
+  and full `./scripts/run-quality.sh --review`
 
 ## Recommended Next Gates
 
