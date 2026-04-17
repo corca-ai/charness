@@ -62,15 +62,17 @@ reach for are all visible near the top.
   README.
 - Added a small surface-classification block so readers can tell public skills,
   support skills, and integration manifests apart.
+- Added one concrete multi-skill workflow so the harness reads as an execution
+  path, not only as a catalog.
 - Kept install and packaging material intact, but moved reader guidance ahead
   of operational detail.
 
 ### Open Questions
 
-- Should README also add one minimal “happy path” example loop, or is the new
-  routing enough without turning it into another long operator manual?
 - Should the public skill map stay intent-grouped, or should one future doc own
   a full scenario catalog similar to `cautilus` archetypes?
+- Is one concrete flow enough, or should README eventually carry one example
+  for both “new workflow” and “existing repo bootstrap” without getting long?
 
 ## Claim Audit
 
@@ -83,6 +85,11 @@ reach for are all visible near the top.
   support tool knowledge; `docs/deferred-decisions.md` keeps evaluator-heavy
   work out of `charness`; `docs/public-skill-validation.md` fixes current skill
   validation posture.
+- Claim: README now shows an actual charness-shaped path, not only sectioned
+  philosophy.
+  Evidence: the new concrete workflow maps one common maintainer journey across
+  `ideation`, `spec`, `impl`, `quality`, and `handoff`, with `init-repo` and
+  `cautilus` called out as neighboring boundaries.
 - Claim: `charness` is ready to be described as internally roll-outable.
   Evidence: the user confirmed the managed install proof and update-propagation
   proof are already complete, and the repo still carries passing local quality
@@ -104,14 +111,14 @@ reach for are all visible near the top.
 
 - Do we want a separate “workflow examples” doc that gives one concrete path
   per major public skill cluster?
-- If we keep README compact, which one workflow should become the canonical
-  first example: repo bootstrap, concept-to-impl, or quality review?
+- If we keep README compact, should the next example be repo bootstrap or
+  quality review rather than another concept-to-impl variant?
 
 ## Next Step
 
 1. Re-read README from the perspective of a new internal maintainer who does
    not already know the `charness` / `cautilus` split.
-2. If the “what to use when” section still feels too abstract, add one short
-   concrete workflow example rather than another catalog paragraph.
+2. If the single concrete workflow still feels too narrow, add exactly one
+   neighboring example instead of growing a long catalog.
 3. Keep install, packaging, and acceptance details in their owner docs instead
    of re-growing README into a second operator manual.

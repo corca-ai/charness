@@ -75,6 +75,25 @@ If you are deciding between surfaces:
 - integration manifest: external ownership boundary for install, update,
   detect, healthcheck, and readiness
 
+## One Concrete Workflow
+
+Start here if you want one picture before reading the rest of the surface.
+
+Scenario: you want to add a new repo-owned workflow, and the shape is still
+forming.
+
+- `ideation`: sharpen the workflow concept, user path, and system boundary
+- `spec`: turn that direction into the current executable contract
+- `impl`: make the code, config, tests, and operator-facing artifacts match the contract
+- `quality`: review whether the local proof bar is strong enough and what gate
+  should move next
+- `handoff`: leave the next session a precise pickup point if the slice is not done
+
+If the work starts from an unshaped or partially initialized repo, begin with
+`init-repo`. If the real uncertainty is behavior regression under prompt or
+workflow changes, hand that boundary to `cautilus` instead of stretching
+`charness` into an eval harness.
+
 ## Scope
 
 `charness` owns:
