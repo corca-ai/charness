@@ -171,11 +171,70 @@ def inventory(repo_root: Path) -> dict[str, Any]:
     runner_specs = sorted(
         spec["spec_path"] for spec in specs if "delegated_test_runner_proof" in spec["heuristics"]
     )
+    recommendations: list[dict[str, Any]] = []
     layering_heuristics: list[str] = []
     if duplicates:
         layering_heuristics.append("duplicate_public_spec_examples")
+        recommendations.append(
+            {
+                "action": "delete_or_merge",
+                "scope": "public-spec",
+                "target": "duplicate_command_examples",
+                "target_items": duplicates,
+                "guidance": (
+                    "Keep one representative public-spec proof per happy-path command, "
+                    "then delete or merge repeated public-spec copies."
+                ),
+            }
+        )
     if runner_specs:
         layering_heuristics.append("delegated_test_runner_inside_public_spec")
+        recommendations.append(
+            {
+                "action": "move_down",
+                "scope": "public-spec",
+                "target": "delegated_runner_specs",
+                "target_items": runner_specs,
+                "guidance": (
+                    "Replace delegated test-runner proof with direct reader-facing command proof in the public spec, "
+                    "and keep detailed assertions in app, unit, or smoke layers."
+                ),
+            }
+        )
+    if smoke_paths:
+        recommendations.append(
+            {
+                "action": "keep_if_integration_value",
+                "scope": "smoke",
+                "target": "smoke_test_paths",
+                "target_items": smoke_paths,
+                "keep_when": [
+                    "the smoke test proves a cross-command flow",
+                    "the smoke test mutates a repo or artifact boundary",
+                    "a narrower layer cannot own the seam honestly",
+                ],
+                "delete_when": [
+                    "the smoke test only repeats the same happy-path claim already owned by a public spec",
+                    "lower-layer tests already own the behavior and the smoke adds no repo-mutation value",
+                ],
+            }
+        )
+    if e2e_paths:
+        recommendations.append(
+            {
+                "action": "keep_if_integration_value",
+                "scope": "on-demand-e2e",
+                "target": "e2e_test_paths",
+                "target_items": e2e_paths,
+                "keep_when": [
+                    "the E2E path proves an external-consumer or environment-heavy seam",
+                    "the flow is too expensive or unstable for standing smoke or public-spec ownership",
+                ],
+                "delete_when": [
+                    "the E2E path only repeats a cheap happy-path contract already owned by a public spec or smoke test",
+                ],
+            }
+        )
     if (smoke_paths or e2e_paths) and (duplicates or runner_specs):
         layering_heuristics.append("proof_layering_review_needed")
     return {
@@ -195,6 +254,7 @@ def inventory(repo_root: Path) -> dict[str, Any]:
             "delegated_runner_specs": runner_specs,
             "heuristics": layering_heuristics,
             "review_prompts": REVIEW_PROMPTS,
+            "recommendations": recommendations,
         },
     }
 

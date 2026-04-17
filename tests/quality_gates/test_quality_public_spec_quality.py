@@ -52,6 +52,12 @@ def test_inventory_public_spec_quality_flags_reader_facing_drift(tmp_path: Path)
     }
     assert "proof_layering_review_needed" in payload["layering"]["heuristics"]
     assert payload["layering"]["delegated_runner_specs"] == ["docs/specs/current-product.spec.md"]
+    recommendations = payload["layering"]["recommendations"]
+    assert recommendations[0]["action"] == "move_down"
+    assert recommendations[0]["target_items"] == ["docs/specs/current-product.spec.md"]
+    assert recommendations[1]["action"] == "keep_if_integration_value"
+    assert recommendations[1]["scope"] == "smoke"
+    assert recommendations[1]["target_items"] == ["tests/cli_smoke_test.py"]
 
 
 def test_inventory_public_spec_quality_detects_duplicate_public_examples(tmp_path: Path) -> None:
@@ -81,6 +87,12 @@ def test_inventory_public_spec_quality_detects_duplicate_public_examples(tmp_pat
     ]
     assert "duplicate_public_spec_examples" in payload["layering"]["heuristics"]
     assert "proof_layering_review_needed" in payload["layering"]["heuristics"]
+    recommendations = payload["layering"]["recommendations"]
+    assert recommendations[0]["action"] == "delete_or_merge"
+    assert recommendations[0]["target"] == "duplicate_command_examples"
+    assert recommendations[1]["action"] == "keep_if_integration_value"
+    assert recommendations[1]["scope"] == "on-demand-e2e"
+    assert recommendations[1]["target_items"] == ["tests/end_to_end_flow.py"]
 
 
 def test_inventory_public_spec_quality_recognizes_specdown_run_shell_blocks(tmp_path: Path) -> None:

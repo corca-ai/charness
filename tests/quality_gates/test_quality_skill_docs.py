@@ -85,6 +85,9 @@ def test_quality_skill_carries_public_spec_layering_lens() -> None:
     assert "proof layering" in layering
     assert "reader-facing claims plus cheap local proof" in layering
     assert "what is now duplicated at the wrong layer" in layering
+    assert "move_down" in layering
+    assert "delete_or_merge" in layering
+    assert "keep_if_integration_value" in layering
 
 
 def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:

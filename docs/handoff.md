@@ -15,7 +15,7 @@
 - Checked-in plugin export는 source 변경 뒤 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`로 맞춘다.
 - `docs/public-skill-dogfood.json`는 현재 17개 public skill 전체를 커버하는 reviewed consumer dogfood registry다.
 - Packaging/plugin release surface는 이제 `0.0.8` 기준이고, 태그/게시 release는 아직 만들지 않았다.
-- `#33`/`#34` 방향의 public spec boundary 정리는 이번 슬라이스에서 반영됐다. `spec`은 public executable contract vs implementation guard를 명시하고, `quality`는 proof layering inventory를 새로 갖는다.
+- `#33`/`#34` 방향의 public spec boundary 정리는 반영됐다. `spec`은 public executable contract vs implementation guard를 명시하고, `quality`는 proof layering inventory plus actionable `move_down` / `delete_or_merge` / `keep_if_integration_value` recommendation payload를 갖는다.
 - `#35`의 첫 구현으로 `skills/support/markdown-preview/`가 landed 했다. `render_markdown_preview.py`는 `glow`가 있으면 폭별 `.artifacts/markdown-preview/*.txt` snapshot과 `manifest.json`을 만들고, 없으면 degraded artifact를 남긴다. repo-local scope는 `.agents/markdown-preview.yaml` 같은 config search path로 열어뒀고 hard gate나 command surface는 아직 없다.
 
 ## Next Session
