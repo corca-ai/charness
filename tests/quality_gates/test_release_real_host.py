@@ -34,3 +34,12 @@ def test_release_real_host_proof_stays_off_for_unrelated_paths() -> None:
     payload = json.loads(result.stdout)
     assert payload["required"] is False
     assert payload["checklist"] == []
+
+
+def test_release_skill_enforces_phase_barriers_for_mutating_commands() -> None:
+    skill_text = (ROOT / "skills" / "public" / "release" / "SKILL.md").read_text(encoding="utf-8")
+
+    assert "keep release work phase-ordered: mutate, then sync generated surfaces," in skill_text
+    assert "then verify, then push/tag/publish" in skill_text
+    assert "Do not run sync, export, bump, install/update, or git-mutation commands in" in skill_text
+    assert "parallel with validators" in skill_text

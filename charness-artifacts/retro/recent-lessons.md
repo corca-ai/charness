@@ -18,6 +18,8 @@
   #27.
 - Narrative dogfood did not use charness's own first-touch surfaces enough,
   which delayed #26.
+- Running generated-surface sync or version mutations in parallel with
+  validators created false failures and misleading drift.
 
 ## Next-Time Checklist
 
@@ -26,6 +28,8 @@
 - workflow: keep a mature-repo fixture corpus for `init-repo` and `quality`.
 - workflow: test concrete prompt routing against public skill descriptions and
   generated AGENTS hints.
+- workflow: keep `mutate -> sync -> verify -> publish` as a hard phase order,
+  and reserve parallelism for read-only inspection only.
 - capability: add a dogfood matrix helper for prompt/repo shape, expected skill,
   expected artifact, and acceptance evidence.
 - memory: producer-side gates are not enough; charness also needs

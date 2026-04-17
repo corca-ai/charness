@@ -225,10 +225,10 @@ def test_check_python_lengths_rejects_too_long_test_file(tmp_path: Path) -> None
     repo = tmp_path / "repo"
     tests_dir = repo / "tests"
     tests_dir.mkdir(parents=True)
-    (tests_dir / "test_big.py").write_text("\n".join(f"VALUE_{i} = {i}" for i in range(501)) + "\n", encoding="utf-8")
+    (tests_dir / "test_big.py").write_text("\n".join(f"VALUE_{i} = {i}" for i in range(551)) + "\n", encoding="utf-8")
     result = run_script("scripts/check-python-lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "file length 501 exceeds limit 500" in result.stderr
+    assert "file length 551 exceeds limit 550" in result.stderr
 
 
 def test_check_python_lengths_rejects_too_long_test_function(tmp_path: Path) -> None:

@@ -58,3 +58,18 @@ resolve back to `~/.agents/src/charness`.
 
 Keep any proof-only host route out of operator docs unless it becomes a
 maintained, first-class install contract.
+
+## Mutation Phase Barriers
+
+When validating this repo, keep state-changing work and verification in
+separate phases:
+
+1. mutate
+2. sync generated surfaces
+3. verify
+4. publish
+
+Do not run generated-surface sync, version bumps, install/update flows, or git
+mutations in parallel with validators or closeout commands. `multi_tool_use`
+parallelism is only safe for read-only inventory such as `sed`, `rg`, `ls`,
+and similar inspection commands.

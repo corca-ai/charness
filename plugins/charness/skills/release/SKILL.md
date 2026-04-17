@@ -71,6 +71,8 @@ sed -n '1,220p' <resolved-release-artifact> 2>/dev/null || true
 5. Apply the release mutation through the repo helper.
    - prefer the checked-in bump helper over manual JSON edits
    - sync generated install surfaces immediately after bumping
+   - keep release work phase-ordered: mutate, then sync generated surfaces,
+     then verify, then push/tag/publish
 6. Verify the release surface.
    - packaging and generated files agree on the same version
    - canonical quality gate passes
@@ -105,6 +107,8 @@ The result should usually include:
 - Do not turn host-specific human proof into fake standing CI. If a support or
   install surface still depends on PATH, package managers, or host cache
   state, say so explicitly and carry a short checklist.
+- Do not run sync, export, bump, install/update, or git-mutation commands in
+  parallel with validators. Use parallelism only for read-only inspection.
 - Do not skip the standalone `premortem` pass when a release changes
   compatibility, install/update flow, or host-proof expectations in a way the
   next maintainer could misread.

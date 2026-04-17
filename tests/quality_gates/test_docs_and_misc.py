@@ -52,6 +52,17 @@ def test_init_repo_default_surfaces_carry_early_quality_baseline() -> None:
     assert "ratcheting" in default_surfaces
 
 
+def test_development_doc_carries_mutation_phase_barrier_rule() -> None:
+    development = (ROOT / "docs" / "development.md").read_text(encoding="utf-8")
+
+    assert "## Mutation Phase Barriers" in development
+    assert "mutate" in development
+    assert "sync generated surfaces" in development
+    assert "verify" in development
+    assert "publish" in development
+    assert "parallelism is only safe for read-only inventory" in development
+
+
 def test_control_plane_documents_authenticated_release_probe_contract() -> None:
     control_plane = (ROOT / "docs" / "control-plane.md").read_text(encoding="utf-8")
 

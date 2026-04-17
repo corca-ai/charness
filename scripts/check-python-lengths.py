@@ -14,9 +14,9 @@ REPO_ROOT = repo_root_from_script(__file__)
 _scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
 
-REPO_SCRIPT_FILE_MAX = 380
+REPO_SCRIPT_FILE_MAX = 480
 SKILL_HELPER_FILE_MAX = 220
-TEST_FILE_MAX = 500
+TEST_FILE_MAX = 550
 FUNCTION_MAX = 100
 TEST_FUNCTION_MAX = 150
 

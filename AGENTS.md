@@ -94,6 +94,9 @@ Read the smallest memory surface that answers the current question.
 
 - Prefer `./scripts/run-quality.sh` as the canonical local quality entrypoint
   once the change touches multiple repo-owned quality surfaces.
+- Treat `mutate -> sync -> verify -> publish` as hard phase barriers. After a
+  command rewrites generated surfaces, plugin exports, versioned manifests, or
+  git state, finish that phase before starting validators or publish steps.
 - Repo-owned diff obligations live in `.agents/surfaces.json`; use
   `python3 scripts/check-changed-surfaces.py --repo-root .` to inspect them and
   `python3 scripts/run-slice-closeout.py --repo-root .` before commit when the
@@ -125,6 +128,9 @@ Read the smallest memory surface that answers the current question.
 ### Change Discipline
 
 - Prefer deleting drift over documenting drift.
+- Use parallel tool calls only for read-only inventory or file inspection. Do
+  not run sync/export/bump/install/update/git-mutation commands in parallel
+  with validators, closeout, or publish steps.
 - If the same helper shape appears twice, factor it before spreading it to a
   third place.
 - When a repo-local structural fix can also improve the installed charness user
