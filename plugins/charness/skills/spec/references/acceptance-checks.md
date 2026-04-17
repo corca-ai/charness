@@ -27,6 +27,8 @@ Pick the lightest check that still proves the behavior honestly.
 If the repo uses executable specs such as `specdown`:
 
 - keep them at the acceptance boundary, not as a duplicate unit suite
+- keep public executable pages focused on current reader-facing claims rather
+  than future roadmap or implementation inventory
 - prefer direct adapters, check tables, or source-level guards before broad
   shell-driven commands
 - name the expected scope and cost when one acceptance check is substantially

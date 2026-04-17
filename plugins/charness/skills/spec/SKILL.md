@@ -29,7 +29,7 @@ sed -n '1,220p' "$SKILL_DIR/../impl/SKILL.md" 2>/dev/null || true
 ```
 
 If an ideation document already exists, refine it into a spec instead of restating the full discovery history. If the repo already has executable acceptance artifacts, treat them as part of the spec surface rather than as a separate world, and inspect whether they still stay at the acceptance boundary instead of duplicating low-level test detail and runtime cost.
-Borrow Ward Cunningham-style executable-spec discipline when the repo uses tools such as `specdown`: executable acceptance artifacts should make the contract concrete at the boundary, not replace the unit suite or hide low-level test detail. Keep Christopher Alexander-style sequence discipline by ordering `Fixed Decisions`, `Probe Questions`, and `Deferred Decisions` so upstream commitments land before downstream detail hardens; when the slice is still noisy, borrow Kent Beck for thin feedback-bearing slices and John Ousterhout for simpler interfaces and deeper seams. See `references/sequence-discipline.md` and `references/design-lenses.md`.
+Borrow Ward Cunningham-style executable-spec discipline when the repo uses tools such as `specdown`: executable acceptance artifacts should make the contract concrete at the boundary, not replace the unit suite or hide low-level test detail. Distinguish `public executable contract` from `maintenance lint / implementation guard`: public pages should carry current reader-facing claims plus cheap proof, while source inventory, implementation-file pinning, and future roadmap notes move below or beside that surface. Keep Christopher Alexander-style sequence discipline by ordering `Fixed Decisions`, `Probe Questions`, and `Deferred Decisions` so upstream commitments land before downstream detail hardens; when the slice is still noisy, borrow Kent Beck for thin feedback-bearing slices and John Ousterhout for simpler interfaces and deeper seams. See `references/public-executable-contracts.md`, `references/sequence-discipline.md`, and `references/design-lenses.md`.
 
 ## Contract Shaping
 
@@ -41,6 +41,9 @@ probe-friendly and visible instead of inventing a user-facing mode choice.
 
 If the repo already treats executable checks as contract artifacts, push
 acceptance into those checks instead of managing a separate prose-only branch.
+For public executable pages, keep current-state claims and bounded proof only;
+move future-state planning, source inventory, and low-level implementation
+guards down a layer.
 
 If those executable checks are materially expensive, shape the contract so the
 standing acceptance bar stays honest about cost. Keep executable examples at
@@ -170,6 +173,7 @@ as `Entities` or `Stages` instead of recreating them under new names.
 - `references/ingest-and-refine.md`
 - `references/success-criteria.md`
 - `references/acceptance-checks.md`
+- `references/public-executable-contracts.md`
 - `references/executable-spec-cost.md`
 - `references/premortem-loop.md`
 - `references/rejected-alternatives.md`

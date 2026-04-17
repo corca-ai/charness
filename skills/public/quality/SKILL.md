@@ -70,6 +70,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - when a standing local gate exists, inventory quiet-default vs verbose-on-demand posture with `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`
    - when the repo may keep one shipped implementation beside a historical or alternate runtime path, inventory likely dual-implementation parity smells with `$SKILL_DIR/scripts/inventory_dual_implementation.py`, then decide whether the relationship is parity-enforced, canonical-plus-legacy, or intentional divergence
    - when first-touch operator/developer/agent docs are in scope, inventory entrypoint-doc ergonomics with `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py`
+   - when public executable specs are in scope, inventory reader-facing public-spec drift and proof-layering overlap with `$SKILL_DIR/scripts/inventory_public_spec_quality.py`; see `references/public-spec-layering.md`
    - when fixed-string source guards touch prose, inventory hard-wrap fragility with `$SKILL_DIR/scripts/inventory_brittle_source_guards.py`; see `references/brittle-source-guards.md`
    - when lint suppressions start to accumulate, inventory lint suppression pressure with `$SKILL_DIR/scripts/inventory_lint_ignores.py`; blanket or file-level ignores should be explicit review targets, not invisible background debt
    - inspect README / INSTALL / operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist; when the CLI surface is stable, prefer a deterministic command-docs drift gate over repeated prose review
@@ -93,6 +94,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - if a fresh 5-minute reader could misread a present invariant as absent, treat that as a quality gap in declaration or gating rather than dismissing the reader
    - when the same confidence gap could be closed either by shrinking production branches/interfaces or by adding more tests, prefer the smaller production surface first if behavior and signal both improve
    - when executable specs exist, classify smoke vs behavior using the adapter's `specdown_smoke_patterns`, report the ratio, and treat bounded test-ratio posture as a named positive pattern when the repo constrains both under-testing and test-surface inflation
+   - ask not only what proof is missing, but which proof is duplicated at the wrong layer now that a public executable contract exists
    - `security`: are there meaningful code, secret, or supply-chain risks
    - `operability`: are setup, CI, install/update docs, and maintenance surfaces honest enough to sustain the quality bar
    - make skill ergonomics explicit: concise `SKILL.md` core, progressive disclosure honesty, unnecessary mode/option pressure, trigger overlap/undertrigger risk, and prose ritual that should become a helper script
@@ -120,6 +122,8 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not split quality bootstrap into a second public concept when the work is still bounded repo-local quality setup.
 - Do not recommend gates the repo cannot realistically run without saying why.
 - Do not ignore runtime drift just because a gate still passes functionally.
+- Do not ask only what proof is missing when executable public specs land; ask
+  what is duplicated at the wrong layer too.
 - Do not wait for operator follow-up before stating current runtime hot spots, coverage-gate presence or absence, and evaluator-depth status when the repo signals are available.
 - Do not treat slow or broad executable specs as automatically strong quality when they mostly duplicate cheaper deterministic coverage.
 - Do not leave an automatable quality rule as prose-only guidance when a linter, validator, test, hook, or script could own it.
@@ -171,6 +175,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - `references/lint-ignore-discipline.md`
 - `references/sample-presets.md`
 - `references/executable-spec-economics.md`
+- `references/public-spec-layering.md`
 - `references/security-overview.md`
 - `references/security-npm.md`
 - `references/security-pnpm.md`

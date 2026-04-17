@@ -74,6 +74,19 @@ def test_quality_skill_carries_cli_ergonomics_smells_lens() -> None:
     assert "command-archetypes.json" in cli_smells
 
 
+def test_quality_skill_carries_public_spec_layering_lens() -> None:
+    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    layering = (
+        ROOT / "skills" / "public" / "quality" / "references" / "public-spec-layering.md"
+    ).read_text(encoding="utf-8")
+
+    assert "$SKILL_DIR/scripts/inventory_public_spec_quality.py" in skill_text
+    assert "duplicated at the wrong layer" in skill_text
+    assert "proof layering" in layering
+    assert "reader-facing claims plus cheap local proof" in layering
+    assert "what is now duplicated at the wrong layer" in layering
+
+
 def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
     verbosity = (
