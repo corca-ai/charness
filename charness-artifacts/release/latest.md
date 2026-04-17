@@ -1,19 +1,19 @@
 # Release Surface Check
-Date: 2026-04-16
+Date: 2026-04-17
 
 ## Scope
 
-Patch release surface bump after the #25-#31 dogfood fixes and retro correction.
+Patch release surface bump after the public-spec executable-proof cleanup.
 No tag or published GitHub release has been created in this slice.
 
 ## Current Version
 
-- previous version: `0.0.6`
-- target version: `0.0.7`
-- packaging manifest: `0.0.7`
-- checked-in Claude plugin manifest: `0.0.7`
-- checked-in Codex plugin manifest: `0.0.7`
-- Claude marketplace metadata: `0.0.7`
+- previous version: `0.0.7`
+- target version: `0.0.8`
+- packaging manifest: `0.0.8`
+- checked-in Claude plugin manifest: `0.0.8`
+- checked-in Codex plugin manifest: `0.0.8`
+- Claude marketplace metadata: `0.0.8`
 - Codex marketplace source path: `./plugins/charness`
 
 ## Surface Status
@@ -27,18 +27,14 @@ No tag or published GitHub release has been created in this slice.
 
 ## Release Scope
 
-- Includes skill behavior fixes for `quality`, `narrative`, `init-repo`,
-  `gather`, and `find-skills` from #25-#31.
-- Includes the corrected dogfood retro: charness needs consumer-side dogfood
-  fixtures, not only producer-side validation gates.
-- Includes local runtime budget recalibration for `specdown` recent-median
-  variance.
+- Includes the public-spec executable-proof tightening and the inventory fix
+  that now reads real `run:shell` fences.
+- Includes the follow-up quality artifact refresh from the live rerun.
 
 ## Verification
 
-- `./scripts/run-quality.sh` passed with `37 passed, 0 failed` after this
-  artifact update.
-- Pushed to `origin/main` in commit `36a6530`.
+- `./scripts/run-quality.sh --review` passed with `38 passed, 0 failed`.
+- `current_release.py` reports no release-surface drift at `0.0.8`.
 
 ## User Update Steps
 
