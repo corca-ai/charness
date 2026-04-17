@@ -119,6 +119,20 @@ def test_quality_skill_prefers_structure_over_heuristic_chasing() -> None:
     assert "canonical fresh-eye premortem path is blocked" in premortem
 
 
+def test_quality_skill_and_create_cli_carry_language_lint_defaults() -> None:
+    quality_skill = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    create_cli_quality = (
+        ROOT / "skills" / "public" / "create-cli" / "references" / "quality-gates.md"
+    ).read_text(encoding="utf-8")
+
+    assert "For Python, default to `ruff check` as the standing lint path" in quality_skill
+    assert "choose exactly one type checker (`mypy` or `pyright`)" in quality_skill
+    assert "For JavaScript/TypeScript, default to `eslint`" in quality_skill
+    assert "`complexity` rule" in quality_skill
+    assert "Python CLI: `ruff check` with `C90` enabled" in create_cli_quality
+    assert "JavaScript/TypeScript CLI: `eslint` with a standing `complexity` rule" in create_cli_quality
+
+
 def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
     verbosity = (

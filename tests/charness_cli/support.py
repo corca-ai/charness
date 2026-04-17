@@ -23,6 +23,8 @@ REPO_COPY_IGNORE = shutil.ignore_patterns(
     "node_modules",
     "history",
 )
+
+
 def run_cli(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, str(CLI), *args],
@@ -32,6 +34,8 @@ def run_cli(*args: str, env: dict[str, str] | None = None) -> subprocess.Complet
         text=True,
         env=env,
     )
+
+
 def run_cli_in_repo(repo_root: Path, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, str(repo_root / "charness"), *args],
@@ -41,6 +45,8 @@ def run_cli_in_repo(repo_root: Path, *args: str, env: dict[str, str] | None = No
         text=True,
         env=env,
     )
+
+
 def build_test_path(*bin_dirs: Path) -> str:
     ordered = [*bin_dirs, Path(sys.executable).resolve().parent]
     git_binary = shutil.which("git")
@@ -55,10 +61,14 @@ def build_test_path(*bin_dirs: Path) -> str:
         seen.add(value)
         unique.append(value)
     return os.pathsep.join(unique)
+
+
 def make_repo_copy(tmp_path: Path) -> Path:
     repo_copy = tmp_path / "repo"
     shutil.copytree(ROOT, repo_copy, ignore=REPO_COPY_IGNORE)
     return repo_copy
+
+
 def make_git_repo_copy(tmp_path: Path) -> Path:
     repo_copy = make_repo_copy(tmp_path)
     subprocess.run(["git", "init"], cwd=repo_copy, check=True, capture_output=True, text=True)
@@ -79,14 +89,22 @@ def make_git_repo_copy(tmp_path: Path) -> Path:
         text=True,
     )
     return repo_copy
-def make_release_fixture(tmp_path: Path) -> Path:
+
+
+def _current_charness_release_tag() -> str:
+    version = json.loads((ROOT / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
+    return f"v{version}"
+
+
+def make_release_fixture(tmp_path: Path, *, charness_tag: str | None = None) -> Path:
     fixture = tmp_path / "release-fixtures.json"
+    resolved_charness_tag = charness_tag or _current_charness_release_tag()
     fixture.write_text(
         json.dumps(
             {
                 "corca-ai/charness": {
-                    "tag_name": "v0.1.0",
-                    "html_url": "https://github.com/corca-ai/charness/releases/tag/v0.1.0",
+                    "tag_name": resolved_charness_tag,
+                    "html_url": f"https://github.com/corca-ai/charness/releases/tag/{resolved_charness_tag}",
                     "published_at": "2026-04-12T00:00:00Z",
                     "assets": [{"name": "charness"}],
                 },
@@ -135,6 +153,8 @@ def make_support_sync_fixture(tmp_path: Path) -> Path:
     fixture_path = tmp_path / "support-sync-fixtures.json"
     fixture_path.write_text(json.dumps(mappings, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return fixture_path
+
+
 def rewrite_seeded_home_paths(home_root: Path, *, old_home_root: Path) -> None:
     old = str(old_home_root)
     new = str(home_root)
@@ -150,6 +170,8 @@ def rewrite_seeded_home_paths(home_root: Path, *, old_home_root: Path) -> None:
         if not path.is_file():
             continue
         path.write_text(path.read_text(encoding="utf-8").replace(old, new), encoding="utf-8")
+
+
 def make_fake_claude(tmp_path: Path) -> Path:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)

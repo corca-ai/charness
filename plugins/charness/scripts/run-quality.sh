@@ -251,7 +251,7 @@ python_files=(
   skills/support/*/vendor/*.py
 )
 queue_selected "py-compile" python3 -m py_compile "${python_files[@]}"
-queue_selected "ruff" ruff check scripts tests skills/public/*/scripts skills/support/*/scripts
+queue_selected "ruff" ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts
 flush_phase || OVERALL_RC=$?
 
 PYTEST_PARALLEL_FLAGS=()

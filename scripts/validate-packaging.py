@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 import jsonschema
+
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
@@ -91,80 +92,99 @@ def validate_source_paths(root: Path, source: object) -> None:
         require_dir(root / rel_path, f"source.{field}")
 
 
-def validate_codex(
-    package_id: str,
-    version: str,
-    summary: str,
+def _validate_matching_string(
+    actual_value: object,
+    actual_field: str,
+    expected_value: object,
+    expected_field: str,
+    message: str,
+) -> str:
+    actual = validate_string(actual_value, actual_field)
+    expected = validate_string(expected_value, expected_field)
+    if actual != expected:
+        raise ValidationError(message)
+    return actual
+
+
+def _validate_optional_author_field(
+    author: dict[str, object],
     expected_author: dict[str, object],
-    homepage: str,
-    repository: str,
-    data: object,
+    *,
+    manifest_prefix: str,
+    field: str,
 ) -> None:
-    if not isinstance(data, dict):
-        raise ValidationError("`codex` must be an object")
-    manifest_path = validate_string(data.get("manifest_path"), "codex.manifest_path")
-    if manifest_path != ".codex-plugin/plugin.json":
-        raise ValidationError("`codex.manifest_path` must be `.codex-plugin/plugin.json`")
-    manifest = data.get("manifest")
-    if not isinstance(manifest, dict):
-        raise ValidationError("`codex.manifest` must be an object")
-    if validate_slug(manifest.get("name"), "codex.manifest.name") != package_id:
-        raise ValidationError("`codex.manifest.name` must match `package_id`")
-    if validate_version(manifest.get("version"), "codex.manifest.version") != version:
-        raise ValidationError("`codex.manifest.version` must match top-level `version`")
-    if validate_string(manifest.get("description"), "codex.manifest.description") != summary:
-        raise ValidationError("`codex.manifest.description` must match top-level `summary`")
-    author = manifest.get("author")
+    if field not in author:
+        return
+    actual_field = f"{manifest_prefix}.author.{field}"
+    expected_field = f"author.{field}"
+    actual = validate_string(author.get(field), actual_field)
+    expected = expected_author.get(field)
+    if expected is not None and actual != validate_string(expected, expected_field):
+        raise ValidationError(f"`{actual_field}` must match top-level `{expected_field}`")
+
+
+def _validate_manifest_author(
+    author: object,
+    expected_author: dict[str, object],
+    *,
+    manifest_prefix: str,
+) -> None:
     if not isinstance(author, dict):
-        raise ValidationError("`codex.manifest.author` must be an object")
-    if validate_string(author.get("name"), "codex.manifest.author.name") != validate_string(expected_author.get("name"), "author.name"):
-        raise ValidationError("`codex.manifest.author.name` must match top-level `author.name`")
+        raise ValidationError(f"`{manifest_prefix}.author` must be an object")
+    _validate_matching_string(
+        author.get("name"),
+        f"{manifest_prefix}.author.name",
+        expected_author.get("name"),
+        "author.name",
+        f"`{manifest_prefix}.author.name` must match top-level `author.name`",
+    )
     for field in ("url", "email"):
-        if field in author:
-            actual = validate_string(author.get(field), f"codex.manifest.author.{field}")
-            if expected_author.get(field) is not None and actual != validate_string(expected_author.get(field), f"author.{field}"):
-                raise ValidationError(f"`codex.manifest.author.{field}` must match top-level `author.{field}`")
-    if validate_string(manifest.get("homepage"), "codex.manifest.homepage") != homepage:
-        raise ValidationError("`codex.manifest.homepage` must match top-level `homepage`")
-    if validate_string(manifest.get("repository"), "codex.manifest.repository") != repository:
-        raise ValidationError("`codex.manifest.repository` must match top-level `repository`")
-    keywords = manifest.get("keywords")
+        _validate_optional_author_field(author, expected_author, manifest_prefix=manifest_prefix, field=field)
+
+
+def _validate_keyword_list(keywords: object, field: str) -> None:
     if not isinstance(keywords, list) or not keywords:
-        raise ValidationError("`codex.manifest.keywords` must be a non-empty array")
+        raise ValidationError(f"`{field}` must be a non-empty array")
     for index, keyword in enumerate(keywords):
-        validate_string(keyword, f"codex.manifest.keywords[{index}]")
-    if validate_string(manifest.get("skills"), "codex.manifest.skills") != "./skills/":
-        raise ValidationError("`codex.manifest.skills` must be `./skills/`")
-    interface = manifest.get("interface")
+        validate_string(keyword, f"{field}[{index}]")
+
+
+def _validate_codex_interface(interface: object, expected_author: dict[str, object], homepage: str) -> None:
     if not isinstance(interface, dict):
         raise ValidationError("`codex.manifest.interface` must be an object")
     for field in ("displayName", "shortDescription", "longDescription", "category"):
         validate_string(interface.get(field), f"codex.manifest.interface.{field}")
-    if validate_string(interface.get("developerName"), "codex.manifest.interface.developerName") != validate_string(expected_author.get("name"), "author.name"):
-        raise ValidationError("`codex.manifest.interface.developerName` must match top-level `author.name`")
-    capabilities = interface.get("capabilities")
-    if not isinstance(capabilities, list) or not capabilities:
-        raise ValidationError("`codex.manifest.interface.capabilities` must be a non-empty array")
-    for index, capability in enumerate(capabilities):
-        validate_string(capability, f"codex.manifest.interface.capabilities[{index}]")
-    if validate_string(interface.get("websiteURL"), "codex.manifest.interface.websiteURL") != homepage:
-        raise ValidationError("`codex.manifest.interface.websiteURL` must match top-level `homepage`")
-    default_prompt = interface.get("defaultPrompt")
-    if not isinstance(default_prompt, list) or not default_prompt:
+    _validate_matching_string(
+        interface.get("developerName"),
+        "codex.manifest.interface.developerName",
+        expected_author.get("name"),
+        "author.name",
+        "`codex.manifest.interface.developerName` must match top-level `author.name`",
+    )
+    _validate_keyword_list(interface.get("capabilities"), "codex.manifest.interface.capabilities")
+    _validate_matching_string(
+        interface.get("websiteURL"),
+        "codex.manifest.interface.websiteURL",
+        homepage,
+        "homepage",
+        "`codex.manifest.interface.websiteURL` must match top-level `homepage`",
+    )
+    prompts = interface.get("defaultPrompt")
+    if not isinstance(prompts, list) or not prompts:
         raise ValidationError("`codex.manifest.interface.defaultPrompt` must be a non-empty array")
-    for index, prompt in enumerate(default_prompt):
+    for index, prompt in enumerate(prompts):
         prompt_text = validate_string(prompt, f"codex.manifest.interface.defaultPrompt[{index}]")
         if len(prompt_text) > 128:
             raise ValidationError(
                 f"`codex.manifest.interface.defaultPrompt[{index}]` must be at most 128 characters"
             )
-    marketplace = data.get("repo_marketplace")
+
+
+def _validate_codex_marketplace(marketplace: object, package_id: str) -> None:
     if not isinstance(marketplace, dict):
         raise ValidationError("`codex.repo_marketplace` must be an object")
     if validate_string(marketplace.get("path"), "codex.repo_marketplace.path") != ".agents/plugins/marketplace.json":
-        raise ValidationError(
-            "`codex.repo_marketplace.path` must be `.agents/plugins/marketplace.json`"
-        )
+        raise ValidationError("`codex.repo_marketplace.path` must be `.agents/plugins/marketplace.json`")
     default_source_path = validate_string(
         marketplace.get("default_source_path"), "codex.repo_marketplace.default_source_path"
     )
@@ -182,6 +202,68 @@ def validate_codex(
         )
     validate_string(marketplace.get("display_name"), "codex.repo_marketplace.display_name")
     validate_string(marketplace.get("category"), "codex.repo_marketplace.category")
+
+
+def _validate_plugin_manifest_identity(
+    manifest: object,
+    *,
+    manifest_prefix: str,
+    package_id: str,
+    version: str,
+    summary: str,
+) -> dict[str, object]:
+    if not isinstance(manifest, dict):
+        raise ValidationError(f"`{manifest_prefix}` must be an object")
+    if validate_slug(manifest.get("name"), f"{manifest_prefix}.name") != package_id:
+        raise ValidationError(f"`{manifest_prefix}.name` must match `package_id`")
+    if validate_version(manifest.get("version"), f"{manifest_prefix}.version") != version:
+        raise ValidationError(f"`{manifest_prefix}.version` must match top-level `version`")
+    if validate_string(manifest.get("description"), f"{manifest_prefix}.description") != summary:
+        raise ValidationError(f"`{manifest_prefix}.description` must match top-level `summary`")
+    return manifest
+
+
+def validate_codex(
+    package_id: str,
+    version: str,
+    summary: str,
+    expected_author: dict[str, object],
+    homepage: str,
+    repository: str,
+    data: object,
+) -> None:
+    if not isinstance(data, dict):
+        raise ValidationError("`codex` must be an object")
+    manifest_path = validate_string(data.get("manifest_path"), "codex.manifest_path")
+    if manifest_path != ".codex-plugin/plugin.json":
+        raise ValidationError("`codex.manifest_path` must be `.codex-plugin/plugin.json`")
+    manifest = _validate_plugin_manifest_identity(
+        data.get("manifest"),
+        manifest_prefix="codex.manifest",
+        package_id=package_id,
+        version=version,
+        summary=summary,
+    )
+    _validate_manifest_author(manifest.get("author"), expected_author, manifest_prefix="codex.manifest")
+    _validate_matching_string(
+        manifest.get("homepage"),
+        "codex.manifest.homepage",
+        homepage,
+        "homepage",
+        "`codex.manifest.homepage` must match top-level `homepage`",
+    )
+    _validate_matching_string(
+        manifest.get("repository"),
+        "codex.manifest.repository",
+        repository,
+        "repository",
+        "`codex.manifest.repository` must match top-level `repository`",
+    )
+    _validate_keyword_list(manifest.get("keywords"), "codex.manifest.keywords")
+    if validate_string(manifest.get("skills"), "codex.manifest.skills") != "./skills/":
+        raise ValidationError("`codex.manifest.skills` must be `./skills/`")
+    _validate_codex_interface(manifest.get("interface"), expected_author, homepage)
+    _validate_codex_marketplace(data.get("repo_marketplace"), package_id)
 
 def validate_root_install_artifacts(root: Path, data: dict[str, object]) -> None:
     codex = data["codex"]
@@ -260,37 +342,21 @@ def validate_claude(
     manifest_path = validate_string(data.get("manifest_path"), "claude.manifest_path")
     if manifest_path != ".claude-plugin/plugin.json":
         raise ValidationError("`claude.manifest_path` must be `.claude-plugin/plugin.json`")
-
-    manifest = data.get("manifest")
-    if not isinstance(manifest, dict):
-        raise ValidationError("`claude.manifest` must be an object")
-    if validate_slug(manifest.get("name"), "claude.manifest.name") != package_id:
-        raise ValidationError("`claude.manifest.name` must match `package_id`")
-    if validate_version(manifest.get("version"), "claude.manifest.version") != version:
-        raise ValidationError("`claude.manifest.version` must match top-level `version`")
-    if validate_string(manifest.get("description"), "claude.manifest.description") != summary:
-        raise ValidationError("`claude.manifest.description` must match top-level `summary`")
-    author = manifest.get("author")
-    if not isinstance(author, dict):
-        raise ValidationError("`claude.manifest.author` must be an object")
-    if validate_string(author.get("name"), "claude.manifest.author.name") != validate_string(
-        expected_author.get("name"), "author.name"
-    ):
-        raise ValidationError("`claude.manifest.author.name` must match top-level `author.name`")
-    if "url" in author:
-        author_url = validate_string(author.get("url"), "claude.manifest.author.url")
-        if expected_author.get("url") is not None and author_url != validate_string(
-            expected_author.get("url"), "author.url"
-        ):
-            raise ValidationError("`claude.manifest.author.url` must match top-level `author.url`")
-    if "email" in author:
-        author_email = validate_string(author.get("email"), "claude.manifest.author.email")
-        if expected_author.get("email") is not None and author_email != validate_string(
-            expected_author.get("email"), "author.email"
-        ):
-            raise ValidationError("`claude.manifest.author.email` must match top-level `author.email`")
-    if validate_string(manifest.get("repository"), "claude.manifest.repository") != repository:
-        raise ValidationError("`claude.manifest.repository` must match top-level `repository`")
+    manifest = _validate_plugin_manifest_identity(
+        data.get("manifest"),
+        manifest_prefix="claude.manifest",
+        package_id=package_id,
+        version=version,
+        summary=summary,
+    )
+    _validate_manifest_author(manifest.get("author"), expected_author, manifest_prefix="claude.manifest")
+    _validate_matching_string(
+        manifest.get("repository"),
+        "claude.manifest.repository",
+        repository,
+        "repository",
+        "`claude.manifest.repository` must match top-level `repository`",
+    )
     marketplace = data.get("marketplace")
     if not isinstance(marketplace, dict):
         raise ValidationError("`claude.marketplace` must be an object")

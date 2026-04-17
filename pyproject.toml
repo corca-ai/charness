@@ -7,5 +7,8 @@ line-length = 100
 extend-exclude = ["charness-artifacts", ".charness"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I"]
+select = ["E", "F", "I", "C90"]
 ignore = ["E501"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15

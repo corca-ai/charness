@@ -25,9 +25,19 @@ adapter needs a sane starting vocabulary.
 
 - preflight: dependency install sanity, lockfile presence, repo health
 - behavior gates: `vitest`, `jest`, or repo-native test runner
-- static gates: `tsc --noEmit`, `eslint`
+- static gates: `eslint` with a standing `complexity` rule, plus
+  `tsc --noEmit` for TypeScript repos
 - confidence extras when justified: coverage, `knip`, `secretlint` or
   `gitleaks`, dependency review, supply-chain audit
+
+## Suggested ESLint Baseline
+
+- `eslint:recommended` as the minimal JavaScript baseline
+- when TypeScript is present, add the repo's chosen `@typescript-eslint`
+  parser/plugin path and keep `tsc --noEmit` as the type authority
+- `complexity: ["error", 15]` as a practical starting hard gate
+- add broader style or migration-heavy rule families only after the standing
+  baseline is already quiet
 
 ## Notes
 

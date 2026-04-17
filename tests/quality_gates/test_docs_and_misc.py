@@ -40,6 +40,18 @@ def test_init_repo_skill_bootstraps_probe_surface_guidance() -> None:
     assert "local discoverability" in probe_reference
 
 
+def test_init_repo_default_surfaces_carry_early_quality_baseline() -> None:
+    default_surfaces = (
+        ROOT / "skills" / "public" / "init-repo" / "references" / "default-surfaces.md"
+    ).read_text(encoding="utf-8")
+
+    assert "## Early Quality Baseline" in default_surfaces
+    assert "Python: `ruff check` with `E`, `F`, `I`, and `C90`" in default_surfaces
+    assert "JavaScript/TypeScript: `eslint`, a standing `complexity` rule" in default_surfaces
+    assert "let `quality` own the exact gate wiring" in default_surfaces
+    assert "ratcheting" in default_surfaces
+
+
 def test_control_plane_documents_authenticated_release_probe_contract() -> None:
     control_plane = (ROOT / "docs" / "control-plane.md").read_text(encoding="utf-8")
 

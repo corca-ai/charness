@@ -115,6 +115,21 @@ When enabled, keep the seam small and explicit:
 - `charness-artifacts/retro/recent-lessons.md`
 - one stable `summary_path` instead of many ad hoc notes
 
+## Early Quality Baseline
+
+When `init-repo` touches a greenfield or under-initialized code repo, leave one
+explicit next-step lint baseline instead of a vague "add quality later" note.
+Keep the baseline small and language-specific:
+
+- Python: `ruff check` with `E`, `F`, `I`, and `C90` enabled plus one honest
+  type-checking path (`mypy` or `pyright`)
+- JavaScript/TypeScript: `eslint`, a standing `complexity` rule, and
+  `tsc --noEmit` when TypeScript exists
+
+`init-repo` does not need to install every gate itself. The point is to name an
+honest default family early, then let `quality` own the exact gate wiring and
+ratcheting.
+
 ## GitHub Actions Defaults
 
 When the repo scaffolds GitHub-hosted workflows, pin maintained GitHub Actions

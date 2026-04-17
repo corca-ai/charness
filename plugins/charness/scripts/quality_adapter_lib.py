@@ -108,24 +108,22 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
     }
 
 
-def validate_quality_adapter_data(
-    data: dict[str, Any], repo_root: Path
-) -> tuple[dict[str, Any], list[str], list[str]]:
-    errors: list[str] = []
-    warnings: list[str] = []
-    validated = infer_quality_defaults(repo_root)
-
+def _validate_version_field(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
     version = data.get("version")
     if isinstance(version, int):
         validated["version"] = version
     elif version is not None:
         errors.append("version must be an integer")
 
+
+def _apply_string_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
     for field in STRING_FIELDS:
         value = _string(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
 
+
+def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
     coverage_fragile_margin_pp = _float_value(
         data.get("coverage_fragile_margin_pp"), "coverage_fragile_margin_pp", errors
     )
@@ -162,10 +160,24 @@ def validate_quality_adapter_data(
     if runtime_budgets is not None:
         validated["runtime_budgets"] = runtime_budgets
 
+
+def _apply_list_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
     for field in LIST_FIELDS:
         items = _string_list(data.get(field), field, errors)
         if items is not None:
             validated[field] = items
+
+
+def validate_quality_adapter_data(
+    data: dict[str, Any], repo_root: Path
+) -> tuple[dict[str, Any], list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+    validated = infer_quality_defaults(repo_root)
+    _validate_version_field(data, validated, errors)
+    _apply_string_fields(data, validated, errors)
+    _apply_policy_fields(data, validated, errors)
+    _apply_list_fields(data, validated, errors)
 
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")

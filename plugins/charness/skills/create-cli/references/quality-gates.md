@@ -13,6 +13,13 @@ A repo-owned CLI should usually have:
   first-touch install, update, doctor, reset, or uninstall docs
 - cheap syntax smoke such as `py_compile` for Python entrypoints
 
+Language baselines still apply to CLI repos:
+
+- Python CLI: `ruff check` with `C90` enabled, plus one honest type checker
+  (`mypy` or `pyright`)
+- JavaScript/TypeScript CLI: `eslint` with a standing `complexity` rule, plus
+  `tsc --noEmit` when TypeScript is present
+
 When the CLI owns lifecycle state, test both:
 
 - happy path

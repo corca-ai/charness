@@ -117,6 +117,20 @@ def test_validate_presets_ignores_gitignored_files(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_sample_quality_presets_carry_concrete_lint_defaults() -> None:
+    root = Path(__file__).resolve().parents[2]
+    python_quality = (root / "presets" / "python-quality.md").read_text(encoding="utf-8")
+    typescript_quality = (root / "presets" / "typescript-quality.md").read_text(encoding="utf-8")
+    presets_readme = (root / "presets" / "README.md").read_text(encoding="utf-8")
+
+    assert '`ruff check` with `E`, `F`, `I`, and `C90`' in python_quality
+    assert '[tool.ruff.lint.mccabe] max-complexity = 15' in python_quality
+    assert '`eslint` with a standing `complexity` rule' in typescript_quality
+    assert 'complexity: ["error", 15]' in typescript_quality
+    assert "including `eslint` + `complexity` and `tsc --noEmit` defaults" in presets_readme
+    assert "including `ruff` + `C90` and one type-checker default" in presets_readme
+
+
 def test_validate_profiles_rejects_unknown_smoke_scenario(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     profiles_dir = repo / "profiles"

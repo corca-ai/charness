@@ -266,7 +266,7 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "ruff check scripts tests skills/public/*/scripts skills/support/*/scripts",
+        "ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts",
         "pytest -q tests/quality_gates tests/control_plane tests/test_*.py tests/charness_cli/test_doctor_cache_selection.py tests/charness_cli/test_tool_lifecycle.py"
       ],
       "notes": [

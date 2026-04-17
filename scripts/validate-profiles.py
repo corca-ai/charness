@@ -10,6 +10,7 @@ from pathlib import Path
 
 import jsonschema
 from jsonschema import ValidationError as JsonSchemaValidationError
+
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
@@ -77,39 +78,30 @@ def load_profile_schema() -> dict[str, object]:
     return json.loads(PROFILE_SCHEMA_PATH.read_text(encoding="utf-8"))
 
 
-def validate_profile(path: Path, root: Path) -> None:
-    profile_ids = {profile_path.stem for profile_path in iter_profile_files(root)}
-    known_eval_scenarios = scenario_ids()
-    public_skills_dir = root / "skills" / "public"
-    support_skills_dir = root / "skills" / "support"
-    presets_dir = root / "presets"
-    integrations_dir = root / "integrations" / "tools"
+def _validate_extends(
+    extends: object,
+    *,
+    profile_id: str,
+    profile_ids: set[str],
+) -> None:
+    if extends is None:
+        return
+    for base_profile in validate_unique_strings(extends, "extends"):
+        base_profile = validate_slug(base_profile, "extends[]")
+        if base_profile == profile_id:
+            raise ValidationError("`extends[]` must not include the profile itself")
+        if base_profile not in profile_ids:
+            raise ValidationError(f"`extends[]` references missing artifact `{base_profile}`")
 
-    data = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(data, dict):
-        raise ValidationError("profile must be a JSON object")
-    jsonschema.validate(data, load_profile_schema())
 
-    validate_string(data.get("schema_version"), "schema_version")
-    profile_id = validate_slug(data.get("profile_id"), "profile_id")
-    validate_string(data.get("display_name"), "display_name")
-    validate_string(data.get("purpose"), "purpose")
-    if profile_id != path.stem:
-        raise ValidationError(f"`profile_id` must match filename `{path.stem}`")
-
-    extends = data.get("extends", [])
-    if extends is not None:
-        for base_profile in validate_unique_strings(extends, "extends"):
-            base_profile = validate_slug(base_profile, "extends[]")
-            if base_profile == profile_id:
-                raise ValidationError("`extends[]` must not include the profile itself")
-            if base_profile not in profile_ids:
-                raise ValidationError(f"`extends[]` references missing artifact `{base_profile}`")
-
-    bundles = data.get("bundles")
-    if not isinstance(bundles, dict):
-        raise ValidationError("`bundles` must be an object")
-
+def _validate_bundle_targets(
+    bundles: dict[str, object],
+    *,
+    public_skills_dir: Path,
+    support_skills_dir: Path,
+    presets_dir: Path,
+    integrations_dir: Path,
+) -> None:
     public_skills = validate_unique_strings(
         bundles.get("public_skills"),
         "bundles.public_skills",
@@ -132,45 +124,94 @@ def validate_profile(path: Path, root: Path) -> None:
             target = base / item / suffix if suffix == "SKILL.md" else base / f"{item}{suffix}"
             require_file(target, f"bundles.{field}[]", item)
 
-    activation = data.get("activation")
-    if activation is not None:
-        if not isinstance(activation, dict):
-            raise ValidationError("`activation` must be an object")
-        default = activation.get("default")
-        if default is not None and not isinstance(default, bool):
-            raise ValidationError("`activation.default` must be a boolean")
-        for field in ("recommended_when", "avoid_when"):
-            if field in activation:
-                validate_string_list(activation[field], f"activation.{field}")
 
-    validation = data.get("validation")
-    if validation is not None:
-        if not isinstance(validation, dict):
-            raise ValidationError("`validation` must be an object")
-        required_integrations = validation.get("required_integrations", [])
-        if required_integrations is not None:
-            for integration_id in validate_unique_strings(
-                required_integrations,
-                "validation.required_integrations",
-            ):
-                integration_id = validate_slug(integration_id, "validation.required_integrations[]")
-                require_file(
-                    integrations_dir / f"{integration_id}.json",
-                    "validation.required_integrations[]",
-                    integration_id,
+def _validate_activation_block(activation: object) -> None:
+    if activation is None:
+        return
+    if not isinstance(activation, dict):
+        raise ValidationError("`activation` must be an object")
+    default = activation.get("default")
+    if default is not None and not isinstance(default, bool):
+        raise ValidationError("`activation.default` must be a boolean")
+    for field in ("recommended_when", "avoid_when"):
+        if field in activation:
+            validate_string_list(activation[field], f"activation.{field}")
+
+
+def _validate_validation_block(
+    validation: object,
+    *,
+    integrations_dir: Path,
+    known_eval_scenarios: set[str],
+) -> None:
+    if validation is None:
+        return
+    if not isinstance(validation, dict):
+        raise ValidationError("`validation` must be an object")
+    required_integrations = validation.get("required_integrations", [])
+    if required_integrations is not None:
+        for integration_id in validate_unique_strings(
+            required_integrations,
+            "validation.required_integrations",
+        ):
+            integration_id = validate_slug(integration_id, "validation.required_integrations[]")
+            require_file(
+                integrations_dir / f"{integration_id}.json",
+                "validation.required_integrations[]",
+                integration_id,
+            )
+    smoke_scenarios = validation.get("smoke_scenarios", [])
+    if smoke_scenarios is not None:
+        for scenario_id in validate_unique_strings(
+            smoke_scenarios,
+            "validation.smoke_scenarios",
+        ):
+            validate_string(scenario_id, "validation.smoke_scenarios[]")
+            if scenario_id not in known_eval_scenarios:
+                raise ValidationError(
+                    f"`validation.smoke_scenarios[]` references unknown eval scenario `{scenario_id}`"
                 )
-        smoke_scenarios = validation.get("smoke_scenarios", [])
-        if smoke_scenarios is not None:
-            for scenario_id in validate_unique_strings(
-                smoke_scenarios,
-                "validation.smoke_scenarios",
-            ):
-                validate_string(scenario_id, "validation.smoke_scenarios[]")
-                if scenario_id not in known_eval_scenarios:
-                    raise ValidationError(
-                        f"`validation.smoke_scenarios[]` references unknown eval scenario `{scenario_id}`"
-                    )
 
+
+def validate_profile(path: Path, root: Path) -> None:
+    profile_ids = {profile_path.stem for profile_path in iter_profile_files(root)}
+    known_eval_scenarios = scenario_ids()
+    public_skills_dir = root / "skills" / "public"
+    support_skills_dir = root / "skills" / "support"
+    presets_dir = root / "presets"
+    integrations_dir = root / "integrations" / "tools"
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValidationError("profile must be a JSON object")
+    jsonschema.validate(data, load_profile_schema())
+
+    validate_string(data.get("schema_version"), "schema_version")
+    profile_id = validate_slug(data.get("profile_id"), "profile_id")
+    validate_string(data.get("display_name"), "display_name")
+    validate_string(data.get("purpose"), "purpose")
+    if profile_id != path.stem:
+        raise ValidationError(f"`profile_id` must match filename `{path.stem}`")
+
+    _validate_extends(data.get("extends", []), profile_id=profile_id, profile_ids=profile_ids)
+
+    bundles = data.get("bundles")
+    if not isinstance(bundles, dict):
+        raise ValidationError("`bundles` must be an object")
+    _validate_bundle_targets(
+        bundles,
+        public_skills_dir=public_skills_dir,
+        support_skills_dir=support_skills_dir,
+        presets_dir=presets_dir,
+        integrations_dir=integrations_dir,
+    )
+
+    _validate_activation_block(data.get("activation"))
+    _validate_validation_block(
+        data.get("validation"),
+        integrations_dir=integrations_dir,
+        known_eval_scenarios=known_eval_scenarios,
+    )
     notes = data.get("notes")
     if notes is not None:
         validate_string_list(notes, "notes")

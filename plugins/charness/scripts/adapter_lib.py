@@ -39,6 +39,44 @@ def _next_meaningful_line(lines: list[str], start: int) -> tuple[int, str] | Non
     return None
 
 
+def _parse_list_items(lines: list[str], start: int, indent: int) -> tuple[list[Any], int]:
+    items: list[Any] = []
+    index = start
+    while index < len(lines):
+        raw = lines[index]
+        stripped = raw.strip()
+        current_indent = len(raw) - len(raw.lstrip(" "))
+        if not stripped or stripped.startswith("#"):
+            index += 1
+            continue
+        if current_indent < indent:
+            break
+        if current_indent == indent:
+            if not stripped.startswith("- "):
+                break
+            items.append(_coerce_scalar(stripped[2:].strip()))
+            index += 1
+            continue
+        index += 1
+    return items, index
+
+
+def _parse_empty_value(lines: list[str], index: int, current_indent: int) -> tuple[Any, int]:
+    next_item = _next_meaningful_line(lines, index + 1)
+    if next_item is None:
+        return {}, index + 1
+    next_index, next_raw = next_item
+    next_stripped = next_raw.strip()
+    next_indent = len(next_raw) - len(next_raw.lstrip(" "))
+    if next_stripped.startswith("- "):
+        if next_indent < current_indent:
+            return {}, index + 1
+        return _parse_list_items(lines, next_index, next_indent)
+    if next_indent <= current_indent:
+        return {}, index + 1
+    return _parse_block(lines, index + 1, current_indent + 2)
+
+
 def _parse_block(lines: list[str], start: int, indent: int) -> tuple[dict[str, Any], int]:
     result: dict[str, Any] = {}
     index = start
@@ -72,49 +110,7 @@ def _parse_block(lines: list[str], start: int, indent: int) -> tuple[dict[str, A
             index += 1
             continue
 
-        next_item = _next_meaningful_line(lines, index + 1)
-        if next_item is None:
-            result[key] = {}
-            index += 1
-            continue
-
-        next_index, next_raw = next_item
-        next_stripped = next_raw.strip()
-        next_indent = len(next_raw) - len(next_raw.lstrip(" "))
-        if next_stripped.startswith("- "):
-            if next_indent < current_indent:
-                result[key] = {}
-                index += 1
-                continue
-            items: list[Any] = []
-            list_index = next_index
-            while list_index < len(lines):
-                list_raw = lines[list_index]
-                list_stripped = list_raw.strip()
-                list_indent = len(list_raw) - len(list_raw.lstrip(" "))
-                if not list_stripped or list_stripped.startswith("#"):
-                    list_index += 1
-                    continue
-                if list_indent < next_indent:
-                    break
-                if list_indent == next_indent:
-                    if not list_stripped.startswith("- "):
-                        break
-                    items.append(_coerce_scalar(list_stripped[2:].strip()))
-                    list_index += 1
-                    continue
-                list_index += 1
-            result[key] = items
-            index = list_index
-            continue
-        if next_indent <= current_indent:
-            result[key] = {}
-            index += 1
-            continue
-
-        nested, next_after_nested = _parse_block(lines, index + 1, current_indent + 2)
-        result[key] = nested
-        index = next_after_nested
+        result[key], index = _parse_empty_value(lines, index, current_indent)
 
     return result, index
 
