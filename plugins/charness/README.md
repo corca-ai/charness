@@ -14,6 +14,67 @@ It defines reusable agent skills, support integrations, profiles, adapter
 conventions, and validation flows that downstream hosts can adopt without
 copying host-specific policy into public skills.
 
+## Who It Is For
+
+- teams maintaining repo-owned agent workflows or skill packs across Claude,
+  Codex, or adjacent host surfaces
+- maintainers who want portable workflow concepts instead of host-specific
+  prompt bundles
+- operators who want install, update, doctor, and support-sync seams without
+  turning `charness` into the runtime owner of every external tool
+
+Day-1 trigger: your repo has recurring agent work such as repo bootstrap,
+external-source gathering, concept shaping, implementation, quality review,
+handoff, or release work, and you want those workflows to stay portable across
+hosts instead of re-explaining them in each prompt surface.
+
+Not for: repos whose main problem is evaluator-driven behavior regression or
+prompt optimization. That boundary belongs in `cautilus` or an explicit HITL /
+evaluation workflow, not in `charness`.
+
+## Why `charness`
+
+The stance, in four contrasts:
+
+- Unlike a host-specific prompt pack, `charness` keeps public workflow concepts
+  portable and pushes host-specific policy into adapters, presets, and
+  generated install surfaces.
+- Unlike a scaffold scrapbook, `charness` ships reusable skills, support
+  integrations, profiles, and validators as one harness bundle instead of
+  asking each repo to recopy the same operational lore.
+- Unlike an eval harness, `charness` keeps deterministic repo-owned gates local
+  and routes evaluator-heavy or comparison-heavy behavior review into
+  `cautilus`, `hitl`, or explicit operator review.
+- Unlike a raw tool wrapper collection, `charness` separates workflow concepts
+  from tool-use knowledge: public skills express user-facing work, while
+  support skills and integration manifests teach the harness how to use
+  specialized tools.
+
+## What To Use When
+
+- starting or normalizing a repo operating surface: `init-repo`
+- gathering outside source material into durable local artifacts: `gather`
+- shaping an idea before contract or code exists: `ideation`
+- turning a direction into an executable implementation contract: `spec`
+- changing code, config, tests, or operator-facing artifacts: `impl`
+- investigating a bug, regression, or confusing behavior: `debug`
+- aligning README, handoff, or source-of-truth docs: `narrative`
+- adapting aligned truth into human-facing delivery copy: `announcement`
+- reviewing current quality posture and next gates: `quality`
+- inserting bounded human judgment into a review loop: `hitl`
+- preparing the next session or leaving pickup state: `handoff`
+- reflecting on a work unit and repeat traps: `retro`
+- finding hidden or support capabilities before ad hoc search: `find-skills`
+- creating harness-owned skills or CLIs: `create-skill`, `create-cli`
+- cutting or verifying a release surface: `release`
+
+If you are deciding between surfaces:
+
+- public skill: user-facing workflow concept
+- support skill: repeated tool-usage knowledge shared by multiple workflows
+- integration manifest: external ownership boundary for install, update,
+  detect, healthcheck, and readiness
+
 ## Scope
 
 `charness` owns:
@@ -57,6 +118,9 @@ Current planning and takeover surfaces live in
 
 Use the README as the entrypoint, not as the only rollout or install contract.
 
+- picking the right skill or boundary:
+  [docs/support-skill-policy.md](docs/support-skill-policy.md) and
+  [docs/public-skill-validation.md](docs/public-skill-validation.md)
 - evaluating internal rollout readiness:
   [docs/operator-acceptance.md](docs/operator-acceptance.md) and
   [charness-artifacts/quality/latest.md](charness-artifacts/quality/latest.md)

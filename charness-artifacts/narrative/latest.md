@@ -4,105 +4,114 @@ Date: 2026-04-17
 ## Source Map
 
 - `README.md`
-- `INSTALL.md`
-- `UNINSTALL.md`
-- `docs/control-plane.md`
+- `../cautilus/README.md`
+- `docs/support-skill-policy.md`
 - `docs/public-skill-validation.md`
 - `docs/operator-acceptance.md`
 - `docs/host-packaging.md`
+- `docs/deferred-decisions.md`
 - `docs/handoff.md`
 - `charness-artifacts/quality/latest.md`
 
 ## Narrative Drift
 
-- The core story is aligned: `charness` is a portable harness bundle, the
-  managed install contract goes through `charness init`, and root-level host
-  packaging artifacts remain generated surfaces instead of source-of-truth
-  policy.
-- README is intentionally short and now points evaluators more directly at the
-  rollout-readiness and install-verification documents. That improves the
-  first-touch path for internal developers without turning README into a second
-  install manual.
-- The honest remaining gap is not “basic docs are missing” but “the repo still
-  carries explicit operator acceptance work.” `docs/operator-acceptance.md`
-  still keeps managed CLI install experiments as an open item, and
-  `docs/host-packaging.md` still frames public GitHub install as a testable
-  hypothesis rather than a fully proven guarantee.
+- The core contract was already honest, but the first-touch README led with
+  structure instead of choice. A maintainer could learn what `charness` owns
+  without quickly learning who it is for, what problem shape it fits, or how
+  it differs from neighboring harnesses such as `cautilus`.
+- Compared with `../cautilus/README.md`, the missing front-door pieces were:
+  reader targeting, day-1 trigger, short contrast-based philosophy, and a
+  visible “what to use when” map.
+- The real narrative gap was not install truth. It was product-shape truth.
+  `charness` already had the philosophy in supporting docs: public workflow
+  concepts vs support tool knowledge, deterministic gates in-repo, evaluator
+  work out of core, and host policy in adapters rather than in public skills.
+  README simply did not surface that framing early enough.
 
 ## Updated Truth
 
-- No broad truth-surface rewrite was needed.
-- Current honest position: the repo is internally dogfoodable and locally
-  verifiable today, but rollout confidence is strongest when framed as
-  “managed install plus post-install verification” rather than “fully proven
-  zero-touch host rollout on every machine posture.”
+- README now makes the intended reader, product boundary, and skill-routing
+  model visible before install and packaging details.
+- Current honest position: `charness` is the portable workflow-and-operator
+  harness. It is not the behavior-eval product. If the repo needs workflow
+  concepts and portable operating seams, use `charness`. If the repo needs
+  evaluator-driven behavior protection, use `cautilus` or an explicit HITL /
+  evaluation loop.
 
 ## Brief
 
 ### One-Line Summary
 
-`charness` looks ready for internal developer rollout when the expectation is a
-documented managed install plus explicit verification, not a fully proven
-hands-off host rollout on every posture.
+`charness` now reads more like a product entrypoint and less like a packaging
+inventory: who it is for, why it exists, how it differs, and what skill to
+reach for are all visible near the top.
 
 ### Current Contract
 
-- README is the entrypoint.
-- `INSTALL.md` owns the managed install contract.
-- `docs/host-packaging.md` owns generated host-surface rules.
-- `docs/operator-acceptance.md` owns remaining operator proof work.
-- `./scripts/run-quality.sh` is the standing local quality bar.
+- README is the entrypoint and decision orienter.
+- `INSTALL.md` and `docs/host-packaging.md` still own install and packaging
+  truth.
+- `docs/support-skill-policy.md` and
+  `docs/public-skill-validation.md` remain the deeper boundary docs behind the
+  new README framing.
+- `./scripts/run-quality.sh` remains the standing local proof bar.
 
 ### What Changed
 
-- Added a short README routing block for rollout-readiness and install-verifier
-  readers.
-- Recorded this narrative assessment in the canonical narrative artifact path.
+- Added `Who It Is For`, `Why charness`, and `What To Use When` near the top of
+  README.
+- Added a small surface-classification block so readers can tell public skills,
+  support skills, and integration manifests apart.
+- Kept install and packaging material intact, but moved reader guidance ahead
+  of operational detail.
 
 ### Open Questions
 
-- Should internal rollout mean “self-serve from README plus linked docs” or
-  “maintainer-guided managed install with verification”?
-- Should one remaining managed-install acceptance rerun be elevated into a
-  release-blocking ritual, or stay as an on-demand operator proof?
+- Should README also add one minimal “happy path” example loop, or is the new
+  routing enough without turning it into another long operator manual?
+- Should the public skill map stay intent-grouped, or should one future doc own
+  a full scenario catalog similar to `cautilus` archetypes?
 
 ## Claim Audit
 
-- Claim: the current tree is locally healthy.
+- Claim: the repo is locally healthy after the rewrite.
   Evidence: `./scripts/run-quality.sh` passed on 2026-04-17 with `38 passed,
   0 failed`.
-- Claim: the repo has a current release/install story, not only local dev
-  guidance.
-  Evidence: `docs/handoff.md` records published `0.3.0`, and `INSTALL.md`
-  treats `charness init` as the canonical operator bootstrap.
-- Claim: the managed host story is not fully “done forever.”
-  Evidence: `docs/operator-acceptance.md` still keeps managed CLI install
-  experiments as an active remaining item, and `docs/host-packaging.md` keeps
-  public GitHub install under hypothesis language.
-- Claim: README is sufficient as an orienter, but not as the sole rollout
-  decision document.
-  Evidence: rollout confidence still depends on the linked install, packaging,
-  acceptance, and quality surfaces.
+- Claim: the new README framing is grounded in existing source-of-truth docs,
+  not fresh invention.
+  Evidence: `docs/support-skill-policy.md` defines public workflow concepts vs
+  support tool knowledge; `docs/deferred-decisions.md` keeps evaluator-heavy
+  work out of `charness`; `docs/public-skill-validation.md` fixes current skill
+  validation posture.
+- Claim: `charness` is ready to be described as internally roll-outable.
+  Evidence: the user confirmed the managed install proof and update-propagation
+  proof are already complete, and the repo still carries passing local quality
+  proof.
+- Claim: install truth still should not collapse back into README.
+  Evidence: `docs/operator-acceptance.md`, `INSTALL.md`, and
+  `docs/host-packaging.md` remain the correct homes for rollout and packaging
+  detail.
 
 ## Compression
 
-- README remains compressed enough to stay an orienter.
-- The rollout/readiness decision still depends on a small linked packet rather
-  than a single document: README, INSTALL, host packaging, operator
-  acceptance, and latest quality review.
+- README gained new high-leverage product-shape sections instead of only more
+  install detail.
+- The change is a real narrative restructure because the top of the document
+  now answers reader-selection questions before ownership and packaging
+  inventory.
 
 ## Open Questions
 
-- Do we want a dedicated “internal rollout checklist” surface, or is the
-  current README routing plus operator-acceptance doc enough?
-- Do we want one explicit fresh-machine Codex proof recorded before calling the
-  internal rollout story “high confidence”?
+- Do we want a separate “workflow examples” doc that gives one concrete path
+  per major public skill cluster?
+- If we keep README compact, which one workflow should become the canonical
+  first example: repo bootstrap, concept-to-impl, or quality review?
 
 ## Next Step
 
-1. Run one fresh-machine or clean-profile managed install proof for Codex with
-   `charness init`, `charness doctor`, and `charness update`.
-2. Record the exact host-visible result in `docs/operator-acceptance.md` or a
-   linked artifact.
-3. If that proof is clean, treat the repo as ready for broader internal
-   developer distribution.
+1. Re-read README from the perspective of a new internal maintainer who does
+   not already know the `charness` / `cautilus` split.
+2. If the “what to use when” section still feels too abstract, add one short
+   concrete workflow example rather than another catalog paragraph.
+3. Keep install, packaging, and acceptance details in their owner docs instead
+   of re-growing README into a second operator manual.
