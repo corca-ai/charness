@@ -14,7 +14,7 @@
 - `charness task`는 작업 리포의 `.charness/tasks/*.json`에 claim/submit/abort/status를 남긴다. 이 리포의 runtime state에는 `sah-task-envelope`와 `doctor-next-action` record가 있어 `charness task status <task-id>`로 이어받을 수 있다.
 - Checked-in plugin export는 source 변경 뒤 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`로 맞춘다.
 - `docs/public-skill-dogfood.json`는 현재 17개 public skill 전체를 커버하는 reviewed consumer dogfood registry다.
-- Packaging/plugin release surface는 이제 `0.1.0` 기준이고, 태그/게시 release는 아직 만들지 않았다.
+- Packaging/plugin release surface는 이제 `0.2.0` 기준이고, 태그/게시 release는 아직 만들지 않았다.
 - `#33`/`#34` 방향의 public spec boundary 정리는 반영됐다. `spec`은 public executable contract vs implementation guard를 명시하고, `quality`는 proof layering inventory plus actionable `move_down` / `delete_or_merge` / `keep_if_integration_value` recommendation payload를 갖는다.
 - `quality` public skill은 이번 slice에서 structure-first routing을 더 명시했다. 길이/중복/pressure signal은 기본적으로 concept-review advisory로 보고, explicit low-noise invariant와 clear structural response가 있을 때만 `AUTO_CANDIDATE`/`AUTO_EXISTING`로 올린다. 이 caution은 coverage floor나 runtime budget 같은 standing threshold gate까지 일반화하지 않는다.
 - 2026-04-17 quality review 기준 남은 advisory pressure는 `AGENTS.md`/`README.md`/`UNINSTALL.md` entrypoint ergonomics, `init-repo`/`retro`/`spec`의 mode-pressure wording, 그리고 `quality` SKILL core의 `long_core`다.
@@ -26,7 +26,7 @@
 
 1. `git status --short`를 먼저 확인한다.
 2. public-spec executable proof 약점은 이번 slice에서 정리됐다. `inventory_public_spec_quality.py`는 실제 `run:shell` fence를 읽고, `specs/index.spec.md`/`specs/tool-doctor.spec.md`는 direct CLI proof로 바뀌어 현재 flagged spec이 없다.
-3. `0.1.0` release slice는 version surface까지 이미 올라가 있지만 아직 push 전이다. 다음 세션이 release를 이어받으면 `git status --short`로 남은 staged/unstaged surface를 먼저 확인하고 `./scripts/run-quality.sh`, `python3 scripts/run-slice-closeout.py --repo-root .`, `python3 skills/public/release/scripts/current_release.py --repo-root .`부터 재확인한다.
+3. `0.2.0` release slice는 additive `glow` install/runtime surface와 related release/test hardening을 포함한다. 태그/게시 release는 아직 없으니, 다음 세션이 release를 이어받으면 published tag를 만들지 말지부터 결정하고 `python3 skills/public/release/scripts/current_release.py --repo-root .`로 checked-in version surface부터 확인한다.
 4. `markdown-preview`는 이제 이 repo에서 `glow` installed/ready 상태다. 다음 slice 우선순위는 `narrative`/`announcement`/`quality` 중 어떤 workflow가 이 helper를 기본 호출할지 결정하고, `docs:preview`류 command surface가 실제 가치가 있는지 판단하는 것이다.
 5. Agent Harness Guide adaptation을 이어가면 [charness-artifacts/spec/agent-harness-guide-adaptation.md](../charness-artifacts/spec/agent-harness-guide-adaptation.md)를 읽고 `Slice 1`부터 시작한다. 첫 범위는 `docs/harness-composition.md`, `docs/artifact-policy.md`, 최소 handoff cross-link다.
 6. Dogfood 개선은 registry 확장보다 reviewed case 강화가 다음 move다. `hitl` 또는 `ideation`처럼 policy-heavy한 case 하나를 골라 실제 consumer prompt replay와 stronger acceptance evidence를 추가한다.

@@ -27,6 +27,10 @@ def run_helper(repo_root: Path, *args: str, env: dict[str, str] | None = None) -
     )
 
 
+def _isolated_path() -> str:
+    return str(Path(sys.executable).resolve().parent)
+
+
 def _write_fake_glow(bin_dir: Path) -> None:
     glow = bin_dir / "glow"
     glow.write_text(
@@ -57,7 +61,7 @@ def test_markdown_preview_renders_artifacts_with_glow(tmp_path: Path) -> None:
     fake_bin.mkdir()
     _write_fake_glow(fake_bin)
     env = os.environ.copy()
-    env["PATH"] = f"{fake_bin}:{env['PATH']}"
+    env["PATH"] = f"{fake_bin}:{_isolated_path()}"
 
     result = run_helper(repo, "--file", "README.md", "--width", "80", "--width", "100", env=env)
 
@@ -79,8 +83,10 @@ def test_markdown_preview_writes_degraded_artifact_without_glow(tmp_path: Path) 
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "README.md").write_text("# Title\n\nParagraph\n", encoding="utf-8")
+    env = os.environ.copy()
+    env["PATH"] = _isolated_path()
 
-    result = run_helper(repo, "--file", "README.md", "--width", "90")
+    result = run_helper(repo, "--file", "README.md", "--width", "90", env=env)
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -125,7 +131,7 @@ def test_markdown_preview_uses_yaml_config_and_changed_only_scope(tmp_path: Path
     fake_bin.mkdir()
     _write_fake_glow(fake_bin)
     env = os.environ.copy()
-    env["PATH"] = f"{fake_bin}:{env['PATH']}"
+    env["PATH"] = f"{fake_bin}:{_isolated_path()}"
 
     result = run_helper(repo, env=env)
 
