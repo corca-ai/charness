@@ -114,11 +114,23 @@ def make_release_fixture(tmp_path: Path, *, charness_tag: str | None = None) -> 
                     "published_at": "2026-04-10T00:00:00Z",
                     "assets": [{"name": "cautilus-linux-amd64.tar.gz"}],
                 },
+                "cli/cli": {
+                    "tag_name": "v2.90.1",
+                    "html_url": "https://github.com/cli/cli/releases/tag/v2.90.1",
+                    "published_at": "2026-04-08T00:00:00Z",
+                    "assets": [{"name": "gh_2.90.1_linux_amd64.tar.gz"}],
+                },
                 "vercel-labs/agent-browser": {
                     "tag_name": "v0.25.3",
                     "html_url": "https://github.com/vercel-labs/agent-browser/releases/tag/v0.25.3",
                     "published_at": "2026-04-07T02:11:00Z",
                     "assets": [{"name": "agent-browser-x86_64-unknown-linux-gnu.tar.gz"}],
+                },
+                "gitleaks/gitleaks": {
+                    "tag_name": "v8.27.2",
+                    "html_url": "https://github.com/gitleaks/gitleaks/releases/tag/v8.27.2",
+                    "published_at": "2026-04-06T00:00:00Z",
+                    "assets": [{"name": "gitleaks_8.27.2_linux_x64.tar.gz"}],
                 },
                 "corca-ai/specdown": {
                     "tag_name": "v0.47.2",
@@ -159,6 +171,31 @@ def make_support_sync_fixture(tmp_path: Path) -> Path:
     fixture_path = tmp_path / "support-sync-fixtures.json"
     fixture_path.write_text(json.dumps(mappings, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return fixture_path
+
+
+def make_fake_cautilus(tmp_path: Path) -> Path:
+    script = tmp_path / "bin" / "cautilus"
+    script.parent.mkdir(parents=True, exist_ok=True)
+    script.write_text(
+        textwrap.dedent(
+            """\
+            #!/usr/bin/env python3
+            import sys
+
+            args = sys.argv[1:]
+            if args == ["--version"]:
+                print("cautilus 1.2.3")
+                raise SystemExit(0)
+            if args == ["doctor", "--help"]:
+                print("cautilus doctor")
+                raise SystemExit(0)
+            raise SystemExit(0)
+            """
+        ),
+        encoding="utf-8",
+    )
+    script.chmod(0o755)
+    return script
 
 
 def rewrite_seeded_home_paths(home_root: Path, *, old_home_root: Path) -> None:

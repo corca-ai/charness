@@ -199,8 +199,9 @@ install is the canonical operator contract, and `charness init` is the host
 detector when the machine state is still unknown.
 
 Primary operator path once the binary is available: `charness init`,
-`charness doctor`, `charness update`, `charness task claim slice-1 --summary
-"..."`, `charness reset`, `charness uninstall`.
+`charness doctor`, `charness update`, `charness update all`,
+`charness task claim slice-1 --summary "..."`, `charness reset`,
+`charness uninstall`.
 
 If the machine starts in a zero-state posture with no PATH binary and no local
 checkout, bootstrap once from the raw script:
@@ -229,7 +230,7 @@ missing fixture"`, `.charness/tasks/`, `charness capability init`,
 `charness capability resolve slack.default`,
 `charness capability doctor slack.default`, `charness tool doctor cautilus`,
 `charness tool install cautilus`, `charness tool update agent-browser`,
-`charness tool sync-support cautilus`.
+`charness tool sync-support cautilus`, `charness update all`.
 
 Machine-local capability config lives under `~/.config/charness/`. Manual-mode
 tool flows persist manual install guidance plus refreshed doctor state instead
@@ -238,9 +239,11 @@ of pretending the host was mutated.
 Command intent stays stable even when host details evolve: `init` bootstraps or
 refreshes the managed local install surface, `doctor` inspects host state and
 emits `next_action`, `update` means run `charness update` to refresh the
-installed surface, `reset` means remove host plugin state while keeping the
-managed checkout and CLI, and skill execution must stay read-only with respect
-to install/update state.
+installed surface for `charness` itself, `update all` adds `tool update`
+fan-out for tracked external binaries plus bundled support-skill refresh,
+`reset` means remove host plugin state while keeping the managed checkout and
+CLI, and skill execution must stay read-only with respect to install/update
+state.
 
 Removal details stay in [UNINSTALL.md](UNINSTALL.md), including
 `charness uninstall --delete-checkout`, `charness uninstall --delete-cli`, and

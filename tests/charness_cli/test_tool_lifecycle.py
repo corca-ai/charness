@@ -10,6 +10,7 @@ from .support import (
     clone_seeded_managed_home,
     make_fake_agent_browser,
     make_fake_brew_specdown,
+    make_fake_cautilus,
     make_fake_npm_gws,
     make_release_fixture,
     make_repo_copy,
@@ -17,31 +18,6 @@ from .support import (
     run_cli,
     run_cli_in_repo,
 )
-
-
-def make_fake_cautilus(tmp_path: Path) -> Path:
-    script = tmp_path / "bin" / "cautilus"
-    script.parent.mkdir(parents=True, exist_ok=True)
-    script.write_text(
-        textwrap.dedent(
-            """\
-            #!/usr/bin/env python3
-            import sys
-
-            args = sys.argv[1:]
-            if args == ["--version"]:
-                print("cautilus 1.2.3")
-                raise SystemExit(0)
-            if args == ["doctor", "--help"]:
-                print("cautilus doctor")
-                raise SystemExit(0)
-            raise SystemExit(0)
-            """
-        ),
-        encoding="utf-8",
-    )
-    script.chmod(0o755)
-    return script
 
 
 def make_fake_go_glow(tmp_path: Path) -> tuple[Path, Path]:

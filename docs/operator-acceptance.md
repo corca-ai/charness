@@ -91,6 +91,7 @@ Useful local commands:
 python3 scripts/validate-packaging.py --repo-root .
 python3 scripts/sync_root_plugin_manifests.py --repo-root .
 charness doctor
+charness update all
 charness tool doctor cautilus
 charness tool install cautilus
 charness tool update agent-browser
@@ -105,6 +106,8 @@ Suggested operator runs:
 - make an explicit upstream payload change that should be visible in a loaded
   skill or plugin manifest
 - run `charness update`
+- run `charness update all` when the acceptance run also needs tracked external
+  binaries and bundled support skill surfaces refreshed
 - verify Claude by checking that the changed payload is reflected in the
   installed host copy after the documented restart/reload step
 - Codex update propagation is already operator-proven; keep any future rerun as
@@ -129,6 +132,8 @@ Acceptance:
   external dependencies and any remaining manual steps
 - `charness update` refreshes the installed CLI itself before judging downstream
   host behavior
+- `charness update all` keeps the same self-update contract and also runs the
+  tracked external tool update/support-refresh flow in one command
 - an upstream skill/plugin payload change is actually observable in the
   installed Claude or Codex host copy after the required refresh step
 - any required doc or manifest tweaks are committed back here

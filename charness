@@ -2357,6 +2357,63 @@ def tool_result_map(results: object) -> dict[str, dict[str, object]]:
     return mapped
 
 
+def run_tool_update_flow(
+    *,
+    repo_root: Path,
+    managed_checkout: bool,
+    tool_ids: list[str],
+    dry_run: bool,
+    skip_sync_support: bool,
+    upstream_checkouts: list[str],
+) -> tuple[dict[str, object], bool]:
+    update_args = ["--repo-root", str(repo_root), "--json"]
+    for tool_id in tool_ids:
+        update_args.extend(["--tool-id", tool_id])
+    if not dry_run:
+        update_args.append("--execute")
+    update_results = invoke_repo_json_script(repo_root, "scripts/update_tools.py", *update_args, allow_failure=True)
+    support_results: object = []
+    if not skip_sync_support:
+        support_args = ["--repo-root", str(repo_root), "--json"]
+        for tool_id in tool_ids:
+            support_args.extend(["--tool-id", tool_id])
+        for upstream_checkout in upstream_checkouts:
+            support_args.extend(["--upstream-checkout", upstream_checkout])
+        if not dry_run:
+            support_args.append("--execute")
+        support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *support_args, allow_failure=True)
+    doctor_args = ["--repo-root", str(repo_root), "--json"]
+    for tool_id in tool_ids:
+        doctor_args.extend(["--tool-id", tool_id])
+    if not dry_run:
+        doctor_args.append("--write-locks")
+    doctor_results = invoke_repo_json_script(repo_root, "scripts/doctor.py", *doctor_args, allow_failure=True)
+    update_map = tool_result_map(update_results)
+    support_map = tool_result_map(support_results)
+    doctor_map = tool_result_map(doctor_results)
+    payload = {
+        "repo_root": str(repo_root),
+        "managed_checkout": managed_checkout,
+        "tool_ids": tool_ids,
+        "results": {
+            tool_id: {
+                "update": update_map.get(tool_id),
+                "support": support_map.get(tool_id),
+                "doctor": doctor_map.get(tool_id),
+                "next_step": tool_next_step(tool_id, update_map.get(tool_id), doctor_map.get(tool_id), support_map.get(tool_id)),
+            }
+            for tool_id in sorted(set([*update_map.keys(), *support_map.keys(), *doctor_map.keys()]))
+        },
+    }
+    failed = any(
+        isinstance(result, dict)
+        and isinstance(result.get("update"), dict)
+        and result["update"].get("status") == "failed"
+        for result in payload["results"].values()
+    )
+    return payload, failed
+
+
 def _tool_release_suffix(
     action_result: dict[str, object] | None,
     doctor_result: dict[str, object] | None,
@@ -2846,8 +2903,22 @@ def cmd_update(args: argparse.Namespace) -> int:
     )
     write_host_state(home_root, key="last_update", payload=doctor_payload)
     payload["checkout"] = checkout
+    payload["scope"] = args.scope or "self"
+    tool_update_failed = False
+    if args.scope == "all":
+        tool_update_payload, tool_update_failed = run_tool_update_flow(
+            repo_root=Path(checkout["repo_root"]),
+            managed_checkout=managed_checkout,
+            tool_ids=[],
+            dry_run=False,
+            skip_sync_support=False,
+            upstream_checkouts=[],
+        )
+        payload["tool_update"] = tool_update_payload
+        if tool_update_payload["results"]:
+            payload.setdefault("completed_actions", []).append("external_tools_updated")
     print(json.dumps(payload, ensure_ascii=False, indent=2))
-    return 0
+    return 1 if tool_update_failed else 0
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
@@ -3336,57 +3407,19 @@ def cmd_tool_install(args: argparse.Namespace) -> int:
 
 def cmd_tool_update(args: argparse.Namespace) -> int:
     repo_root, managed_checkout = resolve_tool_repo_root(args)
-    update_args = ["--repo-root", str(repo_root), "--json"]
-    for tool_id in tool_ids_from_args(args):
-        update_args.extend(["--tool-id", tool_id])
-    if not args.dry_run:
-        update_args.append("--execute")
-    update_results = invoke_repo_json_script(repo_root, "scripts/update_tools.py", *update_args, allow_failure=True)
-    support_results: object = []
-    if not args.skip_sync_support:
-        support_args = ["--repo-root", str(repo_root), "--json"]
-        for tool_id in tool_ids_from_args(args):
-            support_args.extend(["--tool-id", tool_id])
-        for upstream_checkout in args.upstream_checkout:
-            support_args.extend(["--upstream-checkout", upstream_checkout])
-        if not args.dry_run:
-            support_args.append("--execute")
-        support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *support_args, allow_failure=True)
-    doctor_args = ["--repo-root", str(repo_root), "--json"]
-    for tool_id in tool_ids_from_args(args):
-        doctor_args.extend(["--tool-id", tool_id])
-    if not args.dry_run:
-        doctor_args.append("--write-locks")
-    doctor_results = invoke_repo_json_script(repo_root, "scripts/doctor.py", *doctor_args, allow_failure=True)
-    update_map = tool_result_map(update_results)
-    support_map = tool_result_map(support_results)
-    doctor_map = tool_result_map(doctor_results)
-    payload = {
-        "repo_root": str(repo_root),
-        "managed_checkout": managed_checkout,
-        "tool_ids": tool_ids_from_args(args),
-        "results": {
-            tool_id: {
-                "update": update_map.get(tool_id),
-                "support": support_map.get(tool_id),
-                "doctor": doctor_map.get(tool_id),
-                "next_step": tool_next_step(tool_id, update_map.get(tool_id), doctor_map.get(tool_id), support_map.get(tool_id)),
-            }
-            for tool_id in sorted(set([*update_map.keys(), *support_map.keys(), *doctor_map.keys()]))
-        },
-    }
+    payload, failed = run_tool_update_flow(
+        repo_root=repo_root,
+        managed_checkout=managed_checkout,
+        tool_ids=tool_ids_from_args(args),
+        dry_run=args.dry_run,
+        skip_sync_support=args.skip_sync_support,
+        upstream_checkouts=args.upstream_checkout,
+    )
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         print_tool_human_summary(payload)
-    if any(
-        isinstance(result, dict)
-        and isinstance(result.get("update"), dict)
-        and result["update"].get("status") == "failed"
-        for result in payload["results"].values()
-    ):
-        return 1
-    return 0
+    return 1 if failed else 0
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -3434,6 +3467,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--skip-codex-cache-refresh",
         action="store_true",
         help="Do not call Codex app-server `plugin/install` to refresh the enabled local plugin cache after updating the source plugin root.",
+    )
+    update_parser.add_argument(
+        "scope",
+        nargs="?",
+        choices=["all"],
+        help="Also run `charness tool update` for all tracked external integrations after refreshing the charness install surface itself.",
     )
     update_parser.set_defaults(func=cmd_update)
 

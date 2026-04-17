@@ -170,8 +170,14 @@ Optional version inspection:
 ## Step 4: Update Model
 
 - run `charness update`
+- run `charness update all` when you also want tracked external tools and
+  bundled support skills refreshed in the same pass
 - for Codex, expect `charness update` to attempt the official local plugin
   cache refresh before falling back to manual host steps
+- `charness update` refreshes the installed surface for `charness` itself:
+  managed checkout, CLI, and host plugin state
+- `charness update all` keeps that behavior and then fans out into
+  `charness tool update` for every tracked integration
 - follow the new `next_action` output after the update, then inspect
   `next_steps` when host-specific status matters
 - skill execution must stay read-only with respect to install/update state
