@@ -2,41 +2,24 @@
 
 ## Current Focus
 
-- This session closed GitHub issues #25-#31, then corrected the retro scope:
-  the key lesson is how charness development should have discovered those
-  dogfood failures before sibling repos exposed them.
+- This retro reviews the README rewrite planning thread where the user pointed out that the agent failed to carry forward intent already clarified in prior turns.
+- The miss matters because the next step is to improve `narrative` itself, and that work should start from the real failure mode rather than from a narrower README-only diagnosis.
 
 ## Repeat Traps
 
-- Charness tested many scripts as producers, but not enough skills as products
-  consumed by an agent under realistic prompts.
-- Greenfield/bootstrap paths got more validation than mature-repo sanity-check
-  paths, which delayed #30.
-- Public skill frontmatter was treated as documentation rather than classifier
-  input, which delayed #28, #29, and #31.
-- Quality contracts lacked hostile prose/source mutation fixtures, which delayed
-  #27.
-- Narrative dogfood did not use charness's own first-touch surfaces enough,
-  which delayed #26.
-- Running generated-surface sync or version mutations in parallel with
-  validators created false failures and misleading drift.
-- If a repo treats version bumps as published releases, do not leave the slice
-  at bump+push. Encode tag and GitHub release in one repo-owned publish helper.
+- I treated the README structure proposal as a fresh synthesis from the current surface instead of as a continuation task constrained by already clarified user intent.
+- I reconstructed Quick Start around a human-run install path even though the sibling `cautilus` pattern and the user's framing imply an agent-run install prompt flow.
+- I flattened the public skill map into topic buckets and missed distinctions the user had already been tracking: `init-repo` as a different kind of surface and communication skills differentiated by who is speaking to whom.
+- I proposed keeping `Repository Shape` as an optional trailing section after the user had already signaled low confidence in its value.
 
 ## Next-Time Checklist
 
-- workflow: before closing a skill-behavior slice, run one realistic consumer
-  prompt using only the surfaces an agent would actually see.
-- workflow: keep a mature-repo fixture corpus for `init-repo` and `quality`.
-- workflow: test concrete prompt routing against public skill descriptions and
-  generated AGENTS hints.
-- workflow: keep `mutate -> sync -> verify -> publish` as a hard phase order,
-  and reserve parallelism for read-only inspection only.
-- capability: add a dogfood matrix helper for prompt/repo shape, expected skill,
-  expected artifact, and acceptance evidence.
-- memory: producer-side gates are not enough; charness also needs
-  consumer-side dogfood.
+- workflow: Before proposing a README structure, inventory explicit user-stated intents from the current thread and mark each as preserved, unresolved, or intentionally challenged.
+- workflow: Treat Quick Start for installable agent products as a decision about who executes the install path, not only where install details live.
+- workflow: For public skill maps, preserve actor-direction and concept-shape distinctions before introducing any new grouping.
+- capability: Update the README rewrite plan and later the `narrative` skill so it checks conversational carry-forward, not only source-doc alignment.
+- memory: Persist this retro because the miss is a workflow gap, not a wording preference.
 
 ## Sources
 
-- `charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md`
+- `charness-artifacts/retro/2026-04-17-readme-intent-carry-forward-miss`

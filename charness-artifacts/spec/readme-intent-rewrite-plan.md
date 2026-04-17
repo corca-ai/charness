@@ -5,10 +5,12 @@ Date: 2026-04-17
 
 Turn the current README dissatisfaction into a repeatable improvement loop:
 
-1. reach a README the user would actually approve through direct ping-pong
-2. extract what the current `narrative` skill and repo-local adapter missed
-3. upgrade `narrative` so it preserves intent, not only visible structure
-4. prove the improvement with `cautilus`, then harden it with GEPA if the
+1. run a short retro on why the agent missed intent already surfaced in the
+   conversation and repo context
+2. reach a README the user would actually approve through direct ping-pong
+3. extract what the current `narrative` skill and repo-local adapter missed
+4. upgrade `narrative` so it preserves intent, not only visible structure
+5. prove the improvement with `cautilus`, then harden it with GEPA if the
    evaluation target is stable enough
 
 ## Current Working Thesis
@@ -22,12 +24,39 @@ Examples already surfaced by the user:
 - a public-skill taxonomy can disappear even when a flatter replacement still
   looks "organized"
 - a README can gain product framing while losing the operator's first move
+- for an installable agent product, Quick Start should propose the
+  `install.md` prompt flow to an agent rather than tell the human to follow the
+  install steps manually
 - sections can be structurally valid while still flattening the document's real
   hierarchy
 - deletion can look like simplification while actually erasing a preserved
   intent that should have been carried forward in another form
+- communication-oriented skills carry actor-direction meaning, not only topic
+  grouping:
+  `announcement` is person -> organization,
+  `narrative` is person -> person,
+  `handoff` is agent -> agent,
+  `hitl` is agent -> person
+- `init-repo` may need special handling instead of being flattened into the
+  same cluster logic as the other public skills
+- `Repository Shape` is not currently valuable enough to keep in the README
 
 ## Sequence
+
+### Phase 0. Run the retro first
+
+Before changing `narrative`, write down why the current workflow failed to hold
+on to already surfaced intent from:
+
+- the user's prior turns
+- the older README's preserved purpose
+- repo-local context such as `AGENTS.md`, handoff, and adjacent artifacts
+
+Deliverables:
+
+- a short persisted session retro
+- concrete improvements for memory, review, or artifact use before skill
+  changes start
 
 ### Phase 1. Lock the human target
 
@@ -50,6 +79,7 @@ Compare:
 
 Focus on failures of:
 
+- conversational memory and recall of already surfaced user intent
 - intent extraction
 - deletion review
 - landing-page information architecture
@@ -70,6 +100,8 @@ the behavior becomes recoverable by another agent.
 
 Priority direction:
 
+- improve how the workflow reuses already surfaced user intent from the current
+  thread and durable repo context
 - strengthen intent inventory before rewrite
 - require deletion/absorption accounting for high-signal prior sections
 - distinguish "proposed landing structure" from "required exact headings"
@@ -94,6 +126,8 @@ Candidate fixture families:
 - previous charness README -> approved rewrite
 - sibling landing surfaces where intent is visibly preserved well
 - adversarial cases where simplification deletes an important reader intent
+- cases where the user has already clarified intent in-thread and the agent
+  must carry that clarified meaning forward
 
 Evaluation target:
 
@@ -114,11 +148,12 @@ means real improvement instead of prompt overfitting to a shaky rubric.
 - README structure proposals are allowed to vary by repo.
 - Exact heading text is not the contract unless a repo explicitly treats it as
   one.
+- The contract is preserved intent, not heading imitation.
 - "Delete drift" does not justify deleting preserved intent.
 - The README should remain a first-touch surface, not collapse into a second
   operator manual.
 
 ## Immediate Next Step
 
-Draft the intent map for this repo's README and propose a candidate top-level
-structure with block-by-block purpose.
+Persist the short retro, then refresh the intent map for this repo's README and
+propose a candidate top-level structure with block-by-block purpose.
