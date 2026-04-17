@@ -3,22 +3,25 @@ Date: 2026-04-17
 
 ## Scope
 
-Patch release surface bump after the public-spec executable-proof cleanup.
+Minor release surface bump after adding the `markdown-preview` support
+capability, tightening the `premortem` subagent contract, and refocusing the
+public `quality` skill on structure-first review and explicit gate-promotion
+routing.
 No tag or published GitHub release has been created in this slice.
 
 ## Current Version
 
-- previous version: `0.0.7`
-- target version: `0.0.8`
-- packaging manifest: `0.0.8`
-- checked-in Claude plugin manifest: `0.0.8`
-- checked-in Codex plugin manifest: `0.0.8`
-- Claude marketplace metadata: `0.0.8`
+- previous version: `0.0.8`
+- target version: `0.1.0`
+- packaging manifest: `0.1.0`
+- checked-in Claude plugin manifest: `0.1.0`
+- checked-in Codex plugin manifest: `0.1.0`
+- Claude marketplace metadata: `0.1.0`
 - Codex marketplace source path: `./plugins/charness`
 
 ## Surface Status
 
-- `bump_version.py --part patch` updated `packaging/charness.json` and synced
+- `bump_version.py --part minor` updated `packaging/charness.json` and synced
   checked-in plugin manifests.
 - `current_release.py` reports no version drift across packaging, checked-in
   plugin manifests, and marketplace metadata.
@@ -27,14 +30,26 @@ No tag or published GitHub release has been created in this slice.
 
 ## Release Scope
 
-- Includes the public-spec executable-proof tightening and the inventory fix
-  that now reads real `run:shell` fences.
-- Includes the follow-up quality artifact refresh from the live rerun.
+- Includes the new `markdown-preview` support capability for rendered Markdown
+  QA artifacts.
+- Includes the follow-up hardening for `markdown-preview`, including explicit
+  backend rejection and stronger manifest provenance.
+- Includes the public `premortem` contract change that now requires the
+  canonical subagent path instead of silently degrading into same-agent local
+  review.
+- Includes the `quality` skill follow-up that treats length/duplicate/pressure
+  signals as structure-first advisory by default, clarifies when they may still
+  promote to deterministic gates, and aligns fresh-eye premortem wording with
+  the canonical subagent path.
+- Includes the `inventory_public_spec_quality.py` seam extraction that keeps
+  the standing file-length gate satisfied without loosening the gate.
 
 ## Verification
 
-- `./scripts/run-quality.sh --review` passed with `38 passed, 0 failed`.
-- `current_release.py` reports no release-surface drift at `0.0.8`.
+- `./scripts/run-quality.sh` passed for the final release slice.
+- `python3 scripts/run-slice-closeout.py --repo-root .` passed for the final
+  release slice.
+- `current_release.py` reports no release-surface drift at `0.1.0`.
 
 ## User Update Steps
 
