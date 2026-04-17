@@ -13,7 +13,7 @@ Good default angles for a non-trivial decision:
   mirrors become misleading after the change
 - `devil's advocate`: strongest argument for keeping the current design
 
-Subagent sizing when the runtime supports them:
+Subagent sizing:
 
 - minimum: two contrasting angle subagents plus one separate counterweight
   subagent
@@ -22,6 +22,10 @@ Subagent sizing when the runtime supports them:
   surfaces, a breaking migration, or a release/install/doc cascade
 - if you cannot name four meaningfully different angles, stay at two or three
   instead of inventing filler
+
+Canonical execution uses subagents. If the host cannot provide them, stop and
+say the canonical premortem path is unavailable rather than collapsing into a
+same-agent self-review.
 
 Rotate or swap angles when the decision is narrower:
 

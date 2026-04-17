@@ -17,6 +17,8 @@ without turning "preview docs" into a new public skill.
   `manifest.json`
 - fallback posture: degraded artifact with explicit backend-missing notice and
   the raw source copied only as a reference aid
+- supported backend values are explicit, not open-ended; unsupported backend
+  config should fail fast instead of pretending the problem is just missing PATH
 
 Degraded output is honest but weaker. It helps later sessions understand what
 happened, but it does not count as equivalent proof that the rendered document
@@ -62,8 +64,11 @@ Recommended artifact naming:
 `manifest.json` should preserve:
 
 - selected backend
+- backend version when detected
 - whether rendering was real or degraded
 - config path used, if any
+- source fingerprints for each rendered file
+- current git HEAD when available
 - widths requested
 - target files and generated artifact paths
 - warnings such as missing backend or skipped files

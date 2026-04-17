@@ -16,7 +16,8 @@
 - `docs/public-skill-dogfood.json`는 현재 17개 public skill 전체를 커버하는 reviewed consumer dogfood registry다.
 - Packaging/plugin release surface는 이제 `0.0.8` 기준이고, 태그/게시 release는 아직 만들지 않았다.
 - `#33`/`#34` 방향의 public spec boundary 정리는 반영됐다. `spec`은 public executable contract vs implementation guard를 명시하고, `quality`는 proof layering inventory plus actionable `move_down` / `delete_or_merge` / `keep_if_integration_value` recommendation payload를 갖는다.
-- `#35`의 첫 구현으로 `skills/support/markdown-preview/`가 landed 했다. `render_markdown_preview.py`는 `glow`가 있으면 폭별 `.artifacts/markdown-preview/*.txt` snapshot과 `manifest.json`을 만들고, 없으면 degraded artifact를 남긴다. repo-local scope는 `.agents/markdown-preview.yaml` 같은 config search path로 열어뒀고 hard gate나 command surface는 아직 없다.
+- `#35`의 첫 구현 뒤 hardening도 들어갔다. `render_markdown_preview.py`는 unsupported `backend`를 upfront reject하고, manifest에 `backend_version`, `git_head`, per-file `source_sha256`를 남긴다. repo-local scope는 `.agents/markdown-preview.yaml` 같은 config search path로 열어뒀고 hard gate나 command surface는 아직 없다.
+- `premortem` public skill contract은 이제 canonical subagent path를 요구한다. host가 subagent를 못 주면 같은-agent 로컬 패스로 약화하지 말고 canonical path unavailable로 stop해야 한다.
 
 ## Next Session
 

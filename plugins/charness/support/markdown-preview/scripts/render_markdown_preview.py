@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib
 import json
 import os
@@ -40,6 +41,7 @@ DEFAULT_INCLUDE = [
     "specs/**/*.md",
 ]
 DEFAULT_ARTIFACT_DIR = ".artifacts/markdown-preview"
+SUPPORTED_BACKENDS = {"glow"}
 CONFIG_SEARCH_PATHS = [
     Path(".agents/markdown-preview.yaml"),
     Path(".codex/markdown-preview.yaml"),
@@ -60,6 +62,16 @@ class PreviewConfig:
     on_change_only: bool
     artifact_dir: str
     config_path: str | None
+
+
+def _normalize_backend(value: Any) -> str:
+    backend = str(value or "glow").strip()
+    if backend not in SUPPORTED_BACKENDS:
+        supported = ", ".join(sorted(SUPPORTED_BACKENDS))
+        raise SystemExit(
+            f"Unsupported markdown preview backend `{backend}`. Supported backend(s): {supported}."
+        )
+    return backend
 
 
 def parse_args() -> argparse.Namespace:
@@ -133,7 +145,7 @@ def load_config(repo_root: Path, explicit: Path | None) -> PreviewConfig:
             raise SystemExit("Markdown preview config must be a YAML mapping")
     return PreviewConfig(
         enabled=_normalize_bool(raw.get("enabled"), default=True),
-        backend=str(raw.get("backend") or "glow"),
+        backend=_normalize_backend(raw.get("backend")),
         widths=_normalize_widths(raw.get("widths")),
         include=_normalize_include(raw.get("include")),
         on_change_only=_normalize_bool(raw.get("on_change_only"), default=False),
@@ -146,7 +158,7 @@ def merge_cli(config: PreviewConfig, args: argparse.Namespace) -> PreviewConfig:
     widths = args.width if args.width else config.widths
     include = list(args.file) if args.file else config.include
     artifact_dir = args.artifact_dir or config.artifact_dir
-    backend = args.backend or config.backend
+    backend = _normalize_backend(args.backend or config.backend)
     on_change_only = config.on_change_only or args.changed_only
     if not include:
         include = list(DEFAULT_INCLUDE)
@@ -240,6 +252,35 @@ def artifact_stem(repo_root: Path, path: Path) -> str:
     return SANITIZE_RE.sub("_", relative).strip("_") or "artifact"
 
 
+def _backend_version(backend_path: str | None, backend: str) -> str | None:
+    if backend_path is None:
+        return None
+    completed = subprocess.run(
+        [backend, "--version"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        return None
+    version_text = completed.stdout.strip() or completed.stderr.strip()
+    return version_text or None
+
+
+def _git_head(repo_root: Path) -> str | None:
+    completed = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        return None
+    head = completed.stdout.strip()
+    return head or None
+
+
 def _render_with_glow(path: Path, width: int) -> tuple[str | None, str | None]:
     completed = subprocess.run(
         ["glow", "-w", str(width), str(path)],
@@ -282,6 +323,7 @@ def write_artifact(path: Path, contents: str) -> None:
 def render_targets(repo_root: Path, config: PreviewConfig, targets: list[Path]) -> dict[str, Any]:
     artifact_dir = (repo_root / config.artifact_dir).resolve()
     backend_path = shutil.which(config.backend) if config.backend == "glow" else None
+    backend_version = _backend_version(backend_path, config.backend)
     warnings: list[str] = []
     preview_items: list[dict[str, Any]] = []
     overall_status = "success"
@@ -296,6 +338,7 @@ def render_targets(repo_root: Path, config: PreviewConfig, targets: list[Path]) 
                 "width": width,
                 "artifact_path": str(artifact_path.relative_to(repo_root)),
                 "backend": config.backend,
+                "source_sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
             }
             if backend_path is None:
                 reason = f"{config.backend} not found on PATH"
@@ -331,8 +374,10 @@ def render_targets(repo_root: Path, config: PreviewConfig, targets: list[Path]) 
         "repo_root": str(repo_root),
         "backend": config.backend,
         "backend_available": backend_path is not None,
+        "backend_version": backend_version,
         "config_path": config.config_path,
         "artifact_dir": str(artifact_dir.relative_to(repo_root)),
+        "git_head": _git_head(repo_root),
         "widths": list(config.widths),
         "target_count": len(targets),
         "generated_at": datetime.now(timezone.utc).isoformat(),

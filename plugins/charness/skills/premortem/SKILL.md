@@ -47,7 +47,7 @@ decision contract. Do not restate the whole project history.
    - what would count as success
    - what is explicitly out of scope for this pass
 2. Pick a bounded set of contrasting angles.
-   - when subagents are available and explicitly allowed, always use them
+   - use subagents as the canonical path
    - use at least two angle subagents plus one separate counterweight subagent
    - default to three angle subagents for a normal non-trivial decision
    - expand to four angle subagents only when the change is clearly broad:
@@ -55,12 +55,12 @@ decision contract. Do not restate the whole project history.
    - choose angles that can disagree meaningfully, not five near-duplicates
    - see `references/angle-selection.md`
 3. Run the angle pass.
-   - if subagents are available and explicitly allowed, use bounded fresh-eye
-     subagents with one angle each
+   - use bounded fresh-eye subagents with one angle each
    - do not collapse the counterweight into one of the angle subagents; keep it
      as a separate skeptical pass
-   - otherwise run the same angle pass locally and keep the findings separated
-     by angle
+   - if the host cannot provide subagents, stop and say the canonical
+     premortem path is unavailable instead of silently downgrading to a local
+     self-review
 4. Collapse the findings into one candidate concern list.
    - deduplicate overlap
    - keep evidence and cited source paths with each concern when available
@@ -103,8 +103,8 @@ The result should usually include:
 - Do not treat every surfaced concern as equally important.
 - Do not skip the counterweight pass; a paranoia backlog without triage is not
   decision support.
-- If subagents are unavailable or not explicitly allowed, do the same workflow
-  locally instead of pretending the fresh-eye pass happened.
+- Do not silently downgrade premortem into a same-agent local pass; if
+  subagents are unavailable, say the canonical premortem path is blocked.
 
 ## References
 
