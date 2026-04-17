@@ -1,0 +1,96 @@
+{
+  "schema_version": "1",
+  "tool_id": "glow",
+  "kind": "external_binary",
+  "display_name": "glow",
+  "summary": "Terminal markdown renderer used by doc-facing seams such as `narrative` and `quality` for width-specific rendered review artifacts.",
+  "upstream_repo": "charmbracelet/glow",
+  "homepage": "https://github.com/charmbracelet/glow",
+  "platforms": [
+    "linux",
+    "macos"
+  ],
+  "status": "active",
+  "lifecycle": {
+    "install": {
+      "mode": "script",
+      "commands": [
+        "if command -v brew >/dev/null 2>&1; then brew install glow; else GOPATH=\"$(go env GOPATH)\" && mkdir -p \"$GOPATH/bin\" \"$HOME/.local/bin\" && go install github.com/charmbracelet/glow/v2@latest && ln -sf \"$GOPATH/bin/glow\" \"$HOME/.local/bin/glow\"; fi"
+      ],
+      "docs_url": "https://github.com/charmbracelet/glow",
+      "install_url": "https://github.com/charmbracelet/glow#installation",
+      "notes": [
+        "Preferred install paths are Homebrew or `go install`.",
+        "The repo-managed install path uses Homebrew when available, otherwise `go install` plus a `~/.local/bin/glow` symlink so doctor can find the binary on common Linux setups."
+      ]
+    },
+    "update": {
+      "mode": "manual",
+      "docs_url": "https://github.com/charmbracelet/glow/releases",
+      "notes": [
+        "Use the same mechanism that originally installed the binary. Homebrew installs can use `brew upgrade glow`; Go installs can rerun `go install github.com/charmbracelet/glow/v2@latest`."
+      ]
+    }
+  },
+  "checks": {
+    "detect": {
+      "commands": [
+        "glow --version"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Install `glow` so markdown preview seams can produce real rendered artifacts instead of degraded source snapshots."
+    },
+    "healthcheck": {
+      "commands": [
+        "glow --help"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "The `glow` binary exists but does not respond cleanly. Reinstall it from a clean upstream release or rerun the repo-managed install path."
+    }
+  },
+  "access_modes": [
+    "binary",
+    "degraded"
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer a recent upstream-supported glow release.",
+    "detected_by": "stdout"
+  },
+  "package_managers": {
+    "brew": {
+      "package_name": "glow",
+      "notes": [
+        "Upstream documents Homebrew as `brew install glow`."
+      ]
+    },
+    "go": {
+      "package_name": "github.com/charmbracelet/glow/v2",
+      "notes": [
+        "Upstream documents `go install github.com/charmbracelet/glow/v2@latest`."
+      ]
+    }
+  },
+  "supports_public_skills": [
+    "narrative",
+    "quality"
+  ],
+  "recommendation_role": "runtime",
+  "degradation": {
+    "when_missing": [
+      "Markdown preview seams degrade to source-copy artifacts that explicitly say rendered review did not happen.",
+      "Do not claim rendered readability proof for README, landing docs, or specs without `glow`."
+    ],
+    "when_version_mismatch": [
+      "Treat layout or width-render drift as a manual review point before trusting generated preview artifacts."
+    ]
+  },
+  "host_notes": [
+    "This binary backs the repo-owned `markdown-preview` support seam instead of replacing it.",
+    "Go installs may be symlinked into `~/.local/bin` so the binary is both PATH-visible and still traceable back to the Go install root."
+  ]
+}

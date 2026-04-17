@@ -59,6 +59,9 @@ first-touch Markdown surface, inspect rendered output before calling the
 rewrite done.
 
 - use the repo-local markdown preview seam when it exists
+- if the preferred renderer is missing, surface the exact install/verify path
+  before treating degraded artifacts as sufficient:
+  `python3 skills/public/narrative/scripts/list_tool_recommendations.py --repo-root .`
 - if no preview config exists yet, bootstrap one and leave the exact command
   plus artifact path instead of pretending raw source review was enough
 - keep width-specific preview artifacts so the next session can inspect the

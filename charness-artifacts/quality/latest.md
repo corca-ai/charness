@@ -84,9 +84,10 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   `quality` itself now trips the `long_core` heuristic at `165` core lines.
 - `spec` still trips the mode-pressure heuristic because a checked-in contract
   test currently requires the exact phrase `user-facing mode choice`.
-- `markdown-preview` is wired through checked-in config and local execution, but
-  `doctor.py --json` still reports it as `not-ready` because `glow` is missing.
-  The standing quality gate still passes, but preview proof stays degraded.
+- `markdown-preview` is now wired through checked-in config, repo-owned install
+  guidance, and a local `glow` runtime. Remaining quality work is no longer
+  backend availability; it is deciding which workflow should invoke rendered
+  preview by default instead of leaving the seam as an opt-in helper.
 
 ## Missing
 
@@ -105,6 +106,7 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 
 ## Commands Run
 - `./scripts/run-quality.sh --review`
+- `./charness tool install --repo-root . --json glow`
 - quality inventories: standing-gate verbosity, entrypoint docs, skill ergonomics, public spec quality, CLI ergonomics, lint ignores, and dual implementation
 - `python3 skills/public/quality/scripts/bootstrap_markdown_preview.py --repo-root . --execute`
 - `python3 scripts/doctor.py --json`
@@ -125,9 +127,6 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 - active `AUTO_CANDIDATE`: if the repo wants another deterministic ratchet
   after coverage cleanup, decide whether entrypoint-doc or skill-ergonomics
   inventories should graduate into a narrow hard gate.
-- passive `AUTO_CANDIDATE`: because the repo can operate in degraded mode
-  today, install `glow` or document an explicit no-`glow` posture for
-  `markdown-preview` only if maintainers want preview readiness as a local bar.
 - active `AUTO_CANDIDATE`: decide which workflow should call the now-bootstrapped
   markdown-preview seam by default (`narrative`, `announcement`, `quality`, or
   a command surface) instead of leaving it as a helper that only exists on paper.

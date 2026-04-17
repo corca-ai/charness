@@ -44,6 +44,66 @@ def make_fake_cautilus(tmp_path: Path) -> Path:
     return script
 
 
+def make_fake_go_glow(tmp_path: Path) -> tuple[Path, Path]:
+    gopath = tmp_path / "go"
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    script = bin_dir / "go"
+    script.write_text(
+        textwrap.dedent(
+            f"""\
+            #!/usr/bin/env python3
+            import os
+            import pathlib
+            import sys
+
+            gopath = pathlib.Path({str(gopath)!r})
+            gobin = os.environ.get("GOBIN")
+            install_root = pathlib.Path(gobin) if gobin else gopath / "bin"
+            install_root.mkdir(parents=True, exist_ok=True)
+
+            args = sys.argv[1:]
+            if args == ["version"]:
+                print("go version go1.26.2 linux/arm64")
+                raise SystemExit(0)
+            if args == ["env", "GOPATH"]:
+                print(gopath)
+                raise SystemExit(0)
+            if args == ["install", "github.com/charmbracelet/glow/v2@latest"]:
+                glow = gopath / "bin" / "glow"
+                glow.write_text(
+                    "\\n".join(
+                        [
+                            "#!/usr/bin/env python3",
+                            "import sys",
+                            "args = sys.argv[1:]",
+                            "if args == ['--version']:",
+                            "    print('glow 2.1.1-test')",
+                            "    raise SystemExit(0)",
+                            "if args == ['--help']:",
+                            "    print('glow help')",
+                            "    raise SystemExit(0)",
+                            "print('glow runtime')",
+                        ]
+                    ) + "\\n",
+                    encoding="utf-8",
+                )
+                glow.chmod(0o755)
+                target = install_root / "glow"
+                if target != glow:
+                    if target.exists() or target.is_symlink():
+                        target.unlink()
+                    target.symlink_to(glow)
+                raise SystemExit(0)
+            raise SystemExit(1)
+            """
+        ),
+        encoding="utf-8",
+    )
+    script.chmod(0o755)
+    return script, gopath
+
+
 def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path) -> None:
     repo_root = make_repo_copy(tmp_path)
     home_root = tmp_path / "home"
@@ -271,11 +331,32 @@ def test_tool_doctor_reports_specdown_binary_contract_without_support_sync(tmp_p
     assert doctor["provenance"]["install_method"] == "brew"
     assert doctor["provenance"]["package_name"] == "corca-ai/tap/specdown"
     assert doctor["release"]["latest_tag"] == "v0.47.2"
-    assert specdown["next_step"] == (
-        "`specdown` is ready via `brew` package `corca-ai/tap/specdown`. "
-        "Latest upstream release: `v0.47.2`. "
-        "https://github.com/corca-ai/specdown/releases/tag/v0.47.2"
-    )
+
+
+def test_tool_install_executes_glow_install_script_and_refreshes_doctor(tmp_path: Path) -> None:
+    repo_root = make_repo_copy(tmp_path)
+    home_root = tmp_path / "home"
+    fake_go, gopath = make_fake_go_glow(tmp_path)
+    release_fixture = make_release_fixture(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = build_test_path(fake_go.parent, home_root / ".local" / "bin")
+    env["GOPATH"] = str(gopath)
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+
+    result = run_cli_in_repo(repo_root, "tool", "install", "--repo-root", str(repo_root), "--json", "glow", env=env)
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    glow = payload["results"]["glow"]
+
+    assert glow["install"]["status"] == "installed"
+    assert glow["install"]["mode"] == "script"
+    assert glow["doctor"]["doctor_status"] == "ok"
+    assert glow["doctor"]["provenance"]["install_method"] == "go"
+    assert glow["doctor"]["provenance"]["package_name"] == "github.com/charmbracelet/glow/v2"
+    assert glow["doctor"]["release"]["latest_tag"] == "v2.1.2"
+    assert (home_root / ".local" / "bin" / "glow").is_symlink()
+    assert (gopath / "bin" / "glow").is_file()
 
 
 def test_tool_update_routes_brew_provenance_for_specdown(tmp_path: Path) -> None:

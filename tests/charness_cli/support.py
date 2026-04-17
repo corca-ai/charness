@@ -126,6 +126,12 @@ def make_release_fixture(tmp_path: Path, *, charness_tag: str | None = None) -> 
                     "published_at": "2026-04-05T01:03:46Z",
                     "assets": [{"name": "specdown_0.47.2_linux_amd64.tar.gz"}],
                 },
+                "charmbracelet/glow": {
+                    "tag_name": "v2.1.2",
+                    "html_url": "https://github.com/charmbracelet/glow/releases/tag/v2.1.2",
+                    "published_at": "2026-04-09T20:31:45Z",
+                    "assets": [{"name": "glow_2.1.2_Linux_arm64.tar.gz"}],
+                },
                 "googleworkspace/cli": {
                     "tag_name": "v0.22.5",
                     "html_url": "https://github.com/googleworkspace/cli/releases/tag/v0.22.5",

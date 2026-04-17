@@ -8,43 +8,15 @@ from pathlib import Path
 from .support import ROOT
 
 
-def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: Path) -> None:
+def _write_manifest(tmp_path: Path, name: str, payload: dict[str, object]) -> None:
     (tmp_path / "integrations" / "tools").mkdir(parents=True)
-    (tmp_path / "integrations" / "tools" / "cautilus.json").write_text(
-        json.dumps(
-            {
-                "schema_version": "1",
-                "tool_id": "cautilus",
-                "kind": "external_binary_with_skill",
-                "display_name": "cautilus",
-                "summary": "Standalone evaluator.",
-                "upstream_repo": "corca-ai/cautilus",
-                "homepage": "https://github.com/corca-ai/cautilus",
-                "lifecycle": {
-                    "install": {
-                        "mode": "manual",
-                        "docs_url": "https://github.com/corca-ai/cautilus",
-                        "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.md",
-                        "notes": ["Install cautilus."],
-                    },
-                    "update": {"mode": "manual", "docs_url": "https://github.com/corca-ai/cautilus/releases", "notes": ["Update cautilus."]},
-                },
-                "checks": {
-                    "detect": {"commands": ["cautilus --version"], "success_criteria": ["exit_code:0"]},
-                    "healthcheck": {"commands": ["cautilus doctor --help"], "success_criteria": ["exit_code:0", "stdout_contains:doctor"]},
-                },
-                "access_modes": ["binary", "degraded"],
-                "version_expectation": {"policy": "advisory", "constraint": "latest", "detected_by": "stdout"},
-                "supports_public_skills": ["spec", "quality"],
-                "recommendation_role": "validation",
-            },
-            ensure_ascii=False,
-            indent=2,
-        )
-        + "\n",
+    (tmp_path / "integrations" / "tools" / name).write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
 
+
+def _isolated_path() -> str:
     import shutil
     import sys
 
@@ -52,23 +24,69 @@ def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: 
     git_binary = shutil.which("git")
     if git_binary is not None:
         isolated_path_parts.append(str(Path(git_binary).resolve().parent))
-    isolated_path = os.pathsep.join(dict.fromkeys(isolated_path_parts))
+    return os.pathsep.join(dict.fromkeys(isolated_path_parts))
 
+
+def _run_recommendations(
+    script_relpath: str,
+    tmp_path: Path,
+    *,
+    recommendation_role: str | None = None,
+    next_skill_id: str | None = None,
+) -> dict[str, object]:
     result = subprocess.run(
-        [
-            "python3",
-            "skills/public/quality/scripts/list_tool_recommendations.py",
-            "--repo-root",
-            str(tmp_path),
-        ],
+        ["python3", script_relpath, "--repo-root", str(tmp_path)]
+        + (
+            ["--recommendation-role", recommendation_role]
+            if recommendation_role is not None
+            else []
+        )
+        + (["--next-skill-id", next_skill_id] if next_skill_id is not None else []),
         cwd=ROOT,
         check=True,
         capture_output=True,
         text=True,
-        env={**os.environ, "PATH": isolated_path},
+        env={**os.environ, "PATH": _isolated_path()},
+    )
+    return json.loads(result.stdout)
+
+
+def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: Path) -> None:
+    _write_manifest(
+        tmp_path,
+        "cautilus.json",
+        {
+            "schema_version": "1",
+            "tool_id": "cautilus",
+            "kind": "external_binary_with_skill",
+            "display_name": "cautilus",
+            "summary": "Standalone evaluator.",
+            "upstream_repo": "corca-ai/cautilus",
+            "homepage": "https://github.com/corca-ai/cautilus",
+            "lifecycle": {
+                "install": {
+                    "mode": "manual",
+                    "docs_url": "https://github.com/corca-ai/cautilus",
+                    "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.md",
+                    "notes": ["Install cautilus."],
+                },
+                "update": {"mode": "manual", "docs_url": "https://github.com/corca-ai/cautilus/releases", "notes": ["Update cautilus."]},
+            },
+            "checks": {
+                "detect": {"commands": ["cautilus --version"], "success_criteria": ["exit_code:0"]},
+                "healthcheck": {"commands": ["cautilus doctor --help"], "success_criteria": ["exit_code:0", "stdout_contains:doctor"]},
+            },
+            "access_modes": ["binary", "degraded"],
+            "version_expectation": {"policy": "advisory", "constraint": "latest", "detected_by": "stdout"},
+            "supports_public_skills": ["spec", "quality"],
+            "recommendation_role": "validation",
+        },
     )
 
-    payload = json.loads(result.stdout)
+    payload = _run_recommendations(
+        "skills/public/quality/scripts/list_tool_recommendations.py",
+        tmp_path,
+    )
     assert payload == {
         "recommendation_role": "validation",
         "next_skill_id": "quality",
@@ -97,6 +115,146 @@ def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: 
                 },
                 "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id cautilus",
                 "next_skill_id": "quality",
+            }
+        ],
+    }
+
+
+def test_quality_tool_recommendations_emit_blocking_runtime_routes(tmp_path: Path) -> None:
+    _write_manifest(
+        tmp_path,
+        "glow.json",
+        {
+            "schema_version": "1",
+            "tool_id": "glow",
+            "kind": "external_binary",
+            "display_name": "glow",
+            "summary": "Markdown renderer.",
+            "upstream_repo": "charmbracelet/glow",
+            "homepage": "https://github.com/charmbracelet/glow",
+            "lifecycle": {
+                "install": {
+                    "mode": "manual",
+                    "docs_url": "https://github.com/charmbracelet/glow",
+                    "install_url": "https://github.com/charmbracelet/glow#installation",
+                    "notes": ["Install glow."],
+                },
+                "update": {"mode": "manual", "docs_url": "https://github.com/charmbracelet/glow/releases", "notes": ["Update glow."]},
+            },
+            "checks": {
+                "detect": {"commands": ["glow --version"], "success_criteria": ["exit_code:0"]},
+                "healthcheck": {"commands": ["glow --help"], "success_criteria": ["exit_code:0"]},
+            },
+            "access_modes": ["binary", "degraded"],
+            "version_expectation": {"policy": "advisory", "constraint": "latest", "detected_by": "stdout"},
+            "supports_public_skills": ["narrative", "quality"],
+            "recommendation_role": "runtime",
+        },
+    )
+
+    payload = _run_recommendations(
+        "skills/public/quality/scripts/list_tool_recommendations.py",
+        tmp_path,
+        recommendation_role="runtime",
+        next_skill_id="quality",
+    )
+    assert payload == {
+        "recommendation_role": "runtime",
+        "next_skill_id": "quality",
+        "tool_recommendations": [
+            {
+                "tool_id": "glow",
+                "display_name": "glow",
+                "kind": "external_binary",
+                "summary": "Markdown renderer.",
+                "why_recommended": "Recommended because `quality` can use this tool as a supported runtime path.",
+                "supports_public_skills": ["narrative", "quality"],
+                "recommendation_role": "runtime",
+                "recommendation_status": "install-needed",
+                "doctor_status": "missing",
+                "support_state": "integration-only",
+                "support_sync_status": "not-tracked",
+                "detect_ok": False,
+                "healthcheck_ok": False,
+                "readiness_ok": True,
+                "install": {
+                    "mode": "manual",
+                    "commands": [],
+                    "docs_url": "https://github.com/charmbracelet/glow",
+                    "install_url": "https://github.com/charmbracelet/glow#installation",
+                    "notes": ["Install glow."],
+                },
+                "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id glow",
+                "next_skill_id": "quality",
+            }
+        ],
+    }
+
+
+def test_narrative_tool_recommendations_emit_blocking_runtime_routes(tmp_path: Path) -> None:
+    _write_manifest(
+        tmp_path,
+        "glow.json",
+        {
+            "schema_version": "1",
+            "tool_id": "glow",
+            "kind": "external_binary",
+            "display_name": "glow",
+            "summary": "Markdown renderer.",
+            "upstream_repo": "charmbracelet/glow",
+            "homepage": "https://github.com/charmbracelet/glow",
+            "lifecycle": {
+                "install": {
+                    "mode": "manual",
+                    "docs_url": "https://github.com/charmbracelet/glow",
+                    "install_url": "https://github.com/charmbracelet/glow#installation",
+                    "notes": ["Install glow."],
+                },
+                "update": {"mode": "manual", "docs_url": "https://github.com/charmbracelet/glow/releases", "notes": ["Update glow."]},
+            },
+            "checks": {
+                "detect": {"commands": ["glow --version"], "success_criteria": ["exit_code:0"]},
+                "healthcheck": {"commands": ["glow --help"], "success_criteria": ["exit_code:0"]},
+            },
+            "access_modes": ["binary", "degraded"],
+            "version_expectation": {"policy": "advisory", "constraint": "latest", "detected_by": "stdout"},
+            "supports_public_skills": ["narrative", "quality"],
+            "recommendation_role": "runtime",
+        },
+    )
+
+    payload = _run_recommendations(
+        "skills/public/narrative/scripts/list_tool_recommendations.py",
+        tmp_path,
+    )
+    assert payload == {
+        "recommendation_role": "runtime",
+        "next_skill_id": "narrative",
+        "tool_recommendations": [
+            {
+                "tool_id": "glow",
+                "display_name": "glow",
+                "kind": "external_binary",
+                "summary": "Markdown renderer.",
+                "why_recommended": "Recommended because `narrative` can use this tool as a supported runtime path.",
+                "supports_public_skills": ["narrative", "quality"],
+                "recommendation_role": "runtime",
+                "recommendation_status": "install-needed",
+                "doctor_status": "missing",
+                "support_state": "integration-only",
+                "support_sync_status": "not-tracked",
+                "detect_ok": False,
+                "healthcheck_ok": False,
+                "readiness_ok": True,
+                "install": {
+                    "mode": "manual",
+                    "commands": [],
+                    "docs_url": "https://github.com/charmbracelet/glow",
+                    "install_url": "https://github.com/charmbracelet/glow#installation",
+                    "notes": ["Install glow."],
+                },
+                "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id glow",
+                "next_skill_id": "narrative",
             }
         ],
     }

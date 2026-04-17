@@ -32,10 +32,10 @@ When stronger local proof depends on a missing validation tool, reuse the shared
 python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root .
 ```
 
-When reader-facing Markdown needs rendered readability proof instead of
-source-only review, bootstrap or execute the repo-local markdown preview seam:
+When reader-facing Markdown needs rendered readability proof instead of source-only review, bootstrap or execute the repo-local markdown preview seam:
 
 ```bash
+python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root . --recommendation-role runtime --next-skill-id quality
 python3 "$SKILL_DIR/scripts/bootstrap_markdown_preview.py" --repo-root .
 python3 "$SKILL_DIR/scripts/bootstrap_markdown_preview.py" --repo-root . --execute
 ```

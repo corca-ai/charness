@@ -51,6 +51,14 @@ If the repo would benefit from an explicit truth surface, scaffold an adapter:
 python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .
 ```
 
+When rendered Markdown proof matters for README, landing pages, or durable
+spec prose, surface the supported runtime recommendation before pretending raw
+source review is enough:
+
+```bash
+python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root .
+```
+
 Then inspect current state:
 
 ```bash
@@ -79,6 +87,8 @@ git status --short
    surface.
    - use `references/landing-rewrite-loop.md` for comparables, tension log,
      decision log, compression metric, claim audit, and self-premortem
+   - when rendered preview matters, surface the repo-owned install/verify path
+     for `glow` before accepting degraded raw-Markdown review
    - resolve research/source-truth tensions before editing
    - keep a claim-to-acceptance/spec matrix before calling the rewrite done
 4. Tighten the durable story first.
