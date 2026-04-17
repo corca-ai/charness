@@ -97,7 +97,8 @@ def test_init_repo_render_skill_routing_defaults_to_compact_mode(tmp_path: Path)
     assert payload["listed_skill_ids"] == ["find-skills", "gather", "debug", "impl", "quality", "handoff", "init-repo"]
     assert "Prefer installed charness public skills before improvising a repo-local workflow." in payload["markdown"]
     assert "Keep this block intentionally non-exhaustive" in payload["markdown"]
-    assert "use `find-skills` first" in payload["markdown"]
+    assert "route to the shared/public charness skill `find-skills` first" in payload["markdown"]
+    assert "shared/public charness skill `find-skills`" in payload["markdown"]
     assert "turn a concept or design into a living implementation contract" not in payload["markdown"]
 
 

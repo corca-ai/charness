@@ -118,7 +118,7 @@ def _render_compact_skill_routing(public_skill_ids: list[str]) -> tuple[str, lis
     if "find-skills" in installed:
         lines.extend(
             [
-                "When the right skill is unclear, or you need the current installed/trusted capability list, use `find-skills` first.",
+                "When the right skill is unclear, or you need the current installed/trusted capability list, route to the shared/public charness skill `find-skills` first.",
                 "",
             ]
         )
@@ -132,7 +132,10 @@ def _render_compact_skill_routing(public_skill_ids: list[str]) -> tuple[str, lis
     listed_skill_ids: list[str] = []
     for skill_id in COMPACT_ORDER:
         if skill_id in installed:
-            lines.append(f"- {CURATED_HINTS[skill_id]} -> `{skill_id}`")
+            if skill_id == "find-skills":
+                lines.append(f"- {CURATED_HINTS[skill_id]} -> shared/public charness skill `{skill_id}`")
+            else:
+                lines.append(f"- {CURATED_HINTS[skill_id]} -> `{skill_id}`")
             listed_skill_ids.append(skill_id)
 
     if "find-skills" not in installed:

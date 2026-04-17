@@ -44,7 +44,8 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
   rather than abstract capability labels
 - keep compact mode intentionally non-exhaustive and discovery-heavy:
   explicitly prefer installed charness public skills before improvising, and
-  explicitly route unclear cases to `find-skills`
+  explicitly route unclear cases to the shared/public charness skill
+  `find-skills`
 - keep an expanded mode available when a repo explicitly wants the full
   checked-in public skill catalog rendered into `AGENTS.md`
 - prose wrap policy when the repo uses fixed-string source guards; default to

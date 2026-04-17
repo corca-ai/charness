@@ -168,7 +168,7 @@ def run_init_repo_compact_skill_routing_discoverability(
         expected_snippets = (
             "Prefer installed charness public skills before improvising a repo-local workflow.",
             "Keep this block intentionally non-exhaustive",
-            "use `find-skills` first",
+            "route to the shared/public charness skill `find-skills` first",
         )
         for snippet in expected_snippets:
             if snippet not in markdown:

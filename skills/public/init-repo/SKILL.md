@@ -114,7 +114,7 @@ Then load only the references needed for the detected state:
      installed charness skills provide high-signal routing hints
    - keep compact mode intentionally non-exhaustive and discovery-heavy:
      prefer installed charness public skills before improvising, and route
-     unclear cases to `find-skills` first
+     unclear cases to the shared/public charness skill `find-skills` first
    - allow `expanded` when the repo explicitly wants the full checked-in skill
      catalog rendered into `AGENTS.md`; use adapter `skill_routing_mode` or
      `$SKILL_DIR/scripts/render_skill_routing.py --mode expanded`
