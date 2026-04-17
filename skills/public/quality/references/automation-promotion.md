@@ -39,6 +39,15 @@ Preferred outputs:
 - a test or smoke scenario
 - a hook or script entrypoint
 
+Promotion checklist:
+
+- the invariant is clear enough to explain in one sentence
+- false positives are low enough that maintainers will trust the gate
+- the expected structural response is obvious: delete, merge, split ownership,
+  extract a helper, narrow an interface, or add one missing proof seam
+- the gate protects a real concept, behavior, security, or operability claim,
+  not a cosmetic score target
+
 ## `NON_AUTOMATABLE`
 
 The concern still requires judgment, tradeoffs, or human review.
@@ -55,6 +64,10 @@ These belong in prose findings and proposals.
 
 If a concern is `AUTO_CANDIDATE`, prefer promoting it into a deterministic gate
 before adding more policy text.
+
+Treat length, duplicate, and pressure heuristics as smell sensors first. If the
+signal does not imply a clear structural action, keep it advisory or
+`NON_AUTOMATABLE` instead of forcing it into a hard gate.
 
 When the same confidence gap can be closed either by shrinking production
 surface or by adding more tests, prefer the smaller production surface first if

@@ -8,6 +8,7 @@ description: "Use when the goal is to understand and improve the repo's current 
 Use this when the task is overall quality posture, not only one narrow bug or one isolated test. `quality` covers concept integrity review, test confidence, security and supply-chain posture, skill and maintenance drift, and documentation drift. The job is to understand the current quality surface, run the meaningful gates that already exist, and propose the missing ones concretely.
 `quality` may also install or refresh the repo-local quality posture when the next move is deterministic setup work instead of only review. Keep that inside the same public concept: review posture and bootstrap posture are two states of `quality`, not separate skills. When the next quality move is repo-local, deterministic, and low-risk, prefer implementing that gate in the same turn.
 Deterministic gates should define pass/fail authority wherever possible. If a concern can be enforced by a linter, validator, test, hook, or script, promote it into that gate instead of leaving it as repeated prose advice. Maintainer-local enforcement counts when the repo depends on it; if the final stop-before-finish gate has no checked-in hook, installer, or documented no-hook policy, name that as a missing enforcement gap. Use concept review instead when the real problem is unresolved boundary or ownership design. See `references/maintainer-local-enforcement.md` and `references/quality-lenses.md`.
+Treat length, duplicate, and pressure heuristics as structural smell sensors, not goals in themselves. When one of those signals fires, look first for the structural move it points at: delete dead surface, merge competing copies, split ownership, extract a repeated helper, or narrow an interface. Do not call a cosmetic shrink-to-fit edit a quality win if the underlying design pressure is still present.
 
 ## Bootstrap
 
@@ -61,7 +62,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 
 ## Workflow
 
-1. Restate the current quality question: what the user wants checked or improved, and whether the scope is repo-wide, one seam, or one proposed change.
+1. Restate the current quality question: what the user wants checked or improved, whether the scope is repo-wide, one seam, or one proposed change, and which concept boundary or ownership seam is most likely to be wrong.
 2. Detect the current gate surface.
    - independently enumerate the current source, spec, and gate inventory before letting the previous quality artifact define scope
    - local executable gates already present
@@ -89,6 +90,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - when a hot spot becomes the standing single dominator, define a `runtime_budgets` entry in the adapter and call `$SKILL_DIR/scripts/check-runtime-budget.py` from the repo's standing gate; budgets fail the gate on recent-median drift and report single latest-sample spikes separately
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model
+   - before proposing a new gate for length, duplicate, or pressure findings, ask which structural question the signal is exposing: delete, merge, split ownership, extract a helper, or narrow the interface
    - `behavior`: do tests, evals, checks, and command-surface probes say something falsifiable about real behavior, and does the repo-owned test code stay maintainable
    - when dual-implementation smell is real, treat it as `weak` until the repo proves one honest contract: parity harness, canonical side plus deletion/wrapper plan, or intentional divergence backed by an assertion
    - if a fresh 5-minute reader could misread a present invariant as absent, treat that as a quality gap in declaration or gating rather than dismissing the reader
@@ -107,20 +109,23 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - for missing or weak gates, name the exact setup or command family to add
    - tag every recommended next gate as `active` or `passive`; passive entries require an explicit reason such as future-tool dependency, broader product decision, or runtime budget tradeoff
    - prefer the smallest gate that materially improves confidence
+   - before adding or tightening a gate around length, duplicate, or pressure signals, ask whether deleting code/docs, merging duplicated proof, splitting ownership, or extracting a helper is the cheaper and clearer fix
    - do not force one stack's tooling when the repo does not use that stack
    - when the problem is automatable, prefer a deterministic gate over prose
+   - for every new `AUTO_CANDIDATE`, state the structural question it protects, why the invariant is low-noise enough to automate, and what concrete structural action a failure should trigger; otherwise keep it advisory or `NON_AUTOMATABLE`
    - when the automatable move is already clear and repo-owned, implement it in the same turn unless the user asked to stay review-only
    - when the next deterministic move is to install or refresh the repo-local quality surface itself, prefer the bootstrap posture and leave a machine-readable deferred-setup report
    - if executable specs are slow or overlapping, delete duplicates, move detail into unit-level checks, or add a direct adapter before widening the spec bar
    - when dual-implementation smell is real, recommend exactly one next contract: add a parity harness, pick one side canonical and delete or wrap the other, or document intentional divergence with a test that asserts it
    - do not leave "keep both for safety" as an unpriced middle state
-8. Run one fresh-eye premortem on the drafted report using `references/fresh-eye-premortem.md`; if subagents are available and explicitly allowed, a fresh-eye subagent is ideal, otherwise do the challenge pass yourself without rereading the draft first.
+8. Run one fresh-eye premortem on the drafted report using `references/fresh-eye-premortem.md`; if subagents are available and explicitly allowed, use a fresh-eye subagent, otherwise run the challenge pass yourself without rereading the draft first.
 9. End with a quality posture summary: what ran, which runtime hot spots dominate, whether coverage is standing-gated, whether evaluator-backed depth exists, what the current bar proves and still does not prove, and the next best gate or cleanup.
 
-- `Scope`, `Current Gates`, `Runtime Signals`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Commands Run`, `Recommended Next Gates`
+- `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Commands Run`, `Recommended Next Gates`
 - Do not reduce quality to one aggregate score.
 - Do not split quality bootstrap into a second public concept when the work is still bounded repo-local quality setup.
 - Do not recommend gates the repo cannot realistically run without saying why.
+- Do not treat a passing length, duplicate, or pressure heuristic as the goal; the goal is the structural simplification or ownership clarification that made the heuristic quiet again.
 - Do not ignore runtime drift just because a gate still passes functionally.
 - Do not ask only what proof is missing when executable public specs land; ask
   what is duplicated at the wrong layer too.
@@ -128,6 +133,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not treat slow or broad executable specs as automatically strong quality when they mostly duplicate cheaper deterministic coverage.
 - Do not leave an automatable quality rule as prose-only guidance when a linter, validator, test, hook, or script could own it.
 - Do not normalize growing lint suppressions as harmless cleanup debt; inventory them and ask whether structure should absorb the rule instead.
+- Do not promote a heuristic to a hard gate unless the invariant is clear, false positives are low, and the expected structural response to failure is obvious.
 - If you stop short of an obvious repo-owned deterministic gate, name that as an unresolved enforcement gap explicitly.
 - Do not treat a passing final local gate as sufficient posture when clones have no repo-owned way to run it before push and no documented no-hook waiver.
 - Do not propose generic "add more tests" or "improve security" without naming the actual seam, the next concrete setup, or whether the test surface now needs a maintainability gate.

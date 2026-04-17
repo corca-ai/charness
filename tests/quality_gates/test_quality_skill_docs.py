@@ -90,6 +90,25 @@ def test_quality_skill_carries_public_spec_layering_lens() -> None:
     assert "keep_if_integration_value" in layering
 
 
+def test_quality_skill_prefers_structure_over_heuristic_chasing() -> None:
+    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    lenses = (
+        ROOT / "skills" / "public" / "quality" / "references" / "quality-lenses.md"
+    ).read_text(encoding="utf-8")
+    automation = (
+        ROOT / "skills" / "public" / "quality" / "references" / "automation-promotion.md"
+    ).read_text(encoding="utf-8")
+
+    assert "structural smell sensors" in skill_text
+    assert "`Scope`, `Concept Risks`, `Current Gates`" in skill_text
+    assert "delete, merge, split ownership, extract a helper, or narrow the interface" in skill_text
+    assert "Do not treat a passing length, duplicate, or pressure heuristic as the goal" in skill_text
+    assert "what structural simplification is missing" in lenses
+    assert "gate-last posture" in lenses
+    assert "false positives are low enough" in automation
+    assert "smell sensors first" in automation
+
+
 def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
     verbosity = (
