@@ -94,6 +94,21 @@ If the work starts from an unshaped or partially initialized repo, begin with
 workflow changes, hand that boundary to `cautilus` instead of stretching
 `charness` into an eval harness.
 
+## One Bootstrap Workflow
+
+Scenario: the repo exists, but its operating surface is still thin or uneven.
+
+- `init-repo`: create or normalize the README, operating docs, and takeover
+  surfaces without pretending deep product design already exists
+- `narrative`: tighten the durable story once the repo has enough real shape to
+  align source-of-truth docs
+- `quality`: check whether the local proof bar matches the repo's actual risk
+- `handoff`: leave the next maintainer a precise starting point instead of
+  rediscovery work
+
+This path is for making a repo operable. It is not the same as evaluator
+hardening, prompt optimization, or host-specific packaging work.
+
 ## Scope
 
 `charness` owns:

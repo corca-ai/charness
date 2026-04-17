@@ -64,6 +64,8 @@ reach for are all visible near the top.
   support skills, and integration manifests apart.
 - Added one concrete multi-skill workflow so the harness reads as an execution
   path, not only as a catalog.
+- Added one bootstrap workflow so partially initialized repos also have a clear
+  first move.
 - Kept install and packaging material intact, but moved reader guidance ahead
   of operational detail.
 
@@ -71,8 +73,8 @@ reach for are all visible near the top.
 
 - Should the public skill map stay intent-grouped, or should one future doc own
   a full scenario catalog similar to `cautilus` archetypes?
-- Is one concrete flow enough, or should README eventually carry one example
-  for both “new workflow” and “existing repo bootstrap” without getting long?
+- Are two examples enough, or is there still one missing high-frequency path
+  that users cannot infer from the current README?
 
 ## Claim Audit
 
@@ -90,6 +92,10 @@ reach for are all visible near the top.
   Evidence: the new concrete workflow maps one common maintainer journey across
   `ideation`, `spec`, `impl`, `quality`, and `handoff`, with `init-repo` and
   `cautilus` called out as neighboring boundaries.
+- Claim: README now covers both “shape new work” and “make the repo operable”
+  entry paths.
+  Evidence: the bootstrap workflow maps `init-repo`, `narrative`, `quality`,
+  and `handoff` into a second bounded path for thin or uneven repos.
 - Claim: `charness` is ready to be described as internally roll-outable.
   Evidence: the user confirmed the managed install proof and update-propagation
   proof are already complete, and the repo still carries passing local quality
@@ -111,14 +117,14 @@ reach for are all visible near the top.
 
 - Do we want a separate “workflow examples” doc that gives one concrete path
   per major public skill cluster?
-- If we keep README compact, should the next example be repo bootstrap or
-  quality review rather than another concept-to-impl variant?
+- If we keep README compact, should it stop at these two examples and push any
+  further scenario expansion into a separate doc?
 
 ## Next Step
 
 1. Re-read README from the perspective of a new internal maintainer who does
    not already know the `charness` / `cautilus` split.
-2. If the single concrete workflow still feels too narrow, add exactly one
-   neighboring example instead of growing a long catalog.
+2. Treat these two workflows as the README ceiling unless a repeated confusion
+   shows a third path is load-bearing.
 3. Keep install, packaging, and acceptance details in their owner docs instead
    of re-growing README into a second operator manual.
