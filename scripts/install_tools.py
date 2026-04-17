@@ -25,17 +25,7 @@ Payload = dict[str, object]
 CommandList = list[Payload] | list[str]
 
 
-def base_result(
-    repo_root: Path,
-    manifest: Payload,
-    install_action: Payload,
-    *,
-    status: str,
-    mode: str,
-    commands: CommandList,
-    detect: Payload | None = None,
-    healthcheck: Payload | None = None,
-) -> Payload:
+def base_result(repo_root: Path, manifest: Payload, install_action: Payload, *, status: str, mode: str, commands: CommandList, detect: Payload | None = None, healthcheck: Payload | None = None) -> Payload:
     result = {
         "tool_id": manifest["tool_id"],
         "status": status,
@@ -59,19 +49,7 @@ def capture_provenance(manifest: Payload) -> Payload:
     return provenance
 
 
-def persist_install_lock(
-    repo_root: Path,
-    manifest: Payload,
-    install_action: Payload,
-    *,
-    status: str,
-    mode: str,
-    commands: list[Payload],
-    detect: Payload,
-    healthcheck: Payload,
-    release: Payload | None,
-    provenance: Payload,
-) -> None:
+def persist_install_lock(repo_root: Path, manifest: Payload, install_action: Payload, *, status: str, mode: str, commands: list[Payload], detect: Payload, healthcheck: Payload, release: Payload | None, provenance: Payload) -> None:
     upsert_lock(
         repo_root,
         manifest,

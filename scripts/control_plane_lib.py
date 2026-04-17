@@ -64,11 +64,7 @@ def validate_support_capability_data(data: dict[str, Any], schema: dict[str, Any
             f"{path}: support_skill_path must match colocated support skill `{expected_skill_path}`"
         )
 
-def normalize_support_capability(
-    data: dict[str, Any],
-    path: Path,
-    repo_root: Path,
-) -> dict[str, Any]:
+def normalize_support_capability(data: dict[str, Any], path: Path, repo_root: Path) -> dict[str, Any]:
     return {
         "tool_id": data["capability_id"],
         "kind": data["kind"],
@@ -277,17 +273,7 @@ def read_lock(repo_root: Path, tool_id: str) -> dict[str, Any] | None:
     return data
 
 
-def upsert_lock(
-    repo_root: Path,
-    manifest: dict[str, Any],
-    *,
-    support: dict[str, Any] | None = None,
-    doctor: dict[str, Any] | None = None,
-    release: dict[str, Any] | None = None,
-    provenance: dict[str, Any] | None = None,
-    install: dict[str, Any] | None = None,
-    update: dict[str, Any] | None = None,
-) -> Path:
+def upsert_lock(repo_root: Path, manifest: dict[str, Any], *, support: dict[str, Any] | None = None, doctor: dict[str, Any] | None = None, release: dict[str, Any] | None = None, provenance: dict[str, Any] | None = None, install: dict[str, Any] | None = None, update: dict[str, Any] | None = None) -> Path:
     payload = read_lock(repo_root, manifest["tool_id"]) or {}
     payload["schema_version"] = "1"
     payload["tool_id"] = manifest["tool_id"]

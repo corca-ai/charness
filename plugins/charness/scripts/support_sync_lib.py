@@ -151,11 +151,7 @@ def _promote_tree_to_cache(source_root: Path, *, manifest: dict[str, Any], diges
     return cache_path
 
 
-def _resolve_upstream_source_path(
-    manifest: dict[str, Any],
-    *,
-    upstream_checkouts: dict[str, Path],
-) -> Path:
+def _resolve_upstream_source_path(manifest: dict[str, Any], *, upstream_checkouts: dict[str, Path]) -> Path:
     support = manifest["support_skill_source"]
     relative_source_path = Path(support["path"])
     fixture_root = _fixture_checkout_root(manifest["upstream_repo"], support.get("ref"))
@@ -214,23 +210,14 @@ def materialize_repo_symlink(target_root: Path, dest_root: Path, repo_root: Path
     return [str(dest_root.relative_to(repo_root))]
 
 
-def materialize_upstream_support(
-    manifest: dict[str, Any],
-    *,
-    upstream_checkouts: dict[str, Path],
-) -> tuple[Path, str]:
+def materialize_upstream_support(manifest: dict[str, Any], *, upstream_checkouts: dict[str, Path]) -> tuple[Path, str]:
     source_path = _resolve_upstream_source_path(manifest, upstream_checkouts=upstream_checkouts)
     digest = _compute_tree_digest(source_path)
     cache_path = _promote_tree_to_cache(source_path, manifest=manifest, digest=digest)
     return cache_path, digest
 
 
-def materialize_support(
-    repo_root: Path,
-    manifest: dict[str, Any],
-    *,
-    upstream_checkouts: dict[str, Path],
-) -> dict[str, Any]:
+def materialize_support(repo_root: Path, manifest: dict[str, Any], *, upstream_checkouts: dict[str, Path]) -> dict[str, Any]:
     support = manifest["support_skill_source"]
 
     if support["source_type"] == "local_wrapper":
@@ -258,11 +245,7 @@ def discovery_stub_path(repo_root: Path, tool_id: str) -> Path:
     return discovery_stub_dir(repo_root) / f"{tool_id}.md"
 
 
-def render_discovery_stub(
-    *,
-    manifest: dict[str, Any],
-    support_skill_path: str,
-) -> str:
+def render_discovery_stub(*, manifest: dict[str, Any], support_skill_path: str) -> str:
     install = manifest.get("lifecycle", {}).get("install", {})
     intent_triggers = [item for item in manifest.get("intent_triggers", []) if isinstance(item, str) and item]
     trigger_line = ", ".join(intent_triggers) if intent_triggers else "no explicit trigger hints recorded"

@@ -33,7 +33,7 @@ maintainable structural fixes rather than one-off bypasses.
 - runtime hot spots: `pytest` `37.3s`, `check-coverage` `10.1s`,
   `specdown` `4.6s`, `check-secrets` `3.8s`, `run-evals` `2.4s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
-  `85.0%`; current result is `92.1%` (`1172/1272`).
+  `85.0%`; current result is `98.0%` (`1196/1221`).
 - evaluator depth: `run-evals` passes 19 repo-local scenarios, so the bar is
   stronger than smoke-only review.
 - Budgeted phases: `pytest` median `29.2s / 40.0s`,
@@ -43,15 +43,15 @@ maintainable structural fixes rather than one-off bypasses.
 
 ## Coverage and Eval Depth
 
-- Coverage gate: `92.1%` (`1172/1272`) against the `60.0%` aggregate floor and
+- Coverage gate: `98.0%` (`1196/1221`) against the `60.0%` aggregate floor and
   `85.0%` per-file floor.
 - Test-production ratio is `0.54` (`10749/19860` Python lines), under the
   `1.00` ceiling.
 - Standing pytest passes at `302 passed`; `run-evals` passes 19 repo-local
   scenarios.
-- Weakest tracked files are still warn-band candidates:
-  `install_tools.py` `88.6%`, `control_plane_lib.py` `89.7%`,
-  `install_provenance_lib.py` `90.0%`, `support_sync_lib.py` `90.2%`.
+- Every tracked control-plane file now clears the warn band. Weakest remaining
+  tracked files are `doctor.py` `95.8%`, `upstream_release_lib.py` `95.3%`,
+  and `update_tools.py` `98.3%`.
 - Specdown remains intentionally narrow and honest; the current bar is stronger
   than smoke-only but still not broad behavioral parity coverage.
 
@@ -70,6 +70,8 @@ maintainable structural fixes rather than one-off bypasses.
   for support sync, release probing, manifest/capability validation, and
   install helper lock-writing paths, so the coverage gate better reflects real
   maintained behavior instead of only top-level command flows.
+- Remaining control-plane quality pressure is no longer coverage-floor debt; the
+  standing gap moved back to documentation and skill ergonomics advisories.
 - Lint-ignore inventory is currently clean: no blanket, file-level, or inline
   suppression debt was needed to make this slice pass.
 
@@ -83,9 +85,9 @@ maintainable structural fixes rather than one-off bypasses.
   `create-skill`, `quality`, and `spec` still flag `long_core`,
   while `create-skill`, `init-repo`, `quality`, `retro`, and `spec` still flag
   mode-pressure terms.
-- Coverage warn-band files remain above the floor but are still the most honest
-  next cleanup targets; more tests are not automatically the right move if the
-  branches can be deleted or simplified first.
+- Entry-point and skill-core ergonomics now dominate the remaining advisory
+  pressure. The main quality bar is green, but first-touch docs and a few large
+  public skill cores are still carrying too much inline procedure.
 
 ## Missing
 
@@ -101,8 +103,8 @@ maintainable structural fixes rather than one-off bypasses.
   discoverability goals rather than generic prose taste.
 - Do not add a dedicated specdown adapter until multiple specs start repeating
   the same setup or extraction work.
-- Do not solve warn-band coverage mechanically with more tests if the better
-  next move is deletion or branch flattening in the underlying code.
+- Do not promote prose heuristics into a hard gate before the repo narrows them
+  to rules that actually reflect portability and discoverability goals.
 
 ## Commands Run
 
@@ -111,16 +113,15 @@ maintainable structural fixes rather than one-off bypasses.
 
 ## Recommended Next Gates
 
-- active `AUTO_CANDIDATE`: reduce complexity in `support_sync_lib.py`,
-  `control_plane_lib.py`, `install_tools.py`, and `install_provenance_lib.py`
-  before widening tests again; the warn band is now the sharpest deterministic
-  signal.
 - active `AUTO_CANDIDATE`: tighten `README.md` and
   `docs/operator-acceptance.md` so first-touch docs orient and link rather than
   carry the whole procedure inline.
 - active `AUTO_CANDIDATE`: shrink long public skill cores in `create-skill`,
   `quality`, and `spec` by moving repeated rationale into references or helper
   scripts.
+- active `AUTO_CANDIDATE`: if the repo wants another deterministic ratchet
+  after coverage cleanup, decide whether entrypoint-doc or skill-ergonomics
+  inventories should graduate into a narrow hard gate.
 - passive `NON_AUTOMATABLE`: because these heuristics should stay advisory
   until a narrower, defensible rule set is chosen, decide which ergonomics
   heuristics are strong enough to graduate from advisory inventory to a real

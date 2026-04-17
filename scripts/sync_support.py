@@ -21,13 +21,7 @@ upsert_lock = _scripts_control_plane_lib_module.upsert_lock
 Payload = dict[str, object]
 
 
-def sync_one(
-    repo_root: Path,
-    manifest: Payload,
-    *,
-    execute: bool,
-    upstream_checkouts: dict[str, Path],
-) -> Payload:
+def sync_one(repo_root: Path, manifest: Payload, *, execute: bool, upstream_checkouts: dict[str, Path]) -> Payload:
     support = manifest.get("support_skill_source")
     if not support:
         return {

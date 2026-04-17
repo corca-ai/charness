@@ -29,6 +29,7 @@ exercise_lifecycle_scenarios = _scripts_check_coverage_lib_module.exercise_lifec
 exercise_support_sync_scenarios = _scripts_check_coverage_lib_module.exercise_support_sync_scenarios
 exercise_upstream_release_scenarios = _scripts_check_coverage_lib_module.exercise_upstream_release_scenarios
 exercise_control_plane_helper_scenarios = _scripts_check_coverage_extra_lib_module.exercise_control_plane_helper_scenarios
+exercise_install_provenance_helper_scenarios = _scripts_check_coverage_extra_lib_module.exercise_install_provenance_helper_scenarios
 exercise_install_tool_helper_scenarios = _scripts_check_coverage_extra_lib_module.exercise_install_tool_helper_scenarios
 exercise_support_sync_helper_scenarios = _scripts_check_coverage_extra_lib_module.exercise_support_sync_helper_scenarios
 exercise_upstream_release_helper_scenarios = _scripts_check_coverage_extra_lib_module.exercise_upstream_release_helper_scenarios
@@ -197,6 +198,7 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
             exercise_control_plane_scenarios,
             exercise_control_plane_helper_scenarios,
             exercise_install_provenance_scenarios,
+            exercise_install_provenance_helper_scenarios,
             exercise_install_tool_helper_scenarios,
             exercise_support_sync_scenarios,
             exercise_support_sync_helper_scenarios,
