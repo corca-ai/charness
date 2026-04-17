@@ -20,6 +20,8 @@
   which delayed #26.
 - Running generated-surface sync or version mutations in parallel with
   validators created false failures and misleading drift.
+- If a repo treats version bumps as published releases, do not leave the slice
+  at bump+push. Encode tag and GitHub release in one repo-owned publish helper.
 
 ## Next-Time Checklist
 

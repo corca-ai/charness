@@ -25,6 +25,11 @@ example:
 - restart Codex when host visibility still depends on marketplace rediscovery
 - restart Claude Code when needed
 
+If a repo treats a version bump as a published release boundary rather than a
+private maintainer checkpoint, do not leave push, tag, and GitHub release as
+separate ad hoc steps. Ship one repo-owned publish helper so maintainers do not
+accidentally stop after bump+push and call the release done.
+
 ## Real-Host Proof
 
 Some release claims should stay release-time human proof instead of standing CI.

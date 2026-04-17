@@ -46,6 +46,14 @@ git log --oneline -5
 sed -n '1,220p' <resolved-release-artifact> 2>/dev/null || true
 ```
 
+When the repo treats version bumps and published releases as one coupled
+maintainer action, prefer the repo-owned publish helper instead of stopping at
+push-only state:
+
+```bash
+python3 "$SKILL_DIR/scripts/publish_release.py" --repo-root . --part patch --execute
+```
+
 ## Workflow
 
 1. Restate the release goal.
@@ -70,6 +78,8 @@ sed -n '1,220p' <resolved-release-artifact> 2>/dev/null || true
    - major only when compatibility or invocation expectations break
 5. Apply the release mutation through the repo helper.
    - prefer the checked-in bump helper over manual JSON edits
+   - if the repo couples version, push, tag, and GitHub release, prefer one
+     checked-in publish helper that closes all four in order
    - sync generated install surfaces immediately after bumping
    - keep release work phase-ordered: mutate, then sync generated surfaces,
      then verify, then push/tag/publish
@@ -102,6 +112,8 @@ The result should usually include:
 - Do not hand-edit generated plugin manifests when the repo has a sync helper.
 - Do not bump a version without stating why that bump level is justified.
 - Do not push, tag, or announce a release without explicit user confirmation.
+- Do not leave a repo that treats version bumps as published releases stuck in a
+  push-only state; encode that boundary in one repo-owned publish helper.
 - Do not mutate installed host caches from inside the skill; update instructions
   belong in the closeout.
 - Do not turn host-specific human proof into fake standing CI. If a support or
@@ -123,3 +135,4 @@ The result should usually include:
 - `scripts/current_release.py`
 - `scripts/check_real_host_proof.py`
 - `scripts/bump_version.py`
+- `scripts/publish_release.py`
