@@ -24,5 +24,6 @@ Focus questions:
   they are spread across implementation sites instead of declared with one
   gate, type, or durable source-of-truth pointer?
 
-If the session explicitly allows subagents, a fresh-eye subagent is ideal.
-Otherwise perform the challenge pass locally without rereading the draft first.
+If the session explicitly allows subagents, use a fresh-eye subagent.
+Otherwise say the canonical fresh-eye premortem path is blocked instead of
+pretending a same-agent local pass is equivalent.

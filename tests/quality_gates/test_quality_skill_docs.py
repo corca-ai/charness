@@ -98,15 +98,25 @@ def test_quality_skill_prefers_structure_over_heuristic_chasing() -> None:
     automation = (
         ROOT / "skills" / "public" / "quality" / "references" / "automation-promotion.md"
     ).read_text(encoding="utf-8")
+    premortem = (
+        ROOT / "skills" / "public" / "quality" / "references" / "fresh-eye-premortem.md"
+    ).read_text(encoding="utf-8")
 
     assert "structural smell sensors" in skill_text
     assert "`Scope`, `Concept Risks`, `Current Gates`" in skill_text
     assert "delete, merge, split ownership, extract a helper, or narrow the interface" in skill_text
     assert "Do not treat a passing length, duplicate, or pressure heuristic as the goal" in skill_text
+    assert "routing default, not a veto against good deterministic enforcement" in skill_text
+    assert "standing threshold gates such as coverage floors, runtime budgets" in skill_text
     assert "what structural simplification is missing" in lenses
+    assert "canonical routing lives in `SKILL.md`" in lenses
+    assert "do not over-apply this caution to standing threshold gates" in lenses
     assert "gate-last posture" in lenses
+    assert "follow the canonical routing in `SKILL.md` first" in automation
+    assert "tie-breaker, not a veto" in automation
     assert "false positives are low enough" in automation
     assert "smell sensors first" in automation
+    assert "canonical fresh-eye premortem path is blocked" in premortem
 
 
 def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:

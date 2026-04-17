@@ -15,15 +15,21 @@ Use a concept-integrity lens:
 
 Boundary note:
 
+- canonical routing lives in `SKILL.md`: length, duplicate, and pressure
+  signals start as concept-review advisory by default and only graduate toward
+  deterministic enforcement when the repo can name one explicit low-noise
+  invariant plus a clear structural response to failure
 - `quality` should catch duplicated or drifting concept surfaces when they are
   already visible in docs, gates, or runtime seams
 - a deeper question like "should these be two concepts at all?" still belongs
   to concept-integrity analysis, not only duplicate detection
 - ask what structural simplification is missing before reaching for a new
-  heuristic or threshold
+  length, duplicate, or pressure heuristic
 - treat length, duplicate, and pressure findings as prompts to ask what
   structural simplification is missing: deletion, merge, ownership split,
   helper extraction, or interface narrowing
+- do not over-apply this caution to standing threshold gates like coverage
+  floors or runtime budgets when the repo already has an honest enforced limit
 
 ## Behavior
 
