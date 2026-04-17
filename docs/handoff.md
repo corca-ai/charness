@@ -9,7 +9,7 @@
 
 - Public artifacts는 `charness-artifacts/<skill>/`, hidden runtime state는 `.charness/<skill>/`를 쓴다. 일반 current pointer는 `latest.md`, durable record는 `YYYY-MM-DD-<slug>.md` 규칙이고 `docs/handoff.md`만 rolling canonical 예외다.
 - 현재 quality gate는 aggregate `60.0%` + per-file `85.0%` coverage floor, test/source ratio 상한 `1.00`, recent-median runtime budget(`pytest` 40s, `check-secrets` 5s, `check-coverage` 15s, `run-evals` 5s, `specdown` 8s)을 enforce한다.
-- 가장 최근 review proof 기준 control-plane coverage는 `98.0%` (`1196/1221`), test/source ratio는 `0.54` (`10896/20129`), standing pytest는 `307 passed`, eval은 `19` scenario pass, review gate는 `38 passed, 0 failed, 51.4s`다.
+- 가장 최근 review proof 기준 control-plane coverage는 `98.0%` (`1196/1221`), test/source ratio는 `0.54` (`11279/20721`), standing pytest는 `321 passed`, eval은 `19` scenario pass, review gate는 `38 passed, 0 failed, 50.3s`다.
 - `run-quality.sh`는 `specdown run -quiet -no-report`를 포함하고, `.githooks/pre-push`는 export sync 뒤 canonical quality gate를 강제한다.
 - `charness task`는 작업 리포의 `.charness/tasks/*.json`에 claim/submit/abort/status를 남긴다. 이 리포의 runtime state에는 `sah-task-envelope`와 `doctor-next-action` record가 있어 `charness task status <task-id>`로 이어받을 수 있다.
 - Checked-in plugin export는 source 변경 뒤 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`로 맞춘다.
@@ -17,6 +17,7 @@
 - Packaging/plugin release surface는 이제 `0.1.0` 기준이고, 태그/게시 release는 아직 만들지 않았다.
 - `#33`/`#34` 방향의 public spec boundary 정리는 반영됐다. `spec`은 public executable contract vs implementation guard를 명시하고, `quality`는 proof layering inventory plus actionable `move_down` / `delete_or_merge` / `keep_if_integration_value` recommendation payload를 갖는다.
 - `quality` public skill은 이번 slice에서 structure-first routing을 더 명시했다. 길이/중복/pressure signal은 기본적으로 concept-review advisory로 보고, explicit low-noise invariant와 clear structural response가 있을 때만 `AUTO_CANDIDATE`/`AUTO_EXISTING`로 올린다. 이 caution은 coverage floor나 runtime budget 같은 standing threshold gate까지 일반화하지 않는다.
+- 2026-04-17 quality review 기준 추가 advisory pressure는 `AGENTS.md`/`README.md`/`UNINSTALL.md` entrypoint ergonomics, `init-repo`/`retro`/`spec`의 mode-pressure wording, `quality` SKILL core의 `long_core`, 그리고 `markdown-preview` support runtime의 `glow` 미설치(`doctor`에서 `not-ready`)다.
 - `#35`의 첫 구현 뒤 hardening도 들어갔다. `render_markdown_preview.py`는 unsupported `backend`를 upfront reject하고, manifest에 `backend_version`, `git_head`, per-file `source_sha256`를 남긴다. repo-local scope는 `.agents/markdown-preview.yaml` 같은 config search path로 열어뒀고 hard gate나 command surface는 아직 없다.
 - `premortem` public skill contract은 이제 canonical subagent path를 요구한다. host가 subagent를 못 주면 같은-agent 로컬 패스로 약화하지 말고 canonical path unavailable로 stop해야 한다.
 - `quality`의 fresh-eye premortem reference도 같은 방향으로 맞췄다. explicit subagent allowance가 없으면 same-agent local fallback을 equivalent로 취급하지 않는다.
