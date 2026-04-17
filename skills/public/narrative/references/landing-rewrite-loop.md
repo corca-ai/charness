@@ -52,6 +52,18 @@ fences and tables when practical.
 - less than 10 percent line delta on a claimed restructure: ask whether this
   was only a repackage
 
+## Rendered Preview
+
+When the target is a landing page, README, durable spec prose, or another
+first-touch Markdown surface, inspect rendered output before calling the
+rewrite done.
+
+- use the repo-local markdown preview seam when it exists
+- if no preview config exists yet, bootstrap one and leave the exact command
+  plus artifact path instead of pretending raw source review was enough
+- keep width-specific preview artifacts so the next session can inspect the
+  rendered shape directly
+
 ## Claim Audit
 
 Before stopping, map landing claims to evidence:
