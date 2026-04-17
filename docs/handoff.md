@@ -19,8 +19,8 @@
 ## Next Session
 
 1. `git status --short`를 먼저 확인한다.
-2. 품질 cleanup 다음 우선순위는 coverage가 아니라 ergonomics advisory다. `README.md`, `docs/operator-acceptance.md`, `skills/public/create-skill/SKILL.md`, `skills/public/quality/SKILL.md`, `skills/public/spec/SKILL.md`부터 본다.
-3. entrypoint/skill ergonomics를 hard gate로 올릴지는 아직 결정하지 않았다. 다음 판단은 advisory를 실제로 줄여본 뒤 어떤 rule만 남길지 maintainer가 고르는 순서가 맞다.
+2. 품질 cleanup 다음 우선순위는 coverage가 아니라 남은 ergonomics advisory다. 방금 `docs/operator-acceptance.md`, `create-skill`, `quality`는 정리했고, 이제 `README.md`가 가장 큰 잔여 항목이다. 그 다음은 `AGENTS.md`, `UNINSTALL.md`, `init-repo`, `retro`, 그리고 contract snippet 때문에 heuristic이 남아 있는 `spec`이다.
+3. entrypoint/skill ergonomics를 hard gate로 올릴지는 아직 결정하지 않았다. 다음 판단은 남은 advisory, 특히 `README.md`와 기존 mode-pressure 항목을 더 줄여본 뒤 어떤 rule만 남길지 maintainer가 고르는 순서가 맞다. `spec`은 현재 exact contract phrase 때문에 heuristic과 충돌하므로, gate 승격 전에 validator wording 자체를 손볼지 먼저 결정해야 한다.
 4. Agent Harness Guide adaptation을 이어가면 [charness-artifacts/spec/agent-harness-guide-adaptation.md](../charness-artifacts/spec/agent-harness-guide-adaptation.md)를 읽고 `Slice 1`부터 시작한다. 첫 범위는 `docs/harness-composition.md`, `docs/artifact-policy.md`, 최소 handoff cross-link다.
 5. Dogfood 개선은 registry 확장보다 reviewed case 강화가 다음 move다. `hitl` 또는 `ideation`처럼 policy-heavy한 case 하나를 골라 실제 consumer prompt replay와 stronger acceptance evidence를 추가한다.
 6. sah/specdown lesson line을 이어가면 task envelope와 doctor `next_action`을 실제 멀티에이전트 세션에서 dogfood한 뒤 필요하면 task list/status summary만 다듬는다. 반복 setup/JSON 추출이 두세 번 생기기 전에는 specdown adapter를 만들지 않는다.

@@ -1,10 +1,8 @@
 # Operator Acceptance
 
-This document translates the remaining roadmap into operator-owned acceptance
-runs.
-
-Use it when you want to take over one roadmap item directly instead of asking
-an agent to discover the whole repo state again.
+This document translates the remaining roadmap into operator-owned acceptance runs.
+Use it when you want to take over one roadmap item directly instead of asking an agent to discover the whole repo state again.
+Each item names the ownership seam, read-first surfaces, and acceptance bar. Restate that material in your own prompt instead of copying another embedded prompt block into chat.
 
 ## Shared Start
 
@@ -28,10 +26,7 @@ sed -n '1,220p' docs/public-skill-validation.md
 
 ### 1. Close Deferred Decisions
 
-Why this exists:
-
-- A deferred product-boundary backlog existed in `docs/handoff.md` `Discuss`.
-- It is now closed in [docs/deferred-decisions.md](deferred-decisions.md) (2026-04-10 batch), and should only be reopened by explicit triggers.
+Focus: keep deferred product-boundary decisions closed unless a real reopen trigger is active.
 
 Read first:
 
@@ -39,14 +34,6 @@ Read first:
 - [docs/deferred-decisions.md](deferred-decisions.md)
 - [docs/host-packaging.md](host-packaging.md)
 - [docs/control-plane.md](control-plane.md)
-
-Suggested agent prompt:
-
-```text
-Read docs/deferred-decisions.md and adjacent current planning docs. If any
-reopen trigger is active, propose and record the minimum decision update
-needed; otherwise confirm closure and continue to cautilus integration work.
-```
 
 Acceptance:
 
@@ -57,12 +44,7 @@ Acceptance:
 
 ### 2. Wire `cautilus` Into `charness`
 
-Why this exists:
-
-- `public-skill-validation.md` already says which public skills are
-  `evaluator-required`.
-- The upstream evaluator contract is now connected at the integration-manifest
-  layer, but maintained scenario usage still needs to become real.
+Focus: take `cautilus` from integration-manifest presence to honest maintained evaluator usage.
 
 Read first:
 
@@ -82,15 +64,6 @@ python3 scripts/run-evals.py --repo-root .
 If `~/cautilus` is available, also inspect its current contract surface before
 editing `charness`.
 
-Suggested agent prompt:
-
-```text
-Use the existing validation-tier policy and wire the real cautilus contract into
-charness. Add the integration manifest, update control-plane/docs/tests, and
-connect evaluator-required skills to honest scenario validation without
-placeholder claims.
-```
-
 Acceptance:
 
 - `cautilus` has a real integration surface in `charness`.
@@ -102,11 +75,7 @@ Acceptance:
 
 ### 3. Run Managed CLI Install Experiments
 
-Why this exists:
-
-- a checked-in plugin install surface now exists under `plugins/charness`
-- the repo now claims one thin-CLI-managed install/update path across hosts
-- initial install/bootstrap is largely proven; the remaining real-host question is whether `charness update` propagates upstream skill/plugin changes into the actually installed host-visible copy
+Focus: confirm that the managed install/update path changes the host-visible payload, not only the source checkout.
 
 Read first:
 
@@ -166,9 +135,7 @@ Acceptance:
 
 ### 4. Raise `create-skill` / `spec` Workflow Gates
 
-Why this exists:
-
-- those skills still lean more on contract-marker checks than on workflow smoke
+Focus: move `create-skill` and `spec` from marker-level checks to stronger workflow smoke.
 
 Read first:
 
@@ -179,14 +146,6 @@ Read first:
 - [scripts/run-evals.py](../scripts/run-evals.py)
 - [scripts/validate-public-skill-dogfood.py](../scripts/validate-public-skill-dogfood.py)
 
-Suggested agent prompt:
-
-```text
-Take create-skill and spec from marker-level contract checks to stronger
-repo-owned workflow smoke without introducing fake guarantees or host-specific
-assumptions.
-```
-
 Acceptance:
 
 - at least one stronger deterministic workflow check exists for each targeted
@@ -196,10 +155,7 @@ Acceptance:
 
 ### 5. Decide Adapter Requirements Per Public Skill
 
-Why this exists:
-
-- some public skills still have no checked-in adapter contract
-- the repo has now seen that “probably fine without adapter” can be wrong
+Focus: classify which public skills must fail closed on missing adapters and turn that into a deterministic rule.
 
 Read first:
 
@@ -212,14 +168,6 @@ Useful local commands:
 ```bash
 for d in skills/public/*; do [ -f "$d/adapter.example.yaml" ] && echo "adapter $d" || echo "no-adapter $d"; done
 python3 scripts/validate-adapters.py --repo-root .
-```
-
-Suggested agent prompt:
-
-```text
-Classify which public skills truly require checked-in adapters and which can
-stay adapter-free honestly. Then turn that classification into a deterministic
-repo-owned gate.
 ```
 
 Acceptance:

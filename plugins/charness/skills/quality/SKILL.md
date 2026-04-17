@@ -5,10 +5,9 @@ description: "Use when the goal is to understand and improve the repo's current 
 
 # Quality
 
-Use this when the task is overall quality posture, not only one narrow bug or one isolated test. `quality` is one public concept. It absorbs concept integrity review, test confidence improvement, security and supply-chain posture review, skill package and maintenance drift review, and documentation drift review. The job is to understand the repo's current quality surface, run the meaningful gates that already exist, and propose the missing ones concretely.
-`quality` may also install or refresh the repo-local quality posture when the next move is deterministic setup work instead of only review. Keep this inside the same public concept: review posture and bootstrap posture are different execution states of `quality`, not separate skills. When the next quality move is repo-local, deterministic, and low-risk, prefer implementing that gate in the same turn.
-Deterministic gates should define pass/fail authority wherever possible. If a quality concern can be enforced by a linter, validator, test, hook, or script, promote it into that gate instead of leaving it as repeated prose advice. Stay review-only when the user asks or the tradeoff is genuinely product-defining.
-Maintainer-local enforcement counts when the repo depends on it. When the repo has an obvious final stop-before-finish gate with no checked-in hook, repo-owned hook installer, or documented no-hook policy, name that as a missing enforcement gap. See `references/maintainer-local-enforcement.md`. `quality` and concept review are adjacent; use concept review when boundaries, ownership, or source-of-truth design stay unresolved without duplicate text or an obvious gate. See `references/quality-lenses.md`.
+Use this when the task is overall quality posture, not only one narrow bug or one isolated test. `quality` covers concept integrity review, test confidence, security and supply-chain posture, skill and maintenance drift, and documentation drift. The job is to understand the current quality surface, run the meaningful gates that already exist, and propose the missing ones concretely.
+`quality` may also install or refresh the repo-local quality posture when the next move is deterministic setup work instead of only review. Keep that inside the same public concept: review posture and bootstrap posture are two states of `quality`, not separate skills. When the next quality move is repo-local, deterministic, and low-risk, prefer implementing that gate in the same turn.
+Deterministic gates should define pass/fail authority wherever possible. If a concern can be enforced by a linter, validator, test, hook, or script, promote it into that gate instead of leaving it as repeated prose advice. Maintainer-local enforcement counts when the repo depends on it; if the final stop-before-finish gate has no checked-in hook, installer, or documented no-hook policy, name that as a missing enforcement gap. Use concept review instead when the real problem is unresolved boundary or ownership design. See `references/maintainer-local-enforcement.md` and `references/quality-lenses.md`.
 
 ## Bootstrap
 
@@ -62,9 +61,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 
 ## Workflow
 
-1. Restate the current quality question.
-   - what the user wants checked or improved
-   - whether the scope is repo-wide, one seam, or one proposed change
+1. Restate the current quality question: what the user wants checked or improved, and whether the scope is repo-wide, one seam, or one proposed change.
 2. Detect the current gate surface.
    - independently enumerate the current source, spec, and gate inventory before letting the previous quality artifact define scope
    - local executable gates already present
@@ -78,7 +75,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - inspect README / INSTALL / operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist; when the CLI surface is stable, prefer a deterministic command-docs drift gate over repeated prose review
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
    - if evaluator-backed review or prompt-sensitive output matters, inspect whether prompt/content bulk stays in checked-in assets or is still embedded inline in source files
-   - when skills are in scope, inventory skill ergonomics explicitly with `$SKILL_DIR/scripts/inventory_skill_ergonomics.py` instead of leaving concise-core, progressive-disclosure, or mode-pressure review as vague prose
+   - when skills are in scope, inventory skill ergonomics explicitly with `$SKILL_DIR/scripts/inventory_skill_ergonomics.py` instead of leaving concise-core, progressive-disclosure, or branching-pressure review as vague prose
    - when public-skill behavior or routing is in scope, scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` so the review names prompt, repo shape, expected artifact, and acceptance evidence explicitly
    - when the adapter defines `prompt_asset_roots` or `prompt_asset_policy`, re-derive prompt/content bulk inventory from the current tree instead of trusting prior review prose
    - if the repo keeps standing coverage floors, tag seams within `coverage_fragile_margin_pp` as `FRAGILE` instead of burying near-miss risk in prose
@@ -102,15 +99,8 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - when the repo keeps major entrypoint docs, include entrypoint-doc ergonomics review: concise first-touch ownership, progressive disclosure into deeper owners, duplicate pressure between nearby entry docs, and whether the prose overexplains branches a smart agent/operator can infer safely
    - make evaluator depth explicit: smoke only, maintained evaluator-backed, or still smoke plus HITL
    - if stronger local proof depends on an external binary or support tool, state whether it is currently installed and healthy, then surface the exact install and post-install verification path instead of vague prose
-5. Classify each issue by enforcement tier first.
-   - `AUTO_EXISTING`: already enforced by a meaningful deterministic gate
-   - `AUTO_CANDIDATE`: should be promoted into a linter, validator, test, hook, or script
-   - `NON_AUTOMATABLE`: still requires judgment, tradeoff analysis, or human review
-6. Classify gaps.
-   - `healthy`: already enforced and useful
-   - `weak`: present but low-signal or easy to game
-   - `missing`: should exist but does not
-   - `defer`: useful later, but not the next highest-leverage gate
+5. Classify each issue by enforcement tier first: `AUTO_EXISTING`, `AUTO_CANDIDATE`, or `NON_AUTOMATABLE`.
+6. Classify gaps: `healthy`, `weak`, `missing`, or `defer`.
 7. Propose the next quality moves concretely.
    - for missing or weak gates, name the exact setup or command family to add
    - tag every recommended next gate as `active` or `passive`; passive entries require an explicit reason such as future-tool dependency, broader product decision, or runtime budget tradeoff
@@ -122,15 +112,8 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - if executable specs are slow or overlapping, delete duplicates, move detail into unit-level checks, or add a direct adapter before widening the spec bar
    - when dual-implementation smell is real, recommend exactly one next contract: add a parity harness, pick one side canonical and delete or wrap the other, or document intentional divergence with a test that asserts it
    - do not leave "keep both for safety" as an unpriced middle state
-8. Run one fresh-eye premortem on the drafted report.
-   - use `references/fresh-eye-premortem.md`; if subagents are available and explicitly allowed, a fresh-eye subagent is ideal, otherwise do the challenge pass yourself without rereading the draft first
-9. End with a quality posture summary.
-   - what was actually run and what runtime or diagnostic signals were captured
-   - which runtime hot spots dominate the current bar
-   - whether coverage is standing-gated, indirect, or absent
-   - whether evaluator-backed depth exists, or whether the deeper bar is still smoke plus HITL
-   - what the current bar proves and still does not prove
-   - the next best gate or cleanup to add
+8. Run one fresh-eye premortem on the drafted report using `references/fresh-eye-premortem.md`; if subagents are available and explicitly allowed, a fresh-eye subagent is ideal, otherwise do the challenge pass yourself without rereading the draft first.
+9. End with a quality posture summary: what ran, which runtime hot spots dominate, whether coverage is standing-gated, whether evaluator-backed depth exists, what the current bar proves and still does not prove, and the next best gate or cleanup.
 
 - `Scope`, `Current Gates`, `Runtime Signals`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Commands Run`, `Recommended Next Gates`
 - Do not reduce quality to one aggregate score.
@@ -139,8 +122,6 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not ignore runtime drift just because a gate still passes functionally.
 - Do not wait for operator follow-up before stating current runtime hot spots, coverage-gate presence or absence, and evaluator-depth status when the repo signals are available.
 - Do not treat slow or broad executable specs as automatically strong quality when they mostly duplicate cheaper deterministic coverage.
-- Do not recommend verbose or permanent logs without naming who will read them and how they stay bounded.
-- Do not leave loud default test reporters or interleaved parallel hook output unpriced when they hide which standing gate failed.
 - Do not leave an automatable quality rule as prose-only guidance when a linter, validator, test, hook, or script could own it.
 - Do not normalize growing lint suppressions as harmless cleanup debt; inventory them and ask whether structure should absorb the rule instead.
 - If you stop short of an obvious repo-owned deterministic gate, name that as an unresolved enforcement gap explicitly.
@@ -149,8 +130,6 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not dismiss a fresh-eye misread of a present invariant as reader noise when the real problem is undeclared enforcement or scattered evidence.
 - Do not treat inline prompt/content bulk as automatically wrong; flag it as advisory inventory unless the repo already made it a standing local policy.
 - If a gate already exists, prefer tightening or reusing it before adding a new parallel tool.
-- If a stronger check would require an external tool, support skill, or permission, say so explicitly.
-- If a missing binary or local setup step would materially improve confidence, recommend installing it with the reason and exact command or package family.
 - Do not let whole-worktree scans fail on gitignored runtime artifacts unless the gate explicitly exists to validate that machine-local state.
 - Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior; run one realistic consumer prompt and name the expected artifact.
 - Do not collapse help, command discovery, healthcheck, readiness, and local discoverability into one generic "doctor passed" claim when the repo ships an installable CLI or plugin surface.
@@ -158,7 +137,6 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not treat a historical second implementation as a free safety oracle when no parity harness proves the two paths still agree.
 - Do not treat a historical second implementation as healthy unless the repo has enforced parity, an asserted intentional divergence, or an explicit canonicalization plan.
 - Do not treat support-skill materialization or host-visible plugin discovery as the same seam as generic binary health.
-- Do not hide a missing evaluator or support binary behind "deeper validation recommended"; say whether the deeper bar is currently unavailable locally and how to enable it.
 - Keep repo-local markdown-link discipline separate from external URL health when the repo needs both.
 - Do not pretend a conceptual boundary problem is solved just because duplicate text was linted away; semantic boundary questions still need concept review.
 - Do not confuse skill ergonomics review with taste policing; advisory inventory should sharpen defaults, inference, and discoverability rather than enforce one writing style.

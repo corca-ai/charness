@@ -5,12 +5,8 @@ description: "Use when a concept needs to become a living implementation contrac
 
 # Spec
 
-Use this when the next job is to make the build contract explicit enough that
-implementation can move without rediscovering the problem.
-
-`spec` is not only a document-writing phase before `impl`. It is the skill for
-managing the current implementation contract. Sometimes that contract is mostly
-settled up front. Sometimes it becomes sharper while implementation proceeds.
+Use this when the next job is to make the build contract explicit enough that implementation can move without rediscovering the problem.
+`spec` is not only a document-writing phase before `impl`. It is the skill for managing the current implementation contract, whether that contract is mostly settled up front or becomes sharper while implementation proceeds.
 
 ## Bootstrap
 
@@ -32,23 +28,8 @@ sed -n '1,220p' "$SKILL_DIR/../create-skill/SKILL.md" 2>/dev/null || true
 sed -n '1,220p' "$SKILL_DIR/../impl/SKILL.md" 2>/dev/null || true
 ```
 
-If an ideation document already exists, refine it into a spec. Do not restate
-the entire discovery history from scratch.
-If the repo already has executable acceptance artifacts, treat them as part of
-the spec surface rather than as a separate world.
-When the repo uses executable specs, inspect whether they stay at the
-acceptance boundary or whether they have started duplicating low-level test
-detail and runtime cost.
-Borrow Ward Cunningham-style executable-spec discipline when the repo uses
-tools such as `specdown`: executable acceptance artifacts should make the
-contract concrete at the boundary, not replace the unit suite or hide low-level
-test detail.
-Keep Christopher Alexander-style sequence discipline in the contract: order
-`Fixed Decisions`, `Probe Questions`, and `Deferred Decisions` so upstream
-commitments land before downstream detail hardens. When the slice is still
-noisy, borrow Kent Beck for thin feedback-bearing slices and John Ousterhout
-for simpler interfaces and deeper seams. See
-`references/sequence-discipline.md` and `references/design-lenses.md`.
+If an ideation document already exists, refine it into a spec instead of restating the full discovery history. If the repo already has executable acceptance artifacts, treat them as part of the spec surface rather than as a separate world, and inspect whether they still stay at the acceptance boundary instead of duplicating low-level test detail and runtime cost.
+Borrow Ward Cunningham-style executable-spec discipline when the repo uses tools such as `specdown`: executable acceptance artifacts should make the contract concrete at the boundary, not replace the unit suite or hide low-level test detail. Keep Christopher Alexander-style sequence discipline by ordering `Fixed Decisions`, `Probe Questions`, and `Deferred Decisions` so upstream commitments land before downstream detail hardens; when the slice is still noisy, borrow Kent Beck for thin feedback-bearing slices and John Ousterhout for simpler interfaces and deeper seams. See `references/sequence-discipline.md` and `references/design-lenses.md`.
 
 ## Contract Shaping
 
@@ -91,7 +72,7 @@ selection and triage inline.
    - ask targeted questions only for choices that change build scope,
      user-visible behavior, acceptance, sequencing, dependency choice, or risk
    - if a reasonable default is clear, recommend it with reasons instead of
-     opening broad option trees
+     opening broad branch trees
 4. Define the current execution contract.
    - current slice
    - non-goals
@@ -154,8 +135,8 @@ The final spec should usually include:
 - `Canonical Artifact`
 - `First Implementation Slice`
 
-If the idea depends on durable structure or flow, reuse ideation outputs such as
-`Entities` or `Stages` instead of recreating them under new names.
+If the idea depends on durable structure or flow, reuse ideation outputs such
+as `Entities` or `Stages` instead of recreating them under new names.
 
 ## Guardrails
 

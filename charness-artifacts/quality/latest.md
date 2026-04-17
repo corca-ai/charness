@@ -1,5 +1,5 @@
 # Quality Review
-Date: 2026-04-16
+Date: 2026-04-17
 
 ## Scope
 
@@ -29,16 +29,16 @@ maintainable structural fixes rather than one-off bypasses.
 ## Runtime Signals
 
 - Latest local review gate after this slice: `38 passed, 0 failed`, total
-  `56.7s`.
-- runtime hot spots: `pytest` `37.3s`, `check-coverage` `10.1s`,
-  `specdown` `4.6s`, `check-secrets` `3.8s`, `run-evals` `2.4s`.
+  `68.4s`.
+- runtime hot spots: `pytest` `43.4s`, `check-coverage` `11.4s`,
+  `specdown` `8.3s`, `check-secrets` `6.3s`, `run-evals` `2.3s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
   `85.0%`; current result is `98.0%` (`1196/1221`).
 - evaluator depth: `run-evals` passes 19 repo-local scenarios, so the bar is
   stronger than smoke-only review.
-- Budgeted phases: `pytest` median `29.2s / 40.0s`,
-  `check-coverage` median `10.1s / 15.0s`, `check-secrets` median `3.1s / 5.0s`,
-  `run-evals` median `2.4s / 5.0s`, `specdown` median `7.7s / 8.0s`.
+- Budgeted phases: `pytest` median `30.1s / 40.0s`,
+  `check-coverage` median `10.4s / 15.0s`, `check-secrets` median `3.3s / 5.0s`,
+  `run-evals` median `2.5s / 5.0s`, `specdown` median `7.4s / 8.0s`.
 - Runtime signals continue to persist under `.charness/quality/`.
 
 ## Coverage and Eval Depth
@@ -78,16 +78,16 @@ maintainable structural fixes rather than one-off bypasses.
 ## Weak
 
 - Entry-point doc ergonomics remain advisory pressure, not hard failures:
-  `README.md` still flags `long_entrypoint` and mode-pressure terms,
-  `docs/operator-acceptance.md` still flags `long_entrypoint`,
+  `README.md` still flags `long_entrypoint` and mode-pressure terms, while
   `AGENTS.md` and `UNINSTALL.md` still flag mode/option-pressure wording.
-- Skill ergonomics remain advisory pressure in a few large public cores:
-  `create-skill`, `quality`, and `spec` still flag `long_core`,
-  while `create-skill`, `init-repo`, `quality`, `retro`, and `spec` still flag
-  mode-pressure terms.
-- Entry-point and skill-core ergonomics now dominate the remaining advisory
-  pressure. The main quality bar is green, but first-touch docs and a few large
-  public skill cores are still carrying too much inline procedure.
+- Skill ergonomics remain advisory pressure in two public cores:
+  `init-repo`, `retro`, and `spec` still flag mode-pressure terms.
+- The recent cleanup pass removed `docs/operator-acceptance.md`,
+  `create-skill`, and `quality` from the advisory list, so remaining
+  ergonomics pressure is now concentrated in README plus a smaller set of
+  existing docs/skills. `spec` still trips the mode-pressure heuristic because
+  a checked-in contract test currently requires the exact phrase
+  `user-facing mode choice`.
 
 ## Missing
 
@@ -113,12 +113,12 @@ maintainable structural fixes rather than one-off bypasses.
 
 ## Recommended Next Gates
 
-- active `AUTO_CANDIDATE`: tighten `README.md` and
-  `docs/operator-acceptance.md` so first-touch docs orient and link rather than
-  carry the whole procedure inline.
-- active `AUTO_CANDIDATE`: shrink long public skill cores in `create-skill`,
-  `quality`, and `spec` by moving repeated rationale into references or helper
-  scripts.
+- active `AUTO_CANDIDATE`: tighten `README.md` so the first-touch doc orients
+  and links rather than carrying the whole procedure inline.
+- active `AUTO_CANDIDATE`: decide whether the remaining mode/option-pressure
+  wording in `AGENTS.md`, `UNINSTALL.md`, `init-repo`, `retro`, and the
+  contract-constrained `spec` phrase reflects real product distinctions or
+  should be simplified into stronger defaults.
 - active `AUTO_CANDIDATE`: if the repo wants another deterministic ratchet
   after coverage cleanup, decide whether entrypoint-doc or skill-ergonomics
   inventories should graduate into a narrow hard gate.
@@ -130,7 +130,7 @@ maintainable structural fixes rather than one-off bypasses.
   without turning prose review into taste policing`,
   `decision_needed=select promotable heuristics vs keep inventory-only posture`,
   `must_not_auto_decide=true`,
-  `observation_point=after one more cleanup pass on README/operator docs and long skill cores`,
+  `observation_point=after one more cleanup pass on README and remaining mode-pressure docs/skills`,
   `revisit_cadence=after meaningful quality cleanup slices`,
   `automation_candidate=promote only the narrowed rule subset that survives maintainer review`.
 
