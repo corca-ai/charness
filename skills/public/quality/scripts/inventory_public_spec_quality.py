@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 IGNORED_PARTS = {".git", ".charness", "__pycache__", "node_modules", "plugins", "evals"}
-FENCE_RE = re.compile(r"^```(?P<info>[A-Za-z0-9_-]+)?\s*$")
+FENCE_RE = re.compile(r"^```(?P<info>[^`]*)$")
 SOURCE_GUARD_ROW_RE = re.compile(r"^\|\s*[^|]+?\s*\|\s*(?:fixed|source_guard)\s*\|", re.IGNORECASE)
 SOURCE_GUARD_TOKEN_RE = re.compile(r"\bsource_guard\b", re.IGNORECASE)
 IMPLEMENTATION_PATH_RE = re.compile(
@@ -23,7 +23,7 @@ RUNNER_DELEGATION_RE = re.compile(
     r"^(pytest|go test|cargo test|npm test|pnpm test|yarn test|bun test|specdown run)\b"
 )
 COMMAND_START_RE = re.compile(r"^[A-Za-z0-9._/\-]+(?:\s+.+)?$")
-SHELL_INFOS = {"bash", "sh", "shell", "console", "zsh"}
+SHELL_INFOS = {"bash", "sh", "shell", "console", "zsh", "run:shell"}
 REVIEW_PROMPTS = [
     "Keep public executable pages reader-facing: current claims first, internal structure second.",
     "Check whether source inventory or implementation pinning became the main proof surface.",
@@ -39,7 +39,6 @@ def _iter_public_specs(repo_root: Path) -> list[Path]:
             continue
         specs.append(path)
     return sorted(specs)
-
 
 def _iter_smoke_like_tests(repo_root: Path) -> tuple[list[str], list[str]]:
     smoke_paths: list[str] = []
@@ -90,16 +89,28 @@ def _normalize_command(line: str) -> str:
         command = command[2:]
     elif command.startswith("$"):
         command = command[1:].lstrip()
+    elif command.startswith("! "):
+        command = command[2:]
+    elif command.startswith("!"):
+        command = command[1:].lstrip()
     return " ".join(command.split())
+
+def _normalized_info(info: str) -> str:
+    return info.strip().split()[0].lower() if info.strip() else ""
 
 
 def _command_examples(blocks: list[dict[str, Any]]) -> list[str]:
     commands: list[str] = []
     for block in blocks:
-        info = str(block["info"])
+        info = _normalized_info(str(block["info"]))
         if info and info not in SHELL_INFOS:
             continue
-        for raw in block["lines"]:
+        candidate_lines = list(block["lines"])
+        if info.startswith("run:"):
+            prompted = [raw for raw in candidate_lines if raw.lstrip().startswith(("$", "!"))]
+            if prompted:
+                candidate_lines = prompted
+        for raw in candidate_lines:
             stripped = raw.strip()
             if not stripped or stripped.startswith("#") or stripped.startswith(">"):
                 continue

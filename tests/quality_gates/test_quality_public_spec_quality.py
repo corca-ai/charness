@@ -81,3 +81,38 @@ def test_inventory_public_spec_quality_detects_duplicate_public_examples(tmp_pat
     ]
     assert "duplicate_public_spec_examples" in payload["layering"]["heuristics"]
     assert "proof_layering_review_needed" in payload["layering"]["heuristics"]
+
+
+def test_inventory_public_spec_quality_recognizes_specdown_run_shell_blocks(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "specs").mkdir(parents=True)
+    (repo / "specs" / "index.spec.md").write_text(
+        "\n".join(
+            [
+                "# CLI Contract",
+                "",
+                "Reader-facing current claim.",
+                "",
+                "```run:shell",
+                "demo doctor --json",
+                "```",
+                "",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    spec = payload["public_specs"][0]
+    assert spec["spec_path"] == "specs/index.spec.md"
+    assert spec["command_examples"] == ["demo doctor --json"]
+    assert "no_executable_proof_blocks" not in spec["heuristics"]
+    assert "delegated_test_runner_proof" not in spec["heuristics"]
