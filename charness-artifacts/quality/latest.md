@@ -50,12 +50,9 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 ## Healthy
 
 - Earlier standing-gate failures were removed through structural
-  simplification: `docs/handoff.md` now fits the enforced artifact limit,
-  helper logic moved into repo-level seams, and duplicate `init_adapter.py`
-  helpers collapsed into thin wrappers.
-- Thin skill-side wrappers still preserve path-loaded compatibility for
-  `load_adapter` callers while keeping reusable adapter logic in repo-level
-  seams.
+  simplification: helper logic moved into repo-level seams, duplicate
+  `init_adapter.py` wrappers collapsed, and `docs/handoff.md` now fits the
+  enforced artifact limit.
 - Public executable-spec boundaries are explicit in `spec`, and `quality` now
   inventories proof layering instead of asking only what proof is missing.
 - Public spec inventory now reads actual `run:shell` blocks instead of
@@ -87,9 +84,9 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   `quality` itself now trips the `long_core` heuristic at `165` core lines.
 - `spec` still trips the mode-pressure heuristic because a checked-in contract
   test currently requires the exact phrase `user-facing mode choice`.
-- `doctor.py --json` still reports `markdown-preview` as locally `not-ready`
-  because the preferred `glow` backend is missing. The standing quality gate
-  still passes, but preview proof for that support runtime is degraded.
+- `markdown-preview` is wired through checked-in config and local execution, but
+  `doctor.py --json` still reports it as `not-ready` because `glow` is missing.
+  The standing quality gate still passes, but preview proof stays degraded.
 
 ## Missing
 
@@ -108,9 +105,8 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 
 ## Commands Run
 - `./scripts/run-quality.sh --review`
-- quality inventories: standing-gate verbosity, entrypoint docs, skill
-  ergonomics, public spec quality, CLI ergonomics, lint ignores, and dual
-  implementation
+- quality inventories: standing-gate verbosity, entrypoint docs, skill ergonomics, public spec quality, CLI ergonomics, lint ignores, and dual implementation
+- `python3 skills/public/quality/scripts/bootstrap_markdown_preview.py --repo-root . --execute`
 - `python3 scripts/doctor.py --json`
 
 ## Recommended Next Gates
@@ -132,6 +128,9 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 - passive `AUTO_CANDIDATE`: because the repo can operate in degraded mode
   today, install `glow` or document an explicit no-`glow` posture for
   `markdown-preview` only if maintainers want preview readiness as a local bar.
+- active `AUTO_CANDIDATE`: decide which workflow should call the now-bootstrapped
+  markdown-preview seam by default (`narrative`, `announcement`, `quality`, or
+  a command surface) instead of leaving it as a helper that only exists on paper.
 - passive `NON_AUTOMATABLE`: because gate promotion still needs maintainer
   judgment, only harden ergonomics heuristics that can survive without turning
   prose review into taste policing.

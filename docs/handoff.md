@@ -18,7 +18,7 @@
 - `#33`/`#34` 방향의 public spec boundary 정리는 반영됐다. `spec`은 public executable contract vs implementation guard를 명시하고, `quality`는 proof layering inventory plus actionable `move_down` / `delete_or_merge` / `keep_if_integration_value` recommendation payload를 갖는다.
 - `quality` public skill은 이번 slice에서 structure-first routing을 더 명시했다. 길이/중복/pressure signal은 기본적으로 concept-review advisory로 보고, explicit low-noise invariant와 clear structural response가 있을 때만 `AUTO_CANDIDATE`/`AUTO_EXISTING`로 올린다. 이 caution은 coverage floor나 runtime budget 같은 standing threshold gate까지 일반화하지 않는다.
 - 2026-04-17 quality review 기준 추가 advisory pressure는 `AGENTS.md`/`README.md`/`UNINSTALL.md` entrypoint ergonomics, `init-repo`/`retro`/`spec`의 mode-pressure wording, `quality` SKILL core의 `long_core`, 그리고 `markdown-preview` support runtime의 `glow` 미설치(`doctor`에서 `not-ready`)다.
-- `#35`의 첫 구현 뒤 hardening도 들어갔다. `render_markdown_preview.py`는 unsupported `backend`를 upfront reject하고, manifest에 `backend_version`, `git_head`, per-file `source_sha256`를 남긴다. repo-local scope는 `.agents/markdown-preview.yaml` 같은 config search path로 열어뒀고 hard gate나 command surface는 아직 없다.
+- `#35`의 첫 구현 뒤 hardening도 들어갔다. `render_markdown_preview.py`는 unsupported `backend`를 upfront reject하고, manifest에 `backend_version`, `git_head`, per-file `source_sha256`를 남긴다. repo-local scope는 `.agents/markdown-preview.yaml` 같은 config search path로 열어뒀고, 현재 이 repo에는 scaffolded config가 checked in 되어 있다. preview output은 `.artifacts/markdown-preview/` 아래 machine-local runtime artifact로 본다.
 - `premortem` public skill contract은 이제 canonical subagent path를 요구한다. host가 subagent를 못 주면 같은-agent 로컬 패스로 약화하지 말고 canonical path unavailable로 stop해야 한다.
 - `quality`의 fresh-eye premortem reference도 같은 방향으로 맞췄다. explicit subagent allowance가 없으면 same-agent local fallback을 equivalent로 취급하지 않는다.
 
@@ -27,7 +27,7 @@
 1. `git status --short`를 먼저 확인한다.
 2. public-spec executable proof 약점은 이번 slice에서 정리됐다. `inventory_public_spec_quality.py`는 실제 `run:shell` fence를 읽고, `specs/index.spec.md`/`specs/tool-doctor.spec.md`는 direct CLI proof로 바뀌어 현재 flagged spec이 없다.
 3. `0.1.0` release slice는 version surface까지 이미 올라가 있지만 아직 push 전이다. 다음 세션이 release를 이어받으면 `git status --short`로 남은 staged/unstaged surface를 먼저 확인하고 `./scripts/run-quality.sh`, `python3 scripts/run-slice-closeout.py --repo-root .`, `python3 skills/public/release/scripts/current_release.py --repo-root .`부터 재확인한다.
-4. `markdown-preview` 후속 우선순위는 command surface나 workflow integration을 붙일지 판단하는 것이다. 지금은 support helper + artifact까지만 landed 했으니, 다음 slice는 `narrative`/`announcement`/`quality` 중 어디가 이 helper를 실제 호출해야 하는지, 그리고 `docs:preview`류 command surface를 만들 가치가 있는지 결정하면 된다.
+4. `markdown-preview` 후속 우선순위는 `glow`를 실제 설치해 rendered proof까지 올릴지, 아니면 degraded fallback을 명시적 로컬 posture로 둘지 결정하는 것이다. 그 다음 slice에서 `narrative`/`announcement`/`quality` 중 어디가 이 helper를 실제 호출해야 하는지, 그리고 `docs:preview`류 command surface를 만들 가치가 있는지 판단하면 된다.
 5. Agent Harness Guide adaptation을 이어가면 [charness-artifacts/spec/agent-harness-guide-adaptation.md](../charness-artifacts/spec/agent-harness-guide-adaptation.md)를 읽고 `Slice 1`부터 시작한다. 첫 범위는 `docs/harness-composition.md`, `docs/artifact-policy.md`, 최소 handoff cross-link다.
 6. Dogfood 개선은 registry 확장보다 reviewed case 강화가 다음 move다. `hitl` 또는 `ideation`처럼 policy-heavy한 case 하나를 골라 실제 consumer prompt replay와 stronger acceptance evidence를 추가한다.
 7. sah/specdown lesson line을 이어가면 task envelope와 doctor `next_action`을 실제 멀티에이전트 세션에서 dogfood한 뒤 필요하면 task list/status summary만 다듬는다. 반복 setup/JSON 추출이 두세 번 생기기 전에는 specdown adapter를 만들지 않는다.

@@ -1,0 +1,13 @@
+enabled: true
+backend: glow
+widths:
+  - 80
+  - 100
+include:
+  - README*.md
+  - INSTALL.md
+  - UNINSTALL.md
+  - docs/**/*.md
+  - specs/**/*.md
+on_change_only: false
+artifact_dir: .artifacts/markdown-preview

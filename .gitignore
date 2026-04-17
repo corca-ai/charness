@@ -3,6 +3,7 @@ __pycache__/
 node_modules/
 .pytest_cache/
 .lycheecache
+.artifacts/
 plugins/charness/support/gather-slack/.cache/
 .charness/quality/bootstrap.json
 .charness/quality/runtime-signals.json

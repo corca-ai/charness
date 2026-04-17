@@ -91,11 +91,14 @@ high-churn, or not useful as checked-in repo truth.
 Put it in:
 
 - `.charness/**`
+- `.artifacts/**`
 
 Examples:
 
 - `.charness/tasks/*.json`
 - `.charness/quality/runtime-signals.json`
+- `.artifacts/markdown-preview/*.txt`
+- `.artifacts/markdown-preview/manifest.json`
 - install/update/support-sync state captured under `.charness/`
 
 Use hidden runtime state when:
@@ -173,6 +176,8 @@ Prefer hidden runtime state when the data is mainly for:
 - storing runtime measurements
 - carrying queue or task metadata
 - holding noisy intermediate state
+- keeping rendered or generated proof artifacts that help the current machine
+  inspect a surface without becoming checked-in repo truth
 
 ## Anti-Patterns
 
