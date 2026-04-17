@@ -45,6 +45,16 @@ Current planning and takeover surfaces live in
 [docs/external-integrations.md](docs/external-integrations.md) and
 [docs/operator-acceptance.md](docs/operator-acceptance.md).
 
+## Read This Next
+
+Use the README as the entrypoint, not as the only rollout or install contract.
+
+- evaluating internal rollout readiness:
+  [docs/operator-acceptance.md](docs/operator-acceptance.md) and
+  [charness-artifacts/quality/latest.md](charness-artifacts/quality/latest.md)
+- installing or verifying the managed host surface:
+  [INSTALL.md](INSTALL.md) and [docs/host-packaging.md](docs/host-packaging.md)
+
 ## Plugin Install Surface
 
 `charness` installs as one managed plugin bundle that includes public skills,
