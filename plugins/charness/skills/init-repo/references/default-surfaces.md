@@ -38,10 +38,15 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
 - when retro memory is enabled, include `charness-artifacts/retro/recent-lessons.md`
   in those memory surfaces
 - validation and commit discipline when the repo has them
-- a compact `Skill Routing` block for installed charness skills, using
-  concrete request shapes such as Slack thread, named support helper,
-  unexpected behavior, or quality gate review rather than abstract capability
-  labels
+- a compact-by-default `Skill Routing` block for installed charness skills,
+  using concrete request shapes such as named support helper, external source
+  fetch, unexpected behavior, implementation work, or quality gate review
+  rather than abstract capability labels
+- keep compact mode intentionally non-exhaustive and discovery-heavy:
+  explicitly prefer installed charness public skills before improvising, and
+  explicitly route unclear cases to `find-skills`
+- keep an expanded mode available when a repo explicitly wants the full
+  checked-in public skill catalog rendered into `AGENTS.md`
 - prose wrap policy when the repo uses fixed-string source guards; default to
   semantic line breaks, and require whitespace-normalized matching before
   accepting column-wrapped prose. In `.agents/init-repo-adapter.yaml`, a repo
@@ -55,9 +60,11 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
   `lychee`, prefer optional or tightly scoped checks before adding broad ignore
   rules
 
-Use `scripts/render_skill_routing.py` to render the block. On a mature repo
-whose `AGENTS.md` lacks it, propose adding the block instead of rewriting the
-whole instruction file.
+Use `scripts/render_skill_routing.py` to render the block. Default to compact
+mode; allow `--mode expanded` or adapter `skill_routing_mode: expanded` when a
+repo explicitly wants the full checked-in list. On a mature repo whose
+`AGENTS.md` lacks it, propose adding the block instead of rewriting the whole
+instruction file.
 
 ## Roadmap
 

@@ -23,6 +23,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
+_init_repo_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "init_repo_adapter")
 
 
 
@@ -32,7 +33,7 @@ load_simple_adapter = _scripts_simple_skill_adapter_lib_module.load_simple_adapt
 
 
 def load_adapter(repo_root: Path) -> dict[str, object]:
-    return load_simple_adapter(
+    payload = load_simple_adapter(
         repo_root,
         skill_id="init-repo",
         artifact_filename="latest.md",
@@ -42,6 +43,9 @@ def load_adapter(repo_root: Path) -> dict[str, object]:
             "Create .agents/init-repo-adapter.yaml to move the artifact path or record preset provenance.",
         ),
     )
+    adapter_data, _adapter_path, _warnings = _init_repo_adapter_module.load_init_repo_adapter(repo_root)
+    payload.setdefault("data", {})["skill_routing_mode"] = adapter_data.get("skill_routing_mode", "compact")
+    return payload
 
 
 if __name__ == "__main__":

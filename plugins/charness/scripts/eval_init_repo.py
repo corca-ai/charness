@@ -135,3 +135,54 @@ def run_init_repo_operator_acceptance_synthesis(
             raise error_type(f"init-repo operator acceptance synthesis: expected human review items {payload!r}")
         if "## Environment Prerequisites" not in payload["markdown"]:
             raise error_type(f"init-repo operator acceptance synthesis: missing prerequisites section {payload!r}")
+
+
+def run_init_repo_compact_skill_routing_discoverability(
+    root: Path,
+    *,
+    run_command: Callable[..., object],
+    expect_success: Callable[..., None],
+    error_type: type[Exception],
+) -> None:
+    render_script = root / "skills" / "public" / "init-repo" / "scripts" / "render_skill_routing.py"
+
+    with tempfile.TemporaryDirectory(prefix="charness-eval-init-repo-routing-") as tmpdir:
+        tmp = Path(tmpdir)
+
+        compact_result = run_command(["python3", str(render_script), "--repo-root", str(tmp), "--json"], cwd=root)
+        expect_success(compact_result, "init-repo compact skill routing")
+        compact = json.loads(compact_result.stdout)
+        if compact.get("skill_routing_mode") != "compact":
+            raise error_type(f"init-repo compact skill routing: unexpected mode {compact.get('skill_routing_mode')!r}")
+        if compact.get("skill_routing_mode_source") != "default":
+            raise error_type(
+                "init-repo compact skill routing: unexpected mode source "
+                f"{compact.get('skill_routing_mode_source')!r}"
+            )
+        if compact.get("listed_skill_ids") != ["find-skills", "gather", "debug", "impl", "quality", "handoff", "init-repo"]:
+            raise error_type(
+                "init-repo compact skill routing: unexpected listed_skill_ids "
+                f"{compact.get('listed_skill_ids')!r}"
+            )
+        markdown = compact.get("markdown", "")
+        expected_snippets = (
+            "Prefer installed charness public skills before improvising a repo-local workflow.",
+            "Keep this block intentionally non-exhaustive",
+            "use `find-skills` first",
+        )
+        for snippet in expected_snippets:
+            if snippet not in markdown:
+                raise error_type(f"init-repo compact skill routing: missing snippet {snippet!r}")
+        if "turn a concept or design into a living implementation contract" in markdown:
+            raise error_type("init-repo compact skill routing: compact mode should not render the full expanded catalog")
+
+        expanded_result = run_command(
+            ["python3", str(render_script), "--repo-root", str(tmp), "--mode", "expanded", "--json"],
+            cwd=root,
+        )
+        expect_success(expanded_result, "init-repo expanded skill routing")
+        expanded = json.loads(expanded_result.stdout)
+        if expanded.get("skill_routing_mode") != "expanded":
+            raise error_type(f"init-repo expanded skill routing: unexpected mode {expanded.get('skill_routing_mode')!r}")
+        if "turn a concept or design into a living implementation contract" not in expanded.get("markdown", ""):
+            raise error_type("init-repo expanded skill routing: missing expanded-only coverage for `spec`")

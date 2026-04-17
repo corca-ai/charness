@@ -16,6 +16,9 @@ REPO_ROOT = repo_root_from_script(__file__)
 _scripts_eval_init_repo_module = import_repo_module(__file__, "scripts.eval_init_repo")
 run_init_repo_inspect_states = _scripts_eval_init_repo_module.run_init_repo_inspect_states
 run_init_repo_operator_acceptance_synthesis = _scripts_eval_init_repo_module.run_init_repo_operator_acceptance_synthesis
+run_init_repo_compact_skill_routing_discoverability = (
+    _scripts_eval_init_repo_module.run_init_repo_compact_skill_routing_discoverability
+)
 _scripts_eval_registry_module = import_repo_module(__file__, "scripts.eval_registry")
 SCENARIOS = _scripts_eval_registry_module.SCENARIOS
 Scenario = _scripts_eval_registry_module.Scenario
@@ -170,13 +173,28 @@ def scenario_handoff_adapter_bootstrap(root: Path) -> None:
 def scenario_gather_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="gather", adapter_name="gather-adapter.yaml", expected_artifact_path="charness-artifacts/gather/latest.md")
 def scenario_init_repo_adapter_bootstrap(root: Path) -> None:
-    expect_adapter_bootstrap(root, skill_id="init-repo", adapter_name="init-repo-adapter.yaml", expected_artifact_path="charness-artifacts/init-repo/latest.md")
+    expect_adapter_bootstrap(
+        root,
+        skill_id="init-repo",
+        adapter_name="init-repo-adapter.yaml",
+        expected_artifact_path="charness-artifacts/init-repo/latest.md",
+        expected_data={"skill_routing_mode": "compact"},
+    )
 def scenario_init_repo_inspect_states(root: Path) -> None:
     run_init_repo_inspect_states(root, run_command=run_command, expect_success=expect_success, error_type=EvalError)
 
 
 def scenario_init_repo_operator_acceptance_synthesis(root: Path) -> None:
     run_init_repo_operator_acceptance_synthesis(
+        root,
+        run_command=run_command,
+        expect_success=expect_success,
+        error_type=EvalError,
+    )
+
+
+def scenario_init_repo_compact_skill_routing_discoverability(root: Path) -> None:
+    run_init_repo_compact_skill_routing_discoverability(
         root,
         run_command=run_command,
         expect_success=expect_success,
@@ -330,6 +348,7 @@ def run_scenario(root: Path, scenario: Scenario) -> None:
         "init-repo-adapter-bootstrap": scenario_init_repo_adapter_bootstrap,
         "init-repo-inspect-states": scenario_init_repo_inspect_states,
         "init-repo-operator-acceptance-synthesis": scenario_init_repo_operator_acceptance_synthesis,
+        "init-repo-compact-skill-routing-discoverability": scenario_init_repo_compact_skill_routing_discoverability,
         "handoff-relative-links": scenario_handoff_relative_links,
         "find-skills-local-first": scenario_find_skills_local_first,
         "support-sync-contracts": scenario_support_sync_contracts,

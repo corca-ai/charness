@@ -48,6 +48,7 @@ python3 "$SKILL_DIR/scripts/synthesize_operator_acceptance.py" --repo-root .
 # 1. current repo surface
 python3 "$SKILL_DIR/scripts/inspect_repo.py" --repo-root .
 python3 "$SKILL_DIR/scripts/render_skill_routing.py" --repo-root . --json
+python3 "$SKILL_DIR/scripts/render_skill_routing.py" --repo-root . --mode expanded --json
 git status --short
 rg --files . | sed -n '1,200p'
 
@@ -109,10 +110,16 @@ Then load only the references needed for the detected state:
    - when that seam is enabled, make `AGENTS.md` name
      `charness-artifacts/retro/recent-lessons.md` as a repo memory surface so future
      sessions can actually discover it
-   - add a compact `Skill Routing` block to `AGENTS.md` when installed
-     charness skills provide high-signal routing hints; use
-     `$SKILL_DIR/scripts/render_skill_routing.py` so mature repos get an add-block
-     suggestion instead of a silent rewrite
+   - add a compact-by-default `Skill Routing` block to `AGENTS.md` when
+     installed charness skills provide high-signal routing hints
+   - keep compact mode intentionally non-exhaustive and discovery-heavy:
+     prefer installed charness public skills before improvising, and route
+     unclear cases to `find-skills` first
+   - allow `expanded` when the repo explicitly wants the full checked-in skill
+     catalog rendered into `AGENTS.md`; use adapter `skill_routing_mode` or
+     `$SKILL_DIR/scripts/render_skill_routing.py --mode expanded`
+   - use `$SKILL_DIR/scripts/render_skill_routing.py` so mature repos get an
+     add-block suggestion instead of a silent rewrite
 5. Keep the boundaries honest.
    - `README.md`: current repo story and user-facing orientation
      - if the repo ships an installable surface, README should point at the

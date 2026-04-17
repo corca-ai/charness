@@ -44,7 +44,8 @@
           "skill_id": "init-repo",
           "scenario_ids": [
             "init-repo-adapter-bootstrap",
-            "init-repo-inspect-states"
+            "init-repo-inspect-states",
+            "init-repo-compact-skill-routing-discoverability"
           ]
         },
         {
