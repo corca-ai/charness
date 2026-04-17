@@ -12,7 +12,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-SEMVER_RE = re.compile(r"(?<!\d)\d+(?:\.\d+){1,}(?!\d)")
+SEMVER_RE = re.compile(r"(?<!\d)(\d+(?:\.\d+){1,}(?:-[0-9A-Za-z.-]+)?)(?![0-9A-Za-z.-])")
 GITHUB_API_TEMPLATE = "https://api.github.com/repos/{repo}/releases/latest"
 
 
@@ -20,7 +20,7 @@ def extract_version(text: str | None) -> str | None:
     if not text:
         return None
     match = SEMVER_RE.search(text)
-    return match.group(0) if match else None
+    return match.group(1) if match else None
 
 
 def fixture_release(repo: str) -> dict[str, Any] | None:

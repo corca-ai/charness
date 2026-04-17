@@ -28,6 +28,7 @@ def test_extract_version_and_fixture_release_handle_empty_and_non_dict_payloads(
 
     assert upstream.extract_version(None) is None
     assert upstream.extract_version("release-2026.04 build") == "2026.04"
+    assert upstream.extract_version("release v1.2.3-rc.1") == "1.2.3-rc.1"
     assert upstream.fixture_release("example/tool") == {"tag_name": "v1.2.3"}
     assert upstream.fixture_release("example/list") is None
     assert upstream.fixture_release("example/missing") is None
@@ -59,6 +60,20 @@ def test_normalize_release_payload_filters_assets_and_preserves_error_fields() -
         "error": "broken",
         "reason": "fixture-error",
     }
+
+
+def test_normalize_release_payload_preserves_prerelease_suffix() -> None:
+    payload = {
+        "tag_name": "release v3.4.5-rc.2",
+        "html_url": "https://github.com/example/tool/releases/tag/v3.4.5-rc.2",
+        "published_at": "2026-04-16T00:00:00Z",
+        "assets": [],
+    }
+
+    release = upstream.normalize_release_payload("example/tool", payload)
+
+    assert release["latest_tag"] == "release v3.4.5-rc.2"
+    assert release["latest_version"] == "3.4.5-rc.2"
 
 
 def test_probe_release_requires_github_manifest_shape() -> None:

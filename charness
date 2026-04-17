@@ -717,8 +717,8 @@ def fixture_release(repo: str) -> dict[str, object] | None:
 def extract_version(text: object) -> str | None:
     if not isinstance(text, str):
         return None
-    match = re.search(r"(?<!\d)\d+(?:\.\d+){1,}(?!\d)", text)
-    return match.group(0) if match else None
+    match = re.search(r"(?<!\d)(\d+(?:\.\d+){1,}(?:-[0-9A-Za-z.-]+)?)(?![0-9A-Za-z.-])", text)
+    return match.group(1) if match else None
 
 
 def normalize_release_payload(repo: str, payload: dict[str, object]) -> dict[str, object]:

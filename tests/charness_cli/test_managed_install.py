@@ -19,6 +19,7 @@ from .support import (
 CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
 CURRENT_RELEASE_TAG = f"v{CURRENT_VERSION}"
 NEWER_RELEASE_TAG = "v9.9.9"
+NEWER_PRERELEASE_TAG = "v9.9.9-rc.1"
 OLDER_RELEASE_TAG = "v0.0.0"
 
 
@@ -433,6 +434,33 @@ def test_installed_cli_can_emit_auto_update_notice_for_newer_release(
     )
     assert doctor_result.returncode == 0, doctor_result.stderr
     assert f"charness update available: `{CURRENT_VERSION}` -> `{NEWER_RELEASE_TAG}`." in doctor_result.stderr
+
+
+def test_charness_version_preserves_prerelease_tag_in_update_notice(
+    tmp_path: Path, seeded_managed_home: dict[str, Path]
+) -> None:
+    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    release_fixture = make_release_fixture(tmp_path, charness_tag=NEWER_PRERELEASE_TAG)
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+
+    installed_cli = home_root / ".local" / "bin" / "charness"
+    version_result = subprocess.run(
+        [sys.executable, str(installed_cli), "version", "--home-root", str(home_root), "--json", "--check"],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert version_result.returncode == 0, version_result.stderr
+    payload = json.loads(version_result.stdout)
+    assert payload["latest_release_check"]["latest_tag"] == NEWER_PRERELEASE_TAG
+    assert payload["latest_release_check"]["latest_version"] == "9.9.9-rc.1"
+    assert payload["latest_release_check"]["update_available"] is True
+    assert payload["update_notice"] == (
+        f"charness update available: `{CURRENT_VERSION}` -> `{NEWER_PRERELEASE_TAG}`. "
+        f"Run `charness update`. https://github.com/corca-ai/charness/releases/tag/{NEWER_PRERELEASE_TAG}"
+    )
 
 
 def test_doctor_can_write_host_state_snapshot(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
