@@ -3,19 +3,17 @@ Date: 2026-04-17
 
 ## Scope
 
-Minor release surface bump after adding the `markdown-preview` support
-capability, tightening the `premortem` subagent contract, and refocusing the
-public `quality` skill on structure-first review and explicit gate-promotion
-routing.
+Patch release after fixing prerelease-tag handling in the release probe and
+installed CLI update notice surfaces.
 No tag or published GitHub release has been created in this slice.
 
 ## Current Version
 
-- previous version: `0.0.8`
-- target version: `0.1.0`
-- packaging manifest: `0.1.0`
-- checked-in Claude plugin manifest: `0.1.0`
-- checked-in Codex plugin manifest: `0.1.0`
+- previous version: `0.1.1`
+- target version: `0.1.2`
+- packaging manifest: `0.1.2`
+- checked-in Claude plugin manifest: `0.1.2`
+- checked-in Codex plugin manifest: `0.1.2`
 - Claude marketplace metadata: `0.1.0`
 - Codex marketplace source path: `./plugins/charness`
 
@@ -30,26 +28,19 @@ No tag or published GitHub release has been created in this slice.
 
 ## Release Scope
 
-- Includes the new `markdown-preview` support capability for rendered Markdown
-  QA artifacts.
-- Includes the follow-up hardening for `markdown-preview`, including explicit
-  backend rejection and stronger manifest provenance.
-- Includes the public `premortem` contract change that now requires the
-  canonical subagent path instead of silently degrading into same-agent local
-  review.
-- Includes the `quality` skill follow-up that treats length/duplicate/pressure
-  signals as structure-first advisory by default, clarifies when they may still
-  promote to deterministic gates, and aligns fresh-eye premortem wording with
-  the canonical subagent path.
-- Includes the `inventory_public_spec_quality.py` seam extraction that keeps
-  the standing file-length gate satisfied without loosening the gate.
+- Preserves prerelease suffixes such as `v1.2.3-rc.1` in the shared release
+  probe helper instead of truncating them to the numeric core.
+- Preserves the same prerelease tag in installed CLI update notices so the
+  operator sees the actual upstream release tag that triggered the notice.
+- Adds direct helper and managed-install coverage for prerelease release tags.
 
 ## Verification
 
 - `./scripts/run-quality.sh` passed for the final release slice.
 - `python3 scripts/run-slice-closeout.py --repo-root .` passed for the final
   release slice.
-- `current_release.py` reports no release-surface drift at `0.1.0`.
+- `python3 scripts/validate-packaging.py --repo-root .` passed after syncing
+  the checked-in install surface at `0.1.2`.
 
 ## User Update Steps
 
@@ -63,3 +54,5 @@ No tag or published GitHub release has been created in this slice.
 - No real-host proof was required by the configured release trigger for this
   slice. A future release touching integrations or install/update scripts should
   re-run the real-host checklist from `.agents/release-adapter.yaml`.
+- Complex release tags outside the current semver-like prerelease shape remain
+  deferred.
