@@ -10,7 +10,6 @@ from .support import (
     clone_seeded_managed_home,
     make_fake_agent_browser,
     make_fake_brew_specdown,
-    make_fake_cautilus,
     make_fake_npm_gws,
     make_release_fixture,
     make_repo_copy,
@@ -18,6 +17,7 @@ from .support import (
     run_cli,
     run_cli_in_repo,
 )
+from .tool_fakes import make_fake_cautilus
 
 
 def make_fake_go_glow(tmp_path: Path) -> tuple[Path, Path]:

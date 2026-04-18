@@ -156,7 +156,7 @@ def render_skill_routing(public_skill_ids: list[str], *, mode: str) -> tuple[str
     raise ValueError(f"unknown skill routing mode: {mode}")
 
 
-def build_payload(repo_root: Path) -> dict[str, object]:
+def _build_payload(repo_root: Path, *, cli_mode: str | None) -> dict[str, object]:
     public_root, support_root = _skill_roots()
     public_skill_ids = _installed_skill_ids(public_root)
     support_skill_ids = _installed_skill_ids(support_root)
@@ -169,7 +169,7 @@ def build_payload(repo_root: Path) -> dict[str, object]:
         action = "leave_as_is"
     else:
         action = "add_skill_routing_block"
-    mode, mode_source = _resolve_mode(repo_root, None)
+    mode, mode_source = _resolve_mode(repo_root, cli_mode)
     markdown, listed_skill_ids = render_skill_routing(public_skill_ids, mode=mode)
     return {
         "public_skills": public_skill_ids,
@@ -185,6 +185,10 @@ def build_payload(repo_root: Path) -> dict[str, object]:
     }
 
 
+def build_payload(repo_root: Path) -> dict[str, object]:
+    return _build_payload(repo_root, cli_mode=None)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
@@ -192,32 +196,7 @@ def main() -> int:
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
     repo_root = args.repo_root.resolve()
-    public_root, support_root = _skill_roots()
-    public_skill_ids = _installed_skill_ids(public_root)
-    support_skill_ids = _installed_skill_ids(support_root)
-    agents = repo_root / "AGENTS.md"
-    agents_text = agents.read_text(encoding="utf-8", errors="replace") if agents.is_file() else ""
-    has_skill_routing = "## Skill Routing" in agents_text
-    if not agents.exists():
-        action = "create_agents_with_skill_routing"
-    elif has_skill_routing:
-        action = "leave_as_is"
-    else:
-        action = "add_skill_routing_block"
-    mode, mode_source = _resolve_mode(repo_root, args.mode)
-    markdown, listed_skill_ids = render_skill_routing(public_skill_ids, mode=mode)
-    payload = {
-        "public_skills": public_skill_ids,
-        "support_skills": support_skill_ids,
-        "available_modes": list(VALID_MODES),
-        "agents_path": "AGENTS.md",
-        "agents_has_skill_routing": has_skill_routing,
-        "recommended_action": action,
-        "skill_routing_mode": mode,
-        "skill_routing_mode_source": mode_source,
-        "listed_skill_ids": listed_skill_ids,
-        "markdown": markdown,
-    }
+    payload = _build_payload(repo_root, cli_mode=args.mode)
     if args.json:
         sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
     else:

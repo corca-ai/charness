@@ -12,7 +12,6 @@ from .support import (
     clone_seeded_managed_home,
     make_fake_agent_browser,
     make_fake_brew_specdown,
-    make_fake_cautilus,
     make_fake_claude,
     make_fake_npm_gws,
     make_git_repo_copy,
@@ -20,6 +19,7 @@ from .support import (
     make_support_sync_fixture,
     run_cli,
 )
+from .tool_fakes import make_fake_cautilus
 
 CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
 

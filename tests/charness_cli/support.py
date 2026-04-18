@@ -173,31 +173,6 @@ def make_support_sync_fixture(tmp_path: Path) -> Path:
     return fixture_path
 
 
-def make_fake_cautilus(tmp_path: Path) -> Path:
-    script = tmp_path / "bin" / "cautilus"
-    script.parent.mkdir(parents=True, exist_ok=True)
-    script.write_text(
-        textwrap.dedent(
-            """\
-            #!/usr/bin/env python3
-            import sys
-
-            args = sys.argv[1:]
-            if args == ["--version"]:
-                print("cautilus 1.2.3")
-                raise SystemExit(0)
-            if args == ["doctor", "--help"]:
-                print("cautilus doctor")
-                raise SystemExit(0)
-            raise SystemExit(0)
-            """
-        ),
-        encoding="utf-8",
-    )
-    script.chmod(0o755)
-    return script
-
-
 def rewrite_seeded_home_paths(home_root: Path, *, old_home_root: Path) -> None:
     old = str(old_home_root)
     new = str(home_root)
