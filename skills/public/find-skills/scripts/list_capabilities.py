@@ -23,12 +23,6 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
-
-
-
-
-
-
 _capability_sources_module = SKILL_RUNTIME.load_local_skill_module(__file__, "capability_sources")
 integrations = _capability_sources_module.integrations
 support_capabilities = _capability_sources_module.support_capabilities
