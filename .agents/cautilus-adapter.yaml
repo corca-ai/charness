@@ -23,6 +23,7 @@ artifact_paths:
   - docs/public-skill-validation.json
   - evals/cautilus/scenarios.json
   - evals/cautilus/instruction-surface-cases.json
+  - charness-artifacts/cautilus/latest.md
   - charness-artifacts/quality/latest.md
 report_paths:
   - charness-artifacts/cautilus/held-out/summary.json

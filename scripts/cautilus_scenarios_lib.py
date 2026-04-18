@@ -93,10 +93,16 @@ def validate_instruction_surface_cases(repo_root: Path) -> dict[str, object]:
     return cases
 
 
-def validate_registry(repo_root: Path) -> dict[str, object]:
+def _load_registry_context(repo_root: Path) -> tuple[dict[str, object], dict[str, object], dict[str, object]]:
     policy = validate_policy(load_policy(repo_root), repo_root)
     registry = load_registry(repo_root)
     instruction_surface_cases = validate_instruction_surface_cases(repo_root)
+    return policy, registry, instruction_surface_cases
+
+
+def _evaluator_required_skills(
+    registry: dict[str, object],
+) -> list[dict[str, object]]:
     if registry.get("schema_version") != 1:
         raise ValidationError(f"{REGISTRY_PATH}: schema_version must be 1")
 
@@ -109,9 +115,14 @@ def validate_registry(repo_root: Path) -> dict[str, object]:
     skills = evaluator.get("skills")
     if not isinstance(skills, list):
         raise ValidationError(f"{REGISTRY_PATH}: `profiles.evaluator-required.skills` must be a list")
+    return skills
 
-    known_scenarios = scenario_ids()
-    expected_skills = sorted(policy["tiers"]["evaluator-required"])
+
+def _validate_registry_skill_entries(
+    skills: list[object],
+    expected_skills: list[str],
+    known_scenarios: set[str],
+) -> set[str]:
     seen: set[str] = set()
     for item in skills:
         if not isinstance(item, dict):
@@ -131,12 +142,17 @@ def validate_registry(repo_root: Path) -> dict[str, object]:
             rendered = ", ".join(f"`{value}`" for value in unknown)
             raise ValidationError(f"{REGISTRY_PATH}: `{skill_id}` references unknown eval scenario(s): {rendered}")
         seen.add(skill_id)
+    return seen
 
+
+def _validate_registry_skill_coverage(expected_skills: list[str], seen: set[str]) -> None:
     missing = sorted(set(expected_skills) - seen)
     if missing:
         rendered = ", ".join(f"`{skill_id}`" for skill_id in missing)
         raise ValidationError(f"{REGISTRY_PATH}: evaluator-required registry is missing {rendered}")
 
+
+def _validate_adapter_wiring(repo_root: Path) -> None:
     adapter = repo_root / ADAPTER_PATH
     if not adapter.is_file():
         raise ValidationError(f"missing `{ADAPTER_PATH}`")
@@ -169,4 +185,12 @@ def validate_registry(repo_root: Path) -> dict[str, object]:
         rendered = ", ".join(f"`{path}`" for path in missing_runtime_files)
         raise ValidationError(f"{ADAPTER_PATH}: missing instruction-surface runtime file(s): {rendered}")
 
+
+def validate_registry(repo_root: Path) -> dict[str, object]:
+    policy, registry, instruction_surface_cases = _load_registry_context(repo_root)
+    skills = _evaluator_required_skills(registry)
+    expected_skills = sorted(policy["tiers"]["evaluator-required"])
+    seen = _validate_registry_skill_entries(skills, expected_skills, scenario_ids())
+    _validate_registry_skill_coverage(expected_skills, seen)
+    _validate_adapter_wiring(repo_root)
     return {"policy": policy, "registry": registry, "instruction_surface_cases": instruction_surface_cases}

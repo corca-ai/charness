@@ -27,3 +27,12 @@ Suggested adapter split:
 Use [`find_inline_prompt_bulk.py`](find_inline_prompt_bulk.py) as a cheap
 inventory helper when the repo keeps prompt-heavy Python sources and wants a
 repeatable advisory scan.
+
+In `charness`, prompt-affecting repo changes should also leave visible
+behavioral proof:
+
+- refresh `charness-artifacts/cautilus/latest.md`
+- for `preserve` claims, run `cautilus instruction-surface test --repo-root .`
+- for `improve` claims, additionally record a baseline compare path with
+  `cautilus workspace prepare-compare` and
+  `cautilus mode evaluate --baseline-ref <ref>`

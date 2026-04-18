@@ -74,6 +74,30 @@
       ]
     },
     {
+      "surface_id": "prompt-behavior-proof",
+      "description": "Prompt-affecting instruction surfaces must refresh the checked-in cautilus proof artifact.",
+      "source_paths": [
+        "AGENTS.md",
+        ".agents/*-adapter.yaml",
+        "evals/cautilus/instruction-surface-cases.json",
+        "skills/public/*/SKILL.md",
+        "skills/public/*/references/**",
+        "skills/support/*/SKILL.md",
+        "skills/support/*/references/**"
+      ],
+      "derived_paths": [
+        "charness-artifacts/cautilus/latest.md"
+      ],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/validate-cautilus-proof.py --repo-root ."
+      ],
+      "notes": [
+        "Behavior-preserving prompt changes must refresh `charness-artifacts/cautilus/latest.md` with an instruction-surface proof.",
+        "Behavior-improvement claims must also record a baseline compare path in the cautilus artifact."
+      ]
+    },
+    {
       "surface_id": "skill-packages",
       "description": "Public and support skill packages plus their helper scripts.",
       "source_paths": [

@@ -38,11 +38,36 @@ bucket choices before editing the JSON.
 - the tier only describes extra validation beyond that baseline
 - the tier is routing metadata, not a claim that local CI already runs a
   distinct standing evaluator path for that skill today
-- until maintained `cautilus` scenarios land in this repo, any
-  `evaluator-required` skill still falls back to smoke plus targeted HITL
-  sampling
+- maintained `cautilus` proof is now part of the repo story: instruction-surface
+  dogfood is checked in and should be refreshed when prompt-affecting repo
+  surfaces change
 - a skill can move upward to a stronger tier later, but should not move
   downward without evidence that the deeper gate is wasted effort
+
+## Prompt-Affecting Changes
+
+When a slice changes repo-owned instruction or prompt surfaces that can steer
+agent behavior, refresh checked-in `cautilus` proof before closeout.
+
+Default prompt-affecting surfaces in this repo:
+
+- `AGENTS.md`
+- public/support `SKILL.md` trigger contracts
+- public/support skill `references/**` that materially steer routing or
+  operator-facing behavior
+- `.agents/*-adapter.yaml` entries that change prompt or evaluator behavior
+
+Default proof split:
+
+- `preserve`: run `cautilus instruction-surface test --repo-root .` and refresh
+  `charness-artifacts/cautilus/latest.md`
+- `improve`: run the same instruction-surface proof and also record a baseline
+  compare path with `cautilus workspace prepare-compare` plus
+  `cautilus mode evaluate --baseline-ref <ref>`
+
+The checked-in artifact should say whether the slice claims `preserve` or
+`improve`, list the touched prompt surfaces, and record the exact commands and
+recommendation that support the claim.
 
 ## Tier Definitions
 
@@ -143,9 +168,10 @@ Current assignment:
 
 The next integration session should:
 
-1. confirm that the upstream `cautilus` contract can exercise the
-   `evaluator-required` set without host-specific assumptions
-2. decide whether any current `HITL recommended` skill now has a cheap,
+1. decide whether any current `HITL recommended` skill now has a cheap,
    defensible evaluator path
-3. keep the JSON policy, adapter gate, and maintained scenario registry in sync
+2. widen `cautilus` proof beyond instruction-surface cases when a public skill
+   claim needs stronger held-out or A/B evidence
+3. keep the JSON policy, adapter gate, maintained scenario registry, and
+   checked-in cautilus proof artifact in sync
    without creating placeholder manifests or fake adapter requirements

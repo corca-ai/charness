@@ -216,6 +216,7 @@ queue_selected "validate-surfaces" python3 scripts/validate-surfaces.py --repo-r
 queue_selected "validate-public-skill-validation" python3 scripts/validate-public-skill-validation.py --repo-root "$REPO_ROOT"
 queue_selected "validate-public-skill-dogfood" python3 scripts/validate-public-skill-dogfood.py --repo-root "$REPO_ROOT"
 queue_selected "validate-cautilus-scenarios" python3 scripts/validate-cautilus-scenarios.py --repo-root "$REPO_ROOT"
+queue_selected "validate-cautilus-proof" python3 scripts/validate-cautilus-proof.py --repo-root "$REPO_ROOT"
 queue_selected "validate-profiles" python3 scripts/validate-profiles.py --repo-root "$REPO_ROOT"
 queue_selected "validate-presets" python3 scripts/validate-presets.py --repo-root "$REPO_ROOT"
 queue_selected "validate-adapters" python3 scripts/validate-adapters.py --repo-root "$REPO_ROOT"

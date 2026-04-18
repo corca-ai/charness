@@ -95,6 +95,15 @@ Adapter policy:
    - prefer executed proof over code inspection when an executable path exists
    - add or strengthen checks when an important branch would otherwise stay
      unproven
+   - if the slice changes repo-owned instruction or prompt surfaces such as
+     `AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or
+     adapter prompt wording, refresh `charness-artifacts/cautilus/latest.md`
+     from repo-owned cautilus proof before closeout
+   - for behavior-preserving prompt changes, run
+     `cautilus instruction-surface test --repo-root .`; for behavior-improving
+     claims, also record the baseline compare path with
+     `cautilus workspace prepare-compare` and
+     `cautilus mode evaluate --baseline-ref <ref>`
    - if stronger proof needs setup or permission, ask instead of silently
      downgrading the claim
 5. Sync truth surfaces and re-read the contract before closeout.

@@ -111,3 +111,79 @@ def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> 
     assert by_id["compact-no-bootstrap-impl"]["expectedRouting"]["selectedSkill"] == "impl"
     assert "expectedRouting" not in by_id["compact-no-bootstrap-spec"]
     assert by_id["expanded-no-bootstrap-spec"]["expectedRouting"]["selectedSkill"] == "spec"
+
+
+def test_instruction_surface_runner_normalizes_markdown_link_entry_file(tmp_path: Path) -> None:
+    cases = {
+        "schemaVersion": "cautilus.instruction_surface_cases.v1",
+        "suiteId": "entry-file-normalization",
+        "evaluations": [
+            {
+                "evaluationId": "markdown-link-entry-file",
+                "prompt": "Route this request.",
+                "expectedEntryFile": "AGENTS.md",
+                "instructionSurface": {
+                    "surfaceLabel": "compact_no_bootstrap",
+                    "files": [
+                        {
+                            "path": "AGENTS.md",
+                            "content": "# demo\n",
+                        }
+                    ],
+                },
+            }
+        ],
+    }
+    cases_path = tmp_path / "cases.json"
+    cases_path.write_text(json.dumps(cases, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    workspace = str(ROOT)
+    fixture_results = {
+        "markdown-link-entry-file": {
+            "observationStatus": "observed",
+            "summary": "Observed markdown link entry file",
+            "entryFile": f"[{workspace}/AGENTS.md]({workspace}/AGENTS.md)",
+            "loadedInstructionFiles": [f"{workspace}/AGENTS.md"],
+            "loadedSupportingFiles": [],
+            "routingDecision": {
+                "selectedSkill": "none",
+                "selectedSupport": "none",
+                "firstToolCall": "none",
+                "reasonSummary": "Observed markdown link entry file",
+            },
+        }
+    }
+    fixture_path = tmp_path / "fixture-results.json"
+    output_path = tmp_path / "instruction-surface-inputs.json"
+    artifact_dir = tmp_path / "artifacts"
+    fixture_path.write_text(json.dumps(fixture_results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            "node",
+            "scripts/agent-runtime/run-local-instruction-surface-test.mjs",
+            "--repo-root",
+            str(ROOT),
+            "--workspace",
+            str(ROOT),
+            "--cases-file",
+            str(cases_path),
+            "--output-file",
+            str(output_path),
+            "--artifact-dir",
+            str(artifact_dir),
+            "--backend",
+            "fixture",
+            "--fixture-results-file",
+            str(fixture_path),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    packet = json.loads(output_path.read_text(encoding="utf-8"))
+    evaluation = packet["evaluations"][0]
+    assert evaluation["entryFile"] == "AGENTS.md"

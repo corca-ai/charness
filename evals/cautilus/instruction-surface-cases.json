@@ -5,9 +5,8 @@
   "evaluations": [
     {
       "evaluationId": "checked-in-bootstrap-before-impl",
-      "displayName": "Checked-in AGENTS bootstrap before impl",
-      "prompt": "I need the right charness skill for implementing a code/config/test change to an operator-facing artifact in this repo.",
-      "expectedEntryFile": "AGENTS.md",
+      "displayName": "Checked-in surface still routes impl under bootstrap",
+      "prompt": "Route only: you need the first charness skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.",
       "expectedRouting": {
         "selectedSkill": "find-skills"
       }
@@ -15,7 +14,7 @@
     {
       "evaluationId": "compact-no-bootstrap-impl",
       "displayName": "Compact surface routes direct impl without bootstrap",
-      "prompt": "I need the right charness skill for implementing a code/config/test change to an operator-facing artifact in this repo.",
+      "prompt": "Route only: you need the first charness skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.",
       "instructionSurface": {
         "surfaceLabel": "compact_no_bootstrap",
         "files": [
@@ -25,10 +24,6 @@
           }
         ]
       },
-      "expectedEntryFile": "AGENTS.md",
-      "requiredInstructionFiles": [
-        "AGENTS.md"
-      ],
       "expectedRouting": {
         "selectedSkill": "impl"
       }
@@ -36,7 +31,7 @@
     {
       "evaluationId": "compact-no-bootstrap-spec",
       "displayName": "Compact surface still allows direct spec observation",
-      "prompt": "I need the right charness skill for turning a concept into a living implementation contract before coding.",
+      "prompt": "Route only: you need the first charness skill for turning a concept into a living implementation contract before coding. Do not produce the contract.",
       "instructionSurface": {
         "surfaceLabel": "compact_no_bootstrap",
         "files": [
@@ -45,16 +40,12 @@
             "content": "# demo\n\n## Operating Stance\n\n- USE THE ACTUAL AVAILABLE SKILLS FOR THIS TURN.\n- KEEP THE HARNESS PORTABLE.\n- SPEAK TO THIS USER IN KOREAN UNLESS THEY ASK OTHERWISE.\n\n## Skill Routing\n\nPrefer installed charness public skills before improvising a repo-local workflow.\n\nKeep this block intentionally non-exhaustive so `AGENTS.md` stays stable as the installed charness skill catalog changes.\n\nWhen the right skill is unclear, or you need the current installed/trusted capability list, route to the shared/public charness skill `find-skills` first.\n\nUse these high-signal routes first:\n\n- unclear skill choice, named support/helper, or hidden capability lookup -> shared/public charness skill `find-skills`\n- external source fetch (Slack thread, Notion page, Google Docs, GitHub content, arbitrary URL) -> `gather`\n- bug, error, regression, or unexpected behavior investigation -> `debug`\n- code, config, test, or operator-facing artifact implementation -> `impl`\n- repo quality posture, gates, test confidence, security, or operability review -> `quality`\n- next-session pickup, baton pass, or handoff artifact refresh -> `handoff`\n- new or partially initialized repo operating surface -> `init-repo`\n"
           }
         ]
-      },
-      "expectedEntryFile": "AGENTS.md",
-      "requiredInstructionFiles": [
-        "AGENTS.md"
-      ]
+      }
     },
     {
       "evaluationId": "expanded-no-bootstrap-spec",
       "displayName": "Expanded surface exposes direct spec routing",
-      "prompt": "I need the right charness skill for turning a concept into a living implementation contract before coding.",
+      "prompt": "Route only: you need the first charness skill for turning a concept into a living implementation contract before coding. Do not produce the contract.",
       "instructionSurface": {
         "surfaceLabel": "expanded_no_bootstrap",
         "files": [
@@ -64,10 +55,6 @@
           }
         ]
       },
-      "expectedEntryFile": "AGENTS.md",
-      "requiredInstructionFiles": [
-        "AGENTS.md"
-      ],
       "expectedRouting": {
         "selectedSkill": "spec"
       }

@@ -127,6 +127,15 @@ def test_run_quality_can_select_command_docs_gate(tmp_path: Path, seeded_quality
     assert "Quality summary: 1 passed, 0 failed" in result.stdout
 
 
+def test_run_quality_can_select_cautilus_proof_gate(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = "validate-cautilus-proof"
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+    assert result.returncode == 0, result.stderr
+    assert "PASS validate-cautilus-proof" in result.stdout
+    assert "Quality summary: 1 passed, 0 failed" in result.stdout
+
+
 def test_run_quality_verbose_replays_success_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown,pytest,check-coverage"

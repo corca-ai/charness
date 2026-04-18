@@ -80,6 +80,7 @@ def test_select_verifiers_includes_public_skill_policy_for_public_skill_changes(
     assert "python3 scripts/validate-skills.py --repo-root ." in verify_commands
     assert "python3 scripts/validate-public-skill-validation.py --repo-root ." in verify_commands
     assert "python3 scripts/validate-public-skill-dogfood.py --repo-root ." in verify_commands
+    assert "python3 scripts/validate-cautilus-proof.py --repo-root ." in verify_commands
 
 
 def test_select_verifiers_includes_public_skill_policy_for_policy_json_changes() -> None:
