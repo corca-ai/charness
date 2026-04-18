@@ -205,11 +205,11 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-16",
+      "reviewed_on": "2026-04-18",
       "observed_evidence": [
-        "The checked-in public core frames `premortem` as a standalone before-the-fact decision review rather than broad ideation or implementation cleanup, with a required four-bin counterweight triage for caller skills to consume.",
-        "Repo-owned tests already pin the highest-signal reasoning seam: `test_premortem_skill_surfaces_counterweight_and_deliberately_not_doing` guards contrasting angle selection, separate counterweight review, and explicit `Deliberately Not Doing` capture.",
-        "Adjacent checked-in skills already depend on this boundary: `spec` preserves the standalone premortem loop and rejected-alternative handling instead of re-implementing the same decision-triage logic inline."
+        "The checked-in public core now makes bounded subagents the canonical premortem path and explicitly forbids silently collapsing to a same-agent local pass before the subagent capability check runs and yields a concrete block.",
+        "That same policy is reinforced in `skills/public/premortem/references/subagent-capability-check.md` and in `specs/on-demand-validation.spec.md`, which keeps `premortem` as a judgment-heavy on-demand workflow rather than pretending it belongs in a standing evaluator or generic local fallback path.",
+        "This makes the current `premortem-canonical-subagent-followup` long-context candidate a real reviewed consumer seam: the user's push to keep subagents canonical maps directly to checked-in behavior, not just to a one-off wording preference."
       ]
     },
     {
@@ -228,11 +228,11 @@
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-16",
+      "reviewed_on": "2026-04-18",
       "observed_evidence": [
-        "The checked-in adapter resolves the durable artifact to `charness-artifacts/quality/latest.md` and records the current gate commands under `.agents/quality-adapter.yaml`.",
-        "The public core now tells quality review to scaffold one consumer-side dogfood case when public-skill behavior or routing is in scope.",
-        "The current repo already has a standing quiet gate, runtime-budget policy, and maintainer-local enforcement surface, so the prompt lands on quality posture rather than a narrow bug skill."
+        "The current quality artifact at `charness-artifacts/quality/latest.md` now explicitly audits proof layering instead of only asking what proof is missing: public executable specs, on-demand `cautilus` proof, and the specdown viewer are treated as distinct layers with different ownership.",
+        "The checked-in quality references and validation docs now preserve the same split: `skills/public/quality/references/public-spec-layering.md` keeps reader-facing public proof separate from lower-layer checks, while `docs/public-skill-validation.md` and `specs/on-demand-validation.spec.md` say checked artifacts remain the source of truth and specdown is only the readable viewer.",
+        "That makes the current `quality-proof-layering-followup` long-context candidate a real reviewed consumer seam rather than a one-off conversation detail: the user pressure about `specdown` as SoT versus viewer maps directly to checked-in `quality` behavior and proof surfaces."
       ]
     },
     {
@@ -376,12 +376,12 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-16",
-      "observed_evidence": [
-        "The checked-in public core keeps `retro` bounded to a session or weekly review, requires an explicit `Persisted` status, and auto-triggers a short session retro when a real workflow miss is exposed.",
-        "The adapter resolver already exposes `summary_path: charness-artifacts/retro/recent-lessons.md`, and the current repo treats that digest as a first-class memory surface from both `AGENTS.md` and `docs/handoff.md`.",
-        "Repo-owned tests prove the durable-memory seam end to end: `test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons` verifies artifact plus digest refresh, and `test_retro_memory_surfaces_reference_recent_lessons_digest` guards the checked-in recent-lessons contract."
-      ]
+  "reviewed_on": "2026-04-18",
+  "observed_evidence": [
+    "The checked-in public core now makes a real workflow miss trigger a short `session` retro before resuming work, and it requires the retro to separate local symptom from the workflow or capability change that would prevent the repeat trap.",
+    "That persistence rule is reinforced in `skills/public/retro/references/trigger-and-persistence.md`, and the current repo treats `charness-artifacts/retro/recent-lessons.md` as a first-class memory surface from both `AGENTS.md` and `docs/handoff.md`.",
+    "This makes the current `retro-structural-cause-followup` long-context candidate a real reviewed consumer seam: pushing past a local explanation toward a structural cause and durable memory update is now explicit checked-in `retro` behavior, not only a conversation style preference."
+  ]
     }
   ]
 }

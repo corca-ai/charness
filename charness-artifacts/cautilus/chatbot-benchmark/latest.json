@@ -1,43 +1,11 @@
 {
   "schema_version": 1,
   "repo": "charness",
-  "baseline_repo": "/tmp/charness-chatbot-baseline.ku4tpz",
+  "baseline_repo": "/tmp/charness-chatbot-baseline.nYxbWj",
   "candidate_repo": "/home/ubuntu/charness",
-  "baseline_commit": "383df466380456a772e4ec990639ec2de2f953c6",
-  "candidate_commit": "383df466380456a772e4ec990639ec2de2f953c6",
+  "baseline_commit": "4d4608ca9c9d5e161e919d34d9a1268b050f9c3c",
+  "candidate_commit": "4d4608ca9c9d5e161e919d34d9a1268b050f9c3c",
   "baseline": {
-    "candidate_count": 11,
-    "proposal_count": 5,
-    "candidate_keys": [
-      "retro-structural-cause-followup",
-      "quality-proof-layering-followup",
-      "premortem-canonical-subagent-followup",
-      "find-skills-canonical-artifact-followup",
-      "handoff-workflow-trigger-followup",
-      "init-repo-partial-normalization-followup",
-      "narrative-truth-before-announcement-followup",
-      "spec-before-impl-followup",
-      "debug-exact-symptom-before-fix-followup",
-      "release-real-host-proof-followup",
-      "hitl-bounded-review-loop-followup"
-    ],
-    "proposal_keys": [
-      "hitl-bounded-review-loop-followup",
-      "release-real-host-proof-followup",
-      "debug-exact-symptom-before-fix-followup",
-      "spec-before-impl-followup",
-      "narrative-truth-before-announcement-followup"
-    ],
-    "omitted_candidate_keys": [
-      "retro-structural-cause-followup",
-      "quality-proof-layering-followup",
-      "premortem-canonical-subagent-followup",
-      "find-skills-canonical-artifact-followup",
-      "handoff-workflow-trigger-followup",
-      "init-repo-partial-normalization-followup"
-    ]
-  },
-  "candidate": {
     "candidate_count": 12,
     "proposal_count": 5,
     "candidate_keys": [
@@ -71,20 +39,62 @@
       "narrative-truth-before-announcement-followup"
     ]
   },
-  "diff": {
-    "added_candidate_keys": [
+  "candidate": {
+    "candidate_count": 12,
+    "proposal_count": 5,
+    "candidate_keys": [
+      "retro-structural-cause-followup",
+      "quality-proof-layering-followup",
+      "premortem-canonical-subagent-followup",
+      "find-skills-canonical-artifact-followup",
+      "handoff-workflow-trigger-followup",
+      "init-repo-partial-normalization-followup",
+      "narrative-truth-before-announcement-followup",
+      "spec-before-impl-followup",
+      "debug-exact-symptom-before-fix-followup",
+      "release-real-host-proof-followup",
+      "hitl-bounded-review-loop-followup",
       "gather-official-path-before-browser-followup"
     ],
+    "proposal_keys": [
+      "retro-structural-cause-followup",
+      "premortem-canonical-subagent-followup",
+      "quality-proof-layering-followup",
+      "gather-official-path-before-browser-followup",
+      "hitl-bounded-review-loop-followup"
+    ],
+    "omitted_candidate_keys": [
+      "find-skills-canonical-artifact-followup",
+      "handoff-workflow-trigger-followup",
+      "init-repo-partial-normalization-followup",
+      "narrative-truth-before-announcement-followup",
+      "spec-before-impl-followup",
+      "debug-exact-symptom-before-fix-followup",
+      "release-real-host-proof-followup"
+    ]
+  },
+  "diff": {
+    "added_candidate_keys": [],
     "removed_candidate_keys": [],
     "added_proposal_keys": [
-      "gather-official-path-before-browser-followup"
+      "premortem-canonical-subagent-followup",
+      "quality-proof-layering-followup",
+      "retro-structural-cause-followup"
     ],
     "removed_proposal_keys": [
-      "narrative-truth-before-announcement-followup"
+      "debug-exact-symptom-before-fix-followup",
+      "release-real-host-proof-followup",
+      "spec-before-impl-followup"
     ],
     "newly_omitted_candidate_keys": [
-      "narrative-truth-before-announcement-followup"
+      "debug-exact-symptom-before-fix-followup",
+      "release-real-host-proof-followup",
+      "spec-before-impl-followup"
     ],
-    "resolved_omitted_candidate_keys": []
+    "resolved_omitted_candidate_keys": [
+      "premortem-canonical-subagent-followup",
+      "quality-proof-layering-followup",
+      "retro-structural-cause-followup"
+    ]
   }
 }

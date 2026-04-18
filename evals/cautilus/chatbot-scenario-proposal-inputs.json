@@ -7,11 +7,11 @@
   "proposalCandidates": [
     {
       "proposalKey": "retro-structural-cause-followup",
-      "title": "Refresh retro structural-cause follow-up scenario from recent activity",
+      "title": "Refresh retro structural-cause follow-up scenario from dogfood contracts",
       "family": "fast_regression",
       "name": "Retro Structural Cause Follow-up",
-      "description": "The user keeps pushing past a local explanation until the assistant generalizes the structural cause and proposes a durable retro change.",
-      "brief": "Recent activity shows repeated correction pressure before the assistant lands on a structural retro.",
+      "description": "The user keeps pushing past a local explanation until the assistant generalizes the structural cause, names the workflow change, and persists the repeat trap instead of stopping at a chat-only apology.",
+      "brief": "Current retro contracts emphasize structural cause, explicit persistence, and workflow-memory updates, so long-context behavior regresses if the assistant only explains the immediate miss.",
       "tags": [
         "retro",
         "long-context",
@@ -25,10 +25,10 @@
       ],
       "evidence": [
         {
-          "sourceKind": "human_conversation",
-          "title": "retro structural cause follow-up",
-          "threadKey": "session-retro-structural-cause",
-          "observedAt": "2026-04-18T09:30:00.000Z",
+          "sourceKind": "skill_contract",
+          "title": "retro structural cause contract",
+          "threadKey": "dogfood-retro-structural-cause",
+          "observedAt": "2026-04-18T19:30:00.000Z",
           "messages": [
             "이번 회고는 과적합된 것 아닌가요?",
             "이 패턴이 발생할 수밖에 없었던 구조적 원인을 더 봐주세요.",
@@ -39,11 +39,11 @@
     },
     {
       "proposalKey": "quality-proof-layering-followup",
-      "title": "Refresh quality proof-layering follow-up scenario from recent activity",
+      "title": "Refresh quality proof-layering follow-up scenario from dogfood contracts",
       "family": "fast_regression",
       "name": "Quality Proof Layering Follow-up",
-      "description": "The user refines the distinction between public executable specs, on-demand proof, and the specdown viewer until the assistant aligns the layering policy correctly.",
-      "brief": "Recent activity shows a multi-turn quality discussion that depends on remembering the specdown SoT versus viewer split.",
+      "description": "The user keeps refining the distinction between public executable specs, on-demand proof artifacts, and the specdown viewer until the assistant preserves the layering policy instead of collapsing those surfaces into one proof claim.",
+      "brief": "Current quality contracts emphasize the public-spec versus on-demand-proof versus viewer split, and long-context quality behavior regresses if that layering is forgotten.",
       "tags": [
         "quality",
         "specdown",
@@ -57,10 +57,10 @@
       ],
       "evidence": [
         {
-          "sourceKind": "human_conversation",
-          "title": "quality proof layering follow-up",
-          "threadKey": "session-quality-proof-layering",
-          "observedAt": "2026-04-18T10:00:00.000Z",
+          "sourceKind": "skill_contract",
+          "title": "quality proof layering contract",
+          "threadKey": "dogfood-quality-proof-layering",
+          "observedAt": "2026-04-18T19:10:00.000Z",
           "messages": [
             "스펙다운은 SoT와 viewer 두 역할이 있다고 봅니다.",
             "source guard는 전자 때문에 줄이고 싶지만, 후자 때문에 결과는 보여야 해요.",
@@ -71,11 +71,11 @@
     },
     {
       "proposalKey": "premortem-canonical-subagent-followup",
-      "title": "Refresh premortem canonical-subagent follow-up scenario from recent activity",
+      "title": "Refresh premortem canonical-subagent follow-up scenario from dogfood contracts",
       "family": "fast_regression",
       "name": "Premortem Canonical Subagent Follow-up",
-      "description": "The user clarifies that premortem should stay on the canonical subagent path, and the assistant must preserve that policy rather than collapsing to same-agent fallback logic.",
-      "brief": "Recent activity shows a policy clarification that only makes sense if the assistant remembers the prior premortem discussion.",
+      "description": "The user clarifies that premortem must stay on the canonical subagent path, and the assistant must preserve that policy instead of silently collapsing into a same-agent fallback or confusing it with standing evaluator scope.",
+      "brief": "Current premortem contracts explicitly require a subagent capability check before any degraded local path, so long-context behavior regresses if that policy boundary is forgotten.",
       "tags": [
         "premortem",
         "subagent",
@@ -89,10 +89,10 @@
       ],
       "evidence": [
         {
-          "sourceKind": "human_conversation",
-          "title": "premortem canonical subagent follow-up",
-          "threadKey": "session-premortem-canonical-subagent",
-          "observedAt": "2026-04-18T10:30:00.000Z",
+          "sourceKind": "skill_contract",
+          "title": "premortem canonical subagent contract",
+          "threadKey": "dogfood-premortem-canonical-subagent",
+          "observedAt": "2026-04-18T19:20:00.000Z",
           "messages": [
             "프리모르템은 무조건 서브에이전트로 명시하자는 의도입니다.",
             "이거랑 지금 얘기한 standing eval 범위가 관련 있나요?",
