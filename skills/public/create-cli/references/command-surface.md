@@ -18,6 +18,8 @@ Design rules:
 - make `--help` usable without reading docs first
 - stable public subcommands should support `--help` with exit `0` and no side
   effects unless the repo documents a strong exception
+- keep default stdout short and operator-readable; reserve full machine payloads
+  for explicit `--json` or equivalent machine mode
 - if wrappers or agents may probe the command surface, prefer an explicit
   machine-readable registry such as `commands --json` or
   `capabilities --json` instead of scraping help text
@@ -37,6 +39,9 @@ Agent-facing rule:
 
 - if an agent is expected to chain commands, provide `--json` and keep the
   payload stable enough to parse without scraping prose
+- if a mutation command also offers `--json`, keep progress and chatter off
+  stdout so the structured payload stays parseable; prefer stderr or durable
+  state for in-flight visibility
 - if local plugin, skill, or materialized runtime files are part of the usable
   surface, expose that discoverability as its own readiness check instead of
   hiding it inside generic health

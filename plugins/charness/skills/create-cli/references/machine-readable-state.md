@@ -6,6 +6,8 @@ later agent can read directly.
 Prefer:
 
 - structured stdout for the current command
+- parseable machine output only in explicit machine mode such as `--json`,
+  keeping human chatter or progress on stderr when the command is still running
 - durable local state for the last observed machine condition
 - explicit paths for generated artifacts
 - enough provenance to tell which runtime binary actually handled the command

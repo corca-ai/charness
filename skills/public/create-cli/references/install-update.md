@@ -22,6 +22,8 @@ Do not assume these move together just because the checkout version changed.
 Be explicit about what the CLI can and cannot automate.
 
 - If the host or package manager owns the final activation step, say so.
+- If install or update may take noticeable time, surface phase progress so the
+  operator can see which step is running before the command finishes.
 - If update depends on the original install method, persist that fact or leave
   enough structured guidance for the next agent.
 - If the runtime binary may lag the checkout, expose runtime capability through

@@ -2013,6 +2013,62 @@ def print_human_summary(payload: dict[str, object]) -> None:
     _print_next_actions(payload)
 
 
+def emit_progress(message: str, *, json_mode: bool) -> None:
+    stream = sys.stderr if json_mode else sys.stdout
+    print(message, file=stream, flush=True)
+
+
+def _tool_update_summary(payload: dict[str, object]) -> str | None:
+    results = payload.get("results")
+    if not isinstance(results, dict) or not results:
+        return None
+    parts: list[str] = []
+    for tool_id in sorted(results):
+        result = results.get(tool_id)
+        if not isinstance(result, dict):
+            continue
+        status = None
+        update = result.get("update")
+        if isinstance(update, dict) and isinstance(update.get("status"), str):
+            status = update["status"]
+        doctor = result.get("doctor")
+        if status is None and isinstance(doctor, dict) and isinstance(doctor.get("doctor_status"), str):
+            status = doctor["doctor_status"]
+        support = result.get("support")
+        if status is None and isinstance(support, dict) and isinstance(support.get("status"), str):
+            status = support["status"]
+        parts.append(f"{tool_id}={status or 'unknown'}")
+    return ", ".join(parts) if parts else None
+
+
+def print_update_human_summary(payload: dict[str, object]) -> None:
+    print(f"PACKAGE: {payload['package_id']}")
+    previous_version = payload.get("previous_checkout_version")
+    current_version = payload.get("checkout_version")
+    if isinstance(previous_version, str) and previous_version and previous_version != current_version:
+        print(f"VERSION: {previous_version} -> {current_version}")
+    elif isinstance(current_version, str) and current_version:
+        print(f"VERSION: {current_version}")
+    checkout = payload.get("checkout")
+    if isinstance(checkout, dict):
+        state = "pulled" if checkout.get("pulled") else "current"
+        print(f"CHECKOUT: {state} {checkout.get('repo_root')}")
+    if payload.get("checkout_git_head"):
+        print(f"GIT_HEAD: {payload['checkout_git_head']}")
+    if payload.get("scope"):
+        print(f"SCOPE: {payload['scope']}")
+    completed_actions = payload.get("completed_actions")
+    if isinstance(completed_actions, list) and completed_actions:
+        print(f"COMPLETED: {', '.join(str(action) for action in completed_actions)}")
+    _print_latest_release(payload.get("latest_release_check"))
+    tool_update = payload.get("tool_update")
+    if isinstance(tool_update, dict):
+        summary = _tool_update_summary(tool_update)
+        if summary:
+            print(f"TOOLS: {summary}")
+    _print_next_actions(payload)
+
+
 def build_version_payload(
     *,
     home_root: Path,
@@ -2365,7 +2421,9 @@ def run_tool_update_flow(
     dry_run: bool,
     skip_sync_support: bool,
     upstream_checkouts: list[str],
+    json_mode: bool = False,
 ) -> tuple[dict[str, object], bool]:
+    emit_progress("STEP: updating tracked external tools", json_mode=json_mode)
     update_args = ["--repo-root", str(repo_root), "--json"]
     for tool_id in tool_ids:
         update_args.extend(["--tool-id", tool_id])
@@ -2374,6 +2432,7 @@ def run_tool_update_flow(
     update_results = invoke_repo_json_script(repo_root, "scripts/update_tools.py", *update_args, allow_failure=True)
     support_results: object = []
     if not skip_sync_support:
+        emit_progress("STEP: syncing support surfaces", json_mode=json_mode)
         support_args = ["--repo-root", str(repo_root), "--json"]
         for tool_id in tool_ids:
             support_args.extend(["--tool-id", tool_id])
@@ -2382,6 +2441,7 @@ def run_tool_update_flow(
         if not dry_run:
             support_args.append("--execute")
         support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *support_args, allow_failure=True)
+    emit_progress("STEP: refreshing tool doctor state", json_mode=json_mode)
     doctor_args = ["--repo-root", str(repo_root), "--json"]
     for tool_id in tool_ids:
         doctor_args.extend(["--tool-id", tool_id])
@@ -2811,6 +2871,7 @@ def cmd_init(args: argparse.Namespace) -> int:
 def cmd_update(args: argparse.Namespace) -> int:
     home_root = args.home_root.resolve()
     repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    previous_checkout_version = packaging_version(repo_root) if repo_root.exists() else None
     enforce_managed_cli_contract(
         home_root=home_root,
         repo_root=repo_root,
@@ -2818,6 +2879,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         skip_cli_install=args.skip_cli_install,
     )
     plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path = resolve_runtime_paths(args)
+    emit_progress("STEP: refreshing source checkout", json_mode=args.json)
     checkout = ensure_checkout(
         repo_root,
         managed=managed_checkout,
@@ -2825,6 +2887,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         allow_clone=False,
         allow_pull=managed_checkout and not args.no_pull,
     )
+    emit_progress("STEP: refreshing install surface", json_mode=args.json)
     selected_wrapper_path = None if args.skip_claude_wrapper else claude_wrapper_path
     payload = install_surface(
         Path(checkout["repo_root"]),
@@ -2835,6 +2898,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         cli_path=None if args.skip_cli_install else cli_path,
         update=True,
     )
+    payload["previous_checkout_version"] = previous_checkout_version
     initial_doctor_payload = build_doctor_payload(
         home_root=home_root,
         repo_root=Path(checkout["repo_root"]),
@@ -2843,6 +2907,10 @@ def cmd_update(args: argparse.Namespace) -> int:
         codex_marketplace_path=codex_marketplace_path,
         cli_path=cli_path,
         claude_wrapper_path=claude_wrapper_path,
+    )
+    emit_progress(
+        "STEP: skipping Codex host cache refresh" if args.skip_codex_cache_refresh else "STEP: refreshing Codex host cache",
+        json_mode=args.json,
     )
     codex_cache_refresh = maybe_install_codex_host(
         home_root=home_root,
@@ -2913,11 +2981,16 @@ def cmd_update(args: argparse.Namespace) -> int:
             dry_run=False,
             skip_sync_support=False,
             upstream_checkouts=[],
+            json_mode=args.json,
         )
         payload["tool_update"] = tool_update_payload
         if tool_update_payload["results"]:
             payload.setdefault("completed_actions", []).append("external_tools_updated")
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        emit_progress("DONE: update complete", json_mode=False)
+        print_update_human_summary(payload)
     return 1 if tool_update_failed else 0
 
 

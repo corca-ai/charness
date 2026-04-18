@@ -48,6 +48,8 @@ steps call tools outside the baseline shell surface.
    - if wrappers or agents may probe the surface, separate machine-readable
      command discovery such as `commands --json` or `capabilities --json` from
      human help text
+   - default stdout should stay concise for human operators; reserve full
+     structured payloads for explicit `--json` or equivalent machine mode
    - separate binary/runtime health from repo- or install-readiness instead of
      overloading one `doctor`
    - if agent/plugin/materialized-surface discoverability matters, give it an
@@ -56,6 +58,8 @@ steps call tools outside the baseline shell surface.
    - help probes, command discovery, and healthchecks stay read-only
    - `doctor` stays read-only
    - install and update commands must say what they changed
+   - long-running mutations should show phase progress so operators can tell
+     what is happening before the command finishes
    - if `update` has a wider aggregate variant, distinguish self-update from
      tracked dependency refresh in both help text and structured output
    - readiness commands may depend on repo or local install state, but they
