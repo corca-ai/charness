@@ -84,11 +84,13 @@ the `Workflow Trigger` first and continue with that workflow.
 5. Run a misunderstanding premortem when the handoff changed materially.
    - use Gary Klein-style premortem discipline to ask what the next operator is
      most likely to misunderstand
-   - if the runtime supports subagents, run one or two bounded premortem reads
-     that ask what the next operator is most likely to misunderstand
+   - canonical path is one or two bounded premortem subagent reads that ask
+     what the next operator is most likely to misunderstand
    - bias the prompts toward workflow trigger ambiguity, ownership boundary
      confusion, and examples that could be over-literalized
-   - if subagents are unavailable, do the same check yourself before finalizing
+   - before falling back to a local check, run the capability check in
+     `../premortem/references/subagent-capability-check.md` and cite the
+     concrete host signal; do not assume subagents are unavailable from priors
    - incorporate only concrete clarity fixes, not speculative churn
 6. Finish with a clean baton pass.
    - the next operator should know what to do first without interpretation

@@ -52,9 +52,10 @@ celebrating broad slow coverage.
 
 Before locking the contract, run one bounded premortem. Ask what a fresh
 five-minute implementer, reviewer, or operator would most likely misread, and
-tighten only the lines that create real ambiguity. If the runtime supports
-subagents and the session explicitly allows them, use one fresh-eye subagent
-with a contrasting lens; otherwise do the challenge pass yourself. See
+tighten only the lines that create real ambiguity. The canonical path is a
+fresh-eye subagent with a contrasting lens; before falling back to a local
+pass, run the capability check in
+`../premortem/references/subagent-capability-check.md`. See
 `references/premortem-loop.md`. When the decision is non-trivial, use the
 standalone `premortem` skill as the subroutine rather than reinventing angle
 selection and triage inline.
@@ -113,8 +114,10 @@ selection and triage inline.
      incorrectly from this contract
    - focus on missing invariants, overloaded examples, hidden sequencing, and
      acceptance checks that look stronger than they really are
-   - if subagents are available and explicitly allowed, use one fresh-eye
-     subagent or contrasting reviewer lens; otherwise do the same pass locally
+   - canonical path is one fresh-eye subagent or contrasting reviewer lens;
+     before falling back to a local pass, run the capability check in
+     `../premortem/references/subagent-capability-check.md` and cite the
+     concrete host signal
    - keep future re-litigation low by writing the important rejected paths into
      the spec itself instead of leaving them in chat-only memory
    - tighten only the lines that change the likely next action; do not reopen

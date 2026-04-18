@@ -129,7 +129,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - if executable specs are slow or overlapping, delete duplicates, move detail into unit-level checks, or add a direct adapter before widening the spec bar
    - when dual-implementation smell is real, recommend exactly one next contract: add a parity harness, pick one side canonical and delete or wrap the other, or document intentional divergence with a test that asserts it
    - do not leave "keep both for safety" as an unpriced middle state
-8. Run one fresh-eye premortem on the drafted report using `references/fresh-eye-premortem.md`; if subagents are available and explicitly allowed, use a fresh-eye subagent, otherwise say the canonical fresh-eye premortem path is blocked instead of silently downgrading to a local pass.
+8. Run one fresh-eye premortem on the drafted report using `references/fresh-eye-premortem.md`. Run the capability check in `../premortem/references/subagent-capability-check.md` before reporting the canonical fresh-eye subagent path as blocked: attempt the bounded setup, resolve availability uncertainty, and cite the concrete host signal. Only collapse into a local pass when the caller or an operator instruction explicitly allows the degraded fallback.
 9. End with a quality posture summary: what ran, which runtime hot spots dominate, whether coverage is standing-gated, whether evaluator-backed depth exists, what the current bar proves and still does not prove, and the next best gate or cleanup.
 
 - `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Commands Run`, `Recommended Next Gates`

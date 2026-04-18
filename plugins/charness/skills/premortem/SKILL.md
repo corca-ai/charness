@@ -58,9 +58,13 @@ decision contract. Do not restate the whole project history.
    - use bounded fresh-eye subagents with one angle each
    - do not collapse the counterweight into one of the angle subagents; keep it
      as a separate skeptical pass
-   - if the host cannot provide subagents, stop and say the canonical
-     premortem path is unavailable instead of silently downgrading to a local
-     self-review
+   - before reporting the canonical path as blocked, run the capability check
+     in `references/subagent-capability-check.md`: attempt the bounded subagent
+     setup, resolve any availability uncertainty, and cite the concrete signal
+     that made the host unable to provide subagents
+   - do not collapse into a same-agent local pass unless the caller explicitly
+     asked for a degraded fallback or an operator instruction forbids subagents
+     for this run
 4. Collapse the findings into one candidate concern list.
    - deduplicate overlap
    - keep evidence and cited source paths with each concern when available
@@ -103,10 +107,13 @@ The result should usually include:
 - Do not treat every surfaced concern as equally important.
 - Do not skip the counterweight pass; a paranoia backlog without triage is not
   decision support.
-- Do not silently downgrade premortem into a same-agent local pass; if
-  subagents are unavailable, say the canonical premortem path is blocked.
+- Do not silently downgrade premortem into a same-agent local pass. Before
+  declaring subagents unavailable, run `references/subagent-capability-check.md`
+  and cite the concrete host signal. Assuming a cap from priors is the failure
+  mode the check exists to stop.
 
 ## References
 
 - `references/angle-selection.md`
 - `references/counterweight-triage.md`
+- `references/subagent-capability-check.md`

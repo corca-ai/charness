@@ -24,6 +24,9 @@ Focus questions:
   they are spread across implementation sites instead of declared with one
   gate, type, or durable source-of-truth pointer?
 
-If the session explicitly allows subagents, use a fresh-eye subagent.
-Otherwise say the canonical fresh-eye premortem path is blocked instead of
-pretending a same-agent local pass is equivalent.
+Canonical execution uses a fresh-eye subagent. Before reporting that path as
+blocked, run the capability check in
+`../../premortem/references/subagent-capability-check.md`: attempt the bounded
+subagent setup, resolve availability uncertainty, and cite the concrete host
+signal. Do not pretend a same-agent local pass is equivalent to the canonical
+path, and do not collapse into one on a guess.
