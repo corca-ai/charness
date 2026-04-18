@@ -1,8 +1,8 @@
 # Cautilus Chatbot Benchmark
 
-- baseline commit: `04ae05e675d8b6b9b6eaa5ce76ad22265e7d4696`
-- candidate commit: `04ae05e675d8b6b9b6eaa5ce76ad22265e7d4696`
-- baseline repo: `/tmp/charness-chatbot-baseline.UqUif1`
+- baseline commit: `1c1904fa9559e35b274e9d87ecc4a6c98bc7ddf6`
+- candidate commit: `1c1904fa9559e35b274e9d87ecc4a6c98bc7ddf6`
+- baseline repo: `/tmp/charness-chatbot-baseline.11HL8T`
 - candidate repo: `/home/ubuntu/charness`
 
 ## Candidate Delta
@@ -12,10 +12,10 @@
 
 ## Proposal Delta
 
-- `added_proposal_keys`: `find-skills-canonical-artifact-followup`
-- `removed_proposal_keys`: `hitl-bounded-review-loop-followup`
+- `added_proposal_keys`: `handoff-workflow-trigger-followup`, `init-repo-partial-normalization-followup`
+- `removed_proposal_keys`: `gather-official-path-before-browser-followup`, `quality-proof-layering-followup`
 
 ## Omitted Delta
 
-- `newly_omitted_candidate_keys`: `hitl-bounded-review-loop-followup`
-- `resolved_omitted_candidate_keys`: `find-skills-canonical-artifact-followup`
+- `newly_omitted_candidate_keys`: `gather-official-path-before-browser-followup`, `quality-proof-layering-followup`
+- `resolved_omitted_candidate_keys`: `handoff-workflow-trigger-followup`, `init-repo-partial-normalization-followup`

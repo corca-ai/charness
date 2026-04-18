@@ -135,11 +135,11 @@
     },
     {
       "proposalKey": "handoff-workflow-trigger-followup",
-      "title": "Refresh handoff workflow-trigger follow-up scenario from recent activity",
+      "title": "Refresh handoff workflow-trigger follow-up scenario from dogfood contracts",
       "family": "fast_regression",
       "name": "Handoff Workflow Trigger Follow-up",
-      "description": "The user sharpens the next-session pickup path until the assistant treats the workflow trigger as the handoff's primary contract instead of preserving history first.",
-      "brief": "Recent activity shows a handoff request that only stabilizes after the assistant reorients around the next move rather than the diary of what happened.",
+      "description": "The user sharpens the next-session pickup path until the assistant treats the workflow trigger as the handoff's primary contract instead of preserving history first or making the next move implicit.",
+      "brief": "Current handoff contracts emphasize workflow-trigger-first continuation, so long-context behavior regresses if the assistant falls back to history-first baton passing.",
       "tags": [
         "handoff",
         "workflow-trigger",
@@ -153,10 +153,10 @@
       ],
       "evidence": [
         {
-          "sourceKind": "human_conversation",
-          "title": "handoff workflow trigger follow-up",
-          "threadKey": "session-handoff-workflow-trigger",
-          "observedAt": "2026-04-18T12:10:00.000Z",
+          "sourceKind": "skill_contract",
+          "title": "handoff workflow trigger contract",
+          "threadKey": "dogfood-handoff-workflow-trigger",
+          "observedAt": "2026-04-18T20:00:00.000Z",
           "messages": [
             "handoff 남겨주세요.",
             "다음 세션 첫 move는 이슈 close 정리부터입니다.",
@@ -167,11 +167,11 @@
     },
     {
       "proposalKey": "init-repo-partial-normalization-followup",
-      "title": "Refresh init-repo partial-normalization follow-up scenario from recent activity",
+      "title": "Refresh init-repo partial-normalization follow-up scenario from dogfood contracts",
       "family": "fast_regression",
       "name": "Init Repo Partial Normalization Follow-up",
-      "description": "The user clarifies that the repo is already partially initialized, and the assistant must normalize the existing surface instead of defaulting to a greenfield rewrite.",
-      "brief": "Recent activity shows the repo mode only becoming clear after the user pushes back on greenfield assumptions.",
+      "description": "The user clarifies that the repo is already partially initialized, and the assistant must normalize the existing surface or repair the one missing seam instead of defaulting to a greenfield rewrite.",
+      "brief": "Current init-repo contracts emphasize `PARTIAL` and targeted normalization, so long-context behavior regresses if the assistant falls back to greenfield scaffolding.",
       "tags": [
         "init-repo",
         "partial-repo",
@@ -185,10 +185,10 @@
       ],
       "evidence": [
         {
-          "sourceKind": "human_conversation",
-          "title": "init-repo partial normalization follow-up",
-          "threadKey": "session-init-repo-partial-normalization",
-          "observedAt": "2026-04-18T12:20:00.000Z",
+          "sourceKind": "skill_contract",
+          "title": "init-repo partial normalization contract",
+          "threadKey": "dogfood-init-repo-partial-normalization",
+          "observedAt": "2026-04-18T20:05:00.000Z",
           "messages": [
             "이 repo는 이미 운영 surface가 좀 있습니다.",
             "greenfield처럼 갈아엎지 말고 partial normalize로 가주세요.",

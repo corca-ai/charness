@@ -19,20 +19,20 @@
   ],
   "proposal_count": 5,
   "proposal_keys": [
+    "init-repo-partial-normalization-followup",
+    "handoff-workflow-trigger-followup",
     "find-skills-canonical-artifact-followup",
     "retro-structural-cause-followup",
-    "premortem-canonical-subagent-followup",
-    "quality-proof-layering-followup",
-    "gather-official-path-before-browser-followup"
+    "premortem-canonical-subagent-followup"
   ],
   "omitted_candidate_keys": [
-    "handoff-workflow-trigger-followup",
-    "init-repo-partial-normalization-followup",
+    "quality-proof-layering-followup",
     "narrative-truth-before-announcement-followup",
     "spec-before-impl-followup",
     "debug-exact-symptom-before-fix-followup",
     "release-real-host-proof-followup",
-    "hitl-bounded-review-loop-followup"
+    "hitl-bounded-review-loop-followup",
+    "gather-official-path-before-browser-followup"
   ],
   "families": [
     "fast_regression"
@@ -92,6 +92,134 @@
     ],
     "generatedAt": "2026-04-18T12:00:00Z",
     "proposals": [
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "init-repo-partial-normalization-followup",
+            "tags": [
+              "init-repo",
+              "partial-repo",
+              "normalization"
+            ]
+          },
+          "brief": "Current init-repo contracts emphasize `PARTIAL` and targeted normalization, so long-context behavior regresses if the assistant falls back to greenfield scaffolding.",
+          "description": "The user clarifies that the repo is already partially initialized, and the assistant must normalize the existing surface or repair the one missing seam instead of defaulting to a greenfield rewrite.",
+          "maxTurns": 5,
+          "name": "Init Repo Partial Normalization Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "init-repo-partial-normalization-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "이 repo는 이미 운영 surface가 좀 있습니다."
+              },
+              {
+                "text": "greenfield처럼 갈아엎지 말고 partial normalize로 가주세요."
+              },
+              {
+                "text": "README와 AGENTS는 있는데 operator acceptance만 빈약합니다."
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "이 repo는 이미 운영 surface가 좀 있습니다.",
+              "greenfield처럼 갈아엎지 말고 partial normalize로 가주세요.",
+              "README와 AGENTS는 있는데 operator acceptance만 빈약합니다."
+            ],
+            "observedAt": "2026-04-18T20:05:00.000Z",
+            "sourceKind": "skill_contract",
+            "threadKey": "dogfood-init-repo-partial-normalization",
+            "title": "init-repo partial normalization contract"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "init-repo-partial-normalization-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh init-repo partial-normalization follow-up scenario from dogfood contracts"
+      },
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "handoff-workflow-trigger-followup",
+            "tags": [
+              "handoff",
+              "workflow-trigger",
+              "continuation-sequence"
+            ]
+          },
+          "brief": "Current handoff contracts emphasize workflow-trigger-first continuation, so long-context behavior regresses if the assistant falls back to history-first baton passing.",
+          "description": "The user sharpens the next-session pickup path until the assistant treats the workflow trigger as the handoff's primary contract instead of preserving history first or making the next move implicit.",
+          "maxTurns": 5,
+          "name": "Handoff Workflow Trigger Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "handoff-workflow-trigger-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "handoff 남겨주세요."
+              },
+              {
+                "text": "다음 세션 첫 move는 이슈 close 정리부터입니다."
+              },
+              {
+                "text": "과거 기록보다 pickup 경로가 먼저 보여야 해요."
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "handoff 남겨주세요.",
+              "다음 세션 첫 move는 이슈 close 정리부터입니다.",
+              "과거 기록보다 pickup 경로가 먼저 보여야 해요."
+            ],
+            "observedAt": "2026-04-18T20:00:00.000Z",
+            "sourceKind": "skill_contract",
+            "threadKey": "dogfood-handoff-workflow-trigger",
+            "title": "handoff workflow trigger contract"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "handoff-workflow-trigger-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh handoff workflow-trigger follow-up scenario from dogfood contracts"
+      },
       {
         "action": "add_new_scenario",
         "draftScenario": {
@@ -283,134 +411,6 @@
           "scripted"
         ],
         "title": "Refresh premortem canonical-subagent follow-up scenario from dogfood contracts"
-      },
-      {
-        "action": "add_new_scenario",
-        "draftScenario": {
-          "benchmark": {
-            "backend": "scripted",
-            "family": "fast_regression",
-            "scenarioKey": "quality-proof-layering-followup",
-            "tags": [
-              "quality",
-              "specdown",
-              "proof-layering"
-            ]
-          },
-          "brief": "Current quality contracts emphasize the public-spec versus on-demand-proof versus viewer split, and long-context quality behavior regresses if that layering is forgotten.",
-          "description": "The user keeps refining the distinction between public executable specs, on-demand proof artifacts, and the specdown viewer until the assistant preserves the layering policy instead of collapsing those surfaces into one proof claim.",
-          "maxTurns": 6,
-          "name": "Quality Proof Layering Follow-up",
-          "runner": {
-            "mode": "live"
-          },
-          "scenarioId": "quality-proof-layering-followup",
-          "schemaVersion": "cautilus.scenario.v1",
-          "sideEffectsMode": "shadow",
-          "simulator": {
-            "kind": "scripted",
-            "turns": [
-              {
-                "text": "스펙다운은 SoT와 viewer 두 역할이 있다고 봅니다."
-              },
-              {
-                "text": "source guard는 전자 때문에 줄이고 싶지만, 후자 때문에 결과는 보여야 해요."
-              },
-              {
-                "text": "이 관점이 quality skill에도 반영돼 있나요?"
-              }
-            ]
-          }
-        },
-        "evidence": [
-          {
-            "messages": [
-              "스펙다운은 SoT와 viewer 두 역할이 있다고 봅니다.",
-              "source guard는 전자 때문에 줄이고 싶지만, 후자 때문에 결과는 보여야 해요.",
-              "이 관점이 quality skill에도 반영돼 있나요?"
-            ],
-            "observedAt": "2026-04-18T19:10:00.000Z",
-            "sourceKind": "skill_contract",
-            "threadKey": "dogfood-quality-proof-layering",
-            "title": "quality proof layering contract"
-          }
-        ],
-        "existingCoverage": {
-          "recentResultCount": 0,
-          "scenarioKeyExists": false
-        },
-        "family": "fast_regression",
-        "intentProfile": null,
-        "proposalKey": "quality-proof-layering-followup",
-        "rationale": "1 recent log match(es) suggested this pattern.",
-        "recommendedBackends": [
-          "scripted"
-        ],
-        "title": "Refresh quality proof-layering follow-up scenario from dogfood contracts"
-      },
-      {
-        "action": "add_new_scenario",
-        "draftScenario": {
-          "benchmark": {
-            "backend": "scripted",
-            "family": "fast_regression",
-            "scenarioKey": "gather-official-path-before-browser-followup",
-            "tags": [
-              "gather",
-              "agent-browser",
-              "private-saas"
-            ]
-          },
-          "brief": "Current gather contracts emphasize source-specific acquisition intent, official export first, browser fallback only when needed, and honest auth/bootstrap stops.",
-          "description": "The user starts from a private SaaS source URL, but the assistant must keep the gather path honest by preferring official API/export routes before browser fallback and stopping cleanly when auth bootstrap is still missing.",
-          "maxTurns": 6,
-          "name": "Gather Official Path Before Browser Follow-up",
-          "runner": {
-            "mode": "live"
-          },
-          "scenarioId": "gather-official-path-before-browser-followup",
-          "schemaVersion": "cautilus.scenario.v1",
-          "sideEffectsMode": "shadow",
-          "simulator": {
-            "kind": "scripted",
-            "turns": [
-              {
-                "text": "이 private SaaS roster URL을 gather해 주세요: https://hr.example.internal/roster"
-              },
-              {
-                "text": "browser로 바로 들어가기 전에 official export나 API가 있는지 먼저 봐야 하지 않나요?"
-              },
-              {
-                "text": "browser fallback은 허용하되 auth/bootstrap이 없으면 clean stop해야 합니다."
-              }
-            ]
-          }
-        },
-        "evidence": [
-          {
-            "messages": [
-              "이 private SaaS roster URL을 gather해 주세요: https://hr.example.internal/roster",
-              "browser로 바로 들어가기 전에 official export나 API가 있는지 먼저 봐야 하지 않나요?",
-              "browser fallback은 허용하되 auth/bootstrap이 없으면 clean stop해야 합니다."
-            ],
-            "observedAt": "2026-04-18T17:10:00.000Z",
-            "sourceKind": "skill_contract",
-            "threadKey": "dogfood-gather-official-path-before-browser",
-            "title": "gather official path before browser fallback"
-          }
-        ],
-        "existingCoverage": {
-          "recentResultCount": 0,
-          "scenarioKeyExists": false
-        },
-        "family": "fast_regression",
-        "intentProfile": null,
-        "proposalKey": "gather-official-path-before-browser-followup",
-        "rationale": "1 recent log match(es) suggested this pattern.",
-        "recommendedBackends": [
-          "scripted"
-        ],
-        "title": "Refresh gather official-path-before-browser follow-up scenario from dogfood contracts"
       }
     ],
     "schemaVersion": "cautilus.scenario_proposals.v1",
