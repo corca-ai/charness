@@ -13,6 +13,15 @@ Use this skill when plain HTTP fetch is not enough.
 - click/fill/wait workflows
 - screenshots or browser evidence
 
+When the caller is `gather`, treat this as a browser runtime seam rather than a
+public workflow concept:
+
+- prefer official API/export paths before browser fallback
+- use this runtime when a private SaaS URL or stable UI path still needs real
+  browser execution
+- preserve which auth/bootstrap mode made the acquisition possible
+- stop cleanly when browser auth/bootstrap is still missing
+
 ## Runtime
 
 This skill depends on the `agent-browser` CLI and a local Chromium executable.
@@ -24,6 +33,10 @@ If the browser still is not ready yet, run:
 ```bash
 AGENT_BROWSER_EXECUTABLE_PATH=/usr/bin/chromium-browser agent-browser open https://example.com
 ```
+
+For private SaaS gather flows, read `references/auth-bootstrap.md` before
+assuming local profile reuse, saved state, or headed bootstrap mean the same
+thing on every host.
 
 ## Core Workflow
 
@@ -48,7 +61,13 @@ AGENT_BROWSER_EXECUTABLE_PATH=/usr/bin/chromium-browser agent-browser close
 - Prefer `web-fetch` for ordinary public URL reading.
 - Use this skill when `web-fetch` returns thin content, or when the page clearly needs a real browser.
 - For debugging a failing page fetch, capture a screenshot and inspect the live DOM.
+- For `gather`, use this only after stronger official acquisition paths were
+  checked first.
+- Do not treat a local desktop Chrome profile as equivalent to a remote
+  headless runner; some flows need one-time manual or headed bootstrap before
+  later headless reuse is honest.
 
 ## References
 
 - `references/runtime.md`
+- `references/auth-bootstrap.md`

@@ -3,24 +3,31 @@ Date: 2026-04-18
 
 ## Trigger
 
-- slice: `cautilus` long-context chatbot benchmark adapter
+- slice: `gather` private SaaS browser-fallback contract
 - claim: `preserve`
 
 ## Validation Goal
 
 - goal: `preserve`
-- reason: add a compare-backed chatbot benchmark surface without regressing the
-  existing root instruction-surface routing contract
+- reason: widen `gather` and `agent-browser` wording for browser-mediated
+  private-source acquisition without regressing the maintained root
+  instruction-surface routing contract
 
 ## Prompt Surfaces
 
-- `.agents/cautilus-adapters/chatbot-benchmark.yaml`
+- `skills/public/gather/SKILL.md`
+- `skills/public/gather/references/capability-contract.md`
+- `skills/public/gather/references/browser-mediated-private-sources.md`
+- `skills/support/agent-browser/SKILL.md`
+- `skills/support/agent-browser/references/runtime.md`
+- `skills/support/agent-browser/references/auth-bootstrap.md`
 
 ## Commands Run
 
-- `pytest -q tests/test_cautilus_chatbot_compare.py tests/test_cautilus_scenarios.py tests/quality_gates/test_surface_obligations.py`
-- `python3 scripts/validate-cautilus-scenarios.py --repo-root .`
-- `python3 scripts/eval_cautilus_chatbot_compare.py --repo-root . --baseline-ref HEAD~1 --output-dir charness-artifacts/cautilus/chatbot-benchmark --json`
+- `pytest -q tests/test_gather_google_workspace.py tests/charness_cli/test_capability_resolution.py`
+- `python3 scripts/validate-skills.py --repo-root .`
+- `python3 scripts/validate-integrations.py --repo-root .`
+- `python3 scripts/check-skill-contracts.py --repo-root .`
 - `cautilus instruction-surface test --repo-root .`
 
 ## Outcome
@@ -29,17 +36,16 @@ Date: 2026-04-18
 - instruction-surface summary: `4 passed / 0 failed / 0 blocked`
 - routing notes: the checked-in bootstrap case still routes as
   `bootstrapHelper=find-skills` plus `workSkill=impl`; compact no-bootstrap
-  implementation still routes to `impl`; contract-shaping cases still route to
+  implementation still routes to `impl`; contract-shaping still routes to
   `spec`
-- benchmark notes: the new compare-backed surface shows the packet expansion
-  added `handoff`, `init-repo`, `narrative`, and `spec` proposal keys versus
-  `HEAD~1`; the compare artifact also records that the product's current top-5
-  ranking now omits `retro`, `quality`, and `premortem`
+- gather notes: the new contract now names official API/export first,
+  `agent-browser` browser fallback, first-class auth/bootstrap modes, and
+  remote/headless degradation without perturbing the maintained first-skill
+  routing surface
 
 ## Follow-ups
 
-- decide whether the top-5 ranking cap should stay product-default or whether
-  `charness` needs a wider compare mode once more long-context candidates land
-- extend the packet with additional high-signal long-context boundaries such as
-  `gather`, `debug`, `release`, and `hitl` before treating this benchmark as
-  broadly representative
+- close `charness#40` if the repo-facing contract and example scope are
+  judged sufficient
+- if `gather` needs long-context chatbot coverage next, add it to the packet
+  only after this contract lands and is stable

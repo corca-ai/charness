@@ -33,6 +33,8 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "Prefer primary sources.",
         "Refresh in place when the source identity matches.",
         "local files before external summaries",
+        "browser-mediated fallback through `agent-browser`",
+        "official API/export docs before browser automation",
         "- `Requested Facts`",
         "- `Open Gaps`",
     ),

@@ -17,6 +17,9 @@ belong in support and integration layers, not in the public skill definition.
 Current `charness`-owned provider runtime lives under support skills such as
 `gather-slack` and `gather-notion`. Google Workspace remains an external
 runtime boundary and should flow through a real integration such as `gws-cli`.
+Browser-mediated private SaaS acquisition also stays below the public skill:
+`gather` owns the decision ladder, while `agent-browser` remains the external
+browser runtime when stronger official paths are unavailable.
 When the source is Google Workspace, prefer the repo-owned helper below rather
 than guessing the next operator step:
 
@@ -60,12 +63,19 @@ widening into web search or external discovery.
 
 Prefer the strongest honest access path first:
 
-1. runtime capability grant or connector access already provided by the host
-2. authenticated local binary already present on the machine
-3. environment-variable or process-environment fallback when the host lacks a
+1. local durable asset for the same source identity already exists
+2. runtime capability grant or connector access already provided by the host
+3. authenticated local binary or official API/export path already present on
+   the machine
+4. environment-variable or process-environment fallback when the host lacks a
    stronger grant path
-4. public unauthenticated fetch path when that still answers the request
-5. clean stop with an explicit missing-capability explanation
+5. browser-mediated fallback through `agent-browser` when the user has a
+   private SaaS URL or stable UI path and the official API/export path is
+   unavailable, insufficient, or still requires the same authenticated browser
+   session
+6. clean stop with an explicit missing-capability explanation when browser
+   auth/bootstrap is missing or the source still needs human-only approval
+7. degraded path only when it still produces honest partial value
 
 Examples:
 
@@ -74,9 +84,14 @@ Examples:
 - Slack via runtime grant or a bot-token-backed integration
 - Notion via runtime grant, token-backed integration, or published-page
   fallback
+- private SaaS roster or directory via official export first, then
+  `agent-browser` only if the export path is absent or still gated behind the
+  same authenticated UI
 
 Do not ask the user to paste secrets into chat. If private access is missing,
 name the missing capability and stop cleanly or fall back to a public path.
+For the browser-mediated private-source ladder, read
+`references/browser-mediated-private-sources.md`.
 
 ## Workflow
 
@@ -87,9 +102,11 @@ name the missing capability and stop cleanly or fall back to a public path.
    - local files before external summaries
    - upstream docs before secondary commentary
    - direct URLs before search results when the user already named the source
+   - for private SaaS, official API/export docs before browser automation
 3. Normalize the source into a durable asset.
    - keep it readable
    - preserve source identity and freshness context
+   - preserve the access path and auth/bootstrap mode that were actually used
    - avoid mixing raw source excerpts with unsupported guesses
 4. Refresh in place when the source identity matches.
    - if an asset for the same source already exists, update that asset rather
@@ -107,7 +124,9 @@ The result should usually include:
 - `Source`
 - `Canonical Asset`
 - `Freshness`
+- `Access Mode`
 - `Requested Facts`
+- `Captured vs Human Confirmation`
 - `Open Gaps`
 
 ## Guardrails
@@ -120,6 +139,10 @@ The result should usually include:
 - Do not prefer derived summaries when the primary source is accessible.
 - If access is missing for a private source, say what is missing and stop
   cleanly instead of inventing the content.
+- Do not jump to `agent-browser` before checking whether an official API or
+  export path already exists.
+- Do not treat local desktop profile reuse as equivalent to a remote/headless
+  runner; say when a one-time manual or headed bootstrap is still required.
 
 ## References
 
@@ -128,5 +151,6 @@ The result should usually include:
 - `references/asset-refresh.md`
 - `references/document-seams.md`
 - `references/capability-contract.md`
+- `references/browser-mediated-private-sources.md`
 - `references/google-workspace-via-gws.md`
 - `scripts/advise_google_workspace_path.py`

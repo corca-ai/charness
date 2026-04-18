@@ -216,6 +216,7 @@ def test_capability_explain_reports_skill_needs_and_announcement_adapter_binding
         "github.default",
         "slack.default",
         "gws.default",
+        "agent-browser.default",
     }
 
     announcement_result = run_cli(

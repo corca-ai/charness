@@ -3,7 +3,7 @@
   "tool_id": "agent-browser",
   "kind": "external_binary_with_skill",
   "display_name": "agent-browser",
-  "summary": "Browser automation CLI for JS-rendered pages, DOM inspection, and interactive browser debugging.",
+  "summary": "Browser automation CLI for JS-rendered pages, DOM inspection, interactive browser debugging, and browser-mediated `gather` fallback when private SaaS acquisition cannot stay on an official API/export path.",
   "upstream_repo": "vercel-labs/agent-browser",
   "homepage": "https://github.com/vercel-labs/agent-browser",
   "platforms": [
@@ -55,29 +55,52 @@
     "human-only",
     "degraded"
   ],
+  "config_layers": [
+    {
+      "layer_id": "agent-browser-saved-auth-state",
+      "layer_type": "authenticated-binary",
+      "summary": "Prefer imported auth state, persistent profiles, session persistence, or auth-vault login when browser-mediated private-source gather already has approved local state."
+    },
+    {
+      "layer_id": "agent-browser-origin-headers",
+      "layer_type": "authenticated-binary",
+      "summary": "Use origin-scoped headers only when the source contract explicitly allows header-based read access through the local browser runtime."
+    },
+    {
+      "layer_id": "agent-browser-manual-bootstrap",
+      "layer_type": "operator-step",
+      "summary": "Some private SaaS flows need a one-time manual or headed bootstrap before later headless gather can continue honestly."
+    }
+  ],
   "version_expectation": {
     "policy": "advisory",
     "constraint": "Prefer a recent upstream-supported release.",
     "detected_by": "stdout"
   },
+  "supports_public_skills": [
+    "gather"
+  ],
+  "recommendation_role": "runtime",
   "support_skill_source": {
     "source_type": "upstream_repo",
     "path": "skills/agent-browser",
     "ref": "main",
     "notes": [
-      "Prefer the upstream support skill surface when the host runtime can consume it."
+      "Prefer the upstream support skill surface when the host runtime can consume it.",
+      "`charness` still owns the public `gather` fallback and degradation contract that decides when browser mediation is honest."
     ]
   },
   "degradation": {
     "when_missing": [
       "Fall back to plain HTTP or non-browser workflows when possible.",
-      "Do not pretend browser-backed checks succeeded."
+      "For private SaaS gather, stop cleanly when browser auth/bootstrap is the missing boundary instead of pretending acquisition succeeded."
     ],
     "when_version_mismatch": [
       "Prefer operator guidance over silent retries when CLI behavior drifts."
     ]
   },
   "host_notes": [
-    "Hosts may need a separate Chromium or Chrome installation if they do not use `agent-browser install`."
+    "Hosts may need a separate Chromium or Chrome installation if they do not use `agent-browser install`.",
+    "Local desktop profile reuse is not equivalent to a remote or CI-like Linux runner; some flows require a one-time manual or headed bootstrap before later headless reuse is honest."
   ]
 }

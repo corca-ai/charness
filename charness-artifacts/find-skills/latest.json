@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-04-18T08:26:12Z",
+  "generated_at": "2026-04-18T18:16:30Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -747,10 +747,28 @@
         "discovery_stub_path": null,
         "capability_requirements": {},
         "intent_triggers": [],
-        "config_layers": [],
+        "config_layers": [
+          {
+            "layer_id": "agent-browser-saved-auth-state",
+            "layer_type": "authenticated-binary",
+            "summary": "Prefer imported auth state, persistent profiles, session persistence, or auth-vault login when browser-mediated private-source gather already has approved local state."
+          },
+          {
+            "layer_id": "agent-browser-origin-headers",
+            "layer_type": "authenticated-binary",
+            "summary": "Use origin-scoped headers only when the source contract explicitly allows header-based read access through the local browser runtime."
+          },
+          {
+            "layer_id": "agent-browser-manual-bootstrap",
+            "layer_type": "operator-step",
+            "summary": "Some private SaaS flows need a one-time manual or headed bootstrap before later headless gather can continue honestly."
+          }
+        ],
         "readiness_checks": [],
-        "supports_public_skills": [],
-        "recommendation_role": null,
+        "supports_public_skills": [
+          "gather"
+        ],
+        "recommendation_role": "runtime",
         "path": "integrations/tools/agent-browser.json",
         "source": "local-integration",
         "layer": "external integration"
@@ -948,75 +966,7 @@
       }
     ],
     "trusted_skills": [],
-    "tool_recommendations": [
-      {
-        "tool_id": "cautilus",
-        "display_name": "cautilus",
-        "kind": "external_binary_with_skill",
-        "summary": "Standalone evaluation engine and bundled skill for bounded behavior review beyond repo-local deterministic gates.",
-        "why_recommended": "Recommended because `quality` can use this tool for stronger validation when repo-native deterministic proof is not enough.",
-        "supports_public_skills": [
-          "impl",
-          "quality",
-          "spec"
-        ],
-        "recommendation_role": "validation",
-        "recommendation_status": "ready",
-        "doctor_status": "ok",
-        "support_state": "upstream-consumed",
-        "support_sync_status": "ok",
-        "detect_ok": true,
-        "healthcheck_ok": true,
-        "readiness_ok": true,
-        "install": {
-          "mode": "manual",
-          "commands": [],
-          "docs_url": "https://github.com/corca-ai/cautilus",
-          "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.md",
-          "notes": [
-            "Install from a tagged GitHub release with the upstream install script or keep a checked-out upstream repo with its runtime dependencies installed.",
-            "Consumer repos keep `cautilus-adapter.yaml` and named adapters locally; `charness` only points at the product boundary."
-          ]
-        },
-        "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id cautilus",
-        "next_skill_id": "quality"
-      },
-      {
-        "tool_id": "gitleaks",
-        "display_name": "gitleaks",
-        "kind": "external_binary",
-        "summary": "Fast Go-based secret scanner. Preferred over the secretlint fallback by `scripts/check-secrets.sh`; sub-second on the charness tree vs ~5s for the npm secretlint path.",
-        "why_recommended": "Recommended because `quality` can use this tool for stronger validation when repo-native deterministic proof is not enough.",
-        "supports_public_skills": [
-          "quality"
-        ],
-        "recommendation_role": "validation",
-        "recommendation_status": "ready",
-        "doctor_status": "ok",
-        "support_state": "integration-only",
-        "support_sync_status": "not-tracked",
-        "detect_ok": true,
-        "healthcheck_ok": true,
-        "readiness_ok": true,
-        "install": {
-          "mode": "manual",
-          "commands": [],
-          "docs_url": "https://github.com/gitleaks/gitleaks#installing",
-          "install_url": null,
-          "notes": [
-            "Preferred install paths stay host-controlled: `brew install gitleaks` on macOS/Linux, or download a tagged release from GitHub.",
-            "When `gitleaks` is missing, `scripts/check-secrets.sh` falls back to the secretlint npm path with a stderr warning. The fallback is correct but ~5s slower per run."
-          ]
-        },
-        "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id gitleaks",
-        "next_skill_id": "quality"
-      }
-    ],
-    "tool_recommendation_query": {
-      "mode": "recommendation_role",
-      "recommendation_role": "validation",
-      "next_skill_id": "quality",
-      "only_blocking": false
-    }
+    "tool_recommendations": [],
+    "tool_recommendation_query": null
   }
 }

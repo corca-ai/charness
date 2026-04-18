@@ -16,6 +16,11 @@
       "logical_id": "gws.default",
       "summary": "Private Google Workspace gather through an authenticated provider path.",
       "when": "when gather needs private Docs, Drive, Sheets, or Slides access"
+    },
+    {
+      "logical_id": "agent-browser.default",
+      "summary": "Browser-mediated private SaaS gather through the external `agent-browser` runtime.",
+      "when": "when gather has a private SaaS URL or stable UI path and an official API/export route is unavailable or insufficient"
     }
   ],
   "notes": [

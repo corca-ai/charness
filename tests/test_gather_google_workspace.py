@@ -86,3 +86,35 @@ def test_gather_skill_description_names_concrete_source_triggers() -> None:
 
     for trigger in ("Slack thread", "Notion page", "Google Docs", "GitHub content", "arbitrary URL"):
         assert trigger in description
+
+
+def test_gather_skill_contract_names_browser_mediated_private_source_ladder() -> None:
+    skill_text = (ROOT / "skills" / "public" / "gather" / "SKILL.md").read_text(encoding="utf-8")
+
+    assert "browser-mediated fallback through `agent-browser`" in skill_text
+    assert "official API/export docs before browser automation" in skill_text
+    assert "- `Access Mode`" in skill_text
+    assert "- `Captured vs Human Confirmation`" in skill_text
+
+
+def test_gather_capability_needs_include_agent_browser_private_saas_path() -> None:
+    payload = json.loads((ROOT / "skills" / "public" / "gather" / "capability-needs.json").read_text(encoding="utf-8"))
+
+    assert {need["logical_id"] for need in payload["capability_needs"]} == {
+        "github.default",
+        "slack.default",
+        "gws.default",
+        "agent-browser.default",
+    }
+
+
+def test_agent_browser_manifest_supports_gather_runtime_contract() -> None:
+    payload = json.loads((ROOT / "integrations" / "tools" / "agent-browser.json").read_text(encoding="utf-8"))
+
+    assert payload["supports_public_skills"] == ["gather"]
+    assert payload["recommendation_role"] == "runtime"
+    assert [layer["layer_id"] for layer in payload["config_layers"]] == [
+        "agent-browser-saved-auth-state",
+        "agent-browser-origin-headers",
+        "agent-browser-manual-bootstrap",
+    ]

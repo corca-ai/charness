@@ -98,6 +98,10 @@ When a consumer wants provider-backed gather:
 - Google:
   - install the approved external runtime such as `gws-cli`
   - let `charness` consume that binary through an integration manifest
+- browser-mediated private SaaS:
+  - let `gather` own the official-path-first and degradation policy
+  - let `agent-browser` stay the external browser runtime boundary
+  - do not push each consumer repo to reinvent profile/auth/bootstrap wording
 
 ## Modeling Rule Going Forward
 

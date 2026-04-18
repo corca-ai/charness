@@ -43,13 +43,14 @@
 - Current `cautilus scenario propose` behavior appears to emit only the top `5` proposals by default even when the checked-in packet carries more candidates. The repo-owned runner now records both `candidate_keys` and `omitted_candidate_keys` so breadth is still visible in the checked current pointer.
 - `charness` now also ships a compare-backed named adapter at [.agents/cautilus-adapters/chatbot-benchmark.yaml](../.agents/cautilus-adapters/chatbot-benchmark.yaml). It compares baseline and candidate worktrees via [scripts/eval_cautilus_chatbot_compare.py](../scripts/eval_cautilus_chatbot_compare.py) and writes the current pointer to [charness-artifacts/cautilus/chatbot-benchmark/latest.md](../charness-artifacts/cautilus/chatbot-benchmark/latest.md). This surface is the first honest A/B benchmark for the long-context proposal packet.
 - The newest benchmark slice shows the current top-five cap now favoring `hitl`, `release`, `debug`, `spec`, and `narrative`; `find-skills`, `handoff`, and `init-repo` remain in the checked packet but are currently omitted by product ranking.
+- `gather` now has an explicit browser-mediated private SaaS contract. The public skill and references now require official API/export first, then `agent-browser` fallback, and name first-class auth/bootstrap plus remote/headless degradation honestly. The `agent-browser` integration manifest now advertises `gather` runtime support, and the `find-skills` current pointer updated accordingly.
 
 ## Next Session
 
 1. `git status --short`를 먼저 확인한다.
 2. public-spec executable proof 약점은 이번 slice에서 정리됐다. `inventory_public_spec_quality.py`는 실제 `run:shell` fence를 읽고, `specs/index.spec.md`/`specs/tool-doctor.spec.md`는 direct CLI proof로 바뀌어 현재 flagged spec이 없다.
 3. release를 이어받는 다음 세션은 먼저 `python3 skills/public/release/scripts/current_release.py --repo-root .`로 checked-in version surface를 확인하고, 새 publish slice라면 `publish_release.py` helper를 기본 경로로 쓴다. bump만 하고 push-only 상태에서 멈추지 않는다.
-4. `charness#39`는 이제 close 후보다. 다음 pickup의 첫 move는 issue comment/close를 정리하고, 그 다음 질문은 `mode evaluate`가 prepared compare worktree를 더 직접 소비하도록 charness adapter contract를 넓힐지다.
+4. 다음 pickup에서 `gather`를 long-context packet에 넣고 싶다면 이제 [charness#40](https://github.com/corca-ai/charness/issues/40) blocker는 없다. 다음 질문은 새 `gather` contract를 chatbot proposal/benchmark packet에 추가할지다.
 5. `markdown-preview`는 helper-only 상태가 아니다. `quality`에는 bootstrap/execute seam이 이미 있고, `narrative` docs도 rendered Markdown review를 workflow seam으로 언급한다. 현재 판단으로는 `announcement` explicit 연결은 우선순위가 낮고, 정말 남은 질문은 `docs:preview`류 별도 command surface가 실제 필요한지다.
 6. CLI UX follow-up을 이어가면 `update`에 맞춘 human-first default / `--json` opt-in / stderr progress pattern을 `init` 같은 나머지 long-running lifecycle commands에도 확대할지 판단한다. 이번 slice는 `update`와 `update all`만 바꿨다.
 7. Agent Harness Guide adaptation을 이어가면 [charness-artifacts/spec/agent-harness-guide-adaptation.md](../charness-artifacts/spec/agent-harness-guide-adaptation.md)를 읽고 `Slice 1`부터 시작한다. 첫 범위는 `docs/harness-composition.md`, `docs/artifact-policy.md`, 최소 handoff cross-link다.
@@ -57,7 +58,7 @@
 9. sah/specdown lesson line을 이어가면 task envelope와 doctor `next_action`을 실제 멀티에이전트 세션에서 dogfood한 뒤 필요하면 task list/status summary만 다듬는다. 반복 setup/JSON 추출이 두세 번 생기기 전에는 specdown adapter를 만들지 않는다.
 10. source가 checked-in plugin export에 들어가는 파일이면 focused managed-checkout 테스트 전에 export sync를 먼저 실행한다. 이번 slice에서도 `plugins/charness/README.md` drift가 packaging/managed-install pytest를 바로 깨뜨렸으니, root README 계열 변경 뒤에는 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`를 먼저 습관화한다.
 11. long-context skill-trigger work를 이어가면 `cautilus adapter resolve --repo-root . --adapter-name chatbot-proposals`와 `python3 scripts/eval_cautilus_chatbot_proposals.py --repo-root . --json`부터 시작한다. proposal-mining surface와 compare/A/B benchmark surface는 이제 둘 다 checked-in 상태다.
-12. 다음 long-context 후보 확장은 `gather` 하나만 남았다. 다만 `gather`는 [charness#40](https://github.com/corca-ai/charness/issues/40) 의 `private SaaS -> agent-browser fallback` contract를 먼저 닫기 전까지 packet에 넣지 않는다.
+12. 다음 long-context 후보 확장은 이제 `gather`다. 새 contract가 landed 했으니, private SaaS browser-fallback correction pattern을 checked-in packet으로 승격할지 보면 된다.
 13. benchmark를 다시 생성할 때는 `cautilus workspace prepare-compare --repo-root . --baseline-ref <ref> --output-dir <tmp>` 또는 `git worktree add --detach <tmp> <ref>`로 baseline을 준비한 뒤, `python3 scripts/eval_cautilus_chatbot_compare.py --repo-root . --baseline-repo <baseline> --candidate-repo <candidate> --output-dir charness-artifacts/cautilus/chatbot-benchmark`를 실행한다.
 
 ## Discuss
