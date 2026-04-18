@@ -6,6 +6,8 @@ Use nearby repos and tools as comparison points, not as cargo-cult templates.
 
 - thin lifecycle CLI around managed install state
 - explicit `doctor`, `update`, and `reset`
+- `update all` keeps the user-facing command product-owned while fanning out
+  into tracked external tool updates and bundled support refresh
 - lock and generated-support artifacts for agent-readable continuation
 
 `agent-browser`

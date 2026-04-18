@@ -53,6 +53,41 @@ Host-visible plugin or skill propagation note:
   host-interactive proof into explicit on-demand validation when that is the
   cheaper honest bar
 
+Product-owned aggregate update note:
+
+- if the product needs one operator command that refreshes both the product
+  binary and tracked repo-local runtime surfaces, keep that command in product
+  vocabulary, for example `product update all`
+- make plain `update` vs aggregate `update all` semantics explicit so operators
+  can tell whether they are refreshing only the product itself or also tracked
+  external binaries, bundled skills, or generated local surfaces
+- prefer aggregating existing honest subflows over inventing a second mutation
+  engine; the aggregate path should reuse the same detect, doctor, and
+  machine-readable state contracts
+- if some tracked dependencies are manual-only, the aggregate command should
+  preserve that honesty and report `manual` guidance instead of pretending the
+  whole fan-out updated successfully
+- if the aggregate flow refreshes repo-local materialized skills or plugins,
+  report which tracked surfaces were refreshed and which were skipped
+
+Wording boundary note:
+
+- end-user docs and help text should stay in product vocabulary even when the
+  implementation internally reuses harness helpers or shared lifecycle code
+- do not leak internal platform names into the user-facing command surface
+  unless the product is intentionally exposing them as a first-class operator
+  concept
+
+User-scoped registry note:
+
+- when the product wants an opt-in list of repos or local surfaces to refresh,
+  prefer an explicit user-scoped managed-install registry over machine-wide
+  scanning
+- record only installs the product explicitly manages
+- make stale-entry cleanup and per-repo targeting possible
+- keep the registry semantics product-owned; the shared pattern is the contract,
+  not one hardcoded filename
+
 Version provenance note:
 
 - when update guidance depends on how the tool was installed, persist current

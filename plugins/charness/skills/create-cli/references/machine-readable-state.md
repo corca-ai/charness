@@ -20,6 +20,8 @@ Examples:
   agent work
 - generated references or wrappers under a predictable directory
 - user-scoped version provenance plus last successful update-check metadata
+- user-scoped managed-install registries for explicitly tracked repos or local
+  surfaces when an aggregate `update all` path needs opt-in fan-out
 - host-state snapshots that separate source version, runtime capability, and
   installed host copy when those can drift
 

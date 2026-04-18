@@ -39,6 +39,9 @@ steps call tools outside the baseline shell surface.
    - one obvious install/bootstrap path
    - explicit `doctor`, `update`, `reset`, or `uninstall` commands when the
      product owns lifecycle state
+   - if the product needs one command that refreshes both itself and tracked
+     external/runtime surfaces, keep that aggregate path product-owned, such as
+     `update all`, instead of leaking harness-internal vocabulary
    - `--json` or another structured mode when agents may consume the output
    - public subcommands should expose a no-side-effect `--help` contract unless
      there is a strong documented reason not to
@@ -53,6 +56,8 @@ steps call tools outside the baseline shell surface.
    - help probes, command discovery, and healthchecks stay read-only
    - `doctor` stays read-only
    - install and update commands must say what they changed
+   - if `update` has a wider aggregate variant, distinguish self-update from
+     tracked dependency refresh in both help text and structured output
    - readiness commands may depend on repo or local install state, but they
      should not pretend to be generic binary health probes
    - partial manual steps should still leave machine-readable breadcrumbs
