@@ -260,6 +260,102 @@
           ]
         }
       ]
+    },
+    {
+      "proposalKey": "debug-exact-symptom-before-fix-followup",
+      "title": "Refresh debug exact-symptom-before-fix follow-up scenario from dogfood contracts",
+      "family": "fast_regression",
+      "name": "Debug Exact Symptom Before Fix Follow-up",
+      "description": "The user interrupts an eager fix request until the assistant preserves exact symptoms, a smallest honest repro, and multiple candidate causes before patching.",
+      "brief": "Current debug contracts emphasize diagnosis before repair, exact symptom capture, and falsifiable hypothesis building.",
+      "tags": [
+        "debug",
+        "reproduction",
+        "hypothesis"
+      ],
+      "maxTurns": 5,
+      "simulatorTurns": [
+        "바로 고치기 전에 exact symptom이랑 repro를 먼저 고정해 주세요.",
+        "후보 원인을 셋은 깔고 falsifiable hypothesis 없이 패치부터 하지 마세요.",
+        "이번 건 durable debug artifact가 남아야 합니다."
+      ],
+      "evidence": [
+        {
+          "sourceKind": "skill_contract",
+          "title": "debug diagnosis before repair",
+          "threadKey": "dogfood-debug-exact-symptom-before-fix",
+          "observedAt": "2026-04-18T16:10:00.000Z",
+          "messages": [
+            "바로 고치기 전에 exact symptom이랑 repro를 먼저 고정해 주세요.",
+            "후보 원인을 셋은 깔고 falsifiable hypothesis 없이 패치부터 하지 마세요.",
+            "이번 건 durable debug artifact가 남아야 합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "proposalKey": "release-real-host-proof-followup",
+      "title": "Refresh release real-host-proof follow-up scenario from dogfood contracts",
+      "family": "fast_regression",
+      "name": "Release Real-Host Proof Follow-up",
+      "description": "The user keeps pushing back on a naive version bump until the assistant reads the current release surface, uses the repo publish helper, and carries real-host proof honestly.",
+      "brief": "Current release contracts emphasize current-surface inspection, generated-manifest discipline, and real-host proof boundaries.",
+      "tags": [
+        "release",
+        "real-host-proof",
+        "versioning"
+      ],
+      "maxTurns": 5,
+      "simulatorTurns": [
+        "버전만 올리지 말고 current release surface부터 읽어주세요.",
+        "generated manifest hand-edit 말고 publish helper로 가야 합니다.",
+        "real-host proof 요구가 있으면 closeout에 남겨야 해요."
+      ],
+      "evidence": [
+        {
+          "sourceKind": "skill_contract",
+          "title": "release real-host proof boundary",
+          "threadKey": "dogfood-release-real-host-proof",
+          "observedAt": "2026-04-18T16:20:00.000Z",
+          "messages": [
+            "버전만 올리지 말고 current release surface부터 읽어주세요.",
+            "generated manifest hand-edit 말고 publish helper로 가야 합니다.",
+            "real-host proof 요구가 있으면 closeout에 남겨야 해요."
+          ]
+        }
+      ]
+    },
+    {
+      "proposalKey": "hitl-bounded-review-loop-followup",
+      "title": "Refresh hitl bounded-review-loop follow-up scenario from dogfood contracts",
+      "family": "fast_regression",
+      "name": "HITL Bounded Review Loop Follow-up",
+      "description": "The user rejects agent-owned judgment until the assistant builds a bounded, resumable review loop with explicit accepted rules and next-state carryover.",
+      "brief": "Current HITL contracts emphasize what must stay human-owned, chunked review, and rule propagation between chunks.",
+      "tags": [
+        "hitl",
+        "resumable-review",
+        "rule-propagation"
+      ],
+      "maxTurns": 5,
+      "simulatorTurns": [
+        "이건 agent가 final judgment 내리면 안 됩니다.",
+        "사람이 판단해야 할 기준을 먼저 적고 chunked review loop로 가주세요.",
+        "accepted rules를 다음 chunk들에 전파해야 합니다."
+      ],
+      "evidence": [
+        {
+          "sourceKind": "skill_contract",
+          "title": "hitl bounded review loop",
+          "threadKey": "dogfood-hitl-bounded-review-loop",
+          "observedAt": "2026-04-18T16:30:00.000Z",
+          "messages": [
+            "이건 agent가 final judgment 내리면 안 됩니다.",
+            "사람이 판단해야 할 기준을 먼저 적고 chunked review loop로 가주세요.",
+            "accepted rules를 다음 chunk들에 전파해야 합니다."
+          ]
+        }
+      ]
     }
   ],
   "existingScenarioRegistry": [],

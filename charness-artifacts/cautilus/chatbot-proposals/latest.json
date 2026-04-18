@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "charness",
   "input_file": "evals/cautilus/chatbot-scenario-proposal-inputs.json",
-  "candidate_count": 8,
+  "candidate_count": 11,
   "candidate_keys": [
     "retro-structural-cause-followup",
     "quality-proof-layering-followup",
@@ -11,20 +11,26 @@
     "handoff-workflow-trigger-followup",
     "init-repo-partial-normalization-followup",
     "narrative-truth-before-announcement-followup",
-    "spec-before-impl-followup"
+    "spec-before-impl-followup",
+    "debug-exact-symptom-before-fix-followup",
+    "release-real-host-proof-followup",
+    "hitl-bounded-review-loop-followup"
   ],
   "proposal_count": 5,
   "proposal_keys": [
+    "hitl-bounded-review-loop-followup",
+    "release-real-host-proof-followup",
+    "debug-exact-symptom-before-fix-followup",
     "spec-before-impl-followup",
-    "narrative-truth-before-announcement-followup",
-    "init-repo-partial-normalization-followup",
-    "handoff-workflow-trigger-followup",
-    "find-skills-canonical-artifact-followup"
+    "narrative-truth-before-announcement-followup"
   ],
   "omitted_candidate_keys": [
     "retro-structural-cause-followup",
     "quality-proof-layering-followup",
-    "premortem-canonical-subagent-followup"
+    "premortem-canonical-subagent-followup",
+    "find-skills-canonical-artifact-followup",
+    "handoff-workflow-trigger-followup",
+    "init-repo-partial-normalization-followup"
   ],
   "families": [
     "fast_regression"
@@ -53,7 +59,16 @@
     "truth-surface": 1,
     "spec": 1,
     "impl": 1,
-    "contract-shaping": 1
+    "contract-shaping": 1,
+    "debug": 1,
+    "reproduction": 1,
+    "hypothesis": 1,
+    "release": 1,
+    "real-host-proof": 1,
+    "versioning": 1,
+    "hitl": 1,
+    "resumable-review": 1,
+    "rule-propagation": 1
   },
   "command": {
     "argv": [
@@ -72,6 +87,198 @@
     ],
     "generatedAt": "2026-04-18T12:00:00Z",
     "proposals": [
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "hitl-bounded-review-loop-followup",
+            "tags": [
+              "hitl",
+              "resumable-review",
+              "rule-propagation"
+            ]
+          },
+          "brief": "Current HITL contracts emphasize what must stay human-owned, chunked review, and rule propagation between chunks.",
+          "description": "The user rejects agent-owned judgment until the assistant builds a bounded, resumable review loop with explicit accepted rules and next-state carryover.",
+          "maxTurns": 5,
+          "name": "HITL Bounded Review Loop Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "hitl-bounded-review-loop-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "이건 agent가 final judgment 내리면 안 됩니다."
+              },
+              {
+                "text": "사람이 판단해야 할 기준을 먼저 적고 chunked review loop로 가주세요."
+              },
+              {
+                "text": "accepted rules를 다음 chunk들에 전파해야 합니다."
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "이건 agent가 final judgment 내리면 안 됩니다.",
+              "사람이 판단해야 할 기준을 먼저 적고 chunked review loop로 가주세요.",
+              "accepted rules를 다음 chunk들에 전파해야 합니다."
+            ],
+            "observedAt": "2026-04-18T16:30:00.000Z",
+            "sourceKind": "skill_contract",
+            "threadKey": "dogfood-hitl-bounded-review-loop",
+            "title": "hitl bounded review loop"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "hitl-bounded-review-loop-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh hitl bounded-review-loop follow-up scenario from dogfood contracts"
+      },
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "release-real-host-proof-followup",
+            "tags": [
+              "release",
+              "real-host-proof",
+              "versioning"
+            ]
+          },
+          "brief": "Current release contracts emphasize current-surface inspection, generated-manifest discipline, and real-host proof boundaries.",
+          "description": "The user keeps pushing back on a naive version bump until the assistant reads the current release surface, uses the repo publish helper, and carries real-host proof honestly.",
+          "maxTurns": 5,
+          "name": "Release Real-Host Proof Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "release-real-host-proof-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "버전만 올리지 말고 current release surface부터 읽어주세요."
+              },
+              {
+                "text": "generated manifest hand-edit 말고 publish helper로 가야 합니다."
+              },
+              {
+                "text": "real-host proof 요구가 있으면 closeout에 남겨야 해요."
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "버전만 올리지 말고 current release surface부터 읽어주세요.",
+              "generated manifest hand-edit 말고 publish helper로 가야 합니다.",
+              "real-host proof 요구가 있으면 closeout에 남겨야 해요."
+            ],
+            "observedAt": "2026-04-18T16:20:00.000Z",
+            "sourceKind": "skill_contract",
+            "threadKey": "dogfood-release-real-host-proof",
+            "title": "release real-host proof boundary"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "release-real-host-proof-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh release real-host-proof follow-up scenario from dogfood contracts"
+      },
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "debug-exact-symptom-before-fix-followup",
+            "tags": [
+              "debug",
+              "reproduction",
+              "hypothesis"
+            ]
+          },
+          "brief": "Current debug contracts emphasize diagnosis before repair, exact symptom capture, and falsifiable hypothesis building.",
+          "description": "The user interrupts an eager fix request until the assistant preserves exact symptoms, a smallest honest repro, and multiple candidate causes before patching.",
+          "maxTurns": 5,
+          "name": "Debug Exact Symptom Before Fix Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "debug-exact-symptom-before-fix-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "바로 고치기 전에 exact symptom이랑 repro를 먼저 고정해 주세요."
+              },
+              {
+                "text": "후보 원인을 셋은 깔고 falsifiable hypothesis 없이 패치부터 하지 마세요."
+              },
+              {
+                "text": "이번 건 durable debug artifact가 남아야 합니다."
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "바로 고치기 전에 exact symptom이랑 repro를 먼저 고정해 주세요.",
+              "후보 원인을 셋은 깔고 falsifiable hypothesis 없이 패치부터 하지 마세요.",
+              "이번 건 durable debug artifact가 남아야 합니다."
+            ],
+            "observedAt": "2026-04-18T16:10:00.000Z",
+            "sourceKind": "skill_contract",
+            "threadKey": "dogfood-debug-exact-symptom-before-fix",
+            "title": "debug diagnosis before repair"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "debug-exact-symptom-before-fix-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh debug exact-symptom-before-fix follow-up scenario from dogfood contracts"
+      },
       {
         "action": "add_new_scenario",
         "draftScenario": {
@@ -199,198 +406,6 @@
           "scripted"
         ],
         "title": "Refresh narrative truth-before-announcement follow-up scenario from recent activity"
-      },
-      {
-        "action": "add_new_scenario",
-        "draftScenario": {
-          "benchmark": {
-            "backend": "scripted",
-            "family": "fast_regression",
-            "scenarioKey": "init-repo-partial-normalization-followup",
-            "tags": [
-              "init-repo",
-              "partial-repo",
-              "normalization"
-            ]
-          },
-          "brief": "Recent activity shows the repo mode only becoming clear after the user pushes back on greenfield assumptions.",
-          "description": "The user clarifies that the repo is already partially initialized, and the assistant must normalize the existing surface instead of defaulting to a greenfield rewrite.",
-          "maxTurns": 5,
-          "name": "Init Repo Partial Normalization Follow-up",
-          "runner": {
-            "mode": "live"
-          },
-          "scenarioId": "init-repo-partial-normalization-followup",
-          "schemaVersion": "cautilus.scenario.v1",
-          "sideEffectsMode": "shadow",
-          "simulator": {
-            "kind": "scripted",
-            "turns": [
-              {
-                "text": "이 repo는 이미 운영 surface가 좀 있습니다."
-              },
-              {
-                "text": "greenfield처럼 갈아엎지 말고 partial normalize로 가주세요."
-              },
-              {
-                "text": "README와 AGENTS는 있는데 operator acceptance만 빈약합니다."
-              }
-            ]
-          }
-        },
-        "evidence": [
-          {
-            "messages": [
-              "이 repo는 이미 운영 surface가 좀 있습니다.",
-              "greenfield처럼 갈아엎지 말고 partial normalize로 가주세요.",
-              "README와 AGENTS는 있는데 operator acceptance만 빈약합니다."
-            ],
-            "observedAt": "2026-04-18T12:20:00.000Z",
-            "sourceKind": "human_conversation",
-            "threadKey": "session-init-repo-partial-normalization",
-            "title": "init-repo partial normalization follow-up"
-          }
-        ],
-        "existingCoverage": {
-          "recentResultCount": 0,
-          "scenarioKeyExists": false
-        },
-        "family": "fast_regression",
-        "intentProfile": null,
-        "proposalKey": "init-repo-partial-normalization-followup",
-        "rationale": "1 recent log match(es) suggested this pattern.",
-        "recommendedBackends": [
-          "scripted"
-        ],
-        "title": "Refresh init-repo partial-normalization follow-up scenario from recent activity"
-      },
-      {
-        "action": "add_new_scenario",
-        "draftScenario": {
-          "benchmark": {
-            "backend": "scripted",
-            "family": "fast_regression",
-            "scenarioKey": "handoff-workflow-trigger-followup",
-            "tags": [
-              "handoff",
-              "workflow-trigger",
-              "continuation-sequence"
-            ]
-          },
-          "brief": "Recent activity shows a handoff request that only stabilizes after the assistant reorients around the next move rather than the diary of what happened.",
-          "description": "The user sharpens the next-session pickup path until the assistant treats the workflow trigger as the handoff's primary contract instead of preserving history first.",
-          "maxTurns": 5,
-          "name": "Handoff Workflow Trigger Follow-up",
-          "runner": {
-            "mode": "live"
-          },
-          "scenarioId": "handoff-workflow-trigger-followup",
-          "schemaVersion": "cautilus.scenario.v1",
-          "sideEffectsMode": "shadow",
-          "simulator": {
-            "kind": "scripted",
-            "turns": [
-              {
-                "text": "handoff 남겨주세요."
-              },
-              {
-                "text": "다음 세션 첫 move는 이슈 close 정리부터입니다."
-              },
-              {
-                "text": "과거 기록보다 pickup 경로가 먼저 보여야 해요."
-              }
-            ]
-          }
-        },
-        "evidence": [
-          {
-            "messages": [
-              "handoff 남겨주세요.",
-              "다음 세션 첫 move는 이슈 close 정리부터입니다.",
-              "과거 기록보다 pickup 경로가 먼저 보여야 해요."
-            ],
-            "observedAt": "2026-04-18T12:10:00.000Z",
-            "sourceKind": "human_conversation",
-            "threadKey": "session-handoff-workflow-trigger",
-            "title": "handoff workflow trigger follow-up"
-          }
-        ],
-        "existingCoverage": {
-          "recentResultCount": 0,
-          "scenarioKeyExists": false
-        },
-        "family": "fast_regression",
-        "intentProfile": null,
-        "proposalKey": "handoff-workflow-trigger-followup",
-        "rationale": "1 recent log match(es) suggested this pattern.",
-        "recommendedBackends": [
-          "scripted"
-        ],
-        "title": "Refresh handoff workflow-trigger follow-up scenario from recent activity"
-      },
-      {
-        "action": "add_new_scenario",
-        "draftScenario": {
-          "benchmark": {
-            "backend": "scripted",
-            "family": "fast_regression",
-            "scenarioKey": "find-skills-canonical-artifact-followup",
-            "tags": [
-              "find-skills",
-              "artifact-policy",
-              "operator-trust"
-            ]
-          },
-          "brief": "Recent activity shows repeated correction pressure about artifact churn caused by invocation-shape differences.",
-          "description": "The user keeps pointing out dirty `find-skills` artifacts until the assistant distinguishes canonical durable inventory from ad hoc recommendation output.",
-          "maxTurns": 5,
-          "name": "Find Skills Canonical Artifact Follow-up",
-          "runner": {
-            "mode": "live"
-          },
-          "scenarioId": "find-skills-canonical-artifact-followup",
-          "schemaVersion": "cautilus.scenario.v1",
-          "sideEffectsMode": "shadow",
-          "simulator": {
-            "kind": "scripted",
-            "turns": [
-              {
-                "text": "이게 충분히 유의미한 정보라면 무조건 커밋해야 하는데 왜 물어보는가?"
-              },
-              {
-                "text": "평소와 다른 방식으로 호출했다는 건 뭐죠?"
-              },
-              {
-                "text": "이건 canonical artifact와 ad hoc query output을 구분해야 하는 문제 아닌가요?"
-              }
-            ]
-          }
-        },
-        "evidence": [
-          {
-            "messages": [
-              "이게 충분히 유의미한 정보라면 무조건 커밋해야 하는데 왜 물어보는가?",
-              "평소와 다른 방식으로 호출했다는 건 뭐죠?",
-              "이건 canonical artifact와 ad hoc query output을 구분해야 하는 문제 아닌가요?"
-            ],
-            "observedAt": "2026-04-18T11:00:00.000Z",
-            "sourceKind": "human_conversation",
-            "threadKey": "session-find-skills-canonical-artifact",
-            "title": "find-skills canonical artifact follow-up"
-          }
-        ],
-        "existingCoverage": {
-          "recentResultCount": 0,
-          "scenarioKeyExists": false
-        },
-        "family": "fast_regression",
-        "intentProfile": null,
-        "proposalKey": "find-skills-canonical-artifact-followup",
-        "rationale": "1 recent log match(es) suggested this pattern.",
-        "recommendedBackends": [
-          "scripted"
-        ],
-        "title": "Refresh find-skills canonical-artifact follow-up scenario from recent activity"
       }
     ],
     "schemaVersion": "cautilus.scenario_proposals.v1",
