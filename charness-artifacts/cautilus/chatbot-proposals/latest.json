@@ -19,20 +19,20 @@
   ],
   "proposal_count": 5,
   "proposal_keys": [
+    "find-skills-canonical-artifact-followup",
     "retro-structural-cause-followup",
     "premortem-canonical-subagent-followup",
     "quality-proof-layering-followup",
-    "gather-official-path-before-browser-followup",
-    "hitl-bounded-review-loop-followup"
+    "gather-official-path-before-browser-followup"
   ],
   "omitted_candidate_keys": [
-    "find-skills-canonical-artifact-followup",
     "handoff-workflow-trigger-followup",
     "init-repo-partial-normalization-followup",
     "narrative-truth-before-announcement-followup",
     "spec-before-impl-followup",
     "debug-exact-symptom-before-fix-followup",
-    "release-real-host-proof-followup"
+    "release-real-host-proof-followup",
+    "hitl-bounded-review-loop-followup"
   ],
   "families": [
     "fast_regression"
@@ -92,6 +92,70 @@
     ],
     "generatedAt": "2026-04-18T12:00:00Z",
     "proposals": [
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "find-skills-canonical-artifact-followup",
+            "tags": [
+              "find-skills",
+              "artifact-policy",
+              "operator-trust"
+            ]
+          },
+          "brief": "Current find-skills contracts and retro memory both require canonical inventory to stay separate from ad hoc recommendation output, so long-context behavior regresses if that boundary is forgotten.",
+          "description": "The user keeps pointing out dirty `find-skills` artifacts until the assistant distinguishes canonical durable inventory from ad hoc recommendation output and stops treating query-shaped churn as repo truth.",
+          "maxTurns": 5,
+          "name": "Find Skills Canonical Artifact Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "find-skills-canonical-artifact-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "이게 충분히 유의미한 정보라면 무조건 커밋해야 하는데 왜 물어보는가?"
+              },
+              {
+                "text": "평소와 다른 방식으로 호출했다는 건 뭐죠?"
+              },
+              {
+                "text": "이건 canonical artifact와 ad hoc query output을 구분해야 하는 문제 아닌가요?"
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "이게 충분히 유의미한 정보라면 무조건 커밋해야 하는데 왜 물어보는가?",
+              "평소와 다른 방식으로 호출했다는 건 뭐죠?",
+              "이건 canonical artifact와 ad hoc query output을 구분해야 하는 문제 아닌가요?"
+            ],
+            "observedAt": "2026-04-18T19:45:00.000Z",
+            "sourceKind": "skill_contract",
+            "threadKey": "dogfood-find-skills-canonical-artifact",
+            "title": "find-skills canonical artifact contract"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "find-skills-canonical-artifact-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh find-skills canonical-artifact follow-up scenario from dogfood contracts"
+      },
       {
         "action": "add_new_scenario",
         "draftScenario": {
@@ -347,70 +411,6 @@
           "scripted"
         ],
         "title": "Refresh gather official-path-before-browser follow-up scenario from dogfood contracts"
-      },
-      {
-        "action": "add_new_scenario",
-        "draftScenario": {
-          "benchmark": {
-            "backend": "scripted",
-            "family": "fast_regression",
-            "scenarioKey": "hitl-bounded-review-loop-followup",
-            "tags": [
-              "hitl",
-              "resumable-review",
-              "rule-propagation"
-            ]
-          },
-          "brief": "Current HITL contracts emphasize what must stay human-owned, chunked review, and rule propagation between chunks.",
-          "description": "The user rejects agent-owned judgment until the assistant builds a bounded, resumable review loop with explicit accepted rules and next-state carryover.",
-          "maxTurns": 5,
-          "name": "HITL Bounded Review Loop Follow-up",
-          "runner": {
-            "mode": "live"
-          },
-          "scenarioId": "hitl-bounded-review-loop-followup",
-          "schemaVersion": "cautilus.scenario.v1",
-          "sideEffectsMode": "shadow",
-          "simulator": {
-            "kind": "scripted",
-            "turns": [
-              {
-                "text": "이건 agent가 final judgment 내리면 안 됩니다."
-              },
-              {
-                "text": "사람이 판단해야 할 기준을 먼저 적고 chunked review loop로 가주세요."
-              },
-              {
-                "text": "accepted rules를 다음 chunk들에 전파해야 합니다."
-              }
-            ]
-          }
-        },
-        "evidence": [
-          {
-            "messages": [
-              "이건 agent가 final judgment 내리면 안 됩니다.",
-              "사람이 판단해야 할 기준을 먼저 적고 chunked review loop로 가주세요.",
-              "accepted rules를 다음 chunk들에 전파해야 합니다."
-            ],
-            "observedAt": "2026-04-18T16:30:00.000Z",
-            "sourceKind": "skill_contract",
-            "threadKey": "dogfood-hitl-bounded-review-loop",
-            "title": "hitl bounded review loop"
-          }
-        ],
-        "existingCoverage": {
-          "recentResultCount": 0,
-          "scenarioKeyExists": false
-        },
-        "family": "fast_regression",
-        "intentProfile": null,
-        "proposalKey": "hitl-bounded-review-loop-followup",
-        "rationale": "1 recent log match(es) suggested this pattern.",
-        "recommendedBackends": [
-          "scripted"
-        ],
-        "title": "Refresh hitl bounded-review-loop follow-up scenario from dogfood contracts"
       }
     ],
     "schemaVersion": "cautilus.scenario_proposals.v1",

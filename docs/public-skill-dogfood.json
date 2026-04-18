@@ -120,13 +120,13 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context",
         "uses the named skill or capability lookup path before falling back to broad filesystem search"
       ],
-      "review_status": "reviewed",
-      "reviewed_on": "2026-04-16",
-      "observed_evidence": [
-        "The checked-in public core explicitly says capability phrases like `X skill`, `support/X`, and `X integration` should invoke `find-skills` before filesystem discovery.",
-        "The adapter resolves the durable artifact to `charness-artifacts/find-skills/latest.md`, which matches the current reviewed expectation for persisted capability discovery output.",
-        "Repo-owned eval and tests already exercise local-first discovery through `find-skills-local-first`, confirming that named capability lookup stays ahead of broad search and still exposes trusted roots and integrations honestly."
-      ]
+  "review_status": "reviewed",
+  "reviewed_on": "2026-04-18",
+  "observed_evidence": [
+    "The checked-in public core now treats `charness-artifacts/find-skills/latest.*` as the canonical capability inventory artifact, while recommendation queries stay ad hoc and should not rewrite that durable surface just because the invocation shape changed.",
+    "The current repo memory at `charness-artifacts/retro/recent-lessons.md` explicitly records the repeat trap here: canonical inventory and ad hoc recommendation output must stay separate so ordinary inspection does not create false dirty state or erode operator trust.",
+    "That makes the current `find-skills-canonical-artifact-followup` long-context candidate a real reviewed consumer seam: the user's push to distinguish canonical evidence from query-shaped output maps directly to checked-in `find-skills` behavior and artifact policy."
+  ]
     },
     {
       "skill_id": "gather",

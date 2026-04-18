@@ -103,11 +103,11 @@
     },
     {
       "proposalKey": "find-skills-canonical-artifact-followup",
-      "title": "Refresh find-skills canonical-artifact follow-up scenario from recent activity",
+      "title": "Refresh find-skills canonical-artifact follow-up scenario from dogfood contracts",
       "family": "fast_regression",
       "name": "Find Skills Canonical Artifact Follow-up",
-      "description": "The user keeps pointing out dirty `find-skills` artifacts until the assistant distinguishes canonical durable inventory from ad hoc recommendation output.",
-      "brief": "Recent activity shows repeated correction pressure about artifact churn caused by invocation-shape differences.",
+      "description": "The user keeps pointing out dirty `find-skills` artifacts until the assistant distinguishes canonical durable inventory from ad hoc recommendation output and stops treating query-shaped churn as repo truth.",
+      "brief": "Current find-skills contracts and retro memory both require canonical inventory to stay separate from ad hoc recommendation output, so long-context behavior regresses if that boundary is forgotten.",
       "tags": [
         "find-skills",
         "artifact-policy",
@@ -121,10 +121,10 @@
       ],
       "evidence": [
         {
-          "sourceKind": "human_conversation",
-          "title": "find-skills canonical artifact follow-up",
-          "threadKey": "session-find-skills-canonical-artifact",
-          "observedAt": "2026-04-18T11:00:00.000Z",
+          "sourceKind": "skill_contract",
+          "title": "find-skills canonical artifact contract",
+          "threadKey": "dogfood-find-skills-canonical-artifact",
+          "observedAt": "2026-04-18T19:45:00.000Z",
           "messages": [
             "이게 충분히 유의미한 정보라면 무조건 커밋해야 하는데 왜 물어보는가?",
             "평소와 다른 방식으로 호출했다는 건 뭐죠?",

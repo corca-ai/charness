@@ -21,21 +21,21 @@
 
 ## Proposal Keys
 
+- `find-skills-canonical-artifact-followup`
 - `retro-structural-cause-followup`
 - `premortem-canonical-subagent-followup`
 - `quality-proof-layering-followup`
 - `gather-official-path-before-browser-followup`
-- `hitl-bounded-review-loop-followup`
 
 ## Omitted Candidate Keys
 
-- `find-skills-canonical-artifact-followup`
 - `handoff-workflow-trigger-followup`
 - `init-repo-partial-normalization-followup`
 - `narrative-truth-before-announcement-followup`
 - `spec-before-impl-followup`
 - `debug-exact-symptom-before-fix-followup`
 - `release-real-host-proof-followup`
+- `hitl-bounded-review-loop-followup`
 
 ## Tag Coverage
 
