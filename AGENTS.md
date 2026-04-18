@@ -5,6 +5,10 @@ self-validation.
 
 ## Operating Stance
 
+- ALWAYS CALL `CHARNESS:FIND-SKILLS` ONCE AT THE START OF EACH TASK-ORIENTED SESSION.
+  Use its capability inventory as the session's default map of public skills,
+  support skills, synced support surfaces, and integrations before broader
+  repo exploration.
 - USE THE ACTUAL AVAILABLE SKILLS FOR THIS TURN.
   If a matching skill exists in the current session, load it before
   improvising.
