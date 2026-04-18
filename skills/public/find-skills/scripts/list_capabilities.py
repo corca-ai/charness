@@ -6,7 +6,6 @@ import importlib.util
 import json
 import re
 from pathlib import Path
-from typing import Any
 
 
 def _load_skill_runtime_bootstrap():
@@ -34,13 +33,15 @@ support_dir = _scripts_repo_layout_module.support_dir
 _scripts_tool_recommendation_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.tool_recommendation_lib")
 recommendations_for_public_skill = _scripts_tool_recommendation_lib_module.recommendations_for_public_skill
 recommendations_for_role = _scripts_tool_recommendation_lib_module.recommendations_for_role
+_list_capabilities_lib_module = SKILL_RUNTIME.load_local_skill_module(__file__, "list_capabilities_lib")
+build_inventory_payload = _list_capabilities_lib_module.build_inventory_payload
 _inventory_artifact_module = SKILL_RUNTIME.load_local_skill_module(__file__, "inventory_artifact")
 persist_inventory = _inventory_artifact_module.persist_inventory
+resolve_tool_recommendations = _list_capabilities_lib_module.resolve_tool_recommendations
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
 
 REFERENCE_TOKEN_RE = re.compile(r"`([^`]+)`")
-
 def _local_surface_root(target_root: Path) -> Path:
     return target_root if (REPO_ROOT / "skills" / "public").is_dir() else REPO_ROOT
 
@@ -189,49 +190,24 @@ def main() -> None:
         for path in sorted((local_root / "integrations" / "tools").glob("*.json"))
         if path.name != "manifest.schema.json"
     ]
-    recommendation_query: dict[str, Any] | None = None
-    if args.recommend_for_skill:
-        tool_recommendations = recommendations_for_public_skill(local_root, manifests, skill_id=args.recommend_for_skill)
-        recommendation_query = {
-            "mode": "public_skill",
-            "skill_id": args.recommend_for_skill,
-        }
-    elif args.recommendation_role:
-        next_skill_id = args.next_skill_id or "quality"
-        tool_recommendations = recommendations_for_role(
-            local_root,
-            manifests,
-            recommendation_role=args.recommendation_role,
-            next_skill_id=next_skill_id,
-            only_blocking=args.only_blocking,
-        )
-        recommendation_query = {
-            "mode": "recommendation_role",
-            "recommendation_role": args.recommendation_role,
-            "next_skill_id": next_skill_id,
-            "only_blocking": args.only_blocking,
-        }
-    else:
-        tool_recommendations = []
-
-    payload = {
-        "adapter": {
-            "found": adapter["found"],
-            "valid": adapter["valid"],
-            "path": adapter["path"],
-            "warnings": adapter["warnings"],
-            "trusted_skill_roots": trusted_skill_roots,
-            "allow_external_registry": adapter["data"].get("allow_external_registry", False),
-            "prefer_local_first": adapter["data"].get("prefer_local_first", True),
-        },
-        "public_skills": public_entries,
-        "support_skills": support_entries,
-        "support_capabilities": support_capabilities(local_root),
-        "integrations": integrations(local_root),
-        "trusted_skills": trusted_entries,
-        "tool_recommendations": tool_recommendations,
-        "tool_recommendation_query": recommendation_query,
-    }
+    tool_recommendations, recommendation_query = resolve_tool_recommendations(
+        args,
+        local_root=local_root,
+        manifests=manifests,
+        recommendations_for_public_skill=recommendations_for_public_skill,
+        recommendations_for_role=recommendations_for_role,
+    )
+    payload = build_inventory_payload(
+        adapter=adapter,
+        trusted_skill_roots=trusted_skill_roots,
+        public_entries=public_entries,
+        support_entries=support_entries,
+        support_capabilities=support_capabilities(local_root),
+        integrations=integrations(local_root),
+        trusted_entries=trusted_entries,
+        tool_recommendations=tool_recommendations,
+        recommendation_query=recommendation_query,
+    )
     payload["artifacts"] = persist_inventory(
         repo_root=root,
         output_dir=root / adapter["data"]["output_dir"],

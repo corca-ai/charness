@@ -6,6 +6,51 @@ import subprocess
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+LIST_CAPABILITIES_CMD = ("python3", "skills/public/find-skills/scripts/list_capabilities.py")
+
+
+def _write_skill(root: Path, skill_id: str, description: str, *, name: str | None = None) -> None:
+    skill_name = name or skill_id
+    title = skill_name.replace("-", " ").title()
+    skill_dir = root / "skills" / "public" / skill_id
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(["---", f"name: {skill_name}", f'description: "{description}"', "---", "", f"# {title}"]) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _write_find_skills_adapter(root: Path, *, include_preset: bool = False) -> None:
+    lines = [
+        "version: 1",
+        "repo: demo",
+        "language: en",
+        "output_dir: charness-artifacts/find-skills",
+    ]
+    if include_preset:
+        lines.extend(["preset_id: portable-defaults", "customized_from: portable-defaults"])
+    lines.extend(["trusted_skill_roots: []", "prefer_local_first: true", "allow_external_registry: false", ""])
+    (root / ".agents").mkdir(parents=True)
+    (root / ".agents" / "find-skills-adapter.yaml").write_text("\n".join(lines), encoding="utf-8")
+
+
+def _run_list_capabilities(tmp_path: Path, *args: str, env: dict[str, str] | None = None) -> dict[str, object]:
+    result = subprocess.run(
+        [*LIST_CAPABILITIES_CMD, "--repo-root", str(tmp_path), *args],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    return json.loads(result.stdout)
+
+
+def _write_executable(root: Path, name: str, lines: list[str]) -> None:
+    binary = root / "bin" / name
+    binary.parent.mkdir(parents=True)
+    binary.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    binary.chmod(0o755)
 
 
 def _write_example_integration(root: Path) -> None:
@@ -46,11 +91,7 @@ def _write_example_integration(root: Path) -> None:
 
 
 def _write_gather_support_capability(root: Path) -> None:
-    (root / "skills" / "public" / "gather").mkdir(parents=True)
-    (root / "skills" / "public" / "gather" / "SKILL.md").write_text(
-        "\n".join(["---", "name: gather", 'description: "Gather skill."', "---", "", "# Gather"]) + "\n",
-        encoding="utf-8",
-    )
+    _write_skill(root, "gather", "Gather skill.")
     support = root / "skills" / "support" / "gather-slack"
     (support / "references").mkdir(parents=True)
     (support / "references" / "runtime.md").write_text("# Runtime\n", encoding="utf-8")
@@ -87,72 +128,14 @@ def _write_gather_support_capability(root: Path) -> None:
         "intent_triggers": ["gather slack"],
     }
     (support / "capability.json").write_text(json.dumps(capability, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    (root / ".agents").mkdir(parents=True)
-    (root / ".agents" / "find-skills-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/find-skills",
-                "trusted_skill_roots: []",
-                "prefer_local_first: true",
-                "allow_external_registry: false",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
+    _write_find_skills_adapter(root)
 
 
 def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> None:
-    (tmp_path / "skills" / "public" / "demo").mkdir(parents=True)
-    (tmp_path / "skills" / "public" / "demo" / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: demo",
-                'description: "Demo skill."',
-                "---",
-                "",
-                "# Demo",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    (tmp_path / ".agents").mkdir(parents=True)
-    (tmp_path / ".agents" / "find-skills-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/find-skills",
-                "preset_id: portable-defaults",
-                "customized_from: portable-defaults",
-                "trusted_skill_roots: []",
-                "prefer_local_first: true",
-                "allow_external_registry: false",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
+    _write_skill(tmp_path, "demo", "Demo skill.")
+    _write_find_skills_adapter(tmp_path, include_preset=True)
     _write_example_integration(tmp_path)
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/find-skills/scripts/list_capabilities.py",
-            "--repo-root",
-            str(tmp_path),
-        ],
-        cwd=REPO_ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    payload = json.loads(result.stdout)
+    payload = _run_list_capabilities(tmp_path)
     assert payload["public_skills"][0]["summary"] == "Demo skill."
     assert payload["public_skills"][0]["canonical_path"] == "skills/public/demo/SKILL.md"
     assert payload["public_skills"][0]["trigger_phrases"] == [
@@ -208,19 +191,7 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
 
 def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None:
     _write_gather_support_capability(tmp_path)
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/find-skills/scripts/list_capabilities.py",
-            "--repo-root",
-            str(tmp_path),
-        ],
-        cwd=REPO_ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    payload = json.loads(result.stdout)
+    payload = _run_list_capabilities(tmp_path)
     assert payload["support_skills"] == [
         {
             "id": "gather-slack",
@@ -305,96 +276,37 @@ def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None
 
 def test_list_capabilities_preserves_generated_at_when_inventory_is_unchanged(tmp_path: Path) -> None:
     _write_gather_support_capability(tmp_path)
-
-    first = subprocess.run(
-        [
-            "python3",
-            "skills/public/find-skills/scripts/list_capabilities.py",
-            "--repo-root",
-            str(tmp_path),
-        ],
-        cwd=REPO_ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    first_payload = json.loads(first.stdout)
-
-    second = subprocess.run(
-        [
-            "python3",
-            "skills/public/find-skills/scripts/list_capabilities.py",
-            "--repo-root",
-            str(tmp_path),
-        ],
-        cwd=REPO_ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    second_payload = json.loads(second.stdout)
+    first_payload = _run_list_capabilities(tmp_path)
+    second_payload = _run_list_capabilities(tmp_path)
 
     assert first_payload["artifacts"]["updated"] is True
     assert second_payload["artifacts"]["updated"] is False
     assert second_payload["artifacts"]["generated_at"] == first_payload["artifacts"]["generated_at"]
+
+
 def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_path: Path) -> None:
-    (tmp_path / "skills" / "public" / "gather").mkdir(parents=True)
-    (tmp_path / "skills" / "public" / "gather" / "SKILL.md").write_text(
-        "\n".join(
-            [
-                "---",
-                "name: gather",
-                'description: "Gather skill."',
-                "---",
-                "",
-                "# Gather",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    (tmp_path / ".agents").mkdir(parents=True)
-    (tmp_path / ".agents" / "find-skills-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/find-skills",
-                "preset_id: portable-defaults",
-                "customized_from: portable-defaults",
-                "trusted_skill_roots: []",
-                "prefer_local_first: true",
-                "allow_external_registry: false",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
+    _write_skill(tmp_path, "gather", "Gather skill.")
+    _write_find_skills_adapter(tmp_path, include_preset=True)
     (tmp_path / "integrations" / "tools").mkdir(parents=True)
-    (tmp_path / "bin").mkdir(parents=True)
-    (tmp_path / "bin" / "gws").write_text(
-        "\n".join(
-            [
-                "#!/bin/sh",
-                "if [ \"$1\" = \"--version\" ]; then",
-                "  echo 'gws 1.2.3'",
-                "  exit 0",
-                "fi",
-                "if [ \"$1\" = \"auth\" ] && [ \"$2\" = \"--help\" ]; then",
-                "  echo 'login'",
-                "  exit 0",
-                "fi",
-                "if [ \"$1\" = \"auth\" ] && [ \"$2\" = \"status\" ]; then",
-                "  exit 0",
-                "fi",
-                "exit 1",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    _write_executable(
+        tmp_path,
+        "gws",
+        [
+            "#!/bin/sh",
+            "if [ \"$1\" = \"--version\" ]; then",
+            "  echo 'gws 1.2.3'",
+            "  exit 0",
+            "fi",
+            "if [ \"$1\" = \"auth\" ] && [ \"$2\" = \"--help\" ]; then",
+            "  echo 'login'",
+            "  exit 0",
+            "fi",
+            "if [ \"$1\" = \"auth\" ] && [ \"$2\" = \"status\" ]; then",
+            "  exit 0",
+            "fi",
+            "exit 1",
+        ],
     )
-    (tmp_path / "bin" / "gws").chmod(0o755)
     (tmp_path / "integrations" / "tools" / "gws-cli.json").write_text(
         json.dumps(
             {
@@ -433,23 +345,12 @@ def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_pa
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/find-skills/scripts/list_capabilities.py",
-            "--repo-root",
-            str(tmp_path),
-            "--recommend-for-skill",
-            "gather",
-        ],
-        cwd=REPO_ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
+    payload = _run_list_capabilities(
+        tmp_path,
+        "--recommend-for-skill",
+        "gather",
         env={**os.environ, "PATH": f"{tmp_path / 'bin'}:{os.environ.get('PATH', '')}"},
     )
-
-    payload = json.loads(result.stdout)
     assert payload["tool_recommendations"] == [
         {
             "tool_id": "gws-cli",
@@ -480,43 +381,24 @@ def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_pa
 
 
 def test_list_capabilities_can_emit_tool_recommendations_for_role(tmp_path: Path) -> None:
-    (tmp_path / ".agents").mkdir(parents=True)
-    (tmp_path / ".agents" / "find-skills-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/find-skills",
-                "trusted_skill_roots: []",
-                "prefer_local_first: true",
-                "allow_external_registry: false",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
+    _write_find_skills_adapter(tmp_path)
     (tmp_path / "integrations" / "tools").mkdir(parents=True)
-    (tmp_path / "bin").mkdir(parents=True)
-    (tmp_path / "bin" / "cautilus").write_text(
-        "\n".join(
-            [
-                "#!/bin/sh",
-                "if [ \"$1\" = \"--version\" ]; then",
-                "  echo 'cautilus 0.5.3'",
-                "  exit 0",
-                "fi",
-                "if [ \"$1\" = \"doctor\" ] && [ \"$2\" = \"--help\" ]; then",
-                "  echo 'doctor'",
-                "  exit 0",
-                "fi",
-                "exit 1",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    _write_executable(
+        tmp_path,
+        "cautilus",
+        [
+            "#!/bin/sh",
+            "if [ \"$1\" = \"--version\" ]; then",
+            "  echo 'cautilus 0.5.3'",
+            "  exit 0",
+            "fi",
+            "if [ \"$1\" = \"doctor\" ] && [ \"$2\" = \"--help\" ]; then",
+            "  echo 'doctor'",
+            "  exit 0",
+            "fi",
+            "exit 1",
+        ],
     )
-    (tmp_path / "bin" / "cautilus").chmod(0o755)
     (tmp_path / "integrations" / "tools" / "cautilus.json").write_text(
         json.dumps(
             {
@@ -560,25 +442,14 @@ def test_list_capabilities_can_emit_tool_recommendations_for_role(tmp_path: Path
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/find-skills/scripts/list_capabilities.py",
-            "--repo-root",
-            str(tmp_path),
-            "--recommendation-role",
-            "validation",
-            "--next-skill-id",
-            "quality",
-        ],
-        cwd=REPO_ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
+    payload = _run_list_capabilities(
+        tmp_path,
+        "--recommendation-role",
+        "validation",
+        "--next-skill-id",
+        "quality",
         env={**os.environ, "PATH": f"{tmp_path / 'bin'}:{os.environ.get('PATH', '')}"},
     )
-
-    payload = json.loads(result.stdout)
     assert payload["tool_recommendation_query"] == {
         "mode": "recommendation_role",
         "recommendation_role": "validation",
