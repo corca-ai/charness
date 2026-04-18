@@ -13,7 +13,7 @@ normalized.
 - detect whether the repo is greenfield or already partially initialized
 - run a short ideation pass when the concept is still too thin for honest docs
 - scaffold or realign the basic durable surfaces a maintainer needs
-- normalize `AGENTS.md` and `CLAUDE.md` into one explicit host-facing policy
+- normalize [`AGENTS.md`](../../../AGENTS.md) and `CLAUDE.md` into one explicit host-facing policy
 - leave deeper quality review, long-range planning, and baton-pass work to
   adjacent skills once the operating surface exists
 
@@ -33,9 +33,9 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 
 By default, `init-repo` writes any durable normalization note to
 `charness-artifacts/init-repo/latest.md`. Repos can override the directory with
-`.agents/init-repo-adapter.yaml`.
+[`.agents/init-repo-adapter.yaml`](../../../.agents/init-repo-adapter.yaml).
 
-If the repo is mature and only `docs/operator-acceptance.md` is missing,
+If the repo is mature and only [`docs/operator-acceptance.md`](../../../docs/operator-acceptance.md) is missing,
 synthesize a first draft from existing checks before hand-writing a template:
 
 ```bash
@@ -64,7 +64,7 @@ Then load only the references needed for the detected state:
 
 - greenfield or under-shaped repo: `references/greenfield-flow.md`
 - partially initialized repo: `references/normalization-flow.md`
-- any `AGENTS.md` / `CLAUDE.md` ambiguity: `references/agent-docs-policy.md`
+- any [`AGENTS.md`](../../../AGENTS.md) / `CLAUDE.md` ambiguity: `references/agent-docs-policy.md`
 - scaffolding or rewriting the basic docs: `references/default-surfaces.md`
 - installable CLI / plugin / agent-facing local surface: `references/probe-surface.md`
 - repo wants durable retrospective pickup: `references/retro-memory-seam.md`
@@ -78,15 +78,15 @@ Then load only the references needed for the detected state:
        missing-surface repair instead of a broad scaffold rewrite
    - `NORMALIZE`: the core files exist, but their boundaries or ownership are drifting
    - if a mature repo uses equivalent local names, prefer
-     `.agents/init-repo-adapter.yaml` `surfaces` overrides over asking the repo
+     [`.agents/init-repo-adapter.yaml`](../../../.agents/init-repo-adapter.yaml) `surfaces` overrides over asking the repo
      to rename docs only to satisfy the inspector
 2. Stabilize the host-facing instruction surface first.
-   - if both `AGENTS.md` and `CLAUDE.md` are missing, create `AGENTS.md` and
+   - if both [`AGENTS.md`](../../../AGENTS.md) and `CLAUDE.md` are missing, create [`AGENTS.md`](../../../AGENTS.md) and
      make `CLAUDE.md` a symlink to it
-   - if `AGENTS.md` exists and `CLAUDE.md` is missing, create the symlink
-   - if `CLAUDE.md` already symlinks to `AGENTS.md`, keep it
+   - if [`AGENTS.md`](../../../AGENTS.md) exists and `CLAUDE.md` is missing, create the symlink
+   - if `CLAUDE.md` already symlinks to [`AGENTS.md`](../../../AGENTS.md), keep it
    - if `CLAUDE.md` is a real file with meaningful content, stop and ask the
-     user before promoting or merging it into `AGENTS.md`
+     user before promoting or merging it into [`AGENTS.md`](../../../AGENTS.md)
 3. Run a short ideation pass when needed.
    - if the repo has no honest concept surface yet, ask the minimum
      high-leverage questions needed to write real docs
@@ -94,46 +94,46 @@ Then load only the references needed for the detected state:
      direction before scaffolding
    - do not dump generic templates into a concept vacuum
 4. Scaffold or realign the default operating surfaces.
-   - `README.md`
-   - `AGENTS.md`
+   - [`README.md`](../../../README.md)
+   - [`AGENTS.md`](../../../AGENTS.md)
    - `docs/roadmap.md`
-   - `docs/operator-acceptance.md`
-   - optionally `INSTALL.md` and `UNINSTALL.md` only when the repo actually
+   - [`docs/operator-acceptance.md`](../../../docs/operator-acceptance.md)
+   - optionally [`INSTALL.md`](../../../INSTALL.md) and [`UNINSTALL.md`](../../../UNINSTALL.md) only when the repo actually
      ships an installable surface
    - when the repo ships an installable CLI, plugin, package, or local
-     agent-facing integration surface, make `README.md` and/or `INSTALL.md`
+     agent-facing integration surface, make [`README.md`](../../../README.md) and/or [`INSTALL.md`](../../../INSTALL.md)
      name a small probe surface explicitly instead of collapsing everything into
      one vague "run doctor" instruction
    - when the repo wants durable retrospective memory, seed
-     `.agents/retro-adapter.yaml` and `charness-artifacts/retro/recent-lessons.md`
+     [`.agents/retro-adapter.yaml`](../../../.agents/retro-adapter.yaml) and [`charness-artifacts/retro/recent-lessons.md`](../../../charness-artifacts/retro/recent-lessons.md)
      with `$SKILL_DIR/scripts/seed_retro_memory.py` instead of hand-writing the seam
-   - when that seam is enabled, make `AGENTS.md` name
-     `charness-artifacts/retro/recent-lessons.md` as a repo memory surface so future
+   - when that seam is enabled, make [`AGENTS.md`](../../../AGENTS.md) name
+     [`charness-artifacts/retro/recent-lessons.md`](../../../charness-artifacts/retro/recent-lessons.md) as a repo memory surface so future
      sessions can actually discover it
-   - add a compact-by-default `Skill Routing` block to `AGENTS.md` when
+   - add a compact-by-default `Skill Routing` block to [`AGENTS.md`](../../../AGENTS.md) when
      installed charness skills provide high-signal routing hints
    - keep compact mode intentionally non-exhaustive and discovery-heavy:
      prefer installed charness public skills before improvising, and route
      unclear cases to the shared/public charness skill `find-skills` first
    - allow `expanded` when the repo explicitly wants the full checked-in skill
-     catalog rendered into `AGENTS.md`; use adapter `skill_routing_mode` or
+     catalog rendered into [`AGENTS.md`](../../../AGENTS.md); use adapter `skill_routing_mode` or
      `$SKILL_DIR/scripts/render_skill_routing.py --mode expanded`
    - use `$SKILL_DIR/scripts/render_skill_routing.py` so mature repos get an
      add-block suggestion instead of a silent rewrite
 5. Keep the boundaries honest.
-   - `README.md`: current repo story and user-facing orientation
+   - [`README.md`](../../../README.md): current repo story and user-facing orientation
      - if the repo ships an installable surface, README should point at the
        canonical install path and the probe-surface doc section without trying
        to explain every command inline
-   - `AGENTS.md`: agent operating contract for this repo
+   - [`AGENTS.md`](../../../AGENTS.md): agent operating contract for this repo
    - `docs/roadmap.md`: near-term work direction and ordered priorities
-   - `docs/operator-acceptance.md`: what a human maintainer must do to take over
-   - `INSTALL.md`: install/update/probe semantics for repos that really expose
+   - [`docs/operator-acceptance.md`](../../../docs/operator-acceptance.md): what a human maintainer must do to take over
+   - [`INSTALL.md`](../../../INSTALL.md): install/update/probe semantics for repos that really expose
      an install contract
      - the minimum honest probe surface is usually: install/update path,
        binary healthcheck, machine-readable discovery if it exists, repo
        readiness, and any local discoverability/materialization step
-   - do not create `docs/handoff.md` by default; use `handoff` only when the
+   - do not create [`docs/handoff.md`](../../../docs/handoff.md) by default; use `handoff` only when the
      next session truly needs a baton-pass artifact
    - do not create `docs/master-plan.md` unless the user explicitly asks for it
 6. End with a quality-style sanity pass.
@@ -160,7 +160,7 @@ The result should usually include:
 
 - Do not write generic boilerplate without first checking whether the repo
   already has an honest concept or operating surface.
-- Do not silently merge `CLAUDE.md` into `AGENTS.md` when both contain real
+- Do not silently merge `CLAUDE.md` into [`AGENTS.md`](../../../AGENTS.md) when both contain real
   content; ask the user first.
 - Do not let `init-repo` expand into deep product ideation when a short
   clarification loop is enough.
@@ -169,7 +169,7 @@ The result should usually include:
 - Do not let `init-repo` become a substitute for `narrative` when the repo
   already has a rich truth surface that mainly needs alignment.
 - Do not create `docs/master-plan.md` by default.
-- Do not create `docs/handoff.md` unless the user explicitly wants a baton pass
+- Do not create [`docs/handoff.md`](../../../docs/handoff.md) unless the user explicitly wants a baton pass
   or the next-step coordination burden is real enough to justify `handoff`.
 
 ## References

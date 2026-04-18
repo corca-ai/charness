@@ -12,13 +12,13 @@ This reference covers the pnpm lockfile and audit moves that matter to
 - keep one JavaScript lockfile surface per repo root unless the repo has an
   explicit multi-root packaging contract
 
-`scripts/check-supply-chain.py` enforces the root-level alignment piece. It is
+[`scripts/check-supply-chain.py`](../../../../scripts/check-supply-chain.py) enforces the root-level alignment piece. It is
 not a substitute for pnpm's live audit tooling.
 
 ## Manual Or Networked Follow-Up
 
 - run pnpm's audit flow only where the team is prepared to triage advisory
-  output; `scripts/check-supply-chain-online.py` now wraps that path
+  output; [`scripts/check-supply-chain-online.py`](../../../../scripts/check-supply-chain-online.py) now wraps that path
   explicitly with `pnpm audit --json`
 - review new registries, overrides, or workspace-wide patching rules with human
   judgment because those choices are trust-boundary changes, not only syntax

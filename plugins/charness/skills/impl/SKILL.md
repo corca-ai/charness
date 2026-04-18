@@ -96,8 +96,8 @@ Adapter policy:
    - add or strengthen checks when an important branch would otherwise stay
      unproven
    - if the slice changes repo-owned instruction or prompt surfaces such as
-     `AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or
-     adapter prompt wording, refresh `charness-artifacts/cautilus/latest.md`
+     [`AGENTS.md`](../../../AGENTS.md), public/support `SKILL.md`, behavior-steering references, or
+     adapter prompt wording, refresh [`charness-artifacts/cautilus/latest.md`](../../../charness-artifacts/cautilus/latest.md)
      from repo-owned cautilus proof before closeout
    - for behavior-preserving prompt changes, run
      `cautilus instruction-surface test --repo-root .`; for behavior-improving
@@ -109,7 +109,7 @@ Adapter policy:
 5. Sync truth surfaces and re-read the contract before closeout.
    - if the slice changed user-visible capability, operating philosophy,
      supported integrations, install/usage surface, or honest stage claims,
-     check `README.md` and the adapter's `truth_surfaces`
+     check [`README.md`](../../../README.md) and the adapter's `truth_surfaces`
    - update the relevant truth surfaces before stopping
    - re-read `Fixed Decisions` and named acceptance checks
    - confirm each item is reflected in the delivered slice or explicitly
@@ -155,7 +155,7 @@ The closeout should usually include:
   named acceptance checks against the delivered slice.
 - Do not treat commit, verification, or contract-sync completion as a default
   pause when the user explicitly asked for autonomous continuation.
-- Do not stop after a user-visible change without checking whether `README.md`
+- Do not stop after a user-visible change without checking whether [`README.md`](../../../README.md)
   and adjacent durable truth surfaces are now stale.
 - Do not leave a resolved probe undocumented in the canonical artifact.
 - If a branch or fallback matters to users or operators, prove it with the best

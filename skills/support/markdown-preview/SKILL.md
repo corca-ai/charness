@@ -15,7 +15,7 @@ README, docs, or spec prose review.
 - prefer `glow` for terminal-faithful Markdown rendering when it is available
 - render checked-in Markdown at explicit widths and persist the result as text
   artifacts
-- search for repo-local config at `.agents/markdown-preview.yaml`,
+- search for repo-local config at [`.agents/markdown-preview.yaml`](../../../.agents/markdown-preview.yaml),
   `.codex/markdown-preview.yaml`, `.claude/markdown-preview.yaml`,
   `docs/markdown-preview.yaml`, and `markdown-preview.yaml`
 - when `glow` is missing, write degraded artifacts that say so explicitly

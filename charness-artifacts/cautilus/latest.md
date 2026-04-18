@@ -3,49 +3,80 @@ Date: 2026-04-18
 
 ## Trigger
 
-- slice: `gather` private SaaS browser-fallback contract
+- slice: `check-doc-links` backtick file-ref rule + required `lychee` for internal link integrity
 - claim: `preserve`
 
 ## Validation Goal
 
 - goal: `preserve`
-- reason: widen `gather` and `agent-browser` wording for browser-mediated
-  private-source acquisition without regressing the maintained root
-  instruction-surface routing contract
+- reason: mechanical rewrite of silently-rotting backtick file references into
+  markdown links across checked-in docs, plus documentation and lint stance
+  updates; no semantic prompt changes intended
 
 ## Prompt Surfaces
 
+- `AGENTS.md`
+- `.agents/quality-adapter.yaml`
+- `skills/public/create-skill/references/adapter-pattern.md`
+- `skills/public/find-skills/SKILL.md`
 - `skills/public/gather/SKILL.md`
-- `skills/public/gather/references/capability-contract.md`
-- `skills/public/gather/references/browser-mediated-private-sources.md`
-- `skills/support/agent-browser/SKILL.md`
-- `skills/support/agent-browser/references/runtime.md`
-- `skills/support/agent-browser/references/auth-bootstrap.md`
+- `skills/public/gather/references/adapter-contract.md`
+- `skills/public/gather/references/document-seams.md`
+- `skills/public/handoff/SKILL.md`
+- `skills/public/handoff/references/adapter-contract.md`
+- `skills/public/handoff/references/document-seams.md`
+- `skills/public/handoff/references/spill-targets.md`
+- `skills/public/hitl/SKILL.md`
+- `skills/public/impl/SKILL.md`
+- `skills/public/impl/references/adapter-contract.md`
+- `skills/public/init-repo/SKILL.md`
+- `skills/public/init-repo/references/agent-docs-policy.md`
+- `skills/public/init-repo/references/default-surfaces.md`
+- `skills/public/init-repo/references/greenfield-flow.md`
+- `skills/public/init-repo/references/normalization-flow.md`
+- `skills/public/init-repo/references/operator-acceptance-synthesis.md`
+- `skills/public/init-repo/references/probe-surface.md`
+- `skills/public/init-repo/references/retro-memory-seam.md`
+- `skills/public/narrative/SKILL.md`
+- `skills/public/narrative/references/adapter-contract.md`
+- `skills/public/quality/references/adapter-contract.md`
+- `skills/public/quality/references/automation-promotion.md`
+- `skills/public/quality/references/bootstrap-posture.md`
+- `skills/public/quality/references/entrypoint-docs-ergonomics.md`
+- `skills/public/quality/references/operability-signals.md`
+- `skills/public/quality/references/prompt-asset-policy.md`
+- `skills/public/quality/references/proposal-flow.md`
+- `skills/public/quality/references/security-npm.md`
+- `skills/public/quality/references/security-overview.md`
+- `skills/public/quality/references/security-pnpm.md`
+- `skills/public/quality/references/security-uv.md`
+- `skills/public/release/SKILL.md`
+- `skills/public/release/references/adapter-contract.md`
+- `skills/public/release/references/install-surface.md`
+- `skills/public/retro/SKILL.md`
+- `skills/public/retro/references/adapter-contract.md`
+- `skills/public/spec/SKILL.md`
+- `skills/support/markdown-preview/SKILL.md`
+- `skills/support/specdown/SKILL.md`
 
 ## Commands Run
 
-- `pytest -q tests/test_gather_google_workspace.py tests/charness_cli/test_capability_resolution.py`
-- `python3 scripts/validate-skills.py --repo-root .`
-- `python3 scripts/validate-integrations.py --repo-root .`
-- `python3 scripts/check-skill-contracts.py --repo-root .`
+- `python3 scripts/check-doc-links.py --repo-root .`
+- `./scripts/check-links-internal.sh`
+- `./scripts/check-links-external.sh`
+- `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
 - `cautilus instruction-surface test --repo-root .`
 
 ## Outcome
 
 - recommendation: `accept-now`
 - instruction-surface summary: `4 passed / 0 failed / 0 blocked`
-- routing notes: the checked-in bootstrap case still routes as
-  `bootstrapHelper=find-skills` plus `workSkill=impl`; compact no-bootstrap
-  implementation still routes to `impl`; contract-shaping still routes to
-  `spec`
-- gather notes: the new contract now names official API/export first,
-  `agent-browser` browser fallback, first-class auth/bootstrap modes, and
-  remote/headless degradation without perturbing the maintained first-skill
-  routing surface
+- routing notes: all four checked-in routing cases still pass after the
+  mechanical rewrite; converted `` `path/to/file.ext` `` and
+  `` `ROOT_FILE.ext` `` tokens into markdown links without altering the
+  conceptual prompt surface
 
 ## Follow-ups
 
-- close `charness#40` if the repo-facing contract and example scope are
-  judged sufficient
-- if `gather` needs long-context chatbot coverage next, add it to the packet
-  only after this contract lands and is stable
+- consider extending the rule to bare-basename refs (e.g., `` `check-doc-links.py` ``)
+  once we agree on the ambiguity policy for multi-match basenames

@@ -5,16 +5,16 @@ workdir: .tmp-test
 
 # Configuration
 
-Every project needs a `specdown.json`. It tells specdown where specs live,
+Every project needs a [`specdown.json`](../../../specdown.json). It tells specdown where specs live,
 which [depends::adapters](adapter-protocol.md) to launch, and what
 [reporters](report.md) to generate.
 
-Place `specdown.json` at the project root, next to `.git/`. All paths
+Place [`specdown.json`](../../../specdown.json) at the project root, next to `.git/`. All paths
 inside the config are resolved relative to the config file's directory,
 so a root-level config can reference specs in any subdirectory (e.g.
 `"entry": "docs/specs/index.spec.md"`). This also makes the config easy
 to find for both humans and tools — `specdown run` looks for
-`specdown.json` in the current directory by default.
+[`specdown.json`](../../../specdown.json) in the current directory by default.
 
 The config is data-only JSON — no scripting, no language runtime dependency.
 For v1, a single file is sufficient.
@@ -252,7 +252,7 @@ When fields are omitted from a config file, sensible defaults are applied:
 
 | Field | Default |
 |-------|---------|
-| `entry` | `specs/index.spec.md` |
+| `entry` | [`specs/index.spec.md`](../../../specs/index.spec.md) |
 | `adapters` | `[]` (empty — built-in shell adapter handles `run:shell`) |
 | `models.builtin` | `"alloy"` |
 | `reporters` | `[{"builtin":"html","outFile":"specs/report"}, {"builtin":"json","outFile":"specs/report.json"}]` |
@@ -276,7 +276,7 @@ echo '{}' > defaults-test/specdown.json
 cd defaults-test && specdown run -dry-run 2>&1 | grep 'spec(s)'
 ```
 
-specdown runs without a config file when `specs/index.spec.md` exists.
+specdown runs without a config file when [`specs/index.spec.md`](../../../specs/index.spec.md) exists.
 
 ```run:shell
 # Verify specdown works with no config file

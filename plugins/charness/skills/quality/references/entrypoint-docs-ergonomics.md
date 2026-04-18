@@ -68,6 +68,6 @@ invariants. Keep taste, structure, and progressive-disclosure review in the
 advisory inventory above.
 
 Keep repo-specific command names and doc ownership in a repo-local contract
-such as `.agents/command-docs.yaml`, then call the checker from the standing
+such as [`.agents/command-docs.yaml`](../../../../.agents/command-docs.yaml), then call the checker from the standing
 quality gate. The public skill should carry the pattern; the adapter or
 repo-local contract should carry the actual CLI surface.

@@ -5,11 +5,11 @@ of the public skill body.
 
 ## Canonical Path
 
-Use `.agents/retro-adapter.yaml` for new repos.
+Use [`.agents/retro-adapter.yaml`](../../../../.agents/retro-adapter.yaml) for new repos.
 
 Search order:
 
-1. `.agents/retro-adapter.yaml`
+1. [`.agents/retro-adapter.yaml`](../../../../.agents/retro-adapter.yaml)
 2. `.codex/retro-adapter.yaml`
 3. `.claude/retro-adapter.yaml`
 4. `docs/retro-adapter.yaml`
@@ -86,7 +86,7 @@ auto_session_trigger_path_globs: []
 - missing adapter is stronger for `weekly`, especially when metrics or durable
   artifacts are expected
 - `snapshot_path` must be explicit; never infer hidden machine-write locations
-- `summary_path` should stay stable when used so `AGENTS.md` and handoff can
+- `summary_path` should stay stable when used so [`AGENTS.md`](../../../../AGENTS.md) and handoff can
   treat it as a repeatable memory surface instead of a one-off artifact
 - `metrics_commands` must be real commands with real sources; never placeholders
 - auto-trigger lists should stay bounded to repeat-trap seams such as

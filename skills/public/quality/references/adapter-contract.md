@@ -5,11 +5,11 @@ of the public skill body.
 
 ## Canonical Path
 
-Use `.agents/quality-adapter.yaml` for new repos.
+Use [`.agents/quality-adapter.yaml`](../../../../.agents/quality-adapter.yaml) for new repos.
 
 Search order:
 
-1. `.agents/quality-adapter.yaml`
+1. [`.agents/quality-adapter.yaml`](../../../../.agents/quality-adapter.yaml)
 2. `.codex/quality-adapter.yaml`
 3. `.claude/quality-adapter.yaml`
 4. `docs/quality-adapter.yaml`
@@ -83,7 +83,7 @@ checks, and hidden PASS-phase output. For this repo that is
 `./scripts/run-quality.sh --review`.
 
 Command-docs drift checks should usually live in their own repo-local contract
-such as `.agents/command-docs.yaml`, then be invoked from `gate_commands` or a
+such as [`.agents/command-docs.yaml`](../../../../.agents/command-docs.yaml), then be invoked from `gate_commands` or a
 repo-owned quality runner. Keep command names, doc paths, required help
 anchors, and required/forbidden doc phrases out of the public skill body.
 
@@ -114,7 +114,7 @@ them. Leave it empty by default. Current supported rules:
   and `scripts/`.
 
 The canonical quality path runs these opt-in rules through
-`scripts/validate-skill-ergonomics.py`. Bootstrap also treats invalid explicit
+[`scripts/validate-skill-ergonomics.py`](../../../../scripts/validate-skill-ergonomics.py). Bootstrap also treats invalid explicit
 rule values as an error instead of silently rewriting them to `[]`.
 
 ## Artifact Rule
@@ -125,7 +125,7 @@ The current quality pointer filename is fixed:
 
 Default path:
 
-- `charness-artifacts/quality/latest.md`
+- [`charness-artifacts/quality/latest.md`](../../../../charness-artifacts/quality/latest.md)
 
 Dated quality records should use `charness-artifacts/quality/YYYY-MM-DD-<slug>.md`.
 

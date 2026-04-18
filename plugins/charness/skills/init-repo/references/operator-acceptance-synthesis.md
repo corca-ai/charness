@@ -1,6 +1,6 @@
 # Operator Acceptance Synthesis
 
-When `docs/operator-acceptance.md` is missing in a repo that already has real
+When [`docs/operator-acceptance.md`](../../../../docs/operator-acceptance.md) is missing in a repo that already has real
 checks, derive it from the repo's current command and takeover surface instead
 of inventing a parallel ritual.
 

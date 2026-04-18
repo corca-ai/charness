@@ -106,7 +106,7 @@ selection and triage inline.
    - if the contract edits repo-owned instruction or prompt surfaces that steer
      agent behavior, define whether the intended claim is `preserve` or
      `improve`, then leave the matching cautilus proof path visible in
-     `charness-artifacts/cautilus/latest.md`
+     [`charness-artifacts/cautilus/latest.md`](../../../charness-artifacts/cautilus/latest.md)
 6. Keep the contract alive during implementation.
    - stabilize the contract earlier when churn would otherwise be expensive
    - keep unresolved items visible as probes when answers should emerge through

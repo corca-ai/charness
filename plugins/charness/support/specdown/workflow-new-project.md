@@ -14,8 +14,8 @@ This creates:
 
 | File | Purpose |
 |------|---------|
-| `specdown.json` | [Configuration](config.md) — entry file, adapters, reporters |
-| `specs/index.spec.md` | Entry page linking all spec documents |
+| [`specdown.json`](../../../specdown.json) | [Configuration](config.md) — entry file, adapters, reporters |
+| [`specs/index.spec.md`](../../../specs/index.spec.md) | Entry page linking all spec documents |
 | `specs/example.spec.md` | Starter spec you'll replace |
 
 ## 2. Replace the example
@@ -37,7 +37,7 @@ $ echo '{"email":"a@b.com","pass":"secret"}' | my-app login
 ```
 ````
 
-Update `specs/index.spec.md` to link to it:
+Update [`specs/index.spec.md`](../../../specs/index.spec.md) to link to it:
 
 ```markdown
 # My Project
@@ -49,7 +49,7 @@ Run `specdown run` to verify. The built-in shell adapter handles `run:shell` wit
 
 ## 3. Add adapters when needed
 
-The shell adapter covers most projects. When you need domain-specific checks (database state, API responses, UI assertions), register an [adapter](adapter-protocol.md) in `specdown.json`:
+The shell adapter covers most projects. When you need domain-specific checks (database state, API responses, UI assertions), register an [adapter](adapter-protocol.md) in [`specdown.json`](../../../specdown.json):
 
 ```json
 {

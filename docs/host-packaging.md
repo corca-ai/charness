@@ -39,7 +39,7 @@ The first contract keeps these repo directories host-neutral:
 - `profiles/`
 - `presets/`
 - `integrations/tools/`
-- `README.md`
+- [`README.md`](../README.md)
 
 That means the export script can materialize a host plugin layout without
 needing a second skill taxonomy or a second profile catalog.
@@ -47,10 +47,10 @@ needing a second skill taxonomy or a second profile catalog.
 The repo also carries a checked-in generated plugin tree so the GitHub
 repository exposes one stable install surface:
 
-- `plugins/charness/.claude-plugin/plugin.json`
-- `plugins/charness/.codex-plugin/plugin.json`
-- `.claude-plugin/marketplace.json`
-- `.agents/plugins/marketplace.json`
+- [`plugins/charness/.claude-plugin/plugin.json`](../plugins/charness/.claude-plugin/plugin.json)
+- [`plugins/charness/.codex-plugin/plugin.json`](../plugins/charness/.codex-plugin/plugin.json)
+- [`.claude-plugin/marketplace.json`](../.claude-plugin/marketplace.json)
+- [`.agents/plugins/marketplace.json`](../.agents/plugins/marketplace.json)
 
 These files are generated from the shared packaging manifest and validated
 against it. They are still derived artifacts, not the source of truth.
@@ -65,7 +65,7 @@ The Codex export must map the shared bundle into:
 - `skills/` with flat public skill directories
 - `support/` for non-discoverable support assets
 - optional future `.mcp.json`, `.app.json`, and `assets/`
-- optional repo marketplace at `.agents/plugins/marketplace.json`
+- optional repo marketplace at [`.agents/plugins/marketplace.json`](../.agents/plugins/marketplace.json)
 
 The current contract fixes the Codex repo-marketplace path because the official
 Codex plugin docs use that location for repo-scoped plugin catalogs.
@@ -91,7 +91,7 @@ repo also keeps a generated checked-in install tree under `plugins/charness/`.
 
 What it materializes today:
 
-- `README.md`
+- [`README.md`](../README.md)
 - flat public `skills/`
 - `support/` without `support/generated/`
 - `profiles/`
@@ -112,7 +112,7 @@ The shared packaging manifest keeps the default version. That remains the
 checked-in source of truth.
 
 When a release workflow needs a stamped export without mutating
-`packaging/charness.json`, the export entrypoint may override the emitted
+[`packaging/charness.json`](../packaging/charness.json), the export entrypoint may override the emitted
 version:
 
 ```bash

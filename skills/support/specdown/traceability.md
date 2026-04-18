@@ -127,7 +127,7 @@ run sanityCheck {} for 5
 
 ## Configuration
 
-The `trace` key in `specdown.json` configures traceability:
+The `trace` key in [`specdown.json`](../../../specdown.json) configures traceability:
 
 ```json
 {
@@ -334,7 +334,7 @@ With `--strict`, validation errors cause a non-zero exit code.
 
 ## Opt-in
 
-No `trace` config in `specdown.json` means everything works as before.
+No `trace` config in [`specdown.json`](../../../specdown.json) means everything works as before.
 The trace feature activates only when the `trace` key is present in config.
 
 ## Integration with `specdown run`

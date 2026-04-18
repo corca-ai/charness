@@ -34,7 +34,7 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 
 Default durable artifact:
 
-- `charness-artifacts/narrative/latest.md`
+- [`charness-artifacts/narrative/latest.md`](../../../charness-artifacts/narrative/latest.md)
 
 What you get after one run:
 

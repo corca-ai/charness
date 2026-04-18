@@ -5,11 +5,11 @@ an adapter instead of hardcoding one repo's document set into the public core.
 
 Canonical path for new repos:
 
-- `.agents/narrative-adapter.yaml`
+- [`.agents/narrative-adapter.yaml`](../../../../.agents/narrative-adapter.yaml)
 
 Fallback lookup order:
 
-1. `.agents/narrative-adapter.yaml`
+1. [`.agents/narrative-adapter.yaml`](../../../../.agents/narrative-adapter.yaml)
 2. `.codex/narrative-adapter.yaml`
 3. `.claude/narrative-adapter.yaml`
 4. `docs/narrative-adapter.yaml`
@@ -37,7 +37,7 @@ Fallback lookup order:
 
 The default artifact is:
 
-- `charness-artifacts/narrative/latest.md`
+- [`charness-artifacts/narrative/latest.md`](../../../../charness-artifacts/narrative/latest.md)
 
 Dated narrative records should use `charness-artifacts/narrative/YYYY-MM-DD-<slug>.md`.
 

@@ -24,7 +24,7 @@ Examples:
 - [runtime-capability-contract.md](runtime-capability-contract.md)
 - [external-integrations.md](external-integrations.md)
 - `skills/public/<skill-id>/SKILL.md`
-- `.agents/quality-adapter.yaml`
+- [`.agents/quality-adapter.yaml`](../.agents/quality-adapter.yaml)
 
 Do not use fixed surfaces for:
 
@@ -70,9 +70,9 @@ Put it in:
 
 Examples:
 
-- `charness-artifacts/gather/2026-04-16-agent-harness-guide-v1-0.md`
-- `charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md`
-- `charness-artifacts/quality/history/2026-04-09-through-2026-04-10.md`
+- [`charness-artifacts/gather/2026-04-16-agent-harness-guide-v1-0.md`](../charness-artifacts/gather/2026-04-16-agent-harness-guide-v1-0.md)
+- [`charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md`](../charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md)
+- [`charness-artifacts/quality/history/2026-04-09-through-2026-04-10.md`](../charness-artifacts/quality/history/2026-04-09-through-2026-04-10.md)
 
 Use dated visible records when:
 
@@ -137,8 +137,8 @@ Current repo examples:
 
 - `charness-artifacts/debug/latest.md`
 - `charness-artifacts/debug/YYYY-MM-DD-<slug>.md`
-- `charness-artifacts/gather/latest.md`
-- `charness-artifacts/release/latest.md`
+- [`charness-artifacts/gather/latest.md`](../charness-artifacts/gather/latest.md)
+- [`charness-artifacts/release/latest.md`](../charness-artifacts/release/latest.md)
 
 ## Current Exceptions
 

@@ -37,8 +37,8 @@ Read first:
 
 Acceptance:
 
-- `docs/deferred-decisions.md` stays in sync with current product-boundary choices.
-- `docs/handoff.md` `Discuss` is either empty or scoped to explicit reopen triggers only.
+- [`docs/deferred-decisions.md`](deferred-decisions.md) stays in sync with current product-boundary choices.
+- [`docs/handoff.md`](handoff.md) `Discuss` is either empty or scoped to explicit reopen triggers only.
 - Any reopened decision records its new choice and impacted docs.
 - `./scripts/run-quality.sh` passes after the doc updates.
 
@@ -67,7 +67,7 @@ editing `charness`.
 Acceptance:
 
 - `cautilus` has a real integration surface in `charness`.
-- `docs/public-skill-validation.md` is confirmed or minimally adjusted against
+- [`docs/public-skill-validation.md`](public-skill-validation.md) is confirmed or minimally adjusted against
   the actual upstream contract.
 - Repo-owned tests/evals/docs reflect the new evaluator path and any added
   maintained scenario wiring honestly.

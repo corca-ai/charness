@@ -25,4 +25,4 @@ non-generated support assets into `plugins/charness/support/`. Machine-local
 - generated reference artifacts may live here even when `charness` does not own
   a local `SKILL.md`
 - generated wrappers or references should be regenerated through
-  `scripts/sync_support.py` instead of edited by hand
+  [`scripts/sync_support.py`](../../scripts/sync_support.py) instead of edited by hand

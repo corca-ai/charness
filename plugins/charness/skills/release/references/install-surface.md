@@ -6,14 +6,14 @@ aligned with the new version.
 
 ## Canonical Mutable Source
 
-- `packaging/charness.json`
+- [`packaging/charness.json`](../../../../packaging/charness.json)
 
 ## Generated Surfaces
 
-- `plugins/charness/.claude-plugin/plugin.json`
-- `plugins/charness/.codex-plugin/plugin.json`
-- `.claude-plugin/marketplace.json`
-- `.agents/plugins/marketplace.json`
+- [`plugins/charness/.claude-plugin/plugin.json`](../../../../plugins/charness/.claude-plugin/plugin.json)
+- [`plugins/charness/.codex-plugin/plugin.json`](../../../../plugins/charness/.codex-plugin/plugin.json)
+- [`.claude-plugin/marketplace.json`](../../../../.claude-plugin/marketplace.json)
+- [`.agents/plugins/marketplace.json`](../../../../.agents/plugins/marketplace.json)
 
 ## User Update Boundary
 

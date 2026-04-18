@@ -276,9 +276,9 @@ The key split is:
 
 For a `quality` review:
 
-1. route with `skills/public/quality/SKILL.md`
+1. route with [`skills/public/quality/SKILL.md`](../skills/public/quality/SKILL.md)
 2. read [handoff.md](handoff.md) and current repo policy docs
-3. resolve `.agents/quality-adapter.yaml`
+3. resolve [`.agents/quality-adapter.yaml`](../.agents/quality-adapter.yaml)
 4. inspect [../charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
    as history and current posture summary
 5. run current gates and inventories
@@ -290,7 +290,7 @@ disagree.
 
 For a `gather` task:
 
-1. route with `skills/public/gather/SKILL.md`
+1. route with [`skills/public/gather/SKILL.md`](../skills/public/gather/SKILL.md)
 2. resolve the gather adapter for the visible artifact path
 3. use [runtime-capability-contract.md](runtime-capability-contract.md) and
    [external-integrations.md](external-integrations.md) for provider/access

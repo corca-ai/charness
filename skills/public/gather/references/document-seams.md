@@ -9,7 +9,7 @@ Examples:
 - a knowledge or research folder
 - a task-local gathered artifact
 
-If no durable surface exists yet, default to `charness-artifacts/gather/latest.md`
+If no durable surface exists yet, default to [`charness-artifacts/gather/latest.md`](../../../../charness-artifacts/gather/latest.md)
 for the current pointer and `charness-artifacts/gather/YYYY-MM-DD-<slug>.md`
 for dated records.
 

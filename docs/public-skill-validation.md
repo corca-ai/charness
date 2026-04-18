@@ -33,7 +33,7 @@ bucket choices before editing the JSON.
   `SKILL.md` owns selection and sequencing, while references deepen the chosen
   move without becoming a parallel workflow
 - load-bearing reviewed consumer prompts should stay explicit in
-  `docs/public-skill-dogfood.json`; that registry is operator-reviewed evidence,
+  [`docs/public-skill-dogfood.json`](public-skill-dogfood.json); that registry is operator-reviewed evidence,
   not a fake claim of fully automated routing proof
 - the tier only describes extra validation beyond that baseline
 - the tier is routing metadata, not a claim that local CI already runs a
@@ -51,7 +51,7 @@ agent behavior, refresh checked-in `cautilus` proof before closeout.
 
 Default prompt-affecting surfaces in this repo:
 
-- `AGENTS.md`
+- [`AGENTS.md`](../AGENTS.md)
 - public/support `SKILL.md` trigger contracts
 - public/support skill `references/**` that materially steer routing or
   operator-facing behavior
@@ -60,7 +60,7 @@ Default prompt-affecting surfaces in this repo:
 Default proof split:
 
 - `preserve`: run `cautilus instruction-surface test --repo-root .` and refresh
-  `charness-artifacts/cautilus/latest.md`
+  [`charness-artifacts/cautilus/latest.md`](../charness-artifacts/cautilus/latest.md)
 - `improve`: run the same instruction-surface proof and also record a baseline
   compare path with `cautilus workspace prepare-compare` plus
   `cautilus mode evaluate --baseline-ref <ref>`
@@ -79,7 +79,7 @@ standing evals.
   validators, adapter bootstrap, helper scripts, and thin acceptance smoke
 - `cautilus` or HITL own the deeper question of whether a skill contract still
   produces the intended routing, artifact, or decision support behavior
-- checked-in latest artifacts such as `charness-artifacts/cautilus/latest.md`
+- checked-in latest artifacts such as [`charness-artifacts/cautilus/latest.md`](../charness-artifacts/cautilus/latest.md)
   are the source of truth for those on-demand runs
 - `specdown` may project those checked artifacts into a readable report so
   operators can inspect the latest proof, but that viewer page is not the

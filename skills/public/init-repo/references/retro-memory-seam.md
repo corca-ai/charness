@@ -10,8 +10,8 @@ forcing a full weekly retro every time.
 
 ## Seeded Files
 
-- `.agents/retro-adapter.yaml`
-- `charness-artifacts/retro/recent-lessons.md`
+- [`.agents/retro-adapter.yaml`](../../../../.agents/retro-adapter.yaml)
+- [`charness-artifacts/retro/recent-lessons.md`](../../../../charness-artifacts/retro/recent-lessons.md)
 
 ## Preferred Path
 
@@ -26,7 +26,7 @@ This seeds:
 - `summary_path: charness-artifacts/retro/recent-lessons.md`
 - a stable `snapshot_path`
 - empty `evidence_paths` and `metrics_commands` that the repo can tighten later
-- an expectation that `AGENTS.md` should list `charness-artifacts/retro/recent-lessons.md`
+- an expectation that [`AGENTS.md`](../../../../AGENTS.md) should list [`charness-artifacts/retro/recent-lessons.md`](../../../../charness-artifacts/retro/recent-lessons.md)
   in repo memory when the seam is enabled
 
 ## Guardrails

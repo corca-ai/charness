@@ -2,26 +2,26 @@
 
 `init-repo` owns one explicit repo-level host policy:
 
-- `AGENTS.md` is the canonical repo instruction file
-- `CLAUDE.md` should symlink to `AGENTS.md` when Claude compatibility is needed
+- [`AGENTS.md`](../../../../AGENTS.md) is the canonical repo instruction file
+- `CLAUDE.md` should symlink to [`AGENTS.md`](../../../../AGENTS.md) when Claude compatibility is needed
 
 ## Deterministic Cases
 
-- no `AGENTS.md`, no `CLAUDE.md`
-  - create `AGENTS.md`
+- no [`AGENTS.md`](../../../../AGENTS.md), no `CLAUDE.md`
+  - create [`AGENTS.md`](../../../../AGENTS.md)
   - create `CLAUDE.md -> AGENTS.md`
-- `AGENTS.md` exists, `CLAUDE.md` missing
+- [`AGENTS.md`](../../../../AGENTS.md) exists, `CLAUDE.md` missing
   - create the symlink
-- `CLAUDE.md` already symlinks to `AGENTS.md`
+- `CLAUDE.md` already symlinks to [`AGENTS.md`](../../../../AGENTS.md)
   - leave it alone
 
 ## Ask-The-User Cases
 
-- `CLAUDE.md` exists as a real file and `AGENTS.md` is missing
-  - ask whether to promote `CLAUDE.md` content into `AGENTS.md` and replace
+- `CLAUDE.md` exists as a real file and [`AGENTS.md`](../../../../AGENTS.md) is missing
+  - ask whether to promote `CLAUDE.md` content into [`AGENTS.md`](../../../../AGENTS.md) and replace
     `CLAUDE.md` with a symlink
 - both exist as real files
-  - ask whether to merge the meaningful Claude-only content into `AGENTS.md`
+  - ask whether to merge the meaningful Claude-only content into [`AGENTS.md`](../../../../AGENTS.md)
     and replace `CLAUDE.md` with a symlink
 
 ## Rule

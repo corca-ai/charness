@@ -5,11 +5,11 @@ seams from a repo adapter.
 
 ## Canonical Path
 
-Use `.agents/release-adapter.yaml` for new repos.
+Use [`.agents/release-adapter.yaml`](../../../../.agents/release-adapter.yaml) for new repos.
 
 Search order:
 
-1. `.agents/release-adapter.yaml`
+1. [`.agents/release-adapter.yaml`](../../../../.agents/release-adapter.yaml)
 2. `.codex/release-adapter.yaml`
 3. `.claude/release-adapter.yaml`
 4. `docs/release-adapter.yaml`

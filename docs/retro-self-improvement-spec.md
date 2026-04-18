@@ -29,8 +29,8 @@ The first implementation batch has landed:
   durable retro artifact
 - `persist_retro_artifact.py` now auto-refreshes the digest when a durable
   retro artifact is written
-- `init-repo` can seed `.agents/retro-adapter.yaml` and
-  `charness-artifacts/retro/recent-lessons.md` for repos that opt into durable retro
+- `init-repo` can seed [`.agents/retro-adapter.yaml`](../.agents/retro-adapter.yaml) and
+  [`charness-artifacts/retro/recent-lessons.md`](../charness-artifacts/retro/recent-lessons.md) for repos that opt into durable retro
   memory
 - `quality` now treats skill ergonomics as an explicit lens with an advisory
   inventory helper
@@ -47,7 +47,7 @@ memory.
 - Keep retrospective memory local-first and explicit. No mandatory remote
   telemetry, no hidden background services, and no host-specific global writes
   outside declared adapter paths.
-- Keep `charness-artifacts/retro/recent-lessons.md` as the stable compact digest path
+- Keep [`charness-artifacts/retro/recent-lessons.md`](../charness-artifacts/retro/recent-lessons.md) as the stable compact digest path
   when a repo opts into this pattern.
 - Implement the host-log probe as a standalone helper first. `retro` may
   consume it later, but this slice should not make host-log collection an
@@ -153,10 +153,10 @@ If this work is implemented badly, the likely failure modes are:
   declared local script returns real data, and can explicitly report
   `unavailable` when the host does not expose that data.
 - The first implementation slice ships a standalone helper at
-  `skills/public/retro/scripts/probe_host_logs.py`.
+  [`skills/public/retro/scripts/probe_host_logs.py`](../skills/public/retro/scripts/probe_host_logs.py).
 - The second implementation slice ships a standalone helper at
-  `skills/public/retro/scripts/refresh_recent_lessons.py`.
-- The third implementation slice ships `skills/public/init-repo/scripts/seed_retro_memory.py`
+  [`skills/public/retro/scripts/refresh_recent_lessons.py`](../skills/public/retro/scripts/refresh_recent_lessons.py).
+- The third implementation slice ships [`skills/public/init-repo/scripts/seed_retro_memory.py`](../skills/public/init-repo/scripts/seed_retro_memory.py)
   so new repos can opt into the same seam without hand-writing it.
 - A repo-owned helper can probe Claude/Codex local logs and return structured
   availability status for:
@@ -184,7 +184,7 @@ If this work is implemented badly, the likely failure modes are:
 
 ## Canonical Artifact
 
-- This document: `docs/retro-self-improvement-spec.md`
+- This document: [`docs/retro-self-improvement-spec.md`](retro-self-improvement-spec.md)
 
 ## First Implementation Slice
 
@@ -197,7 +197,7 @@ If this work is implemented badly, the likely failure modes are:
    product posture. Landed in favor of auto-refresh through
    `persist_retro_artifact.py`.
 3. Decide whether `init-repo` should also wire the recent-lessons seam into
-   scaffolded `AGENTS.md` memory by default when retro memory is enabled.
+   scaffolded [`AGENTS.md`](../AGENTS.md) memory by default when retro memory is enabled.
    Landed.
 
 ## Notes On Existing Signals

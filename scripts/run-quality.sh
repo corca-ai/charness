@@ -243,6 +243,7 @@ if [[ "${CHARNESS_SUPPLY_CHAIN_ONLINE:-0}" == "1" ]]; then
   queue_selected "check-supply-chain-online" python3 scripts/check-supply-chain-online.py --repo-root "$REPO_ROOT" --triage-owner "repo-maintainers"
 fi
 queue_selected "check-shell" ./scripts/check-shell.sh
+queue_selected "check-links-internal" ./scripts/check-links-internal.sh
 queue_selected "check-links-external" ./scripts/check-links-external.sh
 shopt -s nullglob
 python_files=(

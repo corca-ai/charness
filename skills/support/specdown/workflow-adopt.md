@@ -8,7 +8,7 @@ Add specdown to a project that already has code, tests, and documentation.
 specdown init
 ```
 
-If the default directory layout doesn't fit (e.g., docs live in `docs/specs/` instead of `specs/`), edit `specdown.json` manually:
+If the default directory layout doesn't fit (e.g., docs live in `docs/specs/` instead of `specs/`), edit [`specdown.json`](../../../specdown.json) manually:
 
 ```json
 {

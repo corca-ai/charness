@@ -96,7 +96,7 @@ even if the next session only skims this document.
 
 - `corca-ai/charness#11`
   Landed. `init-repo` now points installable-surface repos at an explicit probe
-  surface, keeps that guidance narrow, and teaches `README.md` / `INSTALL.md`
+  surface, keeps that guidance narrow, and teaches [`README.md`](../README.md) / [`INSTALL.md`](../INSTALL.md)
   to name install, healthcheck, discovery, readiness, and local
   discoverability semantics without forcing boilerplate onto repos that do not
   ship installable surfaces.
@@ -263,7 +263,7 @@ Status:
   validation/runtime query path through
   `list_capabilities.py --recommendation-role <runtime|validation> --next-skill-id <skill-id>`.
 - `quality` now reuses the same shared payload through
-  `skills/public/quality/scripts/list_tool_recommendations.py` when a missing
+  [`skills/public/quality/scripts/list_tool_recommendations.py`](../skills/public/quality/scripts/list_tool_recommendations.py) when a missing
   validation tool blocks stronger local proof.
 - Integration manifests may now declare:
   - `supports_public_skills`
@@ -329,7 +329,7 @@ attached to the support-tool follow-up context.
 
 Current honest state:
 
-- validation choice still depends partly on operator judgment plus `AGENTS.md`
+- validation choice still depends partly on operator judgment plus [`AGENTS.md`](../AGENTS.md)
   conventions
 - this is better than ad hoc guessing, but it is not yet a strongly
   repo-owned verifier-selection seam
@@ -338,8 +338,8 @@ Current honest state:
 
 Status:
 
-- landed on 2026-04-14 as `scripts/select_verifiers.py`
-- the helper now maps changed paths through `.agents/surfaces.json`, returns
+- landed on 2026-04-14 as [`scripts/select_verifiers.py`](../scripts/select_verifiers.py)
+- the helper now maps changed paths through [`.agents/surfaces.json`](../.agents/surfaces.json), returns
   the smallest repo-owned sync/verify bundle, and names uncovered paths as a
   real missing-bundle gap instead of silently re-deciding verification in chat
 

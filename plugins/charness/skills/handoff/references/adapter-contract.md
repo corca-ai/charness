@@ -5,11 +5,11 @@ skill body.
 
 ## Canonical Path
 
-Use `.agents/handoff-adapter.yaml` for new repos.
+Use [`.agents/handoff-adapter.yaml`](../../../../.agents/handoff-adapter.yaml) for new repos.
 
 Search order:
 
-1. `.agents/handoff-adapter.yaml`
+1. [`.agents/handoff-adapter.yaml`](../../../../.agents/handoff-adapter.yaml)
 2. `.codex/handoff-adapter.yaml`
 3. `.claude/handoff-adapter.yaml`
 4. `docs/handoff-adapter.yaml`
@@ -38,6 +38,6 @@ The durable handoff artifact filename is fixed:
 
 Default path:
 
-- `docs/handoff.md`
+- [`docs/handoff.md`](../../../../docs/handoff.md)
 
 To change the location, override `output_dir` in the adapter.

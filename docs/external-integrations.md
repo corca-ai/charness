@@ -65,8 +65,8 @@ See [gather-provider-ownership.md](gather-provider-ownership.md).
 The machine-readable metadata for these `charness`-owned gather providers now
 lives next to the support skill itself under:
 
-- `skills/support/gather-slack/capability.json`
-- `skills/support/gather-notion/capability.json`
+- [`skills/support/gather-slack/capability.json`](../skills/support/gather-slack/capability.json)
+- [`skills/support/gather-notion/capability.json`](../skills/support/gather-notion/capability.json)
 
 ## Runtime Access Principle
 
@@ -177,5 +177,5 @@ These do not need implementation in session 1, but the plan assumes them.
 - `gws-cli` is intentionally excluded from support skill scope because it is an
   external binary boundary, not a `charness` support skill. It now belongs in
   the external integration surface via
-  `integrations/tools/gws-cli.json`.
+  [`integrations/tools/gws-cli.json`](../integrations/tools/gws-cli.json).
 - a reference implementation repo is not, by itself, an integration contract.

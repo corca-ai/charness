@@ -28,6 +28,9 @@ MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")
 INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 FENCE_RE = re.compile(r"^\s*(```|~~~)")
 PATH_TOKEN_RE = re.compile(r"\b(?:README\.md|(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9._-]+\.md)(?:#[A-Za-z0-9._-]+)?\b")
+BACKTICK_CONTENT_RE = re.compile(r"`([^`\n]+)`")
+PATHY_TOKEN_RE = re.compile(r"^(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9_-]+\.[A-Za-z0-9._-]+$")
+ROOT_FILE_NAME_RE = re.compile(r"^[A-Za-z0-9_-]+\.[A-Za-z0-9._-]+$")
 SKIP_DIR_NAMES = {".git", "node_modules", ".pytest_cache", "__pycache__"}
 
 
@@ -50,9 +53,22 @@ def iter_known_markdown_paths(root: Path) -> set[str]:
     return known
 
 
+def iter_known_repo_paths(root: Path) -> set[str]:
+    known: set[str] = set()
+    for path in iter_repo_files(root):
+        if any(part in SKIP_DIR_NAMES for part in path.parts):
+            continue
+        known.add(path.relative_to(root).as_posix())
+    return known
+
+
 def strip_inline_markup(line: str) -> str:
     without_links = MARKDOWN_LINK_RE.sub("", line)
     return INLINE_CODE_RE.sub("", without_links)
+
+
+def strip_markdown_links(line: str) -> str:
+    return MARKDOWN_LINK_RE.sub("", line)
 
 
 def iter_bare_internal_doc_refs(root: Path, doc: Path, known_markdown_paths: set[str]) -> list[str]:
@@ -69,6 +85,31 @@ def iter_bare_internal_doc_refs(root: Path, doc: Path, known_markdown_paths: set
             candidate = match.split("#", 1)[0]
             if candidate in known_markdown_paths:
                 matches.append(match)
+    return matches
+
+
+def iter_backticked_file_refs(doc: Path, known_repo_paths: set[str]) -> list[tuple[int, str]]:
+    matches: list[tuple[int, str]] = []
+    in_fence = False
+    for lineno, line in enumerate(doc.read_text(encoding="utf-8").splitlines(), start=1):
+        if FENCE_RE.match(line):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        scrubbed = strip_markdown_links(line)
+        for match in BACKTICK_CONTENT_RE.finditer(scrubbed):
+            candidate = match.group(1).split("#", 1)[0].strip()
+            if not candidate:
+                continue
+            if any(ch.isspace() for ch in candidate):
+                continue
+            if PATHY_TOKEN_RE.match(candidate):
+                if candidate in known_repo_paths:
+                    matches.append((lineno, candidate))
+                continue
+            if "/" not in candidate and ROOT_FILE_NAME_RE.match(candidate) and candidate in known_repo_paths:
+                matches.append((lineno, candidate))
     return matches
 
 
@@ -95,6 +136,7 @@ def main() -> int:
 
     root = args.repo_root.resolve()
     known_markdown_paths = iter_known_markdown_paths(root)
+    known_repo_paths = iter_known_repo_paths(root)
     for doc in iter_docs(root):
         contents = doc.read_text(encoding="utf-8")
         for target in LINK_RE.findall(contents):
@@ -106,6 +148,14 @@ def main() -> int:
                 refs += ", ..."
             raise ValidationError(
                 f"{doc}: bare internal markdown reference(s) {refs}; use markdown links in prose"
+            )
+        backticked = iter_backticked_file_refs(doc, known_repo_paths)
+        if backticked:
+            refs = ", ".join(f"`{cand}` (line {ln})" for ln, cand in backticked[:3])
+            if len(backticked) > 3:
+                refs += ", ..."
+            raise ValidationError(
+                f"{doc}: backticked file reference(s) {refs}; use markdown links so renames do not rot"
             )
     print("Validated markdown links.")
     return 0

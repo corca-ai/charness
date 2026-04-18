@@ -117,9 +117,12 @@ Read the smallest memory surface that answers the current question.
   `python3 scripts/check-doc-links.py`.
 - When markdown or secret-bearing text changes materially, run
   `./scripts/check-markdown.sh` and `./scripts/check-secrets.sh`.
-- Use `./scripts/check-shell.sh` and `./scripts/check-links-external.sh` when
-  `shellcheck` or `lychee` are available; these are honest optional escalations,
-  not fake guarantees.
+- Use `./scripts/check-shell.sh` when `shellcheck` is available; this is an
+  honest optional escalation, not a fake guarantee.
+- `./scripts/check-links-internal.sh` and `./scripts/check-links-external.sh`
+  require `lychee` and will fail if it is missing. Internal link existence is
+  always verified; external URLs are verified online only when
+  `CHARNESS_LINK_CHECK_ONLINE=1`.
 - Use `python3 scripts/check-duplicates.py` to surface helper-script duplicate
   hotspots before copying a pattern again.
 - Keep `python3 -m py_compile skills/public/*/scripts/*.py` as the cheap smoke

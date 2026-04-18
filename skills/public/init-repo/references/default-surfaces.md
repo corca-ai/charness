@@ -3,7 +3,7 @@
 `init-repo` uses these as the default operating surfaces.
 
 Existing repos may already keep equivalent surfaces under local names. Declare
-those names in `.agents/init-repo-adapter.yaml` instead of renaming mature repo
+those names in [`.agents/init-repo-adapter.yaml`](../../../../.agents/init-repo-adapter.yaml) instead of renaming mature repo
 docs only to satisfy the inspector:
 
 ```yaml
@@ -35,7 +35,7 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
 - how an agent should operate in this repo
 - language or collaboration expectations
 - core repo memory surfaces
-- when retro memory is enabled, include `charness-artifacts/retro/recent-lessons.md`
+- when retro memory is enabled, include [`charness-artifacts/retro/recent-lessons.md`](../../../../charness-artifacts/retro/recent-lessons.md)
   in those memory surfaces
 - validation and commit discipline when the repo has them
 - a compact-by-default `Skill Routing` block for installed charness skills,
@@ -47,24 +47,30 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
   explicitly route unclear cases to the shared/public charness skill
   `find-skills`
 - keep an expanded mode available when a repo explicitly wants the full
-  checked-in public skill catalog rendered into `AGENTS.md`
+  checked-in public skill catalog rendered into [`AGENTS.md`](../../../../AGENTS.md)
 - prose wrap policy when the repo uses fixed-string source guards; default to
   semantic line breaks, and require whitespace-normalized matching before
-  accepting column-wrapped prose. In `.agents/init-repo-adapter.yaml`, a repo
+  accepting column-wrapped prose. In [`.agents/init-repo-adapter.yaml`](../../../../.agents/init-repo-adapter.yaml), a repo
   that deliberately keeps column wrapping must set
   `source_guard_matcher.normalize_whitespace: true` or
   `allow_column_wrap_fixed_guards: true`; otherwise the inspector reports a
   `requires_override` warning.
 - selection rules in the core file, with deeper rationale pushed into linked
-  docs instead of turning `AGENTS.md` into a second handbook
-- avoid blanket external-link ignore defaults; if the repo later adopts
-  `lychee`, prefer optional or tightly scoped checks before adding broad ignore
-  rules
+  docs instead of turning [`AGENTS.md`](../../../../AGENTS.md) into a second handbook
+- avoid blanket external-link ignore defaults; when the repo relies on
+  checked-in cross-file markdown links (the common case for any docs-heavy
+  repo), treat `lychee`-backed internal link integrity and a backtick
+  file-reference rule as baseline gates rather than optional escalations —
+  the rule rejects path-like tokens and extension-bearing root-file tokens
+  inside inline code because they silently rot on rename; see
+  [`scripts/check-doc-links.py`](../../../../scripts/check-doc-links.py) and
+  [`scripts/check-links-internal.sh`](../../../../scripts/check-links-internal.sh) for the
+  shipped reference implementation
 
 Use `scripts/render_skill_routing.py` to render the block. Default to compact
 mode; allow `--mode expanded` or adapter `skill_routing_mode: expanded` when a
 repo explicitly wants the full checked-in list. On a mature repo whose
-`AGENTS.md` lacks it, propose adding the block instead of rewriting the whole
+[`AGENTS.md`](../../../../AGENTS.md) lacks it, propose adding the block instead of rewriting the whole
 instruction file.
 
 ## Roadmap
@@ -99,10 +105,10 @@ acceptance from them instead of inventing a disconnected checklist:
 
 ## Optional Install Docs
 
-Only scaffold `INSTALL.md` and `UNINSTALL.md` when the repo really exposes an
+Only scaffold [`INSTALL.md`](../../../../INSTALL.md) and [`UNINSTALL.md`](../../../../UNINSTALL.md) when the repo really exposes an
 installable surface such as a plugin, package, or operator-facing setup path.
 
-When `INSTALL.md` exists for that reason, it should also keep a small explicit
+When [`INSTALL.md`](../../../../INSTALL.md) exists for that reason, it should also keep a small explicit
 probe surface honest:
 
 - install or update path
@@ -119,8 +125,8 @@ pickup between sessions.
 
 When enabled, keep the seam small and explicit:
 
-- `.agents/retro-adapter.yaml`
-- `charness-artifacts/retro/recent-lessons.md`
+- [`.agents/retro-adapter.yaml`](../../../../.agents/retro-adapter.yaml)
+- [`charness-artifacts/retro/recent-lessons.md`](../../../../charness-artifacts/retro/recent-lessons.md)
 - one stable `summary_path` instead of many ad hoc notes
 
 ## Early Quality Baseline

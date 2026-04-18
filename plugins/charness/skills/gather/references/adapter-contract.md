@@ -38,7 +38,7 @@ The durable gather artifact filename is fixed:
 
 Default path:
 
-- `charness-artifacts/gather/latest.md`
+- [`charness-artifacts/gather/latest.md`](../../../../charness-artifacts/gather/latest.md)
 
 Dated knowledge records should use `charness-artifacts/gather/YYYY-MM-DD-<slug>.md`.
 

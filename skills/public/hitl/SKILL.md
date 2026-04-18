@@ -24,7 +24,7 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 
 Default durable artifact:
 
-- `charness-artifacts/hitl/latest.md`
+- [`charness-artifacts/hitl/latest.md`](../../../charness-artifacts/hitl/latest.md)
 
 Default runtime directory:
 

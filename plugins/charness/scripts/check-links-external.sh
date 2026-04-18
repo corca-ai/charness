@@ -5,8 +5,13 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
 if ! command -v lychee >/dev/null 2>&1; then
-  echo "lychee unavailable; skipping external link checks." >&2
-  exit 0
+  cat >&2 <<'EOF'
+lychee is required for link checking. Install one of:
+  - cargo install lychee
+  - brew install lychee
+  - download from https://github.com/lycheeverse/lychee/releases
+EOF
+  exit 1
 fi
 
 tmp_links="$(mktemp)"

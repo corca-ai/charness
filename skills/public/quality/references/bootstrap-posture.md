@@ -5,7 +5,7 @@ installed state, not only produce review notes.
 
 The bootstrap helper should:
 
-- write or refresh `.agents/quality-adapter.yaml` idempotently
+- write or refresh [`.agents/quality-adapter.yaml`](../../../../.agents/quality-adapter.yaml) idempotently
 - preserve explicit operator-owned command groups when they already exist
 - infer concept paths and preset lineage from the repo surface
 - record `installed`, `inferred`, `preserved`, or `deferred` status per field

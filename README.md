@@ -164,7 +164,7 @@ The checked-in install surface lives under `plugins/charness/`. Root-level
 compatibility artifacts are generated from
 [packaging/charness.json](packaging/charness.json) via
 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`. Diff obligations
-for that surface live in `.agents/surfaces.json`.
+for that surface live in [`.agents/surfaces.json`](.agents/surfaces.json).
 
 ## Local Development
 

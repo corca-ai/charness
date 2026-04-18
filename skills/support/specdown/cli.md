@@ -71,7 +71,7 @@ echo "$help" | grep -q "alloy dump"
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `-config` | `specdown.json` | Config file path |
+| `-config` | [`specdown.json`](../../../specdown.json) | Config file path |
 | `-out` | (per config file) | HTML report output path |
 | `-filter` | (none) | Case filter (heading substring or `type:`, `block:`, `check:` prefix) |
 | `-jobs` | `1` | Number of spec files to run in parallel |
@@ -89,14 +89,14 @@ echo "$help" | grep -q "alloy dump"
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `-config` | `specdown.json` | Config file path |
+| `-config` | [`specdown.json`](../../../specdown.json) | Config file path |
 | `-format` | `json` | Output format: `json`, `dot`, or `matrix` |
 | `-strict` | `false` | Suppress output and exit non-zero when validation errors exist |
 
 ## Trace
 
 The `specdown trace` command validates the [depends::traceability](traceability.md)
-graph configured in `specdown.json` and outputs the result.
+graph configured in [`specdown.json`](../../../specdown.json) and outputs the result.
 
 Without `-strict`, validation errors are printed to stderr but the graph
 is still written to stdout and the command exits successfully.

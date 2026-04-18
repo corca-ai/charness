@@ -94,6 +94,6 @@ adapters should always use an explicit prefix.
 - if the repo has a stronger preferred proof path, record it here instead of
   burying it in the main skill body
 - if the repo has a few durable truth surfaces, record them here instead of
-  hoping `README.md` drift is remembered ad hoc at closeout
+  hoping [`README.md`](../../../../README.md) drift is remembered ad hoc at closeout
 - use explicit empty lists to record intentional opt-out from repo-specific
   verification preferences

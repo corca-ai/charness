@@ -50,7 +50,7 @@ new local skill.
 
 Default durable artifact:
 
-- `charness-artifacts/find-skills/latest.md`
+- [`charness-artifacts/find-skills/latest.md`](../../../charness-artifacts/find-skills/latest.md)
 - `latest.*` is the canonical local-first capability inventory only; ad hoc
   recommendation queries stay in the current command output and do not rewrite
   query-shaped state into the durable artifact
@@ -62,8 +62,8 @@ What you get after one run:
   directly referenced skill files
 - the smallest next usable path across public skills, support seams, and integrations
 - refreshed capability inventory artifacts at
-  `charness-artifacts/find-skills/latest.md` and
-  `charness-artifacts/find-skills/latest.json`
+  [`charness-artifacts/find-skills/latest.md`](../../../charness-artifacts/find-skills/latest.md) and
+  [`charness-artifacts/find-skills/latest.json`](../../../charness-artifacts/find-skills/latest.json)
 - recommendation-query payloads in the current command output when
   `--recommend-for-skill` or `--recommendation-role` is used
 
