@@ -1,0 +1,28 @@
+version: 1
+repo: charness
+evaluation_surfaces:
+  - long-context chatbot proposal A/B comparison
+baseline_options:
+  - compare a candidate checkout against a baseline git ref via prepared compare worktrees
+required_prerequisites:
+  - install the `cautilus` CLI before running chatbot benchmark comparison
+  - prepare baseline and candidate worktrees before compare runs
+preflight_commands:
+  - python3 scripts/validate-cautilus-scenarios.py --repo-root .
+comparison_command_templates:
+  - python3 scripts/eval_cautilus_chatbot_compare.py --repo-root . --baseline-repo {baseline_repo} --candidate-repo {candidate_repo} --output-dir {output_dir}
+held_out_command_templates:
+  - python3 scripts/eval_cautilus_chatbot_compare.py --repo-root . --baseline-repo {baseline_repo} --candidate-repo {candidate_repo} --output-dir {output_dir}
+full_gate_command_templates:
+  - python3 scripts/eval_cautilus_chatbot_compare.py --repo-root . --baseline-repo {baseline_repo} --candidate-repo {candidate_repo} --output-dir {output_dir}
+artifact_paths:
+  - evals/cautilus/chatbot-scenario-proposal-inputs.json
+  - charness-artifacts/cautilus/chatbot-proposals/latest.json
+  - charness-artifacts/cautilus/chatbot-benchmark/latest.json
+report_paths:
+  - charness-artifacts/cautilus/chatbot-benchmark/latest.json
+comparison_questions:
+  - Which long-context proposal keys were added, dropped, or omitted between baseline and candidate?
+human_review_prompts:
+  - id: benchmark-honesty
+    prompt: Where does the benchmark still hide long-context regressions behind a top-five proposal cap?

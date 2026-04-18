@@ -41,6 +41,7 @@
 - `charness` now also ships a named `cautilus` adapter for long-context conversation proposal generation: [.agents/cautilus-adapters/chatbot-proposals.yaml](../.agents/cautilus-adapters/chatbot-proposals.yaml) runs [scripts/eval_cautilus_chatbot_proposals.py](../scripts/eval_cautilus_chatbot_proposals.py) against [evals/cautilus/chatbot-scenario-proposal-inputs.json](../evals/cautilus/chatbot-scenario-proposal-inputs.json) and writes the current pointer to [charness-artifacts/cautilus/chatbot-proposals/latest.md](../charness-artifacts/cautilus/chatbot-proposals/latest.md). This is the first repo-owned seam for multi-turn skill-trigger proposal generation; it is not yet a compare-backed benchmark.
 - 2026-04-18 UTC packet expansion widened that long-context proposal surface from 4 to 8 checked-in follow-up patterns. The packet now covers `retro`, `quality`, `premortem`, `find-skills`, `handoff`, `init-repo`, `narrative`, and `spec` boundary corrections as proposal-mining inputs.
 - Current `cautilus scenario propose` behavior appears to emit only the top `5` proposals by default even when the checked-in packet carries more candidates. The repo-owned runner now records both `candidate_keys` and `omitted_candidate_keys` so breadth is still visible in the checked current pointer.
+- `charness` now also ships a compare-backed named adapter at [.agents/cautilus-adapters/chatbot-benchmark.yaml](../.agents/cautilus-adapters/chatbot-benchmark.yaml). It compares baseline and candidate worktrees via [scripts/eval_cautilus_chatbot_compare.py](../scripts/eval_cautilus_chatbot_compare.py) and writes the current pointer to [charness-artifacts/cautilus/chatbot-benchmark/latest.md](../charness-artifacts/cautilus/chatbot-benchmark/latest.md). This surface is the first honest A/B benchmark for the long-context proposal packet.
 
 ## Next Session
 
@@ -56,6 +57,7 @@
 10. source가 checked-in plugin export에 들어가는 파일이면 focused managed-checkout 테스트 전에 export sync를 먼저 실행한다. 이번 slice에서도 `plugins/charness/README.md` drift가 packaging/managed-install pytest를 바로 깨뜨렸으니, root README 계열 변경 뒤에는 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`를 먼저 습관화한다.
 11. long-context skill-trigger work를 이어가면 `cautilus adapter resolve --repo-root . --adapter-name chatbot-proposals`와 `python3 scripts/eval_cautilus_chatbot_proposals.py --repo-root . --json`부터 시작한다. 다음 단계 질문은 이 proposal packet을 실제 compare/A/B benchmark surface로 승격할지, 아니면 repo-owned proposal mining layer로 유지할지다.
 12. benchmark 승격 전에 [evals/cautilus/chatbot-scenario-proposal-inputs.json](../evals/cautilus/chatbot-scenario-proposal-inputs.json) 의 breadth를 더 늘릴 수 있다. 다음 후보는 `gather`, `debug`, `release`, `hitl`처럼 long-context correction이 실제 skill boundary를 바꾸는 쪽이다.
+13. long-context benchmark를 이어가면 `cautilus workspace prepare-compare --repo-root . --baseline-ref <ref> --output-dir <tmp>`로 baseline/candidate worktrees를 먼저 만들고, 그 다음 `python3 scripts/eval_cautilus_chatbot_compare.py --repo-root . --baseline-repo <baseline> --candidate-repo <candidate> --output-dir charness-artifacts/cautilus/chatbot-benchmark`를 실행한다.
 
 ## Discuss
 

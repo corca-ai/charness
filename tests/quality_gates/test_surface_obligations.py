@@ -130,6 +130,24 @@ def test_select_verifiers_includes_chatbot_proposal_runner_for_packet_changes() 
     assert "python3 scripts/eval_cautilus_chatbot_proposals.py --repo-root . --json" in verify_commands
 
 
+def test_select_verifiers_includes_chatbot_benchmark_smoke_for_compare_runner_changes() -> None:
+    result = run_script(
+        "scripts/select_verifiers.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "scripts/eval_cautilus_chatbot_compare.py",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
+    assert (
+        "python3 scripts/eval_cautilus_chatbot_compare.py --repo-root . --baseline-repo . --candidate-repo . --output-dir /tmp/charness-cautilus-chatbot-benchmark-self-compare"
+        in verify_commands
+    )
+
+
 def test_select_verifiers_includes_public_skill_dogfood_for_registry_changes() -> None:
     result = run_script(
         "scripts/select_verifiers.py",

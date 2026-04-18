@@ -237,6 +237,25 @@
       ]
     },
     {
+      "surface_id": "cautilus-chatbot-benchmark",
+      "description": "A/B comparison runner and current-pointer artifacts for long-context chatbot proposal benchmarking.",
+      "source_paths": [
+        ".agents/cautilus-adapters/chatbot-benchmark.yaml",
+        "scripts/eval_cautilus_chatbot_compare.py",
+        "scripts/eval_cautilus_chatbot_proposals.py"
+      ],
+      "derived_paths": [
+        "charness-artifacts/cautilus/chatbot-benchmark/**"
+      ],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/eval_cautilus_chatbot_compare.py --repo-root . --baseline-repo . --candidate-repo . --output-dir /tmp/charness-cautilus-chatbot-benchmark-self-compare"
+      ],
+      "notes": [
+        "Keep compare artifacts explicit about baseline versus candidate and about proposal keys omitted by the product's current ranking cap."
+      ]
+    },
+    {
       "surface_id": "executable-specs",
       "description": "Repo-owned specdown executable acceptance specs and their config.",
       "source_paths": [

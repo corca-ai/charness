@@ -13,6 +13,7 @@ INSTRUCTION_SURFACE_CASES_PATH = Path("evals/cautilus/instruction-surface-cases.
 ADAPTER_PATH = Path(".agents/cautilus-adapter.yaml")
 CHATBOT_PROPOSAL_INPUTS_PATH = Path("evals/cautilus/chatbot-scenario-proposal-inputs.json")
 CHATBOT_ADAPTER_PATH = Path(".agents/cautilus-adapters/chatbot-proposals.yaml")
+CHATBOT_BENCHMARK_ADAPTER_PATH = Path(".agents/cautilus-adapters/chatbot-benchmark.yaml")
 
 
 def load_registry(repo_root: Path) -> dict[str, object]:
@@ -269,6 +270,26 @@ def _validate_adapter_wiring(repo_root: Path) -> None:
     chatbot_runner = repo_root / "scripts" / "eval_cautilus_chatbot_proposals.py"
     if not chatbot_runner.is_file():
         raise ValidationError("missing `scripts/eval_cautilus_chatbot_proposals.py`")
+
+    chatbot_benchmark_adapter = repo_root / CHATBOT_BENCHMARK_ADAPTER_PATH
+    if not chatbot_benchmark_adapter.is_file():
+        raise ValidationError(f"missing `{CHATBOT_BENCHMARK_ADAPTER_PATH}`")
+    chatbot_benchmark_text = chatbot_benchmark_adapter.read_text(encoding="utf-8")
+    benchmark_required_snippets = (
+        "comparison_command_templates:",
+        "scripts/eval_cautilus_chatbot_compare.py",
+        "--baseline-repo {baseline_repo}",
+        "--candidate-repo {candidate_repo}",
+        "charness-artifacts/cautilus/chatbot-benchmark/latest.json",
+    )
+    missing_benchmark_snippets = [snippet for snippet in benchmark_required_snippets if snippet not in chatbot_benchmark_text]
+    if missing_benchmark_snippets:
+        rendered = ", ".join(f"`{snippet}`" for snippet in missing_benchmark_snippets)
+        raise ValidationError(f"{CHATBOT_BENCHMARK_ADAPTER_PATH}: missing chatbot benchmark wiring snippet(s): {rendered}")
+
+    chatbot_compare_runner = repo_root / "scripts" / "eval_cautilus_chatbot_compare.py"
+    if not chatbot_compare_runner.is_file():
+        raise ValidationError("missing `scripts/eval_cautilus_chatbot_compare.py`")
 
 
 def validate_registry(repo_root: Path) -> dict[str, object]:

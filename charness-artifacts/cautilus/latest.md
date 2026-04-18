@@ -3,25 +3,24 @@ Date: 2026-04-18
 
 ## Trigger
 
-- slice: `cautilus` long-context chatbot proposal surface
+- slice: `cautilus` long-context chatbot benchmark adapter
 - claim: `preserve`
 
 ## Validation Goal
 
 - goal: `preserve`
-- reason: add a checked-in multi-turn conversation proposal surface without
-  regressing the existing root instruction-surface routing contract
+- reason: add a compare-backed chatbot benchmark surface without regressing the
+  existing root instruction-surface routing contract
 
 ## Prompt Surfaces
 
-- `.agents/cautilus-adapters/chatbot-proposals.yaml`
+- `.agents/cautilus-adapters/chatbot-benchmark.yaml`
 
 ## Commands Run
 
-- `pytest -q tests/test_cautilus_scenarios.py tests/test_cautilus_proof_artifact.py tests/quality_gates/test_surface_obligations.py tests/quality_gates/test_profile_and_preset_validation.py`
-- `python3 scripts/validate-adapters.py --repo-root .`
+- `pytest -q tests/test_cautilus_chatbot_compare.py tests/test_cautilus_scenarios.py tests/quality_gates/test_surface_obligations.py`
 - `python3 scripts/validate-cautilus-scenarios.py --repo-root .`
-- `python3 scripts/eval_cautilus_chatbot_proposals.py --repo-root . --json`
+- `python3 scripts/eval_cautilus_chatbot_compare.py --repo-root . --baseline-ref HEAD~1 --output-dir charness-artifacts/cautilus/chatbot-benchmark --json`
 - `cautilus instruction-surface test --repo-root .`
 
 ## Outcome
@@ -32,13 +31,15 @@ Date: 2026-04-18
   `bootstrapHelper=find-skills` plus `workSkill=impl`; compact no-bootstrap
   implementation still routes to `impl`; contract-shaping cases still route to
   `spec`
-- proposal notes: the new checked-in chatbot proposal packet emits `4`
-  long-context fast-regression scenarios covering `retro`, `quality`,
-  `premortem`, and `find-skills` follow-up patterns
+- benchmark notes: the new compare-backed surface shows the packet expansion
+  added `handoff`, `init-repo`, `narrative`, and `spec` proposal keys versus
+  `HEAD~1`; the compare artifact also records that the product's current top-5
+  ranking now omits `retro`, `quality`, and `premortem`
 
 ## Follow-ups
 
-- decide whether `chatbot-proposals` should stay a proposal-mining layer or
-  graduate into a compare-backed benchmark adapter
-- if another skill needs long-context coverage, extend the checked-in proposal
-  packet first before widening the root adapter
+- decide whether the top-5 ranking cap should stay product-default or whether
+  `charness` needs a wider compare mode once more long-context candidates land
+- extend the packet with additional high-signal long-context boundaries such as
+  `gather`, `debug`, `release`, and `hitl` before treating this benchmark as
+  broadly representative
