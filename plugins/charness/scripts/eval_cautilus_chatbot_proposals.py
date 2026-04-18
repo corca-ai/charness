@@ -74,6 +74,11 @@ def build_summary(
     proposals_packet: dict[str, object],
     command: subprocess.CompletedProcess[str],
 ) -> dict[str, object]:
+    candidate_keys = [
+        candidate.get("proposalKey")
+        for candidate in input_packet.get("proposalCandidates", [])
+        if isinstance(candidate, dict) and isinstance(candidate.get("proposalKey"), str)
+    ]
     proposals = proposals_packet.get("proposals", [])
     assert isinstance(proposals, list)
     proposal_keys = [
@@ -81,6 +86,7 @@ def build_summary(
         for proposal in proposals
         if isinstance(proposal, dict) and isinstance(proposal.get("proposalKey"), str)
     ]
+    omitted_candidate_keys = [proposal_key for proposal_key in candidate_keys if proposal_key not in proposal_keys]
     tag_counts: dict[str, int] = {}
     for candidate in input_packet.get("proposalCandidates", []):
         if not isinstance(candidate, dict):
@@ -96,8 +102,10 @@ def build_summary(
         "repo": repo_root.name,
         "input_file": str(input_path.relative_to(repo_root)),
         "candidate_count": len(input_packet["proposalCandidates"]),
+        "candidate_keys": candidate_keys,
         "proposal_count": len(proposals),
         "proposal_keys": proposal_keys,
+        "omitted_candidate_keys": omitted_candidate_keys,
         "families": proposals_packet.get("families", []),
         "tag_counts": tag_counts,
         "command": {
@@ -121,14 +129,32 @@ def write_summary(output_dir: Path, summary: dict[str, object]) -> None:
         f"- candidates: `{summary['candidate_count']}`",
         f"- emitted proposals: `{summary['proposal_count']}`",
         "",
-        "## Proposal Keys",
+        "## Candidate Keys",
         "",
     ]
+    candidate_keys = summary["candidate_keys"]
+    assert isinstance(candidate_keys, list)
+    for candidate_key in candidate_keys:
+        lines.append(f"- `{candidate_key}`")
+    if not candidate_keys:
+        lines.append("- none")
+    lines.extend([
+        "",
+        "## Proposal Keys",
+        "",
+    ])
     proposal_keys = summary["proposal_keys"]
     assert isinstance(proposal_keys, list)
     for proposal_key in proposal_keys:
         lines.append(f"- `{proposal_key}`")
     if not proposal_keys:
+        lines.append("- none")
+    lines.extend(["", "## Omitted Candidate Keys", ""])
+    omitted_candidate_keys = summary["omitted_candidate_keys"]
+    assert isinstance(omitted_candidate_keys, list)
+    for omitted_key in omitted_candidate_keys:
+        lines.append(f"- `{omitted_key}`")
+    if not omitted_candidate_keys:
         lines.append("- none")
     lines.extend(["", "## Tag Coverage", ""])
     for tag, count in sorted(tag_counts.items()):

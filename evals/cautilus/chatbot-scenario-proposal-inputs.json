@@ -132,6 +132,134 @@
           ]
         }
       ]
+    },
+    {
+      "proposalKey": "handoff-workflow-trigger-followup",
+      "title": "Refresh handoff workflow-trigger follow-up scenario from recent activity",
+      "family": "fast_regression",
+      "name": "Handoff Workflow Trigger Follow-up",
+      "description": "The user sharpens the next-session pickup path until the assistant treats the workflow trigger as the handoff's primary contract instead of preserving history first.",
+      "brief": "Recent activity shows a handoff request that only stabilizes after the assistant reorients around the next move rather than the diary of what happened.",
+      "tags": [
+        "handoff",
+        "workflow-trigger",
+        "continuation-sequence"
+      ],
+      "maxTurns": 5,
+      "simulatorTurns": [
+        "handoff 남겨주세요.",
+        "다음 세션 첫 move는 이슈 close 정리부터입니다.",
+        "과거 기록보다 pickup 경로가 먼저 보여야 해요."
+      ],
+      "evidence": [
+        {
+          "sourceKind": "human_conversation",
+          "title": "handoff workflow trigger follow-up",
+          "threadKey": "session-handoff-workflow-trigger",
+          "observedAt": "2026-04-18T12:10:00.000Z",
+          "messages": [
+            "handoff 남겨주세요.",
+            "다음 세션 첫 move는 이슈 close 정리부터입니다.",
+            "과거 기록보다 pickup 경로가 먼저 보여야 해요."
+          ]
+        }
+      ]
+    },
+    {
+      "proposalKey": "init-repo-partial-normalization-followup",
+      "title": "Refresh init-repo partial-normalization follow-up scenario from recent activity",
+      "family": "fast_regression",
+      "name": "Init Repo Partial Normalization Follow-up",
+      "description": "The user clarifies that the repo is already partially initialized, and the assistant must normalize the existing surface instead of defaulting to a greenfield rewrite.",
+      "brief": "Recent activity shows the repo mode only becoming clear after the user pushes back on greenfield assumptions.",
+      "tags": [
+        "init-repo",
+        "partial-repo",
+        "normalization"
+      ],
+      "maxTurns": 5,
+      "simulatorTurns": [
+        "이 repo는 이미 운영 surface가 좀 있습니다.",
+        "greenfield처럼 갈아엎지 말고 partial normalize로 가주세요.",
+        "README와 AGENTS는 있는데 operator acceptance만 빈약합니다."
+      ],
+      "evidence": [
+        {
+          "sourceKind": "human_conversation",
+          "title": "init-repo partial normalization follow-up",
+          "threadKey": "session-init-repo-partial-normalization",
+          "observedAt": "2026-04-18T12:20:00.000Z",
+          "messages": [
+            "이 repo는 이미 운영 surface가 좀 있습니다.",
+            "greenfield처럼 갈아엎지 말고 partial normalize로 가주세요.",
+            "README와 AGENTS는 있는데 operator acceptance만 빈약합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "proposalKey": "narrative-truth-before-announcement-followup",
+      "title": "Refresh narrative truth-before-announcement follow-up scenario from recent activity",
+      "family": "fast_regression",
+      "name": "Narrative Truth Before Announcement Follow-up",
+      "description": "The user keeps separating durable truth alignment from chat-ready communication until the assistant routes the work through narrative first and announcement second.",
+      "brief": "Recent activity shows a repo-story edit that only becomes correct once the assistant preserves the narrative-versus-announcement boundary.",
+      "tags": [
+        "narrative",
+        "announcement",
+        "truth-surface"
+      ],
+      "maxTurns": 5,
+      "simulatorTurns": [
+        "README와 handoff의 스토리를 먼저 맞춰주세요.",
+        "지금 필요한 건 릴리즈 문안이 아니라 source-of-truth alignment입니다.",
+        "그 다음에 brief를 한 장 뽑는 게 맞습니다."
+      ],
+      "evidence": [
+        {
+          "sourceKind": "human_conversation",
+          "title": "narrative truth before announcement follow-up",
+          "threadKey": "session-narrative-truth-before-announcement",
+          "observedAt": "2026-04-18T12:30:00.000Z",
+          "messages": [
+            "README와 handoff의 스토리를 먼저 맞춰주세요.",
+            "지금 필요한 건 릴리즈 문안이 아니라 source-of-truth alignment입니다.",
+            "그 다음에 brief를 한 장 뽑는 게 맞습니다."
+          ]
+        }
+      ]
+    },
+    {
+      "proposalKey": "spec-before-impl-followup",
+      "title": "Refresh spec-before-impl follow-up scenario from recent activity",
+      "family": "fast_regression",
+      "name": "Spec Before Impl Follow-up",
+      "description": "The user starts from implementation intent but then clarifies that the contract is still under-specified, so the assistant must keep the work in spec mode before coding spreads.",
+      "brief": "Recent activity shows the assistant needing several turns to preserve the spec-versus-impl boundary honestly.",
+      "tags": [
+        "spec",
+        "impl",
+        "contract-shaping"
+      ],
+      "maxTurns": 5,
+      "simulatorTurns": [
+        "이 기능 고쳐주세요.",
+        "잠깐, 아직 acceptance와 non-goals가 안 정해졌네요.",
+        "구현보다 먼저 living contract로 정리해 주세요."
+      ],
+      "evidence": [
+        {
+          "sourceKind": "human_conversation",
+          "title": "spec before impl follow-up",
+          "threadKey": "session-spec-before-impl",
+          "observedAt": "2026-04-18T12:40:00.000Z",
+          "messages": [
+            "이 기능 고쳐주세요.",
+            "잠깐, 아직 acceptance와 non-goals가 안 정해졌네요.",
+            "구현보다 먼저 living contract로 정리해 주세요."
+          ]
+        }
+      ]
     }
   ],
   "existingScenarioRegistry": [],
