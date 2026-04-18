@@ -276,3 +276,24 @@ def test_validate_adapters_ignores_gitignored_skills(tmp_path: Path) -> None:
 
     result = run_script("scripts/validate-adapters.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
+
+
+def test_validate_adapters_checks_named_cautilus_adapter_yaml(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    adapters_dir = repo / ".agents" / "cautilus-adapters"
+    adapters_dir.mkdir(parents=True)
+    (adapters_dir / "chatbot-proposals.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "evaluation_surfaces:",
+                "  - chatbot proposals",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/validate-adapters.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr

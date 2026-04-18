@@ -79,6 +79,7 @@
       "source_paths": [
         "AGENTS.md",
         ".agents/*-adapter.yaml",
+        ".agents/cautilus-adapters/*.yaml",
         "evals/cautilus/instruction-surface-cases.json",
         "skills/public/*/SKILL.md",
         "skills/public/*/references/**",
@@ -184,6 +185,7 @@
       "description": "Repo-local adapter contracts and adapter helper libraries.",
       "source_paths": [
         ".agents/*-adapter.yaml",
+        ".agents/cautilus-adapters/*.yaml",
         "scripts/adapter*_lib.py",
         "scripts/adapter_init_lib.py",
         "scripts/simple_skill_adapter_lib.py"
@@ -210,6 +212,28 @@
       ],
       "notes": [
         "Keep the surfaces manifest aligned with real repo-owned source and derived obligations."
+      ]
+    },
+    {
+      "surface_id": "cautilus-chatbot-proposals",
+      "description": "Checked-in long-context chatbot proposal packets and their current-pointer artifacts.",
+      "source_paths": [
+        "evals/cautilus/chatbot-scenario-proposal-inputs.json",
+        "scripts/eval_cautilus_chatbot_proposals.py",
+        "scripts/cautilus_scenarios_lib.py",
+        "scripts/validate-cautilus-scenarios.py"
+      ],
+      "derived_paths": [
+        "charness-artifacts/cautilus/chatbot-proposals/**"
+      ],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 scripts/validate-cautilus-scenarios.py --repo-root .",
+        "python3 scripts/eval_cautilus_chatbot_proposals.py --repo-root . --json"
+      ],
+      "notes": [
+        "Keep the checked-in proposal packet and the visible current-pointer artifact in sync.",
+        "This surface is proposal-mining evidence, not yet a compare-backed benchmark claim."
       ]
     },
     {

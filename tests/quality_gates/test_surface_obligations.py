@@ -98,6 +98,38 @@ def test_select_verifiers_includes_public_skill_policy_for_policy_json_changes()
     assert "python3 scripts/validate-public-skill-validation.py --repo-root ." in verify_commands
 
 
+def test_select_verifiers_includes_adapter_and_prompt_proof_for_named_cautilus_adapter_changes() -> None:
+    result = run_script(
+        "scripts/select_verifiers.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        ".agents/cautilus-adapters/chatbot-proposals.yaml",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
+    assert "python3 scripts/validate-adapters.py --repo-root ." in verify_commands
+    assert "python3 scripts/validate-cautilus-proof.py --repo-root ." in verify_commands
+
+
+def test_select_verifiers_includes_chatbot_proposal_runner_for_packet_changes() -> None:
+    result = run_script(
+        "scripts/select_verifiers.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "evals/cautilus/chatbot-scenario-proposal-inputs.json",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
+    assert "python3 scripts/validate-cautilus-scenarios.py --repo-root ." in verify_commands
+    assert "python3 scripts/eval_cautilus_chatbot_proposals.py --repo-root . --json" in verify_commands
+
+
 def test_select_verifiers_includes_public_skill_dogfood_for_registry_changes() -> None:
     result = run_script(
         "scripts/select_verifiers.py",

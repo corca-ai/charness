@@ -15,6 +15,7 @@ MAX_ARTIFACT_LINES = 120
 PROMPT_AFFECTING_PATTERNS = (
     "AGENTS.md",
     ".agents/*-adapter.yaml",
+    ".agents/cautilus-adapters/*.yaml",
     "skills/public/*/SKILL.md",
     "skills/public/*/references/**",
     "skills/support/*/SKILL.md",

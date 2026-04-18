@@ -1,0 +1,25 @@
+version: 1
+repo: charness
+evaluation_surfaces:
+  - multi-turn conversation proposal generation for skill-affecting context accumulation
+baseline_options:
+  - no baseline compare yet; this surface validates the current checked-in proposal packet
+required_prerequisites:
+  - install the `cautilus` CLI before running chatbot proposal generation
+preflight_commands:
+  - python3 scripts/validate-cautilus-scenarios.py --repo-root .
+held_out_command_templates:
+  - python3 scripts/eval_cautilus_chatbot_proposals.py --repo-root . --input-file evals/cautilus/chatbot-scenario-proposal-inputs.json --output-dir charness-artifacts/cautilus/chatbot-proposals/held-out
+full_gate_command_templates:
+  - python3 scripts/eval_cautilus_chatbot_proposals.py --repo-root . --input-file evals/cautilus/chatbot-scenario-proposal-inputs.json --output-dir charness-artifacts/cautilus/chatbot-proposals/full-gate
+artifact_paths:
+  - evals/cautilus/chatbot-scenario-proposal-inputs.json
+  - docs/public-skill-dogfood.json
+  - charness-artifacts/retro/recent-lessons.md
+report_paths:
+  - charness-artifacts/cautilus/chatbot-proposals/latest.json
+comparison_questions:
+  - Which long-context skill-trigger proposal is still missing from the checked-in packet?
+human_review_prompts:
+  - id: accumulated-context
+    prompt: Where would a long session still lose the user's already-stated correction or policy?

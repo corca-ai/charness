@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "cautilus.scenario_proposal_inputs.v1",
+  "windowDays": 30,
+  "families": [
+    "fast_regression"
+  ],
+  "proposalCandidates": [
+    {
+      "proposalKey": "retro-structural-cause-followup",
+      "title": "Refresh retro structural-cause follow-up scenario from recent activity",
+      "family": "fast_regression",
+      "name": "Retro Structural Cause Follow-up",
+      "description": "The user keeps pushing past a local explanation until the assistant generalizes the structural cause and proposes a durable retro change.",
+      "brief": "Recent activity shows repeated correction pressure before the assistant lands on a structural retro.",
+      "tags": [
+        "retro",
+        "long-context",
+        "structural-causes"
+      ],
+      "maxTurns": 5,
+      "simulatorTurns": [
+        "이번 회고는 과적합된 것 아닌가요?",
+        "이 패턴이 발생할 수밖에 없었던 구조적 원인을 더 봐주세요.",
+        "리트로 스킬도 그 관점으로 바뀌어야 하지 않나요?"
+      ],
+      "evidence": [
+        {
+          "sourceKind": "human_conversation",
+          "title": "retro structural cause follow-up",
+          "threadKey": "session-retro-structural-cause",
+          "observedAt": "2026-04-18T09:30:00.000Z",
+          "messages": [
+            "이번 회고는 과적합된 것 아닌가요?",
+            "이 패턴이 발생할 수밖에 없었던 구조적 원인을 더 봐주세요.",
+            "리트로 스킬도 그 관점으로 바뀌어야 하지 않나요?"
+          ]
+        }
+      ]
+    },
+    {
+      "proposalKey": "quality-proof-layering-followup",
+      "title": "Refresh quality proof-layering follow-up scenario from recent activity",
+      "family": "fast_regression",
+      "name": "Quality Proof Layering Follow-up",
+      "description": "The user refines the distinction between public executable specs, on-demand proof, and the specdown viewer until the assistant aligns the layering policy correctly.",
+      "brief": "Recent activity shows a multi-turn quality discussion that depends on remembering the specdown SoT versus viewer split.",
+      "tags": [
+        "quality",
+        "specdown",
+        "proof-layering"
+      ],
+      "maxTurns": 6,
+      "simulatorTurns": [
+        "스펙다운은 SoT와 viewer 두 역할이 있다고 봅니다.",
+        "source guard는 전자 때문에 줄이고 싶지만, 후자 때문에 결과는 보여야 해요.",
+        "이 관점이 quality skill에도 반영돼 있나요?"
+      ],
+      "evidence": [
+        {
+          "sourceKind": "human_conversation",
+          "title": "quality proof layering follow-up",
+          "threadKey": "session-quality-proof-layering",
+          "observedAt": "2026-04-18T10:00:00.000Z",
+          "messages": [
+            "스펙다운은 SoT와 viewer 두 역할이 있다고 봅니다.",
+            "source guard는 전자 때문에 줄이고 싶지만, 후자 때문에 결과는 보여야 해요.",
+            "이 관점이 quality skill에도 반영돼 있나요?"
+          ]
+        }
+      ]
+    },
+    {
+      "proposalKey": "premortem-canonical-subagent-followup",
+      "title": "Refresh premortem canonical-subagent follow-up scenario from recent activity",
+      "family": "fast_regression",
+      "name": "Premortem Canonical Subagent Follow-up",
+      "description": "The user clarifies that premortem should stay on the canonical subagent path, and the assistant must preserve that policy rather than collapsing to same-agent fallback logic.",
+      "brief": "Recent activity shows a policy clarification that only makes sense if the assistant remembers the prior premortem discussion.",
+      "tags": [
+        "premortem",
+        "subagent",
+        "policy-clarification"
+      ],
+      "maxTurns": 4,
+      "simulatorTurns": [
+        "프리모르템은 무조건 서브에이전트로 명시하자는 의도입니다.",
+        "이거랑 지금 얘기한 standing eval 범위가 관련 있나요?",
+        "정책을 흐리지 말고 구분해서 설명해 주세요."
+      ],
+      "evidence": [
+        {
+          "sourceKind": "human_conversation",
+          "title": "premortem canonical subagent follow-up",
+          "threadKey": "session-premortem-canonical-subagent",
+          "observedAt": "2026-04-18T10:30:00.000Z",
+          "messages": [
+            "프리모르템은 무조건 서브에이전트로 명시하자는 의도입니다.",
+            "이거랑 지금 얘기한 standing eval 범위가 관련 있나요?",
+            "정책을 흐리지 말고 구분해서 설명해 주세요."
+          ]
+        }
+      ]
+    },
+    {
+      "proposalKey": "find-skills-canonical-artifact-followup",
+      "title": "Refresh find-skills canonical-artifact follow-up scenario from recent activity",
+      "family": "fast_regression",
+      "name": "Find Skills Canonical Artifact Follow-up",
+      "description": "The user keeps pointing out dirty `find-skills` artifacts until the assistant distinguishes canonical durable inventory from ad hoc recommendation output.",
+      "brief": "Recent activity shows repeated correction pressure about artifact churn caused by invocation-shape differences.",
+      "tags": [
+        "find-skills",
+        "artifact-policy",
+        "operator-trust"
+      ],
+      "maxTurns": 5,
+      "simulatorTurns": [
+        "이게 충분히 유의미한 정보라면 무조건 커밋해야 하는데 왜 물어보는가?",
+        "평소와 다른 방식으로 호출했다는 건 뭐죠?",
+        "이건 canonical artifact와 ad hoc query output을 구분해야 하는 문제 아닌가요?"
+      ],
+      "evidence": [
+        {
+          "sourceKind": "human_conversation",
+          "title": "find-skills canonical artifact follow-up",
+          "threadKey": "session-find-skills-canonical-artifact",
+          "observedAt": "2026-04-18T11:00:00.000Z",
+          "messages": [
+            "이게 충분히 유의미한 정보라면 무조건 커밋해야 하는데 왜 물어보는가?",
+            "평소와 다른 방식으로 호출했다는 건 뭐죠?",
+            "이건 canonical artifact와 ad hoc query output을 구분해야 하는 문제 아닌가요?"
+          ]
+        }
+      ]
+    }
+  ],
+  "existingScenarioRegistry": [],
+  "scenarioCoverage": [],
+  "now": "2026-04-18T12:00:00.000Z"
+}

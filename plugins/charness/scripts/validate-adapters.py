@@ -12,6 +12,8 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
+_scripts_adapter_lib_module = import_repo_module(__file__, "scripts.adapter_lib")
+load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
 _scripts_artifact_naming_lib_module = import_repo_module(__file__, "scripts.artifact_naming_lib")
 current_artifact_filename = _scripts_artifact_naming_lib_module.current_artifact_filename
 _scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
@@ -64,6 +66,22 @@ def iter_resolvers(root: Path) -> list[Path]:
     return iter_matching_repo_files(root, ("skills/public/*/scripts/resolve_adapter.py",))
 
 
+def iter_adapter_yaml(root: Path) -> list[Path]:
+    return iter_matching_repo_files(root, (".agents/*-adapter.yaml", ".agents/cautilus-adapters/*.yaml"))
+
+
+def validate_adapter_yaml(path: Path) -> None:
+    data = load_yaml_file(path)
+    if not isinstance(data, dict):
+        raise ValidationError(f"{path}: adapter YAML must parse to a mapping")
+    version = data.get("version")
+    if not isinstance(version, int) or version < 1:
+        raise ValidationError(f"{path}: `version` must be a positive integer")
+    repo = data.get("repo")
+    if not isinstance(repo, str) or not repo:
+        raise ValidationError(f"{path}: `repo` must be a non-empty string")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
@@ -71,14 +89,17 @@ def main() -> int:
 
     root = args.repo_root.resolve()
     resolvers = iter_resolvers(root)
-    if not resolvers:
-        print("No adapter resolvers found.")
+    adapter_yaml = iter_adapter_yaml(root)
+    if not resolvers and not adapter_yaml:
+        print("No adapter surfaces found.")
         return 0
 
     for resolver in resolvers:
         validate_resolver(resolver, root)
+    for path in adapter_yaml:
+        validate_adapter_yaml(path)
 
-    print(f"Validated {len(resolvers)} adapter resolvers.")
+    print(f"Validated {len(resolvers)} adapter resolvers and {len(adapter_yaml)} adapter YAML file(s).")
     return 0
 
 

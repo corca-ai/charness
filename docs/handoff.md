@@ -38,6 +38,7 @@
 - `find-skills` now supports a direct validation/runtime recommendation query via `list_capabilities.py --recommendation-role <runtime|validation> --next-skill-id <skill-id>`, and the `cautilus` integration manifest now limits `supports_public_skills` to the checked validation routes `impl`, `quality`, and `spec`.
 - `public-skill-validation` policy is now explicit that deeper skill-contract meaning belongs to on-demand `cautilus`/HITL proof, while repo-owned standing gates stay deterministic. `premortem` remains `hitl-recommended` + `adapter-free`, not a standing evaluator-required skill.
 - `specdown` now has an explicit second role as a viewer for the latest checked on-demand validation artifacts. Public executable contract pages remain the SoT for reader-facing contract claims, but checked artifacts such as [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md) stay the source of truth for on-demand runs.
+- `charness` now also ships a named `cautilus` adapter for long-context conversation proposal generation: [.agents/cautilus-adapters/chatbot-proposals.yaml](../.agents/cautilus-adapters/chatbot-proposals.yaml) runs [scripts/eval_cautilus_chatbot_proposals.py](../scripts/eval_cautilus_chatbot_proposals.py) against [evals/cautilus/chatbot-scenario-proposal-inputs.json](../evals/cautilus/chatbot-scenario-proposal-inputs.json) and writes the current pointer to [charness-artifacts/cautilus/chatbot-proposals/latest.md](../charness-artifacts/cautilus/chatbot-proposals/latest.md). This is the first repo-owned seam for multi-turn skill-trigger proposal generation; it is not yet a compare-backed benchmark.
 
 ## Next Session
 
@@ -51,6 +52,7 @@
 8. Dogfood 개선은 registry 확장보다 reviewed case 강화가 다음 move다. `hitl` 또는 `ideation`처럼 policy-heavy한 case 하나를 골라 실제 consumer prompt replay와 stronger acceptance evidence를 추가한다.
 9. sah/specdown lesson line을 이어가면 task envelope와 doctor `next_action`을 실제 멀티에이전트 세션에서 dogfood한 뒤 필요하면 task list/status summary만 다듬는다. 반복 setup/JSON 추출이 두세 번 생기기 전에는 specdown adapter를 만들지 않는다.
 10. source가 checked-in plugin export에 들어가는 파일이면 focused managed-checkout 테스트 전에 export sync를 먼저 실행한다. 이번 slice에서도 `plugins/charness/README.md` drift가 packaging/managed-install pytest를 바로 깨뜨렸으니, root README 계열 변경 뒤에는 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`를 먼저 습관화한다.
+11. long-context skill-trigger work를 이어가면 `cautilus adapter resolve --repo-root . --adapter-name chatbot-proposals`와 `python3 scripts/eval_cautilus_chatbot_proposals.py --repo-root . --json`부터 시작한다. 다음 단계 질문은 이 proposal packet을 실제 compare/A/B benchmark surface로 승격할지, 아니면 repo-owned proposal mining layer로 유지할지다.
 
 ## Discuss
 

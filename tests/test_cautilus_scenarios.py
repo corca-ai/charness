@@ -48,6 +48,25 @@ def test_validate_cautilus_scenarios_covers_instruction_surface_wiring() -> None
     assert result.returncode == 0, result.stderr
 
 
+def test_eval_cautilus_chatbot_proposals_writes_summary(tmp_path: Path) -> None:
+    output_dir = tmp_path / "chatbot-proposals"
+    result = run_script(
+        "scripts/eval_cautilus_chatbot_proposals.py",
+        "--repo-root",
+        str(ROOT),
+        "--output-dir",
+        str(output_dir),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["candidate_count"] == 4
+    assert payload["proposal_count"] == 4
+    assert "retro-structural-cause-followup" in payload["proposal_keys"]
+    assert (output_dir / "latest.json").is_file()
+    assert (output_dir / "latest.md").is_file()
+
+
 def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> None:
     cases_path = ROOT / "evals" / "cautilus" / "instruction-surface-cases.json"
     cases = json.loads(cases_path.read_text(encoding="utf-8"))

@@ -8,9 +8,11 @@ from .test_quality_artifact import run_script
 def seed_repo(tmp_path: Path, artifact_body: str | None) -> Path:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "cautilus-adapters").mkdir(parents=True)
     (repo / "skills" / "public" / "impl").mkdir(parents=True)
     (repo / "charness-artifacts" / "cautilus").mkdir(parents=True)
     (repo / "skills" / "public" / "impl" / "SKILL.md").write_text("# Impl\n", encoding="utf-8")
+    (repo / ".agents" / "cautilus-adapters" / "chatbot-proposals.yaml").write_text("version: 1\n", encoding="utf-8")
     if artifact_body is not None:
         (repo / "charness-artifacts" / "cautilus" / "latest.md").write_text(artifact_body, encoding="utf-8")
     return repo
@@ -126,3 +128,16 @@ def test_validate_cautilus_proof_accepts_preserve_claim(tmp_path: Path) -> None:
         "charness-artifacts/cautilus/latest.md",
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_validate_cautilus_proof_treats_named_cautilus_adapter_as_prompt_affecting(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, None)
+    result = run_script(
+        "scripts/validate-cautilus-proof.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        ".agents/cautilus-adapters/chatbot-proposals.yaml",
+    )
+    assert result.returncode == 1
+    assert "require refreshing `charness-artifacts/cautilus/latest.md`" in result.stderr

@@ -1,0 +1,307 @@
+{
+  "schema_version": 1,
+  "repo": "charness",
+  "input_file": "evals/cautilus/chatbot-scenario-proposal-inputs.json",
+  "candidate_count": 4,
+  "proposal_count": 4,
+  "proposal_keys": [
+    "find-skills-canonical-artifact-followup",
+    "premortem-canonical-subagent-followup",
+    "quality-proof-layering-followup",
+    "retro-structural-cause-followup"
+  ],
+  "families": [
+    "fast_regression"
+  ],
+  "tag_counts": {
+    "retro": 1,
+    "long-context": 1,
+    "structural-causes": 1,
+    "quality": 1,
+    "specdown": 1,
+    "proof-layering": 1,
+    "premortem": 1,
+    "subagent": 1,
+    "policy-clarification": 1,
+    "find-skills": 1,
+    "artifact-policy": 1,
+    "operator-trust": 1
+  },
+  "command": {
+    "argv": [
+      "cautilus",
+      "scenario",
+      "propose",
+      "--input",
+      "evals/cautilus/chatbot-scenario-proposal-inputs.json"
+    ],
+    "exit_code": 0,
+    "stderr": ""
+  },
+  "proposals_packet": {
+    "families": [
+      "fast_regression"
+    ],
+    "generatedAt": "2026-04-18T12:00:00Z",
+    "proposals": [
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "find-skills-canonical-artifact-followup",
+            "tags": [
+              "find-skills",
+              "artifact-policy",
+              "operator-trust"
+            ]
+          },
+          "brief": "Recent activity shows repeated correction pressure about artifact churn caused by invocation-shape differences.",
+          "description": "The user keeps pointing out dirty `find-skills` artifacts until the assistant distinguishes canonical durable inventory from ad hoc recommendation output.",
+          "maxTurns": 5,
+          "name": "Find Skills Canonical Artifact Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "find-skills-canonical-artifact-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "이게 충분히 유의미한 정보라면 무조건 커밋해야 하는데 왜 물어보는가?"
+              },
+              {
+                "text": "평소와 다른 방식으로 호출했다는 건 뭐죠?"
+              },
+              {
+                "text": "이건 canonical artifact와 ad hoc query output을 구분해야 하는 문제 아닌가요?"
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "이게 충분히 유의미한 정보라면 무조건 커밋해야 하는데 왜 물어보는가?",
+              "평소와 다른 방식으로 호출했다는 건 뭐죠?",
+              "이건 canonical artifact와 ad hoc query output을 구분해야 하는 문제 아닌가요?"
+            ],
+            "observedAt": "2026-04-18T11:00:00.000Z",
+            "sourceKind": "human_conversation",
+            "threadKey": "session-find-skills-canonical-artifact",
+            "title": "find-skills canonical artifact follow-up"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "find-skills-canonical-artifact-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh find-skills canonical-artifact follow-up scenario from recent activity"
+      },
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "premortem-canonical-subagent-followup",
+            "tags": [
+              "premortem",
+              "subagent",
+              "policy-clarification"
+            ]
+          },
+          "brief": "Recent activity shows a policy clarification that only makes sense if the assistant remembers the prior premortem discussion.",
+          "description": "The user clarifies that premortem should stay on the canonical subagent path, and the assistant must preserve that policy rather than collapsing to same-agent fallback logic.",
+          "maxTurns": 4,
+          "name": "Premortem Canonical Subagent Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "premortem-canonical-subagent-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "프리모르템은 무조건 서브에이전트로 명시하자는 의도입니다."
+              },
+              {
+                "text": "이거랑 지금 얘기한 standing eval 범위가 관련 있나요?"
+              },
+              {
+                "text": "정책을 흐리지 말고 구분해서 설명해 주세요."
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "프리모르템은 무조건 서브에이전트로 명시하자는 의도입니다.",
+              "이거랑 지금 얘기한 standing eval 범위가 관련 있나요?",
+              "정책을 흐리지 말고 구분해서 설명해 주세요."
+            ],
+            "observedAt": "2026-04-18T10:30:00.000Z",
+            "sourceKind": "human_conversation",
+            "threadKey": "session-premortem-canonical-subagent",
+            "title": "premortem canonical subagent follow-up"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "premortem-canonical-subagent-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh premortem canonical-subagent follow-up scenario from recent activity"
+      },
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "quality-proof-layering-followup",
+            "tags": [
+              "quality",
+              "specdown",
+              "proof-layering"
+            ]
+          },
+          "brief": "Recent activity shows a multi-turn quality discussion that depends on remembering the specdown SoT versus viewer split.",
+          "description": "The user refines the distinction between public executable specs, on-demand proof, and the specdown viewer until the assistant aligns the layering policy correctly.",
+          "maxTurns": 6,
+          "name": "Quality Proof Layering Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "quality-proof-layering-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "스펙다운은 SoT와 viewer 두 역할이 있다고 봅니다."
+              },
+              {
+                "text": "source guard는 전자 때문에 줄이고 싶지만, 후자 때문에 결과는 보여야 해요."
+              },
+              {
+                "text": "이 관점이 quality skill에도 반영돼 있나요?"
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "스펙다운은 SoT와 viewer 두 역할이 있다고 봅니다.",
+              "source guard는 전자 때문에 줄이고 싶지만, 후자 때문에 결과는 보여야 해요.",
+              "이 관점이 quality skill에도 반영돼 있나요?"
+            ],
+            "observedAt": "2026-04-18T10:00:00.000Z",
+            "sourceKind": "human_conversation",
+            "threadKey": "session-quality-proof-layering",
+            "title": "quality proof layering follow-up"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "quality-proof-layering-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh quality proof-layering follow-up scenario from recent activity"
+      },
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "retro-structural-cause-followup",
+            "tags": [
+              "retro",
+              "long-context",
+              "structural-causes"
+            ]
+          },
+          "brief": "Recent activity shows repeated correction pressure before the assistant lands on a structural retro.",
+          "description": "The user keeps pushing past a local explanation until the assistant generalizes the structural cause and proposes a durable retro change.",
+          "maxTurns": 5,
+          "name": "Retro Structural Cause Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "retro-structural-cause-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "이번 회고는 과적합된 것 아닌가요?"
+              },
+              {
+                "text": "이 패턴이 발생할 수밖에 없었던 구조적 원인을 더 봐주세요."
+              },
+              {
+                "text": "리트로 스킬도 그 관점으로 바뀌어야 하지 않나요?"
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "이번 회고는 과적합된 것 아닌가요?",
+              "이 패턴이 발생할 수밖에 없었던 구조적 원인을 더 봐주세요.",
+              "리트로 스킬도 그 관점으로 바뀌어야 하지 않나요?"
+            ],
+            "observedAt": "2026-04-18T09:30:00.000Z",
+            "sourceKind": "human_conversation",
+            "threadKey": "session-retro-structural-cause",
+            "title": "retro structural cause follow-up"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "retro-structural-cause-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh retro structural-cause follow-up scenario from recent activity"
+      }
+    ],
+    "schemaVersion": "cautilus.scenario_proposals.v1",
+    "windowDays": 30
+  }
+}
