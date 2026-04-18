@@ -3,55 +3,49 @@ Date: 2026-04-18
 
 ## Trigger
 
-- slice: `spec` contract layering, specdown on-demand viewer policy, and canonical premortem stop wording
+- slice: `instruction-surface` bootstrapHelper/workSkill split adoption for `charness`
 - claim: `preserve`
 
 ## Validation Goal
 
 - goal: `preserve`
-- reason: clarify that public executable contracts stay reader-facing while
-  on-demand behavioral proof remains artifact-backed, without intentionally
-  changing the standing routing claims for `spec`
+- reason: validate the released `Cautilus v0.5.5` split contract against the
+  checked-in `charness` routing fixtures without changing the intended repo
+  behavior
 
 ## Prompt Surfaces
 
-- `skills/public/spec/SKILL.md`
-- `skills/public/spec/references/public-executable-contracts.md`
-- `skills/public/premortem/SKILL.md`
-- `skills/public/premortem/references/angle-selection.md`
-- `skills/public/quality/references/fresh-eye-premortem.md`
+- `evals/cautilus/instruction-surface-cases.json`
 
 ## Commands Run
 
-- `python3 scripts/validate-skills.py --repo-root .`
-- `pytest tests/quality_gates/test_spec_premortem.py tests/quality_gates/test_docs_and_misc.py tests/test_public_skill_validation.py`
-- `python3 scripts/check-doc-links.py --repo-root .`
-- `./scripts/check-markdown.sh`
-- `./scripts/check-secrets.sh`
-- `specdown run -quiet -no-report`
+- `cautilus --version`
+- `pytest tests/test_cautilus_scenarios.py`
+- `python3 scripts/validate-cautilus-scenarios.py --repo-root .`
+- `python3 scripts/run-evals.py --repo-root .`
 - `cautilus instruction-surface test --repo-root .`
 
 ## Outcome
 
-- recommendation: `reject`
-- instruction-surface summary: `3 passed / 1 failed / 0 blocked`
-- routing notes: `compact-no-bootstrap-impl` still routes directly to `impl`,
-  both contract-shaping cases still route to `spec`, and the checked-in
-  bootstrap case still collapses to observed `impl` after loading
-  `find-skills`
-- contract notes: this slice clarified that public executable pages may act as
-  viewers over checked on-demand artifacts, but the checked artifact remains
-  the source of truth for the run
-- premortem notes: `premortem` stays `hitl-recommended` and `adapter-free`,
-  with behavioral proof remaining on-demand rather than standing
-  evaluator-required
+- recommendation: `accept-now`
+- binary version: `0.5.5`
+- instruction-surface summary: `4 passed / 0 failed / 0 blocked`
+- routing notes: the checked-in bootstrap case now evaluates as
+  `bootstrapHelper=find-skills` plus `workSkill=impl`; compact no-bootstrap
+  implementation still routes directly to `impl`; both contract-shaping cases
+  still route to `spec`
+- summary notes: `cautilus.instruction_surface_summary.v1` now reports
+  `bootstrapHelperCounts` and `workSkillCounts`, so the previous false mismatch
+  on `find-skills -> impl` is gone
+- premortem notes: this issue did not promote `premortem` into standing
+  evaluator-required coverage; current policy remains on-demand/HITL proof plus
+  repo-owned seam checks
 
 ## Follow-ups
 
-- close `charness#39` only after the checked-in bootstrap expectation is
-  updated or reclassified under the released `bootstrapHelper/workSkill` split
-- keep `premortem` out of standing evaluator-required routing coverage unless
-  a narrow low-noise route-only expectation proves worthwhile
-- if more on-demand artifacts need reader-facing visibility, add specdown
-  viewer pages over checked artifacts rather than promoting source guards into
-  public executable specs
+- close `charness#39` with the concrete `v0.5.5` evidence and note that the
+  remaining `premortem` question is policy, not a blocker on the bootstrap/work
+  split
+- if `premortem` later gets its own low-noise route-only expectation, add it as
+  a separate checked-in case instead of folding it into the `find-skills -> impl`
+  split proof

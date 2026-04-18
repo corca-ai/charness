@@ -72,7 +72,7 @@ def validate_instruction_surface_cases(repo_root: Path) -> dict[str, object]:
                 raise ValidationError(f"{INSTRUCTION_SURFACE_CASES_PATH}: `{evaluation_id}` `expectedRouting` must be an object")
             if not any(
                 isinstance(expected_routing.get(key), str) and expected_routing.get(key)
-                for key in ("selectedSkill", "selectedSupport", "firstToolCallPattern")
+                for key in ("selectedSkill", "bootstrapHelper", "workSkill", "selectedSupport", "firstToolCallPattern")
             ):
                 raise ValidationError(
                     f"{INSTRUCTION_SURFACE_CASES_PATH}: `{evaluation_id}` `expectedRouting` must declare at least one expectation"

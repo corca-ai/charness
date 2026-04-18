@@ -37,7 +37,7 @@ function normalizeExpectedRouting(value, field) {
 	}
 	const record = assertObject(value, field);
 	const normalized = {};
-	for (const key of ["selectedSkill", "selectedSupport", "firstToolCallPattern"]) {
+	for (const key of ["selectedSkill", "bootstrapHelper", "workSkill", "selectedSupport", "firstToolCallPattern"]) {
 		const text = optionalString(record[key], `${field}.${key}`);
 		if (text) {
 			normalized[key] = text;

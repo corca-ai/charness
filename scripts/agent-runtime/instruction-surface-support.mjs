@@ -48,7 +48,13 @@ function normalizeRoutingField(value, key) {
 	if (/^none\b/i.test(value)) {
 		return "none";
 	}
-	if ((key === "selectedSkill" || key === "selectedSupport") && value.startsWith("charness:")) {
+	if (
+		(key === "selectedSkill" ||
+			key === "bootstrapHelper" ||
+			key === "workSkill" ||
+			key === "selectedSupport") &&
+		value.startsWith("charness:")
+	) {
 		return value.slice("charness:".length);
 	}
 	if (key === "firstToolCall") {
@@ -71,7 +77,7 @@ export function normalizeRoutingDecision(value, field = "observed.routingDecisio
 	}
 	const record = assertObject(value, field);
 	const normalized = {};
-	for (const key of ["selectedSkill", "selectedSupport", "firstToolCall", "reasonSummary"]) {
+	for (const key of ["selectedSkill", "bootstrapHelper", "workSkill", "selectedSupport", "firstToolCall", "reasonSummary"]) {
 		const text = normalizeRoutingField(optionalString(record[key], `${field}.${key}`), key);
 		if (text) {
 			normalized[key] = text;
@@ -89,9 +95,11 @@ export function backendFailureResult(message) {
 		loadedInstructionFiles: [],
 		loadedSupportingFiles: [],
 		routingDecision: {
-			selectedSkill: "",
-			selectedSupport: "",
-			firstToolCall: "",
+			selectedSkill: "none",
+			bootstrapHelper: "none",
+			workSkill: "none",
+			selectedSupport: "none",
+			firstToolCall: "none",
 			reasonSummary: message,
 		},
 	};

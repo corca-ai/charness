@@ -55,6 +55,7 @@ def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> 
 
     fixture_results = {}
     for evaluation in cases["evaluations"]:
+        expected_routing = evaluation.get("expectedRouting", {})
         fixture_results[evaluation["evaluationId"]] = {
             "observationStatus": "observed",
             "blockerKind": "",
@@ -63,8 +64,10 @@ def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> 
             "loadedInstructionFiles": [f"{workspace}/AGENTS.md"],
             "loadedSupportingFiles": [],
             "routingDecision": {
-                "selectedSkill": evaluation.get("expectedRouting", {}).get("selectedSkill", "none"),
-                "selectedSupport": evaluation.get("expectedRouting", {}).get("selectedSupport", "none"),
+                "selectedSkill": expected_routing.get("selectedSkill", expected_routing.get("workSkill", "none")),
+                "bootstrapHelper": expected_routing.get("bootstrapHelper", "none"),
+                "workSkill": expected_routing.get("workSkill", expected_routing.get("selectedSkill", "none")),
+                "selectedSupport": expected_routing.get("selectedSupport", "none"),
                 "firstToolCall": "none",
                 "reasonSummary": f"Observed {evaluation['evaluationId']}",
             },
@@ -107,7 +110,8 @@ def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> 
     assert len(packet["evaluations"]) == len(cases["evaluations"])
 
     by_id = {item["evaluationId"]: item for item in packet["evaluations"]}
-    assert by_id["checked-in-bootstrap-before-impl"]["expectedRouting"]["selectedSkill"] == "find-skills"
+    assert by_id["checked-in-bootstrap-before-impl"]["expectedRouting"]["bootstrapHelper"] == "find-skills"
+    assert by_id["checked-in-bootstrap-before-impl"]["expectedRouting"]["workSkill"] == "impl"
     assert by_id["compact-no-bootstrap-impl"]["expectedRouting"]["selectedSkill"] == "impl"
     assert "expectedRouting" not in by_id["compact-no-bootstrap-spec"]
     assert by_id["expanded-no-bootstrap-spec"]["expectedRouting"]["selectedSkill"] == "spec"
@@ -147,6 +151,8 @@ def test_instruction_surface_runner_normalizes_markdown_link_entry_file(tmp_path
             "loadedSupportingFiles": [],
             "routingDecision": {
                 "selectedSkill": "none",
+                "bootstrapHelper": "none",
+                "workSkill": "none",
                 "selectedSupport": "none",
                 "firstToolCall": "none",
                 "reasonSummary": "Observed markdown link entry file",

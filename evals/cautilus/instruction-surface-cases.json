@@ -5,10 +5,11 @@
   "evaluations": [
     {
       "evaluationId": "checked-in-bootstrap-before-impl",
-      "displayName": "Checked-in surface still routes impl under bootstrap",
+      "displayName": "Checked-in surface keeps bootstrap helper distinct from work skill",
       "prompt": "Route only: you need the first charness skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.",
       "expectedRouting": {
-        "selectedSkill": "find-skills"
+        "bootstrapHelper": "find-skills",
+        "workSkill": "impl"
       }
     },
     {
