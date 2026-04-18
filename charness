@@ -3487,6 +3487,7 @@ def cmd_tool_update(args: argparse.Namespace) -> int:
         dry_run=args.dry_run,
         skip_sync_support=args.skip_sync_support,
         upstream_checkouts=args.upstream_checkout,
+        json_mode=args.json,
     )
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))

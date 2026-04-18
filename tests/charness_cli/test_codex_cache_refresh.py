@@ -19,7 +19,7 @@ def test_charness_update_reports_codex_version_drift(
     cache_manifest.parent.mkdir(parents=True, exist_ok=True)
     cache_manifest.write_text('{"version":"0.0.0-old"}', encoding="utf-8")
 
-    update_result = run_cli("update", "--home-root", str(home_root), "--skip-codex-cache-refresh", env=env)
+    update_result = run_cli("update", "--home-root", str(home_root), "--skip-codex-cache-refresh", "--json", env=env)
     assert update_result.returncode == 0, update_result.stderr
     payload = json.loads(update_result.stdout)
     assert payload["codex_source_version"] == CURRENT_VERSION
@@ -45,7 +45,7 @@ def test_charness_update_refreshes_codex_cache_via_official_app_server(
     cache_manifest.parent.mkdir(parents=True, exist_ok=True)
     cache_manifest.write_text('{"version":"0.0.0-old"}', encoding="utf-8")
 
-    update_result = run_cli("update", "--home-root", str(home_root), env=env)
+    update_result = run_cli("update", "--home-root", str(home_root), "--json", env=env)
     assert update_result.returncode == 0, update_result.stderr
     payload = json.loads(update_result.stdout)
 
