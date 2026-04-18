@@ -444,6 +444,7 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     managed_repo = home_root / ".agents" / "src" / "charness"
 
     assert payload["scope"] == "all"
+    assert payload["previous_checkout_version"] == payload["checkout_version"]
     assert "external_tools_updated" in payload["completed_actions"]
     assert sentinel in installed_cli.read_text(encoding="utf-8")
     assert sentinel in (managed_repo / "charness").read_text(encoding="utf-8")

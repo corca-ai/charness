@@ -57,6 +57,8 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     assert "STEP: refreshing tool doctor state" in update_result.stdout
     assert "DONE: update complete" in update_result.stdout
     assert "PACKAGE: charness" in update_result.stdout
+    assert "VERSION: None" not in update_result.stdout
+    assert "-> None" not in update_result.stdout
     assert "SCOPE: all" in update_result.stdout
     assert "TOOLS:" in update_result.stdout
     assert "agent-browser=updated" in update_result.stdout
