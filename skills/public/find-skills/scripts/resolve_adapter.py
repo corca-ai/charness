@@ -147,8 +147,8 @@ def _record_artifact_pattern(output_dir: str) -> str:
 def _bootstrap_expectations(data: dict[str, Any]) -> dict[str, str]:
     return {
         "artifact_path": _artifact_path(data["output_dir"]),
-        "what_you_get_after_one_run": "A local-first capability inventory plus the smallest next usable path.",
-        "artifact_meaning": "The artifact shows what this repo can already do today across public skills, support skills, synced support, and integrations.",
+        "what_you_get_after_one_run": "A local-first capability inventory in latest.md/latest.json plus the smallest next usable path.",
+        "artifact_meaning": "The artifacts show what this repo can already do today across public skills, support skills, synced support, and integrations.",
         "what_this_does_not_do": "It does not search arbitrary external registries unless trusted roots or registry access are explicitly configured.",
     }
 

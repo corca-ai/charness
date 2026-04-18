@@ -310,6 +310,13 @@ def assert_find_skills_payload(payload: dict[str, object]) -> None:
         raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
     if integration["readiness_checks"] != [{"check_id": "browser-setup", "summary": "Browser setup is complete."}]:
         raise EvalError(f"find-skills local-first discovery: unexpected integrations {payload['integrations']!r}")
+    artifacts = payload.get("artifacts", {})
+    if artifacts.get("markdown_path") != "charness-artifacts/find-skills/latest.md":
+        raise EvalError(f"find-skills local-first discovery: unexpected artifacts {artifacts!r}")
+    if artifacts.get("json_path") != "charness-artifacts/find-skills/latest.json":
+        raise EvalError(f"find-skills local-first discovery: unexpected artifacts {artifacts!r}")
+    if not isinstance(artifacts.get("generated_at"), str):
+        raise EvalError(f"find-skills local-first discovery: unexpected artifacts {artifacts!r}")
 
 def scenario_find_skills_local_first(root: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="charness-eval-find-skills-") as tmpdir:
@@ -321,7 +328,15 @@ def scenario_find_skills_local_first(root: Path) -> None:
             cwd=root,
         )
         expect_success(result, "find-skills local-first discovery")
-        assert_find_skills_payload(json.loads(result.stdout))
+        payload = json.loads(result.stdout)
+        assert_find_skills_payload(payload)
+        markdown_path = tmp / payload["artifacts"]["markdown_path"]
+        json_path = tmp / payload["artifacts"]["json_path"]
+        if not markdown_path.is_file() or not json_path.is_file():
+            raise EvalError("find-skills local-first discovery: expected latest.md/latest.json artifacts to be written")
+        markdown_text = markdown_path.read_text(encoding="utf-8")
+        if "## Support Skills" not in markdown_text:
+            raise EvalError("find-skills local-first discovery: markdown artifact missing support skill section")
 
 def scenario_representative_skill_contracts(root: Path) -> None:
     result = run_command(["python3", "scripts/check-skill-contracts.py", "--repo-root", str(root)], cwd=root)

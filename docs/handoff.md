@@ -11,6 +11,10 @@
 - `AGENTS.md` now requires one `charness:find-skills` call at the start of each
   task-oriented session so the session begins with a current capability map of
   public skills, support skills, synced support surfaces, and integrations.
+- `find-skills` now actually persists that capability map to
+  `charness-artifacts/find-skills/latest.md` and `latest.json`; unchanged
+  inventories keep the previous generated timestamp instead of rewriting the
+  current pointer on every run.
 - 현재 quality gate는 aggregate `60.0%` + per-file `85.0%` coverage floor, test/source ratio 상한 `1.00`, recent-median runtime budget(`pytest` 40s, `check-secrets` 5s, `check-coverage` 15s, `run-evals` 5s, `specdown` 8s)을 enforce한다.
 - 가장 최근 review proof 기준 control-plane coverage는 `98.0%` (`1196/1221`), test/source ratio는 `0.54` (`11279/20721`), standing pytest는 `321 passed`, eval은 `19` scenario pass, review gate는 `38 passed, 0 failed, 50.3s`다.
 - `run-quality.sh`는 `specdown run -quiet -no-report`를 포함하고, `.githooks/pre-push`는 export sync 뒤 canonical quality gate를 강제한다.

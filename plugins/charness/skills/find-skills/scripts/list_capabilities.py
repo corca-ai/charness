@@ -38,6 +38,8 @@ public_skills_dir = _scripts_repo_layout_module.public_skills_dir
 support_dir = _scripts_repo_layout_module.support_dir
 _scripts_tool_recommendation_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.tool_recommendation_lib")
 recommendations_for_public_skill = _scripts_tool_recommendation_lib_module.recommendations_for_public_skill
+_inventory_artifact_module = SKILL_RUNTIME.load_local_skill_module(__file__, "inventory_artifact")
+persist_inventory = _inventory_artifact_module.persist_inventory
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
 
@@ -208,6 +210,11 @@ def main() -> None:
             else []
         ),
     }
+    payload["artifacts"] = persist_inventory(
+        repo_root=root,
+        output_dir=root / adapter["data"]["output_dir"],
+        inventory=payload,
+    )
     print(json.dumps(payload, ensure_ascii=False, indent=2))
 
 if __name__ == "__main__":

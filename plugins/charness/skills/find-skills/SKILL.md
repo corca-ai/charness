@@ -57,6 +57,9 @@ What you get after one run:
 - public/support skill descriptions, canonical paths, trigger phrases, and
   directly referenced skill files
 - the smallest next usable path across public skills, support seams, and integrations
+- refreshed capability inventory artifacts at
+  `charness-artifacts/find-skills/latest.md` and
+  `charness-artifacts/find-skills/latest.json`
 
 What this does not do:
 

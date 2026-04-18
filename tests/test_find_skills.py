@@ -290,6 +290,53 @@ def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None
             "layer": "support capability",
         }
     ]
+
+    artifact_md = (tmp_path / "charness-artifacts" / "find-skills" / "latest.md").read_text(encoding="utf-8")
+    artifact_json = json.loads((tmp_path / "charness-artifacts" / "find-skills" / "latest.json").read_text(encoding="utf-8"))
+    assert payload["artifacts"]["markdown_path"] == "charness-artifacts/find-skills/latest.md"
+    assert payload["artifacts"]["json_path"] == "charness-artifacts/find-skills/latest.json"
+    assert artifact_json["inventory"]["support_skills"][0]["id"] == "gather-slack"
+    assert artifact_json["inventory"]["support_capabilities"][0]["id"] == "gather-slack"
+    assert "# Find Skills Inventory" in artifact_md
+    assert "## Support Skills" in artifact_md
+    assert "`gather-slack` (support skill): Slack support." in artifact_md
+    assert "## Support Capabilities" in artifact_md
+
+
+def test_list_capabilities_preserves_generated_at_when_inventory_is_unchanged(tmp_path: Path) -> None:
+    _write_gather_support_capability(tmp_path)
+
+    first = subprocess.run(
+        [
+            "python3",
+            "skills/public/find-skills/scripts/list_capabilities.py",
+            "--repo-root",
+            str(tmp_path),
+        ],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    first_payload = json.loads(first.stdout)
+
+    second = subprocess.run(
+        [
+            "python3",
+            "skills/public/find-skills/scripts/list_capabilities.py",
+            "--repo-root",
+            str(tmp_path),
+        ],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    second_payload = json.loads(second.stdout)
+
+    assert first_payload["artifacts"]["updated"] is True
+    assert second_payload["artifacts"]["updated"] is False
+    assert second_payload["artifacts"]["generated_at"] == first_payload["artifacts"]["generated_at"]
 def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_path: Path) -> None:
     (tmp_path / "skills" / "public" / "gather").mkdir(parents=True)
     (tmp_path / "skills" / "public" / "gather" / "SKILL.md").write_text(
