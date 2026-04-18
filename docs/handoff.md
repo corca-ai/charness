@@ -21,6 +21,7 @@
 - `charness task`는 작업 리포의 `.charness/tasks/*.json`에 claim/submit/abort/status를 남긴다. 이 리포의 runtime state에는 `sah-task-envelope`와 `doctor-next-action` record가 있어 `charness task status <task-id>`로 이어받을 수 있다.
 - `charness update`와 `charness update all`은 이제 기본 stdout에서 long JSON 대신 human summary를 내고, full payload는 `--json` opt-in일 때만 stdout으로 내보낸다. 진행 visibility가 필요한 phase line은 human mode에서는 stdout, JSON mode에서는 stderr로 보낸다.
 - Checked-in plugin export는 source 변경 뒤 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`로 맞춘다.
+- `.claude/worktrees/`는 host-generated runtime 흔적으로 보고 `.gitignore`에서 무시한다. `.claude/*.yaml` 같은 repo-owned adapter/config 후보까지 통째로 숨기지는 않는다.
 - `docs/public-skill-dogfood.json`는 현재 17개 public skill 전체를 커버하는 reviewed consumer dogfood registry다.
 - Packaging/plugin release surface는 checked-in version surface를 source of truth로 본다. 다음 publish slice도 `python3 skills/public/release/scripts/current_release.py --repo-root .`로 현재 버전을 먼저 읽고, 실제 release boundary는 `python3 skills/public/release/scripts/publish_release.py --repo-root . --part <patch|minor|major> --execute` helper로 닫는다.
 - 2026-04-18 UTC release surface is now `0.4.0`, and GitHub release `v0.4.0` is live. The release helper also now creates the tag before pushing and uses one `git push <remote> <branch> <tag>` transaction, so pre-push quality should no longer rerun just because branch and tag were pushed separately.
