@@ -37,6 +37,7 @@ Start local-first:
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root .
 python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommend-for-skill <skill-id>
+python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommendation-role <runtime|validation> --next-skill-id <skill-id>
 sed -n '1,220p' docs/external-integrations.md 2>/dev/null || true
 sed -n '1,220p' docs/support-skill-policy.md 2>/dev/null || true
 ```
@@ -94,6 +95,9 @@ What this does not do:
    - when the best-match public skill has a declared external-tool route, use
      the structured recommendation payload instead of prose-only install advice,
      including whether the route is a runtime path or a validation path
+   - when the user is asking about stronger validation itself, or about
+     prompt-affecting / behavior-affecting changes, query the validation route
+     directly with `--recommendation-role validation --next-skill-id <skill-id>`
    - if the capability is genuinely missing, say whether it belongs in a new
      public skill, support skill, or integration manifest
 6. Explain why.

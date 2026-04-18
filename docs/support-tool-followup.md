@@ -259,7 +259,9 @@ Status:
 
 - The first code seam landed on 2026-04-13.
 - `find-skills` now has a structured recommendation payload through
-  `list_capabilities.py --recommend-for-skill <skill-id>`.
+  `list_capabilities.py --recommend-for-skill <skill-id>` and the broader
+  validation/runtime query path through
+  `list_capabilities.py --recommendation-role <runtime|validation> --next-skill-id <skill-id>`.
 - `quality` now reuses the same shared payload through
   `skills/public/quality/scripts/list_tool_recommendations.py` when a missing
   validation tool blocks stronger local proof.
@@ -267,8 +269,10 @@ Status:
   - `supports_public_skills`
   - `recommendation_role` (`runtime` or `validation`)
 - Current dogfood proof in `charness`:
-  - `gather` surfaces `gws-cli` as `runtime` and `cautilus` as `validation`
-  - `spec` surfaces `cautilus` as `validation`
+  - `gather` surfaces `gws-cli` as `runtime`
+  - `find-skills` can now surface blocking validation tools directly through the
+    shared `recommendation_role` query path
+  - `impl` and `spec` surface `cautilus` as a checked validation route
 - the `quality` dogfood path now surfaces `cautilus` as a blocking validation
   tool with exact install docs and a repo-owned verify command.
 - What still remains:

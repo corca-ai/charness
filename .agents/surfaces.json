@@ -106,7 +106,9 @@
       ],
       "derived_paths": [
         "plugins/charness/skills/**",
-        "plugins/charness/support/**"
+        "plugins/charness/support/**",
+        "charness-artifacts/find-skills/latest.md",
+        "charness-artifacts/find-skills/latest.json"
       ],
       "sync_commands": [],
       "verify_commands": [

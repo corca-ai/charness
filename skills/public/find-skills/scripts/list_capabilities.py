@@ -6,6 +6,7 @@ import importlib.util
 import json
 import re
 from pathlib import Path
+from typing import Any
 
 
 def _load_skill_runtime_bootstrap():
@@ -32,6 +33,7 @@ public_skills_dir = _scripts_repo_layout_module.public_skills_dir
 support_dir = _scripts_repo_layout_module.support_dir
 _scripts_tool_recommendation_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.tool_recommendation_lib")
 recommendations_for_public_skill = _scripts_tool_recommendation_lib_module.recommendations_for_public_skill
+recommendations_for_role = _scripts_tool_recommendation_lib_module.recommendations_for_role
 _inventory_artifact_module = SKILL_RUNTIME.load_local_skill_module(__file__, "inventory_artifact")
 persist_inventory = _inventory_artifact_module.persist_inventory
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
@@ -159,7 +161,11 @@ def _filter_shadowed(entries: list[dict[str, str]], preferred: list[dict[str, st
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--recommend-for-skill")
+    recommendation_group = parser.add_mutually_exclusive_group()
+    recommendation_group.add_argument("--recommend-for-skill")
+    recommendation_group.add_argument("--recommendation-role", choices=("runtime", "validation"))
+    parser.add_argument("--next-skill-id")
+    parser.add_argument("--only-blocking", action="store_true")
     args = parser.parse_args()
     root = args.repo_root.resolve()
     local_root = _local_surface_root(root)
@@ -183,6 +189,31 @@ def main() -> None:
         for path in sorted((local_root / "integrations" / "tools").glob("*.json"))
         if path.name != "manifest.schema.json"
     ]
+    recommendation_query: dict[str, Any] | None = None
+    if args.recommend_for_skill:
+        tool_recommendations = recommendations_for_public_skill(local_root, manifests, skill_id=args.recommend_for_skill)
+        recommendation_query = {
+            "mode": "public_skill",
+            "skill_id": args.recommend_for_skill,
+        }
+    elif args.recommendation_role:
+        next_skill_id = args.next_skill_id or "quality"
+        tool_recommendations = recommendations_for_role(
+            local_root,
+            manifests,
+            recommendation_role=args.recommendation_role,
+            next_skill_id=next_skill_id,
+            only_blocking=args.only_blocking,
+        )
+        recommendation_query = {
+            "mode": "recommendation_role",
+            "recommendation_role": args.recommendation_role,
+            "next_skill_id": next_skill_id,
+            "only_blocking": args.only_blocking,
+        }
+    else:
+        tool_recommendations = []
+
     payload = {
         "adapter": {
             "found": adapter["found"],
@@ -198,11 +229,8 @@ def main() -> None:
         "support_capabilities": support_capabilities(local_root),
         "integrations": integrations(local_root),
         "trusted_skills": trusted_entries,
-        "tool_recommendations": (
-            recommendations_for_public_skill(local_root, manifests, skill_id=args.recommend_for_skill)
-            if args.recommend_for_skill
-            else []
-        ),
+        "tool_recommendations": tool_recommendations,
+        "tool_recommendation_query": recommendation_query,
     }
     payload["artifacts"] = persist_inventory(
         repo_root=root,

@@ -36,6 +36,7 @@
 - Product-side follow-up is now tracked in `corca-ai/cautilus#11`, which asks `cautilus` to separate bootstrap helper selection from durable work-skill routing in the instruction-surface summary contract.
 - Prompt-affecting repo changes now have a checked-in closeout rule: [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md) is the current visible proof artifact, [scripts/validate-cautilus-proof.py](../scripts/validate-cautilus-proof.py) enforces that prompt-affecting slices refresh it, and `./scripts/run-quality.sh` now includes `validate-cautilus-proof`.
 - 2026-04-18 UTC A/B smoke: `cautilus workspace prepare-compare --repo-root . --baseline-ref HEAD~1 --output-dir /tmp/cautilus-compare-smoke` prepared baseline/candidate worktrees successfully. `cautilus mode evaluate` also ran with that compare setup, but current adapter command templates still consume `baseline_ref` rather than directly using the prepared baseline/candidate repos, so the compare workspace path is proven as operator workflow but not yet a deeper charness adapter contract.
+- `find-skills` now supports a direct validation/runtime recommendation query via `list_capabilities.py --recommendation-role <runtime|validation> --next-skill-id <skill-id>`, and the `cautilus` integration manifest now limits `supports_public_skills` to the checked validation routes `impl`, `quality`, and `spec`.
 
 ## Next Session
 

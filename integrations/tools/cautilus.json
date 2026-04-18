@@ -68,13 +68,8 @@
     "detected_by": "stdout"
   },
   "supports_public_skills": [
-    "create-skill",
-    "debug",
-    "find-skills",
-    "gather",
-    "handoff",
     "impl",
-    "init-repo",
+    "quality",
     "spec"
   ],
   "intent_triggers": [

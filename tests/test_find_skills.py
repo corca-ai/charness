@@ -477,3 +477,138 @@ def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_pa
             "next_skill_id": "gather",
         }
     ]
+
+
+def test_list_capabilities_can_emit_tool_recommendations_for_role(tmp_path: Path) -> None:
+    (tmp_path / ".agents").mkdir(parents=True)
+    (tmp_path / ".agents" / "find-skills-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: charness-artifacts/find-skills",
+                "trusted_skill_roots: []",
+                "prefer_local_first: true",
+                "allow_external_registry: false",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "integrations" / "tools").mkdir(parents=True)
+    (tmp_path / "bin").mkdir(parents=True)
+    (tmp_path / "bin" / "cautilus").write_text(
+        "\n".join(
+            [
+                "#!/bin/sh",
+                "if [ \"$1\" = \"--version\" ]; then",
+                "  echo 'cautilus 0.5.3'",
+                "  exit 0",
+                "fi",
+                "if [ \"$1\" = \"doctor\" ] && [ \"$2\" = \"--help\" ]; then",
+                "  echo 'doctor'",
+                "  exit 0",
+                "fi",
+                "exit 1",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "bin" / "cautilus").chmod(0o755)
+    (tmp_path / "integrations" / "tools" / "cautilus.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "tool_id": "cautilus",
+                "kind": "external_binary_with_skill",
+                "display_name": "cautilus",
+                "summary": "Behavior validation engine.",
+                "upstream_repo": "corca-ai/cautilus",
+                "homepage": "https://github.com/corca-ai/cautilus",
+                "lifecycle": {
+                    "install": {
+                        "mode": "manual",
+                        "docs_url": "https://github.com/corca-ai/cautilus",
+                        "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.md",
+                        "notes": ["Install cautilus."],
+                    },
+                    "update": {
+                        "mode": "manual",
+                        "docs_url": "https://github.com/corca-ai/cautilus/releases",
+                        "notes": ["Update cautilus."],
+                    },
+                },
+                "checks": {
+                    "detect": {"commands": ["cautilus --version"], "success_criteria": ["exit_code:0"]},
+                    "healthcheck": {
+                        "commands": ["cautilus doctor --help"],
+                        "success_criteria": ["exit_code:0", "stdout_contains:doctor"],
+                    },
+                },
+                "access_modes": ["binary", "human-only", "degraded"],
+                "version_expectation": {"policy": "advisory", "constraint": "latest", "detected_by": "stdout"},
+                "supports_public_skills": ["impl", "quality", "spec"],
+                "recommendation_role": "validation",
+                "support_skill_source": {"source_type": "upstream_repo", "path": "skills/cautilus", "ref": "main"},
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/find-skills/scripts/list_capabilities.py",
+            "--repo-root",
+            str(tmp_path),
+            "--recommendation-role",
+            "validation",
+            "--next-skill-id",
+            "quality",
+        ],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PATH": f"{tmp_path / 'bin'}:{os.environ.get('PATH', '')}"},
+    )
+
+    payload = json.loads(result.stdout)
+    assert payload["tool_recommendation_query"] == {
+        "mode": "recommendation_role",
+        "recommendation_role": "validation",
+        "next_skill_id": "quality",
+        "only_blocking": False,
+    }
+    assert payload["tool_recommendations"] == [
+        {
+            "tool_id": "cautilus",
+            "display_name": "cautilus",
+            "kind": "external_binary_with_skill",
+            "summary": "Behavior validation engine.",
+            "why_recommended": "Recommended because `quality` can use this tool for stronger validation when repo-native deterministic proof is not enough.",
+            "supports_public_skills": ["impl", "quality", "spec"],
+            "recommendation_role": "validation",
+            "recommendation_status": "ready",
+            "doctor_status": "ok",
+            "support_state": "upstream-consumed",
+            "support_sync_status": "not-tracked",
+            "detect_ok": True,
+            "healthcheck_ok": True,
+            "readiness_ok": True,
+            "install": {
+                "mode": "manual",
+                "commands": [],
+                "docs_url": "https://github.com/corca-ai/cautilus",
+                "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.md",
+                "notes": ["Install cautilus."],
+            },
+            "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id cautilus",
+            "next_skill_id": "quality",
+        }
+    ]
