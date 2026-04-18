@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import textwrap
 from pathlib import Path
@@ -73,6 +74,27 @@ def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
         encoding="utf-8",
     )
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    _write_exec(
+        bin_dir / "git",
+        textwrap.dedent(
+            f"""\
+            #!/usr/bin/env python3
+            from __future__ import annotations
+            import json
+            import os
+            import subprocess
+            import sys
+            from pathlib import Path
+
+            log_path = Path(os.environ["FAKE_GIT_LOG"])
+            args = sys.argv[1:]
+            entries = json.loads(log_path.read_text(encoding="utf-8")) if log_path.exists() else []
+            entries.append(args)
+            log_path.write_text(json.dumps(entries, indent=2) + "\\n", encoding="utf-8")
+            raise SystemExit(subprocess.run([{json.dumps(shutil.which("git") or "/usr/bin/git")}, *args]).returncode)
+            """
+        ),
+    )
     _write_exec(
         repo / "scripts" / "sync_root_plugin_manifests.py",
         textwrap.dedent(
@@ -162,6 +184,7 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     env = os.environ.copy()
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
     env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
+    env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
     result = subprocess.run(
         [
             "python3",
@@ -203,4 +226,8 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
         entry[:6] == ["release", "create", "v0.0.1", "--verify-tag", "--title", "v0.0.1"]
         for entry in gh_log
     )
+    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
+    assert ["push", "origin", "main", "v0.0.1"] in git_log
+    assert ["push", "origin", "main"] not in git_log
+    assert ["push", "origin", "v0.0.1"] not in git_log
     assert payload["release_url"] == "https://github.com/example/demo/releases/tag/v0.0.1"

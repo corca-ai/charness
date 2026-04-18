@@ -150,9 +150,8 @@ def main() -> None:
     )
     run(["git", "add", "-A"], cwd=repo_root)
     run(["git", "commit", "-m", payload["commit_message"]], cwd=repo_root)
-    run(["git", "push", args.remote, branch], cwd=repo_root)
     run(["git", "tag", tag_name], cwd=repo_root)
-    run(["git", "push", args.remote, tag_name], cwd=repo_root)
+    run(["git", "push", args.remote, branch, tag_name], cwd=repo_root)
 
     release_command = ["gh", "release", "create", tag_name, "--verify-tag", "--title", title]
     release_command.extend(["--notes-file", str(args.notes_file.resolve())] if args.notes_file else ["--generate-notes"])

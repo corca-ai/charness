@@ -100,7 +100,7 @@ def write_release_artifact(
         "",
         f"- `{quality_command}` passed before publish.",
         "- `current_release.py` reported no version drift across packaging and generated install surfaces.",
-        "- git push and tag push completed from the release helper.",
+        "- one git push carried both the release branch update and the tag from the release helper.",
     ]
     if release_url:
         lines.append(f"- GitHub release created: {release_url}")
