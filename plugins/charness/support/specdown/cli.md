@@ -11,8 +11,8 @@ running specs, generating reports, and dumping Alloy models.
 ## Getting Started
 
 A specdown workflow has three parts:
-a [depends::spec document](syntax.md) that describes behavior,
-a [depends::configuration file](config.md) that registers adapters,
+a [depends::spec document](./syntax.md) that describes behavior,
+a [depends::configuration file](./config.md) that registers adapters,
 and the `specdown run` command.
 
 ```run:shell
@@ -95,7 +95,7 @@ echo "$help" | grep -q "alloy dump"
 
 ## Trace
 
-The `specdown trace` command validates the [depends::traceability](traceability.md)
+The `specdown trace` command validates the [depends::traceability](./traceability.md)
 graph configured in [`specdown.json`](../../../specdown.json) and outputs the result.
 
 Without `-strict`, validation errors are printed to stderr but the graph

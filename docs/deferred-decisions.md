@@ -1,7 +1,7 @@
 # Deferred Decisions
 
 This document is the canonical closure surface for the deferred product-boundary
-items that were previously listed in [`docs/handoff.md`](handoff.md) `Discuss`.
+items that were previously listed in [`docs/handoff.md`](./handoff.md) `Discuss`.
 
 ## Scope
 
@@ -30,7 +30,7 @@ Reopen trigger:
 - Question: Which shared packaging manifest is canonical for Claude/Codex dual support?
 - Current choice: [`packaging/charness.json`](../packaging/charness.json) stays the single source of truth.
 - Why now: This is already how the checked-in plugin install surface and root marketplace files are generated and validated.
-- Impact surfaces: [`docs/host-packaging.md`](host-packaging.md), [`scripts/sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py), [`scripts/validate-packaging.py`](../scripts/validate-packaging.py)
+- Impact surfaces: [`docs/host-packaging.md`](./host-packaging.md), [`scripts/sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py), [`scripts/validate-packaging.py`](../scripts/validate-packaging.py)
 - Reopen trigger: If host-specific metadata can no longer be represented as generated output from one shared manifest.
 
 ### D2. Evaluator Engine ID
@@ -38,7 +38,7 @@ Reopen trigger:
 - Question: Keep a legacy evaluator alias or standardize on one active product id?
 - Current choice: Standardize on `cautilus` as the active product id for extraction-facing work, with no legacy naming compatibility.
 - Why now: Current handoff and adapter flow already use `cautilus`, and keeping legacy naming would only preserve ambiguity.
-- Impact surfaces: [`docs/handoff.md`](handoff.md), [`.agents/cautilus-adapter.yaml`](../.agents/cautilus-adapter.yaml), future integration manifest naming
+- Impact surfaces: [`docs/handoff.md`](./handoff.md), [`.agents/cautilus-adapter.yaml`](../.agents/cautilus-adapter.yaml), future integration manifest naming
 - Reopen trigger: If upstream evaluator branding or repository identity changes.
 
 ### D3. Packaging Version Ownership
@@ -46,7 +46,7 @@ Reopen trigger:
 - Question: Should shared packaging manifest carry release version directly or rely on export-time override?
 - Current choice: Shared manifest remains canonical for default version; export-time override is allowed for host-specific release workflows.
 - Why now: Preserves reproducibility while keeping release operations flexible.
-- Impact surfaces: [`packaging/charness.json`](../packaging/charness.json), [`scripts/export-plugin.py`](../scripts/export-plugin.py), [`docs/host-packaging.md`](host-packaging.md)
+- Impact surfaces: [`packaging/charness.json`](../packaging/charness.json), [`scripts/export-plugin.py`](../scripts/export-plugin.py), [`docs/host-packaging.md`](./host-packaging.md)
 - Reopen trigger: If release tooling requires immutable manifest-only versioning with no override path.
 
 ### D4. Generated Export Tree Storage
@@ -78,7 +78,7 @@ Reopen trigger:
 - Question: Replace `official` with broader wording (`trusted`/`declared`) now?
 - Current choice: Replace `official` with `trusted` now.
 - Why now: The actual policy boundary is host trust, not brand-official status.
-- Impact surfaces: [`docs/support-skill-policy.md`](support-skill-policy.md), `skills/public/find-skills/*`
+- Impact surfaces: [`docs/support-skill-policy.md`](./support-skill-policy.md), `skills/public/find-skills/*`
 - Reopen trigger: If the trust policy later needs a more precise distinction than one `trusted` bucket.
 
 ### D8. Profile Inheritance Policy
@@ -134,7 +134,7 @@ Reopen trigger:
 - Question: Where should Session 10+ gate proposals be implemented?
 - Current choice: Implement only deterministic, repo-owned gates in `charness`; keep evaluator/HITL-heavy checks in `cautilus` or explicit HITL workflows.
 - Why now: Keeps `charness` guarantees honest and runnable in isolation.
-- Impact surfaces: [`scripts/run-quality.sh`](../scripts/run-quality.sh), [`scripts/run-evals.py`](../scripts/run-evals.py), [`docs/public-skill-validation.md`](public-skill-validation.md)
+- Impact surfaces: [`scripts/run-quality.sh`](../scripts/run-quality.sh), [`scripts/run-evals.py`](../scripts/run-evals.py), [`docs/public-skill-validation.md`](./public-skill-validation.md)
 - Reopen trigger: If current repo-owned gates prove insufficient for regression containment.
 
 ### D15. `spec` Mode Strategy

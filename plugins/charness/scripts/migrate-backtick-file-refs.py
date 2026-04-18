@@ -1,17 +1,29 @@
 #!/usr/bin/env python3
-"""Convert backtick-wrapped file references in checked-in docs to markdown links.
+"""Migrate checked-in docs to the explicit-file-reference convention.
 
-Only tokens that (a) match `*/*.*` (nested path with extension) or
-(b) are root-level tracked files with an extension-like name are rewritten.
-Command-invocation backticks (containing whitespace) are preserved so inline
-runnable examples keep their literal form.
+Two conversions run in sequence on every DOC_GLOBS markdown file:
+
+1. Backtick-wrapped file references become markdown links. A backticked token
+   counts as a file reference when it is one of:
+   - a path-like token (contains `/`) that resolves to a tracked file,
+   - a bare filename that matches exactly one tracked file (unique basename),
+   - a token starting with `./` or `../` (which is never correct as a bare
+     backtick, even when the remainder is a concept name).
+   Command-invocation backticks (containing whitespace) stay literal so inline
+   runnable examples keep their form.
+
+2. Existing relative markdown link targets that do not already start with
+   `./`, `../`, `#`, or a URL scheme get a `./` prefix so every file reference
+   is visually distinguishable from a concept token.
 """
 
 from __future__ import annotations
 
 import argparse
+import os.path
 import re
 import sys
+from collections import defaultdict
 from os.path import relpath
 from pathlib import Path
 
@@ -25,6 +37,9 @@ iter_repo_files = _scripts_repo_file_listing_module.iter_repo_files
 
 DOC_GLOBS = (
     "README.md",
+    "AGENTS.md",
+    "INSTALL.md",
+    "UNINSTALL.md",
     "docs/**/*.md",
     "presets/**/*.md",
     "profiles/**/*.md",
@@ -34,9 +49,9 @@ DOC_GLOBS = (
 SKIP_DIR_NAMES = {".git", "node_modules", ".pytest_cache", "__pycache__"}
 FENCE_RE = re.compile(r"^\s*(```|~~~)")
 BACKTICK_SPAN_RE = re.compile(r"`([^`\n]+)`")
-MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")
+MARKDOWN_LINK_RE = re.compile(r"(\[[^\]]+\])\(([^)]+)\)")
 PATHY_TOKEN_RE = re.compile(r"^(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9_-]+\.[A-Za-z0-9._-]+$")
-ROOT_FILE_NAME_RE = re.compile(r"^[A-Za-z0-9_-]+\.[A-Za-z0-9._-]+$")
+EXTENSION_TOKEN_RE = re.compile(r"^[A-Za-z0-9_.-]+\.[A-Za-z][A-Za-z0-9]{0,5}$")
 
 
 def iter_known_repo_paths(root: Path) -> set[str]:
@@ -48,60 +63,141 @@ def iter_known_repo_paths(root: Path) -> set[str]:
     return known
 
 
-def is_file_ref(candidate: str, known: set[str]) -> bool:
+def build_unique_basename_index(known_repo_paths: set[str]) -> dict[str, str]:
+    groups: dict[str, list[str]] = defaultdict(list)
+    for rel_path in known_repo_paths:
+        groups[os.path.basename(rel_path)].append(rel_path)
+    return {name: paths[0] for name, paths in groups.items() if len(paths) == 1}
+
+
+def build_known_directories(known_repo_paths: set[str]) -> set[str]:
+    dirs: set[str] = set()
+    for rel_path in known_repo_paths:
+        parent = os.path.dirname(rel_path)
+        while parent:
+            dirs.add(parent)
+            parent = os.path.dirname(parent)
+    return dirs
+
+
+def classify_token(
+    candidate: str,
+    known_repo_paths: set[str],
+    unique_basename_index: dict[str, str],
+    known_directories: set[str],
+) -> tuple[str, bool] | None:
+    """Resolve a backticked token to (target_rel_path, is_directory) or None if it's not a file ref."""
     if not candidate or any(ch.isspace() for ch in candidate):
-        return False
+        return None
     bare = candidate.split("#", 1)[0]
     if not bare:
-        return False
-    if PATHY_TOKEN_RE.match(bare):
-        return bare in known
-    if "/" not in bare and ROOT_FILE_NAME_RE.match(bare):
-        return bare in known
-    return False
+        return None
+    if bare.startswith("./") or bare.startswith("../"):
+        stripped = bare.rstrip("/")
+        while stripped.startswith("./"):
+            stripped = stripped[2:]
+        if stripped in known_repo_paths:
+            return stripped, False
+        if stripped in known_directories:
+            return stripped, True
+        return None
+    if PATHY_TOKEN_RE.match(bare) and bare in known_repo_paths:
+        return bare, False
+    if "/" in bare:
+        return None
+    if not EXTENSION_TOKEN_RE.match(bare):
+        return None
+    if bare in known_repo_paths:
+        return bare, False
+    if bare in unique_basename_index:
+        return unique_basename_index[bare], False
+    return None
 
 
-def relative_link(doc_rel: str, target_rel: str) -> str:
+def relative_link_with_prefix(doc_rel: str, target_rel: str) -> str:
     doc_dir = Path(doc_rel).parent.as_posix() or "."
-    return relpath(target_rel, doc_dir).replace("\\", "/")
+    rel = relpath(target_rel, doc_dir).replace("\\", "/")
+    if rel.startswith("./") or rel.startswith("../"):
+        return rel
+    return f"./{rel}"
 
 
-def rewrite_segment(segment: str, doc_rel: str, known: set[str]) -> tuple[str, int]:
+def prefix_existing_target(target: str) -> str:
+    stripped = target.strip()
+    if not stripped:
+        return target
+    if stripped.startswith(("./", "../", "#", "/")) or "://" in stripped or stripped.startswith("mailto:"):
+        return target
+    return f"./{target}"
+
+
+def rewrite_backticks_in_segment(
+    segment: str,
+    doc_rel: str,
+    known: set[str],
+    unique_basename_index: dict[str, str],
+    known_directories: set[str],
+) -> tuple[str, int]:
     changes = 0
 
     def _replace(match: re.Match[str]) -> str:
         nonlocal changes
         inner = match.group(1)
-        if not is_file_ref(inner, known):
+        classified = classify_token(inner, known, unique_basename_index, known_directories)
+        if classified is None:
             return match.group(0)
+        target_rel, is_dir = classified
         bare = inner.split("#", 1)[0]
         fragment = inner[len(bare) :]
-        rel_target = relative_link(doc_rel, bare)
+        rel_target = relative_link_with_prefix(doc_rel, target_rel)
+        if is_dir and not rel_target.endswith("/"):
+            rel_target = f"{rel_target}/"
         changes += 1
         return f"[`{inner}`]({rel_target}{fragment})"
 
     return BACKTICK_SPAN_RE.sub(_replace, segment), changes
 
 
-def rewrite_line(line: str, doc_rel: str, known: set[str]) -> tuple[str, int]:
+def rewrite_line(
+    line: str,
+    doc_rel: str,
+    known: set[str],
+    unique_basename_index: dict[str, str],
+    known_directories: set[str],
+) -> tuple[str, int]:
     pieces: list[str] = []
     total_changes = 0
     cursor = 0
     for match in MARKDOWN_LINK_RE.finditer(line):
         segment = line[cursor : match.start()]
-        rewritten_seg, changes = rewrite_segment(segment, doc_rel, known)
+        rewritten_seg, changes = rewrite_backticks_in_segment(
+            segment, doc_rel, known, unique_basename_index, known_directories
+        )
         pieces.append(rewritten_seg)
         total_changes += changes
-        pieces.append(match.group(0))
+        label, target = match.group(1), match.group(2)
+        new_target = prefix_existing_target(target)
+        if new_target != target:
+            total_changes += 1
+        pieces.append(f"{label}({new_target})")
         cursor = match.end()
     tail = line[cursor:]
-    rewritten_tail, changes = rewrite_segment(tail, doc_rel, known)
+    rewritten_tail, changes = rewrite_backticks_in_segment(
+        tail, doc_rel, known, unique_basename_index, known_directories
+    )
     pieces.append(rewritten_tail)
     total_changes += changes
     return "".join(pieces), total_changes
 
 
-def rewrite_file(path: Path, root: Path, known: set[str], dry_run: bool) -> int:
+def rewrite_file(
+    path: Path,
+    root: Path,
+    known: set[str],
+    unique_basename_index: dict[str, str],
+    known_directories: set[str],
+    dry_run: bool,
+) -> int:
     original = path.read_text(encoding="utf-8")
     lines = original.splitlines(keepends=True)
     out_lines: list[str] = []
@@ -118,7 +214,7 @@ def rewrite_file(path: Path, root: Path, known: set[str], dry_run: bool) -> int:
         if in_fence:
             out_lines.append(raw_line)
             continue
-        rewritten, changes = rewrite_line(line_no_nl, doc_rel, known)
+        rewritten, changes = rewrite_line(line_no_nl, doc_rel, known, unique_basename_index, known_directories)
         total_changes += changes
         out_lines.append(rewritten + newline)
     if total_changes and not dry_run:
@@ -134,12 +230,14 @@ def main() -> int:
 
     root = args.repo_root.resolve()
     known = iter_known_repo_paths(root)
+    unique_basename_index = build_unique_basename_index(known)
+    known_directories = build_known_directories(known)
     docs = iter_matching_repo_files(root, DOC_GLOBS)
 
     total = 0
     changed_files: list[tuple[str, int]] = []
     for doc in docs:
-        changes = rewrite_file(doc, root, known, dry_run=args.dry_run)
+        changes = rewrite_file(doc, root, known, unique_basename_index, known_directories, dry_run=args.dry_run)
         if changes:
             changed_files.append((doc.relative_to(root).as_posix(), changes))
             total += changes

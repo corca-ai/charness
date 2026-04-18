@@ -20,9 +20,9 @@ Put it in:
 
 Examples:
 
-- [deferred-decisions.md](deferred-decisions.md)
-- [runtime-capability-contract.md](runtime-capability-contract.md)
-- [external-integrations.md](external-integrations.md)
+- [deferred-decisions.md](./deferred-decisions.md)
+- [runtime-capability-contract.md](./runtime-capability-contract.md)
+- [external-integrations.md](./external-integrations.md)
 - `skills/public/<skill-id>/SKILL.md`
 - [`.agents/quality-adapter.yaml`](../.agents/quality-adapter.yaml)
 
@@ -44,7 +44,7 @@ Put it in:
 
 Examples:
 
-- [handoff.md](handoff.md)
+- [handoff.md](./handoff.md)
 - [../charness-artifacts/gather/latest.md](../charness-artifacts/gather/latest.md)
 - [../charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
 - [../charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md)
@@ -144,7 +144,7 @@ Current repo examples:
 
 These are intentional exceptions to the simple defaults:
 
-- [handoff.md](handoff.md) is a rolling canonical artifact under `docs/`, not
+- [handoff.md](./handoff.md) is a rolling canonical artifact under `docs/`, not
   under `charness-artifacts/`, because the next-session pickup path is a repo
   entry surface.
 - `spec` work can live in checked-in spec artifacts such as
@@ -193,8 +193,8 @@ Avoid these mistakes:
 
 ## Related Contracts
 
-- [harness-composition.md](harness-composition.md)
-- [handoff.md](handoff.md)
-- [runtime-capability-contract.md](runtime-capability-contract.md)
-- [external-integrations.md](external-integrations.md)
+- [harness-composition.md](./harness-composition.md)
+- [handoff.md](./handoff.md)
+- [runtime-capability-contract.md](./runtime-capability-contract.md)
+- [external-integrations.md](./external-integrations.md)
 - `skills/public/*/references/adapter-contract.md`

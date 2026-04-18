@@ -17,7 +17,7 @@ If the default directory layout doesn't fit (e.g., docs live in `docs/specs/` in
 }
 ```
 
-All paths are relative to the config file location. See [Configuration](config.md).
+All paths are relative to the config file location. See [Configuration](./config.md).
 
 ## 2. Choose what to spec first
 
@@ -49,7 +49,7 @@ $ curl -s -o /dev/null -w '%{http_code}' -X POST \
 ```
 ````
 
-If the project needs setup before specs run (database, containers), use the [global setup/teardown](config.md#global-setup-and-teardown) config:
+If the project needs setup before specs run (database, containers), use the [global setup/teardown](./config.md#global-setup-and-teardown) config:
 
 ```json
 {
@@ -60,9 +60,9 @@ If the project needs setup before specs run (database, containers), use the [glo
 
 ## 4. Bridge existing test infrastructure
 
-If you have a test harness, API client, or CLI wrapper, turn it into an [adapter](adapter-protocol.md). The adapter receives JSON commands on stdin and returns results on stdout — any language works.
+If you have a test harness, API client, or CLI wrapper, turn it into an [adapter](./adapter-protocol.md). The adapter receives JSON commands on stdin and returns results on stdout — any language works.
 
-This lets you write specs with [check tables](syntax.md#check-tables) instead of shell scripts:
+This lets you write specs with [check tables](./syntax.md#check-tables) instead of shell scripts:
 
 ```markdown
 > check:user-api(method=POST, endpoint=/api/users)
@@ -75,14 +75,14 @@ This lets you write specs with [check tables](syntax.md#check-tables) instead of
 
 | When | Do |
 |------|----|
-| Adding a new feature | Write the spec first, then implement ([new feature workflow](workflow-evolve.md#adding-a-new-feature)) |
+| Adding a new feature | Write the spec first, then implement ([new feature workflow](./workflow-evolve.md#adding-a-new-feature)) |
 | Fixing a bug | Add a failing spec case that reproduces the bug, then fix |
 | Refactoring | Ensure the affected behavior has specs before refactoring |
 | Onboarding a team member | Point them to the HTML report — it's the spec and the test results in one |
 
 ## 6. Optional: add traceability
 
-If the project has layered documentation (goals, features, stories), add [traceability](traceability.md) to enforce coverage:
+If the project has layered documentation (goals, features, stories), add [traceability](./traceability.md) to enforce coverage:
 
 ```json
 {

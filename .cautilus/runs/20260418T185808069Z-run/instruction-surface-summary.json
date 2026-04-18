@@ -1,0 +1,523 @@
+{
+  "evaluatedAt": "2026-04-18T18:58:46.82987561Z",
+  "evaluationCounts": {
+    "blocked": 0,
+    "failed": 0,
+    "passed": 4,
+    "total": 4
+  },
+  "evaluations": [
+    {
+      "artifactRefs": [
+        {
+          "kind": "prompt",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/checked-in-bootstrap-before-impl/prompt.md"
+        },
+        {
+          "kind": "schema",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/checked-in-bootstrap-before-impl/schema.json"
+        },
+        {
+          "kind": "stderr",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/checked-in-bootstrap-before-impl/result.stderr"
+        },
+        {
+          "kind": "result",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/checked-in-bootstrap-before-impl/result.json"
+        },
+        {
+          "kind": "instruction_surface",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/checked-in-bootstrap-before-impl/instruction-surface/AGENTS.md"
+        }
+      ],
+      "blockerKind": "none",
+      "displayName": "Checked-in surface keeps bootstrap helper distinct from work skill",
+      "entryFile": "AGENTS.md",
+      "evaluationId": "checked-in-bootstrap-before-impl",
+      "expectationResults": {
+        "entryFile": {
+          "status": "not_applicable"
+        },
+        "instructionFiles": {
+          "forbiddenLoaded": [],
+          "missingRequired": [],
+          "status": "not_applicable"
+        },
+        "routing": {
+          "expected": {
+            "bootstrapHelper": "find-skills",
+            "workSkill": "impl"
+          },
+          "matched": true,
+          "mismatches": [],
+          "observed": {
+            "bootstrapHelper": "find-skills",
+            "firstToolCall": "multi_tool_use.parallel -\u003e exec_command: `pwd \u0026\u0026 rg --files /home/ubuntu/.codex/plugins/cache/local/charness/0.3.3/skills/find-skills | sed -n '1p'`",
+            "reasonSummary": "AGENTS.md explicitly requires a first `find-skills` pass; the task is a code/config/test change to an operator-facing artifact, which maps to the durable `impl` skill rather than a support helper or a different workflow.",
+            "selectedSkill": "impl",
+            "selectedSupport": "none",
+            "workSkill": "impl"
+          },
+          "status": "passed"
+        },
+        "supportingFiles": {
+          "forbiddenLoaded": [],
+          "missingRequired": [],
+          "status": "not_applicable"
+        }
+      },
+      "expectedRouting": {
+        "bootstrapHelper": "find-skills",
+        "workSkill": "impl"
+      },
+      "instructionSurface": {
+        "files": [
+          {
+            "artifactPath": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/checked-in-bootstrap-before-impl/instruction-surface/AGENTS.md",
+            "kind": "file",
+            "path": "AGENTS.md",
+            "sourceKind": "workspace_default"
+          }
+        ],
+        "surfaceLabel": "workspace_checked_in"
+      },
+      "loadedInstructionFiles": [
+        "AGENTS.md",
+        "/home/ubuntu/.codex/plugins/cache/local/charness/0.3.3/skills/find-skills/SKILL.md"
+      ],
+      "loadedSupportingFiles": [
+        "skill_runtime_bootstrap.py"
+      ],
+      "observationStatus": "observed",
+      "prompt": "Route only: you need the first charness skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.",
+      "routingDecision": {
+        "bootstrapHelper": "find-skills",
+        "firstToolCall": "multi_tool_use.parallel -\u003e exec_command: `pwd \u0026\u0026 rg --files /home/ubuntu/.codex/plugins/cache/local/charness/0.3.3/skills/find-skills | sed -n '1p'`",
+        "reasonSummary": "AGENTS.md explicitly requires a first `find-skills` pass; the task is a code/config/test change to an operator-facing artifact, which maps to the durable `impl` skill rather than a support helper or a different workflow.",
+        "selectedSkill": "impl",
+        "selectedSupport": "none",
+        "workSkill": "impl"
+      },
+      "routingEvaluation": {
+        "expected": {
+          "bootstrapHelper": "find-skills",
+          "workSkill": "impl"
+        },
+        "matched": true,
+        "mismatches": [],
+        "observed": {
+          "bootstrapHelper": "find-skills",
+          "firstToolCall": "multi_tool_use.parallel -\u003e exec_command: `pwd \u0026\u0026 rg --files /home/ubuntu/.codex/plugins/cache/local/charness/0.3.3/skills/find-skills | sed -n '1p'`",
+          "reasonSummary": "AGENTS.md explicitly requires a first `find-skills` pass; the task is a code/config/test change to an operator-facing artifact, which maps to the durable `impl` skill rather than a support helper or a different workflow.",
+          "selectedSkill": "impl",
+          "selectedSupport": "none",
+          "workSkill": "impl"
+        },
+        "status": "passed"
+      },
+      "startedAt": "2026-04-18T18:58:08.800Z",
+      "status": "passed",
+      "summary": "첫 라우팅은 `find-skills`로 잡았고, 이 요청은 코드/config/test 변경을 위한 operator-facing artifact 작업이므로 최종 작업 스킬은 `impl`로 분류했습니다. 변경은 수행하지 않았습니다.",
+      "surface": "instruction_surface_fidelity",
+      "telemetry": {
+        "model": "gpt-5.4-mini"
+      }
+    },
+    {
+      "artifactRefs": [
+        {
+          "kind": "prompt",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/compact-no-bootstrap-impl/prompt.md"
+        },
+        {
+          "kind": "schema",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/compact-no-bootstrap-impl/schema.json"
+        },
+        {
+          "kind": "stderr",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/compact-no-bootstrap-impl/result.stderr"
+        },
+        {
+          "kind": "result",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/compact-no-bootstrap-impl/result.json"
+        },
+        {
+          "kind": "instruction_surface",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/compact-no-bootstrap-impl/instruction-surface/AGENTS.md"
+        }
+      ],
+      "displayName": "Compact surface routes direct impl without bootstrap",
+      "entryFile": "AGENTS.md",
+      "evaluationId": "compact-no-bootstrap-impl",
+      "expectationResults": {
+        "entryFile": {
+          "status": "not_applicable"
+        },
+        "instructionFiles": {
+          "forbiddenLoaded": [],
+          "missingRequired": [],
+          "status": "not_applicable"
+        },
+        "routing": {
+          "expected": {
+            "selectedSkill": "impl"
+          },
+          "matched": true,
+          "mismatches": [],
+          "observed": {
+            "bootstrapHelper": "none",
+            "firstToolCall": "functions.exec_command",
+            "reasonSummary": "`AGENTS.md` explicitly maps code/config/test/operator-facing artifact work to `impl`, and the request was only to route the task without making changes.",
+            "selectedSkill": "impl",
+            "selectedSupport": "none",
+            "workSkill": "impl"
+          },
+          "status": "passed"
+        },
+        "supportingFiles": {
+          "forbiddenLoaded": [],
+          "missingRequired": [],
+          "status": "not_applicable"
+        }
+      },
+      "expectedRouting": {
+        "selectedSkill": "impl"
+      },
+      "instructionSurface": {
+        "files": [
+          {
+            "artifactPath": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/compact-no-bootstrap-impl/instruction-surface/AGENTS.md",
+            "kind": "file",
+            "path": "AGENTS.md",
+            "sourceKind": "inline"
+          }
+        ],
+        "surfaceLabel": "compact_no_bootstrap"
+      },
+      "loadedInstructionFiles": [
+        "AGENTS.md",
+        "/home/ubuntu/.codex/plugins/cache/local/charness/0.3.3/skills/impl/SKILL.md"
+      ],
+      "loadedSupportingFiles": [],
+      "observationStatus": "observed",
+      "prompt": "Route only: you need the first charness skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.",
+      "routingDecision": {
+        "bootstrapHelper": "none",
+        "firstToolCall": "functions.exec_command",
+        "reasonSummary": "`AGENTS.md` explicitly maps code/config/test/operator-facing artifact work to `impl`, and the request was only to route the task without making changes.",
+        "selectedSkill": "impl",
+        "selectedSupport": "none",
+        "workSkill": "impl"
+      },
+      "routingEvaluation": {
+        "expected": {
+          "selectedSkill": "impl"
+        },
+        "matched": true,
+        "mismatches": [],
+        "observed": {
+          "bootstrapHelper": "none",
+          "firstToolCall": "functions.exec_command",
+          "reasonSummary": "`AGENTS.md` explicitly maps code/config/test/operator-facing artifact work to `impl`, and the request was only to route the task without making changes.",
+          "selectedSkill": "impl",
+          "selectedSupport": "none",
+          "workSkill": "impl"
+        },
+        "status": "passed"
+      },
+      "startedAt": "2026-04-18T18:58:20.551Z",
+      "status": "passed",
+      "summary": "Entry point was the repo-local `AGENTS.md`, which directly routed this request to the `impl` skill for a code/config/test/operator-facing artifact change. No bootstrap helper or support helper was needed, so the first routing decision was to use `impl` as both the selected and durable work skill. The first tool call was `functions.exec_command` to read the `impl` skill instructions.",
+      "surface": "instruction_surface_fidelity",
+      "telemetry": {
+        "model": "gpt-5.4-mini"
+      }
+    },
+    {
+      "artifactRefs": [
+        {
+          "kind": "prompt",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/compact-no-bootstrap-spec/prompt.md"
+        },
+        {
+          "kind": "schema",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/compact-no-bootstrap-spec/schema.json"
+        },
+        {
+          "kind": "stderr",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/compact-no-bootstrap-spec/result.stderr"
+        },
+        {
+          "kind": "result",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/compact-no-bootstrap-spec/result.json"
+        },
+        {
+          "kind": "instruction_surface",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/compact-no-bootstrap-spec/instruction-surface/AGENTS.md"
+        }
+      ],
+      "displayName": "Compact surface still allows direct spec observation",
+      "entryFile": "AGENTS.md",
+      "evaluationId": "compact-no-bootstrap-spec",
+      "expectationResults": {
+        "entryFile": {
+          "status": "not_applicable"
+        },
+        "instructionFiles": {
+          "forbiddenLoaded": [],
+          "missingRequired": [],
+          "status": "not_applicable"
+        },
+        "routing": {
+          "matched": false,
+          "mismatches": [],
+          "status": "not_applicable"
+        },
+        "supportingFiles": {
+          "forbiddenLoaded": [],
+          "missingRequired": [],
+          "status": "not_applicable"
+        }
+      },
+      "instructionSurface": {
+        "files": [
+          {
+            "artifactPath": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/compact-no-bootstrap-spec/instruction-surface/AGENTS.md",
+            "kind": "file",
+            "path": "AGENTS.md",
+            "sourceKind": "inline"
+          }
+        ],
+        "surfaceLabel": "compact_no_bootstrap"
+      },
+      "loadedInstructionFiles": [
+        "/home/ubuntu/.codex/plugins/cache/local/charness/0.3.3/skills/spec/SKILL.md"
+      ],
+      "loadedSupportingFiles": [],
+      "observationStatus": "observed",
+      "prompt": "Route only: you need the first charness skill for turning a concept into a living implementation contract before coding. Do not produce the contract.",
+      "routingDecision": {
+        "bootstrapHelper": "none",
+        "firstToolCall": "functions.exec_command",
+        "reasonSummary": "AGENTS instruction surface routed concept-to-contract work to `spec`, and the user explicitly requested the first charness skill for turning a concept into a living implementation contract before coding. I confirmed the `spec` skill instructions, then selected `charness:spec` as the durable work skill with no separate bootstrap helper.",
+        "selectedSkill": "spec",
+        "selectedSupport": "none",
+        "workSkill": "spec"
+      },
+      "routingEvaluation": {
+        "matched": false,
+        "mismatches": [],
+        "status": "not_applicable"
+      },
+      "startedAt": "2026-04-18T18:58:29.764Z",
+      "status": "passed",
+      "summary": "첫 라우팅은 `charness:spec`로 결정했습니다. 이 요청은 개념을 코드 작성 전에 살아있는 구현 계약으로 다듬는 단계에 해당하므로, 별도 bootstrap helper 없이 바로 `spec`이 적절합니다.",
+      "surface": "instruction_surface_fidelity",
+      "telemetry": {
+        "model": "gpt-5.4-mini"
+      }
+    },
+    {
+      "artifactRefs": [
+        {
+          "kind": "prompt",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/expanded-no-bootstrap-spec/prompt.md"
+        },
+        {
+          "kind": "schema",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/expanded-no-bootstrap-spec/schema.json"
+        },
+        {
+          "kind": "stderr",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/expanded-no-bootstrap-spec/result.stderr"
+        },
+        {
+          "kind": "result",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/expanded-no-bootstrap-spec/result.json"
+        },
+        {
+          "kind": "instruction_surface",
+          "path": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/expanded-no-bootstrap-spec/instruction-surface/AGENTS.md"
+        }
+      ],
+      "displayName": "Expanded surface exposes direct spec routing",
+      "entryFile": "AGENTS.md",
+      "evaluationId": "expanded-no-bootstrap-spec",
+      "expectationResults": {
+        "entryFile": {
+          "status": "not_applicable"
+        },
+        "instructionFiles": {
+          "forbiddenLoaded": [],
+          "missingRequired": [],
+          "status": "not_applicable"
+        },
+        "routing": {
+          "expected": {
+            "selectedSkill": "spec"
+          },
+          "matched": true,
+          "mismatches": [],
+          "observed": {
+            "bootstrapHelper": "none",
+            "firstToolCall": "functions.exec_command",
+            "reasonSummary": "요청이 '코딩 전 개념을 살아있는 구현 계약으로 바꾸는 첫 charness 스킬'을 요구했으므로, 지침상 `spec`이 적합했다. 별도 부트스트랩 단계 없이 바로 `spec`을 선택했다.",
+            "selectedSkill": "spec",
+            "selectedSupport": "none",
+            "workSkill": "spec"
+          },
+          "status": "passed"
+        },
+        "supportingFiles": {
+          "forbiddenLoaded": [],
+          "missingRequired": [],
+          "status": "not_applicable"
+        }
+      },
+      "expectedRouting": {
+        "selectedSkill": "spec"
+      },
+      "instructionSurface": {
+        "files": [
+          {
+            "artifactPath": "/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/.cautilus/runs/20260418T185808069Z-run/instruction-surface-test/expanded-no-bootstrap-spec/instruction-surface/AGENTS.md",
+            "kind": "file",
+            "path": "AGENTS.md",
+            "sourceKind": "inline"
+          }
+        ],
+        "surfaceLabel": "expanded_no_bootstrap"
+      },
+      "loadedInstructionFiles": [
+        "AGENTS.md",
+        "/home/ubuntu/.codex/plugins/cache/local/charness/0.3.3/skills/spec/SKILL.md"
+      ],
+      "loadedSupportingFiles": [],
+      "observationStatus": "observed",
+      "prompt": "Route only: you need the first charness skill for turning a concept into a living implementation contract before coding. Do not produce the contract.",
+      "routingDecision": {
+        "bootstrapHelper": "none",
+        "firstToolCall": "functions.exec_command",
+        "reasonSummary": "요청이 '코딩 전 개념을 살아있는 구현 계약으로 바꾸는 첫 charness 스킬'을 요구했으므로, 지침상 `spec`이 적합했다. 별도 부트스트랩 단계 없이 바로 `spec`을 선택했다.",
+        "selectedSkill": "spec",
+        "selectedSupport": "none",
+        "workSkill": "spec"
+      },
+      "routingEvaluation": {
+        "expected": {
+          "selectedSkill": "spec"
+        },
+        "matched": true,
+        "mismatches": [],
+        "observed": {
+          "bootstrapHelper": "none",
+          "firstToolCall": "functions.exec_command",
+          "reasonSummary": "요청이 '코딩 전 개념을 살아있는 구현 계약으로 바꾸는 첫 charness 스킬'을 요구했으므로, 지침상 `spec`이 적합했다. 별도 부트스트랩 단계 없이 바로 `spec`을 선택했다.",
+          "selectedSkill": "spec",
+          "selectedSupport": "none",
+          "workSkill": "spec"
+        },
+        "status": "passed"
+      },
+      "startedAt": "2026-04-18T18:58:38.717Z",
+      "status": "passed",
+      "summary": "첫 진입 instruction 파일은 `/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/AGENTS.md`였다. 그 지침과 요청 문맥을 기준으로 첫 라우팅 결정은 `spec` 스킬 선택으로 정리했고, bootstrap helper나 별도 support helper는 쓰지 않았다. 첫 도구 호출은 `spec` 스킬 파일을 확인한 `exec_command`였다.",
+      "surface": "instruction_surface_fidelity",
+      "telemetry": {
+        "model": "gpt-5.4-mini"
+      }
+    }
+  ],
+  "recommendation": "accept-now",
+  "routingSummary": {
+    "bootstrapHelperCounts": {
+      "find-skills": 1,
+      "none": 2
+    },
+    "evaluationsWithExpectedRoute": 3,
+    "evaluationsWithRoutingDecision": 3,
+    "matchedExpectedRoute": 3,
+    "mismatchedExpectedRoute": 0,
+    "selectedSkillCounts": {
+      "impl": 2,
+      "spec": 1
+    },
+    "workSkillCounts": {
+      "impl": 2,
+      "spec": 1
+    }
+  },
+  "schemaVersion": "cautilus.instruction_surface_summary.v1",
+  "suiteDisplayName": "Charness Instruction Surface",
+  "suiteId": "charness-instruction-surface",
+  "surfaceSummary": {
+    "entryFileMatches": 0,
+    "entryFileMismatches": 0,
+    "forbiddenInstructionFileViolations": 0,
+    "forbiddenSupportingFileViolations": 0,
+    "requiredInstructionFileMisses": 0,
+    "requiredSupportingFileMisses": 0
+  },
+  "variantSummaries": [
+    {
+      "bootstrapHelperCounts": {
+        "none": 1
+      },
+      "evaluationCounts": {
+        "blocked": 0,
+        "failed": 0,
+        "passed": 2,
+        "total": 2
+      },
+      "matchedExpectedRoute": 1,
+      "mismatchedExpectedRoute": 0,
+      "selectedSkillCounts": {
+        "impl": 1
+      },
+      "surfaceLabel": "compact_no_bootstrap",
+      "workSkillCounts": {
+        "impl": 1
+      }
+    },
+    {
+      "bootstrapHelperCounts": {
+        "none": 1
+      },
+      "evaluationCounts": {
+        "blocked": 0,
+        "failed": 0,
+        "passed": 1,
+        "total": 1
+      },
+      "matchedExpectedRoute": 1,
+      "mismatchedExpectedRoute": 0,
+      "selectedSkillCounts": {
+        "spec": 1
+      },
+      "surfaceLabel": "expanded_no_bootstrap",
+      "workSkillCounts": {
+        "spec": 1
+      }
+    },
+    {
+      "bootstrapHelperCounts": {
+        "find-skills": 1
+      },
+      "evaluationCounts": {
+        "blocked": 0,
+        "failed": 0,
+        "passed": 1,
+        "total": 1
+      },
+      "matchedExpectedRoute": 1,
+      "mismatchedExpectedRoute": 0,
+      "selectedSkillCounts": {
+        "impl": 1
+      },
+      "surfaceLabel": "workspace_checked_in",
+      "workSkillCounts": {
+        "impl": 1
+      }
+    }
+  ]
+}

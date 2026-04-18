@@ -10,7 +10,7 @@ individual public skills à la carte.
 
 ## Guardrails
 
-- treat [packaging/charness.json](packaging/charness.json)
+- treat [packaging/charness.json](./packaging/charness.json)
   as the source of truth
 - treat checked-in plugin manifests and compatibility marketplace files as
   derived artifacts
@@ -36,7 +36,7 @@ Minimum bootstrap prerequisites:
 - the user asked to install or verify `charness`
 - you can run shell commands and read local files
 - `bash` and `git` are available
-- either `curl` is available or you can download the raw `init.sh` script
+- either `curl` is available or you can download the raw [`init.sh`](./init.sh) script
 - outbound network access to the `charness` repo is available for zero-state
   bootstrap
 
@@ -77,9 +77,9 @@ If `charness` is already on PATH, bootstrap directly:
 charness init
 ```
 
-### Existing checkout with `init.sh`
+### Existing checkout with [`init.sh`](./init.sh)
 
-If you already have a `charness` checkout that still carries `./init.sh`, that
+If you already have a `charness` checkout that still carries [`./init.sh`](./init.sh), that
 wrapper is a valid bootstrap path:
 
 ```bash
@@ -87,7 +87,7 @@ wrapper is a valid bootstrap path:
 ```
 
 Development-only and proof-only non-managed checkout paths live in
-[docs/development.md](docs/development.md). They are useful for packaging or
+[docs/development.md](./docs/development.md). They are useful for packaging or
 repo-local dogfood, but they are not part of the operator install contract.
 
 After a successful bootstrap, `charness` installs a reusable CLI copy at

@@ -17,7 +17,7 @@ README, docs, or spec prose review.
   artifacts
 - search for repo-local config at [`.agents/markdown-preview.yaml`](../../../.agents/markdown-preview.yaml),
   `.codex/markdown-preview.yaml`, `.claude/markdown-preview.yaml`,
-  `docs/markdown-preview.yaml`, and `markdown-preview.yaml`
+  `docs/markdown-preview.yaml`, and [`markdown-preview.yaml`](../../../.agents/markdown-preview.yaml)
 - when `glow` is missing, write degraded artifacts that say so explicitly
   instead of pretending source-only review is equivalent
 

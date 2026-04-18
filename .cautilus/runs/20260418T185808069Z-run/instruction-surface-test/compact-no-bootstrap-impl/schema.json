@@ -1,0 +1,75 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "observationStatus",
+    "blockerKind",
+    "summary",
+    "entryFile",
+    "loadedInstructionFiles",
+    "loadedSupportingFiles",
+    "routingDecision"
+  ],
+  "properties": {
+    "observationStatus": {
+      "type": "string",
+      "enum": [
+        "observed",
+        "blocked"
+      ]
+    },
+    "blockerKind": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "entryFile": {
+      "type": "string"
+    },
+    "loadedInstructionFiles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "loadedSupportingFiles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "routingDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "selectedSkill",
+        "bootstrapHelper",
+        "workSkill",
+        "selectedSupport",
+        "firstToolCall",
+        "reasonSummary"
+      ],
+      "properties": {
+        "selectedSkill": {
+          "type": "string"
+        },
+        "bootstrapHelper": {
+          "type": "string"
+        },
+        "workSkill": {
+          "type": "string"
+        },
+        "selectedSupport": {
+          "type": "string"
+        },
+        "firstToolCall": {
+          "type": "string"
+        },
+        "reasonSummary": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

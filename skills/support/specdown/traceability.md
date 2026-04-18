@@ -13,7 +13,7 @@ traces back to a theme? That no test is orphaned?
 
 Traceability answers these questions. Documents are nodes; named,
 typed links between them are edges. Configure edge types and
-cardinality constraints in [depends::specdown.json](config.md),
+cardinality constraints in [depends::specdown.json](./config.md),
 and specdown checks them automatically.
 
 Edges follow UML dependency direction: `from` is the dependent,

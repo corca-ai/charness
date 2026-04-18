@@ -145,21 +145,21 @@ wrapper only when harness-specific knowledge is required locally.
 ## Current Plan
 
 Current planning and takeover surfaces live in
-[docs/external-integrations.md](docs/external-integrations.md) and
-[docs/operator-acceptance.md](docs/operator-acceptance.md).
+[docs/external-integrations.md](./docs/external-integrations.md) and
+[docs/operator-acceptance.md](./docs/operator-acceptance.md).
 
 ## Read This Next
 
 Use the README as the entrypoint, not as the only rollout or install contract.
 
 - picking the right skill or boundary:
-  [docs/support-skill-policy.md](docs/support-skill-policy.md) and
-  [docs/public-skill-validation.md](docs/public-skill-validation.md)
+  [docs/support-skill-policy.md](./docs/support-skill-policy.md) and
+  [docs/public-skill-validation.md](./docs/public-skill-validation.md)
 - evaluating internal rollout readiness:
-  [docs/operator-acceptance.md](docs/operator-acceptance.md) and
-  [charness-artifacts/quality/latest.md](charness-artifacts/quality/latest.md)
+  [docs/operator-acceptance.md](./docs/operator-acceptance.md) and
+  [charness-artifacts/quality/latest.md](./charness-artifacts/quality/latest.md)
 - installing or verifying the managed host surface:
-  [INSTALL.md](INSTALL.md) and [docs/host-packaging.md](docs/host-packaging.md)
+  [INSTALL.md](./INSTALL.md) and [docs/host-packaging.md](./docs/host-packaging.md)
 
 ## Plugin Install Surface
 
@@ -170,17 +170,17 @@ integration manifests.
 
 The checked-in install surface lives under `plugins/charness/`. Root-level
 compatibility artifacts are generated from
-[packaging/charness.json](packaging/charness.json) via
+[packaging/charness.json](./packaging/charness.json) via
 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`. Diff obligations
-for that surface live in [`.agents/surfaces.json`](.agents/surfaces.json).
+for that surface live in [`.agents/surfaces.json`](./.agents/surfaces.json).
 
 ## Local Development
 
-Use `./scripts/run-quality.sh` as the canonical local quality gate,
+Use [`./scripts/run-quality.sh`](./scripts/run-quality.sh) as the canonical local quality gate,
 `python3 scripts/check-changed-surfaces.py --repo-root .` for diff-aware
 obligations, and `python3 scripts/run-slice-closeout.py --repo-root .` for the
 repo-owned closeout path. Install `.githooks/pre-push` with
-`./scripts/install-git-hooks.sh` so the clone's `core.hooksPath` points at the
+[`./scripts/install-git-hooks.sh`](./scripts/install-git-hooks.sh) so the clone's `core.hooksPath` points at the
 checked-in hook.
 
 Use `charness doctor` for shared startup advice and version/install drift. It
@@ -189,9 +189,9 @@ readiness from lock state. It stays read-only.
 
 ## Install And Update
 
-Canonical install documents live in [INSTALL.md](INSTALL.md),
-[UNINSTALL.md](UNINSTALL.md), [docs/host-packaging.md](docs/host-packaging.md),
-and [docs/development.md](docs/development.md) for proof-only or repo-local
+Canonical install documents live in [INSTALL.md](./INSTALL.md),
+[UNINSTALL.md](./UNINSTALL.md), [docs/host-packaging.md](./docs/host-packaging.md),
+and [docs/development.md](./docs/development.md) for proof-only or repo-local
 flows.
 
 All official install paths converge on `charness init`. The managed local
@@ -212,7 +212,7 @@ curl -fsSLo /tmp/charness-init.sh \
 bash /tmp/charness-init.sh
 ```
 
-Use `./init.sh` only as a checkout convenience wrapper when the repo already
+Use [`./init.sh`](./init.sh) only as a checkout convenience wrapper when the repo already
 exists locally. The managed install keeps its checkout under
 `~/.agents/src/charness`; the installed surface still excludes external
 binaries such as `cautilus` and other host-owned prompts or product logic.
@@ -245,14 +245,14 @@ fan-out for tracked external binaries plus bundled support-skill refresh,
 CLI, and skill execution must stay read-only with respect to install/update
 state.
 
-Removal details stay in [UNINSTALL.md](UNINSTALL.md), including
+Removal details stay in [UNINSTALL.md](./UNINSTALL.md), including
 `charness uninstall --delete-checkout`, `charness uninstall --delete-cli`, and
 the default behavior of preserving the source checkout and CLI unless explicit
 delete flags are passed.
 
-Detailed owner docs: [docs/agent-task-envelope.md](docs/agent-task-envelope.md)
-owns the `task` surface, [docs/capability-resolution.md](docs/capability-resolution.md)
-owns the `capability` surface, and [docs/control-plane.md](docs/control-plane.md)
+Detailed owner docs: [docs/agent-task-envelope.md](./docs/agent-task-envelope.md)
+owns the `task` surface, [docs/capability-resolution.md](./docs/capability-resolution.md)
+owns the `capability` surface, and [docs/control-plane.md](./docs/control-plane.md)
 plus integration manifests own the `tool` surface.
 
 ## Repository Shape

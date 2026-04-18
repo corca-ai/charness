@@ -9,7 +9,7 @@ Adapters are how specs talk to real code.
 The boundary is a process protocol, not an in-process language API —
 any executable that reads NDJSON from stdin and writes NDJSON to stdout is an adapter.
 
-Adapters execute the [depends::executable blocks and check tables](syntax.md) defined in spec documents.
+Adapters execute the [depends::executable blocks and check tables](./syntax.md) defined in spec documents.
 This allows each project to build adapters with minimal effort in any language.
 
 ## Protocol Flow
@@ -135,7 +135,7 @@ Capabilities are declared in config, not negotiated at runtime.
 ## Built-in Shell Adapter
 
 The shell adapter is one of two built-in adapters (the other is the
-[jq check](config.md#built-in-jq-check)). It handles `run:shell`
+[jq check](./config.md#built-in-jq-check)). It handles `run:shell`
 blocks without any adapter configuration.
 
 ### Execution Model

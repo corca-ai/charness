@@ -13,7 +13,7 @@ Search order:
 2. `.codex/quality-adapter.yaml`
 3. `.claude/quality-adapter.yaml`
 4. `docs/quality-adapter.yaml`
-5. `quality-adapter.yaml` as compatibility fallback only
+5. [`quality-adapter.yaml`](../../../../.agents/quality-adapter.yaml) as compatibility fallback only
 
 ## Fields
 

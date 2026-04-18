@@ -13,7 +13,7 @@ Search order:
 2. `.codex/handoff-adapter.yaml`
 3. `.claude/handoff-adapter.yaml`
 4. `docs/handoff-adapter.yaml`
-5. `handoff-adapter.yaml` as compatibility fallback only
+5. [`handoff-adapter.yaml`](../../../../.agents/handoff-adapter.yaml) as compatibility fallback only
 
 ## Fields
 
@@ -34,7 +34,7 @@ Optional shared provenance:
 
 The durable handoff artifact filename is fixed:
 
-- `handoff.md`
+- [`handoff.md`](../../../../docs/handoff.md)
 
 Default path:
 

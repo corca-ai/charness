@@ -8,8 +8,8 @@ source-of-truth repo unless the user explicitly asks for that.
 
 Related install-surface owners:
 
-- [INSTALL.md](INSTALL.md) for the managed install/update contract
-- [docs/host-packaging.md](docs/host-packaging.md) for host surface ownership
+- [INSTALL.md](./INSTALL.md) for the managed install/update contract
+- [docs/host-packaging.md](./docs/host-packaging.md) for host surface ownership
 
 ## Guardrails
 
@@ -25,7 +25,7 @@ Related install-surface owners:
 Possible install modes:
 
 - managed local install via `charness init` or checkout convenience wrapper
-  `./init.sh`
+  [`./init.sh`](./init.sh)
 - proof-only checkout run via `./charness init --repo-root /absolute/path/to/charness --skip-cli-install`
 - generated export copy used as a disposable install surface
 

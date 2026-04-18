@@ -42,9 +42,9 @@ Does not own:
 Authoritative detail lives in:
 
 - skill references under `skills/public/<skill-id>/references/`
-- repo policy docs such as [runtime-capability-contract.md](runtime-capability-contract.md),
-  [external-integrations.md](external-integrations.md), and
-  [deferred-decisions.md](deferred-decisions.md)
+- repo policy docs such as [runtime-capability-contract.md](./runtime-capability-contract.md),
+  [external-integrations.md](./external-integrations.md), and
+  [deferred-decisions.md](./deferred-decisions.md)
 - repo-local adapters under `.agents/`
 
 ### References
@@ -95,11 +95,11 @@ Does not own:
 
 Authoritative detail lives in:
 
-- [deferred-decisions.md](deferred-decisions.md) for closed product-boundary choices
-- [runtime-capability-contract.md](runtime-capability-contract.md) for access-layer policy
-- [external-integrations.md](external-integrations.md) for integration ownership
-- [artifact-policy.md](artifact-policy.md) for durability classes
-- [handoff.md](handoff.md) for the next-session pickup path
+- [deferred-decisions.md](./deferred-decisions.md) for closed product-boundary choices
+- [runtime-capability-contract.md](./runtime-capability-contract.md) for access-layer policy
+- [external-integrations.md](./external-integrations.md) for integration ownership
+- [artifact-policy.md](./artifact-policy.md) for durability classes
+- [handoff.md](./handoff.md) for the next-session pickup path
 
 ### Adapters
 
@@ -125,7 +125,7 @@ Does not own:
 Authoritative detail lives in:
 
 - the matching adapter-contract reference
-- [artifact-policy.md](artifact-policy.md) for why a surface is visible,
+- [artifact-policy.md](./artifact-policy.md) for why a surface is visible,
   historical, or hidden
 
 ### Integration Manifests
@@ -151,8 +151,8 @@ Does not own:
 
 Authoritative detail lives in:
 
-- [external-integrations.md](external-integrations.md)
-- [runtime-capability-contract.md](runtime-capability-contract.md)
+- [external-integrations.md](./external-integrations.md)
+- [runtime-capability-contract.md](./runtime-capability-contract.md)
 
 ### Validators and Scripts
 
@@ -184,7 +184,7 @@ Authoritative detail lives in:
 Surface:
 
 - `charness-artifacts/**`
-- [handoff.md](handoff.md)
+- [handoff.md](./handoff.md)
 
 Owns:
 
@@ -199,7 +199,7 @@ Does not own:
 
 Authoritative detail lives in:
 
-- [artifact-policy.md](artifact-policy.md)
+- [artifact-policy.md](./artifact-policy.md)
 - skill-specific adapter contracts for path conventions
 
 ### Hidden Runtime State
@@ -222,8 +222,8 @@ Does not own:
 
 Authoritative detail lives in:
 
-- [artifact-policy.md](artifact-policy.md)
-- [handoff.md](handoff.md) when the next maintainer needs a visible summary
+- [artifact-policy.md](./artifact-policy.md)
+- [handoff.md](./handoff.md) when the next maintainer needs a visible summary
 
 ## Precedence Inside `charness`
 
@@ -256,7 +256,7 @@ Use this order when building context for a `charness` task:
 1. Start from the user request and route to the likely public skill.
 2. Read the repo-level operating context that can change the move:
    - [AGENTS.md](../AGENTS.md)
-   - [handoff.md](handoff.md)
+   - [handoff.md](./handoff.md)
    - any obviously relevant repo policy doc
 3. Resolve the repo-local adapter or manifest for the selected surface.
 4. Read the current visible artifact or runtime state only if it is relevant to
@@ -277,7 +277,7 @@ The key split is:
 For a `quality` review:
 
 1. route with [`skills/public/quality/SKILL.md`](../skills/public/quality/SKILL.md)
-2. read [handoff.md](handoff.md) and current repo policy docs
+2. read [handoff.md](./handoff.md) and current repo policy docs
 3. resolve [`.agents/quality-adapter.yaml`](../.agents/quality-adapter.yaml)
 4. inspect [../charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
    as history and current posture summary
@@ -292,8 +292,8 @@ For a `gather` task:
 
 1. route with [`skills/public/gather/SKILL.md`](../skills/public/gather/SKILL.md)
 2. resolve the gather adapter for the visible artifact path
-3. use [runtime-capability-contract.md](runtime-capability-contract.md) and
-   [external-integrations.md](external-integrations.md) for provider/access
+3. use [runtime-capability-contract.md](./runtime-capability-contract.md) and
+   [external-integrations.md](./external-integrations.md) for provider/access
    policy
 4. persist the gathered result to the visible artifact
 

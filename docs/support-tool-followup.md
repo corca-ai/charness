@@ -292,7 +292,7 @@ Likely touch points:
 - [skills/public/find-skills/SKILL.md](../skills/public/find-skills/SKILL.md)
 - [skills/public/find-skills/scripts/list_capabilities.py](../skills/public/find-skills/scripts/list_capabilities.py)
 - shared control-plane helpers under `scripts/`
-- possibly [docs/control-plane.md](control-plane.md) if the operator-facing
+- possibly [docs/control-plane.md](./control-plane.md) if the operator-facing
   contract needs one small addition
 
 Dogfood requirement:
@@ -382,5 +382,5 @@ Not the next slice, but worth preserving as a probable later follow-on:
 - dogfood each changed public skill inside `charness`
 - record durable findings in the appropriate artifact instead of leaving them
   only in chat
-- update [docs/handoff.md](handoff.md) again if the next first move changes
+- update [docs/handoff.md](./handoff.md) again if the next first move changes
 - commit after each meaningful slice instead of batching the whole workstream

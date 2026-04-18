@@ -158,7 +158,7 @@ Operationally this means:
 - Codex personal installs may point `~/.agents/plugins/marketplace.json` at
   `./.codex/plugins/charness` while keeping the marketplace file itself under
   `~/.agents`
-- Codex local development should load `./plugins/charness` through the
+- Codex local development should load [`./plugins/charness`](../plugins/charness/) through the
   checked-in repo marketplace file
 - checked-in marketplace files remain generated compatibility artifacts rather
   than the primary operator-facing install contract

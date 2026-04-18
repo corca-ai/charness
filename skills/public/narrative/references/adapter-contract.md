@@ -13,7 +13,7 @@ Fallback lookup order:
 2. `.codex/narrative-adapter.yaml`
 3. `.claude/narrative-adapter.yaml`
 4. `docs/narrative-adapter.yaml`
-5. `narrative-adapter.yaml`
+5. [`narrative-adapter.yaml`](../../../../.agents/narrative-adapter.yaml)
 
 ## Fields
 

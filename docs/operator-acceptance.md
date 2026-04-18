@@ -30,17 +30,17 @@ Focus: keep deferred product-boundary decisions closed unless a real reopen trig
 
 Read first:
 
-- [docs/handoff.md](handoff.md)
-- [docs/deferred-decisions.md](deferred-decisions.md)
-- [docs/host-packaging.md](host-packaging.md)
-- [docs/control-plane.md](control-plane.md)
+- [docs/handoff.md](./handoff.md)
+- [docs/deferred-decisions.md](./deferred-decisions.md)
+- [docs/host-packaging.md](./host-packaging.md)
+- [docs/control-plane.md](./control-plane.md)
 
 Acceptance:
 
-- [`docs/deferred-decisions.md`](deferred-decisions.md) stays in sync with current product-boundary choices.
-- [`docs/handoff.md`](handoff.md) `Discuss` is either empty or scoped to explicit reopen triggers only.
+- [`docs/deferred-decisions.md`](./deferred-decisions.md) stays in sync with current product-boundary choices.
+- [`docs/handoff.md`](./handoff.md) `Discuss` is either empty or scoped to explicit reopen triggers only.
 - Any reopened decision records its new choice and impacted docs.
-- `./scripts/run-quality.sh` passes after the doc updates.
+- [`./scripts/run-quality.sh`](../scripts/run-quality.sh) passes after the doc updates.
 
 ### 2. Wire `cautilus` Into `charness`
 
@@ -48,9 +48,9 @@ Focus: take `cautilus` from integration-manifest presence to honest maintained e
 
 Read first:
 
-- [docs/public-skill-validation.md](public-skill-validation.md)
-- [docs/control-plane.md](control-plane.md)
-- [docs/handoff.md](handoff.md)
+- [docs/public-skill-validation.md](./public-skill-validation.md)
+- [docs/control-plane.md](./control-plane.md)
+- [docs/handoff.md](./handoff.md)
 - [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml)
 
 Useful local commands:
@@ -67,11 +67,11 @@ editing `charness`.
 Acceptance:
 
 - `cautilus` has a real integration surface in `charness`.
-- [`docs/public-skill-validation.md`](public-skill-validation.md) is confirmed or minimally adjusted against
+- [`docs/public-skill-validation.md`](./public-skill-validation.md) is confirmed or minimally adjusted against
   the actual upstream contract.
 - Repo-owned tests/evals/docs reflect the new evaluator path and any added
   maintained scenario wiring honestly.
-- `./scripts/run-quality.sh` passes.
+- [`./scripts/run-quality.sh`](../scripts/run-quality.sh) passes.
 
 ### 3. Run Managed CLI Install Experiments
 
@@ -82,7 +82,7 @@ Read first:
 - [INSTALL.md](../INSTALL.md)
 - [UNINSTALL.md](../UNINSTALL.md)
 - [README.md](../README.md)
-- [docs/host-packaging.md](host-packaging.md)
+- [docs/host-packaging.md](./host-packaging.md)
 - [packaging/charness.json](../packaging/charness.json)
 
 Useful local commands:
@@ -100,7 +100,7 @@ charness tool update agent-browser
 Suggested operator runs:
 
 - bootstrap or reuse the managed checkout under `~/.agents/src/charness` with
-  `charness init`; use `./init.sh` only when the binary is not already
+  `charness init`; use [`./init.sh`](../init.sh) only when the binary is not already
   available on PATH
 - treat initial install/enable as pre-proven unless the host reports otherwise
 - make an explicit upstream payload change that should be visible in a loaded
@@ -116,7 +116,7 @@ Suggested operator runs:
   `pytest -q tests/charness_cli/test_update_propagation.py` plus a human host
   spot-check instead of turning it back into a default every-session task
 - if you want the full local install/update regression suite before or after
-  host testing, run `./scripts/self-validate-install-update.sh`
+  host testing, run [`./scripts/self-validate-install-update.sh`](../scripts/self-validate-install-update.sh)
 
 Acceptance:
 
@@ -146,7 +146,7 @@ Read first:
 
 - [skills/public/create-skill/SKILL.md](../skills/public/create-skill/SKILL.md)
 - [skills/public/spec/SKILL.md](../skills/public/spec/SKILL.md)
-- [docs/public-skill-dogfood.md](public-skill-dogfood.md)
+- [docs/public-skill-dogfood.md](./public-skill-dogfood.md)
 - [scripts/check-skill-contracts.py](../scripts/check-skill-contracts.py)
 - [scripts/run-evals.py](../scripts/run-evals.py)
 - [scripts/validate-public-skill-dogfood.py](../scripts/validate-public-skill-dogfood.py)
@@ -156,7 +156,7 @@ Acceptance:
 - at least one stronger deterministic workflow check exists for each targeted
   skill
 - docs and tests describe the stronger proof honestly
-- `./scripts/run-quality.sh` passes
+- [`./scripts/run-quality.sh`](../scripts/run-quality.sh) passes
 
 ### 5. Decide Adapter Requirements Per Public Skill
 
@@ -180,7 +180,7 @@ Acceptance:
 - the classification is recorded in canonical docs or validator logic
 - obviously adapter-dependent skills fail closed if their adapter contract is
   missing
-- `./scripts/run-quality.sh` passes
+- [`./scripts/run-quality.sh`](../scripts/run-quality.sh) passes
 
 ## Closeout Rule
 
@@ -189,5 +189,5 @@ For any accepted item:
 1. update the canonical doc(s)
 2. run the strongest honest local validation
 3. commit the work
-4. update [docs/handoff.md](handoff.md) if the next
+4. update [docs/handoff.md](./handoff.md) if the next
    operator's first move changed

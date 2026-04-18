@@ -434,16 +434,16 @@ Multiple inline elements can appear in the same paragraph.
 
 ## Other Block Prefixes
 
-The target in `run:<target>` names an [adapter](adapter-protocol.md).
+The target in `run:<target>` names an [adapter](./adapter-protocol.md).
 The built-in shell adapter works with no configuration; custom adapters
-are registered in [`specdown.json`](config.md).
+are registered in [`specdown.json`](./config.md).
 
 | Prefix | Meaning |
 |--------|---------|
 | `run:<target>` | Executable block dispatched to an adapter |
-| `alloy:model(<name>)` | Alloy model definition (see [Alloy](alloy.md)) |
-| `alloy:ref(<model>#<assertion>)` | Alloy model reference (see [Alloy](alloy.md)) |
-| `mermaid` | Diagram block rendered by Mermaid (see [Report](report.md#mermaid-diagrams)) |
+| `alloy:model(<name>)` | Alloy model definition (see [Alloy](./alloy.md)) |
+| `alloy:ref(<model>#<assertion>)` | Alloy model reference (see [Alloy](./alloy.md)) |
+| `mermaid` | Diagram block rendered by Mermaid (see [Report](./report.md#mermaid-diagrams)) |
 
 ### Diagram Blocks
 
@@ -505,7 +505,7 @@ An optional YAML frontmatter can be placed at the top of a spec file.
 | Key | Description |
 |-----|-------------|
 | `timeout` | Per-case execution time limit in milliseconds. Overrides `defaultTimeoutMsec` from config. `0` disables the time limit |
-| `type` | Document type for [traceability](traceability.md) (e.g. `spec`, `goal`, `feature`) |
+| `type` | Document type for [traceability](./traceability.md) (e.g. `spec`, `goal`, `feature`) |
 | `workdir` | Working directory for all shell blocks, relative to the spec file's location. Created automatically if it does not exist |
 
 If frontmatter is absent, the global `defaultTimeoutMsec` from [`specdown.json`](../../../specdown.json) applies (default: 30 seconds).

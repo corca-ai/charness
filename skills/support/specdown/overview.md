@@ -36,7 +36,7 @@ brew install corca-ai/tap/specdown
 specdown init
 ```
 
-This creates a [explains::configuration file](config.md) and example specs
+This creates a [explains::configuration file](./config.md) and example specs
 in the current directory. Run this from the project root so that
 [`specdown.json`](../../../specdown.json) sits next to `.git/`.
 
@@ -60,8 +60,8 @@ yes
 specdown run
 ```
 
-Specs are parsed, executed via [explains::adapters](adapter-protocol.md), and results are rendered as an [explains::HTML report](report.md).
-See the [explains::CLI reference](cli.md) for all flags. Use `-dry-run` to validate syntax without executing.
+Specs are parsed, executed via [explains::adapters](./adapter-protocol.md), and results are rendered as an [explains::HTML report](./report.md).
+See the [explains::CLI reference](./cli.md) for all flags. Use `-dry-run` to validate syntax without executing.
 
 ```run:shell
 $ cd init-overview && specdown run -dry-run 2>&1 | grep 'spec(s)'
@@ -76,4 +76,4 @@ specdown install skills
 
 This installs the `/specdown` skill with syntax reference, adapter protocol, and best practices.
 
-The next chapter, [explains::Spec Syntax](syntax.md), covers the full authoring surface: shell blocks, doctest blocks, variables, check tables, and hooks.
+The next chapter, [explains::Spec Syntax](./syntax.md), covers the full authoring surface: shell blocks, doctest blocks, variables, check tables, and hooks.

@@ -14,7 +14,7 @@ This creates:
 
 | File | Purpose |
 |------|---------|
-| [`specdown.json`](../../../specdown.json) | [Configuration](config.md) — entry file, adapters, reporters |
+| [`specdown.json`](../../../specdown.json) | [Configuration](./config.md) — entry file, adapters, reporters |
 | [`specs/index.spec.md`](../../../specs/index.spec.md) | Entry page linking all spec documents |
 | `specs/example.spec.md` | Starter spec you'll replace |
 
@@ -49,7 +49,7 @@ Run `specdown run` to verify. The built-in shell adapter handles `run:shell` wit
 
 ## 3. Add adapters when needed
 
-The shell adapter covers most projects. When you need domain-specific checks (database state, API responses, UI assertions), register an [adapter](adapter-protocol.md) in [`specdown.json`](../../../specdown.json):
+The shell adapter covers most projects. When you need domain-specific checks (database state, API responses, UI assertions), register an [adapter](./adapter-protocol.md) in [`specdown.json`](../../../specdown.json):
 
 ```json
 {
@@ -64,7 +64,7 @@ The shell adapter covers most projects. When you need domain-specific checks (da
 }
 ```
 
-Prefer [check tables](syntax.md#check-tables) over shell blocks for repetitive assertions — they read as data, not scripts.
+Prefer [check tables](./syntax.md#check-tables) over shell blocks for repetitive assertions — they read as data, not scripts.
 
 ## 4. Set up CI
 
@@ -88,6 +88,6 @@ This gives Claude Code the `/specdown` skill with full syntax reference and adap
 
 As the project grows:
 
-- One spec file per feature or bounded concern ([best practice](best-practices.md#keep-documents-focused))
-- Add [Alloy models](alloy.md) when the state space is too large for example-based testing
-- Add [traceability](traceability.md) when you need to track which specs cover which goals
+- One spec file per feature or bounded concern ([best practice](./best-practices.md#keep-documents-focused))
+- Add [Alloy models](./alloy.md) when the state space is too large for example-based testing
+- Add [traceability](./traceability.md) when you need to track which specs cover which goals

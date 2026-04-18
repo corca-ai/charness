@@ -6,8 +6,8 @@ workdir: .tmp-test
 # Configuration
 
 Every project needs a [`specdown.json`](../../../specdown.json). It tells specdown where specs live,
-which [depends::adapters](adapter-protocol.md) to launch, and what
-[reporters](report.md) to generate.
+which [depends::adapters](./adapter-protocol.md) to launch, and what
+[reporters](./report.md) to generate.
 
 Place [`specdown.json`](../../../specdown.json) at the project root, next to `.git/`. All paths
 inside the config are resolved relative to the config file's directory,
@@ -148,7 +148,7 @@ precedence over the built-in.
 | `reporters` | Output generators. `html` and `json` builtins provided |
 | `models` | Alloy model verification (default: `alloy`). Accepted for explicit configuration; omit to use the default. Set `models.jarPath` to use a local Alloy JAR instead of auto-downloading |
 | `ignorePrefixes` | List of code block prefixes to suppress unknown-prefix warnings for |
-| `trace` | Traceability configuration. See [Traceability](traceability.md) |
+| `trace` | Traceability configuration. See [Traceability](./traceability.md) |
 | `toc` | Sidebar table-of-contents grouping. See [TOC Grouping](#toc-grouping) below |
 | `setup` | Shell command to run once before any specs execute |
 | `teardown` | Shell command to run once after all specs finish (runs even on failure) |

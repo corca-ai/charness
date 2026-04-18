@@ -18,9 +18,9 @@ Identify the user's scenario from the Project Context above, then **read the mat
 
 | Scenario | How to detect | Guide |
 |----------|---------------|-------|
-| **New project** | No [`specdown.json`](../../../specdown.json) found | [New Project](workflow-new-project.md) |
-| **Adopting specdown** | [`specdown.json`](../../../specdown.json) exists but few or no `.spec.md` files | [Adopt](workflow-adopt.md) |
-| **Evolving specs** | Specs already exist; user wants to add, change, or strengthen them | [Evolve](workflow-evolve.md) |
+| **New project** | No [`specdown.json`](../../../specdown.json) found | [New Project](./workflow-new-project.md) |
+| **Adopting specdown** | [`specdown.json`](../../../specdown.json) exists but few or no `.spec.md` files | [Adopt](./workflow-adopt.md) |
+| **Evolving specs** | Specs already exist; user wants to add, change, or strengthen them | [Evolve](./workflow-evolve.md) |
 
 ## Running and Fixing Specs
 
@@ -37,15 +37,15 @@ Identify the user's scenario from the Project Context above, then **read the mat
 
 **You must read the relevant reference docs before writing or modifying specs.** The descriptions below are for navigation — they do not contain enough detail to work from.
 
-- [Overview](overview.md) — What specdown is, project setup with `specdown init`, and a first-spec walkthrough showing how prose, executable blocks, and check tables work together. Read this first if you haven't used specdown before.
-- [Spec Syntax](syntax.md) — All executable elements: `run:<target>` blocks, doctest style (`$ ` lines with expected output), variable capture (`-> $var`) and scoping, `!fail` expected failures, wildcard matching (`...`), check tables (`> check:name`), inline assertions (`expect:`, `check:`), setup/teardown hooks, summary lines, and frontmatter fields (`timeout`, `type`, `workdir`). Read this before writing or editing any spec.
-- [Best Practices](best-practices.md) — How to structure a spec document (lead with prose, then verify), choosing the right verification approach (doctest vs check table vs inline assertion vs shell block), Alloy modeling patterns, common pitfalls, and anti-patterns. Read this before writing or editing any spec.
-- [Configuration](config.md) — [`specdown.json`](../../../specdown.json) format: entry file, adapter registration (`blocks`/`checks`), reporter configuration, Alloy model runner, global setup/teardown, defaults, and `ignorePrefixes`. Read this when changing config or adding adapters.
-- [Validation Rules](validation.md) — Parse-time errors specdown catches before any adapter runs: unclosed code blocks, check without table, hook without code block, table without columns/rows, block without target. Read this when debugging parse errors.
-- [Adapter Protocol](adapter-protocol.md) — NDJSON stdin/stdout process protocol: `exec` requests (run code, capture output) and `assert` requests (check table rows), response format, structured failure reporting (`expected`/`actual`/`label`), and complete adapter examples in Python and Shell. Read this when building or debugging an adapter.
-- [CLI](cli.md) — Commands (`run`, `trace`, `init`, `alloy explore`, `alloy dump`, `install skills`), flags (`-config`, `-filter`, `-quiet`, `-jobs`, `-max-failures`), and filter expressions (`type:`, `block:`, `check:` prefixes). Read this when you need to understand commands or flags.
-- [Alloy Models](alloy.md) — Embedding `alloy:model(name)` blocks, `check`/`run` statements, `alloy:ref` cross-section references, scoped checks with `but` clauses, state machine modeling with temporal operators, and counterexample artifacts. Read this when working with formal models.
-- [Alloy Explore Guide](guide-alloy-explore.md) — Iterative spec authoring with `specdown alloy explore`: grow Alloy models and implementation tests together by exploring instances, discovering surprises, and turning each finding into a concrete test. Read this when using Alloy to develop or improve specs.
-- [Traceability](traceability.md) — Document-level traceability graph: typed documents (frontmatter `type`), named edge syntax such as `edge::Title`, cardinality constraints, cycle detection, and strict mode. Read this when setting up document traceability.
-- [HTML Report](report.md) — Multi-page HTML report structure, sidebar navigation, section-level pass/fail borders, failure diagnostics with expected/actual diffs, and `report.json` machine-readable output. Read this when customizing report output.
-- [Internals](internals.md) — Architecture: core/adapter/reporter separation, parallel execution model, and design pillars. Read this when contributing to specdown itself.
+- [Overview](./overview.md) — What specdown is, project setup with `specdown init`, and a first-spec walkthrough showing how prose, executable blocks, and check tables work together. Read this first if you haven't used specdown before.
+- [Spec Syntax](./syntax.md) — All executable elements: `run:<target>` blocks, doctest style (`$ ` lines with expected output), variable capture (`-> $var`) and scoping, `!fail` expected failures, wildcard matching (`...`), check tables (`> check:name`), inline assertions (`expect:`, `check:`), setup/teardown hooks, summary lines, and frontmatter fields (`timeout`, `type`, `workdir`). Read this before writing or editing any spec.
+- [Best Practices](./best-practices.md) — How to structure a spec document (lead with prose, then verify), choosing the right verification approach (doctest vs check table vs inline assertion vs shell block), Alloy modeling patterns, common pitfalls, and anti-patterns. Read this before writing or editing any spec.
+- [Configuration](./config.md) — [`specdown.json`](../../../specdown.json) format: entry file, adapter registration (`blocks`/`checks`), reporter configuration, Alloy model runner, global setup/teardown, defaults, and `ignorePrefixes`. Read this when changing config or adding adapters.
+- [Validation Rules](./validation.md) — Parse-time errors specdown catches before any adapter runs: unclosed code blocks, check without table, hook without code block, table without columns/rows, block without target. Read this when debugging parse errors.
+- [Adapter Protocol](./adapter-protocol.md) — NDJSON stdin/stdout process protocol: `exec` requests (run code, capture output) and `assert` requests (check table rows), response format, structured failure reporting (`expected`/`actual`/`label`), and complete adapter examples in Python and Shell. Read this when building or debugging an adapter.
+- [CLI](./cli.md) — Commands (`run`, `trace`, `init`, `alloy explore`, `alloy dump`, `install skills`), flags (`-config`, `-filter`, `-quiet`, `-jobs`, `-max-failures`), and filter expressions (`type:`, `block:`, `check:` prefixes). Read this when you need to understand commands or flags.
+- [Alloy Models](./alloy.md) — Embedding `alloy:model(name)` blocks, `check`/`run` statements, `alloy:ref` cross-section references, scoped checks with `but` clauses, state machine modeling with temporal operators, and counterexample artifacts. Read this when working with formal models.
+- [Alloy Explore Guide](./guide-alloy-explore.md) — Iterative spec authoring with `specdown alloy explore`: grow Alloy models and implementation tests together by exploring instances, discovering surprises, and turning each finding into a concrete test. Read this when using Alloy to develop or improve specs.
+- [Traceability](./traceability.md) — Document-level traceability graph: typed documents (frontmatter `type`), named edge syntax such as `edge::Title`, cardinality constraints, cycle detection, and strict mode. Read this when setting up document traceability.
+- [HTML Report](./report.md) — Multi-page HTML report structure, sidebar navigation, section-level pass/fail borders, failure diagnostics with expected/actual diffs, and `report.json` machine-readable output. Read this when customizing report output.
+- [Internals](./internals.md) — Architecture: core/adapter/reporter separation, parallel execution model, and design pillars. Read this when contributing to specdown itself.

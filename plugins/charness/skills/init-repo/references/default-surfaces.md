@@ -59,13 +59,21 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
   docs instead of turning [`AGENTS.md`](../../../../AGENTS.md) into a second handbook
 - avoid blanket external-link ignore defaults; when the repo relies on
   checked-in cross-file markdown links (the common case for any docs-heavy
-  repo), treat `lychee`-backed internal link integrity and a backtick file-ref
-  rule (reject `` `path/to/file.ext` `` or bare root-file names like
-  `` `README.md` `` in prose, since they silently rot on rename) as baseline
-  gates rather than optional escalations; see
-  [`scripts/check-doc-links.py`](../../../../scripts/check-doc-links.py) and
-  [`scripts/check-links-internal.sh`](../../../../scripts/check-links-internal.sh) for the
-  shipped reference implementation
+  repo), treat `lychee`-backed internal link integrity and an explicit
+  file-reference convention as baseline gates rather than optional
+  escalations. The convention has two halves that work together:
+  (1) **every relative markdown link target starts with `./` or `../`** so a
+  bare `foo.md` in a link is a lint failure, not a style preference;
+  (2) **backticks are reserved for concept tokens, runnable commands, and
+  explicit file links** — a backticked token that looks like a file (has an
+  extension, or matches a tracked path) must live inside a markdown link
+  instead of sitting alone as inline code. Concepts stay natural: a bare
+  `SKILL.md` whose basename resolves to many tracked files is still allowed,
+  because the linter treats multi-match basenames as conceptual references.
+  See [`./scripts/check-doc-links.py`](../../../../scripts/check-doc-links.py),
+  [`./scripts/check-links-internal.sh`](../../../../scripts/check-links-internal.sh), and
+  [`./scripts/migrate-backtick-file-refs.py`](../../../../scripts/migrate-backtick-file-refs.py)
+  for the shipped reference implementation and one-shot migrator
 
 Use `scripts/render_skill_routing.py` to render the block. Default to compact
 mode; allow `--mode expanded` or adapter `skill_routing_mode: expanded` when a
@@ -148,5 +156,5 @@ ratcheting.
 
 When the repo scaffolds GitHub-hosted workflows, pin maintained GitHub Actions
 to current Node 24-ready majors by default. Keep the maintained baseline in
-[`github-actions-defaults.md`](github-actions-defaults.md) and prefer direct
+[`github-actions-defaults.md`](./github-actions-defaults.md) and prefer direct
 major upgrades over compatibility env vars.

@@ -25,7 +25,7 @@ explicitly ask for it or when a maintainer manually persists the lesson.
 The first implementation batch has landed:
 
 - `probe_host_logs.py` reports honest Claude/Codex metric availability
-- `refresh_recent_lessons.py` refreshes `recent-lessons.md` from the latest
+- `refresh_recent_lessons.py` refreshes [`recent-lessons.md`](../charness-artifacts/retro/recent-lessons.md) from the latest
   durable retro artifact
 - `persist_retro_artifact.py` now auto-refreshes the digest when a durable
   retro artifact is written
@@ -103,7 +103,7 @@ If this work is implemented badly, the likely failure modes are:
 - Should `impl` trigger a short session retro only on explicit misses and
   corrections, or also after bounded slice closeout when the repo opted into
   automatic retrospective accumulation?
-- Should `recent-lessons.md` be rewritten entirely from the latest retro, or
+- Should [`recent-lessons.md`](../charness-artifacts/retro/recent-lessons.md) be rewritten entirely from the latest retro, or
   updated as a bounded rolling digest that preserves a small set of recurring
   traps?
 - How much of skill ergonomics should live in `quality` versus
@@ -173,7 +173,7 @@ If this work is implemented badly, the likely failure modes are:
 - `init-repo` tests prove that the retro memory seam can be scaffolded into a
   fresh repo.
 - `retro` tests prove that the digest refresh helper updates
-  `recent-lessons.md` deterministically from a bounded source artifact.
+  [`recent-lessons.md`](../charness-artifacts/retro/recent-lessons.md) deterministically from a bounded source artifact.
 - Host-log probe tests prove honest degradation:
   unavailable metrics return structured `unavailable`, not fake zeros.
 - `python3 skills/public/retro/scripts/probe_host_logs.py --home <fixture-home>`
@@ -184,7 +184,7 @@ If this work is implemented badly, the likely failure modes are:
 
 ## Canonical Artifact
 
-- This document: [`docs/retro-self-improvement-spec.md`](retro-self-improvement-spec.md)
+- This document: [`docs/retro-self-improvement-spec.md`](./retro-self-improvement-spec.md)
 
 ## First Implementation Slice
 

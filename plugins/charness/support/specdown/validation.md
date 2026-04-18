@@ -6,7 +6,7 @@ workdir: .tmp-test
 # Validation Rules
 
 Malformed specs fail fast. specdown validates documents against the
-[depends::spec syntax](syntax.md) at parse time and rejects errors
+[depends::spec syntax](./syntax.md) at parse time and rejects errors
 before any adapter is invoked.
 
 ## Rules

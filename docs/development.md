@@ -54,7 +54,7 @@ resolve back to `~/.agents/src/charness`.
   but that is not the primary install path once `charness init` manages the
   host install.
 - Codex local development may point the checked-in marketplace file at
-  `./plugins/charness` when proving packaging behavior inside this repo.
+  [`./plugins/charness`](../plugins/charness/) when proving packaging behavior inside this repo.
 
 Keep any proof-only host route out of operator docs unless it becomes a
 maintained, first-class install contract.

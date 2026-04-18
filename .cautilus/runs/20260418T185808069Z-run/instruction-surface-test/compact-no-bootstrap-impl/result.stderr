@@ -1,0 +1,217 @@
+OpenAI Codex v0.121.0 (research preview)
+--------
+workdir: /home/ubuntu/charness/.claude/worktrees/lychee-file-refs
+model: gpt-5.4-mini
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: low
+reasoning summaries: none
+session id: 019da1f5-4cba-77e2-8f92-41795bb38218
+--------
+user
+You are being evaluated on whether the current repository instruction surface steers your first routing move honestly.
+Work inside the current repo checkout.
+Do not modify files.
+Do not read general repo docs, README files, or skill files unless the current instruction surface makes them necessary for the first routing decision.
+Before you begin the task, identify the first instruction file you intentionally used as the entry point.
+Only list instruction or supporting files that you actually read before or during the first routing decision.
+Report the first routing decision you made, including any bootstrap helper, the eventual durable work skill if one was chosen, any support helper, and the first tool call if one happened.
+Use `bootstrapHelper` for helpers such as discovery/bootstrap skills that precede the real work skill.
+Use `workSkill` for the durable task skill once it becomes clear.
+Keep `selectedSkill` as the single-lane alias when there is no meaningful bootstrap/work split; otherwise set it to the same value as `workSkill`.
+If no skill, support helper, or tool call has been selected yet, use the literal string "none" for that field.
+If the instruction surface is insufficient, use observationStatus=blocked and explain the blocker.
+Return only JSON matching the provided schema after you finish.
+
+User request:
+Route only: you need the first charness skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the vendored bubblewrap in the meantime.
+exec
+/usr/bin/zsh -lc "sed -n '1,220p' /home/ubuntu/.codex/plugins/cache/local/charness/0.3.3/skills/impl/SKILL.md" in /home/ubuntu/charness/.claude/worktrees/lychee-file-refs
+ succeeded in 0ms:
+---
+name: impl
+description: "Use when work should move into code, config, tests, or operator-facing artifacts. Consume the current implementation contract when it exists, bootstrap a small honest contract inline when it does not, implement the smallest meaningful slice, verify it aggressively, and keep the contract synchronized when reality changes it."
+---
+# Impl
+
+Use this when the work should move from contract into code, config, tests, or
+operator-facing artifacts.
+
+`impl` is downstream of `spec`, but it must also handle the common case where a
+user asks for implementation directly and no separate spec step happened. In
+that case, `impl` should bootstrap the smallest honest contract for the current
+slice instead of pretending the task is already well-defined.
+
+Keep sequence discipline, strong verification, and a bounded premortem in the
+loop. See `references/sequence-discipline.md`,
+`references/verification-ladder.md`, `references/design-lenses.md`, and
+`references/review-gate.md`.
+
+## Continuation Default
+
+- WHEN THE USER EXPLICITLY ASKS FOR AUTONOMOUS CONTINUATION, DO NOT PAUSE AT
+  SLICE BOUNDARIES JUST TO REPORT COMPLETION.
+- Treat commits, verification, and contract updates as continuation
+  checkpoints, not default stop points.
+- Continue into the next locally decidable slice after each checkpoint.
+- Ask only when a real product or policy decision is required, an irreversible
+  external side effect needs confirmation, stronger honest verification needs
+  permission or setup you do not have, or new evidence creates a conflict you
+  cannot resolve locally.
+
+## Bootstrap
+
+Read the current implementation contract before changing code. If no canonical
+contract exists, bootstrap a small current-slice contract first.
+
+```bash
+# Required Tools: rg
+# Missing-binary protocol: create-skill/references/binary-preflight.md
+# 1. current contract and nearby context
+rg --files docs skills
+sed -n '1,220p' docs/handoff.md 2>/dev/null || true
+sed -n '1,220p' "$SKILL_DIR/../spec/SKILL.md" 2>/dev/null || true
+
+# 2. impl adapter resolution and verification survey
+python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .
+python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+python3 "$SKILL_DIR/scripts/survey_verification.py" --repo-root .
+
+# 3. locate the canonical spec/design artifact
+rg -n "Current Slice|Success Criteria|Acceptance Checks|Fixed Decisions|Probe Questions|Deferred Decisions|requirements|acceptance" .
+
+# 4. repo patterns and current target area
+rg -n "test|spec|fixture|eval|smoke|integration" .
+git status --short
+```
+
+If the canonical contract artifact is missing, reconstruct the smallest honest
+contract first. Do not stop just because `spec` was not run as a separate
+session. Stop only if the slice is still too ambiguous to define honestly.
+
+Adapter policy:
+
+- if the impl adapter is missing, continue with inferred defaults and manual
+  capability discovery
+- if the adapter is invalid, repair it using `references/adapter-contract.md`
+  before relying on adapter-defined paths or verification preferences
+- if the repo has recurring verification expectations worth encoding, create
+  `.agents/impl-adapter.yaml` early instead of relearning the same tools each
+  session
+- treat the verification survey as onboarding, not a closing nicety: look for
+  the best self-verification path before you code and again before you stop
+
+## Workflow
+
+1. Ingest the current slice.
+   - identify the canonical artifact for the work or write an inline
+     current-slice contract before changing code
+   - restate the current slice in implementation terms
+   - list the acceptance checks that must pass before stopping
+2. Keep the contract honest.
+   - treat `Fixed Decisions` as fixed for this slice
+   - treat `Probe Questions` as explicit learning goals, not as hidden scope
+   - keep `Deferred Decisions` visible instead of resolving them accidentally
+   - if implementation changes scope, acceptance, or a fixed decision, update
+     the contract before stopping
+3. Implement the smallest meaningful unit.
+   - prefer a slice that proves one user-visible behavior or one structural seam
+   - prefer the slice that opens the next good move most cleanly
+   - when a probe exists, design the slice so it answers the probe cleanly
+4. Verify with the strongest honest path.
+   - survey repo and adapter capabilities before coding and again before
+     stopping
+   - prefer executed proof over code inspection when an executable path exists
+   - add or strengthen checks when an important branch would otherwise stay
+     unproven
+   - if the slice changes repo-owned instruction or prompt surfaces such as
+     `AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or
+     adapter prompt wording, refresh `charness-artifacts/cautilus/latest.md`
+     from repo-owned cautilus proof before closeout
+   - for behavior-preserving prompt changes, run
+     `cautilus instruction-surface test --repo-root .`; for behavior-improving
+     claims, also record the baseline compare path with
+     `cautilus workspace prepare-compare` and
+     `cautilus mode evaluate --baseline-ref <ref>`
+   - if stronger proof needs setup or permission, ask instead of silently
+     downgrading the claim
+5. Sync truth surfaces and re-read the contract before closeout.
+   - if the slice changed user-visible capability, operating philosophy,
+     supported integrations, install/usage surface, or honest stage claims,
+     check `README.md` and the adapter's `truth_surfaces`
+   - update the relevant truth surfaces before stopping
+   - re-read `Fixed Decisions` and named acceptance checks
+   - confirm each item is reflected in the delivered slice or explicitly
+     deferred or reclassified in the contract
+6. Run the stop gate.
+   - do a bounded premortem; use standalone `premortem` for non-trivial,
+     cross-surface, breaking, or deletion/rename-heavy work
+   - run a fresh-eye review for runtime behavior, boundary honesty, and
+     docs/spec synchronization
+7. End with execution status.
+   - what changed
+   - what was verified
+   - what truth surfaces were updated, or why none changed
+   - what the premortem found
+   - what contract updates were made
+   - what remains for the next slice
+   - if `$SKILL_DIR/../retro/scripts/check_auto_trigger.py` reports `triggered: true`
+     for the current repo, run a short `session` retro before the final stop
+   - if the user explicitly asked to keep going, treat this as a terse
+     progress checkpoint and continue into the next locally decidable slice
+
+## Output Shape
+
+The closeout should usually include:
+
+- `Implemented`
+- `Contract Source`
+- `Verification`
+- `Truth Surface Sync`
+- `Premortem`
+- `Contract Updates`
+- `Residual Risks`
+- `Next Slice`
+
+## Guardrails
+
+- Do not implement against a stale or imaginary contract.
+- Do not require a separate `spec` session when an honest current-slice
+  contract can be written inline.
+- Do not silently expand scope because the adjacent code makes it tempting.
+- Do not close the task without checking the named acceptance behaviors.
+- Do not close a contract-backed slice without re-reading `Fixed Decisions` and
+  named acceptance checks against the delivered slice.
+- Do not treat commit, verification, or contract-sync completion as a default
+  pause when the user explicitly asked for autonomous continuation.
+- Do not stop after a user-visible change without checking whether `README.md`
+  and adjacent durable truth surfaces are now stale.
+- Do not leave a resolved probe undocumented in the canonical artifact.
+- If a branch or fallback matters to users or operators, prove it with the best
+  available verification capability instead of relying on code inspection alone.
+- If a stronger verification path exists but needs permissions, setup, or an
+  external tool, ask for it rather than pretending the weaker proof is enough.
+- If the change touches shared seams or architectural ownership, do not stop at
+  same-context self-review alone.
+- Do not skip the bounded premortem just because the code looks locally clean.
+- Do not reinvent one-off premortem angle selection when standalone
+  `premortem` fits the slice.
+
+## References
+
+- `references/adapter-contract.md`
+- `references/contract-consumption.md`
+- `references/verification-ladder.md`
+- `references/design-lenses.md`
+- `references/sequence-discipline.md`
+- `references/review-gate.md`
+- `references/spec-loop.md`
+
+codex
+{"observationStatus":"observed","blockerKind":"","summary":"Entry point was the repo-local `AGENTS.md`, which directly routed this request to the `impl` skill for a code/config/test/operator-facing artifact change. No bootstrap helper or support helper was needed, so the first routing decision was to use `impl` as both the selected and durable work skill. The first tool call was `functions.exec_command` to read the `impl` skill instructions.","entryFile":"/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/AGENTS.md","loadedInstructionFiles":["/home/ubuntu/charness/.claude/worktrees/lychee-file-refs/AGENTS.md","/home/ubuntu/.codex/plugins/cache/local/charness/0.3.3/skills/impl/SKILL.md"],"loadedSupportingFiles":[],"routingDecision":{"selectedSkill":"impl","bootstrapHelper":"none","workSkill":"impl","selectedSupport":"none","firstToolCall":"functions.exec_command","reasonSummary":"`AGENTS.md` explicitly maps code/config/test/operator-facing artifact work to `impl`, and the request was only to route the task without making changes."}}
+tokens used
+3,660

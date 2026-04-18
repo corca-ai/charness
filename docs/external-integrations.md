@@ -61,7 +61,7 @@ Current `charness` support homes:
 - `skills/support/gather-slack/`
 - `skills/support/gather-notion/`
 
-See [gather-provider-ownership.md](gather-provider-ownership.md).
+See [gather-provider-ownership.md](./gather-provider-ownership.md).
 The machine-readable metadata for these `charness`-owned gather providers now
 lives next to the support skill itself under:
 

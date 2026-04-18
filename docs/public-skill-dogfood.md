@@ -1,7 +1,7 @@
 # Public Skill Dogfood
 
 Canonical machine-readable consumer-dogfood state lives in
-[docs/public-skill-dogfood.json](public-skill-dogfood.json). This markdown file
+[docs/public-skill-dogfood.json](./public-skill-dogfood.json). This markdown file
 stays as the short human-readable contract for the same reviewed cases.
 
 ## Purpose

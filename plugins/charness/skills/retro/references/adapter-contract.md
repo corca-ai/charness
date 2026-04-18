@@ -13,7 +13,7 @@ Search order:
 2. `.codex/retro-adapter.yaml`
 3. `.claude/retro-adapter.yaml`
 4. `docs/retro-adapter.yaml`
-5. `retro-adapter.yaml` as compatibility fallback only
+5. [`retro-adapter.yaml`](../../../../.agents/retro-adapter.yaml) as compatibility fallback only
 
 ## Fields
 
