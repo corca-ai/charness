@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "cautilus.instruction_surface_cases.v1",
+  "suiteId": "charness-instruction-surface",
+  "suiteDisplayName": "Charness Instruction Surface",
+  "evaluations": [
+    {
+      "evaluationId": "checked-in-bootstrap-before-impl",
+      "displayName": "Checked-in AGENTS bootstrap before impl",
+      "prompt": "I need the right charness skill for implementing a code/config/test change to an operator-facing artifact in this repo.",
+      "expectedEntryFile": "AGENTS.md",
+      "expectedRouting": {
+        "selectedSkill": "find-skills"
+      }
+    },
+    {
+      "evaluationId": "compact-no-bootstrap-impl",
+      "displayName": "Compact surface routes direct impl without bootstrap",
+      "prompt": "I need the right charness skill for implementing a code/config/test change to an operator-facing artifact in this repo.",
+      "instructionSurface": {
+        "surfaceLabel": "compact_no_bootstrap",
+        "files": [
+          {
+            "path": "AGENTS.md",
+            "content": "# demo\n\n## Operating Stance\n\n- USE THE ACTUAL AVAILABLE SKILLS FOR THIS TURN.\n- KEEP THE HARNESS PORTABLE.\n- SPEAK TO THIS USER IN KOREAN UNLESS THEY ASK OTHERWISE.\n\n## Skill Routing\n\nPrefer installed charness public skills before improvising a repo-local workflow.\n\nKeep this block intentionally non-exhaustive so `AGENTS.md` stays stable as the installed charness skill catalog changes.\n\nWhen the right skill is unclear, or you need the current installed/trusted capability list, route to the shared/public charness skill `find-skills` first.\n\nUse these high-signal routes first:\n\n- unclear skill choice, named support/helper, or hidden capability lookup -> shared/public charness skill `find-skills`\n- external source fetch (Slack thread, Notion page, Google Docs, GitHub content, arbitrary URL) -> `gather`\n- bug, error, regression, or unexpected behavior investigation -> `debug`\n- code, config, test, or operator-facing artifact implementation -> `impl`\n- repo quality posture, gates, test confidence, security, or operability review -> `quality`\n- next-session pickup, baton pass, or handoff artifact refresh -> `handoff`\n- new or partially initialized repo operating surface -> `init-repo`\n"
+          }
+        ]
+      },
+      "expectedEntryFile": "AGENTS.md",
+      "requiredInstructionFiles": [
+        "AGENTS.md"
+      ],
+      "expectedRouting": {
+        "selectedSkill": "impl"
+      }
+    },
+    {
+      "evaluationId": "compact-no-bootstrap-spec",
+      "displayName": "Compact surface still allows direct spec observation",
+      "prompt": "I need the right charness skill for turning a concept into a living implementation contract before coding.",
+      "instructionSurface": {
+        "surfaceLabel": "compact_no_bootstrap",
+        "files": [
+          {
+            "path": "AGENTS.md",
+            "content": "# demo\n\n## Operating Stance\n\n- USE THE ACTUAL AVAILABLE SKILLS FOR THIS TURN.\n- KEEP THE HARNESS PORTABLE.\n- SPEAK TO THIS USER IN KOREAN UNLESS THEY ASK OTHERWISE.\n\n## Skill Routing\n\nPrefer installed charness public skills before improvising a repo-local workflow.\n\nKeep this block intentionally non-exhaustive so `AGENTS.md` stays stable as the installed charness skill catalog changes.\n\nWhen the right skill is unclear, or you need the current installed/trusted capability list, route to the shared/public charness skill `find-skills` first.\n\nUse these high-signal routes first:\n\n- unclear skill choice, named support/helper, or hidden capability lookup -> shared/public charness skill `find-skills`\n- external source fetch (Slack thread, Notion page, Google Docs, GitHub content, arbitrary URL) -> `gather`\n- bug, error, regression, or unexpected behavior investigation -> `debug`\n- code, config, test, or operator-facing artifact implementation -> `impl`\n- repo quality posture, gates, test confidence, security, or operability review -> `quality`\n- next-session pickup, baton pass, or handoff artifact refresh -> `handoff`\n- new or partially initialized repo operating surface -> `init-repo`\n"
+          }
+        ]
+      },
+      "expectedEntryFile": "AGENTS.md",
+      "requiredInstructionFiles": [
+        "AGENTS.md"
+      ]
+    },
+    {
+      "evaluationId": "expanded-no-bootstrap-spec",
+      "displayName": "Expanded surface exposes direct spec routing",
+      "prompt": "I need the right charness skill for turning a concept into a living implementation contract before coding.",
+      "instructionSurface": {
+        "surfaceLabel": "expanded_no_bootstrap",
+        "files": [
+          {
+            "path": "AGENTS.md",
+            "content": "# demo\n\n## Operating Stance\n\n- USE THE ACTUAL AVAILABLE SKILLS FOR THIS TURN.\n- KEEP THE HARNESS PORTABLE.\n- SPEAK TO THIS USER IN KOREAN UNLESS THEY ASK OTHERWISE.\n\n## Skill Routing\n\nWhen one of these shows up in a request, prefer the named skill first:\n\n- release-note style summary or chat-ready human update -> `announcement`\n- new or upgraded repo-owned CLI, bootstrap script, or command runner -> `create-cli`\n- new or updated charness skill, support skill, profile, preset, or integration -> `create-skill`\n- bug, error, regression, or unexpected behavior investigation -> `debug`\n- unclear skill choice, named support/helper, or hidden capability lookup -> `find-skills`\n- external source fetch (Slack thread, Notion page, Google Docs, GitHub content, arbitrary URL) -> `gather`\n- next-session pickup, baton pass, or handoff artifact refresh -> `handoff`\n- bounded human review loop or deliberate human judgment checkpoint -> `hitl`\n- early product, system, workflow, API, or agent concept shaping -> `ideation`\n- code, config, test, or operator-facing artifact implementation -> `impl`\n- new or partially initialized repo operating surface -> `init-repo`\n- source-of-truth docs and current repo story alignment -> `narrative`\n- before-the-fact failure review for a non-trivial decision -> `premortem`\n- repo quality posture, gates, test confidence, security, or operability review -> `quality`\n- cut, bump, or verify a release surface -> `release`\n- retrospective after a meaningful work unit or missed issue -> `retro`\n- turn a concept or design into a living implementation contract -> `spec`\n"
+          }
+        ]
+      },
+      "expectedEntryFile": "AGENTS.md",
+      "requiredInstructionFiles": [
+        "AGENTS.md"
+      ],
+      "expectedRouting": {
+        "selectedSkill": "spec"
+      }
+    }
+  ]
+}

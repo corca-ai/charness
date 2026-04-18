@@ -11,6 +11,9 @@ preflight_commands:
   - python3 scripts/validate-adapters.py --repo-root .
   - python3 scripts/validate-public-skill-validation.py --repo-root .
   - python3 scripts/validate-cautilus-scenarios.py --repo-root .
+instruction_surface_cases_default: evals/cautilus/instruction-surface-cases.json
+instruction_surface_test_command_templates:
+  - node ./scripts/agent-runtime/run-local-instruction-surface-test.mjs --repo-root . --workspace {candidate_repo} --cases-file {instruction_surface_cases_file} --output-file {instruction_surface_input_file} --artifact-dir {output_dir}/instruction-surface-test --backend {backend} --sandbox read-only --timeout-ms 180000 --codex-model gpt-5.4-mini --codex-reasoning-effort low --claude-permission-mode dontAsk
 held_out_command_templates:
   - python3 scripts/eval_cautilus_scenarios.py --repo-root . --mode held_out --profile {profile} --baseline-ref {baseline_ref} --samples {held_out_samples} --output-dir charness-artifacts/cautilus/held-out
 full_gate_command_templates:
@@ -19,6 +22,7 @@ artifact_paths:
   - docs/public-skill-validation.md
   - docs/public-skill-validation.json
   - evals/cautilus/scenarios.json
+  - evals/cautilus/instruction-surface-cases.json
   - charness-artifacts/quality/latest.md
 report_paths:
   - charness-artifacts/cautilus/held-out/summary.json

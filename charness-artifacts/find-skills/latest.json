@@ -1,0 +1,958 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "find-skills-inventory",
+  "generated_at": "2026-04-18T03:48:23Z",
+  "repo": "charness",
+  "inventory": {
+    "adapter": {
+      "found": false,
+      "valid": true,
+      "path": null,
+      "warnings": [
+        "No find-skills adapter found. Using local-first discovery defaults.",
+        "First run leaves `charness-artifacts/find-skills/latest.md` as the current capability inventory artifact.",
+        "With no trusted roots configured, discovery stays inside this repo and its declared integrations only.",
+        "Create .agents/find-skills-adapter.yaml to declare trusted skill roots or registry policy."
+      ],
+      "trusted_skill_roots": [],
+      "allow_external_registry": false,
+      "prefer_local_first": true
+    },
+    "public_skills": [
+      {
+        "id": "announcement",
+        "name": "announcement",
+        "description": "Use when drafting or delivering human-facing repo change communication such as release-note style summaries or chat-ready updates. Draft value comes first; delivery, audience, and omission policy stay adapter-driven.",
+        "summary": "Use when drafting or delivering human-facing repo change communication such as release-note style summaries or chat-ready updates. Draft value comes first; delivery, audience, and omission policy stay adapter-driven.",
+        "path": "skills/public/announcement/SKILL.md",
+        "skill_dir": "skills/public/announcement",
+        "canonical_path": "skills/public/announcement/SKILL.md",
+        "trigger_phrases": [
+          "announcement",
+          "announcement skill",
+          "announcement 스킬",
+          "charness:announcement"
+        ],
+        "referenced_paths": [],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "create-cli",
+        "name": "create-cli",
+        "description": "Use when creating or upgrading a repo-owned CLI, bootstrap script, or command runner. Define the command surface, install/update contract, structured output, dry-run and doctor behavior, distribution path, and quality gates before spreading ad hoc shell or Python entrypoints.",
+        "summary": "Use when creating or upgrading a repo-owned CLI, bootstrap script, or command runner. Define the command surface, install/update contract, structured output, dry-run and doctor behavior, distribution path, and quality gates before spreading ad hoc shell or Python entrypoints.",
+        "path": "skills/public/create-cli/SKILL.md",
+        "skill_dir": "skills/public/create-cli",
+        "canonical_path": "skills/public/create-cli/SKILL.md",
+        "trigger_phrases": [
+          "create-cli",
+          "create-cli skill",
+          "create-cli 스킬",
+          "charness:create-cli"
+        ],
+        "referenced_paths": [],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "create-skill",
+        "name": "create-skill",
+        "description": "Use when creating a new charness skill or improving a migrated one. Defines the canonical portable authoring contract: classify public/support/profile/integration boundaries, simulate failure modes, keep host-specific behavior in adapters and presets, and express external tool dependencies through manifests instead of hidden assumptions.",
+        "summary": "Use when creating a new charness skill or improving a migrated one. Defines the canonical portable authoring contract: classify public/support/profile/integration boundaries, simulate failure modes, keep host-specific behavior in adapters and presets, and express external tool dependencies through manifests instead of hidden assumptions.",
+        "path": "skills/public/create-skill/SKILL.md",
+        "skill_dir": "skills/public/create-skill",
+        "canonical_path": "skills/public/create-skill/SKILL.md",
+        "trigger_phrases": [
+          "create-skill",
+          "create-skill skill",
+          "create-skill 스킬",
+          "charness:create-skill"
+        ],
+        "referenced_paths": [],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "debug",
+        "name": "debug",
+        "description": "Use when investigating a bug, error, or unexpected behavior. Follow a disciplined root-cause workflow, preserve a durable debug artifact so future sessions inherit what was learned, and do not jump to fixes before a falsifiable hypothesis exists.",
+        "summary": "Use when investigating a bug, error, or unexpected behavior. Follow a disciplined root-cause workflow, preserve a durable debug artifact so future sessions inherit what was learned, and do not jump to fixes before a falsifiable hypothesis exists.",
+        "path": "skills/public/debug/SKILL.md",
+        "skill_dir": "skills/public/debug",
+        "canonical_path": "skills/public/debug/SKILL.md",
+        "trigger_phrases": [
+          "debug",
+          "debug skill",
+          "debug 스킬",
+          "charness:debug"
+        ],
+        "referenced_paths": [],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "find-skills",
+        "name": "find-skills",
+        "description": "Use when the user asks which skill, support capability, or integration should handle a task, or names a skill/support/capability such as `X skill`, `X 스킬`, `support/X`, or `X integration`. Call this before filesystem search for named capabilities; support skills are intentionally hidden from the default skill list.",
+        "summary": "Use when the user asks which skill, support capability, or integration should handle a task, or names a skill/support/capability such as `X skill`, `X 스킬`, `support/X`, or `X integration`. Call this before filesystem search for named capabilities; support skills are intentionally hidden from the default skill list.",
+        "path": "skills/public/find-skills/SKILL.md",
+        "skill_dir": "skills/public/find-skills",
+        "canonical_path": "skills/public/find-skills/SKILL.md",
+        "trigger_phrases": [
+          "find-skills",
+          "find-skills skill",
+          "find-skills 스킬",
+          "charness:find-skills"
+        ],
+        "referenced_paths": [],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "gather",
+        "name": "gather",
+        "description": "Use when a Slack thread, Notion page, Google Docs or Drive file, GitHub content, arbitrary URL, or other external source should become a durable local knowledge asset instead of a transient answer. Prefer primary sources, refresh existing assets in place when the source identity matches, and keep the result scoped to the user’s actual request.",
+        "summary": "Use when a Slack thread, Notion page, Google Docs or Drive file, GitHub content, arbitrary URL, or other external source should become a durable local knowledge asset instead of a transient answer. Prefer primary sources, refresh existing assets in place when the source identity matches, and keep the result scoped to the user’s actual request.",
+        "path": "skills/public/gather/SKILL.md",
+        "skill_dir": "skills/public/gather",
+        "canonical_path": "skills/public/gather/SKILL.md",
+        "trigger_phrases": [
+          "gather",
+          "gather skill",
+          "gather 스킬",
+          "charness:gather"
+        ],
+        "referenced_paths": [],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "handoff",
+        "name": "handoff",
+        "description": "Use when the user wants the next session prepared or asks to update a handoff artifact. Keep the handoff short, current, and operationally useful, and treat mention-only pickup as an instruction to continue the workflow named in the handoff trigger.",
+        "summary": "Use when the user wants the next session prepared or asks to update a handoff artifact. Keep the handoff short, current, and operationally useful, and treat mention-only pickup as an instruction to continue the workflow named in the handoff trigger.",
+        "path": "skills/public/handoff/SKILL.md",
+        "skill_dir": "skills/public/handoff",
+        "canonical_path": "skills/public/handoff/SKILL.md",
+        "trigger_phrases": [
+          "handoff",
+          "handoff skill",
+          "handoff 스킬",
+          "charness:handoff"
+        ],
+        "referenced_paths": [
+          "skills/public/handoff/references/continuation-sequence.md"
+        ],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "hitl",
+        "name": "hitl",
+        "description": "Use when automated review is not enough and deliberate human judgment needs to be inserted into a bounded review loop. Keeps review state resumable, chunked, and adapter-driven without hardcoding one host runtime.",
+        "summary": "Use when automated review is not enough and deliberate human judgment needs to be inserted into a bounded review loop. Keeps review state resumable, chunked, and adapter-driven without hardcoding one host runtime.",
+        "path": "skills/public/hitl/SKILL.md",
+        "skill_dir": "skills/public/hitl",
+        "canonical_path": "skills/public/hitl/SKILL.md",
+        "trigger_phrases": [
+          "hitl",
+          "hitl skill",
+          "hitl 스킬",
+          "charness:hitl"
+        ],
+        "referenced_paths": [],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "ideation",
+        "name": "ideation",
+        "description": "Use when the user is still shaping a product, system, or workflow concept and needs discovery before `spec` or implementation. Build the concept through conversation because the user may not know the full shape yet: maintain a living world model, separate verified facts from assumptions, test demand/status quo/wedge/moat early, think about feedback and expansion from the start, and treat agents, APIs, CLI, and interface choices as first-class design constraints.",
+        "summary": "Use when the user is still shaping a product, system, or workflow concept and needs discovery before `spec` or implementation. Build the concept through conversation because the user may not know the full shape yet: maintain a living world model, separate verified facts from assumptions, test demand/status quo/wedge/moat early, think about feedback and expansion from the start, and treat agents, APIs, CLI, and interface choices as first-class design constraints.",
+        "path": "skills/public/ideation/SKILL.md",
+        "skill_dir": "skills/public/ideation",
+        "canonical_path": "skills/public/ideation/SKILL.md",
+        "trigger_phrases": [
+          "ideation",
+          "ideation skill",
+          "ideation 스킬",
+          "charness:ideation"
+        ],
+        "referenced_paths": [
+          "skills/public/ideation/references/sequence-discipline.md",
+          "skills/public/ideation/references/effectuation.md"
+        ],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "impl",
+        "name": "impl",
+        "description": "Use when work should move into code, config, tests, or operator-facing artifacts. Consume the current implementation contract when it exists, bootstrap a small honest contract inline when it does not, implement the smallest meaningful slice, verify it aggressively, and keep the contract synchronized when reality changes it.",
+        "summary": "Use when work should move into code, config, tests, or operator-facing artifacts. Consume the current implementation contract when it exists, bootstrap a small honest contract inline when it does not, implement the smallest meaningful slice, verify it aggressively, and keep the contract synchronized when reality changes it.",
+        "path": "skills/public/impl/SKILL.md",
+        "skill_dir": "skills/public/impl",
+        "canonical_path": "skills/public/impl/SKILL.md",
+        "trigger_phrases": [
+          "impl",
+          "impl skill",
+          "impl 스킬",
+          "charness:impl"
+        ],
+        "referenced_paths": [
+          "skills/public/impl/references/sequence-discipline.md",
+          "skills/public/impl/references/verification-ladder.md",
+          "skills/public/impl/references/design-lenses.md",
+          "skills/public/impl/references/review-gate.md"
+        ],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "init-repo",
+        "name": "init-repo",
+        "description": "Use when a repo needs its initial operating surface created or normalized. Bootstrap README, AGENTS.md, CLAUDE.md symlink policy, roadmap, and operator-acceptance docs from minimal ideation for greenfield repos, or realign those same surfaces for partially-initialized repos without pretending quality review or deep product ideation already happened.",
+        "summary": "Use when a repo needs its initial operating surface created or normalized. Bootstrap README, AGENTS.md, CLAUDE.md symlink policy, roadmap, and operator-acceptance docs from minimal ideation for greenfield repos, or realign those same surfaces for partially-initialized repos without pretending quality review or deep product ideation already happened.",
+        "path": "skills/public/init-repo/SKILL.md",
+        "skill_dir": "skills/public/init-repo",
+        "canonical_path": "skills/public/init-repo/SKILL.md",
+        "trigger_phrases": [
+          "init-repo",
+          "init-repo skill",
+          "init-repo 스킬",
+          "charness:init-repo"
+        ],
+        "referenced_paths": [],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "narrative",
+        "name": "narrative",
+        "description": "Use when a repo's source-of-truth docs and current product or project story need to be aligned together. Tighten the durable narrative first, then derive one audience-neutral brief skeleton when a compressed handoff artifact would help.",
+        "summary": "Use when a repo's source-of-truth docs and current product or project story need to be aligned together. Tighten the durable narrative first, then derive one audience-neutral brief skeleton when a compressed handoff artifact would help.",
+        "path": "skills/public/narrative/SKILL.md",
+        "skill_dir": "skills/public/narrative",
+        "canonical_path": "skills/public/narrative/SKILL.md",
+        "trigger_phrases": [
+          "narrative",
+          "narrative skill",
+          "narrative 스킬",
+          "charness:narrative"
+        ],
+        "referenced_paths": [],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "premortem",
+        "name": "premortem",
+        "description": "Use when a non-trivial design, deletion, rename, release, or workflow decision needs a before-the-fact failure review. Probe distinct failure angles, then run a counterweight pass that separates real blockers from over-worry before the caller locks the decision.",
+        "summary": "Use when a non-trivial design, deletion, rename, release, or workflow decision needs a before-the-fact failure review. Probe distinct failure angles, then run a counterweight pass that separates real blockers from over-worry before the caller locks the decision.",
+        "path": "skills/public/premortem/SKILL.md",
+        "skill_dir": "skills/public/premortem",
+        "canonical_path": "skills/public/premortem/SKILL.md",
+        "trigger_phrases": [
+          "premortem",
+          "premortem skill",
+          "premortem 스킬",
+          "charness:premortem"
+        ],
+        "referenced_paths": [],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "quality",
+        "name": "quality",
+        "description": "Use when the goal is to understand and improve the repo's current quality bar. Detect existing gates, run the available ones, inspect concept integrity, test confidence, and security posture, then propose concrete next gates instead of only complaining about what is missing.",
+        "summary": "Use when the goal is to understand and improve the repo's current quality bar. Detect existing gates, run the available ones, inspect concept integrity, test confidence, and security posture, then propose concrete next gates instead of only complaining about what is missing.",
+        "path": "skills/public/quality/SKILL.md",
+        "skill_dir": "skills/public/quality",
+        "canonical_path": "skills/public/quality/SKILL.md",
+        "trigger_phrases": [
+          "quality",
+          "quality skill",
+          "quality 스킬",
+          "charness:quality"
+        ],
+        "referenced_paths": [
+          "skills/public/quality/references/maintainer-local-enforcement.md",
+          "skills/public/quality/references/quality-lenses.md",
+          "skills/public/quality/references/sample-presets.md"
+        ],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "release",
+        "name": "release",
+        "description": "Use when a maintainer needs to cut, bump, or verify a repo release surface such as plugin versions, generated install manifests, and operator update instructions.",
+        "summary": "Use when a maintainer needs to cut, bump, or verify a repo release surface such as plugin versions, generated install manifests, and operator update instructions.",
+        "path": "skills/public/release/SKILL.md",
+        "skill_dir": "skills/public/release",
+        "canonical_path": "skills/public/release/SKILL.md",
+        "trigger_phrases": [
+          "release",
+          "release skill",
+          "release 스킬",
+          "charness:release"
+        ],
+        "referenced_paths": [],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "retro",
+        "name": "retro",
+        "description": "Use after a meaningful work unit or when the user asks for a retrospective. Reviews what happened, what created waste, which decisions mattered, which named expert lens or direct counterfactual would have changed the next move, and which workflow/capability/memory improvements should make the next session better. Auto-selects `session` or `weekly` mode from context; ambiguous cases default to `session`.",
+        "summary": "Use after a meaningful work unit or when the user asks for a retrospective. Reviews what happened, what created waste, which decisions mattered, which named expert lens or direct counterfactual would have changed the next move, and which workflow/capability/memory improvements should make the next session better. Auto-selects `session` or `weekly` mode from context; ambiguous cases default to `session`.",
+        "path": "skills/public/retro/SKILL.md",
+        "skill_dir": "skills/public/retro",
+        "canonical_path": "skills/public/retro/SKILL.md",
+        "trigger_phrases": [
+          "retro",
+          "retro skill",
+          "retro 스킬",
+          "charness:retro"
+        ],
+        "referenced_paths": [],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "spec",
+        "name": "spec",
+        "description": "Use when a concept needs to become a living implementation contract. Refine ideation artifacts or existing design docs into the current build contract, decide what must be fixed now versus probed during implementation, define testable success criteria, and keep the contract synchronized as `impl` learns new facts.",
+        "summary": "Use when a concept needs to become a living implementation contract. Refine ideation artifacts or existing design docs into the current build contract, decide what must be fixed now versus probed during implementation, define testable success criteria, and keep the contract synchronized as `impl` learns new facts.",
+        "path": "skills/public/spec/SKILL.md",
+        "skill_dir": "skills/public/spec",
+        "canonical_path": "skills/public/spec/SKILL.md",
+        "trigger_phrases": [
+          "spec",
+          "spec skill",
+          "spec 스킬",
+          "charness:spec"
+        ],
+        "referenced_paths": [],
+        "source": "local-public",
+        "layer": "public skill"
+      }
+    ],
+    "support_skills": [
+      {
+        "id": "agent-browser",
+        "name": "agent-browser",
+        "description": "Use agent-browser CLI for browser automation, JS-rendered pages, and interactive browser debugging. Prefer this when a direct URL needs real browser execution or when you must inspect live DOM state.",
+        "summary": "Use agent-browser CLI for browser automation, JS-rendered pages, and interactive browser debugging. Prefer this when a direct URL needs real browser execution or when you must inspect live DOM state.",
+        "path": "skills/support/agent-browser/SKILL.md",
+        "skill_dir": "skills/support/agent-browser",
+        "canonical_path": "skills/support/agent-browser/SKILL.md",
+        "trigger_phrases": [
+          "agent-browser",
+          "agent-browser skill",
+          "agent-browser 스킬",
+          "charness:agent-browser",
+          "support/agent-browser",
+          "agent-browser support",
+          "agent-browser support skill",
+          "agent-browser helper"
+        ],
+        "referenced_paths": [],
+        "source": "local-support",
+        "layer": "support skill"
+      },
+      {
+        "id": "gather-notion",
+        "name": "gather-notion",
+        "description": "Internal support capability for gathering published Notion pages into durable local markdown without requiring consumer repos to supply their own export helper.",
+        "summary": "Internal support capability for gathering published Notion pages into durable local markdown without requiring consumer repos to supply their own export helper.",
+        "path": "skills/support/gather-notion/SKILL.md",
+        "skill_dir": "skills/support/gather-notion",
+        "canonical_path": "skills/support/gather-notion/SKILL.md",
+        "trigger_phrases": [
+          "gather-notion",
+          "gather-notion skill",
+          "gather-notion 스킬",
+          "charness:gather-notion",
+          "support/gather-notion",
+          "gather-notion support",
+          "gather-notion support skill",
+          "gather-notion helper"
+        ],
+        "referenced_paths": [],
+        "source": "local-support",
+        "layer": "support skill"
+      },
+      {
+        "id": "gather-slack",
+        "name": "gather-slack",
+        "description": "Internal support capability for gathering Slack threads into durable local markdown without asking consumer repos to reimplement Slack export helpers.",
+        "summary": "Internal support capability for gathering Slack threads into durable local markdown without asking consumer repos to reimplement Slack export helpers.",
+        "path": "skills/support/gather-slack/SKILL.md",
+        "skill_dir": "skills/support/gather-slack",
+        "canonical_path": "skills/support/gather-slack/SKILL.md",
+        "trigger_phrases": [
+          "gather-slack",
+          "gather-slack skill",
+          "gather-slack 스킬",
+          "charness:gather-slack",
+          "support/gather-slack",
+          "gather-slack support",
+          "gather-slack support skill",
+          "gather-slack helper"
+        ],
+        "referenced_paths": [],
+        "source": "local-support",
+        "layer": "support skill"
+      },
+      {
+        "id": "markdown-preview",
+        "name": "markdown-preview",
+        "description": "Internal support capability for rendering checked-in Markdown into durable preview artifacts so doc-facing workflows can review real terminal output instead of raw source alone.",
+        "summary": "Internal support capability for rendering checked-in Markdown into durable preview artifacts so doc-facing workflows can review real terminal output instead of raw source alone.",
+        "path": "skills/support/markdown-preview/SKILL.md",
+        "skill_dir": "skills/support/markdown-preview",
+        "canonical_path": "skills/support/markdown-preview/SKILL.md",
+        "trigger_phrases": [
+          "markdown-preview",
+          "markdown-preview skill",
+          "markdown-preview 스킬",
+          "charness:markdown-preview",
+          "support/markdown-preview",
+          "markdown-preview support",
+          "markdown-preview support skill",
+          "markdown-preview helper"
+        ],
+        "referenced_paths": [],
+        "source": "local-support",
+        "layer": "support skill"
+      },
+      {
+        "id": "specdown",
+        "name": "specdown",
+        "description": "Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.",
+        "summary": "Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.",
+        "path": "skills/support/specdown/SKILL.md",
+        "skill_dir": "skills/support/specdown",
+        "canonical_path": "skills/support/specdown/SKILL.md",
+        "trigger_phrases": [
+          "specdown",
+          "specdown skill",
+          "specdown 스킬",
+          "charness:specdown",
+          "support/specdown",
+          "specdown support",
+          "specdown support skill",
+          "specdown helper"
+        ],
+        "referenced_paths": [
+          "skills/support/specdown/references/source-notes.md"
+        ],
+        "source": "local-support",
+        "layer": "support skill"
+      },
+      {
+        "id": "web-fetch",
+        "name": "web-fetch",
+        "description": "Internal support capability for routing public-web fetch requests through the strongest honest access path and classifying blocked or partial fetch responses without turning those tactics into a public workflow concept.",
+        "summary": "Internal support capability for routing public-web fetch requests through the strongest honest access path and classifying blocked or partial fetch responses without turning those tactics into a public workflow concept.",
+        "path": "skills/support/web-fetch/SKILL.md",
+        "skill_dir": "skills/support/web-fetch",
+        "canonical_path": "skills/support/web-fetch/SKILL.md",
+        "trigger_phrases": [
+          "web-fetch",
+          "web-fetch skill",
+          "web-fetch 스킬",
+          "charness:web-fetch",
+          "support/web-fetch",
+          "web-fetch support",
+          "web-fetch support skill",
+          "web-fetch helper"
+        ],
+        "referenced_paths": [],
+        "source": "local-support",
+        "layer": "support skill"
+      },
+      {
+        "id": "cautilus",
+        "name": "cautilus",
+        "description": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
+        "summary": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
+        "path": "skills/support/generated/cautilus/SKILL.md",
+        "skill_dir": "skills/support/generated/cautilus",
+        "canonical_path": "skills/support/generated/cautilus/SKILL.md",
+        "trigger_phrases": [
+          "cautilus",
+          "cautilus skill",
+          "cautilus 스킬",
+          "charness:cautilus",
+          "support/cautilus",
+          "cautilus support",
+          "cautilus support skill",
+          "cautilus helper"
+        ],
+        "referenced_paths": [],
+        "source": "synced-support",
+        "layer": "synced support skill"
+      }
+    ],
+    "support_capabilities": [
+      {
+        "id": "gather-notion",
+        "kind": "support_runtime",
+        "display_name": "Published Notion gather runtime",
+        "summary": "charness-owned published Notion gather runtime used by the public gather skill.",
+        "access_modes": [
+          "public",
+          "human-only",
+          "degraded"
+        ],
+        "capability_requirements": {},
+        "intent_triggers": [],
+        "trigger_phrases": [
+          "gather-notion",
+          "Published Notion gather runtime",
+          "gather-notion support",
+          "gather-notion support skill",
+          "support/gather-notion"
+        ],
+        "config_layers": [
+          {
+            "layer_id": "notion-publish-step",
+            "layer_type": "operator-step",
+            "summary": "The operator may need to publish the Notion page to the web first."
+          },
+          {
+            "layer_id": "notion-public-export",
+            "layer_type": "public-fallback",
+            "summary": "Use the published-page export helper for public Notion page URLs."
+          }
+        ],
+        "readiness_checks": [],
+        "path": "skills/support/gather-notion/capability.json",
+        "support_skill_path": "skills/support/gather-notion/SKILL.md",
+        "supports_public_skills": [
+          "gather"
+        ],
+        "source": "local-support-capability",
+        "layer": "support capability"
+      },
+      {
+        "id": "gather-slack",
+        "kind": "support_runtime",
+        "display_name": "Slack thread gather runtime",
+        "summary": "charness-owned Slack thread gather runtime used by the public gather skill.",
+        "access_modes": [
+          "grant",
+          "env",
+          "human-only",
+          "degraded"
+        ],
+        "capability_requirements": {
+          "grant_ids": [
+            "slack.conversations.history",
+            "slack.users.read",
+            "slack.files.read"
+          ],
+          "env_vars": [
+            "SLACK_BOT_TOKEN"
+          ],
+          "permission_scopes": [
+            "channels:history",
+            "channels:join",
+            "users:read",
+            "files:read"
+          ]
+        },
+        "intent_triggers": [],
+        "trigger_phrases": [
+          "gather-slack",
+          "Slack thread gather runtime",
+          "gather-slack support",
+          "gather-slack support skill",
+          "support/gather-slack"
+        ],
+        "config_layers": [
+          {
+            "layer_id": "slack-runtime-grant",
+            "layer_type": "grant",
+            "summary": "Prefer a host-mediated Slack capability grant when available."
+          },
+          {
+            "layer_id": "slack-bot-env",
+            "layer_type": "env",
+            "summary": "Fall back to `SLACK_BOT_TOKEN` in ordinary local operator setups."
+          },
+          {
+            "layer_id": "slack-channel-operator-step",
+            "layer_type": "operator-step",
+            "summary": "The operator may still need to add the bot to the workspace or target channel."
+          }
+        ],
+        "readiness_checks": [
+          {
+            "check_id": "slack-runtime-deps",
+            "summary": "Slack gather runtime shell dependencies are available."
+          }
+        ],
+        "path": "skills/support/gather-slack/capability.json",
+        "support_skill_path": "skills/support/gather-slack/SKILL.md",
+        "supports_public_skills": [
+          "gather"
+        ],
+        "source": "local-support-capability",
+        "layer": "support capability"
+      },
+      {
+        "id": "markdown-preview",
+        "kind": "support_runtime",
+        "display_name": "Markdown preview artifacts",
+        "summary": "charness-owned markdown preview support that renders checked-in Markdown into width-specific text artifacts for doc-facing workflows.",
+        "access_modes": [
+          "binary",
+          "human-only",
+          "degraded"
+        ],
+        "capability_requirements": {},
+        "intent_triggers": [
+          "rendered markdown review",
+          "markdown preview",
+          "README readability",
+          "docs preview artifacts"
+        ],
+        "trigger_phrases": [
+          "markdown-preview",
+          "Markdown preview artifacts",
+          "markdown-preview support",
+          "markdown-preview support skill",
+          "support/markdown-preview",
+          "rendered markdown review",
+          "markdown preview",
+          "README readability",
+          "docs preview artifacts"
+        ],
+        "config_layers": [
+          {
+            "layer_id": "markdown-preview-authenticated-binary",
+            "layer_type": "authenticated-binary",
+            "summary": "Prefer a locally installed `glow` binary for real terminal rendering."
+          },
+          {
+            "layer_id": "markdown-preview-operator-step",
+            "layer_type": "operator-step",
+            "summary": "Pin repo-local preview scope, widths, and artifact path through a checked-in markdown preview config when the defaults are too broad."
+          },
+          {
+            "layer_id": "markdown-preview-public-fallback",
+            "layer_type": "public-fallback",
+            "summary": "When `glow` is missing, emit degraded artifacts that say rendered review did not happen."
+          }
+        ],
+        "readiness_checks": [
+          {
+            "check_id": "markdown-preview-python-runtime",
+            "summary": "The local Python 3 runtime needed by the markdown preview helper is available."
+          },
+          {
+            "check_id": "markdown-preview-glow-backend",
+            "summary": "The preferred `glow` backend is available for real terminal rendering."
+          }
+        ],
+        "path": "skills/support/markdown-preview/capability.json",
+        "support_skill_path": "skills/support/markdown-preview/SKILL.md",
+        "supports_public_skills": [
+          "announcement",
+          "narrative",
+          "quality"
+        ],
+        "source": "local-support-capability",
+        "layer": "support capability"
+      },
+      {
+        "id": "web-fetch",
+        "kind": "support_runtime",
+        "display_name": "Public web fetch routing",
+        "summary": "charness-owned public-web fetch routing and response classification support used by gather when plain direct fetch is weak, blocked, or ambiguous.",
+        "access_modes": [
+          "grant",
+          "binary",
+          "public",
+          "human-only",
+          "degraded"
+        ],
+        "capability_requirements": {
+          "grant_ids": [
+            "web.fetch",
+            "web.search"
+          ]
+        },
+        "intent_triggers": [],
+        "trigger_phrases": [
+          "web-fetch",
+          "Public web fetch routing",
+          "web-fetch support",
+          "web-fetch support skill",
+          "support/web-fetch"
+        ],
+        "config_layers": [
+          {
+            "layer_id": "web-fetch-runtime-grant",
+            "layer_type": "grant",
+            "summary": "Prefer host-provided web fetch or web search grants when the runtime offers them."
+          },
+          {
+            "layer_id": "web-fetch-authenticated-binaries",
+            "layer_type": "authenticated-binary",
+            "summary": "Use authenticated or installed binaries such as `gh` or `yt-dlp` only when the selected route explicitly calls for them."
+          },
+          {
+            "layer_id": "web-fetch-operator-step",
+            "layer_type": "operator-step",
+            "summary": "When the route still lands on login walls, CAPTCHA, or private content, stop cleanly and leave the exact missing access path visible."
+          },
+          {
+            "layer_id": "web-fetch-public-fallback",
+            "layer_type": "public-fallback",
+            "summary": "Fall back to direct public fetch, public APIs, URL transforms, reader proxies, or archives when that still answers the request."
+          }
+        ],
+        "readiness_checks": [
+          {
+            "check_id": "web-fetch-python-runtime",
+            "summary": "The local Python 3 runtime needed by the routing helpers is available."
+          }
+        ],
+        "path": "skills/support/web-fetch/capability.json",
+        "support_skill_path": "skills/support/web-fetch/SKILL.md",
+        "supports_public_skills": [
+          "gather"
+        ],
+        "source": "local-support-capability",
+        "layer": "support capability"
+      }
+    ],
+    "integrations": [
+      {
+        "id": "agent-browser",
+        "kind": "external_binary_with_skill",
+        "access_modes": [
+          "binary",
+          "human-only",
+          "degraded"
+        ],
+        "support_state": "upstream-consumed",
+        "support_skill_path": null,
+        "discovery_stub_path": null,
+        "capability_requirements": {},
+        "intent_triggers": [],
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [],
+        "recommendation_role": null,
+        "path": "integrations/tools/agent-browser.json",
+        "source": "local-integration",
+        "layer": "external integration"
+      },
+      {
+        "id": "cautilus",
+        "kind": "external_binary_with_skill",
+        "access_modes": [
+          "binary",
+          "human-only",
+          "degraded"
+        ],
+        "support_state": "upstream-consumed",
+        "support_skill_path": "skills/support/generated/cautilus/SKILL.md",
+        "discovery_stub_path": null,
+        "capability_requirements": {},
+        "intent_triggers": [
+          "verify",
+          "verification",
+          "evaluate",
+          "evaluation",
+          "review",
+          "behavior review",
+          "검증",
+          "평가",
+          "리뷰"
+        ],
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "create-skill",
+          "debug",
+          "find-skills",
+          "gather",
+          "handoff",
+          "impl",
+          "init-repo",
+          "spec"
+        ],
+        "recommendation_role": "validation",
+        "path": "integrations/tools/cautilus.json",
+        "source": "local-integration",
+        "layer": "external integration"
+      },
+      {
+        "id": "github-gh",
+        "kind": "external_binary",
+        "access_modes": [
+          "binary",
+          "public",
+          "degraded"
+        ],
+        "support_state": "integration-only",
+        "support_skill_path": null,
+        "discovery_stub_path": null,
+        "capability_requirements": {},
+        "intent_triggers": [],
+        "config_layers": [
+          {
+            "layer_id": "authenticated-gh",
+            "layer_type": "authenticated-binary",
+            "summary": "Prefer an already authenticated `gh` session for private GitHub gather."
+          },
+          {
+            "layer_id": "public-github-fallback",
+            "layer_type": "public-fallback",
+            "summary": "Fall back to public GitHub URLs or generic fetch when authentication is unavailable."
+          }
+        ],
+        "readiness_checks": [],
+        "supports_public_skills": [],
+        "recommendation_role": null,
+        "path": "integrations/tools/github-gh.json",
+        "source": "local-integration",
+        "layer": "external integration"
+      },
+      {
+        "id": "gitleaks",
+        "kind": "external_binary",
+        "access_modes": [
+          "binary",
+          "degraded"
+        ],
+        "support_state": "integration-only",
+        "support_skill_path": null,
+        "discovery_stub_path": null,
+        "capability_requirements": {},
+        "intent_triggers": [],
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "quality"
+        ],
+        "recommendation_role": "validation",
+        "path": "integrations/tools/gitleaks.json",
+        "source": "local-integration",
+        "layer": "external integration"
+      },
+      {
+        "id": "glow",
+        "kind": "external_binary",
+        "access_modes": [
+          "binary",
+          "degraded"
+        ],
+        "support_state": "integration-only",
+        "support_skill_path": null,
+        "discovery_stub_path": null,
+        "capability_requirements": {},
+        "intent_triggers": [],
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "narrative",
+          "quality"
+        ],
+        "recommendation_role": "runtime",
+        "path": "integrations/tools/glow.json",
+        "source": "local-integration",
+        "layer": "external integration"
+      },
+      {
+        "id": "gws-cli",
+        "kind": "external_binary",
+        "access_modes": [
+          "binary",
+          "env",
+          "human-only",
+          "degraded"
+        ],
+        "support_state": "integration-only",
+        "support_skill_path": null,
+        "discovery_stub_path": null,
+        "capability_requirements": {
+          "env_vars": [
+            "GOOGLE_WORKSPACE_CLI_TOKEN",
+            "GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE",
+            "GOOGLE_WORKSPACE_CLI_CLIENT_ID",
+            "GOOGLE_WORKSPACE_CLI_CLIENT_SECRET"
+          ],
+          "permission_scopes": [
+            "https://www.googleapis.com/auth/drive.readonly",
+            "https://www.googleapis.com/auth/documents.readonly",
+            "https://www.googleapis.com/auth/spreadsheets.readonly",
+            "https://www.googleapis.com/auth/presentations.readonly"
+          ]
+        },
+        "intent_triggers": [],
+        "config_layers": [
+          {
+            "layer_id": "authenticated-gws-cli",
+            "layer_type": "authenticated-binary",
+            "summary": "Prefer an already authenticated `gws` session for private Google Workspace gather."
+          },
+          {
+            "layer_id": "gws-env-fallback",
+            "layer_type": "env",
+            "summary": "Fall back to the documented `GOOGLE_WORKSPACE_CLI_*` environment variables in ordinary local operator setups."
+          },
+          {
+            "layer_id": "gws-auth-operator-step",
+            "layer_type": "operator-step",
+            "summary": "When no auth state exists yet, the operator may need `gws auth setup --login` or `gws auth login` before gather can proceed."
+          }
+        ],
+        "readiness_checks": [
+          {
+            "check_id": "gws-auth-ready",
+            "summary": "Google Workspace CLI has an authenticated configuration available."
+          }
+        ],
+        "supports_public_skills": [
+          "gather"
+        ],
+        "recommendation_role": "runtime",
+        "path": "integrations/tools/gws-cli.json",
+        "source": "local-integration",
+        "layer": "external integration"
+      },
+      {
+        "id": "specdown",
+        "kind": "external_binary",
+        "access_modes": [
+          "binary",
+          "human-only",
+          "degraded"
+        ],
+        "support_state": "integration-only",
+        "support_skill_path": null,
+        "discovery_stub_path": null,
+        "capability_requirements": {},
+        "intent_triggers": [],
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [],
+        "recommendation_role": null,
+        "path": "integrations/tools/specdown.json",
+        "source": "local-integration",
+        "layer": "external integration"
+      }
+    ],
+    "trusted_skills": [],
+    "tool_recommendations": []
+  }
+}
