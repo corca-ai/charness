@@ -29,13 +29,15 @@
 - `#35`의 첫 구현 뒤 hardening도 들어갔다. `render_markdown_preview.py`는 unsupported `backend`를 upfront reject하고, manifest에 `backend_version`, `git_head`, per-file `source_sha256`를 남긴다. repo-local scope는 `.agents/markdown-preview.yaml` 같은 config search path로 열어뒀고, 현재 이 repo에는 scaffolded config가 checked in 되어 있다. preview output은 `.artifacts/markdown-preview/` 아래 machine-local runtime artifact로 본다. 2026-04-17 현재 `glow`는 `charness tool install --repo-root . glow`로 로컬 설치 완료됐고, preview helper는 `backend: glow` rendered artifact를 생성한다.
 - `premortem` public skill contract은 이제 canonical subagent path를 요구한다. host가 subagent를 못 주면 같은-agent 로컬 패스로 약화하지 말고 canonical path unavailable로 stop해야 한다.
 - `quality`의 fresh-eye premortem reference도 같은 방향으로 맞췄다. explicit subagent allowance가 없으면 same-agent local fallback을 equivalent로 취급하지 않는다.
+- 2026-04-18 기준 `cautilus` latest release는 `v0.5.3`이고 로컬 설치본도 `0.5.3`이다. `instruction-surface evaluate`는 `cautilus.instruction_surface_inputs.v1` 입력을 받아 `cautilus.instruction_surface_summary.v1`를 정상 출력하는 것까지 smoke test했다. 기대 route와 실제 route가 일치하면 `accept-now`, 어긋나면 `reject`로 내려간다.
+- 반대로 현재 `charness`의 [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml)은 아직 `instruction_surface_test_command_templates`나 `instruction_surface_cases_default`를 선언하지 않아서 `cautilus instruction-surface test --repo-root .`는 바로 시작되지 않는다. 현 시점의 남은 일은 코틸러스 product-side 기능 확인이 아니라 charness-side adapter/case wiring이다.
 
 ## Next Session
 
 1. `git status --short`를 먼저 확인한다.
 2. public-spec executable proof 약점은 이번 slice에서 정리됐다. `inventory_public_spec_quality.py`는 실제 `run:shell` fence를 읽고, `specs/index.spec.md`/`specs/tool-doctor.spec.md`는 direct CLI proof로 바뀌어 현재 flagged spec이 없다.
 3. release를 이어받는 다음 세션은 먼저 `python3 skills/public/release/scripts/current_release.py --repo-root .`로 checked-in version surface를 확인하고, 새 publish slice라면 `publish_release.py` helper를 기본 경로로 쓴다. bump만 하고 push-only 상태에서 멈추지 않는다.
-4. 이번 `init-repo`/`find-skills` slice가 release되면, 다음 큰 pickup은 코틸러스 쪽 AGENTS-aware eval surface 업데이트를 받아 실제 routing behavior를 검증하는 것이다. 비교 대상은 `compact` vs `expanded` routing, 그리고 세션 시작 `charness:find-skills` bootstrap 유무다.
+4. 이번 `init-repo`/`find-skills` slice가 release되면, 다음 큰 pickup은 `cautilus` `instruction-surface test`를 실제로 돌릴 charness-side adapter/case surface를 추가하는 것이다. 비교 대상은 `compact` vs `expanded` routing, 그리고 세션 시작 `charness:find-skills` bootstrap 유무다. 현재 blocker는 upstream product 기능 부재가 아니라 `.agents/cautilus-adapter.yaml`에 instruction-surface command/case wiring이 없는 점이다.
 5. `markdown-preview`는 helper-only 상태가 아니다. `quality`에는 bootstrap/execute seam이 이미 있고, `narrative` docs도 rendered Markdown review를 workflow seam으로 언급한다. 현재 판단으로는 `announcement` explicit 연결은 우선순위가 낮고, 정말 남은 질문은 `docs:preview`류 별도 command surface가 실제 필요한지다.
 6. CLI UX follow-up을 이어가면 `update`에 맞춘 human-first default / `--json` opt-in / stderr progress pattern을 `init` 같은 나머지 long-running lifecycle commands에도 확대할지 판단한다. 이번 slice는 `update`와 `update all`만 바꿨다.
 7. Agent Harness Guide adaptation을 이어가면 [charness-artifacts/spec/agent-harness-guide-adaptation.md](../charness-artifacts/spec/agent-harness-guide-adaptation.md)를 읽고 `Slice 1`부터 시작한다. 첫 범위는 `docs/harness-composition.md`, `docs/artifact-policy.md`, 최소 handoff cross-link다.
