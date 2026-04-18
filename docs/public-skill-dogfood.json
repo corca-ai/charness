@@ -142,11 +142,11 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-16",
+      "reviewed_on": "2026-04-18",
       "observed_evidence": [
-        "The public core frames `gather` as durable knowledge production and explicitly says to read existing local assets before widening into external fetch or search.",
-        "The adapter resolver falls back to `charness-artifacts/gather/latest.md`, which matches the reviewed expectation for the canonical gathered asset path even when no repo-local adapter is configured.",
-        "Repo-owned support boundaries already separate Slack and Notion into support skills and route private Google Workspace access through `advise_google_workspace_path.py`, which is enough local evidence that provider mechanics stay below the public gather concept."
+        "The checked-in public core now carries the private SaaS decision ladder explicitly: prefer existing local assets and official API/export paths first, fall back to `agent-browser` only when the stronger path is unavailable or equally gated, and stop cleanly when auth/bootstrap is still missing.",
+        "The prompt-affecting preserve proof at `charness-artifacts/cautilus/latest.md` stayed green while that contract widened, which is the current repo-owned evidence that the maintained first-skill routing surface did not regress when browser-mediated acquisition language was added.",
+        "The long-context proposal and benchmark surfaces now both carry `gather-official-path-before-browser-followup`, and the current top-five proposal set includes it. That is reviewed evidence that the `official API/export -> browser fallback -> clean auth/bootstrap stop` correction is load-bearing enough to keep in consumer-facing gather dogfood."
       ]
     },
     {
