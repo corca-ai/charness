@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "charness",
   "input_file": "evals/cautilus/chatbot-scenario-proposal-inputs.json",
-  "candidate_count": 11,
+  "candidate_count": 12,
   "candidate_keys": [
     "retro-structural-cause-followup",
     "quality-proof-layering-followup",
@@ -14,15 +14,16 @@
     "spec-before-impl-followup",
     "debug-exact-symptom-before-fix-followup",
     "release-real-host-proof-followup",
-    "hitl-bounded-review-loop-followup"
+    "hitl-bounded-review-loop-followup",
+    "gather-official-path-before-browser-followup"
   ],
   "proposal_count": 5,
   "proposal_keys": [
+    "gather-official-path-before-browser-followup",
     "hitl-bounded-review-loop-followup",
     "release-real-host-proof-followup",
     "debug-exact-symptom-before-fix-followup",
-    "spec-before-impl-followup",
-    "narrative-truth-before-announcement-followup"
+    "spec-before-impl-followup"
   ],
   "omitted_candidate_keys": [
     "retro-structural-cause-followup",
@@ -30,7 +31,8 @@
     "premortem-canonical-subagent-followup",
     "find-skills-canonical-artifact-followup",
     "handoff-workflow-trigger-followup",
-    "init-repo-partial-normalization-followup"
+    "init-repo-partial-normalization-followup",
+    "narrative-truth-before-announcement-followup"
   ],
   "families": [
     "fast_regression"
@@ -68,7 +70,10 @@
     "versioning": 1,
     "hitl": 1,
     "resumable-review": 1,
-    "rule-propagation": 1
+    "rule-propagation": 1,
+    "gather": 1,
+    "agent-browser": 1,
+    "private-saas": 1
   },
   "command": {
     "argv": [
@@ -87,6 +92,70 @@
     ],
     "generatedAt": "2026-04-18T12:00:00Z",
     "proposals": [
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "gather-official-path-before-browser-followup",
+            "tags": [
+              "gather",
+              "agent-browser",
+              "private-saas"
+            ]
+          },
+          "brief": "Current gather contracts emphasize source-specific acquisition intent, official export first, browser fallback only when needed, and honest auth/bootstrap stops.",
+          "description": "The user starts from a private SaaS source URL, but the assistant must keep the gather path honest by preferring official API/export routes before browser fallback and stopping cleanly when auth bootstrap is still missing.",
+          "maxTurns": 6,
+          "name": "Gather Official Path Before Browser Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "gather-official-path-before-browser-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "이 private SaaS roster URL을 gather해 주세요: https://hr.example.internal/roster"
+              },
+              {
+                "text": "browser로 바로 들어가기 전에 official export나 API가 있는지 먼저 봐야 하지 않나요?"
+              },
+              {
+                "text": "browser fallback은 허용하되 auth/bootstrap이 없으면 clean stop해야 합니다."
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "이 private SaaS roster URL을 gather해 주세요: https://hr.example.internal/roster",
+              "browser로 바로 들어가기 전에 official export나 API가 있는지 먼저 봐야 하지 않나요?",
+              "browser fallback은 허용하되 auth/bootstrap이 없으면 clean stop해야 합니다."
+            ],
+            "observedAt": "2026-04-18T17:10:00.000Z",
+            "sourceKind": "skill_contract",
+            "threadKey": "dogfood-gather-official-path-before-browser",
+            "title": "gather official path before browser fallback"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "gather-official-path-before-browser-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh gather official-path-before-browser follow-up scenario from dogfood contracts"
+      },
       {
         "action": "add_new_scenario",
         "draftScenario": {
@@ -342,70 +411,6 @@
           "scripted"
         ],
         "title": "Refresh spec-before-impl follow-up scenario from recent activity"
-      },
-      {
-        "action": "add_new_scenario",
-        "draftScenario": {
-          "benchmark": {
-            "backend": "scripted",
-            "family": "fast_regression",
-            "scenarioKey": "narrative-truth-before-announcement-followup",
-            "tags": [
-              "narrative",
-              "announcement",
-              "truth-surface"
-            ]
-          },
-          "brief": "Recent activity shows a repo-story edit that only becomes correct once the assistant preserves the narrative-versus-announcement boundary.",
-          "description": "The user keeps separating durable truth alignment from chat-ready communication until the assistant routes the work through narrative first and announcement second.",
-          "maxTurns": 5,
-          "name": "Narrative Truth Before Announcement Follow-up",
-          "runner": {
-            "mode": "live"
-          },
-          "scenarioId": "narrative-truth-before-announcement-followup",
-          "schemaVersion": "cautilus.scenario.v1",
-          "sideEffectsMode": "shadow",
-          "simulator": {
-            "kind": "scripted",
-            "turns": [
-              {
-                "text": "README와 handoff의 스토리를 먼저 맞춰주세요."
-              },
-              {
-                "text": "지금 필요한 건 릴리즈 문안이 아니라 source-of-truth alignment입니다."
-              },
-              {
-                "text": "그 다음에 brief를 한 장 뽑는 게 맞습니다."
-              }
-            ]
-          }
-        },
-        "evidence": [
-          {
-            "messages": [
-              "README와 handoff의 스토리를 먼저 맞춰주세요.",
-              "지금 필요한 건 릴리즈 문안이 아니라 source-of-truth alignment입니다.",
-              "그 다음에 brief를 한 장 뽑는 게 맞습니다."
-            ],
-            "observedAt": "2026-04-18T12:30:00.000Z",
-            "sourceKind": "human_conversation",
-            "threadKey": "session-narrative-truth-before-announcement",
-            "title": "narrative truth before announcement follow-up"
-          }
-        ],
-        "existingCoverage": {
-          "recentResultCount": 0,
-          "scenarioKeyExists": false
-        },
-        "family": "fast_regression",
-        "intentProfile": null,
-        "proposalKey": "narrative-truth-before-announcement-followup",
-        "rationale": "1 recent log match(es) suggested this pattern.",
-        "recommendedBackends": [
-          "scripted"
-        ],
-        "title": "Refresh narrative truth-before-announcement follow-up scenario from recent activity"
       }
     ],
     "schemaVersion": "cautilus.scenario_proposals.v1",

@@ -1,37 +1,11 @@
 {
   "schema_version": 1,
   "repo": "charness",
-  "baseline_repo": "/home/ubuntu/.cache/tmp/tmp.gZOLfijjXi",
+  "baseline_repo": "/tmp/charness-chatbot-baseline.ku4tpz",
   "candidate_repo": "/home/ubuntu/charness",
-  "baseline_commit": "3e45841da39274bd05497eddc28d46bdf1b420e5",
-  "candidate_commit": "432f6bd588d11517f4ba0fe52aa72bde71d61aec",
+  "baseline_commit": "383df466380456a772e4ec990639ec2de2f953c6",
+  "candidate_commit": "383df466380456a772e4ec990639ec2de2f953c6",
   "baseline": {
-    "candidate_count": 8,
-    "proposal_count": 5,
-    "candidate_keys": [
-      "retro-structural-cause-followup",
-      "quality-proof-layering-followup",
-      "premortem-canonical-subagent-followup",
-      "find-skills-canonical-artifact-followup",
-      "handoff-workflow-trigger-followup",
-      "init-repo-partial-normalization-followup",
-      "narrative-truth-before-announcement-followup",
-      "spec-before-impl-followup"
-    ],
-    "proposal_keys": [
-      "spec-before-impl-followup",
-      "narrative-truth-before-announcement-followup",
-      "init-repo-partial-normalization-followup",
-      "handoff-workflow-trigger-followup",
-      "find-skills-canonical-artifact-followup"
-    ],
-    "omitted_candidate_keys": [
-      "retro-structural-cause-followup",
-      "quality-proof-layering-followup",
-      "premortem-canonical-subagent-followup"
-    ]
-  },
-  "candidate": {
     "candidate_count": 11,
     "proposal_count": 5,
     "candidate_keys": [
@@ -63,27 +37,53 @@
       "init-repo-partial-normalization-followup"
     ]
   },
+  "candidate": {
+    "candidate_count": 12,
+    "proposal_count": 5,
+    "candidate_keys": [
+      "retro-structural-cause-followup",
+      "quality-proof-layering-followup",
+      "premortem-canonical-subagent-followup",
+      "find-skills-canonical-artifact-followup",
+      "handoff-workflow-trigger-followup",
+      "init-repo-partial-normalization-followup",
+      "narrative-truth-before-announcement-followup",
+      "spec-before-impl-followup",
+      "debug-exact-symptom-before-fix-followup",
+      "release-real-host-proof-followup",
+      "hitl-bounded-review-loop-followup",
+      "gather-official-path-before-browser-followup"
+    ],
+    "proposal_keys": [
+      "gather-official-path-before-browser-followup",
+      "hitl-bounded-review-loop-followup",
+      "release-real-host-proof-followup",
+      "debug-exact-symptom-before-fix-followup",
+      "spec-before-impl-followup"
+    ],
+    "omitted_candidate_keys": [
+      "retro-structural-cause-followup",
+      "quality-proof-layering-followup",
+      "premortem-canonical-subagent-followup",
+      "find-skills-canonical-artifact-followup",
+      "handoff-workflow-trigger-followup",
+      "init-repo-partial-normalization-followup",
+      "narrative-truth-before-announcement-followup"
+    ]
+  },
   "diff": {
     "added_candidate_keys": [
-      "debug-exact-symptom-before-fix-followup",
-      "hitl-bounded-review-loop-followup",
-      "release-real-host-proof-followup"
+      "gather-official-path-before-browser-followup"
     ],
     "removed_candidate_keys": [],
     "added_proposal_keys": [
-      "debug-exact-symptom-before-fix-followup",
-      "hitl-bounded-review-loop-followup",
-      "release-real-host-proof-followup"
+      "gather-official-path-before-browser-followup"
     ],
     "removed_proposal_keys": [
-      "find-skills-canonical-artifact-followup",
-      "handoff-workflow-trigger-followup",
-      "init-repo-partial-normalization-followup"
+      "narrative-truth-before-announcement-followup"
     ],
     "newly_omitted_candidate_keys": [
-      "find-skills-canonical-artifact-followup",
-      "handoff-workflow-trigger-followup",
-      "init-repo-partial-normalization-followup"
+      "narrative-truth-before-announcement-followup"
     ],
     "resolved_omitted_candidate_keys": []
   }

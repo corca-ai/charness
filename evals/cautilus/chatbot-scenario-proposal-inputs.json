@@ -356,6 +356,38 @@
           ]
         }
       ]
+    },
+    {
+      "proposalKey": "gather-official-path-before-browser-followup",
+      "title": "Refresh gather official-path-before-browser follow-up scenario from dogfood contracts",
+      "family": "fast_regression",
+      "name": "Gather Official Path Before Browser Follow-up",
+      "description": "The user starts from a private SaaS source URL, but the assistant must keep the gather path honest by preferring official API/export routes before browser fallback and stopping cleanly when auth bootstrap is still missing.",
+      "brief": "Current gather contracts emphasize source-specific acquisition intent, official export first, browser fallback only when needed, and honest auth/bootstrap stops.",
+      "tags": [
+        "gather",
+        "agent-browser",
+        "private-saas"
+      ],
+      "maxTurns": 6,
+      "simulatorTurns": [
+        "이 private SaaS roster URL을 gather해 주세요: https://hr.example.internal/roster",
+        "browser로 바로 들어가기 전에 official export나 API가 있는지 먼저 봐야 하지 않나요?",
+        "browser fallback은 허용하되 auth/bootstrap이 없으면 clean stop해야 합니다."
+      ],
+      "evidence": [
+        {
+          "sourceKind": "skill_contract",
+          "title": "gather official path before browser fallback",
+          "threadKey": "dogfood-gather-official-path-before-browser",
+          "observedAt": "2026-04-18T17:10:00.000Z",
+          "messages": [
+            "이 private SaaS roster URL을 gather해 주세요: https://hr.example.internal/roster",
+            "browser로 바로 들어가기 전에 official export나 API가 있는지 먼저 봐야 하지 않나요?",
+            "browser fallback은 허용하되 auth/bootstrap이 없으면 clean stop해야 합니다."
+          ]
+        }
+      ]
     }
   ],
   "existingScenarioRegistry": [],
