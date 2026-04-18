@@ -62,6 +62,8 @@ decision contract. Do not restate the whole project history.
      in `references/subagent-capability-check.md`: attempt the bounded subagent
      setup, resolve any availability uncertainty, and cite the concrete signal
      that made the host unable to provide subagents
+   - if the host cannot provide subagents, stop and report that the canonical
+     premortem path is unavailable instead of inventing an equivalent
    - do not collapse into a same-agent local pass unless the caller explicitly
      asked for a degraded fallback or an operator instruction forbids subagents
      for this run

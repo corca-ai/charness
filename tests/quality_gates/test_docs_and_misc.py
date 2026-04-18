@@ -63,6 +63,14 @@ def test_development_doc_carries_mutation_phase_barrier_rule() -> None:
     assert "parallelism is only safe for read-only inventory" in development
 
 
+def test_public_skill_validation_doc_keeps_premortem_and_on_demand_boundary_visible() -> None:
+    validation_doc = (ROOT / "docs" / "public-skill-validation.md").read_text(encoding="utf-8")
+
+    assert "`premortem`" in validation_doc
+    assert "on-demand proof through" in validation_doc
+    assert "underlying evaluator state or storage layer" in validation_doc
+
+
 def test_control_plane_documents_authenticated_release_probe_contract() -> None:
     control_plane = (ROOT / "docs" / "control-plane.md").read_text(encoding="utf-8")
 

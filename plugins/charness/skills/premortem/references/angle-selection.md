@@ -23,10 +23,7 @@ Subagent sizing:
 - if you cannot name four meaningfully different angles, stay at two or three
   instead of inventing filler
 
-Canonical execution uses subagents. Before reporting that path as unavailable,
-run the capability check in `subagent-capability-check.md` — attempt the
-bounded subagent setup, resolve availability uncertainty, and cite the concrete
-host signal. Do not collapse into a same-agent self-review on a guess.
+Canonical execution uses subagents. Before reporting that path as unavailable, run the capability check in `subagent-capability-check.md` — attempt the bounded subagent setup, resolve availability uncertainty, and cite the concrete host signal. If the host still cannot provide subagents, say the canonical premortem path is unavailable. Do not collapse into a same-agent self-review on a guess.
 
 Rotate or swap angles when the decision is narrower:
 

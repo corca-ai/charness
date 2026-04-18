@@ -22,6 +22,10 @@ Maintenance lint or implementation guard owns:
 - fixed-string source assertions
 - low-level structural drift checks
 
+Treat fixed-string source assertions as lower-layer maintenance guards, not as
+public executable contract proof. If a current spec page needs one to stay
+green, the page is probably carrying the wrong layer.
+
 ## Current-State Rule
 
 Do not mix future roadmap, planned behavior, or next-session notes into the
@@ -43,3 +47,17 @@ Public executable pages should prove the contract with cheap bounded slices.
 
 When a lower deterministic layer already proves the detail honestly, keep that
 detail below the public contract instead of re-asserting it in the public spec.
+
+## Viewer Rule
+
+Public executable pages may also act as readers for the latest checked
+on-demand validation artifacts when that helps operators understand current
+product intent.
+
+In that mode:
+
+- the checked artifact remains the source of truth for the run
+- the executable page is a viewer over the latest artifact, not the storage
+  layer for evaluator output
+- the page should verify artifact presence, shape, and current claim framing
+  without rebuilding the whole evaluator inline

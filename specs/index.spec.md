@@ -8,3 +8,4 @@ python3 ./charness --help >/dev/null
 ```
 
 - [CLI Operator Contracts](tool-doctor.spec.md)
+- [On-Demand Validation Viewer](on-demand-validation.spec.md)

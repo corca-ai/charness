@@ -69,6 +69,25 @@ The checked-in artifact should say whether the slice claims `preserve` or
 `improve`, list the touched prompt surfaces, and record the exact commands and
 recommendation that support the claim.
 
+## On-Demand Behavioral Proof
+
+Behavioral contract meaning should default to on-demand proof through
+`cautilus` or an explicit HITL workflow, not to ever-widening repo-owned
+standing evals.
+
+- repo-owned standing checks still own deterministic seams: packaging,
+  validators, adapter bootstrap, helper scripts, and thin acceptance smoke
+- `cautilus` or HITL own the deeper question of whether a skill contract still
+  produces the intended routing, artifact, or decision support behavior
+- checked-in latest artifacts such as `charness-artifacts/cautilus/latest.md`
+  are the source of truth for those on-demand runs
+- `specdown` may project those checked artifacts into a readable report so
+  operators can inspect the latest proof, but that viewer page is not the
+  underlying evaluator state or storage layer
+- public executable spec pages should not fall back to fixed-string source
+  guards to simulate semantic proof; those guards belong in lower
+  deterministic layers when they are still justified at all
+
 ## Tier Definitions
 
 ### `smoke-only`
@@ -94,6 +113,7 @@ Current assignment:
 - `hitl`
 - `ideation`
 - `narrative`
+- `premortem`
 - `quality`
 - `release`
 - `retro`
@@ -118,12 +138,16 @@ Current assignment:
 
 ## Provisional Rationale
 
-- `announcement`, `create-cli`, `ideation`, `narrative`, `quality`, `release`,
-  and `retro` are valuable, but their output quality still depends heavily on
-  human judgment and context setting.
+- `announcement`, `create-cli`, `ideation`, `narrative`, `premortem`,
+  `quality`, `release`, and `retro` are valuable, but their output quality
+  still depends heavily on human judgment and context setting.
 - `hitl` already exists to insert human judgment into a bounded loop, so its
   own quality bar should emphasize operator review rather than pretending the
   whole workflow can be scored automatically.
+- `premortem` now has a stronger canonical subagent contract, but that still
+  makes it a poor standing evaluator target. Keep repo-owned seam checks for
+  the contract and use on-demand proof or reviewed dogfood for the real
+  behavioral question.
 - `create-skill`, `find-skills`, `gather`, `handoff`, `init-repo`, `spec`, `impl`, and
   `debug` shape later execution or durable repo state. Those are the highest
   leverage candidates for maintained scenario evaluation now that `cautilus`
@@ -162,6 +186,7 @@ Current assignment:
 - `create-cli`
 - `create-skill`
 - `ideation`
+- `premortem`
 - `spec`
 
 ## Next Step

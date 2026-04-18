@@ -28,5 +28,6 @@ Canonical execution uses a fresh-eye subagent. Before reporting that path as
 blocked, run the capability check in
 `../../premortem/references/subagent-capability-check.md`: attempt the bounded
 subagent setup, resolve availability uncertainty, and cite the concrete host
-signal. Do not pretend a same-agent local pass is equivalent to the canonical
-path, and do not collapse into one on a guess.
+signal. If the canonical fresh-eye premortem path is blocked, say that
+explicitly. Do not pretend a same-agent local pass is equivalent to the
+canonical path, and do not collapse into one on a guess.

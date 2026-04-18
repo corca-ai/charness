@@ -44,6 +44,9 @@ acceptance into those checks instead of managing a separate prose-only branch.
 For public executable pages, keep current-state claims and bounded proof only;
 move future-state planning, source inventory, and low-level implementation
 guards down a layer.
+If the repo wants the latest on-demand validation visible to readers, project
+the checked artifact into a viewer-style executable page instead of rebuilding
+the evaluator logic inline or promoting source guards into the public spec.
 
 If those executable checks are materially expensive, shape the contract so the
 standing acceptance bar stays honest about cost. Keep executable examples at
@@ -95,6 +98,9 @@ selection and triage inline.
    - if executable specs already exist, keep them at acceptance level and move
      repeated low-level detail into unit tests, source guards, or more direct
      adapters
+   - if the repo wants the latest on-demand proof visible in executable docs,
+     keep the underlying evaluator result in a checked artifact and let the
+     executable page act as a viewer over that artifact
    - when one acceptance path is materially slower than the rest, document why
      that cost is justified and which cheaper layers should absorb the detail
    - if the contract edits repo-owned instruction or prompt surfaces that steer
