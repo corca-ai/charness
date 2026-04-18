@@ -98,6 +98,13 @@ def _load_existing_snapshot(path: Path) -> dict[str, Any] | None:
     return payload
 
 
+def _canonical_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
+    canonical = dict(inventory)
+    canonical["tool_recommendations"] = []
+    canonical["tool_recommendation_query"] = None
+    return canonical
+
+
 def persist_inventory(
     *,
     repo_root: Path,
@@ -106,9 +113,10 @@ def persist_inventory(
 ) -> dict[str, Any]:
     markdown_path = output_dir / "latest.md"
     json_path = output_dir / "latest.json"
+    canonical_inventory = _canonical_inventory(inventory)
     existing = _load_existing_snapshot(json_path)
 
-    if existing is not None and existing.get("inventory") == inventory and markdown_path.is_file():
+    if existing is not None and existing.get("inventory") == canonical_inventory and markdown_path.is_file():
         generated_at = existing["generated_at"]
         updated = False
         snapshot = existing
@@ -119,7 +127,7 @@ def persist_inventory(
             "artifact_kind": "find-skills-inventory",
             "generated_at": generated_at,
             "repo": repo_root.name,
-            "inventory": inventory,
+            "inventory": canonical_inventory,
         }
         output_dir.mkdir(parents=True, exist_ok=True)
         markdown_path.write_text(render_markdown(snapshot).rstrip() + "\n", encoding="utf-8")

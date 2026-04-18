@@ -53,6 +53,61 @@ def _write_executable(root: Path, name: str, lines: list[str]) -> None:
     binary.chmod(0o755)
 
 
+def _write_cautilus_validation_integration(root: Path) -> None:
+    (root / "integrations" / "tools").mkdir(parents=True, exist_ok=True)
+    _write_executable(
+        root,
+        "cautilus",
+        [
+            "#!/bin/sh",
+            "if [ \"$1\" = \"--version\" ]; then",
+            "  echo 'cautilus 0.5.3'",
+            "  exit 0",
+            "fi",
+            "if [ \"$1\" = \"doctor\" ] && [ \"$2\" = \"--help\" ]; then",
+            "  echo 'doctor'",
+            "  exit 0",
+            "fi",
+            "exit 1",
+        ],
+    )
+    (root / "integrations" / "tools" / "cautilus.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1",
+                "tool_id": "cautilus",
+                "kind": "external_binary_with_skill",
+                "display_name": "cautilus",
+                "summary": "Behavior validation engine.",
+                "upstream_repo": "corca-ai/cautilus",
+                "homepage": "https://github.com/corca-ai/cautilus",
+                "lifecycle": {
+                    "install": {
+                        "mode": "manual",
+                        "docs_url": "https://github.com/corca-ai/cautilus",
+                        "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.md",
+                        "notes": ["Install cautilus."],
+                    },
+                    "update": {"mode": "manual", "docs_url": "https://github.com/corca-ai/cautilus/releases", "notes": ["Update cautilus."]},
+                },
+                "checks": {
+                    "detect": {"commands": ["cautilus --version"], "success_criteria": ["exit_code:0"]},
+                    "healthcheck": {"commands": ["cautilus doctor --help"], "success_criteria": ["exit_code:0", "stdout_contains:doctor"]},
+                },
+                "access_modes": ["binary", "human-only", "degraded"],
+                "version_expectation": {"policy": "advisory", "constraint": "latest", "detected_by": "stdout"},
+                "supports_public_skills": ["impl", "quality", "spec"],
+                "recommendation_role": "validation",
+                "support_skill_source": {"source_type": "upstream_repo", "path": "skills/cautilus", "ref": "main"},
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def _write_example_integration(root: Path) -> None:
     (root / "integrations" / "tools").mkdir(parents=True)
     payload = {
@@ -284,6 +339,34 @@ def test_list_capabilities_preserves_generated_at_when_inventory_is_unchanged(tm
     assert second_payload["artifacts"]["generated_at"] == first_payload["artifacts"]["generated_at"]
 
 
+def test_recommendation_queries_do_not_rewrite_canonical_inventory_artifact(tmp_path: Path) -> None:
+    _write_find_skills_adapter(tmp_path)
+    _write_cautilus_validation_integration(tmp_path)
+
+    plain_payload = _run_list_capabilities(tmp_path)
+    query_payload = _run_list_capabilities(
+        tmp_path,
+        "--recommendation-role",
+        "validation",
+        "--next-skill-id",
+        "quality",
+        env={**os.environ, "PATH": f"{tmp_path / 'bin'}:{os.environ.get('PATH', '')}"},
+    )
+    artifact_json = json.loads((tmp_path / "charness-artifacts" / "find-skills" / "latest.json").read_text(encoding="utf-8"))
+
+    assert query_payload["artifacts"]["updated"] is False
+    assert query_payload["artifacts"]["generated_at"] == plain_payload["artifacts"]["generated_at"]
+    assert query_payload["tool_recommendation_query"] == {
+        "mode": "recommendation_role",
+        "recommendation_role": "validation",
+        "next_skill_id": "quality",
+        "only_blocking": False,
+    }
+    assert query_payload["tool_recommendations"][0]["tool_id"] == "cautilus"
+    assert artifact_json["inventory"]["tool_recommendations"] == []
+    assert artifact_json["inventory"]["tool_recommendation_query"] is None
+
+
 def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_path: Path) -> None:
     _write_skill(tmp_path, "gather", "Gather skill.")
     _write_find_skills_adapter(tmp_path, include_preset=True)
@@ -382,65 +465,7 @@ def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_pa
 
 def test_list_capabilities_can_emit_tool_recommendations_for_role(tmp_path: Path) -> None:
     _write_find_skills_adapter(tmp_path)
-    (tmp_path / "integrations" / "tools").mkdir(parents=True)
-    _write_executable(
-        tmp_path,
-        "cautilus",
-        [
-            "#!/bin/sh",
-            "if [ \"$1\" = \"--version\" ]; then",
-            "  echo 'cautilus 0.5.3'",
-            "  exit 0",
-            "fi",
-            "if [ \"$1\" = \"doctor\" ] && [ \"$2\" = \"--help\" ]; then",
-            "  echo 'doctor'",
-            "  exit 0",
-            "fi",
-            "exit 1",
-        ],
-    )
-    (tmp_path / "integrations" / "tools" / "cautilus.json").write_text(
-        json.dumps(
-            {
-                "schema_version": "1",
-                "tool_id": "cautilus",
-                "kind": "external_binary_with_skill",
-                "display_name": "cautilus",
-                "summary": "Behavior validation engine.",
-                "upstream_repo": "corca-ai/cautilus",
-                "homepage": "https://github.com/corca-ai/cautilus",
-                "lifecycle": {
-                    "install": {
-                        "mode": "manual",
-                        "docs_url": "https://github.com/corca-ai/cautilus",
-                        "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.md",
-                        "notes": ["Install cautilus."],
-                    },
-                    "update": {
-                        "mode": "manual",
-                        "docs_url": "https://github.com/corca-ai/cautilus/releases",
-                        "notes": ["Update cautilus."],
-                    },
-                },
-                "checks": {
-                    "detect": {"commands": ["cautilus --version"], "success_criteria": ["exit_code:0"]},
-                    "healthcheck": {
-                        "commands": ["cautilus doctor --help"],
-                        "success_criteria": ["exit_code:0", "stdout_contains:doctor"],
-                    },
-                },
-                "access_modes": ["binary", "human-only", "degraded"],
-                "version_expectation": {"policy": "advisory", "constraint": "latest", "detected_by": "stdout"},
-                "supports_public_skills": ["impl", "quality", "spec"],
-                "recommendation_role": "validation",
-                "support_skill_source": {"source_type": "upstream_repo", "path": "skills/cautilus", "ref": "main"},
-            },
-            ensure_ascii=False,
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    _write_cautilus_validation_integration(tmp_path)
 
     payload = _run_list_capabilities(
         tmp_path,
