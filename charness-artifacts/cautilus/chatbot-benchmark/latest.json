@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "repo": "charness",
-  "baseline_repo": "/tmp/charness-chatbot-base6",
+  "baseline_repo": "/tmp/charness-chatbot-base.d9yWxF",
   "candidate_repo": "/home/ubuntu/charness",
-  "baseline_commit": "c1a7fe388c82852670e318f411fd4136651a7336",
-  "candidate_commit": "c1a7fe388c82852670e318f411fd4136651a7336",
+  "baseline_commit": "51d2bef9475dbf20f42993ece909744c63d8cad1",
+  "candidate_commit": "51d2bef9475dbf20f42993ece909744c63d8cad1",
   "baseline": {
     "candidate_count": 12,
     "proposal_count": 5,
@@ -23,14 +23,14 @@
       "gather-official-path-before-browser-followup"
     ],
     "proposal_keys": [
+      "premortem-canonical-subagent-followup",
       "handoff-workflow-trigger-followup",
       "find-skills-canonical-artifact-followup",
       "retro-structural-cause-followup",
-      "gather-official-path-before-browser-followup",
-      "quality-proof-layering-followup"
+      "gather-official-path-before-browser-followup"
     ],
     "omitted_candidate_keys": [
-      "premortem-canonical-subagent-followup",
+      "quality-proof-layering-followup",
       "init-repo-partial-normalization-followup",
       "narrative-truth-before-announcement-followup",
       "spec-before-impl-followup",
@@ -41,7 +41,7 @@
   },
   "candidate": {
     "candidate_count": 12,
-    "proposal_count": 5,
+    "proposal_count": 12,
     "candidate_keys": [
       "retro-structural-cause-followup",
       "quality-proof-layering-followup",
@@ -61,32 +61,39 @@
       "handoff-workflow-trigger-followup",
       "find-skills-canonical-artifact-followup",
       "retro-structural-cause-followup",
-      "gather-official-path-before-browser-followup"
-    ],
-    "omitted_candidate_keys": [
+      "gather-official-path-before-browser-followup",
       "quality-proof-layering-followup",
       "init-repo-partial-normalization-followup",
-      "narrative-truth-before-announcement-followup",
-      "spec-before-impl-followup",
-      "debug-exact-symptom-before-fix-followup",
+      "hitl-bounded-review-loop-followup",
       "release-real-host-proof-followup",
-      "hitl-bounded-review-loop-followup"
-    ]
+      "debug-exact-symptom-before-fix-followup",
+      "spec-before-impl-followup",
+      "narrative-truth-before-announcement-followup"
+    ],
+    "omitted_candidate_keys": []
   },
   "diff": {
     "added_candidate_keys": [],
     "removed_candidate_keys": [],
     "added_proposal_keys": [
-      "premortem-canonical-subagent-followup"
+      "debug-exact-symptom-before-fix-followup",
+      "hitl-bounded-review-loop-followup",
+      "init-repo-partial-normalization-followup",
+      "narrative-truth-before-announcement-followup",
+      "quality-proof-layering-followup",
+      "release-real-host-proof-followup",
+      "spec-before-impl-followup"
     ],
-    "removed_proposal_keys": [
-      "quality-proof-layering-followup"
-    ],
-    "newly_omitted_candidate_keys": [
-      "quality-proof-layering-followup"
-    ],
+    "removed_proposal_keys": [],
+    "newly_omitted_candidate_keys": [],
     "resolved_omitted_candidate_keys": [
-      "premortem-canonical-subagent-followup"
+      "debug-exact-symptom-before-fix-followup",
+      "hitl-bounded-review-loop-followup",
+      "init-repo-partial-normalization-followup",
+      "narrative-truth-before-announcement-followup",
+      "quality-proof-layering-followup",
+      "release-real-host-proof-followup",
+      "spec-before-impl-followup"
     ]
   }
 }

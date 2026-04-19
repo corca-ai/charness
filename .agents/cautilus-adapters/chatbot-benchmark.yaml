@@ -25,4 +25,4 @@ comparison_questions:
   - Which long-context proposal keys were added, dropped, or omitted between baseline and candidate?
 human_review_prompts:
   - id: benchmark-honesty
-    prompt: Where does the benchmark still hide long-context regressions behind a top-five proposal cap?
+    prompt: Where could upstream default proposal caps still hide long-context regressions if this packet stops setting an explicit `limit`?

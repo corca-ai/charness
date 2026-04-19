@@ -61,22 +61,17 @@ def test_eval_cautilus_chatbot_proposals_writes_summary(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["candidate_count"] == 12
-    assert payload["proposal_count"] == 5
+    assert payload["proposal_count"] == 12
     assert len(payload["candidate_keys"]) == 12
-    assert payload["proposal_keys"] == [
+    assert payload["proposal_keys"][:5] == [
         "premortem-canonical-subagent-followup",
         "handoff-workflow-trigger-followup",
         "find-skills-canonical-artifact-followup",
         "retro-structural-cause-followup",
         "gather-official-path-before-browser-followup",
     ]
-    assert "quality-proof-layering-followup" in payload["omitted_candidate_keys"]
-    assert "init-repo-partial-normalization-followup" in payload["omitted_candidate_keys"]
-    assert "narrative-truth-before-announcement-followup" in payload["omitted_candidate_keys"]
-    assert "spec-before-impl-followup" in payload["omitted_candidate_keys"]
-    assert "debug-exact-symptom-before-fix-followup" in payload["omitted_candidate_keys"]
-    assert "release-real-host-proof-followup" in payload["omitted_candidate_keys"]
-    assert "hitl-bounded-review-loop-followup" in payload["omitted_candidate_keys"]
+    assert sorted(payload["proposal_keys"]) == sorted(payload["candidate_keys"])
+    assert payload["omitted_candidate_keys"] == []
     assert (output_dir / "latest.json").is_file()
     assert (output_dir / "latest.md").is_file()
 

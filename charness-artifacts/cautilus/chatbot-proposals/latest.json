@@ -17,23 +17,22 @@
     "hitl-bounded-review-loop-followup",
     "gather-official-path-before-browser-followup"
   ],
-  "proposal_count": 5,
+  "proposal_count": 12,
   "proposal_keys": [
     "premortem-canonical-subagent-followup",
     "handoff-workflow-trigger-followup",
     "find-skills-canonical-artifact-followup",
     "retro-structural-cause-followup",
-    "gather-official-path-before-browser-followup"
-  ],
-  "omitted_candidate_keys": [
+    "gather-official-path-before-browser-followup",
     "quality-proof-layering-followup",
     "init-repo-partial-normalization-followup",
-    "narrative-truth-before-announcement-followup",
-    "spec-before-impl-followup",
-    "debug-exact-symptom-before-fix-followup",
+    "hitl-bounded-review-loop-followup",
     "release-real-host-proof-followup",
-    "hitl-bounded-review-loop-followup"
+    "debug-exact-symptom-before-fix-followup",
+    "spec-before-impl-followup",
+    "narrative-truth-before-announcement-followup"
   ],
+  "omitted_candidate_keys": [],
   "families": [
     "fast_regression"
   ],
@@ -411,6 +410,454 @@
           "scripted"
         ],
         "title": "Refresh gather official-path-before-browser follow-up scenario from dogfood contracts"
+      },
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "quality-proof-layering-followup",
+            "tags": [
+              "quality",
+              "specdown",
+              "proof-layering"
+            ]
+          },
+          "brief": "Current quality contracts emphasize the public-spec versus on-demand-proof versus viewer split, and long-context quality behavior regresses if that layering is forgotten.",
+          "description": "The user keeps refining the distinction between public executable specs, on-demand proof artifacts, and the specdown viewer until the assistant preserves the layering policy instead of collapsing those surfaces into one proof claim.",
+          "maxTurns": 6,
+          "name": "Quality Proof Layering Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "quality-proof-layering-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "스펙다운은 SoT와 viewer 두 역할이 있다고 봅니다."
+              },
+              {
+                "text": "source guard는 전자 때문에 줄이고 싶지만, 후자 때문에 결과는 보여야 해요."
+              },
+              {
+                "text": "이 관점이 quality skill에도 반영돼 있나요?"
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "스펙다운은 SoT와 viewer 두 역할이 있다고 봅니다.",
+              "source guard는 전자 때문에 줄이고 싶지만, 후자 때문에 결과는 보여야 해요.",
+              "이 관점이 quality skill에도 반영돼 있나요?"
+            ],
+            "observedAt": "2026-04-19T00:10:00.000Z",
+            "sourceKind": "skill_contract",
+            "threadKey": "dogfood-quality-proof-layering",
+            "title": "quality proof layering contract"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "quality-proof-layering-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh quality proof-layering follow-up scenario from dogfood contracts"
+      },
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "init-repo-partial-normalization-followup",
+            "tags": [
+              "init-repo",
+              "partial-repo",
+              "normalization"
+            ]
+          },
+          "brief": "Current init-repo contracts emphasize `PARTIAL` and targeted normalization, so long-context behavior regresses if the assistant falls back to greenfield scaffolding.",
+          "description": "The user clarifies that the repo is already partially initialized, and the assistant must normalize the existing surface or repair the one missing seam instead of defaulting to a greenfield rewrite.",
+          "maxTurns": 5,
+          "name": "Init Repo Partial Normalization Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "init-repo-partial-normalization-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "이 repo는 이미 운영 surface가 좀 있습니다."
+              },
+              {
+                "text": "greenfield처럼 갈아엎지 말고 partial normalize로 가주세요."
+              },
+              {
+                "text": "README와 AGENTS는 있는데 operator acceptance만 빈약합니다."
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "이 repo는 이미 운영 surface가 좀 있습니다.",
+              "greenfield처럼 갈아엎지 말고 partial normalize로 가주세요.",
+              "README와 AGENTS는 있는데 operator acceptance만 빈약합니다."
+            ],
+            "observedAt": "2026-04-18T20:05:00.000Z",
+            "sourceKind": "skill_contract",
+            "threadKey": "dogfood-init-repo-partial-normalization",
+            "title": "init-repo partial normalization contract"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "init-repo-partial-normalization-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh init-repo partial-normalization follow-up scenario from dogfood contracts"
+      },
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "hitl-bounded-review-loop-followup",
+            "tags": [
+              "hitl",
+              "resumable-review",
+              "rule-propagation"
+            ]
+          },
+          "brief": "Current HITL contracts emphasize what must stay human-owned, chunked review, and rule propagation between chunks.",
+          "description": "The user rejects agent-owned judgment until the assistant builds a bounded, resumable review loop with explicit accepted rules and next-state carryover.",
+          "maxTurns": 5,
+          "name": "HITL Bounded Review Loop Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "hitl-bounded-review-loop-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "이건 agent가 final judgment 내리면 안 됩니다."
+              },
+              {
+                "text": "사람이 판단해야 할 기준을 먼저 적고 chunked review loop로 가주세요."
+              },
+              {
+                "text": "accepted rules를 다음 chunk들에 전파해야 합니다."
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "이건 agent가 final judgment 내리면 안 됩니다.",
+              "사람이 판단해야 할 기준을 먼저 적고 chunked review loop로 가주세요.",
+              "accepted rules를 다음 chunk들에 전파해야 합니다."
+            ],
+            "observedAt": "2026-04-18T16:30:00.000Z",
+            "sourceKind": "skill_contract",
+            "threadKey": "dogfood-hitl-bounded-review-loop",
+            "title": "hitl bounded review loop"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "hitl-bounded-review-loop-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh hitl bounded-review-loop follow-up scenario from dogfood contracts"
+      },
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "release-real-host-proof-followup",
+            "tags": [
+              "release",
+              "real-host-proof",
+              "versioning"
+            ]
+          },
+          "brief": "Current release contracts emphasize current-surface inspection, generated-manifest discipline, and real-host proof boundaries.",
+          "description": "The user keeps pushing back on a naive version bump until the assistant reads the current release surface, uses the repo publish helper, and carries real-host proof honestly.",
+          "maxTurns": 5,
+          "name": "Release Real-Host Proof Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "release-real-host-proof-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "버전만 올리지 말고 current release surface부터 읽어주세요."
+              },
+              {
+                "text": "generated manifest hand-edit 말고 publish helper로 가야 합니다."
+              },
+              {
+                "text": "real-host proof 요구가 있으면 closeout에 남겨야 해요."
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "버전만 올리지 말고 current release surface부터 읽어주세요.",
+              "generated manifest hand-edit 말고 publish helper로 가야 합니다.",
+              "real-host proof 요구가 있으면 closeout에 남겨야 해요."
+            ],
+            "observedAt": "2026-04-18T16:20:00.000Z",
+            "sourceKind": "skill_contract",
+            "threadKey": "dogfood-release-real-host-proof",
+            "title": "release real-host proof boundary"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "release-real-host-proof-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh release real-host-proof follow-up scenario from dogfood contracts"
+      },
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "debug-exact-symptom-before-fix-followup",
+            "tags": [
+              "debug",
+              "reproduction",
+              "hypothesis"
+            ]
+          },
+          "brief": "Current debug contracts emphasize diagnosis before repair, exact symptom capture, and falsifiable hypothesis building.",
+          "description": "The user interrupts an eager fix request until the assistant preserves exact symptoms, a smallest honest repro, and multiple candidate causes before patching.",
+          "maxTurns": 5,
+          "name": "Debug Exact Symptom Before Fix Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "debug-exact-symptom-before-fix-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "바로 고치기 전에 exact symptom이랑 repro를 먼저 고정해 주세요."
+              },
+              {
+                "text": "후보 원인을 셋은 깔고 falsifiable hypothesis 없이 패치부터 하지 마세요."
+              },
+              {
+                "text": "이번 건 durable debug artifact가 남아야 합니다."
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "바로 고치기 전에 exact symptom이랑 repro를 먼저 고정해 주세요.",
+              "후보 원인을 셋은 깔고 falsifiable hypothesis 없이 패치부터 하지 마세요.",
+              "이번 건 durable debug artifact가 남아야 합니다."
+            ],
+            "observedAt": "2026-04-18T16:10:00.000Z",
+            "sourceKind": "skill_contract",
+            "threadKey": "dogfood-debug-exact-symptom-before-fix",
+            "title": "debug diagnosis before repair"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "debug-exact-symptom-before-fix-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh debug exact-symptom-before-fix follow-up scenario from dogfood contracts"
+      },
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "spec-before-impl-followup",
+            "tags": [
+              "spec",
+              "impl",
+              "contract-shaping"
+            ]
+          },
+          "brief": "Recent activity shows the assistant needing several turns to preserve the spec-versus-impl boundary honestly.",
+          "description": "The user starts from implementation intent but then clarifies that the contract is still under-specified, so the assistant must keep the work in spec mode before coding spreads.",
+          "maxTurns": 5,
+          "name": "Spec Before Impl Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "spec-before-impl-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "이 기능 고쳐주세요."
+              },
+              {
+                "text": "잠깐, 아직 acceptance와 non-goals가 안 정해졌네요."
+              },
+              {
+                "text": "구현보다 먼저 living contract로 정리해 주세요."
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "이 기능 고쳐주세요.",
+              "잠깐, 아직 acceptance와 non-goals가 안 정해졌네요.",
+              "구현보다 먼저 living contract로 정리해 주세요."
+            ],
+            "observedAt": "2026-04-18T12:40:00.000Z",
+            "sourceKind": "human_conversation",
+            "threadKey": "session-spec-before-impl",
+            "title": "spec before impl follow-up"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "spec-before-impl-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh spec-before-impl follow-up scenario from recent activity"
+      },
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "narrative-truth-before-announcement-followup",
+            "tags": [
+              "narrative",
+              "announcement",
+              "truth-surface"
+            ]
+          },
+          "brief": "Recent activity shows a repo-story edit that only becomes correct once the assistant preserves the narrative-versus-announcement boundary.",
+          "description": "The user keeps separating durable truth alignment from chat-ready communication until the assistant routes the work through narrative first and announcement second.",
+          "maxTurns": 5,
+          "name": "Narrative Truth Before Announcement Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "narrative-truth-before-announcement-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "README와 handoff의 스토리를 먼저 맞춰주세요."
+              },
+              {
+                "text": "지금 필요한 건 릴리즈 문안이 아니라 source-of-truth alignment입니다."
+              },
+              {
+                "text": "그 다음에 brief를 한 장 뽑는 게 맞습니다."
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "README와 handoff의 스토리를 먼저 맞춰주세요.",
+              "지금 필요한 건 릴리즈 문안이 아니라 source-of-truth alignment입니다.",
+              "그 다음에 brief를 한 장 뽑는 게 맞습니다."
+            ],
+            "observedAt": "2026-04-18T12:30:00.000Z",
+            "sourceKind": "human_conversation",
+            "threadKey": "session-narrative-truth-before-announcement",
+            "title": "narrative truth before announcement follow-up"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "narrative-truth-before-announcement-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh narrative truth-before-announcement follow-up scenario from recent activity"
       }
     ],
     "schemaVersion": "cautilus.scenario_proposals.v1",

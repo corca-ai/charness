@@ -1,8 +1,8 @@
 # Cautilus Chatbot Benchmark
 
-- baseline commit: `c1a7fe388c82852670e318f411fd4136651a7336`
-- candidate commit: `c1a7fe388c82852670e318f411fd4136651a7336`
-- baseline repo: `/tmp/charness-chatbot-base6`
+- baseline commit: `51d2bef9475dbf20f42993ece909744c63d8cad1`
+- candidate commit: `51d2bef9475dbf20f42993ece909744c63d8cad1`
+- baseline repo: `/tmp/charness-chatbot-base.d9yWxF`
 - candidate repo: `/home/ubuntu/charness`
 
 ## Candidate Delta
@@ -12,10 +12,10 @@
 
 ## Proposal Delta
 
-- `added_proposal_keys`: `premortem-canonical-subagent-followup`
-- `removed_proposal_keys`: `quality-proof-layering-followup`
+- `added_proposal_keys`: `debug-exact-symptom-before-fix-followup`, `hitl-bounded-review-loop-followup`, `init-repo-partial-normalization-followup`, `narrative-truth-before-announcement-followup`, `quality-proof-layering-followup`, `release-real-host-proof-followup`, `spec-before-impl-followup`
+- `removed_proposal_keys`: none
 
 ## Omitted Delta
 
-- `newly_omitted_candidate_keys`: `quality-proof-layering-followup`
-- `resolved_omitted_candidate_keys`: `premortem-canonical-subagent-followup`
+- `newly_omitted_candidate_keys`: none
+- `resolved_omitted_candidate_keys`: `debug-exact-symptom-before-fix-followup`, `hitl-bounded-review-loop-followup`, `init-repo-partial-normalization-followup`, `narrative-truth-before-announcement-followup`, `quality-proof-layering-followup`, `release-real-host-proof-followup`, `spec-before-impl-followup`

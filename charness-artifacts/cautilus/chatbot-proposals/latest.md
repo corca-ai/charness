@@ -2,7 +2,7 @@
 
 - input: `evals/cautilus/chatbot-scenario-proposal-inputs.json`
 - candidates: `12`
-- emitted proposals: `5`
+- emitted proposals: `12`
 
 ## Candidate Keys
 
@@ -26,16 +26,17 @@
 - `find-skills-canonical-artifact-followup`
 - `retro-structural-cause-followup`
 - `gather-official-path-before-browser-followup`
+- `quality-proof-layering-followup`
+- `init-repo-partial-normalization-followup`
+- `hitl-bounded-review-loop-followup`
+- `release-real-host-proof-followup`
+- `debug-exact-symptom-before-fix-followup`
+- `spec-before-impl-followup`
+- `narrative-truth-before-announcement-followup`
 
 ## Omitted Candidate Keys
 
-- `quality-proof-layering-followup`
-- `init-repo-partial-normalization-followup`
-- `narrative-truth-before-announcement-followup`
-- `spec-before-impl-followup`
-- `debug-exact-symptom-before-fix-followup`
-- `release-real-host-proof-followup`
-- `hitl-bounded-review-loop-followup`
+- none
 
 ## Tag Coverage
 

@@ -1,5 +1,6 @@
 {
   "schemaVersion": "cautilus.scenario_proposal_inputs.v1",
+  "limit": 12,
   "windowDays": 30,
   "families": [
     "fast_regression"

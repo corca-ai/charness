@@ -1,62 +1,41 @@
 # Cautilus Dogfood
-Date: 2026-04-18
+Date: 2026-04-19
 
 ## Trigger
 
-- slice: explicit file-reference convention — `./` prefix on relative link
-  targets + backtick file-reference rule + required `lychee` for internal
-  link integrity (continuation of earlier backtick-rewrite slice)
+- slice: expose the full long-context chatbot proposal set locally by setting
+  explicit `limit: 12` in the checked-in packet and updating the benchmark
+  honesty prompt to name the upstream default-cap seam directly
 - claim: `preserve`
 
 ## Validation Goal
 
 - goal: `preserve`
-- reason: mechanical rewrite so every file reference in prose is
-  syntactically distinguishable from a concept token; adds structural
-  prevention against path-less backtick references (`unique-basename` catch,
-  `./` backtick catch, link-target-must-start-with-`./` rule) without
-  changing any instruction-surface routing semantics
+- reason: the local slice changes the checked-in chatbot proposal packet and
+  one adapter prompt, but it should not disturb the maintained instruction
+  routing contract for `find-skills -> impl` or direct `spec` routing
 
 ## Prompt Surfaces
 
-- `AGENTS.md`
-- `skills/public/handoff/references/adapter-contract.md`
-- `skills/public/handoff/references/spill-targets.md`
-- `skills/public/init-repo/references/default-surfaces.md`
-- `skills/public/narrative/references/adapter-contract.md`
-- `skills/public/quality/references/adapter-contract.md`
-- `skills/public/quality/references/coverage-floor-policy.md`
-- `skills/public/quality/references/prompt-asset-policy.md`
-- `skills/public/release/references/adapter-contract.md`
-- `skills/public/retro/references/adapter-contract.md`
-- `skills/support/markdown-preview/SKILL.md`
-- `skills/support/specdown/SKILL.md`
-
-(Earlier slice of this series also rewrote backticked file references
-across 43 additional prompt-surface paths; those rewrites are already
-folded into HEAD and re-verified under the stricter rule in this slice.)
+- `.agents/cautilus-adapters/chatbot-benchmark.yaml`
 
 ## Commands Run
 
-- `python3 scripts/check-doc-links.py --repo-root .`
-- `./scripts/check-links-internal.sh`
-- `./scripts/check-links-external.sh`
-- `python3 scripts/migrate-backtick-file-refs.py --repo-root .`
-- `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
 - `cautilus instruction-surface test --repo-root .`
+- `python3 scripts/validate-cautilus-scenarios.py --repo-root .`
 
 ## Outcome
 
 - recommendation: `accept-now`
 - instruction-surface summary: `4 passed / 0 failed / 0 blocked`
-- routing notes: all four checked-in routing cases still pass after the
-  `./` prefix migration and stricter backtick rule; the rewrite is
-  syntactic only (markdown renderers treat `./foo` and `foo` identically)
-  so prompt semantics are unchanged while file references are now
-  structurally separated from concept tokens
+- routing notes: checked-in routing still preserves `find-skills -> impl` on
+  the workspace surface, direct compact implementation still routes to `impl`,
+  and both checked `spec` routes still pass after the benchmark prompt wording
+  shifted from a local top-five complaint to an upstream default-cap warning
 
 ## Follow-ups
 
-- document the convention in [operator-onboarding narrative](../../README.md)
-  when next editing the top-level README so external adopters see the
-  rationale before hitting the linter
+- keep the local explicit `limit: 12` override until upstream `cautilus`
+  documents the default cap more honestly in help/schema/docs
+- track the upstream visibility fix in `corca-ai/cautilus` so this repo can
+  later decide whether the checked-in packet still needs the override
