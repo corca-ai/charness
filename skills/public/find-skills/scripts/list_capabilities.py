@@ -42,17 +42,13 @@ _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resol
 load_adapter = _resolve_adapter_module.load_adapter
 
 REFERENCE_TOKEN_RE = re.compile(r"`([^`]+)`")
-
-
 def _target_has_repo_owned_skill_surface(target_root: Path) -> bool:
     return (target_root / "skills" / "public").is_dir() or (target_root / "skills" / "support").is_dir()
-
 
 def _local_surface_root(target_root: Path) -> Path:
     if (REPO_ROOT / "skills" / "public").is_dir():
         return target_root
     return target_root if _target_has_repo_owned_skill_surface(target_root) else REPO_ROOT
-
 
 def extract_frontmatter(path: Path) -> dict[str, str]:
     text = path.read_text(encoding="utf-8")
@@ -68,13 +64,11 @@ def extract_frontmatter(path: Path) -> dict[str, str]:
         key, value = raw.split(":", 1)
         data[key.strip()] = value.strip().strip('"')
     return data
-
 def _render_path(path: Path, repo_root: Path) -> str:
     try:
         return str(path.relative_to(repo_root))
     except ValueError:
         return str(path)
-
 def _dedupe(items: list[str]) -> list[str]:
     seen: set[str] = set()
     result: list[str] = []
@@ -83,7 +77,6 @@ def _dedupe(items: list[str]) -> list[str]:
             seen.add(item)
             result.append(item)
     return result
-
 def _skill_trigger_phrases(name: str, layer: str) -> list[str]:
     phrases = [
         name,
@@ -101,7 +94,6 @@ def _skill_trigger_phrases(name: str, layer: str) -> list[str]:
             ]
         )
     return _dedupe(phrases)
-
 def _referenced_skill_paths(skill_md: Path, repo_root: Path) -> list[str]:
     text = skill_md.read_text(encoding="utf-8")
     paths: list[str] = []
@@ -117,7 +109,6 @@ def _referenced_skill_paths(skill_md: Path, repo_root: Path) -> list[str]:
         if candidate.is_file():
             paths.append(_render_path(candidate, repo_root))
     return _dedupe(paths)
-
 def _collect_skill_entries(
     skill_roots: list[tuple[str, Path]],
     *,
@@ -159,7 +150,6 @@ def _collect_skill_entries(
                 }
             )
     return items
-
 
 def _filter_shadowed(entries: list[dict[str, str]], preferred: list[dict[str, str]]) -> list[dict[str, str]]:
     preferred_ids = {entry["id"] for entry in preferred}
