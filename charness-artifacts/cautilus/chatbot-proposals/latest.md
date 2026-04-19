@@ -21,16 +21,16 @@
 
 ## Proposal Keys
 
+- `retro-structural-cause-followup`
 - `gather-official-path-before-browser-followup`
 - `quality-proof-layering-followup`
 - `init-repo-partial-normalization-followup`
 - `handoff-workflow-trigger-followup`
-- `find-skills-canonical-artifact-followup`
 
 ## Omitted Candidate Keys
 
-- `retro-structural-cause-followup`
 - `premortem-canonical-subagent-followup`
+- `find-skills-canonical-artifact-followup`
 - `narrative-truth-before-announcement-followup`
 - `spec-before-impl-followup`
 - `debug-exact-symptom-before-fix-followup`

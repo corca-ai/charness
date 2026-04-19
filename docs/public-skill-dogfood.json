@@ -376,12 +376,12 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-  "reviewed_on": "2026-04-18",
-  "observed_evidence": [
-    "The checked-in public core now makes a real workflow miss trigger a short `session` retro before resuming work, and it requires the retro to separate local symptom from the workflow or capability change that would prevent the repeat trap.",
-    "That persistence rule is reinforced in `skills/public/retro/references/trigger-and-persistence.md`, and the current repo treats `charness-artifacts/retro/recent-lessons.md` as a first-class memory surface from both `AGENTS.md` and `docs/handoff.md`.",
-    "This makes the current `retro-structural-cause-followup` long-context candidate a real reviewed consumer seam: pushing past a local explanation toward a structural cause and durable memory update is now explicit checked-in `retro` behavior, not only a conversation style preference."
-  ]
+      "reviewed_on": "2026-04-19",
+      "observed_evidence": [
+        "The checked-in public core now makes a real workflow miss trigger a short `session` retro before resuming work, and it requires the retro to separate local symptom from the workflow or capability change that would prevent the repeat trap.",
+        "That persistence rule is reinforced in `skills/public/retro/references/trigger-and-persistence.md`, and the current repo treats `charness-artifacts/retro/recent-lessons.md` as a first-class memory surface from both `AGENTS.md` and `docs/handoff.md`.",
+        "That keeps `retro-structural-cause-followup` as a reviewed consumer seam worth re-promoting after the `v0.4.1` release follow-up work: pushing past a local explanation toward a structural cause and durable memory update is still explicit checked-in `retro` behavior, not only a conversation style preference."
+      ]
     }
   ]
 }
