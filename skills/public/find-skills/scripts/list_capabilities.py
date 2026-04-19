@@ -42,8 +42,16 @@ _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resol
 load_adapter = _resolve_adapter_module.load_adapter
 
 REFERENCE_TOKEN_RE = re.compile(r"`([^`]+)`")
+
+
+def _target_has_repo_owned_skill_surface(target_root: Path) -> bool:
+    return (target_root / "skills" / "public").is_dir() or (target_root / "skills" / "support").is_dir()
+
+
 def _local_surface_root(target_root: Path) -> Path:
-    return target_root if (REPO_ROOT / "skills" / "public").is_dir() else REPO_ROOT
+    if (REPO_ROOT / "skills" / "public").is_dir():
+        return target_root
+    return target_root if _target_has_repo_owned_skill_surface(target_root) else REPO_ROOT
 
 
 def extract_frontmatter(path: Path) -> dict[str, str]:

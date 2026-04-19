@@ -7,6 +7,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 LIST_CAPABILITIES_CMD = ("python3", "skills/public/find-skills/scripts/list_capabilities.py")
+PLUGIN_LIST_CAPABILITIES_CMD = ("python3", "plugins/charness/skills/find-skills/scripts/list_capabilities.py")
 
 
 def _write_skill(root: Path, skill_id: str, description: str, *, name: str | None = None) -> None:
@@ -37,6 +38,18 @@ def _write_find_skills_adapter(root: Path, *, include_preset: bool = False) -> N
 def _run_list_capabilities(tmp_path: Path, *args: str, env: dict[str, str] | None = None) -> dict[str, object]:
     result = subprocess.run(
         [*LIST_CAPABILITIES_CMD, "--repo-root", str(tmp_path), *args],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    return json.loads(result.stdout)
+
+
+def _run_plugin_list_capabilities(tmp_path: Path, *args: str, env: dict[str, str] | None = None) -> dict[str, object]:
+    result = subprocess.run(
+        [*PLUGIN_LIST_CAPABILITIES_CMD, "--repo-root", str(tmp_path), *args],
         cwd=REPO_ROOT,
         check=True,
         capture_output=True,
@@ -184,6 +197,15 @@ def _write_gather_support_capability(root: Path) -> None:
     }
     (support / "capability.json").write_text(json.dumps(capability, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     _write_find_skills_adapter(root)
+
+
+def _write_synced_support_skill(root: Path, skill_id: str, description: str) -> None:
+    skill_dir = root / "skills" / "support" / "generated" / skill_id
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(["---", f"name: {skill_id}", f'description: "{description}"', "---", "", f"# {skill_id.title()}"]) + "\n",
+        encoding="utf-8",
+    )
 
 
 def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> None:
@@ -337,6 +359,59 @@ def test_list_capabilities_preserves_generated_at_when_inventory_is_unchanged(tm
     assert first_payload["artifacts"]["updated"] is True
     assert second_payload["artifacts"]["updated"] is False
     assert second_payload["artifacts"]["generated_at"] == first_payload["artifacts"]["generated_at"]
+
+
+def test_plugin_export_prefers_repo_owned_skill_surface_for_source_repo(tmp_path: Path) -> None:
+    _write_find_skills_adapter(tmp_path)
+    _write_skill(tmp_path, "demo", "Demo skill.")
+    _write_synced_support_skill(tmp_path, "cautilus", "Synced support.")
+
+    payload = _run_plugin_list_capabilities(tmp_path)
+
+    assert payload["public_skills"] == [
+        {
+            "id": "demo",
+            "name": "demo",
+            "description": "Demo skill.",
+            "summary": "Demo skill.",
+            "path": "skills/public/demo/SKILL.md",
+            "skill_dir": "skills/public/demo",
+            "canonical_path": "skills/public/demo/SKILL.md",
+            "trigger_phrases": [
+                "demo",
+                "demo skill",
+                "demo 스킬",
+                "charness:demo",
+            ],
+            "referenced_paths": [],
+            "source": "local-public",
+            "layer": "public skill",
+        }
+    ]
+    assert payload["support_skills"] == [
+        {
+            "id": "cautilus",
+            "name": "cautilus",
+            "description": "Synced support.",
+            "summary": "Synced support.",
+            "path": "skills/support/generated/cautilus/SKILL.md",
+            "skill_dir": "skills/support/generated/cautilus",
+            "canonical_path": "skills/support/generated/cautilus/SKILL.md",
+            "trigger_phrases": [
+                "cautilus",
+                "cautilus skill",
+                "cautilus 스킬",
+                "charness:cautilus",
+                "support/cautilus",
+                "cautilus support",
+                "cautilus support skill",
+                "cautilus helper",
+            ],
+            "referenced_paths": [],
+            "source": "synced-support",
+            "layer": "synced support skill",
+        }
+    ]
 
 
 def test_recommendation_queries_do_not_rewrite_canonical_inventory_artifact(tmp_path: Path) -> None:

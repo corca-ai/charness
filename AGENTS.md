@@ -167,6 +167,10 @@ Read the smallest memory surface that answers the current question.
 - Update [`docs/handoff.md`](./docs/handoff.md) when the next session's first move changed.
 - Keep durable review findings in `charness-artifacts/` when a skill is designed to
   accumulate them.
+- If the mandatory startup `find-skills` call rewrites
+  `charness-artifacts/find-skills/latest.*`, diff it immediately. Commit it
+  only when the canonical capability inventory changed; otherwise treat the
+  rewrite as invocation drift or a bug to fix, not as unrelated ambient dirt.
 - If the user correctly points out a missed issue, broken assumption, or
   missing gate that should likely have been caught, run a brief retro before
   continuing and say whether that retro was persisted.

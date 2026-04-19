@@ -3,42 +3,41 @@ Date: 2026-04-19
 
 ## Trigger
 
-- slice: migrate the checked-in chatbot proposal and benchmark consumer
-  surfaces to the upstream full-truth packet contract by removing the local
-  `limit` workaround and naming `attentionView` as the bounded human-facing
-  shortlist
+- slice: fix `find-skills` startup artifact drift by keeping installed-plugin
+  invocation aligned with repo-owned source inventory, and add an explicit
+  session rule for classifying `find-skills/latest.*` rewrites before treating
+  them as commit candidates
 - claim: `preserve`
 
 ## Validation Goal
 
 - goal: `preserve`
-- reason: the local slice changes the checked-in chatbot proposal packet and
-  one adapter prompt, but it should not disturb the maintained instruction
-  routing contract for `find-skills -> impl` or direct `spec` routing
+- reason: this slice tightens startup discovery and session discipline, but it
+  should not disturb the maintained instruction routing contract for
+  `find-skills -> impl` or direct `spec` routing
 
 ## Prompt Surfaces
 
-- `.agents/cautilus-adapters/chatbot-benchmark.yaml`
+- `AGENTS.md`
 
 ## Commands Run
 
 - `cautilus instruction-surface test --repo-root .`
-- `python3 scripts/validate-cautilus-scenarios.py --repo-root .`
+- `python3 scripts/run-evals.py --repo-root .`
 
 ## Outcome
 
 - recommendation: `accept-now`
 - instruction-surface summary: `4 passed / 0 failed / 0 blocked`
-- routing notes: checked-in routing still preserves `find-skills -> impl` on
-  the workspace surface, direct compact implementation still routes to `impl`,
-  and both checked `spec` routes still pass after the benchmark prompt wording
-  shifted from a default-cap complaint to a full-`proposals` versus
-  `attentionView` contract reminder
+- routing notes: the checked-in surface still preserves `find-skills -> impl`
+  on the workspace path, compact direct implementation still routes to `impl`,
+  and checked direct contract-shaping still routes to `spec`
 
 ## Follow-ups
 
-- keep the checked-in chatbot proposal and benchmark summaries aligned with the
-  installed public `cautilus` release so the consumer proof does not depend on
-  a sibling checkout or machine-local override
-- keep watching for downstream surfaces that still slice `proposals` directly
-  when they really want the bounded human shortlist from `attentionView`
+- keep treating `charness-artifacts/find-skills/latest.*` as canonical
+  capability inventory only when the inventory itself changed; startup
+  invocation churn should now be handled as a bug
+- if `find-skills` later needs to mix installed public skills with
+  repo-specific integrations for non-source consumer repos, add that as a
+  separate contract change instead of regressing the source-repo path again
