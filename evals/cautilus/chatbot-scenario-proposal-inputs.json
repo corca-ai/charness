@@ -92,7 +92,7 @@
           "sourceKind": "skill_contract",
           "title": "premortem canonical subagent contract",
           "threadKey": "dogfood-premortem-canonical-subagent",
-          "observedAt": "2026-04-18T19:20:00.000Z",
+          "observedAt": "2026-04-19T01:00:00.000Z",
           "messages": [
             "프리모르템은 무조건 서브에이전트로 명시하자는 의도입니다.",
             "이거랑 지금 얘기한 standing eval 범위가 관련 있나요?",

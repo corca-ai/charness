@@ -205,11 +205,11 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-18",
+      "reviewed_on": "2026-04-19",
       "observed_evidence": [
         "The checked-in public core now makes bounded subagents the canonical premortem path and explicitly forbids silently collapsing to a same-agent local pass before the subagent capability check runs and yields a concrete block.",
         "That same policy is reinforced in `skills/public/premortem/references/subagent-capability-check.md` and in `specs/on-demand-validation.spec.md`, which keeps `premortem` as a judgment-heavy on-demand workflow rather than pretending it belongs in a standing evaluator or generic local fallback path.",
-        "This makes the current `premortem-canonical-subagent-followup` long-context candidate a real reviewed consumer seam: the user's push to keep subagents canonical maps directly to checked-in behavior, not just to a one-off wording preference."
+        "That keeps `premortem-canonical-subagent-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: the user's push to keep subagents canonical still maps directly to checked-in behavior, not just to a one-off wording preference."
       ]
     },
     {
