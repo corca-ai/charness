@@ -18,6 +18,7 @@ mapfile -t markdown_files < <(
   git ls-files -- '*.md' \
     ':(exclude)charness-artifacts/**' \
     ':(exclude).charness/**' \
+    ':(exclude).cautilus/**' \
     ':(exclude)skills/support/specdown/**' \
     ':(exclude)plugins/charness/support/specdown/**' \
     ':(exclude).pytest_cache/**' \

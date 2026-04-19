@@ -4,7 +4,6 @@ node_modules/
 .pytest_cache/
 .lycheecache
 .artifacts/
-.claude/worktrees/
 plugins/charness/support/gather-slack/.cache/
 .charness/quality/bootstrap.json
 .charness/quality/runtime-signals.json

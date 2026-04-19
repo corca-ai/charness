@@ -1,7 +1,7 @@
 # Cautilus Chatbot Proposals
 
 - input: `evals/cautilus/chatbot-scenario-proposal-inputs.json`
-- candidates: `11`
+- candidates: `12`
 - emitted proposals: `5`
 
 ## Candidate Keys
@@ -17,32 +17,36 @@
 - `debug-exact-symptom-before-fix-followup`
 - `release-real-host-proof-followup`
 - `hitl-bounded-review-loop-followup`
+- `gather-official-path-before-browser-followup`
 
 ## Proposal Keys
 
-- `hitl-bounded-review-loop-followup`
-- `release-real-host-proof-followup`
-- `debug-exact-symptom-before-fix-followup`
-- `spec-before-impl-followup`
-- `narrative-truth-before-announcement-followup`
+- `init-repo-partial-normalization-followup`
+- `handoff-workflow-trigger-followup`
+- `find-skills-canonical-artifact-followup`
+- `retro-structural-cause-followup`
+- `premortem-canonical-subagent-followup`
 
 ## Omitted Candidate Keys
 
-- `retro-structural-cause-followup`
 - `quality-proof-layering-followup`
-- `premortem-canonical-subagent-followup`
-- `find-skills-canonical-artifact-followup`
-- `handoff-workflow-trigger-followup`
-- `init-repo-partial-normalization-followup`
+- `narrative-truth-before-announcement-followup`
+- `spec-before-impl-followup`
+- `debug-exact-symptom-before-fix-followup`
+- `release-real-host-proof-followup`
+- `hitl-bounded-review-loop-followup`
+- `gather-official-path-before-browser-followup`
 
 ## Tag Coverage
 
+- `agent-browser`: `1`
 - `announcement`: `1`
 - `artifact-policy`: `1`
 - `continuation-sequence`: `1`
 - `contract-shaping`: `1`
 - `debug`: `1`
 - `find-skills`: `1`
+- `gather`: `1`
 - `handoff`: `1`
 - `hitl`: `1`
 - `hypothesis`: `1`
@@ -55,6 +59,7 @@
 - `partial-repo`: `1`
 - `policy-clarification`: `1`
 - `premortem`: `1`
+- `private-saas`: `1`
 - `proof-layering`: `1`
 - `quality`: `1`
 - `real-host-proof`: `1`

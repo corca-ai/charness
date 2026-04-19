@@ -7,11 +7,11 @@
   "proposalCandidates": [
     {
       "proposalKey": "retro-structural-cause-followup",
-      "title": "Refresh retro structural-cause follow-up scenario from recent activity",
+      "title": "Refresh retro structural-cause follow-up scenario from dogfood contracts",
       "family": "fast_regression",
       "name": "Retro Structural Cause Follow-up",
-      "description": "The user keeps pushing past a local explanation until the assistant generalizes the structural cause and proposes a durable retro change.",
-      "brief": "Recent activity shows repeated correction pressure before the assistant lands on a structural retro.",
+      "description": "The user keeps pushing past a local explanation until the assistant generalizes the structural cause, names the workflow change, and persists the repeat trap instead of stopping at a chat-only apology.",
+      "brief": "Current retro contracts emphasize structural cause, explicit persistence, and workflow-memory updates, so long-context behavior regresses if the assistant only explains the immediate miss.",
       "tags": [
         "retro",
         "long-context",
@@ -25,10 +25,10 @@
       ],
       "evidence": [
         {
-          "sourceKind": "human_conversation",
-          "title": "retro structural cause follow-up",
-          "threadKey": "session-retro-structural-cause",
-          "observedAt": "2026-04-18T09:30:00.000Z",
+          "sourceKind": "skill_contract",
+          "title": "retro structural cause contract",
+          "threadKey": "dogfood-retro-structural-cause",
+          "observedAt": "2026-04-18T19:30:00.000Z",
           "messages": [
             "이번 회고는 과적합된 것 아닌가요?",
             "이 패턴이 발생할 수밖에 없었던 구조적 원인을 더 봐주세요.",
@@ -39,11 +39,11 @@
     },
     {
       "proposalKey": "quality-proof-layering-followup",
-      "title": "Refresh quality proof-layering follow-up scenario from recent activity",
+      "title": "Refresh quality proof-layering follow-up scenario from dogfood contracts",
       "family": "fast_regression",
       "name": "Quality Proof Layering Follow-up",
-      "description": "The user refines the distinction between public executable specs, on-demand proof, and the specdown viewer until the assistant aligns the layering policy correctly.",
-      "brief": "Recent activity shows a multi-turn quality discussion that depends on remembering the specdown SoT versus viewer split.",
+      "description": "The user keeps refining the distinction between public executable specs, on-demand proof artifacts, and the specdown viewer until the assistant preserves the layering policy instead of collapsing those surfaces into one proof claim.",
+      "brief": "Current quality contracts emphasize the public-spec versus on-demand-proof versus viewer split, and long-context quality behavior regresses if that layering is forgotten.",
       "tags": [
         "quality",
         "specdown",
@@ -57,10 +57,10 @@
       ],
       "evidence": [
         {
-          "sourceKind": "human_conversation",
-          "title": "quality proof layering follow-up",
-          "threadKey": "session-quality-proof-layering",
-          "observedAt": "2026-04-18T10:00:00.000Z",
+          "sourceKind": "skill_contract",
+          "title": "quality proof layering contract",
+          "threadKey": "dogfood-quality-proof-layering",
+          "observedAt": "2026-04-18T19:10:00.000Z",
           "messages": [
             "스펙다운은 SoT와 viewer 두 역할이 있다고 봅니다.",
             "source guard는 전자 때문에 줄이고 싶지만, 후자 때문에 결과는 보여야 해요.",
@@ -71,11 +71,11 @@
     },
     {
       "proposalKey": "premortem-canonical-subagent-followup",
-      "title": "Refresh premortem canonical-subagent follow-up scenario from recent activity",
+      "title": "Refresh premortem canonical-subagent follow-up scenario from dogfood contracts",
       "family": "fast_regression",
       "name": "Premortem Canonical Subagent Follow-up",
-      "description": "The user clarifies that premortem should stay on the canonical subagent path, and the assistant must preserve that policy rather than collapsing to same-agent fallback logic.",
-      "brief": "Recent activity shows a policy clarification that only makes sense if the assistant remembers the prior premortem discussion.",
+      "description": "The user clarifies that premortem must stay on the canonical subagent path, and the assistant must preserve that policy instead of silently collapsing into a same-agent fallback or confusing it with standing evaluator scope.",
+      "brief": "Current premortem contracts explicitly require a subagent capability check before any degraded local path, so long-context behavior regresses if that policy boundary is forgotten.",
       "tags": [
         "premortem",
         "subagent",
@@ -89,10 +89,10 @@
       ],
       "evidence": [
         {
-          "sourceKind": "human_conversation",
-          "title": "premortem canonical subagent follow-up",
-          "threadKey": "session-premortem-canonical-subagent",
-          "observedAt": "2026-04-18T10:30:00.000Z",
+          "sourceKind": "skill_contract",
+          "title": "premortem canonical subagent contract",
+          "threadKey": "dogfood-premortem-canonical-subagent",
+          "observedAt": "2026-04-18T19:20:00.000Z",
           "messages": [
             "프리모르템은 무조건 서브에이전트로 명시하자는 의도입니다.",
             "이거랑 지금 얘기한 standing eval 범위가 관련 있나요?",
@@ -103,11 +103,11 @@
     },
     {
       "proposalKey": "find-skills-canonical-artifact-followup",
-      "title": "Refresh find-skills canonical-artifact follow-up scenario from recent activity",
+      "title": "Refresh find-skills canonical-artifact follow-up scenario from dogfood contracts",
       "family": "fast_regression",
       "name": "Find Skills Canonical Artifact Follow-up",
-      "description": "The user keeps pointing out dirty `find-skills` artifacts until the assistant distinguishes canonical durable inventory from ad hoc recommendation output.",
-      "brief": "Recent activity shows repeated correction pressure about artifact churn caused by invocation-shape differences.",
+      "description": "The user keeps pointing out dirty `find-skills` artifacts until the assistant distinguishes canonical durable inventory from ad hoc recommendation output and stops treating query-shaped churn as repo truth.",
+      "brief": "Current find-skills contracts and retro memory both require canonical inventory to stay separate from ad hoc recommendation output, so long-context behavior regresses if that boundary is forgotten.",
       "tags": [
         "find-skills",
         "artifact-policy",
@@ -121,10 +121,10 @@
       ],
       "evidence": [
         {
-          "sourceKind": "human_conversation",
-          "title": "find-skills canonical artifact follow-up",
-          "threadKey": "session-find-skills-canonical-artifact",
-          "observedAt": "2026-04-18T11:00:00.000Z",
+          "sourceKind": "skill_contract",
+          "title": "find-skills canonical artifact contract",
+          "threadKey": "dogfood-find-skills-canonical-artifact",
+          "observedAt": "2026-04-18T19:45:00.000Z",
           "messages": [
             "이게 충분히 유의미한 정보라면 무조건 커밋해야 하는데 왜 물어보는가?",
             "평소와 다른 방식으로 호출했다는 건 뭐죠?",
@@ -135,11 +135,11 @@
     },
     {
       "proposalKey": "handoff-workflow-trigger-followup",
-      "title": "Refresh handoff workflow-trigger follow-up scenario from recent activity",
+      "title": "Refresh handoff workflow-trigger follow-up scenario from dogfood contracts",
       "family": "fast_regression",
       "name": "Handoff Workflow Trigger Follow-up",
-      "description": "The user sharpens the next-session pickup path until the assistant treats the workflow trigger as the handoff's primary contract instead of preserving history first.",
-      "brief": "Recent activity shows a handoff request that only stabilizes after the assistant reorients around the next move rather than the diary of what happened.",
+      "description": "The user sharpens the next-session pickup path until the assistant treats the workflow trigger as the handoff's primary contract instead of preserving history first or making the next move implicit.",
+      "brief": "Current handoff contracts emphasize workflow-trigger-first continuation, so long-context behavior regresses if the assistant falls back to history-first baton passing.",
       "tags": [
         "handoff",
         "workflow-trigger",
@@ -153,10 +153,10 @@
       ],
       "evidence": [
         {
-          "sourceKind": "human_conversation",
-          "title": "handoff workflow trigger follow-up",
-          "threadKey": "session-handoff-workflow-trigger",
-          "observedAt": "2026-04-18T12:10:00.000Z",
+          "sourceKind": "skill_contract",
+          "title": "handoff workflow trigger contract",
+          "threadKey": "dogfood-handoff-workflow-trigger",
+          "observedAt": "2026-04-18T20:00:00.000Z",
           "messages": [
             "handoff 남겨주세요.",
             "다음 세션 첫 move는 이슈 close 정리부터입니다.",
@@ -167,11 +167,11 @@
     },
     {
       "proposalKey": "init-repo-partial-normalization-followup",
-      "title": "Refresh init-repo partial-normalization follow-up scenario from recent activity",
+      "title": "Refresh init-repo partial-normalization follow-up scenario from dogfood contracts",
       "family": "fast_regression",
       "name": "Init Repo Partial Normalization Follow-up",
-      "description": "The user clarifies that the repo is already partially initialized, and the assistant must normalize the existing surface instead of defaulting to a greenfield rewrite.",
-      "brief": "Recent activity shows the repo mode only becoming clear after the user pushes back on greenfield assumptions.",
+      "description": "The user clarifies that the repo is already partially initialized, and the assistant must normalize the existing surface or repair the one missing seam instead of defaulting to a greenfield rewrite.",
+      "brief": "Current init-repo contracts emphasize `PARTIAL` and targeted normalization, so long-context behavior regresses if the assistant falls back to greenfield scaffolding.",
       "tags": [
         "init-repo",
         "partial-repo",
@@ -185,10 +185,10 @@
       ],
       "evidence": [
         {
-          "sourceKind": "human_conversation",
-          "title": "init-repo partial normalization follow-up",
-          "threadKey": "session-init-repo-partial-normalization",
-          "observedAt": "2026-04-18T12:20:00.000Z",
+          "sourceKind": "skill_contract",
+          "title": "init-repo partial normalization contract",
+          "threadKey": "dogfood-init-repo-partial-normalization",
+          "observedAt": "2026-04-18T20:05:00.000Z",
           "messages": [
             "이 repo는 이미 운영 surface가 좀 있습니다.",
             "greenfield처럼 갈아엎지 말고 partial normalize로 가주세요.",
@@ -353,6 +353,38 @@
             "이건 agent가 final judgment 내리면 안 됩니다.",
             "사람이 판단해야 할 기준을 먼저 적고 chunked review loop로 가주세요.",
             "accepted rules를 다음 chunk들에 전파해야 합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "proposalKey": "gather-official-path-before-browser-followup",
+      "title": "Refresh gather official-path-before-browser follow-up scenario from dogfood contracts",
+      "family": "fast_regression",
+      "name": "Gather Official Path Before Browser Follow-up",
+      "description": "The user starts from a private SaaS source URL, but the assistant must keep the gather path honest by preferring official API/export routes before browser fallback and stopping cleanly when auth bootstrap is still missing.",
+      "brief": "Current gather contracts emphasize source-specific acquisition intent, official export first, browser fallback only when needed, and honest auth/bootstrap stops.",
+      "tags": [
+        "gather",
+        "agent-browser",
+        "private-saas"
+      ],
+      "maxTurns": 6,
+      "simulatorTurns": [
+        "이 private SaaS roster URL을 gather해 주세요: https://hr.example.internal/roster",
+        "browser로 바로 들어가기 전에 official export나 API가 있는지 먼저 봐야 하지 않나요?",
+        "browser fallback은 허용하되 auth/bootstrap이 없으면 clean stop해야 합니다."
+      ],
+      "evidence": [
+        {
+          "sourceKind": "skill_contract",
+          "title": "gather official path before browser fallback",
+          "threadKey": "dogfood-gather-official-path-before-browser",
+          "observedAt": "2026-04-18T17:10:00.000Z",
+          "messages": [
+            "이 private SaaS roster URL을 gather해 주세요: https://hr.example.internal/roster",
+            "browser로 바로 들어가기 전에 official export나 API가 있는지 먼저 봐야 하지 않나요?",
+            "browser fallback은 허용하되 auth/bootstrap이 없으면 clean stop해야 합니다."
           ]
         }
       ]
