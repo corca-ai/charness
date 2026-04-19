@@ -21,15 +21,15 @@
 
 ## Proposal Keys
 
+- `quality-proof-layering-followup`
 - `init-repo-partial-normalization-followup`
 - `handoff-workflow-trigger-followup`
 - `find-skills-canonical-artifact-followup`
 - `retro-structural-cause-followup`
-- `premortem-canonical-subagent-followup`
 
 ## Omitted Candidate Keys
 
-- `quality-proof-layering-followup`
+- `premortem-canonical-subagent-followup`
 - `narrative-truth-before-announcement-followup`
 - `spec-before-impl-followup`
 - `debug-exact-symptom-before-fix-followup`

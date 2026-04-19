@@ -19,14 +19,14 @@
   ],
   "proposal_count": 5,
   "proposal_keys": [
+    "quality-proof-layering-followup",
     "init-repo-partial-normalization-followup",
     "handoff-workflow-trigger-followup",
     "find-skills-canonical-artifact-followup",
-    "retro-structural-cause-followup",
-    "premortem-canonical-subagent-followup"
+    "retro-structural-cause-followup"
   ],
   "omitted_candidate_keys": [
-    "quality-proof-layering-followup",
+    "premortem-canonical-subagent-followup",
     "narrative-truth-before-announcement-followup",
     "spec-before-impl-followup",
     "debug-exact-symptom-before-fix-followup",
@@ -92,6 +92,70 @@
     ],
     "generatedAt": "2026-04-18T12:00:00Z",
     "proposals": [
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "quality-proof-layering-followup",
+            "tags": [
+              "quality",
+              "specdown",
+              "proof-layering"
+            ]
+          },
+          "brief": "Current quality contracts emphasize the public-spec versus on-demand-proof versus viewer split, and long-context quality behavior regresses if that layering is forgotten.",
+          "description": "The user keeps refining the distinction between public executable specs, on-demand proof artifacts, and the specdown viewer until the assistant preserves the layering policy instead of collapsing those surfaces into one proof claim.",
+          "maxTurns": 6,
+          "name": "Quality Proof Layering Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "quality-proof-layering-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "스펙다운은 SoT와 viewer 두 역할이 있다고 봅니다."
+              },
+              {
+                "text": "source guard는 전자 때문에 줄이고 싶지만, 후자 때문에 결과는 보여야 해요."
+              },
+              {
+                "text": "이 관점이 quality skill에도 반영돼 있나요?"
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "스펙다운은 SoT와 viewer 두 역할이 있다고 봅니다.",
+              "source guard는 전자 때문에 줄이고 싶지만, 후자 때문에 결과는 보여야 해요.",
+              "이 관점이 quality skill에도 반영돼 있나요?"
+            ],
+            "observedAt": "2026-04-19T00:10:00.000Z",
+            "sourceKind": "skill_contract",
+            "threadKey": "dogfood-quality-proof-layering",
+            "title": "quality proof layering contract"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "quality-proof-layering-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh quality proof-layering follow-up scenario from dogfood contracts"
+      },
       {
         "action": "add_new_scenario",
         "draftScenario": {
@@ -347,70 +411,6 @@
           "scripted"
         ],
         "title": "Refresh retro structural-cause follow-up scenario from dogfood contracts"
-      },
-      {
-        "action": "add_new_scenario",
-        "draftScenario": {
-          "benchmark": {
-            "backend": "scripted",
-            "family": "fast_regression",
-            "scenarioKey": "premortem-canonical-subagent-followup",
-            "tags": [
-              "premortem",
-              "subagent",
-              "policy-clarification"
-            ]
-          },
-          "brief": "Current premortem contracts explicitly require a subagent capability check before any degraded local path, so long-context behavior regresses if that policy boundary is forgotten.",
-          "description": "The user clarifies that premortem must stay on the canonical subagent path, and the assistant must preserve that policy instead of silently collapsing into a same-agent fallback or confusing it with standing evaluator scope.",
-          "maxTurns": 4,
-          "name": "Premortem Canonical Subagent Follow-up",
-          "runner": {
-            "mode": "live"
-          },
-          "scenarioId": "premortem-canonical-subagent-followup",
-          "schemaVersion": "cautilus.scenario.v1",
-          "sideEffectsMode": "shadow",
-          "simulator": {
-            "kind": "scripted",
-            "turns": [
-              {
-                "text": "프리모르템은 무조건 서브에이전트로 명시하자는 의도입니다."
-              },
-              {
-                "text": "이거랑 지금 얘기한 standing eval 범위가 관련 있나요?"
-              },
-              {
-                "text": "정책을 흐리지 말고 구분해서 설명해 주세요."
-              }
-            ]
-          }
-        },
-        "evidence": [
-          {
-            "messages": [
-              "프리모르템은 무조건 서브에이전트로 명시하자는 의도입니다.",
-              "이거랑 지금 얘기한 standing eval 범위가 관련 있나요?",
-              "정책을 흐리지 말고 구분해서 설명해 주세요."
-            ],
-            "observedAt": "2026-04-18T19:20:00.000Z",
-            "sourceKind": "skill_contract",
-            "threadKey": "dogfood-premortem-canonical-subagent",
-            "title": "premortem canonical subagent contract"
-          }
-        ],
-        "existingCoverage": {
-          "recentResultCount": 0,
-          "scenarioKeyExists": false
-        },
-        "family": "fast_regression",
-        "intentProfile": null,
-        "proposalKey": "premortem-canonical-subagent-followup",
-        "rationale": "1 recent log match(es) suggested this pattern.",
-        "recommendedBackends": [
-          "scripted"
-        ],
-        "title": "Refresh premortem canonical-subagent follow-up scenario from dogfood contracts"
       }
     ],
     "schemaVersion": "cautilus.scenario_proposals.v1",

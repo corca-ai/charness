@@ -64,13 +64,13 @@ def test_eval_cautilus_chatbot_proposals_writes_summary(tmp_path: Path) -> None:
     assert payload["proposal_count"] == 5
     assert len(payload["candidate_keys"]) == 12
     assert payload["proposal_keys"] == [
+        "quality-proof-layering-followup",
         "init-repo-partial-normalization-followup",
         "handoff-workflow-trigger-followup",
         "find-skills-canonical-artifact-followup",
         "retro-structural-cause-followup",
-        "premortem-canonical-subagent-followup",
     ]
-    assert "quality-proof-layering-followup" in payload["omitted_candidate_keys"]
+    assert "premortem-canonical-subagent-followup" in payload["omitted_candidate_keys"]
     assert "narrative-truth-before-announcement-followup" in payload["omitted_candidate_keys"]
     assert "spec-before-impl-followup" in payload["omitted_candidate_keys"]
     assert "debug-exact-symptom-before-fix-followup" in payload["omitted_candidate_keys"]

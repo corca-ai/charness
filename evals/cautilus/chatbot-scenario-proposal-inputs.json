@@ -60,7 +60,7 @@
           "sourceKind": "skill_contract",
           "title": "quality proof layering contract",
           "threadKey": "dogfood-quality-proof-layering",
-          "observedAt": "2026-04-18T19:10:00.000Z",
+          "observedAt": "2026-04-19T00:10:00.000Z",
           "messages": [
             "스펙다운은 SoT와 viewer 두 역할이 있다고 봅니다.",
             "source guard는 전자 때문에 줄이고 싶지만, 후자 때문에 결과는 보여야 해요.",

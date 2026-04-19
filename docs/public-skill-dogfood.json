@@ -142,11 +142,11 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-18",
+      "reviewed_on": "2026-04-19",
       "observed_evidence": [
         "The checked-in public core now carries the private SaaS decision ladder explicitly: prefer existing local assets and official API/export paths first, fall back to `agent-browser` only when the stronger path is unavailable or equally gated, and stop cleanly when auth/bootstrap is still missing.",
         "The prompt-affecting preserve proof at `charness-artifacts/cautilus/latest.md` stayed green while that contract widened, which is the current repo-owned evidence that the maintained first-skill routing surface did not regress when browser-mediated acquisition language was added.",
-        "The long-context proposal and benchmark surfaces now both carry `gather-official-path-before-browser-followup`, and the current top-five proposal set includes it. That is reviewed evidence that the `official API/export -> browser fallback -> clean auth/bootstrap stop` correction is load-bearing enough to keep in consumer-facing gather dogfood."
+        "The long-context proposal and benchmark surfaces still both carry `gather-official-path-before-browser-followup`, even though the current top-five cap no longer includes it. That keeps the `official API/export -> browser fallback -> clean auth/bootstrap stop` correction visible as the next gather re-promotion seam instead of pretending it already holds a top-five slot."
       ]
     },
     {
@@ -228,11 +228,11 @@
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-18",
+      "reviewed_on": "2026-04-19",
       "observed_evidence": [
         "The current quality artifact at `charness-artifacts/quality/latest.md` now explicitly audits proof layering instead of only asking what proof is missing: public executable specs, on-demand `cautilus` proof, and the specdown viewer are treated as distinct layers with different ownership.",
-        "The checked-in quality references and validation docs now preserve the same split: `skills/public/quality/references/public-spec-layering.md` keeps reader-facing public proof separate from lower-layer checks, while `docs/public-skill-validation.md` and `specs/on-demand-validation.spec.md` say checked artifacts remain the source of truth and specdown is only the readable viewer.",
-        "That makes the current `quality-proof-layering-followup` long-context candidate a real reviewed consumer seam rather than a one-off conversation detail: the user pressure about `specdown` as SoT versus viewer maps directly to checked-in `quality` behavior and proof surfaces."
+        "The checked-in quality references and validation docs still preserve the same split after the `v0.4.1` release closeout: `skills/public/quality/references/public-spec-layering.md` keeps reader-facing public proof separate from lower-layer checks, while `docs/public-skill-validation.md`, `specs/on-demand-validation.spec.md`, and the repaired release gate path keep checked artifacts as the source of truth and specdown as the readable viewer.",
+        "That keeps `quality-proof-layering-followup` as a reviewed consumer seam worth re-promoting in the long-context packet: the user pressure about `specdown` as SoT versus viewer still maps directly to checked-in `quality` behavior and proof surfaces, not to a one-off wording preference."
       ]
     },
     {
