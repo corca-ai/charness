@@ -124,7 +124,7 @@
           "sourceKind": "skill_contract",
           "title": "find-skills canonical artifact contract",
           "threadKey": "dogfood-find-skills-canonical-artifact",
-          "observedAt": "2026-04-18T19:45:00.000Z",
+          "observedAt": "2026-04-19T00:40:00.000Z",
           "messages": [
             "이게 충분히 유의미한 정보라면 무조건 커밋해야 하는데 왜 물어보는가?",
             "평소와 다른 방식으로 호출했다는 건 뭐죠?",

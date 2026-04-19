@@ -121,12 +121,12 @@
         "uses the named skill or capability lookup path before falling back to broad filesystem search"
       ],
   "review_status": "reviewed",
-  "reviewed_on": "2026-04-18",
-  "observed_evidence": [
-    "The checked-in public core now treats `charness-artifacts/find-skills/latest.*` as the canonical capability inventory artifact, while recommendation queries stay ad hoc and should not rewrite that durable surface just because the invocation shape changed.",
-    "The current repo memory at `charness-artifacts/retro/recent-lessons.md` explicitly records the repeat trap here: canonical inventory and ad hoc recommendation output must stay separate so ordinary inspection does not create false dirty state or erode operator trust.",
-    "That makes the current `find-skills-canonical-artifact-followup` long-context candidate a real reviewed consumer seam: the user's push to distinguish canonical evidence from query-shaped output maps directly to checked-in `find-skills` behavior and artifact policy."
-  ]
+      "reviewed_on": "2026-04-19",
+      "observed_evidence": [
+        "The checked-in public core now treats `charness-artifacts/find-skills/latest.*` as the canonical capability inventory artifact, while recommendation queries stay ad hoc and should not rewrite that durable surface just because the invocation shape changed.",
+        "The current repo memory at `charness-artifacts/retro/recent-lessons.md` explicitly records the repeat trap here: canonical inventory and ad hoc recommendation output must stay separate so ordinary inspection does not create false dirty state or erode operator trust.",
+        "That keeps `find-skills-canonical-artifact-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: the user's push to distinguish canonical evidence from query-shaped output still maps directly to checked-in `find-skills` behavior and artifact policy."
+      ]
     },
     {
       "skill_id": "gather",
