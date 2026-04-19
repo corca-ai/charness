@@ -156,7 +156,7 @@
           "sourceKind": "skill_contract",
           "title": "handoff workflow trigger contract",
           "threadKey": "dogfood-handoff-workflow-trigger",
-          "observedAt": "2026-04-18T20:00:00.000Z",
+          "observedAt": "2026-04-19T00:50:00.000Z",
           "messages": [
             "handoff 남겨주세요.",
             "다음 세션 첫 move는 이슈 close 정리부터입니다.",

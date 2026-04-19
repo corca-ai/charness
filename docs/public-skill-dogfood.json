@@ -271,11 +271,11 @@
         "reads the current workflow trigger before broad repo exploration and keeps the baton pass continuation-first"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-18",
+      "reviewed_on": "2026-04-19",
       "observed_evidence": [
         "The checked-in public core now makes the `Workflow Trigger` the handoff's primary contract: mention-only pickup should continue the named workflow instead of re-deriving state from summary prose, and the trigger should be explicit enough that the next operator does not have to infer the first move.",
         "That same seam is reinforced in `skills/public/handoff/references/workflow-trigger.md`, which says the next session should name the workflow directly rather than bury it inside history or diary-like status text.",
-        "This makes the current `handoff-workflow-trigger-followup` long-context candidate a real reviewed consumer seam: pushing the handoff away from history-first writing and back toward continuation-first pickup now maps directly to checked-in `handoff` behavior."
+        "That keeps `handoff-workflow-trigger-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: pushing the handoff away from history-first writing and back toward continuation-first pickup still maps directly to checked-in `handoff` behavior."
       ]
     },
     {

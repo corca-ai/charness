@@ -19,15 +19,15 @@
   ],
   "proposal_count": 5,
   "proposal_keys": [
+    "handoff-workflow-trigger-followup",
     "find-skills-canonical-artifact-followup",
     "retro-structural-cause-followup",
     "gather-official-path-before-browser-followup",
-    "quality-proof-layering-followup",
-    "init-repo-partial-normalization-followup"
+    "quality-proof-layering-followup"
   ],
   "omitted_candidate_keys": [
     "premortem-canonical-subagent-followup",
-    "handoff-workflow-trigger-followup",
+    "init-repo-partial-normalization-followup",
     "narrative-truth-before-announcement-followup",
     "spec-before-impl-followup",
     "debug-exact-symptom-before-fix-followup",
@@ -92,6 +92,70 @@
     ],
     "generatedAt": "2026-04-18T12:00:00Z",
     "proposals": [
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "handoff-workflow-trigger-followup",
+            "tags": [
+              "handoff",
+              "workflow-trigger",
+              "continuation-sequence"
+            ]
+          },
+          "brief": "Current handoff contracts emphasize workflow-trigger-first continuation, so long-context behavior regresses if the assistant falls back to history-first baton passing.",
+          "description": "The user sharpens the next-session pickup path until the assistant treats the workflow trigger as the handoff's primary contract instead of preserving history first or making the next move implicit.",
+          "maxTurns": 5,
+          "name": "Handoff Workflow Trigger Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "handoff-workflow-trigger-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "handoff 남겨주세요."
+              },
+              {
+                "text": "다음 세션 첫 move는 이슈 close 정리부터입니다."
+              },
+              {
+                "text": "과거 기록보다 pickup 경로가 먼저 보여야 해요."
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "handoff 남겨주세요.",
+              "다음 세션 첫 move는 이슈 close 정리부터입니다.",
+              "과거 기록보다 pickup 경로가 먼저 보여야 해요."
+            ],
+            "observedAt": "2026-04-19T00:50:00.000Z",
+            "sourceKind": "skill_contract",
+            "threadKey": "dogfood-handoff-workflow-trigger",
+            "title": "handoff workflow trigger contract"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "handoff-workflow-trigger-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh handoff workflow-trigger follow-up scenario from dogfood contracts"
+      },
       {
         "action": "add_new_scenario",
         "draftScenario": {
@@ -347,70 +411,6 @@
           "scripted"
         ],
         "title": "Refresh quality proof-layering follow-up scenario from dogfood contracts"
-      },
-      {
-        "action": "add_new_scenario",
-        "draftScenario": {
-          "benchmark": {
-            "backend": "scripted",
-            "family": "fast_regression",
-            "scenarioKey": "init-repo-partial-normalization-followup",
-            "tags": [
-              "init-repo",
-              "partial-repo",
-              "normalization"
-            ]
-          },
-          "brief": "Current init-repo contracts emphasize `PARTIAL` and targeted normalization, so long-context behavior regresses if the assistant falls back to greenfield scaffolding.",
-          "description": "The user clarifies that the repo is already partially initialized, and the assistant must normalize the existing surface or repair the one missing seam instead of defaulting to a greenfield rewrite.",
-          "maxTurns": 5,
-          "name": "Init Repo Partial Normalization Follow-up",
-          "runner": {
-            "mode": "live"
-          },
-          "scenarioId": "init-repo-partial-normalization-followup",
-          "schemaVersion": "cautilus.scenario.v1",
-          "sideEffectsMode": "shadow",
-          "simulator": {
-            "kind": "scripted",
-            "turns": [
-              {
-                "text": "이 repo는 이미 운영 surface가 좀 있습니다."
-              },
-              {
-                "text": "greenfield처럼 갈아엎지 말고 partial normalize로 가주세요."
-              },
-              {
-                "text": "README와 AGENTS는 있는데 operator acceptance만 빈약합니다."
-              }
-            ]
-          }
-        },
-        "evidence": [
-          {
-            "messages": [
-              "이 repo는 이미 운영 surface가 좀 있습니다.",
-              "greenfield처럼 갈아엎지 말고 partial normalize로 가주세요.",
-              "README와 AGENTS는 있는데 operator acceptance만 빈약합니다."
-            ],
-            "observedAt": "2026-04-18T20:05:00.000Z",
-            "sourceKind": "skill_contract",
-            "threadKey": "dogfood-init-repo-partial-normalization",
-            "title": "init-repo partial normalization contract"
-          }
-        ],
-        "existingCoverage": {
-          "recentResultCount": 0,
-          "scenarioKeyExists": false
-        },
-        "family": "fast_regression",
-        "intentProfile": null,
-        "proposalKey": "init-repo-partial-normalization-followup",
-        "rationale": "1 recent log match(es) suggested this pattern.",
-        "recommendedBackends": [
-          "scripted"
-        ],
-        "title": "Refresh init-repo partial-normalization follow-up scenario from dogfood contracts"
       }
     ],
     "schemaVersion": "cautilus.scenario_proposals.v1",
