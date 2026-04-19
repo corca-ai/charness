@@ -19,20 +19,20 @@
   ],
   "proposal_count": 5,
   "proposal_keys": [
+    "gather-official-path-before-browser-followup",
     "quality-proof-layering-followup",
     "init-repo-partial-normalization-followup",
     "handoff-workflow-trigger-followup",
-    "find-skills-canonical-artifact-followup",
-    "retro-structural-cause-followup"
+    "find-skills-canonical-artifact-followup"
   ],
   "omitted_candidate_keys": [
+    "retro-structural-cause-followup",
     "premortem-canonical-subagent-followup",
     "narrative-truth-before-announcement-followup",
     "spec-before-impl-followup",
     "debug-exact-symptom-before-fix-followup",
     "release-real-host-proof-followup",
-    "hitl-bounded-review-loop-followup",
-    "gather-official-path-before-browser-followup"
+    "hitl-bounded-review-loop-followup"
   ],
   "families": [
     "fast_regression"
@@ -92,6 +92,70 @@
     ],
     "generatedAt": "2026-04-18T12:00:00Z",
     "proposals": [
+      {
+        "action": "add_new_scenario",
+        "draftScenario": {
+          "benchmark": {
+            "backend": "scripted",
+            "family": "fast_regression",
+            "scenarioKey": "gather-official-path-before-browser-followup",
+            "tags": [
+              "gather",
+              "agent-browser",
+              "private-saas"
+            ]
+          },
+          "brief": "Current gather contracts emphasize source-specific acquisition intent, official export first, browser fallback only when needed, and honest auth/bootstrap stops.",
+          "description": "The user starts from a private SaaS source URL, but the assistant must keep the gather path honest by preferring official API/export routes before browser fallback and stopping cleanly when auth bootstrap is still missing.",
+          "maxTurns": 6,
+          "name": "Gather Official Path Before Browser Follow-up",
+          "runner": {
+            "mode": "live"
+          },
+          "scenarioId": "gather-official-path-before-browser-followup",
+          "schemaVersion": "cautilus.scenario.v1",
+          "sideEffectsMode": "shadow",
+          "simulator": {
+            "kind": "scripted",
+            "turns": [
+              {
+                "text": "이 private SaaS roster URL을 gather해 주세요: https://hr.example.internal/roster"
+              },
+              {
+                "text": "browser로 바로 들어가기 전에 official export나 API가 있는지 먼저 봐야 하지 않나요?"
+              },
+              {
+                "text": "browser fallback은 허용하되 auth/bootstrap이 없으면 clean stop해야 합니다."
+              }
+            ]
+          }
+        },
+        "evidence": [
+          {
+            "messages": [
+              "이 private SaaS roster URL을 gather해 주세요: https://hr.example.internal/roster",
+              "browser로 바로 들어가기 전에 official export나 API가 있는지 먼저 봐야 하지 않나요?",
+              "browser fallback은 허용하되 auth/bootstrap이 없으면 clean stop해야 합니다."
+            ],
+            "observedAt": "2026-04-19T00:20:00.000Z",
+            "sourceKind": "skill_contract",
+            "threadKey": "dogfood-gather-official-path-before-browser",
+            "title": "gather official path before browser fallback"
+          }
+        ],
+        "existingCoverage": {
+          "recentResultCount": 0,
+          "scenarioKeyExists": false
+        },
+        "family": "fast_regression",
+        "intentProfile": null,
+        "proposalKey": "gather-official-path-before-browser-followup",
+        "rationale": "1 recent log match(es) suggested this pattern.",
+        "recommendedBackends": [
+          "scripted"
+        ],
+        "title": "Refresh gather official-path-before-browser follow-up scenario from dogfood contracts"
+      },
       {
         "action": "add_new_scenario",
         "draftScenario": {
@@ -347,70 +411,6 @@
           "scripted"
         ],
         "title": "Refresh find-skills canonical-artifact follow-up scenario from dogfood contracts"
-      },
-      {
-        "action": "add_new_scenario",
-        "draftScenario": {
-          "benchmark": {
-            "backend": "scripted",
-            "family": "fast_regression",
-            "scenarioKey": "retro-structural-cause-followup",
-            "tags": [
-              "retro",
-              "long-context",
-              "structural-causes"
-            ]
-          },
-          "brief": "Current retro contracts emphasize structural cause, explicit persistence, and workflow-memory updates, so long-context behavior regresses if the assistant only explains the immediate miss.",
-          "description": "The user keeps pushing past a local explanation until the assistant generalizes the structural cause, names the workflow change, and persists the repeat trap instead of stopping at a chat-only apology.",
-          "maxTurns": 5,
-          "name": "Retro Structural Cause Follow-up",
-          "runner": {
-            "mode": "live"
-          },
-          "scenarioId": "retro-structural-cause-followup",
-          "schemaVersion": "cautilus.scenario.v1",
-          "sideEffectsMode": "shadow",
-          "simulator": {
-            "kind": "scripted",
-            "turns": [
-              {
-                "text": "이번 회고는 과적합된 것 아닌가요?"
-              },
-              {
-                "text": "이 패턴이 발생할 수밖에 없었던 구조적 원인을 더 봐주세요."
-              },
-              {
-                "text": "리트로 스킬도 그 관점으로 바뀌어야 하지 않나요?"
-              }
-            ]
-          }
-        },
-        "evidence": [
-          {
-            "messages": [
-              "이번 회고는 과적합된 것 아닌가요?",
-              "이 패턴이 발생할 수밖에 없었던 구조적 원인을 더 봐주세요.",
-              "리트로 스킬도 그 관점으로 바뀌어야 하지 않나요?"
-            ],
-            "observedAt": "2026-04-18T19:30:00.000Z",
-            "sourceKind": "skill_contract",
-            "threadKey": "dogfood-retro-structural-cause",
-            "title": "retro structural cause contract"
-          }
-        ],
-        "existingCoverage": {
-          "recentResultCount": 0,
-          "scenarioKeyExists": false
-        },
-        "family": "fast_regression",
-        "intentProfile": null,
-        "proposalKey": "retro-structural-cause-followup",
-        "rationale": "1 recent log match(es) suggested this pattern.",
-        "recommendedBackends": [
-          "scripted"
-        ],
-        "title": "Refresh retro structural-cause follow-up scenario from dogfood contracts"
       }
     ],
     "schemaVersion": "cautilus.scenario_proposals.v1",

@@ -380,7 +380,7 @@
           "sourceKind": "skill_contract",
           "title": "gather official path before browser fallback",
           "threadKey": "dogfood-gather-official-path-before-browser",
-          "observedAt": "2026-04-18T17:10:00.000Z",
+          "observedAt": "2026-04-19T00:20:00.000Z",
           "messages": [
             "이 private SaaS roster URL을 gather해 주세요: https://hr.example.internal/roster",
             "browser로 바로 들어가기 전에 official export나 API가 있는지 먼저 봐야 하지 않나요?",

@@ -1,8 +1,8 @@
 # Cautilus Chatbot Benchmark
 
-- baseline commit: `e1533897431accded7fc8d8a87e5002d5b32eadf`
-- candidate commit: `e1533897431accded7fc8d8a87e5002d5b32eadf`
-- baseline repo: `/tmp/charness-chatbot-base`
+- baseline commit: `fb0206eacfdc70f9cc26d8bacb52c5ffaabf038f`
+- candidate commit: `fb0206eacfdc70f9cc26d8bacb52c5ffaabf038f`
+- baseline repo: `/tmp/charness-chatbot-base2`
 - candidate repo: `/home/ubuntu/charness`
 
 ## Candidate Delta
@@ -12,10 +12,10 @@
 
 ## Proposal Delta
 
-- `added_proposal_keys`: `quality-proof-layering-followup`
-- `removed_proposal_keys`: `premortem-canonical-subagent-followup`
+- `added_proposal_keys`: `gather-official-path-before-browser-followup`
+- `removed_proposal_keys`: `retro-structural-cause-followup`
 
 ## Omitted Delta
 
-- `newly_omitted_candidate_keys`: `premortem-canonical-subagent-followup`
-- `resolved_omitted_candidate_keys`: `quality-proof-layering-followup`
+- `newly_omitted_candidate_keys`: `retro-structural-cause-followup`
+- `resolved_omitted_candidate_keys`: `gather-official-path-before-browser-followup`

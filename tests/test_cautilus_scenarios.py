@@ -64,19 +64,19 @@ def test_eval_cautilus_chatbot_proposals_writes_summary(tmp_path: Path) -> None:
     assert payload["proposal_count"] == 5
     assert len(payload["candidate_keys"]) == 12
     assert payload["proposal_keys"] == [
+        "gather-official-path-before-browser-followup",
         "quality-proof-layering-followup",
         "init-repo-partial-normalization-followup",
         "handoff-workflow-trigger-followup",
         "find-skills-canonical-artifact-followup",
-        "retro-structural-cause-followup",
     ]
+    assert "retro-structural-cause-followup" in payload["omitted_candidate_keys"]
     assert "premortem-canonical-subagent-followup" in payload["omitted_candidate_keys"]
     assert "narrative-truth-before-announcement-followup" in payload["omitted_candidate_keys"]
     assert "spec-before-impl-followup" in payload["omitted_candidate_keys"]
     assert "debug-exact-symptom-before-fix-followup" in payload["omitted_candidate_keys"]
     assert "release-real-host-proof-followup" in payload["omitted_candidate_keys"]
     assert "hitl-bounded-review-loop-followup" in payload["omitted_candidate_keys"]
-    assert "gather-official-path-before-browser-followup" in payload["omitted_candidate_keys"]
     assert (output_dir / "latest.json").is_file()
     assert (output_dir / "latest.md").is_file()
 

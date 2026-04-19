@@ -146,7 +146,7 @@
       "observed_evidence": [
         "The checked-in public core now carries the private SaaS decision ladder explicitly: prefer existing local assets and official API/export paths first, fall back to `agent-browser` only when the stronger path is unavailable or equally gated, and stop cleanly when auth/bootstrap is still missing.",
         "The prompt-affecting preserve proof at `charness-artifacts/cautilus/latest.md` stayed green while that contract widened, which is the current repo-owned evidence that the maintained first-skill routing surface did not regress when browser-mediated acquisition language was added.",
-        "The long-context proposal and benchmark surfaces still both carry `gather-official-path-before-browser-followup`, even though the current top-five cap no longer includes it. That keeps the `official API/export -> browser fallback -> clean auth/bootstrap stop` correction visible as the next gather re-promotion seam instead of pretending it already holds a top-five slot."
+        "The long-context proposal and benchmark surfaces still both carry `gather-official-path-before-browser-followup`, and the current top-five proposal set includes it again after the 2026-04-19 refresh. That keeps the `official API/export -> browser fallback -> clean auth/bootstrap stop` correction visible as a live consumer-facing gather seam instead of a stale side packet."
       ]
     },
     {
