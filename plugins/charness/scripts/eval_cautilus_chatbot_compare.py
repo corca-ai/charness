@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import subprocess
 import sys
 import tempfile
@@ -20,7 +19,7 @@ class EvalError(Exception):
     pass
 
 
-def _run_proposal_summary(target_repo: Path, output_dir: Path, cautilus_bin: str) -> dict[str, object]:
+def _run_proposal_summary(target_repo: Path, output_dir: Path) -> dict[str, object]:
     result = subprocess.run(
         [
             "python3",
@@ -29,8 +28,6 @@ def _run_proposal_summary(target_repo: Path, output_dir: Path, cautilus_bin: str
             str(target_repo),
             "--output-dir",
             str(output_dir),
-            "--cautilus-bin",
-            cautilus_bin,
             "--json",
         ],
         cwd=REPO_ROOT,
@@ -90,6 +87,10 @@ def _sorted_delta(left: list[str], right: list[str]) -> list[str]:
     return sorted(set(left) - set(right))
 
 
+def _display_repo_path(path: Path) -> str:
+    return "." if path == REPO_ROOT else str(path)
+
+
 def build_summary(
     *,
     baseline_repo: Path,
@@ -109,8 +110,8 @@ def build_summary(
     return {
         "schema_version": 1,
         "repo": REPO_ROOT.name,
-        "baseline_repo": str(baseline_repo),
-        "candidate_repo": str(candidate_repo),
+        "baseline_repo": _display_repo_path(baseline_repo),
+        "candidate_repo": _display_repo_path(candidate_repo),
         "baseline_commit": _git_head(baseline_repo),
         "candidate_commit": _git_head(candidate_repo),
         "baseline": {
@@ -209,7 +210,6 @@ def resolve_repo_pair(
     baseline_repo: Path | None,
     candidate_repo: Path | None,
     baseline_ref: str | None,
-    cautilus_bin: str,
 ) -> tuple[Path, Path]:
     if baseline_repo is not None and candidate_repo is not None:
         return baseline_repo.resolve(), candidate_repo.resolve()
@@ -221,7 +221,7 @@ def resolve_repo_pair(
     workspace_root = Path(tempfile.mkdtemp(prefix="cautilus-chatbot-compare-"))
     result = subprocess.run(
         [
-            cautilus_bin,
+            "cautilus",
             "workspace",
             "prepare-compare",
             "--repo-root",
@@ -263,7 +263,6 @@ def main() -> int:
     parser.add_argument("--candidate-repo", type=Path)
     parser.add_argument("--baseline-ref")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
-    parser.add_argument("--cautilus-bin", default=os.environ.get("CAUTILUS_BIN", "cautilus"))
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
@@ -274,13 +273,12 @@ def main() -> int:
         baseline_repo=args.baseline_repo,
         candidate_repo=args.candidate_repo,
         baseline_ref=args.baseline_ref,
-        cautilus_bin=args.cautilus_bin,
     )
     with tempfile.TemporaryDirectory(prefix="cautilus-chatbot-benchmark-baseline-") as baseline_tmp, tempfile.TemporaryDirectory(
         prefix="cautilus-chatbot-benchmark-candidate-"
     ) as candidate_tmp:
-        baseline_summary = _run_proposal_summary(baseline_repo, Path(baseline_tmp), args.cautilus_bin)
-        candidate_summary = _run_proposal_summary(candidate_repo, Path(candidate_tmp), args.cautilus_bin)
+        baseline_summary = _run_proposal_summary(baseline_repo, Path(baseline_tmp))
+        candidate_summary = _run_proposal_summary(candidate_repo, Path(candidate_tmp))
     summary = build_summary(
         baseline_repo=baseline_repo,
         candidate_repo=candidate_repo,

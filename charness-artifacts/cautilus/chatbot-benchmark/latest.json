@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "repo": "charness",
-  "baseline_repo": "/home/ubuntu/charness",
-  "candidate_repo": "/home/ubuntu/charness",
-  "baseline_commit": "8f253a2a0b26b93ff6ee353edddc8a6cf3a57d34",
-  "candidate_commit": "8f253a2a0b26b93ff6ee353edddc8a6cf3a57d34",
+  "baseline_repo": ".",
+  "candidate_repo": ".",
+  "baseline_commit": "fde3900d8f1a186bdecf6b9cbb76657f7127834a",
+  "candidate_commit": "fde3900d8f1a186bdecf6b9cbb76657f7127834a",
   "baseline": {
     "candidate_count": 12,
     "proposal_count": 12,

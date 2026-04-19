@@ -110,5 +110,5 @@
 ## Command
 
 ```text
-../cautilus/bin/cautilus scenario propose --input evals/cautilus/chatbot-scenario-proposal-inputs.json
+cautilus scenario propose --input evals/cautilus/chatbot-scenario-proposal-inputs.json
 ```

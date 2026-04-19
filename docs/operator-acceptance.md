@@ -61,8 +61,8 @@ python3 scripts/validate-integrations.py --repo-root .
 python3 scripts/run-evals.py --repo-root .
 ```
 
-If `~/cautilus` is available, also inspect its current contract surface before
-editing `charness`.
+If `cautilus` is installed on PATH, also inspect its current contract surface
+before editing `charness`.
 
 Acceptance:
 

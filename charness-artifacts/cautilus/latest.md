@@ -37,8 +37,8 @@ Date: 2026-04-19
 
 ## Follow-ups
 
-- re-run the checked-in chatbot proposal and benchmark summaries with the first
-  public release that includes the `#15` packet shape so the repo stops
-  depending on a pre-release sibling checkout for this consumer proof
+- keep the checked-in chatbot proposal and benchmark summaries aligned with the
+  installed public `cautilus` release so the consumer proof does not depend on
+  a sibling checkout or machine-local override
 - keep watching for downstream surfaces that still slice `proposals` directly
   when they really want the bounded human shortlist from `attentionView`

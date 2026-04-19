@@ -6,7 +6,6 @@ from pathlib import Path
 from .test_quality_artifact import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
-CAUTILUS_BIN = str((ROOT.parent / "cautilus" / "bin" / "cautilus").resolve())
 
 
 def test_eval_cautilus_chatbot_compare_writes_summary(tmp_path: Path) -> None:
@@ -22,7 +21,6 @@ def test_eval_cautilus_chatbot_compare_writes_summary(tmp_path: Path) -> None:
         "--output-dir",
         str(output_dir),
         "--json",
-        env={"CAUTILUS_BIN": CAUTILUS_BIN},
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)

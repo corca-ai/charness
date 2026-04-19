@@ -1,9 +1,9 @@
 # Cautilus Chatbot Benchmark
 
-- baseline commit: `8f253a2a0b26b93ff6ee353edddc8a6cf3a57d34`
-- candidate commit: `8f253a2a0b26b93ff6ee353edddc8a6cf3a57d34`
-- baseline repo: `/home/ubuntu/charness`
-- candidate repo: `/home/ubuntu/charness`
+- baseline commit: `fde3900d8f1a186bdecf6b9cbb76657f7127834a`
+- candidate commit: `fde3900d8f1a186bdecf6b9cbb76657f7127834a`
+- baseline repo: `.`
+- candidate repo: `.`
 - baseline attention shortlist: `5`
 - candidate attention shortlist: `5`
 

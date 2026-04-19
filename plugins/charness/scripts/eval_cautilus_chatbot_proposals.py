@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -54,9 +53,9 @@ def load_input_packet(path: Path) -> dict[str, object]:
     return data
 
 
-def run_scenario_propose(repo_root: Path, input_path: Path, cautilus_bin: str) -> subprocess.CompletedProcess[str]:
+def run_scenario_propose(repo_root: Path, input_path: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        [cautilus_bin, "scenario", "propose", "--input", str(input_path)],
+        ["cautilus", "scenario", "propose", "--input", str(input_path)],
         cwd=repo_root,
         check=False,
         capture_output=True,
@@ -102,7 +101,6 @@ def build_summary(
     input_packet: dict[str, object],
     proposals_packet: dict[str, object],
     command: subprocess.CompletedProcess[str],
-    cautilus_bin: str,
 ) -> dict[str, object]:
     candidate_keys = [
         candidate.get("proposalKey")
@@ -157,7 +155,7 @@ def build_summary(
         "families": proposals_packet.get("families", []),
         "tag_counts": tag_counts,
         "command": {
-            "argv": [cautilus_bin, "scenario", "propose", "--input", str(input_path.relative_to(repo_root))],
+            "argv": ["cautilus", "scenario", "propose", "--input", str(input_path.relative_to(repo_root))],
             "exit_code": command.returncode,
             "stderr": command.stderr.strip(),
         },
@@ -249,7 +247,6 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--input-file", type=Path, default=DEFAULT_INPUT_PATH)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
-    parser.add_argument("--cautilus-bin", default=os.environ.get("CAUTILUS_BIN", "cautilus"))
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
@@ -258,7 +255,7 @@ def main() -> int:
     output_dir = (repo_root / args.output_dir).resolve() if not args.output_dir.is_absolute() else args.output_dir.resolve()
 
     input_packet = load_input_packet(input_path)
-    result = run_scenario_propose(repo_root, input_path, args.cautilus_bin)
+    result = run_scenario_propose(repo_root, input_path)
     proposals_packet = load_proposals(result, input_path)
     summary = build_summary(
         repo_root=repo_root,
@@ -266,7 +263,6 @@ def main() -> int:
         input_packet=input_packet,
         proposals_packet=proposals_packet,
         command=result,
-        cautilus_bin=args.cautilus_bin,
     )
     write_summary(output_dir, summary)
     if args.json:

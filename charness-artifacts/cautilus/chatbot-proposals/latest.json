@@ -140,7 +140,7 @@
   },
   "command": {
     "argv": [
-      "../cautilus/bin/cautilus",
+      "cautilus",
       "scenario",
       "propose",
       "--input",

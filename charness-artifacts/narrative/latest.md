@@ -4,7 +4,7 @@ Date: 2026-04-17
 ## Source Map
 
 - `README.md`
-- `../cautilus/README.md`
+- `https://github.com/corca-ai/cautilus/blob/main/README.md`
 - `docs/support-skill-policy.md`
 - `docs/public-skill-validation.md`
 - `docs/operator-acceptance.md`
@@ -19,7 +19,8 @@ Date: 2026-04-17
   structure instead of choice. A maintainer could learn what `charness` owns
   without quickly learning who it is for, what problem shape it fits, or how
   it differs from neighboring harnesses such as `cautilus`.
-- Compared with `../cautilus/README.md`, the missing front-door pieces were:
+- Compared with the public `cautilus` README, the missing front-door pieces
+  were:
   reader targeting, day-1 trigger, short contrast-based philosophy, and a
   visible “what to use when” map.
 - The real narrative gap was not install truth. It was product-shape truth.

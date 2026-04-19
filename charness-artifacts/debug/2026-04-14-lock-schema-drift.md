@@ -22,12 +22,12 @@ escalated to a process-killing exception.
 - Failure stack: `plugin_preamble.main` → `build_payload` →
   `collect_readiness_summary` → `read_lock` → `validate_lock_data` →
   `jsonschema.validate`. Triggered file:
-  `/home/ubuntu/.agents/src/charness/integrations/locks/cautilus.json`.
+  managed-checkout `integrations/locks/cautilus.json`.
 - Offending instance has `support.sync_strategy: "reference"` plus `support`
   fields that the new schema requires (`cache_path`, `content_digest`) are
   also missing — both directions of drift in one record.
 - Current source schema
-  (`/home/ubuntu/.agents/src/charness/integrations/locks/lock.schema.json`)
+  (`integrations/locks/lock.schema.json` in the managed checkout)
   defines `supportSection` with `additionalProperties: false` and the
   `synced_at, support_state, source_type, source_path, cache_path,
   content_digest, materialized_paths` required set. `sync_strategy` is not
@@ -42,7 +42,7 @@ escalated to a process-killing exception.
   `scripts/support_sync_lib.py` and `scripts/sync_support.py` no longer emit
   that key (`rg sync_strategy` returns 0 hits in the source tree).
 - The lock file in the user working tree
-  (`/home/ubuntu/charness/integrations/locks/cautilus.json`) has no `support`
+  (`integrations/locks/cautilus.json`) has no `support`
   section at all — only `doctor`/`release`/`provenance` — so it validates
   fine. Only the managed checkout's lock blew up.
 - Lock files themselves are not git-tracked (`git log -- ...cautilus.json`
