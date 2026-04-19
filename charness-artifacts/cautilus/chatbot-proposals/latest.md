@@ -2,7 +2,9 @@
 
 - input: `evals/cautilus/chatbot-scenario-proposal-inputs.json`
 - candidates: `12`
-- emitted proposals: `12`
+- full ranked proposals: `12`
+- attention shortlist: `5`
+- attention truncated: `True`
 
 ## Candidate Keys
 
@@ -34,9 +36,37 @@
 - `spec-before-impl-followup`
 - `narrative-truth-before-announcement-followup`
 
+## Attention View Proposal Keys
+
+- `premortem-canonical-subagent-followup`
+- `handoff-workflow-trigger-followup`
+- `find-skills-canonical-artifact-followup`
+- `retro-structural-cause-followup`
+- `gather-official-path-before-browser-followup`
+
+## Attention View Reasons
+
+- `debug-exact-symptom-before-fix-followup`: `new_scenario`, `low_recent_coverage`
+- `find-skills-canonical-artifact-followup`: `new_scenario`, `low_recent_coverage`
+- `gather-official-path-before-browser-followup`: `new_scenario`, `low_recent_coverage`
+- `handoff-workflow-trigger-followup`: `new_scenario`, `low_recent_coverage`
+- `hitl-bounded-review-loop-followup`: `new_scenario`, `low_recent_coverage`
+- `init-repo-partial-normalization-followup`: `new_scenario`, `low_recent_coverage`
+- `narrative-truth-before-announcement-followup`: `new_scenario`, `low_recent_coverage`
+- `premortem-canonical-subagent-followup`: `new_scenario`, `low_recent_coverage`
+- `quality-proof-layering-followup`: `new_scenario`, `low_recent_coverage`
+- `release-real-host-proof-followup`: `new_scenario`, `low_recent_coverage`
+- `retro-structural-cause-followup`: `new_scenario`, `low_recent_coverage`
+- `spec-before-impl-followup`: `new_scenario`, `low_recent_coverage`
+
 ## Omitted Candidate Keys
 
 - none
+
+## Proposal Telemetry
+
+- `mergedCandidateCount`: `12`
+- `returnedProposalCount`: `12`
 
 ## Tag Coverage
 
@@ -80,5 +110,5 @@
 ## Command
 
 ```text
-cautilus scenario propose --input evals/cautilus/chatbot-scenario-proposal-inputs.json
+../cautilus/bin/cautilus scenario propose --input evals/cautilus/chatbot-scenario-proposal-inputs.json
 ```

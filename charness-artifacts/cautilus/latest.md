@@ -3,9 +3,10 @@ Date: 2026-04-19
 
 ## Trigger
 
-- slice: expose the full long-context chatbot proposal set locally by setting
-  explicit `limit: 12` in the checked-in packet and updating the benchmark
-  honesty prompt to name the upstream default-cap seam directly
+- slice: migrate the checked-in chatbot proposal and benchmark consumer
+  surfaces to the upstream full-truth packet contract by removing the local
+  `limit` workaround and naming `attentionView` as the bounded human-facing
+  shortlist
 - claim: `preserve`
 
 ## Validation Goal
@@ -31,11 +32,13 @@ Date: 2026-04-19
 - routing notes: checked-in routing still preserves `find-skills -> impl` on
   the workspace surface, direct compact implementation still routes to `impl`,
   and both checked `spec` routes still pass after the benchmark prompt wording
-  shifted from a local top-five complaint to an upstream default-cap warning
+  shifted from a default-cap complaint to a full-`proposals` versus
+  `attentionView` contract reminder
 
 ## Follow-ups
 
-- keep the local explicit `limit: 12` override until upstream `cautilus`
-  documents the default cap more honestly in help/schema/docs
-- track the upstream visibility fix in `corca-ai/cautilus` so this repo can
-  later decide whether the checked-in packet still needs the override
+- re-run the checked-in chatbot proposal and benchmark summaries with the first
+  public release that includes the `#15` packet shape so the repo stops
+  depending on a pre-release sibling checkout for this consumer proof
+- keep watching for downstream surfaces that still slice `proposals` directly
+  when they really want the bounded human shortlist from `attentionView`

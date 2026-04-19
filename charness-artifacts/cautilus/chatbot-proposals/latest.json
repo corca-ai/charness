@@ -33,6 +33,70 @@
     "narrative-truth-before-announcement-followup"
   ],
   "omitted_candidate_keys": [],
+  "proposal_telemetry": {
+    "mergedCandidateCount": 12,
+    "returnedProposalCount": 12
+  },
+  "attention_view_proposal_keys": [
+    "premortem-canonical-subagent-followup",
+    "handoff-workflow-trigger-followup",
+    "find-skills-canonical-artifact-followup",
+    "retro-structural-cause-followup",
+    "gather-official-path-before-browser-followup"
+  ],
+  "attention_view_reason_codes_by_proposal_key": {
+    "debug-exact-symptom-before-fix-followup": [
+      "new_scenario",
+      "low_recent_coverage"
+    ],
+    "find-skills-canonical-artifact-followup": [
+      "new_scenario",
+      "low_recent_coverage"
+    ],
+    "gather-official-path-before-browser-followup": [
+      "new_scenario",
+      "low_recent_coverage"
+    ],
+    "handoff-workflow-trigger-followup": [
+      "new_scenario",
+      "low_recent_coverage"
+    ],
+    "hitl-bounded-review-loop-followup": [
+      "new_scenario",
+      "low_recent_coverage"
+    ],
+    "init-repo-partial-normalization-followup": [
+      "new_scenario",
+      "low_recent_coverage"
+    ],
+    "narrative-truth-before-announcement-followup": [
+      "new_scenario",
+      "low_recent_coverage"
+    ],
+    "premortem-canonical-subagent-followup": [
+      "new_scenario",
+      "low_recent_coverage"
+    ],
+    "quality-proof-layering-followup": [
+      "new_scenario",
+      "low_recent_coverage"
+    ],
+    "release-real-host-proof-followup": [
+      "new_scenario",
+      "low_recent_coverage"
+    ],
+    "retro-structural-cause-followup": [
+      "new_scenario",
+      "low_recent_coverage"
+    ],
+    "spec-before-impl-followup": [
+      "new_scenario",
+      "low_recent_coverage"
+    ]
+  },
+  "attention_view_selected_count": 5,
+  "attention_view_truncated": true,
+  "attention_view_fallback_used": false,
   "families": [
     "fast_regression"
   ],
@@ -76,7 +140,7 @@
   },
   "command": {
     "argv": [
-      "cautilus",
+      "../cautilus/bin/cautilus",
       "scenario",
       "propose",
       "--input",
@@ -86,10 +150,78 @@
     "stderr": ""
   },
   "proposals_packet": {
+    "attentionView": {
+      "fallbackUsed": false,
+      "matchedRuleCount": 12,
+      "proposalKeys": [
+        "premortem-canonical-subagent-followup",
+        "handoff-workflow-trigger-followup",
+        "find-skills-canonical-artifact-followup",
+        "retro-structural-cause-followup",
+        "gather-official-path-before-browser-followup"
+      ],
+      "reasonCodesByProposalKey": {
+        "debug-exact-symptom-before-fix-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "find-skills-canonical-artifact-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "gather-official-path-before-browser-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "handoff-workflow-trigger-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "hitl-bounded-review-loop-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "init-repo-partial-normalization-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "narrative-truth-before-announcement-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "premortem-canonical-subagent-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "quality-proof-layering-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "release-real-host-proof-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "retro-structural-cause-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "spec-before-impl-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ]
+      },
+      "ruleVersion": "v1",
+      "selectedCount": 5,
+      "truncated": true
+    },
     "families": [
       "fast_regression"
     ],
     "generatedAt": "2026-04-18T12:00:00Z",
+    "proposalTelemetry": {
+      "mergedCandidateCount": 12,
+      "returnedProposalCount": 12
+    },
     "proposals": [
       {
         "action": "add_new_scenario",

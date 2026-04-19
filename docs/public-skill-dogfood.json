@@ -146,7 +146,7 @@
       "observed_evidence": [
         "The checked-in public core now carries the private SaaS decision ladder explicitly: prefer existing local assets and official API/export paths first, fall back to `agent-browser` only when the stronger path is unavailable or equally gated, and stop cleanly when auth/bootstrap is still missing.",
         "The prompt-affecting preserve proof at `charness-artifacts/cautilus/latest.md` stayed green while that contract widened, which is the current repo-owned evidence that the maintained first-skill routing surface did not regress when browser-mediated acquisition language was added.",
-        "The long-context proposal and benchmark surfaces still both carry `gather-official-path-before-browser-followup`, and the checked-in chatbot packet now sets an explicit `limit` so the full candidate set stays emitted instead of disappearing behind the upstream default cap. That keeps the `official API/export -> browser fallback -> clean auth/bootstrap stop` correction visible as a live consumer-facing gather seam instead of a stale side packet."
+        "The long-context proposal and benchmark surfaces still both carry `gather-official-path-before-browser-followup`, and the checked-in chatbot summaries now preserve the full `proposals` truth surface alongside the bounded `attentionView` shortlist instead of relying on a packet-level `limit` workaround. That keeps the `official API/export -> browser fallback -> clean auth/bootstrap stop` correction visible as a live consumer-facing gather seam instead of a stale side packet."
       ]
     },
     {

@@ -22,7 +22,7 @@ artifact_paths:
 report_paths:
   - charness-artifacts/cautilus/chatbot-benchmark/latest.json
 comparison_questions:
-  - Which long-context proposal keys were added, dropped, or omitted between baseline and candidate?
+  - Which full long-context proposal keys changed, and did the bounded `attentionView` shortlist move in ways that still match the same underlying full set?
 human_review_prompts:
   - id: benchmark-honesty
-    prompt: Where could upstream default proposal caps still hide long-context regressions if this packet stops setting an explicit `limit`?
+    prompt: Where could this benchmark still confuse the full ranked `proposals` truth surface with the bounded `attentionView` shortlist?

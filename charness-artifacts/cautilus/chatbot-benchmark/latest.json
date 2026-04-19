@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repo": "charness",
-  "baseline_repo": "/tmp/charness-chatbot-base.d9yWxF",
+  "baseline_repo": "/home/ubuntu/charness",
   "candidate_repo": "/home/ubuntu/charness",
-  "baseline_commit": "51d2bef9475dbf20f42993ece909744c63d8cad1",
-  "candidate_commit": "51d2bef9475dbf20f42993ece909744c63d8cad1",
+  "baseline_commit": "8f253a2a0b26b93ff6ee353edddc8a6cf3a57d34",
+  "candidate_commit": "8f253a2a0b26b93ff6ee353edddc8a6cf3a57d34",
   "baseline": {
     "candidate_count": 12,
-    "proposal_count": 5,
+    "proposal_count": 12,
     "candidate_keys": [
       "retro-structural-cause-followup",
       "quality-proof-layering-followup",
@@ -27,17 +27,82 @@
       "handoff-workflow-trigger-followup",
       "find-skills-canonical-artifact-followup",
       "retro-structural-cause-followup",
-      "gather-official-path-before-browser-followup"
-    ],
-    "omitted_candidate_keys": [
+      "gather-official-path-before-browser-followup",
       "quality-proof-layering-followup",
       "init-repo-partial-normalization-followup",
-      "narrative-truth-before-announcement-followup",
-      "spec-before-impl-followup",
-      "debug-exact-symptom-before-fix-followup",
+      "hitl-bounded-review-loop-followup",
       "release-real-host-proof-followup",
-      "hitl-bounded-review-loop-followup"
-    ]
+      "debug-exact-symptom-before-fix-followup",
+      "spec-before-impl-followup",
+      "narrative-truth-before-announcement-followup"
+    ],
+    "proposal_telemetry": {
+      "mergedCandidateCount": 12,
+      "returnedProposalCount": 12
+    },
+    "attention_view": {
+      "proposal_keys": [
+        "premortem-canonical-subagent-followup",
+        "handoff-workflow-trigger-followup",
+        "find-skills-canonical-artifact-followup",
+        "retro-structural-cause-followup",
+        "gather-official-path-before-browser-followup"
+      ],
+      "reason_codes_by_proposal_key": {
+        "debug-exact-symptom-before-fix-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "find-skills-canonical-artifact-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "gather-official-path-before-browser-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "handoff-workflow-trigger-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "hitl-bounded-review-loop-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "init-repo-partial-normalization-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "narrative-truth-before-announcement-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "premortem-canonical-subagent-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "quality-proof-layering-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "release-real-host-proof-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "retro-structural-cause-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "spec-before-impl-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ]
+      },
+      "selected_count": 5,
+      "truncated": true,
+      "fallback_used": false
+    },
+    "omitted_candidate_keys": []
   },
   "candidate": {
     "candidate_count": 12,
@@ -70,30 +135,82 @@
       "spec-before-impl-followup",
       "narrative-truth-before-announcement-followup"
     ],
+    "proposal_telemetry": {
+      "mergedCandidateCount": 12,
+      "returnedProposalCount": 12
+    },
+    "attention_view": {
+      "proposal_keys": [
+        "premortem-canonical-subagent-followup",
+        "handoff-workflow-trigger-followup",
+        "find-skills-canonical-artifact-followup",
+        "retro-structural-cause-followup",
+        "gather-official-path-before-browser-followup"
+      ],
+      "reason_codes_by_proposal_key": {
+        "debug-exact-symptom-before-fix-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "find-skills-canonical-artifact-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "gather-official-path-before-browser-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "handoff-workflow-trigger-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "hitl-bounded-review-loop-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "init-repo-partial-normalization-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "narrative-truth-before-announcement-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "premortem-canonical-subagent-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "quality-proof-layering-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "release-real-host-proof-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "retro-structural-cause-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ],
+        "spec-before-impl-followup": [
+          "new_scenario",
+          "low_recent_coverage"
+        ]
+      },
+      "selected_count": 5,
+      "truncated": true,
+      "fallback_used": false
+    },
     "omitted_candidate_keys": []
   },
   "diff": {
     "added_candidate_keys": [],
     "removed_candidate_keys": [],
-    "added_proposal_keys": [
-      "debug-exact-symptom-before-fix-followup",
-      "hitl-bounded-review-loop-followup",
-      "init-repo-partial-normalization-followup",
-      "narrative-truth-before-announcement-followup",
-      "quality-proof-layering-followup",
-      "release-real-host-proof-followup",
-      "spec-before-impl-followup"
-    ],
+    "added_proposal_keys": [],
     "removed_proposal_keys": [],
+    "added_attention_proposal_keys": [],
+    "removed_attention_proposal_keys": [],
     "newly_omitted_candidate_keys": [],
-    "resolved_omitted_candidate_keys": [
-      "debug-exact-symptom-before-fix-followup",
-      "hitl-bounded-review-loop-followup",
-      "init-repo-partial-normalization-followup",
-      "narrative-truth-before-announcement-followup",
-      "quality-proof-layering-followup",
-      "release-real-host-proof-followup",
-      "spec-before-impl-followup"
-    ]
+    "resolved_omitted_candidate_keys": []
   }
 }

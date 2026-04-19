@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -17,6 +18,23 @@ DEFAULT_OUTPUT_DIR = Path("charness-artifacts/cautilus/chatbot-proposals")
 
 class EvalError(Exception):
     pass
+
+
+def _require_string_list(value: object, label: str) -> list[str]:
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise EvalError(f"cautilus scenario propose output must include string-list `{label}`")
+    return list(value)
+
+
+def _require_string_list_mapping(value: object, label: str) -> dict[str, list[str]]:
+    if not isinstance(value, dict):
+        raise EvalError(f"cautilus scenario propose output must include object `{label}`")
+    normalized: dict[str, list[str]] = {}
+    for key, item in value.items():
+        if not isinstance(key, str):
+            raise EvalError(f"cautilus scenario propose output must use string keys in `{label}`")
+        normalized[key] = _require_string_list(item, f"{label}.{key}")
+    return normalized
 
 
 def load_input_packet(path: Path) -> dict[str, object]:
@@ -36,9 +54,9 @@ def load_input_packet(path: Path) -> dict[str, object]:
     return data
 
 
-def run_scenario_propose(repo_root: Path, input_path: Path) -> subprocess.CompletedProcess[str]:
+def run_scenario_propose(repo_root: Path, input_path: Path, cautilus_bin: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        ["cautilus", "scenario", "propose", "--input", str(input_path)],
+        [cautilus_bin, "scenario", "propose", "--input", str(input_path)],
         cwd=repo_root,
         check=False,
         capture_output=True,
@@ -63,6 +81,17 @@ def load_proposals(result: subprocess.CompletedProcess[str], input_path: Path) -
     proposals = data.get("proposals")
     if not isinstance(proposals, list):
         raise EvalError("cautilus scenario propose output must include list `proposals`")
+    attention_view = data.get("attentionView")
+    if not isinstance(attention_view, dict):
+        raise EvalError("cautilus scenario propose output must include object `attentionView`")
+    _require_string_list(attention_view.get("proposalKeys"), "attentionView.proposalKeys")
+    _require_string_list_mapping(
+        attention_view.get("reasonCodesByProposalKey"),
+        "attentionView.reasonCodesByProposalKey",
+    )
+    proposal_telemetry = data.get("proposalTelemetry")
+    if not isinstance(proposal_telemetry, dict):
+        raise EvalError("cautilus scenario propose output must include object `proposalTelemetry`")
     return data
 
 
@@ -73,6 +102,7 @@ def build_summary(
     input_packet: dict[str, object],
     proposals_packet: dict[str, object],
     command: subprocess.CompletedProcess[str],
+    cautilus_bin: str,
 ) -> dict[str, object]:
     candidate_keys = [
         candidate.get("proposalKey")
@@ -81,11 +111,23 @@ def build_summary(
     ]
     proposals = proposals_packet.get("proposals", [])
     assert isinstance(proposals, list)
+    attention_view = proposals_packet.get("attentionView", {})
+    assert isinstance(attention_view, dict)
+    proposal_telemetry = proposals_packet.get("proposalTelemetry", {})
+    assert isinstance(proposal_telemetry, dict)
     proposal_keys = [
         proposal.get("proposalKey")
         for proposal in proposals
         if isinstance(proposal, dict) and isinstance(proposal.get("proposalKey"), str)
     ]
+    attention_view_proposal_keys = _require_string_list(
+        attention_view.get("proposalKeys"),
+        "attentionView.proposalKeys",
+    )
+    attention_view_reason_codes = _require_string_list_mapping(
+        attention_view.get("reasonCodesByProposalKey"),
+        "attentionView.reasonCodesByProposalKey",
+    )
     omitted_candidate_keys = [proposal_key for proposal_key in candidate_keys if proposal_key not in proposal_keys]
     tag_counts: dict[str, int] = {}
     for candidate in input_packet.get("proposalCandidates", []):
@@ -106,10 +148,16 @@ def build_summary(
         "proposal_count": len(proposals),
         "proposal_keys": proposal_keys,
         "omitted_candidate_keys": omitted_candidate_keys,
+        "proposal_telemetry": proposal_telemetry,
+        "attention_view_proposal_keys": attention_view_proposal_keys,
+        "attention_view_reason_codes_by_proposal_key": attention_view_reason_codes,
+        "attention_view_selected_count": attention_view.get("selectedCount"),
+        "attention_view_truncated": attention_view.get("truncated"),
+        "attention_view_fallback_used": attention_view.get("fallbackUsed"),
         "families": proposals_packet.get("families", []),
         "tag_counts": tag_counts,
         "command": {
-            "argv": ["cautilus", "scenario", "propose", "--input", str(input_path.relative_to(repo_root))],
+            "argv": [cautilus_bin, "scenario", "propose", "--input", str(input_path.relative_to(repo_root))],
             "exit_code": command.returncode,
             "stderr": command.stderr.strip(),
         },
@@ -127,7 +175,9 @@ def write_summary(output_dir: Path, summary: dict[str, object]) -> None:
         "",
         f"- input: `{summary['input_file']}`",
         f"- candidates: `{summary['candidate_count']}`",
-        f"- emitted proposals: `{summary['proposal_count']}`",
+        f"- full ranked proposals: `{summary['proposal_count']}`",
+        f"- attention shortlist: `{summary['attention_view_selected_count']}`",
+        f"- attention truncated: `{summary['attention_view_truncated']}`",
         "",
         "## Candidate Keys",
         "",
@@ -149,6 +199,22 @@ def write_summary(output_dir: Path, summary: dict[str, object]) -> None:
         lines.append(f"- `{proposal_key}`")
     if not proposal_keys:
         lines.append("- none")
+    lines.extend(["", "## Attention View Proposal Keys", ""])
+    attention_view_proposal_keys = summary["attention_view_proposal_keys"]
+    assert isinstance(attention_view_proposal_keys, list)
+    for attention_key in attention_view_proposal_keys:
+        lines.append(f"- `{attention_key}`")
+    if not attention_view_proposal_keys:
+        lines.append("- none")
+    lines.extend(["", "## Attention View Reasons", ""])
+    attention_view_reason_codes = summary["attention_view_reason_codes_by_proposal_key"]
+    assert isinstance(attention_view_reason_codes, dict)
+    for proposal_key, reason_codes in sorted(attention_view_reason_codes.items()):
+        assert isinstance(reason_codes, list)
+        rendered = ", ".join(f"`{reason_code}`" for reason_code in reason_codes)
+        lines.append(f"- `{proposal_key}`: {rendered or 'none'}")
+    if not attention_view_reason_codes:
+        lines.append("- none")
     lines.extend(["", "## Omitted Candidate Keys", ""])
     omitted_candidate_keys = summary["omitted_candidate_keys"]
     assert isinstance(omitted_candidate_keys, list)
@@ -156,6 +222,11 @@ def write_summary(output_dir: Path, summary: dict[str, object]) -> None:
         lines.append(f"- `{omitted_key}`")
     if not omitted_candidate_keys:
         lines.append("- none")
+    lines.extend(["", "## Proposal Telemetry", ""])
+    proposal_telemetry = summary["proposal_telemetry"]
+    assert isinstance(proposal_telemetry, dict)
+    for telemetry_key in ("mergedCandidateCount", "returnedProposalCount"):
+        lines.append(f"- `{telemetry_key}`: `{proposal_telemetry.get(telemetry_key)}`")
     lines.extend(["", "## Tag Coverage", ""])
     for tag, count in sorted(tag_counts.items()):
         lines.append(f"- `{tag}`: `{count}`")
@@ -178,6 +249,7 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--input-file", type=Path, default=DEFAULT_INPUT_PATH)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--cautilus-bin", default=os.environ.get("CAUTILUS_BIN", "cautilus"))
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
@@ -186,7 +258,7 @@ def main() -> int:
     output_dir = (repo_root / args.output_dir).resolve() if not args.output_dir.is_absolute() else args.output_dir.resolve()
 
     input_packet = load_input_packet(input_path)
-    result = run_scenario_propose(repo_root, input_path)
+    result = run_scenario_propose(repo_root, input_path, args.cautilus_bin)
     proposals_packet = load_proposals(result, input_path)
     summary = build_summary(
         repo_root=repo_root,
@@ -194,6 +266,7 @@ def main() -> int:
         input_packet=input_packet,
         proposals_packet=proposals_packet,
         command=result,
+        cautilus_bin=args.cautilus_bin,
     )
     write_summary(output_dir, summary)
     if args.json:

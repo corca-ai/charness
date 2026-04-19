@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -19,7 +20,7 @@ class EvalError(Exception):
     pass
 
 
-def _run_proposal_summary(target_repo: Path, output_dir: Path) -> dict[str, object]:
+def _run_proposal_summary(target_repo: Path, output_dir: Path, cautilus_bin: str) -> dict[str, object]:
     result = subprocess.run(
         [
             "python3",
@@ -28,6 +29,8 @@ def _run_proposal_summary(target_repo: Path, output_dir: Path) -> dict[str, obje
             str(target_repo),
             "--output-dir",
             str(output_dir),
+            "--cautilus-bin",
+            cautilus_bin,
             "--json",
         ],
         cwd=REPO_ROOT,
@@ -69,6 +72,20 @@ def _string_list(payload: dict[str, object], key: str) -> list[str]:
     return list(value)
 
 
+def _string_list_mapping(payload: dict[str, object], key: str) -> dict[str, list[str]]:
+    value = payload.get(key)
+    if not isinstance(value, dict):
+        raise EvalError(f"proposal summary is missing object `{key}`")
+    normalized: dict[str, list[str]] = {}
+    for mapping_key, mapping_value in value.items():
+        if not isinstance(mapping_key, str):
+            raise EvalError(f"proposal summary `{key}` must use string keys")
+        if not isinstance(mapping_value, list) or not all(isinstance(item, str) for item in mapping_value):
+            raise EvalError(f"proposal summary is missing string-list `{key}.{mapping_key}`")
+        normalized[mapping_key] = list(mapping_value)
+    return normalized
+
+
 def _sorted_delta(left: list[str], right: list[str]) -> list[str]:
     return sorted(set(left) - set(right))
 
@@ -84,6 +101,8 @@ def build_summary(
     candidate_candidate_keys = _string_list(candidate_summary, "candidate_keys")
     baseline_proposal_keys = _string_list(baseline_summary, "proposal_keys")
     candidate_proposal_keys = _string_list(candidate_summary, "proposal_keys")
+    baseline_attention_keys = _string_list(baseline_summary, "attention_view_proposal_keys")
+    candidate_attention_keys = _string_list(candidate_summary, "attention_view_proposal_keys")
     baseline_omitted = _string_list(baseline_summary, "omitted_candidate_keys")
     candidate_omitted = _string_list(candidate_summary, "omitted_candidate_keys")
 
@@ -99,6 +118,17 @@ def build_summary(
             "proposal_count": baseline_summary.get("proposal_count"),
             "candidate_keys": baseline_candidate_keys,
             "proposal_keys": baseline_proposal_keys,
+            "proposal_telemetry": baseline_summary.get("proposal_telemetry"),
+            "attention_view": {
+                "proposal_keys": baseline_attention_keys,
+                "reason_codes_by_proposal_key": _string_list_mapping(
+                    baseline_summary,
+                    "attention_view_reason_codes_by_proposal_key",
+                ),
+                "selected_count": baseline_summary.get("attention_view_selected_count"),
+                "truncated": baseline_summary.get("attention_view_truncated"),
+                "fallback_used": baseline_summary.get("attention_view_fallback_used"),
+            },
             "omitted_candidate_keys": baseline_omitted,
         },
         "candidate": {
@@ -106,6 +136,17 @@ def build_summary(
             "proposal_count": candidate_summary.get("proposal_count"),
             "candidate_keys": candidate_candidate_keys,
             "proposal_keys": candidate_proposal_keys,
+            "proposal_telemetry": candidate_summary.get("proposal_telemetry"),
+            "attention_view": {
+                "proposal_keys": candidate_attention_keys,
+                "reason_codes_by_proposal_key": _string_list_mapping(
+                    candidate_summary,
+                    "attention_view_reason_codes_by_proposal_key",
+                ),
+                "selected_count": candidate_summary.get("attention_view_selected_count"),
+                "truncated": candidate_summary.get("attention_view_truncated"),
+                "fallback_used": candidate_summary.get("attention_view_fallback_used"),
+            },
             "omitted_candidate_keys": candidate_omitted,
         },
         "diff": {
@@ -113,6 +154,8 @@ def build_summary(
             "removed_candidate_keys": _sorted_delta(baseline_candidate_keys, candidate_candidate_keys),
             "added_proposal_keys": _sorted_delta(candidate_proposal_keys, baseline_proposal_keys),
             "removed_proposal_keys": _sorted_delta(baseline_proposal_keys, candidate_proposal_keys),
+            "added_attention_proposal_keys": _sorted_delta(candidate_attention_keys, baseline_attention_keys),
+            "removed_attention_proposal_keys": _sorted_delta(baseline_attention_keys, candidate_attention_keys),
             "newly_omitted_candidate_keys": _sorted_delta(candidate_omitted, baseline_omitted),
             "resolved_omitted_candidate_keys": _sorted_delta(baseline_omitted, candidate_omitted),
         },
@@ -132,6 +175,8 @@ def write_summary(output_dir: Path, summary: dict[str, object]) -> None:
         f"- candidate commit: `{summary['candidate_commit'] or 'unknown'}`",
         f"- baseline repo: `{summary['baseline_repo']}`",
         f"- candidate repo: `{summary['candidate_repo']}`",
+        f"- baseline attention shortlist: `{summary['baseline']['attention_view']['selected_count']}`",
+        f"- candidate attention shortlist: `{summary['candidate']['attention_view']['selected_count']}`",
         "",
         "## Candidate Delta",
         "",
@@ -142,6 +187,11 @@ def write_summary(output_dir: Path, summary: dict[str, object]) -> None:
         lines.append(f"- `{key}`: {', '.join(f'`{value}`' for value in values) if values else 'none'}")
     lines.extend(["", "## Proposal Delta", ""])
     for key in ("added_proposal_keys", "removed_proposal_keys"):
+        values = diff[key]
+        assert isinstance(values, list)
+        lines.append(f"- `{key}`: {', '.join(f'`{value}`' for value in values) if values else 'none'}")
+    lines.extend(["", "## Attention View Delta", ""])
+    for key in ("added_attention_proposal_keys", "removed_attention_proposal_keys"):
         values = diff[key]
         assert isinstance(values, list)
         lines.append(f"- `{key}`: {', '.join(f'`{value}`' for value in values) if values else 'none'}")
@@ -159,6 +209,7 @@ def resolve_repo_pair(
     baseline_repo: Path | None,
     candidate_repo: Path | None,
     baseline_ref: str | None,
+    cautilus_bin: str,
 ) -> tuple[Path, Path]:
     if baseline_repo is not None and candidate_repo is not None:
         return baseline_repo.resolve(), candidate_repo.resolve()
@@ -170,7 +221,7 @@ def resolve_repo_pair(
     workspace_root = Path(tempfile.mkdtemp(prefix="cautilus-chatbot-compare-"))
     result = subprocess.run(
         [
-            "cautilus",
+            cautilus_bin,
             "workspace",
             "prepare-compare",
             "--repo-root",
@@ -212,6 +263,7 @@ def main() -> int:
     parser.add_argument("--candidate-repo", type=Path)
     parser.add_argument("--baseline-ref")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--cautilus-bin", default=os.environ.get("CAUTILUS_BIN", "cautilus"))
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
@@ -222,12 +274,13 @@ def main() -> int:
         baseline_repo=args.baseline_repo,
         candidate_repo=args.candidate_repo,
         baseline_ref=args.baseline_ref,
+        cautilus_bin=args.cautilus_bin,
     )
     with tempfile.TemporaryDirectory(prefix="cautilus-chatbot-benchmark-baseline-") as baseline_tmp, tempfile.TemporaryDirectory(
         prefix="cautilus-chatbot-benchmark-candidate-"
     ) as candidate_tmp:
-        baseline_summary = _run_proposal_summary(baseline_repo, Path(baseline_tmp))
-        candidate_summary = _run_proposal_summary(candidate_repo, Path(candidate_tmp))
+        baseline_summary = _run_proposal_summary(baseline_repo, Path(baseline_tmp), args.cautilus_bin)
+        candidate_summary = _run_proposal_summary(candidate_repo, Path(candidate_tmp), args.cautilus_bin)
     summary = build_summary(
         baseline_repo=baseline_repo,
         candidate_repo=candidate_repo,

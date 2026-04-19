@@ -7,6 +7,7 @@ from pathlib import Path
 from .test_quality_artifact import run_script
 
 ROOT = Path(__file__).resolve().parents[1]
+CAUTILUS_BIN = str((ROOT.parent / "cautilus" / "bin" / "cautilus").resolve())
 
 
 def test_run_evals_supports_scenario_filter() -> None:
@@ -57,6 +58,7 @@ def test_eval_cautilus_chatbot_proposals_writes_summary(tmp_path: Path) -> None:
         "--output-dir",
         str(output_dir),
         "--json",
+        env={"CAUTILUS_BIN": CAUTILUS_BIN},
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -70,6 +72,18 @@ def test_eval_cautilus_chatbot_proposals_writes_summary(tmp_path: Path) -> None:
         "retro-structural-cause-followup",
         "gather-official-path-before-browser-followup",
     ]
+    assert payload["attention_view_proposal_keys"] == [
+        "premortem-canonical-subagent-followup",
+        "handoff-workflow-trigger-followup",
+        "find-skills-canonical-artifact-followup",
+        "retro-structural-cause-followup",
+        "gather-official-path-before-browser-followup",
+    ]
+    assert payload["attention_view_selected_count"] == 5
+    assert payload["attention_view_truncated"] is True
+    assert payload["attention_view_fallback_used"] is False
+    assert payload["proposal_telemetry"]["mergedCandidateCount"] == 12
+    assert payload["proposal_telemetry"]["returnedProposalCount"] == 12
     assert sorted(payload["proposal_keys"]) == sorted(payload["candidate_keys"])
     assert payload["omitted_candidate_keys"] == []
     assert (output_dir / "latest.json").is_file()
