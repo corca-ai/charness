@@ -1,14 +1,14 @@
 # Release Surface Check
-Date: 2026-04-18
+Date: 2026-04-19
 
 ## Scope
 
-Published `charness` release `0.4.0` through the repo-owned release helper.
+Published `charness` release `0.4.1` through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.3.5`
-- target version: `0.4.0`
+- previous version: `0.4.0`
+- target version: `0.4.1`
 - git branch: `main`
 - git remote: `origin`
 
@@ -16,7 +16,7 @@ Published `charness` release `0.4.0` through the repo-owned release helper.
 
 - `./scripts/run-quality.sh` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
-- git push and tag push completed from the release helper.
+- one git push carried both the release branch update and the tag from the release helper.
 
 ## Real-Host Proof
 
