@@ -13,10 +13,11 @@ def _write_exec(path: Path, body: str) -> None:
     path.chmod(0o755)
 
 
-def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
-    repo = tmp_path / "repo"
-    remote = tmp_path / "remote.git"
-    bin_dir = tmp_path / "bin"
+def _make_release_paths(tmp_path: Path) -> tuple[Path, Path, Path]:
+    return tmp_path / "repo", tmp_path / "remote.git", tmp_path / "bin"
+
+
+def _prepare_release_tree(repo: Path, remote: Path, bin_dir: Path) -> None:
     repo.mkdir()
     remote.mkdir()
     bin_dir.mkdir()
@@ -24,8 +25,8 @@ def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
     (repo / "packaging").mkdir(parents=True)
     (repo / "scripts").mkdir(parents=True)
 
-    subprocess.run(["git", "init", "--bare", str(remote)], check=True, capture_output=True, text=True)
 
+def _write_release_adapter(repo: Path) -> None:
     (repo / ".agents" / "release-adapter.yaml").write_text(
         "\n".join(
             [
@@ -73,6 +74,9 @@ def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
         + "\n",
         encoding="utf-8",
     )
+
+
+def _write_fake_git(repo: Path, bin_dir: Path) -> None:
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
     _write_exec(
         bin_dir / "git",
@@ -95,6 +99,9 @@ def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
             """
         ),
     )
+
+
+def _write_sync_script(repo: Path) -> None:
     _write_exec(
         repo / "scripts" / "sync_root_plugin_manifests.py",
         textwrap.dedent(
@@ -127,6 +134,9 @@ def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
             """
         ),
     )
+
+
+def _write_quality_script(repo: Path) -> None:
     _write_exec(
         repo / "scripts" / "run-quality.sh",
         textwrap.dedent(
@@ -137,6 +147,9 @@ def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
             """
         ),
     )
+
+
+def _write_fake_gh(bin_dir: Path) -> None:
     _write_exec(
         bin_dir / "gh",
         textwrap.dedent(
@@ -168,6 +181,8 @@ def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
         ),
     )
 
+
+def _init_repo_git(repo: Path, remote: Path) -> None:
     subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "config", "user.email", "codex-test@example.com"], cwd=repo, check=True, capture_output=True, text=True)
@@ -175,6 +190,18 @@ def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
     subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "push", "-u", "origin", "main"], cwd=repo, check=True, capture_output=True, text=True)
+
+
+def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
+    repo, remote, bin_dir = _make_release_paths(tmp_path)
+    _prepare_release_tree(repo, remote, bin_dir)
+    subprocess.run(["git", "init", "--bare", str(remote)], check=True, capture_output=True, text=True)
+    _write_release_adapter(repo)
+    _write_fake_git(repo, bin_dir)
+    _write_sync_script(repo)
+    _write_quality_script(repo)
+    _write_fake_gh(bin_dir)
+    _init_repo_git(repo, remote)
     return repo, remote, bin_dir
 
 
