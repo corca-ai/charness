@@ -31,13 +31,10 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _subprocess_guard = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.subprocess_guard")
 run_process = _subprocess_guard.run_process
-
 HELP_TIMEOUT_SECONDS = 10
 PS_TIMEOUT_SECONDS = 10
 TERM_GRACE_SECONDS = 2.0
-CLEANUP_COMMAND = (
-    "python3 skills/support/agent-browser/scripts/runtime_guard.py --repo-root . --cleanup-orphans --execute"
-)
+CLEANUP_COMMAND = "python3 skills/support/agent-browser/scripts/runtime_guard.py --repo-root . --cleanup-orphans --execute"
 
 
 @dataclass(frozen=True)

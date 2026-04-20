@@ -1,4 +1,5 @@
-# Process Boundary Drift
+# Process Boundary Drift Debug
+Date: 2026-04-20
 
 ## Problem
 
@@ -30,13 +31,22 @@ then the process boundary should be:
 - the reported `agent-browser` failure mode is not a classic zombie (`Z`) but
   long-lived orphan daemon trees adopted by PID 1.
 
+## Reproduction
+
+Issue reports documented two concrete failure paths:
+
+- `#41`: `resolve_adapter.py` and `run-evals` subprocess seams can hang without
+  timeout and accumulate runaway processes.
+- `#42`: `agent-browser` daemon trees can survive session exit as orphaned
+  long-lived runtimes.
+
 ## Candidate Causes
 
-1. Missing timeout defaults for repo-owned subprocess seams.
-2. External runtime health modeled as "binary responds" rather than "runtime is
-   hygienic and recoverable".
-3. Support skills and integrations lacked a repo-owned cleanup / diagnosis path
-   for long-lived runtime drift.
+- Missing timeout defaults for repo-owned subprocess seams.
+- External runtime health was modeled as "binary responds" rather than
+  "runtime is hygienic and recoverable".
+- Support skills and integrations lacked a repo-owned cleanup / diagnosis path
+  for long-lived runtime drift.
 
 ## Hypothesis
 
@@ -47,7 +57,7 @@ helpers, then:
 - `tool doctor` can surface orphan runtime drift before users rediscover it
 - operators get a scripted cleanup path that future skill and CLI authors can reuse
 
-## Verification Plan
+## Verification
 
 - add a shared subprocess guard with default timeouts
 - route `run-evals` through that guard
