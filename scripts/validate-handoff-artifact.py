@@ -34,7 +34,7 @@ validate_max_lines = _scripts_artifact_validator_module.validate_max_lines
 validate_nonempty_sections = _scripts_artifact_validator_module.validate_nonempty_sections
 validate_title = _scripts_artifact_validator_module.validate_title
 
-MAX_ARTIFACT_LINES = 80
+MAX_ARTIFACT_LINES = 70
 REQUIRED_SECTIONS = (
     "## Workflow Trigger",
     "## Current State",

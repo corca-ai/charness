@@ -205,10 +205,10 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-19",
+      "reviewed_on": "2026-04-20",
       "observed_evidence": [
-        "The checked-in public core now makes bounded subagents the canonical premortem path and explicitly forbids silently collapsing to a same-agent local pass before the subagent capability check runs and yields a concrete block.",
-        "That same policy is reinforced in `skills/public/premortem/references/subagent-capability-check.md` and in `specs/on-demand-validation.spec.md`, which keeps `premortem` as a judgment-heavy on-demand workflow rather than pretending it belongs in a standing evaluator or generic local fallback path.",
+        "The checked-in public core now makes bounded subagents mandatory for `premortem`: the capability probe must run, and a concrete spawn failure is reported as a host-side contract gap instead of opening a same-agent fallback path.",
+        "That same policy is reinforced in `skills/public/premortem/references/subagent-capability-check.md` and in `specs/on-demand-validation.spec.md`, which keeps `premortem` as a judgment-heavy on-demand workflow rather than pretending it belongs in a standing evaluator or local substitute path.",
         "That keeps `premortem-canonical-subagent-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: the user's push to keep subagents canonical still maps directly to checked-in behavior, not just to a one-off wording preference."
       ]
     },
@@ -271,10 +271,10 @@
         "reads the current workflow trigger before broad repo exploration and keeps the baton pass continuation-first"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-19",
+      "reviewed_on": "2026-04-20",
       "observed_evidence": [
         "The checked-in public core now makes the `Workflow Trigger` the handoff's primary contract: mention-only pickup should continue the named workflow instead of re-deriving state from summary prose, and the trigger should be explicit enough that the next operator does not have to infer the first move.",
-        "That same seam is reinforced in `skills/public/handoff/references/workflow-trigger.md`, which says the next session should name the workflow directly rather than bury it inside history or diary-like status text.",
+        "That same seam is reinforced by the updated `handoff` references: `workflow-trigger.md` keeps the first move explicit, while `state-selection.md` and `spill-targets.md` now push stable metrics and proof detail back to their owning artifacts so the handoff stays pointer-heavy.",
         "That keeps `handoff-workflow-trigger-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: pushing the handoff away from history-first writing and back toward continuation-first pickup still maps directly to checked-in `handoff` behavior."
       ]
     },

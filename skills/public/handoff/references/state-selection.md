@@ -19,9 +19,12 @@ Handoffs should include only the facts that change the next action.
 - speculative future work that is not the next step
 - coverage, runtime, or test deltas that are already recorded in a quality
   artifact and do not change the next action
+- stable release numbers, version surfaces, or dogfood/proof counts that are
+  already owned elsewhere and do not change the first move
 - debug or retro story detail when a link is enough
 
 ## Compression Rule
 
 For each bullet, ask: would removing this line make the next operator choose a
-different first action? If not, drop it or replace it with a reference.
+different first action? If not, drop it or replace it with a reference. Trust
+the next operator to follow one good link and infer stable repo defaults.

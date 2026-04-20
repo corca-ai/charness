@@ -63,10 +63,9 @@ decision contract. Do not restate the whole project history.
      setup, resolve any availability uncertainty, and cite the concrete signal
      that made the host unable to provide subagents
    - if the host cannot provide subagents, stop and report that the canonical
-     premortem path is unavailable instead of inventing an equivalent
-   - do not collapse into a same-agent local pass unless the caller explicitly
-     asked for a degraded fallback or an operator instruction forbids subagents
-     for this run
+     premortem path is unavailable; fixing the host-side subagent contract is
+     the next move instead of inventing a local substitute
+   - do not collapse into a same-agent local pass or degraded variant
 4. Collapse the findings into one candidate concern list.
    - deduplicate overlap
    - keep evidence and cited source paths with each concern when available
@@ -112,7 +111,9 @@ The result should usually include:
 - Do not silently downgrade premortem into a same-agent local pass. Before
   declaring subagents unavailable, run `references/subagent-capability-check.md`
   and cite the concrete host signal. Assuming a cap from priors is the failure
-  mode the check exists to stop.
+  mode the check exists to stop. If the host still cannot provide subagents,
+  stop and leave the host-side contract gap visible instead of improvising a
+  degraded premortem.
 
 ## References
 

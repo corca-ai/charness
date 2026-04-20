@@ -97,8 +97,8 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 - Do not add a dedicated specdown adapter until multiple specs start repeating
   the same setup or extraction work.
 - Do not describe the canonical fresh-eye path as blocked without a bounded
-  capability probe and a concrete host signal; a same-agent pass is degraded,
-  not equivalent.
+  capability probe and a concrete host signal; if the host still cannot spawn
+  subagents, stop and leave the host-side contract gap visible.
 
 ## Commands Run
 - `./scripts/run-quality.sh --review`

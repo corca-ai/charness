@@ -2,78 +2,35 @@
 
 ## Workflow Trigger
 
-- 다음 세션이 artifact output policy, skill adapter contract, plugin export, 또는 checked-in artifact 경로를 이어받는다면 이 handoff부터 읽는다.
+- 다음 세션이 repo operating contract, prompt/skill surface, export sync, 또는 checked-in artifact policy를 건드리면 이 handoff부터 읽고 `impl`로 이어간다.
 - 반복 실수 방지는 [charness-artifacts/retro/recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)를 함께 읽는다.
 
 ## Current State
 
-- Public artifacts는 `charness-artifacts/<skill>/`, hidden runtime state는 `.charness/<skill>/`를 쓴다. 일반 current pointer는 `latest.md`, durable record는 `YYYY-MM-DD-<slug>.md` 규칙이고 [`docs/handoff.md`](./handoff.md)만 rolling canonical 예외다.
-- [`AGENTS.md`](../AGENTS.md) now requires one `charness:find-skills` call at the start of each
-  task-oriented session so the session begins with a current capability map of
-  public skills, support skills, synced support surfaces, and integrations.
-- `find-skills` now actually persists that capability map to [`charness-artifacts/find-skills/latest.md`](../charness-artifacts/find-skills/latest.md) and `latest.json`; unchanged inventories keep the previous generated timestamp instead of rewriting the current pointer on every run.
-- 현재 quality gate는 aggregate `60.0%` + per-file `85.0%` coverage floor, test/source ratio 상한 `1.00`, recent-median runtime budget(`pytest` 45s, `check-secrets` 5s, `check-coverage` 15s, `run-evals` 5s, `specdown` 8s)을 enforce한다.
-- 가장 최근 review proof 기준 control-plane coverage는 `98.0%` (`1193/1218`), test/source ratio는 `0.56` (`13220/23747`), standing pytest는 `370 passed`, eval은 `20` scenario pass, review gate는 `40 passed, 0 failed, 66.2s`다.
-- `run-quality.sh`는 `specdown run -quiet -no-report`를 포함하고, `.githooks/pre-push`는 export sync 뒤 canonical quality gate를 강제한다.
-- `external link` review는 이제 `.internal`, `.test`, `localhost` 같은 private/demo placeholder host를 public URL health 대상으로 취급하지 않는다. private SaaS 예시는 [scripts/list_external_links.py](../scripts/list_external_links.py)에서 제외한다.
-- `charness task`는 작업 리포의 `.charness/tasks/*.json`에 claim/submit/abort/status를 남긴다. 이 리포의 runtime state에는 `sah-task-envelope`와 `doctor-next-action` record가 있어 `charness task status <task-id>`로 이어받을 수 있다.
-- `charness update`와 `charness update all`은 이제 기본 stdout에서 long JSON 대신 human summary를 내고, full payload는 `--json` opt-in일 때만 stdout으로 내보낸다. 진행 visibility가 필요한 phase line은 human mode에서는 stdout, JSON mode에서는 stderr로 보낸다.
-- Checked-in plugin export는 source 변경 뒤 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`로 맞춘다.
-- `find-skills/latest.*`는 mandatory startup discovery가 남기는 canonical capability inventory로 보되,
-  그 startup call 자체가 diff를 만들면 먼저 artifact diff를 분류한다. canonical inventory가 바뀐
-  경우만 commit 대상이고, invocation-shape/runtime-root 탓의 rewrite면 bug로 처리한다.
-- [`docs/public-skill-dogfood.json`](./public-skill-dogfood.json)는 현재 17개 public skill 전체를 커버하는 reviewed consumer dogfood registry다.
-- Packaging/plugin release surface는 checked-in version surface를 source of truth로 본다. 다음 publish slice도 `python3 skills/public/release/scripts/current_release.py --repo-root .`로 현재 버전을 먼저 읽고, 실제 release boundary는 `python3 skills/public/release/scripts/publish_release.py --repo-root . --part <patch|minor|major> --execute` helper로 닫는다.
-- 2026-04-19 UTC release surface is now `0.4.1`, and GitHub release `v0.4.1` is live. The release helper now creates the tag before pushing and uses one `git push <remote> <branch> <tag>` transaction, so pre-push quality no longer reruns just because branch and tag were pushed separately.
-- `#45` 방향의 release closure hardening is now in. `release` SKILL and install-surface guidance distinguish `local/tag state complete`, `workflow publication complete`, and `public release surface verified`, and the publish helper artifact now records that public verification is still unchecked unless a repo-owned verifier closes it explicitly.
-- release helper artifacts now prefer adapter-defined `update_instructions` over hardcoded product guesses. This repo’s release adapter now points operator refresh back at `charness update` plus host cache restart when needed.
-- `#44` 방향의 install-surface ownership clarification is now in. `create-cli`는 single canonical target을 기본 lifecycle contract로 두고, multi-target registry/manifest는 explicit choice로만 다루며, `create-skill`은 그 ownership을 package boundary 밖 owning CLI/packaging contract로 남기고, `quality`는 cleanup owner matches install owner lens를 본다.
-- `#33`/`#34` 방향의 public spec boundary 정리는 반영됐다. `spec`은 public executable contract vs implementation guard를 명시하고, `quality`는 proof layering inventory plus actionable `move_down` / `delete_or_merge` / `keep_if_integration_value` recommendation payload를 갖는다.
-- `quality` public skill은 이번 slice에서 structure-first routing을 더 명시했다. 길이/중복/pressure signal은 기본적으로 concept-review advisory로 보고, explicit low-noise invariant와 clear structural response가 있을 때만 `AUTO_CANDIDATE`/`AUTO_EXISTING`로 올린다. 이 caution은 coverage floor나 runtime budget 같은 standing threshold gate까지 일반화하지 않는다.
-- 2026-04-17 quality review 기준 남은 advisory pressure는 [`AGENTS.md`](../AGENTS.md)/[`README.md`](../README.md)/[`UNINSTALL.md`](../UNINSTALL.md) entrypoint ergonomics, `init-repo`/`retro`/`spec`의 mode-pressure wording, 그리고 `quality` SKILL core의 `long_core`다.
-- `#35`의 첫 구현 뒤 hardening도 들어갔다. `render_markdown_preview.py`는 unsupported `backend`를 upfront reject하고, manifest에 `backend_version`, `git_head`, per-file `source_sha256`를 남긴다. repo-local scope는 [`.agents/markdown-preview.yaml`](../.agents/markdown-preview.yaml) 같은 config search path로 열어뒀고, 현재 이 repo에는 scaffolded config가 checked in 되어 있다. preview output은 `.artifacts/markdown-preview/` 아래 machine-local runtime artifact로 본다. 2026-04-17 현재 `glow`는 `charness tool install --repo-root . glow`로 로컬 설치 완료됐고, preview helper는 `backend: glow` rendered artifact를 생성한다.
-- `premortem` public skill contract은 이제 canonical subagent path를 요구한다. host가 subagent를 못 주면 같은-agent 로컬 패스로 약화하지 말고 canonical path unavailable로 stop해야 한다.
-- `quality`의 fresh-eye premortem reference도 같은 방향으로 맞췄다. canonical subagent path를 `blocked`라고 쓰려면 bounded capability probe와 concrete host signal이 필요하고, same-agent local fallback은 degraded variant일 뿐 equivalent가 아니다.
-- 2026-04-20 기준 local `cautilus`는 `0.8.2`이고 latest release도 `v0.8.2`다. `instruction-surface evaluate`는 `cautilus.instruction_surface_inputs.v1` 입력을 받아 `cautilus.instruction_surface_summary.v1`를 정상 출력한다.
-- `charness` now ships checked-in instruction-surface wiring for `cautilus`: [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml), [evals/cautilus/instruction-surface-cases.json](../evals/cautilus/instruction-surface-cases.json), and [scripts/agent-runtime/run-local-instruction-surface-test.mjs](../scripts/agent-runtime/run-local-instruction-surface-test.mjs) plus its support helpers are all present.
-- 2026-04-18 UTC `Cautilus v0.5.5` 검증은 green이다. `cautilus instruction-surface test --repo-root .`가 `recommendation=accept-now`로 끝났고, checked-in bootstrap case는 이제 `bootstrapHelper=find-skills`, `workSkill=impl` expectation으로 통과한다. compact no-bootstrap implementation은 `impl`, contract-shaping은 `spec`으로 유지된다.
-- `python3 scripts/run-evals.py --repo-root .`도 현재 `20` scenario pass다. 즉 기존 maintained consumer path는 released binary에서 regression 없이 유지되고, `find-skills -> impl` false mismatch도 사라졌다.
-- Prompt-affecting repo changes now have a checked-in closeout rule: [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md) is the current visible proof artifact, [scripts/validate-cautilus-proof.py](../scripts/validate-cautilus-proof.py) enforces that prompt-affecting slices refresh it, and [`./scripts/run-quality.sh`](../scripts/run-quality.sh) now includes `validate-cautilus-proof`.
-- 2026-04-18 UTC A/B smoke: `cautilus workspace prepare-compare --repo-root . --baseline-ref HEAD~1 --output-dir /tmp/cautilus-compare-smoke` prepared baseline/candidate worktrees successfully. `cautilus mode evaluate` also ran with that compare setup, but current adapter command templates still consume `baseline_ref` rather than directly using the prepared baseline/candidate repos, so the compare workspace path is proven as operator workflow but not yet a deeper charness adapter contract.
-- `find-skills` now supports a direct validation/runtime recommendation query via `list_capabilities.py --recommendation-role <runtime|validation> --next-skill-id <skill-id>`, and the `cautilus` integration manifest now limits `supports_public_skills` to the checked validation routes `impl`, `quality`, and `spec`.
-- `public-skill-validation` policy is now explicit that deeper skill-contract meaning belongs to on-demand `cautilus`/HITL proof, while repo-owned standing gates stay deterministic. `premortem` remains `hitl-recommended` + `adapter-free`, not a standing evaluator-required skill.
-- `specdown` now has an explicit second role as a viewer for the latest checked on-demand validation artifacts. Public executable contract pages remain the SoT for reader-facing contract claims, but checked artifacts such as [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md) stay the source of truth for on-demand runs.
-- `charness` now ships checked-in long-context chatbot proposal/benchmark surfaces via [.agents/cautilus-adapters/chatbot-proposals.yaml](../.agents/cautilus-adapters/chatbot-proposals.yaml) and [.agents/cautilus-adapters/chatbot-benchmark.yaml](../.agents/cautilus-adapters/chatbot-benchmark.yaml). The packet is now 12 candidates wide and includes `gather-official-path-before-browser-followup` for the private SaaS `official API/export -> agent-browser fallback -> clean auth/bootstrap stop` correction arc.
-- Local `cautilus 0.5.7` now emits the full ranked `proposals` set plus a bounded `attentionView` shortlist for the checked-in chatbot packet even without a packet-level `limit`, so [evals/cautilus/chatbot-scenario-proposal-inputs.json](../evals/cautilus/chatbot-scenario-proposal-inputs.json) no longer carries the old `limit: 12` workaround.
-- The checked-in chatbot proposal and benchmark summaries now record both the full `proposal_keys` surface and the derived `attention_view` shortlist/telemetry instead of treating omission against a default cap as the main signal. For working-tree diffs, do not rely on `--baseline-ref` shorthand alone: prepare an explicit baseline repo and pass `--baseline-repo <baseline> --candidate-repo <current repo>` to [scripts/eval_cautilus_chatbot_compare.py](../scripts/eval_cautilus_chatbot_compare.py), otherwise uncommitted candidate changes are invisible.
-- `gather` reviewed dogfood evidence is now refreshed against that private SaaS contract. [docs/public-skill-dogfood.json](./public-skill-dogfood.json) points at the preserve proof in [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md) plus the long-context proposal/benchmark pointers as the current consumer-facing evidence for `official API/export -> agent-browser fallback -> clean auth/bootstrap stop`.
-- `quality`, `premortem`, and `retro` reviewed dogfood evidence is now likewise refreshed against their checked policy seams: proof layering for `quality`, canonical subagent enforcement for `premortem`, and structural-cause plus repeat-trap persistence for `retro`.
-- `find-skills` reviewed dogfood evidence is now likewise refreshed against the canonical-artifact seam: `latest.*` stays the canonical capability inventory, while recommendation queries remain ad hoc and should not rewrite durable evidence just because invocation shape changes.
-- `handoff` and `init-repo` reviewed dogfood evidence is now likewise refreshed against their checked seams: workflow-trigger-first baton passing for `handoff`, and `PARTIAL` targeted normalization instead of greenfield rewrite for `init-repo`.
+- startup에는 `charness:find-skills` 1회가 필수이고, durable capability inventory는 [charness-artifacts/find-skills/latest.md](../charness-artifacts/find-skills/latest.md)와 `latest.json`이 owning surface다.
+- `premortem`과 `quality`/`handoff`의 fresh-eye loop는 subagent가 canonical이 아니라 mandatory다. bounded capability probe 뒤에도 spawn이 안 되면 same-agent fallback으로 대체하지 말고 concrete host signal을 남긴 채 stop한다.
+- [`docs/handoff.md`](./handoff.md)는 rolling pointer다. gate 수치, release 상태, dogfood evidence, 긴 history는 owning artifact로 보내고 여기에는 next action을 바꾸는 사실만 남긴다.
+- checked-in plugin export가 걸린 source를 바꾸면 validator보다 먼저 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`로 sync한다.
+- prompt-affecting surface를 바꾸면 `cautilus instruction-surface test --repo-root .`로 preserve proof를 다시 보고, visible proof owner는 [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md)다.
+- quality/runtime 숫자와 current review posture는 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md), release/version truth는 [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md)와 `python3 skills/public/release/scripts/current_release.py --repo-root .`가 owner다.
 
 ## Next Session
 
-1. `git status --short`를 먼저 확인한다.
-2. public-spec executable proof 약점은 이번 slice에서 정리됐다. `inventory_public_spec_quality.py`는 실제 `run:shell` fence를 읽고, [`specs/index.spec.md`](../specs/index.spec.md)/[`specs/tool-doctor.spec.md`](../specs/tool-doctor.spec.md)는 direct CLI proof로 바뀌어 현재 flagged spec이 없다.
-3. release를 이어받는 다음 세션은 먼저 `python3 skills/public/release/scripts/current_release.py --repo-root .`로 checked-in version surface를 확인하고, 새 publish slice라면 `publish_release.py` helper를 기본 경로로 쓴다. bump만 하고 push-only 상태에서 멈추지 않는다.
-4. 다음 pickup의 first move는 `#44` 후속이 필요할지 판단하는 것이다. 현재 rule은 docs/policy layer까지는 들어갔고 hard validator는 아직 없다. 더 파면 `quality` advisory를 standing gate로 올릴 low-noise invariant가 실제 있는지, 아니면 지금 수준에서 issue close만 하면 되는지부터 본다. release follow-up을 더 파면, 다음 포인트는 `check_real_host_proof.py`와 publish artifact wording이 local changed-path state, async workflow state, public verification state를 아직 얼마나 섞고 있는지 다시 분리하는 것이다.
-5. `markdown-preview`는 helper-only 상태가 아니다. `quality`에는 bootstrap/execute seam이 이미 있고, `narrative` docs도 rendered Markdown review를 workflow seam으로 언급한다. 현재 판단으로는 `announcement` explicit 연결은 우선순위가 낮고, 정말 남은 질문은 `docs:preview`류 별도 command surface가 실제 필요한지다.
-6. CLI UX follow-up을 이어가면 `update`에 맞춘 human-first default / `--json` opt-in / stderr progress pattern을 `init` 같은 나머지 long-running lifecycle commands에도 확대할지 판단한다. 이번 slice는 `update`와 `update all`만 바꿨다.
-7. Agent Harness Guide adaptation을 이어가면 [charness-artifacts/spec/agent-harness-guide-adaptation.md](../charness-artifacts/spec/agent-harness-guide-adaptation.md)를 읽고 `Slice 1`부터 시작한다. 첫 범위는 [`docs/harness-composition.md`](./harness-composition.md), [`docs/artifact-policy.md`](./artifact-policy.md), 최소 handoff cross-link다.
-8. Dogfood 개선은 registry 확장보다 reviewed case 강화가 다음 move다. `hitl` 또는 `ideation`처럼 policy-heavy한 case 하나를 골라 실제 consumer prompt replay와 stronger acceptance evidence를 추가한다.
-9. sah/specdown lesson line을 이어가면 task envelope와 doctor `next_action`을 실제 멀티에이전트 세션에서 dogfood한 뒤 필요하면 task list/status summary만 다듬는다. 반복 setup/JSON 추출이 두세 번 생기기 전에는 specdown adapter를 만들지 않는다.
-10. source가 checked-in plugin export에 들어가는 파일이면 focused managed-checkout 테스트 전에 export sync를 먼저 실행한다. 이번 slice에서도 [`plugins/charness/README.md`](../plugins/charness/README.md) drift가 packaging/managed-install pytest를 바로 깨뜨렸으니, root README 계열 변경 뒤에는 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`를 먼저 습관화한다.
-11. long-context skill-trigger work를 이어가면 `cautilus adapter resolve --repo-root . --adapter-name chatbot-proposals`와 `python3 scripts/eval_cautilus_chatbot_proposals.py --repo-root . --json`부터 시작한다. proposal-mining surface와 compare/A/B benchmark surface는 이제 둘 다 checked-in 상태다.
-12. benchmark를 다시 생성할 때는 `cautilus workspace prepare-compare --repo-root . --baseline-ref <ref> --output-dir <tmp>` 또는 `git worktree add --detach <tmp> <ref>`로 baseline을 준비한 뒤, `python3 scripts/eval_cautilus_chatbot_compare.py --repo-root . --baseline-repo <baseline> --candidate-repo <candidate> --output-dir charness-artifacts/cautilus/chatbot-benchmark`를 실행한다.
+1. `git status --short`를 먼저 본다.
+2. public skill, handoff, validator, 또는 other prompt surface를 건드리면 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)와 [docs/public-skill-dogfood.json](./public-skill-dogfood.json)을 읽고 `impl`로 이어간다.
+3. export surface가 걸린 변경이면 sync를 먼저 끝내고 그 다음 validator와 quality gate를 돌린다.
+4. rolling pointer freshness를 더 조일 다음 slice면 prose를 더 추가하지 말고 deterministic validator를 우선 검토한다.
+5. release를 이어받으면 `current_release.py`로 checked-in surface를 먼저 읽고, actual publish는 `publish_release.py` helper 경로를 쓴다.
 
 ## Discuss
 
-- stale artifact를 언제 삭제/아카이브할지, 아니면 `superseded_by` frontmatter만 도입할지 아직 정책으로 잠그지 않았다.
-- singleton 성격이 강한 스킬도 dated record를 항상 남길지, 일부는 current pointer만 둘지는 dogfood 후 다시 본다.
-- `find-skills/latest.md`와 `latest.json`는 현재 판단으로 hidden runtime state가 아니라 semi-fixed dogfood/current-pointer evidence로 유지하는 편이 맞다. 이 repo 자체가 charness skill surface를 소비하므로, current capability inventory를 checked-in visible artifact로 두는 편이 더 honest하다.
+- 이 [docs/handoff.md](./handoff.md)와 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)의 freshness를 어느 수준까지 deterministic validator로 올릴지 아직 열려 있다.
+- `Discuss`는 unresolved decision만 남기고, metrics/history/closed proof는 owning artifact로 계속 밀어내는 방향을 유지한다.
 
 ## References
 
 - [AGENTS.md](../AGENTS.md)
+- [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
+- [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md)
 - [charness-artifacts/retro/recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)
-- [public-skill-dogfood.md](./public-skill-dogfood.md)
+- [docs/public-skill-dogfood.json](./public-skill-dogfood.json)

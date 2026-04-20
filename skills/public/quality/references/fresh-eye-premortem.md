@@ -29,5 +29,5 @@ blocked, run the capability check in
 `../../premortem/references/subagent-capability-check.md`: attempt the bounded
 subagent setup, resolve availability uncertainty, and cite the concrete host
 signal. If the canonical fresh-eye premortem path is blocked, say that
-explicitly. Do not pretend a same-agent local pass is equivalent to the
-canonical path, and do not collapse into one on a guess.
+explicitly and leave the host-side contract gap visible. Do not substitute a
+same-agent local pass for the canonical path.

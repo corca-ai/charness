@@ -31,12 +31,13 @@ By default, `handoff` writes its durable artifact to
 [`.agents/handoff-adapter.yaml`](../../../.agents/handoff-adapter.yaml).
 
 Keep the handoff inside the repo-owned size and shape gate. Default to a
-signal target of 40-70 lines and treat 80 lines as the usual hard stop unless
+signal target of 30-60 lines and treat 70 lines as the usual hard stop unless
 the repo names a different gate. If the current handoff approaches that range,
 preserve only information that changes the next action and spill durable detail
 before appending more prose. Multiple dated `## This Session (<date>)` sections
 are a hard diary smell. See `references/spill-targets.md` for the default spill
-destinations.
+destinations. Assume a competent next operator can follow one good link and
+infer stable repo defaults; do not restate those defaults just to feel safe.
 
 ```bash
 # Required Tools: rg
@@ -76,8 +77,8 @@ the `Workflow Trigger` first and continue with that workflow.
    - ordered next actions
    - open decisions that still need user input
    - tight reference list
-   - one reference to the owning artifact for historical detail, not a replay
-     of that detail
+   - one reference to the owning artifact for metrics, history, or proof detail
+     instead of replaying that detail inline
 4. Keep the trigger explicit.
    - if a named workflow or skill should run next, say it directly
    - if the next pickup depends on reading specific files first, name them
@@ -88,9 +89,11 @@ the `Workflow Trigger` first and continue with that workflow.
      what the next operator is most likely to misunderstand
    - bias the prompts toward workflow trigger ambiguity, ownership boundary
      confusion, and examples that could be over-literalized
-   - before falling back to a local check, run the capability check in
+   - run the capability check in
      `../premortem/references/subagent-capability-check.md` and cite the
      concrete host signal; do not assume subagents are unavailable from priors
+   - if the host still cannot provide subagents, stop and leave the host-side
+     contract gap visible instead of substituting a same-agent check
    - incorporate only concrete clarity fixes, not speculative churn
 6. Finish with a clean baton pass.
    - the next operator should know what to do first without interpretation
@@ -119,6 +122,8 @@ The handoff should usually contain:
   durable detail instead.
 - Do not use the line budget as permission to keep process narrative; the
   budget is a failure guard, not a target.
+- Do not restate stable repo defaults, release numbers, or gate metrics when a
+  link to the owning artifact would leave the next action unchanged.
 - Do not assume your own interpretation of the handoff is the only plausible
   one when a bounded premortem could catch a likely misread.
 - If the handoff changed materially, treat it as a real artifact update rather

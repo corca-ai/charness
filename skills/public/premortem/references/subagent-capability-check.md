@@ -27,18 +27,12 @@ instead of rewriting ad hoc availability wording.
      returned, which operator instruction forbids subagents for this run, or
      which agent-count budget is already exhausted.
 
-## When a degraded local pass is acceptable
+## If the canonical path is blocked
 
-Run the same-agent local pass only when one of these is explicitly true:
-
-- the caller asked for a degraded fallback in the same turn
-- an operator-level instruction (handoff, adapter config, session note) says
-  subagents are off for this run
-- the capability check above produced a concrete block and the caller already
-  agreed that a degraded pass is better than stopping
-
-Label the result as the degraded variant and record *why* the canonical path
-was skipped. Do not present a local pass as the canonical premortem.
+Stop and record the concrete host signal. Treat it as a host/runtime contract
+gap for this run, not as permission to replace premortem with a same-agent
+local pass. Do not present a local pass as the canonical premortem, and do not
+call a same-agent substitute "good enough" just because the probe failed.
 
 ## Do not
 
@@ -47,5 +41,7 @@ was skipped. Do not present a local pass as the canonical premortem.
   the uncertainty first.
 - Do not silently collapse into a same-agent review and call it the canonical
   path.
+- Do not turn a concrete spawn failure into an excuse for a degraded
+  premortem; the next action is to surface the host-side contract gap.
 - Do not name the blocker as "canonical path unavailable" without the concrete
   signal that made it unavailable.

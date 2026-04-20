@@ -24,26 +24,19 @@ Good prompt shapes:
 - "Which example line would make a reviewer over-generalize the intended
   behavior?"
 
-## Capability Check Before Fallback
+## Capability Check
 
-Before falling back to a local pass, run the capability check in
+Run the capability check in
 `../../premortem/references/subagent-capability-check.md`: attempt the bounded
 subagent setup, resolve availability uncertainty, and cite the concrete host
 signal. Assuming subagents are unavailable from priors is the exact failure
 mode that check exists to stop.
 
-## Fallback
+## If The Host Blocks The Canonical Path
 
-Run the local pass only when the capability check returned a concrete block,
-the caller explicitly asked for a degraded fallback, or the premortem would be
-an honest local bounded pass for this particular slice:
-
-- do the same pass yourself without rereading the full discovery history first
-- look for hidden sequencing, undeclared invariants, and examples that could be
-  mistaken for policy
-- keep the loop bounded to one pass plus one focused edit round
-- label the result as the degraded variant and say why the canonical path was
-  skipped
+Stop and report the concrete host signal. Treat it as a host-side operating
+gap for this run. Do not replace the fresh-eye premortem with a same-agent
+local pass and still call the contract reviewed.
 
 ## Guardrails
 

@@ -22,6 +22,8 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/handoff/SKILL.md": (
         "mention-only pickup",
         "Run a misunderstanding premortem",
+        "Assume a competent next operator can follow one good link",
+        "one reference to the owning artifact for metrics, history, or proof detail",
         "The handoff should usually contain:",
         "- `Workflow Trigger`",
         "- `Current State`",

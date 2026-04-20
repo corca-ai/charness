@@ -24,23 +24,18 @@ Good prompt shapes:
 - "Which line would make a future agent over-literalize an example or confuse
   reference code with runtime ownership?"
 
-## Capability Check Before Fallback
+## Capability Check
 
-Before falling back to a local check, run the capability check in
+Run the capability check in
 `../../premortem/references/subagent-capability-check.md`: attempt the bounded
 subagent setup, resolve availability uncertainty, and cite the concrete host
 signal. Do not assume subagents are unavailable from priors.
 
-## Fallback
+## If The Host Blocks The Canonical Path
 
-Run the local pass only when the capability check returned a concrete block or
-the caller explicitly asked for a degraded fallback:
-
-- perform the same premortem yourself
-- write down the single most likely misread
-- tighten the handoff only where that misread is real
-- label the result as the degraded variant and say why the canonical path was
-  skipped
+Stop and record the concrete host signal. Treat it as a host-side operating
+gap for this run. Do not replace the misunderstanding premortem with a
+same-agent local pass and still call the baton pass verified.
 
 ## Guardrails
 

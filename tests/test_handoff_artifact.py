@@ -145,7 +145,7 @@ def test_validate_handoff_artifact_rejects_overlong_handoff(tmp_path: Path) -> N
     (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
     result = run_script("scripts/validate-handoff-artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "80 lines" in result.stderr
+    assert "70 lines" in result.stderr
 
 
 def test_validate_handoff_artifact_rejects_explicit_allowance_as_subagent_blocker(tmp_path: Path) -> None:
