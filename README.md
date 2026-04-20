@@ -1,33 +1,38 @@
-# charness
+# Charness - Corca Harness
 
-`charness` is the portable Corca harness layer for repo-owned agent work.
+`charness` is a Claude Code / Codex plugin developed by [Corca](https://www.corca.ai/).
 
-It packages public workflow skills, support skills, profiles, presets,
-integration manifests, and repo-owned validation flows so a host can adopt one
-coherent harness surface instead of rebuilding the same operating lore in each
-prompt surface.
+It helps plugin developers keep shared workflow logic separate from
+repo-specific rules, so skills can grow with each repository instead of
+hard-coding one team's assumptions everywhere.
 
-Use it when your repo has recurring agent work such as concept shaping,
-implementation, review, handoff, or release work, and you want those workflows
-to stay portable across Claude Code, Codex, or adjacent host surfaces.
+`charness` combines public workflow skills, repo-local adapters, support
+integrations, and a managed install/update path into one system for teams that
+want agents to do more real work without turning every repository into a
+one-off prompt maze.
 
-In a normal task-oriented session, `charness` now starts from a capability map:
-run `charness:find-skills` first, then choose the public skill or supporting
-capability that fits the task.
+## Core Concepts
 
-## Who It Is For
+These are the core concepts `charness` uses to tackle common problems plugin
+developers run into.
 
-- teams maintaining repo-owned agent workflows or skill packs across Claude
-  Code, Codex, or adjacent host surfaces
-- maintainers who want portable workflow concepts instead of host-specific
-  prompt bundles
-- operators who want install, update, doctor, and support-sync seams without
-  turning `charness` into the runtime owner of every external tool
+| Concept | Common problem | How `charness` handles it | Connected skills and areas |
+|---|---|---|---|
+| Less is more | If you assume the agent is not very capable, the system grows extra modes, options, explanation, and ceremony until users have to learn the framework before they can use it. | `charness` assumes a capable agent. It prefers strong defaults, a small public interface, and progressive disclosure, then moves deeper rules into adapters, helpers, and repo-owned checks only when they are actually needed. | `find-skills`, `init-repo`, `quality`, `create-skill` |
+| Human-code-AI symbiosis | Automation gets brittle when people, deterministic checks, and AI all try to do the same job badly instead of each doing what they are best at. | Humans keep the decisions that require judgment, authority, physical action, or another machine. Code keeps the deterministic gates: linters, tests, validators, hooks. AI handles exploration, drafting, implementation, and synthesis. `charness` is designed to keep those roles aligned instead of blurred together. | `impl`, `quality`, `hitl`, validators, hooks |
+| Shared logic, local growth | A skill written directly from one team's habits often works in one repository and feels wrong everywhere else. | `charness` keeps shared workflow concepts public, then lets each repository define its own docs, rules, checks, and operating patterns through adapters. The workflow stays recognizable, but it can still grow in ways that fit the repo using it. | public skills, adapters, `create-skill`, `narrative` |
+| Agents are first-class users | If install, update, and health checks only make sense to a human operator, agents end up guessing local state and repeating recovery work every session. | `charness` ships as both plugin and CLI. The same path can install it, verify what is ready, update it later, and tell both people and agents what to do next. | install / update / doctor flows, `release`, `find-skills` |
+| Concepts first, tools second | When public skills mix user-facing workflow ideas with tool-specific instructions, every tool change becomes a workflow rewrite. | `charness` keeps workflow concepts in public skills and pushes tool-specific know-how into support skills and integrations. That way a repo can swap tools without losing the workflow shape users learned. | `gather`, support skills, integrations |
+| Quality makes autonomy trustworthy | As repositories get larger and agents work longer, weak code, tests, design, docs, skills, or binaries become the first place trust breaks down. | `charness` treats quality as a system-wide trust problem, not just a code-style problem. It helps repos build reliable foundations early, then improve code, tests, skills, binaries, design, docs, and operating checks together as automation grows more ambitious. | `init-repo`, `quality`, `debug`, `premortem` |
+| Communication depends on who speaks to whom | Work only stays alive when it can move between people and agents, but the right format changes depending on who is talking to whom. | `charness` treats communication as part of the system. It separates announcement, narrative, handoff, and HITL review because the best shape for person -> organization, person -> person, agent -> agent, and agent -> person communication is not the same. | `announcement`, `narrative`, `handoff`, `hitl` |
+| Expert tacit knowledge becomes workflow | Great debugging and review often live inside a few experts' heads, so teams keep relearning the same patterns by trial and error. | `charness` turns that tacit knowledge into reusable workflow patterns. Some skills are built from deep interviews with expert practitioners, and when a name usefully recalls the right thinking pattern, the expert's name stays in the skill. | `debug`, `premortem`, `retro`, adjacent skills |
+| The system should get smarter with use | Repeated mistakes and good decisions are wasted if they disappear when the session ends. | `charness` keeps lessons alive through retro, auto-retro, adapters, validators, and durable artifacts, so both people and agents can improve the system while using it. | `retro`, `quality`, `handoff` |
 
 ## Quick Start
 
-If you want an agent to install `charness`, give it the install contract
-instead of paraphrasing the steps:
+If you are installing `charness` yourself, start with [INSTALL.md](./INSTALL.md).
+If you want an agent to do it for you, give it the install contract instead of
+paraphrasing the steps:
 
 ```md
 Read and follow: https://raw.githubusercontent.com/corca-ai/charness/main/INSTALL.md
@@ -38,7 +43,8 @@ This repo should work in Claude Code and Codex.
 After installation, use `charness update` for refreshes.
 ```
 
-Primary operator path once the binary is available:
+Once the binary is available, these are the main commands users and agents will
+keep seeing:
 
 - `charness init` to bootstrap or refresh the managed local install surface
 - `charness doctor` to inspect current host state and read `next_action`
@@ -49,13 +55,13 @@ Primary operator path once the binary is available:
   managed checkout and CLI
 - `charness uninstall` when you want the host-facing uninstall path while
   preserving the source checkout and CLI unless explicit delete flags are passed
-- `charness task claim <task-id> --summary "<summary>"` when you want a
-  machine-readable task handoff record under `.charness/tasks/`
 
 [INSTALL.md](./INSTALL.md) remains the canonical install contract. The README is the
 entrypoint, not the full operator manual.
 
 ## Skill Map
+
+The concepts above show up in the skill map below.
 
 Public skills are user-facing workflow concepts. Support skills and
 integrations teach the harness how to use specialized tools without turning
@@ -103,9 +109,8 @@ Current integration examples include:
 - `cautilus`
 - `gws-cli`
 
-This is where `cautilus` belongs in the README: as an upstream-owned support
-binary / skill surface that `charness` can integrate with, not as a public
-workflow concept.
+This is where `cautilus` belongs in the README: as an upstream integration
+boundary and evaluator-facing support tool, not as a public workflow concept.
 
 Profiles and presets stay alongside this skill surface as default bundles and
 host/repo-specific configuration seams rather than user-facing workflow
@@ -134,8 +139,7 @@ This is the common path when the repo shape still needs to be established.
 This is the common path when the repo already has an operating surface and the
 user simply wants work done.
 
-1. Start with `find-skills` so the session begins with the current capability
-   map.
+1. Let the agent route itself from repo context, [AGENTS.md](./AGENTS.md), and installed skill metadata; use `find-skills` when discovery is unclear or the repo needs an explicit capability inventory.
 2. Go straight to `impl` when the task is already concrete enough.
 3. Pull in `spec` only when the contract still needs to be shaped.
 4. Use `debug` when the slice turns into root-cause work.

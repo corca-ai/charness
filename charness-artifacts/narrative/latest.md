@@ -32,8 +32,12 @@ Date: 2026-04-20
 
 - README now leads with who `charness` is for, what kind of repo-owned agent
   work it helps structure, and the current capability-map-first session model.
-- Quick Start now points agents at `INSTALL.md` and keeps the human-facing
-  summary short: `init`, `doctor`, then `update`.
+- Quick Start now tells human readers to start with `INSTALL.md` directly, and
+  still gives agents a clean install-contract handoff prompt plus a short
+  command summary: `init`, `doctor`, then `update`.
+- The command summary now reads as the main operator/agent path readers will
+  keep seeing, while still leaving the detailed install, uninstall, and task
+  contracts in their owner docs.
 - The public skill map now groups skills by intent rather than flattening them
   into one list, with `init-repo` separated as a special entrypoint.
 - `quality` and `retro` now read as dedicated quality-raising loops rather
@@ -41,7 +45,8 @@ Date: 2026-04-20
 - `announcement`, `narrative`, `handoff`, and `hitl` now read by speaking
   direction, not only by topic.
 - `cautilus` now appears in the support-skill / integration explanation where
-  it belongs.
+  it belongs, but is described as an integration/evaluator boundary rather than
+  as a fully productized public-facing concept.
 
 ## Brief
 
