@@ -11,10 +11,7 @@
 - [`AGENTS.md`](../AGENTS.md) now requires one `charness:find-skills` call at the start of each
   task-oriented session so the session begins with a current capability map of
   public skills, support skills, synced support surfaces, and integrations.
-- `find-skills` now actually persists that capability map to
-  [`charness-artifacts/find-skills/latest.md`](../charness-artifacts/find-skills/latest.md) and `latest.json`; unchanged
-  inventories keep the previous generated timestamp instead of rewriting the
-  current pointer on every run.
+- `find-skills` now actually persists that capability map to [`charness-artifacts/find-skills/latest.md`](../charness-artifacts/find-skills/latest.md) and `latest.json`; unchanged inventories keep the previous generated timestamp instead of rewriting the current pointer on every run.
 - 현재 quality gate는 aggregate `60.0%` + per-file `85.0%` coverage floor, test/source ratio 상한 `1.00`, recent-median runtime budget(`pytest` 40s, `check-secrets` 5s, `check-coverage` 15s, `run-evals` 5s, `specdown` 8s)을 enforce한다.
 - 가장 최근 review proof 기준 control-plane coverage는 `98.0%` (`1196/1221`), test/source ratio는 `0.54` (`11279/20721`), standing pytest는 `321 passed`, eval은 `19` scenario pass, review gate는 `38 passed, 0 failed, 50.3s`다.
 - `run-quality.sh`는 `specdown run -quiet -no-report`를 포함하고, `.githooks/pre-push`는 export sync 뒤 canonical quality gate를 강제한다.
@@ -29,6 +26,7 @@
 - 2026-04-19 UTC release surface is now `0.4.1`, and GitHub release `v0.4.1` is live. The release helper now creates the tag before pushing and uses one `git push <remote> <branch> <tag>` transaction, so pre-push quality no longer reruns just because branch and tag were pushed separately.
 - `#45` 방향의 release closure hardening is now in. `release` SKILL and install-surface guidance distinguish `local/tag state complete`, `workflow publication complete`, and `public release surface verified`, and the publish helper artifact now records that public verification is still unchecked unless a repo-owned verifier closes it explicitly.
 - release helper artifacts now prefer adapter-defined `update_instructions` over hardcoded product guesses. This repo’s release adapter now points operator refresh back at `charness update` plus host cache restart when needed.
+- `#44` 방향의 install-surface ownership clarification is now in. `create-cli`는 single canonical target을 기본 lifecycle contract로 두고, multi-target registry/manifest는 explicit choice로만 다루며, `create-skill`은 그 ownership을 package boundary 밖 owning CLI/packaging contract로 남기고, `quality`는 cleanup owner matches install owner lens를 본다.
 - `#33`/`#34` 방향의 public spec boundary 정리는 반영됐다. `spec`은 public executable contract vs implementation guard를 명시하고, `quality`는 proof layering inventory plus actionable `move_down` / `delete_or_merge` / `keep_if_integration_value` recommendation payload를 갖는다.
 - `quality` public skill은 이번 slice에서 structure-first routing을 더 명시했다. 길이/중복/pressure signal은 기본적으로 concept-review advisory로 보고, explicit low-noise invariant와 clear structural response가 있을 때만 `AUTO_CANDIDATE`/`AUTO_EXISTING`로 올린다. 이 caution은 coverage floor나 runtime budget 같은 standing threshold gate까지 일반화하지 않는다.
 - 2026-04-17 quality review 기준 남은 advisory pressure는 [`AGENTS.md`](../AGENTS.md)/[`README.md`](../README.md)/[`UNINSTALL.md`](../UNINSTALL.md) entrypoint ergonomics, `init-repo`/`retro`/`spec`의 mode-pressure wording, 그리고 `quality` SKILL core의 `long_core`다.
@@ -57,7 +55,7 @@
 1. `git status --short`를 먼저 확인한다.
 2. public-spec executable proof 약점은 이번 slice에서 정리됐다. `inventory_public_spec_quality.py`는 실제 `run:shell` fence를 읽고, [`specs/index.spec.md`](../specs/index.spec.md)/[`specs/tool-doctor.spec.md`](../specs/tool-doctor.spec.md)는 direct CLI proof로 바뀌어 현재 flagged spec이 없다.
 3. release를 이어받는 다음 세션은 먼저 `python3 skills/public/release/scripts/current_release.py --repo-root .`로 checked-in version surface를 확인하고, 새 publish slice라면 `publish_release.py` helper를 기본 경로로 쓴다. bump만 하고 push-only 상태에서 멈추지 않는다.
-4. 다음 pickup의 first move는 `#44`를 실제로 먹을지 판단하는 것이다. 진행한다면 `create-cli` 중심 rule로 두고, `create-skill`에는 lifecycle owner를 다시 넣지 말고 boundary만 강화한다. 만약 release follow-up을 더 파면, 다음 포인트는 `check_real_host_proof.py`와 publish artifact wording이 local changed-path state, async workflow state, public verification state를 아직 얼마나 섞고 있는지 다시 분리하는 것이다.
+4. 다음 pickup의 first move는 `#44` 후속이 필요할지 판단하는 것이다. 현재 rule은 docs/policy layer까지는 들어갔고 hard validator는 아직 없다. 더 파면 `quality` advisory를 standing gate로 올릴 low-noise invariant가 실제 있는지, 아니면 지금 수준에서 issue close만 하면 되는지부터 본다. release follow-up을 더 파면, 다음 포인트는 `check_real_host_proof.py`와 publish artifact wording이 local changed-path state, async workflow state, public verification state를 아직 얼마나 섞고 있는지 다시 분리하는 것이다.
 5. `markdown-preview`는 helper-only 상태가 아니다. `quality`에는 bootstrap/execute seam이 이미 있고, `narrative` docs도 rendered Markdown review를 workflow seam으로 언급한다. 현재 판단으로는 `announcement` explicit 연결은 우선순위가 낮고, 정말 남은 질문은 `docs:preview`류 별도 command surface가 실제 필요한지다.
 6. CLI UX follow-up을 이어가면 `update`에 맞춘 human-first default / `--json` opt-in / stderr progress pattern을 `init` 같은 나머지 long-running lifecycle commands에도 확대할지 판단한다. 이번 slice는 `update`와 `update all`만 바꿨다.
 7. Agent Harness Guide adaptation을 이어가면 [charness-artifacts/spec/agent-harness-guide-adaptation.md](../charness-artifacts/spec/agent-harness-guide-adaptation.md)를 읽고 `Slice 1`부터 시작한다. 첫 범위는 [`docs/harness-composition.md`](./harness-composition.md), [`docs/artifact-policy.md`](./artifact-policy.md), 최소 handoff cross-link다.

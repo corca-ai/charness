@@ -90,6 +90,27 @@ User-scoped registry note:
 - keep the registry semantics product-owned; the shared pattern is the contract,
   not one hardcoded filename
 
+Materialized install surface ownership note:
+
+- when install or update lands exactly one host-visible copy, prefer one
+  canonical target path plus direct proof over a registry or manifest layer
+- add a registry or manifest only when the product intentionally manages
+  multiple install targets and refresh, cleanup, or provenance cannot be
+  recovered safely from one canonical target
+- keep cleanup responsibility aligned with install responsibility: the product
+  should clean up the targets or registry entries it creates, and it should not
+  pretend to own uninstall of host-managed copies
+- keep compatibility shims, migration aliases, and helper symlink layouts as
+  implementation detail unless an operator must choose, repair, or verify them
+
+Example boundary:
+
+- one plugin export path or one installed binary path: model that as the
+  canonical target and report whether it was refreshed
+- multiple managed repo-local checkouts, plugin copies, or install channels:
+  make the registry or manifest decision explicit and expose stale-entry
+  cleanup honestly
+
 Version provenance note:
 
 - when update guidance depends on how the tool was installed, persist current

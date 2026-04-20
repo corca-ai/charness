@@ -42,9 +42,13 @@ Use `create-cli` when the repo owns:
 - plugin install/update commands
 - doctor or recovery state
 - structured output that later agents read
+- lifecycle state for one canonical host target or an explicit managed-install
+  registry for multiple targets
 
 Keep `create-skill` focused on the skill package boundary itself:
 
 - is this one user-facing concept?
 - does it stay portable after host behavior is removed?
 - are runtime capabilities modeled in manifests instead of hidden prose?
+- is lifecycle ownership delegated to the owning CLI or packaging contract
+  instead of being reinvented inside skill-local docs?

@@ -76,7 +76,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 2. Detect the current gate surface.
    - independently enumerate the current source, spec, and gate inventory before letting the previous quality artifact define scope
    - local executable gates already present
-   - if the repo ships an installable CLI, bootstrap command, or operator-facing command surface, inspect whether help, command discovery, binary health, install/readiness, and local discoverability are separated honestly
+   - if the repo ships an installable CLI, bootstrap command, or operator-facing command surface, inspect whether help, command discovery, binary health, install/readiness, local discoverability, canonical-target vs multi-target lifecycle ownership, and cleanup ownership are separated honestly
    - when README, docs, or public-spec prose readability is part of the review, run the markdown preview seam or leave an explicit bootstrap payload instead of treating raw Markdown as equivalent proof
    - when CLI ergonomics are in scope, inventory flat help-list and cross-archetype schema smells with `$SKILL_DIR/scripts/inventory_cli_ergonomics.py`
    - when a standing local gate exists, inventory quiet-default vs verbose-on-demand posture with `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`
@@ -98,7 +98,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - prefer repo-native commands over hypothetical recommendations
    - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage
    - when a standing gate already exists, prefer compact default phase output plus a verbose-on-demand escape hatch over always-on chatter; see `references/standing-gate-verbosity.md`
-   - when a hot spot becomes the standing single dominator, define a `runtime_budgets` entry in the adapter and call `$SKILL_DIR/scripts/check-runtime-budget.py` from the repo's standing gate; budgets fail the gate on recent-median drift and report single latest-sample spikes separately
+   - when a hot spot becomes the standing single dominator, define a `runtime_budgets` entry in the adapter and call `$SKILL_DIR/scripts/check-runtime-budget.py` from the repo's standing gate; budgets fail on recent-median drift and report latest-sample spikes separately
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model
    - before proposing a new gate for length, duplicate, or pressure findings, ask which structural question the signal is exposing: delete, merge, split ownership, extract a helper, or narrow the interface
@@ -138,8 +138,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not recommend gates the repo cannot realistically run without saying why.
 - Do not treat a passing length, duplicate, or pressure heuristic as the goal; the goal is the structural simplification or ownership clarification that made the heuristic quiet again.
 - Do not ignore runtime drift just because a gate still passes functionally.
-- Do not ask only what proof is missing when executable public specs land; ask
-  what is duplicated at the wrong layer too.
+- Do not ask only what proof is missing when executable public specs land; ask what is duplicated at the wrong layer too.
 - Do not wait for operator follow-up before stating current runtime hot spots, coverage-gate presence or absence, and evaluator-depth status when the repo signals are available.
 - Do not treat slow or broad executable specs as automatically strong quality when they mostly duplicate cheaper deterministic coverage.
 - Do not leave an automatable quality rule as prose-only guidance when a linter, validator, test, hook, or script could own it.
@@ -158,6 +157,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not treat a historical second implementation as a free safety oracle when no parity harness proves the two paths still agree.
 - Do not treat a historical second implementation as healthy unless the repo has enforced parity, an asserted intentional divergence, or an explicit canonicalization plan.
 - Do not treat support-skill materialization or host-visible plugin discovery as the same seam as generic binary health.
+- Do not normalize ambient multi-target scanning when one canonical install target would be the more honest lifecycle contract.
 - Keep repo-local markdown-link discipline separate from external URL health when the repo needs both.
 - Do not pretend a conceptual boundary problem is solved just because duplicate text was linted away; semantic boundary questions still need concept review.
 - Do not confuse skill ergonomics review with taste policing; advisory inventory should sharpen defaults, inference, and discoverability rather than enforce one writing style.

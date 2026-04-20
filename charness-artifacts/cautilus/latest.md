@@ -3,28 +3,31 @@ Date: 2026-04-20
 
 ## Trigger
 
-- slice: tighten `release` closure semantics after issue `#45`, separating
-  local/tag completion from workflow publication and public release surface
-  verification
+- slice: clarify lifecycle ownership for materialized install surfaces after
+  issue `#44`, making single canonical targets the default and multi-target
+  registries an explicit choice
 - claim: `preserve`
 
 ## Validation Goal
 
 - goal: `preserve`
-- reason: the slice changes release-skill wording and release adapter guidance,
-  but it should not change the maintained public instruction routing contract
+- reason: the slice changes `create-cli`, `create-skill`, and `quality`
+  wording around install-surface ownership, but it should not change the
+  maintained public instruction routing contract
 
 ## Prompt Surfaces
 
-- `.agents/release-adapter.yaml`
-- `skills/public/release/SKILL.md`
-- `skills/public/release/references/adapter-contract.md`
-- `skills/public/release/references/install-surface.md`
+- `skills/public/create-cli/SKILL.md`
+- `skills/public/create-cli/references/install-update.md`
+- `skills/public/create-skill/references/deployable-skill-packaging.md`
+- `skills/public/quality/SKILL.md`
+- `skills/public/quality/references/installable-cli-probes.md`
 
 ## Commands Run
 
 - `cautilus instruction-surface test --repo-root .`
-- `pytest -q tests/quality_gates/test_release_publish.py tests/quality_gates/test_release_real_host.py`
+- `python3 scripts/validate-skills.py`
+- `python3 skills/public/quality/scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id create-cli`
 
 ## Outcome
 
@@ -36,9 +39,8 @@ Date: 2026-04-20
 
 ## Follow-ups
 
-- keep `tag pushed`, workflow publication, and `public release surface
-  verified` as separate release states instead of collapsing them back into one
-  publish-complete phrase
-- if the repo later adds async public-release verification helpers, wire them
-  into the release adapter/helper contract rather than leaving the boundary as
-  prose-only closeout guidance
+- keep lifecycle ownership defaulting to one canonical target unless a product
+  really manages multiple install surfaces
+- if a future repo wants multi-target refresh or uninstall, make the registry
+  or manifest explicit in the owning CLI contract instead of smuggling it into
+  skill-local packaging prose

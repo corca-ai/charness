@@ -39,6 +39,8 @@ steps call tools outside the baseline shell surface.
    - one obvious install/bootstrap path
    - explicit `doctor`, `update`, `reset`, or `uninstall` commands when the
      product owns lifecycle state
+   - if install materializes one host-visible target, treat that target as the
+     canonical lifecycle surface instead of inventing a registry first
    - if the product needs one command that refreshes both itself and tracked
      external/runtime surfaces, keep that aggregate path product-owned, such as
      `update all`, instead of leaking harness-internal vocabulary
@@ -60,6 +62,8 @@ steps call tools outside the baseline shell surface.
    - install and update commands must say what they changed
    - long-running mutations should show phase progress so operators can tell
      what is happening before the command finishes
+   - if the product manages multiple install targets, make the registry or
+     manifest decision explicit and say who cleans up stale entries
    - if `update` has a wider aggregate variant, distinguish self-update from
      tracked dependency refresh in both help text and structured output
    - readiness commands may depend on repo or local install state, but they

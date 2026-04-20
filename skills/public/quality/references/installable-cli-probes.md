@@ -12,12 +12,18 @@ Check these seams explicitly:
 - repo/install readiness
 - local discoverability such as support-skill materialization or host-visible
   plugin state
+- lifecycle ownership: one canonical target vs explicit multi-target registry or
+  manifest, plus who owns cleanup
 
 Review docs and runtime together:
 
 - README / INSTALL / operator docs should describe install, update, doctor,
   reset, and uninstall behavior without conflating them
 - readiness and discoverability should not be reported as generic binary health
+- if one installed copy is canonical, docs and machine-readable state should
+  point at that target directly instead of hiding it behind a registry story
+- if multiple managed targets exist, docs should say how they are tracked and
+  how stale entries or orphaned copies get cleaned up
 - a repo-local install surface should not fail closed on gitignored runtime
   artifacts unless that exact seam is the point of the check
 
