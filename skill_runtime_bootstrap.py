@@ -15,11 +15,13 @@ def _load_skill_runtime_bootstrap_module():
 
 
 _SKILL_RUNTIME_BOOTSTRAP = _load_skill_runtime_bootstrap_module()
+arm_cli_timeout = _SKILL_RUNTIME_BOOTSTRAP.arm_cli_timeout
 load_local_skill_module = _SKILL_RUNTIME_BOOTSTRAP.load_local_skill_module
 load_repo_module_from_skill_script = _SKILL_RUNTIME_BOOTSTRAP.load_repo_module_from_skill_script
 repo_root_from_skill_script = _SKILL_RUNTIME_BOOTSTRAP.repo_root_from_skill_script
 
 __all__ = [
+    "arm_cli_timeout",
     "load_local_skill_module",
     "load_repo_module_from_skill_script",
     "repo_root_from_skill_script",

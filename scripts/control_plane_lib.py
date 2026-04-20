@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import re
-import subprocess
 import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -21,6 +20,7 @@ from scripts.repo_layout import (
     support_capability_paths,
     support_capability_schema_path,
 )
+from scripts.subprocess_guard import run_process
 
 MANIFEST_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "integrations" / "tools" / "manifest.schema.json"
 LOCKS_DIR = Path("integrations/locks")
@@ -128,14 +128,11 @@ def load_capabilities(repo_root: Path) -> list[dict[str, Any]]:
 
 
 def run_shell(command: str, cwd: Path) -> CommandResult:
-    completed = subprocess.run(
+    completed = run_process(
         command,
+        cwd=cwd,
         shell=True,
         executable="/bin/bash",
-        cwd=cwd,
-        check=False,
-        capture_output=True,
-        text=True,
     )
     return CommandResult(
         command=command,

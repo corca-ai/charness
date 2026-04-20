@@ -37,8 +37,11 @@ Examples:
   `human-only`, `degraded`)
 - which version range is expected
 - how to health-check it
+- runtime hygiene for long-lived helper processes or daemons that `charness`
+  may start, reuse, or depend on
 - how hosts should install or update it
 - how a public skill should degrade when it is absent
+- the scripted recovery path when a recurring integration failure mode is known
 
 ### `gather` provider exception
 

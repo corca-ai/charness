@@ -13,6 +13,8 @@ from pathlib import Path
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
+_scripts_subprocess_guard_module = import_repo_module(__file__, "scripts.subprocess_guard")
+run_process = _scripts_subprocess_guard_module.run_process
 _scripts_eval_init_repo_module = import_repo_module(__file__, "scripts.eval_init_repo")
 run_init_repo_inspect_states = _scripts_eval_init_repo_module.run_init_repo_inspect_states
 run_init_repo_operator_acceptance_synthesis = _scripts_eval_init_repo_module.run_init_repo_operator_acceptance_synthesis
@@ -28,14 +30,15 @@ class EvalError(Exception):
     pass
 
 
+COMMAND_TIMEOUT_SECONDS = 60
+
+
 def run_command(command: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
+    return run_process(
         command,
         cwd=cwd,
-        check=False,
-        capture_output=True,
-        text=True,
         env=env,
+        timeout_seconds=COMMAND_TIMEOUT_SECONDS,
     )
 
 

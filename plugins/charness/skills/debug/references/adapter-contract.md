@@ -38,7 +38,7 @@ The durable debug artifact filename is fixed:
 
 Default path:
 
-- `charness-artifacts/debug/latest.md`
+- [`charness-artifacts/debug/latest.md`](../../../../charness-artifacts/debug/latest.md)
 
 Dated debug records should use `charness-artifacts/debug/YYYY-MM-DD-<slug>.md`.
 

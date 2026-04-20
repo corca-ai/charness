@@ -1,43 +1,40 @@
 # Cautilus Dogfood
-Date: 2026-04-19
+Date: 2026-04-20
 
 ## Trigger
 
-- slice: fix `find-skills` startup artifact drift by keeping installed-plugin
-  invocation aligned with repo-owned source inventory, and add an explicit
-  session rule for classifying `find-skills/latest.*` rewrites before treating
-  them as commit candidates
+- slice: bound unowned process seams after issues `#41` and `#42`, including
+  timeout discipline for public `resolve_adapter` CLIs and repo-owned
+  `agent-browser` runtime hygiene / cleanup surfaces
 - claim: `preserve`
 
 ## Validation Goal
 
 - goal: `preserve`
-- reason: this slice tightens startup discovery and session discipline, but it
-  should not disturb the maintained instruction routing contract for
-  `find-skills -> impl` or direct `spec` routing
+- reason: the slice adds stronger process and runtime guardrails, but it should
+  not change the maintained public instruction routing contract
 
 ## Prompt Surfaces
 
-- `AGENTS.md`
+- `skills/public/debug/references/adapter-contract.md`
+- `skills/public/debug/references/document-seams.md`
 
 ## Commands Run
 
 - `cautilus instruction-surface test --repo-root .`
-- `python3 scripts/run-evals.py --repo-root .`
+- `pytest -q tests/test_subprocess_guard.py tests/test_script_timeout.py tests/test_agent_browser_runtime_guard.py tests/test_gather_google_workspace.py tests/control_plane/test_integrations_validation.py tests/control_plane/test_sync_support.py tests/charness_cli/test_tool_lifecycle.py`
 
 ## Outcome
 
 - recommendation: `accept-now`
 - instruction-surface summary: `4 passed / 0 failed / 0 blocked`
-- routing notes: the checked-in surface still preserves `find-skills -> impl`
-  on the workspace path, compact direct implementation still routes to `impl`,
-  and checked direct contract-shaping still routes to `spec`
+- routing notes: the checked-in surface still preserves the maintained
+  `find-skills -> impl` path, compact direct implementation still routes to
+  `impl`, and direct contract-shaping still routes to `spec`
 
 ## Follow-ups
 
-- keep treating `charness-artifacts/find-skills/latest.*` as canonical
-  capability inventory only when the inventory itself changed; startup
-  invocation churn should now be handled as a bug
-- if `find-skills` later needs to mix installed public skills with
-  repo-specific integrations for non-source consumer repos, add that as a
-  separate contract change instead of regressing the source-repo path again
+- keep pushing timeout and lifecycle ownership into repo-owned helpers instead
+  of leaving raw subprocess calls and daemon recovery as prose-only guidance
+- if another long-lived runtime seam lands, require doctor-visible hygiene and
+  scripted recovery from the first integration slice

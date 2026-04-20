@@ -9,7 +9,7 @@ Use the repo's current durable troubleshooting surface:
 - a troubleshooting doc
 - an issue-linked artifact
 
-If nothing exists, default to `charness-artifacts/debug/latest.md` for the
+If nothing exists, default to [`charness-artifacts/debug/latest.md`](../../../../charness-artifacts/debug/latest.md) for the
 current pointer and `charness-artifacts/debug/YYYY-MM-DD-<slug>.md` for dated
 records.
 

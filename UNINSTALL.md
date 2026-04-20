@@ -52,8 +52,9 @@ the uninstall name:
 charness uninstall
 ```
 
-`charness uninstall` now removes the same host-facing plugin state while still
-preserving the source checkout and CLI unless explicit delete flags are passed.
+`charness uninstall` now removes host plugin state while keeping the managed
+checkout and CLI, preserving the source checkout and CLI unless explicit delete
+flags are passed.
 
 If the host caches plugin visibility, restart Codex after the uninstall.
 

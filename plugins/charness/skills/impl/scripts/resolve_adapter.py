@@ -190,12 +190,16 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
 
 
 def main() -> None:
+    cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="impl resolve_adapter")
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
-    args = parser.parse_args()
-    sys.stdout.write(
-        json.dumps(load_adapter(args.repo_root.resolve()), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
-    )
+    try:
+        args = parser.parse_args()
+        sys.stdout.write(
+            json.dumps(load_adapter(args.repo_root.resolve()), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+        )
+    finally:
+        cancel_timeout()
 
 
 if __name__ == "__main__":

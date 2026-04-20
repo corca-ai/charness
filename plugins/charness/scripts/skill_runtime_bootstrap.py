@@ -16,6 +16,7 @@ def _load_runtime_bootstrap_module() -> ModuleType:
 
 
 _RUNTIME_BOOTSTRAP = _load_runtime_bootstrap_module()
+arm_cli_timeout = _RUNTIME_BOOTSTRAP.arm_cli_timeout
 load_path_module = _RUNTIME_BOOTSTRAP.load_path_module
 
 

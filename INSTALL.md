@@ -114,6 +114,9 @@ One-time recovery note for older installs:
 charness doctor --write-state
 ```
 
+It stays read-only and only writes machine-local doctor state when you pass
+`--write-state`.
+
 ## Step 2: Follow The `next_action` Output
 
 `charness init` is the canonical host detector. Do not guess which host action
@@ -170,6 +173,7 @@ Optional version inspection:
 ## Step 4: Update Model
 
 - run `charness update`
+- use it when you want to refresh the installed surface without reinstalling
 - run `charness update all` when you also want tracked external tools and
   bundled support skills refreshed in the same pass
 - for Codex, expect `charness update` to attempt the official local plugin

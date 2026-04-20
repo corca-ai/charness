@@ -46,13 +46,19 @@ This repo should work in Claude Code and Codex.
 After installation, use `charness update` for refreshes.
 ```
 
-After install, the usual operator path is short:
+Primary operator path once the binary is available:
 
 - `charness init` to bootstrap or refresh the managed local install surface
 - `charness doctor` to inspect current host state and read `next_action`
-- `charness update` to refresh the installed `charness` surface later
+- `charness update` to refresh the installed surface later
 - `charness update all` when you also want tracked external tools and bundled
   support skills refreshed in the same pass
+- `charness reset` when you need to remove host plugin state while keeping the
+  managed checkout and CLI
+- `charness uninstall` when you want the host-facing uninstall path while
+  preserving the source checkout and CLI unless explicit delete flags are passed
+- `charness task claim <task-id> --summary "<summary>"` when you want a
+  machine-readable task handoff record under `.charness/tasks/`
 
 [INSTALL.md](./INSTALL.md) remains the canonical install contract. The README is the
 entrypoint, not the full operator manual.

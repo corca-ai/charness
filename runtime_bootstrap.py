@@ -15,8 +15,9 @@ def _load_runtime_bootstrap_module():
 
 
 _RUNTIME_BOOTSTRAP = _load_runtime_bootstrap_module()
+arm_cli_timeout = _RUNTIME_BOOTSTRAP.arm_cli_timeout
 import_repo_module = _RUNTIME_BOOTSTRAP.import_repo_module
 load_path_module = _RUNTIME_BOOTSTRAP.load_path_module
 repo_root_from_script = _RUNTIME_BOOTSTRAP.repo_root_from_script
 
-__all__ = ["import_repo_module", "load_path_module", "repo_root_from_script"]
+__all__ = ["arm_cli_timeout", "import_repo_module", "load_path_module", "repo_root_from_script"]

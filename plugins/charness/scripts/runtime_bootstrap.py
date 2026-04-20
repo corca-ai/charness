@@ -26,3 +26,12 @@ def load_path_module(module_name: str, module_path: Path) -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def arm_cli_timeout(
+    *,
+    label: str,
+    default_seconds: int = 10,
+):
+    module = import_repo_module(__file__, "scripts.script_timeout")
+    return module.arm_cli_timeout(label=label, default_seconds=default_seconds)

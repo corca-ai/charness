@@ -41,13 +41,13 @@
     },
     "healthcheck": {
       "commands": [
-        "agent-browser --help"
+        "python3 skills/support/agent-browser/scripts/runtime_guard.py --repo-root . --doctor-check"
       ],
       "success_criteria": [
         "exit_code:0",
-        "stdout_contains:agent-browser"
+        "stdout_contains:agent-browser runtime healthy"
       ],
-      "failure_hint": "The CLI exists but does not respond cleanly. Reinstall it or run `agent-browser install --with-deps` on Linux."
+      "failure_hint": "The CLI exists but the runtime is not healthy. Run `python3 skills/support/agent-browser/scripts/runtime_guard.py --repo-root . --cleanup-orphans --execute` to remove orphan daemon trees, then reinstall or run `agent-browser install --with-deps` if the CLI itself is still unhealthy."
     }
   },
   "access_modes": [
@@ -101,6 +101,7 @@
   },
   "host_notes": [
     "Hosts may need a separate Chromium or Chrome installation if they do not use `agent-browser install`.",
-    "Local desktop profile reuse is not equivalent to a remote or CI-like Linux runner; some flows require a one-time manual or headed bootstrap before later headless reuse is honest."
+    "Local desktop profile reuse is not equivalent to a remote or CI-like Linux runner; some flows require a one-time manual or headed bootstrap before later headless reuse is honest.",
+    "Long-lived orphan `agent-browser` daemons are treated as runtime drift, not as a healthy installed state."
   ]
 }

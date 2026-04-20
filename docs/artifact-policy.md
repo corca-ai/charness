@@ -135,8 +135,8 @@ For visible skill artifacts, the default naming pattern is:
 
 Current repo examples:
 
-- `charness-artifacts/debug/latest.md`
-- `charness-artifacts/debug/YYYY-MM-DD-<slug>.md`
+- [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md)
+- [charness-artifacts/debug/debug-2026-04-20-process-boundary-drift.md](../charness-artifacts/debug/debug-2026-04-20-process-boundary-drift.md)
 - [`charness-artifacts/gather/latest.md`](../charness-artifacts/gather/latest.md)
 - [`charness-artifacts/release/latest.md`](../charness-artifacts/release/latest.md)
 

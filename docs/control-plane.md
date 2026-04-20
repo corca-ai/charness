@@ -205,6 +205,11 @@ and onboarding layers can inspect it without re-reading the source file:
 - `capability_requirements`
 - `readiness`
 
+For long-lived external runtimes, health is not limited to "the binary
+responds". Doctor should also fail closed on known runtime-hygiene drift such
+as orphaned daemon trees when `charness` has a repo-owned inspection or cleanup
+surface for that tool.
+
 ## Initial Target Set
 
 The first manifest wave should cover:
@@ -223,6 +228,9 @@ consumer-owned adapters remain local repo assets.
 Representative operator path:
 `charness tool doctor cautilus`, `charness tool install cautilus`,
 `charness tool update agent-browser`, `charness tool sync-support cautilus`.
+
+When a tool's healthcheck detects recurring runtime drift, the follow-up should
+prefer a repo-owned cleanup command over prose-only guidance.
 
 Manual-mode install flows should persist manual install guidance, latest
 observed release metadata when available, and refreshed doctor state instead of
