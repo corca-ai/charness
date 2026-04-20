@@ -21,6 +21,8 @@ Handoffs should include only the facts that change the next action.
   artifact and do not change the next action
 - stable release numbers, version surfaces, or dogfood/proof counts that are
   already owned elsewhere and do not change the first move
+- always-loaded host instruction surfaces that the host already injects
+  automatically unless omitting them would change the first move
 - debug or retro story detail when a link is enough
 
 ## Compression Rule

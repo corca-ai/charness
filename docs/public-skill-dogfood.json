@@ -274,7 +274,7 @@
       "reviewed_on": "2026-04-20",
       "observed_evidence": [
         "The checked-in public core now makes the `Workflow Trigger` the handoff's primary contract: mention-only pickup should continue the named workflow instead of re-deriving state from summary prose, and the trigger should be explicit enough that the next operator does not have to infer the first move.",
-        "That same seam is reinforced by the updated `handoff` references: `workflow-trigger.md` keeps the first move explicit, while `state-selection.md` and `spill-targets.md` now push stable metrics and proof detail back to their owning artifacts so the handoff stays pointer-heavy.",
+        "That same seam is reinforced by the updated `handoff` references: `workflow-trigger.md` keeps the first move explicit, `state-selection.md` and `spill-targets.md` push stable metrics and proof detail back to their owning artifacts, and always-loaded host instruction surfaces are now non-default in `References`.",
         "That keeps `handoff-workflow-trigger-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: pushing the handoff away from history-first writing and back toward continuation-first pickup still maps directly to checked-in `handoff` behavior."
       ]
     },

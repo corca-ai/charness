@@ -29,7 +29,6 @@
 
 ## References
 
-- [AGENTS.md](../AGENTS.md)
 - [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
 - [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md)
 - [charness-artifacts/retro/recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)

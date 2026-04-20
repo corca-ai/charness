@@ -79,6 +79,9 @@ the `Workflow Trigger` first and continue with that workflow.
    - tight reference list
    - one reference to the owning artifact for metrics, history, or proof detail
      instead of replaying that detail inline
+   - leave always-loaded host instruction surfaces out of `References` by
+     default; include them only when omitting them would realistically change
+     the first action
 4. Keep the trigger explicit.
    - if a named workflow or skill should run next, say it directly
    - if the next pickup depends on reading specific files first, name them
@@ -124,6 +127,8 @@ The handoff should usually contain:
   budget is a failure guard, not a target.
 - Do not restate stable repo defaults, release numbers, or gate metrics when a
   link to the owning artifact would leave the next action unchanged.
+- Do not list always-loaded host instruction surfaces in `References` by
+  default when the host already injects them automatically at session start.
 - Do not assume your own interpretation of the handoff is the only plausible
   one when a bounded premortem could catch a likely misread.
 - If the handoff changed materially, treat it as a real artifact update rather

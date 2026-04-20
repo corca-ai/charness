@@ -24,6 +24,7 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "Run a misunderstanding premortem",
         "Assume a competent next operator can follow one good link",
         "one reference to the owning artifact for metrics, history, or proof detail",
+        "always-loaded host instruction surfaces out of `References` by",
         "The handoff should usually contain:",
         "- `Workflow Trigger`",
         "- `Current State`",

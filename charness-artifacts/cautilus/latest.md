@@ -3,31 +3,23 @@ Date: 2026-04-20
 
 ## Trigger
 
-- slice: clarify lifecycle ownership for materialized install surfaces after
-  `premortem` subagent enforcement and compress `handoff` into a more
-  pointer-heavy baton pass
+- slice: tighten `handoff` reference discipline so always-loaded host
+  instruction surfaces are non-default and the current baton pass drops
+  redundant `AGENTS.md`
 - claim: `preserve`
 
 ## Validation Goal
 
 - goal: `preserve`
-- reason: the slice changes `premortem`, `handoff`, `quality`, and `spec`
-  wording around fresh-eye subagent requirements and baton-pass compression,
-  but it should not change the maintained public instruction routing contract
+- reason: the slice changes `handoff` wording around reference selection and
+  host-injected instruction surfaces, but it should not change the maintained
+  public instruction routing contract
 
 ## Prompt Surfaces
 
 - `skills/public/handoff/SKILL.md`
-- `skills/public/handoff/references/premortem-loop.md`
-- `skills/public/handoff/references/spill-targets.md`
+- `skills/public/handoff/references/document-seams.md`
 - `skills/public/handoff/references/state-selection.md`
-- `skills/public/premortem/SKILL.md`
-- `skills/public/premortem/references/angle-selection.md`
-- `skills/public/premortem/references/subagent-capability-check.md`
-- `skills/public/quality/SKILL.md`
-- `skills/public/quality/references/fresh-eye-premortem.md`
-- `skills/public/spec/SKILL.md`
-- `skills/public/spec/references/premortem-loop.md`
 
 ## Commands Run
 
@@ -42,14 +34,12 @@ Date: 2026-04-20
 - instruction-surface summary: `4 passed / 0 failed / 0 blocked`
 - routing notes: the checked-in surface still preserves the maintained
   `find-skills -> impl` path, compact direct implementation still routes to
-  `impl`, and direct contract-shaping still routes to `spec` even after the
-  stronger subagent and handoff wording
+  `impl`, and direct contract-shaping still routes to `spec` after the
+  tighter handoff reference wording
 
 ## Follow-ups
 
-- if host runtimes still make subagent availability feel optional, lift that
-  capability into a more explicit machine-readable contract instead of relying
-  on prose alone
-- keep `docs/handoff.md` pointer-heavy and push fresh metrics, counts, and
-  historical proof back to their owning artifacts before they re-inflate the
-  baton pass
+- keep always-loaded host instruction surfaces out of handoff `References`
+  unless omitting them would change the first move
+- keep `docs/handoff.md` pointer-heavy and continue pushing durable detail back
+  to its owning artifacts before the baton pass re-inflates

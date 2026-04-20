@@ -15,3 +15,5 @@ the handoff adapter instead of the skill body.
 - one mandatory filename for every host
 - preserving a chronological journal
 - duplicating the same state across many docs
+- repeating host-injected instruction surfaces in handoff references when the
+  host already loads them automatically
