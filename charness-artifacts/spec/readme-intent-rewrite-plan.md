@@ -155,5 +155,14 @@ means real improvement instead of prompt overfitting to a shaky rubric.
 
 ## Immediate Next Step
 
-Persist the short retro, then refresh the intent map for this repo's README and
-propose a candidate top-level structure with block-by-block purpose.
+Completed since this plan was written:
+
+- persisted the short retro
+- rewrote the README through direct ping-pong
+- distilled the first-pass `narrative` improvement brief into
+  [narrative-intent-preserving-rewrite-requirements.md](./narrative-intent-preserving-rewrite-requirements.md)
+
+Next move:
+
+- update the repo-local `narrative` adapter and public `narrative` skill from
+  that requirements brief
