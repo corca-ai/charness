@@ -10,8 +10,8 @@ checked_in_plugin_root: plugins/charness
 sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root .
 quality_command: ./scripts/run-quality.sh
 update_instructions:
-- /plugin marketplace update corca-charness
-- /plugin install charness@corca-charness
+- Run `charness update`.
+- Restart Claude Code or Codex if the host cache still shows the previous version.
 real_host_required_surfaces:
 - integrations-and-control-plane
 real_host_required_path_globs:

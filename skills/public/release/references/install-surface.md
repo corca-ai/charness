@@ -25,10 +25,33 @@ example:
 - restart Codex when host visibility still depends on marketplace rediscovery
 - restart Claude Code when needed
 
+If the repo adapter declares `update_instructions`, treat those as the
+canonical operator-facing refresh path for already published installs instead of
+guessing product-specific commands in the helper output.
+
 If a repo treats a version bump as a published release boundary rather than a
 private maintainer checkpoint, do not leave push, tag, and GitHub release as
 separate ad hoc steps. Ship one repo-owned publish helper so maintainers do not
 accidentally stop after bump+push and call the release done.
+
+## Publication Closure Boundary
+
+For repos with asynchronous publication, keep three states distinct:
+
+- local/tag state complete
+- workflow publication complete
+- public release surface verified
+
+If tag push only starts a later workflow, `release` should not call the release
+complete at tag push alone.
+
+If the real product boundary is an externally consumed GitHub release, package
+index, tap, or similar public surface, the canonical closure point is
+verification that the public surface is actually visible.
+
+Bounded retry/backoff is normal here. Eventual consistency after a successful
+workflow is not the same thing as flaky publication, and the closeout should
+say whether the public surface was verified or is still pending.
 
 ## Real-Host Proof
 

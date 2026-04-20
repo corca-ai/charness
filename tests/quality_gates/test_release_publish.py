@@ -41,6 +41,9 @@ def _write_release_adapter(repo: Path) -> None:
                 "checked_in_plugin_root: plugins/demo",
                 "sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root .",
                 "quality_command: ./scripts/run-quality.sh",
+                "update_instructions:",
+                "- Run `demo update`.",
+                "- Restart the host if the previous version is still visible.",
                 "",
             ]
         ),
@@ -258,3 +261,10 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     assert ["push", "origin", "main"] not in git_log
     assert ["push", "origin", "v0.0.1"] not in git_log
     assert payload["release_url"] == "https://github.com/example/demo/releases/tag/v0.0.1"
+    assert payload["public_release_verification"] == "not_checked"
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    assert "## Release State" in artifact_text
+    assert "public release surface verification: not checked by this helper" in artifact_text
+    assert "## Public Release Verification" in artifact_text
+    assert "Run `demo update`." in artifact_text
+    assert "Restart the host if the previous version is still visible." in artifact_text

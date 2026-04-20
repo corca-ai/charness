@@ -74,7 +74,7 @@ def safe_real_host_payload(repo_root: Path, repo_paths: list[str]) -> dict[str, 
             "surface_hits": [],
             "path_hits": [],
             "checklist": [],
-            "reason": f"Real-host proof probe skipped: {exc}",
+            "reason": f"Real-host/public verification probe could not run: {exc}",
         }
 
 
@@ -146,6 +146,7 @@ def main() -> None:
         branch=branch,
         quality_command=adapter_data["quality_command"],
         release_url=None,
+        update_instructions=adapter_data["update_instructions"],
         real_host_payload=host_payload,
     )
     run(["git", "add", "-A"], cwd=repo_root)
@@ -160,5 +161,6 @@ def main() -> None:
     payload["artifact_path"] = artifact_relpath
     payload["real_host_required"] = host_payload["required"]
     payload["real_host_checklist"] = host_payload["checklist"]
+    payload["public_release_verification"] = "not_checked"
     payload["release_url"] = next((line.strip() for line in reversed(release_result.stdout.splitlines()) if line.strip()), None)
     print(json.dumps(payload, ensure_ascii=False, indent=2))

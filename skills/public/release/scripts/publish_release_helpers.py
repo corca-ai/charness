@@ -76,6 +76,7 @@ def write_release_artifact(
     branch: str,
     quality_command: str,
     release_url: str | None,
+    update_instructions: list[str],
     real_host_payload: dict[str, Any],
 ) -> str:
     artifact_dir = repo_root / output_dir
@@ -87,7 +88,7 @@ def write_release_artifact(
         "",
         "## Scope",
         "",
-        f"Published `{package_id}` release `{target_version}` through the repo-owned release helper.",
+        f"Advanced `{package_id}` toward release `{target_version}` through the repo-owned release helper.",
         "",
         "## Current Version",
         "",
@@ -101,23 +102,48 @@ def write_release_artifact(
         f"- `{quality_command}` passed before publish.",
         "- `current_release.py` reported no version drift across packaging and generated install surfaces.",
         "- one git push carried both the release branch update and the tag from the release helper.",
+        "",
+        "## Release State",
+        "",
+        "- local release mutation: complete",
+        "- branch/tag push: complete",
     ]
     if release_url:
-        lines.append(f"- GitHub release created: {release_url}")
+        lines.append(f"- GitHub release record: created ({release_url})")
+    else:
+        lines.append("- GitHub release record: not created by this helper run")
+    lines.extend(
+        [
+            "- public release surface verification: not checked by this helper",
+            "",
+            "## Public Release Verification",
+            "",
+        ]
+    )
     if real_host_payload.get("required"):
+        lines.append(
+            "- This slice still requires configured public/real-host verification before the release is fully closed."
+        )
         lines.extend(["", "## Real-Host Proof", "", "- Release-time real-host proof is required for this slice."])
         lines.extend(f"- {item}" for item in real_host_payload.get("checklist", []))
     else:
-        lines.extend(["", "## Real-Host Proof", "", "- No configured release-time real-host proof trigger matched this slice."])
+        lines.append(
+            "- No configured public/real-host verification trigger matched this slice, but async publication repos should still keep workflow/public checks explicit."
+        )
+        lines.extend(
+            ["", "## Real-Host Proof", "", "- No configured release-time real-host proof trigger matched this slice."]
+        )
+    user_update_steps = update_instructions or [
+        "Document the operator-facing refresh path before calling the release fully closed.",
+    ]
     lines.extend(
         [
             "",
             "## User Update Steps",
             "",
-            "- Run `charness update` after pulling the published release.",
-            "- Refresh Claude or Codex plugin state if the host cache still shows the previous version.",
-            "",
         ]
     )
+    lines.extend(f"- {item}" for item in user_update_steps)
+    lines.append("")
     artifact_path.write_text("\n".join(lines), encoding="utf-8")
     return str(artifact_path.relative_to(repo_root))

@@ -41,5 +41,7 @@ def test_release_skill_enforces_phase_barriers_for_mutating_commands() -> None:
 
     assert "keep release work phase-ordered: mutate, then sync generated surfaces," in skill_text
     assert "then verify, then push/tag/publish" in skill_text
+    assert "public release surface verified" in skill_text
+    assert "tag push alone as publish completion" in skill_text
     assert "Do not run sync, export, bump, install/update, or git-mutation commands in" in skill_text
     assert "parallel with validators" in skill_text
