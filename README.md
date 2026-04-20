@@ -1,5 +1,3 @@
-[한국어 README](./README.ko.md)
-
 # charness
 
 `charness` is the portable Corca harness layer for repo-owned agent work.
