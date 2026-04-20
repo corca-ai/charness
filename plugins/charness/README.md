@@ -6,6 +6,8 @@ generator: python3 scripts/sync_root_plugin_manifests.py --repo-root .
 sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root .
 -->
 
+[한국어 README](./README.ko.md)
+
 # charness
 
 `charness` is the portable Corca harness layer for repo-owned agent work.
