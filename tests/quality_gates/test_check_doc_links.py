@@ -166,6 +166,26 @@ def test_check_doc_links_accepts_dot_slash_prefix_in_markdown_link(tmp_path: Pat
     assert result.returncode == 0, result.stderr
 
 
+def test_check_doc_links_rejects_relative_link_that_escapes_repo_root(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs_dir = repo / "docs"
+    sibling_repo = tmp_path / "other-repo"
+    docs_dir.mkdir(parents=True)
+    sibling_repo.mkdir()
+    (sibling_repo / "README.md").write_text("# Other Repo\n", encoding="utf-8")
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (docs_dir / "handoff.md").write_text(
+        "[sibling](../../other-repo/README.md)\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/check-doc-links.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "escapes repo root" in result.stderr
+    assert "../../other-repo/README.md" in result.stderr
+
+
 def test_check_doc_links_ignores_gitignored_markdown(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     docs_dir = repo / "docs"

@@ -199,6 +199,13 @@ def validate_link(root: Path, doc: Path, raw_target: str) -> None:
 
     relative_target = target.split("#", 1)[0]
     candidate = (doc.parent / relative_target).resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError as exc:
+        raise ValidationError(
+            f"{doc}: relative link `{target}` escapes repo root; keep markdown links inside "
+            "repo-owned paths"
+        ) from exc
     if not candidate.exists():
         raise ValidationError(f"{doc}: broken relative link `{target}`")
 

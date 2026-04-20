@@ -8,6 +8,7 @@ import json
 import sys
 from pathlib import Path
 
+
 def _load_skill_runtime_bootstrap():
     script_path = Path(__file__).resolve()
     for ancestor in script_path.parents:
