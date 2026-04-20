@@ -1,131 +1,112 @@
 # Narrative Review
-Date: 2026-04-17
+Date: 2026-04-20
 
 ## Source Map
 
 - `README.md`
-- `https://github.com/corca-ai/cautilus/blob/main/README.md`
+- `INSTALL.md`
+- `AGENTS.md`
+- `docs/handoff.md`
 - `docs/support-skill-policy.md`
 - `docs/public-skill-validation.md`
 - `docs/operator-acceptance.md`
 - `docs/host-packaging.md`
-- `docs/deferred-decisions.md`
-- `docs/handoff.md`
 - `charness-artifacts/quality/latest.md`
+- `charness-artifacts/retro/2026-04-17-readme-intent-carry-forward-miss`
+- `charness-artifacts/spec/readme-intent-rewrite-plan.md`
 
 ## Narrative Drift
 
-- The core contract was already honest, but the first-touch README led with
-  structure instead of choice. A maintainer could learn what `charness` owns
-  without quickly learning who it is for, what problem shape it fits, or how
-  it differs from neighboring harnesses such as `cautilus`.
-- Compared with the public `cautilus` README, the missing front-door pieces
-  were:
-  reader targeting, day-1 trigger, short contrast-based philosophy, and a
-  visible “what to use when” map.
-- The real narrative gap was not install truth. It was product-shape truth.
-  `charness` already had the philosophy in supporting docs: public workflow
-  concepts vs support tool knowledge, deterministic gates in-repo, evaluator
-  work out of core, and host policy in adapters rather than in public skills.
-  README simply did not surface that framing early enough.
+- The previous README improved front-door product framing, but it still treated
+  the public surface too much like a flat catalog.
+- Quick Start still read like a human-operated install recipe instead of an
+  agent-facing handoff into `INSTALL.md`.
+- The public skill map still under-expressed intent distinctions the user
+  considered load-bearing: `init-repo` as a distinct entrypoint, `quality` and
+  `retro` as quality-raising loops for people and agents, and communication
+  skills grouped by who is speaking to whom.
+- `cautilus` was over-exposed in the README front door instead of being
+  introduced where support skills and integrations are explained.
 
 ## Updated Truth
 
-- README now makes the intended reader, product boundary, and skill-routing
-  model visible before install and packaging details.
-- Current honest position: `charness` is the portable workflow-and-operator
-  harness. It is not the behavior-eval product. If the repo needs workflow
-  concepts and portable operating seams, use `charness`. If the repo needs
-  evaluator-driven behavior protection, use `cautilus` or an explicit HITL /
-  evaluation loop.
+- README now leads with who `charness` is for, what kind of repo-owned agent
+  work it helps structure, and the current capability-map-first session model.
+- Quick Start now points agents at `INSTALL.md` and keeps the human-facing
+  summary short: `init`, `doctor`, then `update`.
+- The public skill map now groups skills by intent rather than flattening them
+  into one list, with `init-repo` separated as a special entrypoint.
+- `quality` and `retro` now read as dedicated quality-raising loops rather
+  than implementation cleanup.
+- `announcement`, `narrative`, `handoff`, and `hitl` now read by speaking
+  direction, not only by topic.
+- `cautilus` now appears in the support-skill / integration explanation where
+  it belongs.
 
 ## Brief
 
 ### One-Line Summary
 
-`charness` now reads more like a product entrypoint and less like a packaging
-inventory: who it is for, why it exists, how it differs, and what skill to
-reach for are all visible near the top.
+`charness` now reads more like an operator-facing workflow map: start the host
+surface through the install contract, choose the right public skill by intent,
+and keep support binaries and deeper contracts in their owner sections.
 
 ### Current Contract
 
-- README is the entrypoint and decision orienter.
-- `INSTALL.md` and `docs/host-packaging.md` still own install and packaging
-  truth.
-- `docs/support-skill-policy.md` and
-  `docs/public-skill-validation.md` remain the deeper boundary docs behind the
-  new README framing.
-- `./scripts/run-quality.sh` remains the standing local proof bar.
+- README is the first-touch orientation surface.
+- `INSTALL.md` remains the canonical install contract for humans and agents.
+- `AGENTS.md` owns the current session discipline, including startup
+  `find-skills`.
+- deeper packaging, operator, and validation details stay in their owner docs
+  and artifacts.
 
 ### What Changed
 
-- Added `Who It Is For`, `Why charness`, and `What To Use When` near the top of
-  README.
-- Added a small surface-classification block so readers can tell public skills,
-  support skills, and integration manifests apart.
-- Added one concrete multi-skill workflow so the harness reads as an execution
-  path, not only as a catalog.
-- Added one bootstrap workflow so partially initialized repos also have a clear
-  first move.
-- Kept install and packaging material intact, but moved reader guidance ahead
-  of operational detail.
-
-### Open Questions
-
-- Should the public skill map stay intent-grouped, or should one future doc own
-  a full scenario catalog similar to `cautilus` archetypes?
-- Are two examples enough, or is there still one missing high-frequency path
-  that users cannot infer from the current README?
+- Replaced the flat "what to use when" framing with an intent-based skill map.
+- Moved Quick Start to an agent-facing prompt into `INSTALL.md`.
+- Separated `init-repo` from the ordinary implementation flow.
+- Reframed `quality` and `retro` as distinct quality-improvement loops.
+- Reframed communication skills by speaker/recipient direction.
+- Removed the low-value repository-shape section from the README.
+- Kept support-skill and integration explanation, but moved `cautilus` into
+  that section instead of front-door contrast framing.
 
 ## Claim Audit
 
-- Claim: the repo is locally healthy after the rewrite.
-  Evidence: `./scripts/run-quality.sh` passed on 2026-04-17 with `38 passed,
-  0 failed`.
-- Claim: the new README framing is grounded in existing source-of-truth docs,
-  not fresh invention.
-  Evidence: `docs/support-skill-policy.md` defines public workflow concepts vs
-  support tool knowledge; `docs/deferred-decisions.md` keeps evaluator-heavy
-  work out of `charness`; `docs/public-skill-validation.md` fixes current skill
-  validation posture.
-- Claim: README now shows an actual charness-shaped path, not only sectioned
-  philosophy.
-  Evidence: the new concrete workflow maps one common maintainer journey across
-  `ideation`, `spec`, `impl`, `quality`, and `handoff`, with `init-repo` and
-  `cautilus` called out as neighboring boundaries.
-- Claim: README now covers both “shape new work” and “make the repo operable”
-  entry paths.
-  Evidence: the bootstrap workflow maps `init-repo`, `narrative`, `quality`,
-  and `handoff` into a second bounded path for thin or uneven repos.
-- Claim: `charness` is ready to be described as internally roll-outable.
-  Evidence: the user confirmed the managed install proof and update-propagation
-  proof are already complete, and the repo still carries passing local quality
-  proof.
-- Claim: install truth still should not collapse back into README.
-  Evidence: `docs/operator-acceptance.md`, `INSTALL.md`, and
-  `docs/host-packaging.md` remain the correct homes for rollout and packaging
-  detail.
+- Claim: the README now preserves the user's stated intent distinctions rather
+  than only improving surface polish.
+  Evidence: `quality`/`retro`, `init-repo`, communication directions, and the
+  Quick Start handoff model all reflect the explicit carry-forward feedback from
+  the 2026-04-17 retro and follow-up discussion.
+- Claim: install truth still belongs outside the README.
+  Evidence: Quick Start hands off to `INSTALL.md` instead of recreating the
+  install contract locally.
+- Claim: support tools and upstream-owned capabilities are now placed in a more
+  honest part of the README.
+  Evidence: `cautilus`, `agent-browser`, `specdown`, and `gws-cli` are
+  introduced under support skills and integrations rather than as top-level
+  product contrast.
 
 ## Compression
 
-- README gained new high-leverage product-shape sections instead of only more
-  install detail.
-- The change is a real narrative restructure because the top of the document
-  now answers reader-selection questions before ownership and packaging
-  inventory.
+- The README is shorter at the top level of ideas even though it now makes more
+  distinctions explicit.
+- The main compression move was to replace repeated inventory sections with one
+  intent-based skill map plus two bounded example flows.
 
 ## Open Questions
 
-- Do we want a separate “workflow examples” doc that gives one concrete path
-  per major public skill cluster?
-- If we keep README compact, should it stop at these two examples and push any
-  further scenario expansion into a separate doc?
+- Should the README eventually mention the startup `find-skills` rule more
+  explicitly in the Quick Start or keep it as session discipline owned by
+  `AGENTS.md`?
+- Should one future doc own a fuller scenario catalog once more public skills
+  gain strong reviewed dogfood examples?
 
 ## Next Step
 
-1. Re-read README from the perspective of a new internal maintainer who does
-   not already know the `charness` / `cautilus` split.
-2. Treat these two workflows as the README ceiling unless a repeated confusion
-   shows a third path is load-bearing.
-3. Keep install, packaging, and acceptance details in their owner docs instead
-   of re-growing README into a second operator manual.
+1. Re-read the new README from the perspective of a maintainer starting a new
+   repo versus one already inside an existing repo.
+2. If the user approves the direction, translate the same intent map into the
+   Korean README variant instead of translating line by line.
+3. Fold the carry-forward lessons into the `narrative` skill and repo-local
+   adapter before running the `cautilus` evaluation loop.
