@@ -1,5 +1,5 @@
 # Quality Review
-Date: 2026-04-17
+Date: 2026-04-20
 
 ## Scope
 
@@ -23,24 +23,24 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 
 ## Runtime Signals
 
-- Latest local review gate after this slice: `38 passed, 0 failed`, total `50.3s`.
-- runtime hot spots: `pytest` `30.7s`, `check-coverage` `11.3s`, `check-secrets`
-  `3.6s`, `check-markdown` `4.1s`, `specdown` `2.8s`.
+- Latest local review gate after this slice: `40 passed, 0 failed`, total `66.2s`.
+- runtime hot spots: `pytest` `44.2s`, `check-coverage` `12.2s`, `check-markdown`
+  `4.7s`, `check-secrets` `4.4s`, `specdown` `3.3s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
-  `85.0%`; current result is `98.0%` (`1196/1221`).
-- evaluator depth: `run-evals` passes 19 repo-local scenarios, so the bar is
+  `85.0%`; current result is `98.0%` (`1193/1218`).
+- evaluator depth: `run-evals` passes 20 repo-local scenarios, so the bar is
   stronger than smoke-only review.
-- Budgeted phases: `pytest` median `31.7s / 40.0s`,
-  `check-coverage` median `10.7s / 15.0s`, `check-secrets` median `3.5s / 5.0s`,
-  `run-evals` median `2.3s / 5.0s`, `specdown` median `2.8s / 8.0s`.
+- Budgeted phases: `pytest` median `37.6s / 45.0s`,
+  `check-coverage` median `11.8s / 15.0s`, `check-secrets` median `4.4s / 5.0s`,
+  `run-evals` median `2.5s / 5.0s`, `specdown` median `2.9s / 8.0s`.
 - Runtime signals continue to persist under `.charness/quality/`.
 
 ## Coverage and Eval Depth
 
-- Coverage gate: `98.0%` (`1196/1221`) against the `60.0%` aggregate floor and
-  `85.0%` per-file floor; test-production ratio is `0.54`
-  (`11279/20721` Python lines), and standing proof is `321 passed` plus
-  19 repo-local eval scenarios.
+- Coverage gate: `98.0%` (`1193/1218`) against the `60.0%` aggregate floor and
+  `85.0%` per-file floor; test-production ratio is `0.56`
+  (`13220/23747` Python lines), and standing proof is `370 passed` plus
+  20 repo-local eval scenarios.
 - Every tracked control-plane file now clears the warn band. Weakest remaining
   tracked files are `doctor.py` `95.8%`, `upstream_release_lib.py` `95.3%`,
   and `update_tools.py` `98.3%`.
@@ -51,20 +51,17 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 
 - Earlier standing-gate failures were removed through structural
   simplification: helper logic moved into repo-level seams, duplicate
-  `init_adapter.py` wrappers collapsed, and `docs/handoff.md` now fits the
-  enforced artifact limit.
-- Public executable-spec boundaries are explicit in `spec`, and `quality` now
-  inventories proof layering instead of asking only what proof is missing.
-- Public spec inventory now reads actual `run:shell` blocks instead of
-  misclassifying them as prose, so the quality lens matches specdown's real executable boundary.
+  `init_adapter.py` wrappers collapsed, and `docs/handoff.md` now fits the enforced artifact limit.
+- Public executable-spec boundaries are explicit in `spec`, and `quality` now inventories proof layering instead of asking only what proof is missing.
+- Public spec inventory now reads actual `run:shell` blocks instead of misclassifying them as prose, so the quality lens matches specdown's real executable boundary.
 - `README.md` was reduced into a short operator orienter while keeping the
   command-doc contract intact, so the root entrypoint doc now clears the
   length-pressure heuristic instead of acting like a second install manual.
-- `specs/index.spec.md` and `specs/tool-doctor.spec.md` now prove current CLI
-  contracts with direct command checks instead of delegating the whole story to pytest, and public-spec inventory is clean again.
-- CLI ergonomics inventory, lint-ignore inventory, and dual-implementation
-  inventory are currently clean: no flat-help registry pressure, no ignore
-  debt, and no likely parity-smell candidates were detected in this tree.
+- `specs/index.spec.md` and `specs/tool-doctor.spec.md` now prove current CLI contracts with direct command checks instead of delegating the whole story to pytest, and public-spec inventory is clean again.
+- CLI ergonomics inventory, lint-ignore inventory, and dual-implementation inventory are currently clean: no flat-help registry pressure, no ignore debt, and no likely parity-smell candidates were detected in this tree.
+- External-link review no longer fails on private/demo placeholder hosts such
+  as `.internal`, `.test`, or `localhost`; `list_external_links.py` now keeps
+  public URL health separate from repo-local or private SaaS examples.
 - Control-plane traced coverage scenarios now include helper-contract branches
   for support sync, release probing, manifest/capability validation, and
   install helper lock-writing paths, so the coverage gate better reflects real
@@ -75,24 +72,23 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 ## Weak
 
 - Entry-point doc ergonomics remain advisory pressure, not hard failures.
-  `README.md` no longer flags `long_entrypoint`, but it still carries
-  `option_pressure_terms_present` because standing command-doc anchors require
-  literal flag-bearing examples. `AGENTS.md` and `UNINSTALL.md` still flag
+  `AGENTS.md`, `README.md`, `INSTALL.md`, and `docs/operator-acceptance.md`
+  still flag `long_entrypoint`; `README.md` also still carries
+  `option_pressure_terms_present`, and `UNINSTALL.md` still flags
   mode/option-pressure wording.
 - Skill ergonomics remain advisory pressure in public cores:
-  `init-repo`, `retro`, and `spec` still flag mode-pressure terms, while
-  `quality` itself now trips the `long_core` heuristic at `165` core lines.
-- `spec` still trips the mode-pressure heuristic because a checked-in contract
-  test currently requires the exact phrase `user-facing mode choice`.
+  `create-cli`, `gather`, `init-repo`, `retro`, and `spec` still flag
+  mode-pressure terms, while `quality` and `spec` both trip `long_core`.
 - `markdown-preview` is now wired through checked-in config, repo-owned install
   guidance, and a local `glow` runtime. Remaining quality work is no longer
   backend availability; it is deciding which workflow should invoke rendered
   preview by default instead of leaving the seam as an opt-in helper.
+- Rolling current-pointer artifacts are still weak on freshness: validators enforce structure, but most resolved claims are not yet cross-checked against current inventories automatically.
 
 ## Missing
 
-- No automated ratchet planner exists yet for deciding when ergonomics
-  inventories are narrow enough to become a hard gate.
+- No deterministic freshness check yet cross-validates `docs/handoff.md` or
+  `charness-artifacts/quality/latest.md` against live inventory outputs.
 
 ## Deferred
 
@@ -100,16 +96,15 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   it to portability/discoverability rules instead of generic prose taste.
 - Do not add a dedicated specdown adapter until multiple specs start repeating
   the same setup or extraction work.
-- Fresh-eye premortem used the reference checklist only. The canonical
-  subagent path was blocked because this session did not explicitly allow
-  subagents.
+- Do not describe the canonical fresh-eye path as blocked without a bounded
+  capability probe and a concrete host signal; a same-agent pass is degraded,
+  not equivalent.
 
 ## Commands Run
 - `./scripts/run-quality.sh --review`
-- `./charness tool install --repo-root . --json glow`
 - quality inventories: standing-gate verbosity, entrypoint docs, skill ergonomics, public spec quality, CLI ergonomics, lint ignores, and dual implementation
-- `python3 skills/public/quality/scripts/bootstrap_markdown_preview.py --repo-root . --execute`
 - `python3 scripts/doctor.py --json`
+- one bounded fresh-eye subagent probe
 
 ## Recommended Next Gates
 
@@ -121,6 +116,10 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   should move more review prose into references or helper scripts so the core
   falls back under the `long_core` advisory threshold without losing routing
   precision.
+- active `AUTO_CANDIDATE`: add a narrow freshness check so rolling pointers
+  such as `docs/handoff.md` and `charness-artifacts/quality/latest.md` cannot
+  claim resolved ergonomics or runtime states that disagree with current
+  inventories.
 - active `AUTO_CANDIDATE`: decide whether command-doc-required flag examples
   should stay inline, move behind owner-doc links, or gain a small inventory
   exemption so README/UNINSTALL pressure tracks real prose clutter.

@@ -212,3 +212,62 @@ def test_validate_quality_artifact_requires_runtime_closeout_fields(tmp_path: Pa
     result = run_script("scripts/validate-quality-artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Runtime Signals" in result.stderr
+
+
+def test_validate_quality_artifact_rejects_explicit_allowance_as_subagent_blocker(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        "\n".join(
+            [
+                "# Quality Review",
+                "Date: 2026-04-20",
+                "",
+                "## Scope",
+                "",
+                "- demo",
+                "",
+                "## Current Gates",
+                "",
+                "- gate",
+                "",
+                "## Runtime Signals",
+                "",
+                "- runtime hot spots: `pytest` 10s",
+                "- coverage gate: none",
+                "- evaluator depth: degraded local pass only",
+                "",
+                "## Healthy",
+                "",
+                "- healthy",
+                "",
+                "## Weak",
+                "",
+                "- canonical fresh-eye path was blocked because this session did not explicitly allow subagents.",
+                "",
+                "## Missing",
+                "",
+                "- missing",
+                "",
+                "## Deferred",
+                "",
+                "- deferred",
+                "",
+                "## Commands Run",
+                "",
+                "- cmd",
+                "",
+                "## Recommended Next Gates",
+                "",
+                "- active AUTO_CANDIDATE: next",
+                "",
+                "## History",
+                "",
+                "- [archive](history/one.md)",
+                "",
+            ]
+        )
+        + "\n",
+    )
+    result = run_script("scripts/validate-quality-artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "must not treat missing explicit subagent allowance" in result.stderr

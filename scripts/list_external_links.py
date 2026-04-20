@@ -11,7 +11,8 @@ from urllib.parse import urlsplit
 TEXT_SUFFIXES = {".md", ".json", ".yaml", ".yml", ".jsonc", ".toml"}
 SKIP_DIR_NAMES = {".git", ".charness", "node_modules", ".pytest_cache", "charness-artifacts", "__pycache__"}
 SKIP_FILE_NAMES = {"package-lock.json"}
-SKIP_HOSTS = {"example.com", "example.org", "example.net"}
+SKIP_HOSTS = {"example.com", "example.org", "example.net", "localhost"}
+SKIP_HOST_SUFFIXES = (".internal", ".invalid", ".local", ".localhost", ".test")
 URL_PATTERN = re.compile(r"https?://[^\s<>'\"\\]+")
 FENCED_CODE_BLOCK_PATTERN = re.compile(r"(^|\n)(```|~~~).*?(\n\2)(?=\n|$)", re.DOTALL)
 INLINE_CODE_PATTERN = re.compile(r"`[^`\n]+`")
@@ -74,6 +75,8 @@ def normalize_candidate(candidate: str) -> str | None:
     if parsed.scheme not in {"http", "https"} or not hostname:
         return None
     if hostname in SKIP_HOSTS:
+        return None
+    if hostname.endswith(SKIP_HOST_SUFFIXES):
         return None
     if any(token in cleaned for token in ("${", "{", "}", "<", ">")):
         return None

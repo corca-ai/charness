@@ -43,6 +43,10 @@ REQUIRED_SECTIONS = (
     "## References",
 )
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")
+FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
+    "did not explicitly allow subagents",
+    "explicit subagent allowance",
+)
 
 
 def validate_references(lines: list[str]) -> None:
@@ -50,6 +54,17 @@ def validate_references(lines: list[str]) -> None:
     section_lines = [line.strip() for line in lines[start:] if line.strip()]
     if not any(MARKDOWN_LINK_RE.search(line) for line in section_lines):
         raise ValidationError("`## References` must contain at least one markdown link")
+
+
+def validate_subagent_blocker_reasoning(lines: list[str]) -> None:
+    for raw in lines:
+        lowered = raw.lower()
+        for phrase in FORBIDDEN_SUBAGENT_BLOCKER_PHRASES:
+            if phrase in lowered:
+                raise ValidationError(
+                    "handoff artifact must not treat missing explicit subagent allowance as the canonical blocker; "
+                    "name the capability probe rule and the concrete host signal instead"
+                )
 
 
 def validate_handoff_artifact(path: Path) -> None:
@@ -63,6 +78,7 @@ def validate_handoff_artifact(path: Path) -> None:
     validate_exact_h2_sections(lines, REQUIRED_SECTIONS)
     validate_nonempty_sections(lines, REQUIRED_SECTIONS)
     validate_references(lines)
+    validate_subagent_blocker_reasoning(lines)
 
 
 def main() -> int:

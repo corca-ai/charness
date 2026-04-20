@@ -146,3 +146,40 @@ def test_validate_handoff_artifact_rejects_overlong_handoff(tmp_path: Path) -> N
     result = run_script("scripts/validate-handoff-artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "80 lines" in result.stderr
+
+
+def test_validate_handoff_artifact_rejects_explicit_allowance_as_subagent_blocker(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        "\n".join(
+            [
+                "# Demo Handoff",
+                "",
+                "## Workflow Trigger",
+                "",
+                "- do the thing",
+                "",
+                "## Current State",
+                "",
+                "- The canonical subagent path was blocked because this session did not explicitly allow subagents.",
+                "",
+                "## Next Session",
+                "",
+                "- next",
+                "",
+                "## Discuss",
+                "",
+                "- discuss",
+                "",
+                "## References",
+                "",
+                "- [guide](docs/guide.md)",
+                "",
+            ]
+        )
+        + "\n",
+    )
+    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    result = run_script("scripts/validate-handoff-artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "must not treat missing explicit subagent allowance" in result.stderr

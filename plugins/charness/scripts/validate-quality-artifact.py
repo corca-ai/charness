@@ -53,6 +53,10 @@ RUNTIME_SIGNAL_PREFIXES = (
     "- evaluator depth:",
 )
 RECOMMENDED_GATE_PREFIXES = ("- active ", "- passive ")
+FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
+    "did not explicitly allow subagents",
+    "explicit subagent allowance",
+)
 
 
 def validate_history_section(lines: list[str]) -> None:
@@ -90,6 +94,17 @@ def validate_recommended_next_gates_section(lines: list[str]) -> None:
             raise ValidationError("passive recommended next gates must explain why they are passive")
 
 
+def validate_subagent_blocker_reasoning(lines: list[str]) -> None:
+    for raw in lines:
+        lowered = raw.lower()
+        for phrase in FORBIDDEN_SUBAGENT_BLOCKER_PHRASES:
+            if phrase in lowered:
+                raise ValidationError(
+                    "quality artifact must not treat missing explicit subagent allowance as the canonical blocker; "
+                    "cite a concrete host signal or describe the pass as degraded/unprobed"
+                )
+
+
 def validate_quality_artifact(path: Path) -> None:
     lines = read_lines(path)
     if not lines or lines[0].strip() != "# Quality Review":
@@ -101,6 +116,7 @@ def validate_quality_artifact(path: Path) -> None:
     validate_runtime_signals_section(lines)
     validate_recommended_next_gates_section(lines)
     validate_history_section(lines)
+    validate_subagent_blocker_reasoning(lines)
 
 
 def main() -> int:

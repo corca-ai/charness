@@ -38,6 +38,8 @@ def test_list_external_links_returns_unique_real_urls(tmp_path: Path) -> None:
                 "Do not keep `https://github.com/corca-ai/specdown` inside inline code.",
                 "",
                 "Skip placeholders like https://example.com/demo and https://${WORKSPACE}.slack.com/api.",
+                "Skip private placeholders like https://hr.example.internal/roster and https://demo.test/path.",
+                "Skip localhost helpers like http://localhost:3000/health too.",
                 "",
             ]
         )
