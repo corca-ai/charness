@@ -20,11 +20,24 @@ Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+python3 "$SKILL_DIR/scripts/scaffold_debug_artifact.py" --repo-root . --json
 ```
 
 By default, `debug` writes durable artifacts to `charness-artifacts/debug/`. Each
 investigation gets its own file: `debug-{date}-{slug}.md`. Repos can override
 the directory with `.agents/debug-adapter.yaml`.
+
+Treat the scaffold helper as the canonical artifact contract shortcut:
+
+- it prints the default artifact path
+- it prints the required heading / section order
+- it points at the standing validator command
+
+Before stopping, run:
+
+```bash
+python3 "$SKILL_DIR/../../../scripts/validate-debug-artifact.py" --repo-root .
+```
 
 Before writing a new artifact, read existing `debug-*.md` files in the output
 directory. If the current incident relates to a prior one, fill in the
@@ -91,6 +104,10 @@ The durable debug artifact should usually include:
 - `Prevention`
 - `Related Prior Incidents` (optional — include when the incident connects to a
   prior debug artifact)
+
+The canonical heading pattern is `# ... Debug ...`, and the canonical section
+order is the validator order above. Prefer the scaffold helper over hand-typing
+the skeleton from memory.
 
 ## Guardrails
 

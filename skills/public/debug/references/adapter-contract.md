@@ -44,6 +44,12 @@ Dated debug records should use `charness-artifacts/debug/YYYY-MM-DD-<slug>.md`.
 
 To change the location, override `output_dir` in the adapter.
 
+To scaffold the canonical artifact body and validator hint from the repo root:
+
+```bash
+python3 skills/public/debug/scripts/scaffold_debug_artifact.py --repo-root . --json
+```
+
 ## Example
 
 ```yaml
