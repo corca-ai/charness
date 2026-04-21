@@ -430,6 +430,28 @@ def resolve_target_repo_root(target_repo_root: Path | None) -> Path:
     return target_repo_root.resolve() if target_repo_root is not None else Path.cwd().resolve()
 
 
+def repo_candidate_markers() -> tuple[Path, ...]:
+    return (
+        Path(".git"),
+        Path("README.md"),
+        Path("AGENTS.md"),
+        Path("CLAUDE.md"),
+        Path(".agents"),
+        Path("docs"),
+        Path("skills"),
+        Path("pyproject.toml"),
+        Path("package.json"),
+        Path("go.mod"),
+        Path("Cargo.toml"),
+    )
+
+
+def looks_like_repo_root(path: Path) -> bool:
+    if not path.exists() or not path.is_dir():
+        return False
+    return any((path / marker).exists() or (path / marker).is_symlink() for marker in repo_candidate_markers())
+
+
 def capability_setup_guidance(home_root: Path) -> list[str]:
     profiles_path = default_capability_profiles_path(home_root)
     bindings_path = default_repo_bindings_path(home_root)
@@ -440,6 +462,81 @@ def capability_setup_guidance(home_root: Path) -> list[str]:
         'Example profile: {"schema_version":1,"profiles":{"slack.ceal-dev":{"provider":"gather-slack","access_mode_preference":["grant","env"],"env_bindings":{"SLACK_BOT_TOKEN":"SLACK_BOT_TOKEN_CEAL_DEV"}}}}',
         'Example binding: {"schema_version":1,"repos":{"github.com/corca-ai/charness":{"slack.default":"slack.ceal-dev"}}}',
     ]
+
+
+def build_repo_onboarding_payload(
+    *,
+    source_repo_root: Path,
+    target_repo_root: Path,
+) -> dict[str, object]:
+    resolved_target = target_repo_root.resolve()
+    payload: dict[str, object] = {
+        "target_repo_root": str(resolved_target),
+        "status": "not-applicable",
+        "manual_action_required": False,
+        "message": None,
+        "source": "repo_onboarding",
+    }
+    if resolved_target == source_repo_root.resolve():
+        payload["status"] = "source-checkout"
+        return payload
+    if not looks_like_repo_root(resolved_target):
+        payload["status"] = "not-a-repo"
+        return payload
+    if not has_source_manifest(source_repo_root):
+        payload["status"] = "source-missing"
+        payload["manual_action_required"] = True
+        payload["message"] = (
+            "charness source checkout is missing, so repo onboarding could not be inspected yet. "
+            "Run `charness init` first, then rerun `charness doctor` from the target repo."
+        )
+        return payload
+
+    inspect_payload = json.loads(
+        invoke_repo_script(
+            source_repo_root,
+            "skills/public/init-repo/scripts/inspect_repo.py",
+            "--repo-root",
+            str(resolved_target),
+        )
+    )
+    skill_routing_payload = json.loads(
+        invoke_repo_script(
+            source_repo_root,
+            "skills/public/init-repo/scripts/render_skill_routing.py",
+            "--repo-root",
+            str(resolved_target),
+            "--json",
+        )
+    )
+    payload["inspection"] = inspect_payload
+    payload["skill_routing"] = skill_routing_payload
+    repo_mode = inspect_payload.get("repo_mode")
+    agent_docs = inspect_payload.get("agent_docs") if isinstance(inspect_payload.get("agent_docs"), dict) else {}
+    routing_action = skill_routing_payload.get("recommended_action")
+    reasons: list[str] = []
+    if repo_mode in {"GREENFIELD", "PARTIAL"}:
+        reasons.append("core_operating_surface")
+    if agent_docs.get("recommended_action") != "leave_as_is":
+        reasons.append("agent_docs")
+    if routing_action != "leave_as_is":
+        reasons.append("skill_routing")
+    payload["reasons"] = reasons
+    payload["skill_bearing_repo"] = any((resolved_target / candidate).is_dir() for candidate in ("skills/public", "skills/support"))
+    if reasons:
+        payload["status"] = "required"
+        payload["manual_action_required"] = True
+        opener = (
+            "This repo already carries repo-owned skills and should freeze skill intent/proof seams before later edits."
+            if payload["skill_bearing_repo"]
+            else "This repo does not look fully charness-onboarded yet."
+        )
+        payload["message"] = (
+            f"{opener} After restarting the host, start a repo-root session and run the `init-repo` skill before broader work."
+        )
+        return payload
+    payload["status"] = "ready"
+    return payload
 
 
 def resolve_capability(
@@ -1642,7 +1739,7 @@ def build_claude_host_guidance(
     }
 
 
-def build_host_next_steps(doctor_payload: dict[str, object]) -> dict[str, str]:
+def build_next_steps(doctor_payload: dict[str, object]) -> dict[str, str]:
     next_steps: dict[str, str] = {}
     for host in ("codex", "claude"):
         guidance = doctor_payload.get(f"{host}_host_guidance")
@@ -1651,6 +1748,11 @@ def build_host_next_steps(doctor_payload: dict[str, object]) -> dict[str, str]:
         message = guidance.get("message")
         if isinstance(message, str) and message:
             next_steps[host] = message
+    repo_onboarding = doctor_payload.get("repo_onboarding")
+    if isinstance(repo_onboarding, dict):
+        message = repo_onboarding.get("message")
+        if isinstance(message, str) and message:
+            next_steps["repo"] = message
     return next_steps
 
 
@@ -1693,6 +1795,26 @@ def build_doctor_next_action(doctor_payload: dict[str, object]) -> dict[str, obj
                 },
             )
         )
+    repo_onboarding = doctor_payload.get("repo_onboarding")
+    if isinstance(repo_onboarding, dict):
+        message = repo_onboarding.get("message")
+        status = repo_onboarding.get("status")
+        manual_action_required = repo_onboarding.get("manual_action_required") is True
+        if isinstance(message, str) and message and manual_action_required and status == "required":
+            candidates.append(
+                (
+                    40,
+                    -10,
+                    {
+                        "kind": "repo-init",
+                        "host": None,
+                        "status": status,
+                        "manual_action_required": True,
+                        "message": message,
+                        "source": "repo_onboarding",
+                    },
+                )
+            )
     actionable = [candidate for candidate in candidates if candidate[0] > 0]
     if actionable:
         return max(actionable, key=lambda candidate: (candidate[0], candidate[1]))[2]
@@ -1815,6 +1937,7 @@ def build_doctor_payload(
     home_root: Path,
     repo_root: Path,
     managed_checkout: bool,
+    target_repo_root: Path,
     plugin_root: Path,
     codex_marketplace_path: Path,
     cli_path: Path,
@@ -1832,6 +1955,7 @@ def build_doctor_payload(
         "package_id": PACKAGE_ID,
         "repo_root": str(repo_root),
         "managed_checkout": managed_checkout,
+        "target_repo_root": str(target_repo_root),
         "install_state_path": str(default_install_state_path(home_root)),
         "host_state_path": str(default_host_state_path(home_root)),
         "version_state_path": str(default_version_state_path(home_root)),
@@ -1928,7 +2052,11 @@ def build_doctor_payload(
         installed_entry=payload["claude_installed_entry"],
         enabled_status=payload["claude_enabled_status"],
     )
-    payload["next_steps"] = build_host_next_steps(payload)
+    payload["repo_onboarding"] = build_repo_onboarding_payload(
+        source_repo_root=repo_root,
+        target_repo_root=target_repo_root,
+    )
+    payload["next_steps"] = build_next_steps(payload)
     payload["next_action"] = build_doctor_next_action(payload)
     return payload
 
@@ -2022,6 +2150,9 @@ def _print_next_actions(payload: dict[str, object]) -> None:
     claude_guidance = payload.get("claude_host_guidance")
     if isinstance(claude_guidance, dict) and isinstance(claude_guidance.get("message"), str):
         print(f"CLAUDE_NEXT_STEP: {claude_guidance['message']}")
+    repo_onboarding = payload.get("repo_onboarding")
+    if isinstance(repo_onboarding, dict) and isinstance(repo_onboarding.get("message"), str):
+        print(f"REPO_NEXT_STEP: {repo_onboarding['message']}")
 
 
 def print_human_summary(payload: dict[str, object]) -> None:
@@ -2807,6 +2938,7 @@ def print_tool_human_summary(payload: dict[str, object]) -> None:
 def cmd_init(args: argparse.Namespace) -> int:
     home_root = args.home_root.resolve()
     repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    target_repo_root = resolve_target_repo_root(args.target_repo_root)
     enforce_managed_cli_contract(
         home_root=home_root,
         repo_root=repo_root,
@@ -2843,6 +2975,7 @@ def cmd_init(args: argparse.Namespace) -> int:
         home_root=home_root,
         repo_root=Path(checkout["repo_root"]),
         managed_checkout=managed_checkout,
+        target_repo_root=target_repo_root,
         plugin_root=plugin_root,
         codex_marketplace_path=codex_marketplace_path,
         cli_path=cli_path,
@@ -2860,6 +2993,7 @@ def cmd_init(args: argparse.Namespace) -> int:
             home_root=home_root,
             repo_root=Path(checkout["repo_root"]),
             managed_checkout=managed_checkout,
+            target_repo_root=target_repo_root,
             plugin_root=plugin_root,
             codex_marketplace_path=codex_marketplace_path,
             cli_path=cli_path,
@@ -2886,7 +3020,8 @@ def cmd_init(args: argparse.Namespace) -> int:
     payload["codex_host_install"] = codex_host_install
     payload["codex_host_guidance"] = doctor_payload["codex_host_guidance"]
     payload["claude_host_guidance"] = doctor_payload["claude_host_guidance"]
-    payload["next_steps"]["codex"] = doctor_payload["next_steps"]["codex"]
+    payload["repo_onboarding"] = doctor_payload["repo_onboarding"]
+    payload["next_steps"] = {**payload.get("next_steps", {}), **doctor_payload["next_steps"]}
     payload["next_action"] = doctor_payload["next_action"]
     payload["checkout_version"] = doctor_payload["checkout_version"]
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
@@ -2912,6 +3047,7 @@ def cmd_init(args: argparse.Namespace) -> int:
 def cmd_update(args: argparse.Namespace) -> int:
     home_root = args.home_root.resolve()
     repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    target_repo_root = resolve_target_repo_root(args.target_repo_root)
     previous_checkout_version = packaging_version(repo_root) if repo_root.exists() else None
     enforce_managed_cli_contract(
         home_root=home_root,
@@ -2944,6 +3080,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         home_root=home_root,
         repo_root=Path(checkout["repo_root"]),
         managed_checkout=managed_checkout,
+        target_repo_root=target_repo_root,
         plugin_root=plugin_root,
         codex_marketplace_path=codex_marketplace_path,
         cli_path=cli_path,
@@ -2965,6 +3102,7 @@ def cmd_update(args: argparse.Namespace) -> int:
             home_root=home_root,
             repo_root=Path(checkout["repo_root"]),
             managed_checkout=managed_checkout,
+            target_repo_root=target_repo_root,
             plugin_root=plugin_root,
             codex_marketplace_path=codex_marketplace_path,
             cli_path=cli_path,
@@ -2994,7 +3132,8 @@ def cmd_update(args: argparse.Namespace) -> int:
     payload["codex_cache_refresh"] = codex_cache_refresh
     payload["codex_host_guidance"] = doctor_payload["codex_host_guidance"]
     payload["claude_host_guidance"] = doctor_payload["claude_host_guidance"]
-    payload["next_steps"]["codex"] = doctor_payload["next_steps"]["codex"]
+    payload["repo_onboarding"] = doctor_payload["repo_onboarding"]
+    payload["next_steps"] = {**payload.get("next_steps", {}), **doctor_payload["next_steps"]}
     payload["next_action"] = doctor_payload["next_action"]
     payload["checkout_version"] = doctor_payload["checkout_version"]
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
@@ -3039,11 +3178,13 @@ def cmd_update(args: argparse.Namespace) -> int:
 def cmd_doctor(args: argparse.Namespace) -> int:
     home_root = args.home_root.resolve()
     repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    target_repo_root = resolve_target_repo_root(args.target_repo_root)
     plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path = resolve_runtime_paths(args)
     payload = build_doctor_payload(
         home_root=home_root,
         repo_root=repo_root,
         managed_checkout=managed_checkout,
+        target_repo_root=target_repo_root,
         plugin_root=plugin_root,
         codex_marketplace_path=codex_marketplace_path,
         cli_path=cli_path,
@@ -3547,6 +3688,11 @@ def build_parser() -> argparse.ArgumentParser:
     def add_common_runtime_args(command: argparse.ArgumentParser) -> None:
         command.add_argument("--home-root", type=Path, default=default_home_root())
         command.add_argument("--repo-root", type=Path, help="Use an explicit existing source checkout instead of the managed default checkout.")
+        command.add_argument(
+            "--target-repo-root",
+            type=Path,
+            help="Optional repo to inspect for post-install charness onboarding. Defaults to the current working directory.",
+        )
         command.add_argument("--repo-url", default=REPO_URL)
         command.add_argument("--plugin-root", type=Path)
         command.add_argument(
@@ -3595,6 +3741,11 @@ def build_parser() -> argparse.ArgumentParser:
     doctor_parser = subparsers.add_parser("doctor", help="Inspect the managed install surface and host-facing wrappers.")
     doctor_parser.add_argument("--home-root", type=Path, default=default_home_root())
     doctor_parser.add_argument("--repo-root", type=Path, help="Inspect an explicit source checkout instead of the managed default checkout.")
+    doctor_parser.add_argument(
+        "--target-repo-root",
+        type=Path,
+        help="Optional repo to inspect for charness onboarding. Defaults to the current working directory.",
+    )
     doctor_parser.add_argument("--plugin-root", type=Path)
     doctor_parser.add_argument(
         "--codex-marketplace-path",

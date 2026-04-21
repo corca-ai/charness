@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
+from .charness_cli.support import ROOT
 from .test_quality_artifact import run_script
 
 
@@ -169,3 +171,27 @@ def test_validate_cautilus_proof_treats_named_cautilus_adapter_as_prompt_affecti
     )
     assert result.returncode == 1
     assert "require refreshing `charness-artifacts/cautilus/latest.md`" in result.stderr
+
+
+def test_plan_cautilus_proof_recommends_skill_dogfood_and_scenario_followups() -> None:
+    result = run_script(
+        "scripts/plan_cautilus_proof.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "skills/public/create-skill/SKILL.md",
+        "charness-artifacts/cautilus/latest.md",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["changed_public_skills"] == ["create-skill"]
+    recommendation = payload["skill_validation_recommendations"][0]
+    assert recommendation["skill_id"] == "create-skill"
+    assert recommendation["validation_tier"] == "evaluator-required"
+    assert any("docs/public-skill-dogfood.json" in note for note in recommendation["notes"])
+    assert any(
+        "python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id create-skill --json" == item
+        for item in payload["recommended_followups"]
+    )
+    assert any("evals/cautilus/scenarios.json" in item for item in payload["recommended_followups"])

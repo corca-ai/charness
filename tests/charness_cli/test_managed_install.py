@@ -68,7 +68,7 @@ def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
     assert payload["next_steps"]["codex"] == payload["codex_host_guidance"]["message"]
     assert payload["codex_host_install"]["status"] == "skipped"
     assert payload["codex_host_install"]["reason"] == "codex-cli-missing"
-    assert payload["next_steps"]["claude"] == "Restart Claude Code to load charness."
+    assert payload["next_steps"]["claude"] == payload["claude_host_guidance"]["message"]
     assert payload["removed_legacy_skills_symlink"] is True
     assert "legacy_skills_symlink_removed" in payload["completed_actions"]
     marketplace = json.loads((home_root / ".agents" / "plugins" / "marketplace.json").read_text(encoding="utf-8"))
@@ -217,6 +217,9 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert payload["claude_marketplace_name"] == "corca-charness"
     assert payload["claude_plugin_ref"] == "charness@corca-charness"
     assert payload["repo_root"] == str(home_root / ".agents" / "src" / "charness")
+    assert payload["target_repo_root"] == str(CLI.parents[0])
+    assert payload["repo_onboarding"]["status"] == "required"
+    assert "init-repo" in payload["repo_onboarding"]["message"]
     assert payload["managed_checkout"] is True
     assert payload["claude_marketplace_entry"]["source"]["path"] == str(home_root / ".agents" / "src" / "charness")
     assert payload["claude_installed_entry"]["version"] == "local"

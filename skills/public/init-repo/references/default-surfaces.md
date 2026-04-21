@@ -44,6 +44,10 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
 - after that bootstrap pass, tell the agent to choose the durable work skill
   from the installed charness surface instead of copying a long checked-in
   catalog into [`AGENTS.md`](../../../../AGENTS.md)
+- when the repo keeps repo-owned skills, keep one short policy that semantic
+  skill changes should freeze the current intent before broad edits by deciding
+  whether reviewed dogfood, maintained evaluator scenarios, or checked-in
+  scenario review proof will carry the change
 - prose wrap policy when the repo uses fixed-string source guards; default to
   semantic line breaks, and require whitespace-normalized matching before
   accepting column-wrapped prose. In [`.agents/init-repo-adapter.yaml`](../../../../.agents/init-repo-adapter.yaml), a repo

@@ -26,6 +26,8 @@ sed -n '1,240p' "$SKILL_DIR/../../support/<skill-id>/SKILL.md"
 
 # 3. external-tool or profile context when relevant
 sed -n '1,240p' docs/control-plane.md
+sed -n '1,260p' docs/public-skill-validation.md 2>/dev/null || true
+sed -n '1,220p' docs/public-skill-dogfood.md 2>/dev/null || true
 sed -n '1,260p' integrations/tools/manifest.schema.json
 sed -n '1,260p' skills/support/capability.schema.json
 sed -n '1,240p' profiles/profile.schema.json
@@ -49,12 +51,17 @@ skill before writing from scratch.
    - any ambient philosophy that should become a behavior rule across adjacent public skills, not only a reference note
    - for each named anchor, the exact move it should retrieve and any factual claim that needs source verification before you compress it
    - simulate cold start, warm start, error recovery, and 5-7 agent failure cases before changing files
-3. Decide the portability seams.
+3. Freeze the current consumer contract before editing an existing public skill.
+   - read the current reviewed dogfood case or scaffold it first with `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --json`
+   - decide whether the slice claims `preserve` or `improve` before changing the core trigger or behavior contract
+   - if the skill is `evaluator-required`, inspect the maintained scenario surface and current cautilus proof plan before editing so the post-change proof obligation is explicit up front
+   - when the checked-in contract is still too vague to freeze honestly, stop and tighten that consumer-facing scenario before broad edits
+4. Decide the portability seams.
    - skill body stays generic
    - repo or host specifics move to adapter files or presets
    - optional fields must distinguish `unset` from `explicitly empty`
    - prefer strong defaults and inference over user-facing branches or flags
-4. Decide dependency ownership honestly.
+5. Decide dependency ownership honestly.
    - harness-owned support logic belongs in `skills/support/`
    - if `charness` owns the runtime capability, keep its machine-readable
      metadata next to the support skill as
@@ -76,7 +83,7 @@ skill before writing from scratch.
    - if the skill must ship inside a host plugin bundle, keep discovery,
      manifest, and install-surface proof in packaging, integrations, or the
      owning CLI contract rather than in the public skill body
-5. Implement the smallest coherent package.
+6. Implement the smallest coherent package.
    - `SKILL.md` contains trigger contract and decision skeleton only
    - treat sparse named person anchors in `SKILL.md` core as a deliberate
      retrieval tool when they materially improve recall of a real reasoning
@@ -88,9 +95,10 @@ skill before writing from scratch.
    - add scripts for deterministic repeated checks, adapter bootstrap, and
      durable artifact handling when the skill would otherwise rely on hand-wavy
      repeated steps
-6. Verify before stopping.
+7. Verify before stopping.
    - cold-start test from repo root
    - for public-skill changes, run one realistic consumer prompt instead of stopping at producer-side validators; use `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` to scaffold prompt, repo shape, expected artifact, and acceptance evidence
+   - for public-skill semantic changes, decide in the same slice whether [docs/public-skill-dogfood.json](../../../docs/public-skill-dogfood.json), [evals/cautilus/scenarios.json](../../../evals/cautilus/scenarios.json), and/or [charness-artifacts/cautilus/latest.md](../../../charness-artifacts/cautilus/latest.md) should move; do not leave that proof-routing decision implicit
    - trigger collision check against adjacent skills
    - path check for every file named in the skill
    - schema or example validation for any profile, preset, or manifest touched
@@ -132,6 +140,12 @@ skill before writing from scratch.
 - Treat public-skill frontmatter and generated AGENTS hints as classifier input,
   not only documentation; prove at least one realistic consumer prompt for the
   changed skill before calling the slice done.
+- Do not rewrite an existing public-skill core until you have decided how the
+  current intent is frozen: reviewed dogfood, cautilus scenario coverage, or a
+  checked-in scenario review artifact.
+- For `evaluator-required` skills, treat maintained scenario coverage and
+  `cautilus` proof planning as part of the edit contract, not as optional
+  closeout commentary after the behavior already changed.
 - When adding a high-leverage reasoning or review pattern to one public skill,
   inspect adjacent public skills for obvious propagation opportunities before
   stopping.

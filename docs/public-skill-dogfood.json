@@ -81,7 +81,7 @@
       "reviewed_on": "2026-04-16",
       "observed_evidence": [
         "The prompt asks to improve a skill package directly, which matches `create-skill` instead of generic implementation or release work.",
-        "The checked-in core now explicitly requires one realistic consumer prompt for public-skill changes and treats frontmatter plus generated AGENTS hints as classifier input.",
+        "The checked-in core now explicitly requires one realistic consumer prompt for public-skill changes, treats frontmatter plus generated AGENTS hints as classifier input, and tells the editor to freeze the current consumer contract before broad public-skill rewrites.",
         "The current scaffold resolves no adapter artifact for `create-skill`, which matches the adapter-free contract instead of inventing repo-local state."
       ]
     },
@@ -167,7 +167,7 @@
       "observed_evidence": [
         "The checked-in public core now makes repo-mode detection explicit: `GREENFIELD`, `PARTIAL`, and `NORMALIZE` are separate states, and a mature repo with one missing core surface should get a targeted repair instead of a greenfield rewrite.",
         "That same boundary is reinforced in `skills/public/init-repo/references/normalization-flow.md`, which says partially initialized repos should rewrite or repair existing truth surfaces and only scaffold the missing core seam instead of dropping fresh parallel templates.",
-        "This makes the current `init-repo-partial-normalization-followup` long-context candidate a real reviewed consumer seam: the user's push against greenfield assumptions maps directly to checked-in `init-repo` behavior and normalization rules."
+        "The current core also treats skill-bearing repos as a first-class onboarding case: `AGENTS.md` should keep one short policy that semantic skill changes freeze current intent via reviewed dogfood, maintained scenarios, or checked-in scenario review proof before broad edits."
       ]
     },
     {

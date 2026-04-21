@@ -137,6 +137,10 @@ Typical outcomes:
   that only the source and marketplace preparation was possible on that
   machine, but `next_action` can point at another actionable host step when one
   exists
+- if you run `charness init` or `charness doctor` from a target repo that does
+  not look charness-onboarded yet, the payload may also report a repo
+  onboarding next step; after the host restart, start a repo-root session and
+  use `init-repo` before broader work
 
 The checked-in root marketplace files remain generated compatibility artifacts,
 not the official operator-facing install path.
@@ -155,6 +159,9 @@ Recommended verification steps:
      stale and `charness doctor` should tell the operator to rerun `charness update` first because it now retries the official Codex `plugin/install` path, then restart Codex and only if needed reinstall or disable/re-enable the local plugin
    - Claude should report whether marketplace and installed-plugin markers are
      already present
+   - when you run `charness doctor` from a consumer repo, also check whether
+     `repo_onboarding.status` is `required`; if it is, the next session in that
+     repo should start with `init-repo`
 3. If you need a durable checkpoint before or after a host restart, run
    `charness doctor --write-state`; use it when you want to persist a proof
    snapshot to `~/.local/state/charness/host-state.json`. `charness init` and

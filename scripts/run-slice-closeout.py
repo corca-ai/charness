@@ -68,6 +68,8 @@ def print_text(payload: dict[str, object]) -> None:
         print(f"- next_action: {cautilus_plan['next_action']}")
         for note in cautilus_plan.get("notes", []):
             print(f"- note: {note}")
+        for followup in cautilus_plan.get("recommended_followups", []):
+            print(f"- followup: {followup}")
 
     if payload["executed_commands"]:
         print("Executed commands:")

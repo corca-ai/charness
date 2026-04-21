@@ -115,6 +115,11 @@ Then load only the references needed for the detected state:
      sessions should call the shared/public charness skill `find-skills` once
      before broader exploration, then choose the durable work skill from the
      installed surface
+   - when the repo keeps repo-owned skills under `skills/public/` or
+     `skills/support/`, make [`AGENTS.md`](../../../AGENTS.md) say that semantic skill changes should
+     freeze the current consumer intent before broad edits by deciding whether
+     reviewed dogfood, maintained evaluator scenarios, or checked-in scenario
+     review proof will carry the change
    - use `$SKILL_DIR/scripts/render_skill_routing.py` so mature repos get an
      add-block suggestion instead of a silent rewrite
 5. Keep the boundaries honest.
@@ -168,6 +173,9 @@ The result should usually include:
 - Do not create `docs/master-plan.md` by default.
 - Do not create [`docs/handoff.md`](../../../docs/handoff.md) unless the user explicitly wants a baton pass
   or the next-step coordination burden is real enough to justify `handoff`.
+- Do not invent a full evaluator regime for repos that do not actually keep
+  repo-owned skills; skill-proof policy belongs only where the repo really
+  maintains skills as a first-class surface.
 
 ## References
 

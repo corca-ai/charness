@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import fnmatch
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -19,6 +20,10 @@ SurfaceError = _scripts_surfaces_lib_module.SurfaceError
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
 dedupe_preserve_order = _scripts_surfaces_lib_module.dedupe_preserve_order
 normalize_repo_path = _scripts_surfaces_lib_module.normalize_repo_path
+_scripts_public_skill_validation_lib_module = import_repo_module(__file__, "scripts.public_skill_validation_lib")
+ValidationError = _scripts_public_skill_validation_lib_module.ValidationError
+load_policy = _scripts_public_skill_validation_lib_module.load_policy
+validate_policy = _scripts_public_skill_validation_lib_module.validate_policy
 
 INSTRUCTION_SURFACE_COMMAND = "cautilus instruction-surface test --repo-root ."
 COMPARE_COMMANDS = [
@@ -33,6 +38,7 @@ TRUTH_SURFACE_FALLBACKS = (
     "docs/operator-acceptance.md",
     "docs/handoff.md",
 )
+PUBLIC_SKILL_PATH_RE = re.compile(r"^skills/public/([^/]+)/")
 
 
 def _match_any(path: str, patterns: list[str] | tuple[str, ...]) -> bool:
@@ -67,6 +73,68 @@ def _intent_tags(
     return dedupe_preserve_order(tags)
 
 
+def _index_partition(partition: dict[str, list[str]]) -> dict[str, str]:
+    indexed: dict[str, str] = {}
+    for label, skill_ids in partition.items():
+        for skill_id in skill_ids:
+            indexed[skill_id] = label
+    return indexed
+
+
+def _changed_public_skills(changed_paths: list[str]) -> list[str]:
+    seen: list[str] = []
+    for path in changed_paths:
+        match = PUBLIC_SKILL_PATH_RE.match(normalize_repo_path(path))
+        if not match:
+            continue
+        skill_id = match.group(1)
+        if skill_id not in seen:
+            seen.append(skill_id)
+    return seen
+
+
+def _skill_change_recommendations(repo_root: Path, changed_paths: list[str]) -> tuple[list[dict[str, object]], list[str]]:
+    changed_public_skills = _changed_public_skills(changed_paths)
+    if not changed_public_skills:
+        return [], []
+    try:
+        policy = validate_policy(load_policy(repo_root), repo_root)
+    except ValidationError:
+        return [], []
+    tier_by_skill = _index_partition(policy["tiers"])
+    recommendations: list[dict[str, object]] = []
+    followups: list[str] = []
+    for skill_id in changed_public_skills:
+        tier = tier_by_skill.get(skill_id)
+        if tier is None:
+            continue
+        commands = [
+            f"python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id {skill_id} --json",
+        ]
+        notes = [
+            f"Freeze the current `{skill_id}` consumer contract in `docs/public-skill-dogfood.json` before treating the semantic change as closed.",
+        ]
+        if tier == "evaluator-required":
+            notes.append(
+                f"`{skill_id}` is `evaluator-required`: inspect `evals/cautilus/scenarios.json` and decide whether maintained scenario coverage or compare proof should change, not only `charness-artifacts/cautilus/latest.md`."
+            )
+        elif tier == "hitl-recommended":
+            notes.append(
+                f"`{skill_id}` is `hitl-recommended`: keep the reviewed dogfood case and checked-in scenario review explicit instead of assuming a maintained evaluator scenario is required by default."
+            )
+        recommendations.append(
+            {
+                "skill_id": skill_id,
+                "validation_tier": tier,
+                "dogfood_command": commands[0],
+                "notes": notes,
+            }
+        )
+        followups.extend(notes)
+        followups.extend(commands)
+    return recommendations, dedupe_preserve_order(followups)
+
+
 def plan_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> dict[str, object]:
     adapter_payload = load_cautilus_adapter(repo_root)
     if not adapter_payload["valid"]:
@@ -76,6 +144,7 @@ def plan_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> dict[str, 
     data = adapter_payload["data"]
     prompt_paths = _matched_paths(normalized_paths, data["prompt_affecting_patterns"])
     scenario_paths = _matched_paths(normalized_paths, data["scenario_review_patterns"])
+    skill_recommendations, skill_followups = _skill_change_recommendations(repo_root, normalized_paths)
     truth_surface_patterns = data.get("truth_surface_patterns") or list(TRUTH_SURFACE_FALLBACKS)
     truth_surface_paths = _matched_paths(normalized_paths, truth_surface_patterns)
     cross_repo_paths = _matched_paths(normalized_paths, data.get("cross_repo_issue_patterns", []))
@@ -120,16 +189,19 @@ def plan_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> dict[str, 
         "goal": "preserve",
         "proof_kinds": proof_kinds,
         "prompt_affecting_paths": prompt_paths,
+        "changed_public_skills": [item["skill_id"] for item in skill_recommendations],
         "scenario_review_paths": scenario_paths,
         "truth_surface_paths": truth_surface_paths,
         "cross_repo_issue_paths": cross_repo_paths,
         "intent_tags": _intent_tags(normalized_paths, prompt_paths, scenario_paths, truth_surface_paths, cross_repo_paths),
         "recommended_commands": recommended_commands,
+        "skill_validation_recommendations": skill_recommendations,
         "recommended_followups": (
             ["review one or two representative scenarios and record what changed"]
             if "scenario_review" in proof_kinds
             else []
-        ),
+        )
+        + skill_followups,
         "next_action": next_action,
         "notes": notes,
         "adapter": {

@@ -6,7 +6,14 @@ import subprocess
 import sys
 from pathlib import Path
 
-from .support import CLI, build_test_path, clone_seeded_managed_home, make_fake_claude, run_cli
+from .support import (
+    CLI,
+    ROOT,
+    build_test_path,
+    clone_seeded_managed_home,
+    make_fake_claude,
+    run_cli,
+)
 
 
 def test_charness_doctor_selects_primary_next_action(
@@ -57,3 +64,37 @@ def test_charness_doctor_next_action_reports_missing_source(tmp_path: Path) -> N
     assert payload["next_action"]["kind"] == "manual"
     assert payload["next_action"]["host"] == "claude"
     assert payload["next_action"]["message"] == payload["claude_host_guidance"]["message"]
+
+
+def test_charness_doctor_can_surface_repo_onboarding_as_primary_next_action(
+    tmp_path: Path, seeded_managed_home: dict[str, Path]
+) -> None:
+    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    env["PATH"] = build_test_path()
+    consumer_repo = tmp_path / "consumer-repo"
+    consumer_repo.mkdir()
+    (consumer_repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+
+    doctor_result = subprocess.run(
+        [
+            sys.executable,
+            str(CLI),
+            "doctor",
+            "--home-root",
+            str(home_root),
+            "--json",
+            "--target-repo-root",
+            str(consumer_repo),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert doctor_result.returncode == 0, doctor_result.stderr
+    payload = json.loads(doctor_result.stdout)
+    assert payload["repo_onboarding"]["status"] == "required"
+    assert payload["next_action"]["kind"] == "repo-init"
+    assert payload["next_action"]["source"] == "repo_onboarding"
+    assert "init-repo" in payload["next_action"]["message"]
