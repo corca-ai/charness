@@ -72,8 +72,13 @@ the repo has named where state, rules, and queue ownership live.
    - record the user's review criteria and concerns first
    - capture any high-level rule that should apply to every later chunk
 5. Review in bounded chunks.
-   - each chunk should include the primary material, enough related context,
-     and the concrete question that needs human judgment
+   - each chunk should include the original material under review, shown
+     directly as the smallest excerpt sufficient for judgment rather than as a
+     summary-only paraphrase
+   - keep the excerpt line-anchored or hunk-anchored when possible so the user
+     can tell exactly what is being judged
+   - include enough related context and the concrete question that needs human
+     judgment
    - pause for user judgment before moving on
 6. Propagate accepted rules.
    - if the user gives a stable rule, write it down and apply it to remaining
@@ -93,6 +98,7 @@ The result should usually include:
 - `Review Goal`
 - `Target`
 - `Current Chunk`
+- `Original Material`
 - `Related Context`
 - `Decision Needed`
 - `Accepted Rules`
@@ -101,6 +107,8 @@ The result should usually include:
 ## Guardrails
 
 - Do not present isolated snippets without enough context for judgment.
+- Do not ask for judgment on summary-only paraphrases when the underlying text,
+  diff, or artifact excerpt can be shown directly.
 - Do not keep advancing when the current item is still unresolved.
 - Do not silently apply edits that require explicit human approval.
 - Do not lose accepted review rules between chunks in the same session.

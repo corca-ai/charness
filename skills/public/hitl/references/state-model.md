@@ -34,6 +34,9 @@ Use `origin: quality-non-automatable` when the review loop starts from a
 `quality` proposal. In that case, queue entries should retain the original
 `review_question`, `decision_needed`, and `must_not_auto_decide` fields so the
 review does not collapse into a generic approval pass.
+Queue entries should also retain the source path plus line span or excerpt used
+for the last presented chunk so resumed review does not drift into summary-only
+reconstruction.
 
 Portable rule:
 
