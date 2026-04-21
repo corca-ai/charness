@@ -21,4 +21,40 @@ brief_template:
 - Current Contract
 - What Changed
 - Open Questions
+primary_reader_profiles:
+- interested repo readers evaluating whether charness fits their workflow
+- plugin developers designing repo-local adapters and support layers
+- maintainers checking whether README still matches current operator reality
+preserve_intents:
+- Less is more: trust capable agents and prefer strong defaults over user-facing modes.
+- Human, code, and AI should work in symbiosis, with deterministic gates and human judgment where each is strongest.
+- Shared workflow concepts should stay public while repo-specific rules grow locally in adapters.
+- Agents are first-class users, so install, update, and state checks should serve agents directly.
+- User-facing concepts should come before tool-specific wiring.
+- Quality is the basis for trusted autonomy across code, tests, docs, skills, binaries, and design.
+- Communication shape depends on who speaks to whom.
+- Expert tacit knowledge should be absorbed into repeatable workflow patterns.
+- The system should get smarter with use through retro and follow-on improvements.
+terms_to_avoid_in_opening:
+- portable
+- surface
+- seam
+- repo-owned agent work
+quick_start_execution_model: Tell human readers where the canonical install contract lives, offer an agent-facing install prompt when useful, and do not inline the full install procedure in README.
+special_entrypoints:
+- init-repo
+skill_grouping_rules:
+- Keep init-repo distinct from the ordinary public skill list.
+- Treat quality and retro as quality-improvement loops, not post-implementation cleanup.
+- Group communication skills by who speaks to whom.
+- Explain support skills and integrations as tool layers, not public workflow concepts.
+owner_doc_boundaries:
+- Full install contract belongs in INSTALL.md and related packaging docs.
+- Full operator takeover contract belongs in docs/operator-acceptance.md.
+- Deeper validation policy belongs in docs/public-skill-validation.md and adjacent owner docs.
+landing_danger_checks:
+- Do not flatten the public skill map into an undifferentiated list.
+- Do not make find-skills sound like a normal end-user command when it is usually internal routing support.
+- Keep cautilus in the support skill or integration layer rather than as the top-level product contrast.
+- Drop low-value inventory sections that do not help first-touch readers.
 remote_name: origin

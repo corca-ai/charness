@@ -48,6 +48,14 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
                 "Next Action",
             ],
         ),
+        ("primary_reader_profiles", []),
+        ("preserve_intents", []),
+        ("terms_to_avoid_in_opening", []),
+        ("quick_start_execution_model", ""),
+        ("special_entrypoints", []),
+        ("skill_grouping_rules", []),
+        ("owner_doc_boundaries", []),
+        ("landing_danger_checks", []),
         ("remote_name", "origin"),
     ]
 

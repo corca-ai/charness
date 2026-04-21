@@ -83,15 +83,23 @@ git status --short
    - if the source map is effectively empty or only placeholder-level, stop and
      recommend `init-repo` rather than pretending there is already a narrative
      surface to align
-3. Run the landing rewrite loop when the target is a high-leverage first-touch
+3. Inventory intent before rewriting a high-leverage first-touch surface.
+   - recover explicit intent from source docs, repo-local adapter guidance, and
+     user-confirmed direction from the current thread
+   - classify high-signal prior blocks as preserved, moved, compressed, or
+     intentionally deleted
+   - treat preserved meaning as the contract; headings and section order are
+     flexible
+4. Run the landing rewrite loop when the target is a high-leverage first-touch
    surface.
    - use `references/landing-rewrite-loop.md` for comparables, tension log,
-     decision log, compression metric, claim audit, and self-premortem
+     decision log, compression metric, opening-language filter, quick-start
+     actor check, claim audit, self-premortem, and carry-forward review
    - when rendered preview matters, surface the repo-owned install/verify path
      for `glow` before accepting degraded raw-Markdown review
    - resolve research/source-truth tensions before editing
    - keep a claim-to-acceptance/spec matrix before calling the rewrite done
-4. Tighten the durable story first.
+5. Tighten the durable story first.
    - rewrite contradictions instead of layering parallel narratives
    - propagate user-confirmed direction changes into source-of-truth docs, not
      only into the brief
@@ -105,18 +113,26 @@ git status --short
      when the block needs a concrete input example
    - if the docs coin product-local jargon, define it inline at first use
      instead of sending the reader to a later glossary
+   - challenge internal terms that help maintainers more than readers, and
+     define unavoidable product-local jargon at first use
+   - when the repo identity depends on a few high-leverage concepts, prefer a
+     compact concept table or concept list before a flat feature inventory
+   - if the adapter carries quick-start execution guidance, respect who should
+     actually act instead of assuming inline human CLI steps
    - when the repo is aligning around a non-trivial design decision, keep one
      short rejected-alternative or `Deliberately Not Doing` block in the
      durable docs instead of leaving that memory in chat or handoff only
-5. Derive the brief second.
+6. Derive the brief second.
    - keep it audience-neutral by default
    - prefer one self-contained compression layer that `announcement` can later
      adapt for a concrete audience, language, tone, or channel
    - when the repo adapter declares `brief_template`, use that ordered skeleton
      instead of inventing a new brief shape in session
-6. Show the aligned edits, claim audit, compression metric, and brief draft
+7. Show the aligned edits, claim audit, compression metric, and brief draft
    before any delivery action.
-7. Hand off to `announcement` only when the user explicitly wants human-facing
+   - include a short carry-forward note for user-stated intents that were
+     preserved, challenged, or left unresolved
+8. Hand off to `announcement` only when the user explicitly wants human-facing
    adaptation or backend delivery after the narrative itself is aligned.
 
 ## Output Shape
@@ -129,6 +145,7 @@ The result should usually include:
 - `Brief`
 - `Claim Audit`
 - `Compression`
+- `Carry-Forward`
 - `Open Questions`
 - `Next Step`
 
@@ -141,10 +158,13 @@ The result should usually include:
   suggests the repo may have moved.
 - Do not collapse durable truth docs and audience-specific briefs into one file
   when their lifecycles differ.
+- Do not mistake a cleaner outline for success when preserved intent was lost.
 - Do not strip away the short "why not this other path" note when that note is
   what keeps the next reader from reopening the same design debate.
 - Do not let audience, language, tone, or channel adaptation pull `narrative`
   into `announcement` territory.
+- Do not let repo-local adapter hints harden into a global README template for
+  every repo.
 - Keep the brief portable enough that later audience adaptation does not require
   re-aligning the durable truth from scratch.
 - If delivery backend execution is the only remaining task, prefer

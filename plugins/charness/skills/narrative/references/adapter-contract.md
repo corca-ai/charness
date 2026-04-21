@@ -31,6 +31,22 @@ Fallback lookup order:
 - `scenario_block_template`: optional ordered slot labels for scenario blocks;
   keep this as a template, not a promise that every scenario must use every
   slot
+- `primary_reader_profiles`: ordered list of first-touch readers the rewrite
+  should optimize for before structure is chosen
+- `preserve_intents`: ordered list of meanings or product truths that must
+  survive even if section names and ordering change
+- `terms_to_avoid_in_opening`: internal terms to downgrade or define later
+  unless the opening has already earned them
+- `quick_start_execution_model`: repo-local reminder of who usually executes
+  quick-start actions and where the canonical contract lives
+- `special_entrypoints`: repo-local entrypoints that should not be buried in a
+  flat skill or feature inventory
+- `skill_grouping_rules`: grouping reminders that keep maps aligned with repo
+  intent rather than with arbitrary category names
+- `owner_doc_boundaries`: deeper contracts that should stay in owner docs
+  instead of silently expanding README scope
+- `landing_danger_checks`: repo-local failure patterns worth checking before
+  closeout
 - `remote_name`: git remote to compare against when checking freshness
 
 ## Durable Artifact
@@ -51,3 +67,10 @@ channel, or one delivery backend.
 `scenario_block_template` should stay concrete and first-run oriented. It is a
 reader-scaffolding device for products with multiple first-class use cases, not
 an invitation to duplicate the whole contract in cards.
+
+`preserve_intents` is the adapter's main protection against structural cleanup
+that erases meaning. Prefer short, falsifiable statements over vague slogans.
+
+`quick_start_execution_model`, `owner_doc_boundaries`, and
+`landing_danger_checks` are repo-local guidance layers. They should bias the
+rewrite without turning the public skill into one repo's fixed README template.

@@ -16,6 +16,32 @@ This is not audience-specific delivery copy. If the user wants channel, tone,
 language, or campaign adaptation, finish durable alignment first and hand off to
 `announcement`.
 
+If the adapter declares `primary_reader_profiles`, test the chosen reader
+against that list before inventing a new landing shape.
+
+## Intent Inventory
+
+Before editing, inventory three things:
+
+- explicit intents already visible in the source docs
+- user-confirmed intents clarified in the current thread
+- repo-local preserve rules declared by the adapter
+
+Do not start from "what is a neat outline?" Start from "what meaning must
+survive?"
+
+When the target is a README or first-touch landing doc, keep a short
+preserve/move/compress/delete table for any high-signal prior sections or
+concepts:
+
+- preserved in place
+- moved elsewhere
+- compressed into another block
+- intentionally deleted, with a reason
+
+Deletion is not self-justifying simplification. The burden is to show why the
+old intent is no longer needed or how it survives elsewhere.
+
 ## Comparables
 
 Run a bounded comparables pass before editing when the surface is externally
@@ -67,6 +93,26 @@ rewrite done.
 - keep width-specific preview artifacts so the next session can inspect the
   rendered shape directly
 
+## Opening Language Filter
+
+Before finalizing the opening, challenge internal language that may read better
+to maintainers than to interested users.
+
+- prefer user value language before architecture shorthand
+- define product-local jargon inline at first use when it must stay
+- if the adapter lists `terms_to_avoid_in_opening`, treat those as downgrade
+  candidates unless the opening has already earned them
+
+## Quick Start Actor Check
+
+If the landing page includes a Quick Start, state who actually acts.
+
+- human executes directly
+- agent executes from a human-provided prompt
+- mixed path, with README handing off the deeper contract to owner docs
+
+Do not assume Quick Start means inline human CLI steps.
+
 ## Claim Audit
 
 Before stopping, map landing claims to evidence:
@@ -89,3 +135,14 @@ Run a short fresh-eye premortem before finalizing:
 - For each claim, is scope fixed while implementation remains open where it
   should?
 - For each example, fixture, or path, is there one canonical source of truth?
+
+## Carry-Forward Check
+
+Before closing out, explicitly note:
+
+- which user-stated intents from the current thread were preserved
+- which were intentionally challenged and why
+- which remain unresolved
+
+If the adapter declares `landing_danger_checks`, run that list before calling
+the rewrite done.

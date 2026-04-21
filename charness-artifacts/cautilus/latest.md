@@ -1,45 +1,45 @@
 # Cautilus Dogfood
-Date: 2026-04-20
+Date: 2026-04-21
 
 ## Trigger
 
-- slice: tighten `handoff` reference discipline so always-loaded host
-  instruction surfaces are non-default and the current baton pass drops
-  redundant `AGENTS.md`
+- slice: strengthen `narrative` so README rewrites preserve intent, model who
+  acts in Quick Start, and filter maintainer-only opening language
 - claim: `preserve`
 
 ## Validation Goal
 
 - goal: `preserve`
-- reason: the slice changes `handoff` wording around reference selection and
-  host-injected instruction surfaces, but it should not change the maintained
-  public instruction routing contract
+- reason: the slice changes prompt-affecting `narrative` instructions and the
+  checked-in repo-local adapter, but it should preserve the maintained skill
+  routing contract and instruction-surface behavior
 
 ## Prompt Surfaces
 
-- `skills/public/handoff/SKILL.md`
-- `skills/public/handoff/references/document-seams.md`
-- `skills/public/handoff/references/state-selection.md`
+- `.agents/narrative-adapter.yaml`
+- `skills/public/narrative/SKILL.md`
+- `skills/public/narrative/references/adapter-contract.md`
+- `skills/public/narrative/references/landing-rewrite-loop.md`
 
 ## Commands Run
 
 - `cautilus instruction-surface test --repo-root .`
-- `python3 scripts/validate-skills.py`
-- `python3 scripts/check-skill-contracts.py --repo-root .`
-- `python3 scripts/validate-handoff-artifact.py --repo-root .`
+- `python3 scripts/validate-skills.py --repo-root .`
+- `python3 scripts/validate-adapters.py --repo-root .`
+- `python3 scripts/check-command-docs.py --repo-root .`
 
 ## Outcome
 
 - recommendation: `accept-now`
 - instruction-surface summary: `4 passed / 0 failed / 0 blocked`
-- routing notes: the checked-in surface still preserves the maintained
-  `find-skills -> impl` path, compact direct implementation still routes to
-  `impl`, and direct contract-shaping still routes to `spec` after the
-  tighter handoff reference wording
+- routing notes: the checked-in workspace surface still keeps mandatory
+  bootstrap discovery on `find-skills` for the checked-in route, direct compact
+  implementation still routes to `impl`, and direct contract-shaping still
+  routes to `spec` after the `narrative` rewrite guidance widened
 
 ## Follow-ups
 
-- keep always-loaded host instruction surfaces out of handoff `References`
-  unless omitting them would change the first move
-- keep `docs/handoff.md` pointer-heavy and continue pushing durable detail back
-  to its owning artifacts before the baton pass re-inflates
+- keep repo-local `narrative` adapter fields focused on preserve intent and
+  danger checks rather than freezing one README template
+- if future `narrative` changes widen routing semantics instead of preserve-only
+  wording, refresh this artifact with `goal: improve` and an A/B compare block

@@ -17,7 +17,7 @@ These are the core concepts `charness` uses to tackle common problems plugin
 developers run into.
 
 | Concept | Common problem | How `charness` handles it | Connected skills and areas |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Less is more | If you assume the agent is not very capable, the system grows extra modes, options, explanation, and ceremony until users have to learn the framework before they can use it. | `charness` assumes a capable agent. It prefers strong defaults, a small public interface, and progressive disclosure, then moves deeper rules into adapters, helpers, and repo-owned checks only when they are actually needed. | `find-skills`, `init-repo`, `quality`, `create-skill` |
 | Human-code-AI symbiosis | Automation gets brittle when people, deterministic checks, and AI all try to do the same job badly instead of each doing what they are best at. | Humans keep the decisions that require judgment, authority, physical action, or another machine. Code keeps the deterministic gates: linters, tests, validators, hooks. AI handles exploration, drafting, implementation, and synthesis. `charness` is designed to keep those roles aligned instead of blurred together. | `impl`, `quality`, `hitl`, validators, hooks |
 | Shared logic, local growth | A skill written directly from one team's habits often works in one repository and feels wrong everywhere else. | `charness` keeps shared workflow concepts public, then lets each repository define its own docs, rules, checks, and operating patterns through adapters. The workflow stays recognizable, but it can still grow in ways that fit the repo using it. | public skills, adapters, `create-skill`, `narrative` |

@@ -20,6 +20,7 @@ STRING_FIELDS = (
     "preset_id",
     "preset_version",
     "customized_from",
+    "quick_start_execution_model",
     "remote_name",
 )
 LIST_FIELDS = (
@@ -28,6 +29,13 @@ LIST_FIELDS = (
     "brief_template",
     "scenario_surfaces",
     "scenario_block_template",
+    "primary_reader_profiles",
+    "preserve_intents",
+    "terms_to_avoid_in_opening",
+    "special_entrypoints",
+    "skill_grouping_rules",
+    "owner_doc_boundaries",
+    "landing_danger_checks",
 )
 ARTIFACT_FILENAME = "latest.md"
 SOURCE_DOCUMENT_CANDIDATES = (
@@ -86,6 +94,14 @@ def infer_narrative_defaults(repo_root: Path) -> dict[str, Any]:
             "What Comes Back",
             "Next Action",
         ],
+        "primary_reader_profiles": [],
+        "preserve_intents": [],
+        "terms_to_avoid_in_opening": [],
+        "quick_start_execution_model": "",
+        "special_entrypoints": [],
+        "skill_grouping_rules": [],
+        "owner_doc_boundaries": [],
+        "landing_danger_checks": [],
         "remote_name": "origin",
     }
 

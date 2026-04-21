@@ -14,17 +14,15 @@ commands:
       - capability
       - tool
     required_doc_contains:
-      - Primary operator path once the binary is available
+      - Once the binary is available, these are the main commands users and agents will keep seeing
       - charness init
       - charness doctor
       - charness update
       - charness reset
       - charness uninstall
-      - charness task claim
   task:
     help_command: ./charness task --help
     doc_paths:
-      - README.md
       - docs/agent-task-envelope.md
     required_help_contains:
       - claim
