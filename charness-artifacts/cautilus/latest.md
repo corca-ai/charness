@@ -3,45 +3,72 @@ Date: 2026-04-21
 
 ## Trigger
 
-- slice: add sparse named-expert anchors to public skill cores plus the
-  `quality` lens reference and README examples
+- slice: add adapter-driven cautilus proof planning, make closeout a proof
+  gatekeeper instead of an evaluator runner, and strengthen narrative /
+  validation guidance around scenario review plus `why` / `what` / `how`
 - claim: `preserve`
 
 ## Validation Goal
 
 - goal: `preserve`
-- reason: the slice adds retrieval anchors without changing the intended
-  routing contract or swapping skill boundaries. Existing first-skill behavior
-  must stay stable while the wording becomes more distinctive.
+- reason: the slice changes proof policy and high-leverage prompt guidance, but
+  it should not silently rewrite first-skill routing expectations or collapse
+  repo truth-shaping into fallback inference.
+
+## Change Intent
+
+- `prompt_affecting_change`
+- `skill_core_change`
+- `adapter_contract_change`
+- `truth_surface_change`
+- `scenario_review_change`
+- `cross_repo_communication_change`
 
 ## Prompt Surfaces
 
-- `skills/public/create-cli/SKILL.md`
-- `skills/public/debug/SKILL.md`
-- `skills/public/find-skills/SKILL.md`
-- `skills/public/hitl/SKILL.md`
-- `skills/public/ideation/SKILL.md`
+- `.agents/cautilus-adapter.yaml`
+- `skills/public/impl/SKILL.md`
 - `skills/public/narrative/SKILL.md`
-- `skills/public/quality/SKILL.md`
-- `skills/public/quality/references/quality-lenses.md`
-- `skills/public/release/SKILL.md`
+- `skills/public/narrative/references/landing-rewrite-loop.md`
+- `skills/public/narrative/references/cross-repo-issue-shaping.md`
+- `skills/public/quality/references/prompt-asset-policy.md`
+- `skills/public/spec/SKILL.md`
 
 ## Commands Run
 
 - `cautilus instruction-surface test --repo-root .`
 
+## Regression Proof
+
+- instruction-surface summary: `3 passed / 1 failed / 0 blocked`
+- failing case: `checked-in-bootstrap-before-impl`
+- regression note: compact direct `impl` routing and both `spec` routing cases
+  still passed, but the checked-in surface still did not register
+  `find-skills` as the explicit bootstrap helper in the evaluator's routing
+  output
+
+## Scenario Review
+
+- representative scenario 1: high-leverage prompt changes now route through an
+  adapter-visible proof plan instead of assuming cautilus auto-runs during
+  closeout
+- representative scenario 2: `narrative` guidance now stops to shape adapter,
+  reader, and truth-surface contracts before rewriting README-like landing
+  surfaces in earnest
+- representative scenario 3: cross-repo issue shaping now keeps `why` and
+  `what` ahead of `how`, which matches the new intended coordination contract
+
 ## Outcome
 
-- recommendation: `accept-now`
-- instruction-surface summary: `4 passed / 0 failed / 0 blocked`
-- routing notes: checked-in bootstrap still selects `find-skills` before
-  `impl`, and direct contract-shaping requests still route to `spec`
+- recommendation: `reject`
+- routing notes: the new proof-planning and narrative-shaping policy landed,
+  but the checked-in bootstrap-helper expectation still disagrees with the
+  current evaluator observation for the workspace default surface
 
 ## Follow-ups
 
-- if a future anchor rewrite changes routing language, trigger phrasing, or
-  skill-boundary wording rather than adding sparse recall cues, refresh this
-  artifact as `goal: improve` with an A/B compare block
-- keep additive expert anchors sparse; if adjacent skills start accumulating
-  overlapping names, move the overlap back into references before it becomes
-  decoration
+- isolate whether the `checked-in-bootstrap-before-impl` failure is a real
+  prompt-surface regression or an evaluator expectation drift around the
+  mandatory session-start `find-skills` rule
+- if the repo decides this policy slice should claim behavioral improvement
+  rather than preservation, rerun as `goal: improve` with an A/B compare block

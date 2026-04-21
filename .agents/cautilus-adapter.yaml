@@ -1,5 +1,6 @@
 version: 1
 repo: charness
+run_mode: adaptive
 evaluation_surfaces:
   - skill portability and metadata integrity
   - repo-owned validation workflow
@@ -11,6 +12,31 @@ preflight_commands:
   - python3 scripts/validate-adapters.py --repo-root .
   - python3 scripts/validate-public-skill-validation.py --repo-root .
   - python3 scripts/validate-cautilus-scenarios.py --repo-root .
+instruction_surface_command: cautilus instruction-surface test --repo-root .
+prompt_affecting_patterns:
+  - AGENTS.md
+  - .agents/*-adapter.yaml
+  - .agents/cautilus-adapters/*.yaml
+  - skills/public/*/SKILL.md
+  - skills/public/*/references/**
+  - skills/support/*/SKILL.md
+  - skills/support/*/references/**
+scenario_review_patterns:
+  - AGENTS.md
+  - .agents/*-adapter.yaml
+  - README.md
+  - docs/public-skill-validation.md
+  - docs/public-skill-validation.json
+  - skills/public/*/SKILL.md
+  - skills/public/narrative/**
+truth_surface_patterns:
+  - README.md
+  - docs/roadmap.md
+  - docs/operator-acceptance.md
+  - docs/handoff.md
+  - docs/public-skill-validation.md
+cross_repo_issue_patterns:
+  - skills/public/narrative/references/cross-repo-issue-shaping.md
 instruction_surface_cases_default: evals/cautilus/instruction-surface-cases.json
 instruction_surface_test_command_templates:
   - node ./scripts/agent-runtime/run-local-instruction-surface-test.mjs --repo-root . --workspace {candidate_repo} --cases-file {instruction_surface_cases_file} --output-file {instruction_surface_input_file} --artifact-dir {output_dir}/instruction-surface-test --backend {backend} --sandbox read-only --timeout-ms 180000 --codex-model gpt-5.4-mini --codex-reasoning-effort low --claude-permission-mode dontAsk
@@ -33,4 +59,6 @@ comparison_questions:
 human_review_prompts:
   - id: portability
     prompt: Where would a host repo still find charness brittle or unclear despite green repo-owned gates?
+  - id: scenario-review
+    prompt: Which representative scenario should be checked to confirm that a high-leverage prompt change improved the intended reader or reasoning behavior rather than only preserving routing?
 profile_default: evaluator-required

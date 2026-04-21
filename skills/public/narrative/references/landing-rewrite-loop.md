@@ -19,6 +19,11 @@ language, or campaign adaptation, finish durable alignment first and hand off to
 If the adapter declares `primary_reader_profiles`, test the chosen reader
 against that list before inventing a new landing shape.
 
+If the target is high-leverage and the adapter is missing, stop to shape the
+truth-surface contract first: primary reader, first-run job, mutable docs, and
+preserve rules. Do not let fallback inference silently become the repo's
+landing contract.
+
 ## Intent Inventory
 
 Before editing, inventory three things:

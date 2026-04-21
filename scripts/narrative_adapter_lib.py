@@ -156,12 +156,12 @@ def load_narrative_adapter(repo_root: Path) -> dict[str, Any]:
             "bootstrap_expectations": _bootstrap_expectations(data),
             "errors": [],
             "warnings": [
-                "No narrative adapter found. Using inferred source-of-truth defaults.",
-                f"First run leaves `{_artifact_path(data['output_dir'])}` as the durable truth-surface alignment artifact.",
-                "When the repo has richer product or operating truth docs, pin .agents/narrative-adapter.yaml instead of relying on fallback inference.",
-                "Create .agents/narrative-adapter.yaml to pin the truth surface and mutable documents.",
-            ],
-            "searched_paths": searched_paths,
+            "No narrative adapter found. Using inferred source-of-truth defaults.",
+            f"First run leaves `{_artifact_path(data['output_dir'])}` as the durable truth-surface alignment artifact.",
+            "High-leverage README or landing rewrites should pin .agents/narrative-adapter.yaml before editing in earnest instead of relying on fallback inference.",
+            "Create .agents/narrative-adapter.yaml to pin the truth surface and mutable documents.",
+        ],
+        "searched_paths": searched_paths,
         }
 
     raw = load_yaml_file(adapter_path)

@@ -47,7 +47,7 @@ bucket choices before editing the JSON.
 ## Prompt-Affecting Changes
 
 When a slice changes repo-owned instruction or prompt surfaces that can steer
-agent behavior, refresh checked-in `cautilus` proof before closeout.
+agent behavior, plan the matching checked-in `cautilus` proof before closeout.
 
 Default prompt-affecting surfaces in this repo:
 
@@ -59,15 +59,48 @@ Default prompt-affecting surfaces in this repo:
 
 Default proof split:
 
-- `preserve`: run `cautilus instruction-surface test --repo-root .` and refresh
-  [`charness-artifacts/cautilus/latest.md`](../charness-artifacts/cautilus/latest.md)
-- `improve`: run the same instruction-surface proof and also record a baseline
-  compare path with `cautilus workspace prepare-compare` plus
+- `regression proof`: preserve routing, contract boundaries, and the existing
+  first-skill shape with `cautilus instruction-surface test --repo-root .`
+- `scenario review`: inspect one or two representative scenarios when the
+  change is high-leverage enough that "not broken" is weaker than "did the
+  intended reader or reasoning behavior actually improve?"
+- `improve`: when the slice claims behavioral improvement rather than only
+  preservation, also record a baseline compare path with
+  `cautilus workspace prepare-compare` plus
   `cautilus mode evaluate --baseline-ref <ref>`
 
 The checked-in artifact should say whether the slice claims `preserve` or
-`improve`, list the touched prompt surfaces, and record the exact commands and
-recommendation that support the claim.
+`improve`, list the touched prompt surfaces, record the active intent tags, and
+separate regression proof from scenario review when both matter.
+
+## Execution Policy
+
+`cautilus` is on-demand proof, not an always-run closeout side effect.
+
+Repo policy lives in [`.agents/cautilus-adapter.yaml`](../.agents/cautilus-adapter.yaml):
+
+- `run_mode: auto`: the repo allows cautilus proof to run without an extra
+  confirmation step when the workflow decides it is needed
+- `run_mode: ask`: the repo always asks before cautilus runs
+- `run_mode: adaptive`: low-cost regression proof may proceed automatically,
+  but high-leverage prompt changes such as skill-core or truth-surface edits
+  stop for explicit confirmation before cautilus runs
+
+`run-slice-closeout.py` should act as a gatekeeper, not as the evaluator
+runner: it decides whether proof is required and whether the refreshed artifact
+is present, but it should not silently launch cautilus itself.
+
+## Intent Classes
+
+Intent is part of the proof contract, not only a chat-side interpretation.
+
+- `prompt_affecting_change`: repo-owned instruction or prompt bytes moved
+- `skill_core_change`: public/support `SKILL.md` core changed
+- `truth_surface_change`: README or other repo-truth docs changed
+- `adapter_contract_change`: repo adapter contract changed
+- `cross_repo_communication_change`: guidance for cross-repo issue shaping changed
+- `scenario_review_change`: the repo policy says this slice needs semantic
+  review in addition to regression proof
 
 ## On-Demand Behavioral Proof
 
@@ -81,6 +114,8 @@ standing evals.
   produces the intended routing, artifact, or decision support behavior
 - checked-in latest artifacts such as [`charness-artifacts/cautilus/latest.md`](../charness-artifacts/cautilus/latest.md)
   are the source of truth for those on-demand runs
+- closeout should block when proof is required but missing; it should not hide
+  that gap behind a passing markdown or packaging bundle
 - `specdown` may project those checked artifacts into a readable report so
   operators can inspect the latest proof, but that viewer page is not the
   underlying evaluator state or storage layer

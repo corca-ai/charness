@@ -99,11 +99,17 @@ Adapter policy:
      [`AGENTS.md`](../../../AGENTS.md), public/support `SKILL.md`, behavior-steering references, or
      adapter prompt wording, refresh [`charness-artifacts/cautilus/latest.md`](../../../charness-artifacts/cautilus/latest.md)
      from repo-owned cautilus proof before closeout
-   - for behavior-preserving prompt changes, run
+   - let the repo's cautilus adapter decide whether proof may run
+     autonomously, must ask, or should adapt by proof kind and cost; closeout
+     should block on missing proof rather than silently launching it
+   - for behavior-preserving prompt changes, keep regression proof anchored by
      `cautilus instruction-surface test --repo-root .`; for behavior-improving
      claims, also record the baseline compare path with
      `cautilus workspace prepare-compare` and
      `cautilus mode evaluate --baseline-ref <ref>`
+   - when the slice changes reader fit, truth-surface framing, or skill-core
+     reasoning shape, add a short scenario-review note instead of treating
+     routing preservation as sufficient evidence
    - if stronger proof needs setup or permission, ask instead of silently
      downgrading the claim
 5. Sync truth surfaces and re-read the contract before closeout.

@@ -18,6 +18,8 @@ SurfaceError = _scripts_surfaces_lib_module.SurfaceError
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
 load_surfaces = _scripts_surfaces_lib_module.load_surfaces
 match_surfaces = _scripts_surfaces_lib_module.match_surfaces
+_scripts_plan_cautilus_proof_module = import_repo_module(__file__, "scripts.plan_cautilus_proof")
+plan_cautilus_proof = _scripts_plan_cautilus_proof_module.plan_cautilus_proof
 
 
 def run_command(repo_root: Path, command: str, phase: str) -> dict[str, object]:
@@ -57,6 +59,15 @@ def print_text(payload: dict[str, object]) -> None:
         print("Unmatched paths:")
         for path in payload["unmatched_paths"]:
             print(f"- {path}")
+
+    cautilus_plan = payload.get("cautilus_plan")
+    if isinstance(cautilus_plan, dict) and cautilus_plan.get("required"):
+        print("Cautilus proof:")
+        print(f"- run_mode: {cautilus_plan['run_mode']}")
+        print(f"- proof_kinds: {', '.join(cautilus_plan['proof_kinds'])}")
+        print(f"- next_action: {cautilus_plan['next_action']}")
+        for note in cautilus_plan.get("notes", []):
+            print(f"- note: {note}")
 
     if payload["executed_commands"]:
         print("Executed commands:")
@@ -114,6 +125,21 @@ def main() -> int:
         else:
             print_text(payload)
             print(message, file=sys.stderr)
+        return 1
+
+    cautilus_plan = plan_cautilus_proof(repo_root, payload["changed_paths"])
+    payload["cautilus_plan"] = cautilus_plan
+    if cautilus_plan["required"] and not cautilus_plan["artifact_changed"]:
+        payload["status"] = "blocked"
+        payload["error"] = (
+            f"cautilus proof is required for this slice; next_action=`{cautilus_plan['next_action']}` "
+            f"and `{cautilus_plan['artifact_path']}` is not refreshed yet"
+        )
+        if args.json:
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+        else:
+            print_text(payload)
+            print(payload["error"], file=sys.stderr)
         return 1
 
     command_plan: list[tuple[str, str]] = []

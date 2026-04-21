@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from scripts.cautilus_adapter_lib import load_cautilus_adapter
 from scripts.eval_registry import scenario_ids
 from scripts.public_skill_validation_lib import ValidationError, load_policy, validate_policy
 
@@ -223,9 +224,15 @@ def _validate_adapter_wiring(repo_root: Path) -> None:
     adapter = repo_root / ADAPTER_PATH
     if not adapter.is_file():
         raise ValidationError(f"missing `{ADAPTER_PATH}`")
+    adapter_payload = load_cautilus_adapter(repo_root)
+    if not adapter_payload["valid"]:
+        raise ValidationError(f"{ADAPTER_PATH}: {'; '.join(adapter_payload['errors'])}")
     adapter_text = adapter.read_text(encoding="utf-8")
     required_snippets = (
         "profile_default: evaluator-required",
+        "run_mode:",
+        "prompt_affecting_patterns:",
+        "scenario_review_patterns:",
         "instruction_surface_cases_default:",
         "instruction_surface_test_command_templates:",
         "held_out_command_templates:",

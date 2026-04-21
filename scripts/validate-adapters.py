@@ -14,6 +14,8 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_adapter_lib_module = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
+_scripts_cautilus_adapter_lib_module = import_repo_module(__file__, "scripts.cautilus_adapter_lib")
+load_cautilus_adapter = _scripts_cautilus_adapter_lib_module.load_cautilus_adapter
 _scripts_artifact_naming_lib_module = import_repo_module(__file__, "scripts.artifact_naming_lib")
 current_artifact_filename = _scripts_artifact_naming_lib_module.current_artifact_filename
 _scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
@@ -71,6 +73,11 @@ def iter_adapter_yaml(root: Path) -> list[Path]:
 
 
 def validate_adapter_yaml(path: Path) -> None:
+    if path.name == "cautilus-adapter.yaml" and path.parent.name == ".agents":
+        payload = load_cautilus_adapter(path.parent.parent.resolve())
+        if not payload["valid"]:
+            raise ValidationError(f"{path}: {'; '.join(payload['errors'])}")
+        return
     data = load_yaml_file(path)
     if not isinstance(data, dict):
         raise ValidationError(f"{path}: adapter YAML must parse to a mapping")

@@ -27,6 +27,9 @@ wording, use
 `announcement`.
 If the repo has little or no durable truth surface yet, use `init-repo` to
 bootstrap that surface before treating the task as narrative alignment.
+If the target is a high-leverage truth surface and the repo-specific narrative
+contract is still missing, shape or scaffold the adapter before rewriting in
+earnest instead of letting fallback inference silently stand in for repo truth.
 
 ## Bootstrap
 
@@ -84,6 +87,9 @@ git status --short
    - check whether local context may be stale relative to git remote state
    - if freshness is ambiguous and the repo cannot be trusted as-is, surface
      that risk before editing
+   - if the adapter is missing and the target is README, landing copy, operator
+     docs, or another first-touch truth surface, stop to shape the truth
+     surface and primary reader contract before rewriting in earnest
    - if the source map is effectively empty or only placeholder-level, stop and
      recommend `init-repo` rather than pretending there is already a narrative
      surface to align
@@ -99,6 +105,9 @@ git status --short
    - use `references/landing-rewrite-loop.md` for comparables, tension log,
      decision log, compression metric, opening-language filter, quick-start
      actor check, claim audit, self-premortem, and carry-forward review
+   - if the work is really a cross-repo issue or proposal packet, use
+     `references/cross-repo-issue-shaping.md` so `why` and `what` stay ahead
+     of `how`
    - when rendered preview matters, surface the repo-owned install/verify path
      for `glow` before accepting degraded raw-Markdown review
    - resolve research/source-truth tensions before editing
@@ -181,4 +190,5 @@ The result should usually include:
 - `references/brief-shape.md`
 - `references/scenario-blocks.md`
 - `references/landing-rewrite-loop.md`
+- `references/cross-repo-issue-shaping.md`
 - `scripts/map_sources.py`

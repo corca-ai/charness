@@ -32,7 +32,12 @@ In `charness`, prompt-affecting repo changes should also leave visible
 behavioral proof:
 
 - refresh [`charness-artifacts/cautilus/latest.md`](../../../../charness-artifacts/cautilus/latest.md)
-- for `preserve` claims, run `cautilus instruction-surface test --repo-root .`
+- let the repo adapter choose whether cautilus runs in `auto`, `ask`, or
+  `adaptive` mode instead of assuming one global execution policy
+- for `preserve` claims, keep a regression-proof record anchored by
+  `cautilus instruction-surface test --repo-root .`
+- for high-leverage prompt changes, add a short scenario-review note rather
+  than pretending routing preservation alone answered the behavioral question
 - for `improve` claims, additionally record a baseline compare path with
   `cautilus workspace prepare-compare` and
   `cautilus mode evaluate --baseline-ref <ref>`

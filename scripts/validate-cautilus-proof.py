@@ -3,37 +3,29 @@
 from __future__ import annotations
 
 import argparse
-import fnmatch
 import sys
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
-ARTIFACT_PATH = Path("charness-artifacts/cautilus/latest.md")
+_scripts_cautilus_adapter_lib_module = import_repo_module(__file__, "scripts.cautilus_adapter_lib")
+ARTIFACT_PATH = Path(_scripts_cautilus_adapter_lib_module.ARTIFACT_PATH)
 MAX_ARTIFACT_LINES = 120
-PROMPT_AFFECTING_PATTERNS = (
-    "AGENTS.md",
-    ".agents/*-adapter.yaml",
-    ".agents/cautilus-adapters/*.yaml",
-    "skills/public/*/SKILL.md",
-    "skills/public/*/references/**",
-    "skills/support/*/SKILL.md",
-    "skills/support/*/references/**",
-)
 REQUIRED_SECTIONS = (
     "## Trigger",
     "## Validation Goal",
+    "## Change Intent",
     "## Prompt Surfaces",
     "## Commands Run",
+    "## Regression Proof",
     "## Outcome",
     "## Follow-ups",
 )
-OPTIONAL_SECTIONS = ("## A/B Compare",)
+OPTIONAL_SECTIONS = ("## Scenario Review", "## A/B Compare")
 RECOMMENDATION_PREFIX = "- recommendation: "
 GOAL_PREFIX = "- goal: "
 VALID_GOALS = {"preserve", "improve"}
-INSTRUCTION_SURFACE_COMMAND = "cautilus instruction-surface test --repo-root ."
 A_B_REQUIRED_SNIPPETS = (
     "baseline_ref:",
     "cautilus workspace prepare-compare",
@@ -51,11 +43,9 @@ validate_nonempty_sections = _scripts_artifact_validator_module.validate_nonempt
 _scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_lib")
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
 normalize_repo_path = _scripts_surfaces_lib_module.normalize_repo_path
-
-
-def path_matches_patterns(path: str, patterns: tuple[str, ...]) -> bool:
-    normalized = normalize_repo_path(path)
-    return any(fnmatch.fnmatch(normalized, pattern) for pattern in patterns)
+_scripts_plan_cautilus_proof_module = import_repo_module(__file__, "scripts.plan_cautilus_proof")
+INSTRUCTION_SURFACE_COMMAND = _scripts_plan_cautilus_proof_module.INSTRUCTION_SURFACE_COMMAND
+plan_cautilus_proof = _scripts_plan_cautilus_proof_module.plan_cautilus_proof
 
 
 def section_lines(lines: list[str], heading: str) -> list[str]:
@@ -72,11 +62,6 @@ def section_lines(lines: list[str], heading: str) -> list[str]:
         if index > start:
             end = min(end, index)
     return [line.strip() for line in lines[start:end] if line.strip()]
-
-
-def prompt_affecting_paths(changed_paths: list[str]) -> list[str]:
-    return [path for path in changed_paths if path_matches_patterns(path, PROMPT_AFFECTING_PATTERNS)]
-
 
 def validate_title(lines: list[str]) -> None:
     if not lines or lines[0].strip() != "# Cautilus Dogfood":
@@ -127,13 +112,45 @@ def validate_outcome(lines: list[str]) -> None:
         raise ValidationError("`## Outcome` must include a `- recommendation: ...` line")
 
 
+def validate_change_intent(lines: list[str], intent_tags: list[str]) -> None:
+    change_lines = section_lines(lines, "## Change Intent")
+    missing = [tag for tag in intent_tags if not any(tag in line for line in change_lines)]
+    if missing:
+        rendered = ", ".join(f"`{value}`" for value in missing)
+        raise ValidationError("`## Change Intent` must list the active planner intent tag(s); missing " + rendered)
+
+
+def validate_regression_proof(lines: list[str]) -> None:
+    regression_lines = section_lines(lines, "## Regression Proof")
+    if not any("instruction-surface" in line or "passed" in line for line in regression_lines):
+        raise ValidationError("`## Regression Proof` must record the instruction-surface result")
+
+
+def validate_scenario_review(lines: list[str], planner: dict[str, object]) -> None:
+    proof_kinds = planner.get("proof_kinds", [])
+    needs_scenario = isinstance(proof_kinds, list) and "scenario_review" in proof_kinds
+    if not needs_scenario:
+        return
+    scenario_lines = section_lines(lines, "## Scenario Review")
+    if not scenario_lines:
+        raise ValidationError("`## Scenario Review` is required when the proof plan requests scenario review")
+
+
 def validate_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> str:
-    changed_prompt_paths = prompt_affecting_paths(changed_paths)
+    planner = plan_cautilus_proof(repo_root, changed_paths)
+    changed_prompt_paths = planner["prompt_affecting_paths"]
     if not changed_prompt_paths:
         return "no prompt-affecting changes detected"
 
     artifact_repo_path = ARTIFACT_PATH.as_posix()
     if artifact_repo_path not in changed_paths:
+        next_action = planner["next_action"]
+        run_mode = planner["run_mode"]
+        if next_action == "ask-before-running":
+            raise ValidationError(
+                "prompt-affecting changes require refreshing "
+                f"`{artifact_repo_path}` in the same slice; repo policy is `{run_mode}` so ask before running cautilus"
+            )
         raise ValidationError(
             "prompt-affecting changes require refreshing "
             f"`{artifact_repo_path}` in the same slice"
@@ -146,8 +163,11 @@ def validate_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> str:
     validate_exact_h2_sections(lines, REQUIRED_SECTIONS, optional_sections=OPTIONAL_SECTIONS)
     validate_nonempty_sections(lines, REQUIRED_SECTIONS)
     goal = validate_validation_goal(lines)
+    validate_change_intent(lines, planner["intent_tags"])
     validate_prompt_surfaces(lines, changed_prompt_paths)
     validate_commands_run(lines, goal)
+    validate_regression_proof(lines)
+    validate_scenario_review(lines, planner)
     validate_outcome(lines)
     return f"validated prompt-affecting cautilus proof for {len(changed_prompt_paths)} changed path(s)"
 
