@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 SCRIPT_REF_RE = re.compile(r"(?:^|\s)(?:bash|sh)?\s*(\./[A-Za-z0-9_./-]+\.sh|[A-Za-z0-9_./-]+\.sh)\b")
+RUNNER_REF_RE = re.compile(r"(?:^|[\s&|;(])(?:(?:bash|sh|node|python3?|ruby)\s+|(?:deno|bun)\s+(?:run\s+)?)?(?:\./)?scripts/run-[A-Za-z0-9_-]+(?:\.(?:sh|mjs|cjs|js|ts|py|rb))?\b")
 NESTED_SCRIPT_RE = re.compile(r"\b(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?([A-Za-z0-9:_-]+)\b")
 VERBOSE_SCRIPT_RE = re.compile(r"\b[A-Za-z0-9:_-]*verbose[A-Za-z0-9:_-]*\b", re.IGNORECASE)
 VERBOSE_VAR_RE = re.compile(r"\b[A-Z][A-Z0-9_]*VERBOSE[A-Z0-9_]*\b")
@@ -154,9 +155,11 @@ def _orchestrator_axis(surfaces: list[dict[str, Any]]) -> dict[str, Any]:
     for surface in surfaces:
         if surface["surface_type"] != "lefthook":
             continue
-        parallel, output = bool(surface["metadata"].get("parallel")), bool(surface["metadata"].get("output_configured"))
-        quiet = not parallel or output
-        findings.append({"type": "lefthook_output_mode" if quiet else "lefthook_parallel_output_unconfigured", "path": surface["path"], "surface_type": surface["surface_type"], "state": "quiet" if quiet else "interleaving_risk", "suggestion": "" if quiet else "Configure `lefthook` grouped output (`output:` or `skip_output:`) when `parallel: true` is enabled."})
+        if surface["commands"] and all(RUNNER_REF_RE.search(command["snippet"]) for command in surface["commands"]):
+            findings.append({"type": "lefthook_thin_launcher", "path": surface["path"], "surface_type": surface["surface_type"], "state": "quiet", "suggestion": ""})
+            continue
+        quiet = not bool(surface["metadata"].get("parallel")) or bool(surface["metadata"].get("output_configured"))
+        findings.append({"type": "lefthook_output_mode" if quiet else "lefthook_parallel_output_unconfigured", "path": surface["path"], "surface_type": surface["surface_type"], "state": "quiet" if quiet else "interleaving_risk", "suggestion": "" if quiet else "Prefer delegating `lefthook` `pre-push` to a repo-owned runner (e.g. `scripts/run-pre-push.sh` or `scripts/run-pre-push.mjs`) that owns quiet-default success output, failure replay, and verbose-on-demand. Configuring `lefthook` grouped output (`output:` / `skip_output:`) is an acceptable fallback when the orchestrator still fans out commands directly."})
     return {"status": _quiet_status(findings), "findings": findings}
 
 

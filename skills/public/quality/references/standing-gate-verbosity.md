@@ -29,10 +29,19 @@ Review these five axes and classify each as `healthy`, `weak`, `missing`, or
    - `go test -v` is usually a smell in the default gate
    - `cargo test -- --nocapture` is usually a smell in the default gate
 2. **Orchestrator output mode**
-   - grouped output matters most when an orchestrator fans out commands in
-     parallel
+   - prefer a thin orchestrator that delegates `pre-push` to a repo-owned
+     runner (for example `scripts/run-pre-push.sh`,
+     `scripts/run-pre-push.mjs`, or
+     [`scripts/run-quality.sh`](../../../../scripts/run-quality.sh)). The runner owns
+     quiet-default success output, failure-path log replay, per-phase elapsed
+     reporting, and a single verbose-on-demand env seam — shapes that outlive
+     any one orchestrator's UI quirks.
+   - grouped output configured on the orchestrator itself
+     (`lefthook output:` / `skip_output:`) is an acceptable secondary local
+     fix when the orchestrator still fans out commands directly under
+     `parallel: true`. Treat it as a fallback, not as the design target.
    - `lefthook` with `parallel: true` should not leave success logs to raw
-     interleaving by default
+     interleaving by default.
 3. **Per-gate chatter**
    - noisy tools such as `pylint`, `coverage report`, or `specdown` should use
      their quietest honest defaults in the standing gate
