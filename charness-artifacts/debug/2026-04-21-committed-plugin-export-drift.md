@@ -14,8 +14,8 @@ present in the working tree.
 Given a repo where source-owned packaging inputs changed,
 when only the source files are committed and the regenerated plugin-export files
 remain uncommitted in the working tree,
-then repo-owned quality gates and local-origin managed updates should reject
-that committed snapshot before another checkout can consume it.
+then repo-owned quality gates should reject that committed snapshot before
+another checkout can consume it.
 
 ## Observed Facts
 
@@ -46,17 +46,17 @@ that committed snapshot before another checkout can consume it.
 
 - Packaging validation only checked the current working tree, not the committed
   snapshot another machine would consume.
-- The local-path managed-update flow had no pre-pull guard analogous to the
-  checked-in pre-push hook.
 - Maintainer workflow relied on hooks or manual discipline instead of a
   repo-owned committed-snapshot validator in the standing gate.
+- The repo had no explicit regression test for the partial-commit case where
+  source files are committed but regenerated plugin-export files remain only in
+  the working tree.
 
 ## Hypothesis
 
-If the repo validates the committed snapshot separately from the working tree
-and managed local-origin updates preflight that committed snapshot before
-pulling, then partial commits with uncommitted plugin-export drift will be
-blocked before they break downstream `charness update` runs.
+If the repo validates the committed snapshot separately from the working tree,
+then partial commits with uncommitted plugin-export drift will be blocked
+before they break downstream `charness update` runs.
 
 ## Verification
 
@@ -66,22 +66,16 @@ blocked before they break downstream `charness update` runs.
   surface obligations.
 - Added a packaging regression test that proves the working-tree validator can
   pass while the committed snapshot validator fails.
-- Added a managed-install regression test that blocks local-origin updates when
-  the source repo has committed plugin-export drift.
 - Re-ran focused packaging, surface-obligation, and managed-install tests.
 
 ## Root Cause
 
 The repo had a workflow gap between "working tree is consistent" and "committed
-snapshot is consistent". That gap was invisible in local-path managed-update
-flows because the pre-push hook never ran before another checkout pulled from
-the local source repo.
+snapshot is consistent". The downstream machine only sees the committed
+snapshot, but the standing packaging check validated the current working tree.
 
 ## Prevention
 
 - Keep `validate-packaging-committed.py` in the standing quality runner so
   partial commits cannot hide behind a locally regenerated working tree.
-- Preflight local-path managed-update sources with the committed-snapshot
-  validator before `git pull --ff-only`.
-- Keep the regression tests for partial-commit drift and local-origin update
-  blocking.
+- Keep the regression test for partial-commit drift.

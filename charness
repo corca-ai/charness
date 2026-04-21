@@ -198,47 +198,6 @@ def git_upstream_divergence(path: Path) -> tuple[str, int, int] | None:
     return upstream, ahead, behind
 
 
-def git_remote_url(path: Path, remote: str = "origin") -> str | None:
-    result = run(["git", "remote", "get-url", remote], cwd=path)
-    if result.returncode != 0:
-        return None
-    remote_url = result.stdout.strip()
-    return remote_url or None
-
-
-def local_git_remote_path(path: Path, remote: str = "origin") -> Path | None:
-    remote_url = git_remote_url(path, remote=remote)
-    if remote_url is None:
-        return None
-    if re.match(r"^[A-Za-z][A-Za-z0-9+.-]*://", remote_url):
-        if remote_url.startswith("file://"):
-            return Path(remote_url.removeprefix("file://")).expanduser().resolve()
-        return None
-    if re.match(r"^[^@]+@[^:]+:.+", remote_url):
-        return None
-    candidate = Path(remote_url).expanduser()
-    if not candidate.is_absolute():
-        candidate = (path / candidate).resolve()
-    else:
-        candidate = candidate.resolve()
-    return candidate if candidate.exists() else None
-
-
-def validate_local_managed_pull_source(source_repo: Path) -> None:
-    validator = source_repo / "scripts" / "validate-packaging-committed.py"
-    if not validator.is_file():
-        return
-    result = run(["python3", str(validator), "--repo-root", str(source_repo)], cwd=source_repo)
-    if result.returncode != 0:
-        raise CharnessError(
-            "local source checkout "
-            f"`{source_repo}` has committed checked-in plugin export drift. "
-            "Run `python3 scripts/sync_root_plugin_manifests.py --repo-root .`, "
-            "commit the regenerated install surface, and retry `charness update`.\n"
-            f"STDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
-        )
-
-
 def packaging_version(path: Path) -> str | None:
     manifest_path = path / "packaging" / f"{PACKAGE_ID}.json"
     if not manifest_path.is_file():
@@ -1016,9 +975,6 @@ def ensure_checkout(repo_root: Path, *, managed: bool, repo_url: str, allow_clon
                 raise CharnessError(
                     f"managed checkout `{repo_root}` has tracked local changes; stop and resolve them before `charness update`"
                 )
-            local_origin = local_git_remote_path(repo_root)
-            if local_origin is not None and local_origin != repo_root:
-                validate_local_managed_pull_source(local_origin)
             pull_result = run(["git", "pull", "--ff-only"], cwd=repo_root)
             if pull_result.returncode != 0:
                 divergence = git_upstream_divergence(repo_root)
