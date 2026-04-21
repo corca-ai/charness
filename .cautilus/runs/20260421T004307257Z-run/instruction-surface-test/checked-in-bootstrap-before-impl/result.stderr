@@ -1,0 +1,260 @@
+OpenAI Codex v0.122.0 (research preview)
+--------
+workdir: /home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens
+model: gpt-5.4-mini
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: low
+reasoning summaries: none
+session id: 019dad7d-af4d-7d13-862f-9433ad5656f0
+--------
+user
+You are being evaluated on whether the current repository instruction surface steers your first routing move honestly.
+Work inside the current repo checkout.
+Do not modify files.
+Do not read general repo docs, README files, or skill files unless the current instruction surface makes them necessary for the first routing decision.
+Before you begin the task, identify the first instruction file you intentionally used as the entry point.
+Only list instruction or supporting files that you actually read before or during the first routing decision.
+Report the first routing decision you made, including any bootstrap helper, the eventual durable work skill if one was chosen, any support helper, and the first tool call if one happened.
+Use `bootstrapHelper` for helpers such as discovery/bootstrap skills that precede the real work skill.
+Use `workSkill` for the durable task skill once it becomes clear.
+Keep `selectedSkill` as the single-lane alias when there is no meaningful bootstrap/work split; otherwise set it to the same value as `workSkill`.
+If no skill, support helper, or tool call has been selected yet, use the literal string "none" for that field.
+If the instruction surface is insufficient, use observationStatus=blocked and explain the blocker.
+Return only JSON matching the provided schema after you finish.
+
+User request:
+Route only: you need the first charness skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the vendored bubblewrap in the meantime.
+exec
+/usr/bin/zsh -lc "sed -n '1,220p' /home/ubuntu/codex/plugins/cache/local/charness/0.5.0/skills/find-skills/SKILL.md" in /home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens
+ exited 2 in 0ms:
+sed: can't read /home/ubuntu/codex/plugins/cache/local/charness/0.5.0/skills/find-skills/SKILL.md: No such file or directory
+
+exec
+/usr/bin/zsh -lc "pwd && rg --files -g 'SKILL.md' -g 'AGENTS.md' -g 'docs/handoff.md' -g 'docs/operator-acceptance.md' -g 'docs/control-plane.md' -g 'docs/roadmap.md' -g 'charness-artifacts/find-skills/latest.*' ." in /home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens
+ succeeded in 0ms:
+/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens
+./charness-artifacts/find-skills/latest.md
+./charness-artifacts/find-skills/latest.json
+./AGENTS.md
+./evals/fixtures/skill-valid/skills/public/demo/SKILL.md
+./skills/support/specdown/SKILL.md
+./evals/fixtures/profile-valid/skills/public/handoff/SKILL.md
+./skills/support/web-fetch/SKILL.md
+./skills/support/gather-slack/SKILL.md
+./skills/support/markdown-preview/SKILL.md
+./skills/support/gather-notion/SKILL.md
+./skills/support/agent-browser/SKILL.md
+./docs/operator-acceptance.md
+./skills/public/ideation/SKILL.md
+./skills/public/debug/SKILL.md
+./skills/public/handoff/SKILL.md
+./plugins/charness/skills/ideation/SKILL.md
+./skills/public/retro/SKILL.md
+./plugins/charness/skills/debug/SKILL.md
+./skills/public/gather/SKILL.md
+./skills/public/create-cli/SKILL.md
+./plugins/charness/skills/find-skills/SKILL.md
+./docs/handoff.md
+./docs/control-plane.md
+./plugins/charness/skills/spec/SKILL.md
+./plugins/charness/skills/create-cli/SKILL.md
+./skills/public/init-repo/SKILL.md
+./plugins/charness/skills/release/SKILL.md
+./plugins/charness/skills/init-repo/SKILL.md
+./skills/public/impl/SKILL.md
+./plugins/charness/skills/premortem/SKILL.md
+./plugins/charness/skills/impl/SKILL.md
+./plugins/charness/skills/announcement/SKILL.md
+./skills/public/quality/SKILL.md
+./skills/public/find-skills/SKILL.md
+./plugins/charness/skills/narrative/SKILL.md
+./plugins/charness/skills/quality/SKILL.md
+./plugins/charness/skills/create-skill/SKILL.md
+./skills/public/spec/SKILL.md
+./plugins/charness/skills/retro/SKILL.md
+./plugins/charness/skills/hitl/SKILL.md
+./skills/public/release/SKILL.md
+./plugins/charness/skills/gather/SKILL.md
+./plugins/charness/skills/handoff/SKILL.md
+./skills/public/premortem/SKILL.md
+./plugins/charness/support/specdown/SKILL.md
+./skills/public/create-skill/SKILL.md
+./skills/public/announcement/SKILL.md
+./plugins/charness/support/web-fetch/SKILL.md
+./skills/public/hitl/SKILL.md
+./skills/public/narrative/SKILL.md
+./plugins/charness/support/markdown-preview/SKILL.md
+./plugins/charness/support/agent-browser/SKILL.md
+./plugins/charness/support/gather-slack/SKILL.md
+./plugins/charness/support/gather-notion/SKILL.md
+
+exec
+/usr/bin/zsh -lc "sed -n '1,220p' /home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/plugins/charness/skills/find-skills/SKILL.md" in /home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens
+ succeeded in 0ms:
+---
+name: find-skills
+description: "Use when the user asks which skill, support capability, or integration should handle a task, or names a skill/support/capability such as `X skill`, `X 스킬`, `support/X`, or `X integration`. Call this before filesystem search for named capabilities; support skills are intentionally hidden from the default skill list."
+---
+
+# Find Skills
+
+Use this when the user is asking:
+
+- what skill should handle a task
+- whether a named skill, support skill, helper, or integration exists
+- whether the current harness can do something
+- whether a capability is native, support-driven, or external
+- how to extend the harness for a recurring task
+
+When the user names a capability directly, including phrases like `X skill`,
+`X 스킬`, `X support`, `support/X`, `X helper`, or `X integration`, run
+`find-skills` before `find`, `ls`, or `grep` filesystem discovery. Support
+skills are intentionally hidden from the default public skill list; this is the
+canonical discovery path for them.
+
+`find-skills` is one public concept:
+
+- discover the right capability surface
+- prefer local native skills first
+- expand to adapter-configured trusted skill roots before treating a gap as new
+- distinguish public skills, support skills, and external integrations honestly
+- surface synced support skills separately when an external integration has
+  already materialized one locally
+- show the next usable path instead of only saying "not found"
+
+## Bootstrap
+
+Start local-first:
+
+```bash
+python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root .
+python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommend-for-skill <skill-id>
+python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommendation-role <runtime|validation> --next-skill-id <skill-id>
+sed -n '1,220p' docs/external-integrations.md 2>/dev/null || true
+sed -n '1,220p' docs/support-skill-policy.md 2>/dev/null || true
+```
+
+If the user's need sounds like a public workflow, inspect `skills/public/`
+first. If it sounds like a tool-use capability, inspect support skills and
+integration manifests before proposing a new public skill.
+If the adapter advertises trusted skill roots, search those before proposing a
+new local skill.
+
+Default durable artifact:
+
+- [`charness-artifacts/find-skills/latest.md`](../../../charness-artifacts/find-skills/latest.md)
+- `latest.*` is the canonical local-first capability inventory only; ad hoc
+  recommendation queries stay in the current command output and do not rewrite
+  query-shaped state into the durable artifact
+
+What you get after one run:
+
+- a local-first capability inventory
+- public/support skill descriptions, canonical paths, trigger phrases, and
+  directly referenced skill files
+- the smallest next usable path across public skills, support seams, and integrations
+- refreshed capability inventory artifacts at
+  [`charness-artifacts/find-skills/latest.md`](../../../charness-artifacts/find-skills/latest.md) and
+  [`charness-artifacts/find-skills/latest.json`](../../../charness-artifacts/find-skills/latest.json)
+- recommendation-query payloads in the current command output when
+  `--recommend-for-skill` or `--recommendation-role` is used
+
+What this does not do:
+
+- arbitrary external skill marketplace search unless the adapter explicitly allows it
+
+## Workflow
+
+1. Restate the capability need.
+   - what task the user wants
+   - whether they need a workflow, a tool-use seam, or a new extension point
+2. Search local native capabilities first.
+   - public skills for user-facing workflow concepts
+   - support skills and synced support skills for tool-usage helpers
+   - integration manifests for external binaries or upstream support skills
+3. Expand to trusted skill roots when the adapter provides them.
+   - host-trusted skill packs
+   - other maintained skill roots that the current harness is allowed to
+     consult
+4. Classify the best match honestly.
+   - `public skill`
+   - `trusted skill`
+   - `support skill`
+   - `synced support skill`
+   - `external integration`
+   - `missing capability`
+5. Recommend the smallest usable next step.
+   - invoke an existing public skill
+   - point to an adapter-configured trusted skill if the current host uses one
+   - use a support capability through the right workflow
+   - install or wire an external integration if the policy already supports it,
+     and surface the supported access modes when that changes the next step
+   - when the best-match public skill has a declared external-tool route, use
+     the structured recommendation payload instead of prose-only install advice,
+     including whether the route is a runtime path or a validation path
+   - when the user is asking about stronger validation itself, or about
+     prompt-affecting / behavior-affecting changes, query the validation route
+     directly with `--recommendation-role validation --next-skill-id <skill-id>`
+   - if the capability is genuinely missing, say whether it belongs in a new
+     public skill, support skill, or integration manifest
+6. Explain why.
+   - why this is the right layer
+   - what is already shipped
+   - what is not yet shipped
+   - whether an external skill ecosystem search is allowed by the current host
+
+The Vercel-style skill-ecosystem flow is still useful here:
+
+- understand what the user needs
+- search the best existing capability surface before inventing a new one
+- verify source quality before recommending installation
+- offer the smallest trustworthy next step
+
+In `charness`, that flow is local-first. External skill registries are optional
+and host-governed rather than the default.
+
+## Output Shape
+
+The result should usually include:
+
+- `Need`
+- `Best Match`
+- `Layer`
+- `Search Surface`
+- `What Exists`
+- `Next Step`
+
+## Guardrails
+
+- Do not recommend a new public skill when an existing public concept already
+  covers the task.
+- Do not skip adapter-configured trusted skill roots if the host has declared
+  them as part of its supported discovery surface.
+- Do not recommend a support skill when the task is really a user-facing
+  workflow concept.
+- Do not pretend an external capability is native to the repo if it only exists
+  as a future integration.
+- Do not recommend installing from a generic external skill ecosystem unless the
+  host policy or adapter explicitly allows that path.
+- If nothing suitable exists yet, say so directly and classify the missing
+  capability instead of hand-waving.
+
+## References
+
+- `adapter.example.yaml`
+- `references/adapter-contract.md`
+- `references/discovery-order.md`
+- `references/support-consumption.md`
+- `scripts/resolve_adapter.py`
+- `scripts/init_adapter.py`
+- `scripts/list_capabilities.py`
+
+codex
+{"observationStatus":"observed","blockerKind":"","summary":"Entry point was `/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/AGENTS.md`. I used `find-skills` as the required bootstrap routing step, and the durable work skill for a code/config/test change to an operator-facing artifact is `impl`. No change was made.","entryFile":"/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/AGENTS.md","loadedInstructionFiles":["/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/AGENTS.md","/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/plugins/charness/skills/find-skills/SKILL.md"],"loadedSupportingFiles":[],"routingDecision":{"selectedSkill":"impl","bootstrapHelper":"find-skills","workSkill":"impl","selectedSupport":"none","firstToolCall":"functions.exec_command: `pwd && rg --files -g 'SKILL.md' -g 'AGENTS.md' -g 'docs/handoff.md' -g 'docs/operator-acceptance.md' -g 'docs/control-plane.md' -g 'docs/roadmap.md' -g 'charness-artifacts/find-skills/latest.*' .`","reasonSummary":"The instruction surface points first to `find-skills` for capability discovery, and the best match for a code/config/test change is the public `impl` skill. No support helper was needed."}}
+tokens used
+17,475
