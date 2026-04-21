@@ -8,6 +8,10 @@ description: "Use when creating or upgrading a repo-owned CLI, bootstrap script,
 Use this when the task is to add, refactor, or normalize a command-line tool in
 `charness` or another repo that `charness` is helping with.
 
+Borrow Jef Raskin-style discoverability and modelessness when shaping the
+surface: make the next command obvious, keep mode shifts explicit, and avoid
+forcing operators or agents to memorize hidden lifecycle state.
+
 ## Bootstrap
 
 Read the smallest current surface that explains how the repo already ships and

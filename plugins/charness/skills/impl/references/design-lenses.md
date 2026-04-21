@@ -19,3 +19,6 @@ This reference captures the Beck and Ousterhout moves that matter to `impl`.
 - use Beck when choosing the smallest honest slice and the next proof step
 - use Ousterhout when interface sprawl or copied helper seams are the real
   source of risk
+- if the real question is command-surface shape for an agent-facing CLI, not
+  slice discipline, see `../../create-cli/references/command-surface.md`
+  prep/execute split section instead

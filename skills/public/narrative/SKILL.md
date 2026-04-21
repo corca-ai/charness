@@ -17,6 +17,10 @@ brief skeleton without leaving the durable docs behind.
 - derive one audience-neutral brief skeleton from that aligned story when
   useful
 
+Borrow Barbara Minto-style structure when compressing a repo story: lead with
+the governing idea, group supporting points cleanly, and order the document so
+the reader can recover the argument without reverse-engineering it.
+
 If the idea is still under-shaped, use `ideation` first. If the docs are
 already aligned and the user mainly wants audience adaptation or delivery-ready
 wording, use

@@ -8,6 +8,10 @@ description: "Use when creating or upgrading a repo-owned CLI, bootstrap script,
 Use this when the task is to add, refactor, or normalize a command-line tool in
 `charness` or another repo that `charness` is helping with.
 
+Borrow Jef Raskin-style discoverability and modelessness when shaping the
+surface: make the next command obvious, keep mode shifts explicit, and avoid
+forcing operators or agents to memorize hidden lifecycle state.
+
 ## Bootstrap
 
 Read the smallest current surface that explains how the repo already ships and
@@ -45,6 +49,10 @@ steps call tools outside the baseline shell surface.
      external/runtime surfaces, keep that aggregate path product-owned, such as
      `update all`, instead of leaking harness-internal vocabulary
    - `--json` or another structured mode when agents may consume the output
+   - for workflow commands whose primary caller is another agent, explicitly
+     decide whether a prep/execute artifact split is the more stable contract
+     than a single thick command; see `references/command-surface.md`
+     prep/execute split section
    - public subcommands should expose a no-side-effect `--help` contract unless
      there is a strong documented reason not to
    - if wrappers or agents may probe the surface, separate machine-readable

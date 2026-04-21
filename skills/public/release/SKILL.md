@@ -12,6 +12,9 @@ not just to describe recent changes.
 surfaces that ship checked-in install metadata. It should keep one repo's
 release contract honest instead of improvising version bumps, CLI update
 advice, or generated-file edits by hand.
+Borrow Jez Humble-style release discipline: keep the path small, repeatable,
+and honest about which boundary is actually closed: local verification, publish
+workflow completion, or public release visibility.
 When the release decision is non-trivial, use the standalone `premortem`
 skill before mutating versions so compatibility, install/update fallout, and
 real-host proof requirements are triaged explicitly.

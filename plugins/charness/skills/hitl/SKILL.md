@@ -14,6 +14,10 @@ inspection, or a resumable human-in-the-loop pass over a bounded target.
 - keep the review bounded and resumable
 - record rules and decisions so the loop can continue coherently
 
+Borrow Atul Gawande-style checklist discipline here: keep the loop explicit
+enough that judgment stays human while omissions, handoff loss, and repeated
+misreads become harder.
+
 ## Bootstrap
 
 Resolve the adapter first.

@@ -3,26 +3,28 @@ Date: 2026-04-21
 
 ## Trigger
 
-- slice: add agent-facing CLI prep/execute artifact-split decision lens to
-  `create-cli` (1st) and crossref in `impl` design-lenses (issue
-  [#48](https://github.com/corca-ai/charness/issues/48) scope (a))
+- slice: add sparse named-expert anchors to public skill cores plus the
+  `quality` lens reference and README examples
 - claim: `preserve`
 
 ## Validation Goal
 
 - goal: `preserve`
-- reason: the slice is additive guidance on `create-cli/references/command-
-  surface.md`, `create-cli/references/case-studies.md`,
-  `create-cli/SKILL.md` Workflow 2, and `impl/references/design-lenses.md`.
-  No existing bullets reworded. Routing contracts (bootstrap → `find-skills`,
-  work → `impl`/`spec`) must remain intact.
+- reason: the slice adds retrieval anchors without changing the intended
+  routing contract or swapping skill boundaries. Existing first-skill behavior
+  must stay stable while the wording becomes more distinctive.
 
 ## Prompt Surfaces
 
 - `skills/public/create-cli/SKILL.md`
-- `skills/public/create-cli/references/command-surface.md`
-- `skills/public/create-cli/references/case-studies.md`
-- `skills/public/impl/references/design-lenses.md`
+- `skills/public/debug/SKILL.md`
+- `skills/public/find-skills/SKILL.md`
+- `skills/public/hitl/SKILL.md`
+- `skills/public/ideation/SKILL.md`
+- `skills/public/narrative/SKILL.md`
+- `skills/public/quality/SKILL.md`
+- `skills/public/quality/references/quality-lenses.md`
+- `skills/public/release/SKILL.md`
 
 ## Commands Run
 
@@ -32,15 +34,14 @@ Date: 2026-04-21
 
 - recommendation: `accept-now`
 - instruction-surface summary: `4 passed / 0 failed / 0 blocked`
-- routing notes: bootstrap continues to route to `find-skills` and work skills
-  to `impl` / `spec` after the additive guidance landing
+- routing notes: checked-in bootstrap still selects `find-skills` before
+  `impl`, and direct contract-shaping requests still route to `spec`
 
 ## Follow-ups
 
-- if future changes to the prep/execute section reword existing decision
-  guidance or change how agents select work vs bootstrap skills, refresh this
-  artifact with `goal: improve` and an A/B compare block via
-  `cautilus workspace prepare-compare` + `cautilus mode evaluate
-  --baseline-ref <ref>`
-- the "cross-repo issue hygiene" (issue #48 scope (b)) separation issue
-  should own its own proof entry when landed
+- if a future anchor rewrite changes routing language, trigger phrasing, or
+  skill-boundary wording rather than adding sparse recall cues, refresh this
+  artifact as `goal: improve` with an A/B compare block
+- keep additive expert anchors sparse; if adjacent skills start accumulating
+  overlapping names, move the overlap back into references before it becomes
+  decoration

@@ -15,7 +15,10 @@ Keep Christopher Alexander-style sequence discipline in the background:
 resolve the upstream question that most changes the rest of the design before
 hardening downstream detail. When uncertainty is high and the next move should
 start from available means, affordable loss, or early stakeholder commitment,
-borrow Saras Sarasvathy-style effectuation. See
+borrow Saras Sarasvathy-style effectuation. When the concept is really a system
+of actors, feedback loops, or leverage
+points, borrow Donella Meadows-style systems thinking so the design pressure is
+traced to structure instead of dissolving into a feature wish list. See
 `references/sequence-discipline.md` and `references/effectuation.md`.
 
 ## Bootstrap

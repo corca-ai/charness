@@ -29,6 +29,11 @@ canonical discovery path for them.
   already materialized one locally
 - show the next usable path instead of only saying "not found"
 
+Borrow Jef Raskin-style discoverability discipline: do not turn capability
+search into a mode maze. Surface the smallest obvious next step, keep lifecycle
+boundaries visible, and make it easy for the next operator to tell what to do
+now.
+
 ## Bootstrap
 
 Start local-first:

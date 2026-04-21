@@ -8,6 +8,10 @@ description: "Use when investigating a bug, error, or unexpected behavior. Follo
 Use this when the goal is to understand and resolve incorrect behavior without
 guessing.
 
+Use George Pólya-style problem-solving discipline here: understand the exact
+problem first, reduce it to the smallest honest failing case, enumerate
+multiple plausible causes, and only then test the next hypothesis.
+
 `debug` is part of the execution cluster, but its job is diagnosis before
 repair. A bug investigation without a durable record only solves the current
 incident and wastes the next one.

@@ -43,3 +43,23 @@ Design takeaway:
   seam or whether the host package manager remains the source of truth
 - when the host package manager stays authoritative, agent-readable provenance
   should survive install and doctor flows so later updates can reuse that route
+
+`cautilus workbench`
+
+- workflow surface split into `cautilus workbench prepare-request-batch` and
+  `cautilus workbench run-scenarios` instead of one thick command
+- the prep command owns deterministic expansion, selection, and filtering of
+  the batch; its output is a product-owned machine-readable artifact
+- the execute command stays narrow: it consumes an artifact, runs it, and
+  reports results
+- agents can inspect, diff, subset, and retry the artifact between the two
+  steps without recomputing the prep pass
+
+Design takeaway:
+
+- when the primary caller is another agent, a prep/execute split plus a
+  product-owned intermediate artifact is often a more stable contract than a
+  single command that tries to own selection, expansion, execution, and
+  policy at once
+- the split is not a default for all CLIs; see `command-surface.md` prep/
+  execute anti-patterns for when it becomes cost, not value

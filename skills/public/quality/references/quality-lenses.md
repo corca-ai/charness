@@ -89,6 +89,8 @@ Use named experts only when they sharpen the next quality move.
 
 - W. Edwards Deming: is the repo measuring the system it is trying to improve,
   or only inspecting output after the fact?
+- Gerald Weinberg: is the current quality problem really in the code under
+  review, or in the broader human, feedback, and system context producing it?
 - Charity Majors: does the current bar fail early and emit diagnostics that a
   maintainer can actually use under time pressure?
 - Kent Beck: are fast lower-layer checks carrying enough change-safety load, or
