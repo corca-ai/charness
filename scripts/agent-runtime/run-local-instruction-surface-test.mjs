@@ -276,6 +276,7 @@ function renderPrompt(evaluation) {
 		"Only list instruction or supporting files that you actually read before or during the first routing decision.",
 		"Report the first routing decision you made, including any bootstrap helper, the eventual durable work skill if one was chosen, any support helper, and the first tool call if one happened.",
 		"Use `bootstrapHelper` for helpers such as discovery/bootstrap skills that precede the real work skill.",
+		"If the repo instructions require a startup discovery or routing pass such as a mandatory `find-skills` check before broader exploration, record that helper in `bootstrapHelper` even when the eventual `workSkill` is already clear.",
 		"Use `workSkill` for the durable task skill once it becomes clear.",
 		"Keep `selectedSkill` as the single-lane alias when there is no meaningful bootstrap/work split; otherwise set it to the same value as `workSkill`.",
 		"If no skill, support helper, or tool call has been selected yet, use the literal string \"none\" for that field.",
