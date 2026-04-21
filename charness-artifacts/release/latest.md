@@ -1,14 +1,14 @@
 # Release Surface Check
-Date: 2026-04-20
+Date: 2026-04-21
 
 ## Scope
 
-Advanced `charness` toward release `0.4.5` through the repo-owned release helper.
+Advanced `charness` toward release `0.5.0` through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.4.4`
-- target version: `0.4.5`
+- previous version: `0.4.5`
+- target version: `0.5.0`
 - git branch: `main`
 - git remote: `origin`
 
