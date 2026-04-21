@@ -57,8 +57,10 @@ python3 "$SKILL_DIR/scripts/infer_audience_tags.py" --repo-root .
 git status --short
 ```
 
-If the adapter is missing, use inferred defaults and continue. Missing delivery
-config must not block drafting.
+If the adapter is missing, say that you are drafting against inferred defaults
+and keep the result draft-only. Missing delivery config must not block
+drafting, but do not present inferred audience or delivery defaults as if the
+repo had already declared them.
 
 ## Workflow
 

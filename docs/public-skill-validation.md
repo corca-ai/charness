@@ -21,6 +21,8 @@ bucket choices before editing the JSON.
 - decide which skills need routine human review, evaluator scenarios, or both
 - decide which skills must ship checked-in adapter contracts versus which can
   stay adapter-free honestly
+- decide whether missing-adapter behavior is allowed silently, must stay
+  visible, or must stop before high-leverage work continues
 - keep `cautilus` integration aligned with a fixed validation matrix instead of
   re-deriving validation expectations from scratch
 
@@ -224,6 +226,64 @@ Current assignment:
 - `premortem`
 - `spec`
 
+## Fallback Policy
+
+### `allow`
+
+Use this when the skill can continue with inferred defaults without burying a
+repo-truth, review-state, or release-policy decision.
+
+Current assignment:
+
+- `create-cli`
+- `create-skill`
+- `debug`
+- `gather`
+- `ideation`
+- `impl`
+- `premortem`
+- `retro`
+
+### `visible`
+
+Use this when the skill may continue without a checked-in adapter, but it must
+say that it is using inferred defaults and avoid presenting those defaults as a
+repo-owned contract.
+
+Current assignment:
+
+- `announcement`
+- `find-skills`
+- `handoff`
+- `init-repo`
+- `quality`
+- `spec`
+
+### `block`
+
+Use this when the missing adapter would make the skill invent repo truth,
+human-review state, or release policy too early. These skills should stop to
+shape or scaffold the adapter before proceeding in earnest.
+
+Current assignment:
+
+- `hitl`
+- `narrative`
+- `release`
+
+## Fallback Rationale
+
+- `hitl`, `narrative`, and `release` mutate high-leverage review, truth, or
+  publication surfaces. Silent fallback here creates convincing but
+  ungrounded repo behavior, so the safe default is to stop.
+- `announcement`, `find-skills`, `handoff`, `init-repo`, `quality`, and
+  `spec` still benefit from adapters, but they can continue honestly when the
+  skill names the inferred-default boundary instead of pretending the repo
+  already declared it.
+- the remaining skills are either low-risk enough, narrow enough, or already
+  anchored by adjacent artifacts strongly enough that silent fallback is an
+  acceptable bootstrap tradeoff.
+
 ## Next Step
 
 The next integration session should:
@@ -232,6 +292,8 @@ The next integration session should:
    defensible evaluator path
 2. widen `cautilus` proof beyond instruction-surface cases when a public skill
    claim needs stronger held-out or A/B evidence
-3. keep the JSON policy, adapter gate, maintained scenario registry, and
+3. revisit any `visible` skill that starts rewriting repo-truth or review
+   policy surfaces often enough that it should graduate to `block`
+4. keep the JSON policy, adapter gate, maintained scenario registry, and
    checked-in cautilus proof artifact in sync
    without creating placeholder manifests or fake adapter requirements

@@ -39,6 +39,10 @@ If the repo has no checked-in release adapter yet, scaffold one:
 python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .
 ```
 
+If the adapter is missing, stop after shaping or scaffolding the release
+contract. Do not mutate versions, tags, or publish state in earnest until the
+repo has declared its release boundary and proof expectations.
+
 Then inspect current release state:
 
 ```bash

@@ -46,5 +46,30 @@
       "premortem",
       "spec"
     ]
+  },
+  "fallback_policy": {
+    "allow": [
+      "create-cli",
+      "create-skill",
+      "debug",
+      "gather",
+      "ideation",
+      "impl",
+      "premortem",
+      "retro"
+    ],
+    "visible": [
+      "announcement",
+      "find-skills",
+      "handoff",
+      "init-repo",
+      "quality",
+      "spec"
+    ],
+    "block": [
+      "hitl",
+      "narrative",
+      "release"
+    ]
   }
 }

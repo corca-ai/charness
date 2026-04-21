@@ -13,6 +13,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 _scripts_public_skill_validation_lib_module = import_repo_module(__file__, "scripts.public_skill_validation_lib")
 POLICY_PATH = _scripts_public_skill_validation_lib_module.POLICY_PATH
 VALID_ADAPTER_REQUIREMENTS = _scripts_public_skill_validation_lib_module.VALID_ADAPTER_REQUIREMENTS
+VALID_FALLBACK_POLICIES = _scripts_public_skill_validation_lib_module.VALID_FALLBACK_POLICIES
 VALID_TIERS = _scripts_public_skill_validation_lib_module.VALID_TIERS
 load_policy = _scripts_public_skill_validation_lib_module.load_policy
 partition_missing_skills = _scripts_public_skill_validation_lib_module.partition_missing_skills
@@ -28,6 +29,11 @@ def build_report(repo_root: Path) -> dict[str, object]:
         if isinstance(policy.get("adapter_requirements"), dict)
         else {}
     )
+    fallback_policy = (
+        policy.get("fallback_policy")
+        if isinstance(policy.get("fallback_policy"), dict)
+        else {}
+    )
     missing_tiers = partition_missing_skills(
         {category: list(tiers.get(category, [])) for category in VALID_TIERS},
         all_skills=all_skills,
@@ -39,7 +45,16 @@ def build_report(repo_root: Path) -> dict[str, object]:
         },
         all_skills=all_skills,
     )
-    missing_skills = sorted(set(missing_tiers) | set(missing_adapter_requirements))
+    missing_fallback_policy = partition_missing_skills(
+        {
+            category: list(fallback_policy.get(category, []))
+            for category in VALID_FALLBACK_POLICIES
+        },
+        all_skills=all_skills,
+    )
+    missing_skills = sorted(
+        set(missing_tiers) | set(missing_adapter_requirements) | set(missing_fallback_policy)
+    )
     suggestions = []
     for skill_id in missing_skills:
         suggestions.append(
@@ -48,6 +63,7 @@ def build_report(repo_root: Path) -> dict[str, object]:
                 "missing_fields": {
                     "tiers": skill_id in missing_tiers,
                     "adapter_requirements": skill_id in missing_adapter_requirements,
+                    "fallback_policy": skill_id in missing_fallback_policy,
                 },
                 "choose_one_of": {
                     "tiers": [f"tiers.{category}" for category in VALID_TIERS]
@@ -59,6 +75,12 @@ def build_report(repo_root: Path) -> dict[str, object]:
                     ]
                     if skill_id in missing_adapter_requirements
                     else [],
+                    "fallback_policy": [
+                        f"fallback_policy.{category}"
+                        for category in VALID_FALLBACK_POLICIES
+                    ]
+                    if skill_id in missing_fallback_policy
+                    else [],
                 },
             }
         )
@@ -67,6 +89,7 @@ def build_report(repo_root: Path) -> dict[str, object]:
         "all_public_skills": all_skills,
         "missing_tiers": missing_tiers,
         "missing_adapter_requirements": missing_adapter_requirements,
+        "missing_fallback_policy": missing_fallback_policy,
         "suggestions": suggestions,
     }
 
@@ -89,6 +112,13 @@ def _format_human(report: dict[str, object]) -> str:
                 + ", ".join(
                     f"`{value}`"
                     for value in item["choose_one_of"]["adapter_requirements"]
+                )
+            )
+        if item["choose_one_of"]["fallback_policy"]:
+            lines.append(
+                "  fallback policy: choose one of "
+                + ", ".join(
+                    f"`{value}`" for value in item["choose_one_of"]["fallback_policy"]
                 )
             )
     return "\n".join(lines)

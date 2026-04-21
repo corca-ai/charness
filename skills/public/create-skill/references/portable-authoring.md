@@ -174,6 +174,22 @@ Prefer designing the public skill and integration surface so:
 
 Do not put raw secret-handling rituals in the public skill body.
 
+## Adapter Fallback Rule
+
+Every adapter-using public skill should declare one fallback posture:
+
+1. `allow`: missing adapter may stay implicit because the work is local,
+   reversible, and not repo-truth-defining
+2. `visible`: missing adapter may continue only when the skill says it is
+   using inferred defaults and does not pretend those defaults are repo-owned
+3. `block`: missing adapter must stop the skill before it rewrites
+   high-leverage truth, review, or release surfaces
+
+Use `block` when the skill would otherwise invent repo truth, delivery policy,
+human-review state, or release boundaries. Use `visible` when inference is
+acceptable only if the repo-contract gap stays explicit. Use `allow` only when
+the work is narrow enough that hiding the bootstrap step is not misleading.
+
 ## WebSearch Rule
 
 If a step requires outside examples, standards, or upstream tool behavior, call

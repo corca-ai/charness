@@ -47,6 +47,10 @@ When starting a new HITL run, initialize runtime artifacts:
 python3 "$SKILL_DIR/scripts/bootstrap_review.py" --repo-root .
 ```
 
+If the adapter is missing, stop after surfacing or scaffolding the bounded
+review contract. Do not start a resumable human-review loop in earnest until
+the repo has named where state, rules, and queue ownership live.
+
 ## Workflow
 
 1. Restate the review goal.

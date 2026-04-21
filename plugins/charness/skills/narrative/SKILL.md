@@ -30,6 +30,7 @@ bootstrap that surface before treating the task as narrative alignment.
 If the target is a high-leverage truth surface and the repo-specific narrative
 contract is still missing, shape or scaffold the adapter before rewriting in
 earnest instead of letting fallback inference silently stand in for repo truth.
+This is a repo-level `block` fallback seam, not a best-effort warning.
 
 ## Bootstrap
 

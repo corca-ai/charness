@@ -55,7 +55,8 @@ def main() -> int:
     print(
         f"Validated public skill validation policy {POLICY_PATH} "
         f"({len(policy['tiers']['evaluator-required'])} evaluator-required, "
-        f"{len(policy['adapter_requirements']['required'])} adapter-required)."
+        f"{len(policy['adapter_requirements']['required'])} adapter-required, "
+        f"{len(policy['fallback_policy']['block'])} fallback-blocked)."
     )
     return 0
 

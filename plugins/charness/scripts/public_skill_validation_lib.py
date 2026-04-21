@@ -7,6 +7,7 @@ from pathlib import Path
 
 VALID_TIERS = ("smoke-only", "hitl-recommended", "evaluator-required")
 VALID_ADAPTER_REQUIREMENTS = ("required", "adapter-free")
+VALID_FALLBACK_POLICIES = ("allow", "visible", "block")
 POLICY_PATH = Path("docs/public-skill-validation.json")
 
 
@@ -112,6 +113,16 @@ def validate_policy(data: dict[str, object], repo_root: Path) -> dict[str, dict[
         )
         for requirement in VALID_ADAPTER_REQUIREMENTS
     }
+    raw_fallback_policy = data.get("fallback_policy")
+    if not isinstance(raw_fallback_policy, dict):
+        raise ValidationError(f"{POLICY_PATH}: `fallback_policy` must be an object")
+    fallback_policy = {
+        mode: _normalized_skill_list(
+            raw_fallback_policy.get(mode),
+            field=f"fallback_policy.{mode}",
+        )
+        for mode in VALID_FALLBACK_POLICIES
+    }
 
     all_skills = public_skill_ids(repo_root)
     _validate_partition(tiers, expected_categories=VALID_TIERS, all_skills=all_skills, field="tiers")
@@ -121,4 +132,22 @@ def validate_policy(data: dict[str, object], repo_root: Path) -> dict[str, dict[
         all_skills=all_skills,
         field="adapter_requirements",
     )
-    return {"tiers": tiers, "adapter_requirements": adapter_requirements}
+    _validate_partition(
+        fallback_policy,
+        expected_categories=VALID_FALLBACK_POLICIES,
+        all_skills=all_skills,
+        field="fallback_policy",
+    )
+    blocked_without_adapter = sorted(
+        set(fallback_policy["block"]) - set(adapter_requirements["required"])
+    )
+    if blocked_without_adapter:
+        rendered = ", ".join(f"`{skill_id}`" for skill_id in blocked_without_adapter)
+        raise ValidationError(
+            f"fallback_policy.block must be a subset of adapter_requirements.required; missing {rendered}"
+        )
+    return {
+        "tiers": tiers,
+        "adapter_requirements": adapter_requirements,
+        "fallback_policy": fallback_policy,
+    }

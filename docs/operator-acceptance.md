@@ -166,6 +166,7 @@ Read first:
 
 - [skills/public/impl/SKILL.md](../skills/public/impl/SKILL.md)
 - [skills/public/quality/SKILL.md](../skills/public/quality/SKILL.md)
+- [docs/public-skill-validation.md](./public-skill-validation.md)
 - [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
 
 Useful local commands:
@@ -177,9 +178,11 @@ python3 scripts/validate-adapters.py --repo-root .
 
 Acceptance:
 
-- the classification is recorded in canonical docs or validator logic
-- obviously adapter-dependent skills fail closed if their adapter contract is
-  missing
+- the classification is recorded in canonical docs and machine-readable policy
+- missing-adapter behavior is explicit per public skill: `allow`, `visible`,
+  or `block`
+- high-leverage repo-truth, review-state, or release skills do not silently
+  fall back when their adapter contract is missing
 - [`./scripts/run-quality.sh`](../scripts/run-quality.sh) passes
 
 ## Closeout Rule
