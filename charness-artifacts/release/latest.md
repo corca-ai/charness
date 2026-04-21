@@ -17,17 +17,20 @@ Advanced `charness` toward release `0.5.0` through the repo-owned release helper
 - `./scripts/run-quality.sh` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - one git push carried both the release branch update and the tag from the release helper.
+- GitHub release was created at `https://github.com/corca-ai/charness/releases/tag/v0.5.0`.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: not created by this helper run
-- public release surface verification: not checked by this helper
+- GitHub release record: complete
+- public release surface verification: GitHub release page exists; broader external dogfood remains open
 
 ## Public Release Verification
 
-- No configured public/real-host verification trigger matched this slice, but async publication repos should still keep workflow/public checks explicit.
+- No configured public/real-host verification trigger matched this slice.
+- GitHub release visibility is confirmed, but cross-repo dogfood of the new
+  `narrative` behavior remains the next proof surface.
 
 ## Real-Host Proof
 

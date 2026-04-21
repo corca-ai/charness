@@ -161,8 +161,16 @@ Completed since this plan was written:
 - rewrote the README through direct ping-pong
 - distilled the first-pass `narrative` improvement brief into
   [narrative-intent-preserving-rewrite-requirements.md](./narrative-intent-preserving-rewrite-requirements.md)
+- updated the repo-local `narrative` adapter and public `narrative` skill from
+  that requirements brief
+- refreshed the checked-in `cautilus` preserve proof for the prompt-affecting
+  `narrative` change
+- released the improved `narrative` surface as `charness` `v0.5.0`
 
 Next move:
 
-- update the repo-local `narrative` adapter and public `narrative` skill from
-  that requirements brief
+- start Phase 4 by building `cautilus` fixtures around the README intent-loss
+  failure mode
+- dogfood the released `narrative` behavior in other repos and keep the
+  resulting misses as issue-shaped eval candidates instead of vague follow-up
+  notes

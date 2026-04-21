@@ -13,6 +13,7 @@
 - checked-in plugin export가 걸린 source를 바꾸면 validator보다 먼저 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`로 sync한다.
 - prompt-affecting surface를 바꾸면 `cautilus instruction-surface test --repo-root .`로 preserve proof를 다시 보고, visible proof owner는 [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md)다.
 - quality/runtime 숫자와 current review posture는 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md), release/version truth는 [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md)와 `python3 skills/public/release/scripts/current_release.py --repo-root .`가 owner다.
+- `narrative` intent-preserving rewrite widening은 `v0.5.0`으로 release됐다. 다음 dogfood는 다른 repo에서 이 release를 실제로 써 보고 issue 형태의 misses를 모으는 단계다.
 - agent-facing CLI prep/execute 아티팩트 분리 결정 렌즈가 `create-cli` (primary) + `impl` (crossref)에 landing됐다 ([#48](https://github.com/corca-ai/charness/issues/48) scope a). Spec은 [charness-artifacts/spec/issue-48-prep-execute-lens.md](../charness-artifacts/spec/issue-48-prep-execute-lens.md). Probe Q1/Q2/Q3는 post-landing 관찰 대상이다.
 - 크로스-레포 이슈 작성 hygiene (`why/what > how`)의 홈 결정은 [#49](https://github.com/corca-ai/charness/issues/49)로 분리되어 probe 대기 중이다. 후보는 `narrative` / `handoff` / `announcement` / 신규 reference이며, 홈 확정 전 구현 텍스트 작성 금지다.
 
@@ -20,14 +21,18 @@
 
 1. `git status --short`를 먼저 본다.
 2. [#49](https://github.com/corca-ai/charness/issues/49) pickup이면 후보 4개 스킬의 SKILL.md를 먼저 읽어 홈 fit을 비교한 뒤 `spec`으로 진입한다. 홈 확정 전 가이드 텍스트를 쓰지 않는다.
-3. public skill, handoff, validator, 또는 other prompt surface를 건드리면 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)와 [docs/public-skill-dogfood.json](./public-skill-dogfood.json)을 읽고 `impl`로 이어간다.
-4. export surface가 걸린 변경이면 sync를 먼저 끝내고 그 다음 validator와 quality gate를 돌린다.
-5. rolling pointer freshness를 더 조일 다음 slice면 prose를 더 추가하지 말고 deterministic validator를 우선 검토한다.
-6. release를 이어받으면 `current_release.py`로 checked-in surface를 먼저 읽고, actual publish는 `publish_release.py` helper 경로를 쓴다.
+3. README/narrative follow-up이면 [charness-artifacts/spec/readme-intent-rewrite-plan.md](../charness-artifacts/spec/readme-intent-rewrite-plan.md)와 [charness-artifacts/spec/narrative-intent-preserving-rewrite-requirements.md](../charness-artifacts/spec/narrative-intent-preserving-rewrite-requirements.md)를 먼저 읽고 Phase 4 fixture 설계부터 시작한다.
+4. 첫 구현 slice는 `cautilus` eval fixture를 만든다. 우선순위는 `bad rewrite`, `approved rewrite`, `thread-carry-forward`, `adversarial deletion` 케이스다.
+5. 다른 repo dogfood 결과가 생겼으면 vague 회고로 흘리지 말고 eval candidate 또는 issue로 바로 정규화한다.
+6. public skill, handoff, validator, 또는 other prompt surface를 건드리면 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)와 [docs/public-skill-dogfood.json](./public-skill-dogfood.json)을 읽고 `impl`로 이어간다.
+7. export surface가 걸린 변경이면 sync를 먼저 끝내고 그 다음 validator와 quality gate를 돌린다.
+8. rolling pointer freshness를 더 조일 다음 slice면 prose를 더 추가하지 말고 deterministic validator를 우선 검토한다.
+9. release를 이어받으면 `current_release.py`로 checked-in surface를 먼저 읽고, actual publish는 `publish_release.py` helper 경로를 쓴다.
 
 ## Discuss
 
 - 이 [docs/handoff.md](./handoff.md)와 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)의 freshness를 어느 수준까지 deterministic validator로 올릴지 아직 열려 있다.
+- release artifact가 GitHub release creation/public verification state를 얼마나 자세히 닫아야 하는지는 helper contract 차원에서 한 번 더 볼 가치가 있다.
 - `Discuss`는 unresolved decision만 남기고, metrics/history/closed proof는 owning artifact로 계속 밀어내는 방향을 유지한다.
 
 ## References
