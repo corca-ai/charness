@@ -1,72 +1,81 @@
-# Doc Link Repo Boundary Debug
-Date: 2026-04-20
+# Managed Checkout Divergence Debug
+Date: 2026-04-21
 
 ## Problem
 
-Issue `#43` reported that `scripts/check-doc-links.py` allowed a checked-in
-markdown link to escape the current repo root and point at a sibling checkout
-such as `../../../other-repo/...` when that path existed on the maintainer
-machine.
+`charness update` failed during source refresh with the raw git error
+`fatal: Not possible to fast-forward, aborting.` instead of explaining that the
+managed checkout had diverged from its upstream branch.
 
 ## Correct Behavior
 
-Given a repo-owned markdown document,
-when it contains a relative markdown file link,
-then the validator should only accept the link if it resolves inside the
-current repo root and the target exists there.
+Given a managed checkout used by the installed CLI,
+when that checkout is both ahead of and behind its upstream branch,
+then `charness update` should fail with an explicit divergence message and an
+actionable recovery path instead of only surfacing raw `git pull --ff-only`
+stderr.
 
 ## Observed Facts
 
-- `scripts/check-doc-links.py` resolved relative links with
-  `(doc.parent / relative_target).resolve()`.
-- The script only checked `candidate.exists()` after resolution.
-- A sibling checkout path outside the repo therefore passed locally whenever
-  that external path existed.
-- Clean single-repo environments such as GitHub Actions then failed later
-  because the sibling checkout was absent.
+- Installed `charness` resolved to `/home/ubuntu/.local/bin/charness`.
+- `charness doctor --json` reported the managed checkout at
+  `/home/ubuntu/.agents/src/charness`.
+- Running `charness update` stopped at `STEP: refreshing source checkout`.
+- The failing command output was:
+  `fatal: Not possible to fast-forward, aborting.`
+- `git -C /home/ubuntu/.agents/src/charness status -sb` showed
+  `## main...origin/main [ahead 1, behind 2]`.
+- The managed checkout also had an untracked `.agents/charness-discovery/`
+  directory, but untracked files are already allowed by the update path.
 
 ## Reproduction
 
-- Create `repo/docs/handoff.md` with a link like
-  `../../other-repo/README.md`.
-- Create `other-repo/README.md` as a sibling directory outside `repo`.
-- Run `python3 scripts/check-doc-links.py --repo-root repo`.
-- Before the fix, validation passed because the resolved target existed.
+- Create a managed checkout from a seeded repo.
+- Commit one local change in the managed checkout.
+- Commit one different upstream change in the remote source repo.
+- Run the installed CLI with
+  `charness update --home-root <seeded-home> --skip-codex-cache-refresh`.
+- Before the fix, the command failed with only the raw `git pull --ff-only`
+  stderr.
 
 ## Candidate Causes
 
-- The validator enforced path syntax but not the repo-boundary invariant.
-- Relative-link validation assumed local filesystem existence was a sufficient
-  portability check.
-- Repo docs encoded a file-link convention, but no deterministic test covered
-  sibling-checkout escape paths.
+- A prior dogfood or manual edit created a local commit in the managed checkout.
+- The upstream repo advanced after that local commit, leaving the branch
+  diverged.
+- The update path delegated directly to `git pull --ff-only` and treated every
+  failure as generic command stderr instead of classifying the common divergence
+  case.
 
 ## Hypothesis
 
-If `check-doc-links.py` rejects any resolved relative target outside
-`repo_root`, then maintainer-local sibling checkout links will fail at the
-shared default gate instead of leaking into downstream release or CI workflows.
+If `charness update` inspects upstream ahead/behind counts after a failed
+`git pull --ff-only`, then the managed-checkout divergence case can be reported
+as a first-class operator error with a precise recovery path.
 
 ## Verification
 
-- Added a `candidate.relative_to(root)` boundary check before the existing
-  `candidate.exists()` check.
-- Added a regression test that creates a real sibling repo path outside the
-  repo root and verifies the validator now fails with `escapes repo root`.
-- Re-ran `pytest -q tests/quality_gates/test_check_doc_links.py`, `ruff check`
-  on the touched files, and `python3 scripts/check-doc-links.py --repo-root .`.
+- Added upstream divergence helpers to `charness` and converted the failed
+  managed-checkout pull path into a targeted `CharnessError` when the checkout
+  is both ahead of and behind its upstream branch.
+- Added `test_installed_cli_update_reports_diverged_managed_checkout` to
+  reproduce the branch divergence and assert the new guidance text.
+- Re-ran the focused managed-install tests and the debug artifact validator.
 
 ## Root Cause
 
-The shared doc-link validator treated "resolves to an existing file" as the
-whole invariant. It never encoded the stronger portability rule that checked-in
-markdown links must stay inside the current repo root.
+The managed update flow encoded only one special-case preflight:
+tracked worktree edits. Once `git pull --ff-only` failed because the managed
+checkout had diverged from `origin/main`, the CLI surfaced raw git stderr
+without telling the operator that the checkout needed rebase/reset or that a
+proof-only `--no-pull` flow existed for intentional dogfood commits.
 
 ## Prevention
 
-- Keep repo-boundary enforcement inside the shared validator instead of relying
-  on reviewer memory.
-- Preserve the sibling-checkout regression test so future refactors cannot drop
-  the invariant silently.
-- Treat cross-repo references as plain text or gathered local artifacts rather
-  than markdown file links.
+- Keep a regression test for diverged managed checkouts so update guidance stays
+  operator-readable.
+- Treat intentional local managed-checkout commits as a proof-only flow and use
+  `charness update --repo-root . --no-pull --skip-cli-install` instead of
+  expecting the default managed fast-forward path to reconcile them.
+- Preserve explicit checkout-state classification near the update entrypoint so
+  future git-command refactors do not collapse back to raw stderr.

@@ -172,6 +172,32 @@ def git_head(path: Path) -> str | None:
     return head or None
 
 
+def git_upstream_ref(path: Path) -> str | None:
+    result = run(["git", "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"], cwd=path)
+    if result.returncode != 0:
+        return None
+    upstream = result.stdout.strip()
+    return upstream or None
+
+
+def git_upstream_divergence(path: Path) -> tuple[str, int, int] | None:
+    upstream = git_upstream_ref(path)
+    if upstream is None:
+        return None
+    result = run(["git", "rev-list", "--left-right", "--count", f"HEAD...{upstream}"], cwd=path)
+    if result.returncode != 0:
+        return None
+    counts = result.stdout.strip().split()
+    if len(counts) != 2:
+        return None
+    try:
+        ahead = int(counts[0])
+        behind = int(counts[1])
+    except ValueError:
+        return None
+    return upstream, ahead, behind
+
+
 def packaging_version(path: Path) -> str | None:
     manifest_path = path / "packaging" / f"{PACKAGE_ID}.json"
     if not manifest_path.is_file():
@@ -950,6 +976,20 @@ def ensure_checkout(repo_root: Path, *, managed: bool, repo_url: str, allow_clon
                     f"managed checkout `{repo_root}` has tracked local changes; stop and resolve them before `charness update`"
                 )
             pull_result = run(["git", "pull", "--ff-only"], cwd=repo_root)
+            if pull_result.returncode != 0:
+                divergence = git_upstream_divergence(repo_root)
+                if divergence is not None:
+                    upstream, ahead, behind = divergence
+                    if ahead > 0 and behind > 0:
+                        raise CharnessError(
+                            "managed checkout "
+                            f"`{repo_root}` diverged from `{upstream}` (ahead {ahead}, behind {behind}); "
+                            "`charness update` only fast-forwards managed checkouts. "
+                            "If the local commit is intentional dogfood, run "
+                            "`charness update --repo-root . --no-pull --skip-cli-install` from that checkout. "
+                            f"Otherwise rebase or reset the managed checkout onto `{upstream}` and retry.\n"
+                            f"STDOUT:\n{pull_result.stdout}\nSTDERR:\n{pull_result.stderr}"
+                        )
             expect_success(pull_result, f"git pull in `{repo_root}`")
             pulled = True
         return {"repo_root": str(repo_root), "managed": managed, "cloned": cloned, "pulled": pulled}
