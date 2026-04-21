@@ -94,49 +94,11 @@ def test_init_repo_render_skill_routing_defaults_to_compact_mode(tmp_path: Path)
     assert payload["skill_routing_mode"] == "compact"
     assert payload["skill_routing_mode_source"] == "default"
     assert "find-skills" in payload["public_skills"]
-    assert payload["listed_skill_ids"] == ["find-skills", "gather", "debug", "impl", "quality", "handoff", "init-repo"]
-    assert "Prefer installed charness public skills before improvising a repo-local workflow." in payload["markdown"]
-    assert "Keep this block intentionally non-exhaustive" in payload["markdown"]
-    assert "route to the shared/public charness skill `find-skills` first" in payload["markdown"]
-    assert "shared/public charness skill `find-skills`" in payload["markdown"]
-    assert "turn a concept or design into a living implementation contract" not in payload["markdown"]
-
-
-def test_init_repo_render_skill_routing_supports_expanded_mode(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    result = run_script(
-        "skills/public/init-repo/scripts/render_skill_routing.py",
-        "--repo-root",
-        str(repo),
-        "--mode",
-        "expanded",
-        "--json",
-    )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["skill_routing_mode"] == "expanded"
-    assert payload["skill_routing_mode_source"] == "cli"
-    assert "Slack thread, Notion page, Google Docs, GitHub content, arbitrary URL" in payload["markdown"]
-    assert "turn a concept or design into a living implementation contract" in payload["markdown"]
-    assert "spec" in payload["listed_skill_ids"]
-
-
-def test_init_repo_render_skill_routing_honors_adapter_mode(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / ".agents" / "init-repo-adapter.yaml").write_text(
-        "\n".join(["version: 1", "repo: repo", "skill_routing_mode: expanded", ""]),
-        encoding="utf-8",
-    )
-
-    result = run_script("skills/public/init-repo/scripts/render_skill_routing.py", "--repo-root", str(repo), "--json")
-
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["skill_routing_mode"] == "expanded"
-    assert payload["skill_routing_mode_source"] == "adapter"
-    assert "spec" in payload["listed_skill_ids"]
+    assert payload["listed_skill_ids"] == ["find-skills"]
+    assert "call the shared/public charness skill `find-skills` once at startup before broader exploration" in payload["markdown"]
+    assert "default map of installed public skills, support skills, synced support surfaces, and integrations" in payload["markdown"]
+    assert "choose the durable work skill that best matches the request" in payload["markdown"]
+    assert "release-note style summary or chat-ready human update" not in payload["markdown"]
 
 
 def test_init_repo_render_skill_routing_suggests_add_block_for_mature_agents(tmp_path: Path) -> None:

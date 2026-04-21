@@ -152,9 +152,10 @@ def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> 
     by_id = {item["evaluationId"]: item for item in packet["evaluations"]}
     assert by_id["checked-in-bootstrap-before-impl"]["expectedRouting"]["bootstrapHelper"] == "find-skills"
     assert by_id["checked-in-bootstrap-before-impl"]["expectedRouting"]["workSkill"] == "impl"
-    assert by_id["compact-no-bootstrap-impl"]["expectedRouting"]["selectedSkill"] == "impl"
-    assert "expectedRouting" not in by_id["compact-no-bootstrap-spec"]
-    assert by_id["expanded-no-bootstrap-spec"]["expectedRouting"]["selectedSkill"] == "spec"
+    assert by_id["compact-startup-bootstrap-before-impl"]["expectedRouting"]["bootstrapHelper"] == "find-skills"
+    assert by_id["compact-startup-bootstrap-before-impl"]["expectedRouting"]["workSkill"] == "impl"
+    assert by_id["compact-startup-bootstrap-before-spec"]["expectedRouting"]["bootstrapHelper"] == "find-skills"
+    assert by_id["compact-startup-bootstrap-before-spec"]["expectedRouting"]["workSkill"] == "spec"
 
 
 def test_instruction_surface_runner_normalizes_markdown_link_entry_file(tmp_path: Path) -> None:

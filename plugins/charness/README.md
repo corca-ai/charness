@@ -10,31 +10,15 @@ sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root .
 
 `charness` is a Claude Code / Codex plugin developed by [Corca](https://www.corca.ai/).
 
-It helps plugin developers keep shared workflow logic separate from
-repo-specific rules, so skills can grow with each repository instead of
-hard-coding one team's assumptions everywhere.
+Most agent frameworks get noisier as repositories grow. `charness` goes the
+other way: it keeps the public workflow surface small, pushes repo-specific
+rules into adapters and checks, and keeps install, update, and discovery
+legible to both humans and agents.
 
 `charness` combines public workflow skills, repo-local adapters, support
 integrations, and a managed install/update path into one system for teams that
 want agents to do more real work without turning every repository into a
 one-off prompt maze.
-
-## Core Concepts
-
-These are the core concepts `charness` uses to tackle common problems plugin
-developers run into.
-
-| Concept | Common problem | How `charness` handles it | Connected skills and areas |
-| --- | --- | --- | --- |
-| Less is more | If you assume the agent is not very capable, the system grows extra modes, options, explanation, and ceremony until users have to learn the framework before they can use it. | `charness` assumes a capable agent. It prefers strong defaults, a small public interface, and progressive disclosure, then moves deeper rules into adapters, helpers, and repo-owned checks only when they are actually needed. | `find-skills`, `init-repo`, `quality`, `create-skill` |
-| Human-code-AI symbiosis | Automation gets brittle when people, deterministic checks, and AI all try to do the same job badly instead of each doing what they are best at. | Humans keep the decisions that require judgment, authority, physical action, or another machine. Code keeps the deterministic gates: linters, tests, validators, hooks. AI handles exploration, drafting, implementation, and synthesis. `charness` is designed to keep those roles aligned instead of blurred together. | `impl`, `quality`, `hitl`, validators, hooks |
-| Shared logic, local growth | A skill written directly from one team's habits often works in one repository and feels wrong everywhere else. | `charness` keeps shared workflow concepts public, then lets each repository define its own docs, rules, checks, and operating patterns through adapters. The workflow stays recognizable, but it can still grow in ways that fit the repo using it. | public skills, adapters, `create-skill`, `narrative` |
-| Agents are first-class users | If install, update, and health checks only make sense to a human operator, agents end up guessing local state and repeating recovery work every session. | `charness` ships as both plugin and CLI. The same path can install it, verify what is ready, update it later, and tell both people and agents what to do next. | install / update / doctor flows, `release`, `find-skills` |
-| Concepts first, tools second | When public skills mix user-facing workflow ideas with tool-specific instructions, every tool change becomes a workflow rewrite. | `charness` keeps workflow concepts in public skills and pushes tool-specific know-how into support skills and integrations. That way a repo can swap tools without losing the workflow shape users learned. | `gather`, support skills, integrations |
-| Quality makes autonomy trustworthy | As repositories get larger and agents work longer, weak code, tests, design, docs, skills, or binaries become the first place trust breaks down. | `charness` treats quality as a system-wide trust problem, not just a code-style problem. It helps repos build reliable foundations early, then improve code, tests, skills, binaries, design, docs, and operating checks together as automation grows more ambitious. | `init-repo`, `quality`, `debug`, `premortem` |
-| Communication depends on who speaks to whom | Work only stays alive when it can move between people and agents, but the right format changes depending on who is talking to whom. | `charness` treats communication as part of the system. It separates announcement, narrative, handoff, and HITL review because the best shape for person -> organization, person -> person, agent -> agent, and agent -> person communication is not the same. | `announcement`, `narrative`, `handoff`, `hitl` |
-| Expert tacit knowledge becomes workflow | Great debugging and review often live inside a few experts' heads, so teams keep relearning the same patterns by trial and error. | `charness` turns that tacit knowledge into reusable workflow patterns. Some skills keep sparse anchors such as George Pólya for debugging, Jef Raskin for discoverability, Barbara Minto for narrative compression, or Gerald Weinberg for systems-quality review when the name recalls the right move faster than extra prose. | `debug`, `quality`, `narrative`, `find-skills`, adjacent skills |
-| The system should get smarter with use | Repeated mistakes and good decisions are wasted if they disappear when the session ends. | `charness` keeps lessons alive through retro, auto-retro, adapters, validators, and durable artifacts, so both people and agents can improve the system while using it. | `retro`, `quality`, `handoff` |
 
 ## Quick Start
 
@@ -66,6 +50,84 @@ keep seeing:
 
 [INSTALL.md](./INSTALL.md) remains the canonical install contract. The README is the
 entrypoint, not the full operator manual.
+
+## Core Concepts
+
+These are the core concepts `charness` uses to tackle common problems plugin
+developers run into.
+
+### 1. Less Is More
+
+If you assume the agent is weak, the system grows extra modes, options,
+explanations, and ceremony until users have to learn the framework before they
+can use it. `charness` assumes a capable agent, prefers strong defaults and a
+small public interface, and moves deeper rules into adapters, helpers, and
+repo-owned checks only when they are actually needed. Connected areas:
+`find-skills`, `init-repo`, `quality`, `create-skill`.
+
+### 2. Human-Code-AI Symbiosis
+
+Automation gets brittle when people, deterministic checks, and AI all try to
+do the same job badly instead of each doing what they are best at. Humans keep
+judgment, authority, physical action, and external-machine control. Code keeps
+the deterministic gates. AI handles exploration, drafting, implementation, and
+synthesis. Connected areas: `impl`, `quality`, `hitl`, validators, hooks.
+
+### 3. Shared Logic, Local Growth
+
+A skill written directly from one team's habits often works in one repository
+and feels wrong everywhere else. `charness` keeps shared workflow concepts
+public, then lets each repository define its own docs, rules, checks, and
+operating patterns through adapters. Connected areas: public skills, adapters,
+`create-skill`, `narrative`.
+
+### 4. Agents Are First-Class Users
+
+If install, update, and health checks only make sense to a human operator,
+agents end up guessing local state and repeating recovery work every session.
+`charness` ships as both plugin and CLI so the same path can install it,
+verify readiness, update it later, and tell both people and agents what to do
+next. Connected areas: install / update / doctor flows, `release`,
+`find-skills`.
+
+### 5. Concepts First, Tools Second
+
+When public skills mix user-facing workflow ideas with tool-specific
+instructions, every tool change becomes a workflow rewrite. `charness` keeps
+workflow concepts in public skills and pushes tool-specific know-how into
+support skills and integrations. Connected areas: `gather`, support skills,
+integrations.
+
+### 6. Quality Makes Autonomy Trustworthy
+
+As repositories get larger and agents work longer, weak code, tests, design,
+docs, skills, or binaries become the first place trust breaks down.
+`charness` treats quality as a system-wide trust problem, not just a code-style
+problem. Connected areas: `init-repo`, `quality`, `debug`, `premortem`.
+
+### 7. Communication Depends On Who Speaks To Whom
+
+Work only stays alive when it can move between people and agents, but the
+right format changes depending on who is talking to whom. `charness` treats
+communication as part of the system and separates announcement, narrative,
+handoff, and HITL review accordingly. Connected areas: `announcement`,
+`narrative`, `handoff`, `hitl`.
+
+### 8. Expert Tacit Knowledge Becomes Workflow
+
+Great debugging and review often live inside a few experts' heads, so teams
+keep relearning the same patterns by trial and error. `charness` turns that
+tacit knowledge into reusable workflow patterns, sometimes with sparse anchors
+that recall the right move faster than extra prose. Connected areas: `debug`,
+`quality`, `narrative`, `find-skills`, adjacent skills.
+
+### 9. The System Should Get Smarter With Use
+
+Repeated mistakes and good decisions are wasted if they disappear when the
+session ends. `charness` keeps lessons alive through retro, auto-retro,
+adapters, validators, and durable artifacts so both people and agents can
+improve the system while using it. Connected areas: `retro`, `quality`,
+`handoff`.
 
 ## Skill Map
 
@@ -147,7 +209,7 @@ This is the common path when the repo shape still needs to be established.
 This is the common path when the repo already has an operating surface and the
 user simply wants work done.
 
-1. Let the agent route itself from repo context, [AGENTS.md](./AGENTS.md), and installed skill metadata; use `find-skills` when discovery is unclear or the repo needs an explicit capability inventory.
+1. Start with `find-skills` once so the current capability inventory is explicit, then route to the durable work skill from repo context, [AGENTS.md](./AGENTS.md), and installed skill metadata.
 2. Go straight to `impl` when the task is already concrete enough.
 3. Pull in `spec` only when the contract still needs to be shaped.
 4. Use `debug` when the slice turns into root-cause work.

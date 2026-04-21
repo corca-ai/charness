@@ -3,17 +3,16 @@ Date: 2026-04-21
 
 ## Trigger
 
-- slice: add deterministic public-skill fallback policy tiers and tighten
-  high-leverage missing-adapter behavior for `narrative`, `hitl`, and
-  `release`
+- slice: tighten startup `find-skills` routing, strengthen repo-reality
+  bootstrap in `ideation` and `spec`, and restructure the README entry surface
 - claim: `preserve`
 
 ## Validation Goal
 
 - goal: `preserve`
-- reason: the slice changes prompt-facing fallback guidance and policy
-  classification, but it should preserve the existing first-skill routing
-  contract while making missing-adapter behavior more explicit.
+- reason: the slice changes repo-owned instruction surfaces and truth docs, but
+  it should preserve the first-skill routing contract while making startup
+  `find-skills` bootstrap more explicit and reducing checked-in routing noise.
 
 ## Change Intent
 
@@ -24,11 +23,12 @@ Date: 2026-04-21
 
 ## Prompt Surfaces
 
-- `skills/public/announcement/SKILL.md`
-- `skills/public/create-skill/references/portable-authoring.md`
-- `skills/public/hitl/SKILL.md`
-- `skills/public/narrative/SKILL.md`
-- `skills/public/release/SKILL.md`
+- `AGENTS.md`
+- `README.md`
+- `skills/public/ideation/SKILL.md`
+- `skills/public/init-repo/SKILL.md`
+- `skills/public/init-repo/references/default-surfaces.md`
+- `skills/public/spec/SKILL.md`
 
 ## Commands Run
 
@@ -36,33 +36,35 @@ Date: 2026-04-21
 
 ## Regression Proof
 
-- instruction-surface summary: `4 passed / 0 failed / 0 blocked`
-- checked-in bootstrap routing now preserves
+- instruction-surface summary: `3 passed / 0 failed / 0 blocked`
+- checked-in `AGENTS.md` still preserves
   `bootstrapHelper=find-skills` plus `workSkill=impl`
-- compact direct `impl` routing and both `spec` routing cases still passed
+- the new compact startup-bootstrap cases both passed:
+  `find-skills -> impl` and `find-skills -> spec`
 
 ## Scenario Review
 
-- representative scenario 1: `narrative` now treats missing adapter on a
-  high-leverage truth surface as a stop-and-shape seam instead of an implicit
-  fallback
-- representative scenario 2: `hitl` now refuses to start a resumable review
-  loop in earnest until adapter-owned state, rules, and queue ownership are
-  explicit
-- representative scenario 3: `release` now stops at adapter scaffolding when
-  the release boundary is missing, while `announcement` stays draftable under
-  visible inferred-default fallback
+- representative scenario 1: a task-oriented session now sees a short
+  checked-in routing block that explicitly forces a startup `find-skills`
+  pass before broader exploration instead of copying a long skill catalog
+- representative scenario 2: `ideation` and `spec` now inspect current repo
+  files, code, tests, and operator docs before opening clarification branches,
+  reducing fake ambiguity from chat-only discovery
+- representative scenario 3: the README now leads with hook plus quick start,
+  then moves the concept inventory below as numbered sections instead of a
+  top-of-file table
 
 ## Outcome
 
 - recommendation: `accept-now`
-- routing notes: fallback tier wording did not regress the checked-in
-  instruction-surface cases, and the mandatory startup `find-skills` bootstrap
-  case now matches the evaluator expectation again
+- routing notes: the shorter `AGENTS.md` routing block still reliably triggers
+  startup `find-skills` bootstrap, and the compact synthetic `impl` and `spec`
+  routes both matched the new evaluator expectation
 
 ## Follow-ups
 
-- if a current `visible` skill starts repeatedly rewriting repo-truth or
-  review-policy surfaces, consider promoting it from `visible` to `block`
-- if the repo later claims fallback-policy behavior improved beyond preserved
-  routing clarity, rerun as `goal: improve` with an A/B compare block
+- if more public skills need stronger repo-reality bootstrap, reuse the same
+  "inspect current surfaces before asking" pattern instead of inventing a new
+  clarify stage
+- if startup `find-skills` proves too sticky for obviously direct requests in
+  future dogfood, rerun as `goal: improve` with a compare-backed routing study

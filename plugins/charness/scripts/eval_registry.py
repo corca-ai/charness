@@ -24,7 +24,7 @@ SCENARIOS = (
     Scenario("gather-adapter-bootstrap", "gather adapter helpers bootstrap the durable gather artifact path"),
     Scenario("init-repo-adapter-bootstrap", "init-repo adapter helpers bootstrap the durable normalization artifact path"),
     Scenario("init-repo-inspect-states", "init-repo state inspection distinguishes greenfield bootstrap from partial repo normalization"),
-    Scenario("init-repo-compact-skill-routing-discoverability", "init-repo compact routing stays discovery-heavy while expanded mode remains available"),
+    Scenario("init-repo-compact-skill-routing-discoverability", "init-repo compact routing makes startup find-skills bootstrap explicit without copying a long skill catalog"),
     Scenario("init-repo-operator-acceptance-synthesis", "init-repo can synthesize operator acceptance from functional checks and repo signals"),
     Scenario("handoff-relative-links", "handoff-style docs use relative markdown links"),
     Scenario("find-skills-local-first", "find-skills keeps local-first discovery while exposing configured trusted roots"),

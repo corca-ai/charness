@@ -11,57 +11,40 @@ Use this when the next job is to make the build contract explicit enough that im
 ## Bootstrap
 
 Read the current concept artifacts before inventing new structure.
+Before drafting a contract or asking follow-up questions, inspect the current implementation and acceptance reality so the spec starts from repo truth, not from an abstract restatement.
 
 ```bash
 # Required Tools: rg
 # Missing-binary protocol: create-skill/references/binary-preflight.md
 # 1. current concept and adjacent context
-rg --files docs skills
+git status --short
+rg --files . | sed -n '1,200p'
+sed -n '1,220p' README.md 2>/dev/null || true
+sed -n '1,220p' AGENTS.md 2>/dev/null || true
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 sed -n '1,220p' "$SKILL_DIR/../ideation/SKILL.md" 2>/dev/null || true
 
 # 2. existing concept/spec/design docs
 rg -n "concept|spec|requirements|success criteria|acceptance|entity|stage|constraint" .
 
-# 3. implementation-side neighbors
+# 3. implementation-side neighbors and current acceptance reality
+rg -n "test|spec|fixture|scenario|acceptance|success criteria|operator|takeover|smoke|integration" .
 sed -n '1,220p' "$SKILL_DIR/../create-skill/SKILL.md" 2>/dev/null || true
 sed -n '1,220p' "$SKILL_DIR/../impl/SKILL.md" 2>/dev/null || true
 ```
 
-If an ideation document already exists, refine it into a spec instead of restating the full discovery history. If the repo already has executable acceptance artifacts, treat them as part of the spec surface rather than as a separate world, and inspect whether they still stay at the acceptance boundary instead of duplicating low-level test detail and runtime cost.
-Borrow Ward Cunningham-style executable-spec discipline when the repo uses tools such as `specdown`: executable acceptance artifacts should make the contract concrete at the boundary, not replace the unit suite or hide low-level test detail. Distinguish `public executable contract` from `maintenance lint / implementation guard`: public pages should carry current reader-facing claims plus cheap proof, while source inventory, implementation-file pinning, and future roadmap notes move below or beside that surface. Keep Christopher Alexander-style sequence discipline by ordering `Fixed Decisions`, `Probe Questions`, and `Deferred Decisions` so upstream commitments land before downstream detail hardens; when the slice is still noisy, borrow Kent Beck for thin feedback-bearing slices and John Ousterhout for simpler interfaces and deeper seams. See `references/public-executable-contracts.md`, `references/sequence-discipline.md`, and `references/design-lenses.md`.
+If an ideation document already exists, refine it into a spec instead of restating the full discovery history. If the repo already has executable acceptance artifacts, treat them as part of the spec surface rather than as a separate world, and inspect whether they still stay at the acceptance boundary instead of duplicating low-level test detail and runtime cost. Borrow Ward Cunningham-style executable-spec discipline when the repo uses tools such as `specdown`: executable acceptance artifacts should make the contract concrete at the boundary, not replace the unit suite or hide low-level test detail. Distinguish `public executable contract` from `maintenance lint / implementation guard`: public pages should carry current reader-facing claims plus cheap proof, while source inventory, implementation-file pinning, and future roadmap notes move below or beside that surface. Keep Christopher Alexander-style sequence discipline by ordering `Fixed Decisions`, `Probe Questions`, and `Deferred Decisions` so upstream commitments land before downstream detail hardens; when the slice is still noisy, borrow Kent Beck for thin feedback-bearing slices and John Ousterhout for simpler interfaces and deeper seams. See `references/public-executable-contracts.md`, `references/sequence-discipline.md`, and `references/design-lenses.md`.
 
 ## Contract Shaping
 
 Choose the lightest honest contract shape.
-When implementation churn would be expensive, reduce ambiguity earlier and make
-the slice more explicit before coding starts.
-If some answers will emerge only while building, keep the contract
-probe-friendly and visible instead of inventing a user-facing mode choice.
+When implementation churn would be expensive, reduce ambiguity earlier and make the slice more explicit before coding starts. If some answers will emerge only while building, keep the contract probe-friendly and visible instead of inventing a user-facing mode choice.
 
-If the repo already treats executable checks as contract artifacts, push
-acceptance into those checks instead of managing a separate prose-only branch.
-For public executable pages, keep current-state claims and bounded proof only;
-move future-state planning, source inventory, and low-level implementation
-guards down a layer.
-If the repo wants the latest on-demand validation visible to readers, project
-the checked artifact into a viewer-style executable page instead of rebuilding
-the evaluator logic inline or promoting source guards into the public spec.
+If the repo already treats executable checks as contract artifacts, push acceptance into those checks instead of managing a separate prose-only branch. For public executable pages, keep current-state claims and bounded proof only; move future-state planning, source inventory, and low-level implementation guards down a layer. If the repo wants the latest on-demand validation visible to readers, project the checked artifact into a viewer-style executable page instead of rebuilding the evaluator logic inline or promoting source guards into the public spec.
 
-If those executable checks are materially expensive, shape the contract so the
-standing acceptance bar stays honest about cost. Keep executable examples at
-the boundary and push duplicated unit-detail coverage downward instead of
-celebrating broad slow coverage.
+If those executable checks are materially expensive, shape the contract so the standing acceptance bar stays honest about cost. Keep executable examples at the boundary and push duplicated unit-detail coverage downward instead of celebrating broad slow coverage.
 
-Before locking the contract, run one bounded premortem. Ask what a fresh
-five-minute implementer, reviewer, or operator would most likely misread, and
-tighten only the lines that create real ambiguity. The canonical path is a
-fresh-eye subagent with a contrasting lens; run the capability check in
-`../premortem/references/subagent-capability-check.md`. See
-`references/premortem-loop.md`. When the decision is non-trivial, use the
-standalone `premortem` skill as the subroutine rather than reinventing angle
-selection and triage inline. If the host still cannot provide subagents, stop
-and surface the host-side contract gap instead of substituting a local pass.
+Before locking the contract, run one bounded premortem. Ask what a fresh five-minute implementer, reviewer, or operator would most likely misread, and tighten only the lines that create real ambiguity. The canonical path is a fresh-eye subagent with a contrasting lens; run the capability check in `../premortem/references/subagent-capability-check.md`. See `references/premortem-loop.md`. When the decision is non-trivial, use the standalone `premortem` skill as the subroutine rather than reinventing angle selection and triage inline. If the host still cannot provide subagents, stop and surface the host-side contract gap instead of substituting a local pass.
 
 ## Workflow
 
@@ -69,6 +52,8 @@ and surface the host-side contract gap instead of substituting a local pass.
    - identify the source artifact or source summary
    - restate the stable idea in implementation terms
    - separate what is already decided from what is still ambiguous
+   - note the current implementation, test, and operator-facing surfaces that
+     already constrain the contract
 2. Classify the remaining uncertainty.
    - `Fixed Decisions`: must be decided before this slice starts
    - `Probe Questions`: should be answered through a small implementation slice,
@@ -76,6 +61,8 @@ and surface the host-side contract gap instead of substituting a local pass.
    - `Deferred Decisions`: visible decisions that can safely wait
    - order these lists by dependency pressure, not prose convenience
 3. Reduce only the ambiguity that blocks this slice.
+   - check whether the repo already answered the question in code, tests, or
+     existing docs before opening a new clarification branch
    - ask targeted questions only for choices that change build scope,
      user-visible behavior, acceptance, sequencing, dependency choice, or risk
    - if a reasonable default is clear, recommend it with reasons instead of
@@ -172,6 +159,8 @@ as `Entities` or `Stages` instead of recreating them under new names.
   because the repo already has executable specs.
 - Do not silently assume implementation details when they materially change
   scope or user-visible behavior.
+- Do not ignore current code, tests, or operator docs when they already
+  resolve a spec question honestly.
 - Do not keep broad shell-driven executable checks in the contract when a
   cheaper deterministic lower layer would prove the same behavior honestly.
 - If the concept artifact is still unstable in a concept-defining way, send the

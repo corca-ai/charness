@@ -44,7 +44,7 @@ def load_adapter(repo_root: Path) -> dict[str, object]:
         ),
     )
     adapter_data, _adapter_path, _warnings = _init_repo_adapter_module.load_init_repo_adapter(repo_root)
-    payload.setdefault("data", {})["skill_routing_mode"] = adapter_data.get("skill_routing_mode", "compact")
+    payload.setdefault("data", {})["skill_routing_mode"] = "compact"
     return payload
 
 

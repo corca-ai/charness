@@ -159,30 +159,19 @@ def run_init_repo_compact_skill_routing_discoverability(
                 "init-repo compact skill routing: unexpected mode source "
                 f"{compact.get('skill_routing_mode_source')!r}"
             )
-        if compact.get("listed_skill_ids") != ["find-skills", "gather", "debug", "impl", "quality", "handoff", "init-repo"]:
+        if compact.get("listed_skill_ids") != ["find-skills"]:
             raise error_type(
                 "init-repo compact skill routing: unexpected listed_skill_ids "
                 f"{compact.get('listed_skill_ids')!r}"
             )
         markdown = compact.get("markdown", "")
         expected_snippets = (
-            "Prefer installed charness public skills before improvising a repo-local workflow.",
-            "Keep this block intentionally non-exhaustive",
-            "route to the shared/public charness skill `find-skills` first",
+            "call the shared/public charness skill `find-skills` once at startup before broader exploration",
+            "default map of installed public skills, support skills, synced support surfaces, and integrations",
+            "After that bootstrap pass, choose the durable work skill",
         )
         for snippet in expected_snippets:
             if snippet not in markdown:
                 raise error_type(f"init-repo compact skill routing: missing snippet {snippet!r}")
-        if "turn a concept or design into a living implementation contract" in markdown:
-            raise error_type("init-repo compact skill routing: compact mode should not render the full expanded catalog")
-
-        expanded_result = run_command(
-            ["python3", str(render_script), "--repo-root", str(tmp), "--mode", "expanded", "--json"],
-            cwd=root,
-        )
-        expect_success(expanded_result, "init-repo expanded skill routing")
-        expanded = json.loads(expanded_result.stdout)
-        if expanded.get("skill_routing_mode") != "expanded":
-            raise error_type(f"init-repo expanded skill routing: unexpected mode {expanded.get('skill_routing_mode')!r}")
-        if "turn a concept or design into a living implementation contract" not in expanded.get("markdown", ""):
-            raise error_type("init-repo expanded skill routing: missing expanded-only coverage for `spec`")
+        if "release-note style summary or chat-ready human update" in markdown:
+            raise error_type("init-repo compact skill routing: compact mode should not inline the checked-in skill catalog")

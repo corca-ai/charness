@@ -8,6 +8,7 @@
 ## Current State
 
 - startup에는 `charness:find-skills` 1회가 필수이고, durable capability inventory는 [charness-artifacts/find-skills/latest.md](../charness-artifacts/find-skills/latest.md)와 `latest.json`이 owning surface다.
+- `init-repo`의 checked-in `Skill Routing` 계약은 이제 compact-only다. [AGENTS.md](../AGENTS.md)에는 긴 스킬 카탈로그를 복사하지 않고 startup `find-skills` bootstrap만 남긴다. 관련 `cautilus` proof는 [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md)와 `.cautilus/runs/20260421T133805047Z-run/`이 owner다.
 - `premortem`과 `quality`/`handoff`의 fresh-eye loop는 subagent가 canonical이 아니라 mandatory다. bounded capability probe 뒤에도 spawn이 안 되면 same-agent fallback으로 대체하지 말고 concrete host signal을 남긴 채 stop한다.
 - [`docs/handoff.md`](./handoff.md)는 rolling pointer다. gate 수치, release 상태, dogfood evidence, 긴 history는 owning artifact로 보내고 여기에는 next action을 바꾸는 사실만 남긴다.
 - checked-in plugin export가 걸린 source를 바꾸면 validator보다 먼저 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`로 sync한다.
@@ -20,8 +21,8 @@
 ## Next Session
 
 1. `git status --short`를 먼저 본다.
-2. 다음 follow-up은 `cautilus` instruction-surface evaluator의 `checked-in-bootstrap-before-impl` 실패가 실제 회귀인지 evaluator expectation drift인지 가르는 것이다. 시작점은 [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md)와 `.cautilus/runs/20260421T104036041Z-run/` summary다.
-3. prompt-affecting slice를 이어받으면 `python3 scripts/plan_cautilus_proof.py --repo-root . --json`로 proof 종류와 `next_action`을 먼저 본다. `adaptive`에서 named-anchor/truth-surface류는 scenario review가 붙는지 확인한다.
+2. prompt-affecting slice를 이어받으면 `python3 scripts/plan_cautilus_proof.py --repo-root . --json`로 proof 종류와 `next_action`을 먼저 본다. `adaptive`에서 named-anchor/truth-surface류는 scenario review가 붙는지 확인한다.
+3. 다음 routing follow-up은 "startup `find-skills`를 강하게 썼을 때 direct request가 과-bootstrap되는가"를 다른 dogfood repo에서도 확인하는 것이다. 시작점은 [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md)와 `.cautilus/runs/20260421T133805047Z-run/` summary다.
 4. README/narrative follow-up이면 [charness-artifacts/spec/readme-intent-rewrite-plan.md](../charness-artifacts/spec/readme-intent-rewrite-plan.md)와 [charness-artifacts/spec/narrative-intent-preserving-rewrite-requirements.md](../charness-artifacts/spec/narrative-intent-preserving-rewrite-requirements.md)를 먼저 읽고, adapter가 없으면 rewrite 전에 truth-surface/reader/job을 shape한다.
 5. 다른 repo dogfood 결과가 생겼으면 vague 회고로 흘리지 말고 eval candidate 또는 issue로 바로 정규화한다.
 6. public skill, handoff, validator, 또는 other prompt surface를 건드리면 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)와 [docs/public-skill-dogfood.json](./public-skill-dogfood.json)을 읽고 `impl`로 이어간다.

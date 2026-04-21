@@ -11,21 +11,10 @@ def main() -> None:
     sys.path.insert(0, str(repo_root))
     from scripts.adapter_init_lib import base_adapter_items, run_init_adapter
 
-    def add_arguments(parser: argparse.ArgumentParser) -> None:
-        parser.add_argument(
-            "--skill-routing-mode",
-            choices=("compact", "expanded"),
-            default="compact",
-            help="Default Skill Routing rendering mode for init-repo outputs.",
-        )
+    def build_items(repo_name: str, _args: argparse.Namespace) -> list[tuple[str, object]]:
+        return [*base_adapter_items(repo_name, "charness-artifacts/init-repo")]
 
-    def build_items(repo_name: str, args: argparse.Namespace) -> list[tuple[str, object]]:
-        return [
-            *base_adapter_items(repo_name, "charness-artifacts/init-repo"),
-            ("skill_routing_mode", args.skill_routing_mode),
-        ]
-
-    print(run_init_adapter(default_output=Path(".agents/init-repo-adapter.yaml"), build_items=build_items, add_arguments=add_arguments))
+    print(run_init_adapter(default_output=Path(".agents/init-repo-adapter.yaml"), build_items=build_items))
 
 
 if __name__ == "__main__":

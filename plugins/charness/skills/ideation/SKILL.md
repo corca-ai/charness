@@ -24,16 +24,21 @@ traced to structure instead of dissolving into a feature wish list. See
 ## Bootstrap
 
 Read only the context that reduces uncertainty for the current idea.
+Before asking clarification questions, inspect the current repo reality first
+so existing code, tests, and operator docs can retire fake ambiguity early.
 
 ```bash
 # Required Tools: rg
 # Missing-binary protocol: create-skill/references/binary-preflight.md
 # 1. repo and adjacent design context
-rg --files docs skills
+git status --short
+rg --files . | sed -n '1,200p'
+sed -n '1,220p' README.md 2>/dev/null || true
+sed -n '1,220p' AGENTS.md 2>/dev/null || true
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 
-# 2. existing concept or design files when they exist
-rg -n "idea|concept|design|entity|stage|workflow|user|customer|problem" .
+# 2. existing concept, design, and acceptance signals when they exist
+rg -n "idea|concept|design|entity|stage|workflow|user|customer|problem|acceptance|constraint|success criteria" .
 
 # 3. adjacent charness skill boundaries
 sed -n '1,220p' "$SKILL_DIR/../create-skill/SKILL.md" 2>/dev/null || true
@@ -70,6 +75,8 @@ incrementally instead of leaving the model only in chat.
    - `feedback lens`: early feedback loops, distribution posture, viral hooks when relevant, expansion surfaces
    - `agent-human lens`: agent-first surfaces, API/CLI/skill priority, interface importance, human cognition and social behavior
 3. Ask the smallest set of high-leverage questions.
+   - check the current repo surfaces first and treat existing code, tests, and
+     operator docs as evidence rather than reopening them as chat-only questions
    - when multiple decisions are open, start with the upstream one that most
      changes the rest of the design while preserving later options
    - ask one question at a time when real tradeoffs remain
@@ -126,7 +133,8 @@ Use that split as a thinking aid, not as mandatory ceremony.
 - Do not jump into implementation while the concept is still unstable.
 - Do not flatten several upstream decisions into one vague brainstorming blob.
 - Do not leave the current recommended decision implicit when tradeoffs are real.
-- Do not ask questions the repo, docs, or provided context can already answer.
+- Do not ask questions the repo, code, tests, docs, or provided context can
+  already answer.
 - If the user already has a formed plan, still challenge demand, wedge, moat,
   feedback path, and agent/human fit before handing off to `spec`.
 - Do not leave the durable concept model stale when the discussion materially
