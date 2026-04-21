@@ -69,6 +69,8 @@ Use this only to confirm that a newly added public skill became visible after
     policy["tiers"]["hitl-recommended"].sort()
     policy["adapter_requirements"]["adapter-free"].append(PROBE_SKILL_ID)
     policy["adapter_requirements"]["adapter-free"].sort()
+    policy["fallback_policy"]["allow"].append(PROBE_SKILL_ID)
+    policy["fallback_policy"]["allow"].sort()
     policy_path.write_text(json.dumps(policy, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     packaging_path = source_repo / "packaging" / "charness.json"

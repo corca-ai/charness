@@ -9,6 +9,19 @@ from .test_quality_artifact import run_script
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def with_fallback_policy(policy: dict[str, object]) -> dict[str, object]:
+    updated = json.loads(json.dumps(policy))
+    updated.setdefault(
+        "fallback_policy",
+        {
+            "allow": [],
+            "visible": [],
+            "block": [],
+        },
+    )
+    return updated
+
+
 def seed_repo(tmp_path: Path, *, policy: dict[str, object]) -> Path:
     repo = tmp_path / "repo"
     docs_dir = repo / "docs"
@@ -16,7 +29,7 @@ def seed_repo(tmp_path: Path, *, policy: dict[str, object]) -> Path:
     docs_dir.mkdir(parents=True)
     public_root.mkdir(parents=True)
     (docs_dir / "public-skill-validation.json").write_text(
-        json.dumps(policy, ensure_ascii=False, indent=2) + "\n",
+        json.dumps(with_fallback_policy(policy), ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
     return repo
@@ -69,6 +82,11 @@ def test_validate_public_skill_validation_requires_full_partition(tmp_path: Path
                 "required": ["demo-a"],
                 "adapter-free": [],
             },
+            "fallback_policy": {
+                "allow": ["demo-a"],
+                "visible": [],
+                "block": [],
+            },
         },
     )
     seed_skill(repo, "demo-a", adapter=True)
@@ -98,6 +116,11 @@ def test_validate_public_skill_validation_reports_missing_adapter_requirement_bu
                 "required": ["demo-a"],
                 "adapter-free": [],
             },
+            "fallback_policy": {
+                "allow": ["demo-a", "demo-b"],
+                "visible": [],
+                "block": [],
+            },
         },
     )
     seed_skill(repo, "demo-a", adapter=True)
@@ -126,6 +149,11 @@ def test_validate_public_skill_validation_requires_adapter_contract_for_required
                 "required": ["demo-a"],
                 "adapter-free": [],
             },
+            "fallback_policy": {
+                "allow": ["demo-a"],
+                "visible": [],
+                "block": [],
+            },
         },
     )
     seed_skill(repo, "demo-a", adapter=False)
@@ -148,6 +176,11 @@ def test_validate_public_skill_validation_rejects_adapter_helpers_for_adapter_fr
             "adapter_requirements": {
                 "required": [],
                 "adapter-free": ["demo-a"],
+            },
+            "fallback_policy": {
+                "allow": ["demo-a"],
+                "visible": [],
+                "block": [],
             },
         },
     )
@@ -172,6 +205,11 @@ def test_suggest_public_skill_validation_reports_missing_bucket_choices(tmp_path
                 "required": ["demo-a"],
                 "adapter-free": [],
             },
+            "fallback_policy": {
+                "allow": ["demo-a"],
+                "visible": [],
+                "block": [],
+            },
         },
     )
     seed_skill(repo, "demo-a", adapter=True)
@@ -182,10 +220,15 @@ def test_suggest_public_skill_validation_reports_missing_bucket_choices(tmp_path
     payload = json.loads(result.stdout)
     assert payload["missing_tiers"] == ["demo-b"]
     assert payload["missing_adapter_requirements"] == ["demo-b"]
+    assert payload["missing_fallback_policy"] == ["demo-b"]
     assert payload["suggestions"] == [
         {
             "skill_id": "demo-b",
-            "missing_fields": {"tiers": True, "adapter_requirements": True},
+            "missing_fields": {
+                "tiers": True,
+                "adapter_requirements": True,
+                "fallback_policy": True,
+            },
             "choose_one_of": {
                 "tiers": [
                     "tiers.smoke-only",
@@ -196,6 +239,11 @@ def test_suggest_public_skill_validation_reports_missing_bucket_choices(tmp_path
                     "adapter_requirements.required",
                     "adapter_requirements.adapter-free",
                 ],
+                "fallback_policy": [
+                    "fallback_policy.allow",
+                    "fallback_policy.visible",
+                    "fallback_policy.block",
+                ],
             },
         }
     ]
@@ -205,3 +253,4 @@ def test_suggest_public_skill_validation_reports_missing_bucket_choices(tmp_path
     assert "`demo-b`" in human.stdout
     assert "`tiers.hitl-recommended`" in human.stdout
     assert "`adapter_requirements.adapter-free`" in human.stdout
+    assert "`fallback_policy.visible`" in human.stdout

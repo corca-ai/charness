@@ -28,6 +28,11 @@ def seed_repo(tmp_path: Path) -> Path:
                     "required": [],
                     "adapter-free": ["demo"],
                 },
+                "fallback_policy": {
+                    "allow": ["demo"],
+                    "visible": [],
+                    "block": [],
+                },
             },
             ensure_ascii=False,
             indent=2,
