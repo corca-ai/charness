@@ -7,6 +7,22 @@ from pathlib import Path
 
 from .support import EVAL_REGISTRY, ROOT, run_script
 
+REPO_COPY_IGNORE = shutil.ignore_patterns(
+    ".git",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".mypy_cache",
+    "__pycache__",
+    ".coverage",
+    ".venv",
+    "node_modules",
+    "history",
+)
+
+
+def copy_repo_snapshot(repo: Path) -> None:
+    shutil.copytree(ROOT, repo, ignore=REPO_COPY_IGNORE)
+
 
 def make_demo_packaging_repo(
     tmp_path: Path,
@@ -114,7 +130,7 @@ def init_committed_repo(repo: Path) -> None:
 
 def test_validate_packaging_rejects_checked_in_plugin_tree_drift(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    shutil.copytree(ROOT, repo)
+    copy_repo_snapshot(repo)
     readme_path = repo / "README.md"
     readme_path.write_text(readme_path.read_text(encoding="utf-8") + "\nDrift.\n", encoding="utf-8")
 
@@ -220,7 +236,7 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
 
 def test_validate_packaging_committed_accepts_clean_head(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    shutil.copytree(ROOT, repo)
+    copy_repo_snapshot(repo)
     init_committed_repo(repo)
 
     result = run_script("scripts/validate-packaging-committed.py", "--repo-root", str(repo), cwd=repo)
@@ -229,7 +245,7 @@ def test_validate_packaging_committed_accepts_clean_head(tmp_path: Path) -> None
 
 def test_validate_packaging_committed_rejects_partial_commit_with_uncommitted_export(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    shutil.copytree(ROOT, repo)
+    copy_repo_snapshot(repo)
     init_committed_repo(repo)
 
     source_skill = repo / "skills" / "public" / "create-cli" / "SKILL.md"
@@ -277,7 +293,7 @@ def test_validate_packaging_rejects_unknown_top_level_field(tmp_path: Path) -> N
 
 def test_validate_packaging_rejects_invalid_public_skill_policy_when_present(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    shutil.copytree(ROOT, repo)
+    copy_repo_snapshot(repo)
     policy_path = repo / "docs" / "public-skill-validation.json"
     policy = json.loads(policy_path.read_text(encoding="utf-8"))
     policy["tiers"]["hitl-recommended"].remove("premortem")
