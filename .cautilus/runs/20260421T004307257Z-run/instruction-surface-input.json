@@ -1,0 +1,248 @@
+{
+  "schemaVersion": "cautilus.instruction_surface_inputs.v1",
+  "suiteId": "charness-instruction-surface",
+  "suiteDisplayName": "Charness Instruction Surface",
+  "evaluations": [
+    {
+      "evaluationId": "checked-in-bootstrap-before-impl",
+      "displayName": "Checked-in surface keeps bootstrap helper distinct from work skill",
+      "prompt": "Route only: you need the first charness skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.",
+      "startedAt": "2026-04-21T00:43:08.038Z",
+      "observationStatus": "observed",
+      "summary": "Entry point was `/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/AGENTS.md`. I used `find-skills` as the required bootstrap routing step, and the durable work skill for a code/config/test change to an operator-facing artifact is `impl`. No change was made.",
+      "loadedInstructionFiles": [
+        "AGENTS.md",
+        "plugins/charness/skills/find-skills/SKILL.md"
+      ],
+      "loadedSupportingFiles": [],
+      "routingDecision": {
+        "selectedSkill": "impl",
+        "bootstrapHelper": "find-skills",
+        "workSkill": "impl",
+        "selectedSupport": "none",
+        "firstToolCall": "functions.exec_command",
+        "reasonSummary": "The instruction surface points first to `find-skills` for capability discovery, and the best match for a code/config/test change is the public `impl` skill. No support helper was needed."
+      },
+      "artifactRefs": [
+        {
+          "kind": "prompt",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/checked-in-bootstrap-before-impl/prompt.md"
+        },
+        {
+          "kind": "schema",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/checked-in-bootstrap-before-impl/schema.json"
+        },
+        {
+          "kind": "stderr",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/checked-in-bootstrap-before-impl/result.stderr"
+        },
+        {
+          "kind": "result",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/checked-in-bootstrap-before-impl/result.json"
+        },
+        {
+          "kind": "instruction_surface",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/checked-in-bootstrap-before-impl/instruction-surface/AGENTS.md"
+        }
+      ],
+      "expectedRouting": {
+        "bootstrapHelper": "find-skills",
+        "workSkill": "impl"
+      },
+      "entryFile": "AGENTS.md",
+      "telemetry": {
+        "model": "gpt-5.4-mini"
+      },
+      "instructionSurface": {
+        "surfaceLabel": "workspace_checked_in",
+        "files": [
+          {
+            "path": "AGENTS.md",
+            "kind": "file",
+            "sourceKind": "workspace_default",
+            "artifactPath": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/checked-in-bootstrap-before-impl/instruction-surface/AGENTS.md"
+          }
+        ]
+      }
+    },
+    {
+      "evaluationId": "compact-no-bootstrap-impl",
+      "displayName": "Compact surface routes direct impl without bootstrap",
+      "prompt": "Route only: you need the first charness skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.",
+      "startedAt": "2026-04-21T00:43:21.012Z",
+      "observationStatus": "observed",
+      "summary": "첫 라우팅은 코드/구성/테스트 변경을 다루는 운영자-facing 아티팩트 작업으로 판단해 `charness:impl`로 정했습니다. 변경은 수행하지 않았고, 첫 진입 지점으로 사용한 지침 파일은 현재 작업 디렉터리의 `AGENTS.md`입니다.",
+      "loadedInstructionFiles": [
+        "AGENTS.md"
+      ],
+      "loadedSupportingFiles": [],
+      "routingDecision": {
+        "selectedSkill": "impl",
+        "bootstrapHelper": "none",
+        "workSkill": "impl",
+        "selectedSupport": "none",
+        "firstToolCall": "none",
+        "reasonSummary": "지침 표면이 이미 코드/구성/테스트 구현 작업에 대해 `impl`로 라우팅하라고 명시하므로 추가 부트스트랩 없이 곧바로 해당 작업 스킬을 선택했습니다."
+      },
+      "artifactRefs": [
+        {
+          "kind": "prompt",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/compact-no-bootstrap-impl/prompt.md"
+        },
+        {
+          "kind": "schema",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/compact-no-bootstrap-impl/schema.json"
+        },
+        {
+          "kind": "stderr",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/compact-no-bootstrap-impl/result.stderr"
+        },
+        {
+          "kind": "result",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/compact-no-bootstrap-impl/result.json"
+        },
+        {
+          "kind": "instruction_surface",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/compact-no-bootstrap-impl/instruction-surface/AGENTS.md"
+        }
+      ],
+      "expectedRouting": {
+        "selectedSkill": "impl"
+      },
+      "entryFile": "AGENTS.md",
+      "telemetry": {
+        "model": "gpt-5.4-mini"
+      },
+      "instructionSurface": {
+        "surfaceLabel": "compact_no_bootstrap",
+        "files": [
+          {
+            "path": "AGENTS.md",
+            "kind": "file",
+            "sourceKind": "inline",
+            "artifactPath": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/compact-no-bootstrap-impl/instruction-surface/AGENTS.md"
+          }
+        ]
+      }
+    },
+    {
+      "evaluationId": "compact-no-bootstrap-spec",
+      "displayName": "Compact surface still allows direct spec observation",
+      "prompt": "Route only: you need the first charness skill for turning a concept into a living implementation contract before coding. Do not produce the contract.",
+      "startedAt": "2026-04-21T00:43:26.839Z",
+      "observationStatus": "observed",
+      "summary": "Entry instruction file: /home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/AGENTS.md. First routing decision: use charness:spec as the durable work skill for turning a concept into a living implementation contract before coding. No bootstrap helper, support helper, or tool call was needed for the routing decision.",
+      "loadedInstructionFiles": [
+        "AGENTS.md"
+      ],
+      "loadedSupportingFiles": [],
+      "routingDecision": {
+        "selectedSkill": "spec",
+        "bootstrapHelper": "none",
+        "workSkill": "spec",
+        "selectedSupport": "none",
+        "firstToolCall": "none",
+        "reasonSummary": "The request explicitly asks for the first charness skill used to turn a concept into a living implementation contract before coding, which maps directly to charness:spec."
+      },
+      "artifactRefs": [
+        {
+          "kind": "prompt",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/compact-no-bootstrap-spec/prompt.md"
+        },
+        {
+          "kind": "schema",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/compact-no-bootstrap-spec/schema.json"
+        },
+        {
+          "kind": "stderr",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/compact-no-bootstrap-spec/result.stderr"
+        },
+        {
+          "kind": "result",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/compact-no-bootstrap-spec/result.json"
+        },
+        {
+          "kind": "instruction_surface",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/compact-no-bootstrap-spec/instruction-surface/AGENTS.md"
+        }
+      ],
+      "entryFile": "AGENTS.md",
+      "telemetry": {
+        "model": "gpt-5.4-mini"
+      },
+      "instructionSurface": {
+        "surfaceLabel": "compact_no_bootstrap",
+        "files": [
+          {
+            "path": "AGENTS.md",
+            "kind": "file",
+            "sourceKind": "inline",
+            "artifactPath": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/compact-no-bootstrap-spec/instruction-surface/AGENTS.md"
+          }
+        ]
+      }
+    },
+    {
+      "evaluationId": "expanded-no-bootstrap-spec",
+      "displayName": "Expanded surface exposes direct spec routing",
+      "prompt": "Route only: you need the first charness skill for turning a concept into a living implementation contract before coding. Do not produce the contract.",
+      "startedAt": "2026-04-21T00:43:32.649Z",
+      "observationStatus": "observed",
+      "summary": "첫 라우팅은 `charness:spec`로 결정했습니다. 사용자가 요구한 것은 코딩 전에 개념을 살아있는 구현 계약으로 바꾸는 단계이므로, durable work skill은 spec이고 별도의 bootstrap helper는 두지 않았습니다.",
+      "loadedInstructionFiles": [
+        "AGENTS.md"
+      ],
+      "loadedSupportingFiles": [
+        "/home/ubuntu/.codex/plugins/charness/skills/spec/SKILL.md"
+      ],
+      "routingDecision": {
+        "selectedSkill": "spec",
+        "bootstrapHelper": "none",
+        "workSkill": "spec",
+        "selectedSupport": "none",
+        "firstToolCall": "functions.exec_command",
+        "reasonSummary": "사용자 요청이 '개념을 구현 계약으로 전환'하는 초기 라우팅이므로 spec 스킬이 정답입니다. 별도 보조 스킬은 필요하지 않았고, 첫 확인용 도구 호출은 spec 스킬 문서를 읽기 위한 exec_command였습니다."
+      },
+      "artifactRefs": [
+        {
+          "kind": "prompt",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/expanded-no-bootstrap-spec/prompt.md"
+        },
+        {
+          "kind": "schema",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/expanded-no-bootstrap-spec/schema.json"
+        },
+        {
+          "kind": "stderr",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/expanded-no-bootstrap-spec/result.stderr"
+        },
+        {
+          "kind": "result",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/expanded-no-bootstrap-spec/result.json"
+        },
+        {
+          "kind": "instruction_surface",
+          "path": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/expanded-no-bootstrap-spec/instruction-surface/AGENTS.md"
+        }
+      ],
+      "expectedRouting": {
+        "selectedSkill": "spec"
+      },
+      "entryFile": "AGENTS.md",
+      "telemetry": {
+        "model": "gpt-5.4-mini"
+      },
+      "instructionSurface": {
+        "surfaceLabel": "expanded_no_bootstrap",
+        "files": [
+          {
+            "path": "AGENTS.md",
+            "kind": "file",
+            "sourceKind": "inline",
+            "artifactPath": "/home/ubuntu/charness/.claude/worktrees/issue-48-prep-execute-lens/.cautilus/runs/20260421T004307257Z-run/instruction-surface-test/expanded-no-bootstrap-spec/instruction-surface/AGENTS.md"
+          }
+        ]
+      }
+    }
+  ]
+}
