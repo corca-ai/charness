@@ -353,9 +353,9 @@ def test_installed_cli_update_reports_diverged_managed_checkout(tmp_path: Path) 
         text=True,
     )
 
-    source_readme = source_repo / "README.md"
-    source_readme.write_text(source_readme.read_text(encoding="utf-8") + "\nupstream divergence note\n", encoding="utf-8")
-    subprocess.run(["git", "add", "README.md"], cwd=source_repo, check=True, capture_output=True, text=True)
+    source_handoff = source_repo / "docs" / "handoff.md"
+    source_handoff.write_text(source_handoff.read_text(encoding="utf-8") + "\nupstream divergence note\n", encoding="utf-8")
+    subprocess.run(["git", "add", "docs/handoff.md"], cwd=source_repo, check=True, capture_output=True, text=True)
     subprocess.run(
         ["git", "commit", "-m", "upstream divergence"],
         cwd=source_repo,
@@ -378,6 +378,52 @@ def test_installed_cli_update_reports_diverged_managed_checkout(tmp_path: Path) 
     assert "diverged from `origin/main` (ahead 1, behind 1)" in output
     assert "only fast-forwards managed checkouts" in output
     assert "charness update --repo-root . --no-pull --skip-cli-install" in output
+
+
+def test_installed_cli_update_blocks_local_origin_with_committed_plugin_export_drift(tmp_path: Path) -> None:
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    source_repo = make_git_repo_copy(source_root)
+    home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
+
+    source_skill = source_repo / "skills" / "public" / "create-cli" / "SKILL.md"
+    source_skill.write_text(source_skill.read_text(encoding="utf-8") + "\nLocal origin partial commit sentinel.\n", encoding="utf-8")
+    subprocess.run(
+        [sys.executable, "scripts/sync_root_plugin_manifests.py", "--repo-root", "."],
+        cwd=source_repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "add", "skills/public/create-cli/SKILL.md"],
+        cwd=source_repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "Commit source without synced plugin export"],
+        cwd=source_repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    installed_cli = home_root / ".local" / "bin" / "charness"
+    update_result = subprocess.run(
+        [sys.executable, str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    output = update_result.stderr + update_result.stdout
+    assert update_result.returncode != 0
+    assert f"local source checkout `{source_repo}` has committed checked-in plugin export drift" in output
+    assert "sync_root_plugin_manifests.py --repo-root ." in output
+    assert "plugins/charness/skills/create-cli/SKILL.md" in output
 
 
 def test_installed_cli_remembers_managed_checkout(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:

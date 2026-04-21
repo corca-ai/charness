@@ -83,6 +83,7 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         ("validate-adapters", "validate-adapters.py"),
         ("validate-integrations", "validate-integrations.py"),
         ("validate-packaging", "validate-packaging.py"),
+        ("validate-packaging-committed", "validate-packaging-committed.py"),
         ("validate-handoff-artifact", "validate-handoff-artifact.py"),
         ("validate-debug-artifact", "validate-debug-artifact.py"),
         ("validate-quality-artifact", "validate-quality-artifact.py"),

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import subprocess
 from pathlib import Path
 
 from .support import EVAL_REGISTRY, ROOT, run_script
@@ -95,6 +96,22 @@ def make_demo_packaging_repo(
         encoding="utf-8",
     )
     return repo
+
+
+def init_committed_repo(repo: Path) -> None:
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "config", "user.email", "codex-test@example.com"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "seed repo"], cwd=repo, check=True, capture_output=True, text=True)
+
+
 def test_validate_packaging_rejects_checked_in_plugin_tree_drift(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     shutil.copytree(ROOT, repo)
@@ -199,6 +216,46 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
 
     validate = run_script("scripts/validate-packaging.py", "--repo-root", str(repo))
     assert validate.returncode == 0, validate.stderr
+
+
+def test_validate_packaging_committed_accepts_clean_head(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    shutil.copytree(ROOT, repo)
+    init_committed_repo(repo)
+
+    result = run_script("scripts/validate-packaging-committed.py", "--repo-root", str(repo), cwd=repo)
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_packaging_committed_rejects_partial_commit_with_uncommitted_export(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    shutil.copytree(ROOT, repo)
+    init_committed_repo(repo)
+
+    source_skill = repo / "skills" / "public" / "create-cli" / "SKILL.md"
+    source_skill.write_text(source_skill.read_text(encoding="utf-8") + "\nPartial commit sentinel.\n", encoding="utf-8")
+
+    sync = run_script("scripts/sync_root_plugin_manifests.py", "--repo-root", str(repo), cwd=repo)
+    assert sync.returncode == 0, sync.stderr
+
+    subprocess.run(["git", "add", "skills/public/create-cli/SKILL.md"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "Commit source without synced plugin export"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    worktree_validate = run_script("scripts/validate-packaging.py", "--repo-root", str(repo), cwd=repo)
+    assert worktree_validate.returncode == 0, worktree_validate.stderr
+
+    committed_validate = run_script("scripts/validate-packaging-committed.py", "--repo-root", str(repo), cwd=repo)
+    assert committed_validate.returncode == 1
+    assert "checked-in plugin tree does not match the generated install surface" in committed_validate.stderr
+    assert "plugins/charness/skills/create-cli/SKILL.md" in committed_validate.stderr
+
+
 def test_eval_registry_omits_redundant_current_repo_smokes() -> None:
     scenario_ids = EVAL_REGISTRY.scenario_ids()
     assert {"managed-cli-install", "packaging-valid", "packaging-export"}.isdisjoint(scenario_ids)

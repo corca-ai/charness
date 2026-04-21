@@ -222,6 +222,7 @@ queue_selected "validate-presets" python3 scripts/validate-presets.py --repo-roo
 queue_selected "validate-adapters" python3 scripts/validate-adapters.py --repo-root "$REPO_ROOT"
 queue_selected "validate-integrations" python3 scripts/validate-integrations.py --repo-root "$REPO_ROOT"
 queue_selected "validate-packaging" python3 scripts/validate-packaging.py --repo-root "$REPO_ROOT"
+queue_selected "validate-packaging-committed" python3 scripts/validate-packaging-committed.py --repo-root "$REPO_ROOT"
 queue_selected "validate-handoff-artifact" python3 scripts/validate-handoff-artifact.py --repo-root "$REPO_ROOT"
 queue_selected "validate-debug-artifact" python3 scripts/validate-debug-artifact.py --repo-root "$REPO_ROOT"
 queue_selected "validate-quality-artifact" python3 scripts/validate-quality-artifact.py --repo-root "$REPO_ROOT"

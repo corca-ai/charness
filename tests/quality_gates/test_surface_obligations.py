@@ -22,6 +22,7 @@ def test_check_changed_surfaces_reports_expected_obligations_for_readme() -> Non
     assert "repo-markdown" in surface_ids
     assert "python3 scripts/sync_root_plugin_manifests.py --repo-root ." in payload["sync_commands"]
     assert "python3 scripts/validate-packaging.py --repo-root ." in payload["verify_commands"]
+    assert "python3 scripts/validate-packaging-committed.py --repo-root ." in payload["verify_commands"]
     assert "python3 scripts/check-doc-links.py --repo-root ." in payload["verify_commands"]
     assert "./scripts/check-markdown.sh" in payload["verify_commands"]
 
@@ -61,6 +62,7 @@ def test_select_verifiers_returns_smallest_repo_owned_bundle_for_readme() -> Non
     }
     verify_commands = {item["command"] for item in recommendations if item["phase"] == "verify"}
     assert "python3 scripts/validate-packaging.py --repo-root ." in verify_commands
+    assert "python3 scripts/validate-packaging-committed.py --repo-root ." in verify_commands
     assert "python3 scripts/check-doc-links.py --repo-root ." in verify_commands
     assert "./scripts/check-markdown.sh" in verify_commands
 
