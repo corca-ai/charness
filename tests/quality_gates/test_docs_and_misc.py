@@ -52,6 +52,27 @@ def test_init_repo_default_surfaces_carry_early_quality_baseline() -> None:
     assert "ratcheting" in default_surfaces
 
 
+def test_init_repo_agent_docs_carry_bounded_subagent_delegation_rule() -> None:
+    skill_text = (ROOT / "skills" / "public" / "init-repo" / "SKILL.md").read_text(
+        encoding="utf-8"
+    ).lower()
+    agent_docs = (
+        ROOT / "skills" / "public" / "init-repo" / "references" / "agent-docs-policy.md"
+    ).read_text(encoding="utf-8").lower()
+    default_surfaces = (
+        ROOT / "skills" / "public" / "init-repo" / "references" / "default-surfaces.md"
+    ).read_text(encoding="utf-8").lower()
+
+    assert "already delegated" in skill_text
+    assert "second user message" in skill_text
+    assert "same-agent pass" in skill_text
+    assert "already delegated by the repo contract" in agent_docs
+    assert "second user message asking for delegation" in agent_docs
+    assert "same-agent pass" in agent_docs
+    assert "already delegated by the repo" in default_surfaces
+    assert "same-agent pass" in default_surfaces
+
+
 def test_development_doc_carries_mutation_phase_barrier_rule() -> None:
     development = (ROOT / "docs" / "development.md").read_text(encoding="utf-8")
 

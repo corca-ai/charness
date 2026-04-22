@@ -17,6 +17,9 @@ parallel templates.
 - if the repo wants durable retrospective pickup, is there one stable retro
   memory seam instead of scattered weekly/session notes
 - do [`AGENTS.md`](../../../../AGENTS.md) and `CLAUDE.md` express one clear host-facing contract
+- when the repo requires bounded fresh-eye or premortem-style subagent review,
+  does [`AGENTS.md`](../../../../AGENTS.md) say that this stop gate is already delegated and that
+  host spawn restrictions must stay visible
 - does `docs/roadmap.md` exist when the repo needs short-horizon planning
 - can a human operator tell what to do from [`docs/operator-acceptance.md`](../../../../docs/operator-acceptance.md)
 - are there duplicate docs that should collapse into one source of truth

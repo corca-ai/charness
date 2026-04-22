@@ -15,6 +15,11 @@ self-validation.
 - KEEP THE HARNESS PORTABLE.
   Host-specific behavior belongs in adapters, presets, and integration
   manifests, not in public skill bodies.
+- TREAT REPO-MANDATED BOUNDED SUBAGENT REVIEWS AS ALREADY DELEGATED.
+  When this repo or a required skill makes a bounded fresh-eye subagent review
+  a stop gate, do not wait for a second user message asking for delegation.
+- IF THE HOST BLOCKS SUBAGENT SPAWNING, STOP AND REPORT THE HOST RESTRICTION.
+  Do not substitute a same-agent pass for the canonical bounded review.
 - PREFER VALIDATORS AND SCRIPTS OVER PROSE RITUALS.
   If a repeated check matters, turn it into a repo-owned script.
 - LEAVE AGENT-READABLE STATE.

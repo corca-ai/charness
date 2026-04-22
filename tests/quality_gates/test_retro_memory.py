@@ -40,3 +40,11 @@ def test_agents_keeps_dogfood_detail_in_development_doc() -> None:
     assert "~/.agents/src/charness/charness update" not in agents_text
     assert "--skip-cli-install" in development_text
     assert "~/.agents/src/charness/charness update" in development_text
+
+
+def test_agents_carries_bounded_subagent_delegation_rule() -> None:
+    agents_text = (ROOT / "AGENTS.md").read_text(encoding="utf-8").lower()
+
+    assert "already delegated" in agents_text
+    assert "second user message asking for delegation" in agents_text
+    assert "same-agent pass" in agents_text

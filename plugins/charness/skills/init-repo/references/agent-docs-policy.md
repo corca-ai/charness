@@ -4,6 +4,9 @@
 
 - [`AGENTS.md`](../../../../AGENTS.md) is the canonical repo instruction file
 - `CLAUDE.md` should symlink to [`AGENTS.md`](../../../../AGENTS.md) when Claude compatibility is needed
+- when the repo requires bounded fresh-eye or premortem-style subagent review
+  as a stop gate, [`AGENTS.md`](../../../../AGENTS.md) should carry one short rule that this review is
+  already delegated by the repo contract
 
 ## Deterministic Cases
 
@@ -27,3 +30,10 @@
 ## Rule
 
 Do not silently overwrite or merge meaningful user-authored host instructions.
+
+When the repo uses bounded fresh-eye or premortem-style subagent review as a
+stop gate, prefer a short rule like:
+
+- Repo-mandated bounded fresh-eye subagent reviews are already delegated by the repo contract.
+- Do not wait for a second user message asking for delegation.
+- If the host blocks subagent spawning, stop and report the host restriction explicitly instead of substituting a same-agent pass.

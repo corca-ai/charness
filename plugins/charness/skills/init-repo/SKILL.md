@@ -17,8 +17,7 @@ normalized.
 - leave deeper quality review, long-range planning, and baton-pass work to
   adjacent skills once the operating surface exists
 
-Keep the concept narrow. `init-repo` is not the whole product-definition skill,
-not the long-range planning skill, and not the repo-wide quality audit.
+Keep the concept narrow. `init-repo` is not the whole product-definition skill, not the long-range planning skill, and not the repo-wide quality audit.
 
 ## Bootstrap
 
@@ -109,6 +108,11 @@ Then load only the references needed for the detected state:
    - when that seam is enabled, make [`AGENTS.md`](../../../AGENTS.md) name
      [`charness-artifacts/retro/recent-lessons.md`](../../../charness-artifacts/retro/recent-lessons.md) as a repo memory surface so future
      sessions can actually discover it
+   - when the repo uses bounded fresh-eye or premortem-style subagent review
+     as a stop gate, make [`AGENTS.md`](../../../AGENTS.md) say that the review is already delegated,
+     agents should not wait for a second user message asking for delegation,
+     and host spawn restrictions should be reported explicitly instead of
+     replaced with a same-agent pass
    - add a short `Skill Routing` block to [`AGENTS.md`](../../../AGENTS.md) when
      installed charness skills are present
    - keep that block startup-bootstrap-heavy and discovery-first: task-oriented
@@ -176,6 +180,9 @@ The result should usually include:
 - Do not invent a full evaluator regime for repos that do not actually keep
   repo-owned skills; skill-proof policy belongs only where the repo really
   maintains skills as a first-class surface.
+- Do not leave repo-mandated bounded fresh-eye or premortem review as an implicit
+  convention. If the repo relies on that stop gate, make the delegation rule
+  explicit in [`AGENTS.md`](../../../AGENTS.md).
 
 ## References
 

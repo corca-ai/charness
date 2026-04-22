@@ -118,6 +118,13 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         'scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`',
         "Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior",
     ),
+    "skills/public/init-repo/SKILL.md": (
+        "normalize [`AGENTS.md`](../../../AGENTS.md) and `CLAUDE.md` into one explicit host-facing policy",
+        "when the repo uses bounded fresh-eye or premortem-style subagent review",
+        "already delegated",
+        "should not wait for a second user message",
+        "same-agent pass",
+    ),
     "skills/public/narrative/SKILL.md": (
         "map the current source-of-truth surface",
         "rewrite the durable docs so the current story is honest in one place",
