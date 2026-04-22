@@ -40,46 +40,41 @@ commands:
     help_command: ./charness init --help
     doc_paths:
       - README.md
-      - INSTALL.md
     required_help_contains:
       - --skip-cli-install
       - --skip-claude-wrapper
       - --json
     required_doc_contains:
-      - All official install paths converge on `charness init`
-      - managed local install
-      - host detector
+      - Zero-state bootstrap
+      - Install charness on this machine.
+      - /tmp/charness-init.sh
   doctor:
     help_command: ./charness doctor --help
     doc_paths:
       - README.md
-      - INSTALL.md
     required_help_contains:
       - --write-state
+      - --next-action
       - --json
     required_doc_contains:
-      - It stays read-only
       - next_action
-      - charness doctor --write-state
-      - persist a proof snapshot
+      - charness doctor --next-action
+      - doctor --json
   update:
     help_command: ./charness update --help
     doc_paths:
       - README.md
-      - INSTALL.md
     required_help_contains:
       - --no-pull
       - --skip-codex-cache-refresh
       - --json
     required_doc_contains:
-      - run `charness update`
+      - After installation, use `charness update` for refreshes.
       - refresh the installed surface
-      - skill execution must stay read-only with respect to install/update state
   reset:
     help_command: ./charness reset --help
     doc_paths:
       - README.md
-      - UNINSTALL.md
     required_help_contains:
       - --json
     required_doc_contains:
@@ -89,15 +84,13 @@ commands:
     help_command: ./charness uninstall --help
     doc_paths:
       - README.md
-      - UNINSTALL.md
     required_help_contains:
       - --delete-checkout
       - --delete-cli
       - --json
     required_doc_contains:
       - preserving the source checkout and CLI unless explicit delete flags are passed
-      - charness uninstall --delete-checkout
-      - charness uninstall --delete-cli
+      - charness uninstall
   capability:
     help_command: ./charness capability --help
     doc_paths:
