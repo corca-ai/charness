@@ -41,6 +41,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
         "prompt_asset_roots": "defaulted",
         "review_commands": "inferred",
         "runtime_budgets": "defaulted",
+        "startup_probes": "defaulted",
         "skill_ergonomics_gate_rules": "defaulted",
         "specdown_smoke_patterns": "defaulted",
         "spec_pytest_reference_format": "defaulted",
@@ -78,6 +79,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     }
     assert resolved["data"]["skill_ergonomics_gate_rules"] == []
     assert resolved["data"]["runtime_budgets"] == {}
+    assert resolved["data"]["startup_probes"] == []
     assert resolved["data"]["gate_commands"] == ["./scripts/run-quality.sh"]
     assert resolved["data"]["review_commands"] == ["./scripts/run-quality.sh --review"]
     assert resolved["data"]["preflight_commands"] == ["python3 scripts/validate-maintainer-setup.py --repo-root ."]
@@ -118,6 +120,15 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
                 "  - tests/**",
                 "skill_ergonomics_gate_rules:",
                 "  - mode_option_pressure_terms",
+                "startup_probes:",
+                "  - label: demo-version",
+                "    command:",
+                "      - python3",
+                "      - -V",
+                "    class: standing",
+                "    startup_mode: warm",
+                "    surface: direct",
+                "    samples: 2",
                 "gate_commands:",
                 "- python3 -m pytest -q",
                 "preflight_commands: []",
@@ -141,6 +152,7 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     assert payload["field_statuses"]["prompt_asset_roots"] == "preserved"
     assert payload["field_statuses"]["prompt_asset_policy"] == "preserved"
     assert payload["field_statuses"]["skill_ergonomics_gate_rules"] == "preserved"
+    assert payload["field_statuses"]["startup_probes"] == "preserved"
 
     resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
@@ -166,6 +178,16 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
         "exemption_globs": ["tests/**"],
     }
     assert resolved["data"]["skill_ergonomics_gate_rules"] == ["mode_option_pressure_terms"]
+    assert resolved["data"]["startup_probes"] == [
+        {
+            "label": "demo-version",
+            "command": ["python3", "-V"],
+            "class": "standing",
+            "startup_mode": "warm",
+            "surface": "direct",
+            "samples": 2,
+        }
+    ]
     assert resolved["data"]["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
 
 

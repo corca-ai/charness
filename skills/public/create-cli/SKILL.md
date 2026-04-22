@@ -52,6 +52,9 @@ steps call tools outside the baseline shell surface.
      external/runtime surfaces, keep that aggregate path product-owned, such as
      `update all`, instead of leaking harness-internal vocabulary
    - `--json` or another structured mode when agents may consume the output
+   - if agents may call the CLI repeatedly, define at least one cheap read-only
+     startup probe such as `version`, `--version`, or a lightweight inspect
+     command; keep that probe stable enough for standing latency measurement
    - for workflow commands whose primary caller is another agent, explicitly
      decide whether a prep/execute artifact split is the more stable contract
      than a single thick command; see `references/command-surface.md`

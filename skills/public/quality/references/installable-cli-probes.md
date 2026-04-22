@@ -6,6 +6,8 @@ treating one `doctor` or one passing smoke command as generic proof.
 
 Check these seams explicitly:
 
+- cheap startup probes such as `version`, `--version`, or lightweight
+  `doctor --json`
 - help probes such as `--help`
 - machine-readable command discovery when wrappers or agents depend on it
 - binary/runtime health
@@ -17,6 +19,8 @@ Check these seams explicitly:
 
 Review docs and runtime together:
 
+- startup latency claims should point at explicit measured probes, not generic
+  "CLI works" prose
 - README / INSTALL / operator docs should describe install, update, doctor,
   reset, and uninstall behavior without conflating them
 - readiness and discoverability should not be reported as generic binary health

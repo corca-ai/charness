@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +28,27 @@ LIST_FIELDS = (
     "security_commands",
 )
 ARTIFACT_FILENAME = "latest.md"
+
+
+def _load_adapter_validators():
+    repo_root = Path(__file__).resolve().parents[1]
+    candidates = (
+        repo_root / "skills" / "public" / "quality" / "scripts",
+        repo_root / "skills" / "quality" / "scripts",
+    )
+    for candidate in candidates:
+        if not (candidate / "adapter_validators.py").is_file():
+            continue
+        candidate_str = str(candidate)
+        if candidate_str not in sys.path:
+            sys.path.insert(0, candidate_str)
+        import adapter_validators
+
+        return adapter_validators
+    raise FileNotFoundError("quality adapter_validators.py not found")
+
+
+adapter_validators = _load_adapter_validators()
 
 
 def _string(value: Any, field: str, errors: list[str]) -> str | None:
@@ -60,23 +82,6 @@ def _float_value(value: Any, field: str, errors: list[str]) -> float | None:
     return None
 
 
-def _runtime_budgets(value: Any, errors: list[str]) -> dict[str, int] | None:
-    if value is None:
-        return None
-    if not isinstance(value, dict):
-        errors.append("runtime_budgets must be a mapping")
-        return None
-    validated: dict[str, int] = {}
-    for label, raw in value.items():
-        if not isinstance(label, str) or not label:
-            errors.append("runtime_budgets keys must be non-empty strings")
-        elif isinstance(raw, bool) or not isinstance(raw, int) or raw <= 0:
-            errors.append(f"runtime_budgets.{label} must be a positive integer (milliseconds)")
-        else:
-            validated[label] = raw
-    return validated
-
-
 def _artifact_path(output_dir: str) -> str:
     return str(Path(output_dir) / ARTIFACT_FILENAME)
 
@@ -100,6 +105,7 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "prompt_asset_policy": dict(DEFAULT_PROMPT_ASSET_POLICY),
         "skill_ergonomics_gate_rules": list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES),
         "runtime_budgets": {},
+        "startup_probes": [],
         "concept_paths": [],
         "preflight_commands": [],
         "gate_commands": [],
@@ -156,9 +162,12 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
     if skill_ergonomics_gate_rules is not None:
         validated["skill_ergonomics_gate_rules"] = skill_ergonomics_gate_rules
 
-    runtime_budgets = _runtime_budgets(data.get("runtime_budgets"), errors)
+    runtime_budgets = adapter_validators.runtime_budgets(data.get("runtime_budgets"), errors)
     if runtime_budgets is not None:
         validated["runtime_budgets"] = runtime_budgets
+    startup_probes = adapter_validators.startup_probes(data.get("startup_probes"), errors)
+    if startup_probes is not None:
+        validated["startup_probes"] = startup_probes
 
 
 def _apply_list_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:

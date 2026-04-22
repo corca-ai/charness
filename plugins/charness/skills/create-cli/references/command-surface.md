@@ -8,6 +8,8 @@ Good defaults:
 - `doctor` for read-only inspection
 - `update` for state refresh
 - `reset` or `uninstall` when the CLI owns local host state
+- `version` for release/version inspection, with top-level `--version` as an
+  ergonomic alias when the CLI already has a stable top-level parser
 
 Design rules:
 
@@ -16,6 +18,7 @@ Design rules:
 - when the CLI owns multiple domains, use a namespace such as
   `tool doctor` instead of flattening every concern into the top level
 - make `--help` usable without reading docs first
+- reserve `-v` for `verbose`, not `version`
 - stable public subcommands should support `--help` with exit `0` and no side
   effects unless the repo documents a strong exception
 - keep default stdout short and operator-readable; reserve full machine payloads

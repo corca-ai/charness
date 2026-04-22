@@ -39,6 +39,7 @@ Quality-specific fields:
 - `spec_pytest_reference_format`
 - `skill_ergonomics_gate_rules`
 - `runtime_budgets`
+- `startup_probes`
 - `prompt_asset_roots`
 - `prompt_asset_policy`
 - `concept_paths`
@@ -75,6 +76,19 @@ reported as a spike when the recent median is still inside budget. Labels with
 no recorded sample yet are warnings, not failures, so a budget can be defined
 before its first run. Omit the field entirely (or leave the mapping empty) to
 opt out.
+
+`startup_probes` is an optional list of startup probe records for installable
+or agent-facing CLIs. Each record should include:
+
+- `label`
+- `command`
+- `class` (`standing` or `release`)
+- `startup_mode` (`warm`, `cold`, or `first-launch`)
+- `surface`
+- `samples`
+
+Use `startup_probes` to describe the startup seam and reuse `runtime_budgets`
+for standing latency budgets keyed by the same `label`.
 
 `gate_commands` should stay suitable for quiet maintainer-local enforcement
 such as pre-push. `review_commands` should hold the fuller quality-review path

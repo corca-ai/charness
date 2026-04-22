@@ -40,6 +40,9 @@ steps call tools outside the baseline shell surface.
    - what state must survive for a later agent or operator
 2. Shape the command surface.
    - stable nouns and verbs
+   - for multi-command CLIs, prefer a subcommand-first surface and follow
+     `references/command-conventions.md` for canonical lifecycle verbs and
+     version/help flag conventions
    - one obvious install/bootstrap path
    - explicit `doctor`, `update`, `reset`, or `uninstall` commands when the
      product owns lifecycle state
@@ -49,6 +52,9 @@ steps call tools outside the baseline shell surface.
      external/runtime surfaces, keep that aggregate path product-owned, such as
      `update all`, instead of leaking harness-internal vocabulary
    - `--json` or another structured mode when agents may consume the output
+   - if agents may call the CLI repeatedly, define at least one cheap read-only
+     startup probe such as `version`, `--version`, or a lightweight inspect
+     command; keep that probe stable enough for standing latency measurement
    - for workflow commands whose primary caller is another agent, explicitly
      decide whether a prep/execute artifact split is the more stable contract
      than a single thick command; see `references/command-surface.md`
@@ -60,6 +66,9 @@ steps call tools outside the baseline shell surface.
      human help text
    - default stdout should stay concise for human operators; reserve full
      structured payloads for explicit `--json` or equivalent machine mode
+   - reserve `-v` for `verbose`, not `version`; prefer canonical `version`
+     plus optional top-level `--version` alias when the parser surface is
+     already stable
    - separate binary/runtime health from repo- or install-readiness instead of
      overloading one `doctor`
    - if agent/plugin/materialized-surface discoverability matters, give it an
@@ -119,6 +128,7 @@ steps call tools outside the baseline shell surface.
 ## References
 
 - `references/command-surface.md`
+- `references/command-conventions.md`
 - `references/install-update.md`
 - `references/version-provenance.md`
 - `references/machine-readable-state.md`

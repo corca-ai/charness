@@ -256,6 +256,38 @@ def test_adapter_lib_renders_and_loads_simple_yaml_mapping() -> None:
     }
 
 
+def test_adapter_lib_renders_and_loads_list_of_mappings() -> None:
+    rendered = ADAPTER_LIB.render_yaml_mapping(
+        [
+            (
+                "startup_probes",
+                [
+                    {
+                        "label": "demo-version",
+                        "command": ["python3", "demo.py", "--version"],
+                        "class": "standing",
+                        "startup_mode": "warm",
+                        "surface": "direct",
+                        "samples": 2,
+                    }
+                ],
+            )
+        ]
+    )
+    assert ADAPTER_LIB.load_yaml(rendered) == {
+        "startup_probes": [
+            {
+                "label": "demo-version",
+                "command": ["python3", "demo.py", "--version"],
+                "class": "standing",
+                "startup_mode": "warm",
+                "surface": "direct",
+                "samples": 2,
+            }
+        ]
+    }
+
+
 def test_quality_skill_carries_blind_spot_policy_and_premortem_refs() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
     adapter_contract = (

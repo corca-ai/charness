@@ -54,7 +54,27 @@ def _parse_list_items(lines: list[str], start: int, indent: int) -> tuple[list[A
         if current_indent == indent:
             if not stripped.startswith("- "):
                 break
-            items.append(_coerce_scalar(stripped[2:].strip()))
+            item_body = stripped[2:].strip()
+            if not item_body:
+                items.append("")
+                index += 1
+                continue
+            key_candidate = item_body.split(":", 1)[0].strip()
+            if (": " in item_body or item_body.endswith(":")) and " " not in key_candidate:
+                key, _, value = item_body.partition(":")
+                item: dict[str, Any] = {}
+                key = key.strip()
+                value = value.strip()
+                if value:
+                    item[key] = [] if value == "[]" else _coerce_scalar(value)
+                    index += 1
+                else:
+                    item[key], index = _parse_empty_value(lines, index, indent)
+                nested, index = _parse_block(lines, index, indent + 2)
+                item.update(nested)
+                items.append(item)
+                continue
+            items.append(_coerce_scalar(item_body))
             index += 1
             continue
         index += 1
@@ -172,9 +192,33 @@ def _render_yaml_value(lines: list[str], key: str, value: Any, *, indent: int) -
             return
         lines.append(f"{prefix}{key}:")
         for item in value:
-            lines.append(f"{prefix}  - {_yaml_scalar(item)}")
+            _render_yaml_list_item(lines, item, indent=indent + 2)
         return
     lines.append(f"{prefix}{key}: {_yaml_scalar(value)}")
+
+
+def _render_yaml_list_item(lines: list[str], item: Any, *, indent: int) -> None:
+    prefix = " " * indent
+    if isinstance(item, dict):
+        first = True
+        for nested_key, nested_value in item.items():
+            item_prefix = f"{prefix}- " if first else f"{prefix}  "
+            if isinstance(nested_value, dict):
+                lines.append(f"{item_prefix}{nested_key}:")
+                for child_key, child_value in nested_value.items():
+                    _render_yaml_value(lines, child_key, child_value, indent=indent + 4)
+            elif isinstance(nested_value, list):
+                if not nested_value:
+                    lines.append(f"{item_prefix}{nested_key}: []")
+                else:
+                    lines.append(f"{item_prefix}{nested_key}:")
+                    for child in nested_value:
+                        _render_yaml_list_item(lines, child, indent=indent + 4)
+            else:
+                lines.append(f"{item_prefix}{nested_key}: {_yaml_scalar(nested_value)}")
+            first = False
+        return
+    lines.append(f"{prefix}- {_yaml_scalar(item)}")
 
 
 def render_yaml_mapping(items: list[tuple[str, Any]]) -> str:

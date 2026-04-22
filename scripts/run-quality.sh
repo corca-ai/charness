@@ -274,6 +274,9 @@ queue_selected "check-duplicates" python3 scripts/check-duplicates.py --repo-roo
 queue_selected "check-coverage" python3 scripts/check-coverage.py --repo-root "$REPO_ROOT"
 flush_phase || OVERALL_RC=$?
 
+queue_selected "measure-startup-probes" python3 skills/public/quality/scripts/measure-startup-probes.py --repo-root "$REPO_ROOT" --class standing --record-runtime-signals
+flush_phase || OVERALL_RC=$?
+
 queue_selected "check-runtime-budget" python3 skills/public/quality/scripts/check-runtime-budget.py --repo-root "$REPO_ROOT"
 flush_phase || OVERALL_RC=$?
 print_final_summary

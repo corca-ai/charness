@@ -108,6 +108,9 @@ verified.
    - distinguish local/tag success from later workflow or public verification
    - if `check_real_host_proof.py` says release-time proof is required, carry
      that checklist into the closeout instead of claiming local CI replaced it
+   - if launcher or install seams moved, include `Startup Proof` and point to
+     measured release-class startup probes instead of only restating generic
+     smoke success
 7. Close the public release boundary.
    - distinguish `local/tag state complete`, `workflow publication complete`,
      and `public release surface verified`
@@ -138,6 +141,7 @@ The result should usually include:
 - `Public Release Verification`
 - `User Update Steps`
 - `Real-Host Proof` when the adapter says a human-run smoke is required
+- `Startup Proof` when startup-probe surfaces moved
 - `Open Risks`
 
 ## Guardrails

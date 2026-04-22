@@ -66,6 +66,10 @@ This is especially true when the change touches:
 When that seam moved, surface a short real-host checklist in the release
 closeout instead of pretending repo-local tests replaced it.
 
+If the repo declares release-class `startup_probes`, use those as the startup
+proof surface for launcher or packaging-sensitive changes. Keep those probes
+distinct from standing local startup budgets.
+
 The adapter can declare that checklist through:
 
 - `real_host_required_surfaces`

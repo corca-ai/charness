@@ -83,6 +83,7 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "prompt_asset_policy": dict(DEFAULT_PROMPT_ASSET_POLICY),
         "skill_ergonomics_gate_rules": list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES),
         "runtime_budgets": {},
+        "startup_probes": [],
         "concept_paths": [],
         "preflight_commands": [],
         "gate_commands": [],
@@ -90,16 +91,12 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "security_commands": [],
     }
 
-def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
-    defaults = _infer_defaults(repo_root)
-    adapter_path = next((repo_root / candidate for candidate in ADAPTER_CANDIDATES if (repo_root / candidate).is_file()), None)
-    if adapter_path is None:
-        defaults["_explicit_fields"] = set()
-        return defaults
-    raw = load_yaml_file(adapter_path)
-    if not isinstance(raw, dict):
-        defaults["_explicit_fields"] = set()
-        return defaults
+
+def _existing_adapter_path(repo_root: Path) -> Path | None:
+    return next((repo_root / candidate for candidate in ADAPTER_CANDIDATES if (repo_root / candidate).is_file()), None)
+
+
+def _load_explicit_skill_rules(raw: dict[str, Any], adapter_path: Path) -> list[str] | None:
     skill_rule_errors: list[str] = []
     validated_skill_rules = validate_skill_ergonomics_gate_rules(
         raw.get("skill_ergonomics_gate_rules"),
@@ -111,8 +108,10 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
             f"{adapter_path}: invalid `skill_ergonomics_gate_rules`; {rendered}. "
             "Repair the adapter before rerunning bootstrap."
         )
-    data = dict(defaults)
-    data["_explicit_fields"] = set(raw.keys())
+    return validated_skill_rules
+
+
+def _apply_existing_scalar_fields(data: dict[str, Any], raw: dict[str, Any]) -> None:
     for field in ("version", "repo", "language", "output_dir", "preset_id", "preset_version", "customized_from"):
         value = raw.get(field)
         if value is not None:
@@ -120,14 +119,17 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
     coverage_fragile_margin_pp = raw.get("coverage_fragile_margin_pp")
     if isinstance(coverage_fragile_margin_pp, (int, float)):
         data["coverage_fragile_margin_pp"] = float(coverage_fragile_margin_pp)
+    spec_pytest_reference_format = raw.get("spec_pytest_reference_format")
+    if isinstance(spec_pytest_reference_format, str):
+        data["spec_pytest_reference_format"] = spec_pytest_reference_format
+
+
+def _apply_existing_policy_fields(data: dict[str, Any], raw: dict[str, Any], validated_skill_rules: list[str] | None) -> None:
     if isinstance(raw.get("coverage_floor_policy"), dict):
         data["coverage_floor_policy"] = merge_coverage_floor_policy(raw.get("coverage_floor_policy"))
     specdown_smoke_patterns = raw.get("specdown_smoke_patterns")
     if isinstance(specdown_smoke_patterns, list) and all(isinstance(item, str) for item in specdown_smoke_patterns):
         data["specdown_smoke_patterns"] = list(specdown_smoke_patterns)
-    spec_pytest_reference_format = raw.get("spec_pytest_reference_format")
-    if isinstance(spec_pytest_reference_format, str):
-        data["spec_pytest_reference_format"] = spec_pytest_reference_format
     if isinstance(raw.get("prompt_asset_policy"), dict):
         data["prompt_asset_policy"] = merge_prompt_asset_policy(raw.get("prompt_asset_policy"))
     if validated_skill_rules is not None:
@@ -142,6 +144,26 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
         for label, value in runtime_budgets.items()
     ):
         data["runtime_budgets"] = dict(runtime_budgets)
+    startup_probes = raw.get("startup_probes")
+    if isinstance(startup_probes, list):
+        data["startup_probes"] = list(startup_probes)
+
+
+def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
+    defaults = _infer_defaults(repo_root)
+    adapter_path = _existing_adapter_path(repo_root)
+    if adapter_path is None:
+        defaults["_explicit_fields"] = set()
+        return defaults
+    raw = load_yaml_file(adapter_path)
+    if not isinstance(raw, dict):
+        defaults["_explicit_fields"] = set()
+        return defaults
+    validated_skill_rules = _load_explicit_skill_rules(raw, adapter_path)
+    data = dict(defaults)
+    data["_explicit_fields"] = set(raw.keys())
+    _apply_existing_scalar_fields(data, raw)
+    _apply_existing_policy_fields(data, raw, validated_skill_rules)
     for field in (
         "preset_lineage",
         "prompt_asset_roots",
@@ -220,6 +242,8 @@ def _add_prompt_and_runtime_fields(
     field_statuses["skill_ergonomics_gate_rules"] = "preserved" if "skill_ergonomics_gate_rules" in explicit_fields else "defaulted"
     final["runtime_budgets"] = dict(existing.get("runtime_budgets", {})) if "runtime_budgets" in explicit_fields else {}
     field_statuses["runtime_budgets"] = "preserved" if "runtime_budgets" in explicit_fields else "defaulted"
+    final["startup_probes"] = list(existing.get("startup_probes", [])) if "startup_probes" in explicit_fields else []
+    field_statuses["startup_probes"] = "preserved" if "startup_probes" in explicit_fields else "defaulted"
 
 
 def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, str], list[dict[str, Any]]]:
@@ -301,6 +325,7 @@ def render_bootstrap_adapter(data: dict[str, Any]) -> str:
             ("prompt_asset_policy", data["prompt_asset_policy"]),
             ("skill_ergonomics_gate_rules", data["skill_ergonomics_gate_rules"]),
             ("runtime_budgets", data["runtime_budgets"]),
+            ("startup_probes", data["startup_probes"]),
             ("concept_paths", data["concept_paths"]),
             ("preflight_commands", data["preflight_commands"]),
             ("gate_commands", data["gate_commands"]),
