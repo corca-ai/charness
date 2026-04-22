@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from .support import (
     make_fake_agent_browser,
     make_fake_go_specdown,
@@ -15,6 +17,8 @@ from .support import (
 )
 from .test_managed_install import init_managed_home_from_repo
 from .tool_fakes import make_fake_cautilus
+
+pytestmark = pytest.mark.ci_only
 
 
 def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_path: Path) -> None:

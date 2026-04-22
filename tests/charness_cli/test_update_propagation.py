@@ -5,9 +5,12 @@ import os
 import subprocess
 from pathlib import Path
 
+import pytest
+
 from .support import make_fake_claude, make_git_repo_copy
 
 PROBE_SKILL_ID = "update-probe-extra"
+pytestmark = pytest.mark.ci_only
 
 
 def test_installed_cli_update_propagates_new_skill_into_exported_plugin_root(tmp_path: Path) -> None:

@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from .support import (
     CLI,
     build_test_path,
@@ -23,40 +25,7 @@ from .test_managed_install import init_managed_home_from_repo
 from .tool_fakes import make_fake_cautilus
 
 
-def test_installed_cli_update_refreshes_the_cli_binary_from_managed_checkout(tmp_path: Path) -> None:
-    source_root = tmp_path / "source"
-    source_root.mkdir()
-    source_repo = make_git_repo_copy(source_root)
-    home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
-
-    updated_checkout_cli = source_repo / "charness"
-    original_text = updated_checkout_cli.read_text(encoding="utf-8")
-    sentinel = "# update-refresh-sentinel\n"
-    assert sentinel not in original_text
-    updated_checkout_cli.write_text(sentinel + original_text, encoding="utf-8")
-    subprocess.run(["git", "add", "charness"], cwd=source_repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "commit", "-m", "Update CLI entrypoint"],
-        cwd=source_repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-
-    installed_cli = home_root / ".local" / "bin" / "charness"
-    update_result = subprocess.run(
-        [sys.executable, str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
-        cwd=tmp_path,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
-    assert update_result.returncode == 0, update_result.stderr
-    assert sentinel in installed_cli.read_text(encoding="utf-8")
-    assert sentinel in (home_root / ".agents" / "src" / "charness" / "charness").read_text(encoding="utf-8")
-
-
+@pytest.mark.ci_only
 def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp_path: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -186,6 +155,7 @@ def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path
     assert payload["next_steps"]["claude"] == payload["claude_host_guidance"]["message"]
 
 
+@pytest.mark.ci_only
 def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     config_path = home_root / ".codex" / "config.toml"

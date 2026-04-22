@@ -3,9 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from .support import CLI, build_test_path, clone_seeded_managed_home, make_fake_codex, run_cli
 
 CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
+pytestmark = pytest.mark.ci_only
 
 
 def test_charness_update_reports_codex_version_drift(
