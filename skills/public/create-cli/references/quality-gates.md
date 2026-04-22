@@ -3,6 +3,8 @@
 A repo-owned CLI should usually have:
 
 - parser smoke tests for representative commands
+- version probe tests for `version` and any supported top-level `--version`
+  alias
 - `--help` smoke for stable public subcommands
 - JSON-shape tests when agents consume the output
 - JSON-shape tests for command discovery output when wrappers or agents probe
@@ -28,6 +30,8 @@ When the CLI owns lifecycle state, test both:
 Quality review should ask:
 
 - do stable public subcommands expose a no-side-effect `--help` contract
+- does the CLI keep a stable answer for `version`, `--version`, and `-v`
+  instead of letting those drift by parser accident
 - is machine-readable command discovery distinct from help text when agents or
   wrappers need to probe the surface
 - is binary health distinct from repo or install readiness

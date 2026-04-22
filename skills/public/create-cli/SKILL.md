@@ -40,6 +40,9 @@ steps call tools outside the baseline shell surface.
    - what state must survive for a later agent or operator
 2. Shape the command surface.
    - stable nouns and verbs
+   - for multi-command CLIs, prefer a subcommand-first surface and follow
+     `references/command-conventions.md` for canonical lifecycle verbs and
+     version/help flag conventions
    - one obvious install/bootstrap path
    - explicit `doctor`, `update`, `reset`, or `uninstall` commands when the
      product owns lifecycle state
@@ -60,6 +63,9 @@ steps call tools outside the baseline shell surface.
      human help text
    - default stdout should stay concise for human operators; reserve full
      structured payloads for explicit `--json` or equivalent machine mode
+   - reserve `-v` for `verbose`, not `version`; prefer canonical `version`
+     plus optional top-level `--version` alias when the parser surface is
+     already stable
    - separate binary/runtime health from repo- or install-readiness instead of
      overloading one `doctor`
    - if agent/plugin/materialized-surface discoverability matters, give it an
@@ -119,6 +125,7 @@ steps call tools outside the baseline shell surface.
 ## References
 
 - `references/command-surface.md`
+- `references/command-conventions.md`
 - `references/install-update.md`
 - `references/version-provenance.md`
 - `references/machine-readable-state.md`
