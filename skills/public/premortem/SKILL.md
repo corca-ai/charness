@@ -14,8 +14,10 @@ counterweight pass so the findings become actionable instead of a paranoia pile.
 Caller skills should use it as the reusable subroutine for non-trivial
 decision review rather than rewriting angle selection or counterweight logic
 inline.
-Routine slices do not need a standalone `premortem` invocation when the caller
-can do a short bounded local pass honestly.
+Routine slices do not need `premortem` at all.
+When a caller needs one, `premortem` always means a fresh bounded subagent
+review. `bounded` limits scope and time box, not execution mode. There is no
+same-agent or local `premortem` variant.
 
 Caller contract:
 
@@ -24,6 +26,8 @@ Caller contract:
 - consume the returned four-bin triage directly:
   `Act Before Ship`, `Bundle Anyway`, `Over-Worry`, `Valid but Defer`
 - write any decision-changing result back into the caller's durable contract
+- if the host blocks the canonical subagent path, treat that as a blocked state
+  for this run instead of rewriting the outcome as a local review
 
 ## Bootstrap
 
@@ -91,12 +95,17 @@ decision contract. Do not restate the whole project history.
 
 The result should usually include:
 
+- `Execution`
 - `Decision`
 - `Angles`
 - `Findings`
 - `Counterweight Triage`
 - `Deliberately Not Doing`
 - `Next Move`
+
+If the host blocks the canonical subagent path before execution, report
+`Execution: blocked <host-signal>` and the next move instead of inventing a
+degraded concern list.
 
 ## Guardrails
 

@@ -19,6 +19,13 @@ class ValidationError(Exception):
 # skill's tuple. When a pinned snippet is edited, the gate will fail and the
 # fix is to update both the skill body and this list in the same commit.
 REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
+    "skills/public/premortem/SKILL.md": (
+        "Routine slices do not need `premortem` at all.",
+        "`premortem` always means a fresh bounded subagent",
+        "There is no\nsame-agent or local `premortem` variant.",
+        "If the host blocks the canonical subagent path before execution, report",
+        "- `Execution`",
+    ),
     "skills/public/handoff/SKILL.md": (
         "mention-only pickup",
         "Run a misunderstanding premortem",
@@ -84,6 +91,9 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "re-read `Fixed Decisions` and named acceptance checks",
         "reflected in the delivered slice or explicitly",
         "$SKILL_DIR/../retro/scripts/check_auto_trigger.py",
+        "`Premortem: skipped <reason>`",
+        "`Premortem: blocked <host-signal>`",
+        "Do not call a same-agent review a premortem.",
     ),
     "skills/public/quality/SKILL.md": (
         "When the next quality move is repo-local, deterministic, and low-risk",
@@ -109,6 +119,9 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "patch for bug fixes, copy fixes, and behavior repairs",
         "Do not hand-edit generated plugin manifests",
         "Do not push, tag, or announce a release without explicit user confirmation",
+        "Routine release hygiene does not need premortem at all.",
+        "`Premortem: skipped <reason>`",
+        "`Premortem: blocked <host-signal>`",
     ),
     "skills/public/retro/SKILL.md": (
         "If the user correctly points out a missed issue",
@@ -117,6 +130,15 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "Trigger a short `session` retro automatically when a user correction exposes a",
         "`Trends vs Last Retro`: for `weekly`, compare against the last durable weekly retro when one exists",
         "Only write a weekly snapshot when the adapter gives an explicit `snapshot_path`",
+    ),
+}
+
+FORBIDDEN_SNIPPETS: dict[str, tuple[str, ...]] = {
+    "skills/public/premortem/SKILL.md": (
+        "short bounded local pass",
+    ),
+    "skills/public/release/SKILL.md": (
+        "local premortem",
     ),
 }
 
@@ -131,6 +153,16 @@ def validate_contract(path: Path, snippets: tuple[str, ...]) -> None:
         raise ValidationError(f"{path}: missing required contract snippet(s): {formatted}")
 
 
+def validate_forbidden_snippets(path: Path, snippets: tuple[str, ...]) -> None:
+    if not path.exists():
+        raise ValidationError(f"missing representative contract file `{path}`")
+    contents = path.read_text(encoding="utf-8")
+    present = [snippet for snippet in snippets if snippet in contents]
+    if present:
+        formatted = ", ".join(f"`{snippet}`" for snippet in present)
+        raise ValidationError(f"{path}: forbidden contract snippet(s) present: {formatted}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
@@ -139,8 +171,13 @@ def main() -> int:
     root = args.repo_root.resolve()
     for rel_path, snippets in REPRESENTATIVE_CONTRACTS.items():
         validate_contract(root / rel_path, snippets)
+    for rel_path, snippets in FORBIDDEN_SNIPPETS.items():
+        validate_forbidden_snippets(root / rel_path, snippets)
 
-    print(f"Validated {len(REPRESENTATIVE_CONTRACTS)} representative skill contracts.")
+    print(
+        f"Validated {len(REPRESENTATIVE_CONTRACTS)} representative skill contracts "
+        f"and {len(FORBIDDEN_SNIPPETS)} forbidden-snippet rules."
+    )
     return 0
 
 

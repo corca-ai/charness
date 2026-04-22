@@ -18,8 +18,8 @@ workflow completion, or public release visibility.
 When the release decision is non-trivial, use the standalone `premortem`
 skill before mutating versions so compatibility, install/update fallout, and
 real-host proof requirements are triaged explicitly.
-Routine release hygiene does not need a standalone session when the release
-caller can do a short bounded local premortem honestly.
+Routine release hygiene does not need premortem at all. When one is needed, use
+the standalone `premortem` skill.
 
 ## Bootstrap
 
@@ -76,13 +76,18 @@ verified.
    - generated plugin manifest versions
    - generated compatibility metadata version
    - dirty or drifted working tree state
-3. Run a bounded premortem on non-trivial release decisions.
+3. Run the standalone `premortem` skill on non-trivial release decisions.
    - use the standalone `premortem` skill when compatibility expectations,
      install/update instructions, deletions, or real-host proof boundaries
      could be misread
    - carry back `Act Before Ship`, `Bundle Anyway`, `Over-Worry`, and
      `Valid but Defer` into the release plan instead of keeping them as chat
      debris
+   - if the release does not need premortem, record `Premortem: skipped <reason>`
+     in the closeout instead of implying it ran
+   - if a required premortem is blocked because the host cannot provide
+     subagents after the capability check, stop and record
+     `Premortem: blocked <host-signal>` instead of continuing the release slice
 4. Choose the lightest honest bump.
    - patch for bug fixes, copy fixes, and behavior repairs
    - minor for new maintained capability or additive operator surface
@@ -127,7 +132,7 @@ The result should usually include:
 - `Current Version`
 - `Target Version`
 - `Release Scope`
-- `Premortem` when the release decision was non-trivial
+- `Premortem`
 - `Verification`
 - `Release State`
 - `Public Release Verification`
@@ -156,6 +161,9 @@ The result should usually include:
 - Do not skip the standalone `premortem` pass when a release changes
   compatibility, install/update flow, or host-proof expectations in a way the
   next maintainer could misread.
+- Do not call a same-agent review a premortem.
+- If a required premortem is blocked, stop instead of downgrading to a local
+  substitute and still calling the release reviewed.
 - If the repo lacks the declared release files or sync script, stop cleanly and
   name the missing seam instead of inventing one.
 

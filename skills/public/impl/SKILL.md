@@ -12,7 +12,7 @@ user asks for implementation directly and no separate spec step happened. In
 that case, `impl` should bootstrap the smallest honest contract for the current
 slice instead of pretending the task is already well-defined.
 
-Keep sequence discipline, strong verification, and a bounded premortem in the
+Keep sequence discipline, strong verification, and honest premortem use in the
 loop. See `references/sequence-discipline.md`,
 `references/verification-ladder.md`, `references/design-lenses.md`, and
 `references/review-gate.md`.
@@ -121,8 +121,14 @@ Adapter policy:
    - confirm each item is reflected in the delivered slice or explicitly
      deferred or reclassified in the contract
 6. Run the stop gate.
-   - do a bounded premortem; use standalone `premortem` for non-trivial,
-     cross-surface, breaking, or deletion/rename-heavy work
+   - when the slice needs premortem, run the standalone `premortem` skill;
+     `premortem` always means a fresh bounded subagent review, never a
+     same-agent pass
+   - if the slice does not need premortem, record `Premortem: skipped <reason>`
+     in the closeout instead of implying it ran
+   - if a required premortem is blocked because the host cannot provide
+     subagents after the capability check, stop and record
+     `Premortem: blocked <host-signal>` instead of closing the slice
    - run a fresh-eye review for runtime behavior, boundary honesty, and
      docs/spec synchronization
 7. End with execution status.
@@ -170,9 +176,12 @@ The closeout should usually include:
   external tool, ask for it rather than pretending the weaker proof is enough.
 - If the change touches shared seams or architectural ownership, do not stop at
   same-context self-review alone.
-- Do not skip the bounded premortem just because the code looks locally clean.
-- Do not reinvent one-off premortem angle selection when standalone
-  `premortem` fits the slice.
+- Do not call a same-agent review a premortem.
+- Do not skip a required premortem just because the code looks locally clean.
+- Do not reinvent one-off premortem angle selection when the standalone
+  `premortem` skill fits the slice.
+- If a required premortem is blocked, stop instead of downgrading to a local
+  substitute and still calling the slice reviewed.
 
 ## References
 

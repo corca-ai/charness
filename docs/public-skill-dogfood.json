@@ -205,11 +205,11 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-20",
+      "reviewed_on": "2026-04-22",
       "observed_evidence": [
-        "The checked-in public core now makes bounded subagents mandatory for `premortem`: the capability probe must run, and a concrete spawn failure is reported as a host-side contract gap instead of opening a same-agent fallback path.",
-        "That same policy is reinforced in `skills/public/premortem/references/subagent-capability-check.md` and in `specs/on-demand-validation.spec.md`, which keeps `premortem` as a judgment-heavy on-demand workflow rather than pretending it belongs in a standing evaluator or local substitute path.",
-        "That keeps `premortem-canonical-subagent-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: the user's push to keep subagents canonical still maps directly to checked-in behavior, not just to a one-off wording preference."
+        "The checked-in public core now says routine slices do not need premortem at all, and when a caller does need one the term `premortem` means only a fresh bounded subagent review with no same-agent or local variant.",
+        "That same contract now makes blocked execution explicit in the public output shape, so a host-side subagent gap stays visible as `Execution: blocked <host-signal>` instead of being rewritten as a degraded concern list.",
+        "That keeps `premortem-canonical-subagent-followup` live as a reviewed seam: the repo now locks the user push for true subagent premortem in both checked-in wording and validator-backed contract pins."
       ]
     },
     {
@@ -249,11 +249,11 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-16",
+      "reviewed_on": "2026-04-22",
       "observed_evidence": [
         "The public core tells release work to inspect `current_release.py`, `check_real_host_proof.py`, git state, and the current release artifact before mutating anything.",
-        "The current repo state already reports a coherent `0.0.7` release surface across packaging and checked-in manifests through `current_release.py`, and no extra release-time host-proof trigger is active for the current slice.",
-        "The checked-in release artifact at `charness-artifacts/release/latest.md` records the same `0.0.7` surface and the guardrails explicitly ban hand-editing generated plugin manifests, which matches the reviewed maintainer-facing release path."
+        "The checked-in release core no longer reopens a local-premortem loophole: routine release hygiene now says no premortem is needed at all, and any release slice that does need one must use the standalone `premortem` skill.",
+        "The release closeout contract now distinguishes `Premortem: skipped <reason>` from `Premortem: blocked <host-signal>`, which matches the maintainer-facing path better than implying that a same-agent substitute still counted as release review."
       ]
     },
     {
@@ -334,11 +334,11 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-16",
+      "reviewed_on": "2026-04-22",
       "observed_evidence": [
         "The checked-in public core keeps `impl` downstream of `spec` while still requiring an inline honest contract when no separate spec exists, which matches a direct build-slice prompt instead of collapsing into `spec` or `quality`.",
         "Repo-owned eval coverage already exercises `impl-adapter-bootstrap`, pinning the inferred adapter defaults for `charness-artifacts/impl` and the verification/truth-surface fields that bootstrap expects.",
-        "Repo-owned tests preserve the operational seams that matter most here: verification survey warnings for missing preferred tools, the explicit `Truth Surface Sync` closeout contract, and the autonomous-continuation rule for locally decidable next slices."
+        "The stop-gate wording now treats premortem as a true standalone skill only: the closeout must report `Premortem: skipped <reason>` when no premortem was needed, and `Premortem: blocked <host-signal>` when a required subagent review could not run instead of quietly downgrading to same-agent review."
       ]
     },
     {
