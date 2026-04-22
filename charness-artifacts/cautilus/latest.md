@@ -3,29 +3,28 @@ Date: 2026-04-22
 
 ## Trigger
 
-- slice: make external-seam risk survive `debug -> spec -> impl` through a
-  repo-owned risk-interrupt planner, structured debug handoff fields, and a
-  closeout backstop
+- slice: make `cautilus` adaptive mode auto-run prompt proof by default and
+  reserve explicit confirmation for maintained scenario-registry mutation
 - claim: `preserve`
 
 ## Validation Goal
 
 - goal: `preserve`
-- reason: the slice changes public skill core wording for `debug`, `impl`, and
-  `spec`, but it should preserve the checked-in startup routing contract while
-  making the seam-risk carry-forward and interruption path explicit.
+- reason: the slice changes `create-skill` and `quality` prompt-shaping
+  references plus the repo validation docs, but it should preserve the
+  checked-in startup routing contract while changing when adaptive proof asks
+  for operator confirmation.
 
 ## Change Intent
 
 - `prompt_affecting_change`
-- `skill_core_change`
+- `truth_surface_change`
 - `scenario_review_change`
 
 ## Prompt Surfaces
 
-- `skills/public/debug/SKILL.md`
-- `skills/public/impl/SKILL.md`
-- `skills/public/spec/SKILL.md`
+- `skills/public/create-skill/references/adapter-pattern.md`
+- `skills/public/quality/references/prompt-asset-policy.md`
 
 ## Commands Run
 
@@ -34,7 +33,7 @@ Date: 2026-04-22
 ## Regression Proof
 
 - instruction-surface summary: `3 passed / 0 failed / 0 blocked`
-- run artifact: `.cautilus/runs/20260422T050353833Z-run/`
+- run artifact: `.cautilus/runs/20260422T071526737Z-run/`
 - checked-in startup routing still preserves `bootstrapHelper=find-skills` plus
   `workSkill=impl`
 - compact startup-bootstrap cases still passed unchanged:
@@ -42,32 +41,30 @@ Date: 2026-04-22
 
 ## Scenario Review
 
-- representative scenario 1: a `debug` slice that crosses a host boundary
-  should now leave structured `Seam Risk` and `Interrupt Decision` fields
-  instead of relying on free-form handoff prose
-- representative scenario 2: an `impl` slice that inherits a forced interrupt
-  should now check the risk-interrupt planner before continuing plain
-  implementation
-- representative scenario 3: a `spec` slice that clears the interrupt must now
-  consume it explicitly in `Premortem` with `Interrupt Source`, `Seam Summary`,
-  `Chosen Next Step`, and `Impl Status`
-- maintained scenario registry review: existing instruction-surface cases still
-  cover the startup `find-skills -> impl/spec` contract, and this slice changes
-  execution-sequence wording rather than the first-skill routing surface, so no
-  new checked-in scenario id was required yet
+- representative scenario 1: `create-skill` guidance now treats visible
+  artifacts as history-default and `latest.md` as an optional current pointer,
+  which changes authoring policy without changing first-skill routing
+- representative scenario 2: prompt-surface policy now treats adaptive mode as
+  auto-run for regression proof plus short scenario review, rather than asking
+  before every high-leverage prompt change
+- maintained scenario registry review: this slice changes proof-execution
+  policy, not the maintained startup routing expectations in
+  `evals/cautilus/scenarios.json`, so no checked-in scenario id had to change
+  yet
 
 ## Outcome
 
 - recommendation: `accept-now`
-- routing notes: the maintained startup routing surface stayed green while the
-  public skills now make forced seam-risk carry-forward and planner-backed
-  interruption explicit
+- routing notes: maintained startup routing stayed green, and adaptive policy
+  now leaves scenario review inside autonomous proof while keeping
+  `scenarios.json` mutation as the explicit-confirmation seam
 
 ## Follow-ups
 
-- add richer current-slice affinity than `debug/latest + named spec handoff`
-  once the first interrupt path proves stable
-- decide whether evaluator-required scenario coverage should grow from startup
-  routing into a maintained `debug -> spec -> impl` interruption case
-- review whether `latest.md` current-pointer generation should stay materialized
-  or gain a repo-owned symlink policy instead of per-script write logic
+- migrate history-default artifact families such as `release`,
+  `announcement`, `cautilus`, and `narrative` onto a shared
+  `dated record + optional latest pointer` helper
+- if a future slice changes maintained routing expectations rather than only
+  proof-execution policy, ask before mutating `evals/cautilus/scenarios.json`
+- keep `docs/public-skill-dogfood.json` aligned when `create-skill` or
+  `quality` semantics move again

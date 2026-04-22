@@ -156,7 +156,10 @@ def plan_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> dict[str, 
         proof_kinds.append("scenario_review")
     artifact_changed = ARTIFACT_PATH in normalized_paths
     run_mode = data["run_mode"]
-    must_ask_before_running = run_mode == "ask" or (run_mode == "adaptive" and "scenario_review" in proof_kinds)
+    scenario_registry_review_required = any(
+        item.get("validation_tier") == "evaluator-required" for item in skill_recommendations
+    )
+    must_ask_before_running = run_mode == "ask"
     recommended_commands = [INSTRUCTION_SURFACE_COMMAND] if required else []
     if not required:
         status = "not-required"
@@ -170,14 +173,20 @@ def plan_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> dict[str, 
     notes: list[str] = []
     if run_mode == "ask":
         notes.append("Repo policy is ask-before-run: closeout must stop before any cautilus execution.")
-    elif run_mode == "adaptive" and "scenario_review" in proof_kinds:
-        notes.append("Repo policy is adaptive: high-leverage prompt changes require explicit confirmation before cautilus runs.")
     elif run_mode == "adaptive":
-        notes.append("Repo policy is adaptive: low-cost regression proof is eligible for autonomous execution, but closeout still waits for the refreshed artifact.")
+        notes.append(
+            "Repo policy is adaptive: cautilus proof may run autonomously, including scenario review, "
+            "but scenario-registry mutations still require explicit confirmation."
+        )
     elif run_mode == "auto":
         notes.append("Repo policy is auto: cautilus proof may run without an extra confirmation step when the operator workflow chooses to execute it.")
     if "scenario_review" in proof_kinds:
         notes.append("This slice needs a scenario review, not only regression proof.")
+    if scenario_registry_review_required:
+        notes.append(
+            "After proof, decide whether maintained scenario coverage should change; ask before mutating "
+            "`evals/cautilus/scenarios.json`."
+        )
 
     return {
         "required": required,
@@ -186,6 +195,7 @@ def plan_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> dict[str, 
         "artifact_changed": artifact_changed,
         "run_mode": run_mode,
         "must_ask_before_running": must_ask_before_running,
+        "scenario_registry_review_required": scenario_registry_review_required,
         "goal": "preserve",
         "proof_kinds": proof_kinds,
         "prompt_affecting_paths": prompt_paths,

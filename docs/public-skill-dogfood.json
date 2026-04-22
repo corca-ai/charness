@@ -78,11 +78,11 @@
         "keeps `SKILL.md` as selection/sequence core and pushes bulky nuance into references or scripts"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-16",
+      "reviewed_on": "2026-04-22",
       "observed_evidence": [
-        "The prompt asks to improve a skill package directly, which matches `create-skill` instead of generic implementation or release work.",
-        "The checked-in core now explicitly requires one realistic consumer prompt for public-skill changes, treats frontmatter plus generated AGENTS hints as classifier input, and tells the editor to freeze the current consumer contract before broad public-skill rewrites.",
-        "The current scaffold resolves no adapter artifact for `create-skill`, which matches the adapter-free contract instead of inventing repo-local state."
+        "The prompt still routes directly to `create-skill`, and the checked-in core keeps public-skill editing anchored on contract freezing, portable helper extraction, and classifier-aware `SKILL.md` edits rather than generic implementation drift.",
+        "The adapter-pattern reference now says visible artifacts are history-default and `latest.md` is only an optional current pointer, which is the intended portable authoring rule for future skill packages instead of a one-off repo exception.",
+        "The current `cautilus` proof policy around `create-skill` no longer treats every scenario-review-worthy prompt change as ask-before-run: adaptive mode now auto-runs proof and reserves confirmation for maintained scenario-registry mutation."
       ]
     },
     {
@@ -228,11 +228,11 @@
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-19",
+      "reviewed_on": "2026-04-22",
       "observed_evidence": [
-        "The current quality artifact at `charness-artifacts/quality/latest.md` now explicitly audits proof layering instead of only asking what proof is missing: public executable specs, on-demand `cautilus` proof, and the specdown viewer are treated as distinct layers with different ownership.",
-        "The checked-in quality references and validation docs still preserve the same split after the `v0.4.1` release closeout: `skills/public/quality/references/public-spec-layering.md` keeps reader-facing public proof separate from lower-layer checks, while `docs/public-skill-validation.md`, `specs/on-demand-validation.spec.md`, and the repaired release gate path keep checked artifacts as the source of truth and specdown as the readable viewer.",
-        "That keeps `quality-proof-layering-followup` as a reviewed consumer seam worth re-promoting in the long-context packet: the user pressure about `specdown` as SoT versus viewer still maps directly to checked-in `quality` behavior and proof surfaces, not to a one-off wording preference."
+        "The current quality posture still treats checked-in proof artifacts, public executable readers, and lower deterministic gates as separate layers with different ownership, which keeps `quality` distinct from generic test-running or release work.",
+        "The prompt-asset reference now makes the adaptive `cautilus` split explicit: scenario review can run automatically as proof, while maintained scenario-registry mutation remains the higher-friction follow-up that still needs confirmation.",
+        "That preserves the consumer-facing `quality` contract here: the skill should prefer repo-owned proof and enforcement structure over ad hoc ceremony, including for prompt-surface validation policy."
       ]
     },
     {

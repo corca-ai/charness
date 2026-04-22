@@ -85,8 +85,9 @@ Repo policy lives in [`.agents/cautilus-adapter.yaml`](../.agents/cautilus-adapt
   confirmation step when the workflow decides it is needed
 - `run_mode: ask`: the repo always asks before cautilus runs
 - `run_mode: adaptive`: low-cost regression proof may proceed automatically,
-  but high-leverage prompt changes such as skill-core or truth-surface edits
-  stop for explicit confirmation before cautilus runs
+  and short scenario review may run automatically too; explicit confirmation is
+  reserved for maintained scenario-registry mutations such as
+  [evals/cautilus/scenarios.json](../evals/cautilus/scenarios.json)
 
 `run-slice-closeout.py` should act as a gatekeeper, not as the evaluator
 runner: it decides whether proof is required and whether the refreshed artifact

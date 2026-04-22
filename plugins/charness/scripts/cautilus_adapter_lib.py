@@ -97,7 +97,11 @@ def infer_cautilus_defaults(repo_root: Path, *, run_mode: str = "ask") -> dict[s
         ],
         "comparison_questions": ["Which evaluator-required skill scenario improved or regressed?"],
         "human_review_prompts": [
-            {"id": "portability", "prompt": "Where would a host repo still find charness brittle or unclear despite green repo-owned gates?"}
+            {"id": "portability", "prompt": "Where would a host repo still find charness brittle or unclear despite green repo-owned gates?"},
+            {
+                "id": "scenario-registry",
+                "prompt": "Did this slice actually change maintained evaluator coverage enough that `evals/cautilus/scenarios.json` should be added, removed, or updated?"
+            },
         ],
         "profile_default": "evaluator-required",
         "prompt_affecting_patterns": list(DEFAULT_PROMPT_AFFECTING_PATTERNS),

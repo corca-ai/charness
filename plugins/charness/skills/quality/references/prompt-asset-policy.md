@@ -38,6 +38,9 @@ behavioral proof:
   `cautilus instruction-surface test --repo-root .`
 - for high-leverage prompt changes, add a short scenario-review note rather
   than pretending routing preservation alone answered the behavioral question
+- in `adaptive` mode, do not stop just because scenario review is needed; stop
+  only if you are about to add, remove, or update maintained scenario-registry
+  coverage
 - for `improve` claims, additionally record a baseline compare path with
   `cautilus workspace prepare-compare` and
   `cautilus mode evaluate --baseline-ref <ref>`

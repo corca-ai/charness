@@ -195,3 +195,20 @@ def test_plan_cautilus_proof_recommends_skill_dogfood_and_scenario_followups() -
         for item in payload["recommended_followups"]
     )
     assert any("evals/cautilus/scenarios.json" in item for item in payload["recommended_followups"])
+
+
+def test_plan_cautilus_proof_adaptive_runs_without_ask_for_scenario_review() -> None:
+    result = run_script(
+        "scripts/plan_cautilus_proof.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "skills/public/create-skill/SKILL.md",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["run_mode"] == "adaptive"
+    assert payload["must_ask_before_running"] is False
+    assert payload["scenario_registry_review_required"] is True
+    assert payload["next_action"] == "run-proof-and-refresh-artifact"
