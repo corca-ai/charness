@@ -300,14 +300,7 @@ flush_phase || OVERALL_RC=$?
 
 PYTEST_PARALLEL_FLAGS=()
 if python3 -c "import xdist" 2>/dev/null; then
-  PYTEST_WORKER_COUNT="$(
-    python3 - <<'PY'
-import os
-
-print(max(1, (os.cpu_count() or 1) - 1))
-PY
-  )"
-  PYTEST_PARALLEL_FLAGS=(-n "$PYTEST_WORKER_COUNT")
+  PYTEST_PARALLEL_FLAGS=(-n auto)
 else
   echo "run-quality: pytest-xdist not installed; pytest will run serially and may exceed runtime budgets. Install with: pip install pytest-xdist" >&2
 fi
