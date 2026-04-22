@@ -97,10 +97,10 @@ Then load only the references needed for the detected state:
    - [`AGENTS.md`](../../../AGENTS.md)
    - `docs/roadmap.md`
    - [`docs/operator-acceptance.md`](../../../docs/operator-acceptance.md)
-   - optionally [`INSTALL.md`](../../../INSTALL.md) and [`UNINSTALL.md`](../../../UNINSTALL.md) only when the repo actually
-     ships an installable surface
+   - optionally separate bootstrap and uninstall docs only when the repo
+     actually ships an installable surface
    - when the repo ships an installable CLI, plugin, package, or local
-     agent-facing integration surface, make [`README.md`](../../../README.md) and/or [`INSTALL.md`](../../../INSTALL.md)
+     agent-facing integration surface, make [`README.md`](../../../README.md) and/or a repo-local bootstrap doc
      name a small probe surface explicitly instead of collapsing everything into
      one vague "run doctor" instruction
    - when the repo wants durable retrospective memory, seed
@@ -130,7 +130,7 @@ Then load only the references needed for the detected state:
    - [`AGENTS.md`](../../../AGENTS.md): agent operating contract for this repo
    - `docs/roadmap.md`: near-term work direction and ordered priorities
    - [`docs/operator-acceptance.md`](../../../docs/operator-acceptance.md): what a human maintainer must do to take over
-   - [`INSTALL.md`](../../../INSTALL.md): install/update/probe semantics for repos that really expose
+   - an optional repo-local bootstrap doc: install/update/probe semantics for repos that really expose
      an install contract
      - the minimum honest probe surface is usually: install/update path,
        binary healthcheck, machine-readable discovery if it exists, repo

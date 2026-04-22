@@ -9,7 +9,7 @@ docs only to satisfy the inspector:
 ```yaml
 surfaces:
   roadmap: docs/master-plan.md
-  install: install.md
+  install: docs/bootstrap.md
   uninstall: null
 ```
 
@@ -109,12 +109,13 @@ acceptance from them instead of inventing a disconnected checklist:
   services, seeded data, or another repo state
 - prefer one honest "run this first" sequence over a long unordered dump
 
-## Optional Install Docs
+## Optional Bootstrap Docs
 
-Only scaffold [`INSTALL.md`](../../../../INSTALL.md) and [`UNINSTALL.md`](../../../../UNINSTALL.md) when the repo really exposes an
-installable surface such as a plugin, package, or operator-facing setup path.
+Only scaffold separate bootstrap and uninstall docs when the repo really
+exposes an installable surface such as a plugin, package, or operator-facing
+setup path.
 
-When [`INSTALL.md`](../../../../INSTALL.md) exists for that reason, it should also keep a small explicit
+When an install/bootstrap doc exists for that reason, it should also keep a small explicit
 probe surface honest:
 
 - install or update path

@@ -7,7 +7,7 @@ packaging change before push, or exercising a host-specific edge case without
 mutating the installed CLI source of truth.
 
 They are not the operator install contract. For supported installation and
-refresh guidance, use [INSTALL.md](../INSTALL.md).
+refresh guidance, use the Quick Start in [README.md](../README.md).
 
 ## Repo-Local Dogfood
 

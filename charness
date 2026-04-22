@@ -3192,7 +3192,11 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     )
     if args.write_state:
         write_host_state(home_root, key="last_doctor", payload=payload)
-    if args.json:
+    if args.next_action:
+        next_action = payload.get("next_action")
+        message = next_action.get("message") if isinstance(next_action, dict) else None
+        print(message if isinstance(message, str) and message else "No manual host action is currently required.")
+    elif args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         print_human_summary(payload)
@@ -3756,7 +3760,13 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
     )
     doctor_parser.add_argument("--cli-path", type=Path)
-    doctor_parser.add_argument("--json", action="store_true")
+    doctor_output_group = doctor_parser.add_mutually_exclusive_group()
+    doctor_output_group.add_argument("--json", action="store_true")
+    doctor_output_group.add_argument(
+        "--next-action",
+        action="store_true",
+        help="Print only the current primary next action message.",
+    )
     doctor_parser.add_argument(
         "--write-state",
         action="store_true",

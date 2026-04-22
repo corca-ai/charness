@@ -28,8 +28,8 @@ re-ask them.
 - `docs/roadmap.md`
 - [`docs/operator-acceptance.md`](../../../../docs/operator-acceptance.md)
 
-Add [`INSTALL.md`](../../../../INSTALL.md) and [`UNINSTALL.md`](../../../../UNINSTALL.md) only when the repo actually exposes an
-installable plugin, package, or operator-facing install contract.
+Add separate bootstrap and uninstall docs only when the repo actually exposes
+an installable plugin, package, or operator-facing install contract.
 
 Add retro memory only when the repo wants that seam from day one. When it does,
 seed [`.agents/retro-adapter.yaml`](../../../../.agents/retro-adapter.yaml) and [`charness-artifacts/retro/recent-lessons.md`](../../../../charness-artifacts/retro/recent-lessons.md)

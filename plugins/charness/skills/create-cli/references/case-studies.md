@@ -19,7 +19,7 @@ Use nearby repos and tools as comparison points, not as cargo-cult templates.
 
 - upstream binary is installable through multiple host-controlled paths
 - upstream release installer is the recommended bootstrap path
-- Homebrew and `go install` are valid secondary paths, but consumer repos should
+- additional host-controlled install paths may exist, but consumer repos should
   not hardcode them unless they can prove provenance
 - without a built-in self-update surface, consumer repos should avoid guessing
   how the operator originally installed it
@@ -34,11 +34,10 @@ Use nearby repos and tools as comparison points, not as cargo-cult templates.
 - automatic update checks are scoped to interactive standalone-binary usage,
   with a 24 hour TTL and explicit skip conditions for CI and non-interactive
   runs
-- future Homebrew support is deferred until the artifact/runtime surface settles
 
 Design takeaway:
 
-- the difference is not “brew or not”
+- the difference is not one package manager versus another
 - the difference is whether the tool exposes a trustworthy self-managed update
   seam or whether the host package manager remains the source of truth
 - when the host package manager stays authoritative, agent-readable provenance

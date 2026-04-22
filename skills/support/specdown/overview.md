@@ -22,12 +22,6 @@ curl -sSfL https://raw.githubusercontent.com/corca-ai/specdown/main/install.sh |
 go install github.com/corca-ai/specdown/cmd/specdown@latest
 ```
 
-### Homebrew
-
-```sh
-brew install corca-ai/tap/specdown
-```
-
 ## Getting Started
 
 ### Create a project

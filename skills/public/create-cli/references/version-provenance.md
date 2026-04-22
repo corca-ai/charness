@@ -25,7 +25,7 @@ honest.
 Do not:
 
 - add network traffic to automation by default
-- pretend the runtime knows whether the operator used Homebrew, npm, or a raw
-  release install when it does not
+- pretend the runtime knows which package manager or release installer the
+  operator used when it does not
 - hide provenance or cache state in a temp directory that later agents cannot
   inspect

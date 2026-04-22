@@ -11,7 +11,7 @@ parallel templates.
 ## Checks
 
 - is [`README.md`](../../../../README.md) current and minimally honest
-- if the repo ships an installable surface, do [`README.md`](../../../../README.md) and [`INSTALL.md`](../../../../INSTALL.md)
+- if the repo ships an installable surface, do [`README.md`](../../../../README.md) and the repo-local bootstrap guidance
   name probe semantics without collapsing health, readiness, and
   discoverability into one command
 - if the repo wants durable retrospective pickup, is there one stable retro

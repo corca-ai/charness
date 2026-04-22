@@ -91,6 +91,9 @@ steps call tools outside the baseline shell surface.
 4. Pick the smallest honest distribution contract.
    - single checked-in entrypoint when possible
    - one canonical bootstrap script if first install is otherwise awkward
+   - if agents need a zero-state bootstrap, prefer a short pasteable contract in
+     the entrypoint docs over telling them to fetch a remote install doc and
+     "follow it"
    - do not pretend update is automatic unless the host really owns it
 5. Keep implementation boring.
    - prefer stdlib argument parsing unless the repo already standardizes on a
@@ -120,6 +123,8 @@ steps call tools outside the baseline shell surface.
 - Do not add a framework dependency just to avoid writing small parser glue.
 - Do not split install methods across multiple equally-primary paths unless the
   product truly supports them.
+- Do not tell an agent to fetch a remote install document and execute it
+  verbatim; paste the contract or give explicit commands.
 - Do not run automatic update checks in CI or other non-interactive paths by
   default.
 - Do not guess upgrade commands when the runtime has not recorded install

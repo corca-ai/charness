@@ -58,7 +58,6 @@ verification_install_proposals:
 truth_surfaces:
   - README.md
   - docs/operator-acceptance.md
-  - INSTALL.md
 ```
 
 ## Tool Spec Format

@@ -79,8 +79,6 @@ Focus: confirm that the managed install/update path changes the host-visible pay
 
 Read first:
 
-- [INSTALL.md](../INSTALL.md)
-- [UNINSTALL.md](../UNINSTALL.md)
 - [README.md](../README.md)
 - [docs/host-packaging.md](./host-packaging.md)
 - [packaging/charness.json](../packaging/charness.json)

@@ -40,6 +40,18 @@ def test_charness_doctor_prints_primary_next_action(
     )
 
 
+def test_charness_doctor_next_action_flag_prints_only_message(
+    tmp_path: Path, seeded_managed_home: dict[str, Path]
+) -> None:
+    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    doctor_result = run_cli("doctor", "--home-root", str(home_root), "--next-action", env=env)
+    assert doctor_result.returncode == 0, doctor_result.stderr
+    assert (
+        doctor_result.stdout.strip()
+        == "Claude host install markers are present. Restart Claude Code to load or refresh charness."
+    )
+
+
 def test_charness_doctor_next_action_reports_missing_source(tmp_path: Path) -> None:
     home_root = tmp_path / "home"
     fake_claude = make_fake_claude(tmp_path)

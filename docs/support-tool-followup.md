@@ -96,7 +96,7 @@ even if the next session only skims this document.
 
 - `corca-ai/charness#11`
   Landed. `init-repo` now points installable-surface repos at an explicit probe
-  surface, keeps that guidance narrow, and teaches [`README.md`](../README.md) / [`INSTALL.md`](../INSTALL.md)
+  surface, keeps that guidance narrow, and teaches [`README.md`](../README.md)
   to name install, healthcheck, discovery, readiness, and local
   discoverability semantics without forcing boilerplate onto repos that do not
   ship installable surfaces.

@@ -14,16 +14,45 @@ one-off prompt maze.
 
 ## Quick Start
 
-If you are installing `charness` yourself, start with [INSTALL.md](./INSTALL.md).
-If you want an agent to do it for you, give it the install contract instead of
-paraphrasing the steps:
+Prerequisites:
+
+- `bash`
+- `git`
+- `curl`
+- outbound network access to `github.com`
+
+Zero-state bootstrap:
+
+```bash
+curl -fsSLo /tmp/charness-init.sh \
+  https://raw.githubusercontent.com/corca-ai/charness/main/init.sh
+bash /tmp/charness-init.sh
+~/.local/bin/charness doctor --next-action
+```
+
+If you want an agent to do it for you, paste the contract directly instead of
+telling it to fetch a remote doc and follow it:
 
 ```md
-Read and follow: https://raw.githubusercontent.com/corca-ai/charness/main/INSTALL.md
-
 Install charness on this machine.
-Then verify the setup with `charness init` and `charness doctor`.
-This repo should work in Claude Code and Codex.
+
+Prerequisites:
+- bash
+- git
+- curl
+- outbound network access to github.com
+
+Run:
+curl -fsSLo /tmp/charness-init.sh https://raw.githubusercontent.com/corca-ai/charness/main/init.sh
+bash /tmp/charness-init.sh
+
+Then run `~/.local/bin/charness doctor --next-action`.
+Do exactly that next action.
+When it finishes, run `~/.local/bin/charness doctor --next-action` again.
+Repeat until no manual host action is required.
+
+Use `~/.local/bin/charness doctor --json` only when you need more detail.
+This machine should work in Claude Code and Codex.
 After installation, use `charness update` for refreshes.
 ```
 
@@ -39,9 +68,6 @@ keep seeing:
   managed checkout and CLI
 - `charness uninstall` when you want the host-facing uninstall path while
   preserving the source checkout and CLI unless explicit delete flags are passed
-
-[INSTALL.md](./INSTALL.md) remains the canonical install contract. The README is the
-entrypoint, not the full operator manual.
 
 ## Core Concepts
 
@@ -218,9 +244,8 @@ user simply wants work done.
 Keep the surface ownership clear:
 
 - the README is the first-touch orientation surface
-- [INSTALL.md](./INSTALL.md), [UNINSTALL.md](./UNINSTALL.md), and
-  [docs/host-packaging.md](./docs/host-packaging.md) own install and packaging
-  truth
+- [docs/host-packaging.md](./docs/host-packaging.md) owns packaging truth and
+  the generated host-layout contract
 - [docs/operator-acceptance.md](./docs/operator-acceptance.md) owns the
   operator-facing takeover checklist
 - [docs/control-plane.md](./docs/control-plane.md) and integration manifests
@@ -241,7 +266,7 @@ generated from [packaging/charness.json](./packaging/charness.json) via
 ## Read This Next
 
 - install or refresh the managed host surface:
-  [INSTALL.md](./INSTALL.md) and [docs/host-packaging.md](./docs/host-packaging.md)
+  the Quick Start above and [docs/host-packaging.md](./docs/host-packaging.md)
 - pick the right public/support boundary:
   [docs/support-skill-policy.md](./docs/support-skill-policy.md) and
   [docs/public-skill-validation.md](./docs/public-skill-validation.md)

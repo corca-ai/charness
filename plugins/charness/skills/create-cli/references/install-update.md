@@ -33,14 +33,10 @@ Be explicit about what the CLI can and cannot automate.
   guidance, but do not claim mutation happened when it did not.
 - If an installer script exists, prefer making it install only the product
   itself. Missing system prerequisites should fail with precise guidance rather
-  than mutating `brew`, `apt`, `npm`, or other host package managers.
-
-Homebrew note:
-
-- Homebrew is officially supported on Linux.
-- The supported Linux install path uses `/home/linuxbrew/.linuxbrew` and then
-  adds `brew` to `PATH`.
-- Treat Linuxbrew as Homebrew on Linux, not a separate product boundary.
+  than mutating host package managers on the operator's behalf.
+- If an agent will run the bootstrap, keep the contract pasteable inside the
+  entrypoint docs instead of requiring a remote documentation fetch as the
+  first move.
 
 Use the same install method for updates unless the product owns a safer
 self-update path.
@@ -121,7 +117,7 @@ Version provenance note:
 - skip automatic checks in CI, non-TTY runs, obvious source-checkout paths, and
   other contexts where the operator did not ask for networked advice
 - when provenance is unknown, degrade to honest manual guidance instead of
-  guessing `brew`, `npm`, release-installer, or package-manager commands
+  guessing release-installer or package-manager commands
 
 Authenticated upstream release probe note:
 
@@ -138,7 +134,6 @@ Authenticated upstream release probe note:
 
 Release-first note:
 
-- A release-first contract can be more honest than a Homebrew-first contract
-  while the runtime, artifact shape, or porting target is still moving.
-- Homebrew becomes cleaner after the product ships stable release artifacts
-  instead of source-oriented bootstraps.
+- A release-first contract can be more honest than a package-manager-first
+  contract while the runtime, artifact shape, or porting target is still
+  moving.

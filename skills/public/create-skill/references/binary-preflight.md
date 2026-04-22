@@ -111,21 +111,21 @@ environment before invoking the agent.
 
 ## Install mapping
 
-V1 scope: `apt` and `brew`. Any other package manager is out of scope for
-direct proposal. When the detected OS is not one of these, the agent asks the
-user to install the binary themselves and paste back the command they used;
-the agent records that for the session only.
+V1 scope: `apt`. Any other package manager is out of scope for direct
+proposal. When the detected OS is not one of these, the agent asks the user to
+install the binary themselves and paste back the command they used; the agent
+records that for the session only.
 
-| binary | apt (Debian/Ubuntu) | brew (macOS/Linuxbrew) |
-| --- | --- | --- |
-| `rg` | `sudo apt-get install -y ripgrep` | `brew install ripgrep` |
-| `jq` | `sudo apt-get install -y jq` | `brew install jq` |
-| `fd` | `sudo apt-get install -y fd-find` | `brew install fd` |
-| `gh` | `sudo apt-get install -y gh` | `brew install gh` |
-| `node` | `sudo apt-get install -y nodejs` | `brew install node` |
-| `uv` | (no apt package; propose `pipx install uv`) | `brew install uv` |
-| `yq` | `sudo apt-get install -y yq` | `brew install yq` |
-| `bat` | `sudo apt-get install -y bat` | `brew install bat` |
+| binary | apt (Debian/Ubuntu) |
+| --- | --- |
+| `rg` | `sudo apt-get install -y ripgrep` |
+| `jq` | `sudo apt-get install -y jq` |
+| `fd` | `sudo apt-get install -y fd-find` |
+| `gh` | `sudo apt-get install -y gh` |
+| `node` | `sudo apt-get install -y nodejs` |
+| `uv` | (no apt package; propose `pipx install uv`) |
+| `yq` | `sudo apt-get install -y yq` |
+| `bat` | `sudo apt-get install -y bat` |
 
 If this table drifts from upstream reality, the escape hatch above is the
 cost ceiling: the user is asked to run the correct command themselves and the
