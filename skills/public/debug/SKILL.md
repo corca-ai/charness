@@ -89,6 +89,11 @@ as codebase memory rather than as stale trivia.
 6. Resolve and preserve the learning.
    - record root cause
    - record the confirming evidence
+   - classify seam risk explicitly when host behavior or repeated symptom fixes
+     showed that local reasoning was not enough
+   - if the incident hits an external seam, host-disproves-local behavior, or a
+     repeated symptom on the same seam, set the next step to `spec` and name a
+     spec handoff artifact instead of handing directly to ordinary `impl`
    - record prevention or follow-up
    - if the fix belongs to normal implementation work, hand off cleanly to
      `impl` with the debug artifact still intact
@@ -105,6 +110,8 @@ The durable debug artifact should usually include:
 - `Hypothesis`
 - `Verification`
 - `Root Cause`
+- `Seam Risk`
+- `Interrupt Decision`
 - `Prevention`
 - `Related Prior Incidents` (optional — include when the incident connects to a
   prior debug artifact)
@@ -121,6 +128,9 @@ the skeleton from memory.
 - Do not stop at the first plausible cause; enumerate multiple candidates first.
 - Do not treat "cannot reproduce locally" as resolution. Record what was tried
   and what observation is still missing.
+- Do not leave external-seam or host-disproves-local risk as free-form prose;
+  carry it forward in the structured handoff fields so the next slice cannot
+  quietly reset into ordinary implementation posture.
 - Do not leave the learning only in chat when the repo has a durable debug
   artifact path or document style.
 - Web search is the default tool for any "gather more information" step.

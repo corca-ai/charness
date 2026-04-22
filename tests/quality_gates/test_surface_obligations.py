@@ -325,3 +325,126 @@ def test_run_slice_closeout_blocks_unmatched_paths_by_default(tmp_path: Path) ->
     )
     assert result.returncode == 1
     assert "not covered by the surfaces manifest" in result.stderr
+
+
+def test_run_slice_closeout_blocks_for_forced_risk_interrupt_without_spec_refresh(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "charness-artifacts" / "debug").mkdir(parents=True)
+    (repo / "charness-artifacts" / "spec").mkdir(parents=True)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (repo / ".agents" / "debug-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: charness-artifacts/debug",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (repo / ".agents" / "surfaces.json").write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "surfaces": [
+                    {
+                        "surface_id": "demo-surface",
+                        "description": "demo",
+                        "source_paths": ["README.md", "charness-artifacts/debug/latest.md", "charness-artifacts/spec/*.md"],
+                        "derived_paths": [],
+                        "sync_commands": [],
+                        "verify_commands": [],
+                        "notes": [],
+                    }
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo / "charness-artifacts" / "debug" / "latest.md").write_text(
+        "\n".join(
+            [
+                "# Debug Review",
+                "Date: 2026-04-22",
+                "",
+                "## Problem",
+                "",
+                "problem",
+                "",
+                "## Correct Behavior",
+                "",
+                "correct",
+                "",
+                "## Observed Facts",
+                "",
+                "- fact",
+                "",
+                "## Reproduction",
+                "",
+                "repro",
+                "",
+                "## Candidate Causes",
+                "",
+                "- one",
+                "- two",
+                "- three",
+                "",
+                "## Hypothesis",
+                "",
+                "hypothesis",
+                "",
+                "## Verification",
+                "",
+                "verification",
+                "",
+                "## Root Cause",
+                "",
+                "root cause",
+                "",
+                "## Seam Risk",
+                "",
+                "- Interrupt ID: seam-demo",
+                "- Risk Class: host-disproves-local",
+                "- Seam: slack-thread-activation",
+                "- Disproving Observation: live host disproved local reasoning",
+                "- What Local Reasoning Cannot Prove: thread visibility semantics",
+                "- Generalization Pressure: factor-now",
+                "",
+                "## Interrupt Decision",
+                "",
+                "- Premortem Required: yes",
+                "- Next Step: spec",
+                "- Handoff Artifact: charness-artifacts/spec/interrupt-demo.md",
+                "",
+                "## Prevention",
+                "",
+                "prevention",
+                "",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo / "charness-artifacts" / "spec" / "interrupt-demo.md").write_text(
+        "# Premortem\n\n- Interrupt Source: seam-demo\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "scripts/run-slice-closeout.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "README.md",
+        "charness-artifacts/debug/latest.md",
+        "--json",
+    )
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "blocked"
+    assert payload["risk_interrupt_plan"]["status"] == "blocked"

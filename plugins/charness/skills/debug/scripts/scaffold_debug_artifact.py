@@ -37,6 +37,8 @@ SECTIONS = (
     "## Hypothesis",
     "## Verification",
     "## Root Cause",
+    "## Seam Risk",
+    "## Interrupt Decision",
     "## Prevention",
 )
 
@@ -48,9 +50,37 @@ def default_title(title: str | None) -> str:
 def render_template(*, title: str, date_text: str) -> str:
     lines = [f"# {title}", f"Date: {date_text}", ""]
     for heading in SECTIONS:
-        lines.extend([heading, "", "- TODO" if heading == "## Candidate Causes" else "TODO", ""])
         if heading == "## Candidate Causes":
-            lines.extend(["- TODO", "- TODO", ""])
+            lines.extend([heading, "", "- TODO", "- TODO", "- TODO", ""])
+            continue
+        if heading == "## Seam Risk":
+            lines.extend(
+                [
+                    heading,
+                    "",
+                    "- Interrupt ID: TODO",
+                    "- Risk Class: none",
+                    "- Seam: none",
+                    "- Disproving Observation: none",
+                    "- What Local Reasoning Cannot Prove: none",
+                    "- Generalization Pressure: none",
+                    "",
+                ]
+            )
+            continue
+        if heading == "## Interrupt Decision":
+            lines.extend(
+                [
+                    heading,
+                    "",
+                    "- Premortem Required: no",
+                    "- Next Step: impl",
+                    "- Handoff Artifact: none",
+                    "",
+                ]
+            )
+            continue
+        lines.extend([heading, "", "TODO", ""])
     return "\n".join(lines).rstrip() + "\n"
 
 

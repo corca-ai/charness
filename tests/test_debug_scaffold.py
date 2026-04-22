@@ -37,4 +37,8 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     assert payload["validator_command"] == "python3 scripts/validate-debug-artifact.py --repo-root ."
     assert "# Debug Review" in payload["template"]
     assert "## Reproduction" in payload["template"]
+    assert "## Seam Risk" in payload["template"]
+    assert "- Interrupt ID: TODO" in payload["template"]
+    assert "## Interrupt Decision" in payload["template"]
+    assert "- Next Step: impl" in payload["template"]
     assert "## Verification" in payload["template"]

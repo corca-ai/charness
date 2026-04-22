@@ -79,6 +79,9 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "probe-friendly and visible instead of inventing a user-facing mode choice.",
         "public executable contract",
         "maintenance lint / implementation guard",
+        'python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --json 2>/dev/null || true',
+        "risk interrupt planner reports a forced debug interrupt",
+        "`Interrupt Source`, `Seam Summary`, `Chosen Next Step`, `Impl Status`",
         "- `Fixed Decisions`",
         "- `Probe Questions`",
         "- `Deferred Decisions`",
@@ -87,6 +90,8 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
     ),
     "skills/public/impl/SKILL.md": (
         "impl adapter resolution and verification survey",
+        'python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --json 2>/dev/null || true',
+        "risk interrupt planner reports a forced interrupt",
         "best self-verification path before you code and again before you stop",
         "re-read `Fixed Decisions` and named acceptance checks",
         "reflected in the delivered slice or explicitly",
@@ -94,6 +99,14 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "`Premortem: skipped <reason>`",
         "`Premortem: blocked <host-signal>`",
         "Do not call a same-agent review a premortem.",
+        "plain implementation until the named spec handoff says this slice may",
+    ),
+    "skills/public/debug/SKILL.md": (
+        "classify seam risk explicitly",
+        "set the next step to `spec`",
+        "structured handoff fields",
+        "- `Seam Risk`",
+        "- `Interrupt Decision`",
     ),
     "skills/public/quality/SKILL.md": (
         "When the next quality move is repo-local, deterministic, and low-risk",

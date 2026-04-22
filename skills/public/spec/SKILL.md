@@ -26,6 +26,7 @@ sed -n '1,220p' "$SKILL_DIR/../ideation/SKILL.md" 2>/dev/null || true
 
 # 2. existing concept/spec/design docs
 rg -n "concept|spec|requirements|success criteria|acceptance|entity|stage|constraint" .
+python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --json 2>/dev/null || true
 
 # 3. implementation-side neighbors and current acceptance reality
 rg -n "test|spec|fixture|scenario|acceptance|success criteria|operator|takeover|smoke|integration" .
@@ -76,6 +77,10 @@ Before locking the contract, run one bounded premortem. Ask what a fresh five-mi
    - success criteria
    - acceptance checks
    - open risks, probe questions, or deferred decisions
+   - when the risk interrupt planner reports a forced debug interrupt, consume
+     it explicitly in `Premortem` with
+     `Interrupt Source`, `Seam Summary`, `Chosen Next Step`, `Impl Status`,
+     `Impl Status Reason`, and `What Disproving Observation Is Resolved`
 5. Tie the contract to verification.
    - every important success criterion should imply at least one acceptance
      check
@@ -151,6 +156,9 @@ as `Entities` or `Stages` instead of recreating them under new names.
 - Do not leave success criteria as vague aspirations.
 - Do not allow an important success criterion without at least one acceptance
   check.
+- Do not clear a forced debug interrupt with generic spec churn; if the planner
+  surfaced one, the spec must explicitly consume that interrupt in
+  `Premortem`.
 - Do not skip the bounded premortem on a risky or cross-surface contract just
   because the document reads clearly to the current author.
 - Do not leave important rejected alternatives only in chat when the same

@@ -50,6 +50,7 @@ python3 "$SKILL_DIR/scripts/survey_verification.py" --repo-root .
 
 # 3. locate the canonical spec/design artifact
 rg -n "Current Slice|Success Criteria|Acceptance Checks|Fixed Decisions|Probe Questions|Deferred Decisions|requirements|acceptance" .
+python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --json 2>/dev/null || true
 
 # 4. repo patterns and current target area
 rg -n "test|spec|fixture|eval|smoke|integration" .
@@ -79,6 +80,9 @@ Adapter policy:
      current-slice contract before changing code
    - restate the current slice in implementation terms
    - list the acceptance checks that must pass before stopping
+   - if the risk interrupt planner reports a forced interrupt, do not continue
+     plain implementation until the named spec handoff says this slice may
+     proceed honestly
 2. Keep the contract honest.
    - treat `Fixed Decisions` as fixed for this slice
    - treat `Probe Questions` as explicit learning goals, not as hidden scope
@@ -122,13 +126,11 @@ Adapter policy:
      deferred or reclassified in the contract
 6. Run the stop gate.
    - when the slice needs premortem, run the standalone `premortem` skill;
-     `premortem` always means a fresh bounded subagent review, never a
-     same-agent pass
+     `premortem` always means a fresh bounded subagent review, never a same-agent pass
    - if the slice does not need premortem, record `Premortem: skipped <reason>`
      in the closeout instead of implying it ran
    - if a required premortem is blocked because the host cannot provide
-     subagents after the capability check, stop and record
-     `Premortem: blocked <host-signal>` instead of closing the slice
+     subagents after the capability check, stop and record `Premortem: blocked <host-signal>`
    - run a fresh-eye review for runtime behavior, boundary honesty, and
      docs/spec synchronization
 7. End with execution status.
@@ -170,6 +172,9 @@ The closeout should usually include:
 - Do not stop after a user-visible change without checking whether [`README.md`](../../../README.md)
   and adjacent durable truth surfaces are now stale.
 - Do not leave a resolved probe undocumented in the canonical artifact.
+- Do not continue ordinary implementation past a forced debug interrupt just
+  because the local patch still looks tempting; let the planner and named spec
+  handoff decide whether plain `impl` is allowed.
 - If a branch or fallback matters to users or operators, prove it with the best
   available verification capability instead of relying on code inspection alone.
 - If a stronger verification path exists but needs permissions, setup, or an

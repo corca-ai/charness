@@ -70,6 +70,21 @@ checkout had diverged from `origin/main`, the CLI surfaced raw git stderr
 without telling the operator that the checkout needed rebase/reset or that a
 proof-only `--no-pull` flow existed for intentional dogfood commits.
 
+## Seam Risk
+
+- Interrupt ID: managed-checkout-divergence
+- Risk Class: none
+- Seam: none
+- Disproving Observation: none
+- What Local Reasoning Cannot Prove: none
+- Generalization Pressure: none
+
+## Interrupt Decision
+
+- Premortem Required: no
+- Next Step: impl
+- Handoff Artifact: none
+
 ## Prevention
 
 - Keep a regression test for diverged managed checkouts so update guidance stays

@@ -99,11 +99,11 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-16",
+      "reviewed_on": "2026-04-22",
       "observed_evidence": [
         "The checked-in public core explicitly keeps `debug` in diagnosis-before-repair mode, preserving the exact symptom, a falsifiable hypothesis, and at least three candidate causes before implementation work starts.",
         "Repo-owned eval coverage already exercises `debug-adapter-bootstrap`, which pins the current adapter bootstrap and canonical artifact path at `charness-artifacts/debug/latest.md`.",
-        "The committed `validate-debug-artifact.py` gate plus `tests/test_debug_artifact.py` enforce the durable artifact shape, including canonical sections and the minimum three plausible causes requirement."
+        "The committed `validate-debug-artifact.py` gate plus `tests/test_debug_artifact.py` now make the current debug artifact carry structured seam risk and interruption data, so a host-boundary miss cannot stay a chat-only handoff."
       ]
     },
     {
@@ -338,7 +338,7 @@
       "observed_evidence": [
         "The checked-in public core keeps `impl` downstream of `spec` while still requiring an inline honest contract when no separate spec exists, which matches a direct build-slice prompt instead of collapsing into `spec` or `quality`.",
         "Repo-owned eval coverage already exercises `impl-adapter-bootstrap`, pinning the inferred adapter defaults for `charness-artifacts/impl` and the verification/truth-surface fields that bootstrap expects.",
-        "The stop-gate wording now treats premortem as a true standalone skill only: the closeout must report `Premortem: skipped <reason>` when no premortem was needed, and `Premortem: blocked <host-signal>` when a required subagent review could not run instead of quietly downgrading to same-agent review."
+        "The impl bootstrap now points at `scripts/plan_risk_interrupt.py`, and the checked-in core tells the agent not to continue plain implementation past a forced debug interrupt until the named spec handoff says that is honest."
       ]
     },
     {
@@ -355,11 +355,11 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-16",
+      "reviewed_on": "2026-04-22",
       "observed_evidence": [
         "The checked-in public core frames `spec` as turning an under-specified request into the current build contract, which keeps this prompt out of `ideation` and `impl` unless the concept or execution state changes materially.",
-        "Representative contract pins in `scripts/check-skill-contracts.py` keep the Contract Shaping section and the `Fixed Decisions`/`Probe Questions`/`Deferred Decisions`/`Acceptance Checks`/`First Implementation Slice` skeleton load-bearing.",
-        "Repo-owned tests preserve the higher-cost reasoning seams around `spec`, including the premortem loop, fresh-eye review, and rejected-alternative capture, while the current scaffold remains adapter-free."
+        "Representative contract pins in `scripts/check-skill-contracts.py` now also keep the risk-interrupt carry-forward seam load-bearing: when the planner surfaces a forced debug interrupt, `spec` must consume it explicitly in `Premortem` instead of clearing it with generic doc churn.",
+        "That keeps the planner-backed `debug -> spec -> impl` boundary visible as a reviewed consumer seam: the current contract makes seam risk survive into the spec handoff before plain implementation is allowed to resume."
       ]
     },
     {
