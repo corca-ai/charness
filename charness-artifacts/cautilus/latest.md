@@ -3,68 +3,87 @@ Date: 2026-04-22
 
 ## Trigger
 
-- slice: teach `init-repo` and the checked-in `AGENTS.md` surface that
-  repo-mandated bounded fresh-eye subagent reviews are already delegated by
-  repo contract and must not wait for a second user message
+- slice: unify repo-owned Python filenames on `snake_case`, add a Python
+  filename convention gate, and tighten standing quality execution so control
+  plane coverage only runs when relevant files changed
 - claim: `preserve`
 
 ## Validation Goal
 
 - goal: `preserve`
-- reason: the slice changes prompt-affecting `AGENTS.md` and `init-repo`
-  guidance, but the maintained startup `find-skills` bootstrap and durable work
-  skill routing should stay intact for representative prompts
+- reason: the slice changes prompt-affecting adapters, `AGENTS.md`, quality
+  skill references, and truth-surface docs, but maintained startup routing and
+  durable work-skill selection should stay intact
 
 ## Change Intent
 
 - `prompt_affecting_change`
 - `skill_core_change`
+- `adapter_contract_change`
+- `truth_surface_change`
 - `scenario_review_change`
 
 ## Prompt Surfaces
 
-- `AGENTS.md`
-- `skills/public/init-repo/SKILL.md`
-- `skills/public/init-repo/references/agent-docs-policy.md`
-- `skills/public/init-repo/references/default-surfaces.md`
-- `skills/public/init-repo/references/normalization-flow.md`
+- adapters: `.agents/cautilus-adapter.yaml`,
+  `.agents/cautilus-adapters/chatbot-benchmark.yaml`,
+  `.agents/cautilus-adapters/chatbot-proposals.yaml`,
+  `.agents/quality-adapter.yaml`
+- host contract: `AGENTS.md`
+- create-skill reference:
+  `skills/public/create-skill/references/binary-preflight.md`
+- debug skill: `skills/public/debug/SKILL.md`,
+  `skills/public/debug/references/document-seams.md`
+- init-repo reference: `skills/public/init-repo/references/default-surfaces.md`
+- quality skill core: `skills/public/quality/SKILL.md`
+- quality references:
+  `skills/public/quality/references/adapter-contract.md`,
+  `skills/public/quality/references/automation-promotion.md`,
+  `skills/public/quality/references/coverage-floor-policy.md`,
+  `skills/public/quality/references/operability-signals.md`,
+  `skills/public/quality/references/security-npm.md`,
+  `skills/public/quality/references/security-overview.md`,
+  `skills/public/quality/references/security-pnpm.md`,
+  `skills/public/quality/references/security-uv.md`,
+  `skills/public/quality/references/skill-quality.md`,
+  `skills/public/quality/references/coverage_floor_inventory.py`,
+  `skills/public/quality/references/validate_spec_pytest_references.py`
+- gather-notion support: `skills/support/gather-notion/SKILL.md`,
+  `skills/support/gather-notion/references/provenance.md`
 
 ## Commands Run
 
+- `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
 - `cautilus instruction-surface test --repo-root .`
-- `python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id init-repo --json`
 
 ## Regression Proof
 
 - instruction-surface summary: `3 passed / 0 failed / 0 blocked`
-- run artifact: `.cautilus/runs/20260422T131049094Z-run/`
+- run artifact: `.cautilus/runs/20260422T225235368Z-run/`
 - maintained startup routing still bootstrapped through `find-skills`, then
-  chose the expected durable work skill instead of collapsing into host-policy
-  confusion or a stale bootstrap-only path
+  selected `impl` for code/config/test work and `spec` for contract-shaping
+  prompts with no route mismatches
 
 ## Scenario Review
 
-- representative `impl` and `spec` prompts still route through the compact
-  startup `find-skills` bootstrap before selecting their durable work skills
-- the checked-in `AGENTS.md` surface stayed loadable after adding the bounded
-  subagent delegation rule, and the new rule did not displace the maintained
-  startup routing contract
-- representative `init-repo` dogfood still points at `init-repo` as the owning
-  skill for partially initialized repo normalization
-- maintained scenario registry follow-up remains open only as a review point:
-  ask before mutating `evals/cautilus/scenarios.json`
+- representative checked-in and compact startup surfaces still require the
+  `find-skills` bootstrap before durable work-skill selection
+- truth-surface edits in `docs/operator-acceptance.md` and
+  `docs/public-skill-validation.md` only followed the snake_case rename and did
+  not change the validation policy they describe
+- the `quality` skill and related references changed naming and gate wording,
+  but this slice did not mutate `evals/cautilus/scenarios.json`; keep that
+  registry unchanged unless a later semantic skill change justifies it
 
 ## Outcome
 
 - recommendation: `accept-now`
-- routing notes: the maintained instruction surface stayed green while the repo
-  made delegated bounded subagent review explicit in both the checked-in host
-  contract and the `init-repo` default AGENTS guidance
+- routing notes: prompt-affecting and truth-surface updates preserved the
+  maintained startup `find-skills` contract and the expected `impl`/`spec`
+  durable work-skill routing
 
 ## Follow-ups
 
-- keep `docs/public-skill-dogfood.json` aligned if `init-repo` semantics move
-  again
-- if a future slice changes maintained routing expectations rather than prompt
-  wording and AGENTS/init-repo guidance, ask before mutating
-  `evals/cautilus/scenarios.json`
+- if public skill semantics move beyond naming/reference cleanup, inspect
+  `docs/public-skill-dogfood.json` before treating the change as closed
+- ask before mutating `evals/cautilus/scenarios.json`

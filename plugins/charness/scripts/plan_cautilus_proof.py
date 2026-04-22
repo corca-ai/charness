@@ -109,7 +109,7 @@ def _skill_change_recommendations(repo_root: Path, changed_paths: list[str]) -> 
         if tier is None:
             continue
         commands = [
-            f"python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id {skill_id} --json",
+            f"python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id {skill_id} --json",
         ]
         notes = [
             f"Freeze the current `{skill_id}` consumer contract in `docs/public-skill-dogfood.json` before treating the semantic change as closed.",

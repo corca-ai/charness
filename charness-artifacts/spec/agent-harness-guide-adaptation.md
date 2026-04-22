@@ -204,8 +204,8 @@ incrementally:
 - Validation passes:
   - `./scripts/check-markdown.sh`
   - `./scripts/check-secrets.sh`
-  - `python3 scripts/check-doc-links.py --repo-root .`
-  - `python3 scripts/validate-skills.py --repo-root .` if public skill
+  - `python3 scripts/check_doc_links.py --repo-root .`
+  - `python3 scripts/validate_skills.py --repo-root .` if public skill
     references change
 
 ## Premortem
@@ -273,7 +273,7 @@ Land the lowest-risk, highest-leverage clarification first:
 5. Run doc validation:
    - `./scripts/check-markdown.sh`
    - `./scripts/check-secrets.sh`
-   - `python3 scripts/check-doc-links.py --repo-root .`
+   - `python3 scripts/check_doc_links.py --repo-root .`
 
 `Slice 2` should then tighten `quality` and adjacent review references around
 the evidence bundle and ownership audit. `Slice 3` should land the chosen proof

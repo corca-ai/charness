@@ -16,7 +16,7 @@ branches.
 
 - `check-coverage` reports `sync_support.py` at `86.5%`, up from `80.0%`.
 - `./scripts/run-quality.sh --review` passed with `36 passed, 0 failed`.
-- `python3 scripts/run-slice-closeout.py --repo-root .` passed all planned sync
+- `python3 scripts/run_slice_closeout.py --repo-root .` passed all planned sync
   and verify commands.
 
 ## Waste

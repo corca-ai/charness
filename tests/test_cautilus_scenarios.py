@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_run_evals_supports_scenario_filter() -> None:
     result = run_script(
-        "scripts/run-evals.py",
+        "scripts/run_evals.py",
         "--repo-root",
         str(ROOT),
         "--scenario-id",
@@ -44,7 +44,7 @@ def test_eval_cautilus_scenarios_writes_summary(tmp_path: Path) -> None:
 
 
 def test_validate_cautilus_scenarios_covers_instruction_surface_wiring() -> None:
-    result = run_script("scripts/validate-cautilus-scenarios.py", "--repo-root", str(ROOT))
+    result = run_script("scripts/validate_cautilus_scenarios.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
 
 

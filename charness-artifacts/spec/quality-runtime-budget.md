@@ -23,7 +23,7 @@ update --repo-root . --no-pull`로 SKILL 변경분을 현재 working tree에
 1. **pytest 단축 (리포 측)**: 중복 smoke 제거 + 실패 2건 수정 + xdist 도입 +
    high-cost CLI fixture를 session-scope로 캐싱. 목표: pytest latest_elapsed_ms ≤ 20000.
 2. **runtime budget 게이트 (SKILL 측 + 리포 측)**: SKILL에 배포되는
-   `check-runtime-budget.py`와 어댑터 스키마의 `runtime_budgets` 필드 추가.
+   `check_runtime_budget.py`와 어댑터 스키마의 `runtime_budgets` 필드 추가.
    `charness`의 `quality-adapter.yaml`에 `pytest: 20000` 박고 `run-quality.sh`
    끝에 게이트로 호출.
 3. **gitleaks tool registry + loud fallback + dogfood 운영 문서화**: gitleaks를
@@ -113,7 +113,7 @@ update --repo-root . --no-pull`로 SKILL 변경분을 현재 working tree에
 
 1. `pytest`의 `runtime-signals.json` latest_elapsed_ms ≤ 25000 (3회 연속
    측정에서 모두 통과).
-2. SKILL이 배포하는 `check-runtime-budget.py` 가 어댑터의 `runtime_budgets`
+2. SKILL이 배포하는 `check_runtime_budget.py` 가 어댑터의 `runtime_budgets`
    맵을 읽고 `runtime-signals.json`의 latest와 비교해 위반 시 non-zero exit.
 3. `charness`의 `quality-adapter.yaml`에 `runtime_budgets: {pytest: 20000}`이
    존재하고, `run-quality.sh` 끝의 budget 게이트가 통과.
@@ -135,7 +135,7 @@ update --repo-root . --no-pull`로 SKILL 변경분을 현재 working tree에
 - (1, 2, 3) `./scripts/run-quality.sh`가 PASS로 끝나고 출력에 `pytest`
   elapsed가 20s 미만이며 budget 게이트 라인이 PASS.
 - (2, 4) 일시적으로 어댑터의 `runtime_budgets.pytest`를 `5000`으로 떨어뜨리고
-  `./scripts/run-quality.sh` 또는 직접 `python3 .../check-runtime-budget.py
+  `./scripts/run-quality.sh` 또는 직접 `python3 .../check_runtime_budget.py
   --repo-root .` 실행 → exit code non-zero, stderr에 "pytest exceeded budget
   (Xms > 5000ms)" 형식 메시지. 끝나면 원복.
 - (5) `command -v gitleaks` 결과가 비어있는 상태에서

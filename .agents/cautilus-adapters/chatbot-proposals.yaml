@@ -7,7 +7,7 @@ baseline_options:
 required_prerequisites:
   - install the `cautilus` CLI before running chatbot proposal generation
 preflight_commands:
-  - python3 scripts/validate-cautilus-scenarios.py --repo-root .
+  - python3 scripts/validate_cautilus_scenarios.py --repo-root .
 held_out_command_templates:
   - python3 scripts/eval_cautilus_chatbot_proposals.py --repo-root . --input-file evals/cautilus/chatbot-scenario-proposal-inputs.json --output-dir charness-artifacts/cautilus/chatbot-proposals/held-out
 full_gate_command_templates:

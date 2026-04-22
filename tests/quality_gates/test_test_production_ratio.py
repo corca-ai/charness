@@ -5,7 +5,7 @@ import importlib.util
 from .support import ROOT, run_script
 
 SPEC = importlib.util.spec_from_file_location(
-    "check_test_production_ratio", ROOT / "scripts" / "check-test-production-ratio.py"
+    "check_test_production_ratio", ROOT / "scripts" / "check_test_production_ratio.py"
 )
 assert SPEC is not None and SPEC.loader is not None
 RATIO = importlib.util.module_from_spec(SPEC)
@@ -23,7 +23,7 @@ def test_test_production_ratio_counts_source_truth_without_plugin_exports() -> N
 
 def test_test_production_ratio_fails_above_max() -> None:
     result = run_script(
-        "scripts/check-test-production-ratio.py",
+        "scripts/check_test_production_ratio.py",
         "--repo-root",
         str(ROOT),
         "--max-ratio",

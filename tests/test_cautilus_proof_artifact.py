@@ -23,7 +23,7 @@ def seed_repo(tmp_path: Path, artifact_body: str | None) -> Path:
 def test_validate_cautilus_proof_requires_artifact_for_prompt_changes(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, None)
     result = run_script(
-        "scripts/validate-cautilus-proof.py",
+        "scripts/validate_cautilus_proof.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -86,7 +86,7 @@ def test_validate_cautilus_proof_requires_ab_compare_for_improve_claim(tmp_path:
         + "\n",
     )
     result = run_script(
-        "scripts/validate-cautilus-proof.py",
+        "scripts/validate_cautilus_proof.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -150,7 +150,7 @@ def test_validate_cautilus_proof_accepts_preserve_claim(tmp_path: Path) -> None:
         + "\n",
     )
     result = run_script(
-        "scripts/validate-cautilus-proof.py",
+        "scripts/validate_cautilus_proof.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -163,7 +163,7 @@ def test_validate_cautilus_proof_accepts_preserve_claim(tmp_path: Path) -> None:
 def test_validate_cautilus_proof_treats_named_cautilus_adapter_as_prompt_affecting(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, None)
     result = run_script(
-        "scripts/validate-cautilus-proof.py",
+        "scripts/validate_cautilus_proof.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -191,7 +191,7 @@ def test_plan_cautilus_proof_recommends_skill_dogfood_and_scenario_followups() -
     assert recommendation["validation_tier"] == "evaluator-required"
     assert any("docs/public-skill-dogfood.json" in note for note in recommendation["notes"])
     assert any(
-        "python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id create-skill --json" == item
+        "python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id create-skill --json" == item
         for item in payload["recommended_followups"]
     )
     assert any("evals/cautilus/scenarios.json" in item for item in payload["recommended_followups"])

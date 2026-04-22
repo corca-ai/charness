@@ -18,7 +18,7 @@ that prove the harness still works as a product:
 Canonical runner:
 
 ```bash
-python3 scripts/run-evals.py
+python3 scripts/run_evals.py
 ```
 
 The quality runner should call this script so eval drift becomes part of the

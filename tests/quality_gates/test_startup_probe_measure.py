@@ -5,7 +5,7 @@ from pathlib import Path
 
 from .support import run_script, write_executable
 
-SCRIPT = "skills/public/quality/scripts/measure-startup-probes.py"
+SCRIPT = "skills/public/quality/scripts/measure_startup_probes.py"
 
 
 def _seed_repo(tmp_path: Path, *, probe_sleep_seconds: float = 0.0, failing: bool = False) -> Path:

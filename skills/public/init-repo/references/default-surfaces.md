@@ -73,9 +73,9 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
   instead of sitting alone as inline code. Concepts stay natural: a bare
   `SKILL.md` whose basename resolves to many tracked files is still allowed,
   because the linter treats multi-match basenames as conceptual references.
-  See [`./scripts/check-doc-links.py`](../../../../scripts/check-doc-links.py),
+  See [`./scripts/check_doc_links.py`](../../../../scripts/check_doc_links.py),
   [`./scripts/check-links-internal.sh`](../../../../scripts/check-links-internal.sh), and
-  [`./scripts/migrate-backtick-file-refs.py`](../../../../scripts/migrate-backtick-file-refs.py)
+  [`./scripts/migrate_backtick_file_refs.py`](../../../../scripts/migrate_backtick_file_refs.py)
   for the shipped reference implementation and one-shot migrator
 
 Use `scripts/render_skill_routing.py` to render the block. Keep it short and

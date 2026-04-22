@@ -9,7 +9,7 @@ recreate a Notion export script after installing `charness`.
 
 Local adjustments from the reference implementation:
 
-- the wrapper lives in `scripts/export-page.py`
+- the wrapper lives in `scripts/export_page.py`
 - `charness` treats this as a published-page capability only
 - Google Workspace access is intentionally separate and should flow through a
   real external runtime such as `gws-cli`

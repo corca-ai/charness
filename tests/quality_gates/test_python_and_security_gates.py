@@ -89,7 +89,7 @@ def test_check_supply_chain_requires_javascript_lockfile(tmp_path: Path) -> None
         json.dumps({"private": True, "devDependencies": {"markdownlint-cli2": "0.22.0"}}, indent=2) + "\n",
         encoding="utf-8",
     )
-    result = run_script("scripts/check-supply-chain.py", "--repo-root", str(repo))
+    result = run_script("scripts/check_supply_chain.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "no lockfile is checked in" in result.stderr
 
@@ -106,7 +106,7 @@ def test_check_supply_chain_requires_declared_pnpm_lockfile(tmp_path: Path) -> N
         encoding="utf-8",
     )
     (repo / "package-lock.json").write_text("{}", encoding="utf-8")
-    result = run_script("scripts/check-supply-chain.py", "--repo-root", str(repo))
+    result = run_script("scripts/check_supply_chain.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "packageManager declares `pnpm`" in result.stderr
 
@@ -118,7 +118,7 @@ def test_check_supply_chain_requires_uv_lock_when_dependencies_exist(tmp_path: P
         "\n".join(["[project]", 'name = "demo"', 'version = "0.1.0"', 'dependencies = ["requests>=2.0"]', ""]),
         encoding="utf-8",
     )
-    result = run_script("scripts/check-supply-chain.py", "--repo-root", str(repo))
+    result = run_script("scripts/check_supply_chain.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "uv.lock is missing" in result.stderr
 
@@ -131,13 +131,13 @@ def test_check_supply_chain_accepts_uv_lock_for_python_dependencies(tmp_path: Pa
         encoding="utf-8",
     )
     (repo / "uv.lock").write_text("version = 1\n", encoding="utf-8")
-    result = run_script("scripts/check-supply-chain.py", "--repo-root", str(repo))
+    result = run_script("scripts/check_supply_chain.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
     assert "uv:uv.lock" in result.stdout
 
 
 def test_check_github_actions_passes_without_workflows() -> None:
-    result = run_script("scripts/check-github-actions.py", "--repo-root", str(ROOT))
+    result = run_script("scripts/check_github_actions.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
     assert "No GitHub Actions workflows detected." in result.stdout
 
@@ -166,7 +166,7 @@ def test_check_github_actions_flags_outdated_node24_baselines(tmp_path: Path) ->
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check-github-actions.py", "--repo-root", str(repo), "--json")
+    result = run_script("scripts/check_github_actions.py", "--repo-root", str(repo), "--json")
     assert result.returncode == 1
     payload = json.loads(result.stderr)
     assert [finding["category"] for finding in payload["findings"]] == [
@@ -186,7 +186,7 @@ def test_check_python_lengths_rejects_too_long_function(tmp_path: Path) -> None:
     scripts_dir.mkdir(parents=True)
     long_body = "\n".join(f"    value_{i} = {i}" for i in range(101))
     (scripts_dir / "long.py").write_text("\n".join(["def too_long():", long_body, "    return 0", ""]), encoding="utf-8")
-    result = run_script("scripts/check-python-lengths.py", "--repo-root", str(repo))
+    result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "function `too_long` length" in result.stderr
 
@@ -196,7 +196,7 @@ def test_check_python_lengths_rejects_too_long_skill_helper_file(tmp_path: Path)
     helper_dir = repo / "skills" / "public" / "demo" / "scripts"
     helper_dir.mkdir(parents=True)
     (helper_dir / "helper.py").write_text("\n".join(f"print({i})" for i in range(221)) + "\n", encoding="utf-8")
-    result = run_script("scripts/check-python-lengths.py", "--repo-root", str(repo))
+    result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "file length 221 exceeds limit 220" in result.stderr
 
@@ -217,7 +217,7 @@ def test_check_python_lengths_ignores_gitignored_python_files(tmp_path: Path) ->
     )
     init_git_repo(repo, ".gitignore", "scripts/kept.py", "tests/kept_test.py")
 
-    result = run_script("scripts/check-python-lengths.py", "--repo-root", str(repo))
+    result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -226,7 +226,7 @@ def test_check_python_lengths_rejects_too_long_test_file(tmp_path: Path) -> None
     tests_dir = repo / "tests"
     tests_dir.mkdir(parents=True)
     (tests_dir / "test_big.py").write_text("\n".join(f"VALUE_{i} = {i}" for i in range(551)) + "\n", encoding="utf-8")
-    result = run_script("scripts/check-python-lengths.py", "--repo-root", str(repo))
+    result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "file length 551 exceeds limit 550" in result.stderr
 
@@ -240,6 +240,6 @@ def test_check_python_lengths_rejects_too_long_test_function(tmp_path: Path) -> 
         "\n".join(["def test_too_long():", long_body, "    assert True", ""]),
         encoding="utf-8",
     )
-    result = run_script("scripts/check-python-lengths.py", "--repo-root", str(repo))
+    result = run_script("scripts/check_python_lengths.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "function `test_too_long` length 152 exceeds limit 150" in result.stderr

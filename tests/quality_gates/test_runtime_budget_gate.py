@@ -5,7 +5,7 @@ from pathlib import Path
 
 from .support import run_script
 
-SCRIPT = "skills/public/quality/scripts/check-runtime-budget.py"
+SCRIPT = "skills/public/quality/scripts/check_runtime_budget.py"
 
 
 def _seed_repo(tmp_path: Path, *, budgets: dict[str, int] | None, signals: dict | None) -> Path:

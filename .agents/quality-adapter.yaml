@@ -54,7 +54,7 @@ concept_paths:
   - charness-artifacts/quality/latest.md
   - README.md
 preflight_commands:
-  - python3 scripts/validate-maintainer-setup.py --repo-root .
+  - python3 scripts/validate_maintainer_setup.py --repo-root .
   - python3 scripts/doctor.py --json
 gate_commands:
   - ./scripts/run-quality.sh
@@ -62,4 +62,4 @@ review_commands:
   - ./scripts/run-quality.sh --review
 security_commands:
   - ./scripts/check-secrets.sh
-  - python3 scripts/check-supply-chain.py --repo-root .
+  - python3 scripts/check_supply_chain.py --repo-root .

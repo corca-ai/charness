@@ -70,7 +70,7 @@ format when specs use `Covered by pytest:` style references.
 `runtime_budgets` is a mapping of standing-gate label → max elapsed
 milliseconds. Labels must match the labels recorded in
 `.charness/quality/runtime-signals.json` by the standing gate runner. Add
-`scripts/check-runtime-budget.py` to the standing gate to fail the run when the
+`scripts/check_runtime_budget.py` to the standing gate to fail the run when the
 recent median exceeds the budget. A single latest sample above budget is
 reported as a spike when the recent median is still inside budget. Labels with
 no recorded sample yet are warnings, not failures, so a budget can be defined
@@ -128,7 +128,7 @@ them. Leave it empty by default. Current supported rules:
   and `scripts/`.
 
 The canonical quality path runs these opt-in rules through
-[`scripts/validate-skill-ergonomics.py`](../../../../scripts/validate-skill-ergonomics.py). Bootstrap also treats invalid explicit
+[`scripts/validate_skill_ergonomics.py`](../../../../scripts/validate_skill_ergonomics.py). Bootstrap also treats invalid explicit
 rule values as an error instead of silently rewriting them to `[]`.
 
 ## Artifact Rule

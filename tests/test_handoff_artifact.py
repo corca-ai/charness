@@ -70,7 +70,7 @@ def test_validate_handoff_artifact_rejects_extra_top_level_section(tmp_path: Pat
         + "\n",
     )
     (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
-    result = run_script("scripts/validate-handoff-artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "canonical sections" in result.stderr
 
@@ -106,7 +106,7 @@ def test_validate_handoff_artifact_rejects_missing_reference_link(tmp_path: Path
         )
         + "\n",
     )
-    result = run_script("scripts/validate-handoff-artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "at least one markdown link" in result.stderr
 
@@ -143,7 +143,7 @@ def test_validate_handoff_artifact_rejects_overlong_handoff(tmp_path: Path) -> N
         + "\n",
     )
     (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
-    result = run_script("scripts/validate-handoff-artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "70 lines" in result.stderr
 
@@ -180,6 +180,6 @@ def test_validate_handoff_artifact_rejects_explicit_allowance_as_subagent_blocke
         + "\n",
     )
     (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
-    result = run_script("scripts/validate-handoff-artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "must not treat missing explicit subagent allowance" in result.stderr

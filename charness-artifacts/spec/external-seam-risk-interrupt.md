@@ -23,7 +23,7 @@ Ship a first repo-owned `risk interrupt` contract that makes `#52` closeable:
   closeout may continue.
 - the same planner must also run before ordinary `impl` continues from a debug
   artifact; closeout is only the last backstop, not the first interrupt point.
-- `run-slice-closeout.py` must block when the current debug artifact says the
+- `run_slice_closeout.py` must block when the current debug artifact says the
   next move is not ordinary implementation and the slice has not refreshed a
   spec artifact.
 - `impl` / `spec` must consume the planner contract in their public wording so
@@ -65,7 +65,7 @@ Ship a first repo-owned `risk interrupt` contract that makes `#52` closeable:
 - the closeout block is current-slice-affine: it should trigger only when the
   current slice touched the current debug artifact or its named handoff artifact
   rather than letting one stale `debug/latest.md` block unrelated work forever.
-- `run-slice-closeout.py` will treat missing or unresolved spec carry-forward as
+- `run_slice_closeout.py` will treat missing or unresolved spec carry-forward as
   the concrete block condition for now.
 - This slice does not add a standalone `premortem` durable artifact; it uses
   refreshed spec/debug artifacts as the visible carry-forward seam.
@@ -121,7 +121,7 @@ Ship a first repo-owned `risk interrupt` contract that makes `#52` closeable:
 - `plan_risk_interrupt.py` emits a stable JSON/text decision from the current
   debug artifact
 - `impl` bootstrap checks the planner before the next ordinary patch continues
-- `run-slice-closeout.py` blocks when a pending forced interruption exists and
+- `run_slice_closeout.py` blocks when a pending forced interruption exists and
   no spec artifact with the matching interrupt id was refreshed in the current
   slice
 - `debug`, `impl`, and `spec` public contracts visibly agree on the new
@@ -131,13 +131,13 @@ Ship a first repo-owned `risk interrupt` contract that makes `#52` closeable:
 # Acceptance Checks
 
 - `pytest -q tests/test_debug_artifact.py tests/test_debug_scaffold.py tests/test_risk_interrupt.py`
-- `python3 scripts/check-skill-contracts.py --repo-root .`
-- `python3 scripts/validate-skills.py --repo-root .`
-- `python3 scripts/validate-public-skill-dogfood.py --repo-root .`
-- `python3 scripts/check-doc-links.py --repo-root .`
+- `python3 scripts/check_skill_contracts.py --repo-root .`
+- `python3 scripts/validate_skills.py --repo-root .`
+- `python3 scripts/validate_public_skill_dogfood.py --repo-root .`
+- `python3 scripts/check_doc_links.py --repo-root .`
 - `./scripts/check-markdown.sh`
 - `./scripts/check-secrets.sh`
-- `python3 scripts/run-slice-closeout.py --repo-root . --plan-only`
+- `python3 scripts/run_slice_closeout.py --repo-root . --plan-only`
 
 # Premortem
 
@@ -161,7 +161,7 @@ Ship a first repo-owned `risk interrupt` contract that makes `#52` closeable:
 1. Extend debug artifact schema, scaffold, and validator with seam-risk and
    interrupt-decision sections plus interrupt id.
 2. Add `scripts/plan_risk_interrupt.py` and a small shared parser/helper.
-3. Wire the planner into `impl` bootstrap and `run-slice-closeout.py`.
+3. Wire the planner into `impl` bootstrap and `run_slice_closeout.py`.
 4. Update `debug`, `spec`, and `impl` contracts plus contract pins/dogfood so
    spec carry-forward fields are explicit.
 5. Add focused tests for the new artifact and planner behavior.

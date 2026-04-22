@@ -46,7 +46,7 @@ def test_validate_integrations_rejects_invalid_local_wrapper(tmp_path: Path) -> 
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-integrations.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "local_wrapper requires wrapper_skill_id" in result.stderr
 
@@ -79,7 +79,7 @@ def test_validate_integrations_requires_install_entrypoint_for_support_backed_to
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-integrations.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "must declare lifecycle.install.install_url" in result.stderr
 
@@ -107,7 +107,7 @@ def test_validate_integrations_rejects_unsorted_access_modes(tmp_path: Path) -> 
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-integrations.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "access_modes must stay in preferred runtime order" in result.stderr
 
@@ -135,7 +135,7 @@ def test_validate_integrations_requires_capability_requirements_for_grant_and_en
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-integrations.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "grant access requires capability_requirements.grant_ids" in result.stderr
 
@@ -168,7 +168,7 @@ def test_validate_integrations_rejects_unsorted_config_layers(tmp_path: Path) ->
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-integrations.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "config_layers must stay in preferred order" in result.stderr
 

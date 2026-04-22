@@ -36,8 +36,8 @@ stays as the short human-readable contract for the same reviewed cases.
 ## Review Posture
 
 - the scaffold for each case comes from
-  `python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id <skill-id>`
-- `validate-public-skill-dogfood.py` fails when the checked-in review cases
+  `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id <skill-id>`
+- `validate_public_skill_dogfood.py` fails when the checked-in review cases
   drift from the current scaffold or when a required reviewed skill is missing
 - this registry is operator-reviewed consumer evidence, not a claim that
   `charness` already has fully automated prompt-routing evaluation

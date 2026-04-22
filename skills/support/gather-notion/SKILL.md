@@ -20,7 +20,7 @@ needs to become a durable local asset.
 Use the wrapper:
 
 ```bash
-python3 scripts/export-page.py \
+python3 scripts/export_page.py \
   "https://www.notion.so/Example-0123456789abcdef0123456789abcdef" \
   charness-artifacts/gather/notion-page.md
 ```
@@ -36,4 +36,4 @@ python3 scripts/export-page.py \
 
 - `references/runtime-contract.md`
 - `references/provenance.md`
-- `scripts/export-page.py`
+- `scripts/export_page.py`

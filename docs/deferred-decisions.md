@@ -30,7 +30,7 @@ Reopen trigger:
 - Question: Which shared packaging manifest is canonical for Claude/Codex dual support?
 - Current choice: [`packaging/charness.json`](../packaging/charness.json) stays the single source of truth.
 - Why now: This is already how the checked-in plugin install surface and root marketplace files are generated and validated.
-- Impact surfaces: [`docs/host-packaging.md`](./host-packaging.md), [`scripts/sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py), [`scripts/validate-packaging.py`](../scripts/validate-packaging.py)
+- Impact surfaces: [`docs/host-packaging.md`](./host-packaging.md), [`scripts/sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py), [`scripts/validate_packaging.py`](../scripts/validate_packaging.py)
 - Reopen trigger: If host-specific metadata can no longer be represented as generated output from one shared manifest.
 
 ### D2. Evaluator Engine ID
@@ -46,7 +46,7 @@ Reopen trigger:
 - Question: Should shared packaging manifest carry release version directly or rely on export-time override?
 - Current choice: Shared manifest remains canonical for default version; export-time override is allowed for host-specific release workflows.
 - Why now: Preserves reproducibility while keeping release operations flexible.
-- Impact surfaces: [`packaging/charness.json`](../packaging/charness.json), [`scripts/export-plugin.py`](../scripts/export-plugin.py), [`docs/host-packaging.md`](./host-packaging.md)
+- Impact surfaces: [`packaging/charness.json`](../packaging/charness.json), [`scripts/export_plugin.py`](../scripts/export_plugin.py), [`docs/host-packaging.md`](./host-packaging.md)
 - Reopen trigger: If release tooling requires immutable manifest-only versioning with no override path.
 
 ### D4. Generated Export Tree Storage
@@ -54,7 +54,7 @@ Reopen trigger:
 - Question: Store generated Claude/Codex export trees as fixtures or keep script+temp smoke canonical?
 - Current choice: Keep script-driven temporary materialization canonical; do not commit generated export trees.
 - Why now: Avoids drift and duplicate source-of-truth risk.
-- Impact surfaces: [`scripts/export-plugin.py`](../scripts/export-plugin.py), [`scripts/sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py), packaging docs
+- Impact surfaces: [`scripts/export_plugin.py`](../scripts/export_plugin.py), [`scripts/sync_root_plugin_manifests.py`](../scripts/sync_root_plugin_manifests.py), packaging docs
 - Reopen trigger: If a downstream installer requires committed generated trees as contract artifacts.
 
 ### D5. `profile.extends` Depth
@@ -62,7 +62,7 @@ Reopen trigger:
 - Question: Promote `extends` into merged-bundle runtime behavior now?
 - Current choice: Keep `extends` as constrained metadata seam; no broad merged-bundle runtime expansion in this phase.
 - Why now: Avoids broad behavior complexity before evaluator integration.
-- Impact surfaces: [`profiles/profile.schema.json`](../profiles/profile.schema.json), [`scripts/validate-profiles.py`](../scripts/validate-profiles.py)
+- Impact surfaces: [`profiles/profile.schema.json`](../profiles/profile.schema.json), [`scripts/validate_profiles.py`](../scripts/validate_profiles.py)
 - Reopen trigger: If real profile composition demand appears in downstream consumer repos.
 
 ### D6. Integration Capability Depth
@@ -70,7 +70,7 @@ Reopen trigger:
 - Question: How deep should capability grants/authenticated binary/env fallback go beyond metadata?
 - Current choice: Keep metadata + validation contracts (`access_modes`, `capability_requirements`, `readiness_checks`, `config_layers`) without automating secretful runtime orchestration in `charness`.
 - Why now: Matches host-neutral product boundary.
-- Impact surfaces: [`integrations/tools/manifest.schema.json`](../integrations/tools/manifest.schema.json), [`scripts/validate-integrations.py`](../scripts/validate-integrations.py), [`scripts/doctor.py`](../scripts/doctor.py)
+- Impact surfaces: [`integrations/tools/manifest.schema.json`](../integrations/tools/manifest.schema.json), [`scripts/validate_integrations.py`](../scripts/validate_integrations.py), [`scripts/doctor.py`](../scripts/doctor.py)
 - Reopen trigger: If multiple consumers need standardized executable orchestration beyond current manifest metadata.
 
 ### D7. `official` Terminology in Discovery Policy
@@ -86,7 +86,7 @@ Reopen trigger:
 - Question: Allow richer inheritance vs flattened bundles?
 - Current choice: Favor flattened effective bundles for execution, with minimal inheritance metadata retained for authoring convenience only.
 - Why now: Predictable runtime behavior beats expressive inheritance at this stage.
-- Impact surfaces: `profiles/*.json`, [`scripts/validate-profiles.py`](../scripts/validate-profiles.py), profile docs
+- Impact surfaces: `profiles/*.json`, [`scripts/validate_profiles.py`](../scripts/validate_profiles.py), profile docs
 - Reopen trigger: If flattening causes repeated maintenance burden across real consumer profiles.
 
 ### D9. Preset Contract Format
@@ -94,7 +94,7 @@ Reopen trigger:
 - Question: Move presets to JSON schema now or keep markdown-first catalog?
 - Current choice: Keep markdown-first preset contract with required frontmatter until first downstream organization preset matures.
 - Why now: Current preset surface is maintainer-oriented and stable with markdown validation.
-- Impact surfaces: `presets/*.md`, [`scripts/validate-presets.py`](../scripts/validate-presets.py)
+- Impact surfaces: `presets/*.md`, [`scripts/validate_presets.py`](../scripts/validate_presets.py)
 - Reopen trigger: If org-install preset scale needs stronger machine-only schema guarantees.
 
 ### D10. `ideation` Core Boundary
@@ -134,7 +134,7 @@ Reopen trigger:
 - Question: Where should Session 10+ gate proposals be implemented?
 - Current choice: Implement only deterministic, repo-owned gates in `charness`; keep evaluator/HITL-heavy checks in `cautilus` or explicit HITL workflows.
 - Why now: Keeps `charness` guarantees honest and runnable in isolation.
-- Impact surfaces: [`scripts/run-quality.sh`](../scripts/run-quality.sh), [`scripts/run-evals.py`](../scripts/run-evals.py), [`docs/public-skill-validation.md`](./public-skill-validation.md)
+- Impact surfaces: [`scripts/run-quality.sh`](../scripts/run-quality.sh), [`scripts/run_evals.py`](../scripts/run_evals.py), [`docs/public-skill-validation.md`](./public-skill-validation.md)
 - Reopen trigger: If current repo-owned gates prove insufficient for regression containment.
 
 ### D15. `spec` Mode Strategy

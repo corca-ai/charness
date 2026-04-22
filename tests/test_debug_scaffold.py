@@ -34,7 +34,7 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["artifact_path"] == "charness-artifacts/debug/latest.md"
-    assert payload["validator_command"] == "python3 scripts/validate-debug-artifact.py --repo-root ."
+    assert payload["validator_command"] == "python3 scripts/validate_debug_artifact.py --repo-root ."
     assert "# Debug Review" in payload["template"]
     assert "## Reproduction" in payload["template"]
     assert "## Seam Risk" in payload["template"]

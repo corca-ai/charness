@@ -11,7 +11,7 @@ markdown file stays as the human-readable narrative and rationale layer for the
 same assignments. Reviewed consumer-dogfood cases live in
 [docs/public-skill-dogfood.json](./public-skill-dogfood.json).
 When a new public skill is missing from the policy, run
-`python3 scripts/suggest-public-skill-validation.py --repo-root .` to list the
+`python3 scripts/suggest_public_skill_validation.py --repo-root .` to list the
 bucket choices before editing the JSON.
 
 ## Purpose
@@ -89,7 +89,7 @@ Repo policy lives in [`.agents/cautilus-adapter.yaml`](../.agents/cautilus-adapt
   reserved for maintained scenario-registry mutations such as
   [evals/cautilus/scenarios.json](../evals/cautilus/scenarios.json)
 
-`run-slice-closeout.py` should act as a gatekeeper, not as the evaluator
+`run_slice_closeout.py` should act as a gatekeeper, not as the evaluator
 runner: it decides whether proof is required and whether the refreshed artifact
 is present, but it should not silently launch cautilus itself.
 

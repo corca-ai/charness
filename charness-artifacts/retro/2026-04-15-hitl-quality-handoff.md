@@ -14,7 +14,7 @@ as loose prose by giving them a resumable HITL handoff shape.
 - `skills/public/hitl/references/chunk-contract.md`
 - `skills/public/hitl/references/state-model.md`
 - `skills/public/hitl/references/rule-propagation.md`
-- `python3 scripts/run-slice-closeout.py --repo-root .`
+- `python3 scripts/run_slice_closeout.py --repo-root .`
 
 ## Waste
 

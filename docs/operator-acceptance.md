@@ -57,8 +57,8 @@ Useful local commands:
 
 ```bash
 python3 scripts/doctor.py --repo-root . --json
-python3 scripts/validate-integrations.py --repo-root .
-python3 scripts/run-evals.py --repo-root .
+python3 scripts/validate_integrations.py --repo-root .
+python3 scripts/run_evals.py --repo-root .
 ```
 
 If `cautilus` is installed on PATH, also inspect its current contract surface
@@ -86,7 +86,7 @@ Read first:
 Useful local commands:
 
 ```bash
-python3 scripts/validate-packaging.py --repo-root .
+python3 scripts/validate_packaging.py --repo-root .
 python3 scripts/sync_root_plugin_manifests.py --repo-root .
 charness doctor
 charness update all
@@ -145,9 +145,9 @@ Read first:
 - [skills/public/create-skill/SKILL.md](../skills/public/create-skill/SKILL.md)
 - [skills/public/spec/SKILL.md](../skills/public/spec/SKILL.md)
 - [docs/public-skill-dogfood.md](./public-skill-dogfood.md)
-- [scripts/check-skill-contracts.py](../scripts/check-skill-contracts.py)
-- [scripts/run-evals.py](../scripts/run-evals.py)
-- [scripts/validate-public-skill-dogfood.py](../scripts/validate-public-skill-dogfood.py)
+- [scripts/check_skill_contracts.py](../scripts/check_skill_contracts.py)
+- [scripts/run_evals.py](../scripts/run_evals.py)
+- [scripts/validate_public_skill_dogfood.py](../scripts/validate_public_skill_dogfood.py)
 
 Acceptance:
 
@@ -171,7 +171,7 @@ Useful local commands:
 
 ```bash
 for d in skills/public/*; do [ -f "$d/adapter.example.yaml" ] && echo "adapter $d" || echo "no-adapter $d"; done
-python3 scripts/validate-adapters.py --repo-root .
+python3 scripts/validate_adapters.py --repo-root .
 ```
 
 Acceptance:

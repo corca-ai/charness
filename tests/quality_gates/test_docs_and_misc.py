@@ -373,7 +373,7 @@ def test_check_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:
     (docs_dir / "alpha.md").write_text(f"# Alpha\n\n{repeated_lines}\n", encoding="utf-8")
     (docs_dir / "beta.md").write_text(f"# Beta\n\n{repeated_lines}\n", encoding="utf-8")
 
-    result = run_script("scripts/check-duplicates.py", "--repo-root", str(repo), "--fail-on-match", "--json")
+    result = run_script("scripts/check_duplicates.py", "--repo-root", str(repo), "--fail-on-match", "--json")
     assert result.returncode == 1
     duplicates = json.loads(result.stdout)
     assert duplicates
@@ -391,7 +391,7 @@ def test_check_duplicates_ignores_gitignored_files(tmp_path: Path) -> None:
     (docs_dir / "generated-beta.md").write_text(f"# Beta\n\n{repeated_lines}\n", encoding="utf-8")
     init_git_repo(repo, ".gitignore", "docs/alpha.md")
 
-    result = run_script("scripts/check-duplicates.py", "--repo-root", str(repo), "--fail-on-match", "--json")
+    result = run_script("scripts/check_duplicates.py", "--repo-root", str(repo), "--fail-on-match", "--json")
     assert result.returncode == 0, result.stderr
     duplicates = json.loads(result.stdout)
     assert duplicates == []

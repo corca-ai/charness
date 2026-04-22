@@ -21,8 +21,8 @@ into host-specific plugin surfaces.
   - `.agents/plugins/marketplace.json`
 - those marketplace files are generated compatibility artifacts, not the
   primary operator-facing install contract
-- `scripts/validate-packaging.py` proves contract shape and repo-path integrity
-- `scripts/export-plugin.py` materializes temporary Claude/Codex plugin layouts
+- `scripts/validate_packaging.py` proves contract shape and repo-path integrity
+- `scripts/export_plugin.py` materializes temporary Claude/Codex plugin layouts
   from the shared manifest
 - `scripts/sync_root_plugin_manifests.py` refreshes the checked-in install
   surface and root marketplace files

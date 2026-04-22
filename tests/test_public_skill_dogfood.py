@@ -78,7 +78,7 @@ def seed_skill(repo: Path, skill_id: str, *, description: str, adapter: bool) ->
 
 def scaffold_case(repo: Path, skill_id: str) -> dict[str, object]:
     result = run_script(
-        "scripts/suggest-public-skill-dogfood.py",
+        "scripts/suggest_public_skill_dogfood.py",
         "--repo-root",
         str(repo),
         "--skill-id",
@@ -107,7 +107,7 @@ def base_registry(repo: Path) -> dict[str, object]:
 
 
 def test_validate_public_skill_dogfood_passes_for_current_real_registry() -> None:
-    result = run_script("scripts/validate-public-skill-dogfood.py", "--repo-root", str(ROOT))
+    result = run_script("scripts/validate_public_skill_dogfood.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
     assert "Validated public skill dogfood registry" in result.stdout
 
@@ -119,7 +119,7 @@ def test_validate_public_skill_dogfood_checks_current_scaffold_drift(tmp_path: P
     registry["cases"][0]["prompt"] = "Drifted prompt."
     write_registry(repo, registry)
 
-    result = run_script("scripts/validate-public-skill-dogfood.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_public_skill_dogfood.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "drifted from current scaffold" in result.stderr
 
@@ -131,7 +131,7 @@ def test_validate_public_skill_dogfood_requires_reviewed_case_for_required_skill
     registry["cases"] = []
     write_registry(repo, registry)
 
-    result = run_script("scripts/validate-public-skill-dogfood.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_public_skill_dogfood.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing required reviewed dogfood case" in result.stderr
 
@@ -143,6 +143,6 @@ def test_validate_public_skill_dogfood_requires_observed_evidence_for_reviewed_c
     registry["cases"][0]["observed_evidence"] = []
     write_registry(repo, registry)
 
-    result = run_script("scripts/validate-public-skill-dogfood.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_public_skill_dogfood.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "observed_evidence" in result.stderr

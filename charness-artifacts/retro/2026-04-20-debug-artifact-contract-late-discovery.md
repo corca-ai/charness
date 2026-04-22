@@ -10,7 +10,7 @@ correctly pointed out that `debug` should have helped earlier.
 ## Evidence Summary
 
 - user correction in the current thread
-- `scripts/validate-debug-artifact.py`
+- `scripts/validate_debug_artifact.py`
 - `skills/public/debug/SKILL.md`
 
 ## Waste

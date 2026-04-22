@@ -82,15 +82,15 @@ def expect_adapter_bootstrap(
                     raise EvalError(f"{skill_id} adapter resolve: unexpected {key} {data.get(key)!r}")
 def scenario_skill_package_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "skill-valid"
-    result = run_command(["python3", "scripts/validate-skills.py", "--repo-root", str(fixture)], cwd=root)
+    result = run_command(["python3", "scripts/validate_skills.py", "--repo-root", str(fixture)], cwd=root)
     expect_success(result, "skill-valid fixture")
 def scenario_profile_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "profile-valid"
-    result = run_command(["python3", "scripts/validate-profiles.py", "--repo-root", str(fixture)], cwd=root)
+    result = run_command(["python3", "scripts/validate_profiles.py", "--repo-root", str(fixture)], cwd=root)
     expect_success(result, "profile-valid fixture")
 def scenario_doc_links_valid(root: Path) -> None:
     fixture = root / "evals" / "fixtures" / "doc-links-valid"
-    result = run_command(["python3", "scripts/check-doc-links.py", "--repo-root", str(fixture)], cwd=root)
+    result = run_command(["python3", "scripts/check_doc_links.py", "--repo-root", str(fixture)], cwd=root)
     expect_success(result, "doc-links-valid fixture")
 def scenario_quality_adapter_bootstrap(root: Path) -> None:
     expect_adapter_bootstrap(root, skill_id="quality", adapter_name="quality-adapter.yaml", expected_artifact_path="charness-artifacts/quality/latest.md")
@@ -219,7 +219,7 @@ def scenario_handoff_relative_links(root: Path) -> None:
             ),
             encoding="utf-8",
         )
-        result = run_command(["python3", "scripts/check-doc-links.py", "--repo-root", str(tmp)], cwd=root)
+        result = run_command(["python3", "scripts/check_doc_links.py", "--repo-root", str(tmp)], cwd=root)
         expect_success(result, "handoff relative-link portability")
 def seed_find_skills_fixture(tmp: Path) -> None:
     local_skill_dir = tmp / "skills" / "public" / "local-demo"
@@ -342,7 +342,7 @@ def scenario_find_skills_local_first(root: Path) -> None:
             raise EvalError("find-skills local-first discovery: markdown artifact missing support skill section")
 
 def scenario_representative_skill_contracts(root: Path) -> None:
-    result = run_command(["python3", "scripts/check-skill-contracts.py", "--repo-root", str(root)], cwd=root)
+    result = run_command(["python3", "scripts/check_skill_contracts.py", "--repo-root", str(root)], cwd=root)
     expect_success(result, "representative skill contracts")
 
 def scenario_support_sync_contracts(root: Path) -> None:

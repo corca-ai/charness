@@ -92,14 +92,14 @@ def test_validate_public_skill_validation_requires_full_partition(tmp_path: Path
     seed_skill(repo, "demo-a", adapter=True)
     seed_skill(repo, "demo-b", adapter=False)
 
-    result = run_script("scripts/validate-public-skill-validation.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_public_skill_validation.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "does not classify every public skill" in result.stderr
     assert "`demo-b`" in result.stderr
     assert "`tiers.smoke-only`" in result.stderr
     assert "`tiers.hitl-recommended`" in result.stderr
     assert "`tiers.evaluator-required`" in result.stderr
-    assert "suggest-public-skill-validation.py" in result.stderr
+    assert "suggest_public_skill_validation.py" in result.stderr
 
 
 def test_validate_public_skill_validation_reports_missing_adapter_requirement_bucket(tmp_path: Path) -> None:
@@ -126,13 +126,13 @@ def test_validate_public_skill_validation_reports_missing_adapter_requirement_bu
     seed_skill(repo, "demo-a", adapter=True)
     seed_skill(repo, "demo-b", adapter=False)
 
-    result = run_script("scripts/validate-public-skill-validation.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_public_skill_validation.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "adapter_requirements does not classify every public skill" in result.stderr
     assert "`demo-b`" in result.stderr
     assert "`adapter_requirements.required`" in result.stderr
     assert "`adapter_requirements.adapter-free`" in result.stderr
-    assert "suggest-public-skill-validation.py" in result.stderr
+    assert "suggest_public_skill_validation.py" in result.stderr
 
 
 def test_validate_public_skill_validation_requires_adapter_contract_for_required_skill(tmp_path: Path) -> None:
@@ -158,7 +158,7 @@ def test_validate_public_skill_validation_requires_adapter_contract_for_required
     )
     seed_skill(repo, "demo-a", adapter=False)
 
-    result = run_script("scripts/validate-public-skill-validation.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_public_skill_validation.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "adapter-required skill is missing `adapter.example.yaml`" in result.stderr
 
@@ -186,7 +186,7 @@ def test_validate_public_skill_validation_rejects_adapter_helpers_for_adapter_fr
     )
     seed_skill(repo, "demo-a", adapter=True)
 
-    result = run_script("scripts/validate-public-skill-validation.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_public_skill_validation.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "adapter-free skill should not ship `adapter.example.yaml`" in result.stderr
 
@@ -215,7 +215,7 @@ def test_suggest_public_skill_validation_reports_missing_bucket_choices(tmp_path
     seed_skill(repo, "demo-a", adapter=True)
     seed_skill(repo, "demo-b", adapter=False)
 
-    result = run_script("scripts/suggest-public-skill-validation.py", "--repo-root", str(repo), "--json")
+    result = run_script("scripts/suggest_public_skill_validation.py", "--repo-root", str(repo), "--json")
     assert result.returncode == 1
     payload = json.loads(result.stdout)
     assert payload["missing_tiers"] == ["demo-b"]
@@ -248,7 +248,7 @@ def test_suggest_public_skill_validation_reports_missing_bucket_choices(tmp_path
         }
     ]
 
-    human = run_script("scripts/suggest-public-skill-validation.py", "--repo-root", str(repo))
+    human = run_script("scripts/suggest_public_skill_validation.py", "--repo-root", str(repo))
     assert human.returncode == 1
     assert "`demo-b`" in human.stdout
     assert "`tiers.hitl-recommended`" in human.stdout

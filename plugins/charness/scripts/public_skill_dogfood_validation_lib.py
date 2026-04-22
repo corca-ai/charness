@@ -116,7 +116,7 @@ def _validate_case_scaffold(
         if case[key] != scaffold[key]:
             raise ValidationError(
                 f"{field}.{key} drifted from current scaffold for `{skill_id}`; "
-                f"refresh with `python3 scripts/suggest-public-skill-dogfood.py --repo-root . --skill-id {skill_id} --json`"
+                f"refresh with `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id {skill_id} --json`"
             )
 
 

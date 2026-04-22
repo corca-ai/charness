@@ -8,7 +8,7 @@ from .support import ROOT, run_script
 
 def test_check_changed_surfaces_reports_expected_obligations_for_readme() -> None:
     result = run_script(
-        "scripts/check-changed-surfaces.py",
+        "scripts/check_changed_surfaces.py",
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -21,15 +21,15 @@ def test_check_changed_surfaces_reports_expected_obligations_for_readme() -> Non
     assert "checked-in-plugin-export" in surface_ids
     assert "repo-markdown" in surface_ids
     assert "python3 scripts/sync_root_plugin_manifests.py --repo-root ." in payload["sync_commands"]
-    assert "python3 scripts/validate-packaging.py --repo-root ." in payload["verify_commands"]
-    assert "python3 scripts/validate-packaging-committed.py --repo-root ." in payload["verify_commands"]
-    assert "python3 scripts/check-doc-links.py --repo-root ." in payload["verify_commands"]
+    assert "python3 scripts/validate_packaging.py --repo-root ." in payload["verify_commands"]
+    assert "python3 scripts/validate_packaging_committed.py --repo-root ." in payload["verify_commands"]
+    assert "python3 scripts/check_doc_links.py --repo-root ." in payload["verify_commands"]
     assert "./scripts/check-markdown.sh" in payload["verify_commands"]
 
 
 def test_check_changed_surfaces_reports_unmatched_paths() -> None:
     result = run_script(
-        "scripts/check-changed-surfaces.py",
+        "scripts/check_changed_surfaces.py",
         "--repo-root",
         str(ROOT),
         "--paths",
@@ -61,9 +61,9 @@ def test_select_verifiers_returns_smallest_repo_owned_bundle_for_readme() -> Non
         "reason_surface_ids": ["checked-in-plugin-export"],
     }
     verify_commands = {item["command"] for item in recommendations if item["phase"] == "verify"}
-    assert "python3 scripts/validate-packaging.py --repo-root ." in verify_commands
-    assert "python3 scripts/validate-packaging-committed.py --repo-root ." in verify_commands
-    assert "python3 scripts/check-doc-links.py --repo-root ." in verify_commands
+    assert "python3 scripts/validate_packaging.py --repo-root ." in verify_commands
+    assert "python3 scripts/validate_packaging_committed.py --repo-root ." in verify_commands
+    assert "python3 scripts/check_doc_links.py --repo-root ." in verify_commands
     assert "./scripts/check-markdown.sh" in verify_commands
 
 
@@ -79,10 +79,10 @@ def test_select_verifiers_includes_public_skill_policy_for_public_skill_changes(
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
-    assert "python3 scripts/validate-skills.py --repo-root ." in verify_commands
-    assert "python3 scripts/validate-public-skill-validation.py --repo-root ." in verify_commands
-    assert "python3 scripts/validate-public-skill-dogfood.py --repo-root ." in verify_commands
-    assert "python3 scripts/validate-cautilus-proof.py --repo-root ." in verify_commands
+    assert "python3 scripts/validate_skills.py --repo-root ." in verify_commands
+    assert "python3 scripts/validate_public_skill_validation.py --repo-root ." in verify_commands
+    assert "python3 scripts/validate_public_skill_dogfood.py --repo-root ." in verify_commands
+    assert "python3 scripts/validate_cautilus_proof.py --repo-root ." in verify_commands
 
 
 def test_select_verifiers_includes_public_skill_policy_for_policy_json_changes() -> None:
@@ -97,7 +97,7 @@ def test_select_verifiers_includes_public_skill_policy_for_policy_json_changes()
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
-    assert "python3 scripts/validate-public-skill-validation.py --repo-root ." in verify_commands
+    assert "python3 scripts/validate_public_skill_validation.py --repo-root ." in verify_commands
 
 
 def test_select_verifiers_includes_adapter_and_prompt_proof_for_named_cautilus_adapter_changes() -> None:
@@ -112,8 +112,8 @@ def test_select_verifiers_includes_adapter_and_prompt_proof_for_named_cautilus_a
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
-    assert "python3 scripts/validate-adapters.py --repo-root ." in verify_commands
-    assert "python3 scripts/validate-cautilus-proof.py --repo-root ." in verify_commands
+    assert "python3 scripts/validate_adapters.py --repo-root ." in verify_commands
+    assert "python3 scripts/validate_cautilus_proof.py --repo-root ." in verify_commands
 
 
 def test_select_verifiers_includes_chatbot_proposal_runner_for_packet_changes() -> None:
@@ -128,7 +128,7 @@ def test_select_verifiers_includes_chatbot_proposal_runner_for_packet_changes() 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
-    assert "python3 scripts/validate-cautilus-scenarios.py --repo-root ." in verify_commands
+    assert "python3 scripts/validate_cautilus_scenarios.py --repo-root ." in verify_commands
     assert "python3 scripts/eval_cautilus_chatbot_proposals.py --repo-root . --json" in verify_commands
 
 
@@ -162,7 +162,7 @@ def test_select_verifiers_includes_public_skill_dogfood_for_registry_changes() -
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     verify_commands = {item["command"] for item in payload["recommended_commands"] if item["phase"] == "verify"}
-    assert "python3 scripts/validate-public-skill-dogfood.py --repo-root ." in verify_commands
+    assert "python3 scripts/validate_public_skill_dogfood.py --repo-root ." in verify_commands
 
 
 def test_select_verifiers_reports_missing_bundle_for_unmatched_paths() -> None:
@@ -216,7 +216,7 @@ def test_validate_surfaces_rejects_duplicate_ids(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = run_script("scripts/validate-surfaces.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_surfaces.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "duplicate surface id `dup`" in result.stderr
 
@@ -276,7 +276,7 @@ def test_run_slice_closeout_executes_sync_then_verify(tmp_path: Path) -> None:
     )
 
     result = run_script(
-        "scripts/run-slice-closeout.py",
+        "scripts/run_slice_closeout.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -317,7 +317,7 @@ def test_run_slice_closeout_blocks_unmatched_paths_by_default(tmp_path: Path) ->
     )
 
     result = run_script(
-        "scripts/run-slice-closeout.py",
+        "scripts/run_slice_closeout.py",
         "--repo-root",
         str(repo),
         "--paths",
@@ -436,7 +436,7 @@ def test_run_slice_closeout_blocks_for_forced_risk_interrupt_without_spec_refres
     )
 
     result = run_script(
-        "scripts/run-slice-closeout.py",
+        "scripts/run_slice_closeout.py",
         "--repo-root",
         str(repo),
         "--paths",

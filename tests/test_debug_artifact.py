@@ -110,7 +110,7 @@ def test_validate_debug_artifact_rejects_extra_top_level_section(tmp_path: Path)
             "## Hypothesis\n\nhypothesis\n\n## Session Log\n\n- log\n\n",
         ),
     )
-    result = run_script("scripts/validate-debug-artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "canonical sections" in result.stderr
 
@@ -120,7 +120,7 @@ def test_validate_debug_artifact_requires_three_candidate_causes(tmp_path: Path)
         tmp_path,
         valid_current_artifact().replace("- three\n", ""),
     )
-    result = run_script("scripts/validate-debug-artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "at least three plausible causes" in result.stderr
 
@@ -133,7 +133,7 @@ def test_validate_debug_artifact_requires_interrupt_sections_for_latest(tmp_path
             "",
         ),
     )
-    result = run_script("scripts/validate-debug-artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing required section `## Seam Risk`" in result.stderr
 
@@ -143,6 +143,6 @@ def test_validate_debug_artifact_forced_interrupt_requires_spec_handoff(tmp_path
         tmp_path,
         valid_current_artifact(next_step="impl", handoff_artifact="none", risk_class="external-seam"),
     )
-    result = run_script("scripts/validate-debug-artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "forced risk interrupt" in result.stderr

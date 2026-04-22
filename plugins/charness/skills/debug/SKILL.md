@@ -40,7 +40,7 @@ Treat the scaffold helper as the canonical artifact contract shortcut:
 Before stopping, run:
 
 ```bash
-python3 "$SKILL_DIR/../../../scripts/validate-debug-artifact.py" --repo-root .
+python3 "$SKILL_DIR/../../../scripts/validate_debug_artifact.py" --repo-root .
 ```
 
 Before writing a new artifact, read existing `debug-*.md` files in the output

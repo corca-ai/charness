@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Exec every .py in the checked-in plugin tree to catch broken imports.
 
-Companion gate to `check-export-safe-imports.py`. That lint rejects a known
+Companion gate to `check_export_safe_imports.py`. That lint rejects a known
 family of dev-tree-only imports statically. This gate executes every module
 in the exported plugin tree end-to-end so that any other import-time failure
 the static lint cannot see still surfaces before push.

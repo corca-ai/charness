@@ -60,67 +60,108 @@ def init_git_repo(repo: Path, *tracked_paths: str) -> None:
         )
 
 
-def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
-    repo = tmp_path / "repo"
-    scripts_dir = repo / "scripts"
-    bin_dir = repo / "bin"
-    scripts_dir.mkdir(parents=True)
-    bin_dir.mkdir()
+QUALITY_PYTHON_STUBS = (
+    ("validate-skills", "validate_skills.py"),
+    ("validate-skill-ergonomics", "validate_skill_ergonomics.py"),
+    ("validate-surfaces", "validate_surfaces.py"),
+    ("validate-public-skill-validation", "validate_public_skill_validation.py"),
+    ("validate-public-skill-dogfood", "validate_public_skill_dogfood.py"),
+    ("validate-cautilus-scenarios", "validate_cautilus_scenarios.py"),
+    ("validate-cautilus-proof", "validate_cautilus_proof.py"),
+    ("validate-profiles", "validate_profiles.py"),
+    ("validate-presets", "validate_presets.py"),
+    ("validate-adapters", "validate_adapters.py"),
+    ("validate-integrations", "validate_integrations.py"),
+    ("validate-packaging", "validate_packaging.py"),
+    ("validate-packaging-committed", "validate_packaging_committed.py"),
+    ("validate-handoff-artifact", "validate_handoff_artifact.py"),
+    ("validate-debug-artifact", "validate_debug_artifact.py"),
+    ("validate-quality-artifact", "validate_quality_artifact.py"),
+    ("inventory-quality-handoff", "inventory_quality_handoff.py"),
+    ("validate-maintainer-setup", "validate_maintainer_setup.py"),
+    ("check-python-lengths", "check_python_lengths.py"),
+    ("check-python-filenames", "check_python_filenames.py"),
+    ("check-skill-contracts", "check_skill_contracts.py"),
+    ("check-export-safe-imports", "check_export_safe_imports.py"),
+    ("check-plugin-import-smoke", "check_plugin_import_smoke.py"),
+    ("check-command-docs", "check_command_docs.py"),
+    ("check-doc-links", "check_doc_links.py"),
+    ("check-supply-chain", "check_supply_chain.py"),
+    ("check-github-actions", "check_github_actions.py"),
+    ("check-supply-chain-online", "check_supply_chain_online.py"),
+    ("check-coverage", "check_coverage.py"),
+    ("check-test-completeness", "check_test_completeness.py"),
+    ("check-test-production-ratio", "check_test_production_ratio.py"),
+    ("run-evals", "run_evals.py"),
+    ("check-duplicates", "check_duplicates.py"),
+)
+QUALITY_RUNTIME_STUBS = (
+    ("measure-startup-probes", "measure_startup_probes.py"),
+    ("check-runtime-budget", "check_runtime_budget.py"),
+)
+QUALITY_SHELL_STUBS = (
+    ("check-markdown", "check-markdown.sh"),
+    ("check-secrets", "check-secrets.sh"),
+    ("check-shell", "check-shell.sh"),
+    ("check-links-internal", "check-links-internal.sh"),
+    ("check-links-external", "check-links-external.sh"),
+)
+QUALITY_BIN_STUBS = ("ruff", "pytest", "specdown")
 
-    shutil.copy2(ROOT / "scripts" / "run-quality.sh", scripts_dir / "run-quality.sh")
-    (scripts_dir / "run-quality.sh").chmod(0o755)
 
-    python_stubs = (
-        ("validate-skills", "validate-skills.py"),
-        ("validate-skill-ergonomics", "validate_skill_ergonomics.py"),
-        ("validate-surfaces", "validate-surfaces.py"),
-        ("validate-public-skill-validation", "validate-public-skill-validation.py"),
-        ("validate-public-skill-dogfood", "validate-public-skill-dogfood.py"),
-        ("validate-cautilus-scenarios", "validate-cautilus-scenarios.py"),
-        ("validate-cautilus-proof", "validate-cautilus-proof.py"),
-        ("validate-profiles", "validate-profiles.py"),
-        ("validate-presets", "validate-presets.py"),
-        ("validate-adapters", "validate-adapters.py"),
-        ("validate-integrations", "validate-integrations.py"),
-        ("validate-packaging", "validate-packaging.py"),
-        ("validate-packaging-committed", "validate-packaging-committed.py"),
-        ("validate-handoff-artifact", "validate-handoff-artifact.py"),
-        ("validate-debug-artifact", "validate-debug-artifact.py"),
-        ("validate-quality-artifact", "validate-quality-artifact.py"),
-        ("inventory-quality-handoff", "inventory_quality_handoff.py"),
-        ("validate-maintainer-setup", "validate-maintainer-setup.py"),
-        ("check-python-lengths", "check-python-lengths.py"),
-        ("check-skill-contracts", "check-skill-contracts.py"),
-        ("check-command-docs", "check-command-docs.py"),
-        ("check-doc-links", "check-doc-links.py"),
-        ("check-supply-chain", "check-supply-chain.py"),
-        ("check-github-actions", "check-github-actions.py"),
-        ("check-supply-chain-online", "check-supply-chain-online.py"),
-        ("check-coverage", "check-coverage.py"),
-        ("check-test-production-ratio", "check-test-production-ratio.py"),
-        ("run-evals", "run-evals.py"),
-        ("check-duplicates", "check-duplicates.py"),
+def quality_python_stub(label: str) -> str:
+    return "\n".join(
+        [
+            "#!/usr/bin/env python3",
+            "import os",
+            "import sys",
+            f"LABEL = {label!r}",
+            "if os.environ.get('QUALITY_FAIL_LABEL') == LABEL:",
+            "    print(f'quality failure output from {LABEL}')",
+            "    sys.exit(1)",
+            "print(f'quality success output from {LABEL}')",
+            "",
+        ]
     )
-    for label, filename in python_stubs:
-        write_executable(
-            scripts_dir / filename,
-            "\n".join(
-                [
-                    "#!/usr/bin/env python3",
-                    "import os",
-                    "import sys",
-                    f"LABEL = {label!r}",
-                    "if os.environ.get('QUALITY_FAIL_LABEL') == LABEL:",
-                    "    print(f'quality failure output from {LABEL}')",
-                    "    sys.exit(1)",
-                    "print(f'quality success output from {LABEL}')",
-                    "",
-                ]
-            ),
-        )
 
+
+def quality_shell_stub(label: str) -> str:
+    return "\n".join(
+        [
+            "#!/usr/bin/env bash",
+            "set -euo pipefail",
+            f"LABEL={label!r}",
+            'if [[ "${QUALITY_FAIL_LABEL:-}" == "$LABEL" ]]; then',
+            '  echo "quality failure output from $LABEL"',
+            "  exit 1",
+            "fi",
+            'echo "quality success output from $LABEL"',
+            'if [[ "$LABEL" == "check-links-external" ]]; then',
+            '  echo "link online=${CHARNESS_LINK_CHECK_ONLINE:-0}"',
+            "fi",
+            "",
+        ]
+    )
+
+
+def seed_quality_python_stubs(target_dir: Path, stubs: tuple[tuple[str, str], ...]) -> None:
+    for label, filename in stubs:
+        write_executable(target_dir / filename, quality_python_stub(label))
+
+
+def seed_quality_shell_stubs(target_dir: Path) -> None:
+    for label, filename in QUALITY_SHELL_STUBS:
+        write_executable(target_dir / filename, quality_shell_stub(label))
+
+
+def seed_quality_bin_stubs(target_dir: Path) -> None:
+    for label in QUALITY_BIN_STUBS:
+        write_executable(target_dir / label, quality_shell_stub(label))
+
+
+def seed_quality_runtime_recorder(target_dir: Path) -> None:
     write_executable(
-        scripts_dir / "record_quality_runtime.py",
+        target_dir / "record_quality_runtime.py",
         "\n".join(
             [
                 "#!/usr/bin/env python3",
@@ -145,53 +186,24 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         ),
     )
 
-    shell_stubs = (
-        ("check-markdown", "check-markdown.sh"),
-        ("check-secrets", "check-secrets.sh"),
-        ("check-shell", "check-shell.sh"),
-        ("check-links-external", "check-links-external.sh"),
-    )
-    for label, filename in shell_stubs:
-        write_executable(
-            scripts_dir / filename,
-            "\n".join(
-                [
-                    "#!/usr/bin/env bash",
-                    "set -euo pipefail",
-                    f"LABEL={label!r}",
-                    'if [[ "${QUALITY_FAIL_LABEL:-}" == "$LABEL" ]]; then',
-                    '  echo "quality failure output from $LABEL"',
-                    "  exit 1",
-                    "fi",
-                    'echo "quality success output from $LABEL"',
-                    'if [[ "$LABEL" == "check-links-external" ]]; then',
-                    '  echo "link online=${CHARNESS_LINK_CHECK_ONLINE:-0}"',
-                    "fi",
-                    "",
-                ]
-            ),
-        )
 
-    for label in ("ruff", "pytest"):
-        write_executable(
-            bin_dir / label,
-            "\n".join(
-                [
-                    "#!/usr/bin/env bash",
-                    "set -euo pipefail",
-                    f"LABEL={label!r}",
-                    'if [[ "${QUALITY_FAIL_LABEL:-}" == "$LABEL" ]]; then',
-                    '  echo "quality failure output from $LABEL"',
-                    "  exit 1",
-                    "fi",
-                    'echo "quality success output from $LABEL"',
-                    "",
-                ]
-            ),
-        )
+def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
+    repo = tmp_path / "repo"
+    scripts_dir = repo / "scripts"
+    bin_dir = repo / "bin"
+    quality_scripts_dir = repo / "skills" / "public" / "quality" / "scripts"
+    scripts_dir.mkdir(parents=True)
+    bin_dir.mkdir()
+    quality_scripts_dir.mkdir(parents=True)
 
-    env = {"PATH": f"{bin_dir}:/usr/bin:/bin"}
-    return repo, env
+    shutil.copy2(ROOT / "scripts" / "run-quality.sh", scripts_dir / "run-quality.sh")
+    (scripts_dir / "run-quality.sh").chmod(0o755)
+    seed_quality_python_stubs(scripts_dir, QUALITY_PYTHON_STUBS)
+    seed_quality_python_stubs(quality_scripts_dir, QUALITY_RUNTIME_STUBS)
+    seed_quality_runtime_recorder(scripts_dir)
+    seed_quality_shell_stubs(scripts_dir)
+    seed_quality_bin_stubs(bin_dir)
+    return repo, {"PATH": f"{bin_dir}:/usr/bin:/bin"}
 
 
 @pytest.fixture(scope="module")

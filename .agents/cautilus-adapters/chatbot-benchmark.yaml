@@ -8,7 +8,7 @@ required_prerequisites:
   - install the `cautilus` CLI before running chatbot benchmark comparison
   - prepare baseline and candidate worktrees before compare runs
 preflight_commands:
-  - python3 scripts/validate-cautilus-scenarios.py --repo-root .
+  - python3 scripts/validate_cautilus_scenarios.py --repo-root .
 comparison_command_templates:
   - python3 scripts/eval_cautilus_chatbot_compare.py --repo-root . --baseline-repo {baseline_repo} --candidate-repo {candidate_repo} --output-dir {output_dir}
 held_out_command_templates:

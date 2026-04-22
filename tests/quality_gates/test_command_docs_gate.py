@@ -51,7 +51,7 @@ def seed_command_docs_repo(tmp_path: Path) -> Path:
 
 
 def test_check_command_docs_passes_current_repo_contract() -> None:
-    result = run_script("scripts/check-command-docs.py", "--repo-root", str(ROOT))
+    result = run_script("scripts/check_command_docs.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
     assert "Validated command docs" in result.stdout
 
@@ -60,7 +60,7 @@ def test_check_command_docs_reports_missing_required_doc_phrase(tmp_path: Path) 
     repo = seed_command_docs_repo(tmp_path)
     (repo / "docs" / "demo.md").write_text("Run `demo` for text output.\n", encoding="utf-8")
 
-    result = run_script("scripts/check-command-docs.py", "--repo-root", str(repo))
+    result = run_script("scripts/check_command_docs.py", "--repo-root", str(repo))
 
     assert result.returncode == 1
     assert "docs/demo.md missing `demo --json`" in result.stderr
@@ -70,7 +70,7 @@ def test_check_command_docs_skips_repos_without_contract(tmp_path: Path) -> None
     repo = tmp_path / "repo"
     repo.mkdir()
 
-    result = run_script("scripts/check-command-docs.py", "--repo-root", str(repo))
+    result = run_script("scripts/check_command_docs.py", "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
     assert "No command-docs contract found" in result.stdout

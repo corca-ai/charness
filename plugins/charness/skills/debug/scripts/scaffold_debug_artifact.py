@@ -94,7 +94,7 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
         "date": date_text,
         "title": resolved_title,
         "template": render_template(title=resolved_title, date_text=date_text),
-        "validator_command": "python3 scripts/validate-debug-artifact.py --repo-root .",
+        "validator_command": "python3 scripts/validate_debug_artifact.py --repo-root .",
     }
 
 

@@ -18,9 +18,9 @@ def seed_quality_repo(tmp_path: Path) -> Path:
     (repo / "package.json").write_text('{"name":"demo","workspaces":["packages/*"]}\n', encoding="utf-8")
     (repo / "pnpm-workspace.yaml").write_text("packages:\n  - packages/*\n", encoding="utf-8")
     (repo / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
-    (repo / "scripts" / "validate-maintainer-setup.py").write_text("print('ok')\n", encoding="utf-8")
+    (repo / "scripts" / "validate_maintainer_setup.py").write_text("print('ok')\n", encoding="utf-8")
     (repo / "scripts" / "check-secrets.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
-    (repo / "scripts" / "check-supply-chain.py").write_text("print('ok')\n", encoding="utf-8")
+    (repo / "scripts" / "check_supply_chain.py").write_text("print('ok')\n", encoding="utf-8")
     return repo
 
 
@@ -82,7 +82,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     assert resolved["data"]["startup_probes"] == []
     assert resolved["data"]["gate_commands"] == ["./scripts/run-quality.sh"]
     assert resolved["data"]["review_commands"] == ["./scripts/run-quality.sh --review"]
-    assert resolved["data"]["preflight_commands"] == ["python3 scripts/validate-maintainer-setup.py --repo-root ."]
+    assert resolved["data"]["preflight_commands"] == ["python3 scripts/validate_maintainer_setup.py --repo-root ."]
 
 
 def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path: Path) -> None:
@@ -218,7 +218,7 @@ def test_quality_bootstrap_rejects_invalid_explicit_skill_ergonomics_rules(tmp_p
 def test_quality_bootstrap_detects_repo_owned_github_actions_check(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
     (repo / "scripts" / "run-quality.sh").unlink()
-    (repo / "scripts" / "check-github-actions.py").write_text("print('ok')\n", encoding="utf-8")
+    (repo / "scripts" / "check_github_actions.py").write_text("print('ok')\n", encoding="utf-8")
 
     result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
@@ -226,7 +226,7 @@ def test_quality_bootstrap_detects_repo_owned_github_actions_check(tmp_path: Pat
     resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
     resolved = json.loads(resolve_result.stdout)
-    assert resolved["data"]["gate_commands"] == ["python3 scripts/check-github-actions.py --repo-root ."]
+    assert resolved["data"]["gate_commands"] == ["python3 scripts/check_github_actions.py --repo-root ."]
 
 
 def test_quality_bootstrap_infers_specdown_defaults(tmp_path: Path) -> None:

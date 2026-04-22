@@ -66,7 +66,7 @@ if __name__ == "__main__":
         sys.exit(main())
     except ValidationError as exc:
         print(
-            f"{exc}\nRun `python3 scripts/suggest-public-skill-validation.py --repo-root .` for bucket choices.",
+            f"{exc}\nRun `python3 scripts/suggest_public_skill_validation.py --repo-root .` for bucket choices.",
             file=sys.stderr,
         )
         sys.exit(1)

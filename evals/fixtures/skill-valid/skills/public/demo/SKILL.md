@@ -5,7 +5,7 @@ description: "Use when a minimal public skill fixture is needed for eval validat
 
 # Demo
 
-Minimal valid public skill fixture for `validate-skills.py`.
+Minimal valid public skill fixture for `validate_skills.py`.
 
 ## References
 

@@ -18,7 +18,7 @@ lifecycle helpers, and added a test-production ratio gate.
 - `check-coverage` reports `86.4%` aggregate control-plane coverage and zero
   files below the `80.0%` per-file floor.
 - `check-test-production-ratio` reports `0.53` against a `1.00` ceiling.
-- `python3 scripts/run-slice-closeout.py --repo-root .` passed all planned
+- `python3 scripts/run_slice_closeout.py --repo-root .` passed all planned
   sync and verify commands.
 
 ## Waste

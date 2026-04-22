@@ -4,7 +4,7 @@ Date: 2026-04-21
 ## Problem
 
 `charness update` failed on another machine during install-surface refresh with
-`scripts/validate-packaging.py ... checked-in plugin tree does not match the
+`scripts/validate_packaging.py ... checked-in plugin tree does not match the
 generated install surface`, even though the source checkout that fed the update
 looked locally "fixed" because regenerated plugin-export files were still
 present in the working tree.
@@ -22,7 +22,7 @@ another checkout can consume it.
 - Another machine failed at
   `plugins/charness/skills/create-cli/SKILL.md` packaging drift during
   `charness update`.
-- In the current repo, `python3 scripts/validate-packaging.py --repo-root .`
+- In the current repo, `python3 scripts/validate_packaging.py --repo-root .`
   passed because the working tree already contained regenerated
   `plugins/charness/**` files.
 - Comparing `HEAD` files directly showed source/plugin mismatch for
@@ -38,7 +38,7 @@ another checkout can consume it.
 - Run `python3 scripts/sync_root_plugin_manifests.py --repo-root .`.
 - Commit only `skills/public/create-cli/SKILL.md`.
 - Leave the regenerated `plugins/charness/**` changes uncommitted.
-- `python3 scripts/validate-packaging.py --repo-root .` passes on the working
+- `python3 scripts/validate_packaging.py --repo-root .` passes on the working
   tree, but the committed snapshot fails packaging validation and another
   checkout pulling that commit fails during `charness update`.
 
@@ -60,7 +60,7 @@ before they break downstream `charness update` runs.
 
 ## Verification
 
-- Added `scripts/validate-packaging-committed.py` to validate a git ref snapshot
+- Added `scripts/validate_packaging_committed.py` to validate a git ref snapshot
   via `git archive`.
 - Added the new validator to `run-quality.sh` and to the checked-in-plugin
   surface obligations.
@@ -76,6 +76,6 @@ snapshot, but the standing packaging check validated the current working tree.
 
 ## Prevention
 
-- Keep `validate-packaging-committed.py` in the standing quality runner so
+- Keep `validate_packaging_committed.py` in the standing quality runner so
   partial commits cannot hide behind a locally regenerated working tree.
 - Keep the regression test for partial-commit drift.

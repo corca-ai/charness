@@ -31,7 +31,7 @@ Lock `premortem` to one meaning in the checked-in public contract:
 - Should `spec`, `quality`, `handoff`, and `narrative` converge on the same
   `executed|skipped|blocked` reporting language in the next slice?
 - Should a repo-owned planner decide when `premortem` is required before closeout?
-- Should `run-slice-closeout.py` eventually gate on a premortem planner the same
+- Should `run_slice_closeout.py` eventually gate on a premortem planner the same
   way it already gates on cautilus proof?
 
 # Deferred Decisions
@@ -70,10 +70,10 @@ Lock `premortem` to one meaning in the checked-in public contract:
 
 # Acceptance Checks
 
-- `python3 scripts/check-skill-contracts.py --repo-root .`
-- `python3 scripts/validate-skills.py --repo-root .`
-- `python3 scripts/validate-public-skill-dogfood.py --repo-root .`
-- `python3 scripts/check-doc-links.py`
+- `python3 scripts/check_skill_contracts.py --repo-root .`
+- `python3 scripts/validate_skills.py --repo-root .`
+- `python3 scripts/validate_public_skill_dogfood.py --repo-root .`
+- `python3 scripts/check_doc_links.py`
 
 # Premortem
 

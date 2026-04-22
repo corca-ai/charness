@@ -64,6 +64,46 @@ format_elapsed() {
   printf '%sms' "$elapsed_ms"
 }
 
+collect_quality_changed_paths() {
+  local upstream_ref merge_base
+
+  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    return 1
+  fi
+
+  if upstream_ref="$(git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null)"; then
+    if merge_base="$(git merge-base HEAD "$upstream_ref" 2>/dev/null)"; then
+      git diff --name-only "$merge_base"...HEAD || true
+    fi
+  fi
+
+  git diff --name-only || true
+  git diff --name-only --cached || true
+  git ls-files --others --exclude-standard || true
+}
+
+coverage_relevant_changes_present() {
+  local path
+
+  if [[ -n "$RUN_QUALITY_LABELS" ]]; then
+    return 0
+  fi
+
+  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    return 0
+  fi
+
+  while IFS= read -r path; do
+    case "$path" in
+      scripts/control_plane_lib.py|scripts/control_plane_lifecycle_lib.py|scripts/doctor.py|scripts/install_provenance_lib.py|scripts/install_tools.py|scripts/support_sync_lib.py|scripts/sync_support.py|scripts/update_tools.py|scripts/upstream_release_lib.py|scripts/check_coverage.py|scripts/check_coverage_lib.py|scripts/check_coverage_extra_lib.py|tests/control_plane/*|tests/quality_gates/test_check_coverage_inventory.py)
+        return 0
+        ;;
+    esac
+  done < <(collect_quality_changed_paths)
+
+  return 1
+}
+
 record_runtime() {
   local label="$1"
   local elapsed_ms="$2"
@@ -210,38 +250,39 @@ print_final_summary() {
     "$(format_elapsed "$elapsed_ms")"
 }
 
-queue_selected "validate-skills" python3 scripts/validate-skills.py --repo-root "$REPO_ROOT"
-queue_selected "validate-skill-ergonomics" python3 scripts/validate-skill-ergonomics.py --repo-root "$REPO_ROOT"
-queue_selected "validate-surfaces" python3 scripts/validate-surfaces.py --repo-root "$REPO_ROOT"
-queue_selected "validate-public-skill-validation" python3 scripts/validate-public-skill-validation.py --repo-root "$REPO_ROOT"
-queue_selected "validate-public-skill-dogfood" python3 scripts/validate-public-skill-dogfood.py --repo-root "$REPO_ROOT"
-queue_selected "validate-cautilus-scenarios" python3 scripts/validate-cautilus-scenarios.py --repo-root "$REPO_ROOT"
-queue_selected "validate-cautilus-proof" python3 scripts/validate-cautilus-proof.py --repo-root "$REPO_ROOT"
-queue_selected "validate-profiles" python3 scripts/validate-profiles.py --repo-root "$REPO_ROOT"
-queue_selected "validate-presets" python3 scripts/validate-presets.py --repo-root "$REPO_ROOT"
-queue_selected "validate-adapters" python3 scripts/validate-adapters.py --repo-root "$REPO_ROOT"
-queue_selected "validate-integrations" python3 scripts/validate-integrations.py --repo-root "$REPO_ROOT"
-queue_selected "validate-packaging" python3 scripts/validate-packaging.py --repo-root "$REPO_ROOT"
-queue_selected "validate-packaging-committed" python3 scripts/validate-packaging-committed.py --repo-root "$REPO_ROOT"
-queue_selected "validate-handoff-artifact" python3 scripts/validate-handoff-artifact.py --repo-root "$REPO_ROOT"
-queue_selected "validate-debug-artifact" python3 scripts/validate-debug-artifact.py --repo-root "$REPO_ROOT"
-queue_selected "validate-quality-artifact" python3 scripts/validate-quality-artifact.py --repo-root "$REPO_ROOT"
+queue_selected "validate-skills" python3 scripts/validate_skills.py --repo-root "$REPO_ROOT"
+queue_selected "validate-skill-ergonomics" python3 scripts/validate_skill_ergonomics.py --repo-root "$REPO_ROOT"
+queue_selected "validate-surfaces" python3 scripts/validate_surfaces.py --repo-root "$REPO_ROOT"
+queue_selected "validate-public-skill-validation" python3 scripts/validate_public_skill_validation.py --repo-root "$REPO_ROOT"
+queue_selected "validate-public-skill-dogfood" python3 scripts/validate_public_skill_dogfood.py --repo-root "$REPO_ROOT"
+queue_selected "validate-cautilus-scenarios" python3 scripts/validate_cautilus_scenarios.py --repo-root "$REPO_ROOT"
+queue_selected "validate-cautilus-proof" python3 scripts/validate_cautilus_proof.py --repo-root "$REPO_ROOT"
+queue_selected "validate-profiles" python3 scripts/validate_profiles.py --repo-root "$REPO_ROOT"
+queue_selected "validate-presets" python3 scripts/validate_presets.py --repo-root "$REPO_ROOT"
+queue_selected "validate-adapters" python3 scripts/validate_adapters.py --repo-root "$REPO_ROOT"
+queue_selected "validate-integrations" python3 scripts/validate_integrations.py --repo-root "$REPO_ROOT"
+queue_selected "validate-packaging" python3 scripts/validate_packaging.py --repo-root "$REPO_ROOT"
+queue_selected "validate-packaging-committed" python3 scripts/validate_packaging_committed.py --repo-root "$REPO_ROOT"
+queue_selected "validate-handoff-artifact" python3 scripts/validate_handoff_artifact.py --repo-root "$REPO_ROOT"
+queue_selected "validate-debug-artifact" python3 scripts/validate_debug_artifact.py --repo-root "$REPO_ROOT"
+queue_selected "validate-quality-artifact" python3 scripts/validate_quality_artifact.py --repo-root "$REPO_ROOT"
 queue_selected "inventory-quality-handoff" python3 scripts/inventory_quality_handoff.py --repo-root "$REPO_ROOT"
-queue_selected "validate-maintainer-setup" python3 scripts/validate-maintainer-setup.py --repo-root "$REPO_ROOT"
-queue_selected "check-python-lengths" python3 scripts/check-python-lengths.py --repo-root "$REPO_ROOT"
-queue_selected "check-skill-contracts" python3 scripts/check-skill-contracts.py --repo-root "$REPO_ROOT"
-queue_selected "check-export-safe-imports" python3 scripts/check-export-safe-imports.py --repo-root "$REPO_ROOT"
-queue_selected "check-plugin-import-smoke" python3 scripts/check-plugin-import-smoke.py --repo-root "$REPO_ROOT"
-queue_selected "check-command-docs" python3 scripts/check-command-docs.py --repo-root "$REPO_ROOT"
-queue_selected "check-doc-links" python3 scripts/check-doc-links.py --repo-root "$REPO_ROOT"
+queue_selected "validate-maintainer-setup" python3 scripts/validate_maintainer_setup.py --repo-root "$REPO_ROOT"
+queue_selected "check-python-lengths" python3 scripts/check_python_lengths.py --repo-root "$REPO_ROOT"
+queue_selected "check-python-filenames" python3 scripts/check_python_filenames.py --repo-root "$REPO_ROOT"
+queue_selected "check-skill-contracts" python3 scripts/check_skill_contracts.py --repo-root "$REPO_ROOT"
+queue_selected "check-export-safe-imports" python3 scripts/check_export_safe_imports.py --repo-root "$REPO_ROOT"
+queue_selected "check-plugin-import-smoke" python3 scripts/check_plugin_import_smoke.py --repo-root "$REPO_ROOT"
+queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo-root "$REPO_ROOT"
+queue_selected "check-doc-links" python3 scripts/check_doc_links.py --repo-root "$REPO_ROOT"
 flush_phase || OVERALL_RC=$?
 
 queue_selected "check-markdown" ./scripts/check-markdown.sh
 queue_selected "check-secrets" ./scripts/check-secrets.sh
-queue_selected "check-supply-chain" python3 scripts/check-supply-chain.py --repo-root "$REPO_ROOT"
-queue_selected "check-github-actions" python3 scripts/check-github-actions.py --repo-root "$REPO_ROOT"
+queue_selected "check-supply-chain" python3 scripts/check_supply_chain.py --repo-root "$REPO_ROOT"
+queue_selected "check-github-actions" python3 scripts/check_github_actions.py --repo-root "$REPO_ROOT"
 if [[ "${CHARNESS_SUPPLY_CHAIN_ONLINE:-0}" == "1" ]]; then
-  queue_selected "check-supply-chain-online" python3 scripts/check-supply-chain-online.py --repo-root "$REPO_ROOT" --triage-owner "repo-maintainers"
+  queue_selected "check-supply-chain-online" python3 scripts/check_supply_chain_online.py --repo-root "$REPO_ROOT" --triage-owner "repo-maintainers"
 fi
 queue_selected "check-shell" ./scripts/check-shell.sh
 queue_selected "check-links-internal" ./scripts/check-links-internal.sh
@@ -259,25 +300,34 @@ flush_phase || OVERALL_RC=$?
 
 PYTEST_PARALLEL_FLAGS=()
 if python3 -c "import xdist" 2>/dev/null; then
-  PYTEST_PARALLEL_FLAGS=(-n auto)
+  PYTEST_WORKER_COUNT="$(
+    python3 - <<'PY'
+import os
+
+print(max(1, (os.cpu_count() or 1) - 1))
+PY
+  )"
+  PYTEST_PARALLEL_FLAGS=(-n "$PYTEST_WORKER_COUNT")
 else
   echo "run-quality: pytest-xdist not installed; pytest will run serially and may exceed runtime budgets. Install with: pip install pytest-xdist" >&2
 fi
 queue_selected "pytest" pytest -q -m "not ci_only" "${PYTEST_PARALLEL_FLAGS[@]}" "${STANDING_PYTEST_TARGETS[@]}"
 flush_phase || OVERALL_RC=$?
 
-queue_selected "check-test-completeness" python3 scripts/check-test-completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
-queue_selected "check-test-production-ratio" python3 scripts/check-test-production-ratio.py --repo-root "$REPO_ROOT"
+queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
+queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT"
 queue_selected "specdown" bash -c 'command -v specdown >/dev/null || { echo "specdown is required for executable specs. Install from https://github.com/corca-ai/specdown or run charness tool doctor specdown --json for current readiness."; exit 1; }; specdown run -quiet -no-report'
-queue_selected "run-evals" python3 scripts/run-evals.py --repo-root "$REPO_ROOT"
-queue_selected "check-duplicates" python3 scripts/check-duplicates.py --repo-root "$REPO_ROOT" --fail-on-match
-queue_selected "check-coverage" python3 scripts/check-coverage.py --repo-root "$REPO_ROOT"
+queue_selected "run-evals" python3 scripts/run_evals.py --repo-root "$REPO_ROOT"
+queue_selected "check-duplicates" python3 scripts/check_duplicates.py --repo-root "$REPO_ROOT" --fail-on-match
+if coverage_relevant_changes_present; then
+  queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
+fi
 flush_phase || OVERALL_RC=$?
 
-queue_selected "measure-startup-probes" python3 skills/public/quality/scripts/measure-startup-probes.py --repo-root "$REPO_ROOT" --class standing --record-runtime-signals
+queue_selected "measure-startup-probes" python3 skills/public/quality/scripts/measure_startup_probes.py --repo-root "$REPO_ROOT" --class standing --record-runtime-signals
 flush_phase || OVERALL_RC=$?
 
-queue_selected "check-runtime-budget" python3 skills/public/quality/scripts/check-runtime-budget.py --repo-root "$REPO_ROOT"
+queue_selected "check-runtime-budget" python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root "$REPO_ROOT"
 flush_phase || OVERALL_RC=$?
 print_final_summary
 exit "$OVERALL_RC"

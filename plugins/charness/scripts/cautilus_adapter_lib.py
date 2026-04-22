@@ -69,9 +69,9 @@ def infer_cautilus_defaults(repo_root: Path, *, run_mode: str = "ask") -> dict[s
             "install Python and Node dependencies before running repo quality gates"
         ],
         "preflight_commands": [
-            "python3 scripts/validate-adapters.py --repo-root .",
-            "python3 scripts/validate-public-skill-validation.py --repo-root .",
-            "python3 scripts/validate-cautilus-scenarios.py --repo-root .",
+            "python3 scripts/validate_adapters.py --repo-root .",
+            "python3 scripts/validate_public_skill_validation.py --repo-root .",
+            "python3 scripts/validate_cautilus_scenarios.py --repo-root .",
         ],
         "instruction_surface_command": "cautilus instruction-surface test --repo-root .",
         "instruction_surface_test_command_templates": [

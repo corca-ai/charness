@@ -103,7 +103,7 @@
       "observed_evidence": [
         "The checked-in public core explicitly keeps `debug` in diagnosis-before-repair mode, preserving the exact symptom, a falsifiable hypothesis, and at least three candidate causes before implementation work starts.",
         "Repo-owned eval coverage already exercises `debug-adapter-bootstrap`, which pins the current adapter bootstrap and canonical artifact path at `charness-artifacts/debug/latest.md`.",
-        "The committed `validate-debug-artifact.py` gate plus `tests/test_debug_artifact.py` now make the current debug artifact carry structured seam risk and interruption data, so a host-boundary miss cannot stay a chat-only handoff."
+        "The committed `validate_debug_artifact.py` gate plus `tests/test_debug_artifact.py` now make the current debug artifact carry structured seam risk and interruption data, so a host-boundary miss cannot stay a chat-only handoff."
       ]
     },
     {
@@ -358,7 +358,7 @@
       "reviewed_on": "2026-04-22",
       "observed_evidence": [
         "The checked-in public core frames `spec` as turning an under-specified request into the current build contract, which keeps this prompt out of `ideation` and `impl` unless the concept or execution state changes materially.",
-        "Representative contract pins in `scripts/check-skill-contracts.py` now also keep the risk-interrupt carry-forward seam load-bearing: when the planner surfaces a forced debug interrupt, `spec` must consume it explicitly in `Premortem` instead of clearing it with generic doc churn.",
+        "Representative contract pins in `scripts/check_skill_contracts.py` now also keep the risk-interrupt carry-forward seam load-bearing: when the planner surfaces a forced debug interrupt, `spec` must consume it explicitly in `Premortem` instead of clearing it with generic doc churn.",
         "That keeps the planner-backed `debug -> spec -> impl` boundary visible as a reviewed consumer seam: the current contract makes seam risk survive into the spec handoff before plain implementation is allowed to resume."
       ]
     },

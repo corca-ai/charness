@@ -3,7 +3,7 @@ Date: 2026-04-20
 
 ## Problem
 
-Issue `#43` reported that `scripts/check-doc-links.py` allowed a checked-in
+Issue `#43` reported that `scripts/check_doc_links.py` allowed a checked-in
 markdown link to escape the current repo root and point at a sibling checkout
 such as `../../../other-repo/...` when that path existed on the maintainer
 machine.
@@ -17,7 +17,7 @@ current repo root and the target exists there.
 
 ## Observed Facts
 
-- `scripts/check-doc-links.py` resolved relative links with
+- `scripts/check_doc_links.py` resolved relative links with
   `(doc.parent / relative_target).resolve()`.
 - The script only checked `candidate.exists()` after resolution.
 - A sibling checkout path outside the repo therefore passed locally whenever
@@ -30,7 +30,7 @@ current repo root and the target exists there.
 - Create `repo/docs/handoff.md` with a link like
   `../../other-repo/README.md`.
 - Create `other-repo/README.md` as a sibling directory outside `repo`.
-- Run `python3 scripts/check-doc-links.py --repo-root repo`.
+- Run `python3 scripts/check_doc_links.py --repo-root repo`.
 - Before the fix, validation passed because the resolved target existed.
 
 ## Candidate Causes
@@ -43,7 +43,7 @@ current repo root and the target exists there.
 
 ## Hypothesis
 
-If `check-doc-links.py` rejects any resolved relative target outside
+If `check_doc_links.py` rejects any resolved relative target outside
 `repo_root`, then maintainer-local sibling checkout links will fail at the
 shared default gate instead of leaking into downstream release or CI workflows.
 
@@ -54,7 +54,7 @@ shared default gate instead of leaking into downstream release or CI workflows.
 - Added a regression test that creates a real sibling repo path outside the
   repo root and verifies the validator now fails with `escapes repo root`.
 - Re-ran `pytest -q tests/quality_gates/test_check_doc_links.py`, `ruff check`
-  on the touched files, and `python3 scripts/check-doc-links.py --repo-root .`.
+  on the touched files, and `python3 scripts/check_doc_links.py --repo-root .`.
 
 ## Root Cause
 

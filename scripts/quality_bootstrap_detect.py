@@ -74,7 +74,7 @@ def detect_concept_paths(repo_root: Path) -> list[str]:
 
 def detect_preflight_commands(repo_root: Path) -> list[str]:
     return [cmd for exists, cmd in (
-        ((repo_root / "scripts" / "validate-maintainer-setup.py").is_file(), "python3 scripts/validate-maintainer-setup.py --repo-root ."),
+        ((repo_root / "scripts" / "validate_maintainer_setup.py").is_file(), "python3 scripts/validate_maintainer_setup.py --repo-root ."),
         ((repo_root / "scripts" / "doctor.py").is_file(), "python3 scripts/doctor.py --json"),
     ) if exists]
 
@@ -82,12 +82,12 @@ def detect_preflight_commands(repo_root: Path) -> list[str]:
 def detect_gate_commands(repo_root: Path) -> list[str]:
     return [cmd for exists, cmd in (
         ((repo_root / "scripts" / "run-quality.sh").is_file(), "./scripts/run-quality.sh"),
-        ((repo_root / "scripts" / "check-github-actions.py").is_file(), "python3 scripts/check-github-actions.py --repo-root ."),
+        ((repo_root / "scripts" / "check_github_actions.py").is_file(), "python3 scripts/check_github_actions.py --repo-root ."),
     ) if exists]
 
 
 def detect_security_commands(repo_root: Path) -> list[str]:
     return [cmd for exists, cmd in (
         ((repo_root / "scripts" / "check-secrets.sh").is_file(), "./scripts/check-secrets.sh"),
-        ((repo_root / "scripts" / "check-supply-chain.py").is_file(), "python3 scripts/check-supply-chain.py --repo-root ."),
+        ((repo_root / "scripts" / "check_supply_chain.py").is_file(), "python3 scripts/check_supply_chain.py --repo-root ."),
     ) if exists]

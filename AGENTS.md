@@ -94,19 +94,19 @@ Read the smallest memory surface that answers the current question.
   command rewrites generated surfaces, plugin exports, versioned manifests, or
   git state, finish that phase before starting validators or publish steps.
 - Repo-owned diff obligations live in [`.agents/surfaces.json`](./.agents/surfaces.json); use
-  `python3 scripts/check-changed-surfaces.py --repo-root .` to inspect them and
-  `python3 scripts/run-slice-closeout.py --repo-root .` before commit when the
+  `python3 scripts/check_changed_surfaces.py --repo-root .` to inspect them and
+  `python3 scripts/run_slice_closeout.py --repo-root .` before commit when the
   slice spans generated surfaces or multiple validator families.
-- Use `python3 scripts/run-evals.py` when changing validator contracts,
+- Use `python3 scripts/run_evals.py` when changing validator contracts,
   adapter bootstrap behavior, or portable markdown-link assumptions.
-- When editing skill packages, run `python3 scripts/validate-skills.py`.
-- When editing profiles, run `python3 scripts/validate-profiles.py`.
+- When editing skill packages, run `python3 scripts/validate_skills.py`.
+- When editing profiles, run `python3 scripts/validate_profiles.py`.
 - When editing adapter bootstrap or resolver behavior, run
-  `python3 scripts/validate-adapters.py`.
+  `python3 scripts/validate_adapters.py`.
 - When editing integration manifests or control-plane scripts, run
-  `python3 scripts/validate-integrations.py`.
+  `python3 scripts/validate_integrations.py`.
 - When editing committed markdown links or handoff references, run
-  `python3 scripts/check-doc-links.py`.
+  `python3 scripts/check_doc_links.py`.
 - When markdown or secret-bearing text changes materially, run
   [`./scripts/check-markdown.sh`](./scripts/check-markdown.sh) and [`./scripts/check-secrets.sh`](./scripts/check-secrets.sh).
 - Use [`./scripts/check-shell.sh`](./scripts/check-shell.sh) when `shellcheck` is available; this is an
@@ -115,7 +115,7 @@ Read the smallest memory surface that answers the current question.
   require `lychee` and will fail if it is missing. Internal link existence is
   always verified; external URLs are verified online only when
   `CHARNESS_LINK_CHECK_ONLINE=1`.
-- Use `python3 scripts/check-duplicates.py` to surface helper-script duplicate
+- Use `python3 scripts/check_duplicates.py` to surface helper-script duplicate
   hotspots before copying a pattern again.
 - Keep `python3 -m py_compile skills/public/*/scripts/*.py` as the cheap smoke
   test for helper scripts.

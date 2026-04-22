@@ -23,7 +23,7 @@ then the process boundary should be:
 
 ## Observed Facts
 
-- `scripts/run-evals.py` called `subprocess.run(...)` without `timeout=`.
+- `scripts/run_evals.py` called `subprocess.run(...)` without `timeout=`.
 - public `resolve_adapter.py` helpers are invoked directly from SKILL bootstrap
   shell snippets, so a hung child process can outlive the caller.
 - `agent-browser` integration only checked binary existence / `--help` health,

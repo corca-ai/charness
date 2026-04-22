@@ -258,6 +258,6 @@ def test_sync_support_rejects_upstream_skill_file_path(tmp_path: Path) -> None:
         + "\n",
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-integrations.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "must point at a skill root directory" in result.stderr

@@ -9,9 +9,9 @@ baseline_options:
 required_prerequisites:
   - install Python and Node dependencies before running repo quality gates
 preflight_commands:
-  - python3 scripts/validate-adapters.py --repo-root .
-  - python3 scripts/validate-public-skill-validation.py --repo-root .
-  - python3 scripts/validate-cautilus-scenarios.py --repo-root .
+  - python3 scripts/validate_adapters.py --repo-root .
+  - python3 scripts/validate_public_skill_validation.py --repo-root .
+  - python3 scripts/validate_cautilus_scenarios.py --repo-root .
 instruction_surface_command: cautilus instruction-surface test --repo-root .
 prompt_affecting_patterns:
   - AGENTS.md

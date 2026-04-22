@@ -46,7 +46,7 @@ def extract_snapshot(repo_root: Path, ref: str, snapshot_root: Path) -> None:
 
 
 def validate_snapshot(snapshot_root: Path) -> subprocess.CompletedProcess[str]:
-    script_path = snapshot_root / "scripts" / "validate-packaging.py"
+    script_path = snapshot_root / "scripts" / "validate_packaging.py"
     if not script_path.is_file():
         raise ValidationError(f"snapshot is missing `{script_path.relative_to(snapshot_root)}`")
     return subprocess.run(

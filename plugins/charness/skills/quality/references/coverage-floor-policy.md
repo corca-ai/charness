@@ -38,6 +38,6 @@ Interpretation:
 
 Reference implementations live next to this document:
 
-- [coverage-floor-inventory.py](./coverage-floor-inventory.py)
+- [coverage_floor_inventory.py](./coverage_floor_inventory.py)
 - [coverage-floor-exemptions.txt](./coverage-floor-exemptions.txt)
-- [validate-spec-pytest-references.py](./validate-spec-pytest-references.py)
+- [validate_spec_pytest_references.py](./validate_spec_pytest_references.py)

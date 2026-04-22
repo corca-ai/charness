@@ -5,7 +5,7 @@ import importlib.util
 from .support import ROOT, run_script
 
 SPEC = importlib.util.spec_from_file_location(
-    "check_coverage_module", ROOT / "scripts" / "check-coverage.py"
+    "check_coverage_module", ROOT / "scripts" / "check_coverage.py"
 )
 assert SPEC is not None and SPEC.loader is not None
 CHECK_COVERAGE = importlib.util.module_from_spec(SPEC)
@@ -50,7 +50,7 @@ def test_per_file_floor_report_classifies_floor_violations() -> None:
 
 
 def test_check_coverage_json_includes_per_file_floor() -> None:
-    result = run_script("scripts/check-coverage.py", "--repo-root", str(ROOT), "--json")
+    result = run_script("scripts/check_coverage.py", "--repo-root", str(ROOT), "--json")
 
     assert result.returncode == 0, result.stderr
     assert '"per_file_floor"' in result.stdout

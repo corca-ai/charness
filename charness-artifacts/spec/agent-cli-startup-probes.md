@@ -36,7 +36,7 @@ This keeps semantics and budgets separate:
 ## Current Slice
 
 1. Add `startup_probes` to the quality adapter contract and bootstrap defaults.
-2. Ship a reusable `measure-startup-probes.py` helper through the public
+2. Ship a reusable `measure_startup_probes.py` helper through the public
    `quality` skill.
 3. Teach `quality` and `create-cli` to require at least one cheap read-only
    startup probe for agent-facing CLIs.

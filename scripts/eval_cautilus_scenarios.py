@@ -34,7 +34,7 @@ def load_profile_skills(repo_root: Path, profile: str) -> list[dict[str, object]
 
 
 def run_selected_evals(repo_root: Path, scenario_names: list[str]) -> subprocess.CompletedProcess[str]:
-    command = ["python3", "scripts/run-evals.py", "--repo-root", str(repo_root)]
+    command = ["python3", "scripts/run_evals.py", "--repo-root", str(repo_root)]
     for scenario_name in scenario_names:
         command.extend(["--scenario-id", scenario_name])
     return subprocess.run(command, cwd=repo_root, check=False, capture_output=True, text=True)
@@ -61,7 +61,7 @@ def build_summary(
         "scenario_count": len(selected_ids),
         "skills": skills,
         "run_evals": {
-            "command": "python3 scripts/run-evals.py --repo-root . "
+            "command": "python3 scripts/run_evals.py --repo-root . "
             + " ".join(f"--scenario-id {scenario_id}" for scenario_id in selected_ids),
             "exit_code": command.returncode,
             "stdout": command.stdout.strip(),

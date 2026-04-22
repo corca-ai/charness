@@ -5,7 +5,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from .support import ROOT, clone_quality_runner_repo, run_script, run_shell_script
+from .support import ROOT, clone_quality_runner_repo, init_git_repo, run_script, run_shell_script
 
 
 def test_record_quality_runtime_writes_summary_and_archive(tmp_path: Path) -> None:
@@ -136,6 +136,20 @@ def test_run_quality_can_select_cautilus_proof_gate(tmp_path: Path, seeded_quali
     assert "Quality summary: 1 passed, 0 failed" in result.stdout
 
 
+def test_run_quality_skips_check_coverage_without_control_plane_changes(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    (repo / "README.md").write_text("# demo\n", encoding="utf-8")
+    init_git_repo(repo)
+    subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.email", "codex-test@example.com"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+    assert result.returncode == 0, result.stderr
+    assert "PASS pytest" in result.stdout
+    assert "PASS check-coverage" not in result.stdout
+
+
 def test_run_quality_verbose_replays_success_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown,pytest,check-coverage"
@@ -189,17 +203,19 @@ def test_install_git_hooks_sets_core_hookspath(tmp_path: Path) -> None:
         text=True,
     )
     assert hookspath.stdout.strip() == str((repo / ".githooks").resolve())
+
+
 def test_validate_maintainer_setup_requires_installed_hookspath(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / ".githooks").mkdir(parents=True)
-    shutil.copy2(ROOT / "scripts" / "validate-maintainer-setup.py", repo / "scripts" / "validate-maintainer-setup.py")
+    shutil.copy2(ROOT / "scripts" / "validate_maintainer_setup.py", repo / "scripts" / "validate_maintainer_setup.py")
     shutil.copy2(ROOT / "scripts" / "install-git-hooks.sh", repo / "scripts" / "install-git-hooks.sh")
     shutil.copy2(ROOT / ".githooks" / "pre-push", repo / ".githooks" / "pre-push")
     subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
 
     missing = subprocess.run(
-        ["python3", "scripts/validate-maintainer-setup.py", "--repo-root", str(repo)],
+        ["python3", "scripts/validate_maintainer_setup.py", "--repo-root", str(repo)],
         cwd=repo,
         check=False,
         capture_output=True,
@@ -218,7 +234,7 @@ def test_validate_maintainer_setup_requires_installed_hookspath(tmp_path: Path) 
     assert install.returncode == 0, install.stderr
 
     ready = subprocess.run(
-        ["python3", "scripts/validate-maintainer-setup.py", "--repo-root", str(repo)],
+        ["python3", "scripts/validate_maintainer_setup.py", "--repo-root", str(repo)],
         cwd=repo,
         check=False,
         capture_output=True,

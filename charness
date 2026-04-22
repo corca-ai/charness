@@ -1889,11 +1889,11 @@ def install_surface(
     if old_skills_path.is_symlink():
         old_skills_path.unlink()
         removed_legacy_skills_symlink = True
-    invoke_repo_script(repo_root, "scripts/validate-packaging.py", "--repo-root", str(repo_root))
+    invoke_repo_script(repo_root, "scripts/validate_packaging.py", "--repo-root", str(repo_root))
     invoke_repo_script(repo_root, "scripts/sync_root_plugin_manifests.py", "--repo-root", str(repo_root))
     install_output = invoke_repo_script(
         repo_root,
-        "scripts/install-machine-local.py",
+        "scripts/install_machine_local.py",
         "--repo-root",
         str(repo_root),
         "--home-root",

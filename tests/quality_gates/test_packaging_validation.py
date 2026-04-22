@@ -134,7 +134,7 @@ def test_validate_packaging_rejects_checked_in_plugin_tree_drift(tmp_path: Path)
     readme_path = repo / "README.md"
     readme_path.write_text(readme_path.read_text(encoding="utf-8") + "\nDrift.\n", encoding="utf-8")
 
-    result = run_script("scripts/validate-packaging.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_packaging.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "checked-in plugin tree does not match the generated install surface" in result.stderr
 
@@ -230,7 +230,7 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
     assert (repo / "plugins" / "demo" / ".codex-plugin" / "plugin.json").exists()
     assert (repo / ".agents" / "plugins" / "marketplace.json").exists()
 
-    validate = run_script("scripts/validate-packaging.py", "--repo-root", str(repo))
+    validate = run_script("scripts/validate_packaging.py", "--repo-root", str(repo))
     assert validate.returncode == 0, validate.stderr
 
 
@@ -239,7 +239,7 @@ def test_validate_packaging_committed_accepts_clean_head(tmp_path: Path) -> None
     copy_repo_snapshot(repo)
     init_committed_repo(repo)
 
-    result = run_script("scripts/validate-packaging-committed.py", "--repo-root", str(repo), cwd=repo)
+    result = run_script("scripts/validate_packaging_committed.py", "--repo-root", str(repo), cwd=repo)
     assert result.returncode == 0, result.stderr
 
 
@@ -263,10 +263,10 @@ def test_validate_packaging_committed_rejects_partial_commit_with_uncommitted_ex
         text=True,
     )
 
-    worktree_validate = run_script("scripts/validate-packaging.py", "--repo-root", str(repo), cwd=repo)
+    worktree_validate = run_script("scripts/validate_packaging.py", "--repo-root", str(repo), cwd=repo)
     assert worktree_validate.returncode == 0, worktree_validate.stderr
 
-    committed_validate = run_script("scripts/validate-packaging-committed.py", "--repo-root", str(repo), cwd=repo)
+    committed_validate = run_script("scripts/validate_packaging_committed.py", "--repo-root", str(repo), cwd=repo)
     assert committed_validate.returncode == 1
     assert "checked-in plugin tree does not match the generated install surface" in committed_validate.stderr
     assert "plugins/charness/skills/create-cli/SKILL.md" in committed_validate.stderr
@@ -279,14 +279,14 @@ def test_eval_registry_omits_redundant_current_repo_smokes() -> None:
 
 def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) -> None:
     repo = make_demo_packaging_repo(tmp_path, codex_manifest_path="plugin.json")
-    result = run_script("scripts/validate-packaging.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_packaging.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert ".codex-plugin/plugin.json" in result.stderr
 
 
 def test_validate_packaging_rejects_unknown_top_level_field(tmp_path: Path) -> None:
     repo = make_demo_packaging_repo(tmp_path, include_unexpected_field=True)
-    result = run_script("scripts/validate-packaging.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_packaging.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Additional properties are not allowed" in result.stderr
 
@@ -299,7 +299,7 @@ def test_validate_packaging_rejects_invalid_public_skill_policy_when_present(tmp
     policy["tiers"]["hitl-recommended"].remove("premortem")
     policy_path.write_text(json.dumps(policy, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    result = run_script("scripts/validate-packaging.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_packaging.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "does not classify every public skill" in result.stderr
 
@@ -309,7 +309,7 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     claude_root = tmp_path / "claude-export"
 
     codex_result = run_script(
-        "scripts/export-plugin.py",
+        "scripts/export_plugin.py",
         "--repo-root",
         str(ROOT),
         "--host",
@@ -330,7 +330,7 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     )
 
     claude_result = run_script(
-        "scripts/export-plugin.py",
+        "scripts/export_plugin.py",
         "--repo-root",
         str(ROOT),
         "--host",
@@ -377,7 +377,7 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
 def test_export_plugin_allows_version_override(tmp_path: Path) -> None:
     output_root = tmp_path / "codex-export"
     result = run_script(
-        "scripts/export-plugin.py",
+        "scripts/export_plugin.py",
         "--repo-root",
         str(ROOT),
         "--host",

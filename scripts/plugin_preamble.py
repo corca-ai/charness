@@ -15,7 +15,7 @@ _scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.contro
 load_capabilities = _scripts_control_plane_lib_module.load_capabilities
 read_lock = _scripts_control_plane_lib_module.read_lock
 
-VALIDATE_PACKAGING_PATH = REPO_ROOT / "scripts" / "validate-packaging.py"
+VALIDATE_PACKAGING_PATH = REPO_ROOT / "scripts" / "validate_packaging.py"
 VALIDATE_PACKAGING_SPEC = importlib.util.spec_from_file_location(
     "validate_packaging_for_plugin_preamble",
     VALIDATE_PACKAGING_PATH,

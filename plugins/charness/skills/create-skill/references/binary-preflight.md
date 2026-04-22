@@ -170,5 +170,5 @@ When migrating an existing skill to this contract:
    non-baseline call, or (b) guard with the `command -v` sentinel above.
 4. Add a pointer to this reference somewhere in the SKILL.md body
    (`## References`, a bullet, or an inline note).
-5. Run `scripts/validate-skills.py --repo-root .` to confirm the new gate
+5. Run `scripts/validate_skills.py --repo-root .` to confirm the new gate
    accepts the change.

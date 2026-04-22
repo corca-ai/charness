@@ -7,7 +7,7 @@ from .support import ROOT, run_script
 
 def test_public_skill_dogfood_matrix_reports_prompt_artifact_and_evidence() -> None:
     result = run_script(
-        "scripts/suggest-public-skill-dogfood.py",
+        "scripts/suggest_public_skill_dogfood.py",
         "--repo-root",
         str(ROOT),
         "--skill-id",
@@ -37,7 +37,7 @@ def test_public_skill_dogfood_matrix_reports_prompt_artifact_and_evidence() -> N
 
 def test_public_skill_dogfood_wrappers_match_root_script() -> None:
     commands = [
-        "scripts/suggest-public-skill-dogfood.py",
+        "scripts/suggest_public_skill_dogfood.py",
         "skills/public/quality/scripts/suggest_public_skill_dogfood.py",
         "plugins/charness/skills/quality/scripts/suggest_public_skill_dogfood.py",
     ]

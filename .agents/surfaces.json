@@ -25,8 +25,8 @@
         "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
       ],
       "verify_commands": [
-        "python3 scripts/validate-packaging.py --repo-root .",
-        "python3 scripts/validate-packaging-committed.py --repo-root ."
+        "python3 scripts/validate_packaging.py --repo-root .",
+        "python3 scripts/validate_packaging_committed.py --repo-root ."
       ],
       "notes": [
         "Edit the repo-owned source path, not the checked-in plugin export.",
@@ -53,6 +53,8 @@
         "charness-artifacts/**/*.md",
         "docs/*.md",
         "docs/**/*.md",
+        "evals/*.md",
+        "evals/**/*.md",
         "packaging/**/*.md",
         "integrations/**/*.md",
         "skills/**/*.md"
@@ -62,8 +64,8 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/check-doc-links.py --repo-root .",
-        "python3 scripts/check-command-docs.py --repo-root .",
+        "python3 scripts/check_doc_links.py --repo-root .",
+        "python3 scripts/check_command_docs.py --repo-root .",
         "./scripts/check-markdown.sh",
         "./scripts/check-secrets.sh"
       ],
@@ -90,7 +92,7 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate-cautilus-proof.py --repo-root ."
+        "python3 scripts/validate_cautilus_proof.py --repo-root ."
       ],
       "notes": [
         "Prompt-affecting changes must refresh `charness-artifacts/cautilus/latest.md`, but adapter policy decides whether cautilus may run automatically, must ask, or may adapt by cost and proof kind.",
@@ -113,7 +115,7 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate-skills.py --repo-root .",
+        "python3 scripts/validate_skills.py --repo-root .",
         "python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py"
       ],
       "notes": [
@@ -128,13 +130,13 @@
         "docs/public-skill-validation.json",
         "docs/public-skill-validation.md",
         "scripts/public_skill_validation_lib.py",
-        "scripts/validate-public-skill-validation.py",
-        "scripts/suggest-public-skill-validation.py"
+        "scripts/validate_public_skill_validation.py",
+        "scripts/suggest_public_skill_validation.py"
       ],
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate-public-skill-validation.py --repo-root ."
+        "python3 scripts/validate_public_skill_validation.py --repo-root ."
       ],
       "notes": [
         "New, renamed, or reclassified public skills must be reflected in `docs/public-skill-validation.json` before closeout."
@@ -148,13 +150,13 @@
         "docs/public-skill-dogfood.json",
         "docs/public-skill-dogfood.md",
         "scripts/public_skill_dogfood_lib.py",
-        "scripts/suggest-public-skill-dogfood.py",
-        "scripts/validate-public-skill-dogfood.py"
+        "scripts/suggest_public_skill_dogfood.py",
+        "scripts/validate_public_skill_dogfood.py"
       ],
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate-public-skill-dogfood.py --repo-root ."
+        "python3 scripts/validate_public_skill_dogfood.py --repo-root ."
       ],
       "notes": [
         "When a reviewed consumer dogfood case drifts from current skill contracts, refresh the scaffold first and only then update the checked-in review observations."
@@ -173,8 +175,8 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate-profiles.py --repo-root .",
-        "python3 scripts/validate-presets.py --repo-root ."
+        "python3 scripts/validate_profiles.py --repo-root .",
+        "python3 scripts/validate_presets.py --repo-root ."
       ],
       "notes": [
         "Do not leave packaged defaults pointing at missing artifacts."
@@ -193,7 +195,7 @@
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate-adapters.py --repo-root ."
+        "python3 scripts/validate_adapters.py --repo-root ."
       ],
       "notes": [
         "Adapter contracts should stay machine-readable and loadable."
@@ -208,7 +210,7 @@
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate-surfaces.py --repo-root ."
+        "python3 scripts/validate_surfaces.py --repo-root ."
       ],
       "notes": [
         "Keep the surfaces manifest aligned with real repo-owned source and derived obligations."
@@ -221,14 +223,14 @@
         "evals/cautilus/chatbot-scenario-proposal-inputs.json",
         "scripts/eval_cautilus_chatbot_proposals.py",
         "scripts/cautilus_scenarios_lib.py",
-        "scripts/validate-cautilus-scenarios.py"
+        "scripts/validate_cautilus_scenarios.py"
       ],
       "derived_paths": [
         "charness-artifacts/cautilus/chatbot-proposals/**"
       ],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate-cautilus-scenarios.py --repo-root .",
+        "python3 scripts/validate_cautilus_scenarios.py --repo-root .",
         "python3 scripts/eval_cautilus_chatbot_proposals.py --repo-root . --json"
       ],
       "notes": [
@@ -292,7 +294,7 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate-integrations.py --repo-root .",
+        "python3 scripts/validate_integrations.py --repo-root .",
         "python3 scripts/sync_support.py --repo-root . --json",
         "python3 scripts/update_tools.py --repo-root . --json"
       ],
@@ -306,12 +308,12 @@
       "source_paths": [
         ".githooks/**",
         "scripts/install-git-hooks.sh",
-        "scripts/validate-maintainer-setup.py"
+        "scripts/validate_maintainer_setup.py"
       ],
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate-maintainer-setup.py --repo-root ."
+        "python3 scripts/validate_maintainer_setup.py --repo-root ."
       ],
       "notes": [
         "Maintainer-local hook enforcement should fail closed when the clone drifts."

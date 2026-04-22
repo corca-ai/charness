@@ -17,8 +17,8 @@ layouts.
 
 - source policy: [packaging/charness.json](../packaging/charness.json)
 - source schema: [packaging/plugin.schema.json](../packaging/plugin.schema.json)
-- validation entrypoint: [scripts/validate-packaging.py](../scripts/validate-packaging.py)
-- export entrypoint: [scripts/export-plugin.py](../scripts/export-plugin.py)
+- validation entrypoint: [scripts/validate_packaging.py](../scripts/validate_packaging.py)
+- export entrypoint: [scripts/export_plugin.py](../scripts/export_plugin.py)
 
 The shared packaging manifest is authoritative for:
 
@@ -116,7 +116,7 @@ When a release workflow needs a stamped export without mutating
 version:
 
 ```bash
-python3 scripts/export-plugin.py \
+python3 scripts/export_plugin.py \
   --repo-root . \
   --host codex \
   --output-root /tmp/charness-export \

@@ -22,7 +22,7 @@ def test_validate_profiles_rejects_missing_skill_reference(tmp_path: Path) -> No
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-profiles.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_profiles.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing artifact `handoff`" in result.stderr
 
@@ -51,7 +51,7 @@ def test_validate_presets_rejects_organization_scope_without_product_slice(tmp_p
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-presets.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_presets.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "organization-scope presets must use `preset_kind: product-slice`" in result.stderr
 
@@ -80,7 +80,7 @@ def test_validate_presets_rejects_product_slice_without_exposure_contract(tmp_pa
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-presets.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_presets.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "product-slice presets must include an `## Exposure Contract` section" in result.stderr
 
@@ -113,7 +113,7 @@ def test_validate_presets_ignores_gitignored_files(tmp_path: Path) -> None:
     (presets_dir / "generated-bad.md").write_text("# Missing frontmatter on ignored file.\n", encoding="utf-8")
     init_git_repo(repo, ".gitignore", "presets/kept.md")
 
-    result = run_script("scripts/validate-presets.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_presets.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -154,7 +154,7 @@ def test_validate_profiles_rejects_unknown_smoke_scenario(tmp_path: Path) -> Non
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-profiles.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_profiles.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "unknown eval scenario `not-a-real-scenario`" in result.stderr
 
@@ -182,7 +182,7 @@ def test_validate_profiles_rejects_missing_extends_reference(tmp_path: Path) -> 
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-profiles.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_profiles.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "extends[]` references missing artifact `missing-base`" in result.stderr
 
@@ -212,7 +212,7 @@ def test_validate_profiles_rejects_unknown_top_level_field(tmp_path: Path) -> No
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-profiles.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_profiles.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Additional properties are not allowed" in result.stderr
 
@@ -251,7 +251,7 @@ def test_validate_profiles_ignores_gitignored_profiles(tmp_path: Path) -> None:
         "skills/public/handoff/references/demo.md",
     )
 
-    result = run_script("scripts/validate-profiles.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_profiles.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 def test_validate_adapters_ignores_gitignored_skills(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
@@ -274,7 +274,7 @@ def test_validate_adapters_ignores_gitignored_skills(tmp_path: Path) -> None:
     (ignored_dir / "resolve_adapter.py").write_text("#!/usr/bin/env python3\nraise SystemExit(1)\n", encoding="utf-8")
     init_git_repo(repo, ".gitignore", "skills/public/kept/scripts/resolve_adapter.py")
 
-    result = run_script("scripts/validate-adapters.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -295,5 +295,5 @@ def test_validate_adapters_checks_named_cautilus_adapter_yaml(tmp_path: Path) ->
         encoding="utf-8",
     )
 
-    result = run_script("scripts/validate-adapters.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr

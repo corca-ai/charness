@@ -92,7 +92,7 @@ def test_validate_quality_artifact_rejects_missing_history_section(tmp_path: Pat
         )
         + "\n",
     )
-    result = run_script("scripts/validate-quality-artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing required section `## History`" in result.stderr
 
@@ -151,7 +151,7 @@ def test_validate_quality_artifact_rejects_missing_history_link(tmp_path: Path) 
         )
         + "\n",
     )
-    result = run_script("scripts/validate-quality-artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "history/*.md" in result.stderr
 
@@ -209,7 +209,7 @@ def test_validate_quality_artifact_requires_runtime_closeout_fields(tmp_path: Pa
         )
         + "\n",
     )
-    result = run_script("scripts/validate-quality-artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Runtime Signals" in result.stderr
 
@@ -268,6 +268,6 @@ def test_validate_quality_artifact_rejects_explicit_allowance_as_subagent_blocke
         )
         + "\n",
     )
-    result = run_script("scripts/validate-quality-artifact.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "must not treat missing explicit subagent allowance" in result.stderr

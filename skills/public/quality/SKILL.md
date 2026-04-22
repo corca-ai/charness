@@ -95,7 +95,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - prefer repo-native commands over hypothetical recommendations
    - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage
    - when a standing gate already exists, prefer compact default phase output plus a verbose-on-demand escape hatch over always-on chatter; see `references/standing-gate-verbosity.md`
-   - when a hot spot becomes the standing single dominator, define a `runtime_budgets` entry in the adapter and call `$SKILL_DIR/scripts/check-runtime-budget.py` from the repo's standing gate; budgets fail on recent-median drift and report latest-sample spikes separately
+   - when a hot spot becomes the standing single dominator, define a `runtime_budgets` entry in the adapter and call `$SKILL_DIR/scripts/check_runtime_budget.py` from the repo's standing gate; budgets fail on recent-median drift and report latest-sample spikes separately
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model
    - before proposing a new gate for length, duplicate, or pressure findings, ask which structural question the signal is exposing: delete, merge, split ownership, extract a helper, or narrow the interface
@@ -168,7 +168,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 
 - `references/adapter-contract.md`
 - `references/coverage-floor-exemptions.txt`
-- `references/coverage-floor-inventory.py`
+- `references/coverage_floor_inventory.py`
 - `references/coverage-floor-policy.md`
 - `references/find_inline_prompt_bulk.py`
 - `references/fresh-eye-premortem.md`
@@ -197,4 +197,4 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - `references/security-npm.md`
 - `references/security-pnpm.md`
 - `references/security-uv.md`
-- `references/validate-spec-pytest-references.py`
+- `references/validate_spec_pytest_references.py`

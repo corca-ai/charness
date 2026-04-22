@@ -18,7 +18,7 @@ Verification commands run during this gather:
 - `go test ./...` in `../sah-cli`: passed.
 - `go test ./...` in `../specdown`: passed.
 - `specdown run -dry-run -quiet` in `../specdown`: passed.
-- `python3 scripts/validate-integrations.py --repo-root .` in `charness`:
+- `python3 scripts/validate_integrations.py --repo-root .` in `charness`:
   passed.
 
 ## Requested Facts

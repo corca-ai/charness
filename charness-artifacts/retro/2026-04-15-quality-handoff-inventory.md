@@ -16,7 +16,7 @@ recommendations, and refreshed quality/handoff state.
 - `scripts/check_auto_trigger.py` reported `checked-in-plugin-export` and
   `integrations-and-control-plane` surface hits.
 - `./scripts/run-quality.sh --review` passed with `35 passed, 0 failed`.
-- `python3 scripts/run-slice-closeout.py --repo-root .` passed all planned sync
+- `python3 scripts/run_slice_closeout.py --repo-root .` passed all planned sync
   and verify commands.
 
 ## Waste

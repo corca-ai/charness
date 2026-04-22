@@ -37,8 +37,8 @@ Check for:
 
 Preferred deterministic gates:
 
-- package validators such as `validate-skills.py`
-- adapter resolution smoke checks such as `validate-adapters.py`
+- package validators such as `validate_skills.py`
+- adapter resolution smoke checks such as `validate_adapters.py`
 - duplicate detection for copied helper logic
 - duplicate detection for checked-in docs and reference bodies
 - markdown and link checks for checked-in skill docs

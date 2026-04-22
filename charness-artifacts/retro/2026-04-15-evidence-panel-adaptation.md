@@ -10,7 +10,7 @@ the public skill core portable while making review outputs more evidence-aware.
 
 - `charness-artifacts/gather/latest.md`
 - `python3 scripts/check_auto_trigger.py --repo-root .`
-- `python3 scripts/run-slice-closeout.py --repo-root .`
+- `python3 scripts/run_slice_closeout.py --repo-root .`
 - Current diff across source skill references and checked-in plugin export
 
 ## Waste
@@ -27,7 +27,7 @@ the public skill core portable while making review outputs more evidence-aware.
 - Kept evidence-strength guidance in references rather than creating a new
   public mode or heavier panel workflow.
 - Preserved generated export sync by running `sync_root_plugin_manifests.py`
-  and then `run-slice-closeout.py`.
+  and then `run_slice_closeout.py`.
 - Used the EBP/PBE lesson as a small falsifiability improvement: non-automatable
   quality recommendations now ask for a minimum experiment or review loop.
 

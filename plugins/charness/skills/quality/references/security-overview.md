@@ -26,7 +26,7 @@ instead of pretending one local script proves them.
 
 ## Current `charness` Slice
 
-`charness` now ships [`scripts/check-supply-chain.py`](../../../../scripts/check-supply-chain.py) as the first offline gate
+`charness` now ships [`scripts/check_supply_chain.py`](../../../../scripts/check_supply_chain.py) as the first offline gate
 for this lens.
 
 It currently checks:

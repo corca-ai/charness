@@ -11,7 +11,7 @@ operability posture rather than a doc-nice-to-have.
 
 Workflow runtime drift is also an operability signal. If the repo keeps GitHub
 Actions workflows, a cheap repo-owned checker such as
-`python3 scripts/check-github-actions.py --repo-root .` should flag outdated
+`python3 scripts/check_github_actions.py --repo-root .` should flag outdated
 JavaScript action majors before hosted-runner deprecation notices become the
 first signal.
 

@@ -11,7 +11,7 @@ def test_validate_skills_rejects_unquoted_description(tmp_path: Path) -> None:
         tmp_path,
         "Use when something has punctuation: this should be rejected.",
     )
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "double-quoted" in result.stderr
 
@@ -33,7 +33,7 @@ def test_validate_skills_rejects_missing_references_section(tmp_path: Path) -> N
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing `## References` section" in result.stderr
 
@@ -62,7 +62,7 @@ def test_validate_skills_rejects_unlisted_reference_file(tmp_path: Path) -> None
         encoding="utf-8",
     )
     (references_dir / "other.md").write_text("# Other\n", encoding="utf-8")
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "unlisted reference file(s): `references/note.md`" in result.stderr
 
@@ -94,7 +94,7 @@ def test_validate_skills_accepts_support_skill_package(tmp_path: Path) -> None:
         ),
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -136,7 +136,7 @@ def test_validate_skills_rejects_public_skill_with_many_fenced_examples_and_no_s
         + "\n",
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "Bootstrap with 3+ fenced examples" in result.stderr
     assert "`scripts/`" in result.stderr
@@ -184,7 +184,7 @@ def test_validate_skills_accepts_public_skill_with_many_fenced_examples_when_scr
         + "\n",
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -226,7 +226,7 @@ def test_validate_skills_allows_many_non_bootstrap_examples_without_scripts(tmp_
         + "\n",
         encoding="utf-8",
     )
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -278,7 +278,7 @@ def make_public_skill_with_bootstrap(
 
 def test_validate_skills_rejects_undeclared_non_baseline_binary(tmp_path: Path) -> None:
     repo = make_public_skill_with_bootstrap(tmp_path, "rg --files docs skills")
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "non-baseline" in result.stderr
     assert "`rg`" in result.stderr
@@ -289,7 +289,7 @@ def test_validate_skills_accepts_declared_non_baseline_binary(tmp_path: Path) ->
         tmp_path,
         "# Required Tools: rg\nrg --files docs skills",
     )
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -299,7 +299,7 @@ def test_validate_skills_rejects_required_tools_without_preflight_pointer(tmp_pa
         "# Required Tools: rg\nrg --files docs skills",
         with_preflight_pointer=False,
     )
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "binary-preflight" in result.stderr
 
@@ -309,7 +309,7 @@ def test_validate_skills_rejects_swallow_pattern_on_non_baseline(tmp_path: Path)
         tmp_path,
         "# Required Tools: rg\nrg -n 'pattern' . 2>/dev/null || true",
     )
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "swallow" in result.stderr
 
@@ -319,7 +319,7 @@ def test_validate_skills_rejects_or_true_swallow_on_non_baseline(tmp_path: Path)
         tmp_path,
         "# Required Tools: rg\nrg -n 'pattern' . || true",
     )
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "swallow" in result.stderr
 
@@ -329,7 +329,7 @@ def test_validate_skills_allows_swallow_on_baseline_only_line(tmp_path: Path) ->
         tmp_path,
         "git config --get core.hooksPath || true\nfind .git/hooks -maxdepth 1 -type f 2>/dev/null | sort",
     )
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -338,7 +338,7 @@ def test_validate_skills_ignores_non_baseline_inside_quoted_regex(tmp_path: Path
         tmp_path,
         '# Required Tools: rg\nrg -n "eslint|ruff|lefthook|husky" docs',
     )
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -347,7 +347,7 @@ def test_validate_skills_rejects_unused_required_tools_declaration(tmp_path: Pat
         tmp_path,
         "# Required Tools: rg\ngit status --short",
     )
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "never calls it" in result.stderr
 
@@ -357,7 +357,7 @@ def test_validate_skills_allows_local_script_invocation(tmp_path: Path) -> None:
         tmp_path,
         'python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .',
     )
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
 
@@ -369,7 +369,7 @@ def test_validate_skills_rejects_cwd_relative_runtime_script_invocation(tmp_path
     scripts_dir = repo / "scripts"
     scripts_dir.mkdir()
     (scripts_dir / "helper.py").write_text("print('ok')\n", encoding="utf-8")
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "cwd-relative" in result.stderr
 
@@ -379,7 +379,7 @@ def test_validate_skills_rejects_source_tree_skill_invocation(tmp_path: Path) ->
         tmp_path,
         "sed -n '1,220p' skills/public/demo/SKILL.md",
     )
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "source-tree skill path" in result.stderr
 
@@ -413,14 +413,14 @@ def test_validate_skills_support_skill_skips_preflight_gate(tmp_path: Path) -> N
     )
     (skill_dir / "references").mkdir()
     (skill_dir / "references" / "runtime.md").write_text("# Runtime\n", encoding="utf-8")
-    result = run_script("scripts/validate-skills.py", "--repo-root", str(repo))
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 def test_check_skill_contracts_rejects_missing_required_snippet(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     handoff_skill_dir = repo / "skills" / "public" / "handoff"
     handoff_skill_dir.mkdir(parents=True)
 
-    module_path = ROOT / "scripts" / "check-skill-contracts.py"
+    module_path = ROOT / "scripts" / "check_skill_contracts.py"
     spec = importlib.util.spec_from_file_location("check_skill_contracts_test_module", module_path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -437,6 +437,6 @@ def test_check_skill_contracts_rejects_missing_required_snippet(tmp_path: Path) 
         encoding="utf-8",
     )
 
-    result = run_script("scripts/check-skill-contracts.py", "--repo-root", str(repo))
+    result = run_script("scripts/check_skill_contracts.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing required contract snippet" in result.stderr

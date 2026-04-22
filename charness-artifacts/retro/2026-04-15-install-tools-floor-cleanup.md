@@ -49,7 +49,7 @@ same production-surface discipline as the files it probes.
 
 - workflow: check helper-file length before the full review when coverage trace
   scenarios grow.
-- capability: continue using `run-slice-closeout.py` after plugin export changes;
+- capability: continue using `run_slice_closeout.py` after plugin export changes;
   it caught all relevant surface obligations in one pass.
 - memory: keep `control_plane_lib.py` as the next cleanup target in handoff and
   quality artifacts.

@@ -13,7 +13,7 @@
     "skill-outputs/quality/quality.md",
     "git rev-list --count --since='2026-04-07T00:00:00Z' HEAD",
     "gh issue list --repo corca-ai/charness --state closed --search 'closed:>=2026-04-07' --limit 100 --json number",
-    "python3 scripts/run-slice-closeout.py --repo-root . --allow-unmatched",
+    "python3 scripts/run_slice_closeout.py --repo-root . --allow-unmatched",
     "./scripts/run-quality.sh"
   ],
   "metrics": {
