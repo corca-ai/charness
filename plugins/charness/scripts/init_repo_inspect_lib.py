@@ -9,8 +9,6 @@ DEFAULT_SURFACES = {
     "agents": Path("AGENTS.md"),
     "roadmap": Path("docs/roadmap.md"),
     "operator_acceptance": Path("docs/operator-acceptance.md"),
-    "install": Path("INSTALL.md"),
-    "uninstall": Path("UNINSTALL.md"),
     "handoff": Path("docs/handoff.md"),
 }
 CORE_SURFACES = ("readme", "agents", "roadmap", "operator_acceptance")

@@ -15,20 +15,19 @@
     "install": {
       "mode": "script",
       "commands": [
-        "if command -v brew >/dev/null 2>&1; then brew install glow; else GOPATH=\"$(go env GOPATH)\" && mkdir -p \"$GOPATH/bin\" \"$HOME/.local/bin\" && go install github.com/charmbracelet/glow/v2@latest && ln -sf \"$GOPATH/bin/glow\" \"$HOME/.local/bin/glow\"; fi"
+        "GOPATH=\"$(go env GOPATH)\" && mkdir -p \"$GOPATH/bin\" \"$HOME/.local/bin\" && go install github.com/charmbracelet/glow/v2@latest && ln -sf \"$GOPATH/bin/glow\" \"$HOME/.local/bin/glow\""
       ],
       "docs_url": "https://github.com/charmbracelet/glow",
       "install_url": "https://github.com/charmbracelet/glow#installation",
       "notes": [
-        "Preferred install paths are Homebrew or `go install`.",
-        "The repo-managed install path uses Homebrew when available, otherwise `go install` plus a `~/.local/bin/glow` symlink so doctor can find the binary on common Linux setups."
+        "Preferred install path for the repo-managed flow is `go install` plus a `~/.local/bin/glow` symlink so doctor can find the binary on common Linux setups."
       ]
     },
     "update": {
       "mode": "manual",
       "docs_url": "https://github.com/charmbracelet/glow/releases",
       "notes": [
-        "Use the same mechanism that originally installed the binary. Homebrew installs can use `brew upgrade glow`; Go installs can rerun `go install github.com/charmbracelet/glow/v2@latest`."
+        "Use the same mechanism that originally installed the binary. Go installs can rerun `go install github.com/charmbracelet/glow/v2@latest`."
       ]
     }
   },
@@ -62,12 +61,6 @@
     "detected_by": "stdout"
   },
   "package_managers": {
-    "brew": {
-      "package_name": "glow",
-      "notes": [
-        "Upstream documents Homebrew as `brew install glow`."
-      ]
-    },
     "go": {
       "package_name": "github.com/charmbracelet/glow/v2",
       "notes": [

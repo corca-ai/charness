@@ -50,8 +50,6 @@
         ".gitleaks.toml",
         ".secretlintignore",
         "README.md",
-        "INSTALL.md",
-        "UNINSTALL.md",
         "charness-artifacts/**/*.md",
         "docs/*.md",
         "docs/**/*.md",

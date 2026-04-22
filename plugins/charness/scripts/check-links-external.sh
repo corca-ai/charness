@@ -8,7 +8,6 @@ if ! command -v lychee >/dev/null 2>&1; then
   cat >&2 <<'EOF'
 lychee is required for link checking. Install one of:
   - cargo install lychee
-  - brew install lychee
   - download from https://github.com/lycheeverse/lychee/releases
 EOF
   exit 1

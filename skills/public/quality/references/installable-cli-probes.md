@@ -21,8 +21,11 @@ Review docs and runtime together:
 
 - startup latency claims should point at explicit measured probes, not generic
   "CLI works" prose
-- README / INSTALL / operator docs should describe install, update, doctor,
-  reset, and uninstall behavior without conflating them
+- first-touch docs such as README and operator docs should describe install,
+  update, doctor, reset, and uninstall behavior without conflating them
+- when one canonical bootstrap exists, prefer a pasteable README-first contract
+  and a repo-owned next-action surface over telling an agent to fetch a remote
+  install doc
 - readiness and discoverability should not be reported as generic binary health
 - if one installed copy is canonical, docs and machine-readable state should
   point at that target directly instead of hiding it behind a registry story

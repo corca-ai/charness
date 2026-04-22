@@ -5,8 +5,6 @@ widths:
   - 100
 include:
   - README*.md
-  - INSTALL.md
-  - UNINSTALL.md
   - docs/**/*.md
   - specs/**/*.md
 on_change_only: false

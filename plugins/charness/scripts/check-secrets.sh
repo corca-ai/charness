@@ -12,7 +12,7 @@ if command -v gitleaks >/dev/null 2>&1; then
     "$REPO_ROOT"
 fi
 
-echo "check-secrets: gitleaks not found, falling back to secretlint via npm (~5s vs sub-1s). Install gitleaks for the fast path: brew install gitleaks (or https://github.com/gitleaks/gitleaks#installing)" >&2
+echo "check-secrets: gitleaks not found, falling back to secretlint via npm (~5s vs sub-1s). Install gitleaks for the fast path from https://github.com/gitleaks/gitleaks#installing" >&2
 
 if command -v npm >/dev/null 2>&1; then
   if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then

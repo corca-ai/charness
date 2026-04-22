@@ -7,7 +7,7 @@ from pathlib import Path
 
 from .support import (
     make_fake_agent_browser,
-    make_fake_brew_specdown,
+    make_fake_go_specdown,
     make_fake_npm_gws,
     make_git_repo_copy,
     make_release_fixture,
@@ -24,7 +24,7 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
 
     fake_agent_browser = make_fake_agent_browser(tmp_path)
-    fake_brew, _ = make_fake_brew_specdown(tmp_path)
+    fake_go, specdown_bin = make_fake_go_specdown(tmp_path)
     fake_npm, fake_gws = make_fake_npm_gws(tmp_path)
     fake_cautilus = make_fake_cautilus(tmp_path)
     release_fixture = make_release_fixture(tmp_path)
@@ -32,13 +32,15 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     env["PATH"] = os.pathsep.join(
         [
             str(fake_agent_browser.parent),
-            str(fake_brew.parent),
+            str(fake_go.parent),
+            str(specdown_bin.parent),
             str(fake_npm.parent),
             str(fake_gws.parent),
             str(fake_cautilus.parent),
             env["PATH"],
         ]
     )
+    env["GOPATH"] = str(specdown_bin.parent.parent)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
 

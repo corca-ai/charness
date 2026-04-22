@@ -38,8 +38,6 @@ iter_repo_files = _scripts_repo_file_listing_module.iter_repo_files
 DOC_GLOBS = (
     "README.md",
     "AGENTS.md",
-    "INSTALL.md",
-    "UNINSTALL.md",
     "docs/**/*.md",
     "presets/**/*.md",
     "profiles/**/*.md",

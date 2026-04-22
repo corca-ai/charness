@@ -2,7 +2,6 @@
 name: quality
 description: "Use when the goal is to understand and improve the repo's current quality bar. Detect existing gates, run the available ones, inspect concept integrity, test confidence, and security posture, then propose concrete next gates instead of only complaining about what is missing."
 ---
-
 # Quality
 
 Use this when the task is overall quality posture, not only one narrow bug or one isolated test. `quality` covers concept integrity review, test confidence, security and supply-chain posture, skill and maintenance drift, and documentation drift. The job is to understand the current quality surface, run the meaningful gates that already exist, and propose the missing ones concretely. Use Gerald Weinberg-style systems thinking when the question crosses code, tests, docs, operators, and local process: inspect the whole system producing quality, not only the last failed check. `quality` may also install or refresh the repo-local quality posture when the next move is deterministic setup work instead of only review. Keep that inside the same public concept: review posture and bootstrap posture are two states of `quality`, not separate skills. When the next quality move is repo-local, deterministic, and low-risk, prefer implementing that gate in the same turn.
@@ -83,7 +82,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - when public executable specs are in scope, inventory reader-facing public-spec drift and proof-layering overlap with `$SKILL_DIR/scripts/inventory_public_spec_quality.py`; see `references/public-spec-layering.md`
    - when fixed-string source guards touch prose, inventory hard-wrap fragility with `$SKILL_DIR/scripts/inventory_brittle_source_guards.py`; see `references/brittle-source-guards.md`
    - when lint suppressions start to accumulate, inventory lint suppression pressure with `$SKILL_DIR/scripts/inventory_lint_ignores.py`; blanket or file-level ignores should be explicit review targets, not invisible background debt
-   - inspect README / INSTALL / operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist; when the CLI surface is stable, prefer a deterministic command-docs drift gate over repeated prose review
+   - inspect first-touch docs such as README and operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist; when the CLI surface is stable, prefer a deterministic command-docs drift gate over repeated prose review
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
    - if evaluator-backed review or prompt-sensitive output matters, inspect whether prompt/content bulk stays in checked-in assets or is still embedded inline in source files
    - when skills are in scope, inventory skill ergonomics explicitly with `$SKILL_DIR/scripts/inventory_skill_ergonomics.py` instead of leaving concise-core, progressive-disclosure, or branching-pressure review as vague prose
@@ -109,7 +108,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - `security`: are there meaningful code, secret, or supply-chain risks
    - `operability`: are setup, CI, install/update docs, and maintenance surfaces honest enough to sustain the quality bar
    - make skill ergonomics explicit: concise `SKILL.md` core, progressive disclosure honesty, unnecessary mode/option pressure, trigger overlap/undertrigger risk, and prose ritual that should become a helper script
-   - when the repo keeps major entrypoint docs, include entrypoint-doc ergonomics review: concise first-touch ownership, progressive disclosure into deeper owners, duplicate pressure between nearby entry docs, and whether the prose overexplains branches a smart agent/operator can infer safely
+   - when the repo keeps major entrypoint docs, include entrypoint-doc ergonomics review: concise first-touch ownership, progressive disclosure into deeper owners, duplicate pressure between nearby entry docs, whether one canonical README-first bootstrap would be clearer than a separate install manual, and whether the prose overexplains branches a smart agent/operator can infer safely
    - make evaluator depth explicit: smoke only, maintained evaluator-backed, or still smoke plus HITL
    - if stronger local proof depends on an external binary or support tool, state whether it is currently installed and healthy, then surface the exact install and post-install verification path instead of vague prose
 5. Classify each issue by enforcement tier first: `AUTO_EXISTING`, `AUTO_CANDIDATE`, or `NON_AUTOMATABLE`.
@@ -152,6 +151,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not let whole-worktree scans fail on gitignored runtime artifacts unless the gate explicitly exists to validate that machine-local state.
 - Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior; run one realistic consumer prompt and name the expected artifact.
 - Do not collapse help, command discovery, healthcheck, readiness, and local discoverability into one generic "doctor passed" claim when the repo ships an installable CLI or plugin surface.
+- Do not tell agents to fetch a remote install doc and "follow it" when the bootstrap can be expressed as a pasteable command contract or a repo-owned next-action surface.
 - Do not ignore a 30-command flat help list or a subcommand that accepts multiple archetype schema namespaces; those are discoverability smells.
 - Do not treat a historical second implementation as a free safety oracle when no parity harness proves the two paths still agree.
 - Do not treat a historical second implementation as healthy unless the repo has enforced parity, an asserted intentional divergence, or an explicit canonicalization plan.

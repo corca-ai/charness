@@ -16,7 +16,7 @@
       "mode": "manual",
       "docs_url": "https://github.com/gitleaks/gitleaks#installing",
       "notes": [
-        "Preferred install paths stay host-controlled: `brew install gitleaks` on macOS/Linux, or download a tagged release from GitHub.",
+        "Preferred install paths stay host-controlled: download a tagged release from GitHub or use another host-approved package path.",
         "When `gitleaks` is missing, `scripts/check-secrets.sh` falls back to the secretlint npm path with a stderr warning. The fallback is correct but ~5s slower per run."
       ]
     },
@@ -57,14 +57,6 @@
     "policy": "advisory",
     "constraint": "Prefer a recent upstream-supported gitleaks release.",
     "detected_by": "stdout"
-  },
-  "package_managers": {
-    "brew": {
-      "package_name": "gitleaks",
-      "notes": [
-        "Upstream-recommended install path on macOS and Linux."
-      ]
-    }
   },
   "supports_public_skills": [
     "quality"

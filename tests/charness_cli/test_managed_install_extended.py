@@ -11,8 +11,8 @@ from .support import (
     build_test_path,
     clone_seeded_managed_home,
     make_fake_agent_browser,
-    make_fake_brew_specdown,
     make_fake_claude,
+    make_fake_go_specdown,
     make_fake_npm_gws,
     make_git_repo_copy,
     make_release_fixture,
@@ -78,7 +78,7 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     )
 
     fake_agent_browser = make_fake_agent_browser(tmp_path)
-    fake_brew, _ = make_fake_brew_specdown(tmp_path)
+    fake_go, specdown_bin = make_fake_go_specdown(tmp_path)
     fake_npm, fake_gws = make_fake_npm_gws(tmp_path)
     fake_cautilus = make_fake_cautilus(tmp_path)
     release_fixture = make_release_fixture(tmp_path)
@@ -86,13 +86,15 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     env["PATH"] = os.pathsep.join(
         [
             str(fake_agent_browser.parent),
-            str(fake_brew.parent),
+            str(fake_go.parent),
+            str(specdown_bin.parent),
             str(fake_npm.parent),
             str(fake_gws.parent),
             str(fake_cautilus.parent),
             env["PATH"],
         ]
     )
+    env["GOPATH"] = str(specdown_bin.parent.parent)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
 
@@ -124,7 +126,7 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     assert tool_update["results"]["cautilus"]["update"]["status"] == "manual"
     assert tool_update["results"]["cautilus"]["support"]["status"] == "synced"
     assert tool_update["results"]["specdown"]["update"]["status"] == "updated"
-    assert tool_update["results"]["specdown"]["update"]["package_manager"] == "brew"
+    assert tool_update["results"]["specdown"]["update"]["package_manager"] == "go"
     assert tool_update["results"]["gws-cli"]["update"]["status"] == "updated"
     assert tool_update["results"]["gws-cli"]["update"]["package_manager"] == "npm"
 
@@ -138,7 +140,7 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     ] == "manual"
     assert json.loads((managed_repo / "integrations" / "locks" / "specdown.json").read_text(encoding="utf-8"))["update"][
         "package_manager"
-    ] == "brew"
+    ] == "go"
     assert json.loads((managed_repo / "integrations" / "locks" / "gws-cli.json").read_text(encoding="utf-8"))["update"][
         "package_manager"
     ] == "npm"

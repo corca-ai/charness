@@ -16,7 +16,7 @@
       "mode": "manual",
       "docs_url": "https://github.com/corca-ai/specdown",
       "notes": [
-        "Preferred install paths are the upstream install script, Homebrew, or `go install`.",
+        "Preferred install paths are the upstream install script or `go install`.",
         "Keep install method host-controlled instead of baking one package manager into charness."
       ]
     },
@@ -60,12 +60,6 @@
     "detected_by": "stdout"
   },
   "package_managers": {
-    "brew": {
-      "package_name": "corca-ai/tap/specdown",
-      "notes": [
-        "Upstream documents Homebrew as `brew install corca-ai/tap/specdown`."
-      ]
-    },
     "go": {
       "package_name": "github.com/corca-ai/specdown/cmd/specdown",
       "notes": [

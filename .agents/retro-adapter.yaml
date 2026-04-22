@@ -21,6 +21,4 @@ auto_session_trigger_path_globs:
   - skills/public/release/**
   - skills/support/**
   - README.md
-  - INSTALL.md
-  - UNINSTALL.md
   - docs/host-packaging.md

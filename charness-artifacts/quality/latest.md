@@ -72,10 +72,9 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 ## Weak
 
 - Entry-point doc ergonomics remain advisory pressure, not hard failures.
-  `AGENTS.md`, `README.md`, `INSTALL.md`, and `docs/operator-acceptance.md`
-  still flag `long_entrypoint`; `README.md` also still carries
-  `option_pressure_terms_present`, and `UNINSTALL.md` still flags
-  mode/option-pressure wording.
+  `AGENTS.md`, `README.md`, `docs/development.md`, and
+  `docs/operator-acceptance.md` still flag `long_entrypoint`; `README.md` also
+  still carries `option_pressure_terms_present`.
 - Skill ergonomics remain advisory pressure in public cores:
   `create-cli`, `gather`, `init-repo`, `retro`, and `spec` still flag
   mode-pressure terms, while `quality` and `spec` both trip `long_core`.
@@ -109,9 +108,9 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 ## Recommended Next Gates
 
 - active `AUTO_CANDIDATE`: decide whether the remaining mode/option-pressure
-  wording in `AGENTS.md`, `README.md`, `UNINSTALL.md`, `init-repo`, `retro`,
-  and the contract-constrained `spec` phrase reflects real distinctions or
-  should collapse into stronger defaults.
+  wording in `AGENTS.md`, `README.md`, `init-repo`, `retro`, and the
+  contract-constrained `spec` phrase reflects real distinctions or should
+  collapse into stronger defaults.
 - active `AUTO_CANDIDATE`: decide whether `skills/public/quality/SKILL.md`
   should move more review prose into references or helper scripts so the core
   falls back under the `long_core` advisory threshold without losing routing

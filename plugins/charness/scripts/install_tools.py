@@ -63,7 +63,7 @@ def persist_install_lock(repo_root: Path, manifest: Payload, install_action: Pay
             "detect": detect,
             "healthcheck": healthcheck,
             "docs_url": install_action.get("docs_url"),
-            "package_manager": provenance.get("install_method") if provenance.get("install_method") in {"brew", "npm", "cargo", "go"} else None,
+            "package_manager": provenance.get("install_method") if provenance.get("install_method") in {"npm", "cargo", "go"} else None,
             "package_name": provenance.get("package_name"),
             "notes": install_action.get("notes", []),
         },

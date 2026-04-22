@@ -9,8 +9,6 @@ docs only to satisfy the inspector:
 ```yaml
 surfaces:
   roadmap: docs/master-plan.md
-  install: docs/bootstrap.md
-  uninstall: null
 ```
 
 The inspector matches default paths case-insensitively. A `null` surface value
@@ -111,19 +109,19 @@ acceptance from them instead of inventing a disconnected checklist:
 
 ## Optional Bootstrap Docs
 
-Only scaffold separate bootstrap and uninstall docs when the repo really
-exposes an installable surface such as a plugin, package, or operator-facing
-setup path.
+Do not scaffold separate bootstrap or uninstall docs by default.
 
-When an install/bootstrap doc exists for that reason, it should also keep a small explicit
-probe surface honest:
+If a repo intentionally keeps an extra bootstrap doc because the README would
+become too heavy otherwise, treat that as a repo-local contract, not a default
+surface every repo should inherit.
 
-- install or update path
-- binary healthcheck
-- machine-readable discovery if it exists
-- repo or install readiness
-- local discoverability or materialization step when agents or plugins depend
-  on it
+Even then, keep the first successful bootstrap honest in the README:
+
+- prerequisites
+- pasteable bootstrap commands
+- the next repo-owned probe or next-action command
+- any local discoverability or materialization step when agents or plugins
+  depend on it
 
 ## Optional Retro Memory Seam
 

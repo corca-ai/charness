@@ -9,7 +9,7 @@ from .support import (
     build_test_path,
     clone_seeded_managed_home,
     make_fake_agent_browser,
-    make_fake_brew_specdown,
+    make_fake_go_specdown,
     make_fake_npm_gws,
     make_release_fixture,
     make_repo_copy,
@@ -286,11 +286,12 @@ def test_tool_doctor_records_npm_provenance(tmp_path: Path) -> None:
 def test_tool_doctor_reports_specdown_binary_contract_without_support_sync(tmp_path: Path) -> None:
     repo_root = make_repo_copy(tmp_path)
     home_root = tmp_path / "home"
-    brew_script, _ = make_fake_brew_specdown(tmp_path)
+    go_script, specdown_script = make_fake_go_specdown(tmp_path)
     release_fixture = make_release_fixture(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
-    env["PATH"] = f"{brew_script.parent}:{env.get('PATH', '')}"
+    env["PATH"] = build_test_path(go_script.parent, specdown_script.parent)
+    env["GOPATH"] = str(specdown_script.parent.parent)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
 
     result = run_cli_in_repo(repo_root, "tool", "doctor", "--repo-root", str(repo_root), "--json", "specdown", env=env)
@@ -304,8 +305,8 @@ def test_tool_doctor_reports_specdown_binary_contract_without_support_sync(tmp_p
     assert doctor["support_sync"]["status"] == "not-tracked"
     assert doctor["detect"]["results"][0]["command"] == "specdown version"
     assert doctor["healthcheck"]["results"][0]["command"] == "specdown run -help"
-    assert doctor["provenance"]["install_method"] == "brew"
-    assert doctor["provenance"]["package_name"] == "corca-ai/tap/specdown"
+    assert doctor["provenance"]["install_method"] == "go"
+    assert doctor["provenance"]["package_name"] == "github.com/corca-ai/specdown/cmd/specdown"
     assert doctor["release"]["latest_tag"] == "v0.47.2"
 
 
@@ -335,14 +336,15 @@ def test_tool_install_executes_glow_install_script_and_refreshes_doctor(tmp_path
     assert (gopath / "bin" / "glow").is_file()
 
 
-def test_tool_update_routes_brew_provenance_for_specdown(tmp_path: Path) -> None:
+def test_tool_update_routes_go_provenance_for_specdown(tmp_path: Path) -> None:
     repo_root = make_repo_copy(tmp_path)
     home_root = tmp_path / "home"
-    brew_script, _ = make_fake_brew_specdown(tmp_path)
+    go_script, specdown_script = make_fake_go_specdown(tmp_path)
     release_fixture = make_release_fixture(tmp_path)
     env = os.environ.copy()
     env["HOME"] = str(home_root)
-    env["PATH"] = f"{brew_script.parent}:{env.get('PATH', '')}"
+    env["PATH"] = build_test_path(go_script.parent, specdown_script.parent)
+    env["GOPATH"] = str(specdown_script.parent.parent)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
 
     result = run_cli_in_repo(
@@ -361,13 +363,13 @@ def test_tool_update_routes_brew_provenance_for_specdown(tmp_path: Path) -> None
     specdown = payload["results"]["specdown"]
     assert specdown["update"]["status"] == "updated"
     assert specdown["update"]["mode"] == "package_manager"
-    assert specdown["update"]["package_manager"] == "brew"
-    assert specdown["update"]["package_name"] == "corca-ai/tap/specdown"
-    assert specdown["doctor"]["provenance"]["install_method"] == "brew"
+    assert specdown["update"]["package_manager"] == "go"
+    assert specdown["update"]["package_name"] == "github.com/corca-ai/specdown/cmd/specdown"
+    assert specdown["doctor"]["provenance"]["install_method"] == "go"
     lock_payload = json.loads((repo_root / "integrations" / "locks" / "specdown.json").read_text(encoding="utf-8"))
-    assert lock_payload["provenance"]["install_method"] == "brew"
+    assert lock_payload["provenance"]["install_method"] == "go"
     assert lock_payload["update"]["mode"] == "package_manager"
-    assert lock_payload["update"]["package_name"] == "corca-ai/tap/specdown"
+    assert lock_payload["update"]["package_name"] == "github.com/corca-ai/specdown/cmd/specdown"
 
 
 def test_tool_update_routes_npm_provenance_for_gws(tmp_path: Path) -> None:

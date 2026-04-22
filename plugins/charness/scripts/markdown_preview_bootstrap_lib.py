@@ -21,8 +21,6 @@ DEFAULT_WIDTHS = [80, 100]
 DEFAULT_ARTIFACT_DIR = ".artifacts/markdown-preview"
 DEFAULT_INCLUDE_CANDIDATES = [
     "README*.md",
-    "INSTALL.md",
-    "UNINSTALL.md",
     "docs/**/*.md",
     "specs/**/*.md",
 ]

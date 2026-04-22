@@ -116,12 +116,6 @@
       "notes": [
         "Upstream documents `npm install -g @googleworkspace/cli` as the package-manager install path."
       ]
-    },
-    "brew": {
-      "package_name": "googleworkspace-cli",
-      "notes": [
-        "Upstream documents `brew install googleworkspace-cli` on macOS and Linux."
-      ]
     }
   },
   "degradation": {

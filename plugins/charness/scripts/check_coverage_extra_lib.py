@@ -189,9 +189,9 @@ def exercise_install_tool_helper_scenarios() -> None:
         install_action = {"docs_url": "https://example.com/install", "notes": ["demo"]}
         detect_result = {"ok": True, "results": [], "failure_details": [], "failure_hint": None}
         healthcheck_result = {"ok": True, "results": [], "failure_details": [], "failure_hint": None}
-        with mock.patch.object(install_tools, "detect_install_provenance", return_value={"install_method": "brew"}):
+        with mock.patch.object(install_tools, "detect_install_provenance", return_value={"install_method": "npm"}):
             install_tools.capture_provenance(manifest)
-        for install_method in ("brew", "path"):
+        for install_method in ("npm", "path"):
             provenance = {"install_method": install_method, "package_name": "demo"}
             with mock.patch.object(install_tools, "upsert_lock"):
                 install_tools.persist_install_lock(

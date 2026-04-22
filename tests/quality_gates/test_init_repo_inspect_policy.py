@@ -33,14 +33,12 @@ def test_init_repo_inspect_repo_matches_default_surfaces_case_insensitively(tmp_
     (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
     (repo / "docs" / "ROADMAP.md").write_text("# Roadmap\n", encoding="utf-8")
     (repo / "docs" / "operator-acceptance.md").write_text("# Acceptance\n", encoding="utf-8")
-    (repo / "install.md").write_text("# Install\n", encoding="utf-8")
 
     payload = _run_inspect(repo)
 
     assert payload["repo_mode"] == "NORMALIZE"
     assert payload["missing_surfaces"] == []
     assert payload["surfaces"]["roadmap"]["path"] == "docs/ROADMAP.md"
-    assert payload["surfaces"]["install"]["path"] == "install.md"
 
 
 def test_init_repo_inspect_repo_honors_adapter_surface_overrides(tmp_path: Path) -> None:
@@ -52,7 +50,7 @@ def test_init_repo_inspect_repo_honors_adapter_surface_overrides(tmp_path: Path)
     (repo / "docs" / "master-plan.md").write_text("# Plan\n", encoding="utf-8")
     (repo / "docs" / "operator-acceptance.md").write_text("# Acceptance\n", encoding="utf-8")
     (repo / ".agents" / "init-repo-adapter.yaml").write_text(
-        "\n".join(["version: 1", "repo: repo", "surfaces:", "  roadmap: docs/master-plan.md", "  uninstall: null", ""]),
+        "\n".join(["version: 1", "repo: repo", "surfaces:", "  roadmap: docs/master-plan.md", ""]),
         encoding="utf-8",
     )
 
@@ -62,7 +60,6 @@ def test_init_repo_inspect_repo_honors_adapter_surface_overrides(tmp_path: Path)
     assert payload["missing_surfaces"] == []
     assert payload["surfaces"]["roadmap"]["path"] == "docs/master-plan.md"
     assert payload["surfaces"]["roadmap"]["source"] == "adapter"
-    assert payload["surfaces"]["uninstall"]["kind"] == "acknowledged_missing"
 
 
 def test_init_repo_inspect_repo_excludes_acknowledged_missing_core_surface(tmp_path: Path) -> None:

@@ -518,7 +518,6 @@
         "install_method": {
           "type": "string",
           "enum": [
-            "brew",
             "npm",
             "cargo",
             "go",
@@ -556,7 +555,6 @@
           "items": {
             "type": "string",
             "enum": [
-              "brew",
               "npm",
               "cargo",
               "go"

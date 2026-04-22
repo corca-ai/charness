@@ -15,8 +15,7 @@ update_instructions:
 real_host_required_surfaces:
 - integrations-and-control-plane
 real_host_required_path_globs:
-- INSTALL.md
-- UNINSTALL.md
+- README.md
 - docs/host-packaging.md
 - integrations/tools/**
 - scripts/doctor.py

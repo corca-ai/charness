@@ -25,7 +25,7 @@ if str(REPO_ROOT) not in sys.path:
 load_yaml_file = importlib.import_module("scripts.adapter_lib").load_yaml_file
 
 DEFAULT_WIDTHS = [100]
-DEFAULT_INCLUDE = ["README*.md", "INSTALL.md", "UNINSTALL.md", "docs/**/*.md", "specs/**/*.md"]
+DEFAULT_INCLUDE = ["README*.md", "docs/**/*.md", "specs/**/*.md"]
 DEFAULT_ARTIFACT_DIR = ".artifacts/markdown-preview"
 SUPPORTED_BACKENDS = {"glow"}
 CONFIG_SEARCH_PATHS = [

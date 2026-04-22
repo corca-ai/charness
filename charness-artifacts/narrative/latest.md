@@ -4,7 +4,6 @@ Date: 2026-04-20
 ## Source Map
 
 - `README.md`
-- `INSTALL.md`
 - `AGENTS.md`
 - `docs/handoff.md`
 - `docs/support-skill-policy.md`
@@ -19,8 +18,8 @@ Date: 2026-04-20
 
 - The previous README improved front-door product framing, but it still treated
   the public surface too much like a flat catalog.
-- Quick Start still read like a human-operated install recipe instead of an
-  agent-facing handoff into `INSTALL.md`.
+- Quick Start still read like a human-operated install recipe instead of a thin
+  README-first bootstrap plus repo-owned next-step guidance.
 - The public skill map still under-expressed intent distinctions the user
   considered load-bearing: `init-repo` as a distinct entrypoint, `quality` and
   `retro` as quality-raising loops for people and agents, and communication
@@ -32,12 +31,11 @@ Date: 2026-04-20
 
 - README now leads with who `charness` is for, what kind of repo-owned agent
   work it helps structure, and the current capability-map-first session model.
-- Quick Start now tells human readers to start with `INSTALL.md` directly, and
-  still gives agents a clean install-contract handoff prompt plus a short
-  command summary: `init`, `doctor`, then `update`.
+- Quick Start now stays inside README: prerequisites, pasteable bootstrap
+  commands, and a `charness doctor --next-action` loop for the next move.
 - The command summary now reads as the main operator/agent path readers will
-  keep seeing, while still leaving the detailed install, uninstall, and task
-  contracts in their owner docs.
+  keep seeing, without requiring separate install or uninstall manuals as the
+  first-touch owner docs.
 - The public skill map now groups skills by intent rather than flattening them
   into one list, with `init-repo` separated as a special entrypoint.
 - `quality` and `retro` now read as dedicated quality-raising loops rather
@@ -53,13 +51,14 @@ Date: 2026-04-20
 ### One-Line Summary
 
 `charness` now reads more like an operator-facing workflow map: start the host
-surface through the install contract, choose the right public skill by intent,
-and keep support binaries and deeper contracts in their owner sections.
+surface through a thin README Quick Start, choose the right public skill by
+intent, and keep support binaries and deeper contracts in their owner sections.
 
 ### Current Contract
 
 - README is the first-touch orientation surface.
-- `INSTALL.md` remains the canonical install contract for humans and agents.
+- README Quick Start owns the first successful bootstrap contract for humans
+  and agents.
 - `AGENTS.md` owns the current session discipline, including startup
   `find-skills`.
 - deeper packaging, operator, and validation details stay in their owner docs
@@ -68,7 +67,8 @@ and keep support binaries and deeper contracts in their owner sections.
 ### What Changed
 
 - Replaced the flat "what to use when" framing with an intent-based skill map.
-- Moved Quick Start to an agent-facing prompt into `INSTALL.md`.
+- Moved Quick Start to a pasteable README-first bootstrap plus
+  `doctor --next-action`.
 - Separated `init-repo` from the ordinary implementation flow.
 - Reframed `quality` and `retro` as distinct quality-improvement loops.
 - Reframed communication skills by speaker/recipient direction.
@@ -84,8 +84,9 @@ and keep support binaries and deeper contracts in their owner sections.
   Quick Start handoff model all reflect the explicit carry-forward feedback from
   the 2026-04-17 retro and follow-up discussion.
 - Claim: install truth still belongs outside the README.
-  Evidence: Quick Start hands off to `INSTALL.md` instead of recreating the
-  install contract locally.
+  Evidence: README now owns the first successful bootstrap directly, while
+  deeper packaging and operator details stay in their owner docs instead of a
+  second install manual.
 - Claim: support tools and upstream-owned capabilities are now placed in a more
   honest part of the README.
   Evidence: `cautilus`, `agent-browser`, `specdown`, and `gws-cli` are

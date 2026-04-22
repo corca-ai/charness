@@ -438,31 +438,38 @@ def make_fake_agent_browser(tmp_path: Path) -> Path:
     return script
 
 
-def make_fake_brew_specdown(tmp_path: Path) -> tuple[Path, Path]:
-    brew_root = tmp_path / "linuxbrew"
-    bin_dir = brew_root / "bin"
+def make_fake_go_specdown(tmp_path: Path) -> tuple[Path, Path]:
+    gopath = tmp_path / "go"
+    bin_dir = tmp_path / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
-    brew_script = bin_dir / "brew"
-    brew_script.write_text(
+    go_script = bin_dir / "go"
+    go_script.write_text(
         textwrap.dedent(
             f"""\
             #!/usr/bin/env python3
+            import os
+            import pathlib
             import sys
 
+            gopath = pathlib.Path({str(gopath)!r})
+            gobin = os.environ.get("GOBIN")
+            install_root = pathlib.Path(gobin) if gobin else gopath / "bin"
+            install_root.mkdir(parents=True, exist_ok=True)
             args = sys.argv[1:]
-            if args == ["--prefix"]:
-                print({str(brew_root)!r})
+            if args == ["env", "GOPATH"]:
+                print(str(gopath))
                 raise SystemExit(0)
-            if args == ["upgrade", "corca-ai/tap/specdown"]:
-                print("upgraded specdown")
+            if args == ["install", "github.com/corca-ai/specdown/cmd/specdown@latest"]:
+                print("installed specdown")
                 raise SystemExit(0)
             raise SystemExit(1)
             """
         ),
         encoding="utf-8",
     )
-    brew_script.chmod(0o755)
-    specdown_script = bin_dir / "specdown"
+    go_script.chmod(0o755)
+    specdown_script = gopath / "bin" / "specdown"
+    specdown_script.parent.mkdir(parents=True, exist_ok=True)
     specdown_script.write_text(
         textwrap.dedent(
             """\
@@ -482,7 +489,7 @@ def make_fake_brew_specdown(tmp_path: Path) -> tuple[Path, Path]:
         encoding="utf-8",
     )
     specdown_script.chmod(0o755)
-    return brew_script, specdown_script
+    return go_script, specdown_script
 def make_fake_npm_gws(tmp_path: Path) -> tuple[Path, Path]:
     npm_prefix = tmp_path / "npm-global"
     bin_dir = npm_prefix / "bin"

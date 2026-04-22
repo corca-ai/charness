@@ -18,8 +18,6 @@ DEFAULT_REVIEW_PROMPTS = [
 DEFAULT_DOC_PATHS = (
     "AGENTS.md",
     "README.md",
-    "INSTALL.md",
-    "UNINSTALL.md",
     "docs/development.md",
     "docs/operator-acceptance.md",
 )

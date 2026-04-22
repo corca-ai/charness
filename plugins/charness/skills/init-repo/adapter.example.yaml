@@ -9,5 +9,3 @@ prose_wrap_policy: semantic
 # source_guard_matcher.normalize_whitespace: true or an explicit override.
 surfaces:
   roadmap: docs/roadmap.md
-  install: INSTALL.md
-  uninstall: null

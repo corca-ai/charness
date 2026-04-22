@@ -123,8 +123,8 @@ update --repo-root . --no-pull`로 SKILL 변경분을 현재 working tree에
    "gitleaks not found, falling back to secretlint" 형식의 한 줄 warning이
    남는다 (stdout 결과는 변하지 않음).
 6. `python3 scripts/list_tool_recommendations.py --repo-root .` 출력에
-   `gitleaks` 항목이 포함되고 install 경로(`brew install gitleaks` 등)와
-   verify command가 같이 surface된다.
+   `gitleaks` 항목이 포함되고 upstream install 경로와 verify command가 같이
+   surface된다.
 7. `README.md` 또는 `AGENTS.md`(또는 둘 다)에 "이 리포에서 SKILL 편집을
    dogfood하려면 `charness update --repo-root . --no-pull`"가 명시되어 있다.
 8. 두 실패 테스트(`test_quality_tool_recommendations_emit_blocking_validation_routes`,

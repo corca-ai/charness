@@ -71,14 +71,6 @@
     "constraint": "Prefer a recent upstream-supported GitHub CLI release.",
     "detected_by": "stdout"
   },
-  "package_managers": {
-    "brew": {
-      "package_name": "gh",
-      "notes": [
-        "The upstream CLI docs recommend `brew install gh` on macOS and Linux."
-      ]
-    }
-  },
   "degradation": {
     "when_missing": [
       "Public GitHub URLs may still be gathered through unauthenticated fetch paths when they are world-readable.",

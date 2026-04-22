@@ -40,7 +40,7 @@ terms_to_avoid_in_opening:
 - surface
 - seam
 - repo-owned agent work
-quick_start_execution_model: Tell human readers where the canonical install contract lives, offer an agent-facing install prompt when useful, and do not inline the full install procedure in README.
+quick_start_execution_model: Keep README Quick Start thin but pasteable: prerequisites, direct bootstrap commands, and the next repo-owned probe or next-action command. Do not require a remote install document fetch for the first successful bootstrap.
 special_entrypoints:
 - init-repo
 skill_grouping_rules:
@@ -49,7 +49,7 @@ skill_grouping_rules:
 - Group communication skills by who speaks to whom.
 - Explain support skills and integrations as tool layers, not public workflow concepts.
 owner_doc_boundaries:
-- Full install contract belongs in INSTALL.md and related packaging docs.
+- The first successful install contract belongs in README Quick Start plus repo-owned command docs and packaging docs when needed.
 - Full operator takeover contract belongs in docs/operator-acceptance.md.
 - Deeper validation policy belongs in docs/public-skill-validation.md and adjacent owner docs.
 landing_danger_checks:

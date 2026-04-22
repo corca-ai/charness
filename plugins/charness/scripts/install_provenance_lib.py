@@ -9,7 +9,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-PACKAGE_MANAGER_KEYS = ("brew", "npm", "cargo", "go")
+PACKAGE_MANAGER_KEYS = ("npm", "cargo", "go")
 
 
 def _run_command(command: list[str]) -> str | None:
@@ -44,9 +44,6 @@ def detect_binary_name(manifest: dict[str, Any]) -> str | None:
 
 def detect_package_manager_prefixes() -> dict[str, str]:
     prefixes: dict[str, str] = {}
-    brew_prefix = _run_command(["brew", "--prefix"])
-    if brew_prefix:
-        prefixes["brew"] = brew_prefix
     npm_prefix = _run_command(["npm", "prefix", "-g"])
     if npm_prefix:
         prefixes["npm"] = npm_prefix
@@ -67,9 +64,7 @@ def detect_package_manager_prefixes() -> dict[str, str]:
 
 def _path_matches_manager(binary_path: Path, resolved_path: Path, manager: str, prefix: Path) -> bool:
     candidates = [binary_path, resolved_path]
-    if manager == "brew":
-        expected_roots = [prefix]
-    elif manager == "npm":
+    if manager == "npm":
         expected_roots = [prefix / "bin", prefix / "lib" / "node_modules"]
     elif manager == "cargo":
         expected_roots = [prefix / "bin"]
@@ -178,9 +173,7 @@ def package_manager_update_action(manifest: dict[str, Any], provenance: dict[str
     package_name = manager_meta.get("package_name")
     if not isinstance(package_name, str) or not package_name:
         return None
-    if manager == "brew":
-        commands = [f"brew upgrade {package_name}"]
-    elif manager == "npm":
+    if manager == "npm":
         commands = [f"npm install -g {package_name}@latest"]
     elif manager == "cargo":
         commands = [f"cargo install {package_name} --force"]

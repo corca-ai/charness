@@ -153,7 +153,6 @@ def exercise_install_provenance_scenarios() -> None:
     manifest = {
         "checks": {"detect": {"commands": ["demo --version"]}},
         "package_managers": {
-            "brew": {"package_name": "demo-brew"},
             "npm": {"package_name": "demo-npm"},
             "cargo": {"package_name": "demo-cargo"},
             "go": {"package_name": "example.com/demo/cmd/demo"},
@@ -161,11 +160,10 @@ def exercise_install_provenance_scenarios() -> None:
     }
     with tempfile.TemporaryDirectory(prefix="charness-provenance-") as temp_dir:
         root = Path(temp_dir)
-        prefixes = {manager: root / manager for manager in ("brew", "npm", "cargo", "go")}
+        prefixes = {manager: root / manager for manager in ("npm", "cargo", "go")}
         for prefix in prefixes.values():
             (prefix / "bin").mkdir(parents=True)
         commands = {
-            ("brew", "--prefix"): str(prefixes["brew"]),
             ("npm", "prefix", "-g"): str(prefixes["npm"]),
             ("go", "env", "GOPATH"): str(prefixes["go"]),
         }
@@ -177,7 +175,7 @@ def exercise_install_provenance_scenarios() -> None:
             with mock.patch.dict(os.environ, {"CARGO_HOME": str(prefixes["cargo"]), "GOPATH": ""}, clear=False):
                 provenance.detect_package_manager_prefixes()
         with mock.patch.object(provenance.shutil, "which", return_value=None):
-            with mock.patch.object(provenance, "detect_package_manager_prefixes", return_value={"brew": str(prefixes["brew"])}):
+            with mock.patch.object(provenance, "detect_package_manager_prefixes", return_value={"npm": str(prefixes["npm"])}):
                 provenance.detect_install_provenance(manifest)
         for manager, prefix in prefixes.items():
             binary = prefix / "bin" / "demo"
@@ -190,7 +188,7 @@ def exercise_install_provenance_scenarios() -> None:
         other_binary.parent.mkdir()
         other_binary.write_text("#!/bin/sh\n", encoding="utf-8")
         with mock.patch.object(provenance.shutil, "which", return_value=str(other_binary)):
-            with mock.patch.object(provenance, "detect_package_manager_prefixes", return_value={"brew": str(prefixes["brew"])}):
+            with mock.patch.object(provenance, "detect_package_manager_prefixes", return_value={"npm": str(prefixes["npm"])}):
                 provenance.detect_install_provenance(manifest)
         for bad_provenance in (
             {"status": "missing"},
@@ -198,10 +196,10 @@ def exercise_install_provenance_scenarios() -> None:
             {"status": "detected", "install_method": "unknown"},
         ):
             provenance.package_manager_update_action(manifest, bad_provenance)
-        provenance.package_manager_update_action({"package_managers": []}, {"status": "detected", "install_method": "brew"})
+        provenance.package_manager_update_action({"package_managers": []}, {"status": "detected", "install_method": "npm"})
         provenance.package_manager_update_action(
-            {"package_managers": {"brew": {"package_name": ""}}},
-            {"status": "detected", "install_method": "brew"},
+            {"package_managers": {"npm": {"package_name": ""}}},
+            {"status": "detected", "install_method": "npm"},
         )
 
 

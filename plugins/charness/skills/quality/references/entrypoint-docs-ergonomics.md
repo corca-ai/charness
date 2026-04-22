@@ -8,6 +8,8 @@ already applies to skill bodies:
 - trust a smart model or operator when inference is safe
 - keep one maintained owner instead of repeating setup/update/help prose across
   multiple entry docs
+- when one canonical bootstrap exists, prefer a thin README-first contract over
+  a second install manual
 
 This is not a rule that every repo must have the same document set or the same
 layout. It is a lens for asking whether the docs that start work are carrying
@@ -19,10 +21,15 @@ only the next move, or whether they are accreting into competing manuals.
   procedure to a deeper maintained document?
 - Is there one obvious owner for recurring setup/update/proof detail, or are
   nearby entry docs repeating the same instructions?
+- When a CLI owns a deterministic first bootstrap, would a pasteable README
+  contract plus a repo-owned next-action command be clearer than a separate
+  install document?
 - Are explicit modes, flags, or branch explanations doing real safety work, or
   compensating for weak defaults and weak inference?
 - Is the doc trying to narrate every predictable branch instead of trusting the
   agent or operator to follow a linked deeper owner?
+- Does any agent-facing prose still tell the reader to fetch a remote install
+  doc and follow it instead of pasting the contract directly?
 - Would trimming this doc make the next move harder, or only remove duplicate
   prose?
 
@@ -41,6 +48,8 @@ It only inventories signals that deserve a human quality pass:
   branching
 - high inline-code density with no deeper doc link, which can suggest a doc is
   trying to carry too much procedural detail itself
+- stale assumptions that every installable repo needs `INSTALL.md` or
+  `UNINSTALL.md`, even when README Quick Start already owns first bootstrap
 
 Treat these as prompts, not automatic failures.
 
@@ -60,6 +69,8 @@ stable enough to name. A portable gate should usually:
 - check required doc phrases for behavioral invariants such as read-only
   doctor behavior, explicit delete flags, managed install ownership, or
   machine-readable output
+- check forbidden doc phrases when deprecated remote-doc handoff language or
+  package-manager guidance must not reappear
 - check forbidden doc phrases when a deprecated path must not reappear
 
 Do not try to prove broad prose quality with substring checks. The gate should

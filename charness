@@ -2730,7 +2730,7 @@ def _manual_tool_next_step(
     provenance = action_result.get("provenance")
     if isinstance(provenance, dict) and provenance.get("status") == "detected":
         manager = provenance.get("install_method")
-        if isinstance(manager, str) and manager in {"brew", "npm", "cargo", "go"}:
+        if isinstance(manager, str) and manager in {"npm", "cargo", "go"}:
             guidance = f"`{tool_id}` is already installed via `{manager}`."
     if isinstance(repo_followup, dict):
         rendered_command = repo_followup.get("rendered_command")
@@ -2767,7 +2767,7 @@ def _doctor_ok_next_step(tool_id: str, doctor_result: dict[str, object]) -> str 
     if isinstance(provenance, dict):
         manager = provenance.get("install_method")
         package_name = provenance.get("package_name")
-        if isinstance(manager, str) and manager in {"brew", "npm", "cargo", "go"} and isinstance(package_name, str):
+        if isinstance(manager, str) and manager in {"npm", "cargo", "go"} and isinstance(package_name, str):
             message = f"`{tool_id}` is ready via `{manager}` package `{package_name}`."
             discovery_suffix = _support_discovery_suffix(doctor_result)
             return f"{message} {discovery_suffix}".strip() if discovery_suffix else message

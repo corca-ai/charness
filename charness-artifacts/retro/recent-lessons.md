@@ -2,16 +2,21 @@
 
 ## Current Focus
 
-- No current focus bullets found in source retro.
+- When bootstrap semantics move, audit helper defaults, adapters, generated
+  exports, integration manifests, and current artifacts in the same slice.
 
 ## Repeat Traps
 
-- No repeat traps extracted from source retro.
+- Do not stop after fixing README or one public skill when the real contract is
+  still encoded in helper defaults and generated prompt surfaces.
 
 ## Next-Time Checklist
 
-- No next improvements extracted from source retro.
+- Survey repo-wide `INSTALL.md`/`UNINSTALL.md` assumptions and package-manager
+  guidance before calling a bootstrap-contract slice closed.
+- Refresh the checked-in cautilus proof and current-pointer artifacts whenever
+  prompt-affecting bootstrap language changes.
 
 ## Sources
 
-- `charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md`
+- `charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md`
