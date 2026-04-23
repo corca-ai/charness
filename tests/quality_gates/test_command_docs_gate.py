@@ -74,3 +74,18 @@ def test_check_command_docs_skips_repos_without_contract(tmp_path: Path) -> None
 
     assert result.returncode == 0, result.stderr
     assert "No command-docs contract found" in result.stdout
+
+
+def test_render_cli_reference_matches_checked_in_doc(tmp_path: Path) -> None:
+    output = tmp_path / "cli-reference.md"
+
+    result = run_script(
+        "scripts/render_cli_reference.py",
+        "--repo-root",
+        str(ROOT),
+        "--output",
+        str(output),
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert output.read_text(encoding="utf-8") == (ROOT / "docs" / "cli-reference.md").read_text(encoding="utf-8")

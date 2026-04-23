@@ -5,6 +5,7 @@ node_modules/
 .lycheecache
 .artifacts/
 .cautilus/
+.agents/charness-discovery/
 plugins/charness/support/gather-slack/.cache/
 .charness/quality/bootstrap.json
 .charness/quality/runtime-signals.json

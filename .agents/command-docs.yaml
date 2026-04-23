@@ -4,26 +4,28 @@ commands:
     help_command: ./charness --help
     doc_paths:
       - README.md
+      - docs/cli-reference.md
     required_help_contains:
       - init
       - doctor
       - update
+      - version
       - reset
       - uninstall
       - task
       - capability
       - tool
     required_doc_contains:
-      - Once the binary is available, these are the main commands users and agents will keep seeing
-      - charness init
+      - The CLI is there so humans and agents can inspect local harness state instead of guessing.
+      - charness --help
       - charness doctor
       - charness update
-      - charness reset
-      - charness uninstall
+      - CLI Reference
   task:
     help_command: ./charness task --help
     doc_paths:
       - docs/agent-task-envelope.md
+      - docs/cli-reference.md
     required_help_contains:
       - claim
       - submit
@@ -40,61 +42,66 @@ commands:
     help_command: ./charness init --help
     doc_paths:
       - README.md
+      - docs/cli-reference.md
     required_help_contains:
       - --skip-cli-install
       - --skip-claude-wrapper
       - --json
     required_doc_contains:
-      - Zero-state bootstrap
-      - Install charness on this machine.
+      - Make sure your machine has Python 3.
       - /tmp/charness-init.sh
+      - Use charness to initialize this repo.
+      - charness init
   doctor:
     help_command: ./charness doctor --help
     doc_paths:
       - README.md
+      - docs/cli-reference.md
     required_help_contains:
       - --write-state
       - --next-action
       - --json
     required_doc_contains:
-      - next_action
-      - charness doctor --next-action
-      - doctor --json
+      - charness doctor
+      - --next-action
+      - --json
   update:
     help_command: ./charness update --help
     doc_paths:
       - README.md
+      - docs/cli-reference.md
     required_help_contains:
       - --no-pull
       - --skip-codex-cache-refresh
       - --json
     required_doc_contains:
-      - After installation, use `charness update` for refreshes.
-      - refresh the installed surface
+      - charness update
+      - charness update all
+      - Refresh the installed surface
   reset:
     help_command: ./charness reset --help
     doc_paths:
-      - README.md
+      - docs/cli-reference.md
     required_help_contains:
       - --json
     required_doc_contains:
-      - remove host plugin state while keeping the managed checkout and CLI
       - charness reset
+      - Remove host plugin state for Codex and Claude while preserving the managed checkout and CLI.
   uninstall:
     help_command: ./charness uninstall --help
     doc_paths:
-      - README.md
+      - docs/cli-reference.md
     required_help_contains:
       - --delete-checkout
       - --delete-cli
       - --json
     required_doc_contains:
-      - preserving the source checkout and CLI unless explicit delete flags are passed
       - charness uninstall
+      - Remove the managed local install surface.
   capability:
     help_command: ./charness capability --help
     doc_paths:
-      - README.md
+      - docs/cli-reference.md
       - docs/capability-resolution.md
     required_help_contains:
       - init
@@ -110,7 +117,7 @@ commands:
   tool:
     help_command: ./charness tool --help
     doc_paths:
-      - README.md
+      - docs/cli-reference.md
       - docs/control-plane.md
     required_help_contains:
       - doctor
