@@ -45,6 +45,29 @@ def init_managed_home_from_repo(
     return home_root, env
 
 
+def assert_managed_checkout_has_no_tracked_runtime_dirt(managed_checkout: Path) -> None:
+    status = subprocess.run(
+        ["git", "status", "--short", "--untracked-files=no", "--", ".charness"],
+        cwd=managed_checkout,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert status.returncode == 0, status.stderr
+    assert status.stdout == ""
+
+    ignored = subprocess.run(
+        ["git", "check-ignore", ".charness/bootstrap-python/bin/python", ".charness/retro/weekly-latest.json"],
+        cwd=managed_checkout,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert ignored.returncode == 0, ignored.stderr
+    assert ".charness/bootstrap-python/bin/python" in ignored.stdout
+    assert ".charness/retro/weekly-latest.json" in ignored.stdout
+
+
 def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -234,6 +257,7 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert host_state["last_init"]["doctor"]["codex_host_guidance"]["status"] == "host-unavailable"
     assert host_state["last_init"]["doctor"]["repo_root"] == str(home_root / ".agents" / "src" / "charness")
     assert isinstance(host_state["last_init"]["recorded_at"], str)
+    assert_managed_checkout_has_no_tracked_runtime_dirt(home_root / ".agents" / "src" / "charness")
 def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(tmp_path: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -302,6 +326,7 @@ def test_installed_cli_update_allows_untracked_files_in_managed_checkout(tmp_pat
     assert "STEP: skipping Codex host cache refresh" in update_result.stderr
     assert payload["checkout"]["pulled"] is True
     assert untracked.read_text(encoding="utf-8") == "runtime cache placeholder\n"
+    assert_managed_checkout_has_no_tracked_runtime_dirt(managed_checkout)
 
 
 def test_installed_cli_update_blocks_tracked_changes_in_managed_checkout(tmp_path: Path) -> None:

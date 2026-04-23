@@ -7,6 +7,8 @@ from pathlib import Path
 
 ADAPTER_RELATIVE_PATH = Path(".agents/retro-adapter.yaml")
 SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
+GITIGNORE_RELATIVE_PATH = Path(".gitignore")
+GITIGNORE_RUNTIME_LINES = (".charness/retro/",)
 
 
 def parse_args() -> argparse.Namespace:
@@ -70,21 +72,35 @@ def write_if_missing(path: Path, text: str) -> bool:
     return True
 
 
+def ensure_gitignore_lines(path: Path, lines: tuple[str, ...]) -> bool:
+    existing = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+    missing = [line for line in lines if line not in existing]
+    if not missing:
+        return False
+    updated = [*existing, *missing]
+    path.write_text("\n".join(updated) + "\n", encoding="utf-8")
+    return True
+
+
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
     adapter_path = repo_root / ADAPTER_RELATIVE_PATH
     summary_path = repo_root / SUMMARY_RELATIVE_PATH
+    gitignore_path = repo_root / GITIGNORE_RELATIVE_PATH
     created_adapter = write_if_missing(adapter_path, adapter_text(repo_root.name))
     created_summary = write_if_missing(summary_path, summary_text())
+    updated_gitignore = ensure_gitignore_lines(gitignore_path, GITIGNORE_RUNTIME_LINES)
     print(
         json.dumps(
             {
                 "adapter_path": str(ADAPTER_RELATIVE_PATH),
                 "summary_path": str(SUMMARY_RELATIVE_PATH),
+                "gitignore_path": str(GITIGNORE_RELATIVE_PATH),
                 "created": {
                     "adapter": created_adapter,
                     "summary": created_summary,
+                    "gitignore": updated_gitignore,
                 },
             },
             ensure_ascii=False,
