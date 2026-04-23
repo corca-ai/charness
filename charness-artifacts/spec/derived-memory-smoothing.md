@@ -51,9 +51,20 @@ as an advisory-only derived signal.
 
 ## Deferred Decisions
 
-- Retro lesson decay stored under `.charness/retro/lesson-signals.json`.
-- Debug seam-risk scoring stored under `.charness/debug/seam-signals.json`.
 - Exposing derived memory hints through `find-skills` routing.
+
+## Next Candidate Decision
+
+- Next candidate is `debug` seam-risk indexing, not retro decay.
+- Keep it as an index over existing debug artifact `## Seam Risk` fields, with
+  links back to incident records. Do not collapse incidents into a single score.
+- Start only when repeated debug incidents need cross-incident lookup; until
+  then, the existing debug artifact validator is enough.
+- Defer retro lesson decay. `recent-lessons.md` already has a source-linked
+  digest; the next retro improvement is selection criteria for which lessons
+  stay in the digest, not exponential decay math.
+- Defer `find-skills` derived hints until either quality EWMA or debug seam-risk
+  changes an actual routing decision.
 
 ## Non-Goals
 
@@ -116,6 +127,6 @@ Valid but Defer:
 ## Next Implementation Slice
 
 Extend deterministic freshness checks only when a current pointer makes a
-concrete claim that can be checked against live inventory. Keep retro lesson
-decay and debug seam-risk scoring deferred until one concrete consumer needs
-derived memory beyond the quality runtime EWMA.
+concrete claim that can be checked against live inventory. If derived memory
+work continues after that, prototype debug seam-risk indexing before retro
+lesson decay.

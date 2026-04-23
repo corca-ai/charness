@@ -120,9 +120,9 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   should move more review prose into references or helper scripts so the core
   falls back under the `long_core` advisory threshold without losing routing
   precision.
-- active `AUTO_CANDIDATE`: extend `validate-current-pointer-freshness` beyond
-  stale validator-existence claims so rolling pointers cannot claim resolved
-  ergonomics or runtime states that disagree with current inventories.
+- active `AUTO_CANDIDATE`: keep expanding `validate-current-pointer-freshness`;
+  runtime EWMA command claims are now checked, but ergonomics/release/dogfood
+  claims still need inventory-backed checks.
 - active `AUTO_CANDIDATE`: decide whether command-doc-required flag examples
   should stay inline, move behind owner-doc links, or gain a small inventory
   exemption so README/UNINSTALL pressure tracks real prose clutter.

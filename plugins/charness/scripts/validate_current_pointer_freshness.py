@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -18,6 +19,10 @@ CURRENT_POINTERS = (
     Path("docs/handoff.md"),
     Path("charness-artifacts/quality/latest.md"),
 )
+QUALITY_POINTER = Path("charness-artifacts/quality/latest.md")
+GITIGNORE = Path(".gitignore")
+RUNTIME_RECORDER = Path("scripts/record_quality_runtime.py")
+RUNTIME_BUDGET_CHECKER = Path("skills/public/quality/scripts/check_runtime_budget.py")
 STALE_POINTER_PHRASES = {
     Path("docs/handoff.md"): (
         "freshness validator를 첫 slice로 잡는다",
@@ -26,8 +31,10 @@ STALE_POINTER_PHRASES = {
     Path("charness-artifacts/quality/latest.md"): (
         "No deterministic freshness check yet",
         "add a narrow freshness check so rolling pointers",
+        "extend `validate-current-pointer-freshness` beyond stale validator-existence claims",
     ),
 }
+COMMAND_RE = re.compile(r"`(python3 [^`]+|\.\/scripts\/[^`]+)`")
 
 
 def read_text(repo_root: Path, relative_path: Path) -> str:
@@ -62,9 +69,65 @@ def validate_no_stale_claims(repo_root: Path) -> None:
         )
 
 
+def command_script_path(command: str) -> Path | None:
+    parts = command.split()
+    if not parts:
+        return None
+    if parts[0] == "python3" and len(parts) > 1:
+        return Path(parts[1])
+    if parts[0].startswith("./"):
+        return Path(parts[0][2:])
+    return None
+
+
+def validate_quality_command_claims(repo_root: Path) -> None:
+    quality = read_text(repo_root, QUALITY_POINTER)
+    missing: list[str] = []
+    for command in COMMAND_RE.findall(quality):
+        script_path = command_script_path(command)
+        if script_path is not None and not (repo_root / script_path).is_file():
+            missing.append(f"`{command}` references missing `{script_path}`")
+    if missing:
+        raise ValidationError(
+            "quality pointer command claims are stale:\n"
+            + "\n".join(f"- {item}" for item in missing)
+        )
+
+
+def validate_runtime_smoothing_claim(repo_root: Path) -> None:
+    quality = read_text(repo_root, QUALITY_POINTER)
+    if "Runtime EWMA is advisory" not in quality:
+        return
+
+    gitignore = read_text(repo_root, GITIGNORE)
+    recorder = read_text(repo_root, RUNTIME_RECORDER)
+    checker = read_text(repo_root, RUNTIME_BUDGET_CHECKER)
+    missing: list[str] = []
+    required_fragments = (
+        (GITIGNORE, gitignore, ".charness/quality/runtime-smoothing.json"),
+        (RUNTIME_RECORDER, recorder, 'SMOOTHING_FILENAME = "runtime-smoothing.json"'),
+        (RUNTIME_RECORDER, recorder, "SMOOTHING_ALPHA_BASE = 0.35"),
+        (RUNTIME_RECORDER, recorder, "SMOOTHING_WARMUP_N = 5"),
+        (RUNTIME_RECORDER, recorder, '"advisory": True'),
+        (RUNTIME_BUDGET_CHECKER, checker, 'SMOOTHING_PATH = Path(".charness") / "quality" / "runtime-smoothing.json"'),
+        (RUNTIME_BUDGET_CHECKER, checker, "ewma_advisory_elapsed_ms"),
+        (RUNTIME_BUDGET_CHECKER, checker, "ewma {ewma:.1f}ms advisory"),
+    )
+    for relative_path, text, fragment in required_fragments:
+        if fragment not in text:
+            missing.append(f"`{relative_path}` missing `{fragment}`")
+    if missing:
+        raise ValidationError(
+            "quality pointer runtime smoothing claim is stale:\n"
+            + "\n".join(f"- {item}" for item in missing)
+        )
+
+
 def validate_current_pointer_freshness(repo_root: Path) -> None:
     validate_gate_is_queued(repo_root)
     validate_no_stale_claims(repo_root)
+    validate_quality_command_claims(repo_root)
+    validate_runtime_smoothing_claim(repo_root)
 
 
 def main() -> int:
