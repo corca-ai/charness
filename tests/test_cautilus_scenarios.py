@@ -158,11 +158,11 @@ def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> 
     assert by_id["compact-startup-bootstrap-before-spec"]["expectedRouting"]["workSkill"] == "spec"
 
 
-def test_instruction_surface_codex_ephemeral_flag_is_configurable() -> None:
+def test_instruction_surface_codex_session_mode_is_configurable() -> None:
     script = """
         import { codexArgs } from './scripts/agent-runtime/run-local-instruction-surface-test.mjs';
-        const base = { workspace: '/tmp/work', sandbox: 'read-only', codexEphemeral: true };
-        const persistent = { ...base, codexEphemeral: false };
+        const base = { workspace: '/tmp/work', sandbox: 'read-only', codexSessionMode: 'ephemeral' };
+        const persistent = { ...base, codexSessionMode: 'persistent' };
         console.log(JSON.stringify({
           defaultArgs: codexArgs(base, '/tmp/schema.json', '/tmp/output.json'),
           persistentArgs: codexArgs(persistent, '/tmp/schema.json', '/tmp/output.json')
