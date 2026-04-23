@@ -10,7 +10,6 @@ This is a routing default, not a veto against good deterministic enforcement. Fo
 When the repo lacks concrete lint defaults, prefer explicit language baselines over taste-driven tool sprawl. For Python, default to `ruff check` as the standing lint path, include `C90`/mccabe for complexity, and choose exactly one type checker (`mypy` or `pyright`). For JavaScript/TypeScript, default to `eslint` and, when TypeScript is present, `tsc --noEmit`; if `eslint` is the standing linter, turn on a `complexity` rule instead of relying only on file/function length. Treat `B`, `UP`, `SIM`, `deptry`, `knip`, `shellcheck`, `lychee`, `secretlint`, or `gitleaks` as repo-surface-driven escalations, not mandatory first-day defaults. See `references/sample-presets.md` and the shipped `python-quality` / `typescript-quality` presets.
 
 ## Bootstrap
-
 Resolve the adapter first, then inspect the current quality surface. Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
 
 ```bash
@@ -68,7 +67,6 @@ git status --short
 If the adapter is missing, use inferred defaults and continue; scaffold one when the repo already has stable gate commands worth recording. Prefer `bootstrap_adapter.py` when the adapter should record installed command groups, inferred concept paths, preset lineage, or deferred setup in one pass.
 
 ## Workflow
-
 1. Restate the current quality question: what the user wants checked or improved, whether the scope is repo-wide, one seam, or one proposed change, and which concept boundary or ownership seam is most likely to be wrong.
 2. Detect the current gate surface.
    - independently enumerate the current source, spec, and gate inventory before letting the previous quality artifact define scope
@@ -117,6 +115,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - for missing or weak gates, name the exact setup or command family to add
    - tag every recommended next gate as `active` or `passive`; passive entries require an explicit reason such as future-tool dependency, broader product decision, or runtime budget tradeoff
    - prefer the smallest gate that materially improves confidence
+   - keep standing-test economics runner-neutral in the public skill body: ask which standing proof is duplicated, which slices belong in `standing` vs `ci_only` vs `on_demand`, and what dominates critical-path wall time without hardcoding one runner family
    - before adding or tightening a gate around length, duplicate, or pressure signals, ask whether deleting code/docs, merging duplicated proof, splitting ownership, or extracting a helper is the cheaper and clearer fix
    - do not force one stack's tooling when the repo does not use that stack
    - when the problem is automatable, prefer a deterministic gate over prose
@@ -130,7 +129,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 8. Run one fresh-eye premortem on the drafted report using `references/fresh-eye-premortem.md`. Run the capability check in `../premortem/references/subagent-capability-check.md` before reporting the canonical fresh-eye subagent path as blocked: attempt the bounded setup, resolve availability uncertainty, and cite the concrete host signal. If the host still cannot provide subagents, stop and leave the host-side contract gap visible instead of substituting a local pass.
 9. End with a quality posture summary: what ran, which runtime hot spots dominate, whether coverage is standing-gated, whether evaluator-backed depth exists, what the current bar proves and still does not prove, and the next best gate or cleanup.
 
-- `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Commands Run`, `Recommended Next Gates`
+- `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`, `Standing Test Economics`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Commands Run`, `Recommended Next Gates`
 - Do not reduce quality to one aggregate score.
 - Do not split quality bootstrap into a second public concept when the work is still bounded repo-local quality setup.
 - Do not recommend gates the repo cannot realistically run without saying why.
@@ -138,6 +137,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not ignore runtime drift just because a gate still passes functionally.
 - Do not ask only what proof is missing when executable public specs land; ask what is duplicated at the wrong layer too.
 - Do not wait for operator follow-up before stating current runtime hot spots, coverage-gate presence or absence, and evaluator-depth status when the repo signals are available.
+- Keep runner-specific naming such as `Pytest Economics` or `Vitest Hotspots` in the repo adapter or repo-owned artifact, not in the portable public skill body.
 - Do not treat slow or broad executable specs as automatically strong quality when they mostly duplicate cheaper deterministic coverage.
 - Do not leave an automatable quality rule as prose-only guidance when a linter, validator, test, hook, or script could own it.
 - Do not normalize growing lint suppressions as harmless cleanup debt; inventory them and ask whether structure should absorb the rule instead.

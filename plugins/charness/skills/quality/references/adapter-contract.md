@@ -77,6 +77,11 @@ no recorded sample yet are warnings, not failures, so a budget can be defined
 before its first run. Omit the field entirely (or leave the mapping empty) to
 opt out.
 
+Repo-owned quality artifacts may use runner-specific section labels or runtime
+signals such as `Pytest Economics` when that is the honest local seam. Keep the
+portable public skill body runner-neutral with broader concepts such as
+`Standing Test Economics`, `Runtime Signals`, or `Executable Test Economics`.
+
 `startup_probes` is an optional list of startup probe records for installable
 or agent-facing CLIs. Each record should include:
 

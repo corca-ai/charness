@@ -104,10 +104,12 @@ def test_quality_skill_prefers_structure_over_heuristic_chasing() -> None:
 
     assert "structural smell sensors" in skill_text
     assert "`Scope`, `Concept Risks`, `Current Gates`" in skill_text
+    assert "Standing Test Economics" in skill_text
     assert "delete, merge, split ownership, extract a helper, or narrow the interface" in skill_text
     assert "Do not treat a passing length, duplicate, or pressure heuristic as the goal" in skill_text
     assert "routing default, not a veto against good deterministic enforcement" in skill_text
     assert "standing threshold gates such as coverage floors, runtime budgets" in skill_text
+    assert "Pytest Economics" in skill_text
     assert "what structural simplification is missing" in lenses
     assert "canonical routing lives in `SKILL.md`" in lenses
     assert "do not over-apply this caution to standing threshold gates" in lenses
@@ -163,6 +165,8 @@ def test_quality_and_create_cli_carry_command_docs_drift_pattern() -> None:
     assert "command-docs drift gate" in quality_skill
     assert "stable CLI command docs" in automation
     assert ".agents/command-docs.yaml" in adapter_contract
+    assert "runner-specific section labels" in adapter_contract
+    assert "Standing Test Economics" in adapter_contract
     assert "command-docs drift gate" in create_cli
     assert "repo-local command-docs contract" in create_cli_quality
 
