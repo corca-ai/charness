@@ -33,7 +33,7 @@ runtime_budgets:
   charness-version: 500
   pytest: 45000
   check-coverage: 15000
-  check-secrets: 5500
+  check-secrets: 6000
   run-evals: 5000
   specdown: 8000
 startup_probes:

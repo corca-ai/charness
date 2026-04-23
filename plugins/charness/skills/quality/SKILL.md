@@ -10,6 +10,7 @@ This is a routing default, not a veto against good deterministic enforcement. Fo
 When the repo lacks concrete lint defaults, prefer explicit language baselines over taste-driven tool sprawl. For Python, default to `ruff check` as the standing lint path, include `C90`/mccabe for complexity, and choose exactly one type checker (`mypy` or `pyright`). For JavaScript/TypeScript, default to `eslint` and, when TypeScript is present, `tsc --noEmit`; if `eslint` is the standing linter, turn on a `complexity` rule instead of relying only on file/function length. Treat `B`, `UP`, `SIM`, `deptry`, `knip`, `shellcheck`, `lychee`, `secretlint`, or `gitleaks` as repo-surface-driven escalations, not mandatory first-day defaults. See `references/sample-presets.md` and the shipped `python-quality` / `typescript-quality` presets.
 
 ## Bootstrap
+
 Resolve the adapter first, then inspect the current quality surface. Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
 
 ```bash
@@ -49,17 +50,14 @@ The prior quality artifact is history, not the authoritative universe. Re-derive
 # Missing-binary protocol: create-skill/references/binary-preflight.md
 # 1. fresh inventory before the prior artifact can anchor scope
 rg --files .
-
 # 2. current quality artifact and adjacent contracts
 sed -n '1,220p' <resolved-quality-artifact> 2>/dev/null || true
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 rg --files docs skills
-
 # 3. repo signals and maintainer-local enforcement surface
 rg -n "eslint|ruff|mypy|pyright|tsc|pytest|vitest|jest|coverage|deptry|knip|audit|sast|owasp|threat|architecture|concept|markdownlint|secretlint|shellcheck|lychee|gitleaks|trufflehog|pre-push|prepush|githook|husky|simple-git-hooks|lefthook|core\.hooksPath|actions/checkout|actions/setup-node|actions/setup-go|actions/setup-python|actions/cache|actions/github-script|check-github-actions" .
 git config --get core.hooksPath || true
 find .git/hooks -maxdepth 1 -type f 2>/dev/null | sort
-
 # 4. current repo state
 git status --short
 ```
@@ -67,6 +65,7 @@ git status --short
 If the adapter is missing, use inferred defaults and continue; scaffold one when the repo already has stable gate commands worth recording. Prefer `bootstrap_adapter.py` when the adapter should record installed command groups, inferred concept paths, preset lineage, or deferred setup in one pass.
 
 ## Workflow
+
 1. Restate the current quality question: what the user wants checked or improved, whether the scope is repo-wide, one seam, or one proposed change, and which concept boundary or ownership seam is most likely to be wrong.
 2. Detect the current gate surface.
    - independently enumerate the current source, spec, and gate inventory before letting the previous quality artifact define scope
