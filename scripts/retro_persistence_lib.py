@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from scripts.recent_lessons_lib import build_recent_lessons
+from scripts.recent_lessons_lib import build_recent_lessons, write_lesson_selection_index
 
 
 def _write_text(path: Path, text: str) -> None:
@@ -42,7 +42,9 @@ def persist_retro_artifact(
     if summary_path is not None and artifact_path.resolve() != summary_path.resolve():
         digest = build_recent_lessons(artifact_path, repo_root=repo_root)
         _write_text(summary_path, digest.summary_text)
+        index_path = write_lesson_selection_index(repo_root, output_dir, summary_path)
         result["summary_path"] = str(summary_path.relative_to(repo_root))
+        result["lesson_selection_index_path"] = str(index_path.relative_to(repo_root))
         result["summary_refreshed"] = True
 
     return result

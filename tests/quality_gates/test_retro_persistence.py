@@ -71,11 +71,13 @@ def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(tmp_
     assert payload["artifact_path"] == "charness-artifacts/retro/weekly-2026-04-14.md"
     assert payload["snapshot_path"] == ".charness/retro/weekly-latest.json"
     assert payload["summary_path"] == "charness-artifacts/retro/recent-lessons.md"
+    assert payload["lesson_selection_index_path"] == "charness-artifacts/retro/lesson-selection-index.json"
     assert payload["summary_refreshed"] is True
 
     summary_text = (output_dir / "recent-lessons.md").read_text(encoding="utf-8")
     assert "Durable persistence should refresh recent lessons automatically." in summary_text
     assert "Manual summary refresh was easy to forget." in summary_text
+    assert (output_dir / "lesson-selection-index.json").is_file()
 
 
 def test_persist_retro_artifact_skips_self_refresh_for_summary_target(tmp_path: Path) -> None:

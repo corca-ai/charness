@@ -1,10 +1,25 @@
 from __future__ import annotations
 
+import hashlib
+import json
+import math
 import re
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
+from typing import Any
 
 DATE_IN_NAME = re.compile(r"(\d{4}-\d{2}-\d{2})")
+DATE_LINE = re.compile(r"^Date:\s*(\d{4}-\d{2}-\d{2})\s*$", re.MULTILINE)
+LESSON_INDEX_FILENAME = "lesson-selection-index.json"
+LESSON_SELECTION_ALPHA_BASE = 0.35
+LESSON_SELECTION_WARMUP_N = 5
+LESSON_SELECTION_HALF_LIFE_DAYS = 14
+LESSON_KINDS = {
+    "Context": "current_focus",
+    "Waste": "repeat_trap",
+    "Next Improvements": "next_improvement",
+}
 
 
 @dataclass
@@ -43,6 +58,21 @@ def _extract_sections(text: str) -> dict[str, str]:
     return {name: "\n".join(lines).strip() for name, lines in sections.items()}
 
 
+def _extract_sections_loose(text: str) -> dict[str, str]:
+    sections = _extract_sections(text)
+    current: str | None = None
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped in {f"{name}:" for name in LESSON_KINDS}:
+            current = stripped[:-1]
+            sections.setdefault(current, "")
+            continue
+        if current is not None:
+            existing = sections.get(current, "")
+            sections[current] = f"{existing}\n{line}".strip()
+    return sections
+
+
 def _bullet_items(section_text: str) -> list[str]:
     items: list[str] = []
     current: list[str] = []
@@ -72,7 +102,209 @@ def _first_sentence(text: str) -> str:
 def _clean_next_improvement(item: str) -> str:
     if item.startswith("`") and "`:" in item:
         return item.split("`:", 1)[1].strip()
+    if ":" in item:
+        prefix, rest = item.split(":", 1)
+        if prefix in {"workflow", "capability", "memory", "validation", "tooling"}:
+            return rest.strip()
     return item
+
+
+def _source_date(path: Path, text: str) -> str | None:
+    match = DATE_LINE.search(text)
+    if match:
+        return match.group(1)
+    token = _date_token(path.name)
+    return token or None
+
+
+def _parse_date(value: str | None) -> date | None:
+    if value is None:
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def _normalize_lesson_key(text: str) -> str:
+    words = re.findall(r"[a-z0-9가-힣]+", text.lower())
+    return " ".join(words[:14]) if words else text.strip().lower()
+
+
+def _candidate_id(kind: str, normalized_key: str) -> str:
+    digest = hashlib.sha1(f"{kind}:{normalized_key}".encode("utf-8")).hexdigest()[:12]
+    return f"{kind}:{digest}"
+
+
+def adaptive_lesson_alpha(sample_count: int) -> float:
+    warmup_ratio = min(1.0, sample_count / LESSON_SELECTION_WARMUP_N)
+    return LESSON_SELECTION_ALPHA_BASE * warmup_ratio
+
+
+def retro_artifact_paths(output_dir: Path, summary_path: Path) -> list[Path]:
+    return sorted(
+        path
+        for path in output_dir.glob("*.md")
+        if path.resolve() != summary_path.resolve()
+        and path.name not in {"recent-lessons.md"}
+    )
+
+
+def _recency_weight(source_date: date | None, as_of: date | None) -> tuple[int | None, float]:
+    if source_date is None or as_of is None:
+        return None, 0.5
+    age_days = max(0, (as_of - source_date).days)
+    weight = math.exp(-math.log(2) * age_days / LESSON_SELECTION_HALF_LIFE_DAYS)
+    return age_days, weight
+
+
+def build_lesson_selection_index(
+    *,
+    repo_root: Path,
+    output_dir: Path,
+    summary_path: Path,
+) -> dict[str, Any]:
+    artifacts = retro_artifact_paths(output_dir, summary_path)
+    parsed_artifacts: list[dict[str, Any]] = []
+    dated_values: list[date] = []
+    candidates: dict[tuple[str, str], dict[str, Any]] = {}
+
+    for artifact_path in artifacts:
+        text = artifact_path.read_text(encoding="utf-8")
+        source_date_text = _source_date(artifact_path, text)
+        source_date = _parse_date(source_date_text)
+        if source_date is not None:
+            dated_values.append(source_date)
+        parsed_artifacts.append(
+            {
+                "path": artifact_path,
+                "text": text,
+                "source_date_text": source_date_text,
+                "source_date": source_date,
+            }
+        )
+
+    as_of = max(dated_values) if dated_values else None
+    for artifact in parsed_artifacts:
+        artifact_path = artifact["path"]
+        sections = _extract_sections_loose(artifact["text"])
+        source_date = artifact["source_date"]
+        source_date_text = artifact["source_date_text"]
+        for section_name, kind in LESSON_KINDS.items():
+            items = _bullet_items(sections.get(section_name, ""))
+            if section_name == "Context" and not items and sections.get(section_name):
+                items = [_first_sentence(sections[section_name])]
+            for raw_item in items:
+                lesson = _clean_next_improvement(raw_item) if section_name == "Next Improvements" else raw_item
+                if not lesson:
+                    continue
+                normalized_key = _normalize_lesson_key(lesson)
+                key = (kind, normalized_key)
+                entry = candidates.setdefault(
+                    key,
+                    {
+                        "kind": kind,
+                        "lesson": lesson,
+                        "normalized_key": normalized_key,
+                        "sources": [],
+                    },
+                )
+                entry["sources"].append(
+                    {
+                        "artifact_path": str(artifact_path.relative_to(repo_root)),
+                        "date": source_date_text,
+                        "section": section_name,
+                    }
+                )
+
+    entries: list[dict[str, Any]] = []
+    for (kind, normalized_key), entry in candidates.items():
+        source_dates = [_parse_date(source.get("date")) for source in entry["sources"]]
+        latest_date = max((value for value in source_dates if value is not None), default=None)
+        latest_date_text = latest_date.isoformat() if latest_date else None
+        age_days, recency_weight = _recency_weight(latest_date, as_of)
+        source_count = len(entry["sources"])
+        alpha = adaptive_lesson_alpha(source_count)
+        recurrence_multiplier = 1 + alpha * max(0, source_count - 1)
+        selection_weight = recency_weight * recurrence_multiplier
+        latest_source_path = max(
+            entry["sources"],
+            key=lambda source: (source.get("date") or "", source["artifact_path"]),
+        )["artifact_path"]
+        entries.append(
+            {
+                "candidate_id": _candidate_id(kind, normalized_key),
+                "kind": kind,
+                "lesson": entry["lesson"],
+                "normalized_key": normalized_key,
+                "source_count": source_count,
+                "latest_source_path": latest_source_path,
+                "latest_source_date": latest_date_text,
+                "age_days": age_days,
+                "recency_weight": round(recency_weight, 4),
+                "alpha": round(alpha, 4),
+                "selection_weight": round(selection_weight, 4),
+                "sources": sorted(entry["sources"], key=lambda source: (source.get("date") or "", source["artifact_path"])),
+            }
+        )
+
+    entries.sort(
+        key=lambda entry: (
+            -entry["selection_weight"],
+            -(entry["source_count"]),
+            entry["kind"],
+            entry["normalized_key"],
+        )
+    )
+    return {
+        "schema_version": 1,
+        "kind": "retro-lesson-selection-index",
+        "source": "charness-artifacts/retro/*.md Context/Waste/Next Improvements",
+        "selection_policy": {
+            "advisory": True,
+            "recency_half_life_days": LESSON_SELECTION_HALF_LIFE_DAYS,
+            "alpha_base": LESSON_SELECTION_ALPHA_BASE,
+            "warmup_n": LESSON_SELECTION_WARMUP_N,
+            "recurrence_multiplier": "1 + alpha_t * max(0, source_count - 1)",
+            "alpha_t": "alpha_base * min(1, source_count / warmup_n)",
+        },
+        "as_of_source_date": as_of.isoformat() if as_of else None,
+        "source_artifact_count": len(artifacts),
+        "candidate_count": len(entries),
+        "top_candidates": entries[:12],
+        "candidates": entries,
+    }
+
+
+def lesson_selection_index_path(output_dir: Path) -> Path:
+    return output_dir / LESSON_INDEX_FILENAME
+
+
+def lesson_selection_index_text(payload: dict[str, Any]) -> str:
+    return json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+
+
+def write_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path: Path) -> Path:
+    payload = build_lesson_selection_index(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
+    index_path = lesson_selection_index_path(output_dir)
+    index_path.write_text(lesson_selection_index_text(payload), encoding="utf-8")
+    return index_path
+
+
+def check_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path: Path) -> None:
+    payload = build_lesson_selection_index(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
+    index_path = lesson_selection_index_path(output_dir)
+    expected = lesson_selection_index_text(payload)
+    if not index_path.is_file():
+        raise FileNotFoundError(
+            f"missing retro lesson selection index `{index_path.relative_to(repo_root)}`; "
+            "run `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write`"
+        )
+    if index_path.read_text(encoding="utf-8") != expected:
+        raise ValueError(
+            f"retro lesson selection index `{index_path.relative_to(repo_root)}` is stale; "
+            "run `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write`"
+        )
 
 
 def build_recent_lessons(source_path: Path, *, repo_root: Path) -> RecentLessonsDigest:

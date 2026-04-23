@@ -36,6 +36,7 @@ load_adapter = _resolve_adapter_module.load_adapter
 _scripts_recent_lessons_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.recent_lessons_lib")
 build_recent_lessons = _scripts_recent_lessons_lib_module.build_recent_lessons
 pick_latest_retro_markdown = _scripts_recent_lessons_lib_module.pick_latest_retro_markdown
+write_lesson_selection_index = _scripts_recent_lessons_lib_module.write_lesson_selection_index
 
 
 def parse_args() -> argparse.Namespace:
@@ -56,11 +57,13 @@ def main() -> int:
     digest = build_recent_lessons(source_path, repo_root=repo_root)
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text(digest.summary_text + "\n", encoding="utf-8")
+    index_path = write_lesson_selection_index(repo_root, output_dir, summary_path)
     print(
         json.dumps(
             {
                 "summary_path": str(summary_path.relative_to(repo_root)),
                 "source_path": str(digest.source_path.relative_to(repo_root)),
+                "lesson_selection_index_path": str(index_path.relative_to(repo_root)),
                 "section_counts": digest.section_counts,
             },
             ensure_ascii=False,

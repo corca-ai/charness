@@ -13,8 +13,8 @@ to current pointers would blur audit history and current truth.
 
 Define the safe contract before broad smoothing rollout. The first implementation
 slice improved current-pointer freshness, the second added quality runtime EWMA
-as advisory-only derived state, and the third added a source-linked debug
-seam-risk index.
+as advisory-only derived state, the third added a source-linked debug seam-risk
+index, and the fourth added a source-linked retro lesson selection index.
 
 ## Fixed Decisions
 
@@ -25,6 +25,7 @@ seam-risk index.
 - `quality` gate decisions must keep using raw/latest samples, medians, and
   explicit spikes. EWMA may be advisory only.
 - `retro/recent-lessons.md` remains a compact digest, not an opaque decay model.
+  Decay belongs in a source-linked advisory selection index.
 - `debug` incident records must never be replaced by a seam-risk score.
 - Adaptive alpha uses a warmup-based alpha:
   `alpha_t = alpha_base * min(1, sample_count / warmup_n)` so early samples do
@@ -52,6 +53,12 @@ seam-risk index.
 - Debug seam-risk indexing is generated at
   `charness-artifacts/debug/seam-risk-index.json` from source debug artifact
   `## Seam Risk` fields.
+- Retro lesson selection indexing is generated at
+  `charness-artifacts/retro/lesson-selection-index.json` from source retro
+  artifact `Context`, `Waste`, and `Next Improvements` sections.
+- Retro lesson selection is advisory. It records source count, latest source,
+  recency half-life, and the same warmup-shaped adaptive alpha family:
+  `alpha_t = alpha_base * min(1, source_count / warmup_n)`.
 
 ## Deferred Decisions
 
@@ -59,18 +66,18 @@ seam-risk index.
 
 ## Next Candidate Decision
 
-- Debug seam-risk indexing is now the next implemented derived memory layer.
-- Keep it as an index over existing debug artifact `## Seam Risk` fields, with
-  links back to incident records. Do not collapse incidents into a single score.
-- Defer retro lesson decay. `recent-lessons.md` already has a source-linked
-  digest; the next retro improvement is selection criteria for which lessons
-  stay in the digest, not exponential decay math.
+- Retro lesson selection indexing is now the implemented derived memory layer
+  for history-style memory. Keep it advisory and source-linked; do not let it
+  rewrite `recent-lessons.md` without an explicit digest refresh.
+- Defer automated digest rewriting from the selection index until there is a
+  reviewed policy for how many `current_focus`, `repeat_trap`, and
+  `next_improvement` candidates should survive.
 - Defer `find-skills` derived hints until either quality EWMA or debug seam-risk
   changes an actual routing decision.
 
 ## Non-Goals
 
-- Do not add smoothing to `recent-lessons.md` in this slice.
+- Do not add opaque smoothing directly to `recent-lessons.md`.
 - Do not make EWMA part of pass/fail budget enforcement.
 - Do not create a new visible artifact family for smoothed memory until a
   current pointer demonstrably needs it.
@@ -121,7 +128,7 @@ Valid but Defer:
 
 ## Deliberately Not Doing
 
-- A three-surface smoothing rollout across `quality`, `retro`, and `debug`.
+- An opaque smoothed memory surface that hides the dated source artifacts.
 - A hidden state schema for all memory surfaces before one concrete consumer
   needs it.
 - A smoothing-derived failure gate.
@@ -129,6 +136,6 @@ Valid but Defer:
 ## Next Implementation Slice
 
 Extend deterministic freshness checks only when a current pointer makes a
-concrete claim that can be checked against live inventory. If derived memory
-work continues after that, define retro lesson selection criteria before any
-retro decay model.
+concrete claim that can be checked against live inventory. If retro derived
+memory continues, decide how the advisory lesson-selection index should feed the
+compact digest without erasing source-linked evidence.

@@ -60,10 +60,12 @@ def test_refresh_recent_lessons_from_latest_retro_artifact(tmp_path: Path) -> No
     payload = json.loads(result.stdout)
     assert payload["summary_path"] == "charness-artifacts/retro/recent-lessons.md"
     assert payload["source_path"] == "charness-artifacts/retro/weekly-2026-04-14.md"
+    assert payload["lesson_selection_index_path"] == "charness-artifacts/retro/lesson-selection-index.json"
     summary_text = (output_dir / "recent-lessons.md").read_text(encoding="utf-8")
     assert "The repo should stop relearning sync boundaries." in summary_text
     assert "Source and installed surfaces drifted independently." in summary_text
     assert "Sync generated surfaces before broad validation." in summary_text
+    assert (output_dir / "lesson-selection-index.json").is_file()
 
 
 def test_refresh_recent_lessons_accepts_explicit_source(tmp_path: Path) -> None:
@@ -114,5 +116,6 @@ def test_refresh_recent_lessons_accepts_explicit_source(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["source_path"] == "charness-artifacts/retro/session-2026-04-15.md"
+    assert payload["lesson_selection_index_path"] == "charness-artifacts/retro/lesson-selection-index.json"
     summary_text = (output_dir / "recent-lessons.md").read_text(encoding="utf-8")
     assert "Explicit source should win." in summary_text

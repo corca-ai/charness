@@ -18,7 +18,8 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 - `check-python-lengths` and `check-duplicates --fail-on-match` are standing
   gates, not advisory review notes.
 - `validate-current-pointer-freshness` rejects known-stale current-pointer claims.
-- `validate-debug-seam-index` keeps the debug seam-risk index current.
+- `validate-debug-seam-index` and `validate-retro-lesson-index` keep derived
+  memory indexes current.
 - Runtime EWMA is advisory in `.charness/quality/runtime-smoothing.json`;
   enforcement still uses raw latest samples, medians, and spikes.
 - `specdown run -quiet -no-report` remains part of the quiet quality gate.
@@ -71,8 +72,6 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   for support sync, release probing, manifest/capability validation, and
   install helper lock-writing paths, so the coverage gate better reflects real
   maintained behavior instead of only top-level command flows.
-- Remaining control-plane quality pressure is no longer coverage-floor debt; the
-  standing gap moved back to documentation and skill ergonomics advisories.
 
 ## Weak
 

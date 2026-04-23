@@ -278,6 +278,29 @@
       ]
     },
     {
+      "surface_id": "retro-lesson-selection-index",
+      "description": "Generated advisory index for source-linked retro lesson digest selection.",
+      "source_paths": [
+        "charness-artifacts/retro/*.md",
+        "scripts/recent_lessons_lib.py",
+        "scripts/build_retro_lesson_selection_index.py",
+        "scripts/retro_persistence_lib.py",
+        "skills/public/retro/scripts/refresh_recent_lessons.py"
+      ],
+      "derived_paths": [
+        "charness-artifacts/retro/lesson-selection-index.json"
+      ],
+      "sync_commands": [
+        "python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write"
+      ],
+      "verify_commands": [
+        "python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check"
+      ],
+      "notes": [
+        "The index is advisory source-linked selection evidence; it must not replace dated retro artifacts or make `recent-lessons.md` opaque."
+      ]
+    },
+    {
       "surface_id": "executable-specs",
       "description": "Repo-owned specdown executable acceptance specs and their config.",
       "source_paths": [
