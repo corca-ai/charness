@@ -29,6 +29,7 @@ When stronger local proof depends on a missing validation tool, reuse the shared
 python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root .
 ```
 
+For evaluator-backed review, closeout, or operator reading test work, run that validation recommendation route before downgrading to HITL or same-agent manual review.
 When reader-facing Markdown needs rendered readability proof instead of source-only review, bootstrap or execute the repo-local markdown preview seam:
 
 ```bash

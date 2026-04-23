@@ -73,6 +73,46 @@ def test_init_repo_agent_docs_carry_bounded_subagent_delegation_rule() -> None:
     assert "same-agent pass" in default_surfaces
 
 
+def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
+    skill_text = (ROOT / "skills" / "public" / "hitl" / "SKILL.md").read_text(encoding="utf-8")
+    chunk_contract = (
+        ROOT / "skills" / "public" / "hitl" / "references" / "chunk-contract.md"
+    ).read_text(encoding="utf-8")
+    state_model = (
+        ROOT / "skills" / "public" / "hitl" / "references" / "state-model.md"
+    ).read_text(encoding="utf-8")
+
+    assert "display-only pseudo-tags" in skill_text
+    assert "Accepted Working Text" in skill_text
+    assert "last_presented_chunk_id" in skill_text
+    assert "<bash>" in chunk_contract
+    assert "not instructions to\nedit the target document" in chunk_contract
+    assert "Accepted working text" in state_model
+    assert "persist accepted decisions before advancing the cursor" in state_model
+
+
+def test_impl_skill_routes_validation_and_browser_proof_explicitly() -> None:
+    skill_text = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
+    quality_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    verification_ladder = (
+        ROOT / "skills" / "public" / "impl" / "references" / "verification-ladder.md"
+    ).read_text(encoding="utf-8")
+    find_skills = (ROOT / "skills" / "public" / "find-skills" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "operator reading" in skill_text
+    assert "--recommendation-role validation --next-skill-id" in find_skills
+    assert "say explicitly that it did not run" in skill_text
+    assert "code/fixture" in skill_text
+    assert "Browser-Facing Output" in verification_ladder
+    assert "same-agent/manual review" in verification_ladder
+    assert "operator reading test" in quality_text
+    assert "before downgrading to HITL" in quality_text
+
+
 def test_development_doc_carries_mutation_phase_barrier_rule() -> None:
     development = (ROOT / "docs" / "development.md").read_text(encoding="utf-8")
 

@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-04-23",
-  "source_artifact_count": 25,
-  "candidate_count": 172,
+  "source_artifact_count": 26,
+  "candidate_count": 179,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:4a4916b6ee1f",
+      "kind": "current_focus",
+      "lesson": "Auto-trigger: changed `find-skills`, checked-in plugin export, and integrations/control-plane surfaces.",
+      "normalized_key": "auto trigger changed find skills checked in plugin export and integrations control plane surfaces",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "date": "2026-04-23",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:1a9cdbf8c0cc",
       "kind": "current_focus",
@@ -51,6 +71,46 @@
           "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
           "date": "2026-04-23",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:aa5d66a9969f",
+      "kind": "current_focus",
+      "lesson": "Unit of work: close GitHub issues #59, #60, and #61 through public skill, integration, Cautilus scenario, and plugin export updates.",
+      "normalized_key": "unit of work close github issues 59 60 and 61 through public skill integration",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "date": "2026-04-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:af70dcfded7e",
+      "kind": "next_improvement",
+      "lesson": "Capability: keep validation-shaped closeout examples near Cautilus scenario coverage, because this is where hidden-tool discovery can regress.",
+      "normalized_key": "capability keep validation shaped closeout examples near cautilus scenario coverage because this is where",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -155,6 +215,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:d6a4445c418a",
+      "kind": "next_improvement",
+      "lesson": "Memory: fresh-eye review should run before the first full closeout when the slice changes public skill routing, not after the validators already pass.",
+      "normalized_key": "memory fresh eye review should run before the first full closeout when the slice",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:62c2fe1f892e",
       "kind": "next_improvement",
       "lesson": "the durable debug artifact now records this as an operator-visible recovery seam.",
@@ -170,86 +250,6 @@
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
           "date": "2026-04-23",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:da4ae62b9618",
-      "kind": "repeat_trap",
-      "lesson": "The assistant over-applied the generic host-level wording about explicit subagent asks and failed to treat the repo's checked-in AGENTS contract as the already-delegated user instruction.",
-      "normalized_key": "the assistant over applied the generic host level wording about explicit subagent asks and",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
-          "date": "2026-04-23",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:037129a6400c",
-      "kind": "repeat_trap",
-      "lesson": "The referenced cautilus proof was mistaken for behavioral coverage of subagent spawning, even though the run artifacts show only routing checks.",
-      "normalized_key": "the referenced cautilus proof was mistaken for behavioral coverage of subagent spawning even though",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
-          "date": "2026-04-23",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:96b73e4fd534",
-      "kind": "next_improvement",
-      "lesson": "consider a narrow gate that flags default `INSTALL.md`/`UNINSTALL.md` assumptions or `brew` in maintained first-touch/operator surfaces.",
-      "normalized_key": "consider a narrow gate that flags default install md uninstall md assumptions or brew",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
-      "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
-          "date": "2026-04-22",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:c2262d4d8246",
-      "kind": "next_improvement",
-      "lesson": "keep `docs/handoff.md` focused on the next dogfood move once the bootstrap contract changes, not on the superseded document layout. Persisted: yes `charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md`",
-      "normalized_key": "keep docs handoff md focused on the next dogfood move once the bootstrap contract",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
-      "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
-          "date": "2026-04-22",
           "section": "Next Improvements"
         }
       ]
@@ -257,6 +257,26 @@
   ],
   "candidates": [
     {
+      "candidate_id": "current_focus:4a4916b6ee1f",
+      "kind": "current_focus",
+      "lesson": "Auto-trigger: changed `find-skills`, checked-in plugin export, and integrations/control-plane surfaces.",
+      "normalized_key": "auto trigger changed find skills checked in plugin export and integrations control plane surfaces",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "date": "2026-04-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:1a9cdbf8c0cc",
       "kind": "current_focus",
       "lesson": "The user pointed out that commit `f982074` intentionally taught this repo to treat repo-mandated bounded subagent review as already delegated, yet the assistant still refused to run canonical `premortem` without a second explicit subagent request.",
@@ -293,6 +313,46 @@
           "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
           "date": "2026-04-23",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:aa5d66a9969f",
+      "kind": "current_focus",
+      "lesson": "Unit of work: close GitHub issues #59, #60, and #61 through public skill, integration, Cautilus scenario, and plugin export updates.",
+      "normalized_key": "unit of work close github issues 59 60 and 61 through public skill integration",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "date": "2026-04-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:af70dcfded7e",
+      "kind": "next_improvement",
+      "lesson": "Capability: keep validation-shaped closeout examples near Cautilus scenario coverage, because this is where hidden-tool discovery can regress.",
+      "normalized_key": "capability keep validation shaped closeout examples near cautilus scenario coverage because this is where",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -397,6 +457,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:d6a4445c418a",
+      "kind": "next_improvement",
+      "lesson": "Memory: fresh-eye review should run before the first full closeout when the slice changes public skill routing, not after the validators already pass.",
+      "normalized_key": "memory fresh eye review should run before the first full closeout when the slice",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:62c2fe1f892e",
       "kind": "next_improvement",
       "lesson": "the durable debug artifact now records this as an operator-visible recovery seam.",
@@ -417,6 +497,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:d101466cb6a8",
+      "kind": "next_improvement",
+      "lesson": "Workflow: when an issue acceptance says \"future agent should route/discover\", add or update a maintained scenario before calling the prompt-surface change complete.",
+      "normalized_key": "workflow when an issue acceptance says future agent should route discover add or update",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8d8cf0889127",
+      "kind": "repeat_trap",
+      "lesson": "#60 initially looked like a documentation-only routing clarification, but fresh-eye review correctly found that the acceptance was not locked by a maintained scenario.",
+      "normalized_key": "60 initially looked like a documentation only routing clarification but fresh eye review correctly",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "date": "2026-04-23",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:da4ae62b9618",
       "kind": "repeat_trap",
       "lesson": "The assistant over-applied the generic host-level wording about explicit subagent asks and failed to treat the repo's checked-in AGENTS contract as the already-delegated user instruction.",
@@ -431,6 +551,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
+          "date": "2026-04-23",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:de40762ef742",
+      "kind": "repeat_trap",
+      "lesson": "The first maintained Cautilus case expected direct Cautilus selection, then exposed that the honest public route is `quality` plus validation recommendations.",
+      "normalized_key": "the first maintained cautilus case expected direct cautilus selection then exposed that the honest",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
           "date": "2026-04-23",
           "section": "Waste"
         }

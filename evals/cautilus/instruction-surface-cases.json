@@ -47,6 +47,16 @@
         "bootstrapHelper": "find-skills",
         "workSkill": "spec"
       }
+    },
+    {
+      "evaluationId": "validation-closeout-routes-before-hitl",
+      "displayName": "Validation-shaped closeout routes to evaluator-backed quality before HITL",
+      "prompt": "Route only: the user asks for evaluator-backed validation while closing out a non-deterministic issue, described as an operator reading test, in this repo. They did not name Cautilus. What Charness routing path should you choose before HITL or same-agent manual review? Do not perform the review.",
+      "expectedRouting": {
+        "bootstrapHelper": "find-skills",
+        "selectedSkill": "quality",
+        "workSkill": "quality"
+      }
     }
   ]
 }

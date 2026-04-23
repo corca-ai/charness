@@ -105,9 +105,13 @@ What this does not do:
    - when the best-match public skill has a declared external-tool route, use
      the structured recommendation payload instead of prose-only install advice,
      including whether the route is a runtime path or a validation path
-   - when the user is asking about stronger validation itself, or about
-     prompt-affecting / behavior-affecting changes, query the validation route
-     directly with `--recommendation-role validation --next-skill-id <skill-id>`
+   - when the user is asking about stronger validation itself, about
+     prompt-affecting / behavior-affecting changes, or about validation-shaped
+     review/closeout work, query the validation route directly with
+     `--recommendation-role validation --next-skill-id <skill-id>`
+   - treat issue closeout and operator reading test wording as validation-shaped
+     when the user needs evaluator-backed judgment; do not route to HITL or
+     manual review only because the request uses the word review
    - if the capability is genuinely missing, say whether it belongs in a new
      public skill, support skill, or integration manifest
 6. Explain why.

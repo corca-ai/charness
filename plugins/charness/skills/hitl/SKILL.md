@@ -77,16 +77,31 @@ the repo has named where state, rules, and queue ownership live.
      summary-only paraphrase
    - keep the excerpt line-anchored or hunk-anchored when possible so the user
      can tell exactly what is being judged
+   - when a user-facing review excerpt shows Markdown that itself contains
+     fenced code examples, keep only the outer review excerpt as a normal
+     Markdown fence and render inner examples as display-only pseudo-tags such
+     as `<bash>`, `<md>`, or `<json>`
    - include enough related context and the concrete question that needs human
      judgment
    - pause for user judgment before moving on
 6. Propagate accepted rules.
    - if the user gives a stable rule, write it down and apply it to remaining
      chunks in the same run
-7. Resume honestly.
+7. Record accepted chunk state.
+   - after every accepted chunk, write the accepted working text to the
+     scratchpad before presenting the next chunk
+   - keep rationale, caveats, and summaries under notes instead of making them
+     the only durable state
+   - update the state cursor, such as `last_presented_chunk_id`, after the
+     accepted text is recorded
+   - treat chat as the review UI and the scratchpad/state files as the durable
+     review state
+   - if the user points out a missed state update, run a short retro and repair
+     the HITL state before continuing
+8. Resume honestly.
    - if files or docs changed out of band, resync intent before presenting the
      next chunk
-8. Close with a concise summary.
+9. Close with a concise summary.
    - what was reviewed
    - what rules were accepted
    - what still needs action or follow-up
@@ -101,6 +116,7 @@ The result should usually include:
 - `Original Material`
 - `Related Context`
 - `Decision Needed`
+- `Accepted Working Text`
 - `Accepted Rules`
 - `Next State`
 
@@ -109,7 +125,11 @@ The result should usually include:
 - Do not present isolated snippets without enough context for judgment.
 - Do not ask for judgment on summary-only paraphrases when the underlying text,
   diff, or artifact excerpt can be shown directly.
+- Do not put nested fenced code blocks inside user-facing review excerpts; use
+  display-only pseudo-tags for inner examples instead.
 - Do not keep advancing when the current item is still unresolved.
+- Do not advance to the next accepted chunk while the scratchpad and state
+  cursor still depend on chat memory.
 - Do not silently apply edits that require explicit human approval.
 - Do not lose accepted review rules between chunks in the same session.
 - If manual edits changed the target out of band, resync intent before the next

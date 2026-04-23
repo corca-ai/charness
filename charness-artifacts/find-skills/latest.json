@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-04-18T18:51:26Z",
+  "generated_at": "2026-04-23T13:51:23Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -792,6 +792,9 @@
           "evaluation",
           "review",
           "behavior review",
+          "closeout",
+          "issue closeout",
+          "operator reading test",
           "검증",
           "평가",
           "리뷰"

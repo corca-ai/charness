@@ -94,11 +94,11 @@ Adapter policy:
    - prefer the slice that opens the next good move most cleanly
    - when a probe exists, design the slice so it answers the probe cleanly
 4. Verify with the strongest honest path.
-   - survey repo and adapter capabilities before coding and again before
-     stopping
+   - survey repo and adapter capabilities before coding and again before stopping
    - prefer executed proof over code inspection when an executable path exists
-   - add or strengthen checks when an important branch would otherwise stay
-     unproven
+   - for validation-shaped review, evaluation, closeout, or operator reading work, query `find-skills` validation recommendations before same-agent manual review; if the evaluator is unavailable, say so
+   - add or strengthen checks when an important branch would otherwise stay unproven
+   - for browser-facing output, treat code-only checks as partial proof by default; resolve browser/runtime support through `find-skills`, run it when available, or say explicitly that it did not run
    - if the slice changes repo-owned instruction or prompt surfaces such as
      [`AGENTS.md`](../../../AGENTS.md), public/support `SKILL.md`, behavior-steering references, or
      adapter prompt wording, refresh [`charness-artifacts/cautilus/latest.md`](../../../charness-artifacts/cautilus/latest.md)
@@ -151,7 +151,7 @@ The closeout should usually include:
 
 - `Implemented`
 - `Contract Source`
-- `Verification`
+- `Verification` naming code/fixture, browser/runtime, and evaluator proof
 - `Truth Surface Sync`
 - `Premortem`
 - `Contract Updates`

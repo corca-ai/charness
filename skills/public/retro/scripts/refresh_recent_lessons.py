@@ -58,7 +58,7 @@ def main() -> int:
         raise FileNotFoundError(f"retro source not found: {source_path}")
     digest = build_indexed_recent_lessons(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
     summary_path.parent.mkdir(parents=True, exist_ok=True)
-    summary_path.write_text(digest.summary_text + "\n", encoding="utf-8")
+    summary_path.write_text(digest.summary_text, encoding="utf-8")
     index_path = write_lesson_selection_index(repo_root, output_dir, summary_path)
     print(
         json.dumps(
