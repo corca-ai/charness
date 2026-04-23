@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-04-23",
-  "source_artifact_count": 26,
-  "candidate_count": 179,
+  "source_artifact_count": 27,
+  "candidate_count": 182,
   "top_candidates": [
     {
       "candidate_id": "current_focus:4a4916b6ee1f",
@@ -89,6 +89,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "date": "2026-04-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:40bd2abedec8",
+      "kind": "current_focus",
+      "lesson": "Unit of work: issue #62 init-repo AGENTS normalization drift.",
+      "normalized_key": "unit of work issue 62 init repo agents normalization drift",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
           "date": "2026-04-23",
           "section": "Context"
         }
@@ -175,6 +195,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:d8b88e8f7b8a",
+      "kind": "next_improvement",
+      "lesson": "for public-skill changes, run `plan_cautilus_proof.py --paths` with the commit paths if the worktree is already clean.",
+      "normalized_key": "for public skill changes run plan cautilus proof py paths with the commit paths",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:326d7316d555",
       "kind": "next_improvement",
       "lesson": "keep stale launcher repair covered in `test_bootstrap_runtime.py` so future install refactors preserve this recovery path.",
@@ -195,12 +235,12 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:a9ea063196a4",
+      "candidate_id": "next_improvement:e4e8c375ad17",
       "kind": "next_improvement",
-      "lesson": "keep this miss in `recent-lessons.md` until a deterministic or cautilus-backed check covers it.",
-      "normalized_key": "keep this miss in recent lessons md until a deterministic or cautilus backed check",
+      "lesson": "keep this as a repeat trap in recent lessons until the closeout script or commit workflow carries explicit-path Cautilus planning.",
+      "normalized_key": "keep this as a repeat trap in recent lessons until the closeout script or",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
       "latest_source_date": "2026-04-23",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -208,47 +248,7 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
-          "date": "2026-04-23",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:d6a4445c418a",
-      "kind": "next_improvement",
-      "lesson": "Memory: fresh-eye review should run before the first full closeout when the slice changes public skill routing, not after the validators already pass.",
-      "normalized_key": "memory fresh eye review should run before the first full closeout when the slice",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
-          "date": "2026-04-23",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:62c2fe1f892e",
-      "kind": "next_improvement",
-      "lesson": "the durable debug artifact now records this as an operator-visible recovery seam.",
-      "normalized_key": "the durable debug artifact now records this as an operator visible recovery seam",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+          "artifact_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
           "date": "2026-04-23",
           "section": "Next Improvements"
         }
@@ -337,6 +337,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:40bd2abedec8",
+      "kind": "current_focus",
+      "lesson": "Unit of work: issue #62 init-repo AGENTS normalization drift.",
+      "normalized_key": "unit of work issue 62 init repo agents normalization drift",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
+          "date": "2026-04-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:af70dcfded7e",
       "kind": "next_improvement",
       "lesson": "Capability: keep validation-shaped closeout examples near Cautilus scenario coverage, because this is where hidden-tool discovery can regress.",
@@ -417,6 +437,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:d8b88e8f7b8a",
+      "kind": "next_improvement",
+      "lesson": "for public-skill changes, run `plan_cautilus_proof.py --paths` with the commit paths if the worktree is already clean.",
+      "normalized_key": "for public skill changes run plan cautilus proof py paths with the commit paths",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:326d7316d555",
       "kind": "next_improvement",
       "lesson": "keep stale launcher repair covered in `test_bootstrap_runtime.py` so future install refactors preserve this recovery path.",
@@ -431,6 +471,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e4e8c375ad17",
+      "kind": "next_improvement",
+      "lesson": "keep this as a repeat trap in recent lessons until the closeout script or commit workflow carries explicit-path Cautilus planning.",
+      "normalized_key": "keep this as a repeat trap in recent lessons until the closeout script or",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
           "date": "2026-04-23",
           "section": "Next Improvements"
         }
