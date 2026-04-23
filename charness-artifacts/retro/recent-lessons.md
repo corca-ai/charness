@@ -2,21 +2,23 @@
 
 ## Current Focus
 
-- When bootstrap semantics move, audit helper defaults, adapters, generated
-  exports, integration manifests, and current artifacts in the same slice.
+- Treat repo-mandated bounded subagent reviews as already delegated; do not
+  require a second explicit user message when AGENTS names the stop gate.
 
 ## Repeat Traps
 
-- Do not stop after fixing README or one public skill when the real contract is
-  still encoded in helper defaults and generated prompt surfaces.
+- Do not mistake cautilus startup-routing proof for behavioral coverage of the
+  actual subagent spawn path.
+- Do not cite missing explicit subagent allowance as a blocker when the repo
+  contract already delegates the review.
 
 ## Next-Time Checklist
 
-- Survey repo-wide `INSTALL.md`/`UNINSTALL.md` assumptions and package-manager
-  guidance before calling a bootstrap-contract slice closed.
-- Refresh the checked-in cautilus proof and current-pointer artifacts whenever
-  prompt-affecting bootstrap language changes.
+- For `premortem`, `spec`, `quality`, and `handoff` fresh-eye gates, attempt the
+  bounded subagent setup unless the host returns a concrete spawn restriction.
+- Add or run a cautilus scenario that observes premortem subagent behavior, not
+  only selected skill routing.
 
 ## Sources
 
-- `charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md`
+- `charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md`
