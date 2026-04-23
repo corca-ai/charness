@@ -36,6 +36,9 @@ def test_premortem_skill_surfaces_counterweight_and_deliberately_not_doing() -> 
     assert "canonical premortem path is unavailable" in angle_text
     assert "Do not present a local pass as the canonical premortem" in capability_text
     assert "the next action is to surface the host-side contract gap" in capability_text
+    assert "shell-only runner" in capability_text
+    assert "model self-report" in capability_text
+    assert "only observed tool is shell execution" in capability_text
     assert "Do not replace the misunderstanding premortem with a" in handoff_loop
     assert "Do not replace the fresh-eye premortem with a same-agent" in spec_loop
     assert "Act Before Ship" in counterweight_text

@@ -205,11 +205,12 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-22",
+      "reviewed_on": "2026-04-23",
       "observed_evidence": [
         "The checked-in public core now says routine slices do not need premortem at all, and when a caller does need one the term `premortem` means only a fresh bounded subagent review with no same-agent or local variant.",
         "That same contract now makes blocked execution explicit in the public output shape, so a host-side subagent gap stays visible as `Execution: blocked <host-signal>` instead of being rewritten as a degraded concern list.",
-        "That keeps `premortem-canonical-subagent-followup` live as a reviewed seam: the repo now locks the user push for true subagent premortem in both checked-in wording and validator-backed contract pins."
+        "That keeps `premortem-canonical-subagent-followup` live as a reviewed seam: the repo now locks the user push for true subagent premortem in both checked-in wording and validator-backed contract pins.",
+        "The capability check now rejects shell-only runners, routing-only proof, and model self-report as evidence that bounded subagents actually ran; the current Codex dogfood probe blocks with `subagent-spawn-host-contract` instead of claiming a prose-only premortem succeeded."
       ]
     },
     {

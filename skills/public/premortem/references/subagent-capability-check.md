@@ -16,6 +16,10 @@ instead of rewriting ad hoc availability wording.
      angle set just to prove availability.
    - Treat refusal-to-spawn, a concrete host error, or a missing agent-spawn
      tool as evidence. Prior belief is *not* evidence.
+   - Availability means an actual host-exposed subagent/spawn tool or a real
+     tool event from that tool. A shell-only runner, routing-only proof, or
+     model self-report that subagents were "used" is not evidence that the
+     canonical path ran.
 2. Resolve availability uncertainty before assuming a cap.
    - If the host exposes an agent-count budget, a "maybe available" signal, or
      a tool surface you are unsure about, probe it first: read the relevant
@@ -39,6 +43,9 @@ call a same-agent substitute "good enough" just because the probe failed.
 - Do not assume subagents are unavailable from model priors.
 - Do not treat "I am uncertain if the host supports this" as a block; resolve
   the uncertainty first.
+- Do not claim bounded subagents ran unless the runtime actually exposed and
+  used a subagent/spawn tool. If the only observed tool is shell execution,
+  report the canonical path as blocked by the missing spawn tool surface.
 - Do not silently collapse into a same-agent review and call it the canonical
   path.
 - Do not turn a concrete spawn failure into an excuse for a degraded
