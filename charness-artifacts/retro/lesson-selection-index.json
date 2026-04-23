@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-04-23",
-  "source_artifact_count": 29,
-  "candidate_count": 189,
+  "source_artifact_count": 30,
+  "candidate_count": 193,
   "top_candidates": [
     {
       "candidate_id": "current_focus:4a4916b6ee1f",
@@ -49,6 +49,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
+          "date": "2026-04-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:2d9865b0a5cc",
+      "kind": "current_focus",
+      "lesson": "Issue #57's first artifact passed a fresh-eye read test, but the reader could not distinguish defined capability boundaries from current readiness.",
+      "normalized_key": "issue 57 s first artifact passed a fresh eye read test but the reader",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
           "date": "2026-04-23",
           "section": "Context"
         }
@@ -151,6 +171,26 @@
           "artifact_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
           "date": "2026-04-23",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4578de46334c",
+      "kind": "next_improvement",
+      "lesson": "After a read test surfaces confusion, fix only the confusion that changed the reader's answer.",
+      "normalized_key": "after a read test surfaces confusion fix only the confusion that changed the reader",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -213,46 +253,6 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:73da44bb2f64",
-      "kind": "next_improvement",
-      "lesson": "extend cautilus coverage with a premortem case that expects an attempted bounded subagent path or a concrete host spawn error.",
-      "normalized_key": "extend cautilus coverage with a premortem case that expects an attempted bounded subagent path",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
-          "date": "2026-04-23",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:99281d55ee48",
-      "kind": "next_improvement",
-      "lesson": "for install/update symptoms, enumerate fresh, valid-reuse, and stale-partial-state branches before patching.",
-      "normalized_key": "for install update symptoms enumerate fresh valid reuse and stale partial state branches before",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
-          "date": "2026-04-23",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -291,6 +291,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
+          "date": "2026-04-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:2d9865b0a5cc",
+      "kind": "current_focus",
+      "lesson": "Issue #57's first artifact passed a fresh-eye read test, but the reader could not distinguish defined capability boundaries from current readiness.",
+      "normalized_key": "issue 57 s first artifact passed a fresh eye read test but the reader",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
           "date": "2026-04-23",
           "section": "Context"
         }
@@ -393,6 +413,26 @@
           "artifact_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
           "date": "2026-04-23",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4578de46334c",
+      "kind": "next_improvement",
+      "lesson": "After a read test surfaces confusion, fix only the confusion that changed the reader's answer.",
+      "normalized_key": "after a read test surfaces confusion fix only the confusion that changed the reader",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -637,6 +677,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:30d615bdbd54",
+      "kind": "next_improvement",
+      "lesson": "Sanitized examples should describe threshold semantics without copying live command output.",
+      "normalized_key": "sanitized examples should describe threshold semantics without copying live command output",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:62c2fe1f892e",
       "kind": "next_improvement",
       "lesson": "the durable debug artifact now records this as an operator-visible recovery seam.",
@@ -651,6 +711,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:499657dea714",
+      "kind": "next_improvement",
+      "lesson": "Treat access-mode legends as part of operator-facing capability maps.",
+      "normalized_key": "treat access mode legends as part of operator facing capability maps",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
           "date": "2026-04-23",
           "section": "Next Improvements"
         }

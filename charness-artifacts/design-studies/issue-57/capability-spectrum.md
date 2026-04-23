@@ -23,6 +23,26 @@ does not run live doctor checks, and does not introduce a public CLI surface.
 - `tool/synced-external`: materialized or upstream-consumed support surface.
 - `runtime/external` or `validation/external`: external integration boundary.
 
+## Access Legend
+
+- `grant`: a host-provided capability may satisfy the boundary.
+- `binary`: a local executable or tool runtime is involved.
+- `env`: environment-backed configuration or credentials may be required.
+- `public`: public unauthenticated access can be enough for some paths.
+- `human-only`: an operator step may still be required.
+- `degraded`: the workflow has an honest fallback or must stop short of a full claim.
+
+## Readiness Threshold Examples
+
+These examples are sanitized and explanatory only. They do not report current
+machine state and do not include raw `doctor` output, local paths, accounts,
+stdout, stderr, provenance, or tokens.
+
+| example | defined | detected | healthy | ready | degraded meaning |
+| --- | --- | --- | --- | --- | --- |
+| `gws-cli` runtime provider | integration boundary exists | `gws` binary exists | auth surface responds | auth/env readiness is satisfied | gather must stop or use a non-private fallback |
+| `cautilus` validation provider | validation boundary exists | `cautilus` binary exists | evaluator doctor surface responds | required support surface is materialized when needed | deterministic local gates remain authoritative |
+
 ## Public Workflow Concepts
 
 | id | boundary | layer | source | access | supports | role |

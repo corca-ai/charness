@@ -14,10 +14,10 @@
 
 ## Next-Time Checklist
 
+- After a read test surfaces confusion, fix only the confusion that changed the reader's answer. (source: `charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md`)
 - after public-skill package edits, run slice closeout and expect explicit Cautilus skill-review acknowledgement before final verification. (source: `charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md`)
 - Capability: keep validation-shaped closeout examples near Cautilus scenario coverage, because this is where hidden-tool discovery can regress. (source: `charness-artifacts/retro/2026-04-23-issue-routing-closeout.md`)
 - consider a follow-up gate for policy-only or dogfood-only public-skill validation changes if those slices keep recurring. (source: `charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md`)
-- extend cautilus coverage with a premortem case that expects an attempted bounded subagent path or a concrete host spawn error. (source: `charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md`)
 
 ## Selection Policy
 
@@ -28,6 +28,7 @@
 ## Sources
 
 - `charness-artifacts/retro/2026-04-23-issue-57-design-study.md`
+- `charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md`
 - `charness-artifacts/retro/2026-04-23-issue-routing-closeout.md`
 - `charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md`
 - `charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md`

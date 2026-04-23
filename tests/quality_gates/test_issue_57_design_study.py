@@ -94,6 +94,11 @@ def test_issue_57_renderer_writes_capability_spectrum_markdown(tmp_path: Path) -
     assert "| web-fetch | runtime/native | support capability | local-support-capability | public, degraded | gather | - |" in rendered
     assert "| cautilus | tool/synced-external | synced support skill | synced-support | binary, degraded | impl, quality | validation |" in rendered
     assert "| gws-cli | runtime/external | external integration | local-integration | binary, env, degraded | gather | runtime |" in rendered
+    assert "## Access Legend" in rendered
+    assert "- `env`: environment-backed configuration or credentials may be required." in rendered
+    assert "## Readiness Threshold Examples" in rendered
+    assert "| `gws-cli` runtime provider | integration boundary exists | `gws` binary exists | auth surface responds | auth/env readiness is satisfied | gather must stop or use a non-private fallback |" in rendered
+    assert "They do not report current" in rendered
     assert "live doctor payload ingestion" in rendered
 
 
