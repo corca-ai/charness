@@ -35,7 +35,7 @@ load_adapter = _resolve_adapter_module.load_adapter
 
 _scripts_recent_lessons_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.recent_lessons_lib")
 build_recent_lessons = _scripts_recent_lessons_lib_module.build_recent_lessons
-pick_latest_retro_markdown = _scripts_recent_lessons_lib_module.pick_latest_retro_markdown
+build_indexed_recent_lessons = _scripts_recent_lessons_lib_module.build_indexed_recent_lessons
 write_lesson_selection_index = _scripts_recent_lessons_lib_module.write_lesson_selection_index
 
 
@@ -53,8 +53,10 @@ def main() -> int:
     summary_rel = adapter["data"]["summary_path"]
     output_dir = repo_root / adapter["data"]["output_dir"]
     summary_path = repo_root / summary_rel
-    source_path = (repo_root / args.source).resolve() if args.source else pick_latest_retro_markdown(output_dir, summary_path)
-    digest = build_recent_lessons(source_path, repo_root=repo_root)
+    source_path = (repo_root / args.source).resolve() if args.source else None
+    if source_path is not None and not source_path.is_file():
+        raise FileNotFoundError(f"retro source not found: {source_path}")
+    digest = build_indexed_recent_lessons(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text(digest.summary_text + "\n", encoding="utf-8")
     index_path = write_lesson_selection_index(repo_root, output_dir, summary_path)

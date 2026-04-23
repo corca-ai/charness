@@ -15,6 +15,11 @@ LESSON_INDEX_FILENAME = "lesson-selection-index.json"
 LESSON_SELECTION_ALPHA_BASE = 0.35
 LESSON_SELECTION_WARMUP_N = 5
 LESSON_SELECTION_HALF_LIFE_DAYS = 14
+LESSON_DIGEST_SLOTS = {
+    "current_focus": 2,
+    "repeat_trap": 4,
+    "next_improvement": 4,
+}
 LESSON_KINDS = {
     "Context": "current_focus",
     "Waste": "repeat_trap",
@@ -305,6 +310,82 @@ def check_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path
             f"retro lesson selection index `{index_path.relative_to(repo_root)}` is stale; "
             "run `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write`"
         )
+
+
+def _fallback_source_path(output_dir: Path, summary_path: Path) -> Path:
+    try:
+        return pick_latest_retro_markdown(output_dir, summary_path)
+    except FileNotFoundError:
+        return summary_path
+
+
+def _select_digest_candidates(index_payload: dict[str, Any], kind: str) -> list[dict[str, Any]]:
+    limit = LESSON_DIGEST_SLOTS[kind]
+    return [entry for entry in index_payload["candidates"] if entry.get("kind") == kind][:limit]
+
+
+def _source_ref(entry: dict[str, Any]) -> str:
+    source_path = str(entry.get("latest_source_path") or "")
+    source_count = int(entry.get("source_count") or 0)
+    if source_count > 1:
+        return f"source: `{source_path}`; sources: {source_count}"
+    return f"source: `{source_path}`"
+
+
+def _render_candidate_lines(candidates: list[dict[str, Any]], empty_message: str) -> list[str]:
+    if not candidates:
+        return [f"- {empty_message}"]
+    return [f"- {entry['lesson']} ({_source_ref(entry)})" for entry in candidates]
+
+
+def build_indexed_recent_lessons(
+    *,
+    repo_root: Path,
+    output_dir: Path,
+    summary_path: Path,
+) -> RecentLessonsDigest:
+    index_payload = build_lesson_selection_index(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
+    current_focus = _select_digest_candidates(index_payload, "current_focus")
+    repeat_traps = _select_digest_candidates(index_payload, "repeat_trap")
+    next_checklist = _select_digest_candidates(index_payload, "next_improvement")
+    source_paths = sorted({source["artifact_path"] for entry in current_focus + repeat_traps + next_checklist for source in entry["sources"]})
+
+    summary_lines = [
+        "# Recent Retro Lessons",
+        "",
+        "## Current Focus",
+        "",
+        *_render_candidate_lines(current_focus, "No current focus bullets found in retro lesson index."),
+        "",
+        "## Repeat Traps",
+        "",
+        *_render_candidate_lines(repeat_traps, "No repeat traps extracted from retro lesson index."),
+        "",
+        "## Next-Time Checklist",
+        "",
+        *_render_candidate_lines(next_checklist, "No next improvements extracted from retro lesson index."),
+        "",
+        "## Selection Policy",
+        "",
+        "- Source: `charness-artifacts/retro/lesson-selection-index.json`",
+        f"- Slots: current_focus={LESSON_DIGEST_SLOTS['current_focus']}, repeat_trap={LESSON_DIGEST_SLOTS['repeat_trap']}, next_improvement={LESSON_DIGEST_SLOTS['next_improvement']}",
+        f"- Policy: advisory recency half-life {LESSON_SELECTION_HALF_LIFE_DAYS} days plus recurrence boost with adaptive alpha.",
+        "",
+        "## Sources",
+        "",
+    ]
+    summary_lines.extend(f"- `{source_path}`" for source_path in source_paths)
+    summary_lines.append("")
+
+    return RecentLessonsDigest(
+        source_path=_fallback_source_path(output_dir, summary_path),
+        summary_text="\n".join(summary_lines),
+        section_counts={
+            "current_focus": len(current_focus),
+            "repeat_traps": len(repeat_traps),
+            "next_time_checklist": len(next_checklist),
+        },
+    )
 
 
 def build_recent_lessons(source_path: Path, *, repo_root: Path) -> RecentLessonsDigest:

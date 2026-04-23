@@ -77,6 +77,8 @@ def test_persist_retro_artifact_writes_artifact_snapshot_and_recent_lessons(tmp_
     summary_text = (output_dir / "recent-lessons.md").read_text(encoding="utf-8")
     assert "Durable persistence should refresh recent lessons automatically." in summary_text
     assert "Manual summary refresh was easy to forget." in summary_text
+    assert "## Selection Policy" in summary_text
+    assert "lesson-selection-index.json" in summary_text
     assert (output_dir / "lesson-selection-index.json").is_file()
 
 
