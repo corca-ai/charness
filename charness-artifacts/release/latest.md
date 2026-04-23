@@ -3,12 +3,12 @@ Date: 2026-04-23
 
 ## Scope
 
-Advanced `charness` toward release `0.5.6` through the repo-owned release helper.
+Advanced `charness` toward release `0.5.7` through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.5.5`
-- target version: `0.5.6`
+- previous version: `0.5.6`
+- target version: `0.5.7`
 - git branch: `main`
 - git remote: `origin`
 
