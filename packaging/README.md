@@ -7,6 +7,9 @@ into host-specific plugin surfaces.
 
 - `plugin.schema.json`: canonical schema for shared packaging metadata
 - `charness.json`: current package manifest for this repo
+- `bootstrap-python.json`: bootstrap Python/runtime contract for install flows
+- `bootstrap-requirements.txt`: repo-owned bootstrap dependency set for the
+  isolated install/update runtime
 
 ## Contract Notes
 
@@ -26,3 +29,5 @@ into host-specific plugin surfaces.
   from the shared manifest
 - `scripts/sync_root_plugin_manifests.py` refreshes the checked-in install
   surface and root marketplace files
+- `scripts/bootstrap_runtime.py` creates or reuses the managed checkout's
+  isolated Python runtime for install/update/bootstrap commands

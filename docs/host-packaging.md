@@ -17,6 +17,8 @@ layouts.
 
 - source policy: [packaging/charness.json](../packaging/charness.json)
 - source schema: [packaging/plugin.schema.json](../packaging/plugin.schema.json)
+- bootstrap runtime contract: [packaging/bootstrap-python.json](../packaging/bootstrap-python.json)
+- bootstrap runtime requirements: [packaging/bootstrap-requirements.txt](../packaging/bootstrap-requirements.txt)
 - validation entrypoint: [scripts/validate_packaging.py](../scripts/validate_packaging.py)
 - export entrypoint: [scripts/export_plugin.py](../scripts/export_plugin.py)
 

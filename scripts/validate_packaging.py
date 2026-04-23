@@ -408,10 +408,11 @@ def validate_packaging_manifest(path: Path, root: Path, *, validate_root_artifac
 
 def iter_packaging_files(root: Path) -> list[Path]:
     packaging_dir = root / "packaging"
+    excluded = {"plugin.schema.json", "bootstrap-python.json"}
     return sorted(
         path
         for path in packaging_dir.glob("*.json")
-        if path.name != "plugin.schema.json"
+        if path.name not in excluded
     )
 
 

@@ -19,6 +19,7 @@ Prerequisites:
 - `bash`
 - `git`
 - `curl`
+- Python 3.10+ available as `python3` or `python`
 - outbound network access to `github.com`
 
 Zero-state bootstrap:
@@ -30,6 +31,10 @@ bash /tmp/charness-init.sh
 ~/.local/bin/charness doctor --next-action
 ```
 
+[init.sh](./init.sh) bootstraps a repo-owned isolated Python runtime under the managed
+checkout before it runs `charness init`, so global `pip install jsonschema`,
+`packaging`, or similar bootstrap packages should not be required.
+
 If you want an agent to do it for you, paste the contract directly instead of
 telling it to fetch a remote doc and follow it:
 
@@ -40,6 +45,7 @@ Prerequisites:
 - bash
 - git
 - curl
+- Python 3.10+ available as `python3` or `python`
 - outbound network access to github.com
 
 Run:

@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "python": {
+    "min_version": "3.10"
+  },
+  "runtime_dir": ".charness/bootstrap-python",
+  "requirements_file": "packaging/bootstrap-requirements.txt",
+  "required_modules": [
+    "jsonschema",
+    "packaging"
+  ]
+}

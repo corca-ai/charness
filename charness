@@ -21,6 +21,8 @@ REPO_URL = "https://github.com/corca-ai/charness"
 SCRIPT_PATH = Path(__file__).resolve()
 EMBEDDED_REPO_ROOT = SCRIPT_PATH.parent if (SCRIPT_PATH.parent / "packaging" / f"{PACKAGE_ID}.json").is_file() else None
 TASK_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+BOOTSTRAP_RUNTIME_RELATIVE_PATH = "scripts/bootstrap_runtime.py"
+_BOOTSTRAP_PYTHON_CACHE: dict[str, str] = {}
 
 
 class CharnessError(Exception):
@@ -1109,9 +1111,35 @@ def ensure_checkout(repo_root: Path, *, managed: bool, repo_url: str, allow_clon
 
 
 def invoke_repo_script(repo_root: Path, relative_script: str, *script_args: str) -> str:
-    result = run(["python3", relative_script, *script_args], cwd=repo_root)
+    python_executable = resolve_repo_python(repo_root)
+    result = run([python_executable, relative_script, *script_args], cwd=repo_root)
     expect_success(result, f"`{relative_script}` in `{repo_root}`")
     return result.stdout.strip()
+
+
+def resolve_repo_python(repo_root: Path) -> str:
+    resolved_root = str(repo_root.resolve())
+    cached = _BOOTSTRAP_PYTHON_CACHE.get(resolved_root)
+    if cached:
+        return cached
+    result = run(
+        [
+            sys.executable,
+            BOOTSTRAP_RUNTIME_RELATIVE_PATH,
+            "--repo-root",
+            resolved_root,
+            "--base-python",
+            sys.executable,
+            "--print-python",
+        ],
+        cwd=repo_root,
+    )
+    expect_success(result, f"bootstrap runtime for `{repo_root}`")
+    python_executable = result.stdout.strip()
+    if not python_executable:
+        raise CharnessError(f"bootstrap runtime for `{repo_root}` did not return a Python executable")
+    _BOOTSTRAP_PYTHON_CACHE[resolved_root] = python_executable
+    return python_executable
 
 
 def write_claude_wrapper(wrapper_path: Path, plugin_root: Path) -> None:
@@ -2549,7 +2577,8 @@ def invoke_repo_json_script(
     *script_args: str,
     allow_failure: bool = False,
 ) -> object:
-    result = run(["python3", relative_script, *script_args], cwd=repo_root)
+    python_executable = resolve_repo_python(repo_root)
+    result = run([python_executable, relative_script, *script_args], cwd=repo_root)
     if result.returncode != 0 and not allow_failure:
         expect_success(result, f"`{relative_script}` in `{repo_root}`")
     stdout = result.stdout.strip()
