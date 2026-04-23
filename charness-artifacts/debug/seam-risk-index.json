@@ -3,17 +3,29 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 10,
-  "indexed_artifact_count": 2,
+  "source_artifact_count": 11,
+  "indexed_artifact_count": 3,
   "risk_class_counts": {
-    "none": 1,
-    "operator-visible-recovery": 1
+    "operator-visible-recovery": 3
   },
   "generalization_pressure_counts": {
-    "monitor": 1,
-    "none": 1
+    "monitor": 3
   },
   "entries": [
+    {
+      "artifact_path": "charness-artifacts/debug/2026-04-23-auto-retro-missing-surfaces.md",
+      "is_current_pointer": false,
+      "interrupt_id": "auto-retro-missing-surfaces",
+      "risk_classes": [
+        "operator-visible-recovery"
+      ],
+      "seam": "consumer repo closeout using installed charness retro helper",
+      "generalization_pressure": "monitor",
+      "premortem_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
     {
       "artifact_path": "charness-artifacts/debug/2026-04-23-bootstrap-runtime-stale-launcher.md",
       "is_current_pointer": false,
@@ -31,12 +43,12 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "managed-checkout-divergence",
+      "interrupt_id": "auto-retro-missing-surfaces",
       "risk_classes": [
-        "none"
+        "operator-visible-recovery"
       ],
-      "seam": "none",
-      "generalization_pressure": "none",
+      "seam": "consumer repo closeout using installed charness retro helper",
+      "generalization_pressure": "monitor",
       "premortem_required": false,
       "next_step": "impl",
       "handoff_artifact": "none",

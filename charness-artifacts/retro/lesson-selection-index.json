@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-04-23",
-  "source_artifact_count": 30,
-  "candidate_count": 193,
+  "source_artifact_count": 31,
+  "candidate_count": 197,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:1800faad159d",
+      "kind": "current_focus",
+      "lesson": "Auto-retro closeout triggered because issue #63 changed the checked-in plugin export surface via the retro public skill helper.",
+      "normalized_key": "auto retro closeout triggered because issue 63 changed the checked in plugin export surface",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
+          "date": "2026-04-23",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:4a4916b6ee1f",
       "kind": "current_focus",
@@ -233,14 +253,16 @@
           "section": "Next Improvements"
         }
       ]
-    },
+    }
+  ],
+  "candidates": [
     {
-      "candidate_id": "next_improvement:fafe390ae868",
-      "kind": "next_improvement",
-      "lesson": "consider a follow-up gate for policy-only or dogfood-only public-skill validation changes if those slices keep recurring.",
-      "normalized_key": "consider a follow up gate for policy only or dogfood only public skill validation",
+      "candidate_id": "current_focus:1800faad159d",
+      "kind": "current_focus",
+      "lesson": "Auto-retro closeout triggered because issue #63 changed the checked-in plugin export surface via the retro public skill helper.",
+      "normalized_key": "auto retro closeout triggered because issue 63 changed the checked in plugin export surface",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
       "latest_source_date": "2026-04-23",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -248,14 +270,12 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
+          "artifact_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
           "date": "2026-04-23",
-          "section": "Next Improvements"
+          "section": "Context"
         }
       ]
-    }
-  ],
-  "candidates": [
+    },
     {
       "candidate_id": "current_focus:4a4916b6ee1f",
       "kind": "current_focus",
@@ -577,6 +597,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:4edce12886f4",
+      "kind": "next_improvement",
+      "lesson": "keep `check_auto_trigger.py` regression tests anchored on consumer repos, not only this repo.",
+      "normalized_key": "keep check auto trigger py regression tests anchored on consumer repos not only this",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:30e5dd9616cb",
       "kind": "next_improvement",
       "lesson": "Keep design-study renderers read-only and source-consuming until a stable artifact schema earns a surface entry.",
@@ -677,6 +717,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:2b9eef74bd8c",
+      "kind": "next_improvement",
+      "lesson": "preserve this as an operator-visible recovery seam in the debug artifact and recent lessons.",
+      "normalized_key": "preserve this as an operator visible recovery seam in the debug artifact and recent",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:30d615bdbd54",
       "kind": "next_improvement",
       "lesson": "Sanitized examples should describe threshold semantics without copying live command output.",
@@ -751,6 +811,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d8c480b4a58c",
+      "kind": "next_improvement",
+      "lesson": "when a helper has optional adapter fields, check the no-op branch before loading required repo manifests.",
+      "normalized_key": "when a helper has optional adapter fields check the no op branch before loading",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
           "date": "2026-04-23",
           "section": "Next Improvements"
         }

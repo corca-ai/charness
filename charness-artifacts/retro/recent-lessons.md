@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Auto-retro closeout triggered because issue #63 changed the checked-in plugin export surface via the retro public skill helper. (source: `charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md`)
 - Auto-trigger: changed `find-skills`, checked-in plugin export, and integrations/control-plane surfaces. (source: `charness-artifacts/retro/2026-04-23-issue-routing-closeout.md`)
-- Issue #57 moved from comment-only planning into a bounded implementation slice after a mandatory fresh-eye premortem. (source: `charness-artifacts/retro/2026-04-23-issue-57-design-study.md`)
 
 ## Repeat Traps
 
@@ -27,7 +27,7 @@
 
 ## Sources
 
-- `charness-artifacts/retro/2026-04-23-issue-57-design-study.md`
+- `charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md`
 - `charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md`
 - `charness-artifacts/retro/2026-04-23-issue-routing-closeout.md`
 - `charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md`
