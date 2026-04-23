@@ -38,7 +38,7 @@ ensure_managed_checkout() {
 ensure_managed_checkout
 cd "$MANAGED_CHECKOUT"
 if ! PYTHON_CMD="$(select_python)"; then
-  echo "charness bootstrap requires Python 3.10+ (`python3` or `python`) plus the stdlib \`venv\` module." >&2
+  echo "charness bootstrap requires Python 3.10+ available as python3 or python, plus the stdlib venv module." >&2
   exit 1
 fi
 BOOTSTRAP_PYTHON="$("$PYTHON_CMD" scripts/bootstrap_runtime.py --repo-root "$MANAGED_CHECKOUT" --base-python "$PYTHON_CMD" --print-python)"
