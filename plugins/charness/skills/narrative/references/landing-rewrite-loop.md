@@ -47,6 +47,28 @@ concepts:
 Deletion is not self-justifying simplification. The burden is to show why the
 old intent is no longer needed or how it survives elsewhere.
 
+## Chunked Review And Accepted Text
+
+When the user wants a section-by-section or subsection-by-subsection review,
+optimize for human judgment first and prose polish second. Show a bounded
+chunk, discuss it, then record the actual accepted working text before moving
+on.
+
+Keep these states distinct:
+
+- current source text
+- proposed replacement text
+- accepted working text
+- rejected alternatives or unresolved follow-ups
+
+The accepted working text is the contract for the later full rewrite. Do not
+replace it with notes such as "chunk 2 option B accepted"; future sessions need
+the actual words, section order, and unresolved constraints.
+
+If the review state is written to a Markdown scratchpad, avoid nested fenced
+blocks that make rendered review hard to read. Use explicit labels or alternate
+delimiters inside an outer Markdown block when needed.
+
 ## Comparables
 
 Run a bounded comparables pass before editing when the surface is externally
@@ -118,6 +140,17 @@ If the landing page includes a Quick Start, state who actually acts.
 
 Do not assume Quick Start means inline human CLI steps.
 
+When the first successful path includes a remote install script, host plugin
+install, or repo-file mutation, include a trust check before finalizing:
+
+- can the reader inspect what will run before running it?
+- does the page distinguish human-executed commands from agent prompts?
+- does it say which repo files may change and that the diff should be reviewed?
+- does it avoid promising automatic routing before the repo instructions have
+  been initialized?
+
+Keep this as reader trust, not legal boilerplate.
+
 ## Claim Audit
 
 Before stopping, map landing claims to evidence:
@@ -132,7 +165,12 @@ The loop is narrative -> operator acceptance -> executable spec -> implementatio
 when a new claim is not yet machine-verifiable. Acceptance and executable specs
 are separate artifacts; do not collapse them.
 
-## Self-Premortem
+If a claim depends on generated docs, CLI reference output, support-skill
+materialization, or another implementation surface that does not exist yet,
+record the doc-code alignment follow-up with its likely owner instead of
+polishing the landing page as if the gap were closed.
+
+## Reader Premortem
 
 Run a short fresh-eye premortem before finalizing:
 
@@ -140,6 +178,13 @@ Run a short fresh-eye premortem before finalizing:
 - For each claim, is scope fixed while implementation remains open where it
   should?
 - For each example, fixture, or path, is there one canonical source of truth?
+- Does the first screen explain why the repo matters before explaining how it
+  is packaged?
+- Does the Quick Start overstate safety, automation, or routing behavior?
+- Are support tools, generated references, or integration details exposed as if
+  they were public workflow concepts?
+- Would a reader know which deeper doc owns a detail that was deliberately kept
+  out of the landing page?
 
 ## Carry-Forward Check
 
@@ -148,6 +193,8 @@ Before closing out, explicitly note:
 - which user-stated intents from the current thread were preserved
 - which were intentionally challenged and why
 - which remain unresolved
+- which accepted working-text chunks should be carried forward verbatim or
+  only with minor copyediting
 
 If the adapter declares `landing_danger_checks`, run that list before calling
 the rewrite done.

@@ -99,13 +99,16 @@ git status --short
      user-confirmed direction from the current thread
    - classify high-signal prior blocks as preserved, moved, compressed, or
      intentionally deleted
+   - when the user reviews section by section, keep the accepted working text
+     itself as durable state, not only a summary of which option won
    - treat preserved meaning as the contract; headings and section order are
      flexible
 4. Run the landing rewrite loop when the target is a high-leverage first-touch
    surface.
    - use `references/landing-rewrite-loop.md` for comparables, tension log,
      decision log, compression metric, opening-language filter, quick-start
-     actor check, claim audit, self-premortem, and carry-forward review
+     actor check, accepted-text ledger, claim audit, reader premortem, and
+     carry-forward review
    - if the work is really a cross-repo issue or proposal packet, use
      `references/cross-repo-issue-shaping.md` so `why` and `what` stay ahead
      of `how`
@@ -146,6 +149,8 @@ git status --short
    before any delivery action.
    - include a short carry-forward note for user-stated intents that were
      preserved, challenged, or left unresolved
+   - when the rewrite creates doc-code or generated-reference obligations,
+     name the owning follow-up instead of hiding the gap in polished prose
 8. Hand off to `announcement` only when the user explicitly wants human-facing
    adaptation or backend delivery after the narrative itself is aligned.
 

@@ -1,19 +1,18 @@
 # Cautilus Dogfood
-Date: 2026-04-23
+Date: 2026-04-24
 
 ## Trigger
 
-- slice: teach HITL and impl to handle review-state, nested-fence,
-  browser/runtime verification, and hidden validation-tool routing misses from
-  GitHub issues #59, #60, and #61, with a maintained closeout-routing scenario
+- slice: teach `narrative` to carry accepted working text from chunked README
+  review, run reader trust premortems, and record doc-code alignment follow-ups
 - claim: preserve
 
 ## Validation Goal
 
 - goal: preserve
-- reason: this slice changes prompt-affecting public skill routing and review
-  guidance, so existing startup routing must still work while the new guidance
-  stays explicit in checked-in skill surfaces
+- reason: this slice changes prompt-affecting public skill guidance, so the
+  existing startup routing surface must still pass while the new narrative
+  guidance stays explicit in checked-in skill surfaces
 
 ## Change Intent
 
@@ -23,52 +22,39 @@ Date: 2026-04-23
 
 ## Prompt Surfaces
 
-- `skills/public/find-skills/SKILL.md`
-- `skills/public/hitl/SKILL.md`
-- `skills/public/hitl/references/chunk-contract.md`
-- `skills/public/hitl/references/state-model.md`
-- `skills/public/impl/SKILL.md`
-- `skills/public/impl/references/verification-ladder.md`
-- `skills/public/quality/SKILL.md`
+- `skills/public/narrative/SKILL.md`
+- `skills/public/narrative/references/landing-rewrite-loop.md`
 
 ## Commands Run
 
-- `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
+- `python3 scripts/plan_cautilus_proof.py --repo-root . --json --paths skills/public/narrative/SKILL.md skills/public/narrative/references/landing-rewrite-loop.md plugins/charness/skills/narrative/SKILL.md plugins/charness/skills/narrative/references/landing-rewrite-loop.md`
 - `cautilus instruction-surface test --repo-root .`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id find-skills --json`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id hitl --json`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id impl --json`
-- `python3 scripts/validate_cautilus_scenarios.py --repo-root .`
+- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id narrative --json`
 
 ## Regression Proof
 
 - instruction-surface summary: `4 passed / 0 failed / 0 blocked`
-- run artifact: `.cautilus/runs/20260423T135213638Z-run/`
+- run artifact: `.cautilus/runs/20260423T163222951Z-run/`
 - maintained startup routing still bootstraps through `find-skills`, then
   selects `impl` or `spec` for the existing instruction-surface cases
-- new `validation-closeout-routes-before-hitl` case routes validation-shaped
-  closeout to `quality` before HITL/manual review; `quality` now says to run
-  validation tool recommendations for evaluator-backed closeout work
 - evaluator recommendation: `accept-now`
 
 ## Scenario Review
 
-- added and reviewed a maintained case in
-  `evals/cautilus/instruction-surface-cases.json` for #60's
-  validation-shaped issue closeout / operator reading test wording
-- reviewed dogfood suggestions for `find-skills`, `hitl`, and `impl`; the
-  current contracts still match their required skill and artifact surfaces
-- kept the route as public `quality` plus validation recommendation discovery
-  instead of exposing Cautilus as a public top-level workflow skill
+- reviewed the `narrative` public-skill dogfood case; the expected route and
+  durable artifact remain `narrative` and `charness-artifacts/narrative/latest.md`
+- no maintained scenario-registry mutation was required for this
+  `hitl-recommended` skill slice
+- the new guidance stays inside `narrative` first-touch rewrite behavior rather
+  than changing public skill routing
 
 ## Outcome
 
 - recommendation: `accept-now`
 - routing notes: regression proof passed after the prompt-surface edits, and
-  #60 now has maintained instruction-surface coverage for the HITL/manual-review
-  misroute
+  the changed guidance does not alter the maintained startup routing cases
 
 ## Follow-ups
 
-- if later dogfood expects Cautilus to be selected directly instead of via
-  `quality` recommendation discovery, split that into a product-boundary issue
+- README/plugin export drift remains owned by the parallel README rewrite; do
+  not use this proof slice to commit the current annotated README export
