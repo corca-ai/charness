@@ -28,6 +28,6 @@ real_host_required_path_globs:
 real_host_checklist:
 - On a second machine or a clean temp-home, refresh `charness` through the published operator path before claiming the release surface is ready.
 - Run `charness tool doctor cautilus --json` before installing `cautilus` and confirm the missing-binary state still surfaces an install document URL instead of a guessed package-manager command.
-- Follow the official Cautilus install guide at `https://github.com/corca-ai/cautilus/blob/main/install.md`, then verify `cautilus --version` and `cautilus version --verbose`.
+- Follow the official Cautilus install script at `https://github.com/corca-ai/cautilus/blob/main/install.sh`, then verify `cautilus --version` and `cautilus version --verbose`.
 - Re-run `charness tool doctor cautilus --json` and confirm the binary is detected on PATH.
 - Run `charness tool sync-support cautilus --json`, then confirm the generated support surface exists and the doctor payload reports support as materialized.

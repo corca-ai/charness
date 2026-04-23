@@ -19,7 +19,7 @@ def test_release_real_host_proof_triggers_for_support_tool_surfaces() -> None:
     assert payload["required"] is True
     assert "integrations-and-control-plane" in payload["surface_hits"]
     assert any("cautilus" in item for item in payload["checklist"])
-    assert any("install.md" in item for item in payload["checklist"])
+    assert any("install.sh" in item for item in payload["checklist"])
 
 
 def test_release_real_host_proof_stays_off_for_unrelated_paths() -> None:

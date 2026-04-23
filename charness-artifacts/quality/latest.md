@@ -29,16 +29,16 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 ## Runtime Signals
 
 - Latest local quality gate after this slice: `45 passed, 0 failed`, total
-  `49.5s`.
-- runtime hot spots: latest recorded samples have `pytest` `41.0s`, `check-coverage`
-  `11.7s`, `check-markdown` `4.2s`, `check-duplicates` `2.6s`, and `specdown` `2.9s`.
+  `54.4s`.
+- runtime hot spots: latest recorded samples have `pytest` `42.5s`, `check-coverage`
+  `11.7s`, `check-markdown` `4.0s`, `check-duplicates` `2.6s`, and `specdown` `2.6s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
   `85.0%`; current result is `97.9%` (`1186/1211`).
 - evaluator depth: `run-evals` passes 20 repo-local scenarios, so the bar is
   stronger than smoke-only review.
-- Budgeted phases: `pytest` median `37.3s / 45.0s`,
+- Budgeted phases: `pytest` median `41.2s / 45.0s`,
   `check-coverage` median `11.9s / 15.0s`, `check-secrets` median
-  `2.3s / 6.0s`, `run-evals` median `2.2s / 5.0s`, `specdown` median
+  `2.2s / 6.0s`, `run-evals` median `2.1s / 5.0s`, `specdown` median
   `2.7s / 8.0s`.
 - Runtime signals and smoothing state persist under `.charness/quality/`.
 
@@ -55,23 +55,15 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 
 ## Healthy
 
-- Earlier standing-gate failures were removed through structural
-  simplification: helper logic moved into repo-level seams, duplicate
-  `init_adapter.py` wrappers collapsed, and `docs/handoff.md` now fits the enforced artifact limit.
-- Public executable-spec boundaries are explicit in `spec`, and `quality` now inventories proof layering instead of asking only what proof is missing.
-- Public spec inventory now reads actual `run:shell` blocks instead of misclassifying them as prose, so the quality lens matches specdown's real executable boundary.
-- `README.md` was reduced into a short operator orienter while keeping the
-  command-doc contract intact, so the root entrypoint doc now clears the
-  length-pressure heuristic instead of acting like a second install manual.
-- `specs/index.spec.md` and `specs/tool-doctor.spec.md` now prove current CLI contracts with direct command checks instead of delegating the whole story to pytest, and public-spec inventory is clean again.
-- CLI ergonomics inventory, lint-ignore inventory, and dual-implementation inventory are currently clean: no flat-help registry pressure, no ignore debt, and no likely parity-smell candidates were detected in this tree.
-- External-link review no longer fails on private/demo placeholder hosts such
-  as `.internal`, `.test`, or `localhost`; `list_external_links.py` now keeps
-  public URL health separate from repo-local or private SaaS examples.
-- Control-plane traced coverage scenarios now include helper-contract branches
-  for support sync, release probing, manifest/capability validation, and
-  install helper lock-writing paths, so the coverage gate better reflects real
-  maintained behavior instead of only top-level command flows.
+- CLI ergonomics, lint-ignore, and dual-implementation inventories are clean:
+  no flat-help pressure, ignore debt, or likely parity-smell candidates were detected.
+- Online external-link review caught a stale Cautilus install URL; the repo now
+  points integration manifests, release checklist guidance, plugin export, and
+  tests at the live upstream `install.sh` URL.
+- Cautilus instruction-surface proof initially rejected the slice because
+  validation-shaped closeout routed directly to `hitl`; checked-in AGENTS
+  routing now makes `quality` before HITL explicit, and the refreshed proof is
+  `4 passed / 0 failed / 0 blocked`.
 
 ## Weak
 
@@ -87,9 +79,11 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   backend availability; it is deciding which workflow should invoke rendered
   preview by default instead of leaving the seam as an opt-in helper.
 - Rolling current-pointer artifacts now have freshness ratchets for stale
-  validator-existence claims plus quality runtime smoothing, hot-spot, and
-  budget-median claims; release pointer target-version claims are also checked
-  against packaging and generated plugin manifests.
+  validator-existence, runtime, budget, and release target-version claims.
+- Public spec quality inventory still reports `duplicate_public_spec_examples`
+  because it sees `.artifacts/cautilus-experiments/...` copies alongside
+  checked-in `specs/`; treat that as inventory-scope pressure before promoting
+  it to a hard public-spec layering failure.
 
 ## Missing
 
@@ -107,15 +101,12 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   subagents, stop and leave the host-side contract gap visible.
 
 ## Commands Run
-- `./scripts/run-quality.sh`
+- `./scripts/run-quality.sh` and `./scripts/run-quality.sh --review`
+- `cautilus instruction-surface test --repo-root .`
 - `python3 scripts/check_coverage.py --repo-root .` and `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root .`
 
 ## Recommended Next Gates
 
-- active `AUTO_CANDIDATE`: decide whether the remaining mode/option-pressure
-  wording in `AGENTS.md`, `README.md`, `init-repo`, `retro`, and the
-  contract-constrained `spec` phrase reflects real distinctions or should
-  collapse into stronger defaults.
 - active `AUTO_CANDIDATE`: decide whether `skills/public/quality/SKILL.md`
   should move more review prose into references or helper scripts so the core
   falls back under the `long_core` advisory threshold without losing routing
@@ -123,15 +114,13 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 - active `AUTO_CANDIDATE`: keep expanding `validate-current-pointer-freshness`;
   runtime EWMA, hot-spot, and budget-median claims are now checked, but
   ergonomics/dogfood claims still need inventory-backed checks.
-- active `AUTO_CANDIDATE`: decide whether command-doc-required flag examples
-  should stay inline, move behind owner-doc links, or gain a small inventory
-  exemption so README/UNINSTALL pressure tracks real prose clutter.
-- active `AUTO_CANDIDATE`: if the repo wants another deterministic ratchet
-  after coverage cleanup, decide whether entrypoint-doc or skill-ergonomics
-  inventories should graduate into a narrow hard gate.
 - active `AUTO_CANDIDATE`: decide which workflow should call the now-bootstrapped
   markdown-preview seam by default (`narrative`, `announcement`, `quality`, or
   a command surface) instead of leaving it as a helper that only exists on paper.
+- active `AUTO_CANDIDATE`: narrow public-spec inventory scope so generated
+  `.artifacts/cautilus-experiments` copies do not look like duplicate checked-in
+  public spec examples unless the repo intentionally wants artifact previews in
+  that advisory lens.
 - passive `NON_AUTOMATABLE`: because gate promotion still needs maintainer
   judgment, only harden ergonomics heuristics that can survive without turning
   prose review into taste policing.

@@ -47,6 +47,10 @@ support skills, synced support surfaces, and integrations.
 After that bootstrap pass, choose the durable work skill that best matches the
 request from the installed charness surface.
 
+Evaluator-backed validation, non-deterministic issue closeout, and operator
+reading test wording route through `quality` before `hitl` or same-agent manual
+review.
+
 Keep this block short. Detailed routing belongs in installed skill metadata and
 `find-skills` output, not in a long checked-in catalog.
 

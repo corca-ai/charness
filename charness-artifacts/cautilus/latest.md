@@ -3,70 +3,64 @@ Date: 2026-04-23
 
 ## Trigger
 
-- slice: teach HITL and impl to handle review-state, nested-fence,
-  browser/runtime verification, and hidden validation-tool routing misses from
-  GitHub issues #59, #60, and #61, with a maintained closeout-routing scenario
+- slice: repair current quality-review drift by replacing stale Cautilus
+  `install.md` links with the live upstream `install.sh` URL, and tighten
+  checked-in routing so evaluator-backed closeout reaches `quality` before
+  `hitl`
 - claim: preserve
 
 ## Validation Goal
 
 - goal: preserve
-- reason: this slice changes prompt-affecting public skill routing and review
-  guidance, so existing startup routing must still work while the new guidance
-  stays explicit in checked-in skill surfaces
+- reason: this slice changes prompt-affecting checked-in routing guidance and
+  the release adapter checklist, so existing startup routing must still work
+  while validation-shaped closeout continues to route through `quality`
 
 ## Change Intent
 
 - `prompt_affecting_change`
-- `skill_core_change`
+- `adapter_contract_change`
+- `checked_in_instruction_change`
 - `scenario_review_change`
 
 ## Prompt Surfaces
 
-- `skills/public/find-skills/SKILL.md`
-- `skills/public/hitl/SKILL.md`
-- `skills/public/hitl/references/chunk-contract.md`
-- `skills/public/hitl/references/state-model.md`
-- `skills/public/impl/SKILL.md`
-- `skills/public/impl/references/verification-ladder.md`
-- `skills/public/quality/SKILL.md`
+- `AGENTS.md`
+- `.agents/release-adapter.yaml`
 
 ## Commands Run
 
 - `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
 - `cautilus instruction-surface test --repo-root .`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id find-skills --json`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id hitl --json`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id impl --json`
 - `python3 scripts/validate_cautilus_scenarios.py --repo-root .`
 
 ## Regression Proof
 
-- instruction-surface summary: `4 passed / 0 failed / 0 blocked`
-- run artifact: `.cautilus/runs/20260423T135213638Z-run/`
+- first instruction-surface run found the closeout routing regression:
+  `.cautilus/runs/20260423T221410173Z-run/`, recommendation `reject`
+- instruction-surface summary after AGENTS routing repair:
+  `4 passed / 0 failed / 0 blocked`
+- run artifact: `.cautilus/runs/20260423T221549607Z-run/`
 - maintained startup routing still bootstraps through `find-skills`, then
   selects `impl` or `spec` for the existing instruction-surface cases
-- new `validation-closeout-routes-before-hitl` case routes validation-shaped
-  closeout to `quality` before HITL/manual review; `quality` now says to run
-  validation tool recommendations for evaluator-backed closeout work
+- `validation-closeout-routes-before-hitl` again routes validation-shaped
+  closeout to `quality` before HITL/manual review after the checked-in AGENTS
+  routing repair
 - evaluator recommendation: `accept-now`
 
 ## Scenario Review
 
-- added and reviewed a maintained case in
-  `evals/cautilus/instruction-surface-cases.json` for #60's
-  validation-shaped issue closeout / operator reading test wording
-- reviewed dogfood suggestions for `find-skills`, `hitl`, and `impl`; the
-  current contracts still match their required skill and artifact surfaces
-- kept the route as public `quality` plus validation recommendation discovery
-  instead of exposing Cautilus as a public top-level workflow skill
+- reviewed the maintained `validation-closeout-routes-before-hitl` case after
+  the first run selected `hitl`; the repair keeps the route as public
+  `quality` plus validation recommendation discovery instead of exposing
+  Cautilus as a public top-level workflow skill
 
 ## Outcome
 
 - recommendation: `accept-now`
-- routing notes: regression proof passed after the prompt-surface edits, and
-  #60 now has maintained instruction-surface coverage for the HITL/manual-review
-  misroute
+- routing notes: regression proof passed after the checked-in routing repair,
+  and the current quality closeout no longer depends on same-agent manual
+  interpretation for evaluator-backed closeout routing
 
 ## Follow-ups
 

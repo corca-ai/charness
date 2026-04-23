@@ -85,7 +85,7 @@ def _write_cautilus_validation_integration(root: Path) -> None:
                     "install": {
                         "mode": "manual",
                         "docs_url": "https://github.com/corca-ai/cautilus",
-                        "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.md",
+                        "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.sh",
                         "notes": ["Install cautilus."],
                     },
                     "update": {"mode": "manual", "docs_url": "https://github.com/corca-ai/cautilus/releases", "notes": ["Update cautilus."]},
@@ -501,7 +501,7 @@ def test_list_capabilities_can_emit_tool_recommendations_for_role(tmp_path: Path
                 "mode": "manual",
                 "commands": [],
                 "docs_url": "https://github.com/corca-ai/cautilus",
-                "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.md",
+                "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.sh",
                 "notes": ["Install cautilus."],
             },
             "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id cautilus",
