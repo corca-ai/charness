@@ -28,18 +28,18 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 
 ## Runtime Signals
 
-- Latest local quality gate after this slice: `44 passed, 0 failed`, total
-  `55.7s`.
-- runtime hot spots: latest full gate had `pytest` `38.1s`, `check-secrets`
-  `9.2s`, `check-markdown` `5.4s`, `specdown` `2.7s`, and `run-evals` `2.3s`.
+- Latest local quality gate after this slice: `45 passed, 0 failed`, total
+  `49.5s`.
+- runtime hot spots: latest recorded samples have `pytest` `37.6s`, `check-coverage`
+  `11.7s`, `check-markdown` `4.1s`, `check-duplicates` `2.7s`, and `specdown` `2.6s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
   `85.0%`; current result is `97.9%` (`1186/1211`).
 - evaluator depth: `run-evals` passes 20 repo-local scenarios, so the bar is
   stronger than smoke-only review.
-- Budgeted phases: `pytest` median `35.3s / 45.0s`,
+- Budgeted phases: `pytest` median `36.5s / 45.0s`,
   `check-coverage` median `11.9s / 15.0s`, `check-secrets` median
-  `6.0s / 6.0s` with a latest-sample spike, `run-evals` median
-  `2.4s / 5.0s`, `specdown` median `2.7s / 8.0s`.
+  `2.5s / 6.0s`, `run-evals` median `2.2s / 5.0s`, `specdown` median
+  `2.7s / 8.0s`.
 - Runtime signals and smoothing state persist under `.charness/quality/`.
 
 ## Coverage and Eval Depth
@@ -86,14 +86,14 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   guidance, and a local `glow` runtime. Remaining quality work is no longer
   backend availability; it is deciding which workflow should invoke rendered
   preview by default instead of leaving the seam as an opt-in helper.
-- Rolling current-pointer artifacts now have an initial freshness ratchet for
-  stale validator-existence claims, but most resolved claims are not yet
-  cross-checked against current inventories automatically.
+- Rolling current-pointer artifacts now have freshness ratchets for stale
+  validator-existence claims plus quality runtime smoothing, hot-spot, and
+  budget-median claims.
 
 ## Missing
 
-- No broad freshness check yet cross-validates runtime, ergonomics, release, or
-  dogfood claims against their owning live inventories.
+- No broad freshness check yet cross-validates ergonomics, release, or dogfood
+  claims against their owning live inventories.
 
 ## Deferred
 
@@ -120,8 +120,8 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   falls back under the `long_core` advisory threshold without losing routing
   precision.
 - active `AUTO_CANDIDATE`: keep expanding `validate-current-pointer-freshness`;
-  runtime EWMA command claims are now checked, but ergonomics/release/dogfood
-  claims still need inventory-backed checks.
+  runtime EWMA, hot-spot, and budget-median claims are now checked, but
+  ergonomics/release/dogfood claims still need inventory-backed checks.
 - active `AUTO_CANDIDATE`: decide whether command-doc-required flag examples
   should stay inline, move behind owner-doc links, or gain a small inventory
   exemption so README/UNINSTALL pressure tracks real prose clutter.

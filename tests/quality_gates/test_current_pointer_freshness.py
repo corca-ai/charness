@@ -5,6 +5,24 @@ from pathlib import Path
 from .support import run_script
 
 
+def write_runtime_signals(repo: Path, *, pytest_latest: int = 37638, pytest_median: int = 36544) -> None:
+    runtime_dir = repo / ".charness" / "quality"
+    runtime_dir.mkdir(parents=True)
+    (runtime_dir / "runtime-signals.json").write_text(
+        (
+            "{\n"
+            '  "commands": {\n'
+            '    "pytest": {\n'
+            f'      "latest": {{"elapsed_ms": {pytest_latest}, "status": "pass"}},\n'
+            f'      "median_recent_elapsed_ms": {pytest_median}\n'
+            "    }\n"
+            "  }\n"
+            "}\n"
+        ),
+        encoding="utf-8",
+    )
+
+
 def seed_repo(
     tmp_path: Path,
     *,
@@ -15,6 +33,7 @@ def seed_repo(
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / "docs").mkdir(parents=True)
+    (repo / ".agents").mkdir(parents=True)
     (repo / "charness-artifacts" / "quality").mkdir(parents=True)
     (repo / "skills" / "public" / "quality" / "scripts").mkdir(parents=True)
     queue_line = (
@@ -26,6 +45,10 @@ def seed_repo(
     (repo / "scripts" / "run-quality.sh").write_text(queue_line, encoding="utf-8")
     (repo / "docs" / "handoff.md").write_text(handoff_text, encoding="utf-8")
     (repo / "charness-artifacts" / "quality" / "latest.md").write_text(quality_text, encoding="utf-8")
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "runtime_budgets:\n  pytest: 45000\n",
+        encoding="utf-8",
+    )
     (repo / ".gitignore").write_text(".charness/quality/runtime-smoothing.json\n", encoding="utf-8")
     (repo / "scripts" / "record_quality_runtime.py").write_text(
         "\n".join(
@@ -128,3 +151,36 @@ def test_current_pointer_freshness_rejects_runtime_smoothing_claim_drift(tmp_pat
     assert result.returncode == 1
     assert "runtime smoothing claim is stale" in result.stderr
     assert ".charness/quality/runtime-smoothing.json" in result.stderr
+
+
+def test_current_pointer_freshness_accepts_matching_runtime_signal_claims(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        quality_text=(
+            "# Quality Review\n\n"
+            "## Runtime Signals\n\n"
+            "- runtime hot spots: latest full gate had `pytest` `37.6s`.\n"
+            "- Budgeted phases: `pytest` median `36.5s / 45.0s`.\n"
+        ),
+    )
+    write_runtime_signals(repo)
+    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_current_pointer_freshness_rejects_stale_runtime_signal_claims(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        quality_text=(
+            "# Quality Review\n\n"
+            "## Runtime Signals\n\n"
+            "- runtime hot spots: latest full gate had `pytest` `99.9s`.\n"
+            "- Budgeted phases: `pytest` median `99.9s / 45.0s`.\n"
+        ),
+    )
+    write_runtime_signals(repo)
+    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "quality pointer runtime signal claim is stale" in result.stderr
+    assert "`pytest` latest is `37.6s`" in result.stderr
+    assert "`pytest` median is `36.5s`" in result.stderr

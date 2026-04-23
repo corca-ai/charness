@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -23,6 +24,8 @@ QUALITY_POINTER = Path("charness-artifacts/quality/latest.md")
 GITIGNORE = Path(".gitignore")
 RUNTIME_RECORDER = Path("scripts/record_quality_runtime.py")
 RUNTIME_BUDGET_CHECKER = Path("skills/public/quality/scripts/check_runtime_budget.py")
+RUNTIME_SIGNALS = Path(".charness/quality/runtime-signals.json")
+QUALITY_ADAPTER = Path(".agents/quality-adapter.yaml")
 STALE_POINTER_PHRASES = {
     Path("docs/handoff.md"): (
         "freshness validator를 첫 slice로 잡는다",
@@ -35,6 +38,10 @@ STALE_POINTER_PHRASES = {
     ),
 }
 COMMAND_RE = re.compile(r"`(python3 [^`]+|\.\/scripts\/[^`]+)`")
+HOT_SPOT_RE = re.compile(r"`([^`]+)`\s+`([0-9]+(?:\.[0-9]+)?s)`")
+BUDGETED_PHASE_RE = re.compile(
+    r"`([^`]+)`\s+median\s+`([0-9]+(?:\.[0-9]+)?s)\s*/\s*([0-9]+(?:\.[0-9]+)?s)`"
+)
 
 
 def read_text(repo_root: Path, relative_path: Path) -> str:
@@ -123,11 +130,118 @@ def validate_runtime_smoothing_claim(repo_root: Path) -> None:
         )
 
 
+def _load_json(path: Path) -> dict:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _format_seconds(elapsed_ms: object) -> str | None:
+    if not isinstance(elapsed_ms, int):
+        return None
+    return f"{elapsed_ms / 1000:.1f}s"
+
+
+def _runtime_commands(repo_root: Path) -> dict:
+    signals_path = repo_root / RUNTIME_SIGNALS
+    if not signals_path.is_file():
+        return {}
+    payload = _load_json(signals_path)
+    commands = payload.get("commands")
+    return commands if isinstance(commands, dict) else {}
+
+
+def _runtime_budgets(repo_root: Path) -> dict[str, int]:
+    adapter_path = repo_root / QUALITY_ADAPTER
+    if not adapter_path.is_file():
+        return {}
+    budgets: dict[str, int] = {}
+    in_runtime_budgets = False
+    for raw_line in adapter_path.read_text(encoding="utf-8").splitlines():
+        if raw_line.strip() == "runtime_budgets:":
+            in_runtime_budgets = True
+            continue
+        if in_runtime_budgets and raw_line and not raw_line.startswith(" "):
+            break
+        if not in_runtime_budgets or not raw_line.startswith("  ") or ":" not in raw_line:
+            continue
+        label, value = raw_line.split(":", 1)
+        try:
+            budgets[label.strip()] = int(value.strip())
+        except ValueError:
+            continue
+    return budgets
+
+
+def _matching_runtime_lines(quality: str, prefix: str) -> list[str]:
+    blocks: list[str] = []
+    current: list[str] = []
+    for line in quality.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(prefix):
+            if current:
+                blocks.append(" ".join(current))
+            current = [stripped]
+            continue
+        if current and line.startswith("  ") and stripped:
+            current.append(stripped)
+            continue
+        if current:
+            blocks.append(" ".join(current))
+            current = []
+    if current:
+        blocks.append(" ".join(current))
+    return blocks
+
+
+def _command_entry(commands: dict, label: str) -> dict:
+    entry = commands.get(label)
+    return entry if isinstance(entry, dict) else {}
+
+
+def validate_quality_runtime_signal_claims(repo_root: Path) -> None:
+    commands = _runtime_commands(repo_root)
+    if not commands:
+        return
+    quality = read_text(repo_root, QUALITY_POINTER)
+    budgets = _runtime_budgets(repo_root)
+    missing: list[str] = []
+
+    for line in _matching_runtime_lines(quality, "- runtime hot spots:"):
+        for label, claimed_latest in HOT_SPOT_RE.findall(line):
+            entry = _command_entry(commands, label)
+            latest = entry.get("latest") if isinstance(entry.get("latest"), dict) else {}
+            actual_latest = _format_seconds(latest.get("elapsed_ms"))
+            if actual_latest is None:
+                missing.append(f"`{label}` has no latest runtime sample")
+            elif claimed_latest != actual_latest:
+                missing.append(f"`{label}` latest is `{actual_latest}`, quality pointer claims `{claimed_latest}`")
+
+    for label, claimed_median, claimed_budget in BUDGETED_PHASE_RE.findall(quality):
+        entry = _command_entry(commands, label)
+        actual_median = _format_seconds(entry.get("median_recent_elapsed_ms"))
+        actual_budget = _format_seconds(budgets.get(label))
+        if actual_median is None:
+            missing.append(f"`{label}` has no median runtime sample")
+        elif claimed_median != actual_median:
+            missing.append(f"`{label}` median is `{actual_median}`, quality pointer claims `{claimed_median}`")
+        if actual_budget is not None and claimed_budget != actual_budget:
+            missing.append(f"`{label}` budget is `{actual_budget}`, quality pointer claims `{claimed_budget}`")
+
+    if missing:
+        raise ValidationError(
+            "quality pointer runtime signal claim is stale:\n"
+            + "\n".join(f"- {item}" for item in missing)
+        )
+
+
 def validate_current_pointer_freshness(repo_root: Path) -> None:
     validate_gate_is_queued(repo_root)
     validate_no_stale_claims(repo_root)
     validate_quality_command_claims(repo_root)
     validate_runtime_smoothing_claim(repo_root)
+    validate_quality_runtime_signal_claims(repo_root)
 
 
 def main() -> int:

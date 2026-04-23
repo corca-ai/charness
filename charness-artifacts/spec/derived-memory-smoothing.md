@@ -14,7 +14,8 @@ to current pointers would blur audit history and current truth.
 Define the safe contract before broad smoothing rollout. The first implementation
 slice improved current-pointer freshness, the second added quality runtime EWMA
 as advisory-only derived state, the third added a source-linked debug seam-risk
-index, and the fourth added a source-linked retro lesson selection index.
+index, the fourth added a source-linked retro lesson selection index, and the
+fifth tightened quality current-pointer runtime claims against recorded signals.
 
 ## Fixed Decisions
 
@@ -59,6 +60,12 @@ index, and the fourth added a source-linked retro lesson selection index.
 - Retro lesson selection is advisory. It records source count, latest source,
   recency half-life, and the same warmup-shaped adaptive alpha family:
   `alpha_t = alpha_base * min(1, source_count / warmup_n)`.
+- `recent-lessons.md` may be refreshed from the selection index only through the
+  reviewed slot policy shown in the digest: `current_focus=2`,
+  `repeat_trap=4`, and `next_improvement=4`.
+- `validate-current-pointer-freshness` checks quality runtime EWMA claims and,
+  when local runtime signals exist, quality runtime hot-spot and budget-median
+  claims against `.charness/quality/runtime-signals.json`.
 
 ## Deferred Decisions
 
@@ -67,11 +74,10 @@ index, and the fourth added a source-linked retro lesson selection index.
 ## Next Candidate Decision
 
 - Retro lesson selection indexing is now the implemented derived memory layer
-  for history-style memory. Keep it advisory and source-linked; do not let it
-  rewrite `recent-lessons.md` without an explicit digest refresh.
-- Defer automated digest rewriting from the selection index until there is a
-  reviewed policy for how many `current_focus`, `repeat_trap`, and
-  `next_improvement` candidates should survive.
+  for history-style memory. Keep it advisory and source-linked; refresh
+  `recent-lessons.md` only through the reviewed digest slot policy.
+- Continue extending deterministic freshness checks only for current-pointer
+  claims that can be checked against live inventory or recorded local signals.
 - Defer `find-skills` derived hints until either quality EWMA or debug seam-risk
   changes an actual routing decision.
 
