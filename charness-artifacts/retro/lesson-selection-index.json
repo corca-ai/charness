@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-04-23",
-  "source_artifact_count": 28,
-  "candidate_count": 185,
+  "source_artifact_count": 29,
+  "candidate_count": 189,
   "top_candidates": [
     {
       "candidate_id": "current_focus:4a4916b6ee1f",
@@ -29,6 +29,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "date": "2026-04-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:6cf3c1c0da32",
+      "kind": "current_focus",
+      "lesson": "Issue #57 moved from comment-only planning into a bounded implementation slice after a mandatory fresh-eye premortem.",
+      "normalized_key": "issue 57 moved from comment only planning into a bounded implementation slice after a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
           "date": "2026-04-23",
           "section": "Context"
         }
@@ -233,26 +253,6 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:2e4b70cd7de0",
-      "kind": "next_improvement",
-      "lesson": "for premortem, spec, quality, and handoff fresh-eye gates, read the already-delegated AGENTS rule as the user authorization to attempt the bounded subagent setup.",
-      "normalized_key": "for premortem spec quality and handoff fresh eye gates read the already delegated agents",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
-          "date": "2026-04-23",
-          "section": "Next Improvements"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -271,6 +271,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "date": "2026-04-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:6cf3c1c0da32",
+      "kind": "current_focus",
+      "lesson": "Issue #57 moved from comment-only planning into a bounded implementation slice after a mandatory fresh-eye premortem.",
+      "normalized_key": "issue 57 moved from comment only planning into a bounded implementation slice after a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
           "date": "2026-04-23",
           "section": "Context"
         }
@@ -517,6 +537,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:30e5dd9616cb",
+      "kind": "next_improvement",
+      "lesson": "Keep design-study renderers read-only and source-consuming until a stable artifact schema earns a surface entry.",
+      "normalized_key": "keep design study renderers read only and source consuming until a stable artifact schema",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:326d7316d555",
       "kind": "next_improvement",
       "lesson": "keep stale launcher repair covered in `test_bootstrap_runtime.py` so future install refactors preserve this recovery path.",
@@ -611,6 +651,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4fdfd56376e3",
+      "kind": "next_improvement",
+      "lesson": "Use this slice as the precedent for avoiding raw live doctor payloads in visible artifacts.",
+      "normalized_key": "use this slice as the precedent for avoiding raw live doctor payloads in visible",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5ae7a186d926",
+      "kind": "next_improvement",
+      "lesson": "When delegating a premortem angle, state that the receiving agent is already the bounded subagent and must not run the subagent capability check again.",
+      "normalized_key": "when delegating a premortem angle state that the receiving agent is already the bounded",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
           "date": "2026-04-23",
           "section": "Next Improvements"
         }

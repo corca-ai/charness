@@ -3,7 +3,7 @@
 ## Current Focus
 
 - Auto-trigger: changed `find-skills`, checked-in plugin export, and integrations/control-plane surfaces. (source: `charness-artifacts/retro/2026-04-23-issue-routing-closeout.md`)
-- The user pointed out that commit `f982074` intentionally taught this repo to treat repo-mandated bounded subagent review as already delegated, yet the assistant still refused to run canonical `premortem` without a second explicit subagent request. (source: `charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md`)
+- Issue #57 moved from comment-only planning into a bounded implementation slice after a mandatory fresh-eye premortem. (source: `charness-artifacts/retro/2026-04-23-issue-57-design-study.md`)
 
 ## Repeat Traps
 
@@ -27,6 +27,7 @@
 
 ## Sources
 
+- `charness-artifacts/retro/2026-04-23-issue-57-design-study.md`
 - `charness-artifacts/retro/2026-04-23-issue-routing-closeout.md`
 - `charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md`
 - `charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md`
