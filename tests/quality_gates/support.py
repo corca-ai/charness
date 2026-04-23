@@ -77,6 +77,7 @@ QUALITY_PYTHON_STUBS = (
     ("validate-handoff-artifact", "validate_handoff_artifact.py"),
     ("validate-debug-artifact", "validate_debug_artifact.py"),
     ("validate-quality-artifact", "validate_quality_artifact.py"),
+    ("validate-current-pointer-freshness", "validate_current_pointer_freshness.py"),
     ("inventory-quality-handoff", "inventory_quality_handoff.py"),
     ("validate-maintainer-setup", "validate_maintainer_setup.py"),
     ("check-python-lengths", "check_python_lengths.py"),

@@ -33,12 +33,12 @@
 5. public skill, handoff, validator, 또는 other prompt surface를 건드리면 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)와 [docs/public-skill-dogfood.json](./public-skill-dogfood.json)을 읽고 `impl`로 이어간다.
 6. export surface가 걸린 변경이면 sync를 먼저 끝내고 그 다음 validator와 quality gate를 돌린다.
 7. rolling pointer freshness를 더 조일 다음 slice면 prose를 더 추가하지 말고 deterministic validator를 우선 검토한다.
-8. derived memory / smoothing 작업을 이어받으면 [charness-artifacts/spec/derived-memory-smoothing.md](../charness-artifacts/spec/derived-memory-smoothing.md)를 먼저 읽고, EWMA/decay보다 `handoff`/`quality latest` freshness validator를 첫 slice로 잡는다.
+8. derived memory / smoothing 작업을 이어받으면 [charness-artifacts/spec/derived-memory-smoothing.md](../charness-artifacts/spec/derived-memory-smoothing.md)를 먼저 읽고, EWMA/decay보다 current-pointer freshness validator 확장 필요성을 먼저 판단한다.
 9. release를 이어받으면 `current_release.py`로 checked-in surface를 먼저 읽고, actual publish는 `publish_release.py` helper 경로를 쓴다.
 
 ## Discuss
 
-- 이 [docs/handoff.md](./handoff.md)와 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)의 freshness를 어느 수준까지 deterministic validator로 올릴지 아직 열려 있다.
+- 이 [docs/handoff.md](./handoff.md)와 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)의 freshness validator를 현재 stale-claim check 너머 어디까지 확장할지는 아직 열려 있다.
 - `cautilus` planner가 아직 `goal`을 사실상 `preserve`로만 둔다. named-anchor/reasoning-frame change를 언제 `improve` + compare path로 올릴지는 dogfood를 더 봐야 한다.
 - release artifact가 GitHub release creation/public verification state를 얼마나 자세히 닫아야 하는지는 helper contract 차원에서 한 번 더 볼 가치가 있다.
 - `Discuss`는 unresolved decision만 남기고, metrics/history/closed proof는 owning artifact로 계속 밀어내는 방향을 유지한다.

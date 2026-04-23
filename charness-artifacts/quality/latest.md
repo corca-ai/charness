@@ -1,5 +1,5 @@
 # Quality Review
-Date: 2026-04-20
+Date: 2026-04-23
 
 ## Scope
 
@@ -11,36 +11,40 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   runtime-budget, concept-path, and prompt-asset policy fields.
 - `./scripts/run-quality.sh` is the canonical local quality gate; `--review`
   replays PASS logs and enables online declared-link validation.
-- `check-coverage` enforces both the `60.0%` aggregate control-plane floor and
-  an `85.0%` per-file floor for every tracked control-plane file.
+- `check-coverage` enforces the `60.0%` aggregate and `85.0%` per-file floors
+  for every tracked control-plane file.
 - `check-test-production-ratio` enforces a Python test/source ratio ceiling of
   `1.00`.
 - `check-python-lengths` and `check-duplicates --fail-on-match` are standing
   gates, not advisory review notes.
+- `validate-current-pointer-freshness` rejects known-stale claims in this
+  quality pointer and `docs/handoff.md`.
 - `specdown run -quiet -no-report` remains part of the quiet quality gate.
 - `.githooks/pre-push` syncs checked-in plugin exports, fails on generated
   export drift, then runs the quiet quality gate.
 
 ## Runtime Signals
 
-- Latest local review gate after this slice: `40 passed, 0 failed`, total `66.2s`.
-- runtime hot spots: `pytest` `44.2s`, `check-coverage` `12.2s`, `check-markdown`
-  `4.7s`, `check-secrets` `4.4s`, `specdown` `3.3s`.
+- Latest local quality gate after this slice: `43 passed, 0 failed`, total
+  `55.5s`.
+- runtime hot spots: latest full gate had `pytest` `36.9s`,
+  `check-secrets` `9.7s`, `check-markdown` `6.4s`, `specdown` `3.3s`, and
+  `run-evals` `3.2s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
-  `85.0%`; current result is `98.0%` (`1193/1218`).
+  `85.0%`; current result is `97.9%` (`1186/1211`).
 - evaluator depth: `run-evals` passes 20 repo-local scenarios, so the bar is
   stronger than smoke-only review.
-- Budgeted phases: `pytest` median `37.6s / 45.0s`,
-  `check-coverage` median `11.8s / 15.0s`, `check-secrets` median `4.4s / 5.0s`,
-  `run-evals` median `2.5s / 5.0s`, `specdown` median `2.9s / 8.0s`.
+- Budgeted phases: `pytest` median `34.6s / 45.0s`,
+  `check-coverage` median `11.9s / 15.0s`, `check-secrets` median
+  `5.8s / 6.0s` with a latest-sample spike, `run-evals` median
+  `2.5s / 5.0s`, `specdown` median `2.7s / 8.0s`.
 - Runtime signals continue to persist under `.charness/quality/`.
 
 ## Coverage and Eval Depth
 
-- Coverage gate: `98.0%` (`1193/1218`) against the `60.0%` aggregate floor and
-  `85.0%` per-file floor; test-production ratio is `0.56`
-  (`13220/23747` Python lines), and standing proof is `370 passed` plus
-  20 repo-local eval scenarios.
+- Coverage gate: `97.9%` (`1186/1211`) against the configured floors;
+  test-production ratio is `0.19` (`14560/77051` Python lines), and standing
+  proof is the latest full pytest gate plus 20 repo-local eval scenarios.
 - Every tracked control-plane file now clears the warn band. Weakest remaining
   tracked files are `doctor.py` `95.8%`, `upstream_release_lib.py` `95.3%`,
   and `update_tools.py` `98.3%`.
@@ -82,12 +86,14 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   guidance, and a local `glow` runtime. Remaining quality work is no longer
   backend availability; it is deciding which workflow should invoke rendered
   preview by default instead of leaving the seam as an opt-in helper.
-- Rolling current-pointer artifacts are still weak on freshness: validators enforce structure, but most resolved claims are not yet cross-checked against current inventories automatically.
+- Rolling current-pointer artifacts now have an initial freshness ratchet for
+  stale validator-existence claims, but most resolved claims are not yet
+  cross-checked against current inventories automatically.
 
 ## Missing
 
-- No deterministic freshness check yet cross-validates `docs/handoff.md` or
-  `charness-artifacts/quality/latest.md` against live inventory outputs.
+- No broad freshness check yet cross-validates runtime, ergonomics, release, or
+  dogfood claims against their owning live inventories.
 
 ## Deferred
 
@@ -100,10 +106,9 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   subagents, stop and leave the host-side contract gap visible.
 
 ## Commands Run
-- `./scripts/run-quality.sh --review`
-- quality inventories: standing-gate verbosity, entrypoint docs, skill ergonomics, public spec quality, CLI ergonomics, lint ignores, and dual implementation
-- `python3 scripts/doctor.py --json`
-- one bounded fresh-eye subagent probe
+- `./scripts/run-quality.sh`
+- `python3 scripts/check_coverage.py --repo-root .` and `python3 scripts/check_test_production_ratio.py --repo-root .`
+- `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root .`
 
 ## Recommended Next Gates
 
@@ -115,10 +120,9 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   should move more review prose into references or helper scripts so the core
   falls back under the `long_core` advisory threshold without losing routing
   precision.
-- active `AUTO_CANDIDATE`: add a narrow freshness check so rolling pointers
-  such as `docs/handoff.md` and `charness-artifacts/quality/latest.md` cannot
-  claim resolved ergonomics or runtime states that disagree with current
-  inventories.
+- active `AUTO_CANDIDATE`: extend `validate-current-pointer-freshness` beyond
+  stale validator-existence claims so rolling pointers cannot claim resolved
+  ergonomics or runtime states that disagree with current inventories.
 - active `AUTO_CANDIDATE`: decide whether command-doc-required flag examples
   should stay inline, move behind owner-doc links, or gain a small inventory
   exemption so README/UNINSTALL pressure tracks real prose clutter.
