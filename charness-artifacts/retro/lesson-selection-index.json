@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-04-23",
-  "source_artifact_count": 27,
-  "candidate_count": 182,
+  "source_artifact_count": 28,
+  "candidate_count": 185,
   "top_candidates": [
     {
       "candidate_id": "current_focus:4a4916b6ee1f",
@@ -115,6 +115,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:7512e9ce9c19",
+      "kind": "current_focus",
+      "lesson": "Unit of work: make the #62 Cautilus planning miss hard to repeat.",
+      "normalized_key": "unit of work make the 62 cautilus planning miss hard to repeat",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
+          "date": "2026-04-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:85d3b685d3e2",
+      "kind": "next_improvement",
+      "lesson": "after public-skill package edits, run slice closeout and expect explicit Cautilus skill-review acknowledgement before final verification.",
+      "normalized_key": "after public skill package edits run slice closeout and expect explicit cautilus skill review",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:af70dcfded7e",
       "kind": "next_improvement",
       "lesson": "Capability: keep validation-shaped closeout examples near Cautilus scenario coverage, because this is where hidden-tool discovery can regress.",
@@ -129,6 +169,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fafe390ae868",
+      "kind": "next_improvement",
+      "lesson": "consider a follow-up gate for policy-only or dogfood-only public-skill validation changes if those slices keep recurring.",
+      "normalized_key": "consider a follow up gate for policy only or dogfood only public skill validation",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
           "date": "2026-04-23",
           "section": "Next Improvements"
         }
@@ -189,66 +249,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
-          "date": "2026-04-23",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:d8b88e8f7b8a",
-      "kind": "next_improvement",
-      "lesson": "for public-skill changes, run `plan_cautilus_proof.py --paths` with the commit paths if the worktree is already clean.",
-      "normalized_key": "for public skill changes run plan cautilus proof py paths with the commit paths",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
-          "date": "2026-04-23",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:326d7316d555",
-      "kind": "next_improvement",
-      "lesson": "keep stale launcher repair covered in `test_bootstrap_runtime.py` so future install refactors preserve this recovery path.",
-      "normalized_key": "keep stale launcher repair covered in test bootstrap runtime py so future install refactors",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
-          "date": "2026-04-23",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:e4e8c375ad17",
-      "kind": "next_improvement",
-      "lesson": "keep this as a repeat trap in recent lessons until the closeout script or commit workflow carries explicit-path Cautilus planning.",
-      "normalized_key": "keep this as a repeat trap in recent lessons until the closeout script or",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
           "date": "2026-04-23",
           "section": "Next Improvements"
         }
@@ -357,6 +357,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:7512e9ce9c19",
+      "kind": "current_focus",
+      "lesson": "Unit of work: make the #62 Cautilus planning miss hard to repeat.",
+      "normalized_key": "unit of work make the 62 cautilus planning miss hard to repeat",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
+          "date": "2026-04-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:85d3b685d3e2",
+      "kind": "next_improvement",
+      "lesson": "after public-skill package edits, run slice closeout and expect explicit Cautilus skill-review acknowledgement before final verification.",
+      "normalized_key": "after public skill package edits run slice closeout and expect explicit cautilus skill review",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:af70dcfded7e",
       "kind": "next_improvement",
       "lesson": "Capability: keep validation-shaped closeout examples near Cautilus scenario coverage, because this is where hidden-tool discovery can regress.",
@@ -371,6 +411,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fafe390ae868",
+      "kind": "next_improvement",
+      "lesson": "consider a follow-up gate for policy-only or dogfood-only public-skill validation changes if those slices keep recurring.",
+      "normalized_key": "consider a follow up gate for policy only or dogfood only public skill validation",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
           "date": "2026-04-23",
           "section": "Next Improvements"
         }
