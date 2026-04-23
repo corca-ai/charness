@@ -22,12 +22,12 @@ Advanced `charness` toward release `0.5.8` through the repo-owned release helper
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: not created by this helper run
-- public release surface verification: not checked by this helper
+- GitHub release record: created (https://github.com/corca-ai/charness/releases/tag/v0.5.8)
+- public release surface verification: complete via `gh release view v0.5.8 --repo corca-ai/charness`
 
 ## Public Release Verification
 
-- No configured public/real-host verification trigger matched this slice, but async publication repos should still keep workflow/public checks explicit.
+- `gh release view v0.5.8 --repo corca-ai/charness` reports a non-draft, non-prerelease GitHub release published at `2026-04-23T14:43:17Z`.
 
 ## Real-Host Proof
 
