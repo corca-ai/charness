@@ -14,8 +14,9 @@ to current pointers would blur audit history and current truth.
 Define the safe contract before broad smoothing rollout. The first implementation
 slice improved current-pointer freshness, the second added quality runtime EWMA
 as advisory-only derived state, the third added a source-linked debug seam-risk
-index, the fourth added a source-linked retro lesson selection index, and the
-fifth tightened quality current-pointer runtime claims against recorded signals.
+index, the fourth added a source-linked retro lesson selection index, the fifth
+tightened quality current-pointer runtime claims against recorded signals, and
+the sixth added release-version and retro-digest consistency checks.
 
 ## Fixed Decisions
 
@@ -65,7 +66,12 @@ fifth tightened quality current-pointer runtime claims against recorded signals.
   `repeat_trap=4`, and `next_improvement=4`.
 - `validate-current-pointer-freshness` checks quality runtime EWMA claims and,
   when local runtime signals exist, quality runtime hot-spot and budget-median
-  claims against `.charness/quality/runtime-signals.json`.
+  claims against `.charness/quality/runtime-signals.json` with bounded tolerance
+  for normal per-run timing variance.
+- `validate-current-pointer-freshness` checks `release/latest.md` target-version
+  claims against the packaging manifest and generated plugin manifests.
+- `validate-retro-lesson-index` checks both the source-linked index and
+  `recent-lessons.md` digest consistency.
 
 ## Deferred Decisions
 
@@ -78,6 +84,7 @@ fifth tightened quality current-pointer runtime claims against recorded signals.
   `recent-lessons.md` only through the reviewed digest slot policy.
 - Continue extending deterministic freshness checks only for current-pointer
   claims that can be checked against live inventory or recorded local signals.
+  The remaining low-noise candidates are ergonomics and dogfood claims.
 - Defer `find-skills` derived hints until either quality EWMA or debug seam-risk
   changes an actual routing decision.
 

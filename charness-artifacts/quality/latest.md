@@ -30,15 +30,15 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 
 - Latest local quality gate after this slice: `45 passed, 0 failed`, total
   `49.5s`.
-- runtime hot spots: latest recorded samples have `pytest` `37.6s`, `check-coverage`
-  `11.7s`, `check-markdown` `4.1s`, `check-duplicates` `2.7s`, and `specdown` `2.6s`.
+- runtime hot spots: latest recorded samples have `pytest` `41.0s`, `check-coverage`
+  `11.7s`, `check-markdown` `4.2s`, `check-duplicates` `2.6s`, and `specdown` `2.9s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
   `85.0%`; current result is `97.9%` (`1186/1211`).
 - evaluator depth: `run-evals` passes 20 repo-local scenarios, so the bar is
   stronger than smoke-only review.
-- Budgeted phases: `pytest` median `36.5s / 45.0s`,
+- Budgeted phases: `pytest` median `37.3s / 45.0s`,
   `check-coverage` median `11.9s / 15.0s`, `check-secrets` median
-  `2.5s / 6.0s`, `run-evals` median `2.2s / 5.0s`, `specdown` median
+  `2.3s / 6.0s`, `run-evals` median `2.2s / 5.0s`, `specdown` median
   `2.7s / 8.0s`.
 - Runtime signals and smoothing state persist under `.charness/quality/`.
 
@@ -88,12 +88,13 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   preview by default instead of leaving the seam as an opt-in helper.
 - Rolling current-pointer artifacts now have freshness ratchets for stale
   validator-existence claims plus quality runtime smoothing, hot-spot, and
-  budget-median claims.
+  budget-median claims; release pointer target-version claims are also checked
+  against packaging and generated plugin manifests.
 
 ## Missing
 
-- No broad freshness check yet cross-validates ergonomics, release, or dogfood
-  claims against their owning live inventories.
+- No broad freshness check yet cross-validates ergonomics or dogfood claims
+  against their owning live inventories.
 
 ## Deferred
 
@@ -121,7 +122,7 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   precision.
 - active `AUTO_CANDIDATE`: keep expanding `validate-current-pointer-freshness`;
   runtime EWMA, hot-spot, and budget-median claims are now checked, but
-  ergonomics/release/dogfood claims still need inventory-backed checks.
+  ergonomics/dogfood claims still need inventory-backed checks.
 - active `AUTO_CANDIDATE`: decide whether command-doc-required flag examples
   should stay inline, move behind owner-doc links, or gain a small inventory
   exemption so README/UNINSTALL pressure tracks real prose clutter.

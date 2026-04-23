@@ -321,6 +321,17 @@ def check_lesson_selection_index(repo_root: Path, output_dir: Path, summary_path
             f"retro lesson selection index `{index_path.relative_to(repo_root)}` is stale; "
             "run `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write`"
         )
+    expected_digest = build_indexed_recent_lessons(repo_root=repo_root, output_dir=output_dir, summary_path=summary_path)
+    if not summary_path.is_file():
+        raise FileNotFoundError(
+            f"missing recent lessons digest `{summary_path.relative_to(repo_root)}`; "
+            "run `python3 skills/public/retro/scripts/refresh_recent_lessons.py --repo-root .`"
+        )
+    if summary_path.read_text(encoding="utf-8") != expected_digest.summary_text:
+        raise ValueError(
+            f"recent lessons digest `{summary_path.relative_to(repo_root)}` is stale relative to the lesson selection index; "
+            "run `python3 skills/public/retro/scripts/refresh_recent_lessons.py --repo-root .`"
+        )
 
 
 def _fallback_source_path(output_dir: Path, summary_path: Path) -> Path:

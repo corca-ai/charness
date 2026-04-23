@@ -35,6 +35,10 @@ def seed_repo(
     (repo / "docs").mkdir(parents=True)
     (repo / ".agents").mkdir(parents=True)
     (repo / "charness-artifacts" / "quality").mkdir(parents=True)
+    (repo / "charness-artifacts" / "release").mkdir(parents=True)
+    (repo / "packaging").mkdir(parents=True)
+    (repo / "plugins" / "charness" / ".codex-plugin").mkdir(parents=True)
+    (repo / "plugins" / "charness" / ".claude-plugin").mkdir(parents=True)
     (repo / "skills" / "public" / "quality" / "scripts").mkdir(parents=True)
     queue_line = (
         'queue_selected "validate-current-pointer-freshness" '
@@ -45,6 +49,16 @@ def seed_repo(
     (repo / "scripts" / "run-quality.sh").write_text(queue_line, encoding="utf-8")
     (repo / "docs" / "handoff.md").write_text(handoff_text, encoding="utf-8")
     (repo / "charness-artifacts" / "quality" / "latest.md").write_text(quality_text, encoding="utf-8")
+    (repo / "charness-artifacts" / "release" / "latest.md").write_text(
+        "# Release Surface Check\n\n## Current Version\n\n- target version: `1.2.3`\n",
+        encoding="utf-8",
+    )
+    for relative_path in (
+        "packaging/charness.json",
+        "plugins/charness/.codex-plugin/plugin.json",
+        "plugins/charness/.claude-plugin/plugin.json",
+    ):
+        (repo / relative_path).write_text('{"version": "1.2.3"}\n', encoding="utf-8")
     (repo / ".agents" / "quality-adapter.yaml").write_text(
         "runtime_budgets:\n  pytest: 45000\n",
         encoding="utf-8",
@@ -184,3 +198,12 @@ def test_current_pointer_freshness_rejects_stale_runtime_signal_claims(tmp_path:
     assert "quality pointer runtime signal claim is stale" in result.stderr
     assert "`pytest` latest is `37.6s`" in result.stderr
     assert "`pytest` median is `36.5s`" in result.stderr
+
+
+def test_current_pointer_freshness_rejects_stale_release_version_claim(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path)
+    (repo / "packaging" / "charness.json").write_text('{"version": "1.2.4"}\n', encoding="utf-8")
+    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "release pointer version claim is stale" in result.stderr
+    assert "packaging/charness.json" in result.stderr

@@ -21,6 +21,10 @@ CURRENT_POINTERS = (
     Path("charness-artifacts/quality/latest.md"),
 )
 QUALITY_POINTER = Path("charness-artifacts/quality/latest.md")
+RELEASE_POINTER = Path("charness-artifacts/release/latest.md")
+PACKAGING_MANIFEST = Path("packaging/charness.json")
+CODEX_PLUGIN_MANIFEST = Path("plugins/charness/.codex-plugin/plugin.json")
+CLAUDE_PLUGIN_MANIFEST = Path("plugins/charness/.claude-plugin/plugin.json")
 GITIGNORE = Path(".gitignore")
 RUNTIME_RECORDER = Path("scripts/record_quality_runtime.py")
 RUNTIME_BUDGET_CHECKER = Path("skills/public/quality/scripts/check_runtime_budget.py")
@@ -42,6 +46,9 @@ HOT_SPOT_RE = re.compile(r"`([^`]+)`\s+`([0-9]+(?:\.[0-9]+)?s)`")
 BUDGETED_PHASE_RE = re.compile(
     r"`([^`]+)`\s+median\s+`([0-9]+(?:\.[0-9]+)?s)\s*/\s*([0-9]+(?:\.[0-9]+)?s)`"
 )
+TARGET_VERSION_RE = re.compile(r"- target version:\s*`([^`]+)`")
+RUNTIME_SECONDS_ABS_TOLERANCE = 0.5
+RUNTIME_SECONDS_REL_TOLERANCE = 0.15
 
 
 def read_text(repo_root: Path, relative_path: Path) -> str:
@@ -143,6 +150,17 @@ def _format_seconds(elapsed_ms: object) -> str | None:
     return f"{elapsed_ms / 1000:.1f}s"
 
 
+def _seconds_value(text: str) -> float:
+    return float(text.removesuffix("s"))
+
+
+def _seconds_close(claimed: str, actual: str) -> bool:
+    claimed_value = _seconds_value(claimed)
+    actual_value = _seconds_value(actual)
+    tolerance = max(RUNTIME_SECONDS_ABS_TOLERANCE, abs(actual_value) * RUNTIME_SECONDS_REL_TOLERANCE)
+    return abs(claimed_value - actual_value) <= tolerance
+
+
 def _runtime_commands(repo_root: Path) -> dict:
     signals_path = repo_root / RUNTIME_SIGNALS
     if not signals_path.is_file():
@@ -215,7 +233,7 @@ def validate_quality_runtime_signal_claims(repo_root: Path) -> None:
             actual_latest = _format_seconds(latest.get("elapsed_ms"))
             if actual_latest is None:
                 missing.append(f"`{label}` has no latest runtime sample")
-            elif claimed_latest != actual_latest:
+            elif not _seconds_close(claimed_latest, actual_latest):
                 missing.append(f"`{label}` latest is `{actual_latest}`, quality pointer claims `{claimed_latest}`")
 
     for label, claimed_median, claimed_budget in BUDGETED_PHASE_RE.findall(quality):
@@ -224,7 +242,7 @@ def validate_quality_runtime_signal_claims(repo_root: Path) -> None:
         actual_budget = _format_seconds(budgets.get(label))
         if actual_median is None:
             missing.append(f"`{label}` has no median runtime sample")
-        elif claimed_median != actual_median:
+        elif not _seconds_close(claimed_median, actual_median):
             missing.append(f"`{label}` median is `{actual_median}`, quality pointer claims `{claimed_median}`")
         if actual_budget is not None and claimed_budget != actual_budget:
             missing.append(f"`{label}` budget is `{actual_budget}`, quality pointer claims `{claimed_budget}`")
@@ -236,12 +254,45 @@ def validate_quality_runtime_signal_claims(repo_root: Path) -> None:
         )
 
 
+def _json_version(repo_root: Path, relative_path: Path) -> str | None:
+    payload = _load_json(repo_root / relative_path)
+    version = payload.get("version")
+    return version if isinstance(version, str) else None
+
+
+def validate_release_version_claim(repo_root: Path) -> None:
+    release_path = repo_root / RELEASE_POINTER
+    if not release_path.is_file():
+        return
+    release = release_path.read_text(encoding="utf-8")
+    match = TARGET_VERSION_RE.search(release)
+    if not match:
+        return
+    claimed_version = match.group(1)
+    version_sources = (
+        (PACKAGING_MANIFEST, _json_version(repo_root, PACKAGING_MANIFEST)),
+        (CODEX_PLUGIN_MANIFEST, _json_version(repo_root, CODEX_PLUGIN_MANIFEST)),
+        (CLAUDE_PLUGIN_MANIFEST, _json_version(repo_root, CLAUDE_PLUGIN_MANIFEST)),
+    )
+    stale = [
+        f"`{relative_path}` version is `{version}`, release pointer claims `{claimed_version}`"
+        for relative_path, version in version_sources
+        if version != claimed_version
+    ]
+    if stale:
+        raise ValidationError(
+            "release pointer version claim is stale:\n"
+            + "\n".join(f"- {item}" for item in stale)
+        )
+
+
 def validate_current_pointer_freshness(repo_root: Path) -> None:
     validate_gate_is_queued(repo_root)
     validate_no_stale_claims(repo_root)
     validate_quality_command_claims(repo_root)
     validate_runtime_smoothing_claim(repo_root)
     validate_quality_runtime_signal_claims(repo_root)
+    validate_release_version_claim(repo_root)
 
 
 def main() -> int:

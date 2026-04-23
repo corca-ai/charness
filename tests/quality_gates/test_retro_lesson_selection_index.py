@@ -111,6 +111,29 @@ def test_build_retro_lesson_selection_index_check_rejects_stale_index(tmp_path: 
     assert "--write" in result.stderr
 
 
+def test_build_retro_lesson_selection_index_check_rejects_stale_digest(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        (
+            "2026-04-15-new.md",
+            retro_artifact(
+                "2026-04-15",
+                waste="Manual summary refresh was easy to forget.",
+                improvement="Refresh recent lessons through the persistence helper.",
+            ),
+        ),
+    )
+    refresh = run_script("skills/public/retro/scripts/refresh_recent_lessons.py", "--repo-root", str(repo))
+    assert refresh.returncode == 0, refresh.stderr
+    summary = repo / "charness-artifacts" / "retro" / "recent-lessons.md"
+    summary.write_text("# Recent Retro Lessons\n\nstale\n", encoding="utf-8")
+
+    result = run_script("scripts/build_retro_lesson_selection_index.py", "--repo-root", str(repo), "--check")
+    assert result.returncode == 1
+    assert "recent lessons digest" in result.stderr
+    assert "refresh_recent_lessons.py" in result.stderr
+
+
 def test_refresh_recent_lessons_prefers_index_ranked_repeated_lessons(tmp_path: Path) -> None:
     repo = seed_repo(
         tmp_path,
