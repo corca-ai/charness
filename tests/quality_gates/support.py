@@ -76,6 +76,7 @@ QUALITY_PYTHON_STUBS = (
     ("validate-packaging-committed", "validate_packaging_committed.py"),
     ("validate-handoff-artifact", "validate_handoff_artifact.py"),
     ("validate-debug-artifact", "validate_debug_artifact.py"),
+    ("validate-debug-seam-index", "build_debug_seam_risk_index.py"),
     ("validate-quality-artifact", "validate_quality_artifact.py"),
     ("validate-current-pointer-freshness", "validate_current_pointer_freshness.py"),
     ("inventory-quality-handoff", "inventory_quality_handoff.py"),

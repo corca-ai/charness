@@ -17,8 +17,8 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   `1.00`.
 - `check-python-lengths` and `check-duplicates --fail-on-match` are standing
   gates, not advisory review notes.
-- `validate-current-pointer-freshness` rejects known-stale claims in this
-  quality pointer and `docs/handoff.md`.
+- `validate-current-pointer-freshness` rejects known-stale current-pointer claims.
+- `validate-debug-seam-index` keeps the debug seam-risk index current.
 - Runtime EWMA is advisory in `.charness/quality/runtime-smoothing.json`;
   enforcement still uses raw latest samples, medians, and spikes.
 - `specdown run -quiet -no-report` remains part of the quiet quality gate.
@@ -27,17 +27,17 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 
 ## Runtime Signals
 
-- Latest local quality gate after this slice: `43 passed, 0 failed`, total
-  `69.5s`.
-- runtime hot spots: latest full gate had `pytest` `37.9s`, `check-secrets`
-  `19.5s`, `check-markdown` `14.9s`, `specdown` `2.5s`, and `run-evals` `2.0s`.
+- Latest local quality gate after this slice: `44 passed, 0 failed`, total
+  `55.7s`.
+- runtime hot spots: latest full gate had `pytest` `38.1s`, `check-secrets`
+  `9.2s`, `check-markdown` `5.4s`, `specdown` `2.7s`, and `run-evals` `2.3s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
   `85.0%`; current result is `97.9%` (`1186/1211`).
 - evaluator depth: `run-evals` passes 20 repo-local scenarios, so the bar is
   stronger than smoke-only review.
 - Budgeted phases: `pytest` median `35.3s / 45.0s`,
   `check-coverage` median `11.9s / 15.0s`, `check-secrets` median
-  `5.8s / 6.0s` with a latest-sample spike, `run-evals` median
+  `6.0s / 6.0s` with a latest-sample spike, `run-evals` median
   `2.4s / 5.0s`, `specdown` median `2.7s / 8.0s`.
 - Runtime signals and smoothing state persist under `.charness/quality/`.
 
@@ -108,7 +108,7 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 
 ## Commands Run
 - `./scripts/run-quality.sh`
-- `python3 scripts/check_coverage.py --repo-root .`, `python3 scripts/check_test_production_ratio.py --repo-root .`, and `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root .`
+- `python3 scripts/check_coverage.py --repo-root .` and `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root .`
 
 ## Recommended Next Gates
 

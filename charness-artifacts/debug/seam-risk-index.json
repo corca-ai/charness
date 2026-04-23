@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "kind": "debug-seam-risk-index",
+  "source": "charness-artifacts/debug/*.md ## Seam Risk",
+  "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
+  "source_artifact_count": 9,
+  "indexed_artifact_count": 1,
+  "risk_class_counts": {
+    "none": 1
+  },
+  "generalization_pressure_counts": {
+    "none": 1
+  },
+  "entries": [
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "managed-checkout-divergence",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "none",
+      "generalization_pressure": "none",
+      "premortem_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    }
+  ],
+  "skipped_artifacts": [
+    {
+      "artifact_path": "charness-artifacts/debug/2026-04-11-plugin-export-drift.md",
+      "reason": "debug artifact has no risk interrupt sections yet"
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-04-13-stale-init-binary.md",
+      "reason": "debug artifact has no risk interrupt sections yet"
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-04-14-lock-schema-drift.md",
+      "reason": "debug artifact has no risk interrupt sections yet"
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-04-15-retro-memory-test-anchor.md",
+      "reason": "debug artifact has no risk interrupt sections yet"
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-04-16-specdown-runtime-budget.md",
+      "reason": "debug artifact has no risk interrupt sections yet"
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-04-21-committed-plugin-export-drift.md",
+      "reason": "debug artifact has no risk interrupt sections yet"
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/debug-2026-04-20-doc-link-repo-boundary.md",
+      "reason": "debug artifact has no risk interrupt sections yet"
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/debug-2026-04-20-process-boundary-drift.md",
+      "reason": "debug artifact has no risk interrupt sections yet"
+    }
+  ]
+}

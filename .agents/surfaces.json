@@ -258,6 +258,26 @@
       ]
     },
     {
+      "surface_id": "debug-seam-risk-index",
+      "description": "Generated source-linked index over debug artifact seam-risk fields.",
+      "source_paths": [
+        "charness-artifacts/debug/*.md",
+        "scripts/build_debug_seam_risk_index.py"
+      ],
+      "derived_paths": [
+        "charness-artifacts/debug/seam-risk-index.json"
+      ],
+      "sync_commands": [
+        "python3 scripts/build_debug_seam_risk_index.py --repo-root . --write"
+      ],
+      "verify_commands": [
+        "python3 scripts/build_debug_seam_risk_index.py --repo-root . --check"
+      ],
+      "notes": [
+        "The index must link back to source debug artifacts and must not replace incident records with a single risk score."
+      ]
+    },
+    {
       "surface_id": "executable-specs",
       "description": "Repo-owned specdown executable acceptance specs and their config.",
       "source_paths": [

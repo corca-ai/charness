@@ -12,8 +12,9 @@ to current pointers would blur audit history and current truth.
 ## Current Slice
 
 Define the safe contract before broad smoothing rollout. The first implementation
-slice improved current-pointer freshness; the second added quality runtime EWMA
-as an advisory-only derived signal.
+slice improved current-pointer freshness, the second added quality runtime EWMA
+as advisory-only derived state, and the third added a source-linked debug
+seam-risk index.
 
 ## Fixed Decisions
 
@@ -48,6 +49,9 @@ as an advisory-only derived signal.
   with `alpha_base = 0.35` and `warmup_n = 5`.
 - `check_runtime_budget.py` reports EWMA as advisory and does not use it for
   pass/fail budget enforcement.
+- Debug seam-risk indexing is generated at
+  `charness-artifacts/debug/seam-risk-index.json` from source debug artifact
+  `## Seam Risk` fields.
 
 ## Deferred Decisions
 
@@ -55,11 +59,9 @@ as an advisory-only derived signal.
 
 ## Next Candidate Decision
 
-- Next candidate is `debug` seam-risk indexing, not retro decay.
+- Debug seam-risk indexing is now the next implemented derived memory layer.
 - Keep it as an index over existing debug artifact `## Seam Risk` fields, with
   links back to incident records. Do not collapse incidents into a single score.
-- Start only when repeated debug incidents need cross-incident lookup; until
-  then, the existing debug artifact validator is enough.
 - Defer retro lesson decay. `recent-lessons.md` already has a source-linked
   digest; the next retro improvement is selection criteria for which lessons
   stay in the digest, not exponential decay math.
@@ -128,5 +130,5 @@ Valid but Defer:
 
 Extend deterministic freshness checks only when a current pointer makes a
 concrete claim that can be checked against live inventory. If derived memory
-work continues after that, prototype debug seam-risk indexing before retro
-lesson decay.
+work continues after that, define retro lesson selection criteria before any
+retro decay model.
