@@ -25,6 +25,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _init_repo_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "init_repo_adapter")
+_render_skill_routing_module = SKILL_RUNTIME.load_local_skill_module(__file__, "render_skill_routing")
 _inspect_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.init_repo_inspect_lib")
 
 
@@ -37,6 +38,7 @@ def main() -> int:
         load_init_repo_adapter=_init_repo_adapter_module.load_init_repo_adapter,
         prose_wrap_state=_init_repo_adapter_module.prose_wrap_state,
         surface_overrides=_init_repo_adapter_module.surface_overrides,
+        skill_routing_payload=_render_skill_routing_module.build_payload,
     )
     sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
     return 0

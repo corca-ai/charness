@@ -12,6 +12,14 @@ def _run_inspect(repo: Path) -> dict[str, object]:
     return json.loads(result.stdout)
 
 
+def _seed_normalize_repo(repo: Path, agents_text: str) -> None:
+    (repo / "docs").mkdir(parents=True)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (repo / "AGENTS.md").write_text(agents_text, encoding="utf-8")
+    (repo / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
+    (repo / "docs" / "operator-acceptance.md").write_text("# Acceptance\n", encoding="utf-8")
+
+
 def test_init_repo_inspect_repo_flags_targeted_missing_surface(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "docs").mkdir(parents=True)
@@ -171,3 +179,67 @@ def test_init_repo_inspect_reports_malformed_adapter(tmp_path: Path) -> None:
     assert payload["adapter"]["found"] is True
     assert payload["adapter"]["valid"] is False
     assert payload["adapter"]["warnings"][0]["type"] == "adapter_root_not_mapping"
+
+
+def test_init_repo_inspect_reports_retro_memory_agents_drift(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(repo, "# Agents\n\n## Skill Routing\n\nCustom local routing.\n")
+    (repo / "charness-artifacts" / "retro").mkdir(parents=True)
+    (repo / "charness-artifacts" / "retro" / "recent-lessons.md").write_text(
+        "# Recent Lessons\n",
+        encoding="utf-8",
+    )
+
+    payload = _run_inspect(repo)
+
+    normalization = payload["agent_docs"]["normalization"]
+    finding_types = {finding["type"] for finding in normalization["findings"]}
+    assert normalization["status"] == "needs_normalization"
+    assert normalization["retro_memory"]["enabled"] is True
+    assert normalization["retro_memory"]["summary_exists"] is True
+    assert normalization["retro_memory"]["adapter_exists"] is False
+    assert normalization["retro_memory"]["agents_mentions_summary"] is False
+    assert "agents_missing_retro_recent_lessons_memory" in finding_types
+    assert "retro_summary_without_adapter" in finding_types
+
+
+def test_init_repo_inspect_reports_fresh_eye_delegation_drift(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(
+        repo,
+        "\n".join(
+            [
+                "# Agents",
+                "",
+                "Run fresh-eye review only after explicit consent.",
+                "If spawning is unavailable, use a local fallback.",
+                "",
+            ]
+        ),
+    )
+
+    payload = _run_inspect(repo)
+
+    normalization = payload["agent_docs"]["normalization"]
+    finding_types = {finding["type"] for finding in normalization["findings"]}
+    assert normalization["fresh_eye_review"]["stop_gate_detected"] is True
+    assert "already delegated" in normalization["fresh_eye_review"]["missing_required_snippets"]
+    assert "explicit consent" in normalization["fresh_eye_review"]["stale_markers"]
+    assert "local fallback" in normalization["fresh_eye_review"]["stale_markers"]
+    assert "fresh_eye_delegation_rule_drift" in finding_types
+    assert "fresh_eye_review_still_requires_consent_or_fallback" in finding_types
+
+
+def test_init_repo_inspect_requires_decision_for_custom_skill_routing_block(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(repo, "# Agents\n\n## Skill Routing\n\nUse local judgment.\n")
+
+    payload = _run_inspect(repo)
+
+    skill_routing = payload["agent_docs"]["normalization"]["skill_routing"]
+    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+    assert skill_routing["has_skill_routing"] is True
+    assert skill_routing["matches_compact_block"] is False
+    assert skill_routing["recommended_action"] == "review_existing_skill_routing"
+    assert skill_routing["decision_needed"] == "leave_as_is_or_replace_with_compact_block"
+    assert "skill_routing_block_custom_or_drifted" in finding_types
