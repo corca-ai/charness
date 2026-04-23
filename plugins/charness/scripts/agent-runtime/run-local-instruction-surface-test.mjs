@@ -30,7 +30,7 @@ const CLAUDE_CLI_ENV = {
 function usage(exitCode = 0) {
 	const text = [
 		"Usage:",
-		"  node ./scripts/agent-runtime/run-local-instruction-surface-test.mjs --repo-root <dir> --workspace <dir> --cases-file <file> --output-file <file> [--artifact-dir <dir>] [--backend codex_exec|claude_code|fixture] [--fixture-results-file <file>] [--sandbox read-only|workspace-write] [--timeout-ms <ms>] [--model <model>] [--reasoning-effort <level>] [--codex-model <model>] [--codex-reasoning-effort <level>] [--codex-config <key=value>] [--claude-model <model>] [--claude-permission-mode <mode>] [--claude-allowed-tools <rules>]",
+		"  node ./scripts/agent-runtime/run-local-instruction-surface-test.mjs --repo-root <dir> --workspace <dir> --cases-file <file> --output-file <file> [--artifact-dir <dir>] [--backend codex_exec|claude_code|fixture] [--fixture-results-file <file>] [--sandbox read-only|workspace-write] [--timeout-ms <ms>] [--model <model>] [--reasoning-effort <level>] [--codex-model <model>] [--codex-reasoning-effort <level>] [--codex-config <key=value>] [--codex-ephemeral true|false] [--claude-model <model>] [--claude-permission-mode <mode>] [--claude-allowed-tools <rules>]",
 	].join("\n");
 	const out = exitCode === 0 ? process.stdout : process.stderr;
 	out.write(`${text}\n`);
@@ -58,6 +58,16 @@ function parsePositiveInteger(value, option) {
 	return parsed;
 }
 
+function parseBoolean(value, option) {
+	if (value === "true") {
+		return true;
+	}
+	if (value === "false") {
+		return false;
+	}
+	fail(`${option} must be true or false`);
+}
+
 function defaultOptions() {
 	return {
 		repoRoot: process.cwd(),
@@ -74,6 +84,7 @@ function defaultOptions() {
 		codexModel: null,
 		codexReasoningEffort: null,
 		codexConfigOverrides: [],
+		codexEphemeral: true,
 		claudeModel: null,
 		claudePermissionMode: null,
 		claudeAllowedTools: null,
@@ -119,6 +130,9 @@ const VALUE_OPTIONS = {
 	},
 	"--codex-config": (options, value) => {
 		options.codexConfigOverrides.push(value);
+	},
+	"--codex-ephemeral": (options, value) => {
+		options.codexEphemeral = parseBoolean(value, "--codex-ephemeral");
 	},
 	"--claude-model": (options, value) => {
 		options.claudeModel = value;
@@ -290,19 +304,21 @@ function renderPrompt(evaluation) {
 	return `${lines.join("\n")}\n`;
 }
 
-function codexArgs(options, schemaFile, outputFile) {
+export function codexArgs(options, schemaFile, outputFile) {
 	const args = [
 		"exec",
 		"-C",
 		options.workspace,
 		"--sandbox",
 		options.sandbox,
-		"--ephemeral",
 		"--output-schema",
 		schemaFile,
 		"-o",
 		outputFile,
 	];
+	if (options.codexEphemeral !== false) {
+		args.splice(5, 0, "--ephemeral");
+	}
 	if (options.codexModel ?? options.model) {
 		args.push("--model", options.codexModel ?? options.model);
 	}

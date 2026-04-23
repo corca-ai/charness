@@ -158,6 +158,29 @@ def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> 
     assert by_id["compact-startup-bootstrap-before-spec"]["expectedRouting"]["workSkill"] == "spec"
 
 
+def test_instruction_surface_codex_ephemeral_flag_is_configurable() -> None:
+    script = """
+        import { codexArgs } from './scripts/agent-runtime/run-local-instruction-surface-test.mjs';
+        const base = { workspace: '/tmp/work', sandbox: 'read-only', codexEphemeral: true };
+        const persistent = { ...base, codexEphemeral: false };
+        console.log(JSON.stringify({
+          defaultArgs: codexArgs(base, '/tmp/schema.json', '/tmp/output.json'),
+          persistentArgs: codexArgs(persistent, '/tmp/schema.json', '/tmp/output.json')
+        }));
+    """
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert "--ephemeral" in payload["defaultArgs"]
+    assert "--ephemeral" not in payload["persistentArgs"]
+
+
 def test_instruction_surface_runner_normalizes_markdown_link_entry_file(tmp_path: Path) -> None:
     cases = {
         "schemaVersion": "cautilus.instruction_surface_cases.v1",
