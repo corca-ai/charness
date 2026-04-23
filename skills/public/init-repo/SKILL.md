@@ -146,21 +146,18 @@ Then load only the references needed for the detected state:
    - check for missing or duplicated operating surfaces
    - check that generated guidance is not contradicting itself
    - check that the next human operator can tell what to read and what to do
+   - for task-completing normalization, spawn bounded reviewers for
+     host-instruction policy, operating-surface adapter fit, and operator
+     takeover flow; report `executed`, `blocked`, or `not_applicable`
+   - use deterministic inspection as reviewer evidence and emit queued
+     `recommendations[]` separately from `normalization.findings`
    - if deeper repo-wide posture review is still needed, hand off to `quality`
      instead of inflating `init-repo`
 
 ## Output Shape
 
-The result should usually include:
-
-- `Repo Mode`
-- `Agent Docs State`
-- `Verified Facts`
-- `Assumptions`
-- `Scaffolded Surfaces`
-- `Normalized Surfaces`
-- `Open Questions`
-- `Next Step`
+The result should usually include repo mode, agent docs state, verified facts,
+assumptions, scaffolded or normalized surfaces, open questions, and next step.
 
 ## Guardrails
 

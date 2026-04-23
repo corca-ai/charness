@@ -22,6 +22,13 @@ FRESH_EYE_REQUIRED_SNIPPETS = (
     "host blocks",
     "same-agent pass",
 )
+RECOMMENDATION_PRIORITY_ORDER = {
+    "review_required": 0,
+    "high": 1,
+    "medium": 2,
+    "low": 3,
+    "advisory": 4,
+}
 
 
 @dataclass(frozen=True)
@@ -165,6 +172,54 @@ def _detect_retro_memory_normalization(repo_root: Path, agents_text: str) -> tup
     )
 
 
+def _recommendation(
+    *,
+    rec_id: str,
+    target: str,
+    kind: str,
+    priority: str,
+    confidence: str,
+    enforcement_tier: str,
+    evidence: list[str],
+    suggested_action: str,
+) -> dict[str, object]:
+    return {
+        "id": rec_id,
+        "target": target,
+        "kind": kind,
+        "priority": priority,
+        "confidence": confidence,
+        "enforcement_tier": enforcement_tier,
+        "evidence": evidence,
+        "suggested_action": suggested_action,
+        "acknowledgement": {"status": "unacknowledged"},
+    }
+
+
+def _finding_recommendation(finding: dict[str, str], *, priority: str = "advisory") -> dict[str, object]:
+    return _recommendation(
+        rec_id=finding["type"],
+        target="AGENTS.md",
+        kind="policy_sync",
+        priority=priority,
+        confidence="medium",
+        enforcement_tier="NON_AUTOMATABLE",
+        evidence=[finding["message"]],
+        suggested_action=finding["recommended_action"],
+    )
+
+
+def _is_acknowledged(item_id: str, acknowledged: set[str]) -> bool:
+    return item_id in acknowledged
+
+
+def _sort_recommendations(recommendations: list[dict[str, object]]) -> list[dict[str, object]]:
+    return sorted(
+        recommendations,
+        key=lambda item: (RECOMMENDATION_PRIORITY_ORDER.get(str(item.get("priority")), 99), str(item.get("id"))),
+    )
+
+
 def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object], list[dict[str, str]]]:
     lowered = agents_text.lower()
     stop_gate_detected = any(marker in lowered for marker in FRESH_EYE_MARKERS)
@@ -195,6 +250,61 @@ def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object]
         },
         findings,
     )
+
+
+def _detect_policy_source_recommendations(
+    repo_root: Path,
+    agents_text: str,
+    policy: dict[str, Any],
+) -> list[dict[str, object]]:
+    lowered_agents = agents_text.lower()
+    missing_required = _missing_snippets(agents_text, FRESH_EYE_REQUIRED_SNIPPETS)
+    missing_scopes = [scope for scope in ("init-repo", "quality") if scope not in lowered_agents]
+    if not missing_required and not missing_scopes:
+        return []
+
+    recommendations_by_id: dict[str, dict[str, object]] = {}
+    enabled = set(policy.get("enabled", []))
+    for source in policy.get("policy_sources", []):
+        raw_path = source.get("path")
+        if not isinstance(raw_path, str):
+            continue
+        source_path = repo_root / raw_path
+        source_text = _read_text(source_path)
+        terms = source.get("evidence_terms") or FRESH_EYE_MARKERS
+        source_mentions_review = any(str(term).lower() in source_text.lower() for term in terms)
+        source_requests_recommendation = "agents.delegated_review_policy" in source.get("recommendations", [])
+        enabled_requests_recommendation = "agents.delegated_review_policy" in enabled
+        if not (source_mentions_review or source_requests_recommendation or enabled_requests_recommendation):
+            continue
+        evidence = [
+            f"{raw_path} implies bounded fresh-eye, premortem, or subagent review policy",
+        ]
+        if missing_required:
+            evidence.append("AGENTS.md lacks delegated-review host restriction wording")
+        if missing_scopes:
+            evidence.append("AGENTS.md does not name init-repo and quality as task-completing review scopes")
+        existing = recommendations_by_id.get("agents.delegated_review_policy")
+        if existing is not None:
+            existing_evidence = existing.setdefault("evidence", [])
+            if isinstance(existing_evidence, list):
+                for item in evidence:
+                    if item not in existing_evidence:
+                        existing_evidence.append(item)
+            continue
+        recommendations_by_id["agents.delegated_review_policy"] = (
+            _recommendation(
+                rec_id="agents.delegated_review_policy",
+                target="AGENTS.md",
+                kind="policy_sync",
+                priority="review_required",
+                confidence="medium",
+                enforcement_tier="NON_AUTOMATABLE",
+                evidence=evidence,
+                suggested_action="Review whether AGENTS.md should carry the delegated review rule.",
+            )
+        )
+    return list(recommendations_by_id.values())
 
 
 def _detect_skill_routing_normalization(
@@ -304,12 +414,46 @@ def build_init_repo_inspection_payload(
     *,
     load_init_repo_adapter: Callable[[Path], tuple[dict[str, Any], str | None, list[dict[str, str]]]],
     prose_wrap_state: Callable[[Path, dict[str, Any]], dict[str, object]],
+    recommendation_policy: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
     surface_overrides: Callable[[dict[str, Any]], dict[str, Any]],
     skill_routing_payload: Callable[[Path], dict[str, Any]] | None = None,
 ) -> dict[str, object]:
     adapter_data, adapter_path, adapter_warnings = load_init_repo_adapter(repo_root)
     specs = _surface_specs(repo_root, surface_overrides(adapter_data))
     repo_mode = detect_repo_mode(specs)
+    policy = recommendation_policy(adapter_data) if recommendation_policy is not None else {}
+    acknowledged = set(policy.get("acknowledged", []))
+    agent_docs = detect_agent_docs(repo_root, skill_routing_payload=skill_routing_payload)
+    normalization = agent_docs["normalization"]
+    findings = [
+        finding
+        for finding in normalization["findings"]
+        if isinstance(finding, dict) and not _is_acknowledged(str(finding.get("type")), acknowledged)
+    ]
+    recommendations = [
+        _finding_recommendation(finding, priority="advisory")
+        for finding in findings
+        if finding.get("type") in {"fresh_eye_delegation_rule_drift", "skill_routing_block_custom_or_drifted"}
+    ]
+    recommendations.extend(_detect_policy_source_recommendations(repo_root, _read_text(repo_root / "AGENTS.md"), policy))
+    recommendations = [
+        recommendation
+        for recommendation in _sort_recommendations(recommendations)
+        if not _is_acknowledged(str(recommendation.get("id")), acknowledged)
+    ]
+    for recommendation in recommendations:
+        acknowledgement = recommendation.get("acknowledgement")
+        if isinstance(acknowledgement, dict):
+            acknowledgement["adapter_path"] = adapter_path
+    normalization["findings"] = findings
+    normalization["recommendations"] = recommendations
+    normalization["status"] = "needs_normalization" if findings or recommendations else "ok"
+    normalization["recommendation_policy"] = {
+        "defaults_version": policy.get("defaults_version"),
+        "policy_source_count": len(policy.get("policy_sources", [])),
+        "enabled": list(policy.get("enabled", [])),
+        "acknowledged": sorted(acknowledged),
+    }
     return {
         "repo": repo_root.name,
         "repo_mode": repo_mode,
@@ -321,7 +465,8 @@ def build_init_repo_inspection_payload(
             "valid": not adapter_warnings,
             "warnings": adapter_warnings,
         },
-        "agent_docs": detect_agent_docs(repo_root, skill_routing_payload=skill_routing_payload),
+        "agent_docs": agent_docs,
+        "recommendations": recommendations,
         "prose_wrap": prose_wrap_state(repo_root, adapter_data),
         "surfaces": {surface_id: _surface_state(repo_root, spec) for surface_id, spec in specs.items()},
     }

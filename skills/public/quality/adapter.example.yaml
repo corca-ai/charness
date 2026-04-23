@@ -18,6 +18,10 @@ coverage_floor_policy:
   ci_workflow_glob: .github/workflows/*.yml
 specdown_smoke_patterns: []
 spec_pytest_reference_format: Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*
+recommendation_defaults_version: issue-64
+adapter_review_sources: []
+acknowledged_recommendations: []
+gate_design_review_globs: []
 skill_ergonomics_gate_rules: []
 concept_paths: []
 preflight_commands: []

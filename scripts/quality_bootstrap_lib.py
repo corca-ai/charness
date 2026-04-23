@@ -80,6 +80,9 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "specdown_smoke_patterns": [],
         "spec_pytest_reference_format": DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
         "prompt_asset_roots": [],
+        "adapter_review_sources": [],
+        "acknowledged_recommendations": [],
+        "gate_design_review_globs": [],
         "prompt_asset_policy": dict(DEFAULT_PROMPT_ASSET_POLICY),
         "skill_ergonomics_gate_rules": list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES),
         "runtime_budgets": {},
@@ -112,7 +115,16 @@ def _load_explicit_skill_rules(raw: dict[str, Any], adapter_path: Path) -> list[
 
 
 def _apply_existing_scalar_fields(data: dict[str, Any], raw: dict[str, Any]) -> None:
-    for field in ("version", "repo", "language", "output_dir", "preset_id", "preset_version", "customized_from"):
+    for field in (
+        "version",
+        "repo",
+        "language",
+        "output_dir",
+        "preset_id",
+        "preset_version",
+        "customized_from",
+        "recommendation_defaults_version",
+    ):
         value = raw.get(field)
         if value is not None:
             data[field] = value
@@ -167,6 +179,9 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
     for field in (
         "preset_lineage",
         "prompt_asset_roots",
+        "adapter_review_sources",
+        "acknowledged_recommendations",
+        "gate_design_review_globs",
         "concept_paths",
         "preflight_commands",
         "gate_commands",
@@ -224,12 +239,21 @@ def _add_adapter_policy_fields(
     )
     field_statuses["spec_pytest_reference_format"] = "preserved" if preserve_spec_format else "defaulted"
 
+    preserve_review_defaults = "recommendation_defaults_version" in explicit_fields
+    final["recommendation_defaults_version"] = (
+        existing.get("recommendation_defaults_version") if preserve_review_defaults else "issue-64"
+    )
+    field_statuses["recommendation_defaults_version"] = "preserved" if preserve_review_defaults else "defaulted"
+
 
 def _add_prompt_and_runtime_fields(
     final: dict[str, Any], existing: dict[str, Any], explicit_fields: set[str], field_statuses: dict[str, str]
 ) -> None:
     final["prompt_asset_roots"] = list(existing.get("prompt_asset_roots", [])) if "prompt_asset_roots" in explicit_fields else []
     field_statuses["prompt_asset_roots"] = "preserved" if "prompt_asset_roots" in explicit_fields else "defaulted"
+    for field in ("adapter_review_sources", "acknowledged_recommendations", "gate_design_review_globs"):
+        final[field] = list(existing.get(field, [])) if field in explicit_fields else []
+        field_statuses[field] = "preserved" if field in explicit_fields else "defaulted"
     final["prompt_asset_policy"] = (
         dict(existing["prompt_asset_policy"]) if "prompt_asset_policy" in explicit_fields else dict(DEFAULT_PROMPT_ASSET_POLICY)
     )
@@ -321,7 +345,11 @@ def render_bootstrap_adapter(data: dict[str, Any]) -> str:
             ("coverage_floor_policy", data["coverage_floor_policy"]),
             ("specdown_smoke_patterns", data["specdown_smoke_patterns"]),
             ("spec_pytest_reference_format", data["spec_pytest_reference_format"]),
+            ("recommendation_defaults_version", data["recommendation_defaults_version"]),
             ("prompt_asset_roots", data["prompt_asset_roots"]),
+            ("adapter_review_sources", data["adapter_review_sources"]),
+            ("acknowledged_recommendations", data["acknowledged_recommendations"]),
+            ("gate_design_review_globs", data["gate_design_review_globs"]),
             ("prompt_asset_policy", data["prompt_asset_policy"]),
             ("skill_ergonomics_gate_rules", data["skill_ergonomics_gate_rules"]),
             ("runtime_budgets", data["runtime_budgets"]),

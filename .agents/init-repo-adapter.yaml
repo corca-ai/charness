@@ -4,5 +4,21 @@ language: en
 output_dir: charness-artifacts/init-repo
 preset_id: portable-defaults
 customized_from: portable-defaults
+defaults_version: issue-64
+policy_sources:
+  - id: agents-operating-stance
+    path: AGENTS.md
+    evidence_terms:
+      - bounded subagent reviews
+      - premortem
+      - quality
+    recommendations:
+      - agents.delegated_review_policy
+recommendation_sets:
+  enabled:
+    - agents.delegated_review_policy
+  acknowledged:
+    - id: skill_routing_block_custom_or_drifted
+      reason: AGENTS.md intentionally carries repo-specific routing and validation guidance beyond the compact generated block.
 surfaces:
   roadmap: null

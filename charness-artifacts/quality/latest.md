@@ -29,7 +29,7 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 ## Runtime Signals
 
 - Latest local quality gate after this slice: `45 passed, 0 failed`, total
-  `54.4s`.
+  `51.7s`.
 - runtime hot spots: latest recorded samples have `pytest` `42.5s`, `check-coverage`
   `11.7s`, `check-markdown` `4.0s`, `check-duplicates` `2.6s`, and `specdown` `2.6s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
@@ -40,8 +40,6 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   `check-coverage` median `11.9s / 15.0s`, `check-secrets` median
   `2.2s / 6.0s`, `run-evals` median `2.1s / 5.0s`, `specdown` median
   `2.7s / 8.0s`.
-- Runtime signals and smoothing state persist under `.charness/quality/`.
-
 ## Coverage and Eval Depth
 
 - Coverage gate: `97.9%` (`1186/1211`) against the configured floors;
@@ -99,6 +97,18 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 - Do not describe the canonical fresh-eye path as blocked without a bounded
   capability probe and a concrete host signal; if the host still cannot spawn
   subagents, stop and leave the host-side contract gap visible.
+
+## Advisory
+
+- Current advisory findings are present from ergonomics, public-spec scope, and
+  dogfood freshness inventories; they remain `NON_AUTOMATABLE` or
+  `AUTO_CANDIDATE` until a low-noise structural response is clear.
+
+## Delegated Review
+
+- status: executed; bounded subagent review ran for the quality advisory
+  omission retro and issue #64 spec planning, and future blocked states must
+  include `host signal:` or `tool signal:` evidence.
 
 ## Commands Run
 - `./scripts/run-quality.sh` and `./scripts/run-quality.sh --review`

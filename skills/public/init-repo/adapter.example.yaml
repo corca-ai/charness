@@ -9,3 +9,16 @@ prose_wrap_policy: semantic
 # source_guard_matcher.normalize_whitespace: true or an explicit override.
 surfaces:
   roadmap: docs/roadmap.md
+defaults_version: issue-64
+policy_sources:
+  - id: review-policy
+    path: AGENTS.md
+    evidence_terms:
+      - bounded fresh-eye review
+      - premortem
+    recommendations:
+      - agents.delegated_review_policy
+recommendation_sets:
+  enabled:
+    - agents.delegated_review_policy
+  acknowledged: []

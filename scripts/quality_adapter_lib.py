@@ -17,10 +17,21 @@ from scripts.quality_policy_defaults import (
     validate_skill_ergonomics_gate_rules,
 )
 
-STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
+STRING_FIELDS = (
+    "repo",
+    "language",
+    "output_dir",
+    "preset_id",
+    "preset_version",
+    "customized_from",
+    "recommendation_defaults_version",
+)
 LIST_FIELDS = (
     "preset_lineage",
     "prompt_asset_roots",
+    "adapter_review_sources",
+    "acknowledged_recommendations",
+    "gate_design_review_globs",
     "concept_paths",
     "preflight_commands",
     "gate_commands",
@@ -102,6 +113,9 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "specdown_smoke_patterns": [],
         "spec_pytest_reference_format": DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
         "prompt_asset_roots": [],
+        "adapter_review_sources": [],
+        "acknowledged_recommendations": [],
+        "gate_design_review_globs": [],
         "prompt_asset_policy": dict(DEFAULT_PROMPT_ASSET_POLICY),
         "skill_ergonomics_gate_rules": list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES),
         "runtime_budgets": {},

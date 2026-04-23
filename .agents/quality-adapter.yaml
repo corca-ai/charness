@@ -23,6 +23,15 @@ specdown_smoke_patterns:
   - "\\b(?:uv\\s+run\\s+)?python\\s+-m\\s+pytest\\b"
   - "\\bpytest\\b.*\\s+-k\\s+"
 spec_pytest_reference_format: "Covered by pytest:\\s+`tests/[^`]+`(?:,\\s*`tests/[^`]+`)*"
+recommendation_defaults_version: issue-64
+adapter_review_sources:
+  - .agents/quality-adapter.yaml
+  - skills/public/quality/references/adapter-contract.md
+acknowledged_recommendations: []
+gate_design_review_globs:
+  - .agents/*-adapter.yaml
+  - skills/public/*/adapter.example.yaml
+  - scripts/*.py
 prompt_asset_roots: []
 prompt_asset_policy:
   source_globs: []

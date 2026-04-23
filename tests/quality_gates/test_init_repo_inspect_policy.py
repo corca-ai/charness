@@ -228,6 +228,8 @@ def test_init_repo_inspect_reports_fresh_eye_delegation_drift(tmp_path: Path) ->
     assert "local fallback" in normalization["fresh_eye_review"]["stale_markers"]
     assert "fresh_eye_delegation_rule_drift" in finding_types
     assert "fresh_eye_review_still_requires_consent_or_fallback" in finding_types
+    recommendation_ids = [item["id"] for item in normalization["recommendations"]]
+    assert "fresh_eye_delegation_rule_drift" in recommendation_ids
 
 
 def test_init_repo_inspect_requires_decision_for_custom_skill_routing_block(tmp_path: Path) -> None:
@@ -243,3 +245,138 @@ def test_init_repo_inspect_requires_decision_for_custom_skill_routing_block(tmp_
     assert skill_routing["recommended_action"] == "review_existing_skill_routing"
     assert skill_routing["decision_needed"] == "leave_as_is_or_replace_with_compact_block"
     assert "skill_routing_block_custom_or_drifted" in finding_types
+
+
+def test_init_repo_inspect_emits_policy_source_recommendation_without_agents_marker(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(repo, "# Agents\n\nExisting operating policy.\n")
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "docs" / "review-policy.md").write_text(
+        "# Review Policy\n\nTask-completing init-repo and quality runs need bounded fresh-eye review.\n",
+        encoding="utf-8",
+    )
+    (repo / ".agents" / "init-repo-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "defaults_version: issue-64",
+                "policy_sources:",
+                "  - id: review-policy",
+                "    path: docs/review-policy.md",
+                "    evidence_terms:",
+                "      - bounded fresh-eye review",
+                "recommendation_sets:",
+                "  enabled:",
+                "    - agents.delegated_review_policy",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = _run_inspect(repo)
+
+    recommendations = payload["recommendations"]
+    assert recommendations[0]["id"] == "agents.delegated_review_policy"
+    assert recommendations[0]["priority"] == "review_required"
+    assert recommendations[0]["enforcement_tier"] == "NON_AUTOMATABLE"
+    assert "AGENTS.md lacks delegated-review host restriction wording" in recommendations[0]["evidence"]
+    assert recommendations[0]["acknowledgement"] == {
+        "status": "unacknowledged",
+        "adapter_path": str(repo / ".agents" / "init-repo-adapter.yaml"),
+    }
+    policy = payload["agent_docs"]["normalization"]["recommendation_policy"]
+    assert policy["defaults_version"] == "issue-64"
+    assert policy["policy_source_count"] == 1
+
+
+def test_init_repo_inspect_acknowledgement_suppresses_only_named_recommendation(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(repo, "# Agents\n\n## Skill Routing\n\nUse local judgment.\n")
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "docs" / "review-policy.md").write_text(
+        "# Review Policy\n\nTask-completing quality runs require premortem review.\n",
+        encoding="utf-8",
+    )
+    (repo / ".agents" / "init-repo-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "policy_sources:",
+                "  - id: review-policy",
+                "    path: docs/review-policy.md",
+                "recommendation_sets:",
+                "  acknowledged:",
+                "    - skill_routing_block_custom_or_drifted",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = _run_inspect(repo)
+
+    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+    recommendation_ids = [item["id"] for item in payload["recommendations"]]
+    assert "skill_routing_block_custom_or_drifted" not in finding_types
+    assert "skill_routing_block_custom_or_drifted" not in recommendation_ids
+    assert recommendation_ids == ["agents.delegated_review_policy"]
+    assert payload["agent_docs"]["normalization"]["status"] == "needs_normalization"
+
+
+def test_init_repo_inspect_recomputes_status_when_all_contextual_findings_are_acknowledged(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(repo, "# Agents\n\n## Skill Routing\n\nUse local judgment.\n")
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "init-repo-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "recommendation_sets:",
+                "  acknowledged:",
+                "    - skill_routing_block_custom_or_drifted",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = _run_inspect(repo)
+
+    normalization = payload["agent_docs"]["normalization"]
+    assert normalization["findings"] == []
+    assert normalization["recommendations"] == []
+    assert normalization["status"] == "ok"
+
+
+def test_init_repo_inspect_dedupes_policy_source_recommendations(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(repo, "# Agents\n\nExisting operating policy.\n")
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "docs" / "review-a.md").write_text("fresh-eye review required\n", encoding="utf-8")
+    (repo / "docs" / "review-b.md").write_text("premortem required\n", encoding="utf-8")
+    (repo / ".agents" / "init-repo-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "policy_sources:",
+                "  - id: review-a",
+                "    path: docs/review-a.md",
+                "  - id: review-b",
+                "    path: docs/review-b.md",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = _run_inspect(repo)
+
+    recommendations = payload["recommendations"]
+    assert [item["id"] for item in recommendations] == ["agents.delegated_review_policy"]
+    assert any("docs/review-a.md" in item for item in recommendations[0]["evidence"])
+    assert any("docs/review-b.md" in item for item in recommendations[0]["evidence"])

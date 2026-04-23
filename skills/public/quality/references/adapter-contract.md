@@ -37,6 +37,10 @@ Quality-specific fields:
 - `coverage_floor_policy`
 - `specdown_smoke_patterns`
 - `spec_pytest_reference_format`
+- `recommendation_defaults_version`
+- `adapter_review_sources`
+- `acknowledged_recommendations`
+- `gate_design_review_globs`
 - `skill_ergonomics_gate_rules`
 - `runtime_budgets`
 - `startup_probes`
@@ -66,6 +70,22 @@ Recommended `coverage_floor_policy` fields:
 
 `spec_pytest_reference_format` should hold the repo's canonical prose-note
 format when specs use `Covered by pytest:` style references.
+
+`recommendation_defaults_version` records the review-queue default set used by
+the adapter. Existing `version: 1` adapters may omit it; the resolver supplies
+a safe default.
+
+`adapter_review_sources` names repo-local files or globs that should be read
+when quality reviews adapter and gate design. Keep this empty when the repo has
+not chosen a review-source policy.
+
+`acknowledged_recommendations` lists recommendation ids that the repo has
+intentionally accepted or suppressed. Acknowledgement should not hide unrelated
+recommendations.
+
+`gate_design_review_globs` scopes advisory inventory for structural fact gates,
+contextual recommendations, migration gaps, acknowledgement gaps, and brittle
+hard-gate smells.
 
 `runtime_budgets` is a mapping of standing-gate label → max elapsed
 milliseconds. Labels must match the labels recorded in

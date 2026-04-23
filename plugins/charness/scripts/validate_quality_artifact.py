@@ -42,6 +42,8 @@ REQUIRED_SECTIONS = (
     "## Weak",
     "## Missing",
     "## Deferred",
+    "## Advisory",
+    "## Delegated Review",
     "## Commands Run",
     "## Recommended Next Gates",
     "## History",
@@ -56,7 +58,11 @@ RECOMMENDED_GATE_PREFIXES = ("- active ", "- passive ")
 FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "did not explicitly allow subagents",
     "explicit subagent allowance",
+    "same-agent fallback",
+    "same agent fallback",
+    "same-agent pass as equivalent",
 )
+DELEGATED_REVIEW_STATUSES = ("executed", "blocked", "not_applicable")
 
 
 def validate_history_section(lines: list[str]) -> None:
@@ -94,6 +100,33 @@ def validate_recommended_next_gates_section(lines: list[str]) -> None:
             raise ValidationError("passive recommended next gates must explain why they are passive")
 
 
+def validate_advisory_section(lines: list[str]) -> None:
+    start = find_index(lines, "## Advisory") + 1
+    end = find_index(lines, "## Delegated Review")
+    section_lines = [line.strip() for line in lines[start:end] if line.strip()]
+    bullets = [line for line in section_lines if line.startswith("- ")]
+    if not bullets:
+        raise ValidationError("`## Advisory` must contain at least one bullet")
+    lowered = "\n".join(section_lines).lower()
+    if "none" in lowered and "none found by inventory" not in lowered:
+        raise ValidationError("empty advisory claims must use `none found by inventory` evidence wording")
+    if "none found by inventory" in lowered and not any(token in lowered for token in ("command:", "artifact:", "`")):
+        raise ValidationError("empty advisory claims must cite inventory-backed command or artifact evidence")
+
+
+def validate_delegated_review_section(lines: list[str]) -> None:
+    start = find_index(lines, "## Delegated Review") + 1
+    end = find_index(lines, "## Commands Run")
+    section_lines = [line.strip() for line in lines[start:end] if line.strip()]
+    if not section_lines:
+        raise ValidationError("`## Delegated Review` must record executed, blocked, or not_applicable status")
+    lowered = "\n".join(section_lines).lower()
+    if not any(status in lowered for status in DELEGATED_REVIEW_STATUSES):
+        raise ValidationError("`## Delegated Review` must include executed, blocked, or not_applicable status")
+    if "blocked" in lowered and "host signal:" not in lowered and "tool signal:" not in lowered:
+        raise ValidationError("blocked delegated review must cite a concrete host signal or tool signal")
+
+
 def validate_subagent_blocker_reasoning(lines: list[str]) -> None:
     for raw in lines:
         lowered = raw.lower()
@@ -114,6 +147,8 @@ def validate_quality_artifact(path: Path) -> None:
 
     validate_section_order(lines, REQUIRED_SECTIONS)
     validate_runtime_signals_section(lines)
+    validate_advisory_section(lines)
+    validate_delegated_review_section(lines)
     validate_recommended_next_gates_section(lines)
     validate_history_section(lines)
     validate_subagent_blocker_reasoning(lines)

@@ -3,30 +3,36 @@ Date: 2026-04-23
 
 ## Trigger
 
-- slice: repair current quality-review drift by replacing stale Cautilus
-  `install.md` links with the live upstream `install.sh` URL, and tighten
-  checked-in routing so evaluator-backed closeout reaches `quality` before
-  `hitl`
+- slice: implement issue #64 delegated-review posture for `init-repo` and
+  `quality`, including AGENTS spawn authorization, adapter recommendation
+  fields, quality advisory/delegated-review reporting, and plugin export sync
 - claim: preserve
 
 ## Validation Goal
 
 - goal: preserve
-- reason: this slice changes prompt-affecting checked-in routing guidance and
-  the release adapter checklist, so existing startup routing must still work
-  while validation-shaped closeout continues to route through `quality`
+- reason: this slice changes prompt-affecting AGENTS, adapter, public skill,
+  and quality-reference surfaces, so maintained startup and closeout routing
+  must stay stable while the new review posture becomes visible
 
 ## Change Intent
 
 - `prompt_affecting_change`
+- `skill_core_change`
 - `adapter_contract_change`
-- `checked_in_instruction_change`
 - `scenario_review_change`
 
 ## Prompt Surfaces
 
+- `.agents/init-repo-adapter.yaml`
+- `.agents/quality-adapter.yaml`
 - `AGENTS.md`
-- `.agents/release-adapter.yaml`
+- `skills/public/init-repo/SKILL.md`
+- `skills/public/init-repo/references/agent-docs-policy.md`
+- `skills/public/init-repo/references/normalization-flow.md`
+- `skills/public/quality/SKILL.md`
+- `skills/public/quality/references/adapter-contract.md`
+- `skills/public/quality/references/adapter-gate-review.md`
 
 ## Commands Run
 
@@ -36,33 +42,40 @@ Date: 2026-04-23
 
 ## Regression Proof
 
-- first instruction-surface run found the closeout routing regression:
-  `.cautilus/runs/20260423T221410173Z-run/`, recommendation `reject`
-- instruction-surface summary after AGENTS routing repair:
+- first instruction-surface run for this slice:
+  `.cautilus/runs/20260423T225726810Z-run/`, recommendation `reject`
+- rejected because `validation-closeout-routes-before-hitl` selected
+  `quality` but failed to record `find-skills` as the required bootstrap helper
+- AGENTS was tightened to say the validation routing rule does not skip
+  startup `find-skills`
+- instruction-surface summary after repair:
   `4 passed / 0 failed / 0 blocked`
-- run artifact: `.cautilus/runs/20260423T221549607Z-run/`
+- run artifact: `.cautilus/runs/20260423T225842725Z-run/`
 - maintained startup routing still bootstraps through `find-skills`, then
-  selects `impl` or `spec` for the existing instruction-surface cases
-- `validation-closeout-routes-before-hitl` again routes validation-shaped
-  closeout to `quality` before HITL/manual review after the checked-in AGENTS
-  routing repair
-- evaluator recommendation: `accept-now`
+  selects `impl`, `spec`, or `quality` for the maintained instruction-surface
+  cases
 
 ## Scenario Review
 
-- reviewed the maintained `validation-closeout-routes-before-hitl` case after
-  the first run selected `hitl`; the repair keeps the route as public
-  `quality` plus validation recommendation discovery instead of exposing
-  Cautilus as a public top-level workflow skill
+- reviewed the maintained validation-closeout case after the first run: the
+  intended behavior remains `find-skills` bootstrap plus public `quality`
+  before HITL/manual review, not direct Cautilus selection
+- reviewed issue #64 prompt-surface changes against current dogfood: `init-repo`
+  now exposes reviewable recommendations, while `quality` now exposes advisory
+  and delegated-review status
+- scenario-registry decision: no maintained scenario mutation in this slice;
+  instruction-surface routing remains covered, and recommendation-queue
+  behavior is locked by repo tests plus refreshed dogfood evidence
 
 ## Outcome
 
 - recommendation: `accept-now`
-- routing notes: regression proof passed after the checked-in routing repair,
-  and the current quality closeout no longer depends on same-agent manual
-  interpretation for evaluator-backed closeout routing
+- routing notes: regression proof passed after the AGENTS bootstrap wording
+  repair, and task-completing `init-repo`/`quality` review work now has an
+  explicit spawn-authorized posture
 
 ## Follow-ups
 
-- if later dogfood expects Cautilus to be selected directly instead of via
-  `quality` recommendation discovery, split that into a product-boundary issue
+- decide separately whether maintained Cautilus scenarios should gain a
+  dedicated issue #64 recommendation-queue case; this slice did not mutate the
+  scenario registry

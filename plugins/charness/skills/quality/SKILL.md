@@ -30,6 +30,12 @@ python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root .
 ```
 
 For evaluator-backed review, closeout, or operator reading test work, run that validation recommendation route before downgrading to HITL or same-agent manual review.
+For task-completing quality reviews, run a bounded multi-lens delegated review
+before final closeout. Use at least `gate-design`, `adapter-policy`, and
+`operator-signal` lenses unless the adapter narrows them. Report
+`Delegated Review: executed`, `blocked`, or `not_applicable`; a blocked state
+needs a concrete host/tool signal and must not be replaced with a same-agent
+pass.
 When reader-facing Markdown needs rendered readability proof instead of source-only review, bootstrap or execute the repo-local markdown preview seam:
 
 ```bash
@@ -83,6 +89,10 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - inspect first-touch docs such as README and operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist; when the CLI surface is stable, prefer a deterministic command-docs drift gate over repeated prose review
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
    - if evaluator-backed review or prompt-sensitive output matters, inspect whether prompt/content bulk stays in checked-in assets or is still embedded inline in source files
+   - inventory adapter/gate design with `$SKILL_DIR/scripts/inventory_adapter_gate_design.py`
+     when the review touches adapter policy, recommendation queues,
+     acknowledgements, or brittle gate promotion; see
+     `references/adapter-gate-review.md`
    - when skills are in scope, inventory skill ergonomics explicitly with `$SKILL_DIR/scripts/inventory_skill_ergonomics.py` instead of leaving concise-core, progressive-disclosure, or branching-pressure review as vague prose
    - when public-skill behavior or routing is in scope, scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` so the review names prompt, repo shape, expected artifact, and acceptance evidence explicitly
    - when the adapter defines `prompt_asset_roots` or `prompt_asset_policy`, re-derive prompt/content bulk inventory from the current tree instead of trusting prior review prose
@@ -129,7 +139,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 8. Run one fresh-eye premortem on the drafted report using `references/fresh-eye-premortem.md`. Run the capability check in `../premortem/references/subagent-capability-check.md` before reporting the canonical fresh-eye subagent path as blocked: attempt the bounded setup, resolve availability uncertainty, and cite the concrete host signal. If the host still cannot provide subagents, stop and leave the host-side contract gap visible instead of substituting a local pass.
 9. End with a quality posture summary: what ran, which runtime hot spots dominate, whether coverage is standing-gated, whether evaluator-backed depth exists, what the current bar proves and still does not prove, and the next best gate or cleanup.
 
-- `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`, `Standing Test Economics`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Commands Run`, `Recommended Next Gates`
+- `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`, `Standing Test Economics`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Advisory`, `Delegated Review`, `Commands Run`, `Recommended Next Gates`
 - Do not reduce quality to one aggregate score.
 - Do not split quality bootstrap into a second public concept when the work is still bounded repo-local quality setup.
 - Do not recommend gates the repo cannot realistically run without saying why.
@@ -150,23 +160,12 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - If a gate already exists, prefer tightening or reusing it before adding a new parallel tool.
 - Do not let whole-worktree scans fail on gitignored runtime artifacts unless the gate explicitly exists to validate that machine-local state.
 - Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior; run one realistic consumer prompt and name the expected artifact.
-- Do not collapse help, command discovery, healthcheck, readiness, and local discoverability into one generic "doctor passed" claim when the repo ships an installable CLI or plugin surface.
-- Do not tell agents to fetch a remote install doc and "follow it" when the bootstrap can be expressed as a pasteable command contract or a repo-owned next-action surface.
-- Do not ignore a 30-command flat help list or a subcommand that accepts multiple archetype schema namespaces; those are discoverability smells.
-- Do not treat a historical second implementation as a free safety oracle when no parity harness proves the two paths still agree.
-- Do not treat a historical second implementation as healthy unless the repo has enforced parity, an asserted intentional divergence, or an explicit canonicalization plan.
-- Do not treat support-skill materialization or host-visible plugin discovery as the same seam as generic binary health.
-- Do not normalize ambient multi-target scanning when one canonical install target would be the more honest lifecycle contract.
-- Keep repo-local markdown-link discipline separate from external URL health when the repo needs both.
-- Do not pretend a conceptual boundary problem is solved just because duplicate text was linted away; semantic boundary questions still need concept review.
-- Do not confuse skill ergonomics review with taste policing; advisory inventory should sharpen defaults, inference, and discoverability rather than enforce one writing style.
-- Do not turn entrypoint-doc ergonomics into doc-set dogma; review concise first-touch ownership, progressive disclosure, and duplicate pressure, not one canonical file layout.
-- For anti-anchoring, unfloored-file inventory, glob-vs-operational drift, and `Covered by pytest:` honesty limits, follow `references/coverage-floor-policy.md` and `references/fresh-eye-premortem.md` instead of improvising.
-- If a seam refactor improves maintainability but a focused gate regresses, rule out stale gate wiring before calling it product risk.
+- Preserve these review anchors: stale gate wiring, free safety oracle, taste policing, doc-set dogma, and multiple archetype schema namespaces.
 
 ## References
 
 - `references/adapter-contract.md`
+- `references/adapter-gate-review.md`
 - `references/coverage-floor-exemptions.txt`
 - `references/coverage_floor_inventory.py`
 - `references/coverage-floor-policy.md`

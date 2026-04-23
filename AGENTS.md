@@ -18,6 +18,10 @@ self-validation.
 - TREAT REPO-MANDATED BOUNDED SUBAGENT REVIEWS AS ALREADY DELEGATED.
   When this repo or a required skill makes a bounded fresh-eye subagent review
   a stop gate, do not wait for a second user message asking for delegation.
+- TREAT TASK-COMPLETING `INIT-REPO` AND `QUALITY` REVIEWS AS SPAWN-AUTHORIZED.
+  Normalization or quality-review runs that complete those skills' review
+  contracts may spawn bounded reviewers; help, route, and raw-inspection calls
+  stay cheap.
 - IF THE HOST BLOCKS SUBAGENT SPAWNING, STOP AND REPORT THE HOST RESTRICTION.
   Do not substitute a same-agent pass for the canonical bounded review.
 - PREFER VALIDATORS AND SCRIPTS OVER PROSE RITUALS.
@@ -49,7 +53,9 @@ request from the installed charness surface.
 
 Evaluator-backed validation, non-deterministic issue closeout, and operator
 reading test wording route through `quality` before `hitl` or same-agent manual
-review.
+review. This routing rule does not skip the required startup `find-skills`
+bootstrap; record `find-skills` as the bootstrap helper even when `quality` is
+already the obvious work skill.
 
 Keep this block short. Detailed routing belongs in installed skill metadata and
 `find-skills` output, not in a long checked-in catalog.
