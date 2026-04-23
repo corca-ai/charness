@@ -11,8 +11,33 @@ def seed_repo(tmp_path: Path, artifact_body: str | None) -> Path:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / ".agents" / "cautilus-adapters").mkdir(parents=True)
+    (repo / "docs").mkdir(parents=True)
     (repo / "skills" / "public" / "impl").mkdir(parents=True)
     (repo / "charness-artifacts" / "cautilus").mkdir(parents=True)
+    (repo / "docs" / "public-skill-validation.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "tiers": {
+                    "smoke-only": [],
+                    "hitl-recommended": [],
+                    "evaluator-required": ["impl"],
+                },
+                "adapter_requirements": {
+                    "required": ["impl"],
+                    "adapter-free": [],
+                },
+                "fallback_policy": {
+                    "allow": ["impl"],
+                    "visible": [],
+                    "block": [],
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     (repo / "skills" / "public" / "impl" / "SKILL.md").write_text("# Impl\n", encoding="utf-8")
     (repo / ".agents" / "cautilus-adapters" / "chatbot-proposals.yaml").write_text("version: 1\n", encoding="utf-8")
     if artifact_body is not None:
@@ -195,6 +220,26 @@ def test_plan_cautilus_proof_recommends_skill_dogfood_and_scenario_followups() -
         for item in payload["recommended_followups"]
     )
     assert any("evals/cautilus/scenarios.json" in item for item in payload["recommended_followups"])
+
+
+def test_plan_cautilus_proof_fails_closed_when_public_skill_policy_is_invalid(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "skills" / "public" / "demo").mkdir(parents=True)
+    (repo / "docs" / "public-skill-validation.json").write_text("{not json\n", encoding="utf-8")
+    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text("# Demo\n", encoding="utf-8")
+
+    result = run_script(
+        "scripts/plan_cautilus_proof.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "skills/public/demo/SKILL.md",
+        "--json",
+    )
+
+    assert result.returncode == 1
+    assert "public-skill validation policy invalid while planning Cautilus proof" in result.stderr
 
 
 def test_plan_cautilus_proof_adaptive_runs_without_ask_for_scenario_review() -> None:

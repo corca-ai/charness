@@ -99,8 +99,8 @@ def _skill_change_recommendations(repo_root: Path, changed_paths: list[str]) -> 
         return [], []
     try:
         policy = validate_policy(load_policy(repo_root), repo_root)
-    except ValidationError:
-        return [], []
+    except ValidationError as exc:
+        raise SurfaceError(f"public-skill validation policy invalid while planning Cautilus proof: {exc}") from exc
     tier_by_skill = _index_partition(policy["tiers"])
     recommendations: list[dict[str, object]] = []
     followups: list[str] = []

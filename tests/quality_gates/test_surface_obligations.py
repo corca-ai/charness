@@ -327,6 +327,76 @@ def test_run_slice_closeout_blocks_unmatched_paths_by_default(tmp_path: Path) ->
     assert "not covered by the surfaces manifest" in result.stderr
 
 
+def test_run_slice_closeout_blocks_public_skill_review_until_acknowledged() -> None:
+    result = run_script(
+        "scripts/run_slice_closeout.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "skills/public/init-repo/scripts/inspect_repo.py",
+        "--skip-sync",
+        "--skip-verify",
+        "--json",
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "blocked"
+    assert "public-skill validation review is required" in payload["error"]
+    assert "--ack-cautilus-skill-review" in payload["error"]
+    assert payload["cautilus_plan"]["required"] is False
+    assert payload["cautilus_plan"]["scenario_registry_review_required"] is True
+    assert payload["cautilus_plan"]["changed_public_skills"] == ["init-repo"]
+    assert any(
+        item["skill_id"] == "init-repo"
+        for item in payload["cautilus_plan"]["skill_validation_recommendations"]
+    )
+
+
+def test_run_slice_closeout_allows_acknowledged_public_skill_review() -> None:
+    result = run_script(
+        "scripts/run_slice_closeout.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "skills/public/init-repo/scripts/inspect_repo.py",
+        "--skip-sync",
+        "--skip-verify",
+        "--ack-cautilus-skill-review",
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "completed"
+    assert payload["cautilus_plan"]["scenario_registry_review_required"] is True
+    assert payload["executed_commands"] == []
+
+
+def test_run_slice_closeout_blocks_hitl_recommended_public_skill_review() -> None:
+    result = run_script(
+        "scripts/run_slice_closeout.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "skills/public/premortem/SKILL.md",
+        "charness-artifacts/cautilus/latest.md",
+        "--skip-sync",
+        "--skip-verify",
+        "--json",
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "blocked"
+    assert payload["cautilus_plan"]["required"] is True
+    assert payload["cautilus_plan"]["artifact_changed"] is True
+    assert payload["cautilus_plan"]["scenario_registry_review_required"] is False
+    assert payload["cautilus_plan"]["changed_public_skills"] == ["premortem"]
+    assert payload["cautilus_plan"]["skill_validation_recommendations"][0]["validation_tier"] == "hitl-recommended"
+    assert "public-skill validation review is required" in payload["error"]
+
+
 def test_run_slice_closeout_blocks_for_forced_risk_interrupt_without_spec_refresh(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)

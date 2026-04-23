@@ -60,13 +60,34 @@ def _print_list(label: str, values: list[str]) -> None:
     print(f"{label}: none")
 
 
+def _cautilus_plan_has_visible_work(cautilus_plan: dict[str, object]) -> bool:
+    return bool(
+        cautilus_plan.get("required")
+        or cautilus_plan.get("scenario_registry_review_required")
+        or cautilus_plan.get("skill_validation_recommendations")
+        or cautilus_plan.get("recommended_followups")
+    )
+
+
 def _print_cautilus_plan(cautilus_plan: dict[str, object]) -> None:
     print("Cautilus proof:")
     print(f"- run_mode: {cautilus_plan['run_mode']}")
-    print(f"- proof_kinds: {', '.join(cautilus_plan['proof_kinds'])}")
+    proof_kinds = cautilus_plan.get("proof_kinds", [])
+    print(f"- proof_kinds: {', '.join(proof_kinds) if proof_kinds else 'none'}")
     print(f"- next_action: {cautilus_plan['next_action']}")
+    changed_public_skills = cautilus_plan.get("changed_public_skills", [])
+    if changed_public_skills:
+        print(f"- changed_public_skills: {', '.join(changed_public_skills)}")
+    if cautilus_plan.get("scenario_registry_review_required"):
+        print("- scenario_registry_review_required: true")
     for note in cautilus_plan.get("notes", []):
         print(f"- note: {note}")
+    for recommendation in cautilus_plan.get("skill_validation_recommendations", []):
+        if isinstance(recommendation, dict):
+            print(
+                "- skill_review: "
+                f"{recommendation.get('skill_id')} ({recommendation.get('validation_tier')})"
+            )
     for followup in cautilus_plan.get("recommended_followups", []):
         print(f"- followup: {followup}")
 
@@ -114,7 +135,7 @@ def print_text(payload: dict[str, object]) -> None:
         _print_list("Unmatched paths", payload["unmatched_paths"])
 
     cautilus_plan = payload.get("cautilus_plan")
-    if isinstance(cautilus_plan, dict) and cautilus_plan.get("required"):
+    if isinstance(cautilus_plan, dict) and _cautilus_plan_has_visible_work(cautilus_plan):
         _print_cautilus_plan(cautilus_plan)
 
     risk_interrupt_plan = payload.get("risk_interrupt_plan")
@@ -136,11 +157,19 @@ def _maybe_block_on_unmatched(payload: dict[str, object], *, allow_unmatched: bo
 
 
 def _maybe_block_on_cautilus(
-    repo_root: Path, payload: dict[str, object], *, as_json: bool
+    repo_root: Path, payload: dict[str, object], *, as_json: bool, ack_skill_review: bool
 ) -> int | None:
     cautilus_plan = plan_cautilus_proof(repo_root, payload["changed_paths"])
     payload["cautilus_plan"] = cautilus_plan
     if not (cautilus_plan["required"] and not cautilus_plan["artifact_changed"]):
+        if cautilus_plan["skill_validation_recommendations"] and not ack_skill_review:
+            payload["status"] = "blocked"
+            payload["error"] = (
+                "public-skill validation review is required for this slice; inspect the dogfood/scenario "
+                "follow-ups in `cautilus_plan` and rerun with --ack-cautilus-skill-review after recording "
+                "the decision"
+            )
+            return _emit_payload(payload, as_json=as_json, stderr_message=payload["error"])
         return None
     payload["status"] = "blocked"
     payload["error"] = (
@@ -174,6 +203,14 @@ def main() -> int:
     parser.add_argument("--skip-sync", action="store_true")
     parser.add_argument("--skip-verify", action="store_true")
     parser.add_argument(
+        "--ack-cautilus-skill-review",
+        action="store_true",
+        help=(
+            "Acknowledge that public-skill dogfood/scenario review follow-ups from the Cautilus planner "
+            "were inspected and the scenario-registry decision was recorded."
+        ),
+    )
+    parser.add_argument(
         "--allow-unmatched",
         action="store_true",
         help="Proceed even when changed files are not covered by the surfaces manifest.",
@@ -196,7 +233,12 @@ def main() -> int:
     if blocked is not None:
         return blocked
 
-    blocked = _maybe_block_on_cautilus(repo_root, payload, as_json=args.json)
+    blocked = _maybe_block_on_cautilus(
+        repo_root,
+        payload,
+        as_json=args.json,
+        ack_skill_review=args.ack_cautilus_skill_review,
+    )
     if blocked is not None:
         return blocked
 
