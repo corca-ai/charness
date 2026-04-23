@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-04-23",
-  "source_artifact_count": 24,
-  "candidate_count": 168,
+  "source_artifact_count": 25,
+  "candidate_count": 172,
   "top_candidates": [
     {
       "candidate_id": "current_focus:1a9cdbf8c0cc",
@@ -29,6 +29,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
+          "date": "2026-04-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:f9be7cfe66c9",
+      "kind": "current_focus",
+      "lesson": "This session repaired an install bootstrap failure where another machine reported that the managed checkout bootstrap runtime was still missing `jsonschema` and `packaging`.",
+      "normalized_key": "this session repaired an install bootstrap failure where another machine reported that the managed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
           "date": "2026-04-23",
           "section": "Context"
         }
@@ -55,6 +75,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:99281d55ee48",
+      "kind": "next_improvement",
+      "lesson": "for install/update symptoms, enumerate fresh, valid-reuse, and stale-partial-state branches before patching.",
+      "normalized_key": "for install update symptoms enumerate fresh valid reuse and stale partial state branches before",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:2e4b70cd7de0",
       "kind": "next_improvement",
       "lesson": "for premortem, spec, quality, and handoff fresh-eye gates, read the already-delegated AGENTS rule as the user authorization to attempt the bounded subagent setup.",
@@ -75,6 +115,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:326d7316d555",
+      "kind": "next_improvement",
+      "lesson": "keep stale launcher repair covered in `test_bootstrap_runtime.py` so future install refactors preserve this recovery path.",
+      "normalized_key": "keep stale launcher repair covered in test bootstrap runtime py so future install refactors",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a9ea063196a4",
       "kind": "next_improvement",
       "lesson": "keep this miss in `recent-lessons.md` until a deterministic or cautilus-backed check covers it.",
@@ -89,6 +149,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:62c2fe1f892e",
+      "kind": "next_improvement",
+      "lesson": "the durable debug artifact now records this as an operator-visible recovery seam.",
+      "normalized_key": "the durable debug artifact now records this as an operator visible recovery seam",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
           "date": "2026-04-23",
           "section": "Next Improvements"
         }
@@ -173,86 +253,6 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:3a5a30b00528",
-      "kind": "next_improvement",
-      "lesson": "whenever bootstrap semantics change, run a repo-wide survey for helper defaults, adapters, generated exports, integration manifests, and current artifacts before calling the slice closed.",
-      "normalized_key": "whenever bootstrap semantics change run a repo wide survey for helper defaults adapters generated",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
-      "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
-          "date": "2026-04-22",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:f828e8b3dfd8",
-      "kind": "repeat_trap",
-      "lesson": "Dan North: keep proof close to behavior; if a prompt-affecting install story changes, refresh the routing proof and current-pointer artifacts immediately.",
-      "normalized_key": "dan north keep proof close to behavior if a prompt affecting install story changes",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
-      "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
-          "date": "2026-04-22",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:65b8e41e4c39",
-      "kind": "repeat_trap",
-      "lesson": "I initially treated the problem as a README/create-cli issue when the actual contract lived across public skills, repo-local adapters, helper defaults, generated plugin exports, integration manifests, and current-pointer artifacts.",
-      "normalized_key": "i initially treated the problem as a readme create cli issue when the actual",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
-      "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
-          "date": "2026-04-22",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:d651362a6a8e",
-      "kind": "repeat_trap",
-      "lesson": "John Ousterhout: when the interface changes, delete residual alternate stories quickly instead of leaving helper defaults to imply two contracts.",
-      "normalized_key": "john ousterhout when the interface changes delete residual alternate stories quickly instead of leaving",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
-      "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
-          "date": "2026-04-22",
-          "section": "Waste"
-        }
-      ]
     }
   ],
   "candidates": [
@@ -271,6 +271,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
+          "date": "2026-04-23",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:f9be7cfe66c9",
+      "kind": "current_focus",
+      "lesson": "This session repaired an install bootstrap failure where another machine reported that the managed checkout bootstrap runtime was still missing `jsonschema` and `packaging`.",
+      "normalized_key": "this session repaired an install bootstrap failure where another machine reported that the managed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
           "date": "2026-04-23",
           "section": "Context"
         }
@@ -297,6 +317,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:99281d55ee48",
+      "kind": "next_improvement",
+      "lesson": "for install/update symptoms, enumerate fresh, valid-reuse, and stale-partial-state branches before patching.",
+      "normalized_key": "for install update symptoms enumerate fresh valid reuse and stale partial state branches before",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:2e4b70cd7de0",
       "kind": "next_improvement",
       "lesson": "for premortem, spec, quality, and handoff fresh-eye gates, read the already-delegated AGENTS rule as the user authorization to attempt the bounded subagent setup.",
@@ -317,6 +357,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:326d7316d555",
+      "kind": "next_improvement",
+      "lesson": "keep stale launcher repair covered in `test_bootstrap_runtime.py` so future install refactors preserve this recovery path.",
+      "normalized_key": "keep stale launcher repair covered in test bootstrap runtime py so future install refactors",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a9ea063196a4",
       "kind": "next_improvement",
       "lesson": "keep this miss in `recent-lessons.md` until a deterministic or cautilus-backed check covers it.",
@@ -331,6 +391,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
+          "date": "2026-04-23",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:62c2fe1f892e",
+      "kind": "next_improvement",
+      "lesson": "the durable debug artifact now records this as an operator-visible recovery seam.",
+      "normalized_key": "the durable debug artifact now records this as an operator visible recovery seam",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
+      "latest_source_date": "2026-04-23",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
           "date": "2026-04-23",
           "section": "Next Improvements"
         }

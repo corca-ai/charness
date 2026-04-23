@@ -43,7 +43,7 @@ def test_bootstrap_runtime_creates_runtime_and_installs_requirements(tmp_path: P
     copy_bootstrap_contract(repo_root)
     runtime_python = repo_root / ".charness" / "bootstrap-python" / ("Scripts/python.cmd" if os.name == "nt" else "bin/python")
     commands: list[list[str]] = []
-    module_probe_count = {"count": 0}
+    requirements_installed = {"value": False}
     module_probe = f"import importlib.util, sys\nmodules = {['jsonschema', 'packaging']!r}\nmissing = [name for name in modules if importlib.util.find_spec(name) is None]\nsys.exit(0 if not missing else 1)\n"
 
     def fake_run(command: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
@@ -57,8 +57,7 @@ def test_bootstrap_runtime_creates_runtime_and_installs_requirements(tmp_path: P
         if command == ["/usr/bin/python", "-c", module_probe]:
             return completed(command, returncode=1)
         if command == [str(runtime_python), "-c", module_probe]:
-            module_probe_count["count"] += 1
-            return completed(command, returncode=0 if module_probe_count["count"] > 1 else 1)
+            return completed(command, returncode=0 if requirements_installed["value"] else 1)
         if command == ["/usr/bin/python", "-m", "pip", "--version"]:
             return completed(command)
         if command == [
@@ -72,6 +71,7 @@ def test_bootstrap_runtime_creates_runtime_and_installs_requirements(tmp_path: P
             "-r",
             str(repo_root / "packaging" / "bootstrap-requirements.txt"),
         ]:
+            requirements_installed["value"] = True
             return completed(command)
         raise AssertionError(f"unexpected command: {command}")
 
@@ -83,6 +83,42 @@ def test_bootstrap_runtime_creates_runtime_and_installs_requirements(tmp_path: P
     assert payload["installed"] is True
     assert payload["python"] == str(runtime_python)
     assert any(command[1:4] == ["-m", "pip", "install"] for command in commands)
+
+
+def test_bootstrap_runtime_repairs_stale_launcher_when_base_has_modules(tmp_path: Path, monkeypatch) -> None:
+    module = load_module("bootstrap_runtime_test_repair_stale_launcher", BOOTSTRAP_RUNTIME_PATH)
+    repo_root = tmp_path / "repo"
+    copy_bootstrap_contract(repo_root)
+    runtime_python = repo_root / ".charness" / "bootstrap-python" / ("Scripts/python.cmd" if os.name == "nt" else "bin/python")
+    runtime_python.parent.mkdir(parents=True, exist_ok=True)
+    runtime_python.write_text("# stale launcher\n", encoding="utf-8")
+    commands: list[list[str]] = []
+    module_probe = f"import importlib.util, sys\nmodules = {['jsonschema', 'packaging']!r}\nmissing = [name for name in modules if importlib.util.find_spec(name) is None]\nsys.exit(0 if not missing else 1)\n"
+
+    def fake_run(command: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+        del cwd
+        commands.append(command)
+        if command[:2] == ["python", "-c"]:
+            return completed(
+                command,
+                stdout='{"executable": "/usr/bin/current-python", "version": [3, 11, 9]}\n',
+            )
+        if command == [str(runtime_python), "-c", module_probe]:
+            content = runtime_python.read_text(encoding="utf-8")
+            return completed(command, returncode=0 if "/usr/bin/current-python" in content else 1)
+        if command == ["/usr/bin/current-python", "-c", module_probe]:
+            return completed(command)
+        raise AssertionError(f"unexpected command: {command}")
+
+    monkeypatch.setattr(module, "run_command", fake_run)
+
+    payload = module.ensure_bootstrap_runtime(repo_root, base_python="python")
+
+    assert payload["created"] is False
+    assert payload["installed"] is False
+    assert payload["python"] == str(runtime_python)
+    assert "/usr/bin/current-python" in runtime_python.read_text(encoding="utf-8")
+    assert not any(command[1:4] == ["-m", "pip", "install"] for command in commands)
 
 
 def test_bootstrap_runtime_reuses_existing_runtime_when_modules_are_present(tmp_path: Path, monkeypatch) -> None:

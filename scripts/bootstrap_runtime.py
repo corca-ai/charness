@@ -239,6 +239,9 @@ def ensure_bootstrap_runtime(
         created = True
         write_launcher(python_path, str(info["executable"]), packages_dir)
 
+    if not modules_available(python_path, required_modules):
+        write_launcher(python_path, str(info["executable"]), packages_dir)
+
     if not modules_available(python_path, required_modules) and not modules_available(base_python_path, required_modules):
         install_requirements(Path(str(info["executable"])), requirements_path, packages_dir)
         write_launcher(python_path, str(info["executable"]), packages_dir)
