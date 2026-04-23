@@ -47,6 +47,18 @@ sed -n '1,220p' docs/external-integrations.md 2>/dev/null || true
 sed -n '1,220p' docs/support-skill-policy.md 2>/dev/null || true
 ```
 
+If a host-provided installed skill path is missing, do not treat the skill as
+absent. Resolve the current installed path first, then continue from that
+`SKILL.md`:
+
+```bash
+python3 "$SKILL_DIR/scripts/resolve_skill_path.py" --repo-root . --skill-id find-skills --reported-path <missing-path>
+```
+
+Prefer the stable host plugin path over versioned cache paths when both exist.
+Versioned cache paths can drift after `charness update`; the resolver should
+report that as a stale host path, not as a missing capability.
+
 If the user's need sounds like a public workflow, inspect `skills/public/`
 first. If it sounds like a tool-use capability, inspect support skills and
 integration manifests before proposing a new public skill.
@@ -66,6 +78,8 @@ What you get after one run:
 - public/support skill descriptions, canonical paths, trigger phrases, and
   directly referenced skill files
 - the smallest next usable path across public skills, support seams, and integrations
+- a stale host-path diagnosis when a reported installed skill path no longer
+  matches the current stable plugin or cache location
 - refreshed capability inventory artifacts at
   [`charness-artifacts/find-skills/latest.md`](../../../charness-artifacts/find-skills/latest.md) and
   [`charness-artifacts/find-skills/latest.json`](../../../charness-artifacts/find-skills/latest.json)

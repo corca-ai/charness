@@ -55,6 +55,8 @@ def _render_skill_routing(public_skill_ids: list[str]) -> tuple[str, list[str]]:
         "",
         "After that bootstrap pass, choose the durable work skill that best matches the request from the installed charness surface.",
         "",
+        "Validation-shaped closeout or operator reading test requests go through `quality` validation recommendations before HITL or same-agent manual review.",
+        "",
         "Keep this block short. Detailed routing belongs in installed skill metadata and `find-skills` output, not in a long checked-in catalog.",
         "",
     ]
