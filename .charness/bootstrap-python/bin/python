@@ -1,4 +1,0 @@
-#!/bin/sh
-PYTHONPATH=/home/ubuntu/charness/.charness/bootstrap-python/site-packages${PYTHONPATH:+:${PYTHONPATH}}
-export PYTHONPATH
-exec /usr/bin/python3 "$@"

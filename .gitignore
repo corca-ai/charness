@@ -10,6 +10,8 @@ plugins/charness/support/gather-slack/.cache/
 .charness/quality/runtime-signals.json
 .charness/quality/runtime-smoothing.json
 .charness/quality/history/runtime-signals-*.jsonl
+.charness/bootstrap-python/
+.charness/retro/
 .charness/tasks/
 .charness/hitl/runtime/
 integrations/locks/*.json
