@@ -163,17 +163,9 @@ def _recency_weight(source_date: date | None, as_of: date | None) -> tuple[int |
     return age_days, weight
 
 
-def build_lesson_selection_index(
-    *,
-    repo_root: Path,
-    output_dir: Path,
-    summary_path: Path,
-) -> dict[str, Any]:
-    artifacts = retro_artifact_paths(output_dir, summary_path)
+def _parse_retro_artifacts(artifacts: list[Path]) -> tuple[list[dict[str, Any]], date | None]:
     parsed_artifacts: list[dict[str, Any]] = []
     dated_values: list[date] = []
-    candidates: dict[tuple[str, str], dict[str, Any]] = {}
-
     for artifact_path in artifacts:
         text = artifact_path.read_text(encoding="utf-8")
         source_date_text = _source_date(artifact_path, text)
@@ -188,12 +180,14 @@ def build_lesson_selection_index(
                 "source_date": source_date,
             }
         )
+    return parsed_artifacts, max(dated_values) if dated_values else None
 
-    as_of = max(dated_values) if dated_values else None
+
+def _collect_lesson_candidates(repo_root: Path, parsed_artifacts: list[dict[str, Any]]) -> dict[tuple[str, str], dict[str, Any]]:
+    candidates: dict[tuple[str, str], dict[str, Any]] = {}
     for artifact in parsed_artifacts:
         artifact_path = artifact["path"]
         sections = _extract_sections_loose(artifact["text"])
-        source_date = artifact["source_date"]
         source_date_text = artifact["source_date_text"]
         for section_name, kind in LESSON_KINDS.items():
             items = _bullet_items(sections.get(section_name, ""))
@@ -221,38 +215,42 @@ def build_lesson_selection_index(
                         "section": section_name,
                     }
                 )
+    return candidates
 
+
+def _candidate_entry(kind: str, normalized_key: str, entry: dict[str, Any], as_of: date | None) -> dict[str, Any]:
+    source_dates = [_parse_date(source.get("date")) for source in entry["sources"]]
+    latest_date = max((value for value in source_dates if value is not None), default=None)
+    latest_date_text = latest_date.isoformat() if latest_date else None
+    age_days, recency_weight = _recency_weight(latest_date, as_of)
+    source_count = len(entry["sources"])
+    alpha = adaptive_lesson_alpha(source_count)
+    recurrence_multiplier = 1 + alpha * max(0, source_count - 1)
+    selection_weight = recency_weight * recurrence_multiplier
+    latest_source_path = max(
+        entry["sources"],
+        key=lambda source: (source.get("date") or "", source["artifact_path"]),
+    )["artifact_path"]
+    return {
+        "candidate_id": _candidate_id(kind, normalized_key),
+        "kind": kind,
+        "lesson": entry["lesson"],
+        "normalized_key": normalized_key,
+        "source_count": source_count,
+        "latest_source_path": latest_source_path,
+        "latest_source_date": latest_date_text,
+        "age_days": age_days,
+        "recency_weight": round(recency_weight, 4),
+        "alpha": round(alpha, 4),
+        "selection_weight": round(selection_weight, 4),
+        "sources": sorted(entry["sources"], key=lambda source: (source.get("date") or "", source["artifact_path"])),
+    }
+
+
+def _ranked_candidate_entries(candidates: dict[tuple[str, str], dict[str, Any]], as_of: date | None) -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
     for (kind, normalized_key), entry in candidates.items():
-        source_dates = [_parse_date(source.get("date")) for source in entry["sources"]]
-        latest_date = max((value for value in source_dates if value is not None), default=None)
-        latest_date_text = latest_date.isoformat() if latest_date else None
-        age_days, recency_weight = _recency_weight(latest_date, as_of)
-        source_count = len(entry["sources"])
-        alpha = adaptive_lesson_alpha(source_count)
-        recurrence_multiplier = 1 + alpha * max(0, source_count - 1)
-        selection_weight = recency_weight * recurrence_multiplier
-        latest_source_path = max(
-            entry["sources"],
-            key=lambda source: (source.get("date") or "", source["artifact_path"]),
-        )["artifact_path"]
-        entries.append(
-            {
-                "candidate_id": _candidate_id(kind, normalized_key),
-                "kind": kind,
-                "lesson": entry["lesson"],
-                "normalized_key": normalized_key,
-                "source_count": source_count,
-                "latest_source_path": latest_source_path,
-                "latest_source_date": latest_date_text,
-                "age_days": age_days,
-                "recency_weight": round(recency_weight, 4),
-                "alpha": round(alpha, 4),
-                "selection_weight": round(selection_weight, 4),
-                "sources": sorted(entry["sources"], key=lambda source: (source.get("date") or "", source["artifact_path"])),
-            }
-        )
-
+        entries.append(_candidate_entry(kind, normalized_key, entry, as_of))
     entries.sort(
         key=lambda entry: (
             -entry["selection_weight"],
@@ -261,6 +259,19 @@ def build_lesson_selection_index(
             entry["normalized_key"],
         )
     )
+    return entries
+
+
+def build_lesson_selection_index(
+    *,
+    repo_root: Path,
+    output_dir: Path,
+    summary_path: Path,
+) -> dict[str, Any]:
+    artifacts = retro_artifact_paths(output_dir, summary_path)
+    parsed_artifacts, as_of = _parse_retro_artifacts(artifacts)
+    candidates = _collect_lesson_candidates(repo_root, parsed_artifacts)
+    entries = _ranked_candidate_entries(candidates, as_of)
     return {
         "schema_version": 1,
         "kind": "retro-lesson-selection-index",
