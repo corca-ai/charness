@@ -39,15 +39,33 @@ _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resol
 load_adapter = _resolve_adapter_module.load_adapter
 
 SIGNALS_PATH = Path(".charness") / "quality" / "runtime-signals.json"
+SMOOTHING_PATH = Path(".charness") / "quality" / "runtime-smoothing.json"
 
 
-def _load_signals(signals_path: Path) -> dict[str, Any]:
-    if not signals_path.is_file():
+def _load_json(path: Path) -> dict[str, Any]:
+    if not path.is_file():
         return {}
     try:
-        return json.loads(signals_path.read_text(encoding="utf-8"))
+        return json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return {}
+
+
+def _smoothing_entry(commands: dict[str, Any], label: str) -> dict[str, Any]:
+    entry = commands.get(label)
+    return entry if isinstance(entry, dict) else {}
+
+
+def _advisory_ewma(entry: dict[str, Any]) -> tuple[float | None, float | None, int | None]:
+    if entry.get("advisory") is not True:
+        return None, None, None
+    ewma = entry.get("ewma_elapsed_ms")
+    alpha = entry.get("alpha_last")
+    samples = entry.get("samples")
+    ewma_value = float(ewma) if isinstance(ewma, (int, float)) else None
+    alpha_value = float(alpha) if isinstance(alpha, (int, float)) else None
+    samples_value = int(samples) if isinstance(samples, int) else None
+    return ewma_value, alpha_value, samples_value
 
 
 def evaluate(repo_root: Path) -> dict[str, Any]:
@@ -55,8 +73,11 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
     data = adapter["data"]
     budgets: dict[str, int] = data.get("runtime_budgets", {}) or {}
     signals_path = repo_root / SIGNALS_PATH
-    signals = _load_signals(signals_path)
+    smoothing_path = repo_root / SMOOTHING_PATH
+    signals = _load_json(signals_path)
+    smoothing = _load_json(smoothing_path)
     commands = signals.get("commands", {}) if isinstance(signals, dict) else {}
+    smoothing_commands = smoothing.get("commands", {}) if isinstance(smoothing, dict) else {}
 
     violations: list[dict[str, Any]] = []
     latest_spikes: list[dict[str, Any]] = []
@@ -65,6 +86,8 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
 
     for label, max_ms in sorted(budgets.items()):
         entry = commands.get(label)
+        smoothing_entry = _smoothing_entry(smoothing_commands, label)
+        ewma, alpha, smoothing_samples = _advisory_ewma(smoothing_entry)
         latest = entry.get("latest") if isinstance(entry, dict) else None
         elapsed = latest.get("elapsed_ms") if isinstance(latest, dict) else None
         if not isinstance(elapsed, int):
@@ -76,6 +99,9 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
                     "latest_elapsed_ms": None,
                     "median_recent_elapsed_ms": None,
                     "max_recent_elapsed_ms": None,
+                    "ewma_advisory_elapsed_ms": ewma,
+                    "ewma_alpha": alpha,
+                    "ewma_samples": smoothing_samples,
                     "status": "no-sample",
                 }
             )
@@ -102,6 +128,9 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
                 "latest_elapsed_ms": elapsed,
                 "median_recent_elapsed_ms": basis_elapsed,
                 "max_recent_elapsed_ms": max_recent if isinstance(max_recent, int) else None,
+                "ewma_advisory_elapsed_ms": ewma,
+                "ewma_alpha": alpha,
+                "ewma_samples": smoothing_samples,
                 "status": status,
             }
         )
@@ -117,6 +146,7 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
 
     return {
         "signals_path": str(signals_path),
+        "smoothing_path": str(smoothing_path),
         "adapter_path": adapter.get("path"),
         "budgets_configured": len(budgets),
         "checked": checked,
@@ -144,6 +174,9 @@ def _format_human(report: dict[str, Any]) -> str:
         detail = f"latest {latest}ms, median {median}ms"
         if max_recent is not None:
             detail += f", max {max_recent}ms"
+        ewma = entry["ewma_advisory_elapsed_ms"]
+        if ewma is not None:
+            detail += f", ewma {ewma:.1f}ms advisory"
         lines.append(f"{status.upper():<12} {label}: {detail} (budget {budget}ms)")
     return "\n".join(lines)
 

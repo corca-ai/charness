@@ -19,6 +19,8 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   gates, not advisory review notes.
 - `validate-current-pointer-freshness` rejects known-stale claims in this
   quality pointer and `docs/handoff.md`.
+- Runtime EWMA is advisory in `.charness/quality/runtime-smoothing.json`;
+  enforcement still uses raw latest samples, medians, and spikes.
 - `specdown run -quiet -no-report` remains part of the quiet quality gate.
 - `.githooks/pre-push` syncs checked-in plugin exports, fails on generated
   export drift, then runs the quiet quality gate.
@@ -26,19 +28,18 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 ## Runtime Signals
 
 - Latest local quality gate after this slice: `43 passed, 0 failed`, total
-  `55.5s`.
-- runtime hot spots: latest full gate had `pytest` `36.9s`,
-  `check-secrets` `9.7s`, `check-markdown` `6.4s`, `specdown` `3.3s`, and
-  `run-evals` `3.2s`.
+  `69.5s`.
+- runtime hot spots: latest full gate had `pytest` `37.9s`, `check-secrets`
+  `19.5s`, `check-markdown` `14.9s`, `specdown` `2.5s`, and `run-evals` `2.0s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
   `85.0%`; current result is `97.9%` (`1186/1211`).
 - evaluator depth: `run-evals` passes 20 repo-local scenarios, so the bar is
   stronger than smoke-only review.
-- Budgeted phases: `pytest` median `34.6s / 45.0s`,
+- Budgeted phases: `pytest` median `35.3s / 45.0s`,
   `check-coverage` median `11.9s / 15.0s`, `check-secrets` median
   `5.8s / 6.0s` with a latest-sample spike, `run-evals` median
-  `2.5s / 5.0s`, `specdown` median `2.7s / 8.0s`.
-- Runtime signals continue to persist under `.charness/quality/`.
+  `2.4s / 5.0s`, `specdown` median `2.7s / 8.0s`.
+- Runtime signals and smoothing state persist under `.charness/quality/`.
 
 ## Coverage and Eval Depth
 
@@ -107,8 +108,7 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 
 ## Commands Run
 - `./scripts/run-quality.sh`
-- `python3 scripts/check_coverage.py --repo-root .` and `python3 scripts/check_test_production_ratio.py --repo-root .`
-- `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root .`
+- `python3 scripts/check_coverage.py --repo-root .`, `python3 scripts/check_test_production_ratio.py --repo-root .`, and `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root .`
 
 ## Recommended Next Gates
 

@@ -29,10 +29,13 @@ _quality_resolve_adapter = load_path_module("quality_resolve_adapter", _resolver
 load_adapter = _quality_resolve_adapter.load_adapter
 
 SUMMARY_FILENAME = "runtime-signals.json"
+SMOOTHING_FILENAME = "runtime-smoothing.json"
 ARCHIVE_PREFIX = "runtime-signals-"
 MAX_RECENT_SAMPLES = 20
 MAX_ARCHIVE_FILES = 12
 STATE_DIR = Path(".charness") / "quality"
+SMOOTHING_ALPHA_BASE = 0.35
+SMOOTHING_WARMUP_N = 5
 
 
 def parse_args() -> argparse.Namespace:
@@ -119,6 +122,54 @@ def update_summary(summary_path: Path, record: dict[str, Any]) -> None:
     summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def adaptive_alpha(sample_count: int) -> float:
+    warmup_ratio = min(1.0, sample_count / SMOOTHING_WARMUP_N)
+    return SMOOTHING_ALPHA_BASE * warmup_ratio
+
+
+def update_smoothing(smoothing_path: Path, record: dict[str, Any]) -> None:
+    smoothing = load_json(smoothing_path)
+    if not smoothing:
+        smoothing = {
+            "schema_version": 1,
+            "updated_at": record["timestamp"],
+            "policy": {
+                "kind": "ewma",
+                "advisory": True,
+                "alpha_base": SMOOTHING_ALPHA_BASE,
+                "warmup_n": SMOOTHING_WARMUP_N,
+            },
+            "commands": {},
+        }
+
+    commands = smoothing.setdefault("commands", {})
+    current = commands.get(record["label"], {})
+    samples = int(current.get("samples", 0)) + 1
+    alpha = adaptive_alpha(samples)
+    elapsed = int(record["elapsed_ms"])
+    previous_ewma = current.get("ewma_elapsed_ms")
+    if isinstance(previous_ewma, (int, float)):
+        ewma = float(previous_ewma) + alpha * (elapsed - float(previous_ewma))
+    else:
+        ewma = float(elapsed)
+
+    commands[record["label"]] = {
+        "samples": samples,
+        "latest": {
+            "timestamp": record["timestamp"],
+            "elapsed_ms": elapsed,
+            "status": record["status"],
+        },
+        "ewma_elapsed_ms": round(ewma, 2),
+        "alpha_last": round(alpha, 4),
+        "alpha_base": SMOOTHING_ALPHA_BASE,
+        "warmup_n": SMOOTHING_WARMUP_N,
+        "advisory": True,
+    }
+    smoothing["updated_at"] = record["timestamp"]
+    smoothing_path.write_text(json.dumps(smoothing, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def append_archive(history_dir: Path, record: dict[str, Any]) -> Path:
     history_dir.mkdir(parents=True, exist_ok=True)
     month_id = record["timestamp"][:7]
@@ -145,12 +196,15 @@ def main() -> int:
     }
 
     summary_path = state_dir / SUMMARY_FILENAME
+    smoothing_path = state_dir / SMOOTHING_FILENAME
     archive_path = append_archive(state_dir / "history", record)
     update_summary(summary_path, record)
+    update_smoothing(smoothing_path, record)
     print(
         json.dumps(
             {
                 "summary_path": str(summary_path.relative_to(repo_root)),
+                "smoothing_path": str(smoothing_path.relative_to(repo_root)),
                 "archive_path": str(archive_path.relative_to(repo_root)),
                 "recorded": record,
             },

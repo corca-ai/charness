@@ -11,9 +11,9 @@ to current pointers would blur audit history and current truth.
 
 ## Current Slice
 
-Define the safe contract before adding any smoothing implementation. The first
-implementation slice should improve current-pointer freshness rather than add a
-new smoothing model.
+Define the safe contract before broad smoothing rollout. The first implementation
+slice improved current-pointer freshness; the second added quality runtime EWMA
+as an advisory-only derived signal.
 
 ## Fixed Decisions
 
@@ -25,7 +25,7 @@ new smoothing model.
   explicit spikes. EWMA may be advisory only.
 - `retro/recent-lessons.md` remains a compact digest, not an opaque decay model.
 - `debug` incident records must never be replaced by a seam-risk score.
-- If adaptive alpha is used later, use a warmup-based alpha such as
+- Adaptive alpha uses a warmup-based alpha:
   `alpha_t = alpha_base * min(1, sample_count / warmup_n)` so early samples do
   not masquerade as stable trends.
 
@@ -35,12 +35,22 @@ new smoothing model.
   `docs/handoff.md`, `charness-artifacts/quality/latest.md`, or both?
 - Should debug seam-risk start as an index over existing incident files or as a
   stricter validator for the current debug artifact's `Seam Risk` section?
-- What operator decision would EWMA change beyond the existing runtime budget,
-  latest sample, and recent median?
+- What operator decision would retro or debug smoothing change beyond existing
+  digest and incident records?
+
+## Implemented Slices
+
+- `validate-current-pointer-freshness` rejects known-stale current-pointer
+  freshness claims in `docs/handoff.md` and `charness-artifacts/quality/latest.md`.
+- Quality runtime EWMA is stored under
+  `.charness/quality/runtime-smoothing.json`.
+- Runtime EWMA uses `alpha_t = alpha_base * min(1, sample_count / warmup_n)`
+  with `alpha_base = 0.35` and `warmup_n = 5`.
+- `check_runtime_budget.py` reports EWMA as advisory and does not use it for
+  pass/fail budget enforcement.
 
 ## Deferred Decisions
 
-- Quality runtime EWMA stored under `.charness/quality/runtime-ewma.json`.
 - Retro lesson decay stored under `.charness/retro/lesson-signals.json`.
 - Debug seam-risk scoring stored under `.charness/debug/seam-signals.json`.
 - Exposing derived memory hints through `find-skills` routing.
@@ -72,8 +82,8 @@ Bundle Anyway:
 
 Over-Worry:
 
-- Quality runtime EWMA is not urgent. Current runtime signals and budgets
-  already support the main quality decisions.
+- Quality runtime EWMA remains advisory. Current runtime signals and budgets
+  still own the main quality decisions.
 
 Valid but Defer:
 
@@ -82,19 +92,19 @@ Valid but Defer:
 
 ## Success Criteria
 
-- A future freshness validator can fail when `docs/handoff.md` or
+- The freshness validator can fail when `docs/handoff.md` or
   `quality/latest.md` makes stale current-state claims that disagree with live
   inventories.
-- Any future smoothing implementation records its raw source, sample count,
-  warmup policy, and whether the output is advisory or enforcing.
+- Any smoothing implementation records its raw source, sample count, warmup
+  policy, and whether the output is advisory or enforcing.
 - No current pointer becomes the only place where a historical fact is stored.
 
 ## Acceptance Checks
 
 - `python3 scripts/check_doc_links.py --repo-root .`
 - `./scripts/check-markdown.sh`
-- Next implementation slice should add a focused test for the first freshness
-  check before wiring it into `run-quality.sh`.
+- Runtime smoothing tests should keep proving EWMA is advisory and raw
+  latest/median/spike behavior still owns budget enforcement.
 
 ## Deliberately Not Doing
 
@@ -103,10 +113,9 @@ Valid but Defer:
   needs it.
 - A smoothing-derived failure gate.
 
-## First Implementation Slice
+## Next Implementation Slice
 
-Add a deterministic freshness check for the rolling current pointers already
-called out as weak: `docs/handoff.md` and `charness-artifacts/quality/latest.md`.
-Keep the check narrow enough to compare concrete claims against current repo
-inventory, and leave EWMA/decay work deferred until that validator proves where
-derived memory would change an operator decision.
+Extend deterministic freshness checks only when a current pointer makes a
+concrete claim that can be checked against live inventory. Keep retro lesson
+decay and debug seam-risk scoring deferred until one concrete consumer needs
+derived memory beyond the quality runtime EWMA.

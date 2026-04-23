@@ -8,6 +8,7 @@ node_modules/
 plugins/charness/support/gather-slack/.cache/
 .charness/quality/bootstrap.json
 .charness/quality/runtime-signals.json
+.charness/quality/runtime-smoothing.json
 .charness/quality/history/runtime-signals-*.jsonl
 .charness/tasks/
 .charness/hitl/runtime/

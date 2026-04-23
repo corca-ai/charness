@@ -45,8 +45,10 @@ def test_record_quality_runtime_writes_summary_and_archive(tmp_path: Path) -> No
     assert second.returncode == 0, second.stderr
 
     summary_path = repo / ".charness" / "quality" / "runtime-signals.json"
+    smoothing_path = repo / ".charness" / "quality" / "runtime-smoothing.json"
     archive_path = repo / ".charness" / "quality" / "history" / "runtime-signals-2026-04.jsonl"
     assert summary_path.exists()
+    assert smoothing_path.exists()
     assert archive_path.exists()
 
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
@@ -56,6 +58,20 @@ def test_record_quality_runtime_writes_summary_and_archive(tmp_path: Path) -> No
     assert pytest_entry["failures"] == 1
     assert pytest_entry["latest"]["elapsed_ms"] == 2345
     assert pytest_entry["median_recent_elapsed_ms"] == 1789
+
+    smoothing = json.loads(smoothing_path.read_text(encoding="utf-8"))
+    policy = smoothing["policy"]
+    assert policy == {
+        "kind": "ewma",
+        "advisory": True,
+        "alpha_base": 0.35,
+        "warmup_n": 5,
+    }
+    smoothed_pytest = smoothing["commands"]["pytest"]
+    assert smoothed_pytest["samples"] == 2
+    assert smoothed_pytest["alpha_last"] == 0.14
+    assert smoothed_pytest["ewma_elapsed_ms"] == 1389.54
+    assert smoothed_pytest["advisory"] is True
 
     archive_lines = archive_path.read_text(encoding="utf-8").strip().splitlines()
     assert len(archive_lines) == 2
