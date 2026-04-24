@@ -3,15 +3,16 @@ Date: 2026-04-24
 
 ## Trigger
 
-- slice: clarify nested fresh-eye review requirements for issue #67
+- slice: tighten init-repo and quality review-scope drift detection after
+  inspecting `../crill/AGENTS.md`
 - claim: preserve
 
 ## Validation Goal
 
 - goal: preserve
-- reason: this slice changes `premortem` prompt surfaces and shared subagent
-  review guidance, so maintained startup routing and validation-closeout routing
-  must remain stable while parent-level delegation is clarified
+- reason: this slice changes `init-repo` and `quality` prompt surfaces plus the
+  maintained `init-repo` eval helper, so startup routing, validation-closeout
+  routing, and consumer-side AGENTS normalization behavior must remain stable
 
 ## Change Intent
 
@@ -21,23 +22,24 @@ Date: 2026-04-24
 
 ## Prompt Surfaces
 
-- `skills/public/premortem/SKILL.md`
-- `skills/public/premortem/references/angle-selection.md`
-- `skills/public/premortem/references/counterweight-triage.md`
-- `skills/public/premortem/references/subagent-capability-check.md`
+- `skills/public/init-repo/SKILL.md`
+- `skills/public/init-repo/references/agent-docs-policy.md`
+- `skills/public/init-repo/references/default-surfaces.md`
+- `skills/public/init-repo/references/normalization-flow.md`
+- `skills/public/quality/references/entrypoint-docs-ergonomics.md`
 
 ## Commands Run
 
 - `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- `python3 scripts/validate_skills.py --repo-root .`
 - `cautilus instruction-surface test --repo-root .`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id premortem --json`
+- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id init-repo --json`
+- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id quality --json`
 
 ## Regression Proof
 
 - instruction-surface summary:
-  `.cautilus/runs/20260424T011737356Z-run/instruction-surface-summary.json`
+  `.cautilus/runs/20260424T012738698Z-run/instruction-surface-summary.json`
 - result: `4 passed / 0 failed / 0 blocked`
 - recommendation: `accept-now`
 - maintained startup routing still bootstraps through `find-skills`, then
@@ -46,23 +48,25 @@ Date: 2026-04-24
 
 ## Scenario Review
 
-- `premortem` dogfood still expects non-trivial pending decisions to route to
-  `premortem` and produce a maintainer-reviewable output
-- the new behavior clarifies execution context inside that skill: parent-level
-  spawned reviewers report `parent-delegated`, recursive delegation is opt-in,
-  and blocked states still require a concrete host signal
-- no maintained Cautilus scenario registry mutation is needed in this slice:
-  the change is a public-skill contract clarification, while existing maintained
-  scenarios guard startup and route selection
+- `init-repo` remains `evaluator-required`; the existing
+  `init-repo-inspect-states` evaluator was widened to include a premortem-only
+  AGENTS rule that now must produce `fresh_eye_task_review_scope_drift`
+- no scenario-registry mutation is needed: the registered scenario already owns
+  inspect-state behavior, and the maintained helper now covers this regression
+- `quality` remains `hitl-recommended`; reviewed dogfood now records
+  `host_instruction_runbook_pressure` for AGENTS files that embed multi-step
+  runbooks instead of only reporting generic long-doc pressure
 
 ## Outcome
 
 - recommendation: `accept-now`
-- routing notes: regression proof passed; the new `premortem` guidance preserves
-  the mandatory subagent requirement while preventing accidental recursive
-  spawning inside already delegated reviewers
+- routing notes: regression proof passed; the new `init-repo` inspection
+  detects the `crill`-shaped missing `init-repo` / `quality` review scope, and
+  `quality` now makes AGENTS runbook overfit pressure visible as an advisory
+  inventory signal
 
 ## Follow-ups
 
-- consider a dedicated evaluator scenario if nested delegation confusion repeats
-  after this contract clarification lands in a release
+- when `crill` updates to the next Charness build, rerun `init-repo` there and
+  move the long Missing Operator Session procedure out of AGENTS if the
+  maintainer agrees it belongs in a deeper recovery doc or command surface

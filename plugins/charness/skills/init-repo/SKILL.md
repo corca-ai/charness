@@ -116,6 +116,8 @@ Then load only the references needed for the detected state:
      agents should not wait for a second user message asking for delegation,
      and host spawn restrictions should be reported explicitly instead of
      replaced with a same-agent pass
+   - for Charness-managed repos, include task-completing `init-repo` and
+     `quality` review runs in that rule; do not hide it under Premortem only
    - add a short `Skill Routing` block to [`AGENTS.md`](../../../AGENTS.md) when
      installed charness skills are present
    - keep that block startup-bootstrap-heavy and discovery-first: task-oriented
@@ -156,11 +158,6 @@ Then load only the references needed for the detected state:
      `recommendations[]` separately from `normalization.findings`
    - if deeper repo-wide posture review is still needed, hand off to `quality`
      instead of inflating `init-repo`
-
-## Output Shape
-
-The result should usually include repo mode, agent docs state, verified facts,
-assumptions, scaffolded or normalized surfaces, open questions, and next step.
 
 ## Guardrails
 

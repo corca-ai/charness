@@ -45,6 +45,9 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
   contract, agents should not wait for a second user message asking for
   delegation, and host spawn restrictions should be reported explicitly
   instead of replaced with a same-agent pass
+- for Charness-managed repos, the same rule should explicitly cover
+  task-completing `init-repo` and `quality` review runs instead of implying
+  that only premortem may spawn reviewers
 - a short `Skill Routing` block that tells task-oriented sessions to call the
   shared/public charness skill `find-skills` once at startup before broader
   exploration

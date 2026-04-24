@@ -24,6 +24,7 @@ FRESH_EYE_REQUIRED_SNIPPETS = (
     "host blocks",
     "same-agent pass",
 )
+TASK_REVIEW_SCOPE_SNIPPETS = ("init-repo", "quality")
 RECOMMENDATION_PRIORITY_ORDER = {
     "review_required": 0,
     "high": 1,
@@ -225,6 +226,9 @@ def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object]
     lowered = agents_text.lower()
     stop_gate_detected = any(marker in lowered for marker in FRESH_EYE_MARKERS)
     missing_required = _missing_snippets(agents_text, FRESH_EYE_REQUIRED_SNIPPETS) if stop_gate_detected else []
+    missing_task_review_scopes = (
+        [snippet for snippet in TASK_REVIEW_SCOPE_SNIPPETS if snippet not in lowered] if stop_gate_detected else []
+    )
     stale_markers = [marker for marker in FRESH_EYE_STALE_MARKERS if marker in lowered]
     findings: list[dict[str, str]] = []
     if stop_gate_detected and missing_required:
@@ -233,6 +237,14 @@ def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object]
                 "type": "fresh_eye_delegation_rule_drift",
                 "message": "Fresh-eye or premortem review is present but AGENTS.md is missing the delegated-review stop-gate rule.",
                 "recommended_action": "normalize_fresh_eye_delegation_rule",
+            }
+        )
+    if stop_gate_detected and missing_task_review_scopes:
+        findings.append(
+            {
+                "type": "fresh_eye_task_review_scope_drift",
+                "message": "Fresh-eye or premortem review is present but AGENTS.md does not name task-completing init-repo and quality review runs as spawn-authorized scopes.",
+                "recommended_action": "add_init_repo_quality_delegated_review_scope",
             }
         )
     if stop_gate_detected and stale_markers:
@@ -247,6 +259,7 @@ def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object]
         {
             "stop_gate_detected": stop_gate_detected,
             "missing_required_snippets": missing_required,
+            "missing_task_review_scopes": missing_task_review_scopes,
             "stale_markers": stale_markers,
         },
         findings,
@@ -439,6 +452,7 @@ def build_init_repo_inspection_payload(
         if finding.get("type")
         in {
             "fresh_eye_delegation_rule_drift",
+            "fresh_eye_task_review_scope_drift",
             "skill_routing_block_custom_or_drifted",
             "charness_artifacts_commit_policy_drift",
         }

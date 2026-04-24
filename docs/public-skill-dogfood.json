@@ -167,7 +167,7 @@
       "observed_evidence": [
         "The checked-in public core keeps repo-mode detection explicit while adding a task-completing delegated-review gate for normalization runs; inspect/help/routing calls stay cheap.",
         "`inspect_repo.py` now emits `recommendations[]` separately from `normalization.findings`, so adapter-declared policy sources can raise `agents.delegated_review_policy` without pretending phrase matching is a hard fact.",
-        "`AGENTS.md` now authorizes task-completing `init-repo` and `quality` bounded review spawning and keeps host-blocked review visible instead of substituting a same-agent pass."
+        "`inspect_repo.py` now flags `fresh_eye_task_review_scope_drift` when `AGENTS.md` carries a premortem or fresh-eye delegation rule but does not name task-completing `init-repo` and `quality` review runs as spawn-authorized scopes."
       ]
     },
     {
@@ -233,7 +233,8 @@
       "observed_evidence": [
         "The quality core now requires task-completing reviews to report delegated-review status and includes an adapter/gate design inventory path for recommendation, acknowledgement, migration, and brittle hard-gate risks.",
         "`validate_quality_artifact.py` now requires `Advisory` and `Delegated Review` sections, rejecting green-gate-only summaries that omit advisory or delegated-review status.",
-        "The quality adapter resolver now preserves existing `version: 1` adapters while defaulting new review fields to safe empty values."
+        "The quality adapter resolver now preserves existing `version: 1` adapters while defaulting new review fields to safe empty values.",
+        "`inventory_entrypoint_docs_ergonomics.py` now surfaces `host_instruction_runbook_pressure` when `AGENTS.md` embeds a multi-step procedure that likely belongs in a deeper doc or repo-owned command surface."
       ]
     },
     {

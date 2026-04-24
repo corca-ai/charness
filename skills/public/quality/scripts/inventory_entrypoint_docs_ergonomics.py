@@ -24,6 +24,7 @@ DEFAULT_DOC_PATHS = (
 
 INTERNAL_DOC_LINK_RE = re.compile(r"\[[^\]]+\]\((?!https?://|mailto:|#)([^)]+\.md(?:#[^)]+)?)\)")
 INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
+NUMBERED_PROCEDURE_RE = re.compile(r"^\s*\d+\.\s+", re.MULTILINE)
 
 
 def parse_args() -> argparse.Namespace:
@@ -54,6 +55,7 @@ def inventory_doc(repo_root: Path, doc_path: Path, *, max_core_lines: int) -> di
     code_fence_count = sum(1 for line in lines if line.strip().startswith("```"))
     internal_doc_link_count = len(INTERNAL_DOC_LINK_RE.findall(text))
     inline_code_count = len(INLINE_CODE_RE.findall(text))
+    numbered_procedure_count = len(NUMBERED_PROCEDURE_RE.findall(text))
     heuristics: list[str] = []
     if len(nonempty_lines) > max_core_lines:
         heuristics.append("long_entrypoint")
@@ -67,6 +69,8 @@ def inventory_doc(repo_root: Path, doc_path: Path, *, max_core_lines: int) -> di
         heuristics.append("option_pressure_terms_present")
     if inline_code_count >= 16 and internal_doc_link_count == 0:
         heuristics.append("inline_code_density_without_deeper_doc_link")
+    if doc_path.name == "AGENTS.md" and numbered_procedure_count >= 3:
+        heuristics.append("host_instruction_runbook_pressure")
 
     return {
         "doc_path": str(doc_path.relative_to(repo_root)),
@@ -74,6 +78,7 @@ def inventory_doc(repo_root: Path, doc_path: Path, *, max_core_lines: int) -> di
         "internal_doc_link_count": internal_doc_link_count,
         "inline_code_count": inline_code_count,
         "code_fence_count": code_fence_count,
+        "numbered_procedure_count": numbered_procedure_count,
         "heuristics": heuristics,
         "review_prompts": DEFAULT_REVIEW_PROMPTS,
     }
