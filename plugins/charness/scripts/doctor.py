@@ -41,7 +41,13 @@ def lock_safe_doctor_payload(payload: dict[str, object]) -> dict[str, object]:
     return lock_payload
 
 
-def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: bool) -> dict[str, object]:
+def inspect_manifest(
+    repo_root: Path,
+    manifest: dict[str, object],
+    *,
+    write: bool,
+    skip_release_probe: bool,
+) -> dict[str, object]:
     state = inspect_capability_state(repo_root, manifest)
     provenance_result = detect_install_provenance(manifest)
     provenance_result["checked_at"] = now_iso()
@@ -50,7 +56,7 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
         **state,
         "provenance": provenance_result,
     }
-    release = probe_release(manifest)
+    release = None if skip_release_probe else probe_release(manifest)
     if release is not None:
         payload["release"] = release
     if write:
@@ -69,13 +75,26 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--tool-id", action="append", default=[])
     parser.add_argument("--write-locks", action="store_true")
+    parser.add_argument(
+        "--skip-release-probe",
+        action="store_true",
+        help="Skip upstream release lookups while preserving local readiness and support checks.",
+    )
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     capabilities = load_capabilities(repo_root)
     selected = [capability for capability in capabilities if not args.tool_id or capability["tool_id"] in args.tool_id]
-    results = [inspect_manifest(repo_root, capability, write=args.write_locks) for capability in selected]
+    results = [
+        inspect_manifest(
+            repo_root,
+            capability,
+            write=args.write_locks,
+            skip_release_probe=args.skip_release_probe,
+        )
+        for capability in selected
+    ]
 
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))

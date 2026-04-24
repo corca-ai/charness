@@ -206,6 +206,35 @@ def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path) -> 
     assert payload["failed_checks"] == ["demo-ready-file"]
 
 
+def test_doctor_skip_release_probe_preserves_local_readiness_without_release_lookup(tmp_path: Path) -> None:
+    repo = seed_control_plane_repo(tmp_path)
+    manifest_path = repo / "integrations" / "tools" / "demo-tool.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["homepage"] = "https://github.com/example/demo-tool"
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    env = os.environ.copy()
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(tmp_path / "missing-release-fixtures.json")
+
+    doctor = run_script(
+        "scripts/doctor.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+        "--write-locks",
+        "--skip-release-probe",
+        env=env,
+    )
+
+    assert doctor.returncode == 0, doctor.stderr
+    doctor_payload = json.loads(doctor.stdout)
+    assert doctor_payload[0]["doctor_status"] == "ok"
+    assert doctor_payload[0]["readiness"]["ok"] is True
+    assert "release" not in doctor_payload[0]
+    lock_payload = json.loads((repo / "integrations" / "locks" / "demo-tool.json").read_text(encoding="utf-8"))
+    assert lock_payload["doctor"]["doctor_status"] == "ok"
+    assert "release" not in lock_payload
+
+
 def test_doctor_reads_support_owned_capability_metadata(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     support_dir = repo / "skills" / "support" / "gather-slack"

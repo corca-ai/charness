@@ -34,17 +34,22 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 ## Runtime Signals
 
 - Latest local quality gate after this slice: `48 passed, 0 failed`, total
-  `67.3s`.
-- runtime hot spots: latest recorded samples have `pytest` `36.3s`,
-  `check-coverage` `13.4s`, `check-cli-skill-surface` `7.8s`,
-  `check-markdown` `4.8s`, `specdown` `3.6s`, and `check-duplicates` `3.4s`.
+  `61.9s`.
+- runtime hot spots: latest recorded samples have `pytest` `35.8s`,
+  `check-coverage` `13.2s`, `check-markdown` `4.5s`, `specdown` `4.3s`,
+  and `check-cli-skill-surface` `4.1s`.
+- Fixture economics moved broad managed-install/update lifecycle checks to
+  `ci_only`; standing pytest still keeps representative install coverage and
+  the full on-demand slice remains green.
+- CLI/skill surface probes now run `doctor.py --skip-release-probe` so standing
+  readiness checks do not spend wall time on upstream release freshness.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
   `85.0%`; current result is `97.9%` (`1186/1211`).
 - evaluator depth: `run-evals` passes 20 repo-local scenarios, so the bar is
   stronger than smoke-only review.
 - Budgeted phases: `pytest` median `42.1s / 70.0s`,
   `check-coverage` median `12.2s / 15.0s`, `check-secrets` median
-  `2.2s / 6.0s`, `run-evals` median `2.2s / 5.0s`, `specdown` median
+  `2.3s / 6.0s`, `run-evals` median `2.3s / 5.0s`, `specdown` median
   `2.8s / 8.0s`.
 ## Coverage and Eval Depth
 
@@ -118,6 +123,8 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 
 ## Commands Run
 - `./scripts/run-quality.sh`
+- targeted pytest for managed-install standing/`ci_only` split and doctor
+  fast-probe behavior
 - `pytest -q tests/quality_gates/test_current_pointer_freshness.py tests/quality_gates/test_runtime_budget_gate.py tests/quality_gates/test_check_coverage_inventory.py tests/quality_gates/test_quality_skill_docs.py`
 - `cautilus instruction-surface test --repo-root .`
 - Surface closeout: packaging, command-docs, doc links, markdown, secrets,
@@ -125,11 +132,9 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 
 ## Recommended Next Gates
 
-- active `AUTO_CANDIDATE`: keep expanding `validate-current-pointer-freshness`;
-  runtime source-shape checks now follow the split runtime budget library, but
-  ergonomics and dogfood claims still need inventory-backed freshness checks.
-- active `AUTO_CANDIDATE`: continue the `tests/charness_cli` fixture-economics
-  slice before moving broad install/update checks fully on-demand.
+- active `AUTO_CANDIDATE`: keep expanding `validate-current-pointer-freshness`
+  for ergonomics and dogfood claims, and keep broad install/update coverage in
+  on-demand or CI slices unless a cheaper standing fixture proves the contract.
 
 ## History
 - [2026-04-09 through 2026-04-10 archive](history/2026-04-09-through-2026-04-10.md)

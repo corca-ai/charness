@@ -98,6 +98,9 @@ When `product_surfaces` contains both `installable_cli` and `bundled_skill`,
 release runs the CLI plus bundled-skill disclosure gate only for matching CLI,
 skill, plugin, package, or install-surface changes. Use
 `cli_skill_surface_probe_commands` to point at binary-owned help, registry,
-catalog, example, version, install-smoke, doctor, or readiness probes, and
+catalog, example, version, install-smoke, doctor, or readiness probes. Keep
+these probes local and deterministic; latest-release, network, or upstream
+freshness checks belong in the release-specific proof that is intentionally
+checking freshness. Use
 `cli_skill_surface_skill_paths` when the shipped skill does not live under
 `skills/public/*` or `skills/support/*`.

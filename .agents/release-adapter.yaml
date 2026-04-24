@@ -16,7 +16,7 @@ cli_skill_surface_probe_commands:
 - ./charness --help
 - ./charness doctor --help
 - ./charness --version
-- python3 scripts/doctor.py --repo-root . --json
+- python3 scripts/doctor.py --repo-root . --json --skip-release-probe
 cli_skill_surface_command_docs:
 - .agents/command-docs.yaml
 cli_skill_surface_change_globs:

@@ -97,7 +97,10 @@ hard-gate smells.
 both `installable_cli` and `bundled_skill`, quality runs the CLI plus
 bundled-skill disclosure inventory before same-agent prose review. Use
 `cli_skill_surface_probe_commands` for cheap binary-owned help, registry,
-catalog, example, version, install-smoke, doctor, or readiness probes. Use
+catalog, example, version, install-smoke, doctor, or readiness probes. Keep
+standing probes on the local command/readiness contract; latest-release,
+network, or upstream freshness checks belong in explicit update/release flows
+unless that freshness is the quality question being asked. Use
 `cli_skill_surface_command_docs` for command-doc contracts such as
 like [`.agents/command-docs.yaml`](../../../../.agents/command-docs.yaml), `cli_skill_surface_skill_paths` for shipped skill
 layouts outside default roots, and `cli_skill_surface_change_globs` to scope
