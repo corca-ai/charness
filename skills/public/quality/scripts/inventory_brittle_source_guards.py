@@ -40,16 +40,35 @@ def _iter_markdown_files(repo_root: Path) -> list[Path]:
     ignored_parts = {".git", ".charness", "node_modules", "__pycache__"}
     files: list[Path] = []
     for path in repo_root.rglob("*.md"):
-        if any(part in ignored_parts for part in path.relative_to(repo_root).parts):
+        relative_parts = path.relative_to(repo_root).parts
+        if any(part in ignored_parts or part.startswith(".") for part in relative_parts):
             continue
         files.append(path)
     return sorted(files)
 
 
-def _source_guards(repo_root: Path) -> list[dict[str, str]]:
+def _relative(path: Path, repo_root: Path) -> str:
+    try:
+        return path.relative_to(repo_root).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+def _source_guard_scan(repo_root: Path) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     guards: list[dict[str, str]] = []
+    warnings: list[dict[str, str]] = []
     for spec_path in _iter_markdown_files(repo_root):
-        text = spec_path.read_text(encoding="utf-8", errors="replace")
+        try:
+            text = spec_path.read_text(encoding="utf-8", errors="replace")
+        except OSError as exc:
+            warnings.append(
+                {
+                    "type": "source_guard_markdown_unreadable",
+                    "path": _relative(spec_path, repo_root),
+                    "message": f"Skipped unreadable markdown while scanning source guards: {exc.strerror or exc}",
+                }
+            )
+            continue
         for line_no, line in enumerate(text.splitlines(), start=1):
             match = SOURCE_GUARD_RE.match(line)
             if not match:
@@ -57,13 +76,13 @@ def _source_guards(repo_root: Path) -> list[dict[str, str]]:
             target, pattern = (part.strip() for part in match.groups())
             guards.append(
                 {
-                    "spec_path": spec_path.relative_to(repo_root).as_posix(),
+                    "spec_path": _relative(spec_path, repo_root),
                     "line": str(line_no),
                     "target_path": target,
                     "pattern": pattern,
                 }
             )
-    return guards
+    return guards, warnings
 
 
 def _policy_state(repo_root: Path) -> dict[str, Any]:
@@ -131,11 +150,13 @@ def _finding_for_guard(repo_root: Path, guard: dict[str, str], min_pattern_chars
 
 
 def inventory(repo_root: Path, *, min_pattern_chars: int = DEFAULT_MIN_PATTERN_CHARS) -> dict[str, Any]:
-    findings = [_finding_for_guard(repo_root, guard, min_pattern_chars) for guard in _source_guards(repo_root)]
+    guards, warnings = _source_guard_scan(repo_root)
+    findings = [_finding_for_guard(repo_root, guard, min_pattern_chars) for guard in guards]
     fragile = [finding for finding in findings if finding["status"] in {"brittle", "at_risk", "normalization_needed"}]
     return {
         "repo_root": str(repo_root),
         "min_pattern_chars": min_pattern_chars,
+        "warnings": warnings,
         "summary": {
             "source_guard_count": len(findings),
             "fragile_count": len(fragile),

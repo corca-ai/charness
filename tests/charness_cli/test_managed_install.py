@@ -329,6 +329,40 @@ def test_installed_cli_update_allows_untracked_files_in_managed_checkout(tmp_pat
     assert_managed_checkout_has_no_tracked_runtime_dirt(managed_checkout)
 
 
+def test_installed_cli_update_skips_cwd_onboarding_by_default(tmp_path: Path) -> None:
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    source_repo = make_git_repo_copy(source_root)
+    home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
+    cwd_repo = tmp_path / "cwd-repo"
+    (cwd_repo / ".agents").mkdir(parents=True)
+    (cwd_repo / "README.md").write_text("# CWD repo\n", encoding="utf-8")
+    (cwd_repo / ".agents" / "init-repo-adapter.yaml").write_text("- malformed\n", encoding="utf-8")
+
+    installed_cli = home_root / ".local" / "bin" / "charness"
+    update_result = subprocess.run(
+        [
+            sys.executable,
+            str(installed_cli),
+            "update",
+            "--home-root",
+            str(home_root),
+            "--skip-codex-cache-refresh",
+            "--json",
+        ],
+        cwd=cwd_repo,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert update_result.returncode == 0, update_result.stderr
+    payload = json.loads(update_result.stdout)
+    assert payload["target_repo_root"] == str(cwd_repo)
+    assert payload["repo_onboarding"]["status"] == "skipped"
+
+
 def test_installed_cli_update_blocks_tracked_changes_in_managed_checkout(tmp_path: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
