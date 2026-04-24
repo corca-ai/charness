@@ -14,7 +14,6 @@ COMMAND_TOKEN_RE = re.compile(r"(^|&&\s*|\|\|\s*|;\s*|\(\s*|\s)(pytest|pylint|sp
 def _split_chunks(command: str) -> list[str]:
     return [chunk.strip() for chunk in re.split(r"\s*(?:&&|\|\||;|\n)\s*", command) if chunk.strip()]
 
-
 def _yaml_block(text: str, key: str) -> str:
     block, started, indent = [], False, 0
     for line in text.splitlines():
@@ -32,7 +31,6 @@ def _yaml_block(text: str, key: str) -> str:
 def _surface(path: Path, repo_root: Path, surface_type: str, commands: list[dict[str, str]], text: str, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
     return {"path": str(path.relative_to(repo_root)), "surface_type": surface_type, "commands": commands, "metadata": metadata or {}, "text": text}
 
-
 def _shell_surface(repo_root: Path, rel_path: str, surface_type: str) -> dict[str, Any] | None:
     path = repo_root / rel_path
     if not path.is_file():
@@ -40,11 +38,9 @@ def _shell_surface(repo_root: Path, rel_path: str, surface_type: str) -> dict[st
     text, commands = path.read_text(encoding="utf-8"), []
     for line in text.splitlines():
         stripped = line.strip()
-        if not stripped or stripped.startswith(("#", "echo ", "printf ")):
+        if not stripped or stripped.startswith(("#", "echo ", "printf ", "if ", "elif ", "else", "fi")):
             continue
         if re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", stripped):
-            continue
-        if stripped.startswith(("if ", "elif ", "else", "fi")):
             continue
         if COMMAND_TOKEN_RE.search(stripped) or 'queue_selected "pytest"' in stripped or SCRIPT_REF_RE.search(stripped):
             commands.append({"origin": surface_type, "snippet": stripped})
