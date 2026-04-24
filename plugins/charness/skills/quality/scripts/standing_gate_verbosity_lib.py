@@ -42,7 +42,11 @@ def _shell_surface(repo_root: Path, rel_path: str, surface_type: str) -> dict[st
         stripped = line.strip()
         if not stripped or stripped.startswith(("#", "echo ", "printf ")):
             continue
-        if COMMAND_TOKEN_RE.search(stripped) or SCRIPT_REF_RE.search(stripped):
+        if re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", stripped):
+            continue
+        if stripped.startswith(("if ", "elif ", "else", "fi")):
+            continue
+        if COMMAND_TOKEN_RE.search(stripped) or 'queue_selected "pytest"' in stripped or SCRIPT_REF_RE.search(stripped):
             commands.append({"origin": surface_type, "snippet": stripped})
     return _surface(path, repo_root, surface_type, commands, text)
 def _package_surface(repo_root: Path) -> dict[str, Any] | None:

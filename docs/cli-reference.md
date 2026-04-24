@@ -57,7 +57,9 @@ options:
                         the managed default checkout.
   --target-repo-root TARGET_REPO_ROOT
                         Optional repo to inspect for post-install charness
-                        onboarding. Defaults to the current working directory.
+                        onboarding. Defaults to the current working directory
+                        for init/doctor; update inspects only when this is
+                        explicit.
   --repo-url REPO_URL
   --plugin-root PLUGIN_ROOT
   --codex-marketplace-path CODEX_MARKETPLACE_PATH
@@ -94,7 +96,9 @@ options:
                         the managed default checkout.
   --target-repo-root TARGET_REPO_ROOT
                         Optional repo to inspect for post-install charness
-                        onboarding. Defaults to the current working directory.
+                        onboarding. Defaults to the current working directory
+                        for init/doctor; update inspects only when this is
+                        explicit.
   --repo-url REPO_URL
   --plugin-root PLUGIN_ROOT
   --codex-marketplace-path CODEX_MARKETPLACE_PATH

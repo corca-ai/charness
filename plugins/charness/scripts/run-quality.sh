@@ -318,16 +318,21 @@ queue_selected "py-compile" python3 -m py_compile "${python_files[@]}"
 queue_selected "ruff" ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts
 flush_phase || OVERALL_RC=$?
 
+PYTEST_CMD=(pytest)
+if python3 -m pytest --version >/dev/null 2>&1; then
+  PYTEST_CMD=(python3 -m pytest)
+fi
+
 PYTEST_PARALLEL_FLAGS=()
-if python3 -c "import xdist" 2>/dev/null; then
+if "${PYTEST_CMD[@]}" --help 2>/dev/null | grep -q -- "--numprocesses"; then
   PYTEST_PARALLEL_FLAGS=(-n auto)
 else
   echo "run-quality: pytest-xdist not installed; pytest will run serially and may exceed runtime budgets. Install with: pip install pytest-xdist" >&2
 fi
 if ((${#PYTEST_PARALLEL_FLAGS[@]})); then
-  queue_selected "pytest" pytest -q -m "not ci_only" "${PYTEST_PARALLEL_FLAGS[@]}" "${STANDING_PYTEST_TARGETS[@]}"
+  queue_selected "pytest" "${PYTEST_CMD[@]}" -q -m "not ci_only" "${PYTEST_PARALLEL_FLAGS[@]}" "${STANDING_PYTEST_TARGETS[@]}"
 else
-  queue_selected "pytest" pytest -q -m "not ci_only" "${STANDING_PYTEST_TARGETS[@]}"
+  queue_selected "pytest" "${PYTEST_CMD[@]}" -q -m "not ci_only" "${STANDING_PYTEST_TARGETS[@]}"
 fi
 flush_phase || OVERALL_RC=$?
 
