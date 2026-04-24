@@ -16,18 +16,20 @@ Advanced `charness` toward release `0.5.12` through the repo-owned release helpe
 
 - `./scripts/run-quality.sh` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
-- one git push carried both the release branch update and the tag from the release helper.
+- one git push carried both the release branch update and the `v0.5.12` tag.
+- GitHub release view verified the public release record.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: not created by this helper run
-- public release surface verification: not checked by this helper
+- GitHub release record: created (https://github.com/corca-ai/charness/releases/tag/v0.5.12)
+- public release surface verification: GitHub release page exists
 
 ## Public Release Verification
 
-- No configured public/real-host verification trigger matched this slice, but async publication repos should still keep workflow/public checks explicit.
+- Verified GitHub release surface:
+  https://github.com/corca-ai/charness/releases/tag/v0.5.12
 
 ## Real-Host Proof
 
