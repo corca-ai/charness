@@ -58,7 +58,7 @@ def render_cli_reference(repo_root: Path) -> str:
                 "",
             ]
         )
-    return "\n".join(sections)
+    return "\n".join(sections).rstrip()
 
 
 def main() -> int:

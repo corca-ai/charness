@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib
 import os
 import re
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -155,13 +156,22 @@ def _expand_pattern(repo_root: Path, pattern: str) -> list[Path]:
 
 
 def _changed_markdown_paths(repo_root: Path) -> tuple[set[str], list[str]]:
-    completed = subprocess.run(
-        ["git", "status", "--porcelain=v1", "--untracked-files=all"],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
+    git = shutil.which("git") or next(
+        (str(candidate) for candidate in (Path("/usr/bin/git"), Path("/opt/homebrew/bin/git")) if candidate.is_file()),
+        None,
     )
+    if git is None:
+        return set(), ["git not found; using configured scope as-is."]
+    try:
+        completed = subprocess.run(
+            [git, "status", "--porcelain=v1", "--untracked-files=all"],
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError:
+        return set(), ["git not found on PATH; using configured scope as-is."]
     if completed.returncode != 0:
         return set(), ["Unable to resolve changed files from git status; using configured scope as-is."]
     changed = set()

@@ -97,7 +97,7 @@ def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path)
     cautilus = payload["results"]["cautilus"]
     assert cautilus["install"]["status"] == "manual"
     assert cautilus["install"]["docs_url"] == "https://github.com/corca-ai/cautilus"
-    assert cautilus["install"]["install_url"] == "https://github.com/corca-ai/cautilus/blob/main/install.md"
+    assert cautilus["install"]["install_url"] == "https://github.com/corca-ai/cautilus/blob/main/install.sh"
     assert cautilus["install"]["release"]["latest_tag"] == "v1.2.3"
     assert cautilus["support"]["status"] == "synced"
     assert cautilus["support"]["materialized_paths"] == ["skills/support/generated/cautilus"]
@@ -133,7 +133,7 @@ def test_installed_cli_tool_install_materializes_cautilus_support(tmp_path: Path
     assert payload["managed_checkout"] is True
     assert payload["repo_root"] == str(managed_repo)
     assert cautilus["install"]["status"] == "manual"
-    assert cautilus["install"]["install_url"] == "https://github.com/corca-ai/cautilus/blob/main/install.md"
+    assert cautilus["install"]["install_url"] == "https://github.com/corca-ai/cautilus/blob/main/install.sh"
     assert cautilus["install"]["release"]["latest_tag"] == "v1.2.3"
     assert cautilus["support"]["status"] == "synced"
     assert cautilus["support"]["materialized_paths"] == ["skills/support/generated/cautilus"]
@@ -223,7 +223,7 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
     assert cautilus["doctor"]["doctor_disposition"] == "advisory-install-needed"
     assert cautilus["doctor"]["install_route"]["mode"] == "manual"
     assert cautilus["doctor"]["install_route"]["docs_url"] == "https://github.com/corca-ai/cautilus"
-    assert cautilus["doctor"]["install_route"]["install_url"] == "https://github.com/corca-ai/cautilus/blob/main/install.md"
+    assert cautilus["doctor"]["install_route"]["install_url"] == "https://github.com/corca-ai/cautilus/blob/main/install.sh"
     assert cautilus["doctor"]["install_route"]["repo_followup"]["rendered_command"] == (
         f"cautilus install --repo-root {home_root / '.agents' / 'src' / 'charness'}"
     )
@@ -233,7 +233,7 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
     assert cautilus["doctor"]["install_route"]["commands"] == []
     assert "Support skill materialization for `cautilus` was refreshed under skills/support/generated/cautilus" in cautilus["next_step"]
     assert "the standalone binary is still missing" in cautilus["next_step"]
-    assert "Install docs: https://github.com/corca-ai/cautilus/blob/main/install.md" in cautilus["next_step"]
+    assert "Install docs: https://github.com/corca-ai/cautilus/blob/main/install.sh" in cautilus["next_step"]
     assert "Docs: https://github.com/corca-ai/cautilus" in cautilus["next_step"]
     assert "Support skill is available at `skills/support/generated/cautilus/SKILL.md`." in cautilus["next_step"]
     assert "Repo-local discovery stub is available at `.agents/charness-discovery/cautilus.md` for host-repo grep and cold-start pickup." in cautilus["next_step"]

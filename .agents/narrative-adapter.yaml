@@ -9,6 +9,7 @@ source_documents:
 - docs/control-plane.md
 - docs/public-skill-validation.md
 - docs/operator-acceptance.md
+- docs/handoff.md
 mutable_documents:
 - README.md
 - docs/control-plane.md

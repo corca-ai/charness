@@ -36,11 +36,18 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
 - when retro memory is enabled, include [`charness-artifacts/retro/recent-lessons.md`](../../../../charness-artifacts/retro/recent-lessons.md)
   in those memory surfaces
 - validation and commit discipline when the repo has them
+- when the repo uses Charness workflows that write durable artifacts under
+  `charness-artifacts/`, say those meaningful artifact changes are repo state
+  and commit targets, while current-pointer helpers should no-op when
+  canonical content has not changed
 - when the repo uses bounded fresh-eye or premortem-style subagent review as a
   stop gate, one short rule that the review is already delegated by the repo
   contract, agents should not wait for a second user message asking for
   delegation, and host spawn restrictions should be reported explicitly
   instead of replaced with a same-agent pass
+- for Charness-managed repos, the same rule should explicitly cover
+  task-completing `init-repo` and `quality` review runs instead of implying
+  that only premortem may spawn reviewers
 - a short `Skill Routing` block that tells task-oriented sessions to call the
   shared/public charness skill `find-skills` once at startup before broader
   exploration

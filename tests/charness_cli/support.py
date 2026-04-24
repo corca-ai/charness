@@ -19,6 +19,7 @@ REPO_COPY_IGNORE = shutil.ignore_patterns(
     ".mypy_cache",
     "__pycache__",
     ".coverage",
+    ".charness",
     ".venv",
     "node_modules",
     "history",
@@ -48,7 +49,7 @@ def run_cli_in_repo(repo_root: Path, *args: str, env: dict[str, str] | None = No
 
 
 def build_test_path(*bin_dirs: Path) -> str:
-    ordered = [*bin_dirs, Path(sys.executable).resolve().parent]
+    ordered = [*bin_dirs, Path(sys.executable).resolve().parent, Path("/usr/bin"), Path("/bin")]
     git_binary = shutil.which("git")
     if git_binary is not None:
         ordered.append(Path(git_binary).resolve().parent)

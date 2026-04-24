@@ -64,6 +64,14 @@ format_elapsed() {
   printf '%sms' "$elapsed_ms"
 }
 
+uppercase_status() {
+  case "$1" in
+    pass) printf 'PASS' ;;
+    fail) printf 'FAIL' ;;
+    *) printf '%s' "$1" ;;
+  esac
+}
+
 collect_quality_changed_paths() {
   local upstream_ref merge_base
 
@@ -184,7 +192,7 @@ print_phase_output() {
   local elapsed_ms="$3"
   local log_path="$4"
 
-  printf '%s %-24s %s\n' "${status^^}" "$label" "$(format_elapsed "$elapsed_ms")"
+  printf '%s %-24s %s\n' "$(uppercase_status "$status")" "$label" "$(format_elapsed "$elapsed_ms")"
 
   if [[ "$status" == "fail" || "$RUN_QUALITY_VERBOSE" == "1" ]]; then
     if [[ -s "$log_path" ]]; then
@@ -201,6 +209,10 @@ flush_phase() {
   local pid label log_path meta_path elapsed_ms status timestamp cmd_rc
   local -a meta_lines
 
+  if ((${#PHASE_LABELS[@]} == 0)); then
+    return 0
+  fi
+
   for pid in "${PHASE_PIDS[@]}"; do
     wait "$pid" || true
   done
@@ -210,7 +222,10 @@ flush_phase() {
     log_path="${PHASE_LOGS[$i]}"
     meta_path="${PHASE_METAS[$i]}"
 
-    mapfile -t meta_lines <"$meta_path"
+    meta_lines=()
+    while IFS= read -r meta_line; do
+      meta_lines+=("$meta_line")
+    done <"$meta_path"
     elapsed_ms="${meta_lines[0]}"
     status="${meta_lines[1]}"
     timestamp="${meta_lines[2]}"
@@ -252,6 +267,7 @@ print_final_summary() {
 
 queue_selected "validate-skills" python3 scripts/validate_skills.py --repo-root "$REPO_ROOT"
 queue_selected "validate-skill-ergonomics" python3 scripts/validate_skill_ergonomics.py --repo-root "$REPO_ROOT"
+queue_selected "check-cli-skill-surface" python3 scripts/check_cli_skill_surface.py --repo-root "$REPO_ROOT" --run-probes
 queue_selected "validate-surfaces" python3 scripts/validate_surfaces.py --repo-root "$REPO_ROOT"
 queue_selected "validate-public-skill-validation" python3 scripts/validate_public_skill_validation.py --repo-root "$REPO_ROOT"
 queue_selected "validate-public-skill-dogfood" python3 scripts/validate_public_skill_dogfood.py --repo-root "$REPO_ROOT"
@@ -308,7 +324,11 @@ if python3 -c "import xdist" 2>/dev/null; then
 else
   echo "run-quality: pytest-xdist not installed; pytest will run serially and may exceed runtime budgets. Install with: pip install pytest-xdist" >&2
 fi
-queue_selected "pytest" pytest -q -m "not ci_only" "${PYTEST_PARALLEL_FLAGS[@]}" "${STANDING_PYTEST_TARGETS[@]}"
+if ((${#PYTEST_PARALLEL_FLAGS[@]})); then
+  queue_selected "pytest" pytest -q -m "not ci_only" "${PYTEST_PARALLEL_FLAGS[@]}" "${STANDING_PYTEST_TARGETS[@]}"
+else
+  queue_selected "pytest" pytest -q -m "not ci_only" "${STANDING_PYTEST_TARGETS[@]}"
+fi
 flush_phase || OVERALL_RC=$?
 
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"

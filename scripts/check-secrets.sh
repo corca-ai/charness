@@ -31,7 +31,10 @@ echo "check-secrets: gitleaks not found, falling back to secretlint via npm (~5s
 
 if command -v npm >/dev/null 2>&1; then
   if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    mapfile -d '' secretlint_files < <(git ls-files -z --cached --others --exclude-standard)
+    secretlint_files=()
+    while IFS= read -r -d '' secretlint_file; do
+      secretlint_files+=("$secretlint_file")
+    done < <(git ls-files -z --cached --others --exclude-standard)
     if ((${#secretlint_files[@]} == 0)); then
       echo "No tracked or unignored files to scan."
       exit 0

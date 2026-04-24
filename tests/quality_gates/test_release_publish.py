@@ -268,3 +268,133 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     assert "## Public Release Verification" in artifact_text
     assert "Run `demo update`." in artifact_text
     assert "Restart the host if the previous version is still visible." in artifact_text
+
+
+def test_requested_review_gate_blocks_unavailable_release_record(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "charness-artifacts" / "release").mkdir(parents=True)
+    (repo / ".agents" / "release-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "output_dir: charness-artifacts/release",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (repo / "charness-artifacts" / "release" / "latest.md").write_text(
+        "# Release Surface Check\n\n- requested review unavailable: missing executor_variants\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/check_requested_review_gate.py",
+            "--repo-root",
+            str(repo),
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert "requested review unavailable" in result.stdout
+
+
+def test_requested_review_gate_allows_explicit_waiver(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "charness-artifacts" / "release").mkdir(parents=True)
+    (repo / ".agents" / "release-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "output_dir: charness-artifacts/release",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (repo / "charness-artifacts" / "release" / "latest.md").write_text(
+        "\n".join(
+            [
+                "# Release Surface Check",
+                "",
+                "- requested review unavailable: external provider outage",
+                "- review waiver: maintainer accepted this release without that requested gate.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/check_requested_review_gate.py",
+            "--repo-root",
+            str(repo),
+            "--json",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "waived"
+    assert payload["unavailable_hits"]
+    assert payload["waiver_hits"]
+
+
+def test_publish_release_blocks_failed_requested_review_command(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    adapter_path = repo / ".agents" / "release-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "\nrequested_review_commands:\n- \"bash -c 'echo review unavailable >&2; exit 1'\"\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "add", ".agents/release-adapter.yaml"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "Configure requested review gate"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    env = os.environ.copy()
+    env["PATH"] = f"{bin_dir}:{env['PATH']}"
+    env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
+    env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/publish_release.py",
+            "--repo-root",
+            str(repo),
+            "--part",
+            "patch",
+            "--execute",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 1
+    assert "requested release review gate blocked publish" in result.stderr
+    gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
+    assert not any(entry[:2] == ["release", "create"] for entry in gh_log)

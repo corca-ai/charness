@@ -28,16 +28,28 @@ artifact_stem = _LIB.artifact_stem
 
 
 def _backend_version(backend: str) -> str | None:
-    completed = subprocess.run([backend, "--version"], check=False, capture_output=True, text=True)
+    try:
+        completed = subprocess.run([backend, "--version"], check=False, capture_output=True, text=True)
+    except FileNotFoundError:
+        return None
     if completed.returncode != 0:
         return None
     return completed.stdout.strip() or completed.stderr.strip() or None
 
 
 def _git_head(repo_root: Path) -> str | None:
-    completed = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=repo_root, check=False, capture_output=True, text=True
+    git = shutil.which("git") or next(
+        (str(candidate) for candidate in (Path("/usr/bin/git"), Path("/opt/homebrew/bin/git")) if candidate.is_file()),
+        None,
     )
+    if git is None:
+        return None
+    try:
+        completed = subprocess.run(
+            [git, "rev-parse", "HEAD"], cwd=repo_root, check=False, capture_output=True, text=True
+        )
+    except FileNotFoundError:
+        return None
     return completed.stdout.strip() if completed.returncode == 0 else None
 
 

@@ -4,6 +4,16 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
+from scripts.init_repo_agent_docs_lib import (
+    FINDING_RECOMMENDATION_PRIORITIES,
+    RECOMMENDATION_FINDING_TYPES,
+    detect_agent_docs,
+    detect_policy_source_recommendations,
+    finding_recommendation,
+    is_acknowledged,
+    sort_recommendations,
+)
+
 DEFAULT_SURFACES = {
     "readme": Path("README.md"),
     "agents": Path("AGENTS.md"),
@@ -12,16 +22,6 @@ DEFAULT_SURFACES = {
     "handoff": Path("docs/handoff.md"),
 }
 CORE_SURFACES = ("readme", "agents", "roadmap", "operator_acceptance")
-RETRO_ADAPTER_RELATIVE_PATH = Path(".agents/retro-adapter.yaml")
-RETRO_SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
-FRESH_EYE_MARKERS = ("fresh-eye", "fresh eye", "premortem", "subagent review", "subagent reviews")
-FRESH_EYE_STALE_MARKERS = ("explicit consent", "local fallback")
-FRESH_EYE_REQUIRED_SNIPPETS = (
-    "already delegated",
-    "second user message",
-    "host blocks",
-    "same-agent pass",
-)
 
 
 @dataclass(frozen=True)
@@ -43,21 +43,13 @@ def _file_state(path: Path) -> dict[str, object]:
     return {"exists": True, "kind": "other"}
 
 
-def _text_present(path: Path) -> bool:
-    return path.is_file() and path.read_text(encoding="utf-8", errors="replace").strip() != ""
-
-
 def _case_insensitive_path(repo_root: Path, relative_path: Path) -> Path:
     current = repo_root
     for part in relative_path.parts:
-        exact = current / part
-        if exact.exists() or exact.is_symlink():
-            current = exact
-            continue
         if not current.is_dir():
-            return exact
+            return current / part
         matches = sorted(child for child in current.iterdir() if child.name.lower() == part.lower())
-        current = matches[0] if matches else exact
+        current = matches[0] if matches else current / part
     return current
 
 
@@ -117,169 +109,6 @@ def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
 
 
-def _missing_snippets(text: str, snippets: tuple[str, ...]) -> list[str]:
-    lowered = text.lower()
-    return [snippet for snippet in snippets if snippet.lower() not in lowered]
-
-
-def _detect_retro_memory_normalization(repo_root: Path, agents_text: str) -> tuple[dict[str, object], list[dict[str, str]]]:
-    adapter = repo_root / RETRO_ADAPTER_RELATIVE_PATH
-    summary = repo_root / RETRO_SUMMARY_RELATIVE_PATH
-    adapter_exists = adapter.is_file()
-    summary_exists = summary.is_file()
-    enabled = adapter_exists or summary_exists
-    agents_mentions_summary = RETRO_SUMMARY_RELATIVE_PATH.as_posix() in agents_text
-    findings: list[dict[str, str]] = []
-    if enabled and not agents_mentions_summary:
-        findings.append(
-            {
-                "type": "agents_missing_retro_recent_lessons_memory",
-                "message": "Retro memory is enabled but AGENTS.md does not list the recent lessons digest.",
-                "recommended_action": "add_recent_lessons_to_agents_memory",
-            }
-        )
-    if summary_exists and not adapter_exists:
-        findings.append(
-            {
-                "type": "retro_summary_without_adapter",
-                "message": "Retro recent-lessons digest exists but .agents/retro-adapter.yaml is missing.",
-                "recommended_action": "seed_or_restore_retro_adapter",
-            }
-        )
-    if adapter_exists and not summary_exists:
-        findings.append(
-            {
-                "type": "retro_adapter_without_summary",
-                "message": "Retro adapter exists but the configured recent-lessons digest is missing.",
-                "recommended_action": "seed_or_restore_recent_lessons_digest",
-            }
-        )
-    return (
-        {
-            "enabled": enabled,
-            "adapter_exists": adapter_exists,
-            "summary_exists": summary_exists,
-            "agents_mentions_summary": agents_mentions_summary,
-        },
-        findings,
-    )
-
-
-def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object], list[dict[str, str]]]:
-    lowered = agents_text.lower()
-    stop_gate_detected = any(marker in lowered for marker in FRESH_EYE_MARKERS)
-    missing_required = _missing_snippets(agents_text, FRESH_EYE_REQUIRED_SNIPPETS) if stop_gate_detected else []
-    stale_markers = [marker for marker in FRESH_EYE_STALE_MARKERS if marker in lowered]
-    findings: list[dict[str, str]] = []
-    if stop_gate_detected and missing_required:
-        findings.append(
-            {
-                "type": "fresh_eye_delegation_rule_drift",
-                "message": "Fresh-eye or premortem review is present but AGENTS.md is missing the delegated-review stop-gate rule.",
-                "recommended_action": "normalize_fresh_eye_delegation_rule",
-            }
-        )
-    if stop_gate_detected and stale_markers:
-        findings.append(
-            {
-                "type": "fresh_eye_review_still_requires_consent_or_fallback",
-                "message": "Fresh-eye review wording still asks for explicit consent or permits local fallback.",
-                "recommended_action": "replace_with_already_delegated_host_restriction_rule",
-            }
-        )
-    return (
-        {
-            "stop_gate_detected": stop_gate_detected,
-            "missing_required_snippets": missing_required,
-            "stale_markers": stale_markers,
-        },
-        findings,
-    )
-
-
-def _detect_skill_routing_normalization(
-    repo_root: Path,
-    agents_text: str,
-    skill_routing_payload: Callable[[Path], dict[str, Any]] | None,
-) -> tuple[dict[str, object], list[dict[str, str]]]:
-    has_skill_routing = "## Skill Routing" in agents_text
-    payload = skill_routing_payload(repo_root) if skill_routing_payload is not None else {}
-    expected_markdown = str(payload.get("markdown", ""))
-    missing_expected_snippets: list[str] = []
-    matches_compact_block = bool(expected_markdown and expected_markdown in agents_text)
-    recommended_action = str(payload.get("recommended_action", "inspect_manually"))
-    decision_needed: str | None = None
-    findings: list[dict[str, str]] = []
-
-    if has_skill_routing and expected_markdown and not matches_compact_block:
-        expected_lines = tuple(line for line in expected_markdown.splitlines() if line.strip() and line != "## Skill Routing")
-        missing_expected_snippets = [line for line in expected_lines if line not in agents_text]
-        recommended_action = "review_existing_skill_routing"
-        decision_needed = "leave_as_is_or_replace_with_compact_block"
-        findings.append(
-            {
-                "type": "skill_routing_block_custom_or_drifted",
-                "message": "AGENTS.md has a Skill Routing block that differs from the generated compact discovery-first block.",
-                "recommended_action": "decide_leave_as_is_or_compact_skill_routing",
-            }
-        )
-
-    return (
-        {
-            "has_skill_routing": has_skill_routing,
-            "matches_compact_block": matches_compact_block,
-            "recommended_action": recommended_action,
-            "decision_needed": decision_needed,
-            "missing_expected_snippets": missing_expected_snippets,
-        },
-        findings,
-    )
-
-
-def detect_agent_docs(
-    repo_root: Path,
-    *,
-    skill_routing_payload: Callable[[Path], dict[str, Any]] | None = None,
-) -> dict[str, object]:
-    agents = _case_insensitive_path(repo_root, Path("AGENTS.md"))
-    claude = _case_insensitive_path(repo_root, Path("CLAUDE.md"))
-    agents_text = _read_text(agents)
-    if not agents.exists() and not claude.exists() and not claude.is_symlink():
-        action = "create_agents_and_symlink"
-    elif agents.exists() and not claude.exists() and not claude.is_symlink():
-        action = "create_symlink_only"
-    elif claude.is_symlink() and claude.resolve() == agents.resolve():
-        action = "leave_as_is"
-    elif claude.is_file() and not agents.exists():
-        action = "ask_to_promote_claude_into_agents"
-    elif claude.is_file() and agents.exists():
-        action = "ask_to_merge_and_replace_with_symlink"
-    else:
-        action = "inspect_manually"
-    retro_memory, retro_findings = _detect_retro_memory_normalization(repo_root, agents_text)
-    fresh_eye_review, fresh_eye_findings = _detect_fresh_eye_normalization(agents_text)
-    skill_routing, skill_routing_findings = _detect_skill_routing_normalization(
-        repo_root,
-        agents_text,
-        skill_routing_payload,
-    )
-    normalization_findings = [*retro_findings, *fresh_eye_findings, *skill_routing_findings]
-    return {
-        "agents": _file_state(agents),
-        "claude": _file_state(claude),
-        "recommended_action": action,
-        "agents_has_text": _text_present(agents),
-        "claude_has_text": _text_present(claude),
-        "normalization": {
-            "status": "needs_normalization" if normalization_findings else "ok",
-            "findings": normalization_findings,
-            "retro_memory": retro_memory,
-            "fresh_eye_review": fresh_eye_review,
-            "skill_routing": skill_routing,
-        },
-    }
-
-
 def detect_repo_mode(specs: dict[str, SurfaceSpec]) -> str:
     present = sum(1 for surface_id in CORE_SURFACES if _surface_present(specs[surface_id]))
     if present == 0:
@@ -304,12 +133,49 @@ def build_init_repo_inspection_payload(
     *,
     load_init_repo_adapter: Callable[[Path], tuple[dict[str, Any], str | None, list[dict[str, str]]]],
     prose_wrap_state: Callable[[Path, dict[str, Any]], dict[str, object]],
+    recommendation_policy: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
     surface_overrides: Callable[[dict[str, Any]], dict[str, Any]],
     skill_routing_payload: Callable[[Path], dict[str, Any]] | None = None,
 ) -> dict[str, object]:
     adapter_data, adapter_path, adapter_warnings = load_init_repo_adapter(repo_root)
     specs = _surface_specs(repo_root, surface_overrides(adapter_data))
     repo_mode = detect_repo_mode(specs)
+    policy = recommendation_policy(adapter_data) if recommendation_policy is not None else {}
+    acknowledged = set(policy.get("acknowledged", []))
+    agent_docs = detect_agent_docs(repo_root, skill_routing_payload=skill_routing_payload)
+    normalization = agent_docs["normalization"]
+    findings = [
+        finding
+        for finding in normalization["findings"]
+        if isinstance(finding, dict) and not is_acknowledged(str(finding.get("type")), acknowledged)
+    ]
+    recommendations = [
+        finding_recommendation(
+            finding,
+            priority=FINDING_RECOMMENDATION_PRIORITIES.get(str(finding.get("type")), "advisory"),
+        )
+        for finding in findings
+        if finding.get("type") in RECOMMENDATION_FINDING_TYPES
+    ]
+    recommendations.extend(detect_policy_source_recommendations(repo_root, _read_text(repo_root / "AGENTS.md"), policy))
+    recommendations = [
+        recommendation
+        for recommendation in sort_recommendations(recommendations)
+        if not is_acknowledged(str(recommendation.get("id")), acknowledged)
+    ]
+    for recommendation in recommendations:
+        acknowledgement = recommendation.get("acknowledgement")
+        if isinstance(acknowledgement, dict):
+            acknowledgement["adapter_path"] = adapter_path
+    normalization["findings"] = findings
+    normalization["recommendations"] = recommendations
+    normalization["status"] = "needs_normalization" if findings or recommendations else "ok"
+    normalization["recommendation_policy"] = {
+        "defaults_version": policy.get("defaults_version"),
+        "policy_source_count": len(policy.get("policy_sources", [])),
+        "enabled": list(policy.get("enabled", [])),
+        "acknowledged": sorted(acknowledged),
+    }
     return {
         "repo": repo_root.name,
         "repo_mode": repo_mode,
@@ -321,7 +187,8 @@ def build_init_repo_inspection_payload(
             "valid": not adapter_warnings,
             "warnings": adapter_warnings,
         },
-        "agent_docs": detect_agent_docs(repo_root, skill_routing_payload=skill_routing_payload),
+        "agent_docs": agent_docs,
+        "recommendations": recommendations,
         "prose_wrap": prose_wrap_state(repo_root, adapter_data),
         "surfaces": {surface_id: _surface_state(repo_root, spec) for surface_id, spec in specs.items()},
     }

@@ -18,6 +18,10 @@ self-validation.
 - TREAT REPO-MANDATED BOUNDED SUBAGENT REVIEWS AS ALREADY DELEGATED.
   When this repo or a required skill makes a bounded fresh-eye subagent review
   a stop gate, do not wait for a second user message asking for delegation.
+- TREAT TASK-COMPLETING `INIT-REPO` AND `QUALITY` REVIEWS AS SPAWN-AUTHORIZED.
+  Normalization or quality-review runs that complete those skills' review
+  contracts may spawn bounded reviewers; help, route, and raw-inspection calls
+  stay cheap.
 - IF THE HOST BLOCKS SUBAGENT SPAWNING, STOP AND REPORT THE HOST RESTRICTION.
   Do not substitute a same-agent pass for the canonical bounded review.
 - PREFER VALIDATORS AND SCRIPTS OVER PROSE RITUALS.
@@ -27,6 +31,13 @@ self-validation.
   the next agent can continue without rediscovering machine state. Install,
   update, and support-sync flows should emit structured output and persist
   machine-readable state when they mutate the operator surface.
+- TREAT `charness-artifacts/` AS REPO STATE, NOT SCRATCH.
+  When a Charness workflow creates or updates durable artifacts under
+  `charness-artifacts/`, include the meaningful artifact changes in the same
+  commit as the work they support. Current-pointer helpers should be no-op when
+  their canonical content has not changed; if a startup or inventory command
+  rewrites an artifact without a canonical change, treat that as invocation
+  drift or a helper bug to fix.
 - KEEP MANUALLY MAINTAINED REPO DOCS IN ENGLISH.
   [`docs/handoff.md`](./docs/handoff.md) may stay Korean when that makes the next session pickup
   sharper.
@@ -47,8 +58,11 @@ support skills, synced support surfaces, and integrations.
 After that bootstrap pass, choose the durable work skill that best matches the
 request from the installed charness surface.
 
-Validation-shaped closeout or operator reading test requests go through
-`quality` validation recommendations before HITL or same-agent manual review.
+Evaluator-backed validation, non-deterministic issue closeout, and operator
+reading test wording route through `quality` before `hitl` or same-agent manual
+review. This routing rule does not skip the required startup `find-skills`
+bootstrap; record `find-skills` as the bootstrap helper even when `quality` is
+already the obvious work skill.
 
 Keep this block short. Detailed routing belongs in installed skill metadata and
 `find-skills` output, not in a long checked-in catalog.
@@ -163,9 +177,9 @@ Read the smallest memory surface that answers the current question.
 - Keep durable review findings in `charness-artifacts/` when a skill is designed to
   accumulate them.
 - If the mandatory startup `find-skills` call rewrites
-  `charness-artifacts/find-skills/latest.*`, diff it immediately. Commit it
-  only when the canonical capability inventory changed; otherwise treat the
-  rewrite as invocation drift or a bug to fix, not as unrelated ambient dirt.
+  `charness-artifacts/find-skills/latest.*` without a canonical capability
+  inventory change, treat that as invocation drift or a bug to fix; the helper
+  should normally no-op in that case.
 - If the user correctly points out a missed issue, broken assumption, or
   missing gate that should likely have been caught, run a brief retro before
   continuing and say whether that retro was persisted.

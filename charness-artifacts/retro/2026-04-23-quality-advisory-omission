@@ -1,0 +1,49 @@
+# Retro: Quality Advisory Omission
+
+## Mode
+
+session
+
+## Context
+
+The quality run found and fixed deterministic drift, then the final response
+reported fixes, gates, coverage, and commit state but did not summarize the
+remaining advisory findings until the user asked.
+
+## Evidence Summary
+
+- `charness-artifacts/quality/latest.md` contained `Weak`, `Missing`,
+  `Deferred`, and `Recommended Next Gates` sections.
+- The final response emphasized resolved drift and passing gates.
+- The user explicitly asked why advisory findings were not mentioned.
+
+## Waste
+
+Trust was lost because the report made the slice sound cleaner than it was. The
+remaining advisory pressure was present in the durable artifact, but the final
+answer did not carry it back to the operator.
+
+## Critical Decisions
+
+- Correct: fixing the stale Cautilus install URL and the `quality` before
+  `hitl` routing gap in the same slice.
+- Incorrect: treating advisory posture as secondary context after a quality
+  request, instead of reporting it alongside pass/fail gate status.
+
+## Expert Counterfactuals
+
+- A Gary Klein premortem lens would have asked what the operator could still be
+  surprised by after a green quality gate; the answer was the advisory backlog.
+- A Gerald Weinberg systems lens would have reported both the deterministic gate
+  system and the soft signals that still shape future quality work.
+
+## Next Improvements
+
+- workflow: every `quality` closeout must include a short `Advisory` section
+  even when all hard gates pass.
+- memory: keep this miss in retro artifacts so future sessions do not equate
+  green gates with a fully healthy posture.
+
+## Persisted
+
+yes: `charness-artifacts/retro/2026-04-23-quality-advisory-omission`

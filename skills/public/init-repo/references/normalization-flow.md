@@ -20,6 +20,16 @@ parallel templates.
 - when the repo requires bounded fresh-eye or premortem-style subagent review,
   does [`AGENTS.md`](../../../../AGENTS.md) say that this stop gate is already delegated and that
   host spawn restrictions must stay visible
+- when Charness `init-repo` or `quality` completes a task by running bounded
+  review, does [`AGENTS.md`](../../../../AGENTS.md) name those skills as spawn-authorized instead of
+  placing all delegated-review policy under a Premortem-only heading
+- when adapter-declared policy sources imply delegated review, does
+  `inspect_repo.py` emit a `recommendations[]` queue item with priority,
+  confidence, evidence, suggested action, and acknowledgement state
+- when the repo uses Charness durable artifacts, does [`AGENTS.md`](../../../../AGENTS.md)
+  make meaningful `charness-artifacts/` changes repo state and commit targets,
+  and say current-pointer helpers should no-op without canonical content
+  changes
 - does `docs/roadmap.md` exist when the repo needs short-horizon planning
 - can a human operator tell what to do from [`docs/operator-acceptance.md`](../../../../docs/operator-acceptance.md)
 - are there duplicate docs that should collapse into one source of truth
@@ -31,6 +41,11 @@ parallel templates.
   targeted repair and keep the rest of the operating docs intact
 - stale but useful surface: rewrite it
 - duplicate surface: collapse it into the more honest source of truth
+
+Task-completing normalization should run bounded delegated review after
+deterministic inspection. Use host-instruction policy, operating-surface
+adapter fit, and operator takeover flow as the default lenses. Help, routing,
+and raw-inspection calls do not need that review gate.
 
 If the repo already has a strong durable story and the main problem is alignment
 across multiple docs, prefer `narrative` as the next deeper skill.

@@ -164,11 +164,11 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-18",
+      "reviewed_on": "2026-04-23",
       "observed_evidence": [
-        "The checked-in public core now makes repo-mode detection explicit: `GREENFIELD`, `PARTIAL`, and `NORMALIZE` are separate states, and a mature repo with one missing core surface should get a targeted repair instead of a greenfield rewrite.",
-        "That same boundary is reinforced in `skills/public/init-repo/references/normalization-flow.md`, which says partially initialized repos should rewrite or repair existing truth surfaces and only scaffold the missing core seam instead of dropping fresh parallel templates.",
-        "The current core also treats skill-bearing repos as a first-class onboarding case: `AGENTS.md` should keep one short policy that semantic skill changes freeze current intent via reviewed dogfood, maintained scenarios, or checked-in scenario review proof before broad edits."
+        "The checked-in public core keeps repo-mode detection explicit while adding a task-completing delegated-review gate for normalization runs; inspect/help/routing calls stay cheap.",
+        "`inspect_repo.py` now emits `recommendations[]` separately from `normalization.findings`, so adapter-declared policy sources can raise `agents.delegated_review_policy` without pretending phrase matching is a hard fact.",
+        "`inspect_repo.py` now flags `fresh_eye_task_review_scope_drift` when `AGENTS.md` carries a premortem or fresh-eye delegation rule but does not name task-completing `init-repo` and `quality` review runs as spawn-authorized scopes."
       ]
     },
     {
@@ -232,12 +232,16 @@
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-22",
+      "reviewed_on": "2026-04-24",
       "observed_evidence": [
         "The current quality posture still treats checked-in proof artifacts, public executable readers, and lower deterministic gates as separate layers with different ownership, which keeps `quality` distinct from generic test-running or release work.",
         "The prompt-asset reference now makes the adaptive `cautilus` split explicit: scenario review can run automatically as proof, while maintained scenario-registry mutation remains the higher-friction follow-up that still needs confirmation.",
         "That preserves the consumer-facing `quality` contract here: the skill should prefer repo-owned proof and enforcement structure over ad hoc ceremony, including for prompt-surface validation policy.",
-        "The missing-validation-binary rule keeps the same contract for local tools: when an existing gate cannot run because `ruff` or another manifest-backed binary is absent, `quality` should turn that into setup work with install and verify steps instead of reporting a skipped gate."
+        "The missing-validation-binary rule keeps the same contract for local tools: when an existing gate cannot run because `ruff` or another manifest-backed binary is absent, `quality` should turn that into setup work with install and verify steps instead of reporting a skipped gate.",
+        "The quality core now requires task-completing reviews to report delegated-review status and includes an adapter/gate design inventory path for recommendation, acknowledgement, migration, and brittle hard-gate risks.",
+        "`validate_quality_artifact.py` now requires `Advisory` and `Delegated Review` sections, rejecting green-gate-only summaries that omit advisory or delegated-review status.",
+        "The quality adapter resolver now preserves existing `version: 1` adapters while defaulting new review fields to safe empty values.",
+        "`inventory_entrypoint_docs_ergonomics.py` now surfaces `host_instruction_runbook_pressure` when `AGENTS.md` embeds a multi-step procedure that likely belongs in a deeper doc or repo-owned command surface."
       ]
     },
     {
@@ -254,11 +258,12 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-22",
+      "reviewed_on": "2026-04-24",
       "observed_evidence": [
-        "The public core tells release work to inspect `current_release.py`, `check_real_host_proof.py`, git state, and the current release artifact before mutating anything.",
+        "The public core tells release work to inspect `current_release.py`, `check_real_host_proof.py`, `check_requested_review_gate.py`, git state, and the current release artifact before mutating anything.",
         "The checked-in release core no longer reopens a local-premortem loophole: routine release hygiene now says no premortem is needed at all, and any release slice that does need one must use the standalone `premortem` skill.",
-        "The release closeout contract now distinguishes `Premortem: skipped <reason>` from `Premortem: blocked <host-signal>`, which matches the maintainer-facing path better than implying that a same-agent substitute still counted as release review."
+        "The release closeout contract now distinguishes `Premortem: skipped <reason>` from `Premortem: blocked <host-signal>`, which matches the maintainer-facing path better than implying that a same-agent substitute still counted as release review.",
+        "`check_requested_review_gate.py` blocks publish when a configured requested-review command fails or when the release record says review was unavailable without an explicit review waiver."
       ]
     },
     {

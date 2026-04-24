@@ -73,6 +73,22 @@ def test_init_repo_agent_docs_carry_bounded_subagent_delegation_rule() -> None:
     assert "same-agent pass" in default_surfaces
 
 
+def test_init_repo_docs_carry_charness_artifact_commit_policy() -> None:
+    skill_text = (ROOT / "skills/public/init-repo/SKILL.md").read_text(encoding="utf-8").lower()
+    agent_docs = (ROOT / "skills/public/init-repo/references/agent-docs-policy.md").read_text(encoding="utf-8").lower()
+    default_surfaces = (ROOT / "skills/public/init-repo/references/default-surfaces.md").read_text(encoding="utf-8").lower()
+    normalization_flow = (ROOT / "skills/public/init-repo/references/normalization-flow.md").read_text(encoding="utf-8").lower()
+
+    for text in (skill_text, agent_docs, default_surfaces, normalization_flow):
+        assert "charness-artifacts/" in text
+        assert "repo state" in text
+        assert "canonical content" in text
+
+    assert "commit targets" in agent_docs
+    assert "current-pointer helpers should no-op" in agent_docs
+    assert "commit targets" in default_surfaces
+
+
 def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
     skill_text = (ROOT / "skills" / "public" / "hitl" / "SKILL.md").read_text(encoding="utf-8")
     chunk_contract = (

@@ -15,11 +15,11 @@
     "install": {
       "mode": "manual",
       "docs_url": "https://github.com/corca-ai/cautilus",
-      "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.md",
+      "install_url": "https://github.com/corca-ai/cautilus/blob/main/install.sh",
       "repo_followup": {
         "summary": "Materialize the upstream host-repo cautilus consumer surface when you want the repo-local `.agents/skills/cautilus/` entrypoint in addition to charness-managed synced support discovery.",
         "command_template": "cautilus install --repo-root {repo_root}",
-        "docs_url": "https://github.com/corca-ai/cautilus/blob/main/install.md",
+        "docs_url": "https://github.com/corca-ai/cautilus/blob/main/install.sh",
         "when": "after-binary-install",
         "optional": true
       },

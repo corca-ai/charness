@@ -21,12 +21,19 @@ def default_repo_root() -> Path:
 
 
 def run_command(command: list[str], *, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+    env = os.environ.copy()
+    # Bootstrap probes must not inherit another repo/session's injected packages.
+    # Otherwise a copied repo can appear healthy because PYTHONPATH points back
+    # to the source checkout's .charness/bootstrap-python directory.
+    env.pop("PYTHONPATH", None)
+    env.pop("PYTHONHOME", None)
     return subprocess.run(
         command,
         cwd=cwd,
         check=False,
         capture_output=True,
         text=True,
+        env=env,
     )
 
 
@@ -142,9 +149,14 @@ def modules_available(python_path: Path, required_modules: list[str]) -> bool:
     if not python_path.exists():
         return False
     probe = (
-        "import importlib.util, sys\n"
+        "import importlib, sys\n"
         f"modules = {required_modules!r}\n"
-        "missing = [name for name in modules if importlib.util.find_spec(name) is None]\n"
+        "missing = []\n"
+        "for name in modules:\n"
+        "    try:\n"
+        "        importlib.import_module(name)\n"
+        "    except Exception:\n"
+        "        missing.append(name)\n"
         "sys.exit(0 if not missing else 1)\n"
     )
     result = run_command([str(python_path), "-c", probe])
@@ -189,7 +201,7 @@ def write_launcher(launcher_path: Path, base_python: str, target_dir: Path) -> N
             "\r\n".join(
                 [
                     "@echo off",
-                    f"set \"PYTHONPATH={target_dir};%PYTHONPATH%\"",
+                    f"set \"PYTHONPATH={target_dir}\"",
                     f"\"{base_python}\" %*",
                     "",
                 ]
@@ -201,7 +213,7 @@ def write_launcher(launcher_path: Path, base_python: str, target_dir: Path) -> N
             "\n".join(
                 [
                     "#!/bin/sh",
-                    f"PYTHONPATH={shlex.quote(str(target_dir))}${{PYTHONPATH:+:${{PYTHONPATH}}}}",
+                    f"PYTHONPATH={shlex.quote(str(target_dir))}",
                     "export PYTHONPATH",
                     f"exec {shlex.quote(base_python)} \"$@\"",
                     "",
@@ -240,6 +252,13 @@ def ensure_bootstrap_runtime(
         write_launcher(python_path, str(info["executable"]), packages_dir)
 
     if not modules_available(python_path, required_modules):
+        write_launcher(python_path, str(info["executable"]), packages_dir)
+
+    if not modules_available(python_path, required_modules) and packages_dir.exists():
+        # A copied checkout may carry a stale target directory with native wheels
+        # from a different Python/runtime. Remove it before deciding whether the
+        # base interpreter can satisfy the contract or a fresh install is needed.
+        shutil.rmtree(packages_dir)
         write_launcher(python_path, str(info["executable"]), packages_dir)
 
     if not modules_available(python_path, required_modules) and not modules_available(base_python_path, required_modules):

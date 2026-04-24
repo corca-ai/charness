@@ -37,18 +37,29 @@ load_adapter = _resolve_adapter_module.load_adapter
 def evaluate(repo_root: Path) -> dict[str, Any]:
     adapter = load_adapter(repo_root)
     rules: list[str] = adapter["data"].get("skill_ergonomics_gate_rules", []) or []
+    requested_paths = adapter["data"].get("skill_ergonomics_skill_paths") or adapter["data"].get(
+        "cli_skill_surface_skill_paths"
+    ) or []
     if not rules:
         return {
             "adapter_path": adapter.get("path"),
             "rules": [],
             "checked_skills": [],
+            "discovery_errors": [],
             "violations": [],
         }
 
     checked_skills: list[dict[str, Any]] = []
     violations: list[dict[str, Any]] = []
-    for skill_path in iter_skill_paths(repo_root, []):
+    discovery_errors: list[dict[str, str]] = []
+    for skill_path in iter_skill_paths(repo_root, requested_paths):
         if not skill_path.is_file():
+            discovery_errors.append(
+                {
+                    "skill_path": str(skill_path.relative_to(repo_root) if skill_path.is_relative_to(repo_root) else skill_path),
+                    "message": "configured skill ergonomics path does not contain SKILL.md",
+                }
+            )
             continue
         item = inventory_skill(repo_root, skill_path, max_core_lines=160)
         checked_skills.append(
@@ -92,11 +103,19 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
                     ),
                 }
             )
+    if rules and not checked_skills:
+        discovery_errors.append(
+            {
+                "skill_path": "",
+                "message": "skill_ergonomics_gate_rules are configured but no skills were checked",
+            }
+        )
 
     return {
         "adapter_path": adapter.get("path"),
         "rules": rules,
         "checked_skills": checked_skills,
+        "discovery_errors": discovery_errors,
         "violations": violations,
     }
 
@@ -104,6 +123,8 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
 def _format_human(report: dict[str, Any]) -> str:
     if not report["rules"]:
         return "No skill_ergonomics_gate_rules configured; nothing to check."
+    if report["discovery_errors"]:
+        return "\n".join(f"skill discovery: {item['message']} {item['skill_path']}".rstrip() for item in report["discovery_errors"])
     if not report["violations"]:
         return (
             "Skill ergonomics gate passed for rules: "
@@ -129,7 +150,7 @@ def main() -> int:
         print(json.dumps(report, ensure_ascii=False, indent=2))
     else:
         print(_format_human(report))
-    return 1 if report["violations"] else 0
+    return 1 if report["violations"] or report["discovery_errors"] else 0
 
 
 if __name__ == "__main__":

@@ -68,6 +68,63 @@ def run_init_repo_inspect_states(
                 f"{targeted.get('missing_surfaces')!r}"
             )
 
+    run_init_repo_review_scope_inspect(
+        root,
+        inspect_script=inspect_script,
+        run_command=run_command,
+        expect_success=expect_success,
+        error_type=error_type,
+    )
+
+
+def run_init_repo_review_scope_inspect(
+    root: Path,
+    *,
+    inspect_script: Path,
+    run_command: Callable[..., object],
+    expect_success: Callable[..., None],
+    error_type: type[Exception],
+) -> None:
+    with tempfile.TemporaryDirectory(prefix="charness-eval-init-repo-review-scope-") as tmpdir:
+        tmp = Path(tmpdir)
+        (tmp / "docs").mkdir(parents=True)
+        (tmp / "README.md").write_text("# Demo\n", encoding="utf-8")
+        (tmp / "AGENTS.md").write_text(
+            "\n".join(
+                [
+                    "# Agents",
+                    "",
+                    "Repo-mandated bounded fresh-eye subagent reviews are already delegated by the repo contract.",
+                    "Do not wait for a second user message asking for delegation.",
+                    "If the host blocks subagent spawning, stop and report the host restriction explicitly instead of substituting a same-agent pass.",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        (tmp / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
+        (tmp / "docs" / "operator-acceptance.md").write_text("# Acceptance\n", encoding="utf-8")
+        result = run_command(["python3", str(inspect_script), "--repo-root", str(tmp)], cwd=root)
+        expect_success(result, "init-repo delegated-review scope inspect")
+        review_scope = json.loads(result.stdout)
+        normalization = review_scope.get("agent_docs", {}).get("normalization", {})
+        missing_scopes = normalization.get("fresh_eye_review", {}).get("missing_task_review_scopes")
+        if missing_scopes != ["init-repo", "quality"]:
+            raise error_type(
+                "init-repo delegated-review scope inspect: unexpected missing_task_review_scopes "
+                f"{missing_scopes!r}"
+            )
+        recommendation_ids = [item.get("id") for item in review_scope.get("recommendations", [])]
+        if "fresh_eye_task_review_scope_drift" not in recommendation_ids:
+            raise error_type(
+                "init-repo delegated-review scope inspect: expected fresh_eye_task_review_scope_drift recommendation"
+            )
+        priorities = {item.get("id"): item.get("priority") for item in review_scope.get("recommendations", [])}
+        if priorities.get("fresh_eye_task_review_scope_drift") != "review_required":
+            raise error_type(
+                "init-repo delegated-review scope inspect: expected fresh_eye_task_review_scope_drift to require review"
+            )
+
 
 def run_init_repo_operator_acceptance_synthesis(
     root: Path,

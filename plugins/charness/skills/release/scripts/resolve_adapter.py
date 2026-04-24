@@ -23,13 +23,6 @@ def _load_skill_runtime_bootstrap():
     raise ImportError("skill_runtime_bootstrap.py not found")
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
-REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
-
-
-
-
-
-
 
 _scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
 load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
@@ -58,13 +51,12 @@ STRING_FIELDS = (
     "quality_command",
 )
 LIST_FIELDS = (
-    "update_instructions",
-    "real_host_required_surfaces",
-    "real_host_required_path_globs",
-    "real_host_checklist",
+    "update_instructions", "real_host_required_surfaces", "real_host_required_path_globs", "real_host_checklist",
+    "requested_review_commands", "review_unavailable_patterns", "review_waiver_phrases", "product_surfaces",
+    "cli_skill_surface_probe_commands", "cli_skill_surface_command_docs", "cli_skill_surface_skill_paths",
+    "cli_skill_surface_change_globs",
 )
 ARTIFACT_FILENAME = "latest.md"
-
 
 def _string(value: Any, field: str, errors: list[str]) -> str | None:
     if value is None:
@@ -100,6 +92,25 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "real_host_required_surfaces": [],
         "real_host_required_path_globs": [],
         "real_host_checklist": [],
+        "requested_review_commands": [],
+        "review_unavailable_patterns": [
+            "review unavailable",
+            "requested review unavailable",
+            "review gate unavailable",
+            "review skipped because",
+            "executor_variants",
+            "no executor_variants",
+        ],
+        "review_waiver_phrases": [
+            "review waiver:",
+            "explicit review waiver:",
+            "requested review waiver:",
+        ],
+        "product_surfaces": [],
+        "cli_skill_surface_probe_commands": [],
+        "cli_skill_surface_command_docs": [],
+        "cli_skill_surface_skill_paths": [],
+        "cli_skill_surface_change_globs": [],
     }
 
 
@@ -202,12 +213,8 @@ def main() -> None:
     parser.add_argument("--repo-root", type=Path, required=True)
     try:
         args = parser.parse_args()
-        sys.stdout.write(
-            json.dumps(load_adapter(args.repo_root.resolve()), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
-        )
+        sys.stdout.write(json.dumps(load_adapter(args.repo_root.resolve()), ensure_ascii=False, indent=2, sort_keys=True) + "\n")
     finally:
         cancel_timeout()
-
-
 if __name__ == "__main__":
     main()

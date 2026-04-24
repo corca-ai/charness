@@ -63,6 +63,7 @@ def init_git_repo(repo: Path, *tracked_paths: str) -> None:
 QUALITY_PYTHON_STUBS = (
     ("validate-skills", "validate_skills.py"),
     ("validate-skill-ergonomics", "validate_skill_ergonomics.py"),
+    ("check-cli-skill-surface", "check_cli_skill_surface.py"),
     ("validate-surfaces", "validate_surfaces.py"),
     ("validate-public-skill-validation", "validate_public_skill_validation.py"),
     ("validate-public-skill-dogfood", "validate_public_skill_dogfood.py"),
@@ -84,6 +85,7 @@ QUALITY_PYTHON_STUBS = (
     ("validate-maintainer-setup", "validate_maintainer_setup.py"),
     ("check-python-lengths", "check_python_lengths.py"),
     ("check-python-filenames", "check_python_filenames.py"),
+    ("check-python-runtime-inheritance", "check_python_runtime_inheritance.py"),
     ("check-skill-contracts", "check_skill_contracts.py"),
     ("check-export-safe-imports", "check_export_safe_imports.py"),
     ("check-plugin-import-smoke", "check_plugin_import_smoke.py"),

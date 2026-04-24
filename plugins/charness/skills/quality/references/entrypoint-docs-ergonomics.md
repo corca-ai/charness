@@ -48,6 +48,9 @@ It only inventories signals that deserve a human quality pass:
   branching
 - high inline-code density with no deeper doc link, which can suggest a doc is
   trying to carry too much procedural detail itself
+- host instruction runbook pressure, where [`AGENTS.md`](../../../../AGENTS.md) embeds a multi-step
+  recovery or setup procedure that likely belongs in a deeper maintained doc
+  or repo-owned command surface
 - stale assumptions that every installable repo needs `INSTALL.md` or
   `UNINSTALL.md`, even when README Quick Start already owns first bootstrap
 

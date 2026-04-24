@@ -108,11 +108,16 @@ Then load only the references needed for the detected state:
    - when that seam is enabled, make [`AGENTS.md`](../../../AGENTS.md) name
      [`charness-artifacts/retro/recent-lessons.md`](../../../charness-artifacts/retro/recent-lessons.md) as a repo memory surface so future
      sessions can actually discover it
+   - when Charness workflows write durable artifacts, make [`AGENTS.md`](../../../AGENTS.md)
+     say meaningful `charness-artifacts/` changes are repo state and
+     current-pointer helpers no-op without canonical content changes
    - when the repo uses bounded fresh-eye or premortem-style subagent review
      as a stop gate, make [`AGENTS.md`](../../../AGENTS.md) say that the review is already delegated,
      agents should not wait for a second user message asking for delegation,
      and host spawn restrictions should be reported explicitly instead of
      replaced with a same-agent pass
+   - for Charness-managed repos, include task-completing `init-repo` and
+     `quality` review runs in that rule; do not hide it under Premortem only
    - add a short `Skill Routing` block to [`AGENTS.md`](../../../AGENTS.md) when
      installed charness skills are present
    - keep that block startup-bootstrap-heavy and discovery-first: task-oriented
@@ -146,21 +151,13 @@ Then load only the references needed for the detected state:
    - check for missing or duplicated operating surfaces
    - check that generated guidance is not contradicting itself
    - check that the next human operator can tell what to read and what to do
+   - for task-completing normalization, spawn bounded reviewers for
+     host-instruction policy, operating-surface adapter fit, and operator
+     takeover flow; report `executed`, `blocked`, or `not_applicable`
+   - use deterministic inspection as reviewer evidence and emit queued
+     `recommendations[]` separately from `normalization.findings`
    - if deeper repo-wide posture review is still needed, hand off to `quality`
      instead of inflating `init-repo`
-
-## Output Shape
-
-The result should usually include:
-
-- `Repo Mode`
-- `Agent Docs State`
-- `Verified Facts`
-- `Assumptions`
-- `Scaffolded Surfaces`
-- `Normalized Surfaces`
-- `Open Questions`
-- `Next Step`
 
 ## Guardrails
 

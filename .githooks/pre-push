@@ -15,5 +15,8 @@ if ! git diff --quiet -- plugins/charness .claude-plugin/marketplace.json .agent
   exit 1
 fi
 
+echo "charness pre-push: checking current pointers before full quality"
+python3 scripts/validate_current_pointer_freshness.py --repo-root "$REPO_ROOT"
+
 echo "charness pre-push: running ./scripts/run-quality.sh"
 ./scripts/run-quality.sh

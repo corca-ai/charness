@@ -48,6 +48,8 @@ Then inspect current release state:
 ```bash
 python3 "$SKILL_DIR/scripts/current_release.py" --repo-root .
 python3 "$SKILL_DIR/scripts/check_real_host_proof.py" --repo-root .
+python3 "$SKILL_DIR/scripts/check_requested_review_gate.py" --repo-root .
+python3 "$SKILL_DIR/../../../scripts/check_cli_skill_surface.py" --repo-root . --adapter-path .agents/release-adapter.yaml --json 2>/dev/null || true
 git status --short
 git log --oneline -5
 sed -n '1,220p' <resolved-release-artifact> 2>/dev/null || true
@@ -108,6 +110,12 @@ verified.
    - distinguish local/tag success from later workflow or public verification
    - if `check_real_host_proof.py` says release-time proof is required, carry
      that checklist into the closeout instead of claiming local CI replaced it
+   - if `check_requested_review_gate.py` reports requested review unavailability,
+     fix the gate, select a correct adapter, or record an explicit waiver before
+     publish/tag
+   - if the adapter declares both `installable_cli` and `bundled_skill`, run the
+     CLI plus bundled-skill disclosure check for relevant CLI, shipped-skill,
+     plugin, package, or install-surface changes
    - if launcher or install seams moved, include `Startup Proof` and point to
      measured release-class startup probes instead of only restating generic
      smoke success
@@ -168,6 +176,9 @@ The result should usually include:
 - Do not call a same-agent review a premortem.
 - If a required premortem is blocked, stop instead of downgrading to a local
   substitute and still calling the release reviewed.
+- Do not downgrade a user-requested review gate failure into a release caveat.
+  A release record that says review was unavailable needs a fix, an explicitly
+  selected working adapter, or an explicit review waiver before publish/tag.
 - If the repo lacks the declared release files or sync script, stop cleanly and
   name the missing seam instead of inventing one.
 
@@ -178,5 +189,6 @@ The result should usually include:
 - `references/install-surface.md`
 - `scripts/current_release.py`
 - `scripts/check_real_host_proof.py`
+- `scripts/check_requested_review_gate.py`
 - `scripts/bump_version.py`
 - `scripts/publish_release.py`

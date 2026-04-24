@@ -26,11 +26,13 @@ _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adap
 _current_release = SKILL_RUNTIME.load_local_skill_module(__file__, "current_release")
 _bump_version = SKILL_RUNTIME.load_local_skill_module(__file__, "bump_version")
 _check_real_host = SKILL_RUNTIME.load_local_skill_module(__file__, "check_real_host_proof")
+_check_review_gate = SKILL_RUNTIME.load_local_skill_module(__file__, "check_requested_review_gate")
 _helpers = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_helpers")
 load_adapter = _resolve_adapter.load_adapter
 build_release_payload = _current_release.build_payload
 bump_part = _bump_version.bump_part
 build_real_host_payload = _check_real_host.build_payload
+build_review_gate_payload = _check_review_gate.build_payload
 run = _helpers.run
 run_shell = _helpers.run_shell
 git_status = _helpers.git_status
@@ -78,6 +80,29 @@ def safe_real_host_payload(repo_root: Path, repo_paths: list[str]) -> dict[str, 
         }
 
 
+def run_requested_review_gate(repo_root: Path) -> None:
+    review_gate_payload = build_review_gate_payload(repo_root, run_commands=True)
+    if review_gate_payload["status"] == "blocked":
+        raise SystemExit("requested release review gate blocked publish:\n" + "\n".join(review_gate_payload["blockers"]))
+
+
+def run_cli_skill_surface_gate(repo_root: Path, adapter_data: dict[str, Any]) -> None:
+    if {"installable_cli", "bundled_skill"}.issubset(set(adapter_data.get("product_surfaces", []))):
+        command = ["python3", "scripts/check_cli_skill_surface.py", "--repo-root", str(repo_root)]
+        command.extend(["--adapter-path", ".agents/release-adapter.yaml", "--run-probes"])
+        for path in changed_paths(repo_root):
+            command.extend(["--changed-path", path])
+        run(command, cwd=repo_root)
+
+
+def run_bump(args: argparse.Namespace, repo_root: Path) -> None:
+    if args.publish_current:
+        return
+    bump_command = ["python3", str(Path(__file__).resolve().with_name("bump_version.py")), "--repo-root", str(repo_root)]
+    bump_command.extend(["--set-version", args.set_version] if args.set_version else ["--part", args.part])
+    run(bump_command, cwd=repo_root)
+
+
 def main() -> None:
     args = parse_args()
     repo_root = args.repo_root.resolve()
@@ -123,10 +148,7 @@ def main() -> None:
         return
 
     run(["gh", "auth", "status"], cwd=repo_root)
-    if not args.publish_current:
-        bump_command = ["python3", str(Path(__file__).resolve().with_name("bump_version.py")), "--repo-root", str(repo_root)]
-        bump_command.extend(["--set-version", args.set_version] if args.set_version else ["--part", args.part])
-        run(bump_command, cwd=repo_root)
+    run_bump(args, repo_root)
 
     release_payload = build_release_payload(repo_root)
     if release_payload["drift"]:
@@ -134,8 +156,24 @@ def main() -> None:
     if release_payload["surface_versions"]["packaging_manifest"] != next_version:
         raise SystemExit(f"expected packaging manifest version `{next_version}`")
 
-    run_shell(str(adapter_data["quality_command"]), cwd=repo_root)
     host_payload = safe_real_host_payload(repo_root, changed_paths(repo_root))
+    write_release_artifact(
+        repo_root,
+        output_dir=adapter_data["output_dir"],
+        package_id=adapter_data["package_id"],
+        previous_version=current_version,
+        target_version=next_version,
+        remote=args.remote,
+        branch=branch,
+        quality_command=adapter_data["quality_command"],
+        release_url=None,
+        update_instructions=adapter_data["update_instructions"],
+        real_host_payload=host_payload,
+        quality_status="is queued for this publish attempt",
+    )
+    run_requested_review_gate(repo_root)
+    run_cli_skill_surface_gate(repo_root, adapter_data)
+    run_shell(str(adapter_data["quality_command"]), cwd=repo_root)
     artifact_relpath = write_release_artifact(
         repo_root,
         output_dir=adapter_data["output_dir"],

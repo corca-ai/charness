@@ -182,7 +182,7 @@ def test_current_pointer_freshness_accepts_matching_runtime_signal_claims(tmp_pa
     assert result.returncode == 0, result.stderr
 
 
-def test_current_pointer_freshness_rejects_stale_runtime_signal_claims(tmp_path: Path) -> None:
+def test_current_pointer_freshness_ignores_volatile_runtime_signal_numbers(tmp_path: Path) -> None:
     repo = seed_repo(
         tmp_path,
         quality_text=(
@@ -194,10 +194,7 @@ def test_current_pointer_freshness_rejects_stale_runtime_signal_claims(tmp_path:
     )
     write_runtime_signals(repo)
     result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "quality pointer runtime signal claim is stale" in result.stderr
-    assert "`pytest` latest is `37.6s`" in result.stderr
-    assert "`pytest` median is `36.5s`" in result.stderr
+    assert result.returncode == 0, result.stderr
 
 
 def test_current_pointer_freshness_rejects_stale_release_version_claim(tmp_path: Path) -> None:

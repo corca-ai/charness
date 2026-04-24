@@ -33,12 +33,16 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     assert payload["field_statuses"] == {
         "coverage_fragile_margin_pp": "defaulted",
         "coverage_floor_policy": "defaulted",
+        "adapter_review_sources": "defaulted",
+        "acknowledged_recommendations": "defaulted",
         "concept_paths": "inferred",
+        "gate_design_review_globs": "defaulted",
         "gate_commands": "installed",
         "preflight_commands": "installed",
         "preset_lineage": "inferred",
         "prompt_asset_policy": "defaulted",
         "prompt_asset_roots": "defaulted",
+        "recommendation_defaults_version": "defaulted",
         "review_commands": "inferred",
         "runtime_budgets": "defaulted",
         "startup_probes": "defaulted",
@@ -72,6 +76,10 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
         r"Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*"
     )
     assert resolved["data"]["prompt_asset_roots"] == []
+    assert resolved["data"]["recommendation_defaults_version"] == "issue-64"
+    assert resolved["data"]["adapter_review_sources"] == []
+    assert resolved["data"]["acknowledged_recommendations"] == []
+    assert resolved["data"]["gate_design_review_globs"] == []
     assert resolved["data"]["prompt_asset_policy"] == {
         "source_globs": [],
         "min_multiline_chars": 400,
@@ -112,6 +120,13 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
                 "spec_pytest_reference_format: \"Covered by pytest:\\s+`tests/custom[^`]+`\"",
                 "prompt_asset_roots:",
                 "- prompts",
+                "recommendation_defaults_version: custom-v1",
+                "adapter_review_sources:",
+                "- .agents/quality-adapter.yaml",
+                "acknowledged_recommendations:",
+                "- demo.ack",
+                "gate_design_review_globs:",
+                "- scripts/*.py",
                 "prompt_asset_policy:",
                 "  source_globs:",
                 "  - src/**/*.py",
@@ -150,6 +165,10 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     assert payload["field_statuses"]["specdown_smoke_patterns"] == "preserved"
     assert payload["field_statuses"]["spec_pytest_reference_format"] == "preserved"
     assert payload["field_statuses"]["prompt_asset_roots"] == "preserved"
+    assert payload["field_statuses"]["recommendation_defaults_version"] == "preserved"
+    assert payload["field_statuses"]["adapter_review_sources"] == "preserved"
+    assert payload["field_statuses"]["acknowledged_recommendations"] == "preserved"
+    assert payload["field_statuses"]["gate_design_review_globs"] == "preserved"
     assert payload["field_statuses"]["prompt_asset_policy"] == "preserved"
     assert payload["field_statuses"]["skill_ergonomics_gate_rules"] == "preserved"
     assert payload["field_statuses"]["startup_probes"] == "preserved"
@@ -172,6 +191,10 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     assert resolved["data"]["specdown_smoke_patterns"] == []
     assert resolved["data"]["spec_pytest_reference_format"] == r"Covered by pytest:\s+`tests/custom[^`]+`"
     assert resolved["data"]["prompt_asset_roots"] == ["prompts"]
+    assert resolved["data"]["recommendation_defaults_version"] == "custom-v1"
+    assert resolved["data"]["adapter_review_sources"] == [".agents/quality-adapter.yaml"]
+    assert resolved["data"]["acknowledged_recommendations"] == ["demo.ack"]
+    assert resolved["data"]["gate_design_review_globs"] == ["scripts/*.py"]
     assert resolved["data"]["prompt_asset_policy"] == {
         "source_globs": ["src/**/*.py"],
         "min_multiline_chars": 256,
@@ -213,6 +236,35 @@ def test_quality_bootstrap_rejects_invalid_explicit_skill_ergonomics_rules(tmp_p
     assert result.returncode == 1
     assert "invalid `skill_ergonomics_gate_rules`" in result.stderr
     assert "Repair the adapter before rerunning bootstrap" in result.stderr
+
+
+def test_quality_resolve_rejects_invalid_review_fields(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: charness-artifacts/quality",
+                "recommendation_defaults_version: 7",
+                "adapter_review_sources: invalid",
+                "acknowledged_recommendations: invalid",
+                "gate_design_review_globs: invalid",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["valid"] is False
+    assert "recommendation_defaults_version must be a string" in payload["errors"]
+    assert "adapter_review_sources must be a list of strings" in payload["errors"]
+    assert "acknowledged_recommendations must be a list of strings" in payload["errors"]
+    assert "gate_design_review_globs must be a list of strings" in payload["errors"]
 
 
 def test_quality_bootstrap_detects_repo_owned_github_actions_check(tmp_path: Path) -> None:
@@ -284,3 +336,86 @@ def test_quality_init_adapter_seeds_specdown_defaults(tmp_path: Path) -> None:
     assert resolved["data"]["spec_pytest_reference_format"] == (
         r"Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*"
     )
+
+
+def test_quality_inventory_adapter_gate_design_emits_required_classes(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: charness-artifacts/quality",
+                "acknowledged_recommendations:",
+                "- demo.ack",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo / "scripts" / "review_policy.py").write_text(
+        "FRESH_EYE_MARKERS = ('premortem',)\nrecommendations = [{'enforcement_tier': 'NON_AUTOMATABLE'}]\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_adapter_gate_design.py",
+        "--repo-root",
+        str(repo),
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert set(payload["finding_classes"]) == {
+        "structural_fact",
+        "contextual_recommendation",
+        "acknowledgement_gap",
+        "migration_gap",
+        "brittle_hard_gate_smell",
+    }
+    assert set(payload["enforcement_tiers"]) == {"AUTO_EXISTING", "AUTO_CANDIDATE", "NON_AUTOMATABLE"}
+    classes = {finding["finding_class"] for finding in payload["findings"]}
+    assert "migration_gap" in classes
+    assert "acknowledgement_gap" in classes
+    assert "brittle_hard_gate_smell" in classes
+    assert "contextual_recommendation" in classes
+
+
+def test_quality_inventory_adapter_gate_design_uses_configured_review_scope(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    (repo / "custom").mkdir()
+    (repo / "custom" / "review_policy.py").write_text(
+        "FRESH_EYE_MARKERS = ('premortem',)\n",
+        encoding="utf-8",
+    )
+    (repo / "scripts" / "ignored_policy.py").write_text(
+        "FRESH_EYE_MARKERS = ('premortem',)\n",
+        encoding="utf-8",
+    )
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: charness-artifacts/quality",
+                "adapter_review_sources:",
+                "- .agents/quality-adapter.yaml",
+                "gate_design_review_globs:",
+                "- custom/*.py",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_adapter_gate_design.py",
+        "--repo-root",
+        str(repo),
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["review_scope_source"].endswith(".agents/quality-adapter.yaml")
+    assert "custom/review_policy.py" in payload["reviewed_paths"]
+    assert "scripts/ignored_policy.py" not in payload["reviewed_paths"]

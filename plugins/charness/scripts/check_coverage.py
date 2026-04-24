@@ -54,6 +54,7 @@ COPY_IGNORE = shutil.ignore_patterns(
     ".mypy_cache",
     "__pycache__",
     ".coverage",
+    ".charness",
     ".venv",
     "node_modules",
     "history",
