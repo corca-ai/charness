@@ -335,6 +335,9 @@ if ((${#PYTEST_PARALLEL_FLAGS[@]})); then
 else
   queue_selected "pytest" "${PYTEST_CMD[@]}" -q -m "not ci_only" "${STANDING_PYTEST_TARGETS[@]}"
 fi
+if coverage_relevant_changes_present; then
+  queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
+fi
 flush_phase || OVERALL_RC=$?
 
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
@@ -342,9 +345,6 @@ queue_selected "check-test-production-ratio" python3 scripts/check_test_producti
 queue_selected "specdown" bash -c 'command -v specdown >/dev/null || { echo "specdown is required for executable specs. Install from https://github.com/corca-ai/specdown or run charness tool doctor specdown --json for current readiness."; exit 1; }; specdown run -quiet -no-report'
 queue_selected "run-evals" python3 scripts/run_evals.py --repo-root "$REPO_ROOT"
 queue_selected "check-duplicates" python3 scripts/check_duplicates.py --repo-root "$REPO_ROOT" --fail-on-match
-if coverage_relevant_changes_present; then
-  queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
-fi
 flush_phase || OVERALL_RC=$?
 
 queue_selected "measure-startup-probes" python3 skills/public/quality/scripts/measure_startup_probes.py --repo-root "$REPO_ROOT" --class standing --record-runtime-signals

@@ -108,6 +108,23 @@ def build_release_fixture(path: Path) -> None:
     )
 
 
+def build_support_sync_fixture(path: Path, fixture_root: Path) -> None:
+    mappings: dict[str, str] = {}
+    for repo, skill_id in {
+        "corca-ai/cautilus": "cautilus",
+        "vercel-labs/agent-browser": "agent-browser",
+    }.items():
+        upstream_root = fixture_root / skill_id
+        skill_root = upstream_root / "skills" / skill_id
+        skill_root.mkdir(parents=True, exist_ok=True)
+        skill_root.joinpath("SKILL.md").write_text(
+            f"---\nname: {skill_id}\ndescription: \"coverage fixture\"\n---\n\n# {skill_id}\n",
+            encoding="utf-8",
+        )
+        mappings[f"{repo}@main"] = str(upstream_root)
+    path.write_text(json.dumps(mappings, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def make_fake_agent_browser(bin_dir: Path) -> None:
     script = bin_dir / "agent-browser"
     script.write_text(
@@ -174,16 +191,20 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
         home_root = tmp / "home"
         bin_dir = tmp / "bin"
         release_fixture = tmp / "release-fixtures.json"
+        support_fixture = tmp / "support-fixtures.json"
+        support_fixture_root = tmp / "support-fixtures"
 
         shutil.copytree(repo_root, repo_copy, ignore=COPY_IGNORE)
         bin_dir.mkdir()
         make_fake_agent_browser(bin_dir)
         build_release_fixture(release_fixture)
+        build_support_sync_fixture(support_fixture, support_fixture_root)
 
         env = {
             "HOME": str(home_root),
             "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}",
             "CHARNESS_RELEASE_PROBE_FIXTURES": str(release_fixture),
+            "CHARNESS_SUPPORT_SYNC_FIXTURES": str(support_fixture),
         }
         tracer = trace.Trace(count=True, trace=False, ignoremods=("importlib", "encodings"))
         entries = (

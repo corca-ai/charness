@@ -34,31 +34,34 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 ## Runtime Signals
 
 - Latest local quality gate after this slice: `48 passed, 0 failed`, total
-  `61.9s`.
-- runtime hot spots: latest recorded samples have `pytest` `35.8s`,
-  `check-coverage` `13.2s`, `check-markdown` `4.5s`, `specdown` `4.3s`,
-  and `check-cli-skill-surface` `4.1s`.
+  `59.0s`.
+- runtime hot spots: latest recorded samples have `pytest` `41.9s`,
+  `check-coverage` `14.4s`, `check-markdown` `4.9s`,
+  `check-cli-skill-surface` `4.8s`, and `specdown` `3.3s`.
 - Fixture economics moved broad managed-install/update lifecycle checks to
   `ci_only`; standing pytest still keeps representative install coverage and
   the full on-demand slice remains green.
 - CLI/skill surface probes now run `doctor.py --skip-release-probe` so standing
   readiness checks do not spend wall time on upstream release freshness.
+- `pytest` and `check-coverage` now run in the same quality-runner phase, and
+  `check-coverage` uses support-sync fixtures instead of fetching upstream
+  support archives during standing coverage proof.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
-  `85.0%`; current result is `97.9%` (`1186/1211`).
+  `85.0%`; current result is `96.8%` (`1187/1226`).
 - evaluator depth: `run-evals` passes 20 repo-local scenarios, so the bar is
   stronger than smoke-only review.
-- Budgeted phases: `pytest` median `42.1s / 70.0s`,
-  `check-coverage` median `12.2s / 15.0s`, `check-secrets` median
+- Budgeted phases: `pytest` median `41.9s / 70.0s`,
+  `check-coverage` median `12.8s / 15.0s`, `check-secrets` median
   `2.3s / 6.0s`, `run-evals` median `2.3s / 5.0s`, `specdown` median
-  `2.8s / 8.0s`.
+  `2.9s / 8.0s`.
 ## Coverage and Eval Depth
 
-- Coverage gate: `97.9%` (`1186/1211`) against the configured floors;
+- Coverage gate: `96.8%` (`1187/1226`) against the configured floors;
   test-production ratio is `0.19` (`14560/77051` Python lines), and standing
   proof is the latest full pytest gate plus 20 repo-local eval scenarios.
-- Every tracked control-plane file now clears the warn band. Weakest remaining
-  tracked files are `doctor.py` `95.8%`, `upstream_release_lib.py` `95.3%`,
-  and `update_tools.py` `98.3%`.
+- Every tracked control-plane file clears the enforced floor. Weakest remaining
+  tracked files are `doctor.py` `90.7%`, `support_sync_lib.py` `92.8%`,
+  and `upstream_release_lib.py` `95.3%`.
 - Specdown remains intentionally narrow and honest; the current bar is stronger
   than smoke-only but still not broad behavioral parity coverage.
 
@@ -122,13 +125,9 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   Future blocked states must include `host signal:` or `tool signal:` evidence.
 
 ## Commands Run
-- `./scripts/run-quality.sh`
-- targeted pytest for managed-install standing/`ci_only` split and doctor
-  fast-probe behavior
-- `pytest -q tests/quality_gates/test_current_pointer_freshness.py tests/quality_gates/test_runtime_budget_gate.py tests/quality_gates/test_check_coverage_inventory.py tests/quality_gates/test_quality_skill_docs.py`
-- `cautilus instruction-surface test --repo-root .`
-- Surface closeout: packaging, command-docs, doc links, markdown, secrets,
-  integrations, support/update dry-runs, ruff, and runtime-budget checks.
+- `./scripts/run-quality.sh`; targeted pytest/coverage timing; Cautilus proof;
+  surface closeout for packaging, docs, markdown, secrets, integrations, ruff,
+  support/update dry-runs, and runtime budgets.
 
 ## Recommended Next Gates
 
