@@ -62,6 +62,9 @@ LIST_FIELDS = (
     "real_host_required_surfaces",
     "real_host_required_path_globs",
     "real_host_checklist",
+    "requested_review_commands",
+    "review_unavailable_patterns",
+    "review_waiver_phrases",
 )
 ARTIFACT_FILENAME = "latest.md"
 
@@ -100,6 +103,20 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "real_host_required_surfaces": [],
         "real_host_required_path_globs": [],
         "real_host_checklist": [],
+        "requested_review_commands": [],
+        "review_unavailable_patterns": [
+            "review unavailable",
+            "requested review unavailable",
+            "review gate unavailable",
+            "review skipped because",
+            "executor_variants",
+            "no executor_variants",
+        ],
+        "review_waiver_phrases": [
+            "review waiver:",
+            "explicit review waiver:",
+            "requested review waiver:",
+        ],
     }
 
 

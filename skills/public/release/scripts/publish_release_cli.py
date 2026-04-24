@@ -26,11 +26,13 @@ _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adap
 _current_release = SKILL_RUNTIME.load_local_skill_module(__file__, "current_release")
 _bump_version = SKILL_RUNTIME.load_local_skill_module(__file__, "bump_version")
 _check_real_host = SKILL_RUNTIME.load_local_skill_module(__file__, "check_real_host_proof")
+_check_review_gate = SKILL_RUNTIME.load_local_skill_module(__file__, "check_requested_review_gate")
 _helpers = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_helpers")
 load_adapter = _resolve_adapter.load_adapter
 build_release_payload = _current_release.build_payload
 bump_part = _bump_version.bump_part
 build_real_host_payload = _check_real_host.build_payload
+build_review_gate_payload = _check_review_gate.build_payload
 run = _helpers.run
 run_shell = _helpers.run_shell
 git_status = _helpers.git_status
@@ -149,6 +151,9 @@ def main() -> None:
         real_host_payload=host_payload,
         quality_status="is queued for this publish attempt",
     )
+    review_gate_payload = build_review_gate_payload(repo_root, run_commands=True)
+    if review_gate_payload["status"] == "blocked":
+        raise SystemExit("requested release review gate blocked publish:\n" + "\n".join(review_gate_payload["blockers"]))
     run_shell(str(adapter_data["quality_command"]), cwd=repo_root)
     artifact_relpath = write_release_artifact(
         repo_root,

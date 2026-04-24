@@ -42,6 +42,19 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
         ("real_host_required_surfaces", []),
         ("real_host_required_path_globs", []),
         ("real_host_checklist", []),
+        ("requested_review_commands", []),
+        (
+            "review_unavailable_patterns",
+            [
+                "review unavailable",
+                "requested review unavailable",
+                "review gate unavailable",
+                "review skipped because",
+                "executor_variants",
+                "no executor_variants",
+            ],
+        ),
+        ("review_waiver_phrases", ["review waiver:", "explicit review waiver:", "requested review waiver:"]),
     ]
 
 

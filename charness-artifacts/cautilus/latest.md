@@ -3,43 +3,41 @@ Date: 2026-04-24
 
 ## Trigger
 
-- slice: tighten init-repo and quality review-scope drift detection after
-  inspecting `../crill/AGENTS.md`
+- slice: block release when a requested review gate is unavailable for issue
+  #68
 - claim: preserve
 
 ## Validation Goal
 
 - goal: preserve
-- reason: this slice changes `init-repo` and `quality` prompt surfaces plus the
-  maintained `init-repo` eval helper, so startup routing, validation-closeout
-  routing, and consumer-side AGENTS normalization behavior must remain stable
+- reason: this slice changes `release` prompt surfaces and adapter contract
+  fields, so maintained startup routing and validation-closeout routing must
+  remain stable while requested-review gate failures become blocking
 
 ## Change Intent
 
 - `prompt_affecting_change`
 - `skill_core_change`
+- `adapter_contract_change`
 - `scenario_review_change`
 
 ## Prompt Surfaces
 
-- `skills/public/init-repo/SKILL.md`
-- `skills/public/init-repo/references/agent-docs-policy.md`
-- `skills/public/init-repo/references/default-surfaces.md`
-- `skills/public/init-repo/references/normalization-flow.md`
-- `skills/public/quality/references/entrypoint-docs-ergonomics.md`
+- `.agents/release-adapter.yaml`
+- `skills/public/release/SKILL.md`
+- `skills/public/release/references/adapter-contract.md`
 
 ## Commands Run
 
 - `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
 - `cautilus instruction-surface test --repo-root .`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id init-repo --json`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id quality --json`
+- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id release --json`
 
 ## Regression Proof
 
 - instruction-surface summary:
-  `.cautilus/runs/20260424T012738698Z-run/instruction-surface-summary.json`
+  `.cautilus/runs/20260424T020446761Z-run/instruction-surface-summary.json`
 - result: `4 passed / 0 failed / 0 blocked`
 - recommendation: `accept-now`
 - maintained startup routing still bootstraps through `find-skills`, then
@@ -48,25 +46,25 @@ Date: 2026-04-24
 
 ## Scenario Review
 
-- `init-repo` remains `evaluator-required`; the existing
-  `init-repo-inspect-states` evaluator was widened to include a premortem-only
-  AGENTS rule that now must produce `fresh_eye_task_review_scope_drift`
-- no scenario-registry mutation is needed: the registered scenario already owns
-  inspect-state behavior, and the maintained helper now covers this regression
-- `quality` remains `hitl-recommended`; reviewed dogfood now records
-  `host_instruction_runbook_pressure` for AGENTS files that embed multi-step
-  runbooks instead of only reporting generic long-doc pressure
+- `release` remains `hitl-recommended`; the checked-in dogfood review now
+  records that release work inspects `check_requested_review_gate.py` along
+  with version and real-host proof checks
+- no maintained Cautilus scenario registry mutation is needed: this is a
+  release closeout/gate clarification, while the existing instruction-surface
+  suite guards startup and validation routing
+- repo-owned tests now cover release records that say review was unavailable,
+  explicit waiver handling, and publish blocking when a configured requested
+  review command fails
 
 ## Outcome
 
 - recommendation: `accept-now`
-- routing notes: regression proof passed; the new `init-repo` inspection
-  detects the `crill`-shaped missing `init-repo` / `quality` review scope, and
-  `quality` now makes AGENTS runbook overfit pressure visible as an advisory
-  inventory signal
+- routing notes: regression proof passed; requested review failures now block
+  release publish/tag unless the gate is fixed, a working adapter is selected,
+  or an explicit review waiver is present
 
 ## Follow-ups
 
-- when `crill` updates to the next Charness build, rerun `init-repo` there and
-  move the long Missing Operator Session procedure out of AGENTS if the
-  maintainer agrees it belongs in a deeper recovery doc or command surface
+- when a consumer repo such as Cautilus advertises a root review loop, configure
+  `requested_review_commands` in its release adapter so Charness can enforce
+  that selected review surface before publish

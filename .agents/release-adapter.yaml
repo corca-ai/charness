@@ -31,3 +31,15 @@ real_host_checklist:
 - Follow the official Cautilus install script at `https://github.com/corca-ai/cautilus/blob/main/install.sh`, then verify `cautilus --version` and `cautilus version --verbose`.
 - Re-run `charness tool doctor cautilus --json` and confirm the binary is detected on PATH.
 - Run `charness tool sync-support cautilus --json`, then confirm the generated support surface exists and the doctor payload reports support as materialized.
+requested_review_commands: []
+review_unavailable_patterns:
+- review unavailable
+- requested review unavailable
+- review gate unavailable
+- review skipped because
+- executor_variants
+- no executor_variants
+review_waiver_phrases:
+- 'review waiver:'
+- 'explicit review waiver:'
+- 'requested review waiver:'

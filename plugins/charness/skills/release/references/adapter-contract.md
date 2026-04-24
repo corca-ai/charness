@@ -36,6 +36,9 @@ Search order:
 - `real_host_required_surfaces`
 - `real_host_required_path_globs`
 - `real_host_checklist`
+- `requested_review_commands`
+- `review_unavailable_patterns`
+- `review_waiver_phrases`
 
 ## Defaults
 
@@ -50,6 +53,11 @@ Search order:
 - `real_host_required_surfaces`: empty list
 - `real_host_required_path_globs`: empty list
 - `real_host_checklist`: empty list
+- `requested_review_commands`: empty list
+- `review_unavailable_patterns`: common release-record phrases such as
+  `review unavailable`, `review gate unavailable`, and `executor_variants`
+- `review_waiver_phrases`: `review waiver:`, `explicit review waiver:`, and
+  `requested review waiver:`
 
 ## Artifact Rule
 
@@ -71,3 +79,10 @@ compatibility detail unless operators truly need it.
 release-time and human-run rather than standing CI. Use it for support-tool or
 install/update smokes on a second machine or clean temp-home, not for generic
 repo validation already covered by `quality_command`.
+
+`requested_review_commands` is optional and exists for release workflows where
+the maintainer asks for a concrete review gate before publish. If any command
+fails, `check_requested_review_gate.py` blocks publish/tag instead of treating
+the missing review surface as a caveat. The same helper scans release records
+for configured unavailable-review phrases; those records need a fix or an
+explicit review waiver phrase before release.

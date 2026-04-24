@@ -251,11 +251,12 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-22",
+      "reviewed_on": "2026-04-24",
       "observed_evidence": [
-        "The public core tells release work to inspect `current_release.py`, `check_real_host_proof.py`, git state, and the current release artifact before mutating anything.",
+        "The public core tells release work to inspect `current_release.py`, `check_real_host_proof.py`, `check_requested_review_gate.py`, git state, and the current release artifact before mutating anything.",
         "The checked-in release core no longer reopens a local-premortem loophole: routine release hygiene now says no premortem is needed at all, and any release slice that does need one must use the standalone `premortem` skill.",
-        "The release closeout contract now distinguishes `Premortem: skipped <reason>` from `Premortem: blocked <host-signal>`, which matches the maintainer-facing path better than implying that a same-agent substitute still counted as release review."
+        "The release closeout contract now distinguishes `Premortem: skipped <reason>` from `Premortem: blocked <host-signal>`, which matches the maintainer-facing path better than implying that a same-agent substitute still counted as release review.",
+        "`check_requested_review_gate.py` blocks publish when a configured requested-review command fails or when the release record says review was unavailable without an explicit review waiver."
       ]
     },
     {
