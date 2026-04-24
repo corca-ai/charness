@@ -3234,7 +3234,10 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
 def cmd_version(args: argparse.Namespace) -> int:
     home_root = args.home_root.resolve()
-    repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
+    if args.repo_root is None and EMBEDDED_REPO_ROOT is not None:
+        repo_root, managed_checkout = EMBEDDED_REPO_ROOT, False
+    else:
+        repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
     cli_path = args.cli_path.resolve() if args.cli_path else default_cli_path(home_root)
     payload = build_version_payload(
         home_root=home_root,

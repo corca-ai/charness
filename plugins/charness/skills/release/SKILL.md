@@ -49,6 +49,7 @@ Then inspect current release state:
 python3 "$SKILL_DIR/scripts/current_release.py" --repo-root .
 python3 "$SKILL_DIR/scripts/check_real_host_proof.py" --repo-root .
 python3 "$SKILL_DIR/scripts/check_requested_review_gate.py" --repo-root .
+python3 "$SKILL_DIR/../../../scripts/check_cli_skill_surface.py" --repo-root . --adapter-path .agents/release-adapter.yaml --json 2>/dev/null || true
 git status --short
 git log --oneline -5
 sed -n '1,220p' <resolved-release-artifact> 2>/dev/null || true
@@ -112,6 +113,9 @@ verified.
    - if `check_requested_review_gate.py` reports requested review unavailability,
      fix the gate, select a correct adapter, or record an explicit waiver before
      publish/tag
+   - if the adapter declares both `installable_cli` and `bundled_skill`, run the
+     CLI plus bundled-skill disclosure check for relevant CLI, shipped-skill,
+     plugin, package, or install-surface changes
    - if launcher or install seams moved, include `Startup Proof` and point to
      measured release-class startup probes instead of only restating generic
      smoke success

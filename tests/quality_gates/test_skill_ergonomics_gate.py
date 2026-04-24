@@ -80,6 +80,7 @@ def test_skill_ergonomics_gate_no_rules_passes(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["rules"] == []
     assert payload["violations"] == []
+    assert payload["discovery_errors"] == []
 
 
 def test_skill_ergonomics_gate_fails_when_opted_in_rule_matches(tmp_path: Path) -> None:
@@ -144,6 +145,53 @@ def test_skill_ergonomics_gate_ignores_mode_option_terms_inside_fences(tmp_path:
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["violations"] == []
+
+
+def test_skill_ergonomics_gate_fails_when_rules_check_no_skills(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "skill_ergonomics_gate_rules:",
+                "  - mode_option_pressure_terms",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    payload = json.loads(result.stdout)
+    assert result.returncode == 1
+    assert "no skills were checked" in payload["discovery_errors"][0]["message"]
+
+
+def test_skill_ergonomics_gate_discovers_direct_skill_layout(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    skill_dir = repo / "skills" / "cautilus"
+    skill_dir.mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "skill_ergonomics_gate_rules:",
+                "  - mode_option_pressure_terms",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: cautilus\n---\n\n# Cautilus\n\nA compact skill body.\n",
+        encoding="utf-8",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    payload = json.loads(result.stdout)
+    assert result.returncode == 0, result.stderr
+    assert payload["checked_skills"][0]["skill_path"] == "skills/cautilus/SKILL.md"
+    assert payload["discovery_errors"] == []
 
 
 def test_skill_ergonomics_gate_fails_when_opted_in_progressive_disclosure_risk_matches(tmp_path: Path) -> None:

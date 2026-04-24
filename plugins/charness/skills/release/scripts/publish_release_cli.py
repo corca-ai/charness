@@ -86,6 +86,15 @@ def run_requested_review_gate(repo_root: Path) -> None:
         raise SystemExit("requested release review gate blocked publish:\n" + "\n".join(review_gate_payload["blockers"]))
 
 
+def run_cli_skill_surface_gate(repo_root: Path, adapter_data: dict[str, Any]) -> None:
+    if {"installable_cli", "bundled_skill"}.issubset(set(adapter_data.get("product_surfaces", []))):
+        command = ["python3", "scripts/check_cli_skill_surface.py", "--repo-root", str(repo_root)]
+        command.extend(["--adapter-path", ".agents/release-adapter.yaml", "--run-probes"])
+        for path in changed_paths(repo_root):
+            command.extend(["--changed-path", path])
+        run(command, cwd=repo_root)
+
+
 def run_bump(args: argparse.Namespace, repo_root: Path) -> None:
     if args.publish_current:
         return
@@ -163,6 +172,7 @@ def main() -> None:
         quality_status="is queued for this publish attempt",
     )
     run_requested_review_gate(repo_root)
+    run_cli_skill_surface_gate(repo_root, adapter_data)
     run_shell(str(adapter_data["quality_command"]), cwd=repo_root)
     artifact_relpath = write_release_artifact(
         repo_root,

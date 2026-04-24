@@ -62,22 +62,27 @@ def parse_args() -> argparse.Namespace:
 
 
 def iter_skill_paths(repo_root: Path, requested: list[str]) -> Iterable[Path]:
+    seen: set[Path] = set()
     if requested:
         for value in requested:
             path = (repo_root / value).resolve()
-            if path.name == "SKILL.md":
-                yield path
-            else:
-                yield path / "SKILL.md"
+            skill_path = path if path.name == "SKILL.md" else path / "SKILL.md"
+            if skill_path not in seen:
+                seen.add(skill_path)
+                yield skill_path
         return
 
-    for parent in (repo_root / "skills" / "public", repo_root / "skills" / "support"):
+    for parent in (repo_root / "skills", repo_root / "skills" / "public", repo_root / "skills" / "support"):
         if not parent.is_dir():
             continue
         for skill_path in sorted(parent.glob("*/SKILL.md")):
             if "generated" in skill_path.parts:
                 continue
+            if skill_path in seen:
+                continue
+            seen.add(skill_path)
             yield skill_path
+
 
 def count_files(directory: Path) -> int:
     if not directory.is_dir():

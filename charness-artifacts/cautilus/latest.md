@@ -3,16 +3,16 @@ Date: 2026-04-24
 
 ## Trigger
 
-- slice: block release when a requested review gate is unavailable for issue
-  #68
+- slice: adapter-gated CLI plus bundled-skill disclosure checks for issue #69
 - claim: preserve
 
 ## Validation Goal
 
 - goal: preserve
-- reason: this slice changes `release` prompt surfaces and adapter contract
-  fields, so maintained startup routing and validation-closeout routing must
-  remain stable while requested-review gate failures become blocking
+- reason: this slice changes quality/release adapter contracts and release
+  closeout prompts, so maintained startup routing and validation-closeout
+  routing must remain stable while CLI plus bundled-skill checks become
+  adapter-gated
 
 ## Change Intent
 
@@ -24,8 +24,10 @@ Date: 2026-04-24
 ## Prompt Surfaces
 
 - `.agents/release-adapter.yaml`
+- `.agents/quality-adapter.yaml`
 - `skills/public/release/SKILL.md`
 - `skills/public/release/references/adapter-contract.md`
+- `skills/public/quality/references/adapter-contract.md`
 
 ## Commands Run
 
@@ -37,7 +39,7 @@ Date: 2026-04-24
 ## Regression Proof
 
 - instruction-surface summary:
-  `.cautilus/runs/20260424T020446761Z-run/instruction-surface-summary.json`
+  `.cautilus/runs/20260424T022913263Z-run/instruction-surface-summary.json`
 - result: `4 passed / 0 failed / 0 blocked`
 - recommendation: `accept-now`
 - maintained startup routing still bootstraps through `find-skills`, then
@@ -46,25 +48,26 @@ Date: 2026-04-24
 
 ## Scenario Review
 
-- `release` remains `hitl-recommended`; the checked-in dogfood review now
-  records that release work inspects `check_requested_review_gate.py` along
-  with version and real-host proof checks
+- `release` remains `hitl-recommended`; the checked-in dogfood review still
+  routes release work through version, real-host proof, requested-review, and
+  now adapter-gated CLI plus bundled-skill disclosure checks
 - no maintained Cautilus scenario registry mutation is needed: this is a
-  release closeout/gate clarification, while the existing instruction-surface
-  suite guards startup and validation routing
-- repo-owned tests now cover release records that say review was unavailable,
-  explicit waiver handling, and publish blocking when a configured requested
-  review command fails
+  quality/release adapter-gate clarification, while the existing
+  instruction-surface suite guards startup and validation routing
+- repo-owned tests now cover adapter-declared `installable_cli` plus
+  `bundled_skill` gating, non-applicable repos, changed-path scoping, and
+  Cautilus-style direct `skills/<product>/SKILL.md` discovery so skill
+  ergonomics rules cannot pass with `checked_skills: []`
 
 ## Outcome
 
 - recommendation: `accept-now`
-- routing notes: regression proof passed; requested review failures now block
-  release publish/tag unless the gate is fixed, a working adapter is selected,
-  or an explicit review waiver is present
+- routing notes: regression proof passed; CLI plus bundled-skill checks now run
+  only when adapter-declared product shape and changed paths make them relevant,
+  and empty skill ergonomics discovery is no longer silently accepted
 
 ## Follow-ups
 
-- when a consumer repo such as Cautilus advertises a root review loop, configure
-  `requested_review_commands` in its release adapter so Charness can enforce
-  that selected review surface before publish
+- when a consumer repo such as Cautilus ships a skill at `skills/<product>`,
+  configure `skill_ergonomics_skill_paths` or `cli_skill_surface_skill_paths`
+  so the checked skill surface is explicit even if future layouts change

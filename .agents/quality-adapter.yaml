@@ -32,6 +32,26 @@ gate_design_review_globs:
   - .agents/*-adapter.yaml
   - skills/public/*/adapter.example.yaml
   - scripts/*.py
+product_surfaces:
+  - installable_cli
+  - bundled_skill
+cli_skill_surface_probe_commands:
+  - ./charness --help
+  - ./charness doctor --help
+  - ./charness --version
+  - python3 scripts/doctor.py --repo-root . --json
+cli_skill_surface_command_docs:
+  - .agents/command-docs.yaml
+cli_skill_surface_change_globs:
+  - charness
+  - scripts/**
+  - skills/public/**
+  - skills/support/**
+  - plugins/**
+  - .claude-plugin/**
+  - .agents/plugins/**
+  - packaging/**
+  - .agents/command-docs.yaml
 prompt_asset_roots: []
 prompt_asset_policy:
   source_globs: []

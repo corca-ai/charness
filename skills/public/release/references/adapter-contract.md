@@ -39,6 +39,11 @@ Search order:
 - `requested_review_commands`
 - `review_unavailable_patterns`
 - `review_waiver_phrases`
+- `product_surfaces`
+- `cli_skill_surface_probe_commands`
+- `cli_skill_surface_command_docs`
+- `cli_skill_surface_skill_paths`
+- `cli_skill_surface_change_globs`
 
 ## Defaults
 
@@ -58,6 +63,8 @@ Search order:
   `review unavailable`, `review gate unavailable`, and `executor_variants`
 - `review_waiver_phrases`: `review waiver:`, `explicit review waiver:`, and
   `requested review waiver:`
+- `product_surfaces`: empty list
+- `cli_skill_surface_*`: empty lists
 
 ## Artifact Rule
 
@@ -86,3 +93,11 @@ fails, `check_requested_review_gate.py` blocks publish/tag instead of treating
 the missing review surface as a caveat. The same helper scans release records
 for configured unavailable-review phrases; those records need a fix or an
 explicit review waiver phrase before release.
+
+When `product_surfaces` contains both `installable_cli` and `bundled_skill`,
+release runs the CLI plus bundled-skill disclosure gate only for matching CLI,
+skill, plugin, package, or install-surface changes. Use
+`cli_skill_surface_probe_commands` to point at binary-owned help, registry,
+catalog, example, version, install-smoke, doctor, or readiness probes, and
+`cli_skill_surface_skill_paths` when the shipped skill does not live under
+`skills/public/*` or `skills/support/*`.

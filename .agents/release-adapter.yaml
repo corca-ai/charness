@@ -9,6 +9,26 @@ packaging_manifest_path: packaging/charness.json
 checked_in_plugin_root: plugins/charness
 sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root .
 quality_command: ./scripts/run-quality.sh
+product_surfaces:
+- installable_cli
+- bundled_skill
+cli_skill_surface_probe_commands:
+- ./charness --help
+- ./charness doctor --help
+- ./charness --version
+- python3 scripts/doctor.py --repo-root . --json
+cli_skill_surface_command_docs:
+- .agents/command-docs.yaml
+cli_skill_surface_change_globs:
+- charness
+- scripts/**
+- skills/public/**
+- skills/support/**
+- plugins/**
+- .claude-plugin/**
+- .agents/plugins/**
+- packaging/**
+- .agents/command-docs.yaml
 update_instructions:
 - Run `charness update`.
 - Restart Claude Code or Codex if the host cache still shows the previous version.

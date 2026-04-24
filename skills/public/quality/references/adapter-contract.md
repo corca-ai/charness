@@ -41,6 +41,12 @@ Quality-specific fields:
 - `adapter_review_sources`
 - `acknowledged_recommendations`
 - `gate_design_review_globs`
+- `product_surfaces`
+- `skill_ergonomics_skill_paths`
+- `cli_skill_surface_probe_commands`
+- `cli_skill_surface_command_docs`
+- `cli_skill_surface_skill_paths`
+- `cli_skill_surface_change_globs`
 - `skill_ergonomics_gate_rules`
 - `runtime_budgets`
 - `startup_probes`
@@ -86,6 +92,17 @@ recommendations.
 `gate_design_review_globs` scopes advisory inventory for structural fact gates,
 contextual recommendations, migration gaps, acknowledgement gaps, and brittle
 hard-gate smells.
+
+`product_surfaces` declares repo shape, not a universal burden. When it contains
+both `installable_cli` and `bundled_skill`, quality runs the CLI plus
+bundled-skill disclosure inventory before same-agent prose review. Use
+`cli_skill_surface_probe_commands` for cheap binary-owned help, registry,
+catalog, example, version, install-smoke, doctor, or readiness probes. Use
+`cli_skill_surface_command_docs` for command-doc contracts such as
+like [`.agents/command-docs.yaml`](../../../../.agents/command-docs.yaml), `cli_skill_surface_skill_paths` for shipped skill
+layouts outside default roots, and `cli_skill_surface_change_globs` to scope
+release-time enforcement to CLI, skill, plugin, package, or install-surface
+changes.
 
 `runtime_budgets` is a mapping of standing-gate label → max elapsed
 milliseconds. Labels must match the labels recorded in
@@ -154,7 +171,10 @@ them. Leave it empty by default. Current supported rules:
 
 The canonical quality path runs these opt-in rules through
 [`scripts/validate_skill_ergonomics.py`](../../../../scripts/validate_skill_ergonomics.py). Bootstrap also treats invalid explicit
-rule values as an error instead of silently rewriting them to `[]`.
+rule values as an error instead of silently rewriting them to `[]`. When rules
+are configured, an empty checked-skill set is a failure; use
+`skill_ergonomics_skill_paths` or `cli_skill_surface_skill_paths` for bundled
+skill layouts such as `skills/<product>/SKILL.md`.
 
 ## Artifact Rule
 

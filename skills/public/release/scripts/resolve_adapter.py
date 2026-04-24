@@ -51,16 +51,12 @@ STRING_FIELDS = (
     "quality_command",
 )
 LIST_FIELDS = (
-    "update_instructions",
-    "real_host_required_surfaces",
-    "real_host_required_path_globs",
-    "real_host_checklist",
-    "requested_review_commands",
-    "review_unavailable_patterns",
-    "review_waiver_phrases",
+    "update_instructions", "real_host_required_surfaces", "real_host_required_path_globs", "real_host_checklist",
+    "requested_review_commands", "review_unavailable_patterns", "review_waiver_phrases", "product_surfaces",
+    "cli_skill_surface_probe_commands", "cli_skill_surface_command_docs", "cli_skill_surface_skill_paths",
+    "cli_skill_surface_change_globs",
 )
 ARTIFACT_FILENAME = "latest.md"
-
 
 def _string(value: Any, field: str, errors: list[str]) -> str | None:
     if value is None:
@@ -110,6 +106,11 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
             "explicit review waiver:",
             "requested review waiver:",
         ],
+        "product_surfaces": [],
+        "cli_skill_surface_probe_commands": [],
+        "cli_skill_surface_command_docs": [],
+        "cli_skill_surface_skill_paths": [],
+        "cli_skill_surface_change_globs": [],
     }
 
 
@@ -215,6 +216,5 @@ def main() -> None:
         sys.stdout.write(json.dumps(load_adapter(args.repo_root.resolve()), ensure_ascii=False, indent=2, sort_keys=True) + "\n")
     finally:
         cancel_timeout()
-
 if __name__ == "__main__":
     main()
