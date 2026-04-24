@@ -7,7 +7,8 @@ Regenerate it with `python3 scripts/render_cli_reference.py --repo-root . --outp
 
 ```text
 usage: charness [-h]
-                {init,update,doctor,version,uninstall,reset,task,capability,tool} ...
+                {init,update,doctor,version,uninstall,reset,task,capability,tool}
+                ...
 
 Thin charness CLI for managed local install, capability resolution, and
 external tool install/update/doctor flows.

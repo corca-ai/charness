@@ -324,7 +324,8 @@ if python3 -m pytest --version >/dev/null 2>&1; then
 fi
 
 PYTEST_PARALLEL_FLAGS=()
-if "${PYTEST_CMD[@]}" --help 2>/dev/null | grep -q -- "--numprocesses"; then
+PYTEST_HELP="$("${PYTEST_CMD[@]}" --help 2>/dev/null || true)"
+if grep -q -- "--numprocesses" <<<"$PYTEST_HELP"; then
   PYTEST_PARALLEL_FLAGS=(-n auto)
 else
   echo "run-quality: pytest-xdist not installed; pytest will run serially and may exceed runtime budgets. Install with: pip install pytest-xdist" >&2

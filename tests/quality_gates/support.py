@@ -164,6 +164,38 @@ def seed_quality_bin_stubs(target_dir: Path) -> None:
         write_executable(target_dir / label, quality_shell_stub(label))
 
 
+def seed_quality_python_binary_stub(target_dir: Path) -> None:
+    real_python = sys.executable
+    write_executable(
+        target_dir / "python3",
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'if [[ "${1:-}" == "-m" && "${2:-}" == "pytest" ]]; then',
+                "  shift 2",
+                '  if [[ "${1:-}" == "--version" ]]; then',
+                '    echo "pytest 9.0.2"',
+                "    exit 0",
+                "  fi",
+                '  if [[ "${1:-}" == "--help" ]]; then',
+                '    echo "  -n numprocesses, --numprocesses=numprocesses"',
+                "    exit 0",
+                "  fi",
+                '  if [[ "${QUALITY_FAIL_LABEL:-}" == "pytest" ]]; then',
+                '    echo "quality failure output from pytest"',
+                "    exit 1",
+                "  fi",
+                '  echo "quality success output from pytest"',
+                "  exit 0",
+                "fi",
+                f"exec {real_python!r} \"$@\"",
+                "",
+            ]
+        ),
+    )
+
+
 def seed_quality_runtime_recorder(target_dir: Path) -> None:
     write_executable(
         target_dir / "record_quality_runtime.py",
@@ -208,6 +240,7 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     seed_quality_runtime_recorder(scripts_dir)
     seed_quality_shell_stubs(scripts_dir)
     seed_quality_bin_stubs(bin_dir)
+    seed_quality_python_binary_stub(bin_dir)
     return repo, {"PATH": f"{bin_dir}:/usr/bin:/bin"}
 
 

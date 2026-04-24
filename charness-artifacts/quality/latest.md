@@ -25,21 +25,25 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 - `specdown run -quiet -no-report` remains part of the quiet quality gate.
 - `.githooks/pre-push` syncs checked-in plugin exports, fails on generated
   export drift, then runs the quiet quality gate.
+- `run-quality.sh` now detects `pytest-xdist` by capturing help output before
+  matching it, avoiding the prior pipefail false negative from
+  `pytest --help | grep`.
 
 ## Runtime Signals
 
-- Latest local quality gate after this slice: `45 passed, 0 failed`, total
-  `54.5s`.
-- runtime hot spots: latest recorded samples have `pytest` `39.5s`, `check-coverage`
-  `11.7s`, `check-markdown` `4.1s`, `check-duplicates` `2.8s`, and `specdown` `2.5s`.
+- Latest local quality gate after this slice: `47 passed, 0 failed`, total
+  `68.0s`.
+- runtime hot spots: latest recorded samples have `pytest` `48.4s`,
+  `check-coverage` `11.7s`, `check-cli-skill-surface` `7.5s`,
+  `check-markdown` `4.1s`, `specdown` `3.5s`, and `check-duplicates` `3.0s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
   `85.0%`; current result is `97.9%` (`1186/1211`).
 - evaluator depth: `run-evals` passes 20 repo-local scenarios, so the bar is
   stronger than smoke-only review.
-- Budgeted phases: `pytest` median `41.2s / 45.0s`,
+- Budgeted phases: `pytest` median `42.6s / 70.0s`,
   `check-coverage` median `11.9s / 15.0s`, `check-secrets` median
-  `2.2s / 6.0s`, `run-evals` median `2.1s / 5.0s`, `specdown` median
-  `2.7s / 8.0s`.
+  `2.2s / 6.0s`, `run-evals` median `2.2s / 5.0s`, `specdown` median
+  `2.8s / 8.0s`.
 ## Coverage and Eval Depth
 
 - Coverage gate: `97.9%` (`1186/1211`) against the configured floors;
@@ -106,34 +110,23 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 
 ## Delegated Review
 
-- status: executed; bounded subagent review ran for the quality advisory
-  omission retro and issue #64 spec planning, and future blocked states must
-  include `host signal:` or `tool signal:` evidence.
+- status: executed; bounded subagent review ran `gate-design`,
+  `adapter-policy`, and `operator-signal` lenses for this runtime investigation.
+  Future blocked states must include `host signal:` or `tool signal:` evidence.
 
 ## Commands Run
-- `./scripts/run-quality.sh` and `./scripts/run-quality.sh --review`
-- `cautilus instruction-surface test --repo-root .`
-- `python3 scripts/check_coverage.py --repo-root .` and `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root .`
+- `./scripts/run-quality.sh`
+- `pytest -q tests/quality_gates/test_quality_runner.py tests/quality_gates/test_command_docs_gate.py`
+- Surface closeout: packaging, command-docs, doc links, markdown, secrets,
+  integrations, support/update dry-runs, ruff, and runtime-budget checks.
 
 ## Recommended Next Gates
 
-- active `AUTO_CANDIDATE`: decide whether `skills/public/quality/SKILL.md`
-  should move more review prose into references or helper scripts so the core
-  falls back under the `long_core` advisory threshold without losing routing
-  precision.
 - active `AUTO_CANDIDATE`: keep expanding `validate-current-pointer-freshness`;
-  runtime EWMA, hot-spot, and budget-median claims are now checked, but
-  ergonomics/dogfood claims still need inventory-backed checks.
-- active `AUTO_CANDIDATE`: decide which workflow should call the now-bootstrapped
-  markdown-preview seam by default (`narrative`, `announcement`, `quality`, or
-  a command surface) instead of leaving it as a helper that only exists on paper.
-- active `AUTO_CANDIDATE`: narrow public-spec inventory scope so generated
-  `.artifacts/cautilus-experiments` copies do not look like duplicate checked-in
-  public spec examples unless the repo intentionally wants artifact previews in
-  that advisory lens.
-- passive `NON_AUTOMATABLE`: because gate promotion still needs maintainer
-  judgment, only harden ergonomics heuristics that can survive without turning
-  prose review into taste policing.
+  runtime prose is still sample-shaped and should get shape/ranking freshness
+  checks before exact timing claims become hard failures.
+- active `AUTO_CANDIDATE`: add budget or top-N reporting for recurring
+  non-budgeted hot spots such as `check-cli-skill-surface` and `check-markdown`.
 
 ## History
 - [2026-04-09 through 2026-04-10 archive](history/2026-04-09-through-2026-04-10.md)
