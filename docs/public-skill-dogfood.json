@@ -236,7 +236,8 @@
       "observed_evidence": [
         "The current quality posture still treats checked-in proof artifacts, public executable readers, and lower deterministic gates as separate layers with different ownership, which keeps `quality` distinct from generic test-running or release work.",
         "The prompt-asset reference now makes the adaptive `cautilus` split explicit: scenario review can run automatically as proof, while maintained scenario-registry mutation remains the higher-friction follow-up that still needs confirmation.",
-        "That preserves the consumer-facing `quality` contract here: the skill should prefer repo-owned proof and enforcement structure over ad hoc ceremony, including for prompt-surface validation policy."
+        "That preserves the consumer-facing `quality` contract here: the skill should prefer repo-owned proof and enforcement structure over ad hoc ceremony, including for prompt-surface validation policy.",
+        "The missing-validation-binary rule keeps the same contract for local tools: when an existing gate cannot run because `ruff` or another manifest-backed binary is absent, `quality` should turn that into setup work with install and verify steps instead of reporting a skipped gate."
       ]
     },
     {

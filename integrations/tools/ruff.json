@@ -1,0 +1,82 @@
+{
+  "schema_version": "1",
+  "tool_id": "ruff",
+  "kind": "external_binary",
+  "display_name": "ruff",
+  "summary": "Fast Python linter used by `scripts/run-quality.sh` as the standing Python lint gate, including mccabe complexity checks.",
+  "upstream_repo": "astral-sh/ruff",
+  "homepage": "https://docs.astral.sh/ruff/",
+  "platforms": [
+    "linux",
+    "macos",
+    "windows"
+  ],
+  "status": "active",
+  "lifecycle": {
+    "install": {
+      "mode": "script",
+      "commands": [
+        "if command -v uv >/dev/null 2>&1; then uv tool install ruff; elif command -v pipx >/dev/null 2>&1; then pipx install ruff; else python3 -m pip install --user ruff; fi"
+      ],
+      "docs_url": "https://docs.astral.sh/ruff/installation/",
+      "install_url": "https://docs.astral.sh/ruff/installation/",
+      "notes": [
+        "Prefer `uv tool install ruff` or `pipx install ruff` so the binary is managed as a user tool rather than a project dependency.",
+        "After installation, ensure the tool bin directory is on PATH and verify with `ruff --version` before trusting `scripts/run-quality.sh`."
+      ]
+    },
+    "update": {
+      "mode": "manual",
+      "docs_url": "https://docs.astral.sh/ruff/installation/",
+      "notes": [
+        "Update through the same user-tool mechanism that installed `ruff`; for uv installs, run `uv tool upgrade ruff`."
+      ]
+    }
+  },
+  "checks": {
+    "detect": {
+      "commands": [
+        "ruff --version"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:ruff"
+      ],
+      "failure_hint": "Install `ruff` before running the standing Python lint gate in `scripts/run-quality.sh`; do not mark the lint gate as skipped."
+    },
+    "healthcheck": {
+      "commands": [
+        "ruff check --help"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:Run Ruff"
+      ],
+      "failure_hint": "The `ruff` binary exists but its check command is not healthy. Reinstall or upgrade `ruff`, then rerun the lint gate."
+    }
+  },
+  "access_modes": [
+    "binary"
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer a recent upstream-supported Ruff release.",
+    "detected_by": "stdout"
+  },
+  "supports_public_skills": [
+    "quality"
+  ],
+  "recommendation_role": "validation",
+  "degradation": {
+    "when_missing": [
+      "`scripts/run-quality.sh` cannot honestly complete the Python lint phase without `ruff`.",
+      "Quality closeout should install `ruff` when allowed or ask for install approval; it should not report the lint gate as skipped without an explicit next action."
+    ],
+    "when_version_mismatch": [
+      "Treat new rule classes or config syntax that older releases reject as a manual review point before suppressing findings."
+    ]
+  },
+  "host_notes": [
+    "The repo's standing gate currently invokes `ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts`."
+  ]
+}

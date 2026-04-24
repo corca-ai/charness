@@ -1,13 +1,13 @@
 # Find Skills Inventory
-Date: 2026-04-23
-Updated: 2026-04-23T13:51:23Z
+Date: 2026-04-24
+Updated: 2026-04-24T01:15:18Z
 
 ## Summary
 - public skills: 17
 - support skills: 6
 - synced support skills: 1
 - support capabilities: 4
-- integrations: 7
+- integrations: 8
 - trusted skills: 0
 
 ## Public Skills
@@ -51,6 +51,7 @@ Updated: 2026-04-23T13:51:23Z
 - `gitleaks` (external_binary, integration-only): access modes `binary, degraded`
 - `glow` (external_binary, integration-only): access modes `binary, degraded`
 - `gws-cli` (external_binary, integration-only): access modes `binary, env, human-only, degraded`
+- `ruff` (external_binary, integration-only): access modes `binary`
 - `specdown` (external_binary, integration-only): access modes `binary, human-only, degraded`
 
 ## Trusted Skills

@@ -264,11 +264,14 @@ def _suggest_existing_path(repo_root: Path, missing_path: str) -> str | None:
     return matches[0] if matches else None
 
 
-def review_narrative_adapter(repo_root: Path) -> dict[str, Any]:
-    adapter = load_narrative_adapter(repo_root)
-    data = adapter["data"]
-    findings: list[dict[str, str]] = []
+def _path_repair_action(repo_root: Path, path: str, base_action: str) -> str:
+    suggestion = _suggest_existing_path(repo_root, path)
+    if not suggestion:
+        return base_action
+    return f"{base_action} Closest existing path: `{suggestion}`."
 
+
+def _append_adapter_presence_findings(adapter: dict[str, Any], findings: list[dict[str, str]]) -> None:
     if not adapter["found"]:
         findings.append(
             _finding(
@@ -292,32 +295,33 @@ def review_narrative_adapter(repo_root: Path) -> dict[str, Any]:
             )
         )
 
+
+def _append_missing_path_findings(repo_root: Path, data: dict[str, Any], findings: list[dict[str, str]]) -> None:
     path_fields = ("source_documents", "mutable_documents")
     for field in path_fields:
         for path in data.get(field, []):
-            if not (repo_root / path).exists():
-                suggestion = _suggest_existing_path(repo_root, path)
-                recommended_action = "Fix the adapter path or create the owning document before rewriting."
-                if suggestion:
-                    recommended_action = (
-                        f"Fix the adapter path or create the owning document before rewriting. "
-                        f"Closest existing path: `{suggestion}`."
-                    )
-                findings.append(
-                    _finding(
-                        "missing_adapter_path",
-                        "block",
-                        f"`{field}` references a path that does not exist.",
-                        path=path,
-                        recommended_action=recommended_action,
-                    )
+            if (repo_root / path).exists():
+                continue
+            findings.append(
+                _finding(
+                    "missing_adapter_path",
+                    "block",
+                    f"`{field}` references a path that does not exist.",
+                    path=path,
+                    recommended_action=_path_repair_action(
+                        repo_root,
+                        path,
+                        "Fix the adapter path or create the owning document before rewriting.",
+                    ),
                 )
+            )
 
-    source_documents = list(data.get("source_documents", []))
-    mutable_documents = list(data.get("mutable_documents", []))
-    special_entrypoints = list(data.get("special_entrypoints", []))
-    source_set = set(source_documents)
 
+def _append_volatile_path_findings(
+    source_documents: list[str],
+    mutable_documents: list[str],
+    findings: list[dict[str, str]],
+) -> None:
     for path in source_documents:
         if _is_volatile_path(path):
             findings.append(
@@ -342,24 +346,29 @@ def review_narrative_adapter(repo_root: Path) -> dict[str, Any]:
                 )
             )
 
+
+def _append_entrypoint_findings(
+    repo_root: Path,
+    special_entrypoints: list[str],
+    source_documents: list[str],
+    findings: list[dict[str, str]],
+) -> None:
+    source_set = set(source_documents)
     for path in special_entrypoints:
         if not _looks_like_path(path):
             continue
         if not (repo_root / path).exists():
-            suggestion = _suggest_existing_path(repo_root, path)
-            recommended_action = "Fix the adapter path or keep this entrypoint as a non-path label."
-            if suggestion:
-                recommended_action = (
-                    f"Fix the adapter path or keep this entrypoint as a non-path label. "
-                    f"Closest existing path: `{suggestion}`."
-                )
             findings.append(
                 _finding(
                     "missing_adapter_path",
                     "block",
                     "`special_entrypoints` references a path that does not exist.",
                     path=path,
-                    recommended_action=recommended_action,
+                    recommended_action=_path_repair_action(
+                        repo_root,
+                        path,
+                        "Fix the adapter path or keep this entrypoint as a non-path label.",
+                    ),
                 )
             )
         elif path not in source_set:
@@ -372,6 +381,29 @@ def review_narrative_adapter(repo_root: Path) -> dict[str, Any]:
                     recommended_action="Add it to source_documents when it should influence the README, or remove it from special_entrypoints.",
                 )
             )
+
+
+def _adapter_review_status(findings: list[dict[str, str]]) -> str:
+    if any(finding["severity"] == "block" for finding in findings):
+        return "needs-repair"
+    if findings:
+        return "review"
+    return "ok"
+
+
+def review_narrative_adapter(repo_root: Path) -> dict[str, Any]:
+    adapter = load_narrative_adapter(repo_root)
+    data = adapter["data"]
+    findings: list[dict[str, str]] = []
+
+    _append_adapter_presence_findings(adapter, findings)
+    _append_missing_path_findings(repo_root, data, findings)
+
+    source_documents = list(data.get("source_documents", []))
+    mutable_documents = list(data.get("mutable_documents", []))
+    special_entrypoints = list(data.get("special_entrypoints", []))
+    _append_volatile_path_findings(source_documents, mutable_documents, findings)
+    _append_entrypoint_findings(repo_root, special_entrypoints, source_documents, findings)
 
     for field in RECOMMENDED_LANDING_FIELDS:
         if not data.get(field):
@@ -395,11 +427,6 @@ def review_narrative_adapter(repo_root: Path) -> dict[str, Any]:
         )
 
     existing_sources = _existing_paths(repo_root, source_documents)
-    status = "ok"
-    if any(finding["severity"] == "block" for finding in findings):
-        status = "needs-repair"
-    elif findings:
-        status = "review"
 
     return {
         "adapter": {
@@ -408,7 +435,7 @@ def review_narrative_adapter(repo_root: Path) -> dict[str, Any]:
             "path": adapter["path"],
             "warnings": adapter["warnings"],
         },
-        "status": status,
+        "status": _adapter_review_status(findings),
         "source_documents_existing": sorted(existing_sources),
         "findings": findings,
     }

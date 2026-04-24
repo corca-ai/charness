@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import sys
 from pathlib import Path
 
 from .support import ROOT, run_script
@@ -289,6 +291,76 @@ def test_run_slice_closeout_executes_sync_then_verify(tmp_path: Path) -> None:
     assert [step["phase"] for step in payload["executed_commands"]] == ["sync", "verify"]
     assert (repo / "sync.log").read_text(encoding="utf-8").strip() == "sync"
     assert (repo / "verify.log").read_text(encoding="utf-8").strip() == "verify"
+
+
+def test_run_slice_closeout_preserves_parent_python_before_login_shell_path(tmp_path: Path, monkeypatch) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    fake_bin = tmp_path / "fake-bin"
+    fake_bin.mkdir()
+    fake_python = fake_bin / "python3"
+    fake_python.write_text(
+        "#!/usr/bin/env bash\n"
+        "echo wrong-python >&2\n"
+        "exit 42\n",
+        encoding="utf-8",
+    )
+    fake_python.chmod(0o755)
+    fake_pytest = fake_bin / "pytest"
+    fake_pytest.write_text(
+        "#!/usr/bin/env bash\n"
+        "echo wrong-pytest >&2\n"
+        "exit 43\n",
+        encoding="utf-8",
+    )
+    fake_pytest.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{fake_bin}:{os.environ.get('PATH', '')}")
+
+    sys.path.insert(0, str(ROOT / "scripts"))
+    try:
+        import run_slice_closeout
+
+        result = run_slice_closeout.run_command(
+            repo,
+            "python3 -c 'import sys; print(sys.executable)' && pytest --version",
+            "verify",
+        )
+    finally:
+        sys.path.remove(str(ROOT / "scripts"))
+        sys.modules.pop("run_slice_closeout", None)
+
+    assert result["returncode"] == 0, result["stderr"]
+    output_lines = result["stdout"].strip().splitlines()
+    assert output_lines[0] == sys.executable
+    assert output_lines[1].startswith("pytest ")
+
+
+def test_check_python_runtime_inheritance_rejects_unpinned_bash_login_shell(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True)
+    (scripts_dir / "bad.py").write_text(
+        "\n".join(
+            [
+                "import subprocess",
+                "",
+                "def run(command):",
+                "    return subprocess.run(['/bin/bash', '-lc', command])",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "scripts/check_python_runtime_inheritance.py",
+        "--repo-root",
+        str(repo),
+    )
+
+    assert result.returncode == 1
+    assert "bad.py:4" in result.stderr
+    assert "must pin" in result.stderr
 
 
 def test_run_slice_closeout_blocks_unmatched_paths_by_default(tmp_path: Path) -> None:

@@ -273,6 +273,7 @@ queue_selected "inventory-quality-handoff" python3 scripts/inventory_quality_han
 queue_selected "validate-maintainer-setup" python3 scripts/validate_maintainer_setup.py --repo-root "$REPO_ROOT"
 queue_selected "check-python-lengths" python3 scripts/check_python_lengths.py --repo-root "$REPO_ROOT"
 queue_selected "check-python-filenames" python3 scripts/check_python_filenames.py --repo-root "$REPO_ROOT"
+queue_selected "check-python-runtime-inheritance" python3 scripts/check_python_runtime_inheritance.py --repo-root "$REPO_ROOT"
 queue_selected "check-skill-contracts" python3 scripts/check_skill_contracts.py --repo-root "$REPO_ROOT"
 queue_selected "check-export-safe-imports" python3 scripts/check_export_safe_imports.py --repo-root "$REPO_ROOT"
 queue_selected "check-plugin-import-smoke" python3 scripts/check_plugin_import_smoke.py --repo-root "$REPO_ROOT"

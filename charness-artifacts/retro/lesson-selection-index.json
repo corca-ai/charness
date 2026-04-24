@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-04-24",
-  "source_artifact_count": 32,
-  "candidate_count": 206,
+  "source_artifact_count": 33,
+  "candidate_count": 211,
   "top_candidates": [
     {
       "candidate_id": "current_focus:0d7e66658729",
@@ -3917,6 +3917,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:0fcd97ab44cd",
+      "kind": "current_focus",
+      "lesson": "During merge closeout, `ruff` was not installed locally.",
+      "normalized_key": "during merge closeout ruff was not installed locally",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-ruff-missing-binary.md",
+      "latest_source_date": null,
+      "age_days": null,
+      "recency_weight": 0.5,
+      "alpha": 0.07,
+      "selection_weight": 0.5,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-ruff-missing-binary.md",
+          "date": null,
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:109fa13527f7",
       "kind": "current_focus",
       "lesson": "Evidence used: the `impl` skill diff, adapter/survey script outputs against `charness` and `crill`, the broken `agent-browser` symlink surfaced by the survey, and the targeted quality-gate checks run in this session.",
@@ -4157,6 +4177,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:bfd01aad09ae",
+      "kind": "next_improvement",
+      "lesson": "keep standing validation binaries such as `ruff` in `integrations/tools/` so `quality` can surface install and verify paths.",
+      "normalized_key": "keep standing validation binaries such as ruff in integrations tools so quality can surface",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-ruff-missing-binary.md",
+      "latest_source_date": null,
+      "age_days": null,
+      "recency_weight": 0.5,
+      "alpha": 0.07,
+      "selection_weight": 0.5,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-ruff-missing-binary.md",
+          "date": null,
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:aca8c3a90c30",
+      "kind": "next_improvement",
+      "lesson": "keep subprocess closeout commands from silently switching Python runtimes; if a command shell can run Python-bearing gates, bind the runtime or fail validation.",
+      "normalized_key": "keep subprocess closeout commands from silently switching python runtimes if a command shell can",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-ruff-missing-binary.md",
+      "latest_source_date": null,
+      "age_days": null,
+      "recency_weight": 0.5,
+      "alpha": 0.07,
+      "selection_weight": 0.5,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-ruff-missing-binary.md",
+          "date": null,
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:f78e1510f95e",
       "kind": "next_improvement",
       "lesson": "repair or reinstall the broken `agent-browser` skill path so repos that prefer browser verification can actually use the stronger proof path the adapter now recommends.",
@@ -4172,6 +4232,26 @@
         {
           "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
           "date": "2026-04-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:389bf12fda1c",
+      "kind": "next_improvement",
+      "lesson": "this retro records the miss; the `quality` skill and `ruff` integration now carry the durable behavior, while `scripts/check_python_runtime_inheritance.py` carries the closeout runtime guard.",
+      "normalized_key": "this retro records the miss the quality skill and ruff integration now carry the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-ruff-missing-binary.md",
+      "latest_source_date": null,
+      "age_days": null,
+      "recency_weight": 0.5,
+      "alpha": 0.07,
+      "selection_weight": 0.5,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-ruff-missing-binary.md",
+          "date": null,
           "section": "Next Improvements"
         }
       ]
@@ -4212,6 +4292,26 @@
         {
           "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
           "date": "2026-04-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6bf3540a6978",
+      "kind": "next_improvement",
+      "lesson": "when an existing gate fails only because a binary is missing, ask or install, then rerun the gate before closeout.",
+      "normalized_key": "when an existing gate fails only because a binary is missing ask or install",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-ruff-missing-binary.md",
+      "latest_source_date": null,
+      "age_days": null,
+      "recency_weight": 0.5,
+      "alpha": 0.07,
+      "selection_weight": 0.5,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-ruff-missing-binary.md",
+          "date": null,
           "section": "Next Improvements"
         }
       ]

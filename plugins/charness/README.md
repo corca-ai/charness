@@ -334,6 +334,7 @@ Current integrations:
 - [`gitleaks`](./integrations/tools/gitleaks.json)
 - [`glow`](./integrations/tools/glow.json)
 - [`gws-cli`](./integrations/tools/gws-cli.json)
+- [`ruff`](./integrations/tools/ruff.json)
 - [`specdown`](./integrations/tools/specdown.json)
 
 `charness update all` is the operator path for refreshing the installed

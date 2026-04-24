@@ -3,86 +3,64 @@ Date: 2026-04-24
 
 ## Trigger
 
-- slice: merge the narrative adapter review work and the customer-first skill
-  authoring follow-up into the current README/main worktree
-- claim: preserve routing while improving first-use behavior for narrative
-  adapters and public-skill authoring
+- slice: add `ruff` as a quality validation integration, repair the merged
+  narrative adapter helper that `ruff` flagged, and make missing validation
+  binaries explicit setup work in the `quality` skill
+- claim: preserve startup routing while improving quality closeout behavior for
+  missing local validation tools
 
 ## Validation Goal
 
 - goal: preserve
-- reason: this merge brings in prompt-affecting public skill guidance, adapter
-  review helpers, and dogfood contracts; existing startup routing must still
-  pass while the new customer-first authoring rule and narrative adapter gate
-  stay explicit in checked-in surfaces
+- reason: this slice changes one public skill prompt surface and the README
+  integration map; existing startup routing should remain stable while the new
+  missing-binary rule stays visible through `quality`
 
 ## Change Intent
 
 - `prompt_affecting_change`
 - `skill_core_change`
-- `adapter_contract_change`
+- `truth_surface_change`
 - `scenario_review_change`
 
 ## Prompt Surfaces
 
-- `.agents/narrative-adapter.yaml`
-- `skills/public/narrative/SKILL.md`
-- `skills/public/narrative/references/adapter-contract.md`
-- `skills/public/narrative/references/landing-rewrite-loop.md`
-- `skills/public/create-skill/SKILL.md`
-- `skills/public/premortem/references/angle-selection.md`
+- `skills/public/quality/SKILL.md`
+- `README.md`
 
 ## Commands Run
 
 - `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
 - `cautilus instruction-surface test --repo-root .`
-- `cautilus instruction-surface test --repo-root .` (rerun after one
-  unrelated flaky route miss)
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id narrative --json`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id create-skill --json`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id premortem --json`
+- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id quality --json`
 
 ## Regression Proof
 
 - instruction-surface summary: `4 passed / 0 failed / 0 blocked`
-- run artifact: `.cautilus/runs/20260424T003030957Z-run/`
+- run artifact: `.cautilus/runs/20260424T011541756Z-run/`
 - maintained startup routing still bootstraps through `find-skills`, then
-  selects `impl` or `spec` for the existing instruction-surface cases
+  selects `impl`, `spec`, or `quality` for the existing instruction-surface
+  cases
 - evaluator recommendation: `accept-now`
-- note: `.cautilus/runs/20260424T002903742Z-run/` produced `3 passed / 1
-  failed` on the existing validation-closeout route, selecting `hitl` instead
-  of expected `quality`; rerun restored `accept-now`, so this is recorded as a
-  nondeterministic existing routing risk rather than a new prompt-surface
-  contract change
 
 ## Scenario Review
 
-- reviewed the `narrative` public-skill dogfood case; the expected route and
-  durable artifact remain `narrative` and
-  `charness-artifacts/narrative/latest.md`
-- direct checks against `../cautilus`, `../ceal`, and `../crill` showed the
-  adapter reviewer catches missing adapters, volatile mutable sources, stale
-  paths with closest-path suggestions, and path-like entrypoint drift before
-  README rewriting starts
-- reviewed and updated the `create-skill` dogfood case so public-skill
-  adapter/bootstrap/example changes must start from the changed skill's
-  customer journey
-- reviewed and updated the `premortem` dogfood case so first-use failure can
-  be covered by the new `customer-of-this-capability` angle
-- no maintained scenario-registry mutation was required in this merge slice;
-  the existing instruction-surface routing proof remains a regression check
-  rather than full semantic coverage of the new authoring rule itself
+- reviewed the generated `quality` public-skill dogfood case; the route remains
+  `quality` and the durable artifact remains
+  `charness-artifacts/quality/latest.md`
+- the new `quality` rule specifically covers the observed miss: an existing
+  gate blocked by a missing validation binary must become setup work with an
+  install/verify path or an explicit user question, not a silent skip
+- no maintained scenario-registry mutation was required; this is a preserve
+  proof plus checked dogfood review for the changed public skill surface
 
 ## Outcome
 
 - recommendation: `accept-now`
-- routing notes: regression proof passed after the prompt-surface edits, and
-  the changed guidance does not alter the maintained startup routing cases
+- routing notes: regression proof passed after the prompt-surface edit, and the
+  changed guidance does not alter the maintained startup routing cases
 
 ## Follow-ups
 
-- the current branch still carries README HITL draft/comment drift; markdown,
-  command-doc, and plugin README export gates remain owned by the README
-  rewrite slice
-- consider a narrower maintained scenario later if customer-first skill
-  authoring becomes a repeated regression rather than a checked dogfood rule
+- if missing local validation binaries recur across repos, consider adding a
+  direct scenario for quality closeout on a missing manifest-backed tool

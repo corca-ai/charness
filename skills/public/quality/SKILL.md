@@ -23,7 +23,7 @@ If the repo already has repo-owned quality commands or needs a first-pass instal
 python3 "$SKILL_DIR/scripts/bootstrap_adapter.py" --repo-root .
 ```
 
-When stronger local proof depends on a missing validation tool, reuse the shared recommendation/install payload instead of inventing prose-only install advice:
+When stronger local proof depends on a missing validation tool, reuse the shared recommendation/install payload instead of inventing prose-only install advice. If an existing gate is blocked only by a missing validation binary, treat that as setup work: name the missing binary and verify command, install when the user already asked for installation or local closeout, otherwise ask, then rerun the blocked gate.
 
 ```bash
 python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root .

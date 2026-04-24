@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 from .support import ROOT
@@ -18,7 +19,6 @@ def _write_manifest(tmp_path: Path, name: str, payload: dict[str, object]) -> No
 
 def _isolated_path() -> str:
     import shutil
-    import sys
 
     isolated_path_parts: list[str] = [str(Path(sys.executable).resolve().parent)]
     git_binary = shutil.which("git")
@@ -35,7 +35,7 @@ def _run_recommendations(
     next_skill_id: str | None = None,
 ) -> dict[str, object]:
     result = subprocess.run(
-        ["python3", script_relpath, "--repo-root", str(tmp_path)]
+        [sys.executable, script_relpath, "--repo-root", str(tmp_path)]
         + (
             ["--recommendation-role", recommendation_role]
             if recommendation_role is not None
