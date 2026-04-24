@@ -34,18 +34,17 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 ## Runtime Signals
 
 - Latest local quality gate after this slice: `48 passed, 0 failed`, total
-  `59.0s`.
-- runtime hot spots: latest recorded samples have `pytest` `41.9s`,
-  `check-coverage` `14.4s`, `check-markdown` `4.9s`,
-  `check-cli-skill-surface` `4.8s`, and `specdown` `3.3s`.
+  `56.8s`.
+- runtime hot spots: latest recorded samples have `pytest` `42.6s`,
+  `check-coverage` `13.3s`, `check-markdown` `5.0s`,
+  `check-cli-skill-surface` `4.3s`, and `specdown` `3.4s`.
 - Fixture economics moved broad managed-install/update lifecycle checks to
   `ci_only`; standing pytest still keeps representative install coverage and
   the full on-demand slice remains green.
 - CLI/skill surface probes now run `doctor.py --skip-release-probe` so standing
   readiness checks do not spend wall time on upstream release freshness.
-- `pytest` and `check-coverage` now run in the same quality-runner phase, and
-  `check-coverage` uses support-sync fixtures instead of fetching upstream
-  support archives during standing coverage proof.
+- `pytest`/`check-coverage` now share a phase; `check-coverage` uses support
+  fixtures, and `check-markdown` overlaps the CLI/skill surface probe.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
   `85.0%`; current result is `96.8%` (`1187/1226`).
 - evaluator depth: `run-evals` passes 20 repo-local scenarios, so the bar is
@@ -53,7 +52,7 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 - Budgeted phases: `pytest` median `41.9s / 70.0s`,
   `check-coverage` median `12.8s / 15.0s`, `check-secrets` median
   `2.3s / 6.0s`, `run-evals` median `2.3s / 5.0s`, `specdown` median
-  `2.9s / 8.0s`.
+  `3.1s / 8.0s`.
 ## Coverage and Eval Depth
 
 - Coverage gate: `96.8%` (`1187/1226`) against the configured floors;

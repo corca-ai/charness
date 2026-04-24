@@ -295,9 +295,9 @@ queue_selected "check-export-safe-imports" python3 scripts/check_export_safe_imp
 queue_selected "check-plugin-import-smoke" python3 scripts/check_plugin_import_smoke.py --repo-root "$REPO_ROOT"
 queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo-root "$REPO_ROOT"
 queue_selected "check-doc-links" python3 scripts/check_doc_links.py --repo-root "$REPO_ROOT"
+queue_selected "check-markdown" ./scripts/check-markdown.sh
 flush_phase || OVERALL_RC=$?
 
-queue_selected "check-markdown" ./scripts/check-markdown.sh
 queue_selected "check-secrets" ./scripts/check-secrets.sh
 queue_selected "check-supply-chain" python3 scripts/check_supply_chain.py --repo-root "$REPO_ROOT"
 queue_selected "check-github-actions" python3 scripts/check_github_actions.py --repo-root "$REPO_ROOT"
