@@ -146,3 +146,79 @@ def test_inventory_brittle_source_guards_ignores_hidden_workflow_dirs(tmp_path: 
     payload = json.loads(result.stdout)
     assert payload["summary"]["source_guard_count"] == 1
     assert payload["warnings"] == []
+
+
+def test_inventory_brittle_source_guards_uses_bounded_default_roots(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "notes").mkdir()
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (repo / "docs" / "spec.md").write_text(
+        "\n".join(
+            [
+                "# Spec",
+                "",
+                "| path | matcher | pattern |",
+                "| --- | --- | --- |",
+                "| README.md | fixed | Demo |",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (repo / "notes" / "extra.md").write_text(
+        "\n".join(
+            [
+                "# Extra",
+                "",
+                "| path | matcher | pattern |",
+                "| --- | --- | --- |",
+                "| README.md | fixed | Demo |",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_brittle_source_guards.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["scan_roots"] == ["AGENTS.md", "README.md", "docs", "specs"]
+    assert payload["summary"]["source_guard_count"] == 1
+    assert payload["findings"][0]["spec_path"] == "docs/spec.md"
+
+
+def test_inventory_brittle_source_guards_scan_root_overrides_defaults(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "notes").mkdir()
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (repo / "docs" / "spec.md").write_text(
+        "\n".join(["# Spec", "", "| README.md | fixed | Demo |", ""]),
+        encoding="utf-8",
+    )
+    (repo / "notes" / "extra.md").write_text(
+        "\n".join(["# Extra", "", "| README.md | fixed | Demo |", ""]),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_brittle_source_guards.py",
+        "--repo-root",
+        str(repo),
+        "--scan-root",
+        "notes",
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["scan_roots"] == ["notes"]
+    assert payload["summary"]["source_guard_count"] == 1
+    assert payload["findings"][0]["spec_path"] == "notes/extra.md"

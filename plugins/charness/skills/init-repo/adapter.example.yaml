@@ -7,6 +7,11 @@ customized_from: portable-defaults
 prose_wrap_policy: semantic
 # If prose_wrap_policy is column and fixed-string source guards exist, declare
 # source_guard_matcher.normalize_whitespace: true or an explicit override.
+# Defaults scan AGENTS.md, README.md, docs/, and specs/ for fixed source-guard
+# tables. Override only when guards intentionally live elsewhere.
+# source_guard_scan_roots:
+#   - docs
+#   - specs
 surfaces:
   roadmap: docs/roadmap.md
 defaults_version: issue-64

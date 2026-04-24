@@ -3,18 +3,19 @@ Date: 2026-04-24
 
 ## Trigger
 
-- slice: merge remote `main` release/review-gate work into the current branch
-  that added `ruff` validation setup and Python runtime inheritance guards
+- slice: merge remote `main` source-guard work into the current validation
+  stabilization branch
 - claim: preserve maintained startup routing and validation-closeout routing
-  while keeping both branches' quality/release behavior changes visible
+  while keeping both branches' quality, init-repo, release, and runtime-gate
+  behavior changes visible
 
 ## Validation Goal
 
 - goal: preserve
-- reason: the merge combines prompt-affecting `quality`, `release`,
-  `premortem`, and checked-in instruction surface changes; startup routing,
-  validation-closeout routing, and public-skill dogfood evidence must remain
-  coherent after conflict resolution
+- reason: this merge combines prompt-affecting `quality`, `init-repo`,
+  `release`, `premortem`, and checked-in instruction surface changes; startup
+  routing, validation-closeout routing, public-skill dogfood evidence, and
+  bounded source-guard defaults must remain coherent after conflict resolution
 
 ## Change Intent
 
@@ -38,6 +39,7 @@ Date: 2026-04-24
 - `skills/public/init-repo/references/agent-docs-policy.md`
 - `skills/public/init-repo/references/default-surfaces.md`
 - `skills/public/init-repo/references/normalization-flow.md`
+- `skills/public/init-repo/scripts/init_repo_adapter.py`
 - `skills/public/premortem/SKILL.md`
 - `skills/public/premortem/references/angle-selection.md`
 - `skills/public/premortem/references/counterweight-triage.md`
@@ -46,6 +48,7 @@ Date: 2026-04-24
 - `skills/public/quality/references/adapter-contract.md`
 - `skills/public/quality/references/adapter-gate-review.md`
 - `skills/public/quality/references/entrypoint-docs-ergonomics.md`
+- `skills/public/quality/scripts/inventory_brittle_source_guards.py`
 - `skills/public/release/SKILL.md`
 - `skills/public/release/references/adapter-contract.md`
 - `skills/public/spec/SKILL.md`
@@ -62,12 +65,13 @@ Date: 2026-04-24
 - `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id quality --json`
 - `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id release --json`
 - `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id spec --json`
-- `cautilus instruction-surface test --repo-root .`
 
 ## Regression Proof
 
 - instruction-surface summary: `4 passed / 0 failed / 0 blocked`
 - run artifact: `.cautilus/runs/20260424T031752356Z-run/`
+- latest upstream summary:
+  `.cautilus/runs/20260424T033032495Z-run/instruction-surface-summary.json`
 - recommendation: `accept-now`
 - maintained startup routing still bootstraps through `find-skills`, then
   selects `impl`, `spec`, or `quality` for the maintained
@@ -75,19 +79,18 @@ Date: 2026-04-24
 
 ## Scenario Review
 
-- `quality` dogfood evidence now includes both the remote delegated-review /
-  adapter-gate posture and the local missing-validation-binary setup rule
-- `release` keeps the remote adapter-gated CLI plus bundled-skill disclosure
-  review evidence
-- dogfood generation was inspected for `find-skills`, `ideation`, `init-repo`,
-  `premortem`, `quality`, `release`, and `spec`; expected artifacts and review
-  tiers remain coherent after the merge
+- `quality` dogfood evidence keeps delegated-review / adapter-gate posture,
+  missing-validation-binary setup rules, bounded scan defaults, and explicit
+  override behavior visible
+- `init-repo` dogfood rows record bounded source-guard scanning defaults and
+  adapter/CLI override behavior
+- `release` keeps adapter-gated CLI plus bundled-skill disclosure review
+  evidence
 - evaluator-required skills named by the planner (`find-skills`, `init-repo`,
   and `spec`) are already present in `evals/cautilus/scenarios.json`, so no
   maintained scenario-registry mutation is required for this merge
-- `narrative` source mapping now keeps `docs/handoff.md` as a source document
-  again, matching the repo-owned map-source gate while leaving README mutation
-  boundaries unchanged
+- repo-owned tests cover bounded scan roots, adapter/CLI overrides, hidden
+  workflow directories, and unreadable markdown warnings
 
 ## Outcome
 

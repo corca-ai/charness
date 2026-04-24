@@ -14,7 +14,8 @@ the current working repo for onboarding unless the operator passes
 `--target-repo-root`.
 
 Given `init-repo` or `quality` inventories fixed-string source guards, then the
-scanner should ignore hidden workflow/cache directories, skip any remaining
+scanner should use bounded default roots instead of repo-wide markdown
+discovery, ignore hidden workflow/cache directories, skip any remaining
 unreadable markdown file, emit a structured warning, and keep the review
 command running.
 
@@ -26,6 +27,8 @@ command running.
   source-guard inventory.
 - `charness update` built doctor payloads that included repo onboarding for the
   current working directory even though update is primarily an install refresh.
+- The first recovery patch still scanned every non-hidden markdown file during
+  explicit repo inspection; large repos need a narrower default.
 - Existing tests covered valid source-guard tables but not unreadable markdown
   paths discovered by `Path.rglob("*.md")`.
 
@@ -38,6 +41,10 @@ Before the fix, reading the broken symlink can raise `FileNotFoundError`.
 Run installed `charness update --json` from a repo with malformed onboarding
 state. Before the fix, update still tried to inspect that repo by default.
 
+Create source-guard specs under both `docs/` and `notes/`. By default only the
+bounded roots should be scanned; an explicit adapter or CLI scan-root override
+should include `notes/` when requested.
+
 ## Candidate Causes
 
 - A broken symlink was yielded by markdown discovery and followed by
@@ -48,26 +55,30 @@ state. Before the fix, update still tried to inspect that repo by default.
   that should be advisory input, not a hard install/update dependency.
 - Update reused the doctor payload builder without distinguishing install
   refresh from explicit repo onboarding inspection.
+- Source-guard inventory used repo-wide discovery because it did not have a
+  narrow scan-root contract.
 
 ## Hypothesis
 
 If update skips repo onboarding unless `--target-repo-root` is explicit, and
-source-guard scanners ignore hidden directories plus catch `OSError` around
-markdown reads, then install refresh stops depending on volatile consumer repo
-files while explicit reviews still leave operator-visible evidence.
+source-guard scanners use bounded roots, ignore hidden directories, and catch
+`OSError` around markdown reads, then install refresh stops depending on
+volatile consumer repo files while explicit reviews still leave
+operator-visible evidence.
 
 ## Verification
 
-Added regression tests for skipped update onboarding, hidden workflow markdown
-dirs, and unreadable markdown specs in both init-repo inspect and quality
-brittle source-guard inventory.
+Added regression tests for skipped update onboarding, bounded default scan
+roots, scan-root overrides, hidden workflow markdown dirs, and unreadable
+markdown specs in both init-repo inspect and quality brittle source-guard
+inventory.
 
 ## Root Cause
 
 `charness update` ran repo onboarding by default for the invocation CWD, and the
-source-guard scanners treated every markdown path discovered by `rglob()` as
-readable. Hidden workflow directories, broken symlinks, and volatile files
-violate that assumption.
+source-guard scanners treated every non-hidden markdown path as both relevant
+and readable. Large repos, hidden workflow directories, broken symlinks, and
+volatile files violate that assumption.
 
 ## Seam Risk
 
@@ -87,5 +98,6 @@ violate that assumption.
 ## Prevention
 
 Keep update's install refresh path separate from explicit repo onboarding, keep
-advisory scans out of hidden workflow/cache directories, and surface skipped
-paths through structured warnings instead of Python tracebacks.
+advisory scans bounded by default, keep hidden workflow/cache directories out
+of source-guard discovery, and surface skipped paths through structured
+warnings instead of Python tracebacks.

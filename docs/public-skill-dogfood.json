@@ -169,7 +169,7 @@
         "The checked-in public core keeps repo-mode detection explicit while adding a task-completing delegated-review gate for normalization runs; inspect/help/routing calls stay cheap.",
         "`inspect_repo.py` now emits `recommendations[]` separately from `normalization.findings`, so adapter-declared policy sources can raise `agents.delegated_review_policy` without pretending phrase matching is a hard fact.",
         "`inspect_repo.py` now flags `fresh_eye_task_review_scope_drift` when `AGENTS.md` carries a premortem or fresh-eye delegation rule but does not name task-completing `init-repo` and `quality` review runs as spawn-authorized scopes.",
-        "`inspect_repo.py` keeps explicit repo inspection resilient by ignoring hidden workflow/cache markdown and reporting unreadable source-guard specs as structured warnings instead of aborting install/update recovery."
+        "`inspect_repo.py` keeps explicit repo inspection resilient by bounding source-guard discovery to AGENTS.md, README.md, docs/, and specs/ by default; repos that keep guards elsewhere can set `source_guard_scan_roots`, and unreadable specs become structured warnings instead of aborting install/update recovery."
       ]
     },
     {
@@ -243,7 +243,7 @@
         "`validate_quality_artifact.py` now requires `Advisory` and `Delegated Review` sections, rejecting green-gate-only summaries that omit advisory or delegated-review status.",
         "The quality adapter resolver now preserves existing `version: 1` adapters while defaulting new review fields to safe empty values.",
         "`inventory_entrypoint_docs_ergonomics.py` now surfaces `host_instruction_runbook_pressure` when `AGENTS.md` embeds a multi-step procedure that likely belongs in a deeper doc or repo-owned command surface.",
-        "`inventory_brittle_source_guards.py` keeps advisory source-guard review resilient by ignoring hidden workflow/cache markdown and reporting unreadable specs without crashing the quality run."
+        "`inventory_brittle_source_guards.py` keeps advisory source-guard review resilient by bounding default scan roots, exposing explicit `--scan-root` overrides, and reporting unreadable specs without crashing the quality run."
       ]
     },
     {

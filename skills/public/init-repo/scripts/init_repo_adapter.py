@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import re
 from pathlib import Path
 from typing import Any
 
 from scripts.adapter_lib import load_yaml_file
+from scripts.source_guard_scan_lib import DEFAULT_SOURCE_GUARD_SCAN_ROOTS, fixed_source_guard_rows
 
 ADAPTER_CANDIDATES = (
     Path(".agents/init-repo-adapter.yaml"),
@@ -13,8 +13,6 @@ ADAPTER_CANDIDATES = (
     Path("docs/init-repo-adapter.yaml"),
     Path("init-repo-adapter.yaml"),
 )
-SOURCE_GUARD_RE = re.compile(r"^\|\s*([^|]+?)\s*\|\s*fixed\s*\|\s*([^|]+?)\s*\|")
-
 
 def load_init_repo_adapter(repo_root: Path) -> tuple[dict[str, Any], str | None, list[dict[str, str]]]:
     adapter_path = next((repo_root / candidate for candidate in ADAPTER_CANDIDATES if (repo_root / candidate).is_file()), None)
@@ -105,6 +103,7 @@ def _validate_recommendation_fields(adapter_data: dict[str, Any]) -> list[dict[s
         warnings.append(
             {"type": "invalid_adapter_field", "message": "defaults_version must be a string."}
         )
+    _string_list(adapter_data.get("source_guard_scan_roots"), "source_guard_scan_roots", warnings)
     _policy_sources(adapter_data.get("policy_sources"), warnings)
     recommendation_sets = adapter_data.get("recommendation_sets")
     if recommendation_sets is not None and not isinstance(recommendation_sets, dict):
@@ -129,53 +128,26 @@ def recommendation_policy(adapter_data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _iter_markdown_files(repo_root: Path) -> list[Path]:
-    ignored_parts = {".git", ".charness", "node_modules", "__pycache__"}
-    files: list[Path] = []
-    for path in repo_root.rglob("*.md"):
-        relative_parts = path.relative_to(repo_root).parts
-        if any(part in ignored_parts or part.startswith(".") for part in relative_parts):
-            continue
-        files.append(path)
-    return sorted(files)
+def _source_guard_scan_roots(adapter_data: dict[str, Any]) -> list[Path]:
+    raw_roots = adapter_data.get("source_guard_scan_roots")
+    if isinstance(raw_roots, list) and all(isinstance(item, str) and item for item in raw_roots):
+        return [Path(item) for item in raw_roots]
+    return list(DEFAULT_SOURCE_GUARD_SCAN_ROOTS)
 
 
-def _relative(path: Path, repo_root: Path) -> str:
-    try:
-        return path.relative_to(repo_root).as_posix()
-    except ValueError:
-        return path.as_posix()
-
-
-def _source_guard_scan(repo_root: Path) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
-    rows: list[dict[str, object]] = []
-    warnings: list[dict[str, object]] = []
-    for spec_path in _iter_markdown_files(repo_root):
-        try:
-            text = spec_path.read_text(encoding="utf-8", errors="replace")
-        except OSError as exc:
-            warnings.append(
-                {
-                    "type": "source_guard_markdown_unreadable",
-                    "path": _relative(spec_path, repo_root),
-                    "message": f"Skipped unreadable markdown while scanning source guards: {exc.strerror or exc}",
-                }
-            )
-            continue
-        for line_no, line in enumerate(text.splitlines(), start=1):
-            match = SOURCE_GUARD_RE.match(line)
-            if not match:
-                continue
-            target, pattern = (part.strip() for part in match.groups())
-            rows.append(
-                {
-                    "spec_path": _relative(spec_path, repo_root),
-                    "line": line_no,
-                    "target_path": target,
-                    "pattern_chars": len(pattern),
-                }
-            )
-    return rows, warnings
+def _source_guard_scan(
+    repo_root: Path, adapter_data: dict[str, Any]
+) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
+    rows, warnings = fixed_source_guard_rows(repo_root, _source_guard_scan_roots(adapter_data))
+    return [
+        {
+            "spec_path": row["spec_path"],
+            "line": int(row["line"]),
+            "target_path": row["target_path"],
+            "pattern_chars": len(row["pattern"]),
+        }
+        for row in rows
+    ], warnings
 
 
 def _matcher_normalizes(adapter_data: dict[str, Any]) -> bool:
@@ -188,7 +160,7 @@ def _matcher_normalizes(adapter_data: dict[str, Any]) -> bool:
 def prose_wrap_state(repo_root: Path, adapter_data: dict[str, Any]) -> dict[str, object]:
     raw_policy = adapter_data.get("prose_wrap_policy", "semantic")
     policy = raw_policy if raw_policy in {"semantic", "column"} else "invalid"
-    guards, scan_warnings = _source_guard_scan(repo_root)
+    guards, scan_warnings = _source_guard_scan(repo_root, adapter_data)
     normalizes = _matcher_normalizes(adapter_data)
     explicit_override = adapter_data.get("allow_column_wrap_fixed_guards") is True
     warnings: list[dict[str, object]] = [*scan_warnings]

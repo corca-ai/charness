@@ -3,13 +3,31 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 from pathlib import Path
 from typing import Any
 
-SOURCE_GUARD_RE = re.compile(r"^\|\s*([^|]+?)\s*\|\s*fixed\s*\|\s*([^|]+?)\s*\|")
 DEFAULT_MIN_PATTERN_CHARS = 40
+
+
+def _load_source_guard_scan_lib():
+    for ancestor in Path(__file__).resolve().parents:
+        candidate = ancestor / "scripts" / "source_guard_scan_lib.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("source_guard_scan_lib", candidate)
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("scripts/source_guard_scan_lib.py not found")
+
+
+_source_guard_scan_lib = _load_source_guard_scan_lib()
+DEFAULT_SOURCE_GUARD_SCAN_ROOTS = _source_guard_scan_lib.DEFAULT_SOURCE_GUARD_SCAN_ROOTS
+fixed_source_guard_rows = _source_guard_scan_lib.fixed_source_guard_rows
 
 
 def _normalize_whitespace(text: str) -> str:
@@ -36,53 +54,8 @@ def _is_hard_wrapped(score: dict[str, int]) -> bool:
     return score["wrapped_lines"] >= 3 and score["wrapped_lines"] / score["prose_lines"] >= 0.4
 
 
-def _iter_markdown_files(repo_root: Path) -> list[Path]:
-    ignored_parts = {".git", ".charness", "node_modules", "__pycache__"}
-    files: list[Path] = []
-    for path in repo_root.rglob("*.md"):
-        relative_parts = path.relative_to(repo_root).parts
-        if any(part in ignored_parts or part.startswith(".") for part in relative_parts):
-            continue
-        files.append(path)
-    return sorted(files)
-
-
-def _relative(path: Path, repo_root: Path) -> str:
-    try:
-        return path.relative_to(repo_root).as_posix()
-    except ValueError:
-        return path.as_posix()
-
-
-def _source_guard_scan(repo_root: Path) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
-    guards: list[dict[str, str]] = []
-    warnings: list[dict[str, str]] = []
-    for spec_path in _iter_markdown_files(repo_root):
-        try:
-            text = spec_path.read_text(encoding="utf-8", errors="replace")
-        except OSError as exc:
-            warnings.append(
-                {
-                    "type": "source_guard_markdown_unreadable",
-                    "path": _relative(spec_path, repo_root),
-                    "message": f"Skipped unreadable markdown while scanning source guards: {exc.strerror or exc}",
-                }
-            )
-            continue
-        for line_no, line in enumerate(text.splitlines(), start=1):
-            match = SOURCE_GUARD_RE.match(line)
-            if not match:
-                continue
-            target, pattern = (part.strip() for part in match.groups())
-            guards.append(
-                {
-                    "spec_path": _relative(spec_path, repo_root),
-                    "line": str(line_no),
-                    "target_path": target,
-                    "pattern": pattern,
-                }
-            )
-    return guards, warnings
+def _source_guard_scan(repo_root: Path, scan_roots: list[Path]) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    return fixed_source_guard_rows(repo_root, scan_roots)
 
 
 def _policy_state(repo_root: Path) -> dict[str, Any]:
@@ -149,13 +122,20 @@ def _finding_for_guard(repo_root: Path, guard: dict[str, str], min_pattern_chars
     return finding
 
 
-def inventory(repo_root: Path, *, min_pattern_chars: int = DEFAULT_MIN_PATTERN_CHARS) -> dict[str, Any]:
-    guards, warnings = _source_guard_scan(repo_root)
+def inventory(
+    repo_root: Path,
+    *,
+    min_pattern_chars: int = DEFAULT_MIN_PATTERN_CHARS,
+    scan_roots: list[Path] | None = None,
+) -> dict[str, Any]:
+    resolved_scan_roots = scan_roots if scan_roots is not None else list(DEFAULT_SOURCE_GUARD_SCAN_ROOTS)
+    guards, warnings = _source_guard_scan(repo_root, resolved_scan_roots)
     findings = [_finding_for_guard(repo_root, guard, min_pattern_chars) for guard in guards]
     fragile = [finding for finding in findings if finding["status"] in {"brittle", "at_risk", "normalization_needed"}]
     return {
         "repo_root": str(repo_root),
         "min_pattern_chars": min_pattern_chars,
+        "scan_roots": [root.as_posix() for root in resolved_scan_roots],
         "warnings": warnings,
         "summary": {
             "source_guard_count": len(findings),
@@ -172,9 +152,20 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--min-pattern-chars", type=int, default=DEFAULT_MIN_PATTERN_CHARS)
+    parser.add_argument(
+        "--scan-root",
+        action="append",
+        type=Path,
+        dest="scan_roots",
+        help="Markdown file or directory to scan for source guards. Repeat to override the default bounded roots.",
+    )
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
-    payload = inventory(args.repo_root.resolve(), min_pattern_chars=args.min_pattern_chars)
+    payload = inventory(
+        args.repo_root.resolve(),
+        min_pattern_chars=args.min_pattern_chars,
+        scan_roots=args.scan_roots,
+    )
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
     else:
