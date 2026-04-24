@@ -10,6 +10,9 @@
 - when adapter-declared policy sources imply delegated review but
   [`AGENTS.md`](../../../../AGENTS.md) lacks the explicit host-spawn rule, emit a reviewable
   recommendation instead of treating phrase matching as a hard fact
+- when a repo uses Charness durable artifacts, [`AGENTS.md`](../../../../AGENTS.md) should say
+  meaningful `charness-artifacts/` changes are commit targets, and
+  current-pointer helpers should no-op when canonical content has not changed
 
 ## Deterministic Cases
 
@@ -42,3 +45,11 @@ stop gate, prefer a short rule like:
   to spawn bounded reviewers.
 - Do not wait for a second user message asking for delegation.
 - If the host blocks subagent spawning, stop and report the host restriction explicitly instead of substituting a same-agent pass.
+
+When the repo uses Charness artifacts, prefer a short rule like:
+
+- Treat `charness-artifacts/` as repo state, not scratch.
+- Commit meaningful durable artifact changes with the work they support.
+- Current-pointer helpers should no-op when canonical content has not changed.
+- If a helper rewrites an artifact without canonical change, treat that as
+  invocation drift or a helper bug to fix.

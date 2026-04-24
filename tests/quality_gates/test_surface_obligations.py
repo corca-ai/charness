@@ -27,6 +27,22 @@ def test_check_changed_surfaces_reports_expected_obligations_for_readme() -> Non
     assert "./scripts/check-markdown.sh" in payload["verify_commands"]
 
 
+def test_check_changed_surfaces_treats_charness_artifacts_as_repo_markdown() -> None:
+    result = run_script(
+        "scripts/check_changed_surfaces.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "charness-artifacts/init-repo/latest.md",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    surface_ids = {surface["surface_id"] for surface in payload["matched_surfaces"]}
+    assert "repo-markdown" in surface_ids
+    assert payload["unmatched_paths"] == []
+
+
 def test_check_changed_surfaces_reports_unmatched_paths() -> None:
     result = run_script(
         "scripts/check_changed_surfaces.py",

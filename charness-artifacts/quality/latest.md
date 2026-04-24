@@ -1,5 +1,5 @@
 # Quality Review
-Date: 2026-04-23
+Date: 2026-04-24
 
 ## Scope
 
@@ -29,9 +29,9 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 ## Runtime Signals
 
 - Latest local quality gate after this slice: `45 passed, 0 failed`, total
-  `51.7s`.
-- runtime hot spots: latest recorded samples have `pytest` `42.5s`, `check-coverage`
-  `11.7s`, `check-markdown` `4.0s`, `check-duplicates` `2.6s`, and `specdown` `2.6s`.
+  `49.4s`.
+- runtime hot spots: latest recorded samples have `pytest` `37.1s`, `check-coverage`
+  `11.7s`, `check-markdown` `4.1s`, `check-duplicates` `2.8s`, and `specdown` `2.9s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
   `85.0%`; current result is `97.9%` (`1186/1211`).
 - evaluator depth: `run-evals` passes 20 repo-local scenarios, so the bar is

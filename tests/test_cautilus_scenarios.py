@@ -91,7 +91,9 @@ def test_eval_cautilus_chatbot_proposals_writes_summary(tmp_path: Path) -> None:
 def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> None:
     cases_path = ROOT / "evals" / "cautilus" / "instruction-surface-cases.json"
     cases = json.loads(cases_path.read_text(encoding="utf-8"))
-    workspace = str(ROOT)
+    workspace_path = tmp_path / "workspace"
+    workspace_path.mkdir()
+    workspace = str(workspace_path)
 
     fixture_results = {}
     for evaluation in cases["evaluations"]:
@@ -125,7 +127,7 @@ def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> 
             "--repo-root",
             str(ROOT),
             "--workspace",
-            str(ROOT),
+            workspace,
             "--cases-file",
             str(cases_path),
             "--output-file",
@@ -205,7 +207,9 @@ def test_instruction_surface_runner_normalizes_markdown_link_entry_file(tmp_path
     cases_path = tmp_path / "cases.json"
     cases_path.write_text(json.dumps(cases, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    workspace = str(ROOT)
+    workspace_path = tmp_path / "workspace"
+    workspace_path.mkdir()
+    workspace = str(workspace_path)
     fixture_results = {
         "markdown-link-entry-file": {
             "observationStatus": "observed",
@@ -235,7 +239,7 @@ def test_instruction_surface_runner_normalizes_markdown_link_entry_file(tmp_path
             "--repo-root",
             str(ROOT),
             "--workspace",
-            str(ROOT),
+            workspace,
             "--cases-file",
             str(cases_path),
             "--output-file",

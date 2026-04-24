@@ -232,6 +232,80 @@ def test_init_repo_inspect_reports_fresh_eye_delegation_drift(tmp_path: Path) ->
     assert "fresh_eye_delegation_rule_drift" in recommendation_ids
 
 
+def test_init_repo_inspect_reports_charness_artifacts_commit_policy_drift(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(repo, "# Agents\n\nExisting operating policy.\n")
+    (repo / "charness-artifacts" / "quality").mkdir(parents=True)
+    (repo / "charness-artifacts" / "quality" / "latest.md").write_text(
+        "# Quality Review\n",
+        encoding="utf-8",
+    )
+
+    payload = _run_inspect(repo)
+
+    normalization = payload["agent_docs"]["normalization"]
+    finding_types = {finding["type"] for finding in normalization["findings"]}
+    recommendation_ids = [item["id"] for item in payload["recommendations"]]
+    assert normalization["charness_artifacts"]["uses_charness_artifacts"] is True
+    assert "repo state" in normalization["charness_artifacts"]["missing_required_snippets"]
+    assert "canonical content" in normalization["charness_artifacts"]["missing_required_snippets"]
+    assert "charness_artifacts_commit_policy_drift" in finding_types
+    assert "charness_artifacts_commit_policy_drift" in recommendation_ids
+
+
+def test_init_repo_inspect_detects_charness_artifacts_from_adapter_output_dir(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(repo, "# Agents\n\nExisting operating policy.\n")
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "init-repo-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "output_dir: charness-artifacts/init-repo",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = _run_inspect(repo)
+
+    normalization = payload["agent_docs"]["normalization"]
+    recommendation_ids = [item["id"] for item in payload["recommendations"]]
+    assert normalization["charness_artifacts"]["uses_charness_artifacts"] is True
+    assert "charness_artifacts_commit_policy_drift" in recommendation_ids
+
+
+def test_init_repo_inspect_accepts_charness_artifacts_commit_policy(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(
+        repo,
+        "\n".join(
+            [
+                "# Agents",
+                "",
+                "Treat `charness-artifacts/` as repo state, not scratch.",
+                "Current-pointer helpers should be no-op when their canonical content has not changed.",
+                "",
+            ]
+        ),
+    )
+    (repo / "charness-artifacts" / "quality").mkdir(parents=True)
+    (repo / "charness-artifacts" / "quality" / "latest.md").write_text(
+        "# Quality Review\n",
+        encoding="utf-8",
+    )
+
+    payload = _run_inspect(repo)
+
+    normalization = payload["agent_docs"]["normalization"]
+    finding_types = {finding["type"] for finding in normalization["findings"]}
+    assert normalization["charness_artifacts"]["uses_charness_artifacts"] is True
+    assert normalization["charness_artifacts"]["missing_required_snippets"] == []
+    assert "charness_artifacts_commit_policy_drift" not in finding_types
+
+
 def test_init_repo_inspect_requires_decision_for_custom_skill_routing_block(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _seed_normalize_repo(repo, "# Agents\n\n## Skill Routing\n\nUse local judgment.\n")

@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
+from scripts.init_repo_artifact_policy_lib import detect_charness_artifact_policy
+
 DEFAULT_SURFACES = {
     "readme": Path("README.md"),
     "agents": Path("AGENTS.md"),
@@ -122,7 +124,6 @@ def _surface_present(spec: SurfaceSpec) -> bool:
 
 def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
-
 
 def _missing_snippets(text: str, snippets: tuple[str, ...]) -> list[str]:
     lowered = text.lower()
@@ -368,12 +369,13 @@ def detect_agent_docs(
         action = "inspect_manually"
     retro_memory, retro_findings = _detect_retro_memory_normalization(repo_root, agents_text)
     fresh_eye_review, fresh_eye_findings = _detect_fresh_eye_normalization(agents_text)
+    charness_artifacts, charness_artifact_findings = detect_charness_artifact_policy(repo_root, agents_text)
     skill_routing, skill_routing_findings = _detect_skill_routing_normalization(
         repo_root,
         agents_text,
         skill_routing_payload,
     )
-    normalization_findings = [*retro_findings, *fresh_eye_findings, *skill_routing_findings]
+    normalization_findings = [*retro_findings, *fresh_eye_findings, *charness_artifact_findings, *skill_routing_findings]
     return {
         "agents": _file_state(agents),
         "claude": _file_state(claude),
@@ -385,6 +387,7 @@ def detect_agent_docs(
             "findings": normalization_findings,
             "retro_memory": retro_memory,
             "fresh_eye_review": fresh_eye_review,
+            "charness_artifacts": charness_artifacts,
             "skill_routing": skill_routing,
         },
     }
@@ -433,7 +436,12 @@ def build_init_repo_inspection_payload(
     recommendations = [
         _finding_recommendation(finding, priority="advisory")
         for finding in findings
-        if finding.get("type") in {"fresh_eye_delegation_rule_drift", "skill_routing_block_custom_or_drifted"}
+        if finding.get("type")
+        in {
+            "fresh_eye_delegation_rule_drift",
+            "skill_routing_block_custom_or_drifted",
+            "charness_artifacts_commit_policy_drift",
+        }
     ]
     recommendations.extend(_detect_policy_source_recommendations(repo_root, _read_text(repo_root / "AGENTS.md"), policy))
     recommendations = [

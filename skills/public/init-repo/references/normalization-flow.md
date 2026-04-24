@@ -23,6 +23,10 @@ parallel templates.
 - when adapter-declared policy sources imply delegated review, does
   `inspect_repo.py` emit a `recommendations[]` queue item with priority,
   confidence, evidence, suggested action, and acknowledgement state
+- when the repo uses Charness durable artifacts, does [`AGENTS.md`](../../../../AGENTS.md)
+  make meaningful `charness-artifacts/` changes repo state and commit targets,
+  and say current-pointer helpers should no-op without canonical content
+  changes
 - does `docs/roadmap.md` exist when the repo needs short-horizon planning
 - can a human operator tell what to do from [`docs/operator-acceptance.md`](../../../../docs/operator-acceptance.md)
 - are there duplicate docs that should collapse into one source of truth

@@ -108,6 +108,9 @@ Then load only the references needed for the detected state:
    - when that seam is enabled, make [`AGENTS.md`](../../../AGENTS.md) name
      [`charness-artifacts/retro/recent-lessons.md`](../../../charness-artifacts/retro/recent-lessons.md) as a repo memory surface so future
      sessions can actually discover it
+   - when Charness workflows write durable artifacts, make [`AGENTS.md`](../../../AGENTS.md)
+     say meaningful `charness-artifacts/` changes are repo state and
+     current-pointer helpers no-op without canonical content changes
    - when the repo uses bounded fresh-eye or premortem-style subagent review
      as a stop gate, make [`AGENTS.md`](../../../AGENTS.md) say that the review is already delegated,
      agents should not wait for a second user message asking for delegation,

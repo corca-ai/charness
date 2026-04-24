@@ -31,6 +31,13 @@ self-validation.
   the next agent can continue without rediscovering machine state. Install,
   update, and support-sync flows should emit structured output and persist
   machine-readable state when they mutate the operator surface.
+- TREAT `charness-artifacts/` AS REPO STATE, NOT SCRATCH.
+  When a Charness workflow creates or updates durable artifacts under
+  `charness-artifacts/`, include the meaningful artifact changes in the same
+  commit as the work they support. Current-pointer helpers should be no-op when
+  their canonical content has not changed; if a startup or inventory command
+  rewrites an artifact without a canonical change, treat that as invocation
+  drift or a helper bug to fix.
 - KEEP MANUALLY MAINTAINED REPO DOCS IN ENGLISH.
   [`docs/handoff.md`](./docs/handoff.md) may stay Korean when that makes the next session pickup
   sharper.
@@ -170,9 +177,9 @@ Read the smallest memory surface that answers the current question.
 - Keep durable review findings in `charness-artifacts/` when a skill is designed to
   accumulate them.
 - If the mandatory startup `find-skills` call rewrites
-  `charness-artifacts/find-skills/latest.*`, diff it immediately. Commit it
-  only when the canonical capability inventory changed; otherwise treat the
-  rewrite as invocation drift or a bug to fix, not as unrelated ambient dirt.
+  `charness-artifacts/find-skills/latest.*` without a canonical capability
+  inventory change, treat that as invocation drift or a bug to fix; the helper
+  should normally no-op in that case.
 - If the user correctly points out a missed issue, broken assumption, or
   missing gate that should likely have been caught, run a brief retro before
   continuing and say whether that retro was persisted.
