@@ -3,17 +3,16 @@ Date: 2026-04-24
 
 ## Trigger
 
-- slice: teach `init-repo` and repo AGENTS policy that meaningful
-  `charness-artifacts/` changes are repo state and commit targets, while
-  current-pointer helpers should no-op without canonical content changes
+- slice: teach `ideation`, `spec`, and `find-skills` to handle decision-shaped
+  prompts and enum-axis checkpointing for issues #65 and #66
 - claim: preserve
 
 ## Validation Goal
 
 - goal: preserve
-- reason: this slice changes prompt-affecting AGENTS and `init-repo` skill
-  surfaces, so maintained startup routing and validation-closeout routing must
-  remain stable while the artifact policy becomes visible
+- reason: this slice changes public skill prompt surfaces, so maintained
+  startup routing and validation-closeout routing must stay stable while the
+  new decision-frame and taxonomy-axis guidance becomes visible
 
 ## Change Intent
 
@@ -23,22 +22,25 @@ Date: 2026-04-24
 
 ## Prompt Surfaces
 
-- `AGENTS.md`
-- `skills/public/init-repo/SKILL.md`
-- `skills/public/init-repo/references/agent-docs-policy.md`
-- `skills/public/init-repo/references/default-surfaces.md`
-- `skills/public/init-repo/references/normalization-flow.md`
+- `skills/public/find-skills/SKILL.md`
+- `skills/public/ideation/SKILL.md`
+- `skills/public/spec/SKILL.md`
+- `skills/public/ideation/references/decision-question-response.md`
+- `skills/public/spec/references/taxonomy-axis-checkpoint.md`
 
 ## Commands Run
 
 - `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
+- `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
 - `cautilus instruction-surface test --repo-root .`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id init-repo --json`
+- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id find-skills --json`
+- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id ideation --json`
+- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id spec --json`
 
 ## Regression Proof
 
 - instruction-surface summary:
-  `.cautilus/runs/20260424T000750987Z-run/instruction-surface-summary.json`
+  `.cautilus/runs/20260424T003907205Z-run/instruction-surface-summary.json`
 - result: `4 passed / 0 failed / 0 blocked`
 - recommendation: `accept-now`
 - maintained startup routing still bootstraps through `find-skills`, then
@@ -47,23 +49,33 @@ Date: 2026-04-24
 
 ## Scenario Review
 
-- reviewed the maintained `init-repo` dogfood row with
-  `suggest_public_skill_dogfood`; it still expects normalization of a partially
-  initialized mature repo, durable state at
-  `charness-artifacts/init-repo/latest.md`, and `init-repo` selection rather
-  than an adjacent skill
-- no maintained Cautilus scenario mutation is needed for this slice because the
-  changed behavior is locked by repo tests for AGENTS policy wording,
-  `inspect_repo.py` recommendation output, surface obligations, and the
-  existing `init-repo` dogfood contract
+- `find-skills` dogfood still expects explicit named capability prompts to
+  route through `find-skills` and refresh
+  `charness-artifacts/find-skills/latest.md` when durable state is persisted
+- `ideation` dogfood still covers concept-shaping prompts as `ideation`; the
+  new Korean decision-question reference narrows the response shape inside that
+  skill rather than changing the selected work skill
+- `spec` dogfood still covers under-specified implementation-contract prompts
+  as `spec`; the new taxonomy-axis checkpoint narrows contract vocabulary
+  before adding mode/kind/strategy/profile/target enums
+- no maintained Cautilus scenario registry mutation is needed in this slice:
+  the existing maintained scenarios guard startup and route selection, while
+  the new #65/#66 behavior is captured as public-skill guidance plus
+  scenario-shaped acceptance in
+  `charness-artifacts/spec/issue-65-66-decision-taxonomy-routing.md`
+- `accept-now` here is preserve/regression evidence for maintained routing, not
+  proof that Korean decision prompts or mixed-axis enum proposals have dedicated
+  semantic evaluator coverage
 
 ## Outcome
 
 - recommendation: `accept-now`
-- routing notes: regression proof passed, and `init-repo` now carries the
-  artifact commit/no-op policy without changing the expected work-skill route
+- routing notes: regression proof passed; the new guidance changes response
+  shape within `ideation`/`spec` and preserves `find-skills` for explicit
+  capability discovery
 
 ## Follow-ups
 
-- consider a shared current-pointer persistence helper so other `latest.*`
-  writers can inherit the `find-skills` canonical no-op behavior
+- consider maintained evaluator scenarios for Korean decision prompts and
+  mixed-axis enum proposals after dogfooding shows this guidance needs stronger
+  executable coverage

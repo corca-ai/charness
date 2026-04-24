@@ -39,7 +39,7 @@ If an ideation document already exists, refine it into a spec instead of restati
 ## Contract Shaping
 
 Choose the lightest honest contract shape.
-When implementation churn would be expensive, reduce ambiguity earlier and make the slice more explicit before coding starts. If some answers will emerge only while building, keep the contract probe-friendly and visible instead of inventing a user-facing mode choice.
+When implementation churn would be expensive, reduce ambiguity earlier and make the slice more explicit before coding starts. If some answers will emerge only while building, keep the contract probe-friendly and visible instead of inventing a user-facing mode choice. Before adding public mode/kind/strategy/profile/target vocabulary, run `references/taxonomy-axis-checkpoint.md`.
 
 If the repo already treats executable checks as contract artifacts, push acceptance into those checks instead of managing a separate prose-only branch. For public executable pages, keep current-state claims and bounded proof only; move future-state planning, source inventory, and low-level implementation guards down a layer. If the repo wants the latest on-demand validation visible to readers, project the checked artifact into a viewer-style executable page instead of rebuilding the evaluator logic inline or promoting source guards into the public spec.
 
@@ -68,6 +68,7 @@ Before locking the contract, run one bounded premortem. Ask what a fresh five-mi
      user-visible behavior, acceptance, sequencing, dependency choice, or risk
    - if a reasonable default is clear, recommend it with reasons instead of
      opening broad branch trees
+   - check taxonomy-axis consistency before adding public enum vocabulary
 4. Define the current execution contract.
    - current slice
    - non-goals
@@ -195,3 +196,4 @@ as `Entities` or `Stages` instead of recreating them under new names.
 - `references/impl-loop.md`
 - `references/ideation-boundary.md`
 - `references/document-seams.md`
+- `references/taxonomy-axis-checkpoint.md`

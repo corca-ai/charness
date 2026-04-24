@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-04-23T13:51:23Z",
+  "generated_at": "2026-04-24T00:47:09Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -181,7 +181,8 @@
         ],
         "referenced_paths": [
           "skills/public/ideation/references/sequence-discipline.md",
-          "skills/public/ideation/references/effectuation.md"
+          "skills/public/ideation/references/effectuation.md",
+          "skills/public/ideation/references/decision-question-response.md"
         ],
         "source": "local-public",
         "layer": "public skill"

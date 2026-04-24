@@ -13,6 +13,14 @@ Use this when the user is asking:
 - whether a capability is native, support-driven, or external
 - how to extend the harness for a recurring task
 
+Do not treat ordinary design or workflow decision-shaped prompts as capability
+discovery only because several public skills are nearby. Questions like "what do
+we need to decide?", "what decision issues are still open?", "뭘 결정해야 하죠?",
+or "결정할 쟁점은?" usually need an `ideation` or `spec` decision frame with
+options, tradeoffs, a recommendation, and a next step. Use `find-skills` when
+the user explicitly asks which skill, support capability, helper, or integration
+should handle the task, or names one directly.
+
 When the user names a capability directly, including phrases like `X skill`,
 `X 스킬`, `X support`, `support/X`, `X helper`, or `X integration`, run
 `find-skills` before `find`, `ls`, or `grep` filesystem discovery. Support
@@ -153,6 +161,9 @@ The result should usually include:
   as a future integration.
 - Do not recommend installing from a generic external skill ecosystem unless the
   host policy or adapter explicitly allows that path.
+- Do not answer ordinary decision-shaped prompts with routing alone when the
+  user needs a decision frame; keep explicit skill/capability discovery on this
+  skill.
 - If nothing suitable exists yet, say so directly and classify the missing
   capability instead of hand-waving.
 
@@ -162,6 +173,7 @@ The result should usually include:
 - `references/adapter-contract.md`
 - `references/discovery-order.md`
 - `references/support-consumption.md`
+- `../ideation/references/decision-question-response.md`
 - `scripts/resolve_adapter.py`
 - `scripts/init_adapter.py`
 - `scripts/list_capabilities.py`

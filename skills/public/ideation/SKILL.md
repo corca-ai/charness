@@ -21,6 +21,12 @@ points, borrow Donella Meadows-style systems thinking so the design pressure is
 traced to structure instead of dissolving into a feature wish list. See
 `references/sequence-discipline.md` and `references/effectuation.md`.
 
+When the user asks a design or workflow decision-shaped question such as "what
+do we need to decide?", "what decision issues are still open?", "뭘 결정해야
+하죠?", or "결정할 쟁점은?", answer with a decision frame before implementation:
+the core decision, 2-4 options, tradeoffs, one recommendation, why, and the next
+step. See `references/decision-question-response.md`.
+
 ## Bootstrap
 
 Read only the context that reduces uncertainty for the current idea.
@@ -68,6 +74,9 @@ incrementally instead of leaving the model only in chat.
    - `stage lens`: chronology, checkpoints, state transitions
    - `decision lens`: sort ambiguities by downstream impact and dependency
      order so the highest-leverage upstream choice is handled first
+   - before introducing a new user-facing mode, kind, strategy, profile, or
+     target, run the `spec` taxonomy-axis checkpoint so objective, evidence,
+     trigger, policy, and internal presets do not collapse into one enum
    - `effectuation lens`: available means, affordable loss, stakeholder
      commitments, and useful contingencies when the idea is still highly
      uncertain
@@ -161,3 +170,5 @@ Use that split as a thinking aid, not as mandatory ceremony.
 - `references/effectuation.md`
 - `references/sequence-discipline.md`
 - `references/spec-boundary.md`
+- `references/decision-question-response.md`
+- `../spec/references/taxonomy-axis-checkpoint.md`
