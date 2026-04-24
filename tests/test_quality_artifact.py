@@ -82,7 +82,7 @@ def test_validate_quality_artifact_rejects_missing_history_section(tmp_path: Pat
                 "",
                 "## Advisory",
                 "",
-                "- advisory",
+                "- inventory: `demo-inventory` found advisory signal.",
                 "",
                 "## Delegated Review",
                 "",
@@ -145,7 +145,7 @@ def test_validate_quality_artifact_rejects_missing_history_link(tmp_path: Path) 
                 "",
                 "## Advisory",
                 "",
-                "- advisory",
+                "- inventory: `demo-inventory` found advisory signal.",
                 "",
                 "## Delegated Review",
                 "",
@@ -211,7 +211,7 @@ def test_validate_quality_artifact_requires_runtime_closeout_fields(tmp_path: Pa
                 "",
                 "## Advisory",
                 "",
-                "- advisory",
+                "- inventory: `demo-inventory` found advisory signal.",
                 "",
                 "## Delegated Review",
                 "",
@@ -278,7 +278,7 @@ def test_validate_quality_artifact_rejects_explicit_allowance_as_subagent_blocke
                 "",
                 "## Advisory",
                 "",
-                "- advisory",
+                "- inventory: `demo-inventory` found advisory signal.",
                 "",
                 "## Delegated Review",
                 "",
@@ -429,6 +429,73 @@ def test_validate_quality_artifact_requires_inventory_backed_empty_advisory(tmp_
     result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "none found by inventory" in result.stderr
+
+
+def test_validate_quality_artifact_rejects_unevidenced_advisory_bullets(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        "\n".join(
+            [
+                "# Quality Review",
+                "Date: 2026-04-20",
+                "",
+                "## Scope",
+                "",
+                "- demo",
+                "",
+                "## Current Gates",
+                "",
+                "- gate",
+                "",
+                "## Runtime Signals",
+                "",
+                "- runtime hot spots: `pytest` 10s",
+                "- coverage gate: none",
+                "- evaluator depth: adapter bootstrap only",
+                "",
+                "## Healthy",
+                "",
+                "- healthy",
+                "",
+                "## Weak",
+                "",
+                "- weak",
+                "",
+                "## Missing",
+                "",
+                "- missing",
+                "",
+                "## Deferred",
+                "",
+                "- deferred",
+                "",
+                "## Advisory",
+                "",
+                "- advisory",
+                "",
+                "## Delegated Review",
+                "",
+                "- status: executed; bounded subagent review ran.",
+                "",
+                "## Commands Run",
+                "",
+                "- cmd",
+                "",
+                "## Recommended Next Gates",
+                "",
+                "- active AUTO_CANDIDATE: next",
+                "",
+                "## History",
+                "",
+                "- [archive](history/one.md)",
+                "",
+            ]
+        )
+        + "\n",
+    )
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "advisory bullets must cite inventory" in result.stderr
 
 
 def test_validate_quality_artifact_requires_blocked_delegated_review_signal(tmp_path: Path) -> None:

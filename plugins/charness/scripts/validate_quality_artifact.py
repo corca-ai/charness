@@ -63,6 +63,16 @@ FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "same-agent pass as equivalent",
 )
 DELEGATED_REVIEW_STATUSES = ("executed", "blocked", "not_applicable")
+ADVISORY_EVIDENCE_MARKERS = (
+    "`",
+    "inventory",
+    "command:",
+    "artifact:",
+    "evidence:",
+    "because",
+    "from ",
+    "found by ",
+)
 
 
 def validate_history_section(lines: list[str]) -> None:
@@ -112,6 +122,12 @@ def validate_advisory_section(lines: list[str]) -> None:
         raise ValidationError("empty advisory claims must use `none found by inventory` evidence wording")
     if "none found by inventory" in lowered and not any(token in lowered for token in ("command:", "artifact:", "`")):
         raise ValidationError("empty advisory claims must cite inventory-backed command or artifact evidence")
+    for bullet in bullets:
+        bullet_lowered = bullet.lower()
+        if "none found by inventory" in bullet_lowered:
+            continue
+        if not any(marker in bullet_lowered for marker in ADVISORY_EVIDENCE_MARKERS):
+            raise ValidationError("advisory bullets must cite inventory, command, artifact, or other explicit evidence")
 
 
 def validate_delegated_review_section(lines: list[str]) -> None:

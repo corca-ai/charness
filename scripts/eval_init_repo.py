@@ -102,6 +102,11 @@ def run_init_repo_inspect_states(
             raise error_type(
                 "init-repo delegated-review scope inspect: expected fresh_eye_task_review_scope_drift recommendation"
             )
+        recommendation_priorities = {item.get("id"): item.get("priority") for item in review_scope.get("recommendations", [])}
+        if recommendation_priorities.get("fresh_eye_task_review_scope_drift") != "review_required":
+            raise error_type(
+                "init-repo delegated-review scope inspect: expected fresh_eye_task_review_scope_drift to require review"
+            )
 
 
 def run_init_repo_operator_acceptance_synthesis(

@@ -231,8 +231,13 @@ def test_init_repo_inspect_reports_fresh_eye_delegation_drift(tmp_path: Path) ->
     assert "fresh_eye_task_review_scope_drift" in finding_types
     assert "fresh_eye_review_still_requires_consent_or_fallback" in finding_types
     recommendation_ids = [item["id"] for item in normalization["recommendations"]]
+    recommendation_priorities = {item["id"]: item["priority"] for item in normalization["recommendations"]}
     assert "fresh_eye_delegation_rule_drift" in recommendation_ids
     assert "fresh_eye_task_review_scope_drift" in recommendation_ids
+    assert "fresh_eye_review_still_requires_consent_or_fallback" in recommendation_ids
+    assert recommendation_priorities["fresh_eye_delegation_rule_drift"] == "review_required"
+    assert recommendation_priorities["fresh_eye_task_review_scope_drift"] == "review_required"
+    assert recommendation_priorities["fresh_eye_review_still_requires_consent_or_fallback"] == "review_required"
 
 
 def test_init_repo_inspect_reports_task_review_scope_drift_when_premortem_rule_is_present(tmp_path: Path) -> None:
@@ -256,11 +261,13 @@ def test_init_repo_inspect_reports_task_review_scope_drift_when_premortem_rule_i
     normalization = payload["agent_docs"]["normalization"]
     finding_types = {finding["type"] for finding in normalization["findings"]}
     recommendation_ids = [item["id"] for item in normalization["recommendations"]]
+    recommendation_priorities = {item["id"]: item["priority"] for item in normalization["recommendations"]}
     assert normalization["fresh_eye_review"]["missing_required_snippets"] == []
     assert normalization["fresh_eye_review"]["missing_task_review_scopes"] == ["init-repo", "quality"]
     assert "fresh_eye_delegation_rule_drift" not in finding_types
     assert "fresh_eye_task_review_scope_drift" in finding_types
     assert "fresh_eye_task_review_scope_drift" in recommendation_ids
+    assert recommendation_priorities["fresh_eye_task_review_scope_drift"] == "review_required"
 
 
 def test_init_repo_inspect_reports_charness_artifacts_commit_policy_drift(tmp_path: Path) -> None:
@@ -277,11 +284,13 @@ def test_init_repo_inspect_reports_charness_artifacts_commit_policy_drift(tmp_pa
     normalization = payload["agent_docs"]["normalization"]
     finding_types = {finding["type"] for finding in normalization["findings"]}
     recommendation_ids = [item["id"] for item in payload["recommendations"]]
+    recommendation_priorities = {item["id"]: item["priority"] for item in payload["recommendations"]}
     assert normalization["charness_artifacts"]["uses_charness_artifacts"] is True
     assert "repo state" in normalization["charness_artifacts"]["missing_required_snippets"]
     assert "canonical content" in normalization["charness_artifacts"]["missing_required_snippets"]
     assert "charness_artifacts_commit_policy_drift" in finding_types
     assert "charness_artifacts_commit_policy_drift" in recommendation_ids
+    assert recommendation_priorities["charness_artifacts_commit_policy_drift"] == "review_required"
 
 
 def test_init_repo_inspect_detects_charness_artifacts_from_adapter_output_dir(tmp_path: Path) -> None:
@@ -304,8 +313,10 @@ def test_init_repo_inspect_detects_charness_artifacts_from_adapter_output_dir(tm
 
     normalization = payload["agent_docs"]["normalization"]
     recommendation_ids = [item["id"] for item in payload["recommendations"]]
+    recommendation_priorities = {item["id"]: item["priority"] for item in payload["recommendations"]}
     assert normalization["charness_artifacts"]["uses_charness_artifacts"] is True
     assert "charness_artifacts_commit_policy_drift" in recommendation_ids
+    assert recommendation_priorities["charness_artifacts_commit_policy_drift"] == "review_required"
 
 
 def test_init_repo_inspect_accepts_charness_artifacts_commit_policy(tmp_path: Path) -> None:
@@ -345,11 +356,13 @@ def test_init_repo_inspect_requires_decision_for_custom_skill_routing_block(tmp_
 
     skill_routing = payload["agent_docs"]["normalization"]["skill_routing"]
     finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+    recommendation_priorities = {item["id"]: item["priority"] for item in payload["recommendations"]}
     assert skill_routing["has_skill_routing"] is True
     assert skill_routing["matches_compact_block"] is False
     assert skill_routing["recommended_action"] == "review_existing_skill_routing"
     assert skill_routing["decision_needed"] == "leave_as_is_or_replace_with_compact_block"
     assert "skill_routing_block_custom_or_drifted" in finding_types
+    assert recommendation_priorities["skill_routing_block_custom_or_drifted"] == "review_required"
 
 
 def test_init_repo_inspect_emits_policy_source_recommendation_without_agents_marker(tmp_path: Path) -> None:

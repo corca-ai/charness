@@ -32,6 +32,13 @@ RECOMMENDATION_PRIORITY_ORDER = {
     "low": 3,
     "advisory": 4,
 }
+FINDING_RECOMMENDATION_PRIORITIES = {
+    "fresh_eye_delegation_rule_drift": "review_required",
+    "fresh_eye_task_review_scope_drift": "review_required",
+    "fresh_eye_review_still_requires_consent_or_fallback": "review_required",
+    "skill_routing_block_custom_or_drifted": "review_required",
+    "charness_artifacts_commit_policy_drift": "review_required",
+}
 
 
 @dataclass(frozen=True)
@@ -447,12 +454,16 @@ def build_init_repo_inspection_payload(
         if isinstance(finding, dict) and not _is_acknowledged(str(finding.get("type")), acknowledged)
     ]
     recommendations = [
-        _finding_recommendation(finding, priority="advisory")
+        _finding_recommendation(
+            finding,
+            priority=FINDING_RECOMMENDATION_PRIORITIES.get(str(finding.get("type")), "advisory"),
+        )
         for finding in findings
         if finding.get("type")
         in {
             "fresh_eye_delegation_rule_drift",
             "fresh_eye_task_review_scope_drift",
+            "fresh_eye_review_still_requires_consent_or_fallback",
             "skill_routing_block_custom_or_drifted",
             "charness_artifacts_commit_policy_drift",
         }
