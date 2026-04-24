@@ -3,18 +3,18 @@ Date: 2026-04-24
 
 ## Scope
 
-Advanced `charness` toward release `0.5.10` through the repo-owned release helper.
+Advanced `charness` toward release `0.5.11` through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.5.9`
-- target version: `0.5.10`
+- previous version: `0.5.10`
+- target version: `0.5.11`
 - git branch: `main`
 - git remote: `origin`
 
 ## Verification
 
-- `./scripts/run-quality.sh` passed before publish.
+- `./scripts/run-quality.sh` is queued for this publish attempt.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - one git push carried both the release branch update and the tag from the release helper.
 
@@ -22,13 +22,12 @@ Advanced `charness` toward release `0.5.10` through the repo-owned release helpe
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: created (https://github.com/corca-ai/charness/releases/tag/v0.5.10)
-- public release surface verification: complete via `gh release view v0.5.10 --repo corca-ai/charness`
+- GitHub release record: not created by this helper run
+- public release surface verification: not checked by this helper
 
 ## Public Release Verification
 
-- `gh release view v0.5.10 --repo corca-ai/charness` reports a non-draft,
-  non-prerelease GitHub release published at `2026-04-24T00:25:23Z`.
+- No configured public/real-host verification trigger matched this slice, but async publication repos should still keep workflow/public checks explicit.
 
 ## Real-Host Proof
 

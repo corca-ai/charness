@@ -68,6 +68,23 @@ def run_init_repo_inspect_states(
                 f"{targeted.get('missing_surfaces')!r}"
             )
 
+    run_init_repo_review_scope_inspect(
+        root,
+        inspect_script=inspect_script,
+        run_command=run_command,
+        expect_success=expect_success,
+        error_type=error_type,
+    )
+
+
+def run_init_repo_review_scope_inspect(
+    root: Path,
+    *,
+    inspect_script: Path,
+    run_command: Callable[..., object],
+    expect_success: Callable[..., None],
+    error_type: type[Exception],
+) -> None:
     with tempfile.TemporaryDirectory(prefix="charness-eval-init-repo-review-scope-") as tmpdir:
         tmp = Path(tmpdir)
         (tmp / "docs").mkdir(parents=True)
@@ -87,9 +104,9 @@ def run_init_repo_inspect_states(
         )
         (tmp / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
         (tmp / "docs" / "operator-acceptance.md").write_text("# Acceptance\n", encoding="utf-8")
-        review_scope_result = run_command(["python3", str(inspect_script), "--repo-root", str(tmp)], cwd=root)
-        expect_success(review_scope_result, "init-repo delegated-review scope inspect")
-        review_scope = json.loads(review_scope_result.stdout)
+        result = run_command(["python3", str(inspect_script), "--repo-root", str(tmp)], cwd=root)
+        expect_success(result, "init-repo delegated-review scope inspect")
+        review_scope = json.loads(result.stdout)
         normalization = review_scope.get("agent_docs", {}).get("normalization", {})
         missing_scopes = normalization.get("fresh_eye_review", {}).get("missing_task_review_scopes")
         if missing_scopes != ["init-repo", "quality"]:
@@ -102,8 +119,8 @@ def run_init_repo_inspect_states(
             raise error_type(
                 "init-repo delegated-review scope inspect: expected fresh_eye_task_review_scope_drift recommendation"
             )
-        recommendation_priorities = {item.get("id"): item.get("priority") for item in review_scope.get("recommendations", [])}
-        if recommendation_priorities.get("fresh_eye_task_review_scope_drift") != "review_required":
+        priorities = {item.get("id"): item.get("priority") for item in review_scope.get("recommendations", [])}
+        if priorities.get("fresh_eye_task_review_scope_drift") != "review_required":
             raise error_type(
                 "init-repo delegated-review scope inspect: expected fresh_eye_task_review_scope_drift to require review"
             )
