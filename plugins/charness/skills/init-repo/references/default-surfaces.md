@@ -64,7 +64,10 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
   that deliberately keeps column wrapping must set
   `source_guard_matcher.normalize_whitespace: true` or
   `allow_column_wrap_fixed_guards: true`; otherwise the inspector reports a
-  `requires_override` warning.
+  `requires_override` warning. Source-guard discovery is intentionally bounded
+  to [`AGENTS.md`](../../../../AGENTS.md), [`README.md`](../../../../README.md),
+  `docs/`, and `specs/` by default; set `source_guard_scan_roots` in the
+  adapter only when fixed guards deliberately live elsewhere.
 - selection rules in the core file, with deeper rationale pushed into linked
   docs instead of turning [`AGENTS.md`](../../../../AGENTS.md) into a second handbook
 - avoid blanket external-link ignore defaults; when the repo relies on
