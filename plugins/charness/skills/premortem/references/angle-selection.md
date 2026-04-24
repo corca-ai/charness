@@ -23,7 +23,12 @@ Subagent sizing:
 - if you cannot name four meaningfully different angles, stay at two or three
   instead of inventing filler
 
-Canonical execution uses subagents. Before reporting that path as unavailable, run the capability check in `subagent-capability-check.md` — attempt the bounded subagent setup, resolve availability uncertainty, and cite the concrete host signal. If the host still cannot provide subagents, say the canonical premortem path is unavailable and leave the host-side contract gap visible. Do not collapse into a same-agent self-review.
+The parent review coordinator owns spawning those angle and counterweight
+subagents. A delegated angle reviewer should run the assigned lens directly and
+should not spawn another reviewer unless the parent explicitly asks for
+recursive delegation.
+
+Canonical execution uses subagents. Before a parent reports that path as unavailable, run the capability check in `subagent-capability-check.md` — attempt the bounded subagent setup, resolve availability uncertainty, and cite the concrete host signal. If the host still cannot provide subagents, say the canonical premortem path is unavailable and leave the host-side contract gap visible. Do not collapse into a same-agent self-review.
 
 Rotate or swap angles when the decision is narrower:
 

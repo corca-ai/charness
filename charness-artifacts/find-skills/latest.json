@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-04-24T00:47:09Z",
+  "generated_at": "2026-04-24T01:11:48Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -260,7 +260,9 @@
           "premortem 스킬",
           "charness:premortem"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/public/premortem/references/subagent-capability-check.md"
+        ],
         "source": "local-public",
         "layer": "public skill"
       },

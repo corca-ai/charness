@@ -5,6 +5,11 @@ Premortem should not end as a flat list of fears.
 After the angle pass, run one counterweight review that pushes back on
 speculation, YAGNI, and maintenance cost amnesia.
 
+In the canonical premortem path, the counterweight reviewer is a separate
+subagent spawned by the parent. That reviewer should triage directly and record
+`Fresh-Eye Satisfaction: parent-delegated`; it should not spawn a further
+reviewer unless the parent explicitly requested recursive delegation.
+
 Use four bins:
 
 - `Act Before Ship`

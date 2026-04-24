@@ -18,6 +18,10 @@ Routine slices do not need `premortem` at all.
 When a caller needs one, `premortem` always means a fresh bounded subagent
 review. `bounded` limits scope and time box, not execution mode. There is no
 same-agent or local `premortem` variant.
+If the parent agent already delegated a bounded angle or counterweight review
+to a subagent, that subagent performs its assigned lens directly; it should not
+spawn another reviewer unless the caller explicitly requests recursive
+delegation. See `references/subagent-capability-check.md`.
 
 Caller contract:
 
@@ -26,6 +30,8 @@ Caller contract:
 - consume the returned four-bin triage directly:
   `Act Before Ship`, `Bundle Anyway`, `Over-Worry`, `Valid but Defer`
 - write any decision-changing result back into the caller's durable contract
+- record `Fresh-Eye Satisfaction` as
+  `parent-delegated`, `nested-delegated`, or `blocked <host-signal>`
 - if the host blocks the canonical subagent path, treat that as a blocked state
   for this run instead of rewriting the outcome as a local review
 
@@ -66,6 +72,9 @@ decision contract. Do not restate the whole project history.
      in `references/subagent-capability-check.md`: attempt the bounded subagent
      setup, resolve any availability uncertainty, and cite the concrete signal
      that made the host unable to provide subagents
+   - if you are already the bounded fresh-eye subagent for one assigned angle,
+     do not run the capability check again unless the assignment explicitly asks
+     for nested delegation
    - if the host cannot provide subagents, stop and report that the canonical
      premortem path is unavailable; fixing the host-side subagent contract is
      the next move instead of inventing a local substitute
@@ -96,6 +105,7 @@ decision contract. Do not restate the whole project history.
 The result should usually include:
 
 - `Execution`
+- `Fresh-Eye Satisfaction`
 - `Decision`
 - `Angles`
 - `Findings`
@@ -106,6 +116,9 @@ The result should usually include:
 If the host blocks the canonical subagent path before execution, report
 `Execution: blocked <host-signal>` and the next move instead of inventing a
 degraded concern list.
+If parent-level delegation satisfied the fresh-eye requirement, report
+`Fresh-Eye Satisfaction: parent-delegated`; use `nested-delegated` only when
+recursive delegation was explicitly required and actually ran.
 
 ## Guardrails
 
@@ -123,6 +136,8 @@ degraded concern list.
   mode the check exists to stop. If the host still cannot provide subagents,
   stop and leave the host-side contract gap visible instead of improvising a
   degraded premortem.
+- Do not make an already delegated angle or counterweight reviewer spawn another
+  reviewer unless recursive delegation was explicitly requested.
 
 ## References
 
