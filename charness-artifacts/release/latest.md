@@ -22,13 +22,13 @@ Advanced `charness` toward release `0.5.10` through the repo-owned release helpe
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: not created by this helper run
-- public release surface verification: not checked by this helper
+- GitHub release record: created (https://github.com/corca-ai/charness/releases/tag/v0.5.10)
+- public release surface verification: complete via `gh release view v0.5.10 --repo corca-ai/charness`
 
 ## Public Release Verification
 
-- Pending `gh release view v0.5.10 --repo corca-ai/charness` after tag push
-  and release creation.
+- `gh release view v0.5.10 --repo corca-ai/charness` reports a non-draft,
+  non-prerelease GitHub release published at `2026-04-24T00:25:23Z`.
 
 ## Real-Host Proof
 
