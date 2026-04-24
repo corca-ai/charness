@@ -54,6 +54,10 @@ skill before writing from scratch.
 3. Freeze the current consumer contract before editing an existing public skill.
    - read the current reviewed dogfood case or scaffold it first with `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --json`
    - decide whether the slice claims `preserve` or `improve` before changing the core trigger or behavior contract
+   - when the change touches adapters, examples, bootstrap, first-touch docs,
+     or repo-local skill customization, run a customer-of-this-skill premortem
+     before editing: name the user or downstream agent, the first prompt they
+     will try, and the adapter states that could make the first run fail
    - if the skill is `evaluator-required`, inspect the maintained scenario surface and current cautilus proof plan before editing so the post-change proof obligation is explicit up front
    - when the checked-in contract is still too vague to freeze honestly, stop and tighten that consumer-facing scenario before broad edits
 4. Decide the portability seams.
@@ -97,7 +101,10 @@ skill before writing from scratch.
      repeated steps
 7. Verify before stopping.
    - cold-start test from repo root
-   - for public-skill changes, run one realistic consumer prompt instead of stopping at producer-side validators; use `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` to scaffold prompt, repo shape, expected artifact, and acceptance evidence
+   - for public-skill changes, run one realistic consumer prompt instead of
+     stopping at producer-side validators; include missing, stale, and thin
+     adapter states when adapters or repo-local defaults shape the first run
+   - use `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` to scaffold prompt, repo shape, expected artifact, and acceptance evidence
    - for public-skill semantic changes, decide in the same slice whether [docs/public-skill-dogfood.json](../../../docs/public-skill-dogfood.json), [evals/cautilus/scenarios.json](../../../evals/cautilus/scenarios.json), and/or [charness-artifacts/cautilus/latest.md](../../../charness-artifacts/cautilus/latest.md) should move; do not leave that proof-routing decision implicit
    - trigger collision check against adjacent skills
    - path check for every file named in the skill
@@ -143,6 +150,9 @@ skill before writing from scratch.
 - Do not rewrite an existing public-skill core until you have decided how the
   current intent is frozen: reviewed dogfood, cautilus scenario coverage, or a
   checked-in scenario review artifact.
+- Do not treat a package-valid public skill as customer-valid. For adapter,
+  bootstrap, example, or first-touch doc changes, prove the changed skill from
+  the customer repo's first prompt before trusting producer-side checks.
 - For `evaluator-required` skills, treat maintained scenario coverage and
   `cautilus` proof planning as part of the edit contract, not as optional
   closeout commentary after the behavior already changed.

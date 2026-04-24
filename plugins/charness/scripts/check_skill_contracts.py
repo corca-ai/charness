@@ -53,6 +53,8 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "support skill: teaches tool usage without becoming product philosophy",
         "Freeze the current consumer contract before editing an existing public skill",
         "decide whether the slice claims `preserve` or `improve` before changing the core trigger or behavior contract",
+        "run a customer-of-this-skill premortem",
+        "the customer repo's first prompt before trusting producer-side checks",
         "For `evaluator-required` skills, treat maintained scenario coverage and",
         "if an upstream support skill already exists, prefer reference, sync, or a",
         "keep manifest",
