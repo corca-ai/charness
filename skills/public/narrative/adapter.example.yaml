@@ -6,10 +6,10 @@ preset_id: portable-defaults
 customized_from: portable-defaults
 source_documents:
 - README.md
-- docs/handoff.md
+- docs/roadmap.md
 mutable_documents:
 - README.md
-- docs/handoff.md
+- docs/roadmap.md
 brief_template:
 - One-Line Summary
 - Current Story
@@ -23,12 +23,18 @@ scenario_block_template:
 - What Happens
 - What Comes Back
 - Next Action
-primary_reader_profiles: []
-preserve_intents: []
+primary_reader_profiles:
+- first-time reader deciding whether this repo is relevant
+- maintainer checking whether durable docs match current repo behavior
+preserve_intents:
+- Preserve the repo's current product or project promise before changing section order.
 terms_to_avoid_in_opening: []
 quick_start_execution_model: ""
 special_entrypoints: []
 skill_grouping_rules: []
-owner_doc_boundaries: []
-landing_danger_checks: []
+owner_doc_boundaries:
+- Keep deep implementation detail in owner docs and link from the landing surface.
+landing_danger_checks:
+- Do not use handoff, internal, archive, or stale generated notes as public README truth.
+- Do not rewrite before missing adapter paths are fixed or explicitly removed.
 remote_name: origin

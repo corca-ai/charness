@@ -3,38 +3,40 @@ Date: 2026-04-24
 
 ## Trigger
 
-- slice: teach `narrative` to carry accepted working text from chunked README
-  review, run reader trust premortems, and record doc-code alignment follow-ups
+- slice: teach `narrative` to review and scaffold repo-local narrative
+  adapters before trusting them for first-touch README rewrites
 - claim: preserve
 
 ## Validation Goal
 
 - goal: preserve
-- reason: this slice changes prompt-affecting public skill guidance, so the
-  existing startup routing surface must still pass while the new narrative
-  guidance stays explicit in checked-in skill surfaces
+- reason: this slice changes prompt-affecting public skill guidance and helper
+  behavior, so existing startup routing must still pass while adapter-quality
+  review stays explicit in checked-in skill surfaces
 
 ## Change Intent
 
 - `prompt_affecting_change`
 - `skill_core_change`
+- `adapter_contract_change`
 - `scenario_review_change`
 
 ## Prompt Surfaces
 
 - `skills/public/narrative/SKILL.md`
-- `skills/public/narrative/references/landing-rewrite-loop.md`
+- `skills/public/narrative/references/adapter-contract.md`
+- `.agents/narrative-adapter.yaml`
 
 ## Commands Run
 
-- `python3 scripts/plan_cautilus_proof.py --repo-root . --json --paths skills/public/narrative/SKILL.md skills/public/narrative/references/landing-rewrite-loop.md plugins/charness/skills/narrative/SKILL.md plugins/charness/skills/narrative/references/landing-rewrite-loop.md`
+- `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
 - `cautilus instruction-surface test --repo-root .`
 - `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id narrative --json`
 
 ## Regression Proof
 
 - instruction-surface summary: `4 passed / 0 failed / 0 blocked`
-- run artifact: `.cautilus/runs/20260423T163222951Z-run/`
+- run artifact: `.cautilus/runs/20260424T001201251Z-run/`
 - maintained startup routing still bootstraps through `find-skills`, then
   selects `impl` or `spec` for the existing instruction-surface cases
 - evaluator recommendation: `accept-now`
@@ -45,8 +47,10 @@ Date: 2026-04-24
   durable artifact remain `narrative` and `charness-artifacts/narrative/latest.md`
 - no maintained scenario-registry mutation was required for this
   `hitl-recommended` skill slice
-- the new guidance stays inside `narrative` first-touch rewrite behavior rather
-  than changing public skill routing
+- direct checks against `../cautilus`, `../ceal`, and `../crill` show the
+  adapter reviewer catches missing adapters, volatile mutable sources, stale
+  paths with closest-path suggestions, and path-like entrypoint drift before
+  README rewriting starts
 
 ## Outcome
 
