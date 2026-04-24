@@ -133,16 +133,35 @@ def _iter_markdown_files(repo_root: Path) -> list[Path]:
     ignored_parts = {".git", ".charness", "node_modules", "__pycache__"}
     files: list[Path] = []
     for path in repo_root.rglob("*.md"):
-        if any(part in ignored_parts for part in path.relative_to(repo_root).parts):
+        relative_parts = path.relative_to(repo_root).parts
+        if any(part in ignored_parts or part.startswith(".") for part in relative_parts):
             continue
         files.append(path)
     return sorted(files)
 
 
-def _source_guard_rows(repo_root: Path) -> list[dict[str, object]]:
+def _relative(path: Path, repo_root: Path) -> str:
+    try:
+        return path.relative_to(repo_root).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+def _source_guard_scan(repo_root: Path) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
     rows: list[dict[str, object]] = []
+    warnings: list[dict[str, object]] = []
     for spec_path in _iter_markdown_files(repo_root):
-        text = spec_path.read_text(encoding="utf-8", errors="replace")
+        try:
+            text = spec_path.read_text(encoding="utf-8", errors="replace")
+        except OSError as exc:
+            warnings.append(
+                {
+                    "type": "source_guard_markdown_unreadable",
+                    "path": _relative(spec_path, repo_root),
+                    "message": f"Skipped unreadable markdown while scanning source guards: {exc.strerror or exc}",
+                }
+            )
+            continue
         for line_no, line in enumerate(text.splitlines(), start=1):
             match = SOURCE_GUARD_RE.match(line)
             if not match:
@@ -150,13 +169,13 @@ def _source_guard_rows(repo_root: Path) -> list[dict[str, object]]:
             target, pattern = (part.strip() for part in match.groups())
             rows.append(
                 {
-                    "spec_path": spec_path.relative_to(repo_root).as_posix(),
+                    "spec_path": _relative(spec_path, repo_root),
                     "line": line_no,
                     "target_path": target,
                     "pattern_chars": len(pattern),
                 }
             )
-    return rows
+    return rows, warnings
 
 
 def _matcher_normalizes(adapter_data: dict[str, Any]) -> bool:
@@ -169,10 +188,10 @@ def _matcher_normalizes(adapter_data: dict[str, Any]) -> bool:
 def prose_wrap_state(repo_root: Path, adapter_data: dict[str, Any]) -> dict[str, object]:
     raw_policy = adapter_data.get("prose_wrap_policy", "semantic")
     policy = raw_policy if raw_policy in {"semantic", "column"} else "invalid"
-    guards = _source_guard_rows(repo_root)
+    guards, scan_warnings = _source_guard_scan(repo_root)
     normalizes = _matcher_normalizes(adapter_data)
     explicit_override = adapter_data.get("allow_column_wrap_fixed_guards") is True
-    warnings: list[dict[str, object]] = []
+    warnings: list[dict[str, object]] = [*scan_warnings]
     status = "ok" if policy != "invalid" else "invalid_policy"
 
     if policy == "column" and guards and not normalizes and not explicit_override:

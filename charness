@@ -1970,6 +1970,7 @@ def build_doctor_payload(
     codex_marketplace_path: Path,
     cli_path: Path,
     claude_wrapper_path: Path,
+    include_repo_onboarding: bool = True,
 ) -> dict[str, object]:
     source_manifest_present = has_source_manifest(repo_root)
     version_provenance = build_version_provenance(
@@ -2080,10 +2081,20 @@ def build_doctor_payload(
         installed_entry=payload["claude_installed_entry"],
         enabled_status=payload["claude_enabled_status"],
     )
-    payload["repo_onboarding"] = build_repo_onboarding_payload(
-        source_repo_root=repo_root,
-        target_repo_root=target_repo_root,
-    )
+    if include_repo_onboarding:
+        payload["repo_onboarding"] = build_repo_onboarding_payload(
+            source_repo_root=repo_root,
+            target_repo_root=target_repo_root,
+        )
+    else:
+        payload["repo_onboarding"] = {
+            "target_repo_root": str(target_repo_root),
+            "status": "skipped",
+            "manual_action_required": False,
+            "message": None,
+            "source": "repo_onboarding",
+            "reason": "skipped during update unless --target-repo-root is provided",
+        }
     payload["next_steps"] = build_next_steps(payload)
     payload["next_action"] = build_doctor_next_action(payload)
     return payload
@@ -3056,6 +3067,7 @@ def cmd_init(args: argparse.Namespace) -> int:
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
+    payload["target_repo_root"] = str(target_repo_root)
     if managed_checkout:
         write_install_state(home_root, repo_root=Path(checkout["repo_root"]), managed_checkout=True)
     write_version_state(
@@ -3077,6 +3089,7 @@ def cmd_update(args: argparse.Namespace) -> int:
     home_root = args.home_root.resolve()
     repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
     target_repo_root = resolve_target_repo_root(args.target_repo_root)
+    include_repo_onboarding = args.target_repo_root is not None
     previous_checkout_version = packaging_version(repo_root) if repo_root.exists() else None
     enforce_managed_cli_contract(
         home_root=home_root,
@@ -3114,6 +3127,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         codex_marketplace_path=codex_marketplace_path,
         cli_path=cli_path,
         claude_wrapper_path=claude_wrapper_path,
+        include_repo_onboarding=include_repo_onboarding,
     )
     emit_progress(
         "STEP: skipping Codex host cache refresh" if args.skip_codex_cache_refresh else "STEP: refreshing Codex host cache",
@@ -3136,6 +3150,7 @@ def cmd_update(args: argparse.Namespace) -> int:
             codex_marketplace_path=codex_marketplace_path,
             cli_path=cli_path,
             claude_wrapper_path=claude_wrapper_path,
+            include_repo_onboarding=include_repo_onboarding,
         )
         codex_cache_refresh["post_refresh_cache_manifest_version"] = doctor_payload.get("codex_cache_manifest_version")
         codex_cache_refresh["post_refresh_drift"] = doctor_payload.get("codex_source_cache_drift")
@@ -3168,6 +3183,7 @@ def cmd_update(args: argparse.Namespace) -> int:
     payload["codex_source_version"] = doctor_payload["codex_source_version"]
     payload["codex_cache_manifest_version"] = doctor_payload["codex_cache_manifest_version"]
     payload["codex_source_cache_drift"] = doctor_payload["codex_source_cache_drift"]
+    payload["target_repo_root"] = str(target_repo_root)
     if managed_checkout:
         write_install_state(home_root, repo_root=Path(checkout["repo_root"]), managed_checkout=True)
     write_version_state(
@@ -3727,7 +3743,10 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument(
             "--target-repo-root",
             type=Path,
-            help="Optional repo to inspect for post-install charness onboarding. Defaults to the current working directory.",
+            help=(
+                "Optional repo to inspect for post-install charness onboarding. "
+                "Defaults to the current working directory for init/doctor; update inspects only when this is explicit."
+            ),
         )
         command.add_argument("--repo-url", default=REPO_URL)
         command.add_argument("--plugin-root", type=Path)

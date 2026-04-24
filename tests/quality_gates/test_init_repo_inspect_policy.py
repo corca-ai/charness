@@ -169,6 +169,37 @@ def test_init_repo_inspect_accepts_column_wrap_when_matcher_normalizes(tmp_path:
     assert payload["prose_wrap"]["matcher_normalizes_whitespace"] is True
 
 
+def test_init_repo_inspect_skips_unreadable_markdown_source_guard_specs(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_source_guard_repo(repo, ["version: 1", "repo: repo", "prose_wrap_policy: semantic"])
+    broken_target = tmp_path / "missing-session-log.md"
+    (repo / "docs" / "session-log.md").symlink_to(broken_target)
+
+    payload = _run_inspect(repo)
+
+    assert payload["prose_wrap"]["status"] == "ok"
+    assert payload["prose_wrap"]["source_guard_count"] == 1
+    assert payload["prose_wrap"]["warnings"] == [
+        {
+            "type": "source_guard_markdown_unreadable",
+            "path": "docs/session-log.md",
+            "message": "Skipped unreadable markdown while scanning source guards: No such file or directory",
+        }
+    ]
+
+
+def test_init_repo_inspect_ignores_hidden_markdown_workflow_dirs(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_source_guard_repo(repo, ["version: 1", "repo: repo", "prose_wrap_policy: semantic"])
+    (repo / ".cwf" / "projects").mkdir(parents=True)
+    (repo / ".cwf" / "projects" / "session-log.md").symlink_to(tmp_path / "missing-session-log.md")
+
+    payload = _run_inspect(repo)
+
+    assert payload["prose_wrap"]["source_guard_count"] == 1
+    assert payload["prose_wrap"]["warnings"] == []
+
+
 def test_init_repo_inspect_reports_malformed_adapter(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
