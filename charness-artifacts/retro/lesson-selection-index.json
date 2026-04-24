@@ -10,10 +10,190 @@
     "recurrence_multiplier": "1 + alpha_t * max(0, source_count - 1)",
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
-  "as_of_source_date": "2026-04-23",
-  "source_artifact_count": 31,
-  "candidate_count": 197,
+  "as_of_source_date": "2026-04-24",
+  "source_artifact_count": 32,
+  "candidate_count": 206,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:0d7e66658729",
+      "kind": "current_focus",
+      "lesson": "The reviewed work unit changed the `narrative` public skill so agents can create or check repo-local narrative adapters before rewriting README or other first-touch truth surfaces.",
+      "normalized_key": "the reviewed work unit changed the narrative public skill so agents can create or",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7b1c7a569601",
+      "kind": "next_improvement",
+      "lesson": "For public skill changes, start with the changed skill's customer journey, not the skill package. Name at least one real or synthetic consumer repo and run the first-use path before declaring the design good.",
+      "normalized_key": "for public skill changes start with the changed skill s customer journey not the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:91292c69f0f2",
+      "kind": "next_improvement",
+      "lesson": "For repo-local skill customization in other repos, use the same principle: validate the changed skill from the repo-local consumer's first prompt, including missing adapter, stale adapter, and thin adapter states.",
+      "normalized_key": "for repo local skill customization in other repos use the same principle validate the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:254dab7cfbed",
+      "kind": "next_improvement",
+      "lesson": "Keep this lesson in recent retro lessons so future skill edits do not stop at producer-side validation.",
+      "normalized_key": "keep this lesson in recent retro lessons so future skill edits do not stop",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a3c20ed0fce4",
+      "kind": "next_improvement",
+      "lesson": "Strengthen `create-skill` so existing public-skill edits require a customer-of-this-skill premortem angle when the change affects adapters, examples, bootstrap, or first-touch docs.",
+      "normalized_key": "strengthen create skill so existing public skill edits require a customer of this skill",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2bc5526af552",
+      "kind": "next_improvement",
+      "lesson": "Strengthen `premortem` angle selection with an explicit `customer-of-this-capability` angle. The angle should ask what the user or downstream agent experiences, not only what code/docs break.",
+      "normalized_key": "strengthen premortem angle selection with an explicit customer of this capability angle the angle",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:31d14e050913",
+      "kind": "repeat_trap",
+      "lesson": "The available instructions hinted at consumer validation but did not force a customer-of-this-skill angle. `create-skill` says to use a realistic consumer prompt, and `premortem` offers blast-radius/current-consumer angles, but neither makes “run the changed skill as its customer would” a stop gate for repo-local skill changes.",
+      "normalized_key": "the available instructions hinted at consumer validation but did not force a customer of",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:66a9d62b4a67",
+      "kind": "repeat_trap",
+      "lesson": "The first premortem came too late. It caught the important misses only after implementation: bad examples, empty scaffold fields, missing repair loop, and weak volatile-path detection.",
+      "normalized_key": "the first premortem came too late it caught the important misses only after implementation",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:6f3ca03460ba",
+      "kind": "repeat_trap",
+      "lesson": "The initial change optimized producer-side correctness before customer-side use. It improved the `narrative` package, but did not first ask what would happen when a real repo with no adapter, a stale adapter path, or a thin adapter ran `$narrative`.",
+      "normalized_key": "the initial change optimized producer side correctness before customer side use it improved the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Waste"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:1800faad159d",
       "kind": "current_focus",
@@ -22,10 +202,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
@@ -42,10 +222,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
@@ -62,201 +242,201 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
           "date": "2026-04-23",
           "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:2d9865b0a5cc",
-      "kind": "current_focus",
-      "lesson": "Issue #57's first artifact passed a fresh-eye read test, but the reader could not distinguish defined capability boundaries from current readiness.",
-      "normalized_key": "issue 57 s first artifact passed a fresh eye read test but the reader",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
-          "date": "2026-04-23",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:1a9cdbf8c0cc",
-      "kind": "current_focus",
-      "lesson": "The user pointed out that commit `f982074` intentionally taught this repo to treat repo-mandated bounded subagent review as already delegated, yet the assistant still refused to run canonical `premortem` without a second explicit subagent request.",
-      "normalized_key": "the user pointed out that commit f982074 intentionally taught this repo to treat repo",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
-          "date": "2026-04-23",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:f9be7cfe66c9",
-      "kind": "current_focus",
-      "lesson": "This session repaired an install bootstrap failure where another machine reported that the managed checkout bootstrap runtime was still missing `jsonschema` and `packaging`.",
-      "normalized_key": "this session repaired an install bootstrap failure where another machine reported that the managed",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
-          "date": "2026-04-23",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:aa5d66a9969f",
-      "kind": "current_focus",
-      "lesson": "Unit of work: close GitHub issues #59, #60, and #61 through public skill, integration, Cautilus scenario, and plugin export updates.",
-      "normalized_key": "unit of work close github issues 59 60 and 61 through public skill integration",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
-          "date": "2026-04-23",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:40bd2abedec8",
-      "kind": "current_focus",
-      "lesson": "Unit of work: issue #62 init-repo AGENTS normalization drift.",
-      "normalized_key": "unit of work issue 62 init repo agents normalization drift",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
-          "date": "2026-04-23",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:7512e9ce9c19",
-      "kind": "current_focus",
-      "lesson": "Unit of work: make the #62 Cautilus planning miss hard to repeat.",
-      "normalized_key": "unit of work make the 62 cautilus planning miss hard to repeat",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
-          "date": "2026-04-23",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:4578de46334c",
-      "kind": "next_improvement",
-      "lesson": "After a read test surfaces confusion, fix only the confusion that changed the reader's answer.",
-      "normalized_key": "after a read test surfaces confusion fix only the confusion that changed the reader",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
-          "date": "2026-04-23",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:85d3b685d3e2",
-      "kind": "next_improvement",
-      "lesson": "after public-skill package edits, run slice closeout and expect explicit Cautilus skill-review acknowledgement before final verification.",
-      "normalized_key": "after public skill package edits run slice closeout and expect explicit cautilus skill review",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
-          "date": "2026-04-23",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:af70dcfded7e",
-      "kind": "next_improvement",
-      "lesson": "Capability: keep validation-shaped closeout examples near Cautilus scenario coverage, because this is where hidden-tool discovery can regress.",
-      "normalized_key": "capability keep validation shaped closeout examples near cautilus scenario coverage because this is where",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
-          "date": "2026-04-23",
-          "section": "Next Improvements"
         }
       ]
     }
   ],
   "candidates": [
     {
+      "candidate_id": "current_focus:0d7e66658729",
+      "kind": "current_focus",
+      "lesson": "The reviewed work unit changed the `narrative` public skill so agents can create or check repo-local narrative adapters before rewriting README or other first-touch truth surfaces.",
+      "normalized_key": "the reviewed work unit changed the narrative public skill so agents can create or",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7b1c7a569601",
+      "kind": "next_improvement",
+      "lesson": "For public skill changes, start with the changed skill's customer journey, not the skill package. Name at least one real or synthetic consumer repo and run the first-use path before declaring the design good.",
+      "normalized_key": "for public skill changes start with the changed skill s customer journey not the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:91292c69f0f2",
+      "kind": "next_improvement",
+      "lesson": "For repo-local skill customization in other repos, use the same principle: validate the changed skill from the repo-local consumer's first prompt, including missing adapter, stale adapter, and thin adapter states.",
+      "normalized_key": "for repo local skill customization in other repos use the same principle validate the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:254dab7cfbed",
+      "kind": "next_improvement",
+      "lesson": "Keep this lesson in recent retro lessons so future skill edits do not stop at producer-side validation.",
+      "normalized_key": "keep this lesson in recent retro lessons so future skill edits do not stop",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a3c20ed0fce4",
+      "kind": "next_improvement",
+      "lesson": "Strengthen `create-skill` so existing public-skill edits require a customer-of-this-skill premortem angle when the change affects adapters, examples, bootstrap, or first-touch docs.",
+      "normalized_key": "strengthen create skill so existing public skill edits require a customer of this skill",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2bc5526af552",
+      "kind": "next_improvement",
+      "lesson": "Strengthen `premortem` angle selection with an explicit `customer-of-this-capability` angle. The angle should ask what the user or downstream agent experiences, not only what code/docs break.",
+      "normalized_key": "strengthen premortem angle selection with an explicit customer of this capability angle the angle",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:31d14e050913",
+      "kind": "repeat_trap",
+      "lesson": "The available instructions hinted at consumer validation but did not force a customer-of-this-skill angle. `create-skill` says to use a realistic consumer prompt, and `premortem` offers blast-radius/current-consumer angles, but neither makes “run the changed skill as its customer would” a stop gate for repo-local skill changes.",
+      "normalized_key": "the available instructions hinted at consumer validation but did not force a customer of",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:66a9d62b4a67",
+      "kind": "repeat_trap",
+      "lesson": "The first premortem came too late. It caught the important misses only after implementation: bad examples, empty scaffold fields, missing repair loop, and weak volatile-path detection.",
+      "normalized_key": "the first premortem came too late it caught the important misses only after implementation",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:6f3ca03460ba",
+      "kind": "repeat_trap",
+      "lesson": "The initial change optimized producer-side correctness before customer-side use. It improved the `narrative` package, but did not first ask what would happen when a real repo with no adapter, a stale adapter path, or a thin adapter ran `$narrative`.",
+      "normalized_key": "the initial change optimized producer side correctness before customer side use it improved the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:1800faad159d",
       "kind": "current_focus",
       "lesson": "Auto-retro closeout triggered because issue #63 changed the checked-in plugin export surface via the retro public skill helper.",
@@ -264,10 +444,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
@@ -284,10 +464,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
@@ -304,10 +484,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
@@ -324,10 +504,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
@@ -344,10 +524,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
@@ -364,10 +544,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
@@ -384,10 +564,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
@@ -404,10 +584,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
@@ -424,10 +604,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
@@ -444,10 +624,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
@@ -464,10 +644,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
@@ -484,10 +664,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
@@ -504,10 +684,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
@@ -524,10 +704,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
@@ -544,10 +724,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
@@ -564,10 +744,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
@@ -584,10 +764,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
@@ -604,10 +784,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
@@ -624,10 +804,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
@@ -644,10 +824,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
@@ -664,10 +844,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
@@ -684,10 +864,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
@@ -704,10 +884,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
@@ -724,10 +904,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
@@ -744,10 +924,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
@@ -764,10 +944,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-bootstrap-runtime-repair.md",
@@ -784,10 +964,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-readiness-example-slice.md",
@@ -804,10 +984,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
@@ -824,10 +1004,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
@@ -844,10 +1024,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
@@ -864,10 +1044,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
@@ -884,10 +1064,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
@@ -904,10 +1084,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
@@ -924,10 +1104,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
@@ -944,10 +1124,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
       "latest_source_date": "2026-04-23",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "age_days": 1,
+      "recency_weight": 0.9517,
       "alpha": 0.07,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9517,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
@@ -964,10 +1144,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
       "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "age_days": 2,
+      "recency_weight": 0.9057,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 0.9057,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
@@ -984,10 +1164,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
       "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "age_days": 2,
+      "recency_weight": 0.9057,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 0.9057,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
@@ -1004,10 +1184,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
       "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "age_days": 2,
+      "recency_weight": 0.9057,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 0.9057,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
@@ -1024,10 +1204,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
       "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "age_days": 2,
+      "recency_weight": 0.9057,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 0.9057,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
@@ -1044,10 +1224,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
       "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "age_days": 2,
+      "recency_weight": 0.9057,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 0.9057,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
@@ -1064,10 +1244,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
       "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "age_days": 2,
+      "recency_weight": 0.9057,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 0.9057,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
@@ -1084,10 +1264,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
       "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "age_days": 2,
+      "recency_weight": 0.9057,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 0.9057,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
@@ -1104,10 +1284,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
       "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "age_days": 2,
+      "recency_weight": 0.9057,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 0.9057,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
@@ -1124,10 +1304,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
       "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "age_days": 2,
+      "recency_weight": 0.9057,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 0.9057,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
@@ -1144,10 +1324,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
       "latest_source_date": "2026-04-22",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "age_days": 2,
+      "recency_weight": 0.9057,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 0.9057,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-22-bootstrap-contract-drift.md",
@@ -1164,10 +1344,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-21-local-origin-packaging-gap.md",
       "latest_source_date": "2026-04-21",
-      "age_days": 2,
-      "recency_weight": 0.9057,
+      "age_days": 3,
+      "recency_weight": 0.862,
       "alpha": 0.07,
-      "selection_weight": 0.9057,
+      "selection_weight": 0.862,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-21-local-origin-packaging-gap.md",
@@ -1184,10 +1364,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-21-local-origin-packaging-gap.md",
       "latest_source_date": "2026-04-21",
-      "age_days": 2,
-      "recency_weight": 0.9057,
+      "age_days": 3,
+      "recency_weight": 0.862,
       "alpha": 0.07,
-      "selection_weight": 0.9057,
+      "selection_weight": 0.862,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-21-local-origin-packaging-gap.md",
@@ -1204,10 +1384,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-21-local-origin-packaging-gap.md",
       "latest_source_date": "2026-04-21",
-      "age_days": 2,
-      "recency_weight": 0.9057,
+      "age_days": 3,
+      "recency_weight": 0.862,
       "alpha": 0.07,
-      "selection_weight": 0.9057,
+      "selection_weight": 0.862,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-21-local-origin-packaging-gap.md",
@@ -1224,10 +1404,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-21-local-origin-packaging-gap.md",
       "latest_source_date": "2026-04-21",
-      "age_days": 2,
-      "recency_weight": 0.9057,
+      "age_days": 3,
+      "recency_weight": 0.862,
       "alpha": 0.07,
-      "selection_weight": 0.9057,
+      "selection_weight": 0.862,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-21-local-origin-packaging-gap.md",
@@ -1244,10 +1424,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-21-local-origin-packaging-gap.md",
       "latest_source_date": "2026-04-21",
-      "age_days": 2,
-      "recency_weight": 0.9057,
+      "age_days": 3,
+      "recency_weight": 0.862,
       "alpha": 0.07,
-      "selection_weight": 0.9057,
+      "selection_weight": 0.862,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-21-local-origin-packaging-gap.md",
@@ -1264,10 +1444,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-debug-artifact-contract-late-discovery.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-debug-artifact-contract-late-discovery.md",
@@ -1284,10 +1464,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-debug-artifact-contract-late-discovery.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-debug-artifact-contract-late-discovery.md",
@@ -1304,10 +1484,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
@@ -1324,10 +1504,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-debug-artifact-contract-late-discovery.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-debug-artifact-contract-late-discovery.md",
@@ -1344,10 +1524,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
@@ -1364,10 +1544,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-debug-artifact-contract-late-discovery.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-debug-artifact-contract-late-discovery.md",
@@ -1384,10 +1564,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
@@ -1404,10 +1584,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
@@ -1424,10 +1604,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
@@ -1444,10 +1624,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
@@ -1464,10 +1644,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
@@ -1484,10 +1664,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
@@ -1504,10 +1684,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-debug-artifact-contract-late-discovery.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-debug-artifact-contract-late-discovery.md",
@@ -1524,10 +1704,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
@@ -1544,10 +1724,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
@@ -1564,10 +1744,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-20-debug-artifact-contract-late-discovery.md",
       "latest_source_date": "2026-04-20",
-      "age_days": 3,
-      "recency_weight": 0.862,
+      "age_days": 4,
+      "recency_weight": 0.8203,
       "alpha": 0.07,
-      "selection_weight": 0.862,
+      "selection_weight": 0.8203,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-20-debug-artifact-contract-late-discovery.md",
@@ -1584,10 +1764,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
@@ -1604,10 +1784,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-startup-artifact-classification.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-startup-artifact-classification.md",
@@ -1624,10 +1804,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
@@ -1644,10 +1824,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
@@ -1664,10 +1844,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-startup-artifact-classification.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-startup-artifact-classification.md",
@@ -1684,10 +1864,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-startup-artifact-classification.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-startup-artifact-classification.md",
@@ -1704,10 +1884,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-startup-artifact-classification.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-startup-artifact-classification.md",
@@ -1724,10 +1904,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
@@ -1744,10 +1924,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
@@ -1764,10 +1944,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
@@ -1784,10 +1964,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-startup-artifact-classification.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-startup-artifact-classification.md",
@@ -1804,10 +1984,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
@@ -1824,10 +2004,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
@@ -1844,10 +2024,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
@@ -1864,10 +2044,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-startup-artifact-classification.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-startup-artifact-classification.md",
@@ -1884,10 +2064,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
@@ -1904,10 +2084,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-19-find-skills-startup-artifact-classification.md",
       "latest_source_date": "2026-04-19",
-      "age_days": 4,
-      "recency_weight": 0.8203,
+      "age_days": 5,
+      "recency_weight": 0.7807,
       "alpha": 0.07,
-      "selection_weight": 0.8203,
+      "selection_weight": 0.7807,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-19-find-skills-startup-artifact-classification.md",
@@ -1924,10 +2104,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
       "latest_source_date": "2026-04-18",
-      "age_days": 5,
-      "recency_weight": 0.7807,
+      "age_days": 6,
+      "recency_weight": 0.743,
       "alpha": 0.07,
-      "selection_weight": 0.7807,
+      "selection_weight": 0.743,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
@@ -1944,10 +2124,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
       "latest_source_date": "2026-04-18",
-      "age_days": 5,
-      "recency_weight": 0.7807,
+      "age_days": 6,
+      "recency_weight": 0.743,
       "alpha": 0.07,
-      "selection_weight": 0.7807,
+      "selection_weight": 0.743,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
@@ -1964,10 +2144,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
       "latest_source_date": "2026-04-18",
-      "age_days": 5,
-      "recency_weight": 0.7807,
+      "age_days": 6,
+      "recency_weight": 0.743,
       "alpha": 0.07,
-      "selection_weight": 0.7807,
+      "selection_weight": 0.743,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
@@ -1984,10 +2164,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
       "latest_source_date": "2026-04-18",
-      "age_days": 5,
-      "recency_weight": 0.7807,
+      "age_days": 6,
+      "recency_weight": 0.743,
       "alpha": 0.07,
-      "selection_weight": 0.7807,
+      "selection_weight": 0.743,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
@@ -2004,10 +2184,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
       "latest_source_date": "2026-04-18",
-      "age_days": 5,
-      "recency_weight": 0.7807,
+      "age_days": 6,
+      "recency_weight": 0.743,
       "alpha": 0.07,
-      "selection_weight": 0.7807,
+      "selection_weight": 0.743,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
@@ -2024,10 +2204,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
       "latest_source_date": "2026-04-18",
-      "age_days": 5,
-      "recency_weight": 0.7807,
+      "age_days": 6,
+      "recency_weight": 0.743,
       "alpha": 0.07,
-      "selection_weight": 0.7807,
+      "selection_weight": 0.743,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
@@ -2044,10 +2224,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
       "latest_source_date": "2026-04-18",
-      "age_days": 5,
-      "recency_weight": 0.7807,
+      "age_days": 6,
+      "recency_weight": 0.743,
       "alpha": 0.07,
-      "selection_weight": 0.7807,
+      "selection_weight": 0.743,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
@@ -2064,10 +2244,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
       "latest_source_date": "2026-04-18",
-      "age_days": 5,
-      "recency_weight": 0.7807,
+      "age_days": 6,
+      "recency_weight": 0.743,
       "alpha": 0.07,
-      "selection_weight": 0.7807,
+      "selection_weight": 0.743,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
@@ -2084,10 +2264,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
       "latest_source_date": "2026-04-18",
-      "age_days": 5,
-      "recency_weight": 0.7807,
+      "age_days": 6,
+      "recency_weight": 0.743,
       "alpha": 0.07,
-      "selection_weight": 0.7807,
+      "selection_weight": 0.743,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
@@ -2104,10 +2284,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
       "latest_source_date": "2026-04-16",
-      "age_days": 7,
-      "recency_weight": 0.7071,
+      "age_days": 8,
+      "recency_weight": 0.673,
       "alpha": 0.07,
-      "selection_weight": 0.7071,
+      "selection_weight": 0.673,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
@@ -2124,10 +2304,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
       "latest_source_date": "2026-04-16",
-      "age_days": 7,
-      "recency_weight": 0.7071,
+      "age_days": 8,
+      "recency_weight": 0.673,
       "alpha": 0.07,
-      "selection_weight": 0.7071,
+      "selection_weight": 0.673,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
@@ -2144,10 +2324,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
       "latest_source_date": "2026-04-16",
-      "age_days": 7,
-      "recency_weight": 0.7071,
+      "age_days": 8,
+      "recency_weight": 0.673,
       "alpha": 0.07,
-      "selection_weight": 0.7071,
+      "selection_weight": 0.673,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
@@ -2164,10 +2344,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
       "latest_source_date": "2026-04-16",
-      "age_days": 7,
-      "recency_weight": 0.7071,
+      "age_days": 8,
+      "recency_weight": 0.673,
       "alpha": 0.07,
-      "selection_weight": 0.7071,
+      "selection_weight": 0.673,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
@@ -2184,10 +2364,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
       "latest_source_date": "2026-04-16",
-      "age_days": 7,
-      "recency_weight": 0.7071,
+      "age_days": 8,
+      "recency_weight": 0.673,
       "alpha": 0.07,
-      "selection_weight": 0.7071,
+      "selection_weight": 0.673,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
@@ -2204,10 +2384,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
       "latest_source_date": "2026-04-16",
-      "age_days": 7,
-      "recency_weight": 0.7071,
+      "age_days": 8,
+      "recency_weight": 0.673,
       "alpha": 0.07,
-      "selection_weight": 0.7071,
+      "selection_weight": 0.673,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
@@ -2224,10 +2404,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
       "latest_source_date": "2026-04-16",
-      "age_days": 7,
-      "recency_weight": 0.7071,
+      "age_days": 8,
+      "recency_weight": 0.673,
       "alpha": 0.07,
-      "selection_weight": 0.7071,
+      "selection_weight": 0.673,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
@@ -2244,10 +2424,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
       "latest_source_date": "2026-04-16",
-      "age_days": 7,
-      "recency_weight": 0.7071,
+      "age_days": 8,
+      "recency_weight": 0.673,
       "alpha": 0.07,
-      "selection_weight": 0.7071,
+      "selection_weight": 0.673,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
@@ -2264,10 +2444,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
       "latest_source_date": "2026-04-16",
-      "age_days": 7,
-      "recency_weight": 0.7071,
+      "age_days": 8,
+      "recency_weight": 0.673,
       "alpha": 0.07,
-      "selection_weight": 0.7071,
+      "selection_weight": 0.673,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
@@ -2284,10 +2464,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
       "latest_source_date": "2026-04-16",
-      "age_days": 7,
-      "recency_weight": 0.7071,
+      "age_days": 8,
+      "recency_weight": 0.673,
       "alpha": 0.07,
-      "selection_weight": 0.7071,
+      "selection_weight": 0.673,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
@@ -2304,10 +2484,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
       "latest_source_date": "2026-04-16",
-      "age_days": 7,
-      "recency_weight": 0.7071,
+      "age_days": 8,
+      "recency_weight": 0.673,
       "alpha": 0.07,
-      "selection_weight": 0.7071,
+      "selection_weight": 0.673,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
@@ -2324,10 +2504,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
       "latest_source_date": "2026-04-16",
-      "age_days": 7,
-      "recency_weight": 0.7071,
+      "age_days": 8,
+      "recency_weight": 0.673,
       "alpha": 0.07,
-      "selection_weight": 0.7071,
+      "selection_weight": 0.673,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
@@ -2344,10 +2524,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-per-file-coverage-floor.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-per-file-coverage-floor.md",
@@ -2364,10 +2544,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-quality-review-diagnostics.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-quality-review-diagnostics.md",
@@ -2384,10 +2564,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-handoff-signal-trim.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-handoff-signal-trim.md",
@@ -2404,10 +2584,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-evidence-panel-adaptation.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-evidence-panel-adaptation.md",
@@ -2424,10 +2604,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-hitl-quality-handoff.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-hitl-quality-handoff.md",
@@ -2444,10 +2624,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-runtime-budget-update-proof.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-runtime-budget-update-proof.md",
@@ -2464,10 +2644,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-install-tools-floor-cleanup.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-install-tools-floor-cleanup.md",
@@ -2484,10 +2664,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-control-plane-lib-cleanup.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-control-plane-lib-cleanup.md",
@@ -2504,10 +2684,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-coverage-floor-runtime-budget.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-coverage-floor-runtime-budget.md",
@@ -2524,10 +2704,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-sync-support-floor-cleanup.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-sync-support-floor-cleanup.md",
@@ -2544,10 +2724,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-quality-handoff-inventory.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-quality-handoff-inventory.md",
@@ -2564,10 +2744,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-control-plane-lib-cleanup.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-control-plane-lib-cleanup.md",
@@ -2584,10 +2764,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-handoff-signal-trim.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-handoff-signal-trim.md",
@@ -2604,10 +2784,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-install-tools-floor-cleanup.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-install-tools-floor-cleanup.md",
@@ -2624,10 +2804,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-evidence-panel-adaptation.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-evidence-panel-adaptation.md",
@@ -2644,10 +2824,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-install-tools-floor-cleanup.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-install-tools-floor-cleanup.md",
@@ -2664,10 +2844,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-coverage-floor-runtime-budget.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-coverage-floor-runtime-budget.md",
@@ -2684,10 +2864,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-hitl-quality-handoff.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-hitl-quality-handoff.md",
@@ -2704,10 +2884,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-coverage-floor-runtime-budget.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-coverage-floor-runtime-budget.md",
@@ -2724,10 +2904,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-hitl-quality-handoff.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-hitl-quality-handoff.md",
@@ -2744,10 +2924,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-install-tools-floor-cleanup.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-install-tools-floor-cleanup.md",
@@ -2764,10 +2944,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-handoff-signal-trim.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-handoff-signal-trim.md",
@@ -2784,10 +2964,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-quality-handoff-inventory.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-quality-handoff-inventory.md",
@@ -2804,10 +2984,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-quality-review-diagnostics.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-quality-review-diagnostics.md",
@@ -2824,10 +3004,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-evidence-panel-adaptation.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-evidence-panel-adaptation.md",
@@ -2844,10 +3024,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-hitl-quality-handoff.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-hitl-quality-handoff.md",
@@ -2864,10 +3044,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-per-file-coverage-floor.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-per-file-coverage-floor.md",
@@ -2884,10 +3064,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-quality-review-diagnostics.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-quality-review-diagnostics.md",
@@ -2904,10 +3084,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-control-plane-lib-cleanup.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-control-plane-lib-cleanup.md",
@@ -2924,10 +3104,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-control-plane-lib-cleanup.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-control-plane-lib-cleanup.md",
@@ -2944,10 +3124,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-runtime-budget-update-proof.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-runtime-budget-update-proof.md",
@@ -2964,10 +3144,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-coverage-floor-runtime-budget.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-coverage-floor-runtime-budget.md",
@@ -2984,10 +3164,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-per-file-coverage-floor.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-per-file-coverage-floor.md",
@@ -3004,10 +3184,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-quality-handoff-inventory.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-quality-handoff-inventory.md",
@@ -3024,10 +3204,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-runtime-budget-update-proof.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-runtime-budget-update-proof.md",
@@ -3044,10 +3224,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-sync-support-floor-cleanup.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-sync-support-floor-cleanup.md",
@@ -3064,10 +3244,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-sync-support-floor-cleanup.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-sync-support-floor-cleanup.md",
@@ -3084,10 +3264,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-handoff-signal-trim.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-handoff-signal-trim.md",
@@ -3104,10 +3284,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-sync-support-floor-cleanup.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-sync-support-floor-cleanup.md",
@@ -3124,10 +3304,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-runtime-budget-update-proof.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-runtime-budget-update-proof.md",
@@ -3144,10 +3324,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-per-file-coverage-floor.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-per-file-coverage-floor.md",
@@ -3164,10 +3344,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-evidence-panel-adaptation.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-evidence-panel-adaptation.md",
@@ -3184,10 +3364,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-quality-handoff-inventory.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-quality-handoff-inventory.md",
@@ -3204,10 +3384,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-quality-review-diagnostics.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-quality-review-diagnostics.md",
@@ -3224,10 +3404,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-evidence-panel-adaptation.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-evidence-panel-adaptation.md",
@@ -3244,10 +3424,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-hitl-quality-handoff.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-hitl-quality-handoff.md",
@@ -3264,10 +3444,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-evidence-panel-adaptation.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-evidence-panel-adaptation.md",
@@ -3284,10 +3464,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-sync-support-floor-cleanup.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-sync-support-floor-cleanup.md",
@@ -3304,10 +3484,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-quality-handoff-inventory.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-quality-handoff-inventory.md",
@@ -3324,10 +3504,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-quality-handoff-inventory.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-quality-handoff-inventory.md",
@@ -3344,10 +3524,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-per-file-coverage-floor.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-per-file-coverage-floor.md",
@@ -3364,10 +3544,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-04-15-per-file-coverage-floor.md",
       "latest_source_date": "2026-04-15",
-      "age_days": 8,
-      "recency_weight": 0.673,
+      "age_days": 9,
+      "recency_weight": 0.6404,
       "alpha": 0.07,
-      "selection_weight": 0.673,
+      "selection_weight": 0.6404,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-15-per-file-coverage-floor.md",
@@ -3384,10 +3564,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3404,10 +3584,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3424,10 +3604,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3444,10 +3624,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3464,10 +3644,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3484,10 +3664,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3504,10 +3684,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3524,10 +3704,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3544,10 +3724,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3564,10 +3744,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3584,10 +3764,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3604,10 +3784,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3624,10 +3804,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3644,10 +3824,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3664,10 +3844,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3684,10 +3864,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3704,10 +3884,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3724,10 +3904,10 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/weekly-2026-04-14.md",
       "latest_source_date": "2026-04-14",
-      "age_days": 9,
-      "recency_weight": 0.6404,
+      "age_days": 10,
+      "recency_weight": 0.6095,
       "alpha": 0.07,
-      "selection_weight": 0.6404,
+      "selection_weight": 0.6095,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/weekly-2026-04-14.md",
@@ -3744,175 +3924,15 @@
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
       "latest_source_date": "2026-04-10",
-      "age_days": 13,
-      "recency_weight": 0.5254,
+      "age_days": 14,
+      "recency_weight": 0.5,
       "alpha": 0.07,
-      "selection_weight": 0.5254,
+      "selection_weight": 0.5,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
           "date": "2026-04-10",
           "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:a2db086dd0b2",
-      "kind": "current_focus",
-      "lesson": "Unit under review: adding repo-adapter support to `impl` so self-verification discovery becomes explicit instead of accidental.",
-      "normalized_key": "unit under review adding repo adapter support to impl so self verification discovery becomes",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
-      "latest_source_date": "2026-04-10",
-      "age_days": 13,
-      "recency_weight": 0.5254,
-      "alpha": 0.07,
-      "selection_weight": 0.5254,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
-          "date": "2026-04-10",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:03be7b4e4bba",
-      "kind": "current_focus",
-      "lesson": "Why it mattered: a recent downstream report change closed too early because `impl` did not force an early search for the strongest repo-available proof path.",
-      "normalized_key": "why it mattered a recent downstream report change closed too early because impl did",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
-      "latest_source_date": "2026-04-10",
-      "age_days": 13,
-      "recency_weight": 0.5254,
-      "alpha": 0.07,
-      "selection_weight": 0.5254,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
-          "date": "2026-04-10",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:fa8eab085d87",
-      "kind": "next_improvement",
-      "lesson": "if more repos need the same pattern, add a portable preset or onboarding note that seeds `impl-adapter.yaml` with common `cmd:`/`skill:` verification entries.",
-      "normalized_key": "if more repos need the same pattern add a portable preset or onboarding note",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
-      "latest_source_date": "2026-04-10",
-      "age_days": 13,
-      "recency_weight": 0.5254,
-      "alpha": 0.07,
-      "selection_weight": 0.5254,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
-          "date": "2026-04-10",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:f78e1510f95e",
-      "kind": "next_improvement",
-      "lesson": "repair or reinstall the broken `agent-browser` skill path so repos that prefer browser verification can actually use the stronger proof path the adapter now recommends.",
-      "normalized_key": "repair or reinstall the broken agent browser skill path so repos that prefer browser",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
-      "latest_source_date": "2026-04-10",
-      "age_days": 13,
-      "recency_weight": 0.5254,
-      "alpha": 0.07,
-      "selection_weight": 0.5254,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
-          "date": "2026-04-10",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:6fc034d2f78d",
-      "kind": "next_improvement",
-      "lesson": "when a slice touches UI, browser paths, screenshots, static reports, or live agents, run the impl verification survey during bootstrap and mention the strongest available proof path before implementation starts.",
-      "normalized_key": "when a slice touches ui browser paths screenshots static reports or live agents run",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
-      "latest_source_date": "2026-04-10",
-      "age_days": 13,
-      "recency_weight": 0.5254,
-      "alpha": 0.07,
-      "selection_weight": 0.5254,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
-          "date": "2026-04-10",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:102f29469910",
-      "kind": "repeat_trap",
-      "lesson": "Repo-wide eval closeout is still partially noisy on this machine because `python3` lacks `jsonschema`. That is separate from this change, but it reduced the signal from one broad `pytest` pass.",
-      "normalized_key": "repo wide eval closeout is still partially noisy on this machine because python3 lacks",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
-      "latest_source_date": "2026-04-10",
-      "age_days": 13,
-      "recency_weight": 0.5254,
-      "alpha": 0.07,
-      "selection_weight": 0.5254,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
-          "date": "2026-04-10",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:c14fcface7e1",
-      "kind": "repeat_trap",
-      "lesson": "The old workflow made missing tooling look like operator forgetfulness rather than a first-class repo contract gap. We only learned that `agent-browser` was broken after asking the new survey directly.",
-      "normalized_key": "the old workflow made missing tooling look like operator forgetfulness rather than a first",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
-      "latest_source_date": "2026-04-10",
-      "age_days": 13,
-      "recency_weight": 0.5254,
-      "alpha": 0.07,
-      "selection_weight": 0.5254,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
-          "date": "2026-04-10",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:4dd203f0d5d8",
-      "kind": "repeat_trap",
-      "lesson": "Verification capability discovery was previously implicit. That left too much to the model's habits, so a UI/report slice could pass string tests while skipping a real rendered check.",
-      "normalized_key": "verification capability discovery was previously implicit that left too much to the model s",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
-      "latest_source_date": "2026-04-10",
-      "age_days": 13,
-      "recency_weight": 0.5254,
-      "alpha": 0.07,
-      "selection_weight": 0.5254,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
-          "date": "2026-04-10",
-          "section": "Waste"
         }
       ]
     },
@@ -3952,6 +3972,46 @@
         {
           "artifact_path": "charness-artifacts/retro/retro.md",
           "date": null,
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:a2db086dd0b2",
+      "kind": "current_focus",
+      "lesson": "Unit under review: adding repo-adapter support to `impl` so self-verification discovery becomes explicit instead of accidental.",
+      "normalized_key": "unit under review adding repo adapter support to impl so self verification discovery becomes",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
+      "latest_source_date": "2026-04-10",
+      "age_days": 14,
+      "recency_weight": 0.5,
+      "alpha": 0.07,
+      "selection_weight": 0.5,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
+          "date": "2026-04-10",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:03be7b4e4bba",
+      "kind": "current_focus",
+      "lesson": "Why it mattered: a recent downstream report change closed too early because `impl` did not force an early search for the strongest repo-available proof path.",
+      "normalized_key": "why it mattered a recent downstream report change closed too early because impl did",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
+      "latest_source_date": "2026-04-10",
+      "age_days": 14,
+      "recency_weight": 0.5,
+      "alpha": 0.07,
+      "selection_weight": 0.5,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
+          "date": "2026-04-10",
           "section": "Context"
         }
       ]
@@ -4017,6 +4077,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:fa8eab085d87",
+      "kind": "next_improvement",
+      "lesson": "if more repos need the same pattern, add a portable preset or onboarding note that seeds `impl-adapter.yaml` with common `cmd:`/`skill:` verification entries.",
+      "normalized_key": "if more repos need the same pattern add a portable preset or onboarding note",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
+      "latest_source_date": "2026-04-10",
+      "age_days": 14,
+      "recency_weight": 0.5,
+      "alpha": 0.07,
+      "selection_weight": 0.5,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
+          "date": "2026-04-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:b0481d687992",
       "kind": "next_improvement",
       "lesson": "keep a default review checklist for any install/update/support change that explicitly covers source checkout, managed checkout, installed CLI, checked-in plugin export, host cache, and PATH visibility as separate seams.",
@@ -4077,6 +4157,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:f78e1510f95e",
+      "kind": "next_improvement",
+      "lesson": "repair or reinstall the broken `agent-browser` skill path so repos that prefer browser verification can actually use the stronger proof path the adapter now recommends.",
+      "normalized_key": "repair or reinstall the broken agent browser skill path so repos that prefer browser",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
+      "latest_source_date": "2026-04-10",
+      "age_days": 14,
+      "recency_weight": 0.5,
+      "alpha": 0.07,
+      "selection_weight": 0.5,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
+          "date": "2026-04-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:3ed72e95c500",
       "kind": "next_improvement",
       "lesson": "when a concern is fully resolved, demote it from handoff/current focus to on-demand regression status quickly. Resolved worries should stop consuming active planning bandwidth.",
@@ -4093,6 +4193,86 @@
           "artifact_path": "charness-artifacts/retro/retro.md",
           "date": null,
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6fc034d2f78d",
+      "kind": "next_improvement",
+      "lesson": "when a slice touches UI, browser paths, screenshots, static reports, or live agents, run the impl verification survey during bootstrap and mention the strongest available proof path before implementation starts.",
+      "normalized_key": "when a slice touches ui browser paths screenshots static reports or live agents run",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
+      "latest_source_date": "2026-04-10",
+      "age_days": 14,
+      "recency_weight": 0.5,
+      "alpha": 0.07,
+      "selection_weight": 0.5,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
+          "date": "2026-04-10",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:102f29469910",
+      "kind": "repeat_trap",
+      "lesson": "Repo-wide eval closeout is still partially noisy on this machine because `python3` lacks `jsonschema`. That is separate from this change, but it reduced the signal from one broad `pytest` pass.",
+      "normalized_key": "repo wide eval closeout is still partially noisy on this machine because python3 lacks",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
+      "latest_source_date": "2026-04-10",
+      "age_days": 14,
+      "recency_weight": 0.5,
+      "alpha": 0.07,
+      "selection_weight": 0.5,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
+          "date": "2026-04-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c14fcface7e1",
+      "kind": "repeat_trap",
+      "lesson": "The old workflow made missing tooling look like operator forgetfulness rather than a first-class repo contract gap. We only learned that `agent-browser` was broken after asking the new survey directly.",
+      "normalized_key": "the old workflow made missing tooling look like operator forgetfulness rather than a first",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
+      "latest_source_date": "2026-04-10",
+      "age_days": 14,
+      "recency_weight": 0.5,
+      "alpha": 0.07,
+      "selection_weight": 0.5,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
+          "date": "2026-04-10",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4dd203f0d5d8",
+      "kind": "repeat_trap",
+      "lesson": "Verification capability discovery was previously implicit. That left too much to the model's habits, so a UI/report slice could pass string tests while skipping a real rendered check.",
+      "normalized_key": "verification capability discovery was previously implicit that left too much to the model s",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/session-2026-04-10.md",
+      "latest_source_date": "2026-04-10",
+      "age_days": 14,
+      "recency_weight": 0.5,
+      "alpha": 0.07,
+      "selection_weight": 0.5,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/session-2026-04-10.md",
+          "date": "2026-04-10",
+          "section": "Waste"
         }
       ]
     },
