@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-04-24",
-  "source_artifact_count": 35,
-  "candidate_count": 217,
+  "source_artifact_count": 36,
+  "candidate_count": 221,
   "top_candidates": [
     {
       "candidate_id": "current_focus:0d7e66658729",
@@ -29,6 +29,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:a634e7f51a4a",
+      "kind": "current_focus",
+      "lesson": "The user challenged my final phrasing that cited a \"host-level delegation policy\" after a quality review that should have respected this repo's checked-in subagent delegation contract.",
+      "normalized_key": "the user challenged my final phrasing that cited a host level delegation policy after",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
           "date": "2026-04-24",
           "section": "Context"
         }
@@ -75,6 +95,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:41f574d849e1",
+      "kind": "next_improvement",
+      "lesson": "Consider a validator or canned quality closeout phrase that rejects vague \"host policy\" wording when the repo's bounded subagent rule is the relevant local contract.",
+      "normalized_key": "consider a validator or canned quality closeout phrase that rejects vague host policy wording",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:7b1c7a569601",
       "kind": "next_improvement",
       "lesson": "For public skill changes, start with the changed skill's customer journey, not the skill package. Name at least one real or synthetic consumer repo and run the first-use path before declaring the design good.",
@@ -109,6 +149,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:35240d39c24d",
+      "kind": "next_improvement",
+      "lesson": "In final closeout, distinguish `repo_contract_requires_subagent` from `host_tool_contract_blocks_spawn` when both are true.",
+      "normalized_key": "in final closeout distinguish repo contract requires subagent from host tool contract blocks spawn",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
           "date": "2026-04-24",
           "section": "Next Improvements"
         }
@@ -191,66 +251,6 @@
           "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
           "date": "2026-04-24",
           "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:9bda5fd76d74",
-      "kind": "next_improvement",
-      "lesson": "Workflow: when `quality` or `init-repo` scope is broad and task-completing, spawn bounded reviewers before finalizing the diagnosis.",
-      "normalized_key": "workflow when quality or init repo scope is broad and task completing spawn bounded",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
-      "latest_source_date": "2026-04-24",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
-          "date": "2026-04-24",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:5b816ed023c7",
-      "kind": "repeat_trap",
-      "lesson": "That delayed two useful facts: runtime budgets were machine-profile blind, and only the final runtime-budget phase has a real ordering dependency.",
-      "normalized_key": "that delayed two useful facts runtime budgets were machine profile blind and only the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
-      "latest_source_date": "2026-04-24",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
-          "date": "2026-04-24",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:31d14e050913",
-      "kind": "repeat_trap",
-      "lesson": "The available instructions hinted at consumer validation but did not force a customer-of-this-skill angle. `create-skill` says to use a realistic consumer prompt, and `premortem` offers blast-radius/current-consumer angles, but neither makes “run the changed skill as its customer would” a stop gate for repo-local skill changes.",
-      "normalized_key": "the available instructions hinted at consumer validation but did not force a customer of",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
-      "latest_source_date": "2026-04-24",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
-          "date": "2026-04-24",
-          "section": "Waste"
         }
       ]
     }
@@ -277,6 +277,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:a634e7f51a4a",
+      "kind": "current_focus",
+      "lesson": "The user challenged my final phrasing that cited a \"host-level delegation policy\" after a quality review that should have respected this repo's checked-in subagent delegation contract.",
+      "normalized_key": "the user challenged my final phrasing that cited a host level delegation policy after",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
+          "date": "2026-04-24",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:b175df57eca2",
       "kind": "current_focus",
       "lesson": "This session optimized `./scripts/run-quality.sh`, added profile-aware runtime budget design, and tightened `quality`/`init-repo` guidance around delegated review.",
@@ -317,6 +337,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:41f574d849e1",
+      "kind": "next_improvement",
+      "lesson": "Consider a validator or canned quality closeout phrase that rejects vague \"host policy\" wording when the repo's bounded subagent rule is the relevant local contract.",
+      "normalized_key": "consider a validator or canned quality closeout phrase that rejects vague host policy wording",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:7b1c7a569601",
       "kind": "next_improvement",
       "lesson": "For public skill changes, start with the changed skill's customer journey, not the skill package. Name at least one real or synthetic consumer repo and run the first-use path before declaring the design good.",
@@ -351,6 +391,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:35240d39c24d",
+      "kind": "next_improvement",
+      "lesson": "In final closeout, distinguish `repo_contract_requires_subagent` from `host_tool_contract_blocks_spawn` when both are true.",
+      "normalized_key": "in final closeout distinguish repo contract requires subagent from host tool contract blocks spawn",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
           "date": "2026-04-24",
           "section": "Next Improvements"
         }
@@ -431,6 +491,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:bbc75d5c9740",
+      "kind": "next_improvement",
+      "lesson": "Treat future user corrections about subagent authorization as a sign to inspect the exact wording of both AGENTS and the active tool contract before explaining the blocker.",
+      "normalized_key": "treat future user corrections about subagent authorization as a sign to inspect the exact",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
           "date": "2026-04-24",
           "section": "Next Improvements"
         }
