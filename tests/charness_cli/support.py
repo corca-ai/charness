@@ -387,7 +387,7 @@ raise SystemExit(0)
     script.write_text(template, encoding="utf-8")
     script.chmod(0o755)
     return script
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def seeded_managed_home(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Path]:
     seed_root = tmp_path_factory.mktemp("managed-home-seed")
     source_root = seed_root / "source"
