@@ -39,8 +39,8 @@ Fallback lookup order:
   unless the opening has already earned them
 - `quick_start_execution_model`: repo-local reminder of who usually executes
   quick-start actions and where the canonical contract lives
-- `special_entrypoints`: repo-local entrypoints that should not be buried in a
-  flat skill or feature inventory
+- `special_entrypoints`: repo-local labels or paths that should not be buried
+  in a flat skill or feature inventory
 - `skill_grouping_rules`: grouping reminders that keep maps aligned with repo
   intent rather than with arbitrary category names
 - `owner_doc_boundaries`: deeper contracts that should stay in owner docs
@@ -48,6 +48,46 @@ Fallback lookup order:
 - `landing_danger_checks`: repo-local failure patterns worth checking before
   closeout
 - `remote_name`: git remote to compare against when checking freshness
+
+## Adapter Fitness Review
+
+Before a README, landing page, or operator-facing truth rewrite, check whether
+the adapter can actually produce the desired reader outcome. A present adapter
+is not automatically a good adapter.
+
+Run:
+
+```bash
+python3 skills/public/narrative/scripts/review_adapter.py --repo-root .
+```
+
+Treat these as repair-before-rewrite findings for first-touch surfaces:
+
+- missing adapter when the target is README, landing copy, or operator docs
+- missing files named by `source_documents`, `mutable_documents`, or
+  path-like `special_entrypoints`
+- `handoff`, `internal`, `archive`, or `archived` paths used as ordinary
+  mutable landing docs
+- path-like `special_entrypoints` that should shape the README but are absent
+  from `source_documents`
+- empty `primary_reader_profiles`, `preserve_intents`, `owner_doc_boundaries`,
+  or `landing_danger_checks` when first-touch quality matters
+- a broad source set that forces the agent to infer which docs are stable
+  product truth and which are current implementation detail
+
+Use volatile handoff or internal notes as situational context only when the
+task explicitly targets those documents. They should not become the default
+source of public README truth.
+
+When the adapter is missing, scaffold it before rewriting in earnest and fill
+the smallest useful contract:
+
+- primary readers
+- stable source documents
+- mutable documents
+- meanings that must survive structural cleanup
+- owner documents that should keep deeper detail
+- landing danger checks that reflect the repo's known failure patterns
 
 ## Durable Artifact
 

@@ -5,6 +5,9 @@ this breaks."
 
 Good default angles for a non-trivial decision:
 
+- `customer-of-this-capability`: what the user or downstream agent experiences
+  on the first real use, including missing setup, stale adapters, thin defaults,
+  confusing next actions, and silent fallback behavior
 - `blast-radius`: what breaks for current users, operators, or consumers
 - `implementation integrity`: what hidden coupling or duplicate logic makes the
   plan less safe than it looks
@@ -27,6 +30,8 @@ Canonical execution uses subagents. Before reporting that path as unavailable, r
 
 Rotate or swap angles when the decision is narrower:
 
+- skill, adapter, bootstrap, or example changes where the main risk is a bad
+  first run for the skill's customer
 - breaking change boundary
 - release-time operator proof
 - external consumer migration

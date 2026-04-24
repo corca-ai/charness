@@ -58,12 +58,16 @@ EVIDENCE_OVERRIDES = {
     "create-skill": [
         "treats the public skill frontmatter and core trigger as classifier input, not only documentation",
         "keeps `SKILL.md` as selection/sequence core and pushes bulky nuance into references or scripts",
+        "starts public-skill adapter/bootstrap/example changes from the changed skill's customer journey",
     ],
     "find-skills": [
         "uses the named skill or capability lookup path before falling back to broad filesystem search",
     ],
     "handoff": [
         "reads the current workflow trigger before broad repo exploration and keeps the baton pass continuation-first",
+    ],
+    "premortem": [
+        "includes a customer-of-this-capability angle when first-use failure is the main risk",
     ],
     "quality": [
         "runs or names the existing repo-owned quality gates before proposing new ones",

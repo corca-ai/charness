@@ -3,67 +3,86 @@ Date: 2026-04-24
 
 ## Trigger
 
-- slice: teach `find-skills` to diagnose stale host-reported installed skill
-  paths and recover through the current stable plugin/cache/repo skill path
-- claim: preserve existing routing while improving recovery when versioned
-  plugin cache paths drift after install/update
+- slice: merge the narrative adapter review work and the customer-first skill
+  authoring follow-up into the current README/main worktree
+- claim: preserve routing while improving first-use behavior for narrative
+  adapters and public-skill authoring
 
 ## Validation Goal
 
 - goal: preserve
-- reason: this slice changes prompt-affecting public skill bootstrap guidance
-  and adds a helper script; existing startup routing and validation-shaped
-  closeout routing must still hold
+- reason: this merge brings in prompt-affecting public skill guidance, adapter
+  review helpers, and dogfood contracts; existing startup routing must still
+  pass while the new customer-first authoring rule and narrative adapter gate
+  stay explicit in checked-in surfaces
 
 ## Change Intent
 
 - `prompt_affecting_change`
 - `skill_core_change`
+- `adapter_contract_change`
 - `scenario_review_change`
-- `truth_surface_change`
 
 ## Prompt Surfaces
 
-- `AGENTS.md`
-- `skills/public/find-skills/SKILL.md`
-- `skills/public/init-repo/scripts/render_skill_routing.py`
+- `.agents/narrative-adapter.yaml`
+- `skills/public/narrative/SKILL.md`
+- `skills/public/narrative/references/adapter-contract.md`
+- `skills/public/narrative/references/landing-rewrite-loop.md`
+- `skills/public/create-skill/SKILL.md`
+- `skills/public/premortem/references/angle-selection.md`
 
 ## Commands Run
 
 - `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
 - `cautilus instruction-surface test --repo-root .`
-- `python3 skills/public/quality/scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id find-skills --json`
-- `python3 scripts/validate_cautilus_scenarios.py --repo-root .`
+- `cautilus instruction-surface test --repo-root .` (rerun after one
+  unrelated flaky route miss)
+- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id narrative --json`
+- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id create-skill --json`
+- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id premortem --json`
 
 ## Regression Proof
 
 - instruction-surface summary: `4 passed / 0 failed / 0 blocked`
-- accepted run artifact: `.cautilus/runs/20260423T163248672Z-run/`
-- stale-path helper smoke: `resolve_skill_path.py` classified the missing
-  `0.5.5` cache path as `stale-reported-path` and resolved the stable Codex
-  plugin path
-- targeted pytest: `tests/test_find_skills.py -k resolve_skill_path` passed
-- broader find-skills pytest targets passed: `12 passed`
+- run artifact: `.cautilus/runs/20260424T003030957Z-run/`
+- maintained startup routing still bootstraps through `find-skills`, then
+  selects `impl` or `spec` for the existing instruction-surface cases
+- evaluator recommendation: `accept-now`
+- note: `.cautilus/runs/20260424T002903742Z-run/` produced `3 passed / 1
+  failed` on the existing validation-closeout route, selecting `hitl` instead
+  of expected `quality`; rerun restored `accept-now`, so this is recorded as a
+  nondeterministic existing routing risk rather than a new prompt-surface
+  contract change
 
 ## Scenario Review
 
-- the existing startup routing cases still bootstrap through `find-skills`
-  before selecting `impl` or `spec`
-- `validation-closeout-routes-before-hitl` failed twice before this slice added
-  one compact AGENTS/generated-routing sentence for validation-shaped closeout
-  routing, then passed in the accepted run
-- no scenario registry mutation was needed; the maintained case already caught
-  the routing ambiguity
+- reviewed the `narrative` public-skill dogfood case; the expected route and
+  durable artifact remain `narrative` and
+  `charness-artifacts/narrative/latest.md`
+- direct checks against `../cautilus`, `../ceal`, and `../crill` showed the
+  adapter reviewer catches missing adapters, volatile mutable sources, stale
+  paths with closest-path suggestions, and path-like entrypoint drift before
+  README rewriting starts
+- reviewed and updated the `create-skill` dogfood case so public-skill
+  adapter/bootstrap/example changes must start from the changed skill's
+  customer journey
+- reviewed and updated the `premortem` dogfood case so first-use failure can
+  be covered by the new `customer-of-this-capability` angle
+- no maintained scenario-registry mutation was required in this merge slice;
+  the existing instruction-surface routing proof remains a regression check
+  rather than full semantic coverage of the new authoring rule itself
 
 ## Outcome
 
 - recommendation: `accept-now`
-- routing notes: path recovery stays inside `find-skills`; validation-shaped
-  closeout remains routed through `quality` validation recommendations before
-  HITL or same-agent manual review
+- routing notes: regression proof passed after the prompt-surface edits, and
+  the changed guidance does not alter the maintained startup routing cases
 
 ## Follow-ups
 
-- the current branch still carries README HITL draft comments from the prior
-  local commit; markdown and command-doc gates fail until that README rewrite
-  slice is finished
+- the current branch still carries README HITL draft/comment drift; markdown,
+  command-doc, and plugin README export gates remain owned by the README
+  rewrite slice
+- consider a narrower maintained scenario later if customer-first skill
+  authoring becomes a repeated regression rather than a checked dogfood rule

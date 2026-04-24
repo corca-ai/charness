@@ -30,6 +30,9 @@ def test_premortem_skill_surfaces_counterweight_and_deliberately_not_doing() -> 
     assert "default to three angle subagents" in skill_text
     assert "if the host cannot provide subagents, stop" in skill_text
     assert "do not collapse into a same-agent local pass or degraded variant" in skill_text
+    assert "customer-of-this-capability" in angle_text
+    assert "first real use" in angle_text
+    assert "stale adapters" in angle_text
     assert "blast-radius" in angle_text
     assert "future maintainer" in angle_text
     assert "minimum: two contrasting angle subagents plus one separate counterweight" in angle_text

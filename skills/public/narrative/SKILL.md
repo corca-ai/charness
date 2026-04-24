@@ -23,8 +23,7 @@ the reader can recover the argument without reverse-engineering it.
 
 If the idea is still under-shaped, use `ideation` first. If the docs are
 already aligned and the user mainly wants audience adaptation or delivery-ready
-wording, use
-`announcement`.
+wording, use `announcement`.
 If the repo has little or no durable truth surface yet, use `init-repo` to
 bootstrap that surface before treating the task as narrative alignment.
 If the target is a high-leverage truth surface and the repo-specific narrative
@@ -38,6 +37,7 @@ Resolve the adapter first.
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+python3 "$SKILL_DIR/scripts/review_adapter.py" --repo-root .
 ```
 
 Default durable artifact:
@@ -85,12 +85,21 @@ git status --short
      if the user wants delivery-local adaptation, keep that for `announcement`
 2. Map the current truth surface.
    - read the source documents before inventing a fresh summary
-   - check whether local context may be stale relative to git remote state
-   - if freshness is ambiguous and the repo cannot be trusted as-is, surface
-     that risk before editing
+   - review adapter fitness before trusting its source set, mutable documents,
+     and special entrypoints
+   - for README, landing, or operator-doc work, use the adapter repair loop:
+     review, edit, rerun until no `block` findings remain, then fill or
+     explicitly waive thin-adapter `warn`s before drafting
+   - surface stale-git or stale-context risk before editing when freshness is
+     ambiguous
    - if the adapter is missing and the target is README, landing copy, operator
      docs, or another first-touch truth surface, stop to shape the truth
      surface and primary reader contract before rewriting in earnest
+   - repair or downgrade missing, volatile, internal, archived, or handoff
+     adapter inputs before using them as ordinary README truth
+   - if the adapter had to be scaffolded, do not stop at file creation; shape
+     readers, preserve-intents, owner boundaries, and landing danger checks
+     from the actual repo before drafting
    - if the source map is effectively empty or only placeholder-level, stop and
      recommend `init-repo` rather than pretending there is already a narrative
      surface to align
@@ -99,13 +108,16 @@ git status --short
      user-confirmed direction from the current thread
    - classify high-signal prior blocks as preserved, moved, compressed, or
      intentionally deleted
+   - when the user reviews section by section, keep the accepted working text
+     itself as durable state, not only a summary of which option won
    - treat preserved meaning as the contract; headings and section order are
      flexible
 4. Run the landing rewrite loop when the target is a high-leverage first-touch
    surface.
    - use `references/landing-rewrite-loop.md` for comparables, tension log,
      decision log, compression metric, opening-language filter, quick-start
-     actor check, claim audit, self-premortem, and carry-forward review
+     actor check, accepted-text ledger, claim audit, reader premortem, and
+     carry-forward review
    - if the work is really a cross-repo issue or proposal packet, use
      `references/cross-repo-issue-shaping.md` so `why` and `what` stay ahead
      of `how`
@@ -117,8 +129,6 @@ git status --short
    - rewrite contradictions instead of layering parallel narratives
    - propagate user-confirmed direction changes into source-of-truth docs, not
      only into the brief
-   - keep README, roadmap, handoff, operator docs, and adjacent maintainer docs
-     consistent enough that the next session does not inherit drift
    - when the repo has multiple first-class use cases or the adapter declares
      `scenario_surfaces`, add short scenario blocks for the main use-case
      paths; use the relevant subset of `references/scenario-blocks.md` instead
@@ -127,8 +137,6 @@ git status --short
      when the block needs a concrete input example
    - if the docs coin product-local jargon, define it inline at first use
      instead of sending the reader to a later glossary
-   - challenge internal terms that help maintainers more than readers, and
-     define unavoidable product-local jargon at first use
    - when the repo identity depends on a few high-leverage concepts, prefer a
      compact concept table or concept list before a flat feature inventory
    - if the adapter carries quick-start execution guidance, respect who should
@@ -146,32 +154,28 @@ git status --short
    before any delivery action.
    - include a short carry-forward note for user-stated intents that were
      preserved, challenged, or left unresolved
+   - when the rewrite creates doc-code or generated-reference obligations,
+     name the owning follow-up instead of hiding the gap in polished prose
 8. Hand off to `announcement` only when the user explicitly wants human-facing
    adaptation or backend delivery after the narrative itself is aligned.
 
 ## Output Shape
 
-The result should usually include:
-
-- `Source Map`
-- `Narrative Drift`
-- `Updated Truth`
-- `Brief`
-- `Claim Audit`
-- `Compression`
-- `Carry-Forward`
-- `Open Questions`
-- `Next Step`
+The result should usually include `Source Map`, `Narrative Drift`, `Updated
+Truth`, `Brief`, `Claim Audit`, `Compression`, `Carry-Forward`, `Open
+Questions`, and `Next Step`.
 
 ## Guardrails
 
 - Do not use `narrative` as a substitute for `ideation` when the concept is
   still vague or upstream decisions are genuinely unresolved.
 - Do not leave user-confirmed direction changes only in an ephemeral brief.
-- Do not treat a stale handoff as the sole truth surface when git freshness
-  suggests the repo may have moved.
-- Do not collapse durable truth docs and audience-specific briefs into one file
-  when their lifecycles differ.
+- Do not let volatile handoff, internal, or archived notes become default
+  README truth just because an adapter listed them or git freshness is unclear.
+- Do not trust a repo-local adapter blindly; review whether it can produce the
+  requested reader-facing outcome before using it as the rewrite contract.
+- Do not collapse durable truth docs and audience-specific briefs when their
+  lifecycles differ.
 - Do not mistake a cleaner outline for success when preserved intent was lost.
 - Do not strip away the short "why not this other path" note when that note is
   what keeps the next reader from reopening the same design debate.
@@ -193,3 +197,4 @@ The result should usually include:
 - `references/landing-rewrite-loop.md`
 - `references/cross-repo-issue-shaping.md`
 - `scripts/map_sources.py`
+- `scripts/review_adapter.py`

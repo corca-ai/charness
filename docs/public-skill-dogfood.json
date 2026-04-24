@@ -75,12 +75,13 @@
         "does not invent host-specific adapter state when repo inspection alone should be enough",
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context",
         "treats the public skill frontmatter and core trigger as classifier input, not only documentation",
-        "keeps `SKILL.md` as selection/sequence core and pushes bulky nuance into references or scripts"
+        "keeps `SKILL.md` as selection/sequence core and pushes bulky nuance into references or scripts",
+        "starts public-skill adapter/bootstrap/example changes from the changed skill's customer journey"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-22",
+      "reviewed_on": "2026-04-24",
       "observed_evidence": [
-        "The prompt still routes directly to `create-skill`, and the checked-in core keeps public-skill editing anchored on contract freezing, portable helper extraction, and classifier-aware `SKILL.md` edits rather than generic implementation drift.",
+        "The prompt still routes directly to `create-skill`, and the checked-in core keeps public-skill editing anchored on contract freezing, customer-of-this-skill premortem, portable helper extraction, and classifier-aware `SKILL.md` edits rather than generic implementation drift.",
         "The adapter-pattern reference now says visible artifacts are history-default and `latest.md` is only an optional current pointer, which is the intended portable authoring rule for future skill packages instead of a one-off repo exception.",
         "The current `cautilus` proof policy around `create-skill` no longer treats every scenario-review-worthy prompt change as ask-before-run: adaptive mode now auto-runs proof and reserves confirmation for maintained scenario-registry mutation."
       ]
@@ -202,12 +203,14 @@
       "acceptance_evidence": [
         "routes the prompt to `premortem` instead of an adjacent public skill",
         "does not invent host-specific adapter state when repo inspection alone should be enough",
-        "produces an output that a maintainer could review directly without re-deriving the whole request"
+        "produces an output that a maintainer could review directly without re-deriving the whole request",
+        "includes a customer-of-this-capability angle when first-use failure is the main risk"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-23",
+      "reviewed_on": "2026-04-24",
       "observed_evidence": [
         "The checked-in public core now says routine slices do not need premortem at all, and when a caller does need one the term `premortem` means only a fresh bounded subagent review with no same-agent or local variant.",
+        "The angle-selection reference now names `customer-of-this-capability` so capability changes can test the user's or downstream agent's first real use instead of only producer-side breakage.",
         "That same contract now makes blocked execution explicit in the public output shape, so a host-side subagent gap stays visible as `Execution: blocked <host-signal>` instead of being rewritten as a degraded concern list.",
         "That keeps `premortem-canonical-subagent-followup` live as a reviewed seam: the repo now locks the user push for true subagent premortem in both checked-in wording and validator-backed contract pins.",
         "The capability check now rejects shell-only runners, routing-only proof, and model self-report as evidence that bounded subagents actually ran; the current Codex dogfood probe blocks with `subagent-spawn-host-contract` instead of claiming a prose-only premortem succeeded."
