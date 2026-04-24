@@ -10,6 +10,7 @@ RETRO_SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
 FRESH_EYE_MARKERS = ("fresh-eye", "fresh eye", "premortem", "subagent review", "subagent reviews")
 FRESH_EYE_STALE_MARKERS = ("explicit consent", "local fallback")
 FRESH_EYE_REQUIRED_SNIPPETS = (
+    "explicit delegation request",
     "already delegated",
     "second user message",
     "host blocks",

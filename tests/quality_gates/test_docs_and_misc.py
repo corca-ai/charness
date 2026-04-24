@@ -66,9 +66,11 @@ def test_init_repo_agent_docs_carry_bounded_subagent_delegation_rule() -> None:
     assert "already delegated" in skill_text
     assert "second user message" in skill_text
     assert "same-agent pass" in skill_text
+    assert "explicit delegation request" in agent_docs
     assert "already delegated by the repo contract" in agent_docs
     assert "second user message asking for delegation" in agent_docs
     assert "same-agent pass" in agent_docs
+    assert "explicit delegation request" in default_surfaces
     assert "already delegated by the repo" in default_surfaces
     assert "same-agent pass" in default_surfaces
 

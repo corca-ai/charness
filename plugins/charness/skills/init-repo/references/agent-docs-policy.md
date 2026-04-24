@@ -6,7 +6,8 @@
 - `CLAUDE.md` should symlink to [`AGENTS.md`](../../../../AGENTS.md) when Claude compatibility is needed
 - when the repo requires bounded fresh-eye or premortem-style subagent review
   as a stop gate, [`AGENTS.md`](../../../../AGENTS.md) should carry one short rule that this review is
-  already delegated by the repo contract
+  the user's explicit delegation request for that bounded scope and is already
+  delegated by the repo contract
 - for Charness-managed repos, that rule should also name task-completing
   `init-repo` and `quality` review runs as authorized to spawn bounded
   reviewers; a Premortem-only heading is too narrow for this policy
@@ -44,6 +45,8 @@ When the repo uses bounded fresh-eye or premortem-style subagent review as a
 stop gate, prefer a short rule like:
 
 - Repo-mandated bounded fresh-eye subagent reviews are already delegated by the repo contract.
+- This rule is the user's explicit delegation request for the bounded review
+  scopes it names.
 - Task-completing `init-repo` and `quality` review runs are already authorized
   to spawn bounded reviewers.
 - Do not wait for a second user message asking for delegation.

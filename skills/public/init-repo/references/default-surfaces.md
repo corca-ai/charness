@@ -41,10 +41,11 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
   and commit targets, while current-pointer helpers should no-op when
   canonical content has not changed
 - when the repo uses bounded fresh-eye or premortem-style subagent review as a
-  stop gate, one short rule that the review is already delegated by the repo
-  contract, agents should not wait for a second user message asking for
-  delegation, and host spawn restrictions should be reported explicitly
-  instead of replaced with a same-agent pass
+  stop gate, one short rule that says `explicit delegation request` for the
+  bounded scope, the review is already delegated by the repo contract, agents
+  should not wait for a second user message asking for delegation, and host
+  spawn restrictions should be reported explicitly instead of replaced with a
+  same-agent pass
 - for Charness-managed repos, the same rule should explicitly cover
   task-completing `init-repo` and `quality` review runs instead of implying
   that only premortem may spawn reviewers

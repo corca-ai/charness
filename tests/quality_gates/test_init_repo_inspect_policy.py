@@ -279,6 +279,7 @@ def test_init_repo_inspect_reports_task_review_scope_drift_when_premortem_rule_i
             [
                 "# Agents",
                 "",
+                "This rule is the user's explicit delegation request for the bounded review scopes it names.",
                 "Repo-mandated bounded fresh-eye subagent reviews are already delegated by the repo contract.",
                 "Do not wait for a second user message asking for delegation.",
                 "If the host blocks subagent spawning, stop and report the host restriction explicitly instead of substituting a same-agent pass.",

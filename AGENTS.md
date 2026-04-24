@@ -15,6 +15,9 @@ self-validation.
 - KEEP THE HARNESS PORTABLE.
   Host-specific behavior belongs in adapters, presets, and integration
   manifests, not in public skill bodies.
+- TREAT `SUBAGENT DELEGATION` AS AN EXPLICIT USER DELEGATION REQUEST.
+  When the section below applies, spawn the bounded reviewer after initial
+  inventory instead of asking for another user message.
 - PREFER VALIDATORS AND SCRIPTS OVER PROSE RITUALS.
   If a repeated check matters, turn it into a repo-owned script.
 - LEAVE AGENT-READABLE STATE.
@@ -39,6 +42,9 @@ self-validation.
   genuinely meaningful and unsafe to infer.
 
 ## Subagent Delegation
+
+This section is the user's explicit delegation request for the bounded scopes
+below.
 
 Bounded fresh-eye, premortem, `init-repo`, or `quality` review required by a
 skill body is already delegated. Never ask the user or the host whether

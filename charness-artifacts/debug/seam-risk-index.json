@@ -3,13 +3,14 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 12,
-  "indexed_artifact_count": 4,
+  "source_artifact_count": 13,
+  "indexed_artifact_count": 5,
   "risk_class_counts": {
+    "contract-freeze-risk": 1,
     "operator-visible-recovery": 4
   },
   "generalization_pressure_counts": {
-    "monitor": 4
+    "monitor": 5
   },
   "entries": [
     {
@@ -48,6 +49,20 @@
         "operator-visible-recovery"
       ],
       "seam": "consumer repo workflow artifacts scanned during install/update refresh",
+      "generalization_pressure": "monitor",
+      "premortem_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-04-24-subagent-delegation-salience.md",
+      "is_current_pointer": false,
+      "interrupt_id": "subagent-delegation-salience",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "repo instruction contract vs host subagent tool policy",
       "generalization_pressure": "monitor",
       "premortem_required": false,
       "next_step": "impl",
