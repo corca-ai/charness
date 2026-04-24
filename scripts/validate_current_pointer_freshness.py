@@ -28,6 +28,7 @@ CLAUDE_PLUGIN_MANIFEST = Path("plugins/charness/.claude-plugin/plugin.json")
 GITIGNORE = Path(".gitignore")
 RUNTIME_RECORDER = Path("scripts/record_quality_runtime.py")
 RUNTIME_BUDGET_CHECKER = Path("skills/public/quality/scripts/check_runtime_budget.py")
+RUNTIME_BUDGET_LIB = Path("skills/public/quality/scripts/runtime_budget_lib.py")
 RUNTIME_SIGNALS = Path(".charness/quality/runtime-signals.json")
 QUALITY_ADAPTER = Path(".agents/quality-adapter.yaml")
 STALE_POINTER_PHRASES = {
@@ -116,6 +117,10 @@ def validate_runtime_smoothing_claim(repo_root: Path) -> None:
     gitignore = read_text(repo_root, GITIGNORE)
     recorder = read_text(repo_root, RUNTIME_RECORDER)
     checker = read_text(repo_root, RUNTIME_BUDGET_CHECKER)
+    runtime_budget_sources = checker
+    runtime_budget_lib = repo_root / RUNTIME_BUDGET_LIB
+    if runtime_budget_lib.is_file():
+        runtime_budget_sources += "\n" + runtime_budget_lib.read_text(encoding="utf-8")
     missing: list[str] = []
     required_fragments = (
         (GITIGNORE, gitignore, ".charness/quality/runtime-smoothing.json"),
@@ -123,9 +128,9 @@ def validate_runtime_smoothing_claim(repo_root: Path) -> None:
         (RUNTIME_RECORDER, recorder, "SMOOTHING_ALPHA_BASE = 0.35"),
         (RUNTIME_RECORDER, recorder, "SMOOTHING_WARMUP_N = 5"),
         (RUNTIME_RECORDER, recorder, '"advisory": True'),
-        (RUNTIME_BUDGET_CHECKER, checker, 'SMOOTHING_PATH = Path(".charness") / "quality" / "runtime-smoothing.json"'),
-        (RUNTIME_BUDGET_CHECKER, checker, "ewma_advisory_elapsed_ms"),
-        (RUNTIME_BUDGET_CHECKER, checker, "ewma {ewma:.1f}ms advisory"),
+        (RUNTIME_BUDGET_CHECKER, runtime_budget_sources, 'SMOOTHING_PATH = Path(".charness") / "quality" / "runtime-smoothing.json"'),
+        (RUNTIME_BUDGET_CHECKER, runtime_budget_sources, "ewma_advisory_elapsed_ms"),
+        (RUNTIME_BUDGET_CHECKER, runtime_budget_sources, "ewma {entry['ewma_advisory_elapsed_ms']:.1f}ms advisory"),
     )
     for relative_path, text, fragment in required_fragments:
         if fragment not in text:

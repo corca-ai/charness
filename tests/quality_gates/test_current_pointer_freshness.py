@@ -83,7 +83,7 @@ def seed_repo(
             [
                 'SMOOTHING_PATH = Path(".charness") / "quality" / "runtime-smoothing.json"',
                 "ewma_advisory_elapsed_ms",
-                "ewma {ewma:.1f}ms advisory",
+                "ewma {entry['ewma_advisory_elapsed_ms']:.1f}ms advisory",
             ]
         )
         + "\n",

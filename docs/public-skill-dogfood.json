@@ -240,6 +240,7 @@
         "That preserves the consumer-facing `quality` contract here: the skill should prefer repo-owned proof and enforcement structure over ad hoc ceremony, including for prompt-surface validation policy.",
         "The missing-validation-binary rule keeps the same contract for local tools: when an existing gate cannot run because `ruff` or another manifest-backed binary is absent, `quality` should turn that into setup work with install and verify steps instead of reporting a skipped gate.",
         "The quality core now requires task-completing reviews to report delegated-review status and includes an adapter/gate design inventory path for recommendation, acknowledgement, migration, and brittle hard-gate risks.",
+        "The quality core and standing-gate verbosity reference now require slow-test reviews to prove the active parallel-runner path, inspect serial fallback, run duration reports, and surface top-N runtime hot spots before widening budgets or moving checks on-demand.",
         "`validate_quality_artifact.py` now requires `Advisory` and `Delegated Review` sections, rejecting green-gate-only summaries that omit advisory or delegated-review status.",
         "The quality adapter resolver now preserves existing `version: 1` adapters while defaulting new review fields to safe empty values.",
         "`inventory_entrypoint_docs_ergonomics.py` now surfaces `host_instruction_runbook_pressure` when `AGENTS.md` embeds a multi-step procedure that likely belongs in a deeper doc or repo-owned command surface.",

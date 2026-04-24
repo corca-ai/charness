@@ -28,20 +28,22 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 - `run-quality.sh` now detects `pytest-xdist` by capturing help output before
   matching it, avoiding the prior pipefail false negative from
   `pytest --help | grep`.
+- `check-runtime-budget` now emits top-N runtime hot spots, including
+  unbudgeted phases.
 
 ## Runtime Signals
 
-- Latest local quality gate after this slice: `47 passed, 0 failed`, total
-  `68.0s`.
-- runtime hot spots: latest recorded samples have `pytest` `48.4s`,
-  `check-coverage` `11.7s`, `check-cli-skill-surface` `7.5s`,
-  `check-markdown` `4.1s`, `specdown` `3.5s`, and `check-duplicates` `3.0s`.
+- Latest local quality gate after this slice: `48 passed, 0 failed`, total
+  `69.7s`.
+- runtime hot spots: latest recorded samples have `pytest` `40.7s`,
+  `check-coverage` `13.4s`, `check-cli-skill-surface` `7.2s`,
+  `check-markdown` `4.4s`, `specdown` `4.0s`, and `check-duplicates` `3.4s`.
 - coverage gate: enforced and passing at aggregate `60.0%` plus per-file
   `85.0%`; current result is `97.9%` (`1186/1211`).
 - evaluator depth: `run-evals` passes 20 repo-local scenarios, so the bar is
   stronger than smoke-only review.
-- Budgeted phases: `pytest` median `42.6s / 70.0s`,
-  `check-coverage` median `11.9s / 15.0s`, `check-secrets` median
+- Budgeted phases: `pytest` median `43.7s / 70.0s`,
+  `check-coverage` median `12.1s / 15.0s`, `check-secrets` median
   `2.2s / 6.0s`, `run-evals` median `2.2s / 5.0s`, `specdown` median
   `2.8s / 8.0s`.
 ## Coverage and Eval Depth
@@ -116,17 +118,18 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 
 ## Commands Run
 - `./scripts/run-quality.sh`
-- `pytest -q tests/quality_gates/test_quality_runner.py tests/quality_gates/test_command_docs_gate.py`
+- `pytest -q tests/quality_gates/test_current_pointer_freshness.py tests/quality_gates/test_runtime_budget_gate.py tests/quality_gates/test_check_coverage_inventory.py tests/quality_gates/test_quality_skill_docs.py`
+- `cautilus instruction-surface test --repo-root .`
 - Surface closeout: packaging, command-docs, doc links, markdown, secrets,
   integrations, support/update dry-runs, ruff, and runtime-budget checks.
 
 ## Recommended Next Gates
 
 - active `AUTO_CANDIDATE`: keep expanding `validate-current-pointer-freshness`;
-  runtime prose is still sample-shaped and should get shape/ranking freshness
-  checks before exact timing claims become hard failures.
-- active `AUTO_CANDIDATE`: add budget or top-N reporting for recurring
-  non-budgeted hot spots such as `check-cli-skill-surface` and `check-markdown`.
+  runtime source-shape checks now follow the split runtime budget library, but
+  ergonomics and dogfood claims still need inventory-backed freshness checks.
+- active `AUTO_CANDIDATE`: continue the `tests/charness_cli` fixture-economics
+  slice before moving broad install/update checks fully on-demand.
 
 ## History
 - [2026-04-09 through 2026-04-10 archive](history/2026-04-09-through-2026-04-10.md)

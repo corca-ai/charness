@@ -143,9 +143,15 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
 
     assert "$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py" in skill_text
     assert "verbose-on-demand escape hatch" in skill_text
+    assert "top-N runtime hot spots" in skill_text
+    assert "serial fallback" in skill_text
     assert "standing-gate-verbosity.md" in skill_text
     assert "Test-runner reporter" in verbosity
     assert "Orchestrator output mode" in verbosity
+    assert "parallel runner is active" in verbosity
+    assert "Slow Test Triage" in verbosity
+    assert "pytest --durations" in verbosity
+    assert "silent serial fallback" in verbosity
     assert "quiet defaults and failure detail" in verbosity.lower()
 
 

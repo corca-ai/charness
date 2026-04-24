@@ -103,7 +103,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - prefer repo-native commands over hypothetical recommendations
    - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage
    - when a standing gate already exists, prefer compact default phase output plus a verbose-on-demand escape hatch over always-on chatter; see `references/standing-gate-verbosity.md`
-   - when a hot spot becomes the standing single dominator, define a `runtime_budgets` entry in the adapter and call `$SKILL_DIR/scripts/check_runtime_budget.py` from the repo's standing gate; budgets fail on recent-median drift and report latest-sample spikes separately
+   - when a hot spot becomes the standing single dominator, define a `runtime_budgets` entry in the adapter and call `$SKILL_DIR/scripts/check_runtime_budget.py` from the repo's standing gate; budgets fail on recent-median drift, report latest-sample spikes separately, and should expose top-N runtime hot spots so unbudgeted slow phases are still visible
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model
    - before proposing a new gate for length, duplicate, or pressure findings, ask which structural question the signal is exposing: delete, merge, split ownership, extract a helper, or narrow the interface
@@ -145,6 +145,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not recommend gates the repo cannot realistically run without saying why.
 - Do not treat a passing length, duplicate, or pressure heuristic as the goal; the goal is the structural simplification or ownership clarification that made the heuristic quiet again.
 - Do not ignore runtime drift just because a gate still passes functionally.
+- Do not treat `pytest-xdist`, worker pools, or other parallel runners as present because a package is expected; prove the active command is actually using the parallel path or surface the serial fallback.
 - Do not ask only what proof is missing when executable public specs land; ask what is duplicated at the wrong layer too.
 - Do not wait for operator follow-up before stating current runtime hot spots, coverage-gate presence or absence, and evaluator-depth status when the repo signals are available.
 - Keep runner-specific naming such as `Pytest Economics` or `Vitest Hotspots` in the repo adapter or repo-owned artifact, not in the portable public skill body.

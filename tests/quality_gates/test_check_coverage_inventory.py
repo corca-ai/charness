@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 
-from .support import ROOT, run_script
+from .support import ROOT
 
 SPEC = importlib.util.spec_from_file_location(
     "check_coverage_module", ROOT / "scripts" / "check_coverage.py"
@@ -49,10 +50,21 @@ def test_per_file_floor_report_classifies_floor_violations() -> None:
     assert [item["path"] for item in report["warn_band"]] == ["scripts/warn.py"]
 
 
-def test_check_coverage_json_includes_per_file_floor() -> None:
-    result = run_script("scripts/check_coverage.py", "--repo-root", str(ROOT), "--json")
+def test_check_coverage_json_includes_per_file_floor(monkeypatch, capsys) -> None:
+    def fake_collect_counts(repo_root):
+        return {
+            (repo_root / rel_path).resolve(): CHECK_COVERAGE.executable_lines(repo_root / rel_path)
+            for rel_path in CHECK_COVERAGE.TARGET_FILES
+        }
 
-    assert result.returncode == 0, result.stderr
-    assert '"per_file_floor"' in result.stdout
-    assert '"relationship": "per-file-floor"' in result.stdout
-    assert '"floor": 0.85' in result.stdout
+    monkeypatch.setattr(CHECK_COVERAGE, "collect_counts", fake_collect_counts)
+    monkeypatch.setattr(
+        CHECK_COVERAGE.sys,
+        "argv",
+        ["check_coverage.py", "--repo-root", str(ROOT), "--json"],
+    )
+
+    assert CHECK_COVERAGE.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["per_file_floor"]["relationship"] == "per-file-floor"
+    assert payload["per_file_floor"]["floor"] == 0.85

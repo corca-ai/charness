@@ -186,3 +186,58 @@ def test_runtime_budget_gate_warns_on_missing_sample(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["missing_samples"] == ["pytest"]
     assert payload["violations"] == []
+
+
+def test_runtime_budget_gate_reports_top_runtime_hotspots(tmp_path: Path) -> None:
+    signals = {
+        "commands": {
+            "pytest": {
+                "latest": {"elapsed_ms": 15000, "status": "pass"},
+                "median_recent_elapsed_ms": 14000,
+            },
+            "check-cli-skill-surface": {
+                "latest": {"elapsed_ms": 9000, "status": "pass"},
+                "median_recent_elapsed_ms": 8000,
+            },
+            "check-markdown": {
+                "latest": {"elapsed_ms": 7000, "status": "pass"},
+                "median_recent_elapsed_ms": 6500,
+            },
+        }
+    }
+    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
+    result = run_script(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--json",
+        "--top-runtime-count",
+        "2",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["runtime_hotspots"] == [
+        {
+            "label": "pytest",
+            "latest_elapsed_ms": 15000,
+            "median_recent_elapsed_ms": 14000,
+            "max_recent_elapsed_ms": None,
+            "budget_ms": 22000,
+            "budgeted": True,
+        },
+        {
+            "label": "check-cli-skill-surface",
+            "latest_elapsed_ms": 9000,
+            "median_recent_elapsed_ms": 8000,
+            "max_recent_elapsed_ms": None,
+            "budget_ms": None,
+            "budgeted": False,
+        },
+    ]
+
+    plain_result = run_script(SCRIPT, "--repo-root", str(repo), "--top-runtime-count", "2")
+    assert plain_result.returncode == 0, plain_result.stderr
+    assert "Runtime hot spots:" in plain_result.stdout
+    assert "check-cli-skill-surface" in plain_result.stdout
+    assert "unbudgeted" in plain_result.stdout

@@ -50,9 +50,27 @@ Review these five axes and classify each as `healthy`, `weak`, `missing`, or
 4. **Phase-level signal**
    - success output should identify the phase and elapsed time
    - failure output should reveal the seam without forcing an immediate rerun
+   - runtime-budget output should also show top-N recent hot spots, including
+     unbudgeted phases, so a green budget gate still answers what dominated
+     the last run
+   - test-runner phases that depend on optional parallelism should print or
+     otherwise prove the active mode; a silent serial fallback is an
+     operability defect even when tests pass
 5. **Escape hatch**
    - keep verbose-on-demand cheap with `VERBOSE=1`, `CI=1`, or a sibling
      `*:verbose` script
+
+## Slow Test Triage
+
+When the user says the test gate feels slow, do not stop at the orchestrator's
+total wall time. Confirm whether the intended parallel runner is active, run
+the test runner's native duration report, and separate duplicated proof from
+slow-but-necessary behavior coverage.
+
+For pytest-shaped repos, that usually means checking `pytest-xdist` readiness,
+serial fallback output, and `pytest --durations` on the standing target set.
+Full integration or coverage traces should move to on-demand or a separate
+standing phase when a cheaper unit test can preserve the output contract.
 
 ## Guardrails
 
