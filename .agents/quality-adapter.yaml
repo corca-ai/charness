@@ -60,7 +60,7 @@ prompt_asset_policy:
 skill_ergonomics_gate_rules: []
 runtime_budgets:
   charness-version: 500
-  pytest: 45000
+  pytest: 70000
   check-coverage: 15000
   check-secrets: 6000
   run-evals: 5000

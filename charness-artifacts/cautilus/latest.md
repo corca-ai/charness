@@ -3,75 +3,42 @@ Date: 2026-04-24
 
 ## Trigger
 
-- slice: merge remote `main` source-guard work into the current validation
-  stabilization branch
+- slice: adjust the repo-local `quality` adapter runtime budget after the
+  standing pytest gate repeatedly exceeded the previous 45s budget on the
+  current test suite
 - claim: preserve maintained startup routing and validation-closeout routing
-  while keeping both branches' quality, init-repo, release, and runtime-gate
-  behavior changes visible
+  while making the runtime budget reflect the actual standing gate rather than
+  encouraging agents to bypass or ignore slow validation
 
 ## Validation Goal
 
 - goal: preserve
-- reason: this merge combines prompt-affecting `quality`, `init-repo`,
-  `release`, `premortem`, and checked-in instruction surface changes; startup
-  routing, validation-closeout routing, public-skill dogfood evidence, and
-  bounded source-guard defaults must remain coherent after conflict resolution
+- reason: this slice changes `.agents/quality-adapter.yaml`, a prompt-affecting
+  adapter surface. The change should not alter skill routing; it should only
+  keep `quality`'s deterministic runtime gate honest for the current repo size.
 
 ## Change Intent
 
 - `prompt_affecting_change`
-- `skill_core_change`
 - `adapter_contract_change`
-- `truth_surface_change`
 - `scenario_review_change`
 
 ## Prompt Surfaces
 
-- `AGENTS.md`
-- `.agents/init-repo-adapter.yaml`
-- `.agents/narrative-adapter.yaml`
 - `.agents/quality-adapter.yaml`
-- `.agents/release-adapter.yaml`
-- `skills/public/find-skills/SKILL.md`
-- `skills/public/ideation/SKILL.md`
-- `skills/public/ideation/references/decision-question-response.md`
-- `skills/public/init-repo/SKILL.md`
-- `skills/public/init-repo/references/agent-docs-policy.md`
-- `skills/public/init-repo/references/default-surfaces.md`
-- `skills/public/init-repo/references/normalization-flow.md`
-- `skills/public/init-repo/scripts/init_repo_adapter.py`
-- `skills/public/premortem/SKILL.md`
-- `skills/public/premortem/references/angle-selection.md`
-- `skills/public/premortem/references/counterweight-triage.md`
-- `skills/public/premortem/references/subagent-capability-check.md`
-- `skills/public/quality/SKILL.md`
-- `skills/public/quality/references/adapter-contract.md`
-- `skills/public/quality/references/adapter-gate-review.md`
-- `skills/public/quality/references/entrypoint-docs-ergonomics.md`
-- `skills/public/quality/scripts/inventory_brittle_source_guards.py`
-- `skills/public/release/SKILL.md`
-- `skills/public/release/references/adapter-contract.md`
-- `skills/public/spec/SKILL.md`
-- `skills/public/spec/references/taxonomy-axis-checkpoint.md`
 
 ## Commands Run
 
 - `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
 - `cautilus instruction-surface test --repo-root .`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id find-skills --json`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id ideation --json`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id init-repo --json`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id premortem --json`
 - `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id quality --json`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id release --json`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id spec --json`
 
 ## Regression Proof
 
 - instruction-surface summary: `4 passed / 0 failed / 0 blocked`
-- run artifact: `.cautilus/runs/20260424T031752356Z-run/`
-- latest upstream summary:
-  `.cautilus/runs/20260424T033032495Z-run/instruction-surface-summary.json`
+- run artifact: `.cautilus/runs/20260424T034545011Z-run/`
+- summary artifact:
+  `.cautilus/runs/20260424T034545011Z-run/instruction-surface-summary.json`
 - recommendation: `accept-now`
 - maintained startup routing still bootstraps through `find-skills`, then
   selects `impl`, `spec`, or `quality` for the maintained
@@ -79,26 +46,27 @@ Date: 2026-04-24
 
 ## Scenario Review
 
-- `quality` dogfood evidence keeps delegated-review / adapter-gate posture,
-  missing-validation-binary setup rules, bounded scan defaults, and explicit
-  override behavior visible
-- `init-repo` dogfood rows record bounded source-guard scanning defaults and
-  adapter/CLI override behavior
-- `release` keeps adapter-gated CLI plus bundled-skill disclosure review
-  evidence
-- evaluator-required skills named by the planner (`find-skills`, `init-repo`,
-  and `spec`) are already present in `evals/cautilus/scenarios.json`, so no
-  maintained scenario-registry mutation is required for this merge
-- repo-owned tests cover bounded scan roots, adapter/CLI overrides, hidden
-  workflow directories, and unreadable markdown warnings
+- Representative scenario: a maintainer asks `quality` to review current repo
+  posture and run available gates before proposing new ones.
+- Expected behavior: the agent should run or name existing repo-owned gates and
+  persist review state in `charness-artifacts/quality/latest.md` when useful.
+- Budget-specific review: the standing pytest target currently passes but takes
+  roughly 60-67s on this machine with `python3 -m pytest -n auto`; keeping a
+  45s budget would fail the closeout after successful validation and train
+  agents to route around the gate. A 70s budget keeps the gate blocking real
+  drift while matching the current suite size.
+- Public-skill dogfood posture remains `hitl-recommended` for `quality`; no
+  maintained scenario-registry mutation is needed for this budget-only adapter
+  adjustment.
 
 ## Outcome
 
 - recommendation: `accept-now`
-- routing notes: conflict resolution preserved the maintained routing cases and
-  kept validation-closeout routing through `quality`
+- routing notes: regression proof preserved the maintained routing cases; the
+  adapter change affects runtime-budget evaluation only
 
 ## Follow-ups
 
-- broad quality closeout may still expose environment-specific test failures;
-  keep runtime/tooling failures separate from routing regressions when triaging
+- If standing pytest remains above 70s after the suite stabilizes, split the
+  standing target or add a separate performance improvement slice rather than
+  repeatedly widening the budget.
