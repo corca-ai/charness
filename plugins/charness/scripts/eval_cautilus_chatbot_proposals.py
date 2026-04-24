@@ -8,11 +8,15 @@ import subprocess
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import repo_root_from_script
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 DEFAULT_INPUT_PATH = Path("evals/cautilus/chatbot-scenario-proposal-inputs.json")
 DEFAULT_OUTPUT_DIR = Path("charness-artifacts/cautilus/chatbot-proposals")
+
+_scripts_portable_artifact_lib_module = import_repo_module(__file__, "scripts.portable_artifact_lib")
+sanitize_artifact_json = _scripts_portable_artifact_lib_module.sanitize_artifact_json
+sanitize_diagnostic_text = _scripts_portable_artifact_lib_module.sanitize_diagnostic_text
 
 
 class EvalError(Exception):
@@ -157,9 +161,9 @@ def build_summary(
         "command": {
             "argv": ["cautilus", "scenario", "propose", "--input", str(input_path.relative_to(repo_root))],
             "exit_code": command.returncode,
-            "stderr": command.stderr.strip(),
+            "stderr": sanitize_diagnostic_text(command.stderr.strip(), repo_root=repo_root),
         },
-        "proposals_packet": proposals_packet,
+        "proposals_packet": sanitize_artifact_json(proposals_packet, repo_root=repo_root),
     }
 
 

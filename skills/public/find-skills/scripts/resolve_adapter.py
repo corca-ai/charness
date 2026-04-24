@@ -25,12 +25,6 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
-
-
-
-
-
-
 _scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
 load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
 _scripts_artifact_naming_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.artifact_naming_lib")
@@ -154,7 +148,7 @@ def _bootstrap_expectations(data: dict[str, Any]) -> dict[str, str]:
 
 
 def load_adapter(repo_root: Path) -> dict[str, Any]:
-    searched_paths = [str((repo_root / candidate).resolve()) for candidate in ADAPTER_CANDIDATES]
+    searched_paths = [candidate.as_posix() for candidate in ADAPTER_CANDIDATES]
     adapter_path = find_adapter(repo_root)
     if adapter_path is None:
         data = infer_repo_defaults(repo_root)
@@ -184,13 +178,13 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
     if not isinstance(raw, dict):
         warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
     if adapter_path.resolve() != canonical_path.resolve():
-        warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical_path}.")
+        warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical_path.relative_to(repo_root).as_posix()}.")
     data, errors, extra_warnings = validate_adapter_data(raw_data, repo_root)
     warnings.extend(extra_warnings)
     return {
         "found": True,
         "valid": not errors,
-        "path": str(adapter_path),
+        "path": adapter_path.relative_to(repo_root).as_posix(),
         "data": data,
         "artifact_filename": ARTIFACT_FILENAME,
         "artifact_path": _artifact_path(data["output_dir"]),

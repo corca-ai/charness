@@ -57,7 +57,7 @@ def main() -> int:
             json.dumps(
                 {
                     "status": "disabled",
-                    "repo_root": str(repo_root),
+                    "repo": repo_root.name,
                     "config_path": config.config_path,
                     "warnings": ["Markdown preview is disabled by config."],
                 },

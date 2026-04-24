@@ -90,3 +90,14 @@ Date: 2026-04-24
 - If future slow-gate work changes maintained behavior rather than preserving
   routing and operator signal, promote the proof goal to `improve` and plan an
   A/B compare path before closeout.
+
+## Issue #70 JSON Artifact Closeout
+
+- decision: no scenario-registry mutation for this slice.
+- reason: the changed public/support skill scripts preserve routing and user
+  prompts; they only normalize durable JSON artifact paths and diagnostic
+  provenance.
+- dogfood checked: `announcement`, `find-skills`, and `hitl` still advertise the
+  same consumer prompt, expected skill, and expected artifact.
+- deterministic proof now owns the contract:
+  `tests/quality_gates/test_portable_json_artifacts.py`.

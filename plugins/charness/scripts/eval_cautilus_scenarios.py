@@ -13,8 +13,10 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_cautilus_scenarios_lib_module = import_repo_module(__file__, "scripts.cautilus_scenarios_lib")
+_scripts_portable_artifact_lib_module = import_repo_module(__file__, "scripts.portable_artifact_lib")
 REGISTRY_PATH = _scripts_cautilus_scenarios_lib_module.REGISTRY_PATH
 validate_registry = _scripts_cautilus_scenarios_lib_module.validate_registry
+sanitize_diagnostic_text = _scripts_portable_artifact_lib_module.sanitize_diagnostic_text
 
 
 class EvalError(Exception):
@@ -64,8 +66,8 @@ def build_summary(
             "command": "python3 scripts/run_evals.py --repo-root . "
             + " ".join(f"--scenario-id {scenario_id}" for scenario_id in selected_ids),
             "exit_code": command.returncode,
-            "stdout": command.stdout.strip(),
-            "stderr": command.stderr.strip(),
+            "stdout": sanitize_diagnostic_text(command.stdout.strip(), repo_root=repo_root),
+            "stderr": sanitize_diagnostic_text(command.stderr.strip(), repo_root=repo_root),
         },
     }
 

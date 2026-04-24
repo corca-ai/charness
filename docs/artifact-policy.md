@@ -111,6 +111,12 @@ Use hidden runtime state when:
 - the state is too noisy to commit usefully
 - the state should not be mistaken for portable policy
 
+JSON state under `.charness/`, `.artifacts/`, or `charness-artifacts/` must
+still keep canonical path fields portable when it may be committed, copied into
+a report, or used by a later clone. Store repo-root-relative paths for repo
+files. If a diagnostic truly points outside the repo, store a logical label and
+non-secret provenance such as a basename instead of the absolute host path.
+
 Do not let hidden runtime state become the only copy of:
 
 - a user-visible decision

@@ -9,10 +9,14 @@ import sys
 import tempfile
 from pathlib import Path
 
-from runtime_bootstrap import repo_root_from_script
+from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 DEFAULT_OUTPUT_DIR = Path("charness-artifacts/cautilus/chatbot-benchmark")
+
+_scripts_portable_artifact_lib_module = import_repo_module(__file__, "scripts.portable_artifact_lib")
+portable_path_provenance = _scripts_portable_artifact_lib_module.portable_path_provenance
+portable_path_value = _scripts_portable_artifact_lib_module.portable_path_value
 
 
 class EvalError(Exception):
@@ -87,8 +91,10 @@ def _sorted_delta(left: list[str], right: list[str]) -> list[str]:
     return sorted(set(left) - set(right))
 
 
-def _display_repo_path(path: Path) -> str:
-    return "." if path == REPO_ROOT else str(path)
+def _display_repo_path(repo_root: Path, path: Path, *, role: str) -> str:
+    if path.resolve() == repo_root.resolve():
+        return "."
+    return portable_path_value(repo_root, path, external_label=f"external-{role}-worktree")
 
 
 def build_summary(
@@ -110,8 +116,10 @@ def build_summary(
     return {
         "schema_version": 1,
         "repo": REPO_ROOT.name,
-        "baseline_repo": _display_repo_path(baseline_repo),
-        "candidate_repo": _display_repo_path(candidate_repo),
+        "baseline_repo": _display_repo_path(REPO_ROOT, baseline_repo, role="baseline"),
+        "candidate_repo": _display_repo_path(REPO_ROOT, candidate_repo, role="candidate"),
+        "baseline_repo_provenance": portable_path_provenance(REPO_ROOT, baseline_repo),
+        "candidate_repo_provenance": portable_path_provenance(REPO_ROOT, candidate_repo),
         "baseline_commit": _git_head(baseline_repo),
         "candidate_commit": _git_head(candidate_repo),
         "baseline": {

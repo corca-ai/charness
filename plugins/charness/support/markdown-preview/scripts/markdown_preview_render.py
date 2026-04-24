@@ -87,6 +87,10 @@ def _write_artifact(path: Path, contents: str) -> None:
     path.write_text(contents, encoding="utf-8")
 
 
+def _repo_relative(repo_root: Path, path: Path) -> str:
+    return path.resolve().relative_to(repo_root.resolve()).as_posix()
+
+
 def render_targets(repo_root: Path, config: PreviewConfig, targets: list[Path]) -> dict[str, Any]:
     artifact_dir = (repo_root / config.artifact_dir).resolve()
     backend_available = shutil.which(config.backend) is not None if config.backend == "glow" else False
@@ -129,12 +133,12 @@ def render_targets(repo_root: Path, config: PreviewConfig, targets: list[Path]) 
             previews.append(item)
     payload = {
         "status": overall_status if targets else "no-targets",
-        "repo_root": str(repo_root),
+        "repo": repo_root.name,
         "backend": config.backend,
         "backend_available": backend_available,
         "backend_version": _backend_version(config.backend) if backend_available else None,
         "config_path": config.config_path,
-        "artifact_dir": str(artifact_dir.relative_to(repo_root)),
+        "artifact_dir": _repo_relative(repo_root, artifact_dir),
         "git_head": _git_head(repo_root),
         "widths": list(config.widths),
         "target_count": len(targets),

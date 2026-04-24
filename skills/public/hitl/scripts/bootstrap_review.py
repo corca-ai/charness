@@ -39,9 +39,32 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
+def portable_path(repo_root: Path, value: str) -> str:
+    path = Path(value)
+    if not path.is_absolute():
+        return value
+    try:
+        return path.resolve().relative_to(repo_root).as_posix()
+    except ValueError:
+        return f"external-path:{path.name}"
+
+
+def target_provenance(repo_root: Path, value: str) -> dict[str, str]:
+    path = Path(value)
+    if not path.is_absolute():
+        return {"kind": "logical-or-repo-relative"}
+    try:
+        path.resolve().relative_to(repo_root)
+    except ValueError:
+        return {"kind": "external-path", "basename": path.name}
+    return {"kind": "repo-root-relative"}
+
+
 def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: str, scope: str) -> dict[str, str]:
     output_dir = repo_root / ".charness" / "hitl" / "runtime" / session_id
     output_dir.mkdir(parents=True, exist_ok=True)
+    portable_target = portable_path(repo_root, target)
+    provenance = target_provenance(repo_root, target)
 
     (output_dir / "hitl-scratchpad.md").write_text(
         "\n".join(
@@ -49,7 +72,7 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
                 f"# HITL Scratchpad: {session_id}",
                 "",
                 f"- Updated: {utc_now()}",
-                f"- Target: {target}",
+                f"- Target: {portable_target}",
                 f"- Base Ref: {base_ref}",
                 f"- Scope: {scope}",
                 "",
@@ -67,7 +90,7 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
             [
                 ("session_id", session_id),
                 ("status", "in_progress"),
-                ("target", target),
+                ("target", portable_target),
                 ("base_ref", base_ref),
                 ("scope", scope),
                 ("intent_resync_required", False),
@@ -80,15 +103,20 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
     (output_dir / "rules.yaml").write_text("rules: []\n", encoding="utf-8")
     (output_dir / "fix-queue.yaml").write_text("items: []\n", encoding="utf-8")
     (output_dir / "queue.json").write_text(
-        json.dumps({"session_id": session_id, "target": target, "items": []}, ensure_ascii=False, indent=2) + "\n",
+        json.dumps(
+            {"session_id": session_id, "target": portable_target, "target_provenance": provenance, "items": []},
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
         encoding="utf-8",
     )
-    (output_dir / "events.log").write_text(f"{utc_now()} bootstrap {target}\n", encoding="utf-8")
+    (output_dir / "events.log").write_text(f"{utc_now()} bootstrap {portable_target}\n", encoding="utf-8")
     return {
-        "session_dir": str(output_dir),
-        "scratchpad": str(output_dir / "hitl-scratchpad.md"),
-        "state_file": str(output_dir / "state.yaml"),
-        "queue_file": str(output_dir / "queue.json"),
+        "session_dir": output_dir.relative_to(repo_root).as_posix(),
+        "scratchpad": (output_dir / "hitl-scratchpad.md").relative_to(repo_root).as_posix(),
+        "state_file": (output_dir / "state.yaml").relative_to(repo_root).as_posix(),
+        "queue_file": (output_dir / "queue.json").relative_to(repo_root).as_posix(),
     }
 
 

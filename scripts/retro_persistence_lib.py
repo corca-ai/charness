@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from scripts.portable_artifact_lib import sanitize_artifact_json
 from scripts.recent_lessons_lib import build_indexed_recent_lessons, write_lesson_selection_index
 
 
@@ -12,9 +13,10 @@ def _write_text(path: Path, text: str) -> None:
     path.write_text(text.rstrip() + "\n", encoding="utf-8")
 
 
-def _write_snapshot(path: Path, snapshot_data: dict[str, Any]) -> None:
+def _write_snapshot(path: Path, snapshot_data: dict[str, Any], *, repo_root: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(snapshot_data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    payload = sanitize_artifact_json(snapshot_data, repo_root=repo_root)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def persist_retro_artifact(
@@ -36,7 +38,7 @@ def persist_retro_artifact(
     }
 
     if snapshot_path is not None and snapshot_data is not None:
-        _write_snapshot(snapshot_path, snapshot_data)
+        _write_snapshot(snapshot_path, snapshot_data, repo_root=repo_root)
         result["snapshot_path"] = str(snapshot_path.relative_to(repo_root))
 
     if summary_path is not None and artifact_path.resolve() != summary_path.resolve():
