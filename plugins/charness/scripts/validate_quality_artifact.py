@@ -63,6 +63,11 @@ FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "same-agent pass as equivalent",
 )
 DELEGATED_REVIEW_STATUSES = ("executed", "blocked", "not_applicable")
+SLOW_GATE_DELEGATED_LENSES = (
+    "fixture-economics",
+    "parallel-critical-path",
+    "duplicated-proof",
+)
 ADVISORY_EVIDENCE_MARKERS = (
     "`",
     "inventory",
@@ -141,6 +146,15 @@ def validate_delegated_review_section(lines: list[str]) -> None:
         raise ValidationError("`## Delegated Review` must include executed, blocked, or not_applicable status")
     if "blocked" in lowered and "host signal:" not in lowered and "tool signal:" not in lowered:
         raise ValidationError("blocked delegated review must cite a concrete host signal or tool signal")
+    artifact_text = "\n".join(lines).lower()
+    slow_gate_scope = any(token in artifact_text for token in ("slow", "standing test", "fixture economics"))
+    if slow_gate_scope and "executed" in lowered:
+        missing = [lens for lens in SLOW_GATE_DELEGATED_LENSES if lens not in lowered]
+        if missing:
+            raise ValidationError(
+                "runtime/test quality artifacts with executed delegated review must name slow-gate lenses: "
+                + ", ".join(missing)
+            )
 
 
 def validate_subagent_blocker_reasoning(lines: list[str]) -> None:

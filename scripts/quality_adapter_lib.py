@@ -25,6 +25,7 @@ STRING_FIELDS = (
     "preset_version",
     "customized_from",
     "recommendation_defaults_version",
+    "runtime_profile_default",
 )
 LIST_FIELDS = (
     "preset_lineage",
@@ -38,6 +39,7 @@ LIST_FIELDS = (
     "cli_skill_surface_command_docs",
     "cli_skill_surface_skill_paths",
     "cli_skill_surface_change_globs",
+    "canonical_markdown_surfaces",
     "concept_paths",
     "preflight_commands",
     "gate_commands",
@@ -128,9 +130,12 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "cli_skill_surface_command_docs": [],
         "cli_skill_surface_skill_paths": [],
         "cli_skill_surface_change_globs": [],
+        "canonical_markdown_surfaces": ["AGENTS.md", "CLAUDE.md"],
         "prompt_asset_policy": dict(DEFAULT_PROMPT_ASSET_POLICY),
         "skill_ergonomics_gate_rules": list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES),
+        "runtime_profile_default": "default",
         "runtime_budgets": {},
+        "runtime_budget_profiles": {},
         "startup_probes": [],
         "concept_paths": [],
         "preflight_commands": [],
@@ -191,6 +196,11 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
     runtime_budgets = adapter_validators.runtime_budgets(data.get("runtime_budgets"), errors)
     if runtime_budgets is not None:
         validated["runtime_budgets"] = runtime_budgets
+    runtime_budget_profiles = adapter_validators.runtime_budget_profiles(
+        data.get("runtime_budget_profiles"), errors
+    )
+    if runtime_budget_profiles is not None:
+        validated["runtime_budget_profiles"] = runtime_budget_profiles
     startup_probes = adapter_validators.startup_probes(data.get("startup_probes"), errors)
     if startup_probes is not None:
         validated["startup_probes"] = startup_probes

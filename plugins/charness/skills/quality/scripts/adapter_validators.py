@@ -6,9 +6,12 @@ or None, appending human-readable errors to the shared list.
 """
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from scripts.quality_policy_defaults import validate_skill_ergonomics_gate_rules
+
+RUNTIME_PROFILE_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 
 
 def runtime_budgets(value: Any, errors: list[str]) -> dict[str, int] | None:
@@ -25,6 +28,38 @@ def runtime_budgets(value: Any, errors: list[str]) -> dict[str, int] | None:
             errors.append(f"runtime_budgets.{label} must be a positive integer (milliseconds)")
         else:
             validated[label] = raw
+    return validated
+
+
+def _runtime_profile_id(value: Any, field: str, errors: list[str]) -> str | None:
+    if not isinstance(value, str) or not value:
+        errors.append(f"{field} must be a non-empty string")
+        return None
+    if not RUNTIME_PROFILE_ID_RE.fullmatch(value):
+        errors.append(f"{field} may only contain letters, numbers, dots, underscores, and hyphens")
+        return None
+    return value
+
+
+def runtime_budget_profiles(value: Any, errors: list[str]) -> dict[str, dict[str, dict[str, int]]] | None:
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        errors.append("runtime_budget_profiles must be a mapping")
+        return None
+    validated: dict[str, dict[str, dict[str, int]]] = {}
+    for profile_id, raw_profile in value.items():
+        valid_profile_id = _runtime_profile_id(profile_id, "runtime_budget_profiles profile id", errors)
+        if valid_profile_id is None:
+            continue
+        if not isinstance(raw_profile, dict):
+            errors.append(f"runtime_budget_profiles.{profile_id} must be a mapping")
+            continue
+        budgets = runtime_budgets(raw_profile.get("budgets"), errors)
+        if budgets is None:
+            errors.append(f"runtime_budget_profiles.{profile_id}.budgets must be a mapping")
+            continue
+        validated[valid_profile_id] = {"budgets": budgets}
     return validated
 
 

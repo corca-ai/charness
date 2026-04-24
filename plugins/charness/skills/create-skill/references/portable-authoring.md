@@ -18,6 +18,13 @@ Choose the target surface before writing files.
 
 If the answer is "two of these at once", split the work.
 
+## Portable JSON Artifacts
+
+JSON artifacts under `.charness/` or `charness-artifacts/` are repo state when
+committed. Store repo-root-relative paths in those files. Absolute host paths
+are acceptable in transient stdout diagnostics, but not in durable artifacts a
+different clone or CI job may read later.
+
 ## Skill Brief
 
 Write this before editing:

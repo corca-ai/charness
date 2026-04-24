@@ -89,7 +89,7 @@ def test_measure_startup_probes_can_record_runtime_signals(tmp_path: Path) -> No
     )
     assert result.returncode == 0, result.stderr
     summary = json.loads((repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8"))
-    assert "demo-version" in summary["commands"]
+    assert any("demo-version" in profile["commands"] for profile in summary["profiles"].values())
 
 
 def test_measure_startup_probes_fails_when_command_fails(tmp_path: Path) -> None:

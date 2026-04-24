@@ -24,6 +24,10 @@ Keep the concept narrow. `init-repo` is not the whole product-definition skill, 
 Resolve the adapter first, then read the smallest context that reveals the repo
 state.
 
+Before any host-capability question, honor the repo's
+`AGENTS.md` `Subagent Delegation` clause: required bounded review is already
+delegated.
+
 Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
 
 ```bash
@@ -146,14 +150,14 @@ Then load only the references needed for the detected state:
        readiness, and any local discoverability/materialization step
    - do not create [`docs/handoff.md`](../../../docs/handoff.md) by default; use `handoff` only when the
      next session truly needs a baton-pass artifact
-   - do not create `docs/master-plan.md` unless the user explicitly asks for it
 6. End with a quality-style sanity pass.
    - check for missing or duplicated operating surfaces
    - check that generated guidance is not contradicting itself
    - check that the next human operator can tell what to read and what to do
    - for task-completing normalization, spawn bounded reviewers for
-     host-instruction policy, operating-surface adapter fit, and operator
-     takeover flow; report `executed`, `blocked`, or `not_applicable`
+     host-instruction policy, operating-surface adapter fit, operator takeover
+     flow, and any broad test/runtime gate surface introduced by the new
+     operating contract; report `executed`, `blocked`, or `not_applicable`
    - use deterministic inspection as reviewer evidence and emit queued
      `recommendations[]` separately from `normalization.findings`
    - if deeper repo-wide posture review is still needed, hand off to `quality`
@@ -171,7 +175,6 @@ Then load only the references needed for the detected state:
   the user wants repo-wide gate posture, security, or broad quality review.
 - Do not let `init-repo` become a substitute for `narrative` when the repo
   already has a rich truth surface that mainly needs alignment.
-- Do not create `docs/master-plan.md` by default.
 - Do not create [`docs/handoff.md`](../../../docs/handoff.md) unless the user explicitly wants a baton pass
   or the next-step coordination burden is real enough to justify `handoff`.
 - Do not invent a full evaluator regime for repos that do not actually keep

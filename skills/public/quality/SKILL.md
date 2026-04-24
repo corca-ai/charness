@@ -29,13 +29,12 @@ When stronger local proof depends on a missing validation tool, reuse the shared
 python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root .
 ```
 
-For evaluator-backed review, closeout, or operator reading test work, run that validation recommendation route before downgrading to HITL or same-agent manual review.
-For task-completing quality reviews, run a bounded multi-lens delegated review
-before final closeout. Use at least `gate-design`, `adapter-policy`, and
-`operator-signal` lenses unless the adapter narrows them. Report
-`Delegated Review: executed`, `blocked`, or `not_applicable`; a blocked state
-needs a concrete host/tool signal and must not be replaced with a same-agent
-pass.
+For evaluator-backed closeout or operator reading test work, use `quality` before downgrading to HITL or same-agent manual review. For task-completing
+quality reviews, run a bounded delegated review after initial inventory and before broad recommendations; add slow-gate lenses
+from `references/standing-gate-verbosity.md` when runtime is in scope. Report
+`Delegated Review: executed`, `blocked`, or `not_applicable`; blocked needs a
+concrete host/tool signal and must not be replaced with a same-agent pass.
+Before host-capability questions, honor `AGENTS.md` `Subagent Delegation`.
 When reader-facing Markdown needs rendered readability proof instead of source-only review, bootstrap or execute the repo-local markdown preview seam:
 
 ```bash
@@ -103,7 +102,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - prefer repo-native commands over hypothetical recommendations
    - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage
    - when a standing gate already exists, prefer compact default phase output plus a verbose-on-demand escape hatch over always-on chatter; see `references/standing-gate-verbosity.md`
-   - when a hot spot becomes the standing single dominator, define a `runtime_budgets` entry in the adapter and call `$SKILL_DIR/scripts/check_runtime_budget.py` from the repo's standing gate; budgets fail on recent-median drift, report latest-sample spikes separately, and should expose top-N runtime hot spots so unbudgeted slow phases are still visible
+   - when a hot spot becomes the standing single dominator, define a `runtime_budgets` or `runtime_budget_profiles` entry in the adapter and call `$SKILL_DIR/scripts/check_runtime_budget.py` from the repo's standing gate; budgets fail on recent-median drift, report latest-sample spikes separately, and should expose top-N runtime hot spots so unbudgeted slow phases are still visible
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model
    - before proposing a new gate for length, duplicate, or pressure findings, ask which structural question the signal is exposing: delete, merge, split ownership, extract a helper, or narrow the interface

@@ -57,6 +57,16 @@
         "selectedSkill": "quality",
         "workSkill": "quality"
       }
+    },
+    {
+      "evaluationId": "slow-gate-routes-to-quality",
+      "displayName": "Slow standing gate review routes to quality",
+      "prompt": "Route only: the user says the standing test gate is too slow and asks whether local vs CI machine differences and parallel critical path should change the Charness quality contract. Do not perform the review.",
+      "expectedRouting": {
+        "bootstrapHelper": "find-skills",
+        "selectedSkill": "quality",
+        "workSkill": "quality"
+      }
     }
   ]
 }

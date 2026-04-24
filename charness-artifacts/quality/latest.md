@@ -18,26 +18,27 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 - `check-python-lengths` and `check-duplicates --fail-on-match` are standing
   gates, not advisory review notes.
 - `validate-current-pointer-freshness` rejects known-stale current-pointer claims.
-- `validate-debug-seam-index` and `validate-retro-lesson-index` keep derived
-  memory indexes current.
 - Runtime EWMA is advisory in `.charness/quality/runtime-smoothing.json`;
   enforcement still uses raw latest samples, medians, and spikes.
 - `specdown run -quiet -no-report` remains part of the quiet quality gate.
 - `.githooks/pre-push` syncs checked-in plugin exports, fails on generated
   export drift, then runs the quiet quality gate.
-- `run-quality.sh` now detects `pytest-xdist` by capturing help output before
-  matching it, avoiding the prior pipefail false negative from
-  `pytest --help | grep`.
 - `check-runtime-budget` now emits top-N runtime hot spots, including
   unbudgeted phases.
+- `check_doc_links.py` now uses quality adapter `canonical_markdown_surfaces`
+  so canonical operator surfaces such as `AGENTS.md`, `CLAUDE.md`, and this
+  repo's `docs/handoff.md` are not forced into source-repo-relative links.
 
 ## Runtime Signals
 
 - Latest local quality gate after this slice: `48 passed, 0 failed`, total
-  `56.8s`.
-- runtime hot spots: latest recorded samples have `pytest` `42.6s`,
-  `check-coverage` `13.3s`, `check-markdown` `5.0s`,
-  `check-cli-skill-surface` `4.3s`, and `specdown` `3.4s`.
+  `53.0s`.
+- runtime hot spots: latest recorded samples have `pytest` `41.1s`,
+  `check-coverage` `17.6s`, `specdown` `6.4s`,
+  `check-duplicates` `6.2s`, and `check-markdown` `5.2s`.
+- Runtime budgets now use a named machine profile by default when no explicit
+  `CHARNESS_RUNTIME_PROFILE` is set, avoiding one global budget history across
+  materially different local and CI machines.
 - Fixture economics moved broad managed-install/update lifecycle checks to
   `ci_only`; standing pytest still keeps representative install coverage and
   the full on-demand slice remains green.
@@ -49,10 +50,10 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
   `85.0%`; current result is `96.8%` (`1187/1226`).
 - evaluator depth: `run-evals` passes 20 repo-local scenarios, so the bar is
   stronger than smoke-only review.
-- Budgeted phases: `pytest` median `41.9s / 70.0s`,
-  `check-coverage` median `12.8s / 15.0s`, `check-secrets` median
-  `2.3s / 6.0s`, `run-evals` median `2.3s / 5.0s`, `specdown` median
-  `3.1s / 8.0s`.
+- Budgeted phases under `local-linux-aarch64-4cpu`: `pytest` latest
+  `41.1s / 70.0s`, `check-coverage` latest `17.6s / 22.0s`,
+  `check-secrets` latest `1.8s / 6.0s`, `run-evals` latest `4.4s / 5.0s`,
+  and `specdown` latest `6.4s / 8.0s`.
 ## Coverage and Eval Depth
 
 - Coverage gate: `96.8%` (`1187/1226`) against the configured floors;
@@ -68,13 +69,10 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 
 - CLI ergonomics, lint-ignore, and dual-implementation inventories are clean:
   no flat-help pressure, ignore debt, or likely parity-smell candidates were detected.
-- Online external-link review caught a stale Cautilus install URL; the repo now
-  points integration manifests, release checklist guidance, plugin export, and
-  tests at the live upstream `install.sh` URL.
 - Cautilus instruction-surface proof initially rejected the slice because
   validation-shaped closeout routed directly to `hitl`; checked-in AGENTS
   routing now makes `quality` before HITL explicit, and the refreshed proof is
-  `4 passed / 0 failed / 0 blocked`.
+  `5 passed / 0 failed / 0 blocked`.
 
 ## Weak
 
@@ -120,7 +118,9 @@ Repo-wide quality posture for the current `charness` tree, focused on turning st
 ## Delegated Review
 
 - status: executed; bounded subagent review ran `gate-design`,
-  `adapter-policy`, and `operator-signal` lenses for this runtime investigation.
+  `adapter-policy`, `operator-signal`, `fixture-economics`,
+  `parallel-critical-path`, and `duplicated-proof` lenses for this runtime
+  investigation.
   Future blocked states must include `host signal:` or `tool signal:` evidence.
 
 ## Commands Run

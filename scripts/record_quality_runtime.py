@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import platform
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from statistics import median
@@ -36,6 +39,8 @@ MAX_ARCHIVE_FILES = 12
 STATE_DIR = Path(".charness") / "quality"
 SMOOTHING_ALPHA_BASE = 0.35
 SMOOTHING_WARMUP_N = 5
+DEFAULT_RUNTIME_PROFILE = "default"
+RUNTIME_PROFILE_ID_RE = re.compile(r"[^A-Za-z0-9_.-]+")
 
 
 def parse_args() -> argparse.Namespace:
@@ -45,7 +50,27 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--elapsed-ms", type=int, required=True)
     parser.add_argument("--status", choices=("pass", "fail"), required=True)
     parser.add_argument("--timestamp")
+    parser.add_argument(
+        "--runtime-profile",
+        default=os.environ.get("CHARNESS_RUNTIME_PROFILE"),
+        help="Named machine/runner profile for runtime samples. Defaults to a fast local machine profile.",
+    )
     return parser.parse_args()
+
+
+def normalize_runtime_profile(value: str | None) -> str:
+    profile = (value or DEFAULT_RUNTIME_PROFILE).strip()
+    if not profile:
+        raise ValueError("runtime profile must be a non-empty string")
+    return profile
+
+
+def machine_runtime_profile() -> str:
+    system = platform.system().lower() or "unknown-os"
+    machine = platform.machine().lower() or "unknown-arch"
+    cpu_count = os.cpu_count() or 1
+    raw = f"local-{system}-{machine}-{cpu_count}cpu"
+    return RUNTIME_PROFILE_ID_RE.sub("-", raw).strip("-") or f"local-{cpu_count}cpu"
 
 
 def parse_timestamp(value: str | None) -> datetime:
@@ -81,17 +106,9 @@ def rotate_archives(history_dir: Path) -> None:
         oldest.unlink()
 
 
-def update_summary(summary_path: Path, record: dict[str, Any]) -> None:
-    summary = load_json(summary_path)
-    if not summary:
-        summary = {
-            "schema_version": 1,
-            "updated_at": record["timestamp"],
-            "commands": {},
-        }
-
-    commands = summary.setdefault("commands", {})
-    current = commands.get(record["label"], {})
+def _update_commands(commands: dict[str, Any], record: dict[str, Any]) -> None:
+    label = record["label"]
+    current = commands.get(label, {})
     recent = list(current.get("recent", []))
     recent.append(
         {
@@ -106,7 +123,7 @@ def update_summary(summary_path: Path, record: dict[str, Any]) -> None:
     failures = int(current.get("failures", 0)) + (1 if record["status"] == "fail" else 0)
     samples = int(current.get("samples", 0)) + 1
 
-    commands[record["label"]] = {
+    commands[label] = {
         "samples": samples,
         "passes": passes,
         "failures": failures,
@@ -118,6 +135,26 @@ def update_summary(summary_path: Path, record: dict[str, Any]) -> None:
         "recent": recent,
         **summarize_recent(recent),
     }
+
+
+def update_summary(summary_path: Path, record: dict[str, Any]) -> None:
+    summary = load_json(summary_path)
+    if not summary:
+        summary = {
+            "schema_version": 2,
+            "updated_at": record["timestamp"],
+            "commands": {},
+            "profiles": {},
+        }
+
+    profile_id = record["runtime_profile"]
+    profiles = summary.setdefault("profiles", {})
+    profile_entry = profiles.setdefault(profile_id, {"commands": {}})
+    profile_commands = profile_entry.setdefault("commands", {})
+    _update_commands(profile_commands, record)
+    profile_entry["updated_at"] = record["timestamp"]
+    if profile_id == DEFAULT_RUNTIME_PROFILE:
+        _update_commands(summary.setdefault("commands", {}), record)
     summary["updated_at"] = record["timestamp"]
     summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -127,23 +164,9 @@ def adaptive_alpha(sample_count: int) -> float:
     return SMOOTHING_ALPHA_BASE * warmup_ratio
 
 
-def update_smoothing(smoothing_path: Path, record: dict[str, Any]) -> None:
-    smoothing = load_json(smoothing_path)
-    if not smoothing:
-        smoothing = {
-            "schema_version": 1,
-            "updated_at": record["timestamp"],
-            "policy": {
-                "kind": "ewma",
-                "advisory": True,
-                "alpha_base": SMOOTHING_ALPHA_BASE,
-                "warmup_n": SMOOTHING_WARMUP_N,
-            },
-            "commands": {},
-        }
-
-    commands = smoothing.setdefault("commands", {})
-    current = commands.get(record["label"], {})
+def _update_smoothing_commands(commands: dict[str, Any], record: dict[str, Any]) -> None:
+    label = record["label"]
+    current = commands.get(label, {})
     samples = int(current.get("samples", 0)) + 1
     alpha = adaptive_alpha(samples)
     elapsed = int(record["elapsed_ms"])
@@ -153,7 +176,7 @@ def update_smoothing(smoothing_path: Path, record: dict[str, Any]) -> None:
     else:
         ewma = float(elapsed)
 
-    commands[record["label"]] = {
+    commands[label] = {
         "samples": samples,
         "latest": {
             "timestamp": record["timestamp"],
@@ -166,6 +189,31 @@ def update_smoothing(smoothing_path: Path, record: dict[str, Any]) -> None:
         "warmup_n": SMOOTHING_WARMUP_N,
         "advisory": True,
     }
+
+
+def update_smoothing(smoothing_path: Path, record: dict[str, Any]) -> None:
+    smoothing = load_json(smoothing_path)
+    if not smoothing:
+        smoothing = {
+            "schema_version": 2,
+            "updated_at": record["timestamp"],
+            "policy": {
+                "kind": "ewma",
+                "advisory": True,
+                "alpha_base": SMOOTHING_ALPHA_BASE,
+                "warmup_n": SMOOTHING_WARMUP_N,
+            },
+            "commands": {},
+            "profiles": {},
+        }
+
+    profile_id = record["runtime_profile"]
+    profiles = smoothing.setdefault("profiles", {})
+    profile_entry = profiles.setdefault(profile_id, {"commands": {}})
+    _update_smoothing_commands(profile_entry.setdefault("commands", {}), record)
+    profile_entry["updated_at"] = record["timestamp"]
+    if profile_id == DEFAULT_RUNTIME_PROFILE:
+        _update_smoothing_commands(smoothing.setdefault("commands", {}), record)
     smoothing["updated_at"] = record["timestamp"]
     smoothing_path.write_text(json.dumps(smoothing, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -187,12 +235,17 @@ def main() -> int:
     state_dir = repo_root / STATE_DIR
     state_dir.mkdir(parents=True, exist_ok=True)
 
+    try:
+        runtime_profile = normalize_runtime_profile(args.runtime_profile or machine_runtime_profile())
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     timestamp = parse_timestamp(args.timestamp).isoformat().replace("+00:00", "Z")
     record = {
         "timestamp": timestamp,
         "label": args.label,
         "elapsed_ms": args.elapsed_ms,
         "status": args.status,
+        "runtime_profile": runtime_profile,
     }
 
     summary_path = state_dir / SUMMARY_FILENAME

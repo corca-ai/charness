@@ -153,6 +153,13 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
     assert "pytest --durations" in verbosity
     assert "silent serial fallback" in verbosity
     assert "quiet defaults and failure detail" in verbosity.lower()
+    assert "after initial inventory and before broad recommendations" in skill_text
+    assert "runtime_budget_profiles" in skill_text
+    assert "CHARNESS_RUNTIME_PROFILE" in verbosity
+    assert "local-linux-x86_64-8cpu" in verbosity
+    assert "fixture-economics" in verbosity
+    assert "parallel-critical-path" in verbosity
+    assert "duplicated-proof" in verbosity
 
 
 def test_quality_and_create_cli_carry_command_docs_drift_pattern() -> None:

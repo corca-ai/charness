@@ -16,6 +16,8 @@ REPO_ROOT = repo_root_from_script(__file__)
 _scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
 iter_repo_files = _scripts_repo_file_listing_module.iter_repo_files
+_quality_adapter_module = import_repo_module(__file__, "scripts.quality_adapter_lib")
+load_quality_adapter = _quality_adapter_module.load_quality_adapter
 
 DOC_GLOBS = (
     "README.md",
@@ -82,6 +84,22 @@ def build_known_directories(known_repo_paths: set[str]) -> set[str]:
     return dirs
 
 
+def normalize_surface_token(candidate: str) -> str:
+    token = candidate.split("#", 1)[0].strip().rstrip("/")
+    while token.startswith("./"):
+        token = token[2:]
+    return token
+
+
+def load_canonical_markdown_surfaces(root: Path) -> set[str]:
+    payload = load_quality_adapter(root)
+    if payload.get("errors"):
+        rendered = "; ".join(str(error) for error in payload["errors"])
+        raise ValidationError(f"quality adapter errors while loading canonical markdown surfaces: {rendered}")
+    surfaces = payload.get("data", {}).get("canonical_markdown_surfaces", [])
+    return {normalize_surface_token(surface) for surface in surfaces if isinstance(surface, str)}
+
+
 def strip_inline_markup(line: str) -> str:
     without_links = MARKDOWN_LINK_RE.sub("", line)
     return INLINE_CODE_RE.sub("", without_links)
@@ -91,7 +109,12 @@ def strip_markdown_links(line: str) -> str:
     return MARKDOWN_LINK_RE.sub("", line)
 
 
-def iter_bare_internal_doc_refs(root: Path, doc: Path, known_markdown_paths: set[str]) -> list[str]:
+def iter_bare_internal_doc_refs(
+    root: Path,
+    doc: Path,
+    known_markdown_paths: set[str],
+    canonical_markdown_surfaces: set[str],
+) -> list[str]:
     matches: list[str] = []
     in_fence = False
     for line in doc.read_text(encoding="utf-8").splitlines():
@@ -103,6 +126,8 @@ def iter_bare_internal_doc_refs(root: Path, doc: Path, known_markdown_paths: set
         scrubbed = strip_inline_markup(line)
         for match in PATH_TOKEN_RE.findall(scrubbed):
             candidate = match.split("#", 1)[0]
+            if normalize_surface_token(candidate) in canonical_markdown_surfaces:
+                continue
             if candidate in known_markdown_paths:
                 matches.append(match)
     return matches
@@ -113,6 +138,7 @@ def classify_backtick_token(
     known_repo_paths: set[str],
     unique_basename_index: dict[str, str],
     known_directories: set[str],
+    canonical_markdown_surfaces: set[str],
 ) -> str | None:
     """Return a short reason tag if the backticked token must become a markdown link.
 
@@ -126,6 +152,8 @@ def classify_backtick_token(
     token that does not resolve to a real repo path, etc.).
     """
     if not candidate or any(ch.isspace() for ch in candidate):
+        return None
+    if normalize_surface_token(candidate) in canonical_markdown_surfaces:
         return None
 
     if candidate.startswith("./") or candidate.startswith("../"):
@@ -159,6 +187,7 @@ def iter_backticked_file_refs(
     known_repo_paths: set[str],
     unique_basename_index: dict[str, str],
     known_directories: set[str],
+    canonical_markdown_surfaces: set[str],
 ) -> list[tuple[int, str, str]]:
     matches: list[tuple[int, str, str]] = []
     in_fence = False
@@ -172,7 +201,11 @@ def iter_backticked_file_refs(
         for match in BACKTICK_CONTENT_RE.finditer(scrubbed):
             candidate = match.group(1).split("#", 1)[0].strip()
             reason = classify_backtick_token(
-                candidate, known_repo_paths, unique_basename_index, known_directories
+                candidate,
+                known_repo_paths,
+                unique_basename_index,
+                known_directories,
+                canonical_markdown_surfaces,
             )
             if reason is not None:
                 matches.append((lineno, candidate, reason))
@@ -218,11 +251,12 @@ def main() -> int:
     known_repo_paths = iter_known_repo_paths(root)
     unique_basename_index = build_unique_basename_index(known_repo_paths)
     known_directories = build_known_directories(known_repo_paths)
+    canonical_markdown_surfaces = load_canonical_markdown_surfaces(root)
     for doc in iter_docs(root):
         contents = doc.read_text(encoding="utf-8")
         for target in LINK_RE.findall(contents):
             validate_link(root, doc, target)
-        bare_refs = iter_bare_internal_doc_refs(root, doc, known_markdown_paths)
+        bare_refs = iter_bare_internal_doc_refs(root, doc, known_markdown_paths, canonical_markdown_surfaces)
         if bare_refs:
             refs = ", ".join(f"`{ref}`" for ref in bare_refs[:3])
             if len(bare_refs) > 3:
@@ -231,7 +265,11 @@ def main() -> int:
                 f"{doc}: bare internal markdown reference(s) {refs}; use markdown links in prose"
             )
         backticked = iter_backticked_file_refs(
-            doc, known_repo_paths, unique_basename_index, known_directories
+            doc,
+            known_repo_paths,
+            unique_basename_index,
+            known_directories,
+            canonical_markdown_surfaces,
         )
         if backticked:
             refs = ", ".join(f"`{cand}` (line {ln}, {reason})" for ln, cand, reason in backticked[:3])

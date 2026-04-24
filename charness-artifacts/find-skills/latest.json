@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-04-24T03:01:12Z",
+  "generated_at": "2026-04-24T07:02:56Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -786,7 +786,7 @@
         ],
         "support_state": "upstream-consumed",
         "support_skill_path": "skills/support/generated/cautilus/SKILL.md",
-        "discovery_stub_path": ".agents/charness-discovery/cautilus.md",
+        "discovery_stub_path": null,
         "capability_requirements": {},
         "intent_triggers": [
           "verify",

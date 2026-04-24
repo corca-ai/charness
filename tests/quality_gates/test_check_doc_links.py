@@ -97,18 +97,61 @@ def test_check_doc_links_rejects_backticked_nested_file_reference(tmp_path: Path
     assert "docs/guide.md" in result.stderr
 
 
-def test_check_doc_links_rejects_backticked_root_file_with_extension(tmp_path: Path) -> None:
+def test_check_doc_links_allows_default_canonical_instruction_surfaces(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
+    (repo / "CLAUDE.md").write_text("# Claude\n", encoding="utf-8")
     (repo / "README.md").write_text(
-        "See `AGENTS.md` for house rules.\n",
+        "See `AGENTS.md`, `CLAUDE.md`, AGENTS.md, and CLAUDE.md for house rules.\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/check_doc_links.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_check_doc_links_rejects_backticked_noncanonical_root_file(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "README.md").write_text(
+        "# Demo\n\nSee `README.md` for the overview.\n",
         encoding="utf-8",
     )
     result = run_script("scripts/check_doc_links.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "backticked file reference" in result.stderr
-    assert "AGENTS.md" in result.stderr
+    assert "README.md" in result.stderr
+
+
+def test_check_doc_links_allows_adapter_canonical_surface(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs_dir = repo / "docs"
+    agents_dir = repo / ".agents"
+    docs_dir.mkdir(parents=True)
+    agents_dir.mkdir()
+    (agents_dir / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: charness-artifacts/quality",
+                "canonical_markdown_surfaces:",
+                "  - AGENTS.md",
+                "  - CLAUDE.md",
+                "  - docs/handoff.md",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (docs_dir / "handoff.md").write_text("# Handoff\n", encoding="utf-8")
+    (repo / "README.md").write_text(
+        "Current pickup lives in `docs/handoff.md`; docs/handoff.md is a canonical surface.\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/check_doc_links.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
 
 
 def test_check_doc_links_rejects_backticked_non_markdown_file_reference(tmp_path: Path) -> None:

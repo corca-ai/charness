@@ -47,6 +47,7 @@ Quality-specific fields:
 - `cli_skill_surface_command_docs`
 - `cli_skill_surface_skill_paths`
 - `cli_skill_surface_change_globs`
+- `canonical_markdown_surfaces`
 - `skill_ergonomics_gate_rules`
 - `runtime_budgets`
 - `startup_probes`
@@ -107,15 +108,52 @@ layouts outside default roots, and `cli_skill_surface_change_globs` to scope
 release-time enforcement to CLI, skill, plugin, package, or install-surface
 changes.
 
-`runtime_budgets` is a mapping of standing-gate label → max elapsed
-milliseconds. Labels must match the labels recorded in
-`.charness/quality/runtime-signals.json` by the standing gate runner. Add
-`scripts/check_runtime_budget.py` to the standing gate to fail the run when the
-recent median exceeds the budget. A single latest sample above budget is
-reported as a spike when the recent median is still inside budget. Labels with
-no recorded sample yet are warnings, not failures, so a budget can be defined
-before its first run. Omit the field entirely (or leave the mapping empty) to
-opt out.
+`canonical_markdown_surfaces` lists repo-owned Markdown surfaces whose filename
+is also an agent/operator concept token. `check_doc_links.py` should allow
+plain or backticked mentions of these surfaces without forcing source-repo
+relative markdown links. Defaults include `AGENTS.md` and `CLAUDE.md`; repos can
+add adapter-owned surfaces such as `docs/handoff.md`.
+
+`runtime_profile_default` names the default machine/runner profile for runtime
+signals. Leave it as `default` to let the helper create a fast local machine
+profile such as `local-linux-x86_64-8cpu` when no `CHARNESS_RUNTIME_PROFILE` is
+set. Set a custom value only when the repo has a stable local or CI runner
+class that should be selected without an environment override.
+
+`runtime_budgets` is the backward-compatible default-profile mapping of
+standing-gate label → max elapsed milliseconds. Labels must match the labels
+recorded in `.charness/quality/runtime-signals.json` by the standing gate
+runner. Add `scripts/check_runtime_budget.py` to the standing gate to fail the
+run when the recent median exceeds the budget. A single latest sample above
+budget is reported as a spike when the recent median is still inside budget.
+Labels with no recorded sample yet are warnings, not failures, so a budget can
+be defined before its first run. Omit the field entirely (or leave the mapping
+empty) to opt out.
+
+`runtime_budget_profiles` optionally defines named profile-specific budgets.
+Use this when the same standing gate runs on materially different hardware or
+runner classes. Select a profile with `CHARNESS_RUNTIME_PROFILE` or
+`--runtime-profile`; otherwise the helper records under the current machine
+profile. Unknown explicit profiles fail as configuration errors so a slow
+machine does not silently inherit a fast-machine budget. Keep profile IDs
+stable and operator-named, for example:
+
+```yaml
+runtime_profile_default: local-fast
+runtime_budgets:
+  pytest: 70000
+runtime_budget_profiles:
+  local-fast:
+    budgets:
+      pytest: 70000
+  ci-2core:
+    budgets:
+      pytest: 540000
+```
+
+Do not derive hard pass/fail budgets from automatic CPU fingerprints by
+default. Hardware facts can be useful diagnostic metadata, but named profiles
+keep budget history from fragmenting across incidental runner details.
 
 Repo-owned quality artifacts may use runner-specific section labels or runtime
 signals such as `Pytest Economics` when that is the honest local seam. Keep the

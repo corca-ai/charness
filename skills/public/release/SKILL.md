@@ -19,7 +19,9 @@ When the release decision is non-trivial, use the standalone `premortem`
 skill before mutating versions so compatibility, install/update fallout, and
 real-host proof requirements are triaged explicitly.
 Routine release hygiene does not need premortem at all. When one is needed, use
-the standalone `premortem` skill.
+the standalone `premortem` skill. Before any host-capability question, honor
+`AGENTS.md` `Subagent Delegation`: required bounded review is already
+delegated.
 
 ## Bootstrap
 

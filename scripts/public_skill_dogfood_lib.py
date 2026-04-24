@@ -28,7 +28,7 @@ REPO_SHAPE_HINTS = {
     "init-repo": "partially initialized mature repo with divergent but valid naming and intentionally missing optional surfaces",
     "narrative": "repo with existing source-of-truth docs that drift from the current product or project story",
     "premortem": "repo with a non-trivial pending decision whose main risk is choosing the wrong plan too early",
-    "quality": "mature repo with standing local gates, some drift or fragility, and at least one final stop-before-finish command",
+    "quality": "mature repo with standing local gates, runtime budgets, possible local-vs-CI machine variance, and at least one final stop-before-finish command",
     "release": "repo with checked-in version or packaging surfaces and a maintainer-facing release workflow",
     "retro": "repo that just completed a meaningful slice or exposed a missed issue that should feed repeat-trap memory",
     "spec": "repo with an under-specified change request and enough current docs or code to refine a build contract",
@@ -48,7 +48,7 @@ PROMPT_HINTS = {
     "init-repo": "Normalize this partially initialized repo without pretending it needs a greenfield rewrite.",
     "narrative": "Tighten the repo's durable story first, then derive one concise brief from that source of truth.",
     "premortem": "Stress this pending decision before we lock it in and separate real blockers from over-worry.",
-    "quality": "Review the current quality posture and install the next deterministic gate if the move is obvious.",
+    "quality": "Review why the standing test gate feels slow, including local vs CI runtime differences, and install the next deterministic gate if the move is obvious.",
     "release": "Verify and advance the checked-in release surface without hand-editing generated packaging artifacts.",
     "retro": "Run a short retro on this slice and persist the repeat trap if the workflow should have caught it.",
     "spec": "Turn this vague request into a living implementation contract before code changes spread.",
@@ -71,6 +71,8 @@ EVIDENCE_OVERRIDES = {
     ],
     "quality": [
         "runs or names the existing repo-owned quality gates before proposing new ones",
+        "attempts bounded subagent review or records a concrete blocked host/tool signal before broad slow-gate recommendations",
+        "checks fixture economics, parallel critical path, duplicated proof, and runtime profile policy instead of only widening budgets",
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior",
     ],
 }

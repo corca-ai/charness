@@ -24,6 +24,8 @@ def test_record_quality_runtime_writes_summary_and_archive(tmp_path: Path) -> No
         "pass",
         "--timestamp",
         "2026-04-10T09:00:00Z",
+        "--runtime-profile",
+        "default",
         cwd=ROOT,
     )
     assert first.returncode == 0, first.stderr
@@ -40,6 +42,8 @@ def test_record_quality_runtime_writes_summary_and_archive(tmp_path: Path) -> No
         "fail",
         "--timestamp",
         "2026-04-11T09:00:00Z",
+        "--runtime-profile",
+        "default",
         cwd=ROOT,
     )
     assert second.returncode == 0, second.stderr
@@ -75,6 +79,36 @@ def test_record_quality_runtime_writes_summary_and_archive(tmp_path: Path) -> No
 
     archive_lines = archive_path.read_text(encoding="utf-8").strip().splitlines()
     assert len(archive_lines) == 2
+    assert json.loads(archive_lines[-1])["runtime_profile"] == "default"
+
+
+def test_record_quality_runtime_keeps_named_profiles_separate(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    for profile, elapsed in (("local-fast", "1200"), ("ci-slow", "9000")):
+        result = run_script(
+            "scripts/record_quality_runtime.py",
+            "--repo-root",
+            str(repo),
+            "--label",
+            "pytest",
+            "--elapsed-ms",
+            elapsed,
+            "--status",
+            "pass",
+            "--timestamp",
+            "2026-04-10T09:00:00Z",
+            "--runtime-profile",
+            profile,
+            cwd=ROOT,
+        )
+        assert result.returncode == 0, result.stderr
+
+    summary = json.loads((repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8"))
+    assert summary.get("commands", {}) == {}
+    assert summary["profiles"]["local-fast"]["commands"]["pytest"]["latest"]["elapsed_ms"] == 1200
+    assert summary["profiles"]["ci-slow"]["commands"]["pytest"]["latest"]["elapsed_ms"] == 9000
 
 
 def test_record_quality_runtime_rotates_old_monthly_archives(tmp_path: Path) -> None:

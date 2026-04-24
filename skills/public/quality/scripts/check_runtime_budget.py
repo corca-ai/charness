@@ -34,6 +34,10 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON.")
     parser.add_argument(
+        "--runtime-profile",
+        help="Named machine/runner profile to enforce. Defaults to CHARNESS_RUNTIME_PROFILE or adapter default.",
+    )
+    parser.add_argument(
         "--top-runtime-count",
         type=int,
         default=runtime_budget_lib.DEFAULT_TOP_RUNTIME_COUNT,
@@ -44,6 +48,7 @@ def main() -> int:
     report = runtime_budget_lib.evaluate(
         args.repo_root.resolve(),
         load_adapter,
+        runtime_profile=args.runtime_profile,
         top_runtime_count=max(args.top_runtime_count, 0),
     )
     if args.json:
@@ -51,6 +56,11 @@ def main() -> int:
     else:
         print(runtime_budget_lib.format_human(report))
 
+    if report["profile_config_errors"]:
+        if not args.json:
+            for error in report["profile_config_errors"]:
+                print(f"runtime profile configuration error: {error}", file=sys.stderr)
+        return 1
     if report["violations"]:
         if not args.json:
             for v in report["violations"]:

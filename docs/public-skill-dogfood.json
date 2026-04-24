@@ -219,8 +219,8 @@
     },
     {
       "skill_id": "quality",
-      "prompt": "Review the current quality posture and install the next deterministic gate if the move is obvious.",
-      "repo_shape": "mature repo with standing local gates, some drift or fragility, and at least one final stop-before-finish command",
+      "prompt": "Review why the standing test gate feels slow, including local vs CI runtime differences, and install the next deterministic gate if the move is obvious.",
+      "repo_shape": "mature repo with standing local gates, runtime budgets, possible local-vs-CI machine variance, and at least one final stop-before-finish command",
       "expected_skill": "quality",
       "expected_artifact": "charness-artifacts/quality/latest.md",
       "validation_tier": "hitl-recommended",
@@ -230,6 +230,8 @@
         "names or refreshes `charness-artifacts/quality/latest.md` when the skill persists durable state",
         "produces an output that a maintainer could review directly without re-deriving the whole request",
         "runs or names the existing repo-owned quality gates before proposing new ones",
+        "attempts bounded subagent review or records a concrete blocked host/tool signal before broad slow-gate recommendations",
+        "checks fixture economics, parallel critical path, duplicated proof, and runtime profile policy instead of only widening budgets",
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior"
       ],
       "review_status": "reviewed",
@@ -241,6 +243,7 @@
         "The missing-validation-binary rule keeps the same contract for local tools: when an existing gate cannot run because `ruff` or another manifest-backed binary is absent, `quality` should turn that into setup work with install and verify steps instead of reporting a skipped gate.",
         "The quality core now requires task-completing reviews to report delegated-review status and includes an adapter/gate design inventory path for recommendation, acknowledgement, migration, and brittle hard-gate risks.",
         "The quality core and standing-gate verbosity reference now require slow-test reviews to prove the active parallel-runner path, inspect serial fallback, run duration reports, and surface top-N runtime hot spots before widening budgets or moving checks on-demand.",
+        "The quality core now requires task-completing delegated review after initial inventory and before broad recommendations, and slow-gate advice must name or block fixture-economics, parallel-critical-path, and duplicated-proof review lenses.",
         "`validate_quality_artifact.py` now requires `Advisory` and `Delegated Review` sections, rejecting green-gate-only summaries that omit advisory or delegated-review status.",
         "The quality adapter resolver now preserves existing `version: 1` adapters while defaulting new review fields to safe empty values.",
         "`inventory_entrypoint_docs_ergonomics.py` now surfaces `host_instruction_runbook_pressure` when `AGENTS.md` embeds a multi-step procedure that likely belongs in a deeper doc or repo-owned command surface.",

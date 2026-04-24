@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-LINEAGE_ORDER = ("python-quality", "typescript-quality", "specdown-quality", "monorepo-quality")
+LINEAGE_ORDER = ("python-quality", "typescript-quality", "go-quality", "specdown-quality", "monorepo-quality")
 
 
 def _repo_has_any(repo_root: Path, *relative_paths: str) -> bool:
@@ -52,6 +52,8 @@ def detect_preset_lineage(repo_root: Path) -> list[str]:
         detected.append("python-quality")
     if _repo_has_any(repo_root, "tsconfig.json", "tsconfig.base.json") or _package_json_signals_typescript(repo_root / "package.json"):
         detected.append("typescript-quality")
+    if _repo_has_any(repo_root, "go.mod", "go.work"):
+        detected.append("go-quality")
     if (repo_root / "pnpm-workspace.yaml").is_file() or _package_json_has_workspaces(repo_root / "package.json") or any((repo_root / "packages").glob("*/package.json")):
         detected.append("monorepo-quality")
     if (repo_root / ".specdown").exists() or (repo_root / "specdown.json").is_file() or any(repo_root.rglob("*.spec.md")):

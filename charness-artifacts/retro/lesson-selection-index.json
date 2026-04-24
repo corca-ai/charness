@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-04-24",
-  "source_artifact_count": 33,
-  "candidate_count": 211,
+  "source_artifact_count": 35,
+  "candidate_count": 217,
   "top_candidates": [
     {
       "candidate_id": "current_focus:0d7e66658729",
@@ -31,6 +31,46 @@
           "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
           "date": "2026-04-24",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:b175df57eca2",
+      "kind": "current_focus",
+      "lesson": "This session optimized `./scripts/run-quality.sh`, added profile-aware runtime budget design, and tightened `quality`/`init-repo` guidance around delegated review.",
+      "normalized_key": "this session optimized scripts run quality sh added profile aware runtime budget design and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+          "date": "2026-04-24",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:90166f3f3801",
+      "kind": "next_improvement",
+      "lesson": "Capability: keep runtime-budget contracts profile-aware so samples from different machines do not share one hard threshold.",
+      "normalized_key": "capability keep runtime budget contracts profile aware so samples from different machines do not",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -95,6 +135,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:4e94cfb23f2d",
+      "kind": "next_improvement",
+      "lesson": "Memory: this retro records the missed sequencing so future slow-gate work starts with delegated lenses instead of adding them after user correction.",
+      "normalized_key": "memory this retro records the missed sequencing so future slow gate work starts with",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a3c20ed0fce4",
       "kind": "next_improvement",
       "lesson": "Strengthen `create-skill` so existing public-skill edits require a customer-of-this-skill premortem angle when the change affects adapters, examples, bootstrap, or first-touch docs.",
@@ -135,6 +195,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:9bda5fd76d74",
+      "kind": "next_improvement",
+      "lesson": "Workflow: when `quality` or `init-repo` scope is broad and task-completing, spawn bounded reviewers before finalizing the diagnosis.",
+      "normalized_key": "workflow when quality or init repo scope is broad and task completing spawn bounded",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:5b816ed023c7",
+      "kind": "repeat_trap",
+      "lesson": "That delayed two useful facts: runtime budgets were machine-profile blind, and only the final runtime-budget phase has a real ordering dependency.",
+      "normalized_key": "that delayed two useful facts runtime budgets were machine profile blind and only the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+          "date": "2026-04-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:31d14e050913",
       "kind": "repeat_trap",
       "lesson": "The available instructions hinted at consumer validation but did not force a customer-of-this-skill angle. `create-skill` says to use a realistic consumer prompt, and `premortem` offers blast-radius/current-consumer angles, but neither makes “run the changed skill as its customer would” a stop gate for repo-local skill changes.",
@@ -151,106 +251,6 @@
           "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
           "date": "2026-04-24",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:66a9d62b4a67",
-      "kind": "repeat_trap",
-      "lesson": "The first premortem came too late. It caught the important misses only after implementation: bad examples, empty scaffold fields, missing repair loop, and weak volatile-path detection.",
-      "normalized_key": "the first premortem came too late it caught the important misses only after implementation",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
-      "latest_source_date": "2026-04-24",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
-          "date": "2026-04-24",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:6f3ca03460ba",
-      "kind": "repeat_trap",
-      "lesson": "The initial change optimized producer-side correctness before customer-side use. It improved the `narrative` package, but did not first ask what would happen when a real repo with no adapter, a stale adapter path, or a thin adapter ran `$narrative`.",
-      "normalized_key": "the initial change optimized producer side correctness before customer side use it improved the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
-      "latest_source_date": "2026-04-24",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
-          "date": "2026-04-24",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:1800faad159d",
-      "kind": "current_focus",
-      "lesson": "Auto-retro closeout triggered because issue #63 changed the checked-in plugin export surface via the retro public skill helper.",
-      "normalized_key": "auto retro closeout triggered because issue 63 changed the checked in plugin export surface",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
-          "date": "2026-04-23",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:4a4916b6ee1f",
-      "kind": "current_focus",
-      "lesson": "Auto-trigger: changed `find-skills`, checked-in plugin export, and integrations/control-plane surfaces.",
-      "normalized_key": "auto trigger changed find skills checked in plugin export and integrations control plane surfaces",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
-          "date": "2026-04-23",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:6cf3c1c0da32",
-      "kind": "current_focus",
-      "lesson": "Issue #57 moved from comment-only planning into a bounded implementation slice after a mandatory fresh-eye premortem.",
-      "normalized_key": "issue 57 moved from comment only planning into a bounded implementation slice after a",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
-      "latest_source_date": "2026-04-23",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-23-issue-57-design-study.md",
-          "date": "2026-04-23",
-          "section": "Context"
         }
       ]
     }
@@ -277,6 +277,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:b175df57eca2",
+      "kind": "current_focus",
+      "lesson": "This session optimized `./scripts/run-quality.sh`, added profile-aware runtime budget design, and tightened `quality`/`init-repo` guidance around delegated review.",
+      "normalized_key": "this session optimized scripts run quality sh added profile aware runtime budget design and",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+          "date": "2026-04-24",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:90166f3f3801",
+      "kind": "next_improvement",
+      "lesson": "Capability: keep runtime-budget contracts profile-aware so samples from different machines do not share one hard threshold.",
+      "normalized_key": "capability keep runtime budget contracts profile aware so samples from different machines do not",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:7b1c7a569601",
       "kind": "next_improvement",
       "lesson": "For public skill changes, start with the changed skill's customer journey, not the skill package. Name at least one real or synthetic consumer repo and run the first-use path before declaring the design good.",
@@ -337,6 +377,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:4e94cfb23f2d",
+      "kind": "next_improvement",
+      "lesson": "Memory: this retro records the missed sequencing so future slow-gate work starts with delegated lenses instead of adding them after user correction.",
+      "normalized_key": "memory this retro records the missed sequencing so future slow gate work starts with",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a3c20ed0fce4",
       "kind": "next_improvement",
       "lesson": "Strengthen `create-skill` so existing public-skill edits require a customer-of-this-skill premortem angle when the change affects adapters, examples, bootstrap, or first-touch docs.",
@@ -377,6 +437,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:9bda5fd76d74",
+      "kind": "next_improvement",
+      "lesson": "Workflow: when `quality` or `init-repo` scope is broad and task-completing, spawn bounded reviewers before finalizing the diagnosis.",
+      "normalized_key": "workflow when quality or init repo scope is broad and task completing spawn bounded",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+          "date": "2026-04-24",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:5b816ed023c7",
+      "kind": "repeat_trap",
+      "lesson": "That delayed two useful facts: runtime budgets were machine-profile blind, and only the final runtime-budget phase has a real ordering dependency.",
+      "normalized_key": "that delayed two useful facts runtime budgets were machine profile blind and only the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+          "date": "2026-04-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:31d14e050913",
       "kind": "repeat_trap",
       "lesson": "The available instructions hinted at consumer validation but did not force a customer-of-this-skill angle. `create-skill` says to use a realistic consumer prompt, and `premortem` offers blast-radius/current-consumer angles, but neither makes “run the changed skill as its customer would” a stop gate for repo-local skill changes.",
@@ -411,6 +511,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "date": "2026-04-24",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2b53a6ed9d1f",
+      "kind": "repeat_trap",
+      "lesson": "The first runtime-optimization passes used direct local exploration before applying the repo rule that task-completing `quality` and `init-repo` reviews should run bounded delegated review.",
+      "normalized_key": "the first runtime optimization passes used direct local exploration before applying the repo rule",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+      "latest_source_date": "2026-04-24",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
           "date": "2026-04-24",
           "section": "Waste"
         }

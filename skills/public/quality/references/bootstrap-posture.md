@@ -8,12 +8,17 @@ The bootstrap helper should:
 - write or refresh [`.agents/quality-adapter.yaml`](../../../../.agents/quality-adapter.yaml) idempotently
 - preserve explicit operator-owned command groups when they already exist
 - infer concept paths and preset lineage from the repo surface
+- avoid materializing language-specific defaults, such as pytest reference
+  patterns, unless that language family is detected or explicitly selected
 - record `installed`, `inferred`, `preserved`, or `deferred` status per field
 - emit a machine-readable deferred-setup report when automation stops short
 
 Default report path:
 
 - `.charness/quality/bootstrap.json`
+
+The report is repo state when committed, so paths in it must be repo-root
+relative. Use absolute paths only for transient stdout diagnostics.
 
 Status meanings:
 

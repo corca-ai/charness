@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from typing import Any, Callable
 
+from runtime_profile_lib import profile_budgets, profile_commands, selected_runtime_profile
+
 SIGNALS_PATH = Path(".charness") / "quality" / "runtime-signals.json"
 SMOOTHING_PATH = Path(".charness") / "quality" / "runtime-smoothing.json"
 DEFAULT_TOP_RUNTIME_COUNT = 5
@@ -102,16 +104,19 @@ def evaluate(
     repo_root: Path,
     load_adapter: Callable[[Path], dict[str, Any]],
     *,
+    runtime_profile: str | None = None,
     top_runtime_count: int = DEFAULT_TOP_RUNTIME_COUNT,
 ) -> dict[str, Any]:
     adapter = load_adapter(repo_root)
-    budgets: dict[str, int] = adapter["data"].get("runtime_budgets", {}) or {}
+    adapter_data = adapter["data"]
+    selected_profile = selected_runtime_profile(adapter_data, runtime_profile)
+    budgets, profile_config_errors = profile_budgets(adapter_data, selected_profile)
     signals_path = repo_root / SIGNALS_PATH
     smoothing_path = repo_root / SMOOTHING_PATH
     signals = _load_json(signals_path)
     smoothing = _load_json(smoothing_path)
-    commands = signals.get("commands", {}) if isinstance(signals, dict) else {}
-    smoothing_commands = smoothing.get("commands", {}) if isinstance(smoothing, dict) else {}
+    commands = profile_commands(signals, selected_profile) if isinstance(signals, dict) else {}
+    smoothing_commands = profile_commands(smoothing, selected_profile) if isinstance(smoothing, dict) else {}
 
     checked: list[dict[str, Any]] = []
     violations: list[dict[str, Any]] = []
@@ -150,6 +155,8 @@ def evaluate(
         "signals_path": str(signals_path),
         "smoothing_path": str(smoothing_path),
         "adapter_path": adapter.get("path"),
+        "runtime_profile": selected_profile,
+        "profile_config_errors": profile_config_errors,
         "budgets_configured": len(budgets),
         "checked": checked,
         "violations": violations,
@@ -161,6 +168,9 @@ def evaluate(
 
 def format_human(report: dict[str, Any]) -> str:
     lines: list[str] = []
+    lines.append(f"Runtime profile: {report['runtime_profile']}")
+    for error in report.get("profile_config_errors", []):
+        lines.append(f"ERROR {error}")
     if not report["budgets_configured"]:
         lines.append("No runtime_budgets configured in adapter; nothing to check.")
     for entry in report["checked"]:

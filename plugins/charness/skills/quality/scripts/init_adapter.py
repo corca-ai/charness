@@ -43,14 +43,14 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
 
 def build_items(repo_name: str, args: argparse.Namespace) -> list[tuple[str, object]]:
     specdown_smoke_patterns = default_specdown_smoke_patterns([args.preset_id])
-    return [
+    items: list[tuple[str, object]] = [
         *base_adapter_items(repo_name, "charness-artifacts/quality", preset_id=args.preset_id),
         ("preset_lineage", [args.preset_id] if args.preset_id != "portable-defaults" else []),
         ("coverage_fragile_margin_pp", 1.0),
         ("coverage_floor_policy", DEFAULT_COVERAGE_FLOOR_POLICY),
         ("specdown_smoke_patterns", specdown_smoke_patterns),
-        ("spec_pytest_reference_format", DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT),
         ("prompt_asset_roots", []),
+        ("canonical_markdown_surfaces", ["AGENTS.md", "CLAUDE.md"]),
         ("prompt_asset_policy", DEFAULT_PROMPT_ASSET_POLICY),
         ("skill_ergonomics_gate_rules", DEFAULT_SKILL_ERGONOMICS_GATE_RULES),
         ("concept_paths", []),
@@ -58,6 +58,10 @@ def build_items(repo_name: str, args: argparse.Namespace) -> list[tuple[str, obj
         ("gate_commands", []),
         ("security_commands", []),
     ]
+    if args.preset_id in {"python-quality", "specdown-quality"}:
+        insert_at = 8
+        items.insert(insert_at, ("spec_pytest_reference_format", DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT))
+    return items
 
 
 def main() -> None:

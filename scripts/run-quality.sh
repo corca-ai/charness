@@ -34,6 +34,7 @@ trap 'rm -rf "$RUN_QUALITY_TMPDIR"' EXIT
 
 RUN_QUALITY_VERBOSE="${CHARNESS_QUALITY_VERBOSE:-0}"
 RUN_QUALITY_LABELS="${CHARNESS_QUALITY_LABELS:-}"
+RUN_QUALITY_RUNTIME_PROFILE="${CHARNESS_RUNTIME_PROFILE:-}"
 RUN_QUALITY_START_NS="$(date +%s%N)"
 
 if [[ "$RUN_QUALITY_REVIEW" == "1" ]]; then
@@ -338,8 +339,6 @@ fi
 if coverage_relevant_changes_present; then
   queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
 fi
-flush_phase || OVERALL_RC=$?
-
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
 queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT"
 queue_selected "specdown" bash -c 'command -v specdown >/dev/null || { echo "specdown is required for executable specs. Install from https://github.com/corca-ai/specdown or run charness tool doctor specdown --json for current readiness."; exit 1; }; specdown run -quiet -no-report'
@@ -350,7 +349,11 @@ flush_phase || OVERALL_RC=$?
 queue_selected "measure-startup-probes" python3 skills/public/quality/scripts/measure_startup_probes.py --repo-root "$REPO_ROOT" --class standing --record-runtime-signals
 flush_phase || OVERALL_RC=$?
 
-queue_selected "check-runtime-budget" python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root "$REPO_ROOT"
+if [[ -n "$RUN_QUALITY_RUNTIME_PROFILE" ]]; then
+  queue_selected "check-runtime-budget" python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root "$REPO_ROOT" --runtime-profile "$RUN_QUALITY_RUNTIME_PROFILE"
+else
+  queue_selected "check-runtime-budget" python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root "$REPO_ROOT"
+fi
 flush_phase || OVERALL_RC=$?
 print_final_summary
 exit "$OVERALL_RC"

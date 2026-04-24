@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts.adapter_lib import load_yaml_file, render_yaml_mapping
+from scripts.path_portability_lib import repo_relative
 from scripts.quality_bootstrap_detect import (
     detect_concept_paths,
     detect_gate_commands,
@@ -45,6 +46,8 @@ def _classify_command_deferral(field: str, preset_lineage: list[str]) -> dict[st
             families = ["pytest or repo-native test runner", "ruff, mypy, or pyright"]
         elif "typescript-quality" in preset_lineage:
             families = ["vitest or jest", "eslint or tsc --noEmit"]
+        elif "go-quality" in preset_lineage:
+            families = ["go test ./...", "go vet ./..."]
         elif "specdown-quality" in preset_lineage:
             families = ["specdown smoke", "overlap or adapter-depth guard"]
         reason = "No repo-owned quality gate command was detected."
@@ -83,9 +86,17 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "adapter_review_sources": [],
         "acknowledged_recommendations": [],
         "gate_design_review_globs": [],
+        "product_surfaces": [],
+        "cli_skill_surface_probe_commands": [],
+        "cli_skill_surface_command_docs": [],
+        "cli_skill_surface_skill_paths": [],
+        "cli_skill_surface_change_globs": [],
+        "canonical_markdown_surfaces": ["AGENTS.md", "CLAUDE.md"],
         "prompt_asset_policy": dict(DEFAULT_PROMPT_ASSET_POLICY),
         "skill_ergonomics_gate_rules": list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES),
+        "runtime_profile_default": "default",
         "runtime_budgets": {},
+        "runtime_budget_profiles": {},
         "startup_probes": [],
         "concept_paths": [],
         "preflight_commands": [],
@@ -124,6 +135,7 @@ def _apply_existing_scalar_fields(data: dict[str, Any], raw: dict[str, Any]) -> 
         "preset_version",
         "customized_from",
         "recommendation_defaults_version",
+        "runtime_profile_default",
     ):
         value = raw.get(field)
         if value is not None:
@@ -156,6 +168,9 @@ def _apply_existing_policy_fields(data: dict[str, Any], raw: dict[str, Any], val
         for label, value in runtime_budgets.items()
     ):
         data["runtime_budgets"] = dict(runtime_budgets)
+    runtime_budget_profiles = raw.get("runtime_budget_profiles")
+    if isinstance(runtime_budget_profiles, dict):
+        data["runtime_budget_profiles"] = dict(runtime_budget_profiles)
     startup_probes = raw.get("startup_probes")
     if isinstance(startup_probes, list):
         data["startup_probes"] = list(startup_probes)
@@ -182,6 +197,12 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
         "adapter_review_sources",
         "acknowledged_recommendations",
         "gate_design_review_globs",
+        "product_surfaces",
+        "cli_skill_surface_probe_commands",
+        "cli_skill_surface_command_docs",
+        "cli_skill_surface_skill_paths",
+        "cli_skill_surface_change_globs",
+        "canonical_markdown_surfaces",
         "concept_paths",
         "preflight_commands",
         "gate_commands",
@@ -212,6 +233,7 @@ def _merge_lineage(
 def _add_adapter_policy_fields(
     final: dict[str, Any], existing: dict[str, Any], explicit_fields: set[str], merged_lineage: list[str], field_statuses: dict[str, str]
 ) -> None:
+    python_lineage = "python-quality" in merged_lineage
     preserve_coverage_margin = "coverage_fragile_margin_pp" in explicit_fields
     final["coverage_fragile_margin_pp"] = (
         existing["coverage_fragile_margin_pp"] if preserve_coverage_margin else DEFAULT_COVERAGE_FRAGILE_MARGIN_PP
@@ -228,16 +250,24 @@ def _add_adapter_policy_fields(
     if "specdown_smoke_patterns" in explicit_fields:
         final["specdown_smoke_patterns"] = list(existing_patterns)
         field_statuses["specdown_smoke_patterns"] = "preserved"
-    else:
+    elif python_lineage:
         inferred_patterns = default_specdown_smoke_patterns(merged_lineage)
         final["specdown_smoke_patterns"] = inferred_patterns
         field_statuses["specdown_smoke_patterns"] = "inferred" if inferred_patterns else "defaulted"
+    else:
+        final["specdown_smoke_patterns"] = []
+        field_statuses["specdown_smoke_patterns"] = "deferred"
 
     preserve_spec_format = "spec_pytest_reference_format" in explicit_fields
-    final["spec_pytest_reference_format"] = (
-        existing["spec_pytest_reference_format"] if preserve_spec_format else DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT
-    )
-    field_statuses["spec_pytest_reference_format"] = "preserved" if preserve_spec_format else "defaulted"
+    if preserve_spec_format:
+        final["spec_pytest_reference_format"] = existing["spec_pytest_reference_format"]
+        field_statuses["spec_pytest_reference_format"] = "preserved"
+    elif python_lineage:
+        final["spec_pytest_reference_format"] = DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT
+        field_statuses["spec_pytest_reference_format"] = "inferred"
+    else:
+        final["spec_pytest_reference_format"] = ""
+        field_statuses["spec_pytest_reference_format"] = "deferred"
 
     preserve_review_defaults = "recommendation_defaults_version" in explicit_fields
     final["recommendation_defaults_version"] = (
@@ -251,8 +281,19 @@ def _add_prompt_and_runtime_fields(
 ) -> None:
     final["prompt_asset_roots"] = list(existing.get("prompt_asset_roots", [])) if "prompt_asset_roots" in explicit_fields else []
     field_statuses["prompt_asset_roots"] = "preserved" if "prompt_asset_roots" in explicit_fields else "defaulted"
-    for field in ("adapter_review_sources", "acknowledged_recommendations", "gate_design_review_globs"):
-        final[field] = list(existing.get(field, [])) if field in explicit_fields else []
+    for field in (
+        "adapter_review_sources",
+        "acknowledged_recommendations",
+        "gate_design_review_globs",
+        "product_surfaces",
+        "cli_skill_surface_probe_commands",
+        "cli_skill_surface_command_docs",
+        "cli_skill_surface_skill_paths",
+        "cli_skill_surface_change_globs",
+        "canonical_markdown_surfaces",
+    ):
+        default = ["AGENTS.md", "CLAUDE.md"] if field == "canonical_markdown_surfaces" else []
+        final[field] = list(existing.get(field, default)) if field in explicit_fields else default
         field_statuses[field] = "preserved" if field in explicit_fields else "defaulted"
     final["prompt_asset_policy"] = (
         dict(existing["prompt_asset_policy"]) if "prompt_asset_policy" in explicit_fields else dict(DEFAULT_PROMPT_ASSET_POLICY)
@@ -264,8 +305,16 @@ def _add_prompt_and_runtime_fields(
         else list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES)
     )
     field_statuses["skill_ergonomics_gate_rules"] = "preserved" if "skill_ergonomics_gate_rules" in explicit_fields else "defaulted"
+    final["runtime_profile_default"] = (
+        existing.get("runtime_profile_default", "default") if "runtime_profile_default" in explicit_fields else "default"
+    )
+    field_statuses["runtime_profile_default"] = "preserved" if "runtime_profile_default" in explicit_fields else "defaulted"
     final["runtime_budgets"] = dict(existing.get("runtime_budgets", {})) if "runtime_budgets" in explicit_fields else {}
     field_statuses["runtime_budgets"] = "preserved" if "runtime_budgets" in explicit_fields else "defaulted"
+    final["runtime_budget_profiles"] = (
+        dict(existing.get("runtime_budget_profiles", {})) if "runtime_budget_profiles" in explicit_fields else {}
+    )
+    field_statuses["runtime_budget_profiles"] = "preserved" if "runtime_budget_profiles" in explicit_fields else "defaulted"
     final["startup_probes"] = list(existing.get("startup_probes", [])) if "startup_probes" in explicit_fields else []
     field_statuses["startup_probes"] = "preserved" if "startup_probes" in explicit_fields else "defaulted"
 
@@ -291,6 +340,15 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
 
     _add_adapter_policy_fields(final, existing, explicit_fields, merged_lineage, field_statuses)
     _add_prompt_and_runtime_fields(final, existing, explicit_fields, field_statuses)
+    if field_statuses.get("spec_pytest_reference_format") == "deferred":
+        deferred_setup.append(
+            {
+                "field": "spec_pytest_reference_format",
+                "status": "deferred",
+                "reason": "No Python quality preset was inferred.",
+                "suggested_families": ["choose a language-specific quality preset or leave pytest references unset"],
+            }
+        )
 
     concept_paths = detect_concept_paths(repo_root)
     existing_concepts = [path for path in existing.get("concept_paths", []) if (repo_root / path).is_file()]
@@ -327,7 +385,7 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
     return final, field_statuses, deferred_setup
 
 
-def render_bootstrap_adapter(data: dict[str, Any]) -> str:
+def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str]) -> str:
     items: list[tuple[str, Any]] = [
         ("version", data["version"]),
         ("repo", data["repo"]),
@@ -338,29 +396,49 @@ def render_bootstrap_adapter(data: dict[str, Any]) -> str:
     ]
     if data.get("preset_version"):
         items.append(("preset_version", data["preset_version"]))
-    items.extend(
-        [
-            ("preset_lineage", data["preset_lineage"]),
-            ("coverage_fragile_margin_pp", data["coverage_fragile_margin_pp"]),
-            ("coverage_floor_policy", data["coverage_floor_policy"]),
-            ("specdown_smoke_patterns", data["specdown_smoke_patterns"]),
-            ("spec_pytest_reference_format", data["spec_pytest_reference_format"]),
-            ("recommendation_defaults_version", data["recommendation_defaults_version"]),
-            ("prompt_asset_roots", data["prompt_asset_roots"]),
-            ("adapter_review_sources", data["adapter_review_sources"]),
-            ("acknowledged_recommendations", data["acknowledged_recommendations"]),
-            ("gate_design_review_globs", data["gate_design_review_globs"]),
-            ("prompt_asset_policy", data["prompt_asset_policy"]),
-            ("skill_ergonomics_gate_rules", data["skill_ergonomics_gate_rules"]),
-            ("runtime_budgets", data["runtime_budgets"]),
-            ("startup_probes", data["startup_probes"]),
-            ("concept_paths", data["concept_paths"]),
-            ("preflight_commands", data["preflight_commands"]),
-            ("gate_commands", data["gate_commands"]),
-            ("review_commands", data["review_commands"]),
-            ("security_commands", data["security_commands"]),
-        ]
+    policy_items: list[tuple[str, Any]] = [
+        ("preset_lineage", data["preset_lineage"]),
+        ("coverage_fragile_margin_pp", data["coverage_fragile_margin_pp"]),
+        ("coverage_floor_policy", data["coverage_floor_policy"]),
+        ("specdown_smoke_patterns", data["specdown_smoke_patterns"]),
+        ("recommendation_defaults_version", data["recommendation_defaults_version"]),
+        ("prompt_asset_roots", data["prompt_asset_roots"]),
+        ("adapter_review_sources", data["adapter_review_sources"]),
+        ("acknowledged_recommendations", data["acknowledged_recommendations"]),
+        ("gate_design_review_globs", data["gate_design_review_globs"]),
+        ("product_surfaces", data["product_surfaces"]),
+        ("cli_skill_surface_probe_commands", data["cli_skill_surface_probe_commands"]),
+        ("cli_skill_surface_command_docs", data["cli_skill_surface_command_docs"]),
+        ("cli_skill_surface_skill_paths", data["cli_skill_surface_skill_paths"]),
+        ("cli_skill_surface_change_globs", data["cli_skill_surface_change_globs"]),
+        ("canonical_markdown_surfaces", data["canonical_markdown_surfaces"]),
+        ("prompt_asset_policy", data["prompt_asset_policy"]),
+        ("skill_ergonomics_gate_rules", data["skill_ergonomics_gate_rules"]),
+        ("runtime_profile_default", data["runtime_profile_default"]),
+        ("runtime_budgets", data["runtime_budgets"]),
+        ("runtime_budget_profiles", data["runtime_budget_profiles"]),
+        ("startup_probes", data["startup_probes"]),
+        ("concept_paths", data["concept_paths"]),
+        ("preflight_commands", data["preflight_commands"]),
+        ("gate_commands", data["gate_commands"]),
+        ("review_commands", data["review_commands"]),
+        ("security_commands", data["security_commands"]),
+    ]
+    optional_empty_fields = set(
+        "prompt_asset_roots adapter_review_sources acknowledged_recommendations gate_design_review_globs "
+        "product_surfaces cli_skill_surface_probe_commands cli_skill_surface_command_docs "
+        "cli_skill_surface_skill_paths cli_skill_surface_change_globs canonical_markdown_surfaces "
+        "skill_ergonomics_gate_rules runtime_budgets runtime_budget_profiles startup_probes concept_paths preflight_commands "
+        "gate_commands review_commands security_commands".split()
     )
+    policy_items = [
+        (key, value)
+        for key, value in policy_items
+        if not (key in optional_empty_fields and value in ({}, []) and field_statuses.get(key) != "preserved")
+    ]
+    if data.get("spec_pytest_reference_format"):
+        policy_items.insert(4, ("spec_pytest_reference_format", data["spec_pytest_reference_format"]))
+    items.extend(policy_items)
     return render_yaml_mapping(items)
 
 
@@ -370,7 +448,7 @@ def bootstrap_quality_adapter(
     adapter_path = output_path if output_path.is_absolute() else repo_root / output_path
     resolved_report_path = report_path if report_path.is_absolute() else repo_root / report_path
     final_data, field_statuses, deferred_setup = build_bootstrap_state(repo_root)
-    adapter_text = render_bootstrap_adapter(final_data)
+    adapter_text = render_bootstrap_adapter(final_data, field_statuses)
     existing_text = adapter_path.read_text(encoding="utf-8") if adapter_path.is_file() else None
 
     if dry_run:
@@ -386,10 +464,10 @@ def bootstrap_quality_adapter(
         adapter_status = "updated"
 
     report = {
-        "adapter_path": str(adapter_path),
+        "adapter_path": repo_relative(repo_root, adapter_path),
         "adapter_status": adapter_status,
         "artifact_path": str(Path(final_data["output_dir"]) / "latest.md"),
-        "report_path": str(resolved_report_path),
+        "report_path": repo_relative(repo_root, resolved_report_path),
         "preset_lineage": final_data["preset_lineage"],
         "field_statuses": field_statuses,
         "deferred_setup": deferred_setup,

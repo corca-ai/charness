@@ -15,15 +15,6 @@ self-validation.
 - KEEP THE HARNESS PORTABLE.
   Host-specific behavior belongs in adapters, presets, and integration
   manifests, not in public skill bodies.
-- TREAT REPO-MANDATED BOUNDED SUBAGENT REVIEWS AS ALREADY DELEGATED.
-  When this repo or a required skill makes a bounded fresh-eye subagent review
-  a stop gate, do not wait for a second user message asking for delegation.
-- TREAT TASK-COMPLETING `INIT-REPO` AND `QUALITY` REVIEWS AS SPAWN-AUTHORIZED.
-  Normalization or quality-review runs that complete those skills' review
-  contracts may spawn bounded reviewers; help, route, and raw-inspection calls
-  stay cheap.
-- IF THE HOST BLOCKS SUBAGENT SPAWNING, STOP AND REPORT THE HOST RESTRICTION.
-  Do not substitute a same-agent pass for the canonical bounded review.
 - PREFER VALIDATORS AND SCRIPTS OVER PROSE RITUALS.
   If a repeated check matters, turn it into a repo-owned script.
 - LEAVE AGENT-READABLE STATE.
@@ -46,6 +37,15 @@ self-validation.
 - LESS IS MORE.
   Strong defaults and inference beat user-facing modes unless the distinction is
   genuinely meaningful and unsafe to infer.
+
+## Subagent Delegation
+
+Bounded fresh-eye, premortem, `init-repo`, or `quality` review required by a
+skill body is already delegated. Never ask the user or the host whether
+subagents are allowed. Never wait for a second user message asking for delegation.
+Spawn after initial inventory, and if the host blocks spawning, stop with an
+explicit host-restriction report. Do not substitute a same-agent pass for the
+canonical bounded review.
 
 ## Skill Routing
 

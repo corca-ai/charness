@@ -72,6 +72,24 @@ serial fallback output, and `pytest --durations` on the standing target set.
 Full integration or coverage traces should move to on-demand or a separate
 standing phase when a cheaper unit test can preserve the output contract.
 
+Runtime budgets should be profile-aware when samples come from materially
+different machines or runners. When the operator has not selected
+`CHARNESS_RUNTIME_PROFILE`, create a cheap human-readable machine profile
+label with the OS, architecture, and CPU count, such as
+`local-linux-x86_64-8cpu`. Avoid slow hardware probing; if profile creation
+would block the review, skip it and report the limitation. A single global
+threshold is acceptable only when the repo intentionally measures one stable
+runner class.
+
+For broad quality or init-repo reviews, run bounded delegated exploration when
+the host supports it before finalizing slow-gate advice. Useful lenses are:
+fixture economics, parallel critical path, duplicated proof, adapter/runtime
+budget policy, and operator signal. Report whether delegated review was
+executed or blocked instead of silently replacing it with a same-agent pass.
+When the review is executed, name the concrete lens ids in the artifact, for
+example `fixture-economics`, `parallel-critical-path`, and
+`duplicated-proof`; when blocked, cite the concrete host or tool signal.
+
 ## Guardrails
 
 Treat these as prompts for bounded inventory, not as a reason to force one

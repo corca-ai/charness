@@ -22,7 +22,14 @@ recommendation_defaults_version: issue-64
 adapter_review_sources: []
 acknowledged_recommendations: []
 gate_design_review_globs: []
+canonical_markdown_surfaces:
+  - AGENTS.md
+  - CLAUDE.md
 skill_ergonomics_gate_rules: []
+runtime_profile_default: default
+runtime_budgets: {}
+runtime_budget_profiles: {}
+startup_probes: []
 concept_paths: []
 preflight_commands: []
 gate_commands: []

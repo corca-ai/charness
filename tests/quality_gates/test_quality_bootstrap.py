@@ -37,6 +37,12 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
         "acknowledged_recommendations": "defaulted",
         "concept_paths": "inferred",
         "gate_design_review_globs": "defaulted",
+        "product_surfaces": "defaulted",
+        "cli_skill_surface_probe_commands": "defaulted",
+        "cli_skill_surface_command_docs": "defaulted",
+        "cli_skill_surface_skill_paths": "defaulted",
+        "cli_skill_surface_change_globs": "defaulted",
+        "canonical_markdown_surfaces": "defaulted",
         "gate_commands": "installed",
         "preflight_commands": "installed",
         "preset_lineage": "inferred",
@@ -44,17 +50,22 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
         "prompt_asset_roots": "defaulted",
         "recommendation_defaults_version": "defaulted",
         "review_commands": "inferred",
+        "runtime_profile_default": "defaulted",
         "runtime_budgets": "defaulted",
+        "runtime_budget_profiles": "defaulted",
         "startup_probes": "defaulted",
         "skill_ergonomics_gate_rules": "defaulted",
         "specdown_smoke_patterns": "defaulted",
-        "spec_pytest_reference_format": "defaulted",
+        "spec_pytest_reference_format": "inferred",
         "security_commands": "installed",
     }
     assert payload["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
     assert payload["deferred_setup"] == []
     report_path = repo / ".charness" / "quality" / "bootstrap.json"
     assert report_path.is_file()
+    report_payload = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report_payload["adapter_path"] == ".agents/quality-adapter.yaml"
+    assert report_payload["report_path"] == ".charness/quality/bootstrap.json"
 
     resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
@@ -80,13 +91,16 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     assert resolved["data"]["adapter_review_sources"] == []
     assert resolved["data"]["acknowledged_recommendations"] == []
     assert resolved["data"]["gate_design_review_globs"] == []
+    assert resolved["data"]["canonical_markdown_surfaces"] == ["AGENTS.md", "CLAUDE.md"]
     assert resolved["data"]["prompt_asset_policy"] == {
         "source_globs": [],
         "min_multiline_chars": 400,
         "exemption_globs": [],
     }
     assert resolved["data"]["skill_ergonomics_gate_rules"] == []
+    assert resolved["data"]["runtime_profile_default"] == "default"
     assert resolved["data"]["runtime_budgets"] == {}
+    assert resolved["data"]["runtime_budget_profiles"] == {}
     assert resolved["data"]["startup_probes"] == []
     assert resolved["data"]["gate_commands"] == ["./scripts/run-quality.sh"]
     assert resolved["data"]["review_commands"] == ["./scripts/run-quality.sh --review"]
@@ -127,6 +141,10 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
                 "- demo.ack",
                 "gate_design_review_globs:",
                 "- scripts/*.py",
+                "canonical_markdown_surfaces:",
+                "- AGENTS.md",
+                "- CLAUDE.md",
+                "- docs/handoff.md",
                 "prompt_asset_policy:",
                 "  source_globs:",
                 "  - src/**/*.py",
@@ -135,6 +153,16 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
                 "  - tests/**",
                 "skill_ergonomics_gate_rules:",
                 "  - mode_option_pressure_terms",
+                "runtime_profile_default: local-fast",
+                "runtime_budgets:",
+                "  pytest: 70000",
+                "runtime_budget_profiles:",
+                "  local-fast:",
+                "    budgets:",
+                "      pytest: 45000",
+                "  ci-slow:",
+                "    budgets:",
+                "      pytest: 540000",
                 "startup_probes:",
                 "  - label: demo-version",
                 "    command:",
@@ -169,8 +197,12 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     assert payload["field_statuses"]["adapter_review_sources"] == "preserved"
     assert payload["field_statuses"]["acknowledged_recommendations"] == "preserved"
     assert payload["field_statuses"]["gate_design_review_globs"] == "preserved"
+    assert payload["field_statuses"]["canonical_markdown_surfaces"] == "preserved"
     assert payload["field_statuses"]["prompt_asset_policy"] == "preserved"
     assert payload["field_statuses"]["skill_ergonomics_gate_rules"] == "preserved"
+    assert payload["field_statuses"]["runtime_profile_default"] == "preserved"
+    assert payload["field_statuses"]["runtime_budgets"] == "preserved"
+    assert payload["field_statuses"]["runtime_budget_profiles"] == "preserved"
     assert payload["field_statuses"]["startup_probes"] == "preserved"
 
     resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
@@ -195,12 +227,19 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     assert resolved["data"]["adapter_review_sources"] == [".agents/quality-adapter.yaml"]
     assert resolved["data"]["acknowledged_recommendations"] == ["demo.ack"]
     assert resolved["data"]["gate_design_review_globs"] == ["scripts/*.py"]
+    assert resolved["data"]["canonical_markdown_surfaces"] == ["AGENTS.md", "CLAUDE.md", "docs/handoff.md"]
     assert resolved["data"]["prompt_asset_policy"] == {
         "source_globs": ["src/**/*.py"],
         "min_multiline_chars": 256,
         "exemption_globs": ["tests/**"],
     }
     assert resolved["data"]["skill_ergonomics_gate_rules"] == ["mode_option_pressure_terms"]
+    assert resolved["data"]["runtime_profile_default"] == "local-fast"
+    assert resolved["data"]["runtime_budgets"] == {"pytest": 70000}
+    assert resolved["data"]["runtime_budget_profiles"] == {
+        "local-fast": {"budgets": {"pytest": 45000}},
+        "ci-slow": {"budgets": {"pytest": 540000}},
+    }
     assert resolved["data"]["startup_probes"] == [
         {
             "label": "demo-version",
@@ -212,6 +251,27 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
         }
     ]
     assert resolved["data"]["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]
+
+
+def test_quality_bootstrap_does_not_materialize_pytest_defaults_for_node_go_repo(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (repo / "package.json").write_text('{"name":"demo","scripts":{"test":"node --test"}}\n', encoding="utf-8")
+    (repo / "go.mod").write_text("module example.com/demo\n\ngo 1.22\n", encoding="utf-8")
+    (repo / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+
+    result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["preset_lineage"] == ["go-quality"]
+    assert payload["field_statuses"]["spec_pytest_reference_format"] == "deferred"
+    assert any(item["field"] == "spec_pytest_reference_format" for item in payload["deferred_setup"])
+
+    adapter_text = (repo / ".agents" / "quality-adapter.yaml").read_text(encoding="utf-8")
+    assert "pytest" not in adapter_text
+    assert "pycheck" not in adapter_text
 
 
 def test_quality_bootstrap_rejects_invalid_explicit_skill_ergonomics_rules(tmp_path: Path) -> None:
@@ -251,6 +311,11 @@ def test_quality_resolve_rejects_invalid_review_fields(tmp_path: Path) -> None:
                 "adapter_review_sources: invalid",
                 "acknowledged_recommendations: invalid",
                 "gate_design_review_globs: invalid",
+                "canonical_markdown_surfaces: invalid",
+                "runtime_budget_profiles:",
+                "  bad profile:",
+                "    budgets:",
+                "      pytest: 0",
             ]
         )
         + "\n",
@@ -265,6 +330,8 @@ def test_quality_resolve_rejects_invalid_review_fields(tmp_path: Path) -> None:
     assert "adapter_review_sources must be a list of strings" in payload["errors"]
     assert "acknowledged_recommendations must be a list of strings" in payload["errors"]
     assert "gate_design_review_globs must be a list of strings" in payload["errors"]
+    assert "canonical_markdown_surfaces must be a list of strings" in payload["errors"]
+    assert "runtime_budget_profiles profile id may only contain letters, numbers, dots, underscores, and hyphens" in payload["errors"]
 
 
 def test_quality_bootstrap_detects_repo_owned_github_actions_check(tmp_path: Path) -> None:
@@ -336,6 +403,22 @@ def test_quality_init_adapter_seeds_specdown_defaults(tmp_path: Path) -> None:
     assert resolved["data"]["spec_pytest_reference_format"] == (
         r"Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*"
     )
+
+
+def test_quality_init_adapter_portable_defaults_omit_pytest_reference(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    result = run_script(
+        "skills/public/quality/scripts/init_adapter.py",
+        "--repo-root",
+        str(repo),
+        "--preset-id",
+        "portable-defaults",
+    )
+    assert result.returncode == 0, result.stderr
+    adapter_text = (repo / ".agents" / "quality-adapter.yaml").read_text(encoding="utf-8")
+    assert "spec_pytest_reference_format" not in adapter_text
 
 
 def test_quality_inventory_adapter_gate_design_emits_required_classes(tmp_path: Path) -> None:

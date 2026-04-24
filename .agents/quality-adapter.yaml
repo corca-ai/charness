@@ -24,6 +24,7 @@ specdown_smoke_patterns:
   - "\\bpytest\\b.*\\s+-k\\s+"
 spec_pytest_reference_format: "Covered by pytest:\\s+`tests/[^`]+`(?:,\\s*`tests/[^`]+`)*"
 recommendation_defaults_version: issue-64
+prompt_asset_roots: []
 adapter_review_sources:
   - .agents/quality-adapter.yaml
   - skills/public/quality/references/adapter-contract.md
@@ -52,12 +53,16 @@ cli_skill_surface_change_globs:
   - .agents/plugins/**
   - packaging/**
   - .agents/command-docs.yaml
-prompt_asset_roots: []
+canonical_markdown_surfaces:
+  - AGENTS.md
+  - CLAUDE.md
+  - docs/handoff.md
 prompt_asset_policy:
   source_globs: []
   min_multiline_chars: 400
   exemption_globs: []
 skill_ergonomics_gate_rules: []
+runtime_profile_default: default
 runtime_budgets:
   charness-version: 500
   pytest: 70000
@@ -65,12 +70,21 @@ runtime_budgets:
   check-secrets: 6000
   run-evals: 5000
   specdown: 8000
+runtime_budget_profiles:
+  local-linux-aarch64-4cpu:
+    budgets:
+      charness-version: 500
+      pytest: 70000
+      check-coverage: 22000
+      check-secrets: 6000
+      run-evals: 5000
+      specdown: 8000
 startup_probes:
   - label: charness-version
     command:
       - python3
       - charness
-      - --version
+      - "--version"
     class: standing
     startup_mode: warm
     surface: direct
