@@ -78,6 +78,7 @@ def write_release_artifact(
     release_url: str | None,
     update_instructions: list[str],
     real_host_payload: dict[str, Any],
+    quality_status: str = "passed before publish",
 ) -> str:
     artifact_dir = repo_root / output_dir
     artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -99,7 +100,7 @@ def write_release_artifact(
         "",
         "## Verification",
         "",
-        f"- `{quality_command}` passed before publish.",
+        f"- `{quality_command}` {quality_status}.",
         "- `current_release.py` reported no version drift across packaging and generated install surfaces.",
         "- one git push carried both the release branch update and the tag from the release helper.",
         "",

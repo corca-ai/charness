@@ -134,8 +134,22 @@ def main() -> None:
     if release_payload["surface_versions"]["packaging_manifest"] != next_version:
         raise SystemExit(f"expected packaging manifest version `{next_version}`")
 
-    run_shell(str(adapter_data["quality_command"]), cwd=repo_root)
     host_payload = safe_real_host_payload(repo_root, changed_paths(repo_root))
+    write_release_artifact(
+        repo_root,
+        output_dir=adapter_data["output_dir"],
+        package_id=adapter_data["package_id"],
+        previous_version=current_version,
+        target_version=next_version,
+        remote=args.remote,
+        branch=branch,
+        quality_command=adapter_data["quality_command"],
+        release_url=None,
+        update_instructions=adapter_data["update_instructions"],
+        real_host_payload=host_payload,
+        quality_status="is queued for this publish attempt",
+    )
+    run_shell(str(adapter_data["quality_command"]), cwd=repo_root)
     artifact_relpath = write_release_artifact(
         repo_root,
         output_dir=adapter_data["output_dir"],
