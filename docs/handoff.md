@@ -26,10 +26,11 @@
 - agent-facing CLI prep/execute 아티팩트 분리 결정 렌즈가 `create-cli` (primary) + `impl` (crossref)에 landing됐다 ([#48](https://github.com/corca-ai/charness/issues/48) scope a). Spec은 [charness-artifacts/spec/issue-48-prep-execute-lens.md](../charness-artifacts/spec/issue-48-prep-execute-lens.md). Probe Q1/Q2/Q3는 post-landing 관찰 대상이다.
 - 크로스-레포 이슈 작성 hygiene (`why/what > how`)는 `narrative` reference로 landing됐다. high-leverage truth-surface rewrite와 adapter-missing stop rule도 함께 `narrative` 쪽에 들어갔다.
 - AGENTS.md hitl 정제(192→130, commit db83ee7) + portable skill body link sweep(178+ links, commit 38a3ae6)이 끝났다. 다음 slice는 craken-style link-index 추가 refactor — spec은 [charness-artifacts/spec/agents-md-craken-refactor.md](../charness-artifacts/spec/agents-md-craken-refactor.md). AGENTS.md ~50 lines 목표.
+- 7 commits가 push pending이다. test_retro_memory + run-evals fixture의 wording-pinned assertion은 commit 4e13a61에서 intent-level로 loosened됐다. 마지막 pre-push blocker인 cautilus eval scenario fail은 의도적으로 craken refactor 뒤로 미뤄둔다 — refactor에서 AGENTS.md가 다시 크게 바뀌므로 cautilus proof refresh를 그 직후에 한 번에 한다.
 
 ## Next Session
 
-1. 다음 first-move slice는 AGENTS.md craken refactor implementation이다. spec은 [charness-artifacts/spec/agents-md-craken-refactor.md](../charness-artifacts/spec/agents-md-craken-refactor.md). 시작은 hitl skill로 docs/ 인벤토리 + 각 파일 운명(keep / move / merge / delete / 카테고리) 결정.
+1. 다음 first-move slice는 AGENTS.md craken refactor implementation이다. spec은 [charness-artifacts/spec/agents-md-craken-refactor.md](../charness-artifacts/spec/agents-md-craken-refactor.md). 시작은 hitl skill로 docs/ 인벤토리 + 각 파일 운명(keep / move / merge / delete / 카테고리) 결정. refactor가 끝난 뒤 cautilus proof refresh + 7 (이상의) commits push까지 한 번에 처리한다 — 그 전 push 시도는 pre-push의 cautilus scenario fail로 다시 차단된다.
 2. `git status --short`를 먼저 본다.
 3. README/help text를 다시 건드리면 먼저 `python3 scripts/render_cli_reference.py --repo-root . --output docs/cli-reference.md`로 command reference를 재생성하고, export surface가 걸리면 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`를 validator보다 먼저 끝낸다.
 4. 이어지는 docs drift slice는 clean temp workspace의 실제 consumer repo dogfood를 우선한다. 설명 없이 `quality` 또는 `init-repo`만 불렀을 때 README-first/bootstrap-less default, CLI reference split, delegated bounded-subagent rule이 기대대로 surface되는지 본다.
