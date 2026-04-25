@@ -5,17 +5,17 @@ repo-owned adapter.
 
 ## Canonical Path
 
-Use [`.agents/hitl-adapter.yaml`](../../../../.agents/hitl-adapter.yaml) for new repos.
+In each repo, the adapter lives at `<repo-root>/.agents/hitl-adapter.yaml`.
 
-Search order (first match wins):
+## Search Order
 
-~~~text
-.agents/hitl-adapter.yaml
-.codex/hitl-adapter.yaml
-.claude/hitl-adapter.yaml
-docs/hitl-adapter.yaml
-hitl-adapter.yaml
-~~~
+`hitl` looks for the adapter in this order (first match wins):
+
+1. `<repo-root>/.agents/hitl-adapter.yaml`
+2. `<repo-root>/.codex/hitl-adapter.yaml`
+3. `<repo-root>/.claude/hitl-adapter.yaml`
+4. `<repo-root>/docs/hitl-adapter.yaml`
+5. `<repo-root>/hitl-adapter.yaml`
 
 ## Shared Core
 
