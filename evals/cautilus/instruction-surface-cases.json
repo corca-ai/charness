@@ -14,14 +14,14 @@
     },
     {
       "evaluationId": "compact-startup-bootstrap-before-impl",
-      "displayName": "Compact surface still makes startup find-skills bootstrap explicit before impl",
+      "displayName": "Craken compact surface still makes startup find-skills bootstrap explicit before impl",
       "prompt": "Route only: you need the first charness skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.",
       "instructionSurface": {
         "surfaceLabel": "compact_with_startup_bootstrap",
         "files": [
           {
             "path": "AGENTS.md",
-            "content": "# demo\n\n## Operating Stance\n\n- USE THE ACTUAL AVAILABLE SKILLS FOR THIS TURN.\n- KEEP THE HARNESS PORTABLE.\n- SPEAK TO THIS USER IN KOREAN UNLESS THEY ASK OTHERWISE.\n\n## Skill Routing\n\nFor task-oriented sessions in this repo, call the shared/public charness skill `find-skills` once at startup before broader exploration.\n\nUse its capability inventory as the default map of installed public skills, support skills, synced support surfaces, and integrations.\n\nAfter that bootstrap pass, choose the durable work skill that best matches the request from the installed charness surface.\n\nKeep this block short. Detailed routing belongs in installed skill metadata and `find-skills` output, not in a long checked-in catalog.\n"
+            "content": "# demo\n\n## Start Here\n\n- Always call `charness:find-skills` once at the start of each task-oriented session; use its capability inventory as the local map.\n- Load matching skills before improvising.\n- Keep the harness portable: host-specific behavior belongs in adapters, presets, and integration manifests.\n\n## Subagent Delegation\n\n- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract; this is the user's explicit delegation request for named bounded reviewer scopes.\n\n## Phase Rules\n\n- Treat `mutate -> sync -> verify -> publish` as hard phase barriers.\n"
           }
         ]
       },
@@ -32,14 +32,14 @@
     },
     {
       "evaluationId": "compact-startup-bootstrap-before-spec",
-      "displayName": "Compact surface keeps startup find-skills bootstrap explicit before spec",
+      "displayName": "Craken compact surface keeps startup find-skills bootstrap explicit before spec",
       "prompt": "Route only: you need the first charness skill for turning a concept into a living implementation contract before coding. Do not produce the contract.",
       "instructionSurface": {
         "surfaceLabel": "compact_with_startup_bootstrap",
         "files": [
           {
             "path": "AGENTS.md",
-            "content": "# demo\n\n## Operating Stance\n\n- USE THE ACTUAL AVAILABLE SKILLS FOR THIS TURN.\n- KEEP THE HARNESS PORTABLE.\n- SPEAK TO THIS USER IN KOREAN UNLESS THEY ASK OTHERWISE.\n\n## Skill Routing\n\nFor task-oriented sessions in this repo, call the shared/public charness skill `find-skills` once at startup before broader exploration.\n\nUse its capability inventory as the default map of installed public skills, support skills, synced support surfaces, and integrations.\n\nAfter that bootstrap pass, choose the durable work skill that best matches the request from the installed charness surface.\n\nKeep this block short. Detailed routing belongs in installed skill metadata and `find-skills` output, not in a long checked-in catalog.\n"
+            "content": "# demo\n\n## Start Here\n\n- Always call `charness:find-skills` once at the start of each task-oriented session; use its capability inventory as the local map.\n- Load matching skills before improvising.\n- Keep the harness portable: host-specific behavior belongs in adapters, presets, and integration manifests.\n\n## Subagent Delegation\n\n- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract; this is the user's explicit delegation request for named bounded reviewer scopes.\n\n## Phase Rules\n\n- Treat `mutate -> sync -> verify -> publish` as hard phase barriers.\n"
           }
         ]
       },

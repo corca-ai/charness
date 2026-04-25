@@ -83,8 +83,8 @@ One implementation session does all of:
 ## Deliberately Not Doing
 
 - Cutting AGENTS.md below 50 lines if policy density justifies more.
-- Moving every charness-only policy into `docs/`. Operating Stance core
-  bullets stay inline (craken intent).
+- Moving every charness-only policy into `docs/`. The compact Start Here,
+  Subagent Delegation, and Phase Rules bullets stay inline (craken intent).
 - Pure mechanical sed/grep migration. Every policy split goes through
   user review.
 
@@ -142,3 +142,26 @@ this artifact before saving. The spec is ready for implementation.
 6. validators pass.
 7. Update this spec artifact with implementation findings.
 8. commit + push.
+
+## Implementation Findings
+
+- 2026-04-25 implementation kept every existing `docs/*.md` file. The stale
+  candidates named above were all changed in April 2026, and the fixed stale
+  criterion requires explicit user agreement before deletion.
+- `AGENTS.md` was rewritten to 37 lines with 9 non-link, non-heading prose
+  lines, so Acceptance Checks #1 and #5 are satisfied before full closeout.
+- Inline AGENTS policy moved into two convention files:
+  [docs/conventions/operating-contract.md](../../docs/conventions/operating-contract.md)
+  and
+  [docs/conventions/implementation-discipline.md](../../docs/conventions/implementation-discipline.md).
+- Host-specific entry resolution used the deterministic `init-repo` case:
+  [CLAUDE.md](../../CLAUDE.md) is now a symlink to [AGENTS.md](../../AGENTS.md).
+- The surface manifest now treats `CLAUDE.md` as a repo markdown and
+  prompt-behavior source path so future alias changes carry the same closeout
+  obligations as `AGENTS.md`.
+- `evals/cautilus/instruction-surface-cases.json` compact synthetic AGENTS
+  surfaces now use the new Start Here / Subagent Delegation / Phase Rules shape
+  instead of the retired Operating Stance / Skill Routing shape. This is the
+  scenario-design change to exercise during final Cautilus proof.
+- Round-1 HITL inventory and conservative fate decisions are recorded in
+  [charness-artifacts/hitl/2026-04-25-agents-md-craken-refactor.md](../hitl/2026-04-25-agents-md-craken-refactor.md).

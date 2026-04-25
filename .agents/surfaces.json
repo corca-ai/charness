@@ -46,6 +46,7 @@
       "description": "Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.",
       "source_paths": [
         "AGENTS.md",
+        "CLAUDE.md",
         ".agents/command-docs.yaml",
         ".gitleaks.toml",
         ".secretlintignore",
@@ -79,6 +80,7 @@
       "description": "Prompt-affecting instruction surfaces must refresh the checked-in cautilus proof artifact.",
       "source_paths": [
         "AGENTS.md",
+        "CLAUDE.md",
         ".agents/*-adapter.yaml",
         ".agents/cautilus-adapters/*.yaml",
         "evals/cautilus/instruction-surface-cases.json",

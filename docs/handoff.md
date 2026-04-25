@@ -8,14 +8,14 @@
 ## Current State
 
 - startup에는 `charness:find-skills` 1회가 필수이고, durable capability inventory는 [charness-artifacts/find-skills/latest.md](../charness-artifacts/find-skills/latest.md)와 `latest.json`이 owning surface다.
-- `init-repo`의 checked-in `Skill Routing` 계약은 이제 compact-only다. [AGENTS.md](../AGENTS.md)에는 긴 스킬 카탈로그를 복사하지 않고 startup `find-skills` bootstrap만 남긴다. 관련 `cautilus` proof는 [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md)와 `.cautilus/runs/20260422T131049094Z-run/`이 owner다.
+- [AGENTS.md](../AGENTS.md)는 craken-style compact entry다. 매 세션 즉시 필요한 Start Here / Subagent Delegation / Phase Rules만 inline이고, 세부 운영 규칙은 [docs/conventions/](./conventions/)가 owner다. 관련 `cautilus` proof는 [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md)와 `.cautilus/runs/20260425T232453694Z-run/`이 owner다.
 - README-first thin bootstrap contract가 이제 public skill/reference/helper/adapters/control-plane까지 맞춰졌다. default surface는 더 이상 `INSTALL.md`/`UNINSTALL.md`를 전제하지 않고, repo-owned next step은 README Quick Start + `doctor --next-action` 류 surface가 owner다.
 - README rewrite slice가 landing됐다. top-level [README.md](../README.md)는 value + Quick Start + operating model 중심으로 얇게 유지하고, command-by-command surface는 generated [docs/cli-reference.md](./cli-reference.md)로 분리한다. owner는 [scripts/render_cli_reference.py](../scripts/render_cli_reference.py), [.agents/command-docs.yaml](../.agents/command-docs.yaml), [tests/quality_gates/test_command_docs_gate.py](../tests/quality_gates/test_command_docs_gate.py)다.
 - install/update bootstrap은 이제 [packaging/bootstrap-python.json](../packaging/bootstrap-python.json) + [packaging/bootstrap-requirements.txt](../packaging/bootstrap-requirements.txt)를 owner로 둔 repo-local Python runtime contract를 쓴다. [init.sh](../init.sh)와 [charness](../charness)는 global `jsonschema`/`packaging` 전제를 두지 않고 managed checkout 아래 runtime helper를 먼저 맞춘다.
 - control plane의 supported install-ownership story에서 `brew`는 제거됐다. integration manifests, provenance/update helpers, locks, tests, plugin export, current cautilus proof까지 같은 계약으로 맞춰졌다.
 - install/doctor는 이제 host install 상태와 repo onboarding 상태를 분리해서 본다. consumer repo에서 `charness doctor`를 돌리면 host action이 끝난 뒤에는 `repo_onboarding`으로 `init-repo` next step을 surface할 수 있고, `create-skill` / `init-repo`는 semantic skill change 전에 dogfood/scenario/proof carrier를 먼저 고르게 됐다.
 - `premortem`과 `quality`/`handoff`의 fresh-eye loop는 subagent가 canonical이 아니라 mandatory다. bounded capability probe 뒤에도 spawn이 안 되면 same-agent fallback으로 대체하지 말고 concrete host signal을 남긴 채 stop한다.
-- `init-repo` 기본 AGENTS guidance와 checked-in [AGENTS.md](../AGENTS.md) 모두 이제 repo-mandated bounded fresh-eye subagent review를 "already delegated" 규칙으로 surface한다. second-message 대기를 금지하고, host spawn restriction을 explicit blocker로 남긴다.
+- `init-repo` 기본 AGENTS guidance와 checked-in [AGENTS.md](../AGENTS.md) 모두 repo-mandated bounded fresh-eye subagent review를 "already delegated" 규칙으로 surface한다. second-message 대기를 금지하고, host spawn restriction을 explicit blocker로 남긴다.
 - [`docs/handoff.md`](./handoff.md)는 rolling pointer다. gate 수치, release 상태, dogfood evidence, 긴 history는 owning artifact로 보내고 여기에는 next action을 바꾸는 사실만 남긴다.
 - artifact policy는 이제 `history-default, latest optional` 쪽으로 재분류 중이다. 기준 owner는 [docs/artifact-policy.md](./artifact-policy.md)와 [charness-artifacts/spec/artifact-history-default-reclassification.md](../charness-artifacts/spec/artifact-history-default-reclassification.md)다.
 - checked-in plugin export가 걸린 source를 바꾸면 validator보다 먼저 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`로 sync한다.
@@ -25,21 +25,19 @@
 - `narrative` intent-preserving rewrite widening은 `v0.5.0`으로 release됐다. 다음 dogfood는 다른 repo에서 이 release를 실제로 써 보고 issue 형태의 misses를 모으는 단계다.
 - agent-facing CLI prep/execute 아티팩트 분리 결정 렌즈가 `create-cli` (primary) + `impl` (crossref)에 landing됐다 ([#48](https://github.com/corca-ai/charness/issues/48) scope a). Spec은 [charness-artifacts/spec/issue-48-prep-execute-lens.md](../charness-artifacts/spec/issue-48-prep-execute-lens.md). Probe Q1/Q2/Q3는 post-landing 관찰 대상이다.
 - 크로스-레포 이슈 작성 hygiene (`why/what > how`)는 `narrative` reference로 landing됐다. high-leverage truth-surface rewrite와 adapter-missing stop rule도 함께 `narrative` 쪽에 들어갔다.
-- AGENTS.md hitl 정제(192→130, commit db83ee7) + portable skill body link sweep(178+ links, commit 38a3ae6)이 끝났다. 다음 slice는 craken-style link-index 추가 refactor — spec은 [charness-artifacts/spec/agents-md-craken-refactor.md](../charness-artifacts/spec/agents-md-craken-refactor.md). AGENTS.md ~50 lines 목표.
-- 7 commits가 push pending이다. test_retro_memory + run-evals fixture의 wording-pinned assertion은 commit 4e13a61에서 intent-level로 loosened됐다. 마지막 pre-push blocker인 cautilus eval scenario fail은 의도적으로 craken refactor 뒤로 미뤄둔다 — refactor에서 AGENTS.md가 다시 크게 바뀌므로 cautilus proof refresh를 그 직후에 한 번에 한다.
+- AGENTS.md craken refactor가 landing됐다. [AGENTS.md](../AGENTS.md)는 37 lines, `CLAUDE.md -> AGENTS.md` symlink가 host alias이며, [.agents/surfaces.json](../.agents/surfaces.json)은 `CLAUDE.md`를 repo markdown + prompt-behavior surface로 본다. Spec/HITL owner는 [charness-artifacts/spec/agents-md-craken-refactor.md](../charness-artifacts/spec/agents-md-craken-refactor.md)와 [charness-artifacts/hitl/2026-04-25-agents-md-craken-refactor.md](../charness-artifacts/hitl/2026-04-25-agents-md-craken-refactor.md)다.
 
 ## Next Session
 
-1. 다음 first-move slice는 AGENTS.md craken refactor implementation이다. spec은 [charness-artifacts/spec/agents-md-craken-refactor.md](../charness-artifacts/spec/agents-md-craken-refactor.md). 시작은 hitl skill로 docs/ 인벤토리 + 각 파일 운명(keep / move / merge / delete / 카테고리) 결정. refactor가 끝난 뒤 cautilus proof refresh + 7 (이상의) commits push까지 한 번에 처리한다 — 그 전 push 시도는 pre-push의 cautilus scenario fail로 다시 차단된다.
+1. 다음 first-move slice는 clean temp workspace의 실제 consumer repo dogfood다. 설명 없이 `quality` 또는 `init-repo`만 불렀을 때 README-first/bootstrap-less default, CLI reference split, delegated bounded-subagent rule, compact AGENTS link-index가 기대대로 surface되는지 본다.
 2. `git status --short`를 먼저 본다.
 3. README/help text를 다시 건드리면 먼저 `python3 scripts/render_cli_reference.py --repo-root . --output docs/cli-reference.md`로 command reference를 재생성하고, export surface가 걸리면 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`를 validator보다 먼저 끝낸다.
-4. 이어지는 docs drift slice는 clean temp workspace의 실제 consumer repo dogfood를 우선한다. 설명 없이 `quality` 또는 `init-repo`만 불렀을 때 README-first/bootstrap-less default, CLI reference split, delegated bounded-subagent rule이 기대대로 surface되는지 본다.
+4. 다른 repo dogfood 결과가 생겼으면 vague 회고로 흘리지 말고 eval candidate 또는 issue로 바로 정규화한다.
 5. prompt-affecting slice를 이어받으면 `python3 scripts/plan_cautilus_proof.py --repo-root . --json`로 proof 종류와 `next_action`을 먼저 본다. `adaptive`에서는 scenario review 자체보다 [evals/cautilus/scenarios.json](../evals/cautilus/scenarios.json) mutation이 필요한지 여부를 따로 본다.
-6. 다른 repo dogfood 결과가 생겼으면 vague 회고로 흘리지 말고 eval candidate 또는 issue로 바로 정규화한다.
-7. public skill, handoff, validator, 또는 other prompt surface를 건드리면 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)와 [docs/public-skill-dogfood.json](./public-skill-dogfood.json)을 읽고 `impl`로 이어간다.
-8. rolling pointer freshness를 더 조일 다음 slice면 prose를 더 추가하지 말고 deterministic validator를 우선 검토한다.
-9. derived memory / smoothing 작업을 이어받으면 [charness-artifacts/spec/derived-memory-smoothing.md](../charness-artifacts/spec/derived-memory-smoothing.md)를 먼저 읽고, quality EWMA, [debug seam-risk index](../charness-artifacts/debug/seam-risk-index.json), [retro lesson selection index](../charness-artifacts/retro/lesson-selection-index.json)는 source-linked/advisory로 유지한다. [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md) 자동 재작성은 별도 digest policy가 먼저다.
-10. release를 이어받으면 `current_release.py`로 checked-in surface를 먼저 읽고, actual publish는 `publish_release.py` helper 경로를 쓴다.
+6. public skill, handoff, validator, 또는 other prompt surface를 건드리면 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)와 [docs/public-skill-dogfood.json](./public-skill-dogfood.json)을 읽고 `impl`로 이어간다.
+7. rolling pointer freshness를 더 조일 다음 slice면 prose를 더 추가하지 말고 deterministic validator를 우선 검토한다.
+8. derived memory / smoothing 작업을 이어받으면 [charness-artifacts/spec/derived-memory-smoothing.md](../charness-artifacts/spec/derived-memory-smoothing.md)를 먼저 읽고, quality EWMA, [debug seam-risk index](../charness-artifacts/debug/seam-risk-index.json), [retro lesson selection index](../charness-artifacts/retro/lesson-selection-index.json)는 source-linked/advisory로 유지한다. [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md) 자동 재작성은 별도 digest policy가 먼저다.
+9. release를 이어받으면 `current_release.py`로 checked-in surface를 먼저 읽고, actual publish는 `publish_release.py` helper 경로를 쓴다.
 
 ## Discuss
 

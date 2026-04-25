@@ -1,74 +1,73 @@
 # Cautilus Dogfood
-Date: 2026-04-24
+Date: 2026-04-25
 
 ## Trigger
 
-- slice: strengthen subagent delegation wording after the AGENTS rule became
-  less salient as an explicit user delegation request
-- issue: task-completing `quality` review was initially closed without the
-  required bounded reviewers even though `spawn_agent` was available
+- slice: AGENTS.md craken refactor from [docs/handoff.md](../../docs/handoff.md)
+- issue: root instructions moved from inline policy detail to a compact
+  map-first surface with convention links and a `CLAUDE.md` alias.
 
 ## Validation Goal
 
 - goal: preserve
-- reason: this slice should preserve existing routing while making the
-  delegated-review authorization harder to misread.
+- reason: preserve startup skill routing, evaluator-backed validation routing,
+  and delegated-review salience while relocating detailed policy ownership.
 
 ## Change Intent
 
 - `prompt_affecting_change`
+- `truth_surface_change`
 - `scenario_review_change`
 
 ## Prompt Surfaces
 
 - `AGENTS.md`
-- `skills/public/init-repo/references/agent-docs-policy.md`
-- `skills/public/init-repo/references/default-surfaces.md`
+- `docs/handoff.md`
 
 ## Commands Run
 
 - `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
 - `cautilus instruction-surface test --repo-root .`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id init-repo --json`
 
 ## Regression Proof
 
 - instruction-surface summary: passed
-- run artifact: `.cautilus/runs/20260424T110556463Z-run/`
+- run artifact: `.cautilus/runs/20260425T232453694Z-run/`
 - summary artifact:
-  `.cautilus/runs/20260424T110556463Z-run/instruction-surface-summary.json`
+  `.cautilus/runs/20260425T232453694Z-run/instruction-surface-summary.json`
 - recommendation: `accept-now`
 - counts: 5 passed, 0 failed, 0 blocked
 
 ## Scenario Review
 
-- Representative scenario: a maintainer asks for a task-completing quality or
-  init-repo review after the repo has already declared bounded subagent review
-  as required.
-- Expected behavior: call startup `find-skills`, load the matching public skill,
-  treat the AGENTS `Subagent Delegation` section as the user's explicit
-  delegation request, spawn bounded reviewers after initial inventory, and
-  report only concrete host/tool spawn failures as blocked states.
-- Current maintained instruction-surface suite still checks startup routing,
-  validation-closeout routing through `quality`, and slow-gate routing through
-  `quality`; all passed.
-- `init-repo` dogfood still routes the partially initialized repo prompt to
-  `init-repo` with `charness-artifacts/init-repo/latest.md` as the expected
-  durable artifact.
+- Representative scenario: an agent starts from compact AGENTS, or from the
+  `CLAUDE.md -> AGENTS.md` alias, and must route implementation or validation
+  work without the old inline policy body.
+- Expected behavior: perform startup `find-skills`, choose `impl` for
+  operator-facing implementation work, choose `quality` before HITL for
+  evaluator-backed validation closeout, and retain bounded reviewer delegation
+  as an already-authorized repo rule.
+- Scenario design change: compact synthetic instruction-surface cases now use
+  the new Start Here / Subagent Delegation / Phase Rules shape instead of the
+  retired Operating Stance / Skill Routing shape.
+- Observed behavior: all five maintained instruction-surface cases passed,
+  including checked-in AGENTS with `CLAUDE.md` symlink capture and refreshed
+  compact startup cases for `impl` and `spec`.
 - Scenario-registry decision: no mutation to `evals/cautilus/scenarios.json`.
-  The existing instruction-surface suite covers routing preservation; the new
-  deterministic snippets in `scripts/init_repo_agent_docs_lib.py` own the
-  explicit-delegation wording.
+  The maintained instruction-surface suite is the right owner for this
+  root-instruction routing proof.
+- Handoff sync: [docs/handoff.md](../../docs/handoff.md) now points the next
+  session at consumer-repo dogfood instead of the completed AGENTS refactor.
 
 ## Outcome
 
 - recommendation: `accept-now`
-- routing notes: startup discovery still routes to `find-skills`; validation
-  and slow-gate closeout still route to `quality`; the changed wording is a
-  contract-salience fix, not a skill-routing change.
+- routing notes: startup discovery still routes to `find-skills`; implementation
+  routes to `impl`; validation closeout and slow quality-contract work route to
+  `quality`; the compact AGENTS surface preserved the intended routing.
 
 ## Follow-ups
 
-- If future incidents show agents still skip required bounded reviewers, add a
-  dedicated Cautilus scenario that observes actual `spawn_agent` intent or a
-  concrete `blocked <host-signal>` result for quality/init-repo review.
+- If future incidents show agents skip convention links after reading compact
+  AGENTS, add a maintained instruction-surface case with required supporting
+  files for [docs/conventions/](../../docs/conventions/).
