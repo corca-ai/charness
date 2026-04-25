@@ -25,18 +25,20 @@
 - `narrative` intent-preserving rewrite widening은 `v0.5.0`으로 release됐다. 다음 dogfood는 다른 repo에서 이 release를 실제로 써 보고 issue 형태의 misses를 모으는 단계다.
 - agent-facing CLI prep/execute 아티팩트 분리 결정 렌즈가 `create-cli` (primary) + `impl` (crossref)에 landing됐다 ([#48](https://github.com/corca-ai/charness/issues/48) scope a). Spec은 [charness-artifacts/spec/issue-48-prep-execute-lens.md](../charness-artifacts/spec/issue-48-prep-execute-lens.md). Probe Q1/Q2/Q3는 post-landing 관찰 대상이다.
 - 크로스-레포 이슈 작성 hygiene (`why/what > how`)는 `narrative` reference로 landing됐다. high-leverage truth-surface rewrite와 adapter-missing stop rule도 함께 `narrative` 쪽에 들어갔다.
+- AGENTS.md hitl 정제(192→130, commit db83ee7) + portable skill body link sweep(178+ links, commit 38a3ae6)이 끝났다. 다음 slice는 craken-style link-index 추가 refactor — spec은 [charness-artifacts/spec/agents-md-craken-refactor.md](../charness-artifacts/spec/agents-md-craken-refactor.md). AGENTS.md ~50 lines 목표.
 
 ## Next Session
 
-1. `git status --short`를 먼저 본다.
-2. README/help text를 다시 건드리면 먼저 `python3 scripts/render_cli_reference.py --repo-root . --output docs/cli-reference.md`로 command reference를 재생성하고, export surface가 걸리면 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`를 validator보다 먼저 끝낸다.
-3. 이어지는 docs drift slice는 clean temp workspace의 실제 consumer repo dogfood를 우선한다. 설명 없이 `quality` 또는 `init-repo`만 불렀을 때 README-first/bootstrap-less default, CLI reference split, delegated bounded-subagent rule이 기대대로 surface되는지 본다.
-4. prompt-affecting slice를 이어받으면 `python3 scripts/plan_cautilus_proof.py --repo-root . --json`로 proof 종류와 `next_action`을 먼저 본다. `adaptive`에서는 scenario review 자체보다 [evals/cautilus/scenarios.json](../evals/cautilus/scenarios.json) mutation이 필요한지 여부를 따로 본다.
-5. 다른 repo dogfood 결과가 생겼으면 vague 회고로 흘리지 말고 eval candidate 또는 issue로 바로 정규화한다.
-6. public skill, handoff, validator, 또는 other prompt surface를 건드리면 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)와 [docs/public-skill-dogfood.json](./public-skill-dogfood.json)을 읽고 `impl`로 이어간다.
-7. rolling pointer freshness를 더 조일 다음 slice면 prose를 더 추가하지 말고 deterministic validator를 우선 검토한다.
-8. derived memory / smoothing 작업을 이어받으면 [charness-artifacts/spec/derived-memory-smoothing.md](../charness-artifacts/spec/derived-memory-smoothing.md)를 먼저 읽고, quality EWMA, [debug seam-risk index](../charness-artifacts/debug/seam-risk-index.json), [retro lesson selection index](../charness-artifacts/retro/lesson-selection-index.json)는 source-linked/advisory로 유지한다. [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md) 자동 재작성은 별도 digest policy가 먼저다.
-9. release를 이어받으면 `current_release.py`로 checked-in surface를 먼저 읽고, actual publish는 `publish_release.py` helper 경로를 쓴다.
+1. 다음 first-move slice는 AGENTS.md craken refactor implementation이다. spec은 [charness-artifacts/spec/agents-md-craken-refactor.md](../charness-artifacts/spec/agents-md-craken-refactor.md). 시작은 hitl skill로 docs/ 인벤토리 + 각 파일 운명(keep / move / merge / delete / 카테고리) 결정.
+2. `git status --short`를 먼저 본다.
+3. README/help text를 다시 건드리면 먼저 `python3 scripts/render_cli_reference.py --repo-root . --output docs/cli-reference.md`로 command reference를 재생성하고, export surface가 걸리면 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`를 validator보다 먼저 끝낸다.
+4. 이어지는 docs drift slice는 clean temp workspace의 실제 consumer repo dogfood를 우선한다. 설명 없이 `quality` 또는 `init-repo`만 불렀을 때 README-first/bootstrap-less default, CLI reference split, delegated bounded-subagent rule이 기대대로 surface되는지 본다.
+5. prompt-affecting slice를 이어받으면 `python3 scripts/plan_cautilus_proof.py --repo-root . --json`로 proof 종류와 `next_action`을 먼저 본다. `adaptive`에서는 scenario review 자체보다 [evals/cautilus/scenarios.json](../evals/cautilus/scenarios.json) mutation이 필요한지 여부를 따로 본다.
+6. 다른 repo dogfood 결과가 생겼으면 vague 회고로 흘리지 말고 eval candidate 또는 issue로 바로 정규화한다.
+7. public skill, handoff, validator, 또는 other prompt surface를 건드리면 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)와 [docs/public-skill-dogfood.json](./public-skill-dogfood.json)을 읽고 `impl`로 이어간다.
+8. rolling pointer freshness를 더 조일 다음 slice면 prose를 더 추가하지 말고 deterministic validator를 우선 검토한다.
+9. derived memory / smoothing 작업을 이어받으면 [charness-artifacts/spec/derived-memory-smoothing.md](../charness-artifacts/spec/derived-memory-smoothing.md)를 먼저 읽고, quality EWMA, [debug seam-risk index](../charness-artifacts/debug/seam-risk-index.json), [retro lesson selection index](../charness-artifacts/retro/lesson-selection-index.json)는 source-linked/advisory로 유지한다. [recent-lessons.md](../charness-artifacts/retro/recent-lessons.md) 자동 재작성은 별도 digest policy가 먼저다.
+10. release를 이어받으면 `current_release.py`로 checked-in surface를 먼저 읽고, actual publish는 `publish_release.py` helper 경로를 쓴다.
 
 ## Discuss
 
