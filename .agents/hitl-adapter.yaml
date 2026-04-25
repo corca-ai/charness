@@ -1,0 +1,9 @@
+version: 1
+repo: charness
+language: en
+output_dir: charness-artifacts/hitl
+preset_id: portable-defaults
+customized_from: portable-defaults
+default_scope: all
+chunk_target_lines: 100
+require_explicit_apply: true
