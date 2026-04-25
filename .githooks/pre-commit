@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+mapfile -t STAGED < <(git diff --cached --name-only --diff-filter=ACM)
+[ "${#STAGED[@]}" -eq 0 ] && exit 0
+
+# Static checks on staged python files
+mapfile -t STAGED_PY < <(printf '%s\n' "${STAGED[@]}" | grep -E '\.py$' || true)
+if [ "${#STAGED_PY[@]}" -gt 0 ]; then
+  echo "charness pre-commit: py_compile (staged)"
+  python3 -m py_compile "${STAGED_PY[@]}"
+  if command -v ruff >/dev/null 2>&1; then
+    echo "charness pre-commit: ruff (staged)"
+    ruff check "${STAGED_PY[@]}"
+  fi
+fi
+
+# Domain validators based on staged paths
+if printf '%s\n' "${STAGED[@]}" | grep -qE '^skills/'; then
+  echo "charness pre-commit: validate-skills"
+  python3 scripts/validate_skills.py --repo-root "$REPO_ROOT"
+fi
+if printf '%s\n' "${STAGED[@]}" | grep -qE '^profiles/'; then
+  echo "charness pre-commit: validate-profiles"
+  python3 scripts/validate_profiles.py --repo-root "$REPO_ROOT"
+fi
+if printf '%s\n' "${STAGED[@]}" | grep -qE '^\.agents/'; then
+  echo "charness pre-commit: validate-adapters"
+  python3 scripts/validate_adapters.py --repo-root "$REPO_ROOT"
+fi
+if printf '%s\n' "${STAGED[@]}" | grep -qE '^presets/'; then
+  echo "charness pre-commit: validate-presets"
+  python3 scripts/validate_presets.py --repo-root "$REPO_ROOT"
+fi
+if printf '%s\n' "${STAGED[@]}" | grep -qE '^integrations/'; then
+  echo "charness pre-commit: validate-integrations"
+  python3 scripts/validate_integrations.py --repo-root "$REPO_ROOT"
+fi
+
+# Markdown / doc checks
+if printf '%s\n' "${STAGED[@]}" | grep -qE '\.md$'; then
+  echo "charness pre-commit: check-doc-links"
+  python3 scripts/check_doc_links.py --repo-root "$REPO_ROOT"
+  echo "charness pre-commit: check-markdown"
+  ./scripts/check-markdown.sh
+fi
+
+echo "charness pre-commit: ok"
