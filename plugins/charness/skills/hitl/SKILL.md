@@ -28,7 +28,7 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 
 Default durable artifact:
 
-- [`charness-artifacts/hitl/latest.md`](../../../charness-artifacts/hitl/latest.md)
+- `<repo-root>/charness-artifacts/hitl/latest.md`
 
 Default runtime directory:
 
@@ -141,4 +141,4 @@ The result should usually include:
 - `references/chunk-contract.md`
 - `references/state-model.md`
 - `references/rule-propagation.md`
-- `scripts/bootstrap_review.py`
+- `<repo-root>/scripts/bootstrap_review.py`

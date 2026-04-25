@@ -71,7 +71,7 @@ echo "$help" | grep -q "alloy dump"
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `-config` | [`specdown.json`](../../../specdown.json) | Config file path |
+| `-config` | `<repo-root>/specdown.json` | Config file path |
 | `-out` | (per config file) | HTML report output path |
 | `-filter` | (none) | Case filter (heading substring or `type:`, `block:`, `check:` prefix) |
 | `-jobs` | `1` | Number of spec files to run in parallel |
@@ -89,14 +89,14 @@ echo "$help" | grep -q "alloy dump"
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `-config` | [`specdown.json`](../../../specdown.json) | Config file path |
+| `-config` | `<repo-root>/specdown.json` | Config file path |
 | `-format` | `json` | Output format: `json`, `dot`, or `matrix` |
 | `-strict` | `false` | Suppress output and exit non-zero when validation errors exist |
 
 ## Trace
 
 The `specdown trace` command validates the [depends::traceability](./traceability.md)
-graph configured in [`specdown.json`](../../../specdown.json) and outputs the result.
+graph configured in `<repo-root>/specdown.json` and outputs the result.
 
 Without `-strict`, validation errors are printed to stderr but the graph
 is still written to stdout and the command exits successfully.
@@ -171,10 +171,10 @@ specdown run -config typed-filter-cfg.json -dry-run -filter "NoSuchHeading" 2>&1
 
 ## Install Skills
 
-`specdown install skills` creates an `.agents/skills/specdown/` directory
+`specdown install skills` creates an `<repo-root>/.agents/skills/specdown/` directory
 with a `SKILL.md` and all reference specs so that Claude Code can write,
 run, and fix specs without leaving the editor. A `.claude/skills` symlink
-pointing to `.agents/skills` is created for Claude Code compatibility.
+pointing to `<repo-root>/.agents/skills` is created for Claude Code compatibility.
 
 ```run:shell
 # Install skills into a fresh directory and list created files
@@ -204,7 +204,7 @@ workflow-evolve.md
 workflow-new-project.md
 ```
 
-The `.claude/skills` path is a symlink to `.agents/skills`:
+The `.claude/skills` path is a symlink to `<repo-root>/.agents/skills`:
 
 ```run:shell
 $ readlink skill-install/.claude/skills

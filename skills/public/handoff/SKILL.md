@@ -27,8 +27,8 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 ```
 
 By default, `handoff` writes its durable artifact to
-[`docs/handoff.md`](../../../docs/handoff.md). Repos can override the directory with
-[`.agents/handoff-adapter.yaml`](../../../.agents/handoff-adapter.yaml).
+`<repo-root>/docs/handoff.md`. Repos can override the directory with
+`<repo-root>/.agents/handoff-adapter.yaml`.
 
 Keep the handoff inside the repo-owned size and shape gate. Default to a
 signal target of 30-60 lines and treat 70 lines as the usual hard stop unless

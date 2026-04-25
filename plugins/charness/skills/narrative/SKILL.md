@@ -42,7 +42,7 @@ python3 "$SKILL_DIR/scripts/review_adapter.py" --repo-root .
 
 Default durable artifact:
 
-- [`charness-artifacts/narrative/latest.md`](../../../charness-artifacts/narrative/latest.md)
+- `<repo-root>/charness-artifacts/narrative/latest.md`
 
 What you get after one run:
 
@@ -196,5 +196,5 @@ Questions`, and `Next Step`.
 - `references/scenario-blocks.md`
 - `references/landing-rewrite-loop.md`
 - `references/cross-repo-issue-shaping.md`
-- `scripts/map_sources.py`
-- `scripts/review_adapter.py`
+- `<repo-root>/scripts/map_sources.py`
+- `<repo-root>/scripts/review_adapter.py`

@@ -111,7 +111,7 @@ should not use `"code"` for other purposes.
 
 ## Registration
 
-Adapters declare their capabilities in [`specdown.json`](../../../specdown.json).
+Adapters declare their capabilities in `<repo-root>/specdown.json`.
 specdown routes each case to the adapter that declared the matching block or check.
 Capabilities are declared in config, not negotiated at runtime.
 
@@ -278,7 +278,7 @@ Every adapter request is subject to a time limit. The timeout is
 determined by (in priority order):
 
 1. Per-document `timeout` in frontmatter (milliseconds)
-2. `defaultTimeoutMsec` in [`specdown.json`](../../../specdown.json) (default: `30000`)
+2. `defaultTimeoutMsec` in `<repo-root>/specdown.json` (default: `30000`)
 
 A timeout value of `0` disables the time limit — the engine waits
 indefinitely for the adapter to respond.

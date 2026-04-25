@@ -38,8 +38,8 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 ```
 
 By default, `gather` writes its durable artifact to
-[`charness-artifacts/gather/latest.md`](../../../charness-artifacts/gather/latest.md). Repos can override the directory with
-`.agents/gather-adapter.yaml`.
+`<repo-root>/charness-artifacts/gather/latest.md`. Repos can override the directory with
+`<repo-root>/.agents/gather-adapter.yaml`.
 
 ```bash
 # Required Tools: rg
@@ -153,4 +153,4 @@ The result should usually include:
 - `references/capability-contract.md`
 - `references/browser-mediated-private-sources.md`
 - `references/google-workspace-via-gws.md`
-- `scripts/advise_google_workspace_path.py`
+- `<repo-root>/scripts/advise_google_workspace_path.py`

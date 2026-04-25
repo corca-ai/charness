@@ -13,7 +13,7 @@ The default gate should answer three questions quickly:
 Quiet defaults and failure detail are complements, not opposites. A good gate
 stays compact on green, then becomes loud enough to act on when a seam fails.
 
-Use `scripts/inventory_standing_gate_verbosity.py` when a repo keeps a standing
+Use `<repo-root>/scripts/inventory_standing_gate_verbosity.py` when a repo keeps a standing
 hook, hook runner, or verify chain.
 
 ## Inventory Axes
@@ -30,9 +30,9 @@ Review these five axes and classify each as `healthy`, `weak`, `missing`, or
    - `cargo test -- --nocapture` is usually a smell in the default gate
 2. **Orchestrator output mode**
    - prefer a thin orchestrator that delegates `pre-push` to a repo-owned
-     runner (for example `scripts/run-pre-push.sh`,
-     `scripts/run-pre-push.mjs`, or
-     [`scripts/run-quality.sh`](../../../../scripts/run-quality.sh)). The runner owns
+     runner (for example `<repo-root>/scripts/run-pre-push.sh`,
+     `<repo-root>/scripts/run-pre-push.mjs`, or
+     `<repo-root>/scripts/run-quality.sh`). The runner owns
      quiet-default success output, failure-path log replay, per-phase elapsed
      reporting, and a single verbose-on-demand env seam — shapes that outlive
      any one orchestrator's UI quirks.

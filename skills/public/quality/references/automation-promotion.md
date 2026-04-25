@@ -12,12 +12,12 @@ The concern is already enforced by a meaningful deterministic gate.
 
 Examples:
 
-- a broken markdown link already caught by [`check_doc_links.py`](../../../../scripts/check_doc_links.py)
+- a broken markdown link already caught by `check_doc_links.py`
 - a backtick-wrapped file reference that would silently rot on rename, already
-  caught by the same [`check_doc_links.py`](../../../../scripts/check_doc_links.py) rule that rejects path-like
-  tokens inside inline code, paired with [`check-links-internal.sh`](../../../../scripts/check-links-internal.sh) for
+  caught by the same `check_doc_links.py` rule that rejects path-like
+  tokens inside inline code, paired with `check-links-internal.sh` for
   actual file-existence verification
-- malformed skill frontmatter already caught by [`validate_skills.py`](../../../../scripts/validate_skills.py)
+- malformed skill frontmatter already caught by `validate_skills.py`
 - Python import hygiene already caught by `ruff`
 
 Do not repeat these as primary manual findings unless you are adding repository

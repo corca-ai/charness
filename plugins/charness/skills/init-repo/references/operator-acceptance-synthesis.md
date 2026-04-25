@@ -1,6 +1,6 @@
 # Operator Acceptance Synthesis
 
-When [`docs/operator-acceptance.md`](../../../../docs/operator-acceptance.md) is missing in a repo that already has real
+When `<repo-root>/docs/operator-acceptance.md` is missing in a repo that already has real
 checks, derive it from the repo's current command and takeover surface instead
 of inventing a parallel ritual.
 
@@ -36,7 +36,7 @@ A good operator-acceptance section usually contains:
 - remaining items with read-first pointers
 - acceptance bullets that say what proves completion
 
-Use `scripts/synthesize_operator_acceptance.py` when the repo already has
+Use `<repo-root>/scripts/synthesize_operator_acceptance.py` when the repo already has
 functional-check style Markdown specs or repo-owned command surfaces and needs
 the first honest draft before manual tightening.
 

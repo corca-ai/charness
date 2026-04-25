@@ -6,14 +6,14 @@ aligned with the new version.
 
 ## Canonical Mutable Source
 
-- [`packaging/charness.json`](../../../../packaging/charness.json)
+- `<repo-root>/packaging/charness.json`
 
 ## Generated Surfaces
 
-- [`plugins/charness/.claude-plugin/plugin.json`](../../../../plugins/charness/.claude-plugin/plugin.json)
-- [`plugins/charness/.codex-plugin/plugin.json`](../../../../plugins/charness/.codex-plugin/plugin.json)
-- [`.claude-plugin/marketplace.json`](../../../../.claude-plugin/marketplace.json)
-- [`.agents/plugins/marketplace.json`](../../../../.agents/plugins/marketplace.json)
+- `<repo-root>/plugins/charness/.claude-plugin/plugin.json`
+- `<repo-root>/plugins/charness/.codex-plugin/plugin.json`
+- `<repo-root>/.claude-plugin/marketplace.json`
+- `<repo-root>/.agents/plugins/marketplace.json`
 
 ## User Update Boundary
 
@@ -76,7 +76,7 @@ The adapter can declare that checklist through:
 - `real_host_required_path_globs`
 - `real_host_checklist`
 
-Use `scripts/check_real_host_proof.py` to decide whether the current slice hit
+Use `<repo-root>/scripts/check_real_host_proof.py` to decide whether the current slice hit
 those seams.
 
 ## Drift Rule

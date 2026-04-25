@@ -5,14 +5,14 @@ artifact policy out of the public skill body.
 
 ## Canonical Path
 
-Use `.agents/impl-adapter.yaml` for new repos.
+Use `<repo-root>/.agents/impl-adapter.yaml` for new repos.
 
 Search order:
 
-1. `.agents/impl-adapter.yaml`
+1. `<repo-root>/.agents/impl-adapter.yaml`
 2. `.codex/impl-adapter.yaml`
 3. `.claude/impl-adapter.yaml`
-4. `docs/impl-adapter.yaml`
+4. `<repo-root>/docs/impl-adapter.yaml`
 5. `impl-adapter.yaml` as compatibility fallback only
 
 ## Fields
@@ -93,6 +93,6 @@ adapters should always use an explicit prefix.
 - if the repo has a stronger preferred proof path, record it here instead of
   burying it in the main skill body
 - if the repo has a few durable truth surfaces, record them here instead of
-  hoping [`README.md`](../../../../README.md) drift is remembered ad hoc at closeout
+  hoping `<repo-root>/README.md` drift is remembered ad hoc at closeout
 - use explicit empty lists to record intentional opt-out from repo-specific
   verification preferences

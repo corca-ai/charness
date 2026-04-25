@@ -36,7 +36,7 @@ Adapter policy:
 - If the adapter is missing and the request is session-like, continue with
   inferred defaults.
 - If the adapter is missing and the request is weekly-like, metrics-heavy, or
-  explicitly asks for durable artifacts, create [`.agents/retro-adapter.yaml`](../../../.agents/retro-adapter.yaml)
+  explicitly asks for durable artifacts, create `<repo-root>/.agents/retro-adapter.yaml`
   first, then continue.
 - If the adapter is invalid, repair it using `references/adapter-contract.md`
   before relying on adapter-defined paths or metrics.

@@ -22,18 +22,18 @@ re-ask them.
 
 ## Expected Surfaces
 
-- [`README.md`](../../../../README.md)
-- [`AGENTS.md`](../../../../AGENTS.md)
-- `CLAUDE.md` symlink to [`AGENTS.md`](../../../../AGENTS.md)
-- `docs/roadmap.md`
-- [`docs/operator-acceptance.md`](../../../../docs/operator-acceptance.md)
+- `<repo-root>/README.md`
+- `<repo-root>/AGENTS.md`
+- `CLAUDE.md` symlink to `<repo-root>/AGENTS.md`
+- `<repo-root>/docs/roadmap.md`
+- `<repo-root>/docs/operator-acceptance.md`
 
 Add separate bootstrap and uninstall docs only when the repo actually exposes
 an installable plugin, package, or operator-facing install contract.
 
 Add retro memory only when the repo wants that seam from day one. When it does,
-seed [`.agents/retro-adapter.yaml`](../../../../.agents/retro-adapter.yaml) and [`charness-artifacts/retro/recent-lessons.md`](../../../../charness-artifacts/retro/recent-lessons.md)
-with `scripts/seed_retro_memory.py` rather than hand-writing them.
+seed `<repo-root>/.agents/retro-adapter.yaml` and `<repo-root>/charness-artifacts/retro/recent-lessons.md`
+with `<repo-root>/scripts/seed_retro_memory.py` rather than hand-writing them.
 
 If those docs are needed, seed a small explicit probe surface early so future
 wrappers or operators do not have to reverse-engineer:

@@ -2,39 +2,39 @@
 
 `init-repo` owns one explicit repo-level host policy:
 
-- [`AGENTS.md`](../../../../AGENTS.md) is the canonical repo instruction file
-- `CLAUDE.md` should symlink to [`AGENTS.md`](../../../../AGENTS.md) when Claude compatibility is needed
+- `<repo-root>/AGENTS.md` is the canonical repo instruction file
+- `CLAUDE.md` should symlink to `<repo-root>/AGENTS.md` when Claude compatibility is needed
 - when the repo requires bounded fresh-eye or premortem-style subagent review
-  as a stop gate, [`AGENTS.md`](../../../../AGENTS.md) should carry one short rule that this review is
+  as a stop gate, `<repo-root>/AGENTS.md` should carry one short rule that this review is
   the user's explicit delegation request for that bounded scope and is already
   delegated by the repo contract
 - for Charness-managed repos, that rule should also name task-completing
   `init-repo` and `quality` review runs as authorized to spawn bounded
   reviewers; a Premortem-only heading is too narrow for this policy
 - when adapter-declared policy sources imply delegated review but
-  [`AGENTS.md`](../../../../AGENTS.md) lacks the explicit host-spawn rule, emit a reviewable
+  `<repo-root>/AGENTS.md` lacks the explicit host-spawn rule, emit a reviewable
   recommendation instead of treating phrase matching as a hard fact
-- when a repo uses Charness durable artifacts, [`AGENTS.md`](../../../../AGENTS.md) should say
+- when a repo uses Charness durable artifacts, `<repo-root>/AGENTS.md` should say
   meaningful `charness-artifacts/` changes are commit targets, and
   current-pointer helpers should no-op when canonical content has not changed
 
 ## Deterministic Cases
 
-- no [`AGENTS.md`](../../../../AGENTS.md), no `CLAUDE.md`
-  - create [`AGENTS.md`](../../../../AGENTS.md)
+- no `<repo-root>/AGENTS.md`, no `CLAUDE.md`
+  - create `<repo-root>/AGENTS.md`
   - create `CLAUDE.md -> AGENTS.md`
-- [`AGENTS.md`](../../../../AGENTS.md) exists, `CLAUDE.md` missing
+- `<repo-root>/AGENTS.md` exists, `CLAUDE.md` missing
   - create the symlink
-- `CLAUDE.md` already symlinks to [`AGENTS.md`](../../../../AGENTS.md)
+- `CLAUDE.md` already symlinks to `<repo-root>/AGENTS.md`
   - leave it alone
 
 ## Ask-The-User Cases
 
-- `CLAUDE.md` exists as a real file and [`AGENTS.md`](../../../../AGENTS.md) is missing
-  - ask whether to promote `CLAUDE.md` content into [`AGENTS.md`](../../../../AGENTS.md) and replace
+- `CLAUDE.md` exists as a real file and `<repo-root>/AGENTS.md` is missing
+  - ask whether to promote `CLAUDE.md` content into `<repo-root>/AGENTS.md` and replace
     `CLAUDE.md` with a symlink
 - both exist as real files
-  - ask whether to merge the meaningful Claude-only content into [`AGENTS.md`](../../../../AGENTS.md)
+  - ask whether to merge the meaningful Claude-only content into `<repo-root>/AGENTS.md`
     and replace `CLAUDE.md` with a symlink
 
 ## Rule

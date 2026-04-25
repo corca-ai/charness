@@ -5,22 +5,22 @@ an adapter instead of hardcoding one repo's document set into the public core.
 
 Canonical path for new repos:
 
-- [`.agents/narrative-adapter.yaml`](../../../../.agents/narrative-adapter.yaml)
+- `<repo-root>/.agents/narrative-adapter.yaml`
 
 Fallback lookup order:
 
-1. [`.agents/narrative-adapter.yaml`](../../../../.agents/narrative-adapter.yaml)
-2. `.codex/narrative-adapter.yaml`
-3. `.claude/narrative-adapter.yaml`
-4. `docs/narrative-adapter.yaml`
-5. [`narrative-adapter.yaml`](../../../../.agents/narrative-adapter.yaml)
+1. `<repo-root>/.agents/narrative-adapter.yaml`
+2. `<repo-root>/.codex/narrative-adapter.yaml`
+3. `<repo-root>/.claude/narrative-adapter.yaml`
+4. `<repo-root>/docs/narrative-adapter.yaml`
+5. `<repo-root>/narrative-adapter.yaml`
 
 ## Fields
 
 - `version`: adapter schema version, currently `1`
 - `repo`: repo display name for artifact labeling
 - `language`: default durable artifact language
-- `output_dir`: durable artifact directory, default `charness-artifacts/narrative`
+- `output_dir`: durable artifact directory, default `<repo-root>/charness-artifacts/narrative`
 - `preset_id`, `preset_version`, `customized_from`: provenance metadata only
 - `source_documents`: ordered list of truth-surface docs to read first
 - `mutable_documents`: ordered list of docs the skill may realign directly
@@ -93,9 +93,9 @@ the smallest useful contract:
 
 The default artifact is:
 
-- [`charness-artifacts/narrative/latest.md`](../../../../charness-artifacts/narrative/latest.md)
+- `<repo-root>/charness-artifacts/narrative/latest.md`
 
-Dated narrative records should use `charness-artifacts/narrative/YYYY-MM-DD-<slug>.md`.
+Dated narrative records should use `<repo-root>/charness-artifacts/narrative/YYYY-MM-DD-<slug>.md`.
 
 Keep the durable alignment artifact separate from any audience-specific brief
 when the brief is ephemeral or audience-local.

@@ -10,28 +10,28 @@ parallel templates.
 
 ## Checks
 
-- is [`README.md`](../../../../README.md) current and minimally honest
-- if the repo ships an installable surface, do [`README.md`](../../../../README.md) and the repo-local bootstrap guidance
+- is `<repo-root>/README.md` current and minimally honest
+- if the repo ships an installable surface, do `<repo-root>/README.md` and the repo-local bootstrap guidance
   name probe semantics without collapsing health, readiness, and
   discoverability into one command
 - if the repo wants durable retrospective pickup, is there one stable retro
   memory seam instead of scattered weekly/session notes
-- do [`AGENTS.md`](../../../../AGENTS.md) and `CLAUDE.md` express one clear host-facing contract
+- do `<repo-root>/AGENTS.md` and `CLAUDE.md` express one clear host-facing contract
 - when the repo requires bounded fresh-eye or premortem-style subagent review,
-  does [`AGENTS.md`](../../../../AGENTS.md) say that this stop gate is already delegated and that
+  does `<repo-root>/AGENTS.md` say that this stop gate is already delegated and that
   host spawn restrictions must stay visible
 - when Charness `init-repo` or `quality` completes a task by running bounded
-  review, does [`AGENTS.md`](../../../../AGENTS.md) name those skills as spawn-authorized instead of
+  review, does `<repo-root>/AGENTS.md` name those skills as spawn-authorized instead of
   placing all delegated-review policy under a Premortem-only heading
 - when adapter-declared policy sources imply delegated review, does
   `inspect_repo.py` emit a `recommendations[]` queue item with priority,
   confidence, evidence, suggested action, and acknowledgement state
-- when the repo uses Charness durable artifacts, does [`AGENTS.md`](../../../../AGENTS.md)
+- when the repo uses Charness durable artifacts, does `<repo-root>/AGENTS.md`
   make meaningful `charness-artifacts/` changes repo state and commit targets,
   and say current-pointer helpers should no-op without canonical content
   changes
-- does `docs/roadmap.md` exist when the repo needs short-horizon planning
-- can a human operator tell what to do from [`docs/operator-acceptance.md`](../../../../docs/operator-acceptance.md)
+- does `<repo-root>/docs/roadmap.md` exist when the repo needs short-horizon planning
+- can a human operator tell what to do from `<repo-root>/docs/operator-acceptance.md`
 - are there duplicate docs that should collapse into one source of truth
 
 ## Decision Rule

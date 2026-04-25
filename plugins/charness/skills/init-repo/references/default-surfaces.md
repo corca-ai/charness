@@ -3,7 +3,7 @@
 `init-repo` uses these as the default operating surfaces.
 
 Existing repos may already keep equivalent surfaces under local names. Declare
-those names in [`.agents/init-repo-adapter.yaml`](../../../../.agents/init-repo-adapter.yaml) instead of renaming mature repo
+those names in `<repo-root>/.agents/init-repo-adapter.yaml` instead of renaming mature repo
 docs only to satisfy the inspector:
 
 ```yaml
@@ -17,7 +17,7 @@ reported as missing.
 
 ## README
 
-The repo root [README.md](../../../../README.md) should answer:
+The repo root `<repo-root>/README.md` should answer:
 
 - what the repo is
 - who it is for
@@ -28,12 +28,12 @@ The repo root [README.md](../../../../README.md) should answer:
 
 ## AGENTS
 
-The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
+The repo root `<repo-root>/AGENTS.md` should answer:
 
 - how an agent should operate in this repo
 - language or collaboration expectations
 - core repo memory surfaces
-- when retro memory is enabled, include [`charness-artifacts/retro/recent-lessons.md`](../../../../charness-artifacts/retro/recent-lessons.md)
+- when retro memory is enabled, include `<repo-root>/charness-artifacts/retro/recent-lessons.md`
   in those memory surfaces
 - validation and commit discipline when the repo has them
 - when the repo uses Charness workflows that write durable artifacts under
@@ -54,23 +54,23 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
   exploration
 - after that bootstrap pass, tell the agent to choose the durable work skill
   from the installed charness surface instead of copying a long checked-in
-  catalog into [`AGENTS.md`](../../../../AGENTS.md)
+  catalog into `<repo-root>/AGENTS.md`
 - when the repo keeps repo-owned skills, keep one short policy that semantic
   skill changes should freeze the current intent before broad edits by deciding
   whether reviewed dogfood, maintained evaluator scenarios, or checked-in
   scenario review proof will carry the change
 - prose wrap policy when the repo uses fixed-string source guards; default to
   semantic line breaks, and require whitespace-normalized matching before
-  accepting column-wrapped prose. In [`.agents/init-repo-adapter.yaml`](../../../../.agents/init-repo-adapter.yaml), a repo
+  accepting column-wrapped prose. In `<repo-root>/.agents/init-repo-adapter.yaml`, a repo
   that deliberately keeps column wrapping must set
   `source_guard_matcher.normalize_whitespace: true` or
   `allow_column_wrap_fixed_guards: true`; otherwise the inspector reports a
   `requires_override` warning. Source-guard discovery is intentionally bounded
-  to [`AGENTS.md`](../../../../AGENTS.md), [`README.md`](../../../../README.md),
+  to `<repo-root>/AGENTS.md`, `<repo-root>/README.md`,
   `docs/`, and `specs/` by default; set `source_guard_scan_roots` in the
   adapter only when fixed guards deliberately live elsewhere.
 - selection rules in the core file, with deeper rationale pushed into linked
-  docs instead of turning [`AGENTS.md`](../../../../AGENTS.md) into a second handbook
+  docs instead of turning `<repo-root>/AGENTS.md` into a second handbook
 - avoid blanket external-link ignore defaults; when the repo relies on
   checked-in cross-file markdown links (the common case for any docs-heavy
   repo), treat `lychee`-backed internal link integrity and an explicit
@@ -84,18 +84,18 @@ The repo root [AGENTS.md](../../../../AGENTS.md) should answer:
   instead of sitting alone as inline code. Concepts stay natural: a bare
   `SKILL.md` whose basename resolves to many tracked files is still allowed,
   because the linter treats multi-match basenames as conceptual references.
-  See [`./scripts/check_doc_links.py`](../../../../scripts/check_doc_links.py),
-  [`./scripts/check-links-internal.sh`](../../../../scripts/check-links-internal.sh), and
-  [`./scripts/migrate_backtick_file_refs.py`](../../../../scripts/migrate_backtick_file_refs.py)
+  See `<repo-root>/scripts/check_doc_links.py`,
+  `<repo-root>/scripts/check-links-internal.sh`, and
+  `<repo-root>/scripts/migrate_backtick_file_refs.py`
   for the shipped reference implementation and one-shot migrator
 
-Use `scripts/render_skill_routing.py` to render the block. Keep it short and
-bootstrap-heavy. On a mature repo whose [`AGENTS.md`](../../../../AGENTS.md) lacks it, propose
+Use `<repo-root>/scripts/render_skill_routing.py` to render the block. Keep it short and
+bootstrap-heavy. On a mature repo whose `<repo-root>/AGENTS.md` lacks it, propose
 adding the block instead of rewriting the whole instruction file.
 
 ## Roadmap
 
-The repo roadmap document, usually `docs/roadmap.md`, should answer:
+The repo roadmap document, usually `<repo-root>/docs/roadmap.md`, should answer:
 
 - current priorities
 - ordering of the next work items
@@ -107,7 +107,7 @@ Prefer short-horizon execution direction over a grand long-range thesis.
 ## Operator Acceptance
 
 The operator takeover document, usually
-[docs/operator-acceptance.md](../../../../docs/operator-acceptance.md), should answer:
+`<repo-root>/docs/operator-acceptance.md`, should answer:
 
 - what a human operator should read first
 - what commands to run first
@@ -146,8 +146,8 @@ pickup between sessions.
 
 When enabled, keep the seam small and explicit:
 
-- [`.agents/retro-adapter.yaml`](../../../../.agents/retro-adapter.yaml)
-- [`charness-artifacts/retro/recent-lessons.md`](../../../../charness-artifacts/retro/recent-lessons.md)
+- `<repo-root>/.agents/retro-adapter.yaml`
+- `<repo-root>/charness-artifacts/retro/recent-lessons.md`
 - one stable `summary_path` instead of many ad hoc notes
 
 ## Early Quality Baseline

@@ -10,12 +10,12 @@ forcing a full weekly retro every time.
 
 ## Seeded Files
 
-- [`.agents/retro-adapter.yaml`](../../../../.agents/retro-adapter.yaml)
-- [`charness-artifacts/retro/recent-lessons.md`](../../../../charness-artifacts/retro/recent-lessons.md)
+- `<repo-root>/.agents/retro-adapter.yaml`
+- `<repo-root>/charness-artifacts/retro/recent-lessons.md`
 
 ## Preferred Path
 
-Use `scripts/seed_retro_memory.py` to create the initial seam:
+Use `<repo-root>/scripts/seed_retro_memory.py` to create the initial seam:
 
 ```bash
 python3 "$SKILL_DIR/scripts/seed_retro_memory.py" --repo-root .
@@ -26,7 +26,7 @@ This seeds:
 - `summary_path: charness-artifacts/retro/recent-lessons.md`
 - a stable `snapshot_path`
 - empty `evidence_paths` and `metrics_commands` that the repo can tighten later
-- an expectation that [`AGENTS.md`](../../../../AGENTS.md) should list [`charness-artifacts/retro/recent-lessons.md`](../../../../charness-artifacts/retro/recent-lessons.md)
+- an expectation that `<repo-root>/AGENTS.md` should list `<repo-root>/charness-artifacts/retro/recent-lessons.md`
   in repo memory when the seam is enabled
 
 ## Guardrails

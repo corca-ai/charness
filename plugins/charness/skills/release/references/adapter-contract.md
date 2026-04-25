@@ -5,15 +5,15 @@ seams from a repo adapter.
 
 ## Canonical Path
 
-Use [`.agents/release-adapter.yaml`](../../../../.agents/release-adapter.yaml) for new repos.
+Use `<repo-root>/.agents/release-adapter.yaml` for new repos.
 
 Search order:
 
-1. [`.agents/release-adapter.yaml`](../../../../.agents/release-adapter.yaml)
-2. `.codex/release-adapter.yaml`
-3. `.claude/release-adapter.yaml`
-4. `docs/release-adapter.yaml`
-5. [`release-adapter.yaml`](../../../../.agents/release-adapter.yaml)
+1. `<repo-root>/.agents/release-adapter.yaml`
+2. `<repo-root>/.codex/release-adapter.yaml`
+3. `<repo-root>/.claude/release-adapter.yaml`
+4. `<repo-root>/docs/release-adapter.yaml`
+5. `<repo-root>/release-adapter.yaml`
 
 ## Shared Core
 
@@ -48,12 +48,12 @@ Search order:
 ## Defaults
 
 - `language`: `en`
-- `output_dir`: `charness-artifacts/release`
+- `output_dir`: `<repo-root>/charness-artifacts/release`
 - `package_id`: repo directory name
-- `packaging_manifest_path`: `packaging/<repo>.json`
-- `checked_in_plugin_root`: `plugins/<package_id>`
+- `packaging_manifest_path`: `<repo-root>/packaging/<repo>.json`
+- `checked_in_plugin_root`: `<repo-root>/plugins/<package_id>`
 - `sync_command`: `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- `quality_command`: [`./scripts/run-quality.sh`](../../../../scripts/run-quality.sh)
+- `quality_command`: `<repo-root>/scripts/run-quality.sh`
 - `update_instructions`: empty list
 - `real_host_required_surfaces`: empty list
 - `real_host_required_path_globs`: empty list
@@ -72,7 +72,7 @@ The durable release artifact filename is fixed:
 
 - `latest.md`
 
-Dated release records should use `charness-artifacts/release/YYYY-MM-DD-<slug>.md`.
+Dated release records should use `<repo-root>/charness-artifacts/release/YYYY-MM-DD-<slug>.md`.
 
 `release` should treat the packaging manifest as the canonical mutable version
 source. Generated plugin manifests and marketplace files are derived surfaces

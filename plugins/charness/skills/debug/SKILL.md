@@ -27,9 +27,9 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/scaffold_debug_artifact.py" --repo-root . --json
 ```
 
-By default, `debug` writes durable artifacts to `charness-artifacts/debug/`. Each
+By default, `debug` writes durable artifacts to `<repo-root>/charness-artifacts/debug/`. Each
 investigation gets its own file: `debug-{date}-{slug}.md`. Repos can override
-the directory with `.agents/debug-adapter.yaml`.
+the directory with `<repo-root>/.agents/debug-adapter.yaml`.
 
 Treat the scaffold helper as the canonical artifact contract shortcut:
 

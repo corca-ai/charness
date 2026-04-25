@@ -5,7 +5,7 @@ uses hard column wrapping. A harmless editor reflow can split an asserted
 substring across two lines and fail the matcher even though the rendered prose
 still says the same thing.
 
-Use `scripts/inventory_brittle_source_guards.py` when a repo keeps source-guard
+Use `<repo-root>/scripts/inventory_brittle_source_guards.py` when a repo keeps source-guard
 tables or equivalent fixed-string assertions.
 
 ## Detection

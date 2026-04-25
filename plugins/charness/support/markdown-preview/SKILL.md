@@ -15,9 +15,9 @@ README, docs, or spec prose review.
 - prefer `glow` for terminal-faithful Markdown rendering when it is available
 - render checked-in Markdown at explicit widths and persist the result as text
   artifacts
-- search for repo-local config at [`.agents/markdown-preview.yaml`](../../../.agents/markdown-preview.yaml),
-  `.codex/markdown-preview.yaml`, `.claude/markdown-preview.yaml`,
-  `docs/markdown-preview.yaml`, and [`markdown-preview.yaml`](../../../.agents/markdown-preview.yaml)
+- search for repo-local config at `<repo-root>/.agents/markdown-preview.yaml`,
+  `<repo-root>/.codex/markdown-preview.yaml`, `<repo-root>/.claude/markdown-preview.yaml`,
+  `<repo-root>/docs/markdown-preview.yaml`, and `<repo-root>/markdown-preview.yaml`
 - when `glow` is missing, write degraded artifacts that say so explicitly
   instead of pretending source-only review is equivalent
 
@@ -41,4 +41,4 @@ python3 "$SKILL_DIR/scripts/render_markdown_preview.py" --repo-root . --config .
 ## References
 
 - `references/runtime-contract.md`
-- `scripts/render_markdown_preview.py`
+- `<repo-root>/scripts/render_markdown_preview.py`

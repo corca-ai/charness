@@ -352,7 +352,7 @@ skipped.
 | `-filter <path>` | Only explore specs whose path contains the substring |
 | `-model <name>` | Only explore the named model |
 | `-repeat <N>` | Find N solutions per command (default: 1). More solutions show more of what the model allows |
-| `-config <path>` | Path to specdown.json (default: [`specdown.json`](../../../specdown.json)) |
+| `-config <path>` | Path to specdown.json (default: `<repo-root>/specdown.json`) |
 
 ### Relationship to `specdown run`
 

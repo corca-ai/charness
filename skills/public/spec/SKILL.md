@@ -99,7 +99,7 @@ Before locking the contract, run one bounded premortem. Ask what a fresh five-mi
    - if the contract edits repo-owned instruction or prompt surfaces that steer
      agent behavior, define whether the intended claim is `preserve` or
      `improve`, leave the matching cautilus proof path visible in
-     [`charness-artifacts/cautilus/latest.md`](../../../charness-artifacts/cautilus/latest.md), and do not assume cautilus auto-runs: adapter policy decides whether the repo asks first, auto-runs low-cost proof, or adapts by proof kind and cost; reader-facing reasoning-shape changes should also plan a short scenario review instead of equating preserve-proof with semantic success
+     `<repo-root>/charness-artifacts/cautilus/latest.md`, and do not assume cautilus auto-runs: adapter policy decides whether the repo asks first, auto-runs low-cost proof, or adapts by proof kind and cost; reader-facing reasoning-shape changes should also plan a short scenario review instead of equating preserve-proof with semantic success
 6. Keep the contract alive during implementation.
    - stabilize the contract earlier when churn would otherwise be expensive
    - keep unresolved items visible as probes when answers should emerge through

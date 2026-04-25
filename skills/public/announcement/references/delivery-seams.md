@@ -14,7 +14,7 @@ Draft only. No posting or file update.
 
 ### `release-notes`
 
-Append or update a checked-in markdown file such as `docs/release-notes.md`.
+Append or update a checked-in markdown file such as `<repo-root>/docs/release-notes.md`.
 
 ### `human-backend`
 

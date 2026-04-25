@@ -26,13 +26,13 @@ instead of pretending one local script proves them.
 
 ## Current `charness` Slice
 
-`charness` now ships [`scripts/check_supply_chain.py`](../../../../scripts/check_supply_chain.py) as the first offline gate
+`charness` now ships `<repo-root>/scripts/check_supply_chain.py` as the first offline gate
 for this lens.
 
 It currently checks:
 
 - JavaScript manifest and lockfile alignment for npm, pnpm, yarn, and bun
-- Python [`pyproject.toml`](../../../../pyproject.toml) dependency declarations against `uv.lock`
+- Python `<repo-root>/pyproject.toml` dependency declarations against `uv.lock`
 - ambiguous multi-lockfile situations that make the active package manager
   unclear
 

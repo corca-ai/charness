@@ -31,7 +31,7 @@ repeatable advisory scan.
 In `charness`, prompt-affecting repo changes should also leave visible
 behavioral proof:
 
-- refresh [`charness-artifacts/cautilus/latest.md`](../../../../charness-artifacts/cautilus/latest.md)
+- refresh `<repo-root>/charness-artifacts/cautilus/latest.md`
 - let the repo adapter choose whether cautilus runs in `auto`, `ask`, or
   `adaptive` mode instead of assuming one global execution policy
 - for `preserve` claims, keep a regression-proof record anchored by

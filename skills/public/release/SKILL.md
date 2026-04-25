@@ -20,7 +20,7 @@ skill before mutating versions so compatibility, install/update fallout, and
 real-host proof requirements are triaged explicitly.
 Routine release hygiene does not need premortem at all. When one is needed, use
 the standalone `premortem` skill. Before any host-capability question, honor
-`AGENTS.md` `Subagent Delegation`: required bounded review is already
+`<repo-root>/AGENTS.md` `Subagent Delegation`: required bounded review is already
 delegated.
 
 ## Bootstrap
@@ -33,7 +33,7 @@ python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 
 Default durable artifact:
 
-- [`charness-artifacts/release/latest.md`](../../../charness-artifacts/release/latest.md)
+- `<repo-root>/charness-artifacts/release/latest.md`
 
 If the repo has no checked-in release adapter yet, scaffold one:
 
@@ -189,8 +189,8 @@ The result should usually include:
 - `references/adapter-contract.md`
 - `references/version-policy.md`
 - `references/install-surface.md`
-- `scripts/current_release.py`
-- `scripts/check_real_host_proof.py`
-- `scripts/check_requested_review_gate.py`
-- `scripts/bump_version.py`
-- `scripts/publish_release.py`
+- `<repo-root>/scripts/current_release.py`
+- `<repo-root>/scripts/check_real_host_proof.py`
+- `<repo-root>/scripts/check_requested_review_gate.py`
+- `<repo-root>/scripts/bump_version.py`
+- `<repo-root>/scripts/publish_release.py`

@@ -11,9 +11,9 @@ Choose the target surface before writing files.
 | --- | --- | --- | --- |
 | public skill | one user-facing concept | external tool installs, host defaults | `skills/public/<skill-id>/` |
 | support skill | harness-owned tool usage guidance and owned runtime helpers | public taxonomy, binary ownership | `skills/support/<skill-id>/` |
-| profile | default bundle selection | host-specific secrets or runtime wiring | `profiles/<profile-id>.json` |
-| preset | opt-in default values and vocabulary | mandatory hidden behavior | `presets/<preset-id>.md` |
-| integration | external ownership, detection, degradation | product philosophy | `integrations/tools/<tool-id>.json` |
+| profile | default bundle selection | host-specific secrets or runtime wiring | `<repo-root>/profiles/<profile-id>.json` |
+| preset | opt-in default values and vocabulary | mandatory hidden behavior | `<repo-root>/presets/<preset-id>.md` |
+| integration | external ownership, detection, degradation | product philosophy | `<repo-root>/integrations/tools/<tool-id>.json` |
 | support capability metadata | machine-readable contract for `charness`-owned runtime | true external ownership | `skills/support/<skill-id>/capability.json` |
 
 If the answer is "two of these at once", split the work.

@@ -29,7 +29,7 @@ Good proposals name:
 Examples:
 
 - add `ruff check` in CI because Python linting is currently absent and the repo
-  already uses [`pyproject.toml`](../../../../pyproject.toml)
+  already uses `<repo-root>/pyproject.toml`
 - move repeated skill helper logic into a shared module because duplicate
   bootstrap code is already drifting across multiple skills
 - collapse repeated checked-in guidance into one source document because the

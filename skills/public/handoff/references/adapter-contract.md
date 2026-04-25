@@ -5,15 +5,15 @@ skill body.
 
 ## Canonical Path
 
-Use [`.agents/handoff-adapter.yaml`](../../../../.agents/handoff-adapter.yaml) for new repos.
+Use `<repo-root>/.agents/handoff-adapter.yaml` for new repos.
 
 Search order:
 
-1. [`.agents/handoff-adapter.yaml`](../../../../.agents/handoff-adapter.yaml)
-2. `.codex/handoff-adapter.yaml`
-3. `.claude/handoff-adapter.yaml`
-4. `docs/handoff-adapter.yaml`
-5. [`handoff-adapter.yaml`](../../../../.agents/handoff-adapter.yaml) as compatibility fallback only
+1. `<repo-root>/.agents/handoff-adapter.yaml`
+2. `<repo-root>/.codex/handoff-adapter.yaml`
+3. `<repo-root>/.claude/handoff-adapter.yaml`
+4. `<repo-root>/docs/handoff-adapter.yaml`
+5. `<repo-root>/handoff-adapter.yaml` as compatibility fallback only
 
 ## Fields
 
@@ -32,12 +32,7 @@ Optional shared provenance:
 
 ## Artifact Rule
 
-The durable handoff artifact filename is fixed:
-
-- [`handoff.md`](../../../../docs/handoff.md)
-
-Default path:
-
-- [`docs/handoff.md`](../../../../docs/handoff.md)
+The durable handoff artifact filename is fixed to handoff.md and the
+default location is `<repo-root>/docs/handoff.md`.
 
 To change the location, override `output_dir` in the adapter.

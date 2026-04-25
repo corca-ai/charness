@@ -83,7 +83,7 @@ When the missing enforcement is maintainer-local and repo-owned, prefer
 implementing a checked-in hook plus a deterministic validator in the same turn
 over leaving a prose recommendation. The smallest honest slice is usually:
 
-- a checked-in `scripts/hooks/pre-push` (or equivalent) that runs the final
+- a checked-in `<repo-root>/scripts/hooks/pre-push` (or equivalent) that runs the final
   gate command
 - a tiny Python or shell validator script that confirms the current clone's
   active hook matches the repo-owned one, runnable as part of `verify`

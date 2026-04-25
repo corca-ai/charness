@@ -9,7 +9,7 @@ install a second plugin or recreate Slack export scripts themselves.
 
 Local adjustments from the reference implementation:
 
-- the wrapper lives in `scripts/export-thread.sh`
+- the wrapper lives in `<repo-root>/scripts/export-thread.sh`
 - credential discovery is reduced to process-environment input instead of
   scanning shell profile files
 - the public `gather` skill remains the only user-facing concept

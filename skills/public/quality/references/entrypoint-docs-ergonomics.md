@@ -35,7 +35,7 @@ only the next move, or whether they are accreting into competing manuals.
 
 ## Advisory Inventory
 
-Use `scripts/inventory_entrypoint_docs_ergonomics.py` when operator, developer,
+Use `<repo-root>/scripts/inventory_entrypoint_docs_ergonomics.py` when operator, developer,
 or agent-facing entry docs are in scope.
 
 The helper stays advisory on purpose. It does not claim to prove good writing.
@@ -48,7 +48,7 @@ It only inventories signals that deserve a human quality pass:
   branching
 - high inline-code density with no deeper doc link, which can suggest a doc is
   trying to carry too much procedural detail itself
-- host instruction runbook pressure, where [`AGENTS.md`](../../../../AGENTS.md) embeds a multi-step
+- host instruction runbook pressure, where `<repo-root>/AGENTS.md` embeds a multi-step
   recovery or setup procedure that likely belongs in a deeper maintained doc
   or repo-owned command surface
 - stale assumptions that every installable repo needs `INSTALL.md` or
@@ -82,6 +82,6 @@ invariants. Keep taste, structure, and progressive-disclosure review in the
 advisory inventory above.
 
 Keep repo-specific command names and doc ownership in a repo-local contract
-such as [`.agents/command-docs.yaml`](../../../../.agents/command-docs.yaml), then call the checker from the standing
+such as `<repo-root>/.agents/command-docs.yaml`, then call the checker from the standing
 quality gate. The public skill should carry the pattern; the adapter or
 repo-local contract should carry the actual CLI surface.

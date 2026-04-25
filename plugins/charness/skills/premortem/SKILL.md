@@ -18,7 +18,7 @@ Routine slices do not need `premortem` at all.
 When a caller needs one, `premortem` always means a fresh bounded subagent
 review. `bounded` limits scope and time box, not execution mode. There is no
 same-agent or local `premortem` variant.
-Before any host-capability question, honor `AGENTS.md` `Subagent Delegation`:
+Before any host-capability question, honor `<repo-root>/AGENTS.md` `Subagent Delegation`:
 required bounded review is already delegated.
 If the parent agent already delegated a bounded angle or counterweight review
 to a subagent, that subagent performs its assigned lens directly; it should not

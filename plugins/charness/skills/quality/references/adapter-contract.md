@@ -5,15 +5,15 @@ of the public skill body.
 
 ## Canonical Path
 
-Use [`.agents/quality-adapter.yaml`](../../../../.agents/quality-adapter.yaml) for new repos.
+Use `<repo-root>/.agents/quality-adapter.yaml` for new repos.
 
 Search order:
 
-1. [`.agents/quality-adapter.yaml`](../../../../.agents/quality-adapter.yaml)
-2. `.codex/quality-adapter.yaml`
-3. `.claude/quality-adapter.yaml`
-4. `docs/quality-adapter.yaml`
-5. [`quality-adapter.yaml`](../../../../.agents/quality-adapter.yaml) as compatibility fallback only
+1. `<repo-root>/.agents/quality-adapter.yaml`
+2. `<repo-root>/.codex/quality-adapter.yaml`
+3. `<repo-root>/.claude/quality-adapter.yaml`
+4. `<repo-root>/docs/quality-adapter.yaml`
+5. `<repo-root>/quality-adapter.yaml` as compatibility fallback only
 
 ## Fields
 
@@ -103,7 +103,7 @@ standing probes on the local command/readiness contract; latest-release,
 network, or upstream freshness checks belong in explicit update/release flows
 unless that freshness is the quality question being asked. Use
 `cli_skill_surface_command_docs` for command-doc contracts such as
-like [`.agents/command-docs.yaml`](../../../../.agents/command-docs.yaml), `cli_skill_surface_skill_paths` for shipped skill
+like `<repo-root>/.agents/command-docs.yaml`, `cli_skill_surface_skill_paths` for shipped skill
 layouts outside default roots, and `cli_skill_surface_change_globs` to scope
 release-time enforcement to CLI, skill, plugin, package, or install-surface
 changes.
@@ -111,8 +111,8 @@ changes.
 `canonical_markdown_surfaces` lists repo-owned Markdown surfaces whose filename
 is also an agent/operator concept token. `check_doc_links.py` should allow
 plain or backticked mentions of these surfaces without forcing source-repo
-relative markdown links. Defaults include `AGENTS.md` and `CLAUDE.md`; repos can
-add adapter-owned surfaces such as `docs/handoff.md`.
+relative markdown links. Defaults include `<repo-root>/AGENTS.md` and `CLAUDE.md`; repos can
+add adapter-owned surfaces such as `<repo-root>/docs/handoff.md`.
 
 `runtime_profile_default` names the default machine/runner profile for runtime
 signals. Leave it as `default` to let the helper create a fast local machine
@@ -123,7 +123,7 @@ class that should be selected without an environment override.
 `runtime_budgets` is the backward-compatible default-profile mapping of
 standing-gate label → max elapsed milliseconds. Labels must match the labels
 recorded in `.charness/quality/runtime-signals.json` by the standing gate
-runner. Add `scripts/check_runtime_budget.py` to the standing gate to fail the
+runner. Add `<repo-root>/scripts/check_runtime_budget.py` to the standing gate to fail the
 run when the recent median exceeds the budget. A single latest sample above
 budget is reported as a spike when the recent median is still inside budget.
 Labels with no recorded sample yet are warnings, not failures, so a budget can
@@ -177,10 +177,10 @@ for standing latency budgets keyed by the same `label`.
 such as pre-push. `review_commands` should hold the fuller quality-review path
 that an agent or maintainer runs when they need diagnostic detail, online
 checks, and hidden PASS-phase output. For this repo that is
-`./scripts/run-quality.sh --review`.
+`<repo-root>/scripts/run-quality.sh --review`.
 
 Command-docs drift checks should usually live in their own repo-local contract
-such as [`.agents/command-docs.yaml`](../../../../.agents/command-docs.yaml), then be invoked from `gate_commands` or a
+such as `<repo-root>/.agents/command-docs.yaml`, then be invoked from `gate_commands` or a
 repo-owned quality runner. Keep command names, doc paths, required help
 anchors, and required/forbidden doc phrases out of the public skill body.
 
@@ -211,7 +211,7 @@ them. Leave it empty by default. Current supported rules:
   and `scripts/`.
 
 The canonical quality path runs these opt-in rules through
-[`scripts/validate_skill_ergonomics.py`](../../../../scripts/validate_skill_ergonomics.py). Bootstrap also treats invalid explicit
+`<repo-root>/scripts/validate_skill_ergonomics.py`. Bootstrap also treats invalid explicit
 rule values as an error instead of silently rewriting them to `[]`. When rules
 are configured, an empty checked-skill set is a failure; use
 `skill_ergonomics_skill_paths` or `cli_skill_surface_skill_paths` for bundled
@@ -225,13 +225,13 @@ The current quality pointer filename is fixed:
 
 Default path:
 
-- [`charness-artifacts/quality/latest.md`](../../../../charness-artifacts/quality/latest.md)
+- `<repo-root>/charness-artifacts/quality/latest.md`
 
-Dated quality records should use `charness-artifacts/quality/YYYY-MM-DD-<slug>.md`.
+Dated quality records should use `<repo-root>/charness-artifacts/quality/YYYY-MM-DD-<slug>.md`.
 
 Recommended sibling history path:
 
-- `charness-artifacts/quality/history/*.md`
+- `<repo-root>/charness-artifacts/quality/history/*.md`
 
 To change the location, override `output_dir` in the adapter.
 

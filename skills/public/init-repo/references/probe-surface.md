@@ -21,16 +21,16 @@ Name these only when the repo really exposes them:
 
 ## Placement
 
-- keep the repo story and high-level pointer in [`README.md`](../../../../README.md)
+- keep the repo story and high-level pointer in `<repo-root>/README.md`
 - put the fuller install and probe semantics in a repo-local bootstrap doc when
   the repo genuinely needs one
-- keep [`docs/operator-acceptance.md`](../../../../docs/operator-acceptance.md) focused on takeover and acceptance, not as
+- keep `<repo-root>/docs/operator-acceptance.md` focused on takeover and acceptance, not as
   the primary install manual
 
 ## Avoid
 
 - saying "`doctor` checks everything" when health, readiness, and local
   discoverability are different seams
-- duplicating conflicting install or probe guidance across [`README.md`](../../../../README.md) and
+- duplicating conflicting install or probe guidance across `<repo-root>/README.md` and
   the repo's deeper bootstrap guidance
 - inventing a discovery command that the repo does not really ship

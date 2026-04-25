@@ -5,14 +5,14 @@ skill body.
 
 ## Canonical Path
 
-Use `.agents/debug-adapter.yaml` for new repos.
+Use `<repo-root>/.agents/debug-adapter.yaml` for new repos.
 
 Search order:
 
-1. `.agents/debug-adapter.yaml`
+1. `<repo-root>/.agents/debug-adapter.yaml`
 2. `.codex/debug-adapter.yaml`
 3. `.claude/debug-adapter.yaml`
-4. `docs/debug-adapter.yaml`
+4. `<repo-root>/docs/debug-adapter.yaml`
 5. `debug-adapter.yaml` as compatibility fallback only
 
 ## Fields
@@ -38,9 +38,9 @@ The durable debug artifact filename is fixed:
 
 Default path:
 
-- [`charness-artifacts/debug/latest.md`](../../../../charness-artifacts/debug/latest.md)
+- `<repo-root>/charness-artifacts/debug/latest.md`
 
-Dated debug records should use `charness-artifacts/debug/YYYY-MM-DD-<slug>.md`.
+Dated debug records should use `<repo-root>/charness-artifacts/debug/YYYY-MM-DD-<slug>.md`.
 
 To change the location, override `output_dir` in the adapter.
 

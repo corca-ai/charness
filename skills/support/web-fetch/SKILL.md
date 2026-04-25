@@ -41,5 +41,5 @@ python3 "$SKILL_DIR/scripts/classify_fetch_response.py" --path /tmp/fetch-respon
 - `references/runtime-contract.md`
 - `references/routing-table.md`
 - `references/provenance.md`
-- `scripts/route_public_fetch.py`
-- `scripts/classify_fetch_response.py`
+- `<repo-root>/scripts/route_public_fetch.py`
+- `<repo-root>/scripts/classify_fetch_response.py`

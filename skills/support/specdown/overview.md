@@ -32,7 +32,7 @@ specdown init
 
 This creates a [explains::configuration file](./config.md) and example specs
 in the current directory. Run this from the project root so that
-[`specdown.json`](../../../specdown.json) sits next to `.git/`.
+`<repo-root>/specdown.json` sits next to `.git/`.
 
 ```run:shell
 # Scaffold a fresh project and verify files exist

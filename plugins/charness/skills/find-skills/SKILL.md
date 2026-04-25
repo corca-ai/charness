@@ -75,7 +75,7 @@ new local skill.
 
 Default durable artifact:
 
-- [`charness-artifacts/find-skills/latest.md`](../../../charness-artifacts/find-skills/latest.md)
+- `<repo-root>/charness-artifacts/find-skills/latest.md`
 - `latest.*` is the canonical local-first capability inventory only; ad hoc
   recommendation queries stay in the current command output and do not rewrite
   query-shaped state into the durable artifact
@@ -89,8 +89,8 @@ What you get after one run:
 - a stale host-path diagnosis when a reported installed skill path no longer
   matches the current stable plugin or cache location
 - refreshed capability inventory artifacts at
-  [`charness-artifacts/find-skills/latest.md`](../../../charness-artifacts/find-skills/latest.md) and
-  [`charness-artifacts/find-skills/latest.json`](../../../charness-artifacts/find-skills/latest.json)
+  `<repo-root>/charness-artifacts/find-skills/latest.md` and
+  `<repo-root>/charness-artifacts/find-skills/latest.json`
 - recommendation-query payloads in the current command output when
   `--recommend-for-skill` or `--recommendation-role` is used
 
@@ -188,6 +188,6 @@ The result should usually include:
 - `references/discovery-order.md`
 - `references/support-consumption.md`
 - `../ideation/references/decision-question-response.md`
-- `scripts/resolve_adapter.py`
-- `scripts/init_adapter.py`
-- `scripts/list_capabilities.py`
+- `<repo-root>/scripts/resolve_adapter.py`
+- `<repo-root>/scripts/init_adapter.py`
+- `<repo-root>/scripts/list_capabilities.py`

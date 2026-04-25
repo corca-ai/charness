@@ -20,7 +20,7 @@ not public skills and they are not mandatory runtime config.
 ## Rules
 
 - preset ids are lowercase slugs such as `portable-defaults`
-- the canonical checked-in file is `presets/<preset-id>.md`
+- the canonical checked-in file is `<repo-root>/presets/<preset-id>.md`
 - preset files should carry YAML-safe frontmatter with:
   - `name`
   - `description`

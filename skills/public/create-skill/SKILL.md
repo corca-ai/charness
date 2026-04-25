@@ -71,7 +71,7 @@ skill before writing from scratch.
      metadata next to the support skill as
      `skills/support/<skill-id>/capability.json`
    - external tools and upstream support skills belong in
-     `integrations/tools/<tool-id>.json`
+     `<repo-root>/integrations/tools/<tool-id>.json`
    - if an upstream support skill already exists, prefer reference, sync, or a
      thin wrapper over copying
    - if private access is involved, model capability grants, authenticated
@@ -105,7 +105,7 @@ skill before writing from scratch.
      stopping at producer-side validators; include missing, stale, and thin
      adapter states when adapters or repo-local defaults shape the first run
    - use `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` to scaffold prompt, repo shape, expected artifact, and acceptance evidence
-   - for public-skill semantic changes, decide in the same slice whether [docs/public-skill-dogfood.json](../../../docs/public-skill-dogfood.json), [evals/cautilus/scenarios.json](../../../evals/cautilus/scenarios.json), and/or [charness-artifacts/cautilus/latest.md](../../../charness-artifacts/cautilus/latest.md) should move; do not leave that proof-routing decision implicit
+   - for public-skill semantic changes, decide in the same slice whether `<repo-root>/docs/public-skill-dogfood.json`, `<repo-root>/evals/cautilus/scenarios.json`, and/or `<repo-root>/charness-artifacts/cautilus/latest.md` should move; do not leave that proof-routing decision implicit
    - trigger collision check against adjacent skills
    - path check for every file named in the skill
    - schema or example validation for any profile, preset, or manifest touched

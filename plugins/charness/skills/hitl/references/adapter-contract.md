@@ -5,15 +5,17 @@ repo-owned adapter.
 
 ## Canonical Path
 
-Use `.agents/hitl-adapter.yaml` for new repos.
+In each repo, the adapter lives at `<repo-root>/.agents/hitl-adapter.yaml`.
 
-Search order:
+## Search Order
 
-1. `.agents/hitl-adapter.yaml`
-2. `.codex/hitl-adapter.yaml`
-3. `.claude/hitl-adapter.yaml`
-4. `docs/hitl-adapter.yaml`
-5. `hitl-adapter.yaml`
+`hitl` looks for the adapter in this order (first match wins):
+
+1. `<repo-root>/.agents/hitl-adapter.yaml`
+2. `<repo-root>/.codex/hitl-adapter.yaml`
+3. `<repo-root>/.claude/hitl-adapter.yaml`
+4. `<repo-root>/docs/hitl-adapter.yaml`
+5. `<repo-root>/hitl-adapter.yaml`
 
 ## Shared Core
 
@@ -33,7 +35,7 @@ Search order:
 
 ## Defaults
 
-- `output_dir`: `charness-artifacts/hitl`
+- `output_dir`: `<repo-root>/charness-artifacts/hitl`
 - `default_scope`: `all`
 - `chunk_target_lines`: `100`
 - `require_explicit_apply`: `true`
@@ -44,7 +46,7 @@ The summary artifact filename is fixed:
 
 - `latest.md`
 
-Dated HITL review records should use `charness-artifacts/hitl/YYYY-MM-DD-<slug>.md`.
+Dated HITL review records should use `<repo-root>/charness-artifacts/hitl/YYYY-MM-DD-<slug>.md`.
 
 The runtime state directory defaults to:
 

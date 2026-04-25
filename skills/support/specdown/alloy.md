@@ -18,7 +18,7 @@ Alloy fragments are embedded using `alloy:model(name)`
 [depends::Alloy runner](./adapter-protocol.md).
 See [Best Practices](./best-practices.md) for patterns
 on combining Alloy models with implementation checks.
-For full Alloy language syntax and semantics, see `docs/alloy-reference.md`
+For full Alloy language syntax and semantics, see `<repo-root>/docs/alloy-reference.md`
 in the repository root.
 
 ## Embedding Rules

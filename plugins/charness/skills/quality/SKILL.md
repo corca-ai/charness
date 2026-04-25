@@ -34,7 +34,7 @@ quality reviews, run a bounded delegated review after initial inventory and befo
 from `references/standing-gate-verbosity.md` when runtime is in scope. Report
 `Delegated Review: executed`, `blocked`, or `not_applicable`; blocked needs a
 concrete host/tool signal and must not be replaced with a same-agent pass.
-Before host-capability questions, honor `AGENTS.md` `Subagent Delegation`.
+Before host-capability questions, honor `<repo-root>/AGENTS.md` `Subagent Delegation`.
 When reader-facing Markdown needs rendered readability proof instead of source-only review, bootstrap or execute the repo-local markdown preview seam:
 
 ```bash

@@ -68,7 +68,7 @@ Adapter policy:
 - if the adapter is invalid, repair it using `references/adapter-contract.md`
   before relying on adapter-defined paths or verification preferences
 - if the repo has recurring verification expectations worth encoding, create
-  `.agents/impl-adapter.yaml` early instead of relearning the same tools each
+  `<repo-root>/.agents/impl-adapter.yaml` early instead of relearning the same tools each
   session
 - treat the verification survey as onboarding, not a closing nicety: look for
   the best self-verification path before you code and again before you stop
@@ -100,8 +100,8 @@ Adapter policy:
    - add or strengthen checks when an important branch would otherwise stay unproven
    - for browser-facing output, treat code-only checks as partial proof by default; resolve browser/runtime support through `find-skills`, run it when available, or say explicitly that it did not run
    - if the slice changes repo-owned instruction or prompt surfaces such as
-     [`AGENTS.md`](../../../AGENTS.md), public/support `SKILL.md`, behavior-steering references, or
-     adapter prompt wording, refresh [`charness-artifacts/cautilus/latest.md`](../../../charness-artifacts/cautilus/latest.md)
+     `<repo-root>/AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or
+     adapter prompt wording, refresh `<repo-root>/charness-artifacts/cautilus/latest.md`
      from repo-owned cautilus proof before closeout
    - let the repo's cautilus adapter decide whether proof may run
      autonomously, must ask, or should adapt by proof kind and cost; closeout
@@ -119,7 +119,7 @@ Adapter policy:
 5. Sync truth surfaces and re-read the contract before closeout.
    - if the slice changed user-visible capability, operating philosophy,
      supported integrations, install/usage surface, or honest stage claims,
-     check [`README.md`](../../../README.md) and the adapter's `truth_surfaces`
+     check `<repo-root>/README.md` and the adapter's `truth_surfaces`
    - update the relevant truth surfaces before stopping
    - re-read `Fixed Decisions` and named acceptance checks
    - confirm each item is reflected in the delivered slice or explicitly
@@ -169,7 +169,7 @@ The closeout should usually include:
   named acceptance checks against the delivered slice.
 - Do not treat commit, verification, or contract-sync completion as a default
   pause when the user explicitly asked for autonomous continuation.
-- Do not stop after a user-visible change without checking whether [`README.md`](../../../README.md)
+- Do not stop after a user-visible change without checking whether `<repo-root>/README.md`
   and adjacent durable truth surfaces are now stale.
 - Do not leave a resolved probe undocumented in the canonical artifact.
 - Do not continue ordinary implementation past a forced debug interrupt just

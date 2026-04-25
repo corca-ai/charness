@@ -5,14 +5,14 @@ skill body.
 
 ## Canonical Path
 
-Use `.agents/gather-adapter.yaml` for new repos.
+Use `<repo-root>/.agents/gather-adapter.yaml` for new repos.
 
 Search order:
 
-1. `.agents/gather-adapter.yaml`
+1. `<repo-root>/.agents/gather-adapter.yaml`
 2. `.codex/gather-adapter.yaml`
 3. `.claude/gather-adapter.yaml`
-4. `docs/gather-adapter.yaml`
+4. `<repo-root>/docs/gather-adapter.yaml`
 5. `gather-adapter.yaml` as compatibility fallback only
 
 ## Fields
@@ -38,8 +38,8 @@ The durable gather artifact filename is fixed:
 
 Default path:
 
-- [`charness-artifacts/gather/latest.md`](../../../../charness-artifacts/gather/latest.md)
+- `<repo-root>/charness-artifacts/gather/latest.md`
 
-Dated knowledge records should use `charness-artifacts/gather/YYYY-MM-DD-<slug>.md`.
+Dated knowledge records should use `<repo-root>/charness-artifacts/gather/YYYY-MM-DD-<slug>.md`.
 
 To change the location, override `output_dir` in the adapter.

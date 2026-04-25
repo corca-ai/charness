@@ -35,7 +35,7 @@ In each repo, the adapter lives at `<repo-root>/.agents/hitl-adapter.yaml`.
 
 ## Defaults
 
-- `output_dir`: `charness-artifacts/hitl`
+- `output_dir`: `<repo-root>/charness-artifacts/hitl`
 - `default_scope`: `all`
 - `chunk_target_lines`: `100`
 - `require_explicit_apply`: `true`
@@ -46,7 +46,7 @@ The summary artifact filename is fixed:
 
 - `latest.md`
 
-Dated HITL review records should use `charness-artifacts/hitl/YYYY-MM-DD-<slug>.md`.
+Dated HITL review records should use `<repo-root>/charness-artifacts/hitl/YYYY-MM-DD-<slug>.md`.
 
 The runtime state directory defaults to:
 

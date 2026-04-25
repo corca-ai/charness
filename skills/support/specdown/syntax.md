@@ -30,7 +30,7 @@ plain, non-executable code blocks. A spec containing only unrecognized
 blocks has zero cases. Unrecognized prefixes emit a warning to stderr
 so typos like `runn:shell` are caught early.
 
-To suppress warnings for specific prefixes, add `ignorePrefixes` to [`specdown.json`](../../../specdown.json).
+To suppress warnings for specific prefixes, add `ignorePrefixes` to `<repo-root>/specdown.json`.
 Plain info strings without a colon (e.g. `json`, `go`, `python`) never warn.
 
 Any executable block can be marked with `!fail` to indicate that failure
@@ -508,7 +508,7 @@ An optional YAML frontmatter can be placed at the top of a spec file.
 | `type` | Document type for [traceability](./traceability.md) (e.g. `spec`, `goal`, `feature`) |
 | `workdir` | Working directory for all shell blocks, relative to the spec file's location. Created automatically if it does not exist |
 
-If frontmatter is absent, the global `defaultTimeoutMsec` from [`specdown.json`](../../../specdown.json) applies (default: 30 seconds).
+If frontmatter is absent, the global `defaultTimeoutMsec` from `<repo-root>/specdown.json` applies (default: 30 seconds).
 
 A spec with a timeout must still pass when the adapter responds quickly.
 

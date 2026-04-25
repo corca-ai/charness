@@ -39,4 +39,4 @@ Use the wrapper:
 
 - `references/runtime-contract.md`
 - `references/provenance.md`
-- `scripts/export-thread.sh`
+- `<repo-root>/scripts/export-thread.sh`

@@ -13,7 +13,7 @@ concepts.
   control plane
 
 Checked-in plugin exports flatten public skills for host discovery and copy
-non-generated support assets into `plugins/charness/support/`. Machine-local
+non-generated support assets into `<repo-root>/plugins/charness/support/`. Machine-local
 `generated/` artifacts are not part of the shipped plugin bundle.
 
 ## Rules

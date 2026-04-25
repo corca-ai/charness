@@ -6,7 +6,7 @@ operator-facing flows.
 
 Missing operator takeover guidance is also an operability signal. When a repo
 has a roadmap, install/update surface, or explicit maintainer handoff burden
-but no honest [`docs/operator-acceptance.md`](../../../../docs/operator-acceptance.md), classify that as `missing`
+but no honest `<repo-root>/docs/operator-acceptance.md`, classify that as `missing`
 operability posture rather than a doc-nice-to-have.
 
 Workflow runtime drift is also an operability signal. If the repo keeps GitHub
