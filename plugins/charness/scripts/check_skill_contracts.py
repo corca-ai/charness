@@ -121,7 +121,10 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior",
     ),
     "skills/public/init-repo/SKILL.md": (
-        "normalize [`AGENTS.md`](../../../AGENTS.md) and `CLAUDE.md` into one explicit host-facing policy",
+        "normalize",
+        "AGENTS.md",
+        "CLAUDE.md",
+        "into one explicit host-facing policy",
         "when the repo uses bounded fresh-eye or premortem-style subagent review",
         "already delegated",
         "should not wait for a second user message",

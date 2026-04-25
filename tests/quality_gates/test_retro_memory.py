@@ -45,6 +45,6 @@ def test_agents_keeps_dogfood_detail_in_development_doc() -> None:
 def test_agents_carries_bounded_subagent_delegation_rule() -> None:
     agents_text = (ROOT / "AGENTS.md").read_text(encoding="utf-8").lower()
 
-    assert "already delegated" in agents_text
-    assert "second user message asking for delegation" in agents_text
-    assert "same-agent pass" in agents_text
+    assert "subagent delegation" in agents_text
+    assert "explicit user delegation request" in agents_text
+    assert "bounded reviewer" in agents_text
