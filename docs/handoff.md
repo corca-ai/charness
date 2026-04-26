@@ -26,10 +26,11 @@
 - agent-facing CLI prep/execute 아티팩트 분리 결정 렌즈가 `create-cli` (primary) + `impl` (crossref)에 landing됐다 ([#48](https://github.com/corca-ai/charness/issues/48) scope a). Spec은 [charness-artifacts/spec/issue-48-prep-execute-lens.md](../charness-artifacts/spec/issue-48-prep-execute-lens.md). Probe Q1/Q2/Q3는 post-landing 관찰 대상이다.
 - 크로스-레포 이슈 작성 hygiene (`why/what > how`)는 `narrative` reference로 landing됐다. high-leverage truth-surface rewrite와 adapter-missing stop rule도 함께 `narrative` 쪽에 들어갔다.
 - AGENTS.md craken refactor가 landing됐다. [AGENTS.md](../AGENTS.md)는 37 lines, `CLAUDE.md -> AGENTS.md` symlink가 host alias이며, [.agents/surfaces.json](../.agents/surfaces.json)은 `CLAUDE.md`를 repo markdown + prompt-behavior surface로 본다. Spec/HITL owner는 [charness-artifacts/spec/agents-md-craken-refactor.md](../charness-artifacts/spec/agents-md-craken-refactor.md)와 [charness-artifacts/hitl/2026-04-25-agents-md-craken-refactor.md](../charness-artifacts/hitl/2026-04-25-agents-md-craken-refactor.md)다.
+- clean temp clone first-move dogfood가 2026-04-26에 실행됐다. Cautilus local runner의 `codex exec`/`claude -p` backend는 `quality`/`init-repo` 모두 `find-skills -> work skill` 라우팅을 잡았다. Direct `claude -p init-repo`는 `NORMALIZE` + `leave_as_is`를 냈고, direct `codex exec quality`는 agent sandbox에서 `./charness --version` state-cache write 실패를 찾아 `write_version_state()`를 non-fatal cache write로 고쳤다. 남은 설계 이슈는 read-only instruction-surface proof에서 `find-skills` artifact write를 어떻게 다룰지다.
 
 ## Next Session
 
-1. 다음 first-move slice는 clean temp workspace의 실제 consumer repo dogfood다. 설명 없이 `quality` 또는 `init-repo`만 불렀을 때 README-first/bootstrap-less default, CLI reference split, delegated bounded-subagent rule, compact AGENTS link-index가 기대대로 surface되는지 본다.
+1. 다음 first-move slice는 dogfood 결과를 eval/scenario로 정규화할지 결정하는 것이다. read-only Cautilus instruction-surface에서 `quality`가 `find-skills` artifact write 때문에 blocked되는 현상을 no-write discovery mode로 풀지, workspace-write proof로 분리할지 먼저 정한다.
 2. `git status --short`를 먼저 본다.
 3. README/help text를 다시 건드리면 먼저 `python3 scripts/render_cli_reference.py --repo-root . --output docs/cli-reference.md`로 command reference를 재생성하고, export surface가 걸리면 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`를 validator보다 먼저 끝낸다.
 4. 다른 repo dogfood 결과가 생겼으면 vague 회고로 흘리지 말고 eval candidate 또는 issue로 바로 정규화한다.

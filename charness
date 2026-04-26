@@ -752,13 +752,17 @@ def write_version_state(
     latest_release: dict[str, object] | None = None,
 ) -> dict[str, object]:
     path = default_version_state_path(home_root)
-    path.parent.mkdir(parents=True, exist_ok=True)
     state = read_version_state(home_root)
     if provenance is not None:
         state["version_provenance"] = provenance
     if latest_release is not None:
         state["latest_release"] = latest_release
-    path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    except OSError:
+        # Version probes must stay usable even when host-local state is read-only.
+        return state
     return state
 
 

@@ -144,3 +144,22 @@ def test_charness_version_preserves_prerelease_tag_in_update_notice(
         f"charness update available: `{CURRENT_VERSION}` -> `{NEWER_PRERELEASE_TAG}`. "
         f"Run `charness update`. https://github.com/corca-ai/charness/releases/tag/{NEWER_PRERELEASE_TAG}"
     )
+
+
+def test_charness_version_degrades_when_state_cache_is_unwritable(tmp_path: Path) -> None:
+    home_root = tmp_path / "home"
+    home_root.mkdir()
+    (home_root / ".local").write_text("not a directory\n", encoding="utf-8")
+
+    version_result = subprocess.run(
+        [sys.executable, str(CLI), "version", "--home-root", str(home_root), "--json"],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert version_result.returncode == 0, version_result.stderr
+    payload = json.loads(version_result.stdout)
+    assert payload["current_version"] == CURRENT_VERSION
+    assert payload["version_state_path"] == str(home_root / ".local" / "state" / "charness" / "version-state.json")
+    assert (home_root / ".local").is_file()
