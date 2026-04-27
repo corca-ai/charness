@@ -79,6 +79,10 @@ as codebase memory rather than as stale trivia.
    - write what should happen in given/when/then form
    - separate observed facts from assumptions or prior knowledge
    - use web search by default for exact error text and likely causes
+   - for async, scheduled, or user-visible workflows, separate pre-worker
+     acknowledgement, worker execution, and post-worker side effects; identify
+     the earliest component that can produce observable status before reasoning
+     only about worker behavior
 3. Build the smallest honest reproduction.
    - isolate the smallest input, path, or environment that still fails
    - if local reproduction fails, gather stronger observation instead of

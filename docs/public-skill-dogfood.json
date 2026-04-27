@@ -103,6 +103,7 @@
       "reviewed_on": "2026-04-27",
       "observed_evidence": [
         "The checked-in public core explicitly keeps `debug` in diagnosis-before-repair mode, preserving the exact symptom, a falsifiable hypothesis, and at least three candidate causes before implementation work starts.",
+        "For async, scheduled, or user-visible workflows, the debug core now separates pre-worker acknowledgement, worker execution, and post-worker side effects before reasoning only about worker behavior.",
         "The debug core now keeps premortem out of premature fact-gathering while requiring task-completing debug closeout or repair handoff to record short scoped diagnosis/repair risk or full standalone premortem for broader seams.",
         "Repo-owned eval coverage already exercises `debug-adapter-bootstrap`, which pins the current adapter bootstrap and canonical artifact path at `charness-artifacts/debug/latest.md`.",
         "The committed `validate_debug_artifact.py` gate plus `tests/test_debug_artifact.py` now make the current debug artifact carry structured seam risk and interruption data, so a host-boundary miss cannot stay a chat-only handoff."
@@ -237,9 +238,10 @@
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-24",
+      "reviewed_on": "2026-04-27",
       "observed_evidence": [
         "The current quality posture still treats checked-in proof artifacts, public executable readers, and lower deterministic gates as separate layers with different ownership, which keeps `quality` distinct from generic test-running or release work.",
+        "Maintainer-local enforcement now asks whether local or pre-push gates hide network, external-repo fetch, latest-release, or supply-chain refresh work that should be an explicit refresh/update/release action instead of default local proof.",
         "The prompt-asset reference now makes the adaptive `cautilus` split explicit: scenario review can run automatically as proof, while maintained scenario-registry mutation remains the higher-friction follow-up that still needs confirmation.",
         "That preserves the consumer-facing `quality` contract here: the skill should prefer repo-owned proof and enforcement structure over ad hoc ceremony, including for prompt-surface validation policy.",
         "The missing-validation-binary rule keeps the same contract for local tools: when an existing gate cannot run because `ruff` or another manifest-backed binary is absent, `quality` should turn that into setup work with install and verify steps instead of reporting a skipped gate.",

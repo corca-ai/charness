@@ -27,6 +27,12 @@ question before classifying anything as healthy:
 
 > How is this enforced before push in maintainer clones?
 
+Ask one more question before calling the gate local:
+
+> Does this local or pre-push gate hide network, external-repo fetch, latest
+> release, or supply-chain refresh work that should be an explicit refresh,
+> update, or release action instead?
+
 Acceptable answers:
 
 - a checked-in `pre-push` hook (or equivalent Husky, simple-git-hooks,
@@ -37,6 +43,10 @@ Acceptable answers:
 - a repo-owned installer or onboarding step that provably wires the hook in
 
 If none of these hold, the gap is `missing`, not implicit.
+
+The default local/pre-push gate should prove local invariants. Network,
+external-repo fetch, and upstream freshness work should be explicit unless the
+user's quality question is specifically about those external boundaries.
 
 When all three exist together, treat that as a strong positive pattern:
 

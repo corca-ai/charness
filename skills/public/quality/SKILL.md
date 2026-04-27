@@ -97,7 +97,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - when the adapter defines `prompt_asset_roots` or `prompt_asset_policy`, re-derive prompt/content bulk inventory from the current tree instead of trusting prior review prose
    - if the repo keeps standing coverage floors, tag seams within `coverage_fragile_margin_pp` as `FRAGILE` instead of burying near-miss risk in prose
    - for blind-spot prevention, apply `references/coverage-floor-policy.md`: adapter-owned `coverage_floor_policy`, real unfloored-file inventory, and `Covered by pytest:` reference validation when those notes exist
-   - maintainer-local enforcement for the final stop-before-finish gate: a checked-in hook, installer, or explicit no-hook policy, and whether the next move is review-only or a bounded bootstrap/install pass
+   - maintainer-local enforcement for the final stop-before-finish gate: a checked-in hook, installer, explicit no-hook policy, hidden network/external-repo work, and whether the next move is review-only or a bounded bootstrap/install pass
 3. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
    - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage

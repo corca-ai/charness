@@ -139,6 +139,31 @@ def test_impl_skill_routes_validation_and_browser_proof_explicitly() -> None:
     assert "before downgrading to HITL" in quality_text
 
 
+def test_debug_and_quality_carry_async_and_hidden_network_field_lessons() -> None:
+    debug_text = (ROOT / "skills" / "public" / "debug" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    quality_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    maintainer_local = (
+        ROOT
+        / "skills"
+        / "public"
+        / "quality"
+        / "references"
+        / "maintainer-local-enforcement.md"
+    ).read_text(encoding="utf-8")
+
+    assert "pre-worker\n     acknowledgement" in debug_text
+    assert "worker execution" in debug_text
+    assert "post-worker side effects" in debug_text
+    assert "earliest component that can produce observable status" in debug_text
+    assert "hidden network/external-repo work" in quality_text
+    assert "external-repo fetch" in maintainer_local
+    assert "explicit refresh,\n> update, or release action" in maintainer_local
+
+
 def test_development_doc_carries_mutation_phase_barrier_rule() -> None:
     development = (ROOT / "docs" / "development.md").read_text(encoding="utf-8")
 
