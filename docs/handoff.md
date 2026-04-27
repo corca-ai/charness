@@ -33,7 +33,7 @@
 1. Cautilus upstream 대수정이 끝난 뒤 [readme-proof-cautilus-eval-migration.md](../charness-artifacts/spec/readme-proof-cautilus-eval-migration.md)를 먼저 읽고 `impl`로 이어간다. 첫 slice는 old `instruction-surface` proof를 `cautilus.evaluation_input.v1` + `cautilus eval test/evaluate`로 기계 이식하는 것이다.
 2. `git status --short`를 먼저 본다.
 3. read-only blocker는 no-write routing eval + workspace-write workflow proof로 분리한다. routing eval에서 `find-skills` artifact write를 요구하지 말고, 실제 artifact/state write는 별도 workspace-write dogfood로 증명한다.
-4. migration이 green이면 README claim별 proof ledger를 만든다. 후보 path는 `docs/readme-proof.md`; deterministic/Cautilus/HITL/deferred operator proof owner를 분리한다.
+4. migration이 green이면 README claim별 proof ledger를 만든다. 후보 위치는 docs 아래 readme-proof 문서이며, deterministic/Cautilus/HITL/deferred operator proof owner를 분리한다.
 5. README/help text를 다시 건드리면 먼저 `python3 scripts/render_cli_reference.py --repo-root . --output docs/cli-reference.md`로 command reference를 재생성하고, export surface가 걸리면 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`를 validator보다 먼저 끝낸다.
 6. public skill, handoff, validator, 또는 other prompt surface를 건드리면 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)와 [docs/public-skill-dogfood.json](./public-skill-dogfood.json)을 읽고 `impl`로 이어간다.
 
@@ -42,7 +42,7 @@
 - 이 [docs/handoff.md](./handoff.md)와 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)의 freshness validator를 현재 stale-claim check 너머 어디까지 확장할지는 아직 열려 있다.
 - `cautilus` planner가 아직 `goal`을 사실상 `preserve`로만 둔다. named-anchor/reasoning-frame change를 언제 `improve` + compare path로 올릴지는 dogfood를 더 봐야 한다.
 - README, CLI reference, operator docs 사이 overlap을 얼마나 더 줄일지는 아직 열려 있다. 지금은 top-level story vs generated command reference 분리까지 닫았고, consumer-repo dogfood에서 실제 탐색 마찰을 본 뒤 더 줄일지 결정한다.
-- README 약속 중 어느 항목을 Cautilus로 증명하고 어느 항목을 deterministic/HITL/deferred operator proof로 둘지는 migration 후 `docs/readme-proof.md`에서 닫는다.
+- README 약속 중 어느 항목을 Cautilus로 증명하고 어느 항목을 deterministic/HITL/deferred operator proof로 둘지는 migration 후 README proof ledger에서 닫는다.
 - release artifact가 GitHub release creation/public verification state를 얼마나 자세히 닫아야 하는지는 helper contract 차원에서 한 번 더 볼 가치가 있다.
 - `Discuss`는 unresolved decision만 남기고, metrics/history/closed proof는 owning artifact로 계속 밀어내는 방향을 유지한다.
 

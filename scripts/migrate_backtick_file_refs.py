@@ -45,6 +45,7 @@ DOC_GLOBS = (
     "skills/support/**/*.md",
 )
 SKIP_DIR_NAMES = {".git", "node_modules", ".pytest_cache", "__pycache__"}
+PORTABLE_SKILL_KINDS = {"public", "support"}
 FENCE_RE = re.compile(r"^\s*(```|~~~)")
 BACKTICK_SPAN_RE = re.compile(r"`([^`\n]+)`")
 MARKDOWN_LINK_RE = re.compile(r"(\[[^\]]+\])\(([^)]+)\)")
@@ -76,6 +77,20 @@ def build_known_directories(known_repo_paths: set[str]) -> set[str]:
             dirs.add(parent)
             parent = os.path.dirname(parent)
     return dirs
+
+
+def is_portable_skill_body(root: Path, path: Path) -> bool:
+    try:
+        rel = path.relative_to(root)
+    except ValueError:
+        return False
+    parts = rel.parts
+    return (
+        len(parts) >= 3
+        and parts[0] == "skills"
+        and parts[1] in PORTABLE_SKILL_KINDS
+        and root.joinpath(*parts[:3]).is_dir()
+    )
 
 
 def classify_token(
@@ -196,6 +211,8 @@ def rewrite_file(
     known_directories: set[str],
     dry_run: bool,
 ) -> int:
+    if is_portable_skill_body(root, path):
+        return 0
     original = path.read_text(encoding="utf-8")
     lines = original.splitlines(keepends=True)
     out_lines: list[str] = []

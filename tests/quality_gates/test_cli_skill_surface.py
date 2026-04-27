@@ -24,11 +24,29 @@ def seed_repo(tmp_path: Path, *, adapter_body: str) -> Path:
     return repo
 
 
-def test_cli_skill_surface_is_not_applicable_without_product_combo(tmp_path: Path) -> None:
-    repo = seed_repo(tmp_path, adapter_body="version: 1\nproduct_surfaces:\n- installable_cli\n")
+def test_cli_skill_surface_is_not_applicable_without_product_combo_or_inferred_skill(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nproduct_surfaces:\n- installable_cli\n",
+        encoding="utf-8",
+    )
     result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--json")
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["status"] == "not_applicable"
+
+
+def test_cli_skill_surface_flags_inferred_combo_without_adapter_fields(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, adapter_body="version: 1\nproduct_surfaces: []\n")
+
+    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--json")
+
+    payload = json.loads(result.stdout)
+    assert result.returncode == 1
+    assert payload["status"] == "blocked"
+    assert payload["product_surface_source"] == "inferred"
+    assert "adapter does not declare `installable_cli`" in "\n".join(payload["adapter_weaknesses"])
+    assert "cli_skill_surface_probe_commands is empty" in "\n".join(payload["adapter_weaknesses"])
 
 
 def test_cli_skill_surface_blocks_declared_combo_without_binary_delegation(tmp_path: Path) -> None:
@@ -67,6 +85,34 @@ def test_cli_skill_surface_accepts_declared_combo_with_probes_and_docs(tmp_path:
     assert result.returncode == 0, result.stderr
     assert payload["status"] == "ok"
     assert payload["probe_commands"] == ["./demo --help", "./demo doctor --json"]
+
+
+def test_cli_skill_surface_reports_missing_skill_path_adapter_weakness(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        adapter_body="\n".join(
+            [
+                "version: 1",
+                "product_surfaces:",
+                "- installable_cli",
+                "- bundled_skill",
+                "cli_skill_surface_probe_commands:",
+                "- ./demo --help",
+                "- ./demo doctor --json",
+                "cli_skill_surface_command_docs:",
+                "- .agents/command-docs.yaml",
+                "",
+            ]
+        ),
+    )
+    (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
+
+    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--json")
+
+    payload = json.loads(result.stdout)
+    assert result.returncode == 0, result.stderr
+    assert payload["status"] == "ok"
+    assert "cli_skill_surface_skill_paths is empty" in "\n".join(payload["adapter_weaknesses"])
 
 
 def test_cli_skill_surface_skips_irrelevant_release_change(tmp_path: Path) -> None:

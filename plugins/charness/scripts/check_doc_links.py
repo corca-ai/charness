@@ -37,6 +37,21 @@ BACKTICK_CONTENT_RE = re.compile(r"`([^`\n]+)`")
 PATHY_TOKEN_RE = re.compile(r"^(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9_-]+\.[A-Za-z0-9._-]+$")
 EXTENSION_TOKEN_RE = re.compile(r"^[A-Za-z0-9_.-]+\.[A-Za-z][A-Za-z0-9]{0,5}$")
 SKIP_DIR_NAMES = {".git", "node_modules", ".pytest_cache", "__pycache__"}
+PORTABLE_SKILL_KINDS = {"public", "support"}
+PORTABLE_PLACEHOLDER_PREFIXES = ("<repo-root>/", "<plugin-dir>/", "<skill-dir>/")
+REPO_REFERENCE_PREFIXES = (
+    ".agents/",
+    "charness-artifacts/",
+    "docs/",
+    "evals/",
+    "packaging/",
+    "plugins/",
+    "presets/",
+    "profiles/",
+    "scripts/",
+    "skills/",
+    "tests/",
+)
 
 
 class ValidationError(Exception):
@@ -91,6 +106,37 @@ def normalize_surface_token(candidate: str) -> str:
     return token
 
 
+def portable_skill_package_root(root: Path, doc: Path) -> Path | None:
+    try:
+        rel = doc.relative_to(root)
+    except ValueError:
+        return None
+    parts = rel.parts
+    if len(parts) >= 3 and parts[0] == "skills" and parts[1] in PORTABLE_SKILL_KINDS:
+        package_root = root.joinpath(*parts[:3])
+        if package_root.is_dir():
+            return package_root
+    return None
+
+
+def has_portable_placeholder(candidate: str) -> bool:
+    return candidate.startswith(PORTABLE_PLACEHOLDER_PREFIXES)
+
+
+def looks_like_repo_reference(candidate: str) -> bool:
+    stripped = candidate.split("#", 1)[0].strip().lstrip("./")
+    return stripped.startswith(REPO_REFERENCE_PREFIXES)
+
+
+def normalize_backtick_candidate(candidate: str) -> str | None:
+    if not candidate or any(ch.isspace() for ch in candidate):
+        return None
+    bare = candidate.split("#", 1)[0].strip()
+    if not bare or any(ch in bare for ch in "*?[]"):
+        return None
+    return bare
+
+
 def load_canonical_markdown_surfaces(root: Path) -> set[str]:
     payload = load_quality_adapter(root)
     if payload.get("errors"):
@@ -107,6 +153,25 @@ def strip_inline_markup(line: str) -> str:
 
 def strip_markdown_links(line: str) -> str:
     return MARKDOWN_LINK_RE.sub("", line)
+
+
+def classify_prefixed_backtick(candidate: str, known_repo_paths: set[str], known_directories: set[str]) -> str | None:
+    stripped = candidate.rstrip("/")
+    while stripped.startswith("./"):
+        stripped = stripped[2:]
+    if stripped in known_repo_paths or stripped in known_directories:
+        return "prefix"
+    return "missing-artifact" if looks_like_repo_reference(candidate) else None
+
+
+def classify_pathlike_backtick(bare: str, known_repo_paths: set[str]) -> str | None:
+    if PATHY_TOKEN_RE.match(bare) and bare in known_repo_paths:
+        return "pathy"
+    if "/" not in bare:
+        return None
+    if not PATHY_TOKEN_RE.match(bare):
+        return None
+    return "missing-artifact" if looks_like_repo_reference(bare) else None
 
 
 def iter_bare_internal_doc_refs(
@@ -139,6 +204,7 @@ def classify_backtick_token(
     unique_basename_index: dict[str, str],
     known_directories: set[str],
     canonical_markdown_surfaces: set[str],
+    portable_package_root: Path | None,
 ) -> str | None:
     """Return a short reason tag if the backticked token must become a markdown link.
 
@@ -151,38 +217,39 @@ def classify_backtick_token(
     command invocation, version string, dotted property path, domain-like token, `./`-prefixed
     token that does not resolve to a real repo path, etc.).
     """
-    if not candidate or any(ch.isspace() for ch in candidate):
+    bare = normalize_backtick_candidate(candidate)
+    if bare is None:
+        return None
+    if has_portable_placeholder(bare):
+        return None
+    if portable_package_root is not None:
+        if bare.startswith("/") and PATHY_TOKEN_RE.match(bare.lstrip("/")):
+            return "portable-absolute"
         return None
     if normalize_surface_token(candidate) in canonical_markdown_surfaces:
         return None
 
     if candidate.startswith("./") or candidate.startswith("../"):
-        stripped = candidate.rstrip("/")
-        while stripped.startswith("./"):
-            stripped = stripped[2:]
-        if stripped in known_repo_paths or stripped in known_directories:
-            return "prefix"
+        return classify_prefixed_backtick(bare, known_repo_paths, known_directories)
+
+    pathlike_reason = classify_pathlike_backtick(bare, known_repo_paths)
+    if pathlike_reason is not None:
+        return pathlike_reason
+
+    if not EXTENSION_TOKEN_RE.match(bare):
         return None
 
-    if PATHY_TOKEN_RE.match(candidate) and candidate in known_repo_paths:
+    if bare in known_repo_paths:
         return "pathy"
 
-    if "/" in candidate:
-        return None
-
-    if not EXTENSION_TOKEN_RE.match(candidate):
-        return None
-
-    if candidate in known_repo_paths:
-        return "pathy"
-
-    if candidate in unique_basename_index:
+    if bare in unique_basename_index:
         return "unique-basename"
 
     return None
 
 
 def iter_backticked_file_refs(
+    root: Path,
     doc: Path,
     known_repo_paths: set[str],
     unique_basename_index: dict[str, str],
@@ -191,6 +258,7 @@ def iter_backticked_file_refs(
 ) -> list[tuple[int, str, str]]:
     matches: list[tuple[int, str, str]] = []
     in_fence = False
+    portable_package_root = portable_skill_package_root(root, doc)
     for lineno, line in enumerate(doc.read_text(encoding="utf-8").splitlines(), start=1):
         if FENCE_RE.match(line):
             in_fence = not in_fence
@@ -206,6 +274,7 @@ def iter_backticked_file_refs(
                 unique_basename_index,
                 known_directories,
                 canonical_markdown_surfaces,
+                portable_package_root,
             )
             if reason is not None:
                 matches.append((lineno, candidate, reason))
@@ -239,6 +308,20 @@ def validate_link(root: Path, doc: Path, raw_target: str) -> None:
         ) from exc
     if not candidate.exists():
         raise ValidationError(f"{doc}: broken relative link `{target}`")
+    portable_package_root = portable_skill_package_root(root, doc)
+    if portable_package_root is not None:
+        try:
+            candidate.relative_to(portable_package_root)
+        except ValueError as exc:
+            try:
+                candidate.relative_to(root / "skills")
+                return
+            except ValueError:
+                pass
+            raise ValidationError(
+                f"{doc}: portable skill link `{target}` resolves outside its skill package; "
+                "use a backticked placeholder such as `<repo-root>/path` for repo-local artifacts"
+            ) from exc
 
 
 def main() -> int:
@@ -265,6 +348,7 @@ def main() -> int:
                 f"{doc}: bare internal markdown reference(s) {refs}; use markdown links in prose"
             )
         backticked = iter_backticked_file_refs(
+            root,
             doc,
             known_repo_paths,
             unique_basename_index,

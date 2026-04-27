@@ -97,6 +97,54 @@ def test_check_doc_links_rejects_backticked_nested_file_reference(tmp_path: Path
     assert "docs/guide.md" in result.stderr
 
 
+def test_check_doc_links_rejects_backticked_missing_repo_path(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "README.md").write_text(
+        "The old follow-up lived at `docs/missing-roadmap.md`.\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/check_doc_links.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "missing-artifact" in result.stderr
+    assert "docs/missing-roadmap.md" in result.stderr
+
+
+def test_check_doc_links_allows_portable_skill_placeholder_backticks(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "Read `<repo-root>/docs/handoff.md` after resolving the adapter.\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/check_doc_links.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_check_doc_links_rejects_portable_skill_link_outside_package(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs_dir = repo / "docs"
+    skill_dir = repo / "skills" / "public" / "demo"
+    docs_dir.mkdir(parents=True)
+    skill_dir.mkdir(parents=True)
+    (docs_dir / "handoff.md").write_text("# Handoff\n", encoding="utf-8")
+    (skill_dir / "SKILL.md").write_text(
+        "Read [handoff](../../../docs/handoff.md) after resolving the adapter.\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/check_doc_links.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "portable skill link" in result.stderr
+    assert "../../../docs/handoff.md" in result.stderr
+
+
 def test_check_doc_links_allows_default_canonical_instruction_surfaces(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

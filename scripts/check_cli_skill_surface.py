@@ -46,6 +46,45 @@ def _required(data: dict[str, Any]) -> bool:
     return REQUIRED_PRODUCT_SURFACES.issubset(set(_string_list(data, "product_surfaces")))
 
 
+def _default_skill_paths(repo_root: Path) -> list[Path]:
+    paths: list[Path] = []
+    public_root = repo_root / "skills" / "public"
+    generated_support_root = repo_root / "skills" / "support" / "generated"
+    direct_skill_root = repo_root / "skills"
+    if public_root.is_dir():
+        paths.extend(sorted(public_root.glob("*/SKILL.md")))
+    if generated_support_root.is_dir():
+        paths.extend(sorted(generated_support_root.glob("*/SKILL.md")))
+    if direct_skill_root.is_dir():
+        paths.extend(sorted(direct_skill_root.glob("*/SKILL.md")))
+    return paths
+
+
+def _has_root_executable(repo_root: Path) -> bool:
+    if not repo_root.is_dir():
+        return False
+    for path in repo_root.iterdir():
+        if not path.is_file() or path.name.startswith("."):
+            continue
+        if path.suffix in {".md", ".txt", ".json", ".yaml", ".yml", ".toml", ".lock"}:
+            continue
+        if path.stat().st_mode & 0o111:
+            return True
+    return False
+
+
+def _has_cli_marker(repo_root: Path, data: dict[str, Any]) -> bool:
+    return bool(_probe_commands(data)) or bool(_existing_docs(_command_doc_paths(repo_root, data))) or _has_root_executable(repo_root)
+
+
+def _product_surface_source(repo_root: Path, data: dict[str, Any], skills: list[Path]) -> str | None:
+    if _required(data):
+        return "declared"
+    if skills and _has_cli_marker(repo_root, data):
+        return "inferred"
+    return None
+
+
 def _relevant_change(data: dict[str, Any], changed_paths: list[str]) -> bool:
     if not changed_paths:
         return True
@@ -57,8 +96,7 @@ def _skill_paths(repo_root: Path, data: dict[str, Any]) -> list[Path]:
     configured = _string_list(data, "cli_skill_surface_skill_paths")
     if configured:
         return [(repo_root / path).resolve() for path in configured]
-    public_root = repo_root / "skills" / "public"
-    return sorted(public_root.glob("*/SKILL.md")) if public_root.is_dir() else []
+    return _default_skill_paths(repo_root)
 
 
 def _command_doc_paths(repo_root: Path, data: dict[str, Any]) -> list[Path]:
@@ -91,6 +129,28 @@ def _run_probe(repo_root: Path, command: str) -> dict[str, object]:
     }
 
 
+def _adapter_weaknesses(data: dict[str, Any], *, source: str, skills: list[Path]) -> list[str]:
+    declared = set(_string_list(data, "product_surfaces"))
+    weaknesses: list[str] = []
+    if source == "inferred":
+        for surface in sorted(REQUIRED_PRODUCT_SURFACES - declared):
+            weaknesses.append(f"adapter does not declare `{surface}` in product_surfaces despite detected CLI plus skill shape")
+    if not _string_list(data, "cli_skill_surface_probe_commands"):
+        weaknesses.append("cli_skill_surface_probe_commands is empty for a CLI plus bundled-skill surface")
+    if not _string_list(data, "cli_skill_surface_command_docs"):
+        weaknesses.append("cli_skill_surface_command_docs is empty; using default command-doc discovery only")
+    if skills and not _string_list(data, "cli_skill_surface_skill_paths"):
+        weaknesses.append("cli_skill_surface_skill_paths is empty; using common skill layout discovery only")
+    globs = _string_list(data, "cli_skill_surface_change_globs")
+    if not globs:
+        weaknesses.append("cli_skill_surface_change_globs is empty; using default broad change globs")
+    elif not any(fnmatch.fnmatch("skills/public/demo/SKILL.md", pattern) for pattern in globs):
+        weaknesses.append("cli_skill_surface_change_globs does not match common public skill paths")
+    elif not any(fnmatch.fnmatch("plugins/demo/SKILL.md", pattern) for pattern in globs):
+        weaknesses.append("cli_skill_surface_change_globs does not match common plugin export paths")
+    return weaknesses
+
+
 def build_payload(
     repo_root: Path,
     *,
@@ -99,14 +159,20 @@ def build_payload(
     run_probes: bool,
 ) -> dict[str, object]:
     data = _load_adapter(repo_root, adapter_path)
-    if not _required(data):
-        return {"status": "not_applicable", "reason": "adapter does not declare installable_cli plus bundled_skill"}
+    skills = [path for path in _skill_paths(repo_root, data) if path.is_file()]
+    source = _product_surface_source(repo_root, data, skills)
+    if source is None:
+        return {
+            "status": "not_applicable",
+            "reason": "no declared or inferred installable CLI plus bundled-skill surface",
+            "adapter_weaknesses": [],
+        }
     if not _relevant_change(data, changed_paths):
         return {"status": "skipped", "reason": "no CLI, skill, plugin, package, or install-surface change matched"}
 
     probes = _probe_commands(data)
     docs = _existing_docs(_command_doc_paths(repo_root, data))
-    skills = [path for path in _skill_paths(repo_root, data) if path.is_file()]
+    adapter_weaknesses = _adapter_weaknesses(data, source=source, skills=skills)
     blockers: list[str] = []
     if not skills:
         blockers.append("No bundled public/support skill path was available to inspect.")
@@ -132,7 +198,9 @@ def build_payload(
     return {
         "status": "blocked" if blockers else "ok",
         "adapter_path": str(adapter_path),
+        "product_surface_source": source,
         "product_surfaces": _string_list(data, "product_surfaces"),
+        "adapter_weaknesses": adapter_weaknesses,
         "changed_paths": changed_paths,
         "skill_paths": [str(path.relative_to(repo_root)) for path in skills],
         "command_docs": [str(path.relative_to(repo_root)) for path in docs],
