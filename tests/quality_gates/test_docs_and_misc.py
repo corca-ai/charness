@@ -99,10 +99,18 @@ def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
     state_model = (
         ROOT / "skills" / "public" / "hitl" / "references" / "state-model.md"
     ).read_text(encoding="utf-8")
+    adapter_contract = (
+        ROOT / "skills" / "public" / "hitl" / "references" / "adapter-contract.md"
+    ).read_text(encoding="utf-8")
 
+    assert "Apply Phase" in skill_text
+    assert "Never edit the target file mid-chunk" in skill_text
+    assert "Do not edit the target file while the review loop is in progress" in skill_text
     assert "display-only pseudo-tags" in skill_text
     assert "Accepted Working Text" in skill_text
     assert "last_presented_chunk_id" in skill_text
+    assert "explicit apply instruction" in adapter_contract
+    assert "accepted-chunk-or-final-apply-boundary" in adapter_contract
     assert "<bash>" in chunk_contract
     assert "not instructions to\nedit the target document" in chunk_contract
     assert "Accepted working text" in state_model

@@ -3,15 +3,15 @@ Date: 2026-04-27
 
 ## Trigger
 
-- slice: mandatory premortem closeout and phase-aware AGENTS link routing.
-- issue: agents were still allowed to read premortem as optional, and compact
-  AGENTS did not say why to follow the quality-contract link for slow gates.
+- slice: HITL Apply Phase and `require_explicit_apply` semantics for #72.
+- issue: HITL review could be read as scratchpad-first while still permitting
+  target edits mid-loop after one accepted chunk.
 
 ## Validation Goal
 
 - goal: preserve
-- reason: preserve startup skill routing and evaluator-backed validation
-  routing while making premortem closeout mandatory and link purposes clearer.
+- reason: preserve startup skill routing and validation-before-HITL routing
+  while tightening the HITL apply contract.
 
 ## Change Intent
 
@@ -21,63 +21,52 @@ Date: 2026-04-27
 
 ## Prompt Surfaces
 
-- `AGENTS.md`
-- `skills/public/debug/SKILL.md`
-- `skills/public/impl/SKILL.md`
-- `skills/public/premortem/SKILL.md`
-- `skills/public/release/SKILL.md`
-- `skills/public/spec/SKILL.md`
+- `skills/public/hitl/SKILL.md`
+- `skills/public/hitl/references/adapter-contract.md`
 
 ## Commands Run
 
 - `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
 - `cautilus instruction-surface test --repo-root .`
-- `python3 scripts/check_doc_links.py --repo-root .`
-- `python3 scripts/check_skill_contracts.py --repo-root .`
+- `pytest -q tests/quality_gates/test_docs_and_misc.py tests/quality_gates/test_portable_json_artifacts.py`
 
 ## Regression Proof
 
-- first run artifact: `.cautilus/runs/20260427T084557972Z-run/`
+- first run artifact: `.cautilus/runs/20260427T091151413Z-run/`
 - first summary:
-  `.cautilus/runs/20260427T084557972Z-run/instruction-surface-summary.json`
+  `.cautilus/runs/20260427T091151413Z-run/instruction-surface-summary.json`
 - first result: 4 passed, 1 failed, 0 blocked; recommendation `reject`
-- failing case: `slow-gate-routes-to-quality` chose startup discovery but did
-  not select durable `quality` work for a route-only slow-gate contract review.
-- repair: `AGENTS.md` now says slow gates, local-vs-CI validation cost,
-  evaluator-backed validation, and quality-contract changes route through
-  `quality`.
-- final run artifact: `.cautilus/runs/20260427T084803069Z-run/`
+- first failure: `validation-closeout-routes-before-hitl` selected `quality` but
+  omitted the expected startup `find-skills` bootstrap.
+- final run artifact: `.cautilus/runs/20260427T091331777Z-run/`
 - final summary:
-  `.cautilus/runs/20260427T084803069Z-run/instruction-surface-summary.json`
+  `.cautilus/runs/20260427T091331777Z-run/instruction-surface-summary.json`
 - final result: 5 passed, 0 failed, 0 blocked; recommendation `accept-now`
 
 ## Scenario Review
 
-- Representative scenario: an agent starts from compact AGENTS during a
-  prompt/skill-surface change and must decide which linked contract matters
-  before mutating, validating, closing out, or claiming an issue is closable.
-- Expected behavior: use `find-skills` as startup discovery, route implementation
-  to `impl`, route concept contracts to `spec`, route validation and slow-gate
-  quality-contract review to `quality`, and treat premortem closeout as
-  mandatory for task-completing repo work.
-- Observed behavior: the first proof exposed that slow-gate review still needed
-  a direct AGENTS reason for following the `quality` route. After the AGENTS
-  phase-map repair, all maintained instruction-surface cases passed.
+- Representative scenario: an agent starts a bounded HITL review and accepts
+  chunk text, but the adapter requires explicit apply.
+- Expected behavior: accepted chunk text goes to scratchpad/state during the
+  review loop; the target file is touched only in the Apply Phase after all
+  chunks are accepted, the closing summary is written, and explicit apply is
+  requested when `require_explicit_apply` is true.
+- Observed behavior: HITL skill text now names Apply Phase, mid-loop target edit
+  prohibition, and adapter-controlled apply semantics. `bootstrap_review.py`
+  surfaces `require_explicit_apply` and `apply_mode` in stdout, state, queue,
+  and scratchpad.
 - Scenario-registry decision: no mutation to `evals/cautilus/scenarios.json`.
-  The maintained instruction-surface suite already covers the route that failed
-  and proved the AGENTS repair.
+  This was a hitl-recommended public skill review, covered by checked-in
+  scenario review plus targeted tests rather than maintained evaluator routing.
 
 ## Outcome
 
 - recommendation: `accept-now`
-- routing notes: startup discovery still routes to `find-skills`; implementation
-  routes to `impl`; spec work routes to `spec`; validation closeout and
-  slow-gate quality-contract review route to `quality`.
-- premortem notes: task-completing repo work now has mandatory premortem
-  closeout language across the root contract and public skill cores, with short
-  scoped versus full standalone review as the scaling axis.
+- routing notes: startup discovery still routes to `find-skills`; validation
+  closeout still routes to `quality` before HITL or same-agent manual review.
+- HITL notes: #72's apply boundary is now explicit and visible at bootstrap.
 
 ## Follow-ups
 
-- When the upstream Cautilus eval migration lands, port this proof record from
-  old `cautilus instruction-surface test` language to the new eval surface.
+- If HITL later needs multi-target or partial-apply behavior, model it as a new
+  adapter/state contract rather than weakening the current Apply Phase rule.

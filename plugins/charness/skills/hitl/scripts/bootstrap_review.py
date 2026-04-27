@@ -33,6 +33,14 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
 render_yaml_mapping = _scripts_adapter_lib_module.render_yaml_mapping
+_resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
+load_adapter = _resolve_adapter_module.load_adapter
+
+
+def apply_mode(require_explicit_apply: bool) -> str:
+    if require_explicit_apply:
+        return "explicit-after-all-chunks"
+    return "accepted-chunk-or-final-apply-boundary"
 
 
 def utc_now() -> str:
@@ -60,9 +68,12 @@ def target_provenance(repo_root: Path, value: str) -> dict[str, str]:
     return {"kind": "repo-root-relative"}
 
 
-def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: str, scope: str) -> dict[str, str]:
+def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: str, scope: str) -> dict[str, object]:
     output_dir = repo_root / ".charness" / "hitl" / "runtime" / session_id
     output_dir.mkdir(parents=True, exist_ok=True)
+    adapter = load_adapter(repo_root)
+    require_explicit_apply = bool(adapter["data"].get("require_explicit_apply", True))
+    mode = apply_mode(require_explicit_apply)
     portable_target = portable_path(repo_root, target)
     provenance = target_provenance(repo_root, target)
 
@@ -75,6 +86,7 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
                 f"- Target: {portable_target}",
                 f"- Base Ref: {base_ref}",
                 f"- Scope: {scope}",
+                f"- Apply Mode: {mode}",
                 "",
                 "## Agreements",
                 "",
@@ -93,6 +105,8 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
                 ("target", portable_target),
                 ("base_ref", base_ref),
                 ("scope", scope),
+                ("require_explicit_apply", require_explicit_apply),
+                ("apply_mode", mode),
                 ("intent_resync_required", False),
                 ("last_presented_chunk_id", ""),
                 ("last_intent_resync_at", ""),
@@ -104,7 +118,14 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
     (output_dir / "fix-queue.yaml").write_text("items: []\n", encoding="utf-8")
     (output_dir / "queue.json").write_text(
         json.dumps(
-            {"session_id": session_id, "target": portable_target, "target_provenance": provenance, "items": []},
+            {
+                "session_id": session_id,
+                "target": portable_target,
+                "target_provenance": provenance,
+                "require_explicit_apply": require_explicit_apply,
+                "apply_mode": mode,
+                "items": [],
+            },
             ensure_ascii=False,
             indent=2,
         )
@@ -117,6 +138,8 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
         "scratchpad": (output_dir / "hitl-scratchpad.md").relative_to(repo_root).as_posix(),
         "state_file": (output_dir / "state.yaml").relative_to(repo_root).as_posix(),
         "queue_file": (output_dir / "queue.json").relative_to(repo_root).as_posix(),
+        "require_explicit_apply": require_explicit_apply,
+        "apply_mode": mode,
     }
 
 

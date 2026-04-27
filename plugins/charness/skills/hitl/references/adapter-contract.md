@@ -40,6 +40,21 @@ In each repo, the adapter lives at `<repo-root>/.agents/hitl-adapter.yaml`.
 - `chunk_target_lines`: `100`
 - `require_explicit_apply`: `true`
 
+## Apply Semantics
+
+`require_explicit_apply` controls when the target file may be edited, not
+whether accepted review state is recorded.
+
+- `true`: target edits happen only after all chunks are accepted, the closing
+  summary is written, and the user gives an explicit apply instruction.
+- `false`: per-chunk or final target edits are allowed only at a documented
+  apply boundary after the relevant chunk has been accepted; never edit before
+  acceptance or mid-chunk.
+
+`bootstrap_review.py` surfaces this as `apply_mode` so the policy is visible at
+session start: `explicit-after-all-chunks` when explicit apply is required, and
+`accepted-chunk-or-final-apply-boundary` otherwise.
+
 ## Artifact Rule
 
 The summary artifact filename is fixed:

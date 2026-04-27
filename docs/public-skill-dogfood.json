@@ -310,10 +310,12 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-16",
+      "reviewed_on": "2026-04-27",
       "observed_evidence": [
         "The checked-in public core keeps `hitl` narrowly scoped to bounded human review, explicitly preserving what must not be auto-decided and routing state through resumable review artifacts rather than chat-only judgment.",
+        "The workflow now defines an explicit Apply Phase: target file edits happen only after accepted chunks and closing summary, and `require_explicit_apply: true` requires a user apply instruction before touching the target.",
         "The current adapter resolver already pins the visible artifact to `charness-artifacts/hitl/latest.md` and the runtime directory to `.charness/hitl/runtime`, with portable defaults when no adapter is present.",
+        "`bootstrap_review.py` now surfaces `require_explicit_apply` and `apply_mode` in JSON, queue, scratchpad, and state so the apply policy is visible at session start.",
         "Repo-owned helper scripts make the review loop concrete: `bootstrap_review.py` creates scratchpad, state, queue, rules, and event-log files for a new session, which is the current best local evidence that resumable HITL state is a maintained seam rather than prose-only guidance."
       ]
     },

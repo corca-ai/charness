@@ -105,6 +105,11 @@ the repo has named where state, rules, and queue ownership live.
    - what was reviewed
    - what rules were accepted
    - what still needs action or follow-up
+10. Apply Phase. Only after all chunks are accepted and the closing summary is
+    written, propose the consolidated target edit as one reviewable operation.
+    Never edit the target file mid-chunk or between accepted chunks while the
+    review loop is still in progress. If `require_explicit_apply` is true, wait
+    for an explicit apply instruction before touching the target file.
 
 ## Output Shape
 
@@ -131,6 +136,9 @@ The result should usually include:
 - Do not advance to the next accepted chunk while the scratchpad and state
   cursor still depend on chat memory.
 - Do not silently apply edits that require explicit human approval.
+- Do not edit the target file while the review loop is in progress. Touch the
+  target only in the Apply Phase, after all chunks are accepted and, when
+  `require_explicit_apply` is true, after explicit user instruction.
 - Do not lose accepted review rules between chunks in the same session.
 - If manual edits changed the target out of band, resync intent before the next
   chunk.

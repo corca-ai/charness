@@ -123,11 +123,52 @@ def test_hitl_bootstrap_normalizes_target_and_output_paths(tmp_path: Path) -> No
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["session_dir"] == ".charness/hitl/runtime/hitl-test"
+    assert payload["require_explicit_apply"] is True
+    assert payload["apply_mode"] == "explicit-after-all-chunks"
+    state = (repo / payload["state_file"]).read_text(encoding="utf-8")
+    assert "require_explicit_apply: true" in state
+    assert "apply_mode: explicit-after-all-chunks" in state
     queue = json.loads((repo / payload["queue_file"]).read_text(encoding="utf-8"))
     assert queue["target"] == "docs/decision.md"
     assert queue["target_provenance"]["kind"] == "repo-root-relative"
+    assert queue["require_explicit_apply"] is True
+    assert queue["apply_mode"] == "explicit-after-all-chunks"
     _assert_no_repo_absolute_path(payload, repo)
     _assert_no_repo_absolute_path(queue, repo)
+
+
+def test_hitl_bootstrap_surfaces_adapter_apply_mode(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "hitl-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "language: en",
+                "output_dir: charness-artifacts/hitl",
+                "require_explicit_apply: false",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/hitl/scripts/bootstrap_review.py",
+        "--repo-root",
+        str(repo),
+        "--session-id",
+        "hitl-apply-mode",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["require_explicit_apply"] is False
+    assert payload["apply_mode"] == "accepted-chunk-or-final-apply-boundary"
+    state = (repo / payload["state_file"]).read_text(encoding="utf-8")
+    assert "require_explicit_apply: false" in state
+    assert "apply_mode: accepted-chunk-or-final-apply-boundary" in state
 
 
 def test_retro_snapshot_sanitizes_path_fields(tmp_path: Path) -> None:
