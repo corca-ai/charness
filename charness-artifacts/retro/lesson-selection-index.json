@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-04-27",
-  "source_artifact_count": 38,
-  "candidate_count": 231,
+  "source_artifact_count": 39,
+  "candidate_count": 238,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:013e0205fc03",
+      "kind": "current_focus",
+      "lesson": "Relevant outcome: task-completing repo work now treats premortem as mandatory; only the review depth scales.",
+      "normalized_key": "relevant outcome task completing repo work now treats premortem as mandatory only the review",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+      "latest_source_date": "2026-04-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+          "date": "2026-04-27",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:e502614a7d36",
       "kind": "current_focus",
@@ -29,6 +49,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md",
+          "date": "2026-04-27",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:cdbb693abfe5",
+      "kind": "current_focus",
+      "lesson": "Unit: user correction that `premortem needed?` still left optional room after many prior discussions, followed by repo contract and public skill repairs.",
+      "normalized_key": "unit user correction that premortem needed still left optional room after many prior discussions",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+      "latest_source_date": "2026-04-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
           "date": "2026-04-27",
           "section": "Context"
         }
@@ -75,6 +115,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:668fbd0e8ade",
+      "kind": "next_improvement",
+      "lesson": "keep `run_slice_closeout.py` blocking on public-skill dogfood review for prompt-affecting skill-core changes.",
+      "normalized_key": "keep run slice closeout py blocking on public skill dogfood review for prompt affecting",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+      "latest_source_date": "2026-04-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+          "date": "2026-04-27",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:afe506e85e11",
+      "kind": "next_improvement",
+      "lesson": "preserve the Cautilus failed-then-repaired result as proof that link purpose belongs in AGENTS, not only deeper docs.",
+      "normalized_key": "preserve the cautilus failed then repaired result as proof that link purpose belongs in",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+      "latest_source_date": "2026-04-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+          "date": "2026-04-27",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:cd074f1a8dd9",
       "kind": "next_improvement",
       "lesson": "Treat `migrate_backtick_file_refs.py --dry-run` output as a regression signal when changing markdown-link policy, but do not require a zero-output state while the migration helper still owns optional cleanups.",
@@ -91,6 +171,46 @@
           "artifact_path": "charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md",
           "date": "2026-04-27",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:393f02d4e7eb",
+      "kind": "next_improvement",
+      "lesson": "when a user correction targets a repeated workflow miss, update the root phase map and the owning skill gates in the same slice.",
+      "normalized_key": "when a user correction targets a repeated workflow miss update the root phase map",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+      "latest_source_date": "2026-04-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+          "date": "2026-04-27",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:99a3d9c06f16",
+      "kind": "repeat_trap",
+      "lesson": "`impl` and `release` grew past the public skill line budget, so the first closeout run caught avoidable verbosity after export sync.",
+      "normalized_key": "impl and release grew past the public skill line budget so the first closeout",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+      "latest_source_date": "2026-04-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+          "date": "2026-04-27",
+          "section": "Waste"
         }
       ]
     },
@@ -131,132 +251,32 @@
           "artifact_path": "charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md",
           "date": "2026-04-27",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:43102fa29d75",
-      "kind": "current_focus",
-      "lesson": "A multi-task session that ran a paragraph-level hitl review of `AGENTS.md`, filed three follow-up GitHub issues (#72 hitl Apply Phase, #73 lint inline-code references, #74 migrate script + check_doc_links portable awareness), added a `.githooks/pre-commit` hook, swept 178+ broken portability links across portable skill bodies, and saved a craken refactor spec.",
-      "normalized_key": "a multi task session that ran a paragraph level hitl review of agents md",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-25-hitl-craken-prep-retro.md",
-      "latest_source_date": "2026-04-25",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-25-hitl-craken-prep-retro.md",
-          "date": "2026-04-25",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:b3cdbbe7d67b",
-      "kind": "repeat_trap",
-      "lesson": "**Apply blocked twice** for the same class of mistake (broken cross-reference after section deletion; placeholder vs link confusion). Each retry burned a pre-commit cycle plus user attention.",
-      "normalized_key": "apply blocked twice for the same class of mistake broken cross reference after section",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-25-hitl-craken-prep-retro.md",
-      "latest_source_date": "2026-04-25",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-25-hitl-craken-prep-retro.md",
-          "date": "2026-04-25",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:fc11bc2e8b5b",
-      "kind": "repeat_trap",
-      "lesson": "**One incorrect commit shape** (db83ee7) had to be partially reverted by c38e06b on the same day; the bulk sweep then re-touched the same file in 38a3ae6. Three commits where one would have sufficed if the portability policy had been recognized before any apply pass.",
-      "normalized_key": "one incorrect commit shape db83ee7 had to be partially reverted by c38e06b on the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-25-hitl-craken-prep-retro.md",
-      "latest_source_date": "2026-04-25",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-25-hitl-craken-prep-retro.md",
-          "date": "2026-04-25",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:b3d330cb6b63",
-      "kind": "repeat_trap",
-      "lesson": "**Re-running the lint after each fix** when a single sweep would have surfaced all path-shape findings at once. This was a hook-output discoverability gap, not a logic gap.",
-      "normalized_key": "re running the lint after each fix when a single sweep would have surfaced",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-25-hitl-craken-prep-retro.md",
-      "latest_source_date": "2026-04-25",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-25-hitl-craken-prep-retro.md",
-          "date": "2026-04-25",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:0d7e66658729",
-      "kind": "current_focus",
-      "lesson": "The reviewed work unit changed the `narrative` public skill so agents can create or check repo-local narrative adapters before rewriting README or other first-touch truth surfaces.",
-      "normalized_key": "the reviewed work unit changed the narrative public skill so agents can create or",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
-      "latest_source_date": "2026-04-24",
-      "age_days": 3,
-      "recency_weight": 0.862,
-      "alpha": 0.07,
-      "selection_weight": 0.862,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
-          "date": "2026-04-24",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:a634e7f51a4a",
-      "kind": "current_focus",
-      "lesson": "The user challenged my final phrasing that cited a \"host-level delegation policy\" after a quality review that should have respected this repo's checked-in subagent delegation contract.",
-      "normalized_key": "the user challenged my final phrasing that cited a host level delegation policy after",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
-      "latest_source_date": "2026-04-24",
-      "age_days": 3,
-      "recency_weight": 0.862,
-      "alpha": 0.07,
-      "selection_weight": 0.862,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
-          "date": "2026-04-24",
-          "section": "Context"
         }
       ]
     }
   ],
   "candidates": [
     {
+      "candidate_id": "current_focus:013e0205fc03",
+      "kind": "current_focus",
+      "lesson": "Relevant outcome: task-completing repo work now treats premortem as mandatory; only the review depth scales.",
+      "normalized_key": "relevant outcome task completing repo work now treats premortem as mandatory only the review",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+      "latest_source_date": "2026-04-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+          "date": "2026-04-27",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:e502614a7d36",
       "kind": "current_focus",
       "lesson": "This work implemented the pre-Cautilus-upgrade slice for GitHub issues #74, #73, and #75: portable skill markdown safety, missing inline-code path detection, and CLI plus bundled-skill quality drift detection.",
@@ -271,6 +291,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md",
+          "date": "2026-04-27",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:cdbb693abfe5",
+      "kind": "current_focus",
+      "lesson": "Unit: user correction that `premortem needed?` still left optional room after many prior discussions, followed by repo contract and public skill repairs.",
+      "normalized_key": "unit user correction that premortem needed still left optional room after many prior discussions",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+      "latest_source_date": "2026-04-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
           "date": "2026-04-27",
           "section": "Context"
         }
@@ -317,6 +357,46 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:668fbd0e8ade",
+      "kind": "next_improvement",
+      "lesson": "keep `run_slice_closeout.py` blocking on public-skill dogfood review for prompt-affecting skill-core changes.",
+      "normalized_key": "keep run slice closeout py blocking on public skill dogfood review for prompt affecting",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+      "latest_source_date": "2026-04-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+          "date": "2026-04-27",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:afe506e85e11",
+      "kind": "next_improvement",
+      "lesson": "preserve the Cautilus failed-then-repaired result as proof that link purpose belongs in AGENTS, not only deeper docs.",
+      "normalized_key": "preserve the cautilus failed then repaired result as proof that link purpose belongs in",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+      "latest_source_date": "2026-04-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+          "date": "2026-04-27",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:cd074f1a8dd9",
       "kind": "next_improvement",
       "lesson": "Treat `migrate_backtick_file_refs.py --dry-run` output as a regression signal when changing markdown-link policy, but do not require a zero-output state while the migration helper still owns optional cleanups.",
@@ -333,6 +413,46 @@
           "artifact_path": "charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md",
           "date": "2026-04-27",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:393f02d4e7eb",
+      "kind": "next_improvement",
+      "lesson": "when a user correction targets a repeated workflow miss, update the root phase map and the owning skill gates in the same slice.",
+      "normalized_key": "when a user correction targets a repeated workflow miss update the root phase map",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+      "latest_source_date": "2026-04-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+          "date": "2026-04-27",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:99a3d9c06f16",
+      "kind": "repeat_trap",
+      "lesson": "`impl` and `release` grew past the public skill line budget, so the first closeout run caught avoidable verbosity after export sync.",
+      "normalized_key": "impl and release grew past the public skill line budget so the first closeout",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+      "latest_source_date": "2026-04-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+          "date": "2026-04-27",
+          "section": "Waste"
         }
       ]
     },
@@ -371,6 +491,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md",
+          "date": "2026-04-27",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:55e76b2a58bf",
+      "kind": "repeat_trap",
+      "lesson": "The first wording fix still centered on removing optional phrases inside skills, but the AGENTS phase map also needed to name why quality-contract links matter.",
+      "normalized_key": "the first wording fix still centered on removing optional phrases inside skills but the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+      "latest_source_date": "2026-04-27",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
           "date": "2026-04-27",
           "section": "Waste"
         }

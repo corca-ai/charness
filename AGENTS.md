@@ -22,6 +22,15 @@
 - Treat `mutate -> sync -> verify -> publish` as hard phase barriers; sync generated, plugin, and export surfaces before validators.
 - Treat meaningful `charness-artifacts/` changes as repo state and commit them with the work they support.
 - Current-pointer helpers should no-op without canonical content change; unexpected rewrites are invocation drift or helper bugs.
+- Treat premortem, closeout, and commit as part of task-completing repo work, not optional follow-up.
+
+## Work Phase Map
+
+- Before mutating code, scripts, docs, skills, generated exports, or validation behavior, read [docs/conventions/implementation-discipline.md](./docs/conventions/implementation-discipline.md); it owns sync-before-verify order, generated surfaces, closeout, and mutation parallelism.
+- Before reviewing slow gates, local-vs-CI validation cost, evaluator-backed validation, or quality-contract changes, route through `quality`; it owns validation posture and repo-local quality gate design.
+- Before closing task-completing repo work, read [docs/conventions/operating-contract.md](./docs/conventions/operating-contract.md); it owns commit discipline, durable artifact inclusion, mandatory premortem closeout, and session repair.
+- Before changing repo operating contracts, prompt or skill surfaces, exports, or artifact policy, read [charness-artifacts/retro/recent-lessons.md](./charness-artifacts/retro/recent-lessons.md); it owns recent repeat traps that should change the next move.
+- Before claiming a GitHub issue or operator-facing request is closable, map the requested outcome to executed proof and run the required premortem; if the canonical bounded-review path is blocked, stop and report the host restriction.
 
 ## Policy Index
 

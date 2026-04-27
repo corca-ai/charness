@@ -11,13 +11,15 @@ wrong decision or carrying the wrong fear into implementation.
 `premortem` is the structured before-the-fact counterpart to `retro`.
 It should stress a pending decision from distinct angles, then perform one
 counterweight pass so the findings become actionable instead of a paranoia pile.
-Caller skills should use it as the reusable subroutine for non-trivial
-decision review rather than rewriting angle selection or counterweight logic
-inline.
-Routine slices do not need `premortem` at all.
-When a caller needs one, `premortem` always means a fresh bounded subagent
-review. `bounded` limits scope and time box, not execution mode. There is no
-same-agent or local `premortem` variant.
+Task-completing repo work always records premortem before closeout. Scale the
+pass, not the obligation: small local-risk slices may use a short scoped
+premortem in the caller's closeout artifact, while non-trivial design,
+deletion, rename, release, workflow, compatibility, install/update,
+host-proof, prompt-surface, public-skill, validator, or export decisions use
+this standalone skill.
+When this standalone `premortem` skill runs, it always means a fresh bounded
+subagent review. `bounded` limits scope and time box, not execution mode. There
+is no same-agent or local standalone `premortem` variant.
 Before any host-capability question, honor `<repo-root>/AGENTS.md` `Subagent Delegation`:
 required bounded review is already delegated.
 If the parent agent already delegated a bounded angle or counterweight review

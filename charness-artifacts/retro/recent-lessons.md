@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- Relevant outcome: task-completing repo work now treats premortem as mandatory; only the review depth scales. (source: `charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md`)
 - This work implemented the pre-Cautilus-upgrade slice for GitHub issues #74, #73, and #75: portable skill markdown safety, missing inline-code path detection, and CLI plus bundled-skill quality drift detection. (source: `charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md`)
-- A multi-task session that ran a paragraph-level hitl review of `AGENTS.md`, filed three follow-up GitHub issues (#72 hitl Apply Phase, #73 lint inline-code references, #74 migrate script + check_doc_links portable awareness), added a `.githooks/pre-commit` hook, swept 178+ broken portability links across portable skill bodies, and saved a craken refactor spec. (source: `charness-artifacts/retro/2026-04-25-hitl-craken-prep-retro.md`)
 
 ## Repeat Traps
 
+- `impl` and `release` grew past the public skill line budget, so the first closeout run caught avoidable verbosity after export sync. (source: `charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md`)
 - The first missing-path implementation caught intentional future-path wording in `docs/handoff.md` and a glob-like token in `docs/harness-composition.md`. That was useful pressure, but it showed the detector needed to distinguish actual path references from planned artifact names and glob patterns. (source: `charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md`)
 - The first portable-link boundary was too strict for checked-in skill-to-skill references, so it had to be narrowed to block repo-doc escapes without rejecting links under `skills/`. (source: `charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md`)
-- **Apply blocked twice** for the same class of mistake (broken cross-reference after section deletion; placeholder vs link confusion). Each retry burned a pre-commit cycle plus user attention. (source: `charness-artifacts/retro/2026-04-25-hitl-craken-prep-retro.md`)
-- **One incorrect commit shape** (db83ee7) had to be partially reverted by c38e06b on the same day; the bulk sweep then re-touched the same file in 38a3ae6. Three commits where one would have sufficed if the portability policy had been recognized before any apply pass. (source: `charness-artifacts/retro/2026-04-25-hitl-craken-prep-retro.md`)
+- The first wording fix still centered on removing optional phrases inside skills, but the AGENTS phase map also needed to name why quality-contract links matter. (source: `charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md`)
 
 ## Next-Time Checklist
 
 - Add small classification helpers before extending `check_doc_links.py` again; the function is a shared lint seam now. (source: `charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md`)
 - For future lint expansion, run the new detector against the live repo before deciding the final error taxonomy. (source: `charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md`)
-- Treat `migrate_backtick_file_refs.py --dry-run` output as a regression signal when changing markdown-link policy, but do not require a zero-output state while the migration helper still owns optional cleanups. (source: `charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md`)
-- Capability: keep runtime-budget contracts profile-aware so samples from different machines do not share one hard threshold. (source: `charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md`)
+- keep `run_slice_closeout.py` blocking on public-skill dogfood review for prompt-affecting skill-core changes. (source: `charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md`)
+- preserve the Cautilus failed-then-repaired result as proof that link purpose belongs in AGENTS, not only deeper docs. (source: `charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md`)
 
 ## Selection Policy
 
@@ -27,6 +27,5 @@
 
 ## Sources
 
-- `charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md`
-- `charness-artifacts/retro/2026-04-25-hitl-craken-prep-retro.md`
 - `charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md`
+- `charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md`

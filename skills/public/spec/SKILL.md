@@ -160,8 +160,8 @@ as `Entities` or `Stages` instead of recreating them under new names.
 - Do not clear a forced debug interrupt with generic spec churn; if the planner
   surfaced one, the spec must explicitly consume that interrupt in
   `Premortem`.
-- Do not skip the bounded premortem on a risky or cross-surface contract just
-  because the document reads clearly to the current author.
+- Do not skip the bounded premortem before finalizing a task-completing
+  contract just because the document reads clearly to the current author.
 - Do not leave important rejected alternatives only in chat when the same
   branch is likely to be reopened by the next maintainer.
 - Do not let acceptance checks become a second copy of the unit suite just

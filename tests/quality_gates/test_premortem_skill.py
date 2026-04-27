@@ -25,6 +25,8 @@ def test_premortem_skill_surfaces_counterweight_and_deliberately_not_doing() -> 
 
     assert "counterweight" in skill_text
     assert "Deliberately Not Doing" in skill_text
+    assert "Task-completing repo work always records premortem before closeout." in skill_text
+    assert "Scale the\npass, not the obligation" in skill_text
     assert "use subagents as the canonical path" in skill_text
     assert "at least two angle subagents plus one separate counterweight subagent" in skill_text
     assert "default to three angle subagents" in skill_text

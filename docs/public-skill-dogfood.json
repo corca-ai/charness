@@ -100,9 +100,10 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-22",
+      "reviewed_on": "2026-04-27",
       "observed_evidence": [
         "The checked-in public core explicitly keeps `debug` in diagnosis-before-repair mode, preserving the exact symptom, a falsifiable hypothesis, and at least three candidate causes before implementation work starts.",
+        "The debug core now keeps premortem out of premature fact-gathering while requiring task-completing debug closeout or repair handoff to record short scoped diagnosis/repair risk or full standalone premortem for broader seams.",
         "Repo-owned eval coverage already exercises `debug-adapter-bootstrap`, which pins the current adapter bootstrap and canonical artifact path at `charness-artifacts/debug/latest.md`.",
         "The committed `validate_debug_artifact.py` gate plus `tests/test_debug_artifact.py` now make the current debug artifact carry structured seam risk and interruption data, so a host-boundary miss cannot stay a chat-only handoff."
       ]
@@ -208,9 +209,10 @@
         "includes a customer-of-this-capability angle when first-use failure is the main risk"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-24",
+      "reviewed_on": "2026-04-27",
       "observed_evidence": [
-        "The checked-in public core now says routine slices do not need premortem at all, and when a caller does need one the term `premortem` means only a fresh bounded subagent review with no same-agent or local variant.",
+        "The checked-in public core now says task-completing repo work always records premortem before closeout, scaling the pass rather than leaving applicability optional.",
+        "The standalone `premortem` skill remains the full bounded-subagent path for non-trivial design, deletion, rename, release, workflow, compatibility, install/update, host-proof, prompt-surface, public-skill, validator, or export decisions.",
         "The angle-selection reference now names `customer-of-this-capability` so capability changes can test the user's or downstream agent's first real use instead of only producer-side breakage.",
         "That same contract now makes blocked execution explicit in the public output shape, so a host-side subagent gap stays visible as `Execution: blocked <host-signal>` instead of being rewritten as a degraded concern list.",
         "That keeps `premortem-canonical-subagent-followup` live as a reviewed seam: the repo now locks the user push for true subagent premortem in both checked-in wording and validator-backed contract pins.",
@@ -267,8 +269,8 @@
       "reviewed_on": "2026-04-24",
       "observed_evidence": [
         "The public core tells release work to inspect `current_release.py`, `check_real_host_proof.py`, `check_requested_review_gate.py`, git state, and the current release artifact before mutating anything.",
-        "The checked-in release core no longer reopens a local-premortem loophole: routine release hygiene now says no premortem is needed at all, and any release slice that does need one must use the standalone `premortem` skill.",
-        "The release closeout contract now distinguishes `Premortem: skipped <reason>` from `Premortem: blocked <host-signal>`, which matches the maintainer-facing path better than implying that a same-agent substitute still counted as release review.",
+        "The checked-in release core no longer reopens a local-premortem loophole: every task-completing release slice records premortem, with routine hygiene using a short scoped pass and higher-risk release decisions using the standalone `premortem` skill.",
+        "The release closeout contract now distinguishes `Premortem: short <scope>`, `Premortem: full <artifact-or-subagent-status>`, `Premortem: not-applicable <reason>`, and `Premortem: blocked <host-signal>`, which matches the maintainer-facing path better than implying that a same-agent substitute still counted as release review.",
         "`check_requested_review_gate.py` blocks publish when a configured requested-review command fails or when the release record says review was unavailable without an explicit review waiver."
       ]
     },
@@ -350,9 +352,10 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-22",
+      "reviewed_on": "2026-04-27",
       "observed_evidence": [
         "The checked-in public core keeps `impl` downstream of `spec` while still requiring an inline honest contract when no separate spec exists, which matches a direct build-slice prompt instead of collapsing into `spec` or `quality`.",
+        "The impl stop gate now requires every task-completing repo slice to record premortem before closeout, using `Premortem: short <scope>` for small local-risk work, `Premortem: full <artifact-or-subagent-status>` for broader decisions, and `Premortem: not-applicable <reason>` only for inspect/status/routing-only requests.",
         "Repo-owned eval coverage already exercises `impl-adapter-bootstrap`, pinning the inferred adapter defaults for `charness-artifacts/impl` and the verification/truth-surface fields that bootstrap expects.",
         "The impl bootstrap now points at `scripts/plan_risk_interrupt.py`, and the checked-in core tells the agent not to continue plain implementation past a forced debug interrupt until the named spec handoff says that is honest."
       ]
@@ -371,9 +374,10 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-22",
+      "reviewed_on": "2026-04-27",
       "observed_evidence": [
         "The checked-in public core frames `spec` as turning an under-specified request into the current build contract, which keeps this prompt out of `ideation` and `impl` unless the concept or execution state changes materially.",
+        "The spec guardrail now forbids skipping bounded premortem before finalizing a task-completing contract, removing the earlier narrow risky/cross-surface qualifier.",
         "Representative contract pins in `scripts/check_skill_contracts.py` now also keep the risk-interrupt carry-forward seam load-bearing: when the planner surfaces a forced debug interrupt, `spec` must consume it explicitly in `Premortem` instead of clearing it with generic doc churn.",
         "That keeps the planner-backed `debug -> spec -> impl` boundary visible as a reviewed consumer seam: the current contract makes seam risk survive into the spec handoff before plain implementation is allowed to resume."
       ]

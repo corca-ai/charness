@@ -20,11 +20,27 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
 ## Commit Discipline
 
 - After each meaningful unit of work, create a git commit before moving on.
+- Do not leave task-completing repo work in a dirty tree unless the user
+  explicitly asked to pause before commit or an unresolved blocker is named.
 - Prefer commit subjects that state user-facing purpose, not only mechanism.
 - After any `git push`, confirm the branch is clean and the remote update succeeded.
 - When a Charness workflow creates or updates durable artifacts under
   [charness-artifacts/](../../charness-artifacts/), include meaningful artifact
   changes in the same commit as the work they support.
+
+## Premortem Discipline
+
+- Every task-completing repo change runs premortem before closeout. Scale the
+  pass, not the obligation.
+- Small local-risk slices may use a short scoped premortem artifact that names
+  the decision, the likely misread, counterweight triage, and the next move.
+- Non-trivial design, deletion, rename, release, workflow, compatibility,
+  install/update, host-proof, prompt-surface, public-skill, validator, or export
+  decisions use the standalone `premortem` skill.
+- `Premortem: not-applicable <reason>` is reserved for inspect-only, status-only,
+  or routing-only requests that do not complete repo work.
+- If the required bounded-review path is blocked by the host, stop and record
+  `Premortem: blocked <host-signal>` instead of substituting same-agent review.
 
 ## Skill And Metadata Discipline
 

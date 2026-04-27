@@ -15,13 +15,12 @@ advice, or generated-file edits by hand.
 Borrow Jez Humble-style release discipline: keep the path small, repeatable,
 and honest about which boundary is actually closed: local verification, publish
 workflow completion, or public release visibility.
-When the release decision is non-trivial, use the standalone `premortem`
-skill before mutating versions so compatibility, install/update fallout, and
-real-host proof requirements are triaged explicitly.
-Routine release hygiene does not need premortem at all. When one is needed, use
-the standalone `premortem` skill. Before any host-capability question, honor
-`<repo-root>/AGENTS.md` `Subagent Delegation`: required bounded review is already
-delegated.
+Every task-completing release slice records premortem before closeout. Scale
+the pass, not the obligation: routine release hygiene may use a short scoped
+premortem for version drift, generated surfaces, publish boundary, and operator
+risk; compatibility, install/update, deletion, host-proof, or public-visibility
+decisions use standalone `premortem` before mutating versions. Before any
+host-capability question, honor `<repo-root>/AGENTS.md` `Subagent Delegation`.
 
 ## Bootstrap
 
@@ -80,16 +79,15 @@ verified.
    - generated plugin manifest versions
    - generated compatibility metadata version
    - dirty or drifted working tree state
-3. Run the standalone `premortem` skill on non-trivial release decisions.
-   - use the standalone `premortem` skill when compatibility expectations,
-     install/update instructions, deletions, or real-host proof boundaries
-     could be misread
+3. Run or record the required premortem before release mutation.
+   - every task-completing release slice records premortem before closeout; scale the pass instead of asking whether it is needed
+   - record `Premortem: short <scope>` for routine release hygiene focused on version drift, generated surfaces, publish boundary, and operator risk
+   - record `Premortem: full <artifact-or-subagent-status>` after standalone `premortem` when compatibility, install/update, deletion, host-proof, or public visibility could be misread
    - carry back `Act Before Ship`, `Bundle Anyway`, `Over-Worry`, and
      `Valid but Defer` into the release plan instead of keeping them as chat
      debris
-   - if the release does not need premortem, record `Premortem: skipped <reason>`
-     in the closeout instead of implying it ran
-   - if a required premortem is blocked because the host cannot provide
+   - use `Premortem: not-applicable <reason>` only for inspect/status/routing-only release requests that do not mutate or close repo work
+   - if the required premortem is blocked because the host cannot provide
      subagents after the capability check, stop and record
      `Premortem: blocked <host-signal>` instead of continuing the release slice
 4. Choose the lightest honest bump.
@@ -172,11 +170,12 @@ The result should usually include:
   still owes bounded retry/backoff or a public visibility check.
 - Do not run sync, export, bump, install/update, or git-mutation commands in
   parallel with validators. Use parallelism only for read-only inspection.
-- Do not skip the standalone `premortem` pass when a release changes
-  compatibility, install/update flow, or host-proof expectations in a way the
-  next maintainer could misread.
+- Do not skip premortem for task-completing release work. Use the standalone
+  `premortem` pass when a release changes compatibility, install/update flow,
+  public visibility, or host-proof expectations in a way the next maintainer
+  could misread.
 - Do not call a same-agent review a premortem.
-- If a required premortem is blocked, stop instead of downgrading to a local
+- If the required premortem is blocked, stop instead of downgrading to a local
   substitute and still calling the release reviewed.
 - Do not downgrade a user-requested review gate failure into a release caveat.
   A release record that says review was unavailable needs a fix, an explicitly

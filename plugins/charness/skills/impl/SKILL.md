@@ -125,11 +125,11 @@ Adapter policy:
    - confirm each item is reflected in the delivered slice or explicitly
      deferred or reclassified in the contract
 6. Run the stop gate.
-   - when the slice needs premortem, run the standalone `premortem` skill;
-     `premortem` always means a fresh bounded subagent review, never a same-agent pass
-   - if the slice does not need premortem, record `Premortem: skipped <reason>`
-     in the closeout instead of implying it ran
-   - if a required premortem is blocked because the host cannot provide
+   - every task-completing repo slice records premortem before closeout; scale the pass instead of asking whether it is needed
+   - record `Premortem: short <scope>` for small local-risk slices, or `Premortem: full <artifact-or-subagent-status>` after using standalone `premortem` for design, release, workflow, compatibility, host-proof, prompt-surface, public-skill, validator, or export decisions
+   - `premortem` always means a fresh bounded subagent review, never a same-agent pass
+   - use `Premortem: not-applicable <reason>` only for inspect/status/routing-only requests that do not complete repo work
+   - if the required premortem is blocked because the host cannot provide
      subagents after the capability check, stop and record `Premortem: blocked <host-signal>`
    - run a fresh-eye review for runtime behavior, boundary honesty, and
      docs/spec synchronization
@@ -182,10 +182,11 @@ The closeout should usually include:
 - If the change touches shared seams or architectural ownership, do not stop at
   same-context self-review alone.
 - Do not call a same-agent review a premortem.
-- Do not skip a required premortem just because the code looks locally clean.
+- Do not skip premortem for task-completing repo work just because the code
+  looks locally clean.
 - Do not reinvent one-off premortem angle selection when the standalone
   `premortem` skill fits the slice.
-- If a required premortem is blocked, stop instead of downgrading to a local
+- If the required premortem is blocked, stop instead of downgrading to a local
   substitute and still calling the slice reviewed.
 
 ## References
