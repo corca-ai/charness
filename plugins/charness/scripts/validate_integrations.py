@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -39,6 +40,17 @@ CONFIG_LAYER_ORDER = {
     "operator-step": 3,
     "public-fallback": 4,
 }
+
+CAUTILUS_GENERIC_INTENT_TRIGGER_RE = re.compile(
+    r"(^|\b)(verify|verification|evaluate|evaluation|review|closeout|"
+    r"quality review|run quality|검증|평가|리뷰|검토)(\b|$)",
+    re.IGNORECASE,
+)
+CAUTILUS_SPECIFIC_INTENT_RE = re.compile(
+    r"(evaluator-backed|behavior|prompt|instruction|regression|baseline|"
+    r"compare|operator reading|cautilus|프롬프트|동작)",
+    re.IGNORECASE,
+)
 
 
 def validate_access_mode_order(manifest: dict[str, object], path: Path) -> None:
@@ -106,6 +118,27 @@ def validate_support_install_entrypoint(manifest: dict[str, object], path: Path)
         )
 
 
+def validate_cautilus_trigger_specificity(manifest: dict[str, object], path: Path) -> None:
+    if manifest.get("tool_id") != "cautilus":
+        return
+    triggers = manifest.get("intent_triggers", [])
+    if not isinstance(triggers, list):
+        return
+    generic = sorted(
+        trigger
+        for trigger in triggers
+        if isinstance(trigger, str)
+        and CAUTILUS_GENERIC_INTENT_TRIGGER_RE.search(trigger)
+        and not CAUTILUS_SPECIFIC_INTENT_RE.search(trigger)
+    )
+    if generic:
+        rendered = ", ".join(f"`{trigger}`" for trigger in generic)
+        raise ValidationError(
+            f"{path}: cautilus intent_triggers must not use generic review/closeout terms "
+            f"({rendered}); use evaluator-backed behavior, prompt regression, or compare-specific triggers."
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
@@ -122,6 +155,7 @@ def main() -> int:
             validate_capability_requirements(manifest, manifest_path)
             validate_config_layers(manifest, manifest_path)
             validate_support_install_entrypoint(manifest, manifest_path)
+            validate_cautilus_trigger_specificity(manifest, manifest_path)
         for capability_path in sorted((repo_root / "skills" / "support").glob("*/capability.json")):
             capability = json.loads(capability_path.read_text(encoding="utf-8"))
             validate_access_mode_order(capability, capability_path)

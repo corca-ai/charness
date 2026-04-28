@@ -18,7 +18,7 @@ hook, hook runner, or verify chain.
 
 ## Inventory Axes
 
-Review these five axes and classify each as `healthy`, `weak`, `missing`, or
+Review these six axes and classify each as `healthy`, `weak`, `missing`, or
 `not_applicable` when the repo genuinely does not use that shape:
 
 1. **Test-runner reporter**
@@ -59,6 +59,14 @@ Review these five axes and classify each as `healthy`, `weak`, `missing`, or
 5. **Escape hatch**
    - keep verbose-on-demand cheap with `VERBOSE=1`, `CI=1`, or a sibling
      `*:verbose` script
+6. **Failure detail**
+   - quiet success output is healthy only when quiet failure output is still
+     actionable
+   - a failing executable-spec or test phase should name the failing
+     unit/spec/case and include a short `actual`, error, or diff snippet
+     without forcing the operator to manually rediscover the failing case
+   - a one-time failure replay or captured-output print is acceptable; always
+     verbose standing logs are not required
 
 ## Slow Test Triage
 

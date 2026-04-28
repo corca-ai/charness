@@ -609,3 +609,41 @@ def test_current_cautilus_guidance_uses_eval_surface() -> None:
     assert "evaluation_input_default: evals/cautilus/whole-repo-routing.fixture.json" in adapter_text
     assert "cautilus instruction-surface test --repo-root ." not in impl_text
     assert "cautilus instruction-surface test --repo-root ." not in public_skill_validation
+
+
+def test_cautilus_guidance_does_not_use_generic_review_triggers() -> None:
+    impl_text = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
+    quality_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    prompt_policy = (
+        ROOT / "skills" / "public" / "quality" / "references" / "prompt-asset-policy.md"
+    ).read_text(encoding="utf-8")
+    manifest = json.loads((ROOT / "integrations" / "tools" / "cautilus.json").read_text(encoding="utf-8"))
+
+    assert "generic" in impl_text
+    assert "review or closeout wording must not silently launch Cautilus" in impl_text
+    assert "Generic review, closeout, or \"run quality\" wording" in quality_text
+    assert "generic review, closeout, or quality-gate wording" in prompt_policy
+    assert "not a Cautilus execution" in prompt_policy
+    assert "prompt behavior regression" in manifest["intent_triggers"]
+    assert "baseline compare" in manifest["intent_triggers"]
+    assert not {"review", "closeout", "검증", "리뷰"}.intersection(manifest["intent_triggers"])
+
+
+def test_validate_integrations_rejects_generic_cautilus_triggers() -> None:
+    from scripts.validate_integrations import (
+        ValidationError,
+        validate_cautilus_trigger_specificity,
+    )
+
+    manifest = {
+        "tool_id": "cautilus",
+        "intent_triggers": ["quality review", "prompt behavior regression", "검토"],
+    }
+    try:
+        validate_cautilus_trigger_specificity(manifest, ROOT / "integrations" / "tools" / "cautilus.json")
+    except ValidationError as exc:
+        assert "generic review/closeout terms" in str(exc)
+        assert "quality review" in str(exc)
+        assert "검토" in str(exc)
+    else:  # pragma: no cover - assertion clarity
+        raise AssertionError("expected generic cautilus trigger rejection")

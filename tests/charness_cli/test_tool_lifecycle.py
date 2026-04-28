@@ -170,18 +170,17 @@ def test_installed_cli_tool_doctor_reports_ok_for_cautilus_with_binary_and_suppo
     assert cautilus["support_sync"]["status"] == "ok"
     assert cautilus["support_discovery"]["status"] == "materialized"
     assert cautilus["support_discovery"]["intent_triggers"] == [
-        "verify",
-        "verification",
-        "evaluate",
-        "evaluation",
-        "review",
+        "evaluator-backed behavior review",
+        "behavior evaluation",
         "behavior review",
-        "closeout",
-        "issue closeout",
+        "prompt behavior regression",
+        "instruction behavior regression",
+        "baseline compare",
+        "cautilus eval",
+        "cautilus scenario",
         "operator reading test",
-        "검증",
-        "평가",
-        "리뷰",
+        "프롬프트 회귀",
+        "동작 평가",
     ]
     assert cautilus["support_discovery"]["support_skill_path"] == "skills/support/generated/cautilus/SKILL.md"
     assert cautilus["support_discovery"]["discovery_stub_path"] == ".agents/charness-discovery/cautilus.md"
@@ -206,18 +205,17 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
     assert cautilus["support"]["materialized_paths"] == ["skills/support/generated/cautilus"]
     assert cautilus["support"]["discovery_stub_path"] == ".agents/charness-discovery/cautilus.md"
     assert cautilus["support"]["intent_triggers"] == [
-        "verify",
-        "verification",
-        "evaluate",
-        "evaluation",
-        "review",
+        "evaluator-backed behavior review",
+        "behavior evaluation",
         "behavior review",
-        "closeout",
-        "issue closeout",
+        "prompt behavior regression",
+        "instruction behavior regression",
+        "baseline compare",
+        "cautilus eval",
+        "cautilus scenario",
         "operator reading test",
-        "검증",
-        "평가",
-        "리뷰",
+        "프롬프트 회귀",
+        "동작 평가",
     ]
     assert cautilus["doctor"]["doctor_status"] == "missing"
     assert cautilus["doctor"]["doctor_disposition"] == "advisory-install-needed"

@@ -54,6 +54,9 @@ move is implied:
 - `keep_if_integration_value`: smoke or E2E paths should stay only when they
   add cross-command, repo-mutation, or external-consumer value beyond the
   public spec
+- `classify_source_guards`: high-pressure source guard specs should be split
+  into `replace_with_contract_check`, `move_to_unit_test`,
+  `keep_as_reader_facing_contract`, or `delete_if_inventory_only`
 - `delete_if_happy_path_only`: smoke or E2E paths that do not add that extra
   value should be removed once a narrower layer owns the claim
 
@@ -66,6 +69,11 @@ Heuristic review is enough to be useful. Look for:
 - spec blocks that mostly delegate to broad test runners
 - the same happy-path command example repeated across public specs
 - standing smoke or E2E paths that likely repeat a public-spec happy path
+
+When source guards are the signal, surface the rollup instead of burying it in
+per-file rows: total source-guard rows, total prose `source_guard` tokens, the
+number of affected specs, top specs by source-guard pressure, and the brittle
+guard count if that separate inventory ran.
 
 ## Review Question
 

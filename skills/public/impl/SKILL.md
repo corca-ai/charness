@@ -11,7 +11,6 @@ operator-facing artifacts.
 user asks for implementation directly and no separate spec step happened. In
 that case, `impl` should bootstrap the smallest honest contract for the current
 slice instead of pretending the task is already well-defined.
-
 Keep sequence discipline, strong verification, and honest premortem use in the
 loop. See `references/sequence-discipline.md`,
 `references/verification-ladder.md`, `references/design-lenses.md`, and
@@ -96,16 +95,17 @@ Adapter policy:
 4. Verify with the strongest honest path.
    - survey repo and adapter capabilities before coding and again before stopping
    - prefer executed proof over code inspection when an executable path exists
-   - for validation-shaped review, evaluation, closeout, or operator reading work, query `find-skills` validation recommendations before same-agent manual review; if the evaluator is unavailable, say so
+   - for validation-shaped review, closeout, or operator reading work, run
+     deterministic gates first; query evaluator tools only for explicit behavior
+     evaluation, prompt regression, baseline compare, or insufficient local proof
    - add or strengthen checks when an important branch would otherwise stay unproven
    - for browser-facing output, treat code-only checks as partial proof by default; resolve browser/runtime support through `find-skills`, run it when available, or say explicitly that it did not run
    - if the slice changes repo-owned instruction or prompt surfaces such as
      `<repo-root>/AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or
      adapter prompt wording, refresh `<repo-root>/charness-artifacts/cautilus/latest.md`
      from repo-owned cautilus proof before closeout
-   - let the repo's cautilus adapter decide whether proof may run
-     autonomously, must ask, or should adapt by proof kind and cost; closeout
-     should block on missing proof rather than silently launching it
+   - let the repo's cautilus adapter decide prompt/evaluator proof policy;
+     generic review or closeout wording must not silently launch Cautilus
    - for behavior-preserving prompt changes, keep regression proof anchored by
      `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` or
      a repo-owned dogfood wrapper; for behavior-improving claims, also record

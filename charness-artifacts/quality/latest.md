@@ -22,6 +22,8 @@ operator-facing proof, runtime signals, and low-noise automation candidates.
 - Standing phases include command docs, CLI probes, markdown/link checks,
   secrets, supply chain, ruff, pytest, coverage, specdown, evals, duplicate
   detection, startup probes, runtime budgets, and current-pointer freshness.
+- #78 gate shape landed: quiet specdown-style failures now need actionable
+  failure detail, not only a verbose rerun escape hatch.
 - `.githooks/pre-push` is active through `core.hooksPath` and runs sync,
   current-pointer freshness, and the quality gate.
 
@@ -92,28 +94,26 @@ operator-facing proof, runtime signals, and low-noise automation candidates.
 - Do not widen specdown coverage before removing duplicated cheaper proof.
 
 ## Advisory
-- Inline prompt/content bulk inventory found 17 advisory items in
-  `scripts/**/*.py`, `skills/**/*.py`, and `tests/**/*.py`: mostly docstrings,
-  fixtures, test payloads, and helper strings.
-- `prompt_asset_roots: []` means no canonical prompt asset root is declared; it
-  does not suppress inline prompt/content bulk inventory or disclosure.
+- `find_inline_prompt_bulk.py` remains advisory; `prompt_asset_roots: []` is
+  not an inventory opt-out.
+- `inventory_public_spec_quality.py` reports `0` source-guard rows and `0`
+  affected public specs; source-guard rollups are now explicit.
 
 ## Delegated Review
 - status: executed.
 - Fresh-eye context: parent-delegated reviewers completed `gate-design`,
   `adapter-policy`, `operator-signal`, `fixture-economics`,
   `parallel-critical-path`, and `duplicated-proof`.
-- Main outcome: enforce coverage-floor adapter alignment, require advisory
-  disclosure, separate prompt root policy from inline bulk inventory, and
-  migrate Cautilus proof guidance to `cautilus eval`.
+- Main outcome: enforce coverage-floor alignment, require advisory disclosure,
+  add #78 quiet-failure/source-guard signals, and narrow generic Cautilus
+  trigger pressure.
 
 ## Commands Run
 - `./scripts/run-quality.sh --review`
-- `python3 scripts/doctor.py --repo-root . --json --skip-release-probe`
 - `python3 scripts/validate_maintainer_setup.py --repo-root .`
-- `python3 scripts/check_coverage.py --repo-root . --json`
-- `python3 skills/public/quality/references/find_inline_prompt_bulk.py --repo-root . --source-glob 'scripts/**/*.py' --source-glob 'skills/**/*.py' --source-glob 'tests/**/*.py' --exemption-glob 'plugins/**' --exemption-glob '.artifacts/**' --json`
-- `../cautilus/bin/cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/whole-repo-routing.fixture.json --output-dir .cautilus/runs/20260428T000000000Z-eval-migration`
+- `python3 skills/public/quality/scripts/inventory_standing_gate_verbosity.py --repo-root . --json`
+- `python3 skills/public/quality/scripts/inventory_public_spec_quality.py --repo-root . --json`
+- `../cautilus/bin/cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/whole-repo-routing.fixture.json --output-dir .cautilus/runs/20260428T000000000Z-cautilus-trigger-narrowing`
 - `python3 scripts/validate_quality_closeout_contract.py --repo-root .`
 - `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root . --json`
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
@@ -125,9 +125,8 @@ operator-facing proof, runtime signals, and low-noise automation candidates.
 - Misread risk: calling generic adapter validation enough. Counterweight:
   repo-specific Charness adapter contract now fails coverage and mature-field
   drift.
-- Misread risk: treating `prompt_asset_roots: []` as an inline-bulk opt-out.
-  Counterweight: skill guidance and this artifact now separate root policy from
-  advisory inventory.
+- Misread risk: generic review wording makes Cautilus feel mandatory.
+  Counterweight: trigger manifest and skill guidance now require evaluator intent.
 
 ## Recommended Next Gates
 - active `AUTO_CANDIDATE`: create and validate the README/operator proof ledger.

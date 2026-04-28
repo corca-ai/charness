@@ -175,8 +175,9 @@ def plan_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> dict[str, 
         notes.append("Repo policy is ask-before-run: closeout must stop before any cautilus execution.")
     elif run_mode == "adaptive":
         notes.append(
-            "Repo policy is adaptive: cautilus proof may run autonomously, including scenario review, "
-            "but scenario-registry mutations still require explicit confirmation."
+            "Repo policy is adaptive: generic review, closeout, or quality wording is not a cautilus "
+            "execution trigger; run only when prompt-affecting or evaluator-backed behavior proof is "
+            "required, and ask before scenario-registry mutations."
         )
     elif run_mode == "auto":
         notes.append("Repo policy is auto: cautilus proof may run without an extra confirmation step when the operator workflow chooses to execute it.")

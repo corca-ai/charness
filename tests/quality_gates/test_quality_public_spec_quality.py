@@ -51,13 +51,23 @@ def test_inventory_public_spec_quality_flags_reader_facing_drift(tmp_path: Path)
         "delegated_test_runner_proof",
     }
     assert "proof_layering_review_needed" in payload["layering"]["heuristics"]
+    assert "source_guard_pressure_rollup" in payload["layering"]["heuristics"]
+    assert payload["summary"]["source_guard_row_count"] == 1
+    assert payload["summary"]["source_guard_pressure_spec_count"] == 1
     assert payload["layering"]["delegated_runner_specs"] == ["docs/specs/current-product.spec.md"]
     recommendations = payload["layering"]["recommendations"]
     assert recommendations[0]["action"] == "move_down"
     assert recommendations[0]["target_items"] == ["docs/specs/current-product.spec.md"]
-    assert recommendations[1]["action"] == "keep_if_integration_value"
-    assert recommendations[1]["scope"] == "smoke"
-    assert recommendations[1]["target_items"] == ["tests/cli_smoke_test.py"]
+    source_guard_recommendation = next(
+        item for item in recommendations if item["action"] == "classify_source_guards"
+    )
+    assert source_guard_recommendation["target"] == "top_source_guard_specs"
+    assert "replace_with_contract_check" in source_guard_recommendation["guidance"]
+    smoke_recommendation = next(
+        item for item in recommendations if item["scope"] == "smoke"
+    )
+    assert smoke_recommendation["action"] == "keep_if_integration_value"
+    assert smoke_recommendation["target_items"] == ["tests/cli_smoke_test.py"]
 
 
 def test_inventory_public_spec_quality_detects_duplicate_public_examples(tmp_path: Path) -> None:
@@ -128,3 +138,78 @@ def test_inventory_public_spec_quality_recognizes_specdown_run_shell_blocks(tmp_
     assert spec["command_examples"] == ["demo doctor --json"]
     assert "no_executable_proof_blocks" not in spec["heuristics"]
     assert "delegated_test_runner_proof" not in spec["heuristics"]
+
+
+def test_inventory_public_spec_quality_rolls_up_top_source_guard_specs(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / "specs").mkdir(parents=True)
+    (repo / "specs" / "alpha.spec.md").write_text(
+        "\n".join(
+            [
+                "# Alpha",
+                "",
+                "| file | matcher | pattern |",
+                "| --- | --- | --- |",
+                "| README.md | source_guard | first |",
+                "| docs/a.md | fixed | second |",
+                "",
+                "source_guard source_guard",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (repo / "specs" / "beta.spec.md").write_text(
+        "\n".join(
+            [
+                "# Beta",
+                "",
+                "| file | matcher | pattern |",
+                "| --- | --- | --- |",
+                "| README.md | fixed | only |",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["summary"]["source_guard_row_count"] == 3
+    assert payload["summary"]["source_guard_token_count"] == 3
+    assert payload["summary"]["source_guard_pressure_spec_count"] == 2
+    assert payload["layering"]["top_source_guard_specs"] == [
+        {
+            "spec_path": "specs/alpha.spec.md",
+            "source_guard_row_count": 2,
+            "source_guard_token_count": 3,
+        },
+        {
+            "spec_path": "specs/beta.spec.md",
+            "source_guard_row_count": 1,
+            "source_guard_token_count": 0,
+        },
+    ]
+    recommendation = next(
+        item for item in payload["layering"]["recommendations"]
+        if item["action"] == "classify_source_guards"
+    )
+    assert recommendation["target_items"][0]["spec_path"] == "specs/alpha.spec.md"
+
+    text_result = run_script(
+        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+        "--repo-root",
+        str(repo),
+    )
+    assert text_result.returncode == 0, text_result.stderr
+    assert "source_guard_rollup: rows=3 tokens=3 affected_specs=2" in text_result.stdout
+    assert "top_source_guard_specs:" in text_result.stdout
+    assert "recommendation: classify_source_guards top_source_guard_specs" in text_result.stdout

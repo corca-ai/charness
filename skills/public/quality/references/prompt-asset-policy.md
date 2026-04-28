@@ -35,6 +35,8 @@ behavioral proof:
 - refresh `<repo-root>/charness-artifacts/cautilus/latest.md`
 - let the repo adapter choose whether cautilus runs in `auto`, `ask`, or
   `adaptive` mode instead of assuming one global execution policy
+- generic review, closeout, or quality-gate wording is not a Cautilus execution
+  trigger; deterministic gates and checked proof-artifact validation come first
 - for `preserve` claims, keep a regression-proof record anchored by
   `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` or a
   repo-owned dogfood wrapper

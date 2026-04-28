@@ -23,7 +23,14 @@ _LIB = _load_public_spec_quality_lib()
 E2E_DELETE, E2E_KEEP = _LIB.E2E_DELETE, _LIB.E2E_KEEP
 REVIEW_PROMPTS = _LIB.REVIEW_PROMPTS
 SMOKE_DELETE, SMOKE_KEEP = _LIB.SMOKE_DELETE, _LIB.SMOKE_KEEP
-recommendation, visible_paths = _LIB.recommendation, _LIB.visible_paths
+implementation_guard_specs = _LIB.implementation_guard_specs
+layering_heuristics_for = _LIB.layering_heuristics
+public_spec_recommendations = _LIB.public_spec_recommendations
+visible_paths = _LIB.visible_paths
+source_guard_specs = _LIB.source_guard_specs
+source_guard_summary = _LIB.source_guard_summary
+top_source_guard_specs_for = _LIB.top_source_guard_specs
+render_text_summary = _LIB.render_text_summary
 FENCE_RE = re.compile(r"^```(?P<info>[^`]*)$")
 SOURCE_GUARD_ROW_RE = re.compile(r"^\|\s*[^|]+?\s*\|\s*(?:fixed|source_guard)\s*\|", re.IGNORECASE)
 SOURCE_GUARD_TOKEN_RE = re.compile(r"\bsource_guard\b", re.IGNORECASE)
@@ -145,47 +152,32 @@ def inventory(repo_root: Path) -> dict[str, Any]:
     runner_specs = sorted(
         spec["spec_path"] for spec in specs if "delegated_test_runner_proof" in spec["heuristics"]
     )
-    recommendations = [
-        recommendation(
-            "delete_or_merge",
-            "public-spec",
-            "duplicate_command_examples",
-            duplicates,
-            guidance="Keep one representative public-spec proof per happy-path command, then delete or merge repeated public-spec copies.",
-        )
-        for duplicates in [duplicates] if duplicates
-    ]
-    recommendations += [
-        recommendation(
-            "move_down",
-            "public-spec",
-            "delegated_runner_specs",
-            runner_specs,
-            guidance="Replace delegated test-runner proof with direct reader-facing command proof in the public spec, and keep detailed assertions in app, unit, or smoke layers.",
-        )
-        for runner_specs in [runner_specs] if runner_specs
-    ]
-    recommendations += [
-        recommendation("keep_if_integration_value", "smoke", "smoke_test_paths", smoke_paths, keep_when=SMOKE_KEEP, delete_when=SMOKE_DELETE)
-        for smoke_paths in [smoke_paths] if smoke_paths
-    ]
-    recommendations += [
-        recommendation("keep_if_integration_value", "on-demand-e2e", "e2e_test_paths", e2e_paths, keep_when=E2E_KEEP, delete_when=E2E_DELETE)
-        for e2e_paths in [e2e_paths] if e2e_paths
-    ]
-    layering_heuristics: list[str] = []
-    if duplicates:
-        layering_heuristics.append("duplicate_public_spec_examples")
-    if runner_specs:
-        layering_heuristics.append("delegated_test_runner_inside_public_spec")
-    if (smoke_paths or e2e_paths) and (duplicates or runner_specs):
-        layering_heuristics.append("proof_layering_review_needed")
+    source_guard_spec_rows = source_guard_specs(specs)
+    implementation_guard_spec_rows = implementation_guard_specs(specs)
+    top_source_guard_specs = top_source_guard_specs_for(specs)
+    recommendations = public_spec_recommendations(
+        duplicates=duplicates,
+        runner_specs=runner_specs,
+        top_source_specs=top_source_guard_specs,
+        smoke_paths=smoke_paths,
+        e2e_paths=e2e_paths,
+    )
+    layering_heuristics = layering_heuristics_for(
+        duplicates=duplicates,
+        runner_specs=runner_specs,
+        source_guard_spec_rows=source_guard_spec_rows,
+        implementation_guard_spec_rows=implementation_guard_spec_rows,
+        smoke_paths=smoke_paths,
+        e2e_paths=e2e_paths,
+    )
+    summary = source_guard_summary(specs)
     return {
         "repo_root": str(repo_root),
         "summary": {
             "public_spec_count": len(specs),
             "flagged_spec_count": sum(1 for spec in specs if spec["heuristics"]),
             "duplicate_command_count": len(duplicates),
+            **summary,
             "smoke_test_count": len(smoke_paths),
             "e2e_test_count": len(e2e_paths),
         },
@@ -195,6 +187,7 @@ def inventory(repo_root: Path) -> dict[str, Any]:
             "smoke_test_paths": smoke_paths,
             "e2e_test_paths": e2e_paths,
             "delegated_runner_specs": runner_specs,
+            "top_source_guard_specs": top_source_guard_specs,
             "heuristics": layering_heuristics,
             "review_prompts": REVIEW_PROMPTS,
             "recommendations": recommendations,
@@ -209,11 +202,7 @@ def main() -> int:
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
     else:
-        for spec in payload["public_specs"]:
-            heuristics = ", ".join(spec["heuristics"]) or "none"
-            print(f"{spec['spec_path']}: heuristics={heuristics}")
-        if payload["layering"]["heuristics"]:
-            print(f"layering: {', '.join(payload['layering']['heuristics'])}")
+        print("\n".join(render_text_summary(payload)))
     return 0
 if __name__ == "__main__":
     raise SystemExit(main())

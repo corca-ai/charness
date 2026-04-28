@@ -143,6 +143,7 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
 
     assert "$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py" in skill_text
     assert "verbose-on-demand escape hatch" in skill_text
+    assert "quiet failure output must still name the" in skill_text
     assert "top-N runtime hot spots" in skill_text
     assert "serial fallback" in skill_text
     assert "standing-gate-verbosity.md" in skill_text
@@ -153,6 +154,8 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
     assert "pytest --durations" in verbosity
     assert "silent serial fallback" in verbosity
     assert "quiet defaults and failure detail" in verbosity.lower()
+    assert "Failure detail" in verbosity
+    assert "without forcing the operator to manually rediscover" in verbosity
     assert "after initial inventory and before broad recommendations" in skill_text
     assert "runtime_budget_profiles" in skill_text
     assert "CHARNESS_RUNTIME_PROFILE" in verbosity
@@ -160,6 +163,19 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
     assert "fixture-economics" in verbosity
     assert "parallel-critical-path" in verbosity
     assert "duplicated-proof" in verbosity
+
+
+def test_quality_skill_carries_source_guard_rollup_guidance() -> None:
+    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    layering = (
+        ROOT / "skills" / "public" / "quality" / "references" / "public-spec-layering.md"
+    ).read_text(encoding="utf-8")
+
+    assert "total source-guard rows" in skill_text
+    assert "next" in skill_text and "action category" in skill_text
+    assert "classify_source_guards" in layering
+    assert "replace_with_contract_check" in layering
+    assert "top specs by source-guard pressure" in layering
 
 
 def test_quality_and_create_cli_carry_command_docs_drift_pattern() -> None:

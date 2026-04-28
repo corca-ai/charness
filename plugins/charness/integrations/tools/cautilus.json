@@ -73,18 +73,17 @@
     "spec"
   ],
   "intent_triggers": [
-    "verify",
-    "verification",
-    "evaluate",
-    "evaluation",
-    "review",
+    "evaluator-backed behavior review",
+    "behavior evaluation",
     "behavior review",
-    "closeout",
-    "issue closeout",
+    "prompt behavior regression",
+    "instruction behavior regression",
+    "baseline compare",
+    "cautilus eval",
+    "cautilus scenario",
     "operator reading test",
-    "검증",
-    "평가",
-    "리뷰"
+    "프롬프트 회귀",
+    "동작 평가"
   ],
   "recommendation_role": "validation",
   "support_skill_source": {

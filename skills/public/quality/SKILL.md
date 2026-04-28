@@ -29,11 +29,9 @@ When stronger local proof depends on a missing validation tool, reuse the shared
 python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root .
 ```
 
-For evaluator-backed closeout or operator reading test work, use `quality` before downgrading to HITL or same-agent manual review. For task-completing
-quality reviews, run a bounded delegated review after initial inventory and before broad recommendations; add slow-gate lenses
-from `references/standing-gate-verbosity.md` when runtime is in scope. Report
-`Delegated Review: executed`, `blocked`, or `not_applicable`; blocked needs a
-concrete host/tool signal and must not be replaced with a same-agent pass.
+For evaluator-backed behavior closeout, prompt regression, baseline compare, or operator reading tests, use `quality` before downgrading to HITL/manual review.
+Generic review, closeout, or "run quality" wording does not require an evaluator; start with deterministic gates and escalate only when they cannot answer the behavior question.
+For task-completing quality reviews, run bounded delegated review after initial inventory and before broad recommendations; add slow-gate lenses from `references/standing-gate-verbosity.md` when runtime is in scope. Report `Delegated Review: executed|blocked|not_applicable`; blocked needs a concrete host/tool signal.
 Before host-capability questions, honor `<repo-root>/AGENTS.md` `Subagent Delegation`.
 When reader-facing Markdown needs rendered readability proof instead of source-only review, bootstrap or execute the repo-local markdown preview seam:
 
@@ -80,9 +78,11 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - when README, docs, or public-spec prose readability is part of the review, run the markdown preview seam or leave an explicit bootstrap payload instead of treating raw Markdown as equivalent proof
    - when CLI ergonomics are in scope, inventory flat help-list and cross-archetype schema smells with `$SKILL_DIR/scripts/inventory_cli_ergonomics.py`
    - when a standing local gate exists, inventory quiet-default vs verbose-on-demand posture with `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`
+   - quiet failure output must still name the failing unit/spec/case and show a short actual/error snippet without a second manual rerun
    - when the repo may keep one shipped implementation beside a historical or alternate runtime path, inventory likely dual-implementation parity smells with `$SKILL_DIR/scripts/inventory_dual_implementation.py`, then decide whether the relationship is parity-enforced, canonical-plus-legacy, or intentional divergence
    - when first-touch operator/developer/agent docs are in scope, inventory entrypoint-doc ergonomics with `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py`
    - when public executable specs are in scope, inventory reader-facing public-spec drift and proof-layering overlap with `$SKILL_DIR/scripts/inventory_public_spec_quality.py`; see `references/public-spec-layering.md`
+   - elevate source-guard pressure as a rollup: total source-guard rows, top specs, brittle count, and next action category should be visible together
    - when fixed-string source guards touch prose, inventory hard-wrap fragility with `$SKILL_DIR/scripts/inventory_brittle_source_guards.py`; see `references/brittle-source-guards.md`
    - when lint suppressions start to accumulate, inventory lint suppression pressure with `$SKILL_DIR/scripts/inventory_lint_ignores.py`; blanket or file-level ignores should be explicit review targets, not invisible background debt
    - inspect first-touch docs such as README and operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist; when the CLI surface is stable, prefer a deterministic command-docs drift gate over repeated prose review

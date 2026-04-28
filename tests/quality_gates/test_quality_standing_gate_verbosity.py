@@ -193,3 +193,78 @@ def test_inventory_standing_gate_verbosity_recognizes_charness_quiet_default() -
     assert payload["axes"]["per_gate_chatter"]["status"] == "healthy"
     assert payload["axes"]["phase_level_signal"]["status"] == "healthy"
     assert payload["axes"]["escape_hatch"]["status"] == "healthy"
+    assert payload["axes"]["failure_detail"]["status"] == "healthy"
+
+
+def test_inventory_standing_gate_verbosity_flags_quiet_failure_without_detail(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".githooks").mkdir(parents=True)
+    (repo / ".githooks" / "pre-push").write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'if [ "${VERBOSE:-0}" = "1" ]; then',
+                "  specdown run -no-report",
+                "else",
+                "  specdown run -quiet -no-report",
+                "fi",
+                'echo "Spec runner summary: PASS"',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_standing_gate_verbosity.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["axes"]["escape_hatch"]["status"] == "healthy"
+    assert payload["axes"]["failure_detail"]["status"] == "weak"
+    assert any(
+        finding["type"] == "quiet_failure_detail"
+        and finding["state"] == "needs_failure_detail"
+        and "failing spec/case" in finding["suggestion"]
+        for finding in payload["findings"]
+    )
+
+
+def test_inventory_standing_gate_verbosity_flags_suppressed_quiet_pytest_detail(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".githooks").mkdir(parents=True)
+    (repo / ".githooks" / "pre-push").write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                "pytest -q --tb=no >/dev/null",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_standing_gate_verbosity.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["axes"]["failure_detail"]["status"] == "weak"
+    assert any(
+        finding.get("tool") == "pytest"
+        and finding["state"] == "needs_failure_detail"
+        and "failing test/case" in finding["suggestion"]
+        for finding in payload["findings"]
+    )
