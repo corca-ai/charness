@@ -31,6 +31,8 @@ RUNTIME_BUDGET_CHECKER = Path("skills/public/quality/scripts/check_runtime_budge
 RUNTIME_BUDGET_LIB = Path("skills/public/quality/scripts/runtime_budget_lib.py")
 RUNTIME_SIGNALS = Path(".charness/quality/runtime-signals.json")
 QUALITY_ADAPTER = Path(".agents/quality-adapter.yaml")
+FIND_SKILLS_INVENTORY = Path("charness-artifacts/find-skills/latest.json")
+INTEGRATIONS_DIR = Path("integrations/tools")
 STALE_POINTER_PHRASES = {
     Path("docs/handoff.md"): (
         "freshness validator를 첫 slice로 잡는다",
@@ -262,6 +264,44 @@ def validate_release_version_claim(repo_root: Path) -> None:
         )
 
 
+def _manifest_default(field: str) -> object:
+    return None if field == "recommendation_role" else []
+
+
+def validate_find_skills_integration_claims(repo_root: Path) -> None:
+    inventory_path = repo_root / FIND_SKILLS_INVENTORY
+    integrations_dir = repo_root / INTEGRATIONS_DIR
+    if not inventory_path.is_file() or not integrations_dir.is_dir():
+        return
+    payload = _load_json(inventory_path)
+    inventory = payload.get("inventory")
+    if not isinstance(inventory, dict):
+        return
+    artifact_integrations = {
+        item.get("path"): item
+        for item in inventory.get("integrations", [])
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+    }
+    stale: list[str] = []
+    for manifest_path in sorted(integrations_dir.glob("*.json")):
+        if manifest_path.name == "manifest.schema.json":
+            continue
+        manifest = _load_json(manifest_path)
+        relative_path = str(manifest_path.relative_to(repo_root))
+        artifact_entry = artifact_integrations.get(relative_path)
+        if not artifact_entry:
+            stale.append(f"`{relative_path}` missing from `{FIND_SKILLS_INVENTORY}`")
+            continue
+        for field in ("intent_triggers", "supports_public_skills", "recommendation_role"):
+            if artifact_entry.get(field) != manifest.get(field, _manifest_default(field)):
+                stale.append(f"`{relative_path}` `{field}` differs from `{FIND_SKILLS_INVENTORY}`")
+    if stale:
+        raise ValidationError(
+            "find-skills inventory pointer is stale:\n"
+            + "\n".join(f"- {item}" for item in stale)
+        )
+
+
 def validate_current_pointer_freshness(repo_root: Path) -> None:
     validate_gate_is_queued(repo_root)
     validate_no_stale_claims(repo_root)
@@ -269,6 +309,7 @@ def validate_current_pointer_freshness(repo_root: Path) -> None:
     validate_runtime_smoothing_claim(repo_root)
     validate_quality_runtime_signal_claims(repo_root)
     validate_release_version_claim(repo_root)
+    validate_find_skills_integration_claims(repo_root)
 
 
 def main() -> int:

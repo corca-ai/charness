@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-04-24T07:02:56Z",
+  "generated_at": "2026-04-28T23:12:03Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -789,18 +789,17 @@
         "discovery_stub_path": null,
         "capability_requirements": {},
         "intent_triggers": [
-          "verify",
-          "verification",
-          "evaluate",
-          "evaluation",
-          "review",
+          "evaluator-backed behavior review",
+          "behavior evaluation",
           "behavior review",
-          "closeout",
-          "issue closeout",
+          "prompt behavior regression",
+          "instruction behavior regression",
+          "baseline compare",
+          "cautilus eval",
+          "cautilus scenario",
           "operator reading test",
-          "검증",
-          "평가",
-          "리뷰"
+          "프롬프트 회귀",
+          "동작 평가"
         ],
         "config_layers": [],
         "readiness_checks": [],

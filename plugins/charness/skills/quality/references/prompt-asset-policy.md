@@ -23,7 +23,7 @@ Suggested adapter split:
 - `prompt_asset_policy.min_multiline_chars`: minimum multi-line string size to
   treat as potential prompt/content bulk
 - `prompt_asset_policy.exemption_globs`: files that intentionally keep larger
-  inline content
+  inline content beyond the repo's `.gitignore` rules
 
 Use [`find_inline_prompt_bulk.py`](./find_inline_prompt_bulk.py) as a cheap
 inventory helper when the repo keeps prompt-heavy Python sources and wants a

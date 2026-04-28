@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from .support import run_script
@@ -204,3 +205,51 @@ def test_current_pointer_freshness_rejects_stale_release_version_claim(tmp_path:
     assert result.returncode == 1
     assert "release pointer version claim is stale" in result.stderr
     assert "packaging/charness.json" in result.stderr
+
+
+def test_current_pointer_freshness_rejects_stale_find_skills_integration_snapshot(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path)
+    integrations = repo / "integrations" / "tools"
+    integrations.mkdir(parents=True)
+    (integrations / "cautilus.json").write_text(
+        json.dumps(
+            {
+                "tool_id": "cautilus",
+                "kind": "external_binary_with_skill",
+                "intent_triggers": ["prompt behavior regression"],
+                "supports_public_skills": ["quality"],
+                "recommendation_role": "validation",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    inventory_dir = repo / "charness-artifacts" / "find-skills"
+    inventory_dir.mkdir(parents=True)
+    (inventory_dir / "latest.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "artifact_kind": "find-skills-inventory",
+                "generated_at": "2026-04-24T00:00:00Z",
+                "repo": "repo",
+                "inventory": {
+                    "integrations": [
+                        {
+                            "path": "integrations/tools/cautilus.json",
+                            "intent_triggers": ["review"],
+                            "supports_public_skills": ["quality"],
+                            "recommendation_role": "validation",
+                        }
+                    ]
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/validate_current_pointer_freshness.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "find-skills inventory pointer is stale" in result.stderr
+    assert "integrations/tools/cautilus.json" in result.stderr

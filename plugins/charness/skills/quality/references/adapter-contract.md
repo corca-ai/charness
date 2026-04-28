@@ -193,7 +193,7 @@ bulk in source files. Recommended fields:
 
 - `source_globs`
 - `min_multiline_chars`
-- `exemption_globs`
+- `exemption_globs`; helper scans should also respect `.gitignore`
 
 Leave `source_globs` empty to opt out honestly. Prefer checked-in asset roots
 over inline multi-line strings when evaluator-backed review needs prompt bytes
