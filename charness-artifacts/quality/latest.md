@@ -1,138 +1,140 @@
 # Quality Review
-Date: 2026-04-24
-
+Date: 2026-04-28
 ## Scope
+Repo-wide quality posture for `charness`: standing gates, adapter policy,
+operator-facing proof, runtime signals, and low-noise automation candidates.
 
-Repo-wide quality posture for the current `charness` tree, focused on turning standing-gate and advisory pressure into maintainable structural fixes.
+## Concept Risks
+- The architecture still matches the claim: public workflow skills, support
+  capabilities, adapters, operator docs, and durable artifacts stay separated.
+- Real drift found and fixed: stale host-cache `quality` bootstrap can strip
+  mature Charness adapter fields while defaults keep generic validation green.
+  `validate_adapters.py` now rejects that for `repo: charness`.
+- README/install/update claims still need a proof ledger that maps each claim
+  to deterministic, evaluator, HITL, or deferred operator evidence.
 
 ## Current Gates
-
-- `.agents/quality-adapter.yaml` records gate, review, preflight, security,
-  runtime-budget, concept-path, and prompt-asset policy fields.
-- `./scripts/run-quality.sh` is the canonical local quality gate; `--review`
-  replays PASS logs and enables online declared-link validation.
-- `check-coverage` enforces the `60.0%` aggregate and `85.0%` per-file floors
-  for every tracked control-plane file.
-- `check-test-production-ratio` enforces a Python test/source ratio ceiling of
-  `1.00`.
-- `check-python-lengths` and `check-duplicates --fail-on-match` are standing
-  gates, not advisory review notes.
-- `validate-current-pointer-freshness` rejects known-stale current-pointer claims.
-- Runtime EWMA is advisory in `.charness/quality/runtime-smoothing.json`;
-  enforcement still uses raw latest samples, medians, and spikes.
-- `specdown run -quiet -no-report` remains part of the quiet quality gate.
-- `.githooks/pre-push` syncs checked-in plugin exports, fails on generated
-  export drift, then runs the quiet quality gate.
-- `check-runtime-budget` now emits top-N runtime hot spots, including
-  unbudgeted phases.
-- `check_doc_links.py` now uses quality adapter `canonical_markdown_surfaces`
-  so canonical operator surfaces such as `AGENTS.md`, `CLAUDE.md`, and this
-  repo's `docs/handoff.md` are not forced into source-repo-relative links.
+- `./scripts/run-quality.sh --review`: passed `47` phases, `0` failed,
+  total `75.0s`.
+- `validate-adapters`: now enforces explicit mature quality-adapter fields for
+  Charness: product surfaces, CLI probes/docs, canonical markdown surfaces,
+  runtime profile/budgets, startup probes, and gate/review/security commands.
+- Standing phases include command docs, CLI probes, markdown/link checks,
+  secrets, supply chain, ruff, pytest, coverage, specdown, evals, duplicate
+  detection, startup probes, runtime budgets, and current-pointer freshness.
+- `.githooks/pre-push` is active through `core.hooksPath` and runs sync,
+  current-pointer freshness, and the quality gate.
 
 ## Runtime Signals
+- Runtime profile: `local-linux-aarch64-4cpu`.
+- Budget violations: none.
+- Latest spikes: `run-evals` `6.5s` latest against `5.0s` budget; `specdown`
+  `9.4s` latest against `8.0s` budget. Medians still pass.
+- runtime hot spots: `pytest` `57.5s` latest / `32.4s` median, `check-coverage`
+  `17.9s` / `16.5s`, `check-markdown` `9.8s` / `5.1s`, `specdown`
+  `9.4s` / `5.8s`, `check-duplicates` `9.0s` / `5.0s`.
+- coverage gate: enforced and passing at `96.8%`, with `0` files below floor.
+- evaluator depth: `run-evals` passed `20` repo-local scenarios.
 
-- Latest local quality gate after this slice: `48 passed, 0 failed`, total
-  `53.0s`.
-- runtime hot spots: latest recorded samples have `pytest` `41.1s`,
-  `check-coverage` `17.6s`, `specdown` `6.4s`,
-  `check-duplicates` `6.2s`, and `check-markdown` `5.2s`.
-- Runtime budgets now use a named machine profile by default when no explicit
-  `CHARNESS_RUNTIME_PROFILE` is set, avoiding one global budget history across
-  materially different local and CI machines.
-- Fixture economics moved broad managed-install/update lifecycle checks to
-  `ci_only`; standing pytest still keeps representative install coverage and
-  the full on-demand slice remains green.
-- CLI/skill surface probes now run `doctor.py --skip-release-probe` so standing
-  readiness checks do not spend wall time on upstream release freshness.
-- `pytest`/`check-coverage` now share a phase; `check-coverage` uses support
-  fixtures, and `check-markdown` overlaps the CLI/skill surface probe.
-- coverage gate: enforced and passing at aggregate `60.0%` plus per-file
-  `85.0%`; current result is `96.8%` (`1187/1226`).
-- evaluator depth: `run-evals` passes 20 repo-local scenarios, so the bar is
-  stronger than smoke-only review.
-- Budgeted phases under `local-linux-aarch64-4cpu`: `pytest` latest
-  `41.1s / 70.0s`, `check-coverage` latest `17.6s / 22.0s`,
-  `check-secrets` latest `1.8s / 6.0s`, `run-evals` latest `4.4s / 5.0s`,
-  and `specdown` latest `6.4s / 8.0s`.
+## Standing Test Economics
+- Pytest passed `481` tests in `52.99s`; phase time was `57.4s`.
+- Test-production ratio is `0.22` (`17902/81233` Python lines), below the
+  `1.00` ceiling.
+- Do not widen spec/eval proof before deciding which slices belong in
+  standing, CI-only, or on-demand lanes.
+
 ## Coverage and Eval Depth
+- Coverage: `96.8%` (`1187/1226`), with `2` files in the `85.0-95.0%` warn band.
+- Weakest tracked files: `doctor.py` `90.7%`, `support_sync_lib.py` `92.8%`,
+  `upstream_release_lib.py` `95.3%`.
+- Rendered Markdown proof ran with `glow`: `52` previews for `26` docs/spec
+  surfaces at widths `80` and `100`.
 
-- Coverage gate: `96.8%` (`1187/1226`) against the configured floors;
-  test-production ratio is `0.19` (`14560/77051` Python lines), and standing
-  proof is the latest full pytest gate plus 20 repo-local eval scenarios.
-- Every tracked control-plane file clears the enforced floor. Weakest remaining
-  tracked files are `doctor.py` `90.7%`, `support_sync_lib.py` `92.8%`,
-  and `upstream_release_lib.py` `95.3%`.
-- Specdown remains intentionally narrow and honest; the current bar is stronger
-  than smoke-only but still not broad behavioral parity coverage.
+## Maintainer-Local Enforcement
+- `validate_maintainer_setup.py` passed and confirmed `.githooks` is active.
+- The final local gate is checked in through `.githooks/pre-push`; no no-hook
+  waiver is in effect.
+- `doctor.py --json --skip-release-probe` reports validation/runtime tools
+  healthy, including `cautilus`, `gitleaks`, `glow`, `ruff`, and `specdown`.
+
+## Enforcement Triage
+- `AUTO_EXISTING`: full quality gate, maintainer hook validation,
+  adapter validation, current-pointer freshness, command docs, CLI probes,
+  coverage floor, test ratio, secrets, supply-chain, ruff, pytest, specdown,
+  evals, duplicates, startup probes, runtime budgets, markdown links.
+- `AUTO_CANDIDATE`: README/operator proof ledger; align adapter
+  `coverage_floor_policy` with `check_coverage.py`; narrower freshness checks
+  for ergonomics and dogfood inventories.
+- `NON_AUTOMATABLE`: broad ergonomics pressure until the repo narrows it to
+  portability/discoverability invariants with a clear structural response.
 
 ## Healthy
-
-- CLI ergonomics, lint-ignore, and dual-implementation inventories are clean:
-  no flat-help pressure, ignore debt, or likely parity-smell candidates were detected.
-- Cautilus instruction-surface proof initially rejected the slice because
-  validation-shaped closeout routed directly to `hitl`; checked-in AGENTS
-  routing now makes `quality` before HITL explicit, and the refreshed proof is
-  `5 passed / 0 failed / 0 blocked`.
+- Delegated `gate-design`, `adapter-policy`, and `operator-signal` reviews ran.
+- CLI help, doctor readiness, command-doc generation, hooks, current pointers,
+  artifact validation, and runtime budgets all have executable proof.
+- CLI ergonomics, lint-ignore, and dual-implementation inventories are clean.
 
 ## Weak
-
-- Entry-point doc ergonomics remain advisory pressure, not hard failures.
-  `AGENTS.md`, `README.md`, `docs/development.md`, and
-  `docs/operator-acceptance.md` still flag `long_entrypoint`; `README.md` also
-  still carries `option_pressure_terms_present`.
-- Skill ergonomics remain advisory pressure in public cores:
-  `create-cli`, `gather`, `init-repo`, `retro`, and `spec` still flag
-  mode-pressure terms, while `quality` and `spec` both trip `long_core`.
-- `markdown-preview` is now wired through checked-in config, repo-owned install
-  guidance, and a local `glow` runtime. Remaining quality work is no longer
-  backend availability; it is deciding which workflow should invoke rendered
-  preview by default instead of leaving the seam as an opt-in helper.
-- Rolling current-pointer artifacts now have freshness ratchets for stale
-  validator-existence, runtime, budget, and release target-version claims.
-- Public spec quality inventory still reports `duplicate_public_spec_examples`
-  because it sees `.artifacts/cautilus-experiments/...` copies alongside
-  checked-in `specs/`; treat that as inventory-scope pressure before promoting
-  it to a hard public-spec layering failure.
+- `README.md` remains `long_entrypoint` with mode/option pressure;
+  `docs/operator-acceptance.md` remains `long_entrypoint`.
+- Public skill ergonomics still flags long cores in mature skills; keep this
+  advisory until a structural split is obvious.
+- `cli_skill_surface_skill_paths` is empty, so CLI/skill surface checking falls
+  back to common layout discovery.
+- Generic `coverage_floor_inventory.py` is not adapted to this repo; current
+  coverage authority is `scripts/check_coverage.py`.
+- Public spec inventory still sees duplicate examples under local
+  `.artifacts/cautilus-experiments/...`; treat as inventory scope pressure.
 
 ## Missing
-
-- No broad freshness check yet cross-validates ergonomics or dogfood claims
-  against their owning live inventories.
+- No README/operator proof ledger yet.
+- Generated CLI reference proves help parity and required strings, not full
+  semantic workflow success for every command.
 
 ## Deferred
-
-- Do not promote ergonomics inventory into a hard gate until the repo narrows
-  it to portability/discoverability rules instead of generic prose taste.
-- Do not add a dedicated specdown adapter until multiple specs start repeating
-  the same setup or extraction work.
-- Do not describe the canonical fresh-eye path as blocked without a bounded
-  capability probe and a concrete host signal; if the host still cannot spawn
-  subagents, stop and leave the host-side contract gap visible.
+- Do not budget `check-duplicates` or `check-markdown` until another local/CI
+  sample shows whether current latest costs are representative.
+- Do not hard-gate skill/entrypoint ergonomics as taste checks.
+- Do not widen specdown coverage before removing duplicated cheaper proof.
 
 ## Advisory
-
-- Current advisory findings are present from ergonomics, public-spec scope, and
-  dogfood freshness inventories; they remain `NON_AUTOMATABLE` or
-  `AUTO_CANDIDATE` until a low-noise structural response is clear.
+- Inline prompt/content bulk inventory mostly found docstrings, fixtures, test
+  payloads, and generated/local experiment copies; adapter policy currently
+  opts out with `prompt_asset_roots: []`.
+- `coverage_floor_policy` is more generic than the actual coverage gate; align
+  the adapter declaration or make `check_coverage.py` consume it.
 
 ## Delegated Review
-
-- status: executed; bounded subagent review ran `gate-design`,
+- status: executed.
+- Fresh-eye context: parent-delegated reviewers completed `gate-design`,
   `adapter-policy`, `operator-signal`, `fixture-economics`,
-  `parallel-critical-path`, and `duplicated-proof` lenses for this runtime
-  investigation.
-  Future blocked states must include `host signal:` or `tool signal:` evidence.
+  `parallel-critical-path`, and `duplicated-proof`.
+- Main outcome: implement explicit mature quality-adapter field enforcement.
 
 ## Commands Run
-- `./scripts/run-quality.sh`; targeted pytest/coverage timing; Cautilus proof;
-  surface closeout for packaging, docs, markdown, secrets, integrations, ruff,
-  support/update dry-runs, and runtime budgets.
+- `./scripts/run-quality.sh --review`
+- `python3 scripts/doctor.py --repo-root . --json --skip-release-probe`
+- `python3 scripts/validate_maintainer_setup.py --repo-root .`
+- `python3 scripts/check_coverage.py --repo-root .`
+- `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root . --json`
+- `python3 skills/public/quality/scripts/bootstrap_markdown_preview.py --repo-root . --execute`
+- `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
+- Targeted pytest, ruff, adapter validation, and quality inventory commands.
+
+## Fresh-Eye Premortem
+- Misread risk: treating host-cache bootstrap drift as legitimate adapter
+  update. Counterweight: diff restored and mature-field gate added.
+- Misread risk: calling generic adapter validation enough. Counterweight:
+  repo-specific Charness adapter contract now fails the exact drift class.
+- Misread risk: turning ergonomics pressure into taste policing. Counterweight:
+  kept it advisory until structural action is clear.
 
 ## Recommended Next Gates
-
-- active `AUTO_CANDIDATE`: keep expanding `validate-current-pointer-freshness`
-  for ergonomics and dogfood claims, and keep broad install/update coverage in
-  on-demand or CI slices unless a cheaper standing fixture proves the contract.
+- active `AUTO_CANDIDATE`: create and validate the README/operator proof ledger.
+- active `AUTO_CANDIDATE`: align adapter `coverage_floor_policy` with
+  `check_coverage.py` or make the coverage gate consume the adapter policy.
+- passive `AUTO_CANDIDATE`: because one more sample should confirm representative
+  cost before budgeting `check-duplicates` and `check-markdown`.
 
 ## History
 - [2026-04-09 through 2026-04-10 archive](history/2026-04-09-through-2026-04-10.md)

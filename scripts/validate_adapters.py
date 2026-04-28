@@ -26,6 +26,22 @@ class ValidationError(Exception):
     pass
 
 
+CHARNESS_QUALITY_ADAPTER_REQUIRED_FIELDS = (
+    "product_surfaces",
+    "cli_skill_surface_probe_commands",
+    "cli_skill_surface_command_docs",
+    "cli_skill_surface_change_globs",
+    "canonical_markdown_surfaces",
+    "runtime_profile_default",
+    "runtime_budget_profiles",
+    "startup_probes",
+    "preflight_commands",
+    "gate_commands",
+    "review_commands",
+    "security_commands",
+)
+
+
 def expected_artifact_filename(skill_id: str) -> str:
     return current_artifact_filename(skill_id)
 
@@ -72,6 +88,48 @@ def iter_adapter_yaml(root: Path) -> list[Path]:
     return iter_matching_repo_files(root, (".agents/*-adapter.yaml", ".agents/cautilus-adapters/*.yaml"))
 
 
+def validate_charness_quality_adapter_contract(path: Path, data: dict) -> None:
+    if path.name != "quality-adapter.yaml" or path.parent.name != ".agents" or data.get("repo") != "charness":
+        return
+
+    missing = [field for field in CHARNESS_QUALITY_ADAPTER_REQUIRED_FIELDS if field not in data]
+    if missing:
+        rendered = ", ".join(f"`{field}`" for field in missing)
+        raise ValidationError(f"{path}: mature charness quality adapter must explicitly declare {rendered}")
+
+    product_surfaces = data.get("product_surfaces")
+    if not isinstance(product_surfaces, list) or not {"installable_cli", "bundled_skill"}.issubset(product_surfaces):
+        raise ValidationError(
+            f"{path}: product_surfaces must explicitly include `installable_cli` and `bundled_skill`"
+        )
+
+    canonical_surfaces = data.get("canonical_markdown_surfaces")
+    required_surfaces = {"AGENTS.md", "CLAUDE.md", "docs/handoff.md"}
+    if not isinstance(canonical_surfaces, list) or not required_surfaces.issubset(canonical_surfaces):
+        raise ValidationError(
+            f"{path}: canonical_markdown_surfaces must explicitly include AGENTS.md, CLAUDE.md, and docs/handoff.md"
+        )
+
+    runtime_profiles = data.get("runtime_budget_profiles")
+    if not isinstance(runtime_profiles, dict) or "local-linux-aarch64-4cpu" not in runtime_profiles:
+        raise ValidationError(
+            f"{path}: runtime_budget_profiles must explicitly include `local-linux-aarch64-4cpu`"
+        )
+
+    for field in (
+        "cli_skill_surface_probe_commands",
+        "cli_skill_surface_command_docs",
+        "cli_skill_surface_change_globs",
+        "startup_probes",
+        "preflight_commands",
+        "gate_commands",
+        "review_commands",
+        "security_commands",
+    ):
+        if not isinstance(data.get(field), list) or not data[field]:
+            raise ValidationError(f"{path}: `{field}` must be an explicit non-empty list")
+
+
 def validate_adapter_yaml(path: Path) -> None:
     if path.name == "cautilus-adapter.yaml" and path.parent.name == ".agents":
         payload = load_cautilus_adapter(path.parent.parent.resolve())
@@ -87,6 +145,7 @@ def validate_adapter_yaml(path: Path) -> None:
     repo = data.get("repo")
     if not isinstance(repo, str) or not repo:
         raise ValidationError(f"{path}: `repo` must be a non-empty string")
+    validate_charness_quality_adapter_contract(path, data)
 
 
 def main() -> int:

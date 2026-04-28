@@ -297,3 +297,87 @@ def test_validate_adapters_checks_named_cautilus_adapter_yaml(tmp_path: Path) ->
 
     result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
+
+
+def test_validate_adapters_rejects_charness_quality_adapter_with_missing_mature_fields(tmp_path: Path) -> None:
+    repo = tmp_path / "charness"
+    agents_dir = repo / ".agents"
+    agents_dir.mkdir(parents=True)
+    (agents_dir / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: charness",
+                "language: en",
+                "output_dir: charness-artifacts/quality",
+                "gate_commands:",
+                "  - ./scripts/run-quality.sh",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "mature charness quality adapter must explicitly declare" in result.stderr
+    assert "`product_surfaces`" in result.stderr
+
+
+def test_validate_adapters_accepts_charness_quality_adapter_mature_fields(tmp_path: Path) -> None:
+    repo = tmp_path / "charness"
+    agents_dir = repo / ".agents"
+    agents_dir.mkdir(parents=True)
+    (agents_dir / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: charness",
+                "language: en",
+                "output_dir: charness-artifacts/quality",
+                "product_surfaces:",
+                "  - installable_cli",
+                "  - bundled_skill",
+                "cli_skill_surface_probe_commands:",
+                "  - ./charness --help",
+                "cli_skill_surface_command_docs:",
+                "  - .agents/command-docs.yaml",
+                "cli_skill_surface_change_globs:",
+                "  - charness",
+                "canonical_markdown_surfaces:",
+                "  - AGENTS.md",
+                "  - CLAUDE.md",
+                "  - docs/handoff.md",
+                "runtime_profile_default: default",
+                "runtime_budget_profiles:",
+                "  local-linux-aarch64-4cpu:",
+                "    budgets:",
+                "      pytest: 70000",
+                "startup_probes:",
+                "  - label: charness-version",
+                "    command:",
+                "      - python3",
+                "      - charness",
+                "      - --version",
+                "    class: standing",
+                "    startup_mode: warm",
+                "    surface: direct",
+                "    samples: 3",
+                "preflight_commands:",
+                "  - python3 scripts/validate_maintainer_setup.py --repo-root .",
+                "gate_commands:",
+                "  - ./scripts/run-quality.sh",
+                "review_commands:",
+                "  - ./scripts/run-quality.sh --review",
+                "security_commands:",
+                "  - ./scripts/check-secrets.sh",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
