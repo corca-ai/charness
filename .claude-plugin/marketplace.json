@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Portable Corca harness layer exported into Claude and Codex plugin layouts from shared repo artifacts.",
-    "version": "0.5.13"
+    "version": "0.5.14"
   },
   "plugins": [
     {
       "name": "charness",
       "source": "./plugins/charness",
-      "version": "0.5.13",
+      "version": "0.5.14",
       "description": "Portable Corca harness layer exported into Claude and Codex plugin layouts from shared repo artifacts."
     }
   ]
