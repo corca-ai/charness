@@ -3,7 +3,7 @@ import { dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 
-import { INSTRUCTION_SURFACE_INPUTS_SCHEMA } from "./contract-versions.mjs";
+import { EVALUATION_OBSERVED_SCHEMA } from "./contract-versions.mjs";
 import { normalizeInstructionSurfaceCaseSuite } from "./instruction-surface-case-suite.mjs";
 import {
 	artifactRef,
@@ -624,7 +624,7 @@ export function buildObservedInstructionSurfaceInput(options) {
 	const fixtureResults = options.backend === "fixture" ? readJson(options.fixtureResultsFile) : {};
 	const evaluations = caseSuite.evaluations.map((evaluation) => evaluateSurface(options, evaluation, fixtureResults));
 	return {
-		schemaVersion: INSTRUCTION_SURFACE_INPUTS_SCHEMA,
+		schemaVersion: EVALUATION_OBSERVED_SCHEMA,
 		suiteId: caseSuite.suiteId,
 		suiteDisplayName: caseSuite.suiteDisplayName,
 		evaluations,

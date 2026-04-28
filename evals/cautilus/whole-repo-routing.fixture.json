@@ -1,10 +1,12 @@
 {
-  "schemaVersion": "cautilus.instruction_surface_cases.v1",
+  "schemaVersion": "cautilus.evaluation_input.v1",
+  "surface": "repo",
+  "preset": "whole-repo",
   "suiteId": "charness-instruction-surface",
   "suiteDisplayName": "Charness Instruction Surface",
-  "evaluations": [
+  "cases": [
     {
-      "evaluationId": "checked-in-bootstrap-before-impl",
+      "caseId": "checked-in-bootstrap-before-impl",
       "displayName": "Checked-in surface keeps bootstrap helper distinct from work skill",
       "prompt": "Route only: you need the first charness skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.",
       "expectedRouting": {
@@ -13,7 +15,7 @@
       }
     },
     {
-      "evaluationId": "compact-startup-bootstrap-before-impl",
+      "caseId": "compact-startup-bootstrap-before-impl",
       "displayName": "Craken compact surface still makes startup find-skills bootstrap explicit before impl",
       "prompt": "Route only: you need the first charness skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.",
       "instructionSurface": {
@@ -31,7 +33,7 @@
       }
     },
     {
-      "evaluationId": "compact-startup-bootstrap-before-spec",
+      "caseId": "compact-startup-bootstrap-before-spec",
       "displayName": "Craken compact surface keeps startup find-skills bootstrap explicit before spec",
       "prompt": "Route only: you need the first charness skill for turning a concept into a living implementation contract before coding. Do not produce the contract.",
       "instructionSurface": {
@@ -49,7 +51,7 @@
       }
     },
     {
-      "evaluationId": "validation-closeout-routes-before-hitl",
+      "caseId": "validation-closeout-routes-before-hitl",
       "displayName": "Validation-shaped closeout routes to evaluator-backed quality before HITL",
       "prompt": "Route only: the user asks for evaluator-backed validation while closing out a non-deterministic issue, described as an operator reading test, in this repo. They did not name Cautilus. What Charness routing path should you choose before HITL or same-agent manual review? Do not perform the review.",
       "expectedRouting": {
@@ -59,7 +61,7 @@
       }
     },
     {
-      "evaluationId": "slow-gate-routes-to-quality",
+      "caseId": "slow-gate-routes-to-quality",
       "displayName": "Slow standing gate review routes to quality",
       "prompt": "Route only: the user says the standing test gate is too slow and asks whether local vs CI machine differences and parallel critical path should change the Charness quality contract. Do not perform the review.",
       "expectedRouting": {

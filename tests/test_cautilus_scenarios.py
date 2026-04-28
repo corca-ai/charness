@@ -43,7 +43,7 @@ def test_eval_cautilus_scenarios_writes_summary(tmp_path: Path) -> None:
     assert summary["run_evals"]["exit_code"] == 0
 
 
-def test_validate_cautilus_scenarios_covers_instruction_surface_wiring() -> None:
+def test_validate_cautilus_scenarios_covers_eval_surface_wiring() -> None:
     result = run_script("scripts/validate_cautilus_scenarios.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
 
@@ -89,14 +89,18 @@ def test_eval_cautilus_chatbot_proposals_writes_summary(tmp_path: Path) -> None:
 
 
 def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> None:
-    cases_path = ROOT / "evals" / "cautilus" / "instruction-surface-cases.json"
+    cases_path = ROOT / "evals" / "cautilus" / "whole-repo-routing.fixture.json"
     cases = json.loads(cases_path.read_text(encoding="utf-8"))
     workspace_path = tmp_path / "workspace"
     workspace_path.mkdir()
     workspace = str(workspace_path)
 
     fixture_results = {}
-    for evaluation in cases["evaluations"]:
+    for item in cases["cases"]:
+        evaluation = {
+            **{key: value for key, value in item.items() if key != "caseId"},
+            "evaluationId": item["caseId"],
+        }
         expected_routing = evaluation.get("expectedRouting", {})
         fixture_results[evaluation["evaluationId"]] = {
             "observationStatus": "observed",
@@ -147,9 +151,9 @@ def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> 
 
     assert result.returncode == 0, result.stderr
     packet = json.loads(output_path.read_text(encoding="utf-8"))
-    assert packet["schemaVersion"] == "cautilus.instruction_surface_inputs.v1"
+    assert packet["schemaVersion"] == "cautilus.evaluation_observed.v1"
     assert packet["suiteId"] == "charness-instruction-surface"
-    assert len(packet["evaluations"]) == len(cases["evaluations"])
+    assert len(packet["evaluations"]) == len(cases["cases"])
 
     by_id = {item["evaluationId"]: item for item in packet["evaluations"]}
     assert by_id["checked-in-bootstrap-before-impl"]["expectedRouting"]["bootstrapHelper"] == "find-skills"
@@ -185,7 +189,7 @@ def test_instruction_surface_codex_session_mode_is_configurable() -> None:
 
 def test_instruction_surface_runner_normalizes_markdown_link_entry_file(tmp_path: Path) -> None:
     cases = {
-        "schemaVersion": "cautilus.instruction_surface_cases.v1",
+        "schemaVersion": "cautilus.evaluation_cases.v1",
         "suiteId": "entry-file-normalization",
         "evaluations": [
             {

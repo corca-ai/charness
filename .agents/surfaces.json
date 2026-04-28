@@ -84,6 +84,7 @@
         ".agents/*-adapter.yaml",
         ".agents/cautilus-adapters/*.yaml",
         "evals/cautilus/instruction-surface-cases.json",
+        "evals/cautilus/whole-repo-routing.fixture.json",
         "skills/public/*/SKILL.md",
         "skills/public/*/references/**",
         "skills/support/*/SKILL.md",

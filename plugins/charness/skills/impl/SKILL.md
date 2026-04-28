@@ -107,10 +107,10 @@ Adapter policy:
      autonomously, must ask, or should adapt by proof kind and cost; closeout
      should block on missing proof rather than silently launching it
    - for behavior-preserving prompt changes, keep regression proof anchored by
-     `cautilus instruction-surface test --repo-root .`; for behavior-improving
-     claims, also record the baseline compare path with
-     `cautilus workspace prepare-compare` and
-     `cautilus mode evaluate --baseline-ref <ref>`
+     `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` or
+     a repo-owned dogfood wrapper; for behavior-improving claims, also record
+     the baseline compare path with `cautilus workspace prepare-compare` and
+     `cautilus eval evaluate --input <observed.json>`
    - when the slice changes reader fit, truth-surface framing, or skill-core
      reasoning shape, add a short scenario-review note instead of treating
      routing preservation as sufficient evidence

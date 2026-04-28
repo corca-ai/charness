@@ -1,4 +1,8 @@
-import { INSTRUCTION_SURFACE_CASES_SCHEMA } from "./contract-versions.mjs";
+import {
+	EVALUATION_CASES_SCHEMA,
+	EVALUATION_INPUT_SCHEMA,
+	INSTRUCTION_SURFACE_CASES_SCHEMA,
+} from "./contract-versions.mjs";
 
 function assertObject(value, field) {
 	if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -139,9 +143,34 @@ function normalizeEvaluation(record, index) {
 	};
 }
 
-export function normalizeInstructionSurfaceCaseSuite(input) {
-	if (input?.schemaVersion !== INSTRUCTION_SURFACE_CASES_SCHEMA) {
-		throw new Error(`schemaVersion must be ${INSTRUCTION_SURFACE_CASES_SCHEMA}`);
+function translateEvaluationInput(input) {
+	if (input?.schemaVersion !== EVALUATION_INPUT_SCHEMA) {
+		return input;
+	}
+	if (input.surface !== "repo" || input.preset !== "whole-repo") {
+		throw new Error("evaluation_input fixture must use surface=repo and preset=whole-repo");
+	}
+	if (!Array.isArray(input.cases) || input.cases.length === 0) {
+		throw new Error("cases must be a non-empty array");
+	}
+	return {
+		schemaVersion: EVALUATION_CASES_SCHEMA,
+		suiteId: input.suiteId,
+		suiteDisplayName: input.suiteDisplayName,
+		evaluations: input.cases.map((entry, index) => {
+			const record = assertObject(entry, `cases[${index}]`);
+			return {
+				...record,
+				evaluationId: assertString(record.caseId, `cases[${index}].caseId`),
+			};
+		}),
+	};
+}
+
+export function normalizeInstructionSurfaceCaseSuite(rawInput) {
+	const input = translateEvaluationInput(rawInput);
+	if (![EVALUATION_CASES_SCHEMA, INSTRUCTION_SURFACE_CASES_SCHEMA].includes(input?.schemaVersion)) {
+		throw new Error(`schemaVersion must be ${EVALUATION_CASES_SCHEMA}`);
 	}
 	if (!Array.isArray(input.evaluations) || input.evaluations.length === 0) {
 		throw new Error("evaluations must be a non-empty array");

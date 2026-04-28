@@ -7,6 +7,13 @@ old instruction-surface proof seam to the new `cautilus eval` surface and use
 that migration to build an explicit proof map for the promises made in
 `README.md`.
 
+Status 2026-04-28: the first migration slice is landed. Charness now uses
+`evals/cautilus/whole-repo-routing.fixture.json`,
+`.agents/cautilus-adapter.yaml` `evaluation_input_default` /
+`eval_test_command_templates`, and `cautilus eval test`; current proof is
+recorded in `charness-artifacts/cautilus/latest.md`. The remaining next move is
+the README proof ledger and the read-only versus workspace-write proof split.
+
 The goal is not to prove every README sentence with an evaluator. The goal is
 to give every load-bearing README promise an owner:
 
@@ -18,10 +25,10 @@ to give every load-bearing README promise an owner:
 - explicit deferred operator proof for host-visible install/update behavior
   that cannot be fully closed in a local fixture
 
-## Current Blocking Facts
+## Original Blocking Facts
 
-- Charness still has old Cautilus contract names in
-  `.agents/cautilus-adapter.yaml`, `evals/cautilus/instruction-surface-cases.json`,
+- Charness used to have old Cautilus contract names in
+  `.agents/cautilus-adapter.yaml`, the maintained whole-repo routing fixture,
   `scripts/cautilus_adapter_lib.py`, `scripts/cautilus_scenarios_lib.py`,
   `scripts/plan_cautilus_proof.py`, and `scripts/validate_cautilus_proof.py`.
 - Cautilus issue
@@ -60,13 +67,12 @@ is still moving.
 
 ## First Slice
 
-Migrate the existing maintained routing proof without broadening the scenario
-set yet.
+Status: landed 2026-04-28. The existing maintained routing proof migrated
+without broadening the scenario set.
 
 1. Rename the Charness proof fixture:
-   - from `evals/cautilus/instruction-surface-cases.json`
-   - to a `cautilus.evaluation_input.v1` fixture such as
-     `evals/cautilus/whole-repo-routing.fixture.json`
+   - from the old instruction-surface case file
+   - to `evals/cautilus/whole-repo-routing.fixture.json`
 2. Convert the five existing cases mechanically:
    - top-level `schemaVersion`: `cautilus.evaluation_input.v1`
    - add `surface: repo`
@@ -76,14 +82,11 @@ set yet.
    - keep fields such as `prompt`, `expectedRouting`,
      `requiredInstructionFiles`, and `requiredSupportingFiles`
 3. Update `.agents/cautilus-adapter.yaml`:
-   - replace `instruction_surface_test_command_templates` with
-     `eval_test_command_templates`
-   - replace `instruction_surface_cases_default` with
-     `evaluation_input_default`
-   - replace `{instruction_surface_cases_file}` with `{eval_cases_file}`
-   - replace `{instruction_surface_input_file}` with `{eval_observed_file}`
-   - replace command text with `cautilus eval test --fixture ...` or the
-     repo-owned runner shape required by upstream Cautilus
+   - use `eval_test_command_templates`
+   - use `evaluation_input_default`
+   - use `{eval_cases_file}` and `{eval_observed_file}`
+   - use command text with `cautilus eval test --fixture ...` or the repo-owned
+     runner shape required by upstream Cautilus
 4. Update the Charness Cautilus validators and planners:
    - `scripts/cautilus_adapter_lib.py`
    - `scripts/cautilus_scenarios_lib.py`

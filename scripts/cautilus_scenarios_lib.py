@@ -10,7 +10,7 @@ from scripts.eval_registry import scenario_ids
 from scripts.public_skill_validation_lib import ValidationError, load_policy, validate_policy
 
 REGISTRY_PATH = Path("evals/cautilus/scenarios.json")
-INSTRUCTION_SURFACE_CASES_PATH = Path("evals/cautilus/instruction-surface-cases.json")
+WHOLE_REPO_ROUTING_FIXTURE_PATH = Path("evals/cautilus/whole-repo-routing.fixture.json")
 ADAPTER_PATH = Path(".agents/cautilus-adapter.yaml")
 CHATBOT_PROPOSAL_INPUTS_PATH = Path("evals/cautilus/chatbot-scenario-proposal-inputs.json")
 CHATBOT_ADAPTER_PATH = Path(".agents/cautilus-adapters/chatbot-proposals.yaml")
@@ -30,71 +30,85 @@ def load_registry(repo_root: Path) -> dict[str, object]:
     return data
 
 
-def load_instruction_surface_cases(repo_root: Path) -> dict[str, object]:
-    path = repo_root / INSTRUCTION_SURFACE_CASES_PATH
+def load_whole_repo_routing_fixture(repo_root: Path) -> dict[str, object]:
+    path = repo_root / WHOLE_REPO_ROUTING_FIXTURE_PATH
     if not path.is_file():
-        raise ValidationError(f"missing `{INSTRUCTION_SURFACE_CASES_PATH}`")
+        raise ValidationError(f"missing `{WHOLE_REPO_ROUTING_FIXTURE_PATH}`")
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
-        raise ValidationError(f"{INSTRUCTION_SURFACE_CASES_PATH}: invalid JSON: {exc}") from exc
+        raise ValidationError(f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: invalid JSON: {exc}") from exc
     if not isinstance(data, dict):
-        raise ValidationError(f"{INSTRUCTION_SURFACE_CASES_PATH}: top-level JSON value must be an object")
+        raise ValidationError(f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: top-level JSON value must be an object")
     return data
 
 
-def validate_instruction_surface_cases(repo_root: Path) -> dict[str, object]:
-    cases = load_instruction_surface_cases(repo_root)
-    if cases.get("schemaVersion") != "cautilus.instruction_surface_cases.v1":
+def validate_whole_repo_routing_fixture(repo_root: Path) -> dict[str, object]:
+    cases = load_whole_repo_routing_fixture(repo_root)
+    if cases.get("schemaVersion") != "cautilus.evaluation_input.v1":
         raise ValidationError(
-            f"{INSTRUCTION_SURFACE_CASES_PATH}: schemaVersion must be `cautilus.instruction_surface_cases.v1`"
+            f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: schemaVersion must be `cautilus.evaluation_input.v1`"
         )
+    if cases.get("surface") != "repo" or cases.get("preset") != "whole-repo":
+        raise ValidationError(f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: must declare `surface: repo` and `preset: whole-repo`")
     suite_id = cases.get("suiteId")
     if not isinstance(suite_id, str) or not suite_id:
-        raise ValidationError(f"{INSTRUCTION_SURFACE_CASES_PATH}: `suiteId` must be a non-empty string")
-    evaluations = cases.get("evaluations")
+        raise ValidationError(f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: `suiteId` must be a non-empty string")
+    evaluations = cases.get("cases")
     if not isinstance(evaluations, list) or not evaluations:
-        raise ValidationError(f"{INSTRUCTION_SURFACE_CASES_PATH}: `evaluations` must be a non-empty list")
+        raise ValidationError(f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: `cases` must be a non-empty list")
 
+    _validate_whole_repo_routing_cases(evaluations)
+
+    return cases
+
+
+def _validate_whole_repo_routing_cases(evaluations: list[object]) -> None:
     seen_ids: set[str] = set()
     for index, evaluation in enumerate(evaluations):
         if not isinstance(evaluation, dict):
-            raise ValidationError(f"{INSTRUCTION_SURFACE_CASES_PATH}: evaluation {index} must be an object")
-        evaluation_id = evaluation.get("evaluationId")
-        prompt = evaluation.get("prompt")
-        if not isinstance(evaluation_id, str) or not evaluation_id:
-            raise ValidationError(
-                f"{INSTRUCTION_SURFACE_CASES_PATH}: evaluation {index} needs non-empty string `evaluationId`"
-            )
-        if evaluation_id in seen_ids:
-            raise ValidationError(f"{INSTRUCTION_SURFACE_CASES_PATH}: duplicate `evaluationId` `{evaluation_id}`")
-        if not isinstance(prompt, str) or not prompt:
-            raise ValidationError(f"{INSTRUCTION_SURFACE_CASES_PATH}: `{evaluation_id}` needs non-empty string `prompt`")
-        expected_routing = evaluation.get("expectedRouting")
-        if expected_routing is not None:
-            if not isinstance(expected_routing, dict):
-                raise ValidationError(f"{INSTRUCTION_SURFACE_CASES_PATH}: `{evaluation_id}` `expectedRouting` must be an object")
-            if not any(
-                isinstance(expected_routing.get(key), str) and expected_routing.get(key)
-                for key in ("selectedSkill", "bootstrapHelper", "workSkill", "selectedSupport", "firstToolCallPattern")
-            ):
-                raise ValidationError(
-                    f"{INSTRUCTION_SURFACE_CASES_PATH}: `{evaluation_id}` `expectedRouting` must declare at least one expectation"
-                )
-        instruction_surface = evaluation.get("instructionSurface")
-        if instruction_surface is not None:
-            if not isinstance(instruction_surface, dict):
-                raise ValidationError(
-                    f"{INSTRUCTION_SURFACE_CASES_PATH}: `{evaluation_id}` `instructionSurface` must be an object"
-                )
-            files = instruction_surface.get("files")
-            if not isinstance(files, list) or not files:
-                raise ValidationError(
-                    f"{INSTRUCTION_SURFACE_CASES_PATH}: `{evaluation_id}` `instructionSurface.files` must be a non-empty list"
-                )
+            raise ValidationError(f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: case {index} must be an object")
+        evaluation_id = _validate_whole_repo_routing_case_identity(evaluation, index, seen_ids)
+        _validate_whole_repo_routing_case_expectations(evaluation, evaluation_id)
         seen_ids.add(evaluation_id)
 
-    return cases
+
+def _validate_whole_repo_routing_case_identity(
+    evaluation: dict[str, object], index: int, seen_ids: set[str]
+) -> str:
+    evaluation_id = evaluation.get("caseId")
+    prompt = evaluation.get("prompt")
+    if not isinstance(evaluation_id, str) or not evaluation_id:
+        raise ValidationError(f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: case {index} needs non-empty string `caseId`")
+    if evaluation_id in seen_ids:
+        raise ValidationError(f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: duplicate `caseId` `{evaluation_id}`")
+    if not isinstance(prompt, str) or not prompt:
+        raise ValidationError(f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: `{evaluation_id}` needs non-empty string `prompt`")
+    return evaluation_id
+
+
+def _validate_whole_repo_routing_case_expectations(evaluation: dict[str, object], evaluation_id: str) -> None:
+    expected_routing = evaluation.get("expectedRouting")
+    if expected_routing is not None:
+        if not isinstance(expected_routing, dict):
+            raise ValidationError(f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: `{evaluation_id}` `expectedRouting` must be an object")
+        if not any(
+            isinstance(expected_routing.get(key), str) and expected_routing.get(key)
+            for key in ("selectedSkill", "bootstrapHelper", "workSkill", "selectedSupport", "firstToolCallPattern")
+        ):
+            raise ValidationError(
+                f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: `{evaluation_id}` `expectedRouting` must declare at least one expectation"
+            )
+    instruction_surface = evaluation.get("instructionSurface")
+    if instruction_surface is None:
+        return
+    if not isinstance(instruction_surface, dict):
+        raise ValidationError(f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: `{evaluation_id}` `instructionSurface` must be an object")
+    files = instruction_surface.get("files")
+    if not isinstance(files, list) or not files:
+        raise ValidationError(
+            f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: `{evaluation_id}` `instructionSurface.files` must be a non-empty list"
+        )
 
 
 def _load_json_object(path: Path) -> dict[str, object]:
@@ -164,7 +178,7 @@ def validate_chatbot_proposal_inputs(repo_root: Path) -> dict[str, object]:
 def _load_registry_context(repo_root: Path) -> tuple[dict[str, object], dict[str, object], dict[str, object]]:
     policy = validate_policy(load_policy(repo_root), repo_root)
     registry = load_registry(repo_root)
-    instruction_surface_cases = validate_instruction_surface_cases(repo_root)
+    instruction_surface_cases = validate_whole_repo_routing_fixture(repo_root)
     return policy, registry, instruction_surface_cases
 
 
@@ -233,12 +247,12 @@ def _validate_adapter_wiring(repo_root: Path) -> None:
         "run_mode:",
         "prompt_affecting_patterns:",
         "scenario_review_patterns:",
-        "instruction_surface_cases_default:",
-        "instruction_surface_test_command_templates:",
+        "evaluation_input_default:",
+        "eval_test_command_templates:",
         "held_out_command_templates:",
         "full_gate_command_templates:",
         "evals/cautilus/scenarios.json",
-        "evals/cautilus/instruction-surface-cases.json",
+        "evals/cautilus/whole-repo-routing.fixture.json",
         "scripts/eval_cautilus_scenarios.py",
         "scripts/agent-runtime/run-local-instruction-surface-test.mjs",
     )
@@ -257,7 +271,7 @@ def _validate_adapter_wiring(repo_root: Path) -> None:
     missing_runtime_files = [path for path in required_runtime_files if not (repo_root / path).is_file()]
     if missing_runtime_files:
         rendered = ", ".join(f"`{path}`" for path in missing_runtime_files)
-        raise ValidationError(f"{ADAPTER_PATH}: missing instruction-surface runtime file(s): {rendered}")
+        raise ValidationError(f"{ADAPTER_PATH}: missing whole-repo eval runtime file(s): {rendered}")
 
     chatbot_adapter = repo_root / CHATBOT_ADAPTER_PATH
     if not chatbot_adapter.is_file():

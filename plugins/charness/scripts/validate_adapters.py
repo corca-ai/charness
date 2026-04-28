@@ -20,6 +20,10 @@ _scripts_artifact_naming_lib_module = import_repo_module(__file__, "scripts.arti
 current_artifact_filename = _scripts_artifact_naming_lib_module.current_artifact_filename
 _scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
+_scripts_check_coverage_lib_module = import_repo_module(__file__, "scripts.check_coverage_lib")
+PER_FILE_MIN_COVERAGE = _scripts_check_coverage_lib_module.PER_FILE_MIN_COVERAGE
+PER_FILE_MIN_STATEMENTS = _scripts_check_coverage_lib_module.PER_FILE_MIN_STATEMENTS
+PER_FILE_WARN_BELOW = _scripts_check_coverage_lib_module.PER_FILE_WARN_BELOW
 
 
 class ValidationError(Exception):
@@ -128,6 +132,36 @@ def validate_charness_quality_adapter_contract(path: Path, data: dict) -> None:
     ):
         if not isinstance(data.get(field), list) or not data[field]:
             raise ValidationError(f"{path}: `{field}` must be an explicit non-empty list")
+
+    coverage_policy = data.get("coverage_floor_policy")
+    expected_fail_pct = PER_FILE_MIN_COVERAGE * 100
+    expected_warn_pct = PER_FILE_WARN_BELOW * 100
+    if not isinstance(coverage_policy, dict):
+        raise ValidationError(f"{path}: coverage_floor_policy must be an explicit mapping")
+    if coverage_policy.get("min_statements_threshold") != PER_FILE_MIN_STATEMENTS:
+        raise ValidationError(
+            f"{path}: coverage_floor_policy.min_statements_threshold must match check_coverage.py "
+            f"({PER_FILE_MIN_STATEMENTS})"
+        )
+    try:
+        fail_below_pct = float(coverage_policy.get("fail_below_pct", -1.0))
+        warn_ceiling_pct = float(coverage_policy.get("warn_ceiling_pct", -1.0))
+    except (TypeError, ValueError) as exc:
+        raise ValidationError(f"{path}: coverage_floor_policy thresholds must be numeric") from exc
+    if fail_below_pct != expected_fail_pct:
+        raise ValidationError(
+            f"{path}: coverage_floor_policy.fail_below_pct must match check_coverage.py "
+            f"({expected_fail_pct:.1f})"
+        )
+    if warn_ceiling_pct != expected_warn_pct:
+        raise ValidationError(
+            f"{path}: coverage_floor_policy.warn_ceiling_pct must match check_coverage.py "
+            f"({expected_warn_pct:.1f})"
+        )
+    if coverage_policy.get("gate_script_pattern") != "scripts/check_coverage.py":
+        raise ValidationError(
+            f"{path}: coverage_floor_policy.gate_script_pattern must name the actual coverage gate"
+        )
 
 
 def validate_adapter_yaml(path: Path) -> None:

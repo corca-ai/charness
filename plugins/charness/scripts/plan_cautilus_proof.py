@@ -25,10 +25,10 @@ ValidationError = _scripts_public_skill_validation_lib_module.ValidationError
 load_policy = _scripts_public_skill_validation_lib_module.load_policy
 validate_policy = _scripts_public_skill_validation_lib_module.validate_policy
 
-INSTRUCTION_SURFACE_COMMAND = "cautilus instruction-surface test --repo-root ."
+EVAL_TEST_COMMAND = "cautilus eval test --repo-root . --adapter-name self-dogfood-eval"
 COMPARE_COMMANDS = [
     "cautilus workspace prepare-compare",
-    "cautilus mode evaluate --baseline-ref <ref>",
+    "cautilus eval evaluate --input <observed.json>",
 ]
 SKILL_CORE_PATTERNS = ("skills/public/*/SKILL.md", "skills/support/*/SKILL.md")
 ADAPTER_PATTERNS = (".agents/*-adapter.yaml", ".agents/cautilus-adapters/*.yaml")
@@ -160,7 +160,7 @@ def plan_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> dict[str, 
         item.get("validation_tier") == "evaluator-required" for item in skill_recommendations
     )
     must_ask_before_running = run_mode == "ask"
-    recommended_commands = [INSTRUCTION_SURFACE_COMMAND] if required else []
+    recommended_commands = [EVAL_TEST_COMMAND] if required else []
     if not required:
         status = "not-required"
     elif artifact_changed:

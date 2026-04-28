@@ -16,7 +16,8 @@ Portable `quality` posture:
 Suggested adapter split:
 
 - `prompt_asset_roots`: checked-in paths where prompt/content assets are
-  expected to live
+  expected to live. An empty list only means the repo has not declared a
+  canonical asset root; it must not suppress inline prompt/content inventory.
 - `prompt_asset_policy.source_globs`: which source files to scan for inline
   bulk when the repo wants the inventory
 - `prompt_asset_policy.min_multiline_chars`: minimum multi-line string size to
@@ -35,7 +36,8 @@ behavioral proof:
 - let the repo adapter choose whether cautilus runs in `auto`, `ask`, or
   `adaptive` mode instead of assuming one global execution policy
 - for `preserve` claims, keep a regression-proof record anchored by
-  `cautilus instruction-surface test --repo-root .`
+  `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` or a
+  repo-owned dogfood wrapper
 - for high-leverage prompt changes, add a short scenario-review note rather
   than pretending routing preservation alone answered the behavioral question
 - in `adaptive` mode, do not stop just because scenario review is needed; stop
@@ -43,4 +45,4 @@ behavioral proof:
   coverage
 - for `improve` claims, additionally record a baseline compare path with
   `cautilus workspace prepare-compare` and
-  `cautilus mode evaluate --baseline-ref <ref>`
+  `cautilus eval evaluate --input <observed.json>`

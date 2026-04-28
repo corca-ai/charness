@@ -8,13 +8,13 @@ from scripts.adapter_lib import load_yaml_file, optional_string, optional_string
 ADAPTER_PATH = Path(".agents/cautilus-adapter.yaml")
 ARTIFACT_PATH = "charness-artifacts/cautilus/latest.md"
 VALID_RUN_MODES = ("auto", "ask", "adaptive")
-STRING_FIELDS = ("repo", "run_mode", "instruction_surface_command", "profile_default")
+STRING_FIELDS = ("repo", "run_mode", "eval_test_command", "evaluation_input_default", "profile_default")
 LIST_FIELDS = (
     "evaluation_surfaces",
     "baseline_options",
     "required_prerequisites",
     "preflight_commands",
-    "instruction_surface_test_command_templates",
+    "eval_test_command_templates",
     "held_out_command_templates",
     "full_gate_command_templates",
     "artifact_paths",
@@ -73,9 +73,10 @@ def infer_cautilus_defaults(repo_root: Path, *, run_mode: str = "ask") -> dict[s
             "python3 scripts/validate_public_skill_validation.py --repo-root .",
             "python3 scripts/validate_cautilus_scenarios.py --repo-root .",
         ],
-        "instruction_surface_command": "cautilus instruction-surface test --repo-root .",
-        "instruction_surface_test_command_templates": [
-            "node ./scripts/agent-runtime/run-local-instruction-surface-test.mjs --repo-root . --workspace {candidate_repo} --cases-file {instruction_surface_cases_file} --output-file {instruction_surface_input_file} --artifact-dir {output_dir}/instruction-surface-test --backend {backend} --sandbox read-only --timeout-ms 180000 --codex-model gpt-5.4-mini --codex-reasoning-effort low --claude-permission-mode dontAsk"
+        "eval_test_command": "cautilus eval test --repo-root . --adapter-name self-dogfood-eval",
+        "evaluation_input_default": "evals/cautilus/whole-repo-routing.fixture.json",
+        "eval_test_command_templates": [
+            "node ./scripts/agent-runtime/run-local-instruction-surface-test.mjs --repo-root . --workspace {candidate_repo} --cases-file {eval_cases_file} --output-file {eval_observed_file} --artifact-dir {output_dir}/eval-test --backend {backend} --sandbox read-only --timeout-ms 180000 --codex-model gpt-5.4-mini --codex-reasoning-effort low --claude-permission-mode dontAsk"
         ],
         "held_out_command_templates": [
             "python3 scripts/eval_cautilus_scenarios.py --repo-root . --mode held_out --profile {profile} --baseline-ref {baseline_ref} --samples {held_out_samples} --output-dir charness-artifacts/cautilus/held-out"
@@ -87,7 +88,7 @@ def infer_cautilus_defaults(repo_root: Path, *, run_mode: str = "ask") -> dict[s
             "docs/public-skill-validation.md",
             "docs/public-skill-validation.json",
             "evals/cautilus/scenarios.json",
-            "evals/cautilus/instruction-surface-cases.json",
+            "evals/cautilus/whole-repo-routing.fixture.json",
             ARTIFACT_PATH,
             "charness-artifacts/quality/latest.md",
         ],
@@ -171,8 +172,8 @@ def validate_cautilus_adapter_data(
 
     if validated["run_mode"] not in VALID_RUN_MODES:
         errors.append(f"run_mode must be one of {', '.join(VALID_RUN_MODES)}")
-    if not validated["instruction_surface_test_command_templates"]:
-        errors.append("instruction_surface_test_command_templates must not be empty")
+    if not validated["eval_test_command_templates"]:
+        errors.append("eval_test_command_templates must not be empty")
     if not validated["prompt_affecting_patterns"]:
         errors.append("prompt_affecting_patterns must not be empty")
     if not validated["artifact_paths"] or ARTIFACT_PATH not in validated["artifact_paths"]:

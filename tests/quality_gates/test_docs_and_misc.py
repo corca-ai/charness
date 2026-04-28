@@ -580,3 +580,32 @@ def test_impl_skill_defaults_to_autonomous_continuation() -> None:
     assert "irreversible" in skill_text and "external side effect" in skill_text
     assert "next locally decidable slice" in skill_text
     assert "check_auto_trigger.py" in skill_text
+
+
+def test_quality_skill_discloses_advisory_and_prompt_asset_root_boundary() -> None:
+    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    prompt_policy = (
+        ROOT / "skills" / "public" / "quality" / "references" / "prompt-asset-policy.md"
+    ).read_text(encoding="utf-8")
+
+    assert "must not silently omit `Weak`, `Missing`, `Advisory`" in skill_text
+    assert "active `Recommended Next Gates`" in skill_text
+    assert "`prompt_asset_roots: []` only means no canonical asset root is declared" in skill_text
+    assert "must not suppress inline prompt/content inventory" in prompt_policy
+
+    result = run_script("scripts/validate_quality_closeout_contract.py", "--repo-root", str(ROOT))
+    assert result.returncode == 0, result.stderr
+
+
+def test_current_cautilus_guidance_uses_eval_surface() -> None:
+    impl_text = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
+    public_skill_validation = (ROOT / "docs" / "public-skill-validation.md").read_text(encoding="utf-8")
+    adapter_text = (ROOT / ".agents" / "cautilus-adapter.yaml").read_text(encoding="utf-8")
+
+    assert "cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>" in impl_text
+    assert "cautilus eval evaluate --input <observed.json>" in impl_text
+    assert "cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>" in public_skill_validation
+    assert "eval_test_command_templates:" in adapter_text
+    assert "evaluation_input_default: evals/cautilus/whole-repo-routing.fixture.json" in adapter_text
+    assert "cautilus instruction-surface test --repo-root ." not in impl_text
+    assert "cautilus instruction-surface test --repo-root ." not in public_skill_validation

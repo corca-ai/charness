@@ -88,11 +88,11 @@ def test_validate_cautilus_proof_requires_ab_compare_for_improve_claim(tmp_path:
                 "",
                 "## Commands Run",
                 "",
-                "- `cautilus instruction-surface test --repo-root .`",
+                "- `cautilus eval test --repo-root . --adapter-name self-dogfood-eval`",
                 "",
                 "## Regression Proof",
                 "",
-                "- instruction-surface result: 1 passed / 0 failed / 0 blocked",
+                "- eval test result: 1 passed / 0 failed / 0 blocked",
                 "",
                 "## Scenario Review",
                 "",
@@ -120,6 +120,130 @@ def test_validate_cautilus_proof_requires_ab_compare_for_improve_claim(tmp_path:
     )
     assert result.returncode == 1
     assert "`## A/B Compare` is required when `goal: improve`" in result.stderr
+
+
+def test_validate_cautilus_proof_rejects_removed_instruction_surface_command(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        "\n".join(
+            [
+                "# Cautilus Dogfood",
+                "Date: 2026-04-18",
+                "",
+                "## Trigger",
+                "",
+                "- slice: demo",
+                "",
+                "## Validation Goal",
+                "",
+                "- goal: `preserve`",
+                "",
+                "## Change Intent",
+                "",
+                "- prompt_affecting_change",
+                "- skill_core_change",
+                "- scenario_review_change",
+                "",
+                "## Prompt Surfaces",
+                "",
+                "- `skills/public/impl/SKILL.md`",
+                "",
+                "## Commands Run",
+                "",
+                "- `cautilus instruction-surface test --repo-root .`",
+                "",
+                "## Regression Proof",
+                "",
+                "- eval test result: 1 passed / 0 failed / 0 blocked",
+                "",
+                "## Scenario Review",
+                "",
+                "- scenario: demo",
+                "",
+                "## Outcome",
+                "",
+                "- recommendation: `accept-now`",
+                "",
+                "## Follow-ups",
+                "",
+                "- demo",
+                "",
+            ]
+        )
+        + "\n",
+    )
+    result = run_script(
+        "scripts/validate_cautilus_proof.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "skills/public/impl/SKILL.md",
+        "charness-artifacts/cautilus/latest.md",
+    )
+    assert result.returncode == 1
+    assert "removed `cautilus instruction-surface test`" in result.stderr
+
+
+def test_validate_cautilus_proof_requires_eval_result_not_generic_passed_line(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        "\n".join(
+            [
+                "# Cautilus Dogfood",
+                "Date: 2026-04-18",
+                "",
+                "## Trigger",
+                "",
+                "- slice: demo",
+                "",
+                "## Validation Goal",
+                "",
+                "- goal: `preserve`",
+                "",
+                "## Change Intent",
+                "",
+                "- prompt_affecting_change",
+                "- skill_core_change",
+                "- scenario_review_change",
+                "",
+                "## Prompt Surfaces",
+                "",
+                "- `skills/public/impl/SKILL.md`",
+                "",
+                "## Commands Run",
+                "",
+                "- `cautilus eval test --repo-root . --adapter-name self-dogfood-eval`",
+                "",
+                "## Regression Proof",
+                "",
+                "- pytest passed",
+                "",
+                "## Scenario Review",
+                "",
+                "- scenario: demo",
+                "",
+                "## Outcome",
+                "",
+                "- recommendation: `accept-now`",
+                "",
+                "## Follow-ups",
+                "",
+                "- demo",
+                "",
+            ]
+        )
+        + "\n",
+    )
+    result = run_script(
+        "scripts/validate_cautilus_proof.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "skills/public/impl/SKILL.md",
+        "charness-artifacts/cautilus/latest.md",
+    )
+    assert result.returncode == 1
+    assert "must record the eval test result" in result.stderr
 
 
 def test_validate_cautilus_proof_accepts_preserve_claim(tmp_path: Path) -> None:
@@ -152,11 +276,11 @@ def test_validate_cautilus_proof_accepts_preserve_claim(tmp_path: Path) -> None:
                 "",
                 "## Commands Run",
                 "",
-                "- `cautilus instruction-surface test --repo-root .`",
+                "- `cautilus eval test --repo-root . --adapter-name self-dogfood-eval`",
                 "",
                 "## Regression Proof",
                 "",
-                "- instruction-surface result: 1 passed / 0 failed / 0 blocked",
+                "- eval test result: 1 passed / 0 failed / 0 blocked",
                 "",
                 "## Scenario Review",
                 "",
@@ -210,6 +334,9 @@ def test_plan_cautilus_proof_recommends_skill_dogfood_and_scenario_followups() -
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
+    assert payload["recommended_commands"] == [
+        "cautilus eval test --repo-root . --adapter-name self-dogfood-eval"
+    ]
     assert payload["changed_public_skills"] == ["create-skill"]
     recommendation = payload["skill_validation_recommendations"][0]
     assert recommendation["skill_id"] == "create-skill"

@@ -40,9 +40,9 @@ bucket choices before editing the JSON.
 - the tier only describes extra validation beyond that baseline
 - the tier is routing metadata, not a claim that local CI already runs a
   distinct standing evaluator path for that skill today
-- maintained `cautilus` proof is now part of the repo story: instruction-surface
-  dogfood is checked in and should be refreshed when prompt-affecting repo
-  surfaces change
+- maintained `cautilus` proof is now part of the repo story:
+  `cautilus.evaluation_input.v1` dogfood is checked in and should be refreshed
+  when prompt-affecting repo surfaces change
 - a skill can move upward to a stronger tier later, but should not move
   downward without evidence that the deeper gate is wasted effort
 
@@ -62,14 +62,16 @@ Default prompt-affecting surfaces in this repo:
 Default proof split:
 
 - `regression proof`: preserve routing, contract boundaries, and the existing
-  first-skill shape with `cautilus instruction-surface test --repo-root .`
+  first-skill shape with
+  `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` or a
+  repo-owned dogfood wrapper
 - `scenario review`: inspect one or two representative scenarios when the
   change is high-leverage enough that "not broken" is weaker than "did the
   intended reader or reasoning behavior actually improve?"
 - `improve`: when the slice claims behavioral improvement rather than only
   preservation, also record a baseline compare path with
   `cautilus workspace prepare-compare` plus
-  `cautilus mode evaluate --baseline-ref <ref>`
+  `cautilus eval evaluate --input <observed.json>`
 
 The checked-in artifact should say whether the slice claims `preserve` or
 `improve`, list the touched prompt surfaces, record the active intent tags, and

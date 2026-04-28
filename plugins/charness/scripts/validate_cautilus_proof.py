@@ -29,8 +29,13 @@ VALID_GOALS = {"preserve", "improve"}
 A_B_REQUIRED_SNIPPETS = (
     "baseline_ref:",
     "cautilus workspace prepare-compare",
-    "cautilus mode evaluate",
+    "cautilus eval evaluate",
 )
+REGRESSION_COMMAND_SNIPPETS = (
+    "cautilus eval test",
+    "npm run dogfood:self",
+)
+REMOVED_COMMAND_SNIPPET = "cautilus instruction-surface test"
 
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _scripts_artifact_validator_module.ValidationError
@@ -44,7 +49,7 @@ _scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_li
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
 normalize_repo_path = _scripts_surfaces_lib_module.normalize_repo_path
 _scripts_plan_cautilus_proof_module = import_repo_module(__file__, "scripts.plan_cautilus_proof")
-INSTRUCTION_SURFACE_COMMAND = _scripts_plan_cautilus_proof_module.INSTRUCTION_SURFACE_COMMAND
+EVAL_TEST_COMMAND = _scripts_plan_cautilus_proof_module.EVAL_TEST_COMMAND
 plan_cautilus_proof = _scripts_plan_cautilus_proof_module.plan_cautilus_proof
 
 
@@ -88,9 +93,13 @@ def validate_prompt_surfaces(lines: list[str], changed_prompt_paths: list[str]) 
 
 def validate_commands_run(lines: list[str], goal: str) -> None:
     command_lines = section_lines(lines, "## Commands Run")
-    if not any(INSTRUCTION_SURFACE_COMMAND in line for line in command_lines):
+    if any(REMOVED_COMMAND_SNIPPET in line for line in command_lines):
         raise ValidationError(
-            "`## Commands Run` must include `cautilus instruction-surface test --repo-root .`"
+            "`## Commands Run` must not use the removed `cautilus instruction-surface test` command"
+        )
+    if not any(any(snippet in line for snippet in REGRESSION_COMMAND_SNIPPETS) for line in command_lines):
+        raise ValidationError(
+            "`## Commands Run` must include `cautilus eval test` or a repo-owned dogfood wrapper"
         )
     if goal != "improve":
         return
@@ -122,8 +131,8 @@ def validate_change_intent(lines: list[str], intent_tags: list[str]) -> None:
 
 def validate_regression_proof(lines: list[str]) -> None:
     regression_lines = section_lines(lines, "## Regression Proof")
-    if not any("instruction-surface" in line or "passed" in line for line in regression_lines):
-        raise ValidationError("`## Regression Proof` must record the instruction-surface result")
+    if not any("eval test" in line and any(token in line for token in ("passed", "accept-now", "0 failed")) for line in regression_lines):
+        raise ValidationError("`## Regression Proof` must record the eval test result")
 
 
 def validate_scenario_review(lines: list[str], planner: dict[str, object]) -> None:

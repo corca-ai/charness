@@ -22,6 +22,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 _scripts_check_coverage_lib_module = import_repo_module(__file__, "scripts.check_coverage_lib")
 _scripts_check_coverage_extra_lib_module = import_repo_module(__file__, "scripts.check_coverage_extra_lib")
 PER_FILE_WARN_BELOW = _scripts_check_coverage_lib_module.PER_FILE_WARN_BELOW
+PER_FILE_MIN_COVERAGE = _scripts_check_coverage_lib_module.PER_FILE_MIN_COVERAGE
 build_per_file_floor_report = _scripts_check_coverage_lib_module.build_per_file_floor_report
 exercise_control_plane_scenarios = _scripts_check_coverage_lib_module.exercise_control_plane_scenarios
 exercise_install_provenance_scenarios = _scripts_check_coverage_lib_module.exercise_install_provenance_scenarios
@@ -46,7 +47,7 @@ TARGET_FILES = (
     Path("scripts/upstream_release_lib.py"),
 )
 MIN_COVERAGE = 0.60
-MIN_FILE_COVERAGE = 0.85
+MIN_FILE_COVERAGE = PER_FILE_MIN_COVERAGE
 COPY_IGNORE = shutil.ignore_patterns(
     ".git",
     ".pytest_cache",
