@@ -1,0 +1,45 @@
+# Quality Advisory Disclosure Miss Retro
+
+## Context
+
+After the `charness:quality` run, the user pointed out two misses: I treated
+`coverage_floor_policy` drift as advisory even though it is closer to a
+quality-contract bug, and I did not surface advisory/weak/missing findings in
+the final user-facing closeout.
+
+## Waste
+
+- The final answer compressed the review into commit and verification status,
+  hiding the posture findings that make `quality` useful.
+- I conflated `prompt_asset_roots: []` with a reason to downplay inline content
+  bulk inventory. That setting only says there is no enforced prompt-asset root;
+  it does not make content-bulk inventory irrelevant.
+
+## Critical Decisions
+
+- `coverage_floor_policy` drift should be handled as an active quality-contract
+  issue unless the adapter explicitly says the field is reference-only.
+- Prompt/content bulk needs a separate classification: enforceable policy,
+  advisory inventory, or intentionally out of scope. Missing configured roots
+  should not suppress the inventory result.
+
+## Expert Counterfactuals
+
+- Gerald Weinberg lens: separate the system that produces quality from the
+  last green gate. A mismatch between declared policy and real gate authority is
+  a system defect, not merely commentary.
+- Daniel Kahneman lens: the "green closeout" anchor made me underweight weak
+  and advisory findings. The final answer needed a checklist of residual risk.
+
+## Next Improvements
+
+- workflow: final `quality` responses must include `Weak`, `Missing`,
+  `Advisory`, and `Recommended Next Gates` summaries even after a clean commit.
+- capability: add or tighten a quality artifact/final-response expectation so
+  adapter-policy drift is not silently downgraded to advisory.
+- memory: persist this miss so future `quality` sessions do not treat missing
+  prompt asset roots as evidence that content bulk can be ignored.
+
+## Persisted
+
+yes: `charness-artifacts/retro/2026-04-28-quality-advisory-disclosure-miss`
