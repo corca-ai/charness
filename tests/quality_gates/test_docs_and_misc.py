@@ -66,14 +66,15 @@ def test_init_repo_agent_docs_carry_bounded_subagent_delegation_rule() -> None:
     assert "already delegated" in skill_text
     assert "second user message" in skill_text
     assert "same-agent pass" in skill_text
-    assert "explicit delegation request" in agent_docs
+    assert "## subagent delegation" in agent_docs
+    assert "explicit user delegation request" in agent_docs
     assert "already delegated by the repo contract" in agent_docs
     assert "second user message asking for delegation" in agent_docs
     assert "same-agent pass" in agent_docs
-    assert "explicit delegation request" in default_surfaces
+    assert "## subagent delegation" in default_surfaces
+    assert "explicit user delegation request" in default_surfaces
     assert "already delegated by the repo" in default_surfaces
     assert "same-agent pass" in default_surfaces
-
 
 def test_init_repo_docs_carry_charness_artifact_commit_policy() -> None:
     skill_text = (ROOT / "skills/public/init-repo/SKILL.md").read_text(encoding="utf-8").lower()

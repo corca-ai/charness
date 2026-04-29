@@ -94,7 +94,7 @@ def run_init_repo_review_scope_inspect(
                 [
                     "# Agents",
                     "",
-                    "This rule is the user's explicit delegation request for the bounded review scopes it names.",
+                    "This rule is the explicit user delegation request for the bounded review scopes it names.",
                     "Repo-mandated bounded fresh-eye subagent reviews are already delegated by the repo contract.",
                     "Do not wait for a second user message asking for delegation.",
                     "If the host blocks subagent spawning, stop and report the host restriction explicitly instead of substituting a same-agent pass.",

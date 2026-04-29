@@ -279,7 +279,7 @@ def test_init_repo_inspect_reports_task_review_scope_drift_when_premortem_rule_i
             [
                 "# Agents",
                 "",
-                "This rule is the user's explicit delegation request for the bounded review scopes it names.",
+                "This rule is the explicit user delegation request for the bounded review scopes it names.",
                 "Repo-mandated bounded fresh-eye subagent reviews are already delegated by the repo contract.",
                 "Do not wait for a second user message asking for delegation.",
                 "If the host blocks subagent spawning, stop and report the host restriction explicitly instead of substituting a same-agent pass.",
@@ -294,12 +294,44 @@ def test_init_repo_inspect_reports_task_review_scope_drift_when_premortem_rule_i
     finding_types = {finding["type"] for finding in normalization["findings"]}
     recommendation_ids = [item["id"] for item in normalization["recommendations"]]
     recommendation_priorities = {item["id"]: item["priority"] for item in normalization["recommendations"]}
-    assert normalization["fresh_eye_review"]["missing_required_snippets"] == []
+    assert normalization["fresh_eye_review"]["has_subagent_delegation_section"] is False
+    assert normalization["fresh_eye_review"]["missing_required_snippets"] == ["## Subagent Delegation"]
     assert normalization["fresh_eye_review"]["missing_task_review_scopes"] == ["init-repo", "quality"]
-    assert "fresh_eye_delegation_rule_drift" not in finding_types
+    assert "fresh_eye_delegation_rule_drift" in finding_types
     assert "fresh_eye_task_review_scope_drift" in finding_types
+    assert "fresh_eye_delegation_rule_drift" in recommendation_ids
     assert "fresh_eye_task_review_scope_drift" in recommendation_ids
+    assert recommendation_priorities["fresh_eye_delegation_rule_drift"] == "review_required"
     assert recommendation_priorities["fresh_eye_task_review_scope_drift"] == "review_required"
+
+
+def test_init_repo_inspect_accepts_dedicated_subagent_delegation_section(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_normalize_repo(
+        repo,
+        "\n".join(
+            [
+                "# Agents",
+                "",
+                "## Subagent Delegation",
+                "",
+                "- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract; this is the explicit user delegation request for named bounded reviewer scopes.",
+                "- Do not wait for a second user message. Task-completing `init-repo` and `quality` review runs may spawn bounded reviewers.",
+                "- If the host blocks subagent spawning, stop and report the host restriction explicitly instead of substituting a same-agent pass.",
+                "",
+            ]
+        ),
+    )
+
+    payload = _run_inspect(repo)
+
+    normalization = payload["agent_docs"]["normalization"]
+    finding_types = {finding["type"] for finding in normalization["findings"]}
+    assert normalization["fresh_eye_review"]["has_subagent_delegation_section"] is True
+    assert normalization["fresh_eye_review"]["missing_required_snippets"] == []
+    assert normalization["fresh_eye_review"]["missing_task_review_scopes"] == []
+    assert "fresh_eye_delegation_rule_drift" not in finding_types
+    assert "fresh_eye_task_review_scope_drift" not in finding_types
 
 
 def test_init_repo_inspect_reports_charness_artifacts_commit_policy_drift(tmp_path: Path) -> None:

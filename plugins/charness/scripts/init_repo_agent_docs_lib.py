@@ -9,8 +9,9 @@ RETRO_ADAPTER_RELATIVE_PATH = Path(".agents/retro-adapter.yaml")
 RETRO_SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
 FRESH_EYE_MARKERS = ("fresh-eye", "fresh eye", "premortem", "subagent review", "subagent reviews")
 FRESH_EYE_STALE_MARKERS = ("explicit consent", "local fallback")
+FRESH_EYE_SECTION_HEADING = "## Subagent Delegation"
 FRESH_EYE_REQUIRED_SNIPPETS = (
-    "explicit delegation request",
+    "explicit user delegation request",
     "already delegated",
     "second user message",
     "host blocks",
@@ -165,7 +166,10 @@ def sort_recommendations(recommendations: list[dict[str, object]]) -> list[dict[
 def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object], list[dict[str, str]]]:
     lowered = agents_text.lower()
     stop_gate_detected = any(marker in lowered for marker in FRESH_EYE_MARKERS)
+    has_subagent_delegation_section = FRESH_EYE_SECTION_HEADING.lower() in lowered
     missing_required = _missing_snippets(agents_text, FRESH_EYE_REQUIRED_SNIPPETS) if stop_gate_detected else []
+    if stop_gate_detected and not has_subagent_delegation_section:
+        missing_required.append(FRESH_EYE_SECTION_HEADING)
     missing_task_review_scopes = (
         [snippet for snippet in TASK_REVIEW_SCOPE_SNIPPETS if snippet not in lowered] if stop_gate_detected else []
     )
@@ -198,6 +202,7 @@ def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object]
     return (
         {
             "stop_gate_detected": stop_gate_detected,
+            "has_subagent_delegation_section": has_subagent_delegation_section,
             "missing_required_snippets": missing_required,
             "missing_task_review_scopes": missing_task_review_scopes,
             "stale_markers": stale_markers,
