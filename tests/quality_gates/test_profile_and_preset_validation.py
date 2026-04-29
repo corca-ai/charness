@@ -460,6 +460,69 @@ def test_validate_adapters_accepts_checked_in_charness_quality_coverage_floor() 
     assert result.returncode == 0, result.stderr
 
 
+def test_validate_adapters_rejects_charness_quality_command_drift(tmp_path: Path) -> None:
+    repo = tmp_path / "command-drift"
+    agents_dir = repo / ".agents"
+    agents_dir.mkdir(parents=True)
+    (agents_dir / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: charness",
+                "language: en",
+                "output_dir: charness-artifacts/quality",
+                "coverage_floor_policy:",
+                "  min_statements_threshold: 30",
+                "  fail_below_pct: 85.0",
+                "  warn_ceiling_pct: 95.0",
+                "  floor_drift_lock_pp: 1.0",
+                "  exemption_list_path: scripts/coverage-floor-exemptions.txt",
+                "  gate_script_pattern: scripts/check_coverage.py",
+                "  lefthook_path: lefthook.yml",
+                "  ci_workflow_glob: .github/workflows/*.yml",
+                "product_surfaces:",
+                "- installable_cli",
+                "- bundled_skill",
+                "cli_skill_surface_probe_commands:",
+                "- ./charness --help",
+                "cli_skill_surface_command_docs:",
+                "- .agents/command-docs.yaml",
+                "cli_skill_surface_change_globs:",
+                "- charness",
+                "canonical_markdown_surfaces:",
+                "- AGENTS.md",
+                "- CLAUDE.md",
+                "- docs/handoff.md",
+                "runtime_profile_default: default",
+                "runtime_budget_profiles:",
+                "  local-linux-aarch64-4cpu:",
+                "    budgets:",
+                "      pytest: 70000",
+                "startup_probes:",
+                "- label: demo",
+                "  command:",
+                "  - python3",
+                "  - -V",
+                "preflight_commands:",
+                "- python3 scripts/validate_maintainer_setup.py --repo-root .",
+                "gate_commands:",
+                "- ./scripts/run-quality-stale.sh",
+                "review_commands:",
+                "- ./scripts/run-quality.sh --review",
+                "security_commands:",
+                "- ./scripts/check-secrets.sh",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "gate_commands must exactly name the standing quality gate" in result.stderr
+
+
 def test_validate_adapters_rejects_charness_quality_coverage_floor_threshold_drift(tmp_path: Path) -> None:
     cases = [
         (

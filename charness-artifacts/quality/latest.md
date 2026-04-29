@@ -1,86 +1,80 @@
 # Quality Review
-Date: 2026-04-28
+Date: 2026-04-29
+
 ## Scope
-Repo-wide quality posture for `charness`: standing gates, adapter policy,
-operator-facing proof, runtime signals, and low-noise automation candidates.
+Repo-wide quality posture for `charness`: gates, adapter policy, operator proof,
+runtime signals, security, and low-noise next gates.
 
 ## Concept Risks
-- The architecture still matches the claim: public workflow skills, support
-  capabilities, adapters, operator docs, and durable artifacts stay separated.
-- Real drift found and fixed: stale host-cache `quality` bootstrap could strip
-  mature Charness adapter fields; `validate_adapters.py` now rejects that.
-- Real drift found and fixed: `.agents/quality-adapter.yaml`
-  `coverage_floor_policy` now matches `scripts/check_coverage.py`.
-- README/install/update claims still need a proof ledger that maps each claim
-  to deterministic, evaluator, HITL, or deferred operator evidence.
+- Architecture remains coherent: public workflow skills, support capabilities,
+  adapters, operator docs, generated exports, and durable artifacts are still
+  separate.
+- Fixed: the Charness quality adapter now rejects stale `gate_commands` and
+  `review_commands` instead of requiring only non-empty lists.
+- Remaining risk: README/operator proof layering is still weak because generated
+  CLI reference proves help parity, not semantic workflow success.
 
 ## Current Gates
-- `./scripts/run-quality.sh --review`: passed `49` phases, `0` failed,
-  total `53.4s`.
-- `validate-adapters`: enforces mature Charness quality-adapter fields and
-  rejects coverage-floor drift against `scripts/check_coverage.py`.
-- Standing phases include command docs, CLI probes, markdown/link checks,
-  secrets, supply chain, ruff, pytest, coverage, specdown, evals, duplicate
-  detection, startup probes, runtime budgets, and current-pointer freshness.
-- #78 gate shape landed: quiet specdown-style failures now need actionable
-  failure detail, not only a verbose rerun escape hatch.
-- `.githooks/pre-push` is active through `core.hooksPath` and runs sync,
-  current-pointer freshness, and the quality gate.
+- `./scripts/run-quality.sh --review`: passed `48` phases, `0` failed, total
+  `46.1s`; includes 515 pytest cases and 20 evals.
+- Targeted post-patch proof passed: adapter validation, focused adapter tests,
+  Ruff, runtime-budget check, online supply-chain audit, and Cautilus routing
+  regression proof.
+- `.githooks/pre-push` is active through `core.hooksPath`.
 
 ## Runtime Signals
-- runtime source: structured metrics from `.charness/quality/runtime-signals.json`
-  rendered by `render_runtime_summary.py`; profile `local-linux-aarch64-4cpu`.
-- Budget violations: none; latest spikes still pass on recent medians.
-- runtime hot spots: `pytest` 32.8s latest / 32.9s median, budget 70.0s;
-  `check-coverage` 17.9s / 16.9s, budget 22.0s; `specdown` 5.8s / 6.0s,
-  budget 8.0s; `check-duplicates` 5.6s / 5.5s; `check-markdown` 5.1s / 5.2s.
-- coverage gate: enforced and passing at `96.8%`, with `0` files below floor.
-- evaluator depth: `run-evals` passed `20` repo-local scenarios.
+- runtime source: `.charness/quality/runtime-signals.json` rendered by
+  `check_runtime_budget.py`; profile `local-linux-aarch64-4cpu`.
+- runtime hot spots: `pytest` 33.5s latest / 35.1s median, budget 70.0s;
+  `check-coverage` 17.9s / 16.9s, budget 22.0s; `specdown` 6.2s / 6.2s,
+  budget 8.0s; `check-duplicates` 5.6s / 5.7s, budget 8.0s;
+  `check-markdown` 5.2s / 5.4s, budget 8.0s.
+- coverage gate: enforced at `96.8%` with `0` files below floor.
+- evaluator depth: 20 evals plus Cautilus `accept-now`.
+- `check-cli-skill-surface` is also budgeted at 8.0s after repeated 5s-class samples.
 
 ## Standing Test Economics
-- Pytest passed `488` tests in `34.59s`; phase time was `39.1s`.
-- Test-production ratio is `0.22` (`18224/81358` Python lines), below `1.00`.
-- Do not widen spec/eval proof before deciding which slices belong in
-  standing, CI-only, or on-demand lanes.
+- Pytest passed `515` tests in `32.75s`; phase time was `33.4s`.
+- Test-production ratio is `0.23` (`19087/82166` Python lines), below `1.00`.
 
 ## Coverage and Eval Depth
-- Coverage: `96.8%` (`1187/1226`), with `2` files in the `85.0-95.0%` warn band.
+- Coverage: `96.8%` (`1187/1226`), with `2` files in the warn band.
 - Weakest tracked files: `doctor.py` `90.7%`, `support_sync_lib.py` `92.8%`,
   `upstream_release_lib.py` `95.3%`.
+- `run-evals` passed `20` scenarios; Cautilus proof passed `accept-now`.
 
 ## Maintainer-Local Enforcement
 - `validate_maintainer_setup.py` passed and confirmed `.githooks` is active.
 - The final local gate is checked in through `.githooks/pre-push`; no no-hook
   waiver is in effect.
-- `doctor.py --json --skip-release-probe` reports validation/runtime tools
-  healthy, including `cautilus`, `gitleaks`, `glow`, `ruff`, and `specdown`.
+- `doctor.py --json --skip-release-probe` reports validation/runtime tools healthy.
 
 ## Enforcement Triage
-- `AUTO_EXISTING`: full quality gate, maintainer hook validation,
-  adapter validation, current-pointer freshness, command docs, CLI probes,
-  coverage floor, test ratio, secrets, supply-chain, ruff, pytest, specdown,
-  evals, duplicates, startup probes, runtime budgets, markdown links.
-- `AUTO_CANDIDATE`: README/operator proof ledger; narrower freshness checks for
-  ergonomics and dogfood inventories.
-- `NON_AUTOMATABLE`: broad ergonomics pressure until the repo narrows it to
-  portability/discoverability invariants with a clear structural response.
+- `AUTO_EXISTING`: full quality gate, maintainer hook validation, adapter
+  validation, exact quality gate/review command validation, current-pointer
+  freshness, command docs, CLI probes, coverage floor, test ratio, secrets,
+  supply-chain, ruff, pytest, specdown, evals, duplicates, startup probes,
+  runtime budgets, markdown links.
+- `AUTO_CANDIDATE`: README/operator proof ledger; command-docs ownership split
+  between README first-touch claims and generated CLI-reference parity.
+- `NON_AUTOMATABLE`: broad skill and entrypoint ergonomics pressure until the
+  repo defines low-noise structural invariants.
 
 ## Healthy
-- Delegated `gate-design`, `adapter-policy`, and `operator-signal` reviews ran.
+- Delegated `adapter/gate-design`, `operator-proof-layering`, and
+  `gate-economics/security` reviews executed.
 - CLI help, doctor readiness, command docs, hooks, current pointers, artifact
-  validation, and runtime budgets all have executable proof.
-- CLI ergonomics, lint-ignore, and dual-implementation inventories are clean.
+  validation, budgets, coverage floor, and security scans have executable proof.
+- CLI ergonomics, lint-ignore, dual-implementation, brittle source-guard, and
+  public-spec source-guard inventories are clean.
 
 ## Weak
-- `README.md` remains `long_entrypoint` with mode/option pressure;
-  `docs/operator-acceptance.md` remains `long_entrypoint`.
-- Public skill ergonomics still flags long cores in mature skills; keep this
+- `README.md` remains `long_entrypoint`; `docs/operator-acceptance.md` remains
+  `long_entrypoint`.
+- Command-docs checks pooled README plus generated CLI-reference content, so
+  generated reference text can mask a missing README first-touch cue.
+- Public skill ergonomics still flags long mature skill cores; keep this
   advisory until a structural split is obvious.
-- `cli_skill_surface_skill_paths` is empty, so CLI/skill surface checking falls
-  back to common layout discovery.
-- Generic `coverage_floor_inventory.py` is not adapted to this repo; current
-  coverage authority is `scripts/check_coverage.py` plus adapter drift
-  validation.
 
 ## Missing
 - No README/operator proof ledger yet.
@@ -88,52 +82,57 @@ operator-facing proof, runtime signals, and low-noise automation candidates.
   success for every command.
 
 ## Deferred
-- Do not budget `check-duplicates` or `check-markdown` until another local/CI
-  sample shows whether current latest costs are representative.
+- Do not promote online supply-chain audit into default pre-push. The checked
+  online audit passed at `--audit-level=high`; broader freshness belongs in
+  review or CI-only lanes unless the repo first prices the noise.
 - Do not hard-gate skill/entrypoint ergonomics as taste checks.
 - Do not widen specdown coverage before removing duplicated cheaper proof.
 
 ## Advisory
-- `find_inline_prompt_bulk.py` remains advisory; `prompt_asset_roots: []` is
-  not an inventory opt-out.
-- `inventory_public_spec_quality.py` reports `0` source-guard rows and `0`
-  affected public specs; source-guard rollups are now explicit.
+- Inline prompt/content bulk inventory remains advisory; `prompt_asset_roots: []`
+  is not an inventory opt-out.
+- Adapter-gate phrase-detector policy seams remain `NON_AUTOMATABLE`.
+- Markdown preview rendered 26 targets at widths 80 and 100 through `glow`.
 
 ## Delegated Review
 - status: executed.
-- Fresh-eye context: parent-delegated reviewers completed `gate-design`,
-  `adapter-policy`, `operator-signal`, `fixture-economics`,
-  `parallel-critical-path`, and `duplicated-proof`.
-- Main outcome: enforce coverage-floor alignment, require advisory disclosure,
-  add #78 quiet-failure/source-guard signals, and narrow generic Cautilus
-  trigger pressure.
+- slow-gate lenses: fixture-economics, parallel-critical-path, duplicated-proof.
+- Adapter/gate design found stale command strings could pass validation; fixed.
+- Operator proof layering found the README/operator proof ledger is still
+  missing and command-docs pooling can mask missing first-touch cues.
+- Gate economics/security found stable unbudgeted 5s-class phases; runtime
+  budgets now cover them. Secrets and manifest/lockfile checks are locally
+  enforced.
 
 ## Commands Run
+- `python3 skills/public/quality/scripts/bootstrap_adapter.py --repo-root .`
 - `./scripts/run-quality.sh --review`
 - `python3 scripts/validate_maintainer_setup.py --repo-root .`
-- `python3 skills/public/quality/scripts/inventory_standing_gate_verbosity.py --repo-root . --json`
-- `python3 skills/public/quality/scripts/inventory_public_spec_quality.py --repo-root . --json`
-- `../cautilus/bin/cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/whole-repo-routing.fixture.json --output-dir .cautilus/runs/20260428T000000000Z-cautilus-trigger-narrowing`
-- `python3 scripts/validate_quality_closeout_contract.py --repo-root .`
+- `python3 scripts/doctor.py --repo-root . --json --skip-release-probe`
+- `python3 scripts/check_coverage.py --repo-root . --json`
 - `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root . --json`
+- `python3 skills/public/quality/scripts/bootstrap_markdown_preview.py --repo-root . --execute`
+- quality inventory scripts for CLI, docs, spec, guard, lint, adapter, skill,
+  gitignore, and inline prompt/content pressure.
+- `python3 scripts/check_supply_chain_online.py --repo-root . --audit-level=high --triage-owner repo-maintainers`
+- focused adapter-validation pytest; targeted Ruff and adapter validation.
+- `../cautilus/bin/cautilus eval test ... 20260429T232900000Z-quality-budget-command-gates`
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- Targeted pytest, ruff, adapter validation, and quality inventory commands.
 
 ## Fresh-Eye Premortem
-- Misread risk: treating host-cache bootstrap drift as legitimate adapter
-  update. Counterweight: diff restored and mature-field gate added.
-- Misread risk: calling generic adapter validation enough. Counterweight:
-  repo-specific Charness adapter contract now fails coverage and mature-field
-  drift.
-- Misread risk: generic review wording makes Cautilus feel mandatory.
-  Counterweight: trigger manifest and skill guidance now require evaluator intent.
+- Misread risk: pooled command-doc checks look like README proof. Counterweight:
+  keep README/operator proof ledger as the active next quality slice.
+- Misread risk: runtime budgets fail on one-off spikes. Counterweight:
+  budgets fail on recent medians and report latest spikes separately.
+- Misread risk: stale adapter command strings stay invisible. Counterweight:
+  exact command validation now owns this invariant.
 
 ## Recommended Next Gates
 - active `AUTO_CANDIDATE`: create and validate the README/operator proof ledger.
-- active `AUTO_CANDIDATE`: extend current-pointer freshness beyond the
-  quality closeout contract into artifact-to-final-response review.
-- passive `AUTO_CANDIDATE`: because another sample should confirm cost before
-  budgeting `check-duplicates` and `check-markdown`.
+- active `AUTO_CANDIDATE`: split command-docs ownership so README first-touch
+  claims and generated CLI-reference parity cannot satisfy each other.
+- passive `AUTO_CANDIDATE`: online supply-chain freshness, because advisory
+  noise and triage ownership need a CI/review policy decision first.
 
 ## History
 - [2026-04-09 through 2026-04-10 archive](history/2026-04-09-through-2026-04-10.md)

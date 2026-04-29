@@ -70,8 +70,11 @@ skill_ergonomics_gate_rules: []
 runtime_profile_default: default
 runtime_budgets:
   charness-version: 500
+  check-cli-skill-surface: 8000
   pytest: 70000
   check-coverage: 15000
+  check-duplicates: 8000
+  check-markdown: 8000
   check-secrets: 6000
   run-evals: 5000
   specdown: 8000
@@ -79,8 +82,11 @@ runtime_budget_profiles:
   local-linux-aarch64-4cpu:
     budgets:
       charness-version: 500
+      check-cli-skill-surface: 8000
       pytest: 70000
       check-coverage: 22000
+      check-duplicates: 8000
+      check-markdown: 8000
       check-secrets: 6000
       run-evals: 5000
       specdown: 8000

@@ -92,6 +92,13 @@ def iter_adapter_yaml(root: Path) -> list[Path]:
     return iter_matching_repo_files(root, (".agents/*-adapter.yaml", ".agents/cautilus-adapters/*.yaml"))
 
 
+def validate_charness_quality_commands(path: Path, data: dict) -> None:
+    if data.get("gate_commands") != ["./scripts/run-quality.sh"]:
+        raise ValidationError(f"{path}: gate_commands must exactly name the standing quality gate")
+    if data.get("review_commands") != ["./scripts/run-quality.sh --review"]:
+        raise ValidationError(f"{path}: review_commands must exactly name the quality review gate")
+
+
 def validate_charness_quality_adapter_contract(path: Path, data: dict) -> None:
     if path.name != "quality-adapter.yaml" or path.parent.name != ".agents" or data.get("repo") != "charness":
         return
@@ -132,6 +139,8 @@ def validate_charness_quality_adapter_contract(path: Path, data: dict) -> None:
     ):
         if not isinstance(data.get(field), list) or not data[field]:
             raise ValidationError(f"{path}: `{field}` must be an explicit non-empty list")
+
+    validate_charness_quality_commands(path, data)
 
     coverage_policy = data.get("coverage_floor_policy")
     expected_fail_pct = PER_FILE_MIN_COVERAGE * 100

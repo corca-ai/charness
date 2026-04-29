@@ -11,9 +11,129 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-04-29",
-  "source_artifact_count": 40,
-  "candidate_count": 238,
+  "source_artifact_count": 41,
+  "candidate_count": 244,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:7068f512f079",
+      "kind": "current_focus",
+      "lesson": "This session ran repo-wide `quality`, then implemented the low-noise gates found by delegated review: exact Charness quality command validation and runtime budgets for stable 5s-class standing phases.",
+      "normalized_key": "this session ran repo wide quality then implemented the low noise gates found by",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+      "latest_source_date": "2026-04-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+          "date": "2026-04-29",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:27a80d23c23c",
+      "kind": "next_improvement",
+      "lesson": "before updating `quality/latest.md`, check its validator-required phrases and line limit first.",
+      "normalized_key": "before updating quality latest md check its validator required phrases and line limit first",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+      "latest_source_date": "2026-04-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+          "date": "2026-04-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5e11cd523bb3",
+      "kind": "next_improvement",
+      "lesson": "consider a small helper that renders the current runtime-hotspot bullet from `check_runtime_budget.py` output to avoid hand-copy drift.",
+      "normalized_key": "consider a small helper that renders the current runtime hotspot bullet from check runtime",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+      "latest_source_date": "2026-04-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+          "date": "2026-04-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7d72c9eb45a5",
+      "kind": "next_improvement",
+      "lesson": "keep the README/operator proof ledger as the next active quality gate.",
+      "normalized_key": "keep the readme operator proof ledger as the next active quality gate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+      "latest_source_date": "2026-04-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+          "date": "2026-04-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:89c84498d9f9",
+      "kind": "repeat_trap",
+      "lesson": "The first refreshed quality artifact exceeded its line budget and included a command string that the freshness validator misread as a path. Artifact validators caught it, but later than ideal.",
+      "normalized_key": "the first refreshed quality artifact exceeded its line budget and included a command string",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+      "latest_source_date": "2026-04-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+          "date": "2026-04-29",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:eb76c0fa9867",
+      "kind": "repeat_trap",
+      "lesson": "The first runtime-budget pass moved the unbudgeted hotspot from duplicates and markdown to `check-cli-skill-surface`; the budget sweep should have covered all current top unbudgeted hot spots in one pass.",
+      "normalized_key": "the first runtime budget pass moved the unbudgeted hotspot from duplicates and markdown to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+      "latest_source_date": "2026-04-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+          "date": "2026-04-29",
+          "section": "Waste"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:013e0205fc03",
       "kind": "current_focus",
@@ -133,129 +253,129 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:afe506e85e11",
-      "kind": "next_improvement",
-      "lesson": "preserve the Cautilus failed-then-repaired result as proof that link purpose belongs in AGENTS, not only deeper docs.",
-      "normalized_key": "preserve the cautilus failed then repaired result as proof that link purpose belongs in",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
-      "latest_source_date": "2026-04-27",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
-          "date": "2026-04-27",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:cd074f1a8dd9",
-      "kind": "next_improvement",
-      "lesson": "Treat `migrate_backtick_file_refs.py --dry-run` output as a regression signal when changing markdown-link policy, but do not require a zero-output state while the migration helper still owns optional cleanups.",
-      "normalized_key": "treat migrate backtick file refs py dry run output as a regression signal when",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md",
-      "latest_source_date": "2026-04-27",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md",
-          "date": "2026-04-27",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:393f02d4e7eb",
-      "kind": "next_improvement",
-      "lesson": "when a user correction targets a repeated workflow miss, update the root phase map and the owning skill gates in the same slice.",
-      "normalized_key": "when a user correction targets a repeated workflow miss update the root phase map",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
-      "latest_source_date": "2026-04-27",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
-          "date": "2026-04-27",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:99a3d9c06f16",
-      "kind": "repeat_trap",
-      "lesson": "`impl` and `release` grew past the public skill line budget, so the first closeout run caught avoidable verbosity after export sync.",
-      "normalized_key": "impl and release grew past the public skill line budget so the first closeout",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
-      "latest_source_date": "2026-04-27",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
-          "date": "2026-04-27",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:c2969bef208c",
-      "kind": "repeat_trap",
-      "lesson": "The first missing-path implementation caught intentional future-path wording in `docs/handoff.md` and a glob-like token in `docs/harness-composition.md`. That was useful pressure, but it showed the detector needed to distinguish actual path references from planned artifact names and glob patterns.",
-      "normalized_key": "the first missing path implementation caught intentional future path wording in docs handoff md",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md",
-      "latest_source_date": "2026-04-27",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md",
-          "date": "2026-04-27",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:0efea657a8f0",
-      "kind": "repeat_trap",
-      "lesson": "The first portable-link boundary was too strict for checked-in skill-to-skill references, so it had to be narrowed to block repo-doc escapes without rejecting links under `skills/`.",
-      "normalized_key": "the first portable link boundary was too strict for checked in skill to skill",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md",
-      "latest_source_date": "2026-04-27",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-04-27-link-surface-quality-retro.md",
-          "date": "2026-04-27",
-          "section": "Waste"
-        }
-      ]
     }
   ],
   "candidates": [
+    {
+      "candidate_id": "current_focus:7068f512f079",
+      "kind": "current_focus",
+      "lesson": "This session ran repo-wide `quality`, then implemented the low-noise gates found by delegated review: exact Charness quality command validation and runtime budgets for stable 5s-class standing phases.",
+      "normalized_key": "this session ran repo wide quality then implemented the low noise gates found by",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+      "latest_source_date": "2026-04-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+          "date": "2026-04-29",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:27a80d23c23c",
+      "kind": "next_improvement",
+      "lesson": "before updating `quality/latest.md`, check its validator-required phrases and line limit first.",
+      "normalized_key": "before updating quality latest md check its validator required phrases and line limit first",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+      "latest_source_date": "2026-04-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+          "date": "2026-04-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5e11cd523bb3",
+      "kind": "next_improvement",
+      "lesson": "consider a small helper that renders the current runtime-hotspot bullet from `check_runtime_budget.py` output to avoid hand-copy drift.",
+      "normalized_key": "consider a small helper that renders the current runtime hotspot bullet from check runtime",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+      "latest_source_date": "2026-04-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+          "date": "2026-04-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7d72c9eb45a5",
+      "kind": "next_improvement",
+      "lesson": "keep the README/operator proof ledger as the next active quality gate.",
+      "normalized_key": "keep the readme operator proof ledger as the next active quality gate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+      "latest_source_date": "2026-04-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+          "date": "2026-04-29",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:89c84498d9f9",
+      "kind": "repeat_trap",
+      "lesson": "The first refreshed quality artifact exceeded its line budget and included a command string that the freshness validator misread as a path. Artifact validators caught it, but later than ideal.",
+      "normalized_key": "the first refreshed quality artifact exceeded its line budget and included a command string",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+      "latest_source_date": "2026-04-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+          "date": "2026-04-29",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:eb76c0fa9867",
+      "kind": "repeat_trap",
+      "lesson": "The first runtime-budget pass moved the unbudgeted hotspot from duplicates and markdown to `check-cli-skill-surface`; the budget sweep should have covered all current top unbudgeted hot spots in one pass.",
+      "normalized_key": "the first runtime budget pass moved the unbudgeted hotspot from duplicates and markdown to",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+      "latest_source_date": "2026-04-29",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+          "date": "2026-04-29",
+          "section": "Waste"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:013e0205fc03",
       "kind": "current_focus",
