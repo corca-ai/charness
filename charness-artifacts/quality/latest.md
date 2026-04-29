@@ -28,12 +28,12 @@ operator-facing proof, runtime signals, and low-noise automation candidates.
   current-pointer freshness, and the quality gate.
 
 ## Runtime Signals
-- Runtime profile: `local-linux-aarch64-4cpu`.
-- Budget violations: none; latest spikes for `run-evals` and `specdown` still
-  pass on recent medians.
-- runtime hot spots: `pytest` `39.2s` latest / `32.6s` median, `check-coverage`
-  `17.4s` / `16.9s`, `check-markdown` `6.5s` / `5.1s`, `specdown`
-  `6.4s` / `5.8s`, `check-duplicates` `6.2s` / `5.0s`.
+- runtime source: structured metrics from `.charness/quality/runtime-signals.json`
+  rendered by `render_runtime_summary.py`; profile `local-linux-aarch64-4cpu`.
+- Budget violations: none; latest spikes still pass on recent medians.
+- runtime hot spots: `pytest` 32.8s latest / 32.9s median, budget 70.0s;
+  `check-coverage` 17.9s / 16.9s, budget 22.0s; `specdown` 5.8s / 6.0s,
+  budget 8.0s; `check-duplicates` 5.6s / 5.5s; `check-markdown` 5.1s / 5.2s.
 - coverage gate: enforced and passing at `96.8%`, with `0` files below floor.
 - evaluator depth: `run-evals` passed `20` repo-local scenarios.
 

@@ -103,6 +103,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - prefer repo-native commands over hypothetical recommendations
    - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage
    - when a standing gate already exists, prefer compact default phase output plus a verbose-on-demand escape hatch over always-on chatter; see `references/standing-gate-verbosity.md`
+   - before reporting runtime trends in `latest.md`, prefer `$SKILL_DIR/scripts/render_runtime_summary.py`; if structured samples are missing, report that as the next gate instead of inventing numbers
    - when a hot spot becomes the standing single dominator, define a `runtime_budgets` or `runtime_budget_profiles` entry in the adapter and call `$SKILL_DIR/scripts/check_runtime_budget.py` from the repo's standing gate; budgets fail on recent-median drift, report latest-sample spikes separately, and should expose top-N runtime hot spots so unbudgeted slow phases are still visible
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model
@@ -144,7 +145,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - Do not split quality bootstrap into a second public concept when the work is still bounded repo-local quality setup.
 - Do not recommend gates the repo cannot realistically run without saying why.
 - Do not treat a passing length, duplicate, or pressure heuristic as the goal; the goal is the structural simplification or ownership clarification that made the heuristic quiet again.
-- Do not ignore runtime drift just because a gate still passes functionally.
+- Do not ignore runtime drift just because a gate still passes functionally. Preserve these review anchors: stale gate wiring, free safety oracle, taste policing, doc-set dogma, and multiple archetype schema namespaces.
 - Do not treat `pytest-xdist`, worker pools, or other parallel runners as present because a package is expected; prove the active command is actually using the parallel path or surface the serial fallback.
 - Do not ask only what proof is missing when executable public specs land; ask what is duplicated at the wrong layer too.
 - Do not wait for operator follow-up before stating current runtime hot spots, coverage-gate presence or absence, and evaluator-depth status when the repo signals are available.
@@ -161,7 +162,6 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - If a gate already exists, prefer tightening or reusing it before adding a new parallel tool.
 - Do not let whole-worktree scans fail on gitignored runtime artifacts unless the gate explicitly exists to validate that machine-local state.
 - Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior; run one realistic consumer prompt and name the expected artifact.
-- Preserve these review anchors: stale gate wiring, free safety oracle, taste policing, doc-set dogma, and multiple archetype schema namespaces.
 
 ## References
 

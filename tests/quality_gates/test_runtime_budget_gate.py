@@ -6,6 +6,7 @@ from pathlib import Path
 from .support import run_script
 
 SCRIPT = "skills/public/quality/scripts/check_runtime_budget.py"
+RENDER_SCRIPT = "skills/public/quality/scripts/render_runtime_summary.py"
 
 
 def _seed_repo(
@@ -323,3 +324,38 @@ def test_runtime_budget_gate_reports_top_runtime_hotspots(tmp_path: Path) -> Non
     assert "Runtime hot spots:" in plain_result.stdout
     assert "check-cli-skill-surface" in plain_result.stdout
     assert "unbudgeted" in plain_result.stdout
+
+
+def test_render_runtime_summary_uses_structured_runtime_signals(tmp_path: Path) -> None:
+    signals = {
+        "commands": {
+            "pytest": {
+                "latest": {"elapsed_ms": 15000, "status": "pass"},
+                "median_recent_elapsed_ms": 14000,
+            }
+        }
+    }
+    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=signals)
+
+    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["signals_present"] is True
+    assert payload["markdown_lines"] == [
+        "- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py`; profile `default`.",
+        "- runtime hot spots: `pytest` 15.0s latest / 14.0s median, budget 22.0s.",
+    ]
+
+
+def test_render_runtime_summary_reports_missing_structured_signals(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path, budgets={"pytest": 22000}, signals=None)
+
+    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--runtime-profile", "default")
+
+    assert result.returncode == 0, result.stderr
+    assert (
+        "- runtime source: not configured; add structured timing capture before reporting timing trends."
+        in result.stdout
+    )
+    assert "10s" not in result.stdout

@@ -41,6 +41,104 @@ def seed_repo(tmp_path: Path, artifact_body: str) -> Path:
     (repo / "charness-artifacts" / "quality" / "latest.md").write_text(artifact_body, encoding="utf-8")
     (repo / "charness-artifacts" / "quality" / "history" / "one.md").write_text("# One\n", encoding="utf-8")
     return repo
+
+
+def valid_quality_artifact(*, runtime_source: str, runtime_hotspots: str = "`pytest` 10s") -> str:
+    return (
+        "\n".join(
+            [
+                "# Quality Review",
+                "Date: 2026-04-20",
+                "## Scope",
+                "- demo",
+                "## Current Gates",
+                "- gate",
+                "## Runtime Signals",
+                f"- runtime source: {runtime_source}",
+                f"- runtime hot spots: {runtime_hotspots}",
+                "- coverage gate: none",
+                "- evaluator depth: adapter bootstrap only",
+                "## Healthy",
+                "- healthy",
+                "## Weak",
+                "- weak",
+                "## Missing",
+                "- missing",
+                "## Deferred",
+                "- deferred",
+                "## Advisory",
+                "- inventory: `demo-inventory` found advisory signal.",
+                "## Delegated Review",
+                "- status: executed; bounded subagent review ran.",
+                "## Commands Run",
+                "- cmd",
+                "## Recommended Next Gates",
+                "- active AUTO_CANDIDATE: next",
+                "## History",
+                "- [archive](history/one.md)",
+            ]
+        )
+        + "\n"
+    )
+
+
+def test_validate_quality_artifact_accepts_generic_structured_runtime_source(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        valid_quality_artifact(
+            runtime_source=(
+                "structured metrics from `artifacts/runtime-timing.jsonl` "
+                "rendered by `scripts/summarize-runtime.py`; profile `ci`."
+            ),
+        ),
+    )
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_quality_artifact_rejects_markdown_runtime_source(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        valid_quality_artifact(runtime_source="manual timing copied from `charness-artifacts/quality/latest.md`."),
+    )
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "runtime source must not be markdown" in result.stderr
+
+
+def test_validate_quality_artifact_rejects_numeric_hotspots_without_renderer(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        valid_quality_artifact(runtime_source="structured metrics from `artifacts/runtime-timing.jsonl`."),
+    )
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "must cite the summary helper" in result.stderr
+
+
+def test_validate_quality_artifact_allows_missing_runtime_source_without_numbers(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        valid_quality_artifact(
+            runtime_source="not configured; add structured timing capture before reporting timing trends.",
+            runtime_hotspots="unavailable until structured runtime metrics have samples.",
+        ),
+    )
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_quality_artifact_rejects_missing_runtime_source_with_numbers(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        valid_quality_artifact(
+            runtime_source="not configured; add structured timing capture before reporting timing trends.",
+            runtime_hotspots="`pytest` 10s",
+        ),
+    )
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "runtime hot spot timings require a structured runtime source" in result.stderr
 def test_validate_quality_artifact_rejects_missing_history_section(tmp_path: Path) -> None:
     repo = seed_repo(
         tmp_path,
@@ -53,6 +151,7 @@ def test_validate_quality_artifact_rejects_missing_history_section(tmp_path: Pat
                 "## Current Gates",
                 "- gate",
                 "## Runtime Signals",
+                "- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`.",
                 "- runtime hot spots: `pytest` 10s",
                 "- coverage gate: none",
                 "- evaluator depth: adapter bootstrap only",
@@ -93,6 +192,7 @@ def test_validate_quality_artifact_rejects_missing_history_link(tmp_path: Path) 
                 "## Current Gates",
                 "- gate",
                 "## Runtime Signals",
+                "- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`.",
                 "- runtime hot spots: `pytest` 10s",
                 "- coverage gate: none",
                 "- evaluator depth: adapter bootstrap only",
@@ -176,6 +276,7 @@ def test_validate_quality_artifact_rejects_explicit_allowance_as_subagent_blocke
                 "## Current Gates",
                 "- gate",
                 "## Runtime Signals",
+                "- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`.",
                 "- runtime hot spots: `pytest` 10s",
                 "- coverage gate: none",
                 "- evaluator depth: degraded local pass only",
@@ -218,6 +319,7 @@ def test_validate_quality_artifact_requires_advisory_and_delegated_review(tmp_pa
                 "## Current Gates",
                 "- gate",
                 "## Runtime Signals",
+                "- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`.",
                 "- runtime hot spots: `pytest` 10s",
                 "- coverage gate: none",
                 "- evaluator depth: adapter bootstrap only",
@@ -256,6 +358,7 @@ def test_validate_quality_artifact_requires_inventory_backed_empty_advisory(tmp_
                 "## Current Gates",
                 "- gate",
                 "## Runtime Signals",
+                "- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`.",
                 "- runtime hot spots: `pytest` 10s",
                 "- coverage gate: none",
                 "- evaluator depth: adapter bootstrap only",
@@ -298,6 +401,7 @@ def test_validate_quality_artifact_rejects_unevidenced_advisory_bullets(tmp_path
                 "## Current Gates",
                 "- gate",
                 "## Runtime Signals",
+                "- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`.",
                 "- runtime hot spots: `pytest` 10s",
                 "- coverage gate: none",
                 "- evaluator depth: adapter bootstrap only",
@@ -340,6 +444,7 @@ def test_validate_quality_artifact_requires_blocked_delegated_review_signal(tmp_
                 "## Current Gates",
                 "- gate",
                 "## Runtime Signals",
+                "- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`.",
                 "- runtime hot spots: `pytest` 10s",
                 "- coverage gate: none",
                 "- evaluator depth: adapter bootstrap only",

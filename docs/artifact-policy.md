@@ -110,6 +110,8 @@ Use hidden runtime state when:
 - the state helps resume work on one machine
 - the state is too noisy to commit usefully
 - the state should not be mistaken for portable policy
+- runtime timings should feed human summaries from structured state instead of
+  becoming hand-edited markdown numbers
 
 JSON state under `.charness/`, `.artifacts/`, or `charness-artifacts/` must
 still keep canonical path fields portable when it may be committed, copied into
