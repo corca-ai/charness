@@ -26,7 +26,7 @@ This is not a tagged public release.
 ## Release State
 
 - local release mutation: complete
-- branch push: pending
+- branch push: complete (`822c066` pushed to `origin/main`)
 - git tag: not created
 - GitHub release record: not created
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 from pathlib import Path
 
 SCHEMA_ID_RE = re.compile(r"\b[a-z0-9_]+(?:\.[a-z0-9_]+){2,}\.v\d+\b")
@@ -23,6 +24,18 @@ CODE_EXTENSIONS = {
 }
 
 
+def _git_visible_repo_files(repo_root: Path) -> set[Path] | None:
+    result = subprocess.run(
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        return None
+    return {repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel}
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
@@ -30,8 +43,9 @@ def parse_args() -> argparse.Namespace:
 
 
 def _iter_code_files(repo_root: Path) -> list[Path]:
+    visible_files = _git_visible_repo_files(repo_root)
     paths: list[Path] = []
-    for path in repo_root.rglob("*"):
+    for path in visible_files if visible_files is not None else repo_root.rglob("*"):
         if not path.is_file():
             continue
         if any(part in {".git", ".venv", "node_modules", "__pycache__", "plugins"} for part in path.parts):
@@ -58,7 +72,11 @@ def _schema_hits(repo_root: Path) -> dict[str, list[dict[str, str]]]:
 def _doc_identity_leakage(repo_root: Path, candidate_paths: list[str]) -> list[dict[str, object]]:
     basenames = {Path(path).name for path in candidate_paths}
     findings: list[dict[str, object]] = []
-    for doc_path in repo_root.rglob("*.md"):
+    visible_files = _git_visible_repo_files(repo_root)
+    candidate_docs = visible_files if visible_files is not None else repo_root.rglob("*.md")
+    for doc_path in candidate_docs:
+        if doc_path.suffix != ".md":
+            continue
         if any(part in {".git", ".venv", "node_modules", "__pycache__", "plugins"} for part in doc_path.parts):
             continue
         text = doc_path.read_text(encoding="utf-8", errors="ignore")

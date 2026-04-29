@@ -1,0 +1,85 @@
+{
+  "schema_version": "1",
+  "tool_id": "vulture",
+  "kind": "external_binary",
+  "display_name": "Vulture",
+  "summary": "Python dead-code and dead-file advisory scanner. Use after the Ruff baseline when whole-repo reachability or stale modules are the quality question.",
+  "upstream_repo": "jendrikseipp/vulture",
+  "homepage": "https://github.com/jendrikseipp/vulture",
+  "platforms": [
+    "linux",
+    "macos",
+    "windows"
+  ],
+  "status": "active",
+  "lifecycle": {
+    "install": {
+      "mode": "script",
+      "commands": [
+        "if command -v uv >/dev/null 2>&1; then uv tool install vulture; elif command -v pipx >/dev/null 2>&1; then pipx install vulture; else python3 -m pip install --user vulture; fi"
+      ],
+      "docs_url": "https://github.com/jendrikseipp/vulture",
+      "install_url": "https://pypi.org/project/vulture/",
+      "notes": [
+        "Prefer `uv tool install vulture` or `pipx install vulture` so the scanner is managed as a user tool.",
+        "Treat first-run findings as advisory until the repo has a whitelist or ignores for dynamic framework entrypoints."
+      ]
+    },
+    "update": {
+      "mode": "manual",
+      "docs_url": "https://pypi.org/project/vulture/",
+      "notes": [
+        "Update through the same user-tool mechanism that installed `vulture`; for uv installs, run `uv tool upgrade vulture`."
+      ]
+    }
+  },
+  "checks": {
+    "detect": {
+      "commands": [
+        "vulture --version"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:vulture"
+      ],
+      "failure_hint": "Install `vulture` before using the Python dead-code advisory inventory."
+    },
+    "healthcheck": {
+      "commands": [
+        "vulture --help"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:usage:"
+      ],
+      "failure_hint": "The `vulture` binary exists but its help surface is not healthy. Reinstall or upgrade `vulture`, then rerun the advisory inventory."
+    }
+  },
+  "access_modes": [
+    "binary",
+    "degraded"
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer a recent upstream-supported Vulture release.",
+    "detected_by": "stdout"
+  },
+  "supports_public_skills": [
+    "quality",
+    "init-repo"
+  ],
+  "recommendation_role": "validation",
+  "degradation": {
+    "when_missing": [
+      "Python repos still get Ruff's file-local unused import and variable checks, but Ruff does not detect unreferenced modules or whole-repo dead files.",
+      "Quality and init-repo should recommend a dead-code/dead-file advisory pass rather than treating migration-like stale files as a special case."
+    ],
+    "when_version_mismatch": [
+      "Treat changed confidence behavior or whitelist syntax in newer Vulture releases as an advisory review point before promoting findings to a hard gate."
+    ]
+  },
+  "host_notes": [
+    "For this repo, `uvx --from vulture vulture` uses `[tool.vulture]` in `pyproject.toml` and was clean on 2026-04-28.",
+    "The default 60% confidence pass reported low-confidence advisory findings, mostly duplicated generated plugin surfaces and pytest conventions."
+  ]
+}

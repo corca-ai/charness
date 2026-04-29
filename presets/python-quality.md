@@ -27,8 +27,9 @@ adapter needs a sane starting vocabulary.
 - behavior gates: `pytest` or repo-native test runner
 - static gates: `ruff check` with `E`, `F`, `I`, and `C90`, plus exactly one
   type checker: `mypy` or `pyright`
-- confidence extras when justified: coverage, `deptry`, `gitleaks` or another
-  repo-native secret scanner, dependency review, supply-chain audit
+- confidence extras when justified: coverage, `vulture` for dead-code/dead-file
+  advisory review, `deptry`, `gitleaks` or another repo-native secret scanner,
+  dependency review, supply-chain audit
 
 ## Suggested Ruff Baseline
 
@@ -38,6 +39,9 @@ adapter needs a sane starting vocabulary.
 - `[tool.ruff.lint.mccabe] max-complexity = 15` as a practical starting hard
   gate
 - add `B`, `UP`, or `SIM` only after the standing baseline is already quiet
+- keep `vulture` advisory by default; promote it only after the repo has tuned
+  dynamic entrypoints and whitelists enough that failures have a clear cleanup
+  action
 
 ## Notes
 

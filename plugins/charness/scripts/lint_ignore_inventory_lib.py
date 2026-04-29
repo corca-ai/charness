@@ -6,6 +6,8 @@ import tokenize
 from pathlib import Path
 from typing import Any
 
+from scripts.repo_file_listing import iter_repo_files
+
 IGNORED_PARTS = {
     ".git",
     ".mypy_cache",
@@ -27,7 +29,7 @@ ESLINT_RE = re.compile(
 
 def _iter_candidate_files(repo_root: Path) -> list[Path]:
     paths: list[Path] = []
-    for path in repo_root.rglob("*"):
+    for path in iter_repo_files(repo_root):
         if not path.is_file():
             continue
         if any(part in IGNORED_PARTS for part in path.relative_to(repo_root).parts):

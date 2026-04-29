@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -28,10 +29,26 @@ E2E_DELETE = [
 ]
 
 
+def git_visible_repo_files(repo_root: Path) -> set[Path] | None:
+    result = subprocess.run(
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        return None
+    return {repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel}
+
+
 def visible_paths(repo_root: Path, pattern: str) -> list[Path]:
+    visible_files = git_visible_repo_files(repo_root)
+    candidates = visible_files if visible_files is not None else repo_root.rglob(pattern)
     return sorted(
-        path for path in repo_root.rglob(pattern)
-        if path.is_file() and not any(part in IGNORED_PARTS for part in path.relative_to(repo_root).parts)
+        path for path in candidates
+        if path.is_file()
+        and path.match(pattern)
+        and not any(part in IGNORED_PARTS for part in path.relative_to(repo_root).parts)
     )
 
 

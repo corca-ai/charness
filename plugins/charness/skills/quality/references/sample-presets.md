@@ -28,3 +28,8 @@ The adapter should still record the actual commands and the preset lineage.
   `fail_below_pct = 80`, `warn_ceiling_pct = 95`,
   `gate_script_pattern = "*-quality-gate.sh"`, and a default
   `spec_pytest_reference_format` for `Covered by pytest:` notes
+- Python presets should treat `vulture` as the default dead-code/dead-file
+  advisory detector after the Ruff baseline. JavaScript/TypeScript presets
+  should treat `knip` as the default unused files/exports/dependencies
+  advisory detector. Keep both advisory until the repo proves low-noise
+  findings and clear cleanup action.

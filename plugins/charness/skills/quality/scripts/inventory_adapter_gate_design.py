@@ -4,28 +4,27 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 from pathlib import Path
 
 FINDING_CLASSES = {
-    "structural_fact",
-    "contextual_recommendation",
-    "acknowledgement_gap",
-    "migration_gap",
-    "brittle_hard_gate_smell",
+    "structural_fact", "contextual_recommendation", "acknowledgement_gap",
+    "migration_gap", "brittle_hard_gate_smell",
 }
 ENFORCEMENT_TIERS = {"AUTO_EXISTING", "AUTO_CANDIDATE", "NON_AUTOMATABLE"}
-QUALITY_ADAPTER_CANDIDATES = (
-    Path(".agents/quality-adapter.yaml"),
-    Path(".codex/quality-adapter.yaml"),
-    Path(".claude/quality-adapter.yaml"),
-    Path("docs/quality-adapter.yaml"),
-    Path("quality-adapter.yaml"),
-)
-DEFAULT_REVIEW_GLOBS = (
-    ".agents/*-adapter.yaml",
-    "skills/public/*/adapter.example.yaml",
-    "scripts/*.py",
-)
+QUALITY_ADAPTER_CANDIDATES = tuple(Path(path) for path in (
+    ".agents/quality-adapter.yaml", ".codex/quality-adapter.yaml",
+    ".claude/quality-adapter.yaml", "docs/quality-adapter.yaml", "quality-adapter.yaml",
+))
+DEFAULT_REVIEW_GLOBS = (".agents/*-adapter.yaml", "skills/public/*/adapter.example.yaml", "scripts/*.py")
+
+
+def _git_visible_repo_files(repo_root: Path) -> set[Path] | None:
+    result = subprocess.run(
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        cwd=repo_root, check=False, capture_output=True,
+    )
+    return None if result.returncode != 0 else {repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel}
 
 
 def _relative(path: Path, repo_root: Path) -> str:
@@ -89,10 +88,14 @@ def _review_globs(repo_root: Path) -> tuple[list[str], str]:
 
 def _review_paths(repo_root: Path) -> tuple[list[Path], str]:
     globs, source = _review_globs(repo_root)
+    visible_files = _git_visible_repo_files(repo_root)
     paths: list[Path] = []
     for pattern in globs:
-        matches = sorted(repo_root.glob(pattern))
-        paths.extend(path for path in matches if path.is_file())
+        paths.extend(
+            path
+            for path in sorted(repo_root.glob(pattern))
+            if path.is_file() and (visible_files is None or path in visible_files)
+        )
     unique = sorted({path.resolve(): path for path in paths}.values())
     return unique, source
 

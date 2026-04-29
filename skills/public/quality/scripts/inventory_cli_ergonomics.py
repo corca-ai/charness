@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -23,12 +24,25 @@ def _load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _git_visible_repo_files(repo_root: Path) -> set[Path] | None:
+    result = subprocess.run(
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        return None
+    return {repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel}
+
+
 def _default_paths(repo_root: Path, patterns: list[str]) -> list[Path]:
+    visible_files = _git_visible_repo_files(repo_root)
     seen: set[Path] = set()
     found: list[Path] = []
     for pattern in patterns:
         for path in sorted(repo_root.glob(pattern)):
-            if path.is_file() and path not in seen:
+            if path.is_file() and path not in seen and (visible_files is None or path in visible_files):
                 seen.add(path)
                 found.append(path)
     return found

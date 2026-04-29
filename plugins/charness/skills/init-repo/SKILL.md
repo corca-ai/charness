@@ -154,6 +154,8 @@ Then load only the references needed for the detected state:
    - check for missing or duplicated operating surfaces
    - check that generated guidance is not contradicting itself
    - check that the next human operator can tell what to read and what to do
+   - for nontrivial source trees, recommend a dead-file advisory detector
+     (`vulture` for Python, `knip` for JavaScript/TypeScript)
    - for task-completing normalization, spawn bounded reviewers for
      host-instruction policy, operating-surface adapter fit, operator takeover
      flow, and any broad test/runtime gate surface introduced by the new
@@ -194,7 +196,4 @@ Then load only the references needed for the detected state:
 - `references/retro-memory-seam.md`
 - `references/github-actions-defaults.md`
 - `references/operator-acceptance-synthesis.md`
-- `<repo-root>/scripts/inspect_repo.py`
-- `<repo-root>/scripts/render_skill_routing.py`
-- `<repo-root>/scripts/seed_retro_memory.py`
-- `<repo-root>/scripts/synthesize_operator_acceptance.py`
+- `<repo-root>/scripts/inspect_repo.py`, `<repo-root>/scripts/render_skill_routing.py`, `<repo-root>/scripts/seed_retro_memory.py`, `<repo-root>/scripts/synthesize_operator_acceptance.py`

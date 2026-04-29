@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from scripts.repo_file_listing import iter_matching_repo_files
+
 LINEAGE_ORDER = ("python-quality", "typescript-quality", "go-quality", "specdown-quality", "monorepo-quality")
 
 
@@ -56,7 +58,11 @@ def detect_preset_lineage(repo_root: Path) -> list[str]:
         detected.append("go-quality")
     if (repo_root / "pnpm-workspace.yaml").is_file() or _package_json_has_workspaces(repo_root / "package.json") or any((repo_root / "packages").glob("*/package.json")):
         detected.append("monorepo-quality")
-    if (repo_root / ".specdown").exists() or (repo_root / "specdown.json").is_file() or any(repo_root.rglob("*.spec.md")):
+    if (
+        (repo_root / ".specdown").exists()
+        or (repo_root / "specdown.json").is_file()
+        or bool(iter_matching_repo_files(repo_root, ("**/*.spec.md",)))
+    ):
         detected.append("specdown-quality")
     return [preset_id for preset_id in LINEAGE_ORDER if preset_id in detected]
 

@@ -1,13 +1,13 @@
 # Find Skills Inventory
-Date: 2026-04-28
-Updated: 2026-04-28T23:12:03Z
+Date: 2026-04-29
+Updated: 2026-04-29T00:03:01Z
 
 ## Summary
 - public skills: 17
 - support skills: 6
 - synced support skills: 1
 - support capabilities: 4
-- integrations: 8
+- integrations: 9
 - trusted skills: 0
 
 ## Public Skills
@@ -53,6 +53,7 @@ Updated: 2026-04-28T23:12:03Z
 - `gws-cli` (external_binary, integration-only): access modes `binary, env, human-only, degraded`
 - `ruff` (external_binary, integration-only): access modes `binary`
 - `specdown` (external_binary, integration-only): access modes `binary, human-only, degraded`
+- `vulture` (external_binary, integration-only): access modes `binary, degraded`
 
 ## Trusted Skills
 - none
