@@ -84,7 +84,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - when public executable specs are in scope, inventory reader-facing public-spec drift and proof-layering overlap with `$SKILL_DIR/scripts/inventory_public_spec_quality.py`; see `references/public-spec-layering.md`
    - elevate source-guard pressure as a rollup: total source-guard rows, top specs, brittle count, and next action category should be visible together
    - when fixed-string source guards touch prose, inventory hard-wrap fragility with `$SKILL_DIR/scripts/inventory_brittle_source_guards.py`; see `references/brittle-source-guards.md`
-   - when lint suppressions start to accumulate, inventory lint suppression pressure with `$SKILL_DIR/scripts/inventory_lint_ignores.py`; blanket or file-level ignores should be explicit review targets, not invisible background debt
+   - when lint suppressions start to accumulate, inventory lint suppression pressure with `$SKILL_DIR/scripts/inventory_lint_ignores.py`; blanket, file-level, or retained policy-level ignores should be explicit review targets with provenance and concrete revisit conditions, not invisible background debt
    - inspect first-touch docs such as README and operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist; when the CLI surface is stable, prefer a deterministic command-docs drift gate over repeated prose review
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
    - if evaluator-backed review or prompt-sensitive output matters, inspect whether prompt/content bulk stays in checked-in assets or is still embedded inline in source files

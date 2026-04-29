@@ -12,6 +12,7 @@ Review pressure points:
 
 - blanket suppressions with no named rule
 - file-level suppressions that mask a whole entrypoint or module
+- policy-level ignores that remain after cleanup but lack a keep decision
 - repeated ignore shapes that point to one missing structural seam
 - plugin or generated mirrors that duplicate the same suppression debt
 
@@ -23,3 +24,20 @@ Preferred direction:
   structural change it is deferring
 - if the same ignore appears across multiple files, treat that as an
   `AUTO_CANDIDATE` for a shared seam or import/bootstrap refactor
+
+## Retained Policy Ignores
+
+When a cleanup reduces active findings but intentionally leaves policy-level
+ignores, record the keep decision beside the source of policy truth. Prefer
+comments near `pyproject.toml` per-file ignores, ESLint config, or a repo
+decision log over generated `latest.md` artifacts. Use handoff only when the
+decision changes the next pickup action.
+
+The keep decision should:
+
+- enumerate the remaining findings by file, rule, and count
+- state why each retained class is justified
+- record the reviewed commit hash or review date
+- name concrete revisit conditions, such as a framework upgrade, CLI schema
+  redesign, wrapper deletion, or safer subprocess boundary
+- distinguish intentionally retained findings from newly introduced ignores

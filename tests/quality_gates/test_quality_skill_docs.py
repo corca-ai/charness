@@ -37,9 +37,14 @@ def test_quality_skill_carries_lint_ignore_lens() -> None:
     assert "lint suppressions start to accumulate" in skill_text
     assert "lint suppression pressure" in skill_text
     assert "growing lint suppressions" in skill_text
+    assert "retained policy-level ignores" in skill_text
+    assert "concrete revisit conditions" in skill_text
     assert "inventory_lint_ignores.py" in lint_ignore
     assert "Treat these as prompts, not automatic failures." in lint_ignore
     assert "structural seam" in lint_ignore
+    assert "source of policy truth" in lint_ignore
+    assert "reviewed commit hash or review date" in lint_ignore
+    assert "generated `latest.md` artifacts" in lint_ignore
 
 
 def test_quality_skill_carries_entrypoint_docs_ergonomics_lens() -> None:
