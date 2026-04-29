@@ -79,7 +79,7 @@
     ]
   },
   "host_notes": [
-    "For this repo, `uvx --from vulture vulture` uses `[tool.vulture]` in `pyproject.toml` and was clean on 2026-04-28.",
-    "The default 60% confidence pass reported low-confidence advisory findings, mostly duplicated generated plugin surfaces and pytest conventions."
+    "For this repo, `vulture` uses `[tool.vulture]` in `pyproject.toml`; the 80% primary pass is expected to be clean, not proof that no dead code exists.",
+    "Use `python3 skills/public/quality/scripts/run_dead_code_advisory.py --repo-root .` for the quality advisory pass; it also runs a 60% sweep for review candidates and likely framework-convention false positives."
   ]
 }

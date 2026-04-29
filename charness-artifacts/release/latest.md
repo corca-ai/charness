@@ -3,13 +3,13 @@ Date: 2026-04-28
 
 ## Scope
 
-Advanced `charness` package surfaces to version `0.5.14` for a branch push.
+Advanced `charness` package surfaces to version `0.5.15` for a branch push.
 This is not a tagged public release.
 
 ## Current Version
 
-- previous version: `0.5.13`
-- target version: `0.5.14`
+- previous version: `0.5.14`
+- target version: `0.5.15`
 - git branch: `main`
 - git remote: `origin`
 
@@ -26,7 +26,7 @@ This is not a tagged public release.
 ## Release State
 
 - local release mutation: complete
-- branch push: complete (`822c066` pushed to `origin/main`)
+- branch push: handled by this slice (`origin/main`)
 - git tag: not created
 - GitHub release record: not created
 

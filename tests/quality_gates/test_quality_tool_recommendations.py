@@ -120,6 +120,43 @@ def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: 
     }
 
 
+def test_quality_tool_recommendations_filter_role_by_next_skill(tmp_path: Path) -> None:
+    _write_manifest(
+        tmp_path,
+        "impl-only.json",
+        {
+            "schema_version": "1",
+            "tool_id": "impl-only",
+            "kind": "external_binary",
+            "display_name": "impl-only",
+            "summary": "Impl-only validation.",
+            "upstream_repo": "example/impl-only",
+            "homepage": "https://example.com/impl-only",
+            "lifecycle": {
+                "install": {"mode": "manual", "docs_url": "https://example.com", "notes": []},
+                "update": {"mode": "manual", "docs_url": "https://example.com", "notes": []},
+            },
+            "checks": {
+                "detect": {"commands": ["impl-only --version"], "success_criteria": ["exit_code:0"]},
+                "healthcheck": {"commands": ["impl-only --help"], "success_criteria": ["exit_code:0"]},
+            },
+            "access_modes": ["binary"],
+            "version_expectation": {"policy": "advisory", "constraint": "latest", "detected_by": "stdout"},
+            "supports_public_skills": ["impl"],
+            "recommendation_role": "validation",
+        },
+    )
+
+    payload = _run_recommendations(
+        "skills/public/quality/scripts/list_tool_recommendations.py",
+        tmp_path,
+        recommendation_role="validation",
+        next_skill_id="quality",
+    )
+
+    assert payload["tool_recommendations"] == []
+
+
 def test_quality_tool_recommendations_emit_blocking_runtime_routes(tmp_path: Path) -> None:
     _write_manifest(
         tmp_path,

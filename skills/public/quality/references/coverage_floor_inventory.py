@@ -22,7 +22,6 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
-SRC_ROOT = REPO_ROOT / "src"
 POLICY = {
     "min_statements_threshold": 30,
     "fail_below_pct": 80.0,

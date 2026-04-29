@@ -2615,6 +2615,55 @@ def tool_ids_from_args(args: argparse.Namespace) -> list[str]:
     return list(getattr(args, "tool_ids", []) or [])
 
 
+def selected_tool_ids_from_args(args: argparse.Namespace, repo_root: Path) -> list[str]:
+    explicit_tool_ids = tool_ids_from_args(args)
+    recommend_for_skill = getattr(args, "recommend_for_skill", None)
+    recommendation_role = getattr(args, "recommendation_role", None)
+    next_skill_id = getattr(args, "next_skill_id", None)
+    if not recommend_for_skill and not recommendation_role:
+        return explicit_tool_ids
+    if explicit_tool_ids:
+        raise CharnessError("Pass either explicit tool ids or recommendation filters, not both.")
+    selected: list[str] = []
+    tools_dir = repo_root / "integrations" / "tools"
+    for manifest_path in sorted(tools_dir.glob("*.json")):
+        if manifest_path.name == "manifest.schema.json":
+            continue
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        supported_skills = manifest.get("supports_public_skills", [])
+        if recommendation_role and manifest.get("recommendation_role") != recommendation_role:
+            continue
+        skill_filter = recommend_for_skill or next_skill_id
+        if skill_filter and skill_filter not in supported_skills:
+            continue
+        tool_id = manifest.get("tool_id")
+        if isinstance(tool_id, str):
+            selected.append(tool_id)
+    if not selected:
+        filters = []
+        if recommend_for_skill:
+            filters.append(f"--recommend-for-skill {recommend_for_skill}")
+        if recommendation_role:
+            filters.append(f"--recommendation-role {recommendation_role}")
+        if next_skill_id:
+            filters.append(f"--next-skill-id {next_skill_id}")
+        raise CharnessError("No tools matched recommendation filters: " + " ".join(filters))
+    return selected
+
+
+def tool_selection_payload(args: argparse.Namespace, tool_ids: list[str]) -> dict[str, object] | None:
+    recommend_for_skill = getattr(args, "recommend_for_skill", None)
+    recommendation_role = getattr(args, "recommendation_role", None)
+    if not recommend_for_skill and not recommendation_role:
+        return None
+    return {
+        "recommend_for_skill": recommend_for_skill,
+        "recommendation_role": recommendation_role,
+        "next_skill_id": getattr(args, "next_skill_id", None),
+        "selected_tool_ids": tool_ids,
+    }
+
+
 def tool_result_map(results: object) -> dict[str, dict[str, object]]:
     if not isinstance(results, list):
         return {}
@@ -3664,8 +3713,9 @@ def cmd_tool_sync_support(args: argparse.Namespace) -> int:
 
 def cmd_tool_install(args: argparse.Namespace) -> int:
     repo_root, managed_checkout = resolve_tool_repo_root(args)
+    selected_tool_ids = selected_tool_ids_from_args(args, repo_root)
     install_args = ["--repo-root", str(repo_root), "--json"]
-    for tool_id in tool_ids_from_args(args):
+    for tool_id in selected_tool_ids:
         install_args.extend(["--tool-id", tool_id])
     if not args.dry_run:
         install_args.append("--execute")
@@ -3673,7 +3723,7 @@ def cmd_tool_install(args: argparse.Namespace) -> int:
     support_results: object = []
     if not args.skip_sync_support:
         support_args = ["--repo-root", str(repo_root), "--json"]
-        for tool_id in tool_ids_from_args(args):
+        for tool_id in selected_tool_ids:
             support_args.extend(["--tool-id", tool_id])
         for upstream_checkout in args.upstream_checkout:
             support_args.extend(["--upstream-checkout", upstream_checkout])
@@ -3681,7 +3731,7 @@ def cmd_tool_install(args: argparse.Namespace) -> int:
             support_args.append("--execute")
         support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *support_args, allow_failure=True)
     doctor_args = ["--repo-root", str(repo_root), "--json"]
-    for tool_id in tool_ids_from_args(args):
+    for tool_id in selected_tool_ids:
         doctor_args.extend(["--tool-id", tool_id])
     if not args.dry_run:
         doctor_args.append("--write-locks")
@@ -3692,7 +3742,8 @@ def cmd_tool_install(args: argparse.Namespace) -> int:
     payload = {
         "repo_root": str(repo_root),
         "managed_checkout": managed_checkout,
-        "tool_ids": tool_ids_from_args(args),
+        "tool_ids": selected_tool_ids,
+        "tool_selection": tool_selection_payload(args, selected_tool_ids),
         "results": {
             tool_id: {
                 "install": install_map.get(tool_id),
@@ -4048,6 +4099,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--skip-sync-support",
         action="store_true",
         help="Skip support skill rematerialization after install guidance or execution.",
+    )
+    tool_install_parser.add_argument(
+        "--recommend-for-skill",
+        help="Install tools declared as supporting a public skill instead of passing explicit tool ids.",
+    )
+    tool_install_parser.add_argument(
+        "--recommendation-role",
+        choices=("runtime", "validation"),
+        help="Install tools with a recommendation role, optionally scoped by --next-skill-id.",
+    )
+    tool_install_parser.add_argument(
+        "--next-skill-id",
+        default="quality",
+        help="Public skill id used with --recommendation-role; defaults to quality.",
     )
     tool_install_parser.set_defaults(func=cmd_tool_install)
 

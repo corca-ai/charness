@@ -26,10 +26,6 @@ load_policy = _scripts_public_skill_validation_lib_module.load_policy
 validate_policy = _scripts_public_skill_validation_lib_module.validate_policy
 
 EVAL_TEST_COMMAND = "cautilus eval test --repo-root . --adapter-name self-dogfood-eval"
-COMPARE_COMMANDS = [
-    "cautilus workspace prepare-compare",
-    "cautilus eval evaluate --input <observed.json>",
-]
 SKILL_CORE_PATTERNS = ("skills/public/*/SKILL.md", "skills/support/*/SKILL.md")
 ADAPTER_PATTERNS = (".agents/*-adapter.yaml", ".agents/cautilus-adapters/*.yaml")
 TRUTH_SURFACE_FALLBACKS = (

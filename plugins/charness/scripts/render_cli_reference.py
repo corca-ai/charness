@@ -21,7 +21,14 @@ COMMANDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("charness task", ("./charness", "task", "--help")),
     ("charness capability", ("./charness", "capability", "--help")),
     ("charness tool", ("./charness", "tool", "--help")),
+    ("charness tool install", ("./charness", "tool", "install", "--help")),
 )
+
+EXAMPLES: dict[str, tuple[str, ...]] = {
+    "charness tool install": (
+        "charness tool install --recommendation-role validation --next-skill-id quality",
+    ),
+}
 
 
 def run_help(repo_root: Path, command: tuple[str, ...]) -> str:
@@ -58,6 +65,9 @@ def render_cli_reference(repo_root: Path) -> str:
                 "",
             ]
         )
+        examples = EXAMPLES.get(title, ())
+        if examples:
+            sections.extend(["Examples", "", "```bash", *examples, "```", ""])
     return "\n".join(sections).rstrip()
 
 

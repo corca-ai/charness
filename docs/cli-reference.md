@@ -280,3 +280,47 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
 ```
+
+## `charness tool install`
+
+```text
+usage: charness tool install [-h] [--home-root HOME_ROOT]
+                             [--repo-root REPO_ROOT] [--repo-url REPO_URL]
+                             [--json] [--upstream-checkout UPSTREAM_CHECKOUT]
+                             [--dry-run] [--skip-sync-support]
+                             [--recommend-for-skill RECOMMEND_FOR_SKILL]
+                             [--recommendation-role {runtime,validation}]
+                             [--next-skill-id NEXT_SKILL_ID]
+                             [tool_ids ...]
+
+positional arguments:
+  tool_ids
+
+options:
+  -h, --help            show this help message and exit
+  --home-root HOME_ROOT
+  --repo-root REPO_ROOT
+                        Use an explicit existing source checkout instead of
+                        the managed default checkout.
+  --repo-url REPO_URL
+  --json
+  --upstream-checkout UPSTREAM_CHECKOUT
+  --dry-run
+  --skip-sync-support   Skip support skill rematerialization after install
+                        guidance or execution.
+  --recommend-for-skill RECOMMEND_FOR_SKILL
+                        Install tools declared as supporting a public skill
+                        instead of passing explicit tool ids.
+  --recommendation-role {runtime,validation}
+                        Install tools with a recommendation role, optionally
+                        scoped by --next-skill-id.
+  --next-skill-id NEXT_SKILL_ID
+                        Public skill id used with --recommendation-role;
+                        defaults to quality.
+```
+
+Examples
+
+```bash
+charness tool install --recommendation-role validation --next-skill-id quality
+```

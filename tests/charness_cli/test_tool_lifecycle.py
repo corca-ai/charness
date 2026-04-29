@@ -117,6 +117,68 @@ def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path)
     assert (repo_root / "skills" / "support" / "generated" / "cautilus").is_symlink()
 
 
+def test_tool_install_can_select_quality_validation_recommendations(tmp_path: Path) -> None:
+    repo_root = make_repo_copy(tmp_path)
+    release_fixture = make_release_fixture(tmp_path)
+    env = os.environ.copy()
+    env["PATH"] = build_test_path()
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+
+    result = run_cli_in_repo(
+        repo_root,
+        "tool",
+        "install",
+        "--repo-root",
+        str(repo_root),
+        "--dry-run",
+        "--skip-sync-support",
+        "--json",
+        "--recommendation-role",
+        "validation",
+        "--next-skill-id",
+        "quality",
+        env=env,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["tool_selection"] == {
+        "recommend_for_skill": None,
+        "recommendation_role": "validation",
+        "next_skill_id": "quality",
+        "selected_tool_ids": ["cautilus", "gitleaks", "ruff", "vulture"],
+    }
+    assert payload["tool_ids"] == ["cautilus", "gitleaks", "ruff", "vulture"]
+    assert set(payload["results"]) == {"cautilus", "gitleaks", "ruff", "vulture"}
+
+
+def test_tool_install_recommendation_filter_no_match_does_not_install_all(tmp_path: Path) -> None:
+    repo_root = make_repo_copy(tmp_path)
+    release_fixture = make_release_fixture(tmp_path)
+    env = os.environ.copy()
+    env["PATH"] = build_test_path()
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+
+    result = run_cli_in_repo(
+        repo_root,
+        "tool",
+        "install",
+        "--repo-root",
+        str(repo_root),
+        "--dry-run",
+        "--skip-sync-support",
+        "--json",
+        "--recommendation-role",
+        "validation",
+        "--next-skill-id",
+        "nonexistent-skill",
+        env=env,
+    )
+
+    assert result.returncode == 1
+    assert "No tools matched recommendation filters" in result.stderr
+
+
 def test_installed_cli_tool_install_materializes_cautilus_support(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     release_fixture = make_release_fixture(tmp_path)

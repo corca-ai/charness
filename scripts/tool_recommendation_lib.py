@@ -93,6 +93,7 @@ def recommendations_for_role(
         build_tool_recommendation(repo_root, manifest, next_skill_id=next_skill_id)
         for manifest in manifests
         if manifest.get("recommendation_role") == recommendation_role
+        and next_skill_id in manifest.get("supports_public_skills", [])
     ]
     if not only_blocking:
         return recommendations

@@ -17,6 +17,6 @@ ignore = ["E501"]
 max-complexity = 15
 
 [tool.vulture]
-paths = ["scripts", "skills", "tests"]
+paths = ["runtime_bootstrap.py", "skill_runtime_bootstrap.py", "scripts", "skills", "tests"]
 min_confidence = 80
 sort_by_size = true

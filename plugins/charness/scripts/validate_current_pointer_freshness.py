@@ -30,7 +30,6 @@ RUNTIME_RECORDER = Path("scripts/record_quality_runtime.py")
 RUNTIME_BUDGET_CHECKER = Path("skills/public/quality/scripts/check_runtime_budget.py")
 RUNTIME_BUDGET_LIB = Path("skills/public/quality/scripts/runtime_budget_lib.py")
 RUNTIME_SIGNALS = Path(".charness/quality/runtime-signals.json")
-QUALITY_ADAPTER = Path(".agents/quality-adapter.yaml")
 FIND_SKILLS_INVENTORY = Path("charness-artifacts/find-skills/latest.json")
 INTEGRATIONS_DIR = Path("integrations/tools")
 STALE_POINTER_PHRASES = {
@@ -45,13 +44,7 @@ STALE_POINTER_PHRASES = {
     ),
 }
 COMMAND_RE = re.compile(r"`(python3 [^`]+|\.\/scripts\/[^`]+)`")
-HOT_SPOT_RE = re.compile(r"`([^`]+)`\s+`([0-9]+(?:\.[0-9]+)?s)`")
-BUDGETED_PHASE_RE = re.compile(
-    r"`([^`]+)`\s+median\s+`([0-9]+(?:\.[0-9]+)?s)\s*/\s*([0-9]+(?:\.[0-9]+)?s)`"
-)
 TARGET_VERSION_RE = re.compile(r"- target version:\s*`([^`]+)`")
-RUNTIME_SECONDS_ABS_TOLERANCE = 0.5
-RUNTIME_SECONDS_REL_TOLERANCE = 0.15
 
 
 def read_text(repo_root: Path, relative_path: Path) -> str:
@@ -149,80 +142,6 @@ def _load_json(path: Path) -> dict:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return {}
-
-
-def _format_seconds(elapsed_ms: object) -> str | None:
-    if not isinstance(elapsed_ms, int):
-        return None
-    return f"{elapsed_ms / 1000:.1f}s"
-
-
-def _seconds_value(text: str) -> float:
-    return float(text.removesuffix("s"))
-
-
-def _seconds_close(claimed: str, actual: str) -> bool:
-    claimed_value = _seconds_value(claimed)
-    actual_value = _seconds_value(actual)
-    tolerance = max(RUNTIME_SECONDS_ABS_TOLERANCE, abs(actual_value) * RUNTIME_SECONDS_REL_TOLERANCE)
-    return abs(claimed_value - actual_value) <= tolerance
-
-
-def _runtime_commands(repo_root: Path) -> dict:
-    signals_path = repo_root / RUNTIME_SIGNALS
-    if not signals_path.is_file():
-        return {}
-    payload = _load_json(signals_path)
-    commands = payload.get("commands")
-    return commands if isinstance(commands, dict) else {}
-
-
-def _runtime_budgets(repo_root: Path) -> dict[str, int]:
-    adapter_path = repo_root / QUALITY_ADAPTER
-    if not adapter_path.is_file():
-        return {}
-    budgets: dict[str, int] = {}
-    in_runtime_budgets = False
-    for raw_line in adapter_path.read_text(encoding="utf-8").splitlines():
-        if raw_line.strip() == "runtime_budgets:":
-            in_runtime_budgets = True
-            continue
-        if in_runtime_budgets and raw_line and not raw_line.startswith(" "):
-            break
-        if not in_runtime_budgets or not raw_line.startswith("  ") or ":" not in raw_line:
-            continue
-        label, value = raw_line.split(":", 1)
-        try:
-            budgets[label.strip()] = int(value.strip())
-        except ValueError:
-            continue
-    return budgets
-
-
-def _matching_runtime_lines(quality: str, prefix: str) -> list[str]:
-    blocks: list[str] = []
-    current: list[str] = []
-    for line in quality.splitlines():
-        stripped = line.strip()
-        if stripped.startswith(prefix):
-            if current:
-                blocks.append(" ".join(current))
-            current = [stripped]
-            continue
-        if current and line.startswith("  ") and stripped:
-            current.append(stripped)
-            continue
-        if current:
-            blocks.append(" ".join(current))
-            current = []
-    if current:
-        blocks.append(" ".join(current))
-    return blocks
-
-
-def _command_entry(commands: dict, label: str) -> dict:
-    entry = commands.get(label)
-    return entry if isinstance(entry, dict) else {}
 
 
 def validate_quality_runtime_signal_claims(repo_root: Path) -> None:

@@ -127,6 +127,7 @@ commands:
     required_doc_contains:
       - charness tool doctor cautilus
       - charness tool install cautilus
+      - charness tool install --recommendation-role validation --next-skill-id quality
       - charness tool update agent-browser
       - charness tool sync-support cautilus
       - persist manual install guidance
