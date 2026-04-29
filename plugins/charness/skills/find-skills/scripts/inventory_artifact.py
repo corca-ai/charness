@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from scripts.artifact_closeout_lib import artifact_closeout_status
+
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -134,9 +136,17 @@ def persist_inventory(
         json_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         updated = True
 
+    markdown_relative = str(markdown_path.relative_to(repo_root))
+    json_relative = str(json_path.relative_to(repo_root))
     return {
-        "markdown_path": str(markdown_path.relative_to(repo_root)),
-        "json_path": str(json_path.relative_to(repo_root)),
+        "markdown_path": markdown_relative,
+        "json_path": json_relative,
         "generated_at": generated_at,
         "updated": updated,
+        **artifact_closeout_status(
+            artifact_paths=[markdown_relative, json_relative],
+            semantic_content_changed=updated,
+            reason="canonical find-skills inventory changed",
+            unchanged_reason="canonical find-skills inventory unchanged",
+        ),
     }

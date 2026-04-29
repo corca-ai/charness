@@ -393,6 +393,10 @@ def test_list_capabilities_includes_support_capabilities(tmp_path: Path) -> None
     artifact_json = json.loads((tmp_path / "charness-artifacts" / "find-skills" / "latest.json").read_text(encoding="utf-8"))
     assert payload["artifacts"]["markdown_path"] == "charness-artifacts/find-skills/latest.md"
     assert payload["artifacts"]["json_path"] == "charness-artifacts/find-skills/latest.json"
+    assert payload["artifacts"]["artifact_paths"] == [
+        "charness-artifacts/find-skills/latest.md",
+        "charness-artifacts/find-skills/latest.json",
+    ]
     assert artifact_json["inventory"]["support_skills"][0]["id"] == "gather-slack"
     assert artifact_json["inventory"]["support_capabilities"][0]["id"] == "gather-slack"
     assert "# Find Skills Inventory" in artifact_md
@@ -407,7 +411,15 @@ def test_list_capabilities_preserves_generated_at_when_inventory_is_unchanged(tm
     second_payload = _run_list_capabilities(tmp_path)
 
     assert first_payload["artifacts"]["updated"] is True
+    assert first_payload["artifacts"]["semantic_content_changed"] is True
+    assert first_payload["artifacts"]["requires_repo_closeout"] is True
+    assert first_payload["artifacts"]["commit_recommended"] is True
+    assert first_payload["artifacts"]["closeout_reason"] == "canonical find-skills inventory changed"
     assert second_payload["artifacts"]["updated"] is False
+    assert second_payload["artifacts"]["semantic_content_changed"] is False
+    assert second_payload["artifacts"]["requires_repo_closeout"] is False
+    assert second_payload["artifacts"]["commit_recommended"] is False
+    assert second_payload["artifacts"]["closeout_reason"] == "canonical find-skills inventory unchanged"
     assert second_payload["artifacts"]["generated_at"] == first_payload["artifacts"]["generated_at"]
 
 
@@ -427,6 +439,9 @@ def test_recommendation_queries_do_not_rewrite_canonical_inventory_artifact(tmp_
     artifact_json = json.loads((tmp_path / "charness-artifacts" / "find-skills" / "latest.json").read_text(encoding="utf-8"))
 
     assert query_payload["artifacts"]["updated"] is False
+    assert query_payload["artifacts"]["semantic_content_changed"] is False
+    assert query_payload["artifacts"]["requires_repo_closeout"] is False
+    assert query_payload["artifacts"]["commit_recommended"] is False
     assert query_payload["artifacts"]["generated_at"] == plain_payload["artifacts"]["generated_at"]
     assert query_payload["tool_recommendation_query"] == {
         "mode": "recommendation_role",

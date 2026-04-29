@@ -91,6 +91,9 @@ What you get after one run:
 - refreshed capability inventory artifacts at
   `<repo-root>/charness-artifacts/find-skills/latest.md` and
   `<repo-root>/charness-artifacts/find-skills/latest.json`
+- a closeout signal under `artifacts`: `artifact_paths`,
+  `semantic_content_changed`, `requires_repo_closeout`, `commit_recommended`,
+  and `closeout_reason`
 - recommendation-query payloads in the current command output when
   `--recommend-for-skill` or `--recommendation-role` is used
 
@@ -180,6 +183,9 @@ The result should usually include:
   skill.
 - If nothing suitable exists yet, say so directly and classify the missing
   capability instead of hand-waving.
+- If the `artifacts` payload reports `requires_repo_closeout: true`, apply the
+  host repo's commit or closeout policy for meaningful durable artifact changes
+  before final response.
 
 ## References
 

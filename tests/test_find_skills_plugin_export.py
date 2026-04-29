@@ -54,6 +54,14 @@ def test_plugin_export_prefers_repo_owned_skill_surface_for_source_repo(tmp_path
 
     payload = _run_plugin_list_capabilities(tmp_path)
 
+    assert payload["artifacts"]["artifact_paths"] == [
+        "charness-artifacts/find-skills/latest.md",
+        "charness-artifacts/find-skills/latest.json",
+    ]
+    assert payload["artifacts"]["semantic_content_changed"] is True
+    assert payload["artifacts"]["requires_repo_closeout"] is True
+    assert payload["artifacts"]["commit_recommended"] is True
+    assert payload["artifacts"]["closeout_reason"] == "canonical find-skills inventory changed"
     assert payload["public_skills"] == [
         {
             "id": "demo",
