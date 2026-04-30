@@ -1,5 +1,5 @@
 # Quality Review
-Date: 2026-04-29
+Date: 2026-04-30
 
 ## Scope
 Repo-wide quality posture for `charness`: gates, adapter policy, operator proof,
@@ -11,30 +11,29 @@ runtime signals, security, and low-noise next gates.
   separate.
 - Fixed: the Charness quality adapter now rejects stale `gate_commands` and
   `review_commands` instead of requiring only non-empty lists.
-- Remaining risk: README/operator proof layering is still weak because generated
-  CLI reference proves help parity, not semantic workflow success.
+- Remaining risk: README/operator proof layering has a manual ledger, but not checked Cautilus claim-discovery output or evidence refs for every criterion.
 
 ## Current Gates
 - `./scripts/run-quality.sh --review`: passed `48` phases, `0` failed, total
-  `46.1s`; includes 515 pytest cases and 20 evals.
-- Targeted post-patch proof passed: adapter validation, focused adapter tests,
-  Ruff, runtime-budget check, online supply-chain audit, and Cautilus routing
-  regression proof.
+  `59.4s`; includes 515 pytest cases and 20 evals.
+- Targeted README-proof checks passed: markdown links, markdown lint, Specdown,
+  handoff/quality/current-pointer validators, and Cautilus claim
+  discover/validate through `../cautilus`.
 - `.githooks/pre-push` is active through `core.hooksPath`.
 
 ## Runtime Signals
 - runtime source: `.charness/quality/runtime-signals.json` rendered by
   `check_runtime_budget.py`; profile `local-linux-aarch64-4cpu`.
-- runtime hot spots: `pytest` 33.5s latest / 35.1s median, budget 70.0s;
-  `check-coverage` 17.9s / 16.9s, budget 22.0s; `specdown` 6.2s / 6.2s,
-  budget 8.0s; `check-duplicates` 5.6s / 5.7s, budget 8.0s;
-  `check-markdown` 5.2s / 5.4s, budget 8.0s.
+- runtime hot spots: `pytest` 36.9s latest / 35.1s median, budget 70.0s;
+  `check-coverage` 17.9s / 16.9s, budget 22.0s; `specdown` 8.8s / 6.2s,
+  budget 8.0s; `check-duplicates` 8.2s / 5.7s, budget 8.0s;
+  `check-markdown` 9.7s / 5.4s, budget 8.0s.
 - coverage gate: enforced at `96.8%` with `0` files below floor.
 - evaluator depth: 20 evals plus Cautilus `accept-now`.
 - `check-cli-skill-surface` is also budgeted at 8.0s after repeated 5s-class samples.
 
 ## Standing Test Economics
-- Pytest passed `515` tests in `32.75s`; phase time was `33.4s`.
+- Pytest passed `515` tests in `35.61s`; phase time was `36.9s`.
 - Test-production ratio is `0.23` (`19087/82166` Python lines), below `1.00`.
 
 ## Coverage and Eval Depth
@@ -55,8 +54,9 @@ runtime signals, security, and low-noise next gates.
   freshness, command docs, CLI probes, coverage floor, test ratio, secrets,
   supply-chain, ruff, pytest, specdown, evals, duplicates, startup probes,
   runtime budgets, markdown links.
-- `AUTO_CANDIDATE`: README/operator proof ledger; command-docs ownership split
-  between README first-touch claims and generated CLI-reference parity.
+- `AUTO_CANDIDATE`: wire README/operator proof ledger to Cautilus claim
+  discovery and evidence refs; split README first-touch claims from generated
+  CLI-reference parity.
 - `NON_AUTOMATABLE`: broad skill and entrypoint ergonomics pressure until the
   repo defines low-noise structural invariants.
 
@@ -77,9 +77,9 @@ runtime signals, security, and low-noise next gates.
   advisory until a structural split is obvious.
 
 ## Missing
-- No README/operator proof ledger yet.
-- Generated CLI reference proves help parity, not full semantic workflow
-  success for every command.
+- README/operator proof ledger exists at `docs/readme-proof.md`, but Cautilus
+  claim discovery output is not yet a stable checked proof source.
+- Generated CLI reference proves help parity, not full semantic command success.
 
 ## Deferred
 - Do not promote online supply-chain audit into default pre-push. The checked
@@ -92,14 +92,13 @@ runtime signals, security, and low-noise next gates.
 - Inline prompt/content bulk inventory remains advisory; `prompt_asset_roots: []`
   is not an inventory opt-out.
 - Adapter-gate phrase-detector policy seams remain `NON_AUTOMATABLE`.
-- Markdown preview rendered 26 targets at widths 80 and 100 through `glow`.
 
 ## Delegated Review
 - status: executed.
 - slow-gate lenses: fixture-economics, parallel-critical-path, duplicated-proof.
 - Adapter/gate design found stale command strings could pass validation; fixed.
-- Operator proof layering found the README/operator proof ledger is still
-  missing and command-docs pooling can mask missing first-touch cues.
+- Operator proof layering found the README/operator proof ledger was missing;
+  initial ledger now exists.
 - Gate economics/security found stable unbudgeted 5s-class phases; runtime
   budgets now cover them. Secrets and manifest/lockfile checks are locally
   enforced.
@@ -118,21 +117,24 @@ runtime signals, security, and low-noise next gates.
 - focused adapter-validation pytest; targeted Ruff and adapter validation.
 - `../cautilus/bin/cautilus eval test ... 20260429T232900000Z-quality-budget-command-gates`
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
+- `../cautilus/bin/cautilus claim discover --repo-root . --source README.md --source docs/operator-acceptance.md --output /tmp/charness-readme-claims.json`
+- `../cautilus/bin/cautilus claim validate --claims /tmp/charness-readme-claims.json --output /tmp/charness-readme-claims-validation.json`
 
 ## Fresh-Eye Premortem
 - Misread risk: pooled command-doc checks look like README proof. Counterweight:
-  keep README/operator proof ledger as the active next quality slice.
+  keep the ledger and future Cautilus claim plans separate from CLI parity.
 - Misread risk: runtime budgets fail on one-off spikes. Counterweight:
   budgets fail on recent medians and report latest spikes separately.
 - Misread risk: stale adapter command strings stay invisible. Counterweight:
   exact command validation now owns this invariant.
 
 ## Recommended Next Gates
-- active `AUTO_CANDIDATE`: create and validate the README/operator proof ledger.
+- active `AUTO_CANDIDATE`: validate README/operator proof ledger through
+  Cautilus claim discovery and direct evidence refs.
 - active `AUTO_CANDIDATE`: split command-docs ownership so README first-touch
   claims and generated CLI-reference parity cannot satisfy each other.
-- passive `AUTO_CANDIDATE`: online supply-chain freshness, because advisory
-  noise and triage ownership need a CI/review policy decision first.
+- passive `AUTO_CANDIDATE`: online supply-chain freshness stays passive because
+  CI/review ownership is unresolved.
 
 ## History
 - [2026-04-09 through 2026-04-10 archive](history/2026-04-09-through-2026-04-10.md)

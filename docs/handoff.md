@@ -29,14 +29,14 @@
 - agent-facing CLI prep/execute 아티팩트 분리 결정 렌즈가 `create-cli` (primary) + `impl` (crossref)에 landing됐다 ([#48](https://github.com/corca-ai/charness/issues/48) scope a). Spec은 [charness-artifacts/spec/issue-48-prep-execute-lens.md](../charness-artifacts/spec/issue-48-prep-execute-lens.md). Probe Q1/Q2/Q3는 post-landing 관찰 대상이다.
 - 크로스-레포 이슈 작성 hygiene (`why/what > how`)는 `narrative` reference로 landing됐다. high-leverage truth-surface rewrite와 adapter-missing stop rule도 함께 `narrative` 쪽에 들어갔다.
 - AGENTS.md craken refactor가 landing됐다. [AGENTS.md](../AGENTS.md)는 37 lines, `CLAUDE.md -> AGENTS.md` symlink가 host alias이며, [.agents/surfaces.json](../.agents/surfaces.json)은 `CLAUDE.md`를 repo markdown + prompt-behavior surface로 본다. Spec/HITL owner는 [charness-artifacts/spec/agents-md-craken-refactor.md](../charness-artifacts/spec/agents-md-craken-refactor.md)와 [charness-artifacts/hitl/2026-04-25-agents-md-craken-refactor.md](../charness-artifacts/hitl/2026-04-25-agents-md-craken-refactor.md)다.
-- clean temp clone first-move dogfood가 2026-04-26에 실행됐다. Cautilus runner와 direct `claude -p`/`codex exec`는 `quality`/`init-repo` 라우팅을 대체로 기대대로 잡았고, direct `codex exec quality`가 `./charness --version` state-cache write 실패를 찾아 `write_version_state()` non-fatal cache write fix로 닫았다. Cautilus eval migration은 [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md) proof로 landing됐고, 다음 proof 설계는 README proof ledger다.
+- clean temp clone first-move dogfood가 2026-04-26에 실행됐다. Cautilus runner와 direct `claude -p`/`codex exec`는 `quality`/`init-repo` 라우팅을 대체로 기대대로 잡았고, direct `codex exec quality`가 `./charness --version` state-cache write 실패를 찾아 `write_version_state()` non-fatal cache write fix로 닫았다. Cautilus eval migration은 [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md) proof로 landing됐고, README proof ledger의 current owner는 [docs/readme-proof.md](./readme-proof.md)와 [specs/readme-proof.spec.md](../specs/readme-proof.spec.md)다.
 
 ## Next Session
 
-1. README claim별 proof ledger를 만든다. 후보 위치는 docs 아래 readme-proof 문서이며, deterministic/Cautilus/HITL/deferred operator proof owner를 분리한다.
+1. README proof ledger를 `../cautilus/bin/cautilus claim discover` output과 연결한다. Discovery output은 `cautilus.claim_proof_plan.v1` 계획이지 verdict가 아니므로, stable acceptance criteria와 direct evidence ref를 별도로 확정한다.
 2. `git status --short`를 먼저 본다.
 3. read-only blocker는 no-write routing eval + workspace-write workflow proof로 분리한다. routing eval에서 `find-skills` artifact write를 요구하지 말고, 실제 artifact/state write는 별도 workspace-write dogfood로 증명한다.
-4. README proof ledger에서 current `cautilus eval test` proof와 deterministic/HITL/deferred proof owner를 연결한다.
+4. README-specific Cautilus fixtures를 추가해 Quick Start `init-repo`, normal prompt routing, quality route claims를 current `cautilus eval test` proof와 연결한다.
 5. README/help text를 다시 건드리면 먼저 `python3 scripts/render_cli_reference.py --repo-root . --output docs/cli-reference.md`로 command reference를 재생성하고, export surface가 걸리면 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`를 validator보다 먼저 끝낸다.
 6. public skill, handoff, validator, 또는 other prompt surface를 건드리면 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)와 [docs/public-skill-dogfood.json](./public-skill-dogfood.json)을 읽고 `impl`로 이어간다.
 
@@ -45,7 +45,7 @@
 - 이 [docs/handoff.md](./handoff.md)와 [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)의 freshness validator를 현재 stale-claim check 너머 어디까지 확장할지는 아직 열려 있다.
 - `cautilus` planner가 아직 `goal`을 사실상 `preserve`로만 둔다. named-anchor/reasoning-frame change를 언제 `improve` + compare path로 올릴지는 dogfood를 더 봐야 한다.
 - README, CLI reference, operator docs 사이 overlap을 얼마나 더 줄일지는 아직 열려 있다. 지금은 top-level story vs generated command reference 분리까지 닫았고, consumer-repo dogfood에서 실제 탐색 마찰을 본 뒤 더 줄일지 결정한다.
-- README 약속 중 어느 항목을 Cautilus로 증명하고 어느 항목을 deterministic/HITL/deferred operator proof로 둘지는 migration 후 README proof ledger에서 닫는다.
+- Cautilus claim discovery output을 checked artifact로 둘지, 아니면 Specdown report build 때 생성되는 transient proof-plan input으로 둘지는 아직 열려 있다.
 - release artifact가 GitHub release creation/public verification state를 얼마나 자세히 닫아야 하는지는 helper contract 차원에서 한 번 더 볼 가치가 있다.
 - `Discuss`는 unresolved decision만 남기고, metrics/history/closed proof는 owning artifact로 계속 밀어내는 방향을 유지한다.
 
