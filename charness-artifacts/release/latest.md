@@ -1,37 +1,39 @@
 # Release Surface Check
-Date: 2026-04-28
+Date: 2026-04-30
 
 ## Scope
 
-Advanced `charness` package surfaces to version `0.5.15` for a branch push.
-This is not a tagged public release.
+Advanced `charness` toward release `0.5.16` through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.5.14`
-- target version: `0.5.15`
+- previous version: `0.5.15`
+- target version: `0.5.16`
 - git branch: `main`
 - git remote: `origin`
 
 ## Verification
 
-- `current_release.py` reported no version drift across packaging and generated
-  install surfaces.
-- `validate_packaging.py` passed.
-- `validate_packaging_committed.py` passed.
-- Full `./scripts/run-quality.sh` was intentionally not used for this slice
-  because Cautilus proof enforcement is being ignored during the current
-  Cautilus transition.
+- `./scripts/run-quality.sh` passed before publish.
+- `current_release.py` reported no version drift across packaging and generated install surfaces.
+- one git push carried both the release branch update and the tag from the release helper.
 
 ## Release State
 
 - local release mutation: complete
-- branch push: handled by this slice (`origin/main`)
-- git tag: not created
-- GitHub release record: not created
+- branch/tag push: complete
+- GitHub release record: not created by this helper run
+- public release surface verification: not checked by this helper
+
+## Public Release Verification
+
+- No configured public/real-host verification trigger matched this slice, but async publication repos should still keep workflow/public checks explicit.
+
+## Real-Host Proof
+
+- No configured release-time real-host proof trigger matched this slice.
 
 ## User Update Steps
 
-- Run `charness update` after the branch push lands.
-- Restart Claude Code or Codex if the host cache still shows the previous
-  version.
+- Run `charness update`.
+- Restart Claude Code or Codex if the host cache still shows the previous version.
