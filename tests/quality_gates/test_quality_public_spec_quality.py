@@ -389,6 +389,41 @@ def test_inventory_public_spec_quality_recognizes_pointer_specs(tmp_path: Path) 
     assert frontmatter_spec["pointer_proof_marker_count"] == 1
 
 
+def test_inventory_public_spec_quality_exempts_wrapped_pytest_pointer_blocks(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "specs").mkdir(parents=True)
+    (repo / "specs" / "wrapped-pointer.spec.md").write_text(
+        "\n".join(
+            [
+                "# Wrapped Pointer",
+                "",
+                "Behavior is covered by deterministic tests.",
+                "Covered by pytest: `tests/test_runtime_device_detection.py::TestDetectDevice`,",
+                "`tests/test_runtime_device_detection.py::TestResolveRequestedDevice`,",
+                "`tests/test_runtime_device.py::TestResolveSessionDevice`,",
+                "`tests/test_runtime_device_listing.py::TestListAvailableDevices`.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    spec = json.loads(result.stdout)["public_specs"][0]
+    assert spec["implementation_path_ref_count"] == 0
+    assert spec["implementation_path_ref_total_count"] == 4
+    assert spec["implementation_path_ref_exempt_count"] == 4
+    assert spec["pointer_proof_reference_count"] == 1
+    assert "implementation_guard_pressure" not in spec["heuristics"]
+    assert "no_executable_proof_blocks" not in spec["heuristics"]
+
+
 def test_inventory_public_spec_quality_rejects_invalid_adapter(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)

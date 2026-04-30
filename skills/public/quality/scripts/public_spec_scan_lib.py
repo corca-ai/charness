@@ -18,6 +18,7 @@ HEADING_RE = re.compile(r"^(?P<marks>#{1,6})\s+(?P<title>.+?)\s*#*\s*$")
 SOURCE_GUARD_ROW_RE = re.compile(r"^\|\s*[^|]+?\s*\|\s*(?:fixed|source_guard)\s*\|", re.IGNORECASE)
 SOURCE_GUARD_TOKEN_RE = re.compile(r"\bsource_guard\b", re.IGNORECASE)
 IMPLEMENTATION_PATH_RE = re.compile(r"`?(?:internal|src|scripts|skills|tests|cmd|app|pkg|lib)/[A-Za-z0-9._/\-]+`?")
+PYTEST_REFERENCE_CONTINUATION_RE = re.compile(r"^\s*`tests/[^`]+`(?:,\s*`tests/[^`]+`)*[,.]?\s*$")
 FUTURE_STATE_RE = re.compile(r"\b(future|planned|roadmap|next session|later|todo|deferred|defer)\b", re.IGNORECASE)
 RUNNER_DELEGATION_RE = re.compile(r"^(pytest|go test|cargo test|npm test|pnpm test|yarn test|bun test|specdown run)\b")
 COMMAND_START_RE = re.compile(r"^[A-Za-z0-9._/\-]+(?:\s+.+)?$")
@@ -86,6 +87,30 @@ def _regex_count(pattern: str, lines: list[str]) -> int:
     return sum(1 for line in lines if compiled.search(line))
 
 
+def _implementation_scan_lines(lines: list[str], spec_ref_re: re.Pattern[str] | None) -> list[str]:
+    if spec_ref_re is None:
+        return lines
+    excluded: set[int] = set()
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        if not spec_ref_re.search(line):
+            index += 1
+            continue
+        excluded.add(index)
+        continuation = index + 1
+        while continuation < len(lines):
+            candidate = lines[continuation]
+            if not candidate.strip():
+                break
+            if not PYTEST_REFERENCE_CONTINUATION_RE.match(candidate):
+                break
+            excluded.add(continuation)
+            continuation += 1
+        index = continuation
+    return [line for line_index, line in enumerate(lines) if line_index not in excluded]
+
+
 def _pointer_proof_info(text: str, body_lines: list[str], data: dict[str, Any]) -> dict[str, Any]:
     spec_format = option(data, "spec_pytest_reference_format", DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT)
     pytest_count = _regex_count(str(spec_format or ""), body_lines)
@@ -135,7 +160,7 @@ def _scan_prose(prose_records: list[dict[str, Any]], body_records: list[dict[str
         spec_ref_re = re.compile(str(pointer["spec_pytest_reference_format"] or ""))
     except re.error:
         spec_ref_re = None
-    impl_lines = [line for line in scan_lines if spec_ref_re is None or not spec_ref_re.search(line)]
+    impl_lines = _implementation_scan_lines(scan_lines, spec_ref_re)
     impl_refs = [ref for line in impl_lines for ref in IMPLEMENTATION_PATH_RE.findall(line)]
     total_impl = len(IMPLEMENTATION_PATH_RE.findall("\n".join(record["line"] for record in prose_records)))
     density_floor = option(data, "public_spec_implementation_ref_density_floor", DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR)
