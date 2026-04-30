@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "commands": [
+    {
+      "command": "./charness init",
+      "mutating": true,
+      "help_probe": "./charness init --help",
+      "dry_run_waiver": "The install/update implementation owns real machine-local paths; fixture-level preview is covered by bootstrap and packaging tests until init grows a product dry-run.",
+      "side_effect_watch_paths": [
+        "~/.codex/plugins",
+        "~/.claude/plugins",
+        "~/.local/bin/charness"
+      ]
+    },
+    {
+      "command": "./charness update",
+      "mutating": true,
+      "help_probe": "./charness update --help",
+      "dry_run_waiver": "Update refreshes the managed install surface and may pull source; dry-run remains a tracked product gap rather than a hidden assumption.",
+      "side_effect_watch_paths": [
+        "~/.codex/plugins",
+        "~/.claude/plugins",
+        "~/.local/bin/charness"
+      ]
+    },
+    {
+      "command": "./charness reset",
+      "mutating": true,
+      "help_probe": "./charness reset --help",
+      "dry_run_waiver": "Reset is intentionally destructive to host plugin state; closeout must use explicit watched paths or a sandboxed fixture before execution.",
+      "side_effect_watch_paths": [
+        "~/.codex/plugins",
+        "~/.claude/plugins"
+      ]
+    },
+    {
+      "command": "./charness uninstall",
+      "mutating": true,
+      "help_probe": "./charness uninstall --help",
+      "dry_run_waiver": "Uninstall is intentionally destructive and requires explicit delete flags for checkout or CLI removal; execution belongs in a sandboxed fixture.",
+      "side_effect_watch_paths": [
+        "~/.codex/plugins",
+        "~/.claude/plugins",
+        "~/.local/bin/charness"
+      ]
+    },
+    {
+      "command": "./charness tool install",
+      "mutating": true,
+      "positional_args": [
+        "tool_ids"
+      ],
+      "help_probe": "./charness tool install --help",
+      "option_like_positional_probes": [
+        "./charness tool install --not-a-tool"
+      ],
+      "dry_run_probe": "./charness tool install --dry-run --not-a-tool",
+      "side_effect_watch_paths": [
+        "integrations/locks",
+        "skills/support"
+      ]
+    },
+    {
+      "command": "./charness tool update",
+      "mutating": true,
+      "positional_args": [
+        "tool_ids"
+      ],
+      "help_probe": "./charness tool update --help",
+      "option_like_positional_probes": [
+        "./charness tool update --not-a-tool"
+      ],
+      "dry_run_probe": "./charness tool update --dry-run --not-a-tool",
+      "side_effect_watch_paths": [
+        "integrations/locks",
+        "skills/support"
+      ]
+    },
+    {
+      "command": "./charness tool sync-support",
+      "mutating": true,
+      "positional_args": [
+        "tool_ids"
+      ],
+      "help_probe": "./charness tool sync-support --help",
+      "option_like_positional_probes": [
+        "./charness tool sync-support --not-a-tool"
+      ],
+      "dry_run_probe": "./charness tool sync-support --dry-run --not-a-tool",
+      "side_effect_watch_paths": [
+        "skills/support"
+      ]
+    }
+  ]
+}

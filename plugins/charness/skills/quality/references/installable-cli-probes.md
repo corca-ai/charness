@@ -9,6 +9,9 @@ Check these seams explicitly:
 - cheap startup probes such as `version`, `--version`, or lightweight
   `doctor --json`
 - help probes such as `--help`
+- mutating subcommand help probes that prove `cmd mutate --help` is read-only
+- option-looking positional probes such as `--help` or `--not-an-instance`
+  that must be rejected before any mutation
 - machine-readable command discovery when wrappers or agents depend on it
 - binary/runtime health
 - repo/install readiness
@@ -27,6 +30,15 @@ Review docs and runtime together:
   and a repo-owned next-action surface over telling an agent to fetch a remote
   install doc
 - readiness and discoverability should not be reported as generic binary health
+- mutating lifecycle commands should expose a dry-run or plan path, or carry an
+  explicit waiver that explains why preview is not meaningful
+- probe fixtures should watch the actual side-effect seams the CLI owns:
+  filesystem roots, service/unit materialization, subprocess runners, or
+  persisted manifests
+- a missing `cli-side-effect-probes.json` contract is itself a quality finding
+  when mutating operator CLI commands are in scope
+- executable probe fixtures should opt in explicitly with `safe_to_execute` and
+  run through `inventory_cli_side_effect_probes.py --execute-probes`
 - if one installed copy is canonical, docs and machine-readable state should
   point at that target directly instead of hiding it behind a registry story
 - if multiple managed targets exist, docs should say how they are tracked and

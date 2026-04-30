@@ -61,6 +61,8 @@ steps call tools outside the baseline shell surface.
      prep/execute split section
    - public subcommands should expose a no-side-effect `--help` contract unless
      there is a strong documented reason not to
+   - mutating subcommands with required positionals should reject option-looking
+     positional values such as `--help` before any state change
    - if wrappers or agents may probe the surface, separate machine-readable
      command discovery such as `commands --json` or `capabilities --json` from
      human help text
@@ -76,6 +78,8 @@ steps call tools outside the baseline shell surface.
 3. Decide mutation rules.
    - help probes, command discovery, and healthchecks stay read-only
    - `doctor` stays read-only
+   - lifecycle mutations should expose a dry-run or plan path unless a concrete
+     product reason makes preview meaningless
    - install and update commands must say what they changed
    - long-running mutations should show phase progress so operators can tell
      what is happening before the command finishes
@@ -103,6 +107,9 @@ steps call tools outside the baseline shell surface.
 6. Add the right gates.
    - smoke tests for representative commands
    - `--help` smoke for stable public subcommands
+   - side-effect probe fixtures for mutating lifecycle commands, including
+     read-only help probes, option-looking positional rejection, dry-run/plan
+     coverage or waiver, and watched filesystem or command-runner side effects
    - validation for generated machine-readable state
    - JSON-shape tests for command discovery output when wrappers or agents
      depend on it

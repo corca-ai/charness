@@ -29,8 +29,7 @@ When stronger local proof depends on a missing validation tool, reuse the shared
 python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root .
 ```
 
-For evaluator-backed behavior closeout, prompt regression, baseline compare, or operator reading tests, use `quality` before downgrading to HITL/manual review.
-Generic review, closeout, or "run quality" wording does not require an evaluator; start with deterministic gates and escalate only when they cannot answer the behavior question.
+For evaluator-backed behavior closeout, prompt regression, baseline compare, or operator reading tests, use `quality` before downgrading to HITL/manual review. Generic review, closeout, or "run quality" wording does not require an evaluator; start with deterministic gates and escalate only when they cannot answer the behavior question.
 For task-completing quality reviews, run bounded delegated review after initial inventory and before broad recommendations; add slow-gate lenses from `references/standing-gate-verbosity.md` when runtime is in scope. Report `Delegated Review: executed|blocked|not_applicable`; blocked needs a concrete host/tool signal.
 Before host-capability questions, honor `<repo-root>/AGENTS.md` `Subagent Delegation`.
 When reader-facing Markdown needs rendered readability proof instead of source-only review, bootstrap or execute the repo-local markdown preview seam:
@@ -77,6 +76,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - if the repo ships an installable CLI, bootstrap command, or operator-facing command surface, inspect whether help, command discovery, binary health, install/readiness, local discoverability, canonical-target vs multi-target lifecycle ownership, and cleanup ownership are separated honestly
    - when README, docs, or public-spec prose readability is part of the review, run the markdown preview seam or leave an explicit bootstrap payload instead of treating raw Markdown as equivalent proof
    - when CLI ergonomics are in scope, inventory flat help-list and cross-archetype schema smells with `$SKILL_DIR/scripts/inventory_cli_ergonomics.py`
+   - when mutating operator CLI commands are in scope, inventory help/read-only, option-looking positional rejection, dry-run/plan, and side-effect watch contracts with `$SKILL_DIR/scripts/inventory_cli_side_effect_probes.py`; see `references/installable-cli-probes.md`
    - when a standing local gate exists, inventory quiet-default vs verbose-on-demand posture with `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`
    - quiet failure output must still name the failing unit/spec/case and show a short actual/error snippet without a second manual rerun
    - when the repo may keep one shipped implementation beside a historical or alternate runtime path, inventory likely dual-implementation parity smells with `$SKILL_DIR/scripts/inventory_dual_implementation.py`, then decide whether the relationship is parity-enforced, canonical-plus-legacy, or intentional divergence
@@ -183,9 +183,9 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - `references/cli-ergonomics-smells.md`
 - `references/standing-gate-verbosity.md`
 - `references/dual-implementation-parity.md`
-- `references/proposal-flow.md`
 - `references/gate-classification.md`
 - `references/automation-promotion.md`
+- `references/proposal-flow.md`
 - `references/bootstrap-posture.md`
 - `references/operability-signals.md`
 - `references/brittle-source-guards.md`

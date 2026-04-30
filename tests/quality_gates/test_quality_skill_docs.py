@@ -79,6 +79,26 @@ def test_quality_skill_carries_cli_ergonomics_smells_lens() -> None:
     assert "command-archetypes.json" in cli_smells
 
 
+def test_quality_and_create_cli_carry_side_effect_probe_lens() -> None:
+    quality_skill = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    cli_probes = (
+        ROOT / "skills" / "public" / "quality" / "references" / "installable-cli-probes.md"
+    ).read_text(encoding="utf-8")
+    create_cli = (ROOT / "skills" / "public" / "create-cli" / "SKILL.md").read_text(encoding="utf-8")
+    quality_gates = (
+        ROOT / "skills" / "public" / "create-cli" / "references" / "quality-gates.md"
+    ).read_text(encoding="utf-8")
+
+    assert "$SKILL_DIR/scripts/inventory_cli_side_effect_probes.py" in quality_skill
+    assert "option-looking positional rejection" in quality_skill
+    assert "mutating subcommand help probes" in cli_probes
+    assert "side-effect seams" in cli_probes
+    assert "option-looking" in create_cli
+    assert "side-effect probe fixtures" in create_cli
+    assert "dry-run or plan probes" in quality_gates
+    assert "subprocess runners" in quality_gates
+
+
 def test_quality_skill_carries_public_spec_layering_lens() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
     layering = (

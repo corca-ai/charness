@@ -49,3 +49,24 @@ re-deriving it from prose-only docs every time.
 These smells stay advisory unless the repo has explicitly chosen a stricter
 policy. The goal is to surface discoverability and naming leakage early, not to
 force one command taxonomy across all CLIs.
+
+## Mutating Probe Contracts
+
+For operator-facing lifecycle commands, ergonomics and safety meet at the parser
+boundary. A mutating command should not treat `--help` or another option-looking
+token as a valid positional argument and then change state.
+
+Use `inventory_cli_side_effect_probes.py` with a `cli-side-effect-probes.json`
+contract to check whether mutating commands declare:
+
+- a no-side-effect help probe
+- option-looking positional rejection probes when required positionals exist
+- a dry-run or plan probe, or a concrete waiver
+- filesystem, service, or command-runner side-effect watch points for tests
+
+The helper flags a missing contract instead of treating an absent declaration as
+clean. Keep declaration findings advisory until the product owns a low-noise
+executable fixture. Once a fixture can safely sandbox the target state, mark the
+entry `safe_to_execute` and run with `--execute-probes`; the helper snapshots
+watch paths before and after each probe so a `--help` mutation becomes a direct
+finding.

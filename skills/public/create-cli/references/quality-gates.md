@@ -6,6 +6,14 @@ A repo-owned CLI should usually have:
 - version probe tests for `version` and any supported top-level `--version`
   alias
 - `--help` smoke for stable public subcommands
+- no-side-effect `--help` probes for mutating subcommands such as `apply`,
+  `init`, `install`, `update`, `reset`, and `delete`
+- option-looking positional rejection probes such as `--help` or
+  `--not-an-instance` when a mutating command requires a positional argument
+- dry-run or plan probes for lifecycle mutations, or an explicit waiver when
+  preview is not meaningful
+- side-effect watch fixtures for filesystem writes, service/unit materialization,
+  subprocess runners, and persisted manifests
 - JSON-shape tests when agents consume the output
 - JSON-shape tests for command discovery output when wrappers or agents probe
   the command registry
@@ -30,6 +38,10 @@ When the CLI owns lifecycle state, test both:
 Quality review should ask:
 
 - do stable public subcommands expose a no-side-effect `--help` contract
+- do mutating commands reject option-looking positional values before touching
+  local or host-visible state
+- do lifecycle mutations expose dry-run/plan behavior, or is the waiver
+  concrete enough to review
 - does the CLI keep a stable answer for `version`, `--version`, and `-v`
   instead of letting those drift by parser accident
 - is machine-readable command discovery distinct from help text when agents or

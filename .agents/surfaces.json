@@ -205,6 +205,23 @@
       ]
     },
     {
+      "surface_id": "cli-side-effect-probes",
+      "description": "Repo-owned mutating CLI probe contract for no-side-effect help, option-looking positional rejection, dry-run or waiver, and watched side-effect seams.",
+      "source_paths": [
+        ".agents/cli-side-effect-probes.json",
+        "skills/public/quality/scripts/cli_side_effect_probe_lib.py",
+        "skills/public/quality/scripts/inventory_cli_side_effect_probes.py"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 skills/public/quality/scripts/inventory_cli_side_effect_probes.py --repo-root . --fail-on-findings"
+      ],
+      "notes": [
+        "Use --execute-probes only with entries that declare safe_to_execute inside a sandboxed fixture."
+      ]
+    },
+    {
       "surface_id": "surface-obligations",
       "description": "Repo-owned changed-surface manifest that drives slice closeout obligations.",
       "source_paths": [
