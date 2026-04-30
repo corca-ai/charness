@@ -12,7 +12,7 @@ preflight_commands:
   - python3 scripts/validate_adapters.py --repo-root .
   - python3 scripts/validate_public_skill_validation.py --repo-root .
   - python3 scripts/validate_cautilus_scenarios.py --repo-root .
-eval_test_command: cautilus eval test --repo-root . --adapter-name self-dogfood-eval
+eval_test_command: cautilus eval test --repo-root . --adapter-name self-dogfood-eval --fixture evals/cautilus/whole-repo-routing.fixture.json
 prompt_affecting_patterns:
   - AGENTS.md
   - .agents/*-adapter.yaml

@@ -334,9 +334,11 @@ def test_plan_cautilus_proof_recommends_skill_dogfood_and_scenario_followups() -
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["recommended_commands"] == [
-        "cautilus eval test --repo-root . --adapter-name self-dogfood-eval"
-    ]
+    expected_command = (
+        "cautilus eval test --repo-root . --adapter-name self-dogfood-eval "
+        "--fixture evals/cautilus/whole-repo-routing.fixture.json"
+    )
+    assert payload["recommended_commands"] == [expected_command]
     assert payload["changed_public_skills"] == ["create-skill"]
     recommendation = payload["skill_validation_recommendations"][0]
     assert recommendation["skill_id"] == "create-skill"

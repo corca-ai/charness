@@ -67,10 +67,10 @@ does not define a generic batch intake schema or runtime helper.
 
 Fresh-Eye Satisfaction: parent-delegated.
 
-- Act Before Ship: prompt-affecting surfaces normally require refreshing
-  `charness-artifacts/cautilus/latest.md`. Maintainer direction for this slice
-  explicitly waives Cautilus execution because Cautilus is in broad redesign, so
-  closeout must report the proof freshness gate as intentionally not satisfied.
+- Act Before Ship: prompt-affecting surfaces require refreshing
+  `charness-artifacts/cautilus/latest.md`. The maintained instruction-surface
+  proof passed after the Cautilus eval command was run with the checked-in
+  fixture.
 - Bundle Anyway: the initial test overfit Markdown wrapping around
   `source/principal binding drift`; fixed by normalizing whitespace and adding
   direct scope assertions.
@@ -84,5 +84,4 @@ Fresh-Eye Satisfaction: parent-delegated.
 ## First Implementation Slice
 
 Add one reference and small public-core anchors, then cover them with focused
-tests. Cautilus proof is intentionally skipped for this slice per maintainer
-direction while Cautilus is undergoing a broad redesign.
+tests and the maintained Cautilus instruction-surface proof.
