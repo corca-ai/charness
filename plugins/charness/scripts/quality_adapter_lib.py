@@ -10,6 +10,9 @@ from scripts.quality_bootstrap_lib import ADAPTER_CANDIDATES
 from scripts.quality_policy_defaults import (
     DEFAULT_COVERAGE_FLOOR_POLICY,
     DEFAULT_PROMPT_ASSET_POLICY,
+    DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR,
+    DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS,
+    DEFAULT_PUBLIC_SPEC_SECTION_EXEMPTIONS,
     DEFAULT_SKILL_ERGONOMICS_GATE_RULES,
     DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
     validate_coverage_floor_policy,
@@ -40,6 +43,8 @@ LIST_FIELDS = (
     "cli_skill_surface_skill_paths",
     "cli_skill_surface_change_globs",
     "canonical_markdown_surfaces",
+    "public_spec_section_exemptions",
+    "public_spec_pointer_proof_markers",
     "concept_paths",
     "preflight_commands",
     "gate_commands",
@@ -120,6 +125,9 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "coverage_floor_policy": dict(DEFAULT_COVERAGE_FLOOR_POLICY),
         "specdown_smoke_patterns": [],
         "spec_pytest_reference_format": DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
+        "public_spec_section_exemptions": list(DEFAULT_PUBLIC_SPEC_SECTION_EXEMPTIONS),
+        "public_spec_implementation_ref_density_floor": DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR,
+        "public_spec_pointer_proof_markers": list(DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS),
         "prompt_asset_roots": [],
         "adapter_review_sources": [],
         "acknowledged_recommendations": [],
@@ -182,6 +190,14 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
     )
     if spec_pytest_reference_format is not None:
         validated["spec_pytest_reference_format"] = spec_pytest_reference_format
+
+    public_spec_implementation_ref_density_floor = _float_value(
+        data.get("public_spec_implementation_ref_density_floor"),
+        "public_spec_implementation_ref_density_floor",
+        errors,
+    )
+    if public_spec_implementation_ref_density_floor is not None:
+        validated["public_spec_implementation_ref_density_floor"] = public_spec_implementation_ref_density_floor
 
     prompt_asset_policy = validate_prompt_asset_policy(data.get("prompt_asset_policy"), errors)
     if prompt_asset_policy is not None:

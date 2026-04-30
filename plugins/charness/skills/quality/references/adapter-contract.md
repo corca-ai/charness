@@ -37,6 +37,9 @@ Quality-specific fields:
 - `coverage_floor_policy`
 - `specdown_smoke_patterns`
 - `spec_pytest_reference_format`
+- `public_spec_section_exemptions`
+- `public_spec_implementation_ref_density_floor`
+- `public_spec_pointer_proof_markers`
 - `recommendation_defaults_version`
 - `adapter_review_sources`
 - `acknowledged_recommendations`
@@ -77,6 +80,22 @@ Recommended `coverage_floor_policy` fields:
 
 `spec_pytest_reference_format` should hold the repo's canonical prose-note
 format when specs use `Covered by pytest:` style references.
+
+`public_spec_section_exemptions` lists Markdown section headings whose body is
+allowed to name frozen contract paths or deferred-scope wording without
+triggering public-spec implementation or future-state pressure. Defaults cover
+common contract sections such as `Fixed Decisions`, `HTTP API contract`,
+`Server backend stack`, `Deferred Decisions`, and `Non-Goals`.
+
+`public_spec_implementation_ref_density_floor` controls when implementation
+path references dominate prose enough to trip `implementation_guard_pressure`.
+The default `0.02` means two incidental path references in a long public spec
+do not stay binary-stuck after an honest cleanup.
+
+`public_spec_pointer_proof_markers` lists front-matter lines that mark a short
+pointer spec as intentionally backed by lower-level proof. A matching
+`spec_pytest_reference_format` prose line also counts as pointer proof and
+prevents `no_executable_proof_blocks`.
 
 `recommendation_defaults_version` records the review-queue default set used by
 the adapter. Existing `version: 1` adapters may omit it; the resolver supplies

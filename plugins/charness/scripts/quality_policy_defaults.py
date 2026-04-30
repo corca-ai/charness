@@ -20,6 +20,20 @@ DEFAULT_COVERAGE_FLOOR_POLICY = {
     "ci_workflow_glob": ".github/workflows/*.yml",
 }
 DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT = r"Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*"
+DEFAULT_PUBLIC_SPEC_SECTION_EXEMPTIONS = [
+    "Fixed Decisions",
+    "HTTP API contract",
+    "Server backend stack",
+    "Deferred Decisions",
+    "Non-Goals",
+]
+DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR = 0.02
+DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS = [
+    "proof: pointer",
+    "proof: pointer-spec",
+    "executable_proof: pointer",
+    "public_spec_proof: pointer",
+]
 DEFAULT_PROMPT_ASSET_POLICY = {
     "source_globs": [],
     "min_multiline_chars": 400,

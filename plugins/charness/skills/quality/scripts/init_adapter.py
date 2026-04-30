@@ -31,6 +31,11 @@ base_adapter_items = _scripts_adapter_init_lib_module.base_adapter_items
 run_init_adapter = _scripts_adapter_init_lib_module.run_init_adapter
 _scripts_quality_policy_defaults_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_policy_defaults")
 DEFAULT_COVERAGE_FLOOR_POLICY = _scripts_quality_policy_defaults_module.DEFAULT_COVERAGE_FLOOR_POLICY
+DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR = (
+    _scripts_quality_policy_defaults_module.DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR
+)
+DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS = _scripts_quality_policy_defaults_module.DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS
+DEFAULT_PUBLIC_SPEC_SECTION_EXEMPTIONS = _scripts_quality_policy_defaults_module.DEFAULT_PUBLIC_SPEC_SECTION_EXEMPTIONS
 DEFAULT_PROMPT_ASSET_POLICY = _scripts_quality_policy_defaults_module.DEFAULT_PROMPT_ASSET_POLICY
 DEFAULT_SKILL_ERGONOMICS_GATE_RULES = _scripts_quality_policy_defaults_module.DEFAULT_SKILL_ERGONOMICS_GATE_RULES
 DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT = _scripts_quality_policy_defaults_module.DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT
@@ -49,6 +54,9 @@ def build_items(repo_name: str, args: argparse.Namespace) -> list[tuple[str, obj
         ("coverage_fragile_margin_pp", 1.0),
         ("coverage_floor_policy", DEFAULT_COVERAGE_FLOOR_POLICY),
         ("specdown_smoke_patterns", specdown_smoke_patterns),
+        ("public_spec_section_exemptions", DEFAULT_PUBLIC_SPEC_SECTION_EXEMPTIONS),
+        ("public_spec_implementation_ref_density_floor", DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR),
+        ("public_spec_pointer_proof_markers", DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS),
         ("prompt_asset_roots", []),
         ("canonical_markdown_surfaces", ["AGENTS.md", "CLAUDE.md"]),
         ("prompt_asset_policy", DEFAULT_PROMPT_ASSET_POLICY),

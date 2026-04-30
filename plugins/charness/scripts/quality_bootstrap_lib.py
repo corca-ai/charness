@@ -17,6 +17,9 @@ from scripts.quality_policy_defaults import (
     DEFAULT_COVERAGE_FLOOR_POLICY,
     DEFAULT_COVERAGE_FRAGILE_MARGIN_PP,
     DEFAULT_PROMPT_ASSET_POLICY,
+    DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR,
+    DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS,
+    DEFAULT_PUBLIC_SPEC_SECTION_EXEMPTIONS,
     DEFAULT_SKILL_ERGONOMICS_GATE_RULES,
     DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
     default_specdown_smoke_patterns,
@@ -30,7 +33,6 @@ ADAPTER_CANDIDATES = (Path(".agents/quality-adapter.yaml"), Path(".codex/quality
 
 class BootstrapValidationError(Exception):
     pass
-
 def _merge_unique(existing: list[str], inferred: list[str]) -> list[str]:
     merged = list(existing)
     for item in inferred:
@@ -126,17 +128,7 @@ def _load_explicit_skill_rules(raw: dict[str, Any], adapter_path: Path) -> list[
 
 
 def _apply_existing_scalar_fields(data: dict[str, Any], raw: dict[str, Any]) -> None:
-    for field in (
-        "version",
-        "repo",
-        "language",
-        "output_dir",
-        "preset_id",
-        "preset_version",
-        "customized_from",
-        "recommendation_defaults_version",
-        "runtime_profile_default",
-    ):
+    for field in "version repo language output_dir preset_id preset_version customized_from recommendation_defaults_version runtime_profile_default".split():
         value = raw.get(field)
         if value is not None:
             data[field] = value
@@ -146,6 +138,9 @@ def _apply_existing_scalar_fields(data: dict[str, Any], raw: dict[str, Any]) -> 
     spec_pytest_reference_format = raw.get("spec_pytest_reference_format")
     if isinstance(spec_pytest_reference_format, str):
         data["spec_pytest_reference_format"] = spec_pytest_reference_format
+    public_spec_implementation_ref_density_floor = raw.get("public_spec_implementation_ref_density_floor")
+    if isinstance(public_spec_implementation_ref_density_floor, (int, float)):
+        data["public_spec_implementation_ref_density_floor"] = float(public_spec_implementation_ref_density_floor)
 
 
 def _apply_existing_policy_fields(data: dict[str, Any], raw: dict[str, Any], validated_skill_rules: list[str] | None) -> None:
@@ -192,23 +187,12 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
     _apply_existing_scalar_fields(data, raw)
     _apply_existing_policy_fields(data, raw, validated_skill_rules)
     for field in (
-        "preset_lineage",
-        "prompt_asset_roots",
-        "adapter_review_sources",
-        "acknowledged_recommendations",
-        "gate_design_review_globs",
-        "product_surfaces",
-        "cli_skill_surface_probe_commands",
-        "cli_skill_surface_command_docs",
-        "cli_skill_surface_skill_paths",
-        "cli_skill_surface_change_globs",
-        "canonical_markdown_surfaces",
-        "concept_paths",
-        "preflight_commands",
-        "gate_commands",
-        "review_commands",
-        "security_commands",
-    ):
+        "preset_lineage prompt_asset_roots adapter_review_sources acknowledged_recommendations "
+        "gate_design_review_globs product_surfaces cli_skill_surface_probe_commands cli_skill_surface_command_docs "
+        "cli_skill_surface_skill_paths cli_skill_surface_change_globs canonical_markdown_surfaces "
+        "public_spec_section_exemptions public_spec_pointer_proof_markers concept_paths preflight_commands "
+        "gate_commands review_commands security_commands"
+    ).split():
         value = raw.get(field)
         if isinstance(value, list) and all(isinstance(item, str) for item in value):
             data[field] = list(value)
@@ -274,6 +258,20 @@ def _add_adapter_policy_fields(
         existing.get("recommendation_defaults_version") if preserve_review_defaults else "issue-64"
     )
     field_statuses["recommendation_defaults_version"] = "preserved" if preserve_review_defaults else "defaulted"
+
+    for field, default in (
+        ("public_spec_section_exemptions", DEFAULT_PUBLIC_SPEC_SECTION_EXEMPTIONS),
+        ("public_spec_pointer_proof_markers", DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS),
+    ):
+        final[field] = list(existing.get(field, default)) if field in explicit_fields else list(default)
+        field_statuses[field] = "preserved" if field in explicit_fields else "defaulted"
+
+    preserve_density_floor = "public_spec_implementation_ref_density_floor" in explicit_fields
+    default_density_floor = DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR
+    final["public_spec_implementation_ref_density_floor"] = (
+        existing.get("public_spec_implementation_ref_density_floor", default_density_floor) if preserve_density_floor else default_density_floor
+    )
+    field_statuses["public_spec_implementation_ref_density_floor"] = "preserved" if preserve_density_floor else "defaulted"
 
 
 def _add_prompt_and_runtime_fields(
@@ -402,6 +400,9 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
         ("coverage_floor_policy", data["coverage_floor_policy"]),
         ("specdown_smoke_patterns", data["specdown_smoke_patterns"]),
         ("recommendation_defaults_version", data["recommendation_defaults_version"]),
+        ("public_spec_section_exemptions", data["public_spec_section_exemptions"]),
+        ("public_spec_implementation_ref_density_floor", data["public_spec_implementation_ref_density_floor"]),
+        ("public_spec_pointer_proof_markers", data["public_spec_pointer_proof_markers"]),
         ("prompt_asset_roots", data["prompt_asset_roots"]),
         ("adapter_review_sources", data["adapter_review_sources"]),
         ("acknowledged_recommendations", data["acknowledged_recommendations"]),
@@ -428,6 +429,7 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
         "prompt_asset_roots adapter_review_sources acknowledged_recommendations gate_design_review_globs "
         "product_surfaces cli_skill_surface_probe_commands cli_skill_surface_command_docs "
         "cli_skill_surface_skill_paths cli_skill_surface_change_globs canonical_markdown_surfaces "
+        "public_spec_section_exemptions public_spec_pointer_proof_markers "
         "skill_ergonomics_gate_rules runtime_budgets runtime_budget_profiles startup_probes concept_paths preflight_commands "
         "gate_commands review_commands security_commands".split()
     )

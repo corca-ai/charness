@@ -23,6 +23,18 @@ specdown_smoke_patterns:
   - "\\b(?:uv\\s+run\\s+)?python\\s+-m\\s+pytest\\b"
   - "\\bpytest\\b.*\\s+-k\\s+"
 spec_pytest_reference_format: "Covered by pytest:\\s+`tests/[^`]+`(?:,\\s*`tests/[^`]+`)*"
+public_spec_section_exemptions:
+  - Fixed Decisions
+  - HTTP API contract
+  - Server backend stack
+  - Deferred Decisions
+  - Non-Goals
+public_spec_implementation_ref_density_floor: 0.02
+public_spec_pointer_proof_markers:
+  - "proof: pointer"
+  - "proof: pointer-spec"
+  - "executable_proof: pointer"
+  - "public_spec_proof: pointer"
 recommendation_defaults_version: issue-64
 prompt_asset_roots: []
 adapter_review_sources:

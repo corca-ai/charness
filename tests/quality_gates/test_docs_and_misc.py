@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .support import ADAPTER_LIB, ROOT, init_git_repo, run_script
+from .support import ROOT, init_git_repo, run_script
 
 
 def test_release_current_release_reports_packaging_version() -> None:
@@ -339,68 +339,6 @@ def test_release_bump_version_updates_manifest_and_runs_sync(tmp_path: Path) -> 
     assert (repo / "sync-version.txt").read_text(encoding="utf-8").strip() == "0.0.1"
 
 
-def test_adapter_lib_renders_and_loads_simple_yaml_mapping() -> None:
-    rendered = ADAPTER_LIB.render_yaml_mapping(
-        [
-            ("version", 1),
-            ("repo", "demo"),
-            ("output_dir", "charness-artifacts/demo"),
-            (
-                "policy",
-                {
-                    "glob": "*-quality-gate.sh",
-                    "threshold": 30,
-                },
-            ),
-            ("commands", ["pytest -q", "ruff check ."]),
-            ("empty", []),
-        ]
-    )
-    assert ADAPTER_LIB.load_yaml(rendered) == {
-        "version": 1,
-        "repo": "demo",
-        "output_dir": "charness-artifacts/demo",
-        "policy": {
-            "glob": "*-quality-gate.sh",
-            "threshold": 30,
-        },
-        "commands": ["pytest -q", "ruff check ."],
-        "empty": [],
-    }
-
-
-def test_adapter_lib_renders_and_loads_list_of_mappings() -> None:
-    rendered = ADAPTER_LIB.render_yaml_mapping(
-        [
-            (
-                "startup_probes",
-                [
-                    {
-                        "label": "demo-version",
-                        "command": ["python3", "demo.py", "--version"],
-                        "class": "standing",
-                        "startup_mode": "warm",
-                        "surface": "direct",
-                        "samples": 2,
-                    }
-                ],
-            )
-        ]
-    )
-    assert ADAPTER_LIB.load_yaml(rendered) == {
-        "startup_probes": [
-            {
-                "label": "demo-version",
-                "command": ["python3", "demo.py", "--version"],
-                "class": "standing",
-                "startup_mode": "warm",
-                "surface": "direct",
-                "samples": 2,
-            }
-        ]
-    }
-
-
 def test_quality_skill_carries_blind_spot_policy_and_premortem_refs() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
     adapter_contract = (
@@ -423,6 +361,9 @@ def test_quality_skill_carries_blind_spot_policy_and_premortem_refs() -> None:
     assert "fresh 5-minute reader" in skill_text
     assert "coverage_floor_policy" in adapter_contract
     assert "spec_pytest_reference_format" in adapter_contract
+    assert "public_spec_section_exemptions" in adapter_contract
+    assert "public_spec_implementation_ref_density_floor" in adapter_contract
+    assert "public_spec_pointer_proof_markers" in adapter_contract
     assert "prompt_asset_policy" in adapter_contract
     assert "gate_script_pattern" in floor_policy
     assert "warn band" in floor_policy

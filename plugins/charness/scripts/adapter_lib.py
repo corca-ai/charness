@@ -31,6 +31,10 @@ def _coerce_scalar(value: str) -> Any:
     return value
 
 
+def _is_quoted_scalar(value: str) -> bool:
+    return (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'"))
+
+
 def _next_meaningful_line(lines: list[str], start: int) -> tuple[int, str] | None:
     for index in range(start, len(lines)):
         stripped = lines[index].strip()
@@ -57,6 +61,10 @@ def _parse_list_items(lines: list[str], start: int, indent: int) -> tuple[list[A
             item_body = stripped[2:].strip()
             if not item_body:
                 items.append("")
+                index += 1
+                continue
+            if _is_quoted_scalar(item_body):
+                items.append(_coerce_scalar(item_body))
                 index += 1
                 continue
             key_candidate = item_body.split(":", 1)[0].strip()
