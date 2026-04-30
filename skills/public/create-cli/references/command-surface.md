@@ -67,6 +67,13 @@ product-owned machine-readable artifact, the other executes it narrowly. The
 split may be two subcommands or two binaries; what matters is that the
 artifact is the contract between them.
 
+For multi-source external-write commands, the prep artifact should preserve
+source-bound records instead of asking the model to author the final commit
+payload. Keep immutable source ids, principal provenance, and source digests in
+the artifact; let execute own validation, idempotency evidence, destination
+ledger lookup, and `report.json`. See
+`../../create-skill/references/source-bound-records.md`.
+
 Anti-patterns for the split:
 
 - **No-op intermediate artifact.** A single idempotent ten-second call with

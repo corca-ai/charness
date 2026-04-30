@@ -12,9 +12,8 @@ user asks for implementation directly and no separate spec step happened. In
 that case, `impl` should bootstrap the smallest honest contract for the current
 slice instead of pretending the task is already well-defined.
 Keep sequence discipline, strong verification, and honest premortem use in the
-loop. See `references/sequence-discipline.md`,
-`references/verification-ladder.md`, `references/design-lenses.md`, and
-`references/review-gate.md`.
+loop. See `references/sequence-discipline.md`, `references/verification-ladder.md`,
+`references/design-lenses.md`, and `references/review-gate.md`.
 
 ## Continuation Default
 
@@ -92,6 +91,7 @@ Adapter policy:
    - prefer a slice that proves one user-visible behavior or one structural seam
    - prefer the slice that opens the next good move most cleanly
    - when a probe exists, design the slice so it answers the probe cleanly
+   - apply `../create-skill/references/source-bound-records.md` for multi-source external writes
 4. Verify with the strongest honest path.
    - survey repo and adapter capabilities before coding and again before stopping
    - prefer executed proof over code inspection when an executable path exists

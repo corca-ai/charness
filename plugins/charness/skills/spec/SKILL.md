@@ -77,6 +77,7 @@ Before locking the contract, run one bounded premortem. Ask what a fresh five-mi
    - constraints
    - success criteria
    - acceptance checks
+   - apply `../create-skill/references/source-bound-records.md` for multi-source external writes
    - open risks, probe questions, or deferred decisions
    - when the risk interrupt planner reports a forced debug interrupt, consume
      it explicitly in `Premortem` with

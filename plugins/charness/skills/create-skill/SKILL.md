@@ -51,6 +51,8 @@ skill before writing from scratch.
    - any ambient philosophy that should become a behavior rule across adjacent public skills, not only a reference note
    - for each named anchor, the exact move it should retrieve and any factual claim that needs source verification before you compress it
    - simulate cold start, warm start, error recovery, and 5-7 agent failure cases before changing files
+   - for multi-source external-write skills, simulate source/principal binding
+     drift and apply `references/source-bound-records.md`
 3. Freeze the current consumer contract before editing an existing public skill.
    - read the current reviewed dogfood case or scaffold it first with `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --json`
    - decide whether the slice claims `preserve` or `improve` before changing the core trigger or behavior contract
@@ -189,4 +191,5 @@ binary and let `capability.json` stay the readiness source of truth.
 - `references/runtime-capabilities.md`
 - `references/deployable-skill-packaging.md`
 - `references/binary-preflight.md`
+- `references/source-bound-records.md`
 - `../create-cli/SKILL.md`
