@@ -86,12 +86,14 @@ def render_template(*, title: str, date_text: str) -> str:
 
 def validator_command(repo_root: Path) -> str:
     for ancestor in Path(__file__).resolve().parents:
-        candidate = ancestor / "scripts" / "validate_debug_artifact.py"
-        if candidate.is_file():
-            return f"python3 {candidate} --repo-root ."
-    repo_local = repo_root / "scripts" / "validate_debug_artifact.py"
-    if repo_local.is_file():
-        return "python3 scripts/validate_debug_artifact.py --repo-root ."
+        for script_name in ("validate_debug_artifact.py", "validate-debug-artifact.py"):
+            candidate = ancestor / "scripts" / script_name
+            if candidate.is_file():
+                return f"python3 {candidate} --repo-root ."
+    for script_name in ("validate_debug_artifact.py", "validate-debug-artifact.py"):
+        repo_local = repo_root / "scripts" / script_name
+        if repo_local.is_file():
+            return f"python3 scripts/{script_name} --repo-root ."
     raise FileNotFoundError("validate_debug_artifact.py not found in installed Charness layout")
 
 
@@ -102,6 +104,7 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
     resolved_title = default_title(title)
     return {
         "artifact_path": str(output_dir / "latest.md"),
+        "artifact_role": "current_pointer",
         "date": date_text,
         "title": resolved_title,
         "template": render_template(title=resolved_title, date_text=date_text),

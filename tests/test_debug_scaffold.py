@@ -35,6 +35,7 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["artifact_path"] == "charness-artifacts/debug/latest.md"
+    assert payload["artifact_role"] == "current_pointer"
     assert payload["validator_command"].endswith("scripts/validate_debug_artifact.py --repo-root .")
     assert "# Debug Review" in payload["template"]
     assert "## Reproduction" in payload["template"]
@@ -50,6 +51,48 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     validation = subprocess.run(
         shlex.split(payload["validator_command"]),
         cwd=repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert validation.returncode == 0, validation.stderr
+
+
+def test_exported_debug_scaffold_validator_command_runs_from_consumer_repo(tmp_path: Path) -> None:
+    export_root = tmp_path / "export"
+    export_result = run_script(
+        "scripts/export_plugin.py",
+        "--repo-root",
+        str(ROOT),
+        "--host",
+        "codex",
+        "--output-root",
+        str(export_root),
+    )
+    assert export_result.returncode == 0, export_result.stderr
+    plugin_root = export_root / "plugins" / "charness"
+    scaffold = plugin_root / "skills" / "debug" / "scripts" / "scaffold_debug_artifact.py"
+
+    consumer = tmp_path / "consumer"
+    (consumer / ".agents").mkdir(parents=True)
+    (consumer / ".agents" / "debug-adapter.yaml").write_text(
+        "\n".join(["version: 1", "repo: consumer", "language: en", "output_dir: charness-artifacts/debug", ""]),
+        encoding="utf-8",
+    )
+
+    result = run_script(str(scaffold), "--repo-root", str(consumer), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["artifact_role"] == "current_pointer"
+    assert str(plugin_root / "scripts") in payload["validator_command"]
+    assert "validate_debug_artifact.py" in payload["validator_command"]
+
+    artifact_path = consumer / payload["artifact_path"]
+    artifact_path.parent.mkdir(parents=True)
+    artifact_path.write_text(payload["template"], encoding="utf-8")
+    validation = subprocess.run(
+        shlex.split(payload["validator_command"]),
+        cwd=consumer,
         check=False,
         capture_output=True,
         text=True,

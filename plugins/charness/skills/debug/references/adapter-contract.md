@@ -54,6 +54,21 @@ Use the returned `validator_command` instead of assuming the consumer repo has a
 local `scripts/validate_debug_artifact.py`. Installed Charness layouts keep that
 validator under the plugin or managed checkout, not under every target repo.
 
+## Validator Contract
+
+The scaffold helper, skill body, and validator share one current artifact
+schema for `latest.md`. The current schema includes `Seam Risk` and
+`Interrupt Decision` before `Prevention`.
+
+Historical dated records are durable debug memory, not mutable current state.
+The validator checks their core debug sections and ordering, but it tolerates
+legacy extra sections so older records do not block a new investigation. When
+any artifact fails validation, the validator names the offending artifact path.
+
+Some older materialized skill packs used a hyphenated validator filename. New
+scaffold output should use the emitted `validator_command` as the canonical
+command instead of hardcoding either spelling.
+
 ## Example
 
 ```yaml

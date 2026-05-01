@@ -34,21 +34,24 @@ python3 "$SKILL_DIR/scripts/scaffold_debug_artifact.py" --repo-root . --json
 By default, `debug` writes durable artifacts to `<repo-root>/charness-artifacts/debug/`. Each
 investigation gets its own file: `debug-{date}-{slug}.md`. Repos can override
 the directory with `<repo-root>/.agents/debug-adapter.yaml`.
+The scaffold helper emits the current pointer artifact, usually `latest.md`.
+When the investigation becomes durable history, preserve it as a dated record
+using the same core debug sections.
 
 Treat the scaffold helper as the canonical artifact contract shortcut:
 
 - it prints the default artifact path
+- it labels that path as the current pointer artifact
 - it prints the required heading / section order
 - it points at the standing validator command for the current installed
   Charness layout; consumer repos do not need Charness validator scripts copied
   into their own `scripts/` directory
 
 Before stopping, run the `validator_command` emitted by the scaffold helper.
-In this repo's source checkout that resolves to:
-
-```bash
-python3 "$SKILL_DIR/../../../scripts/validate_debug_artifact.py" --repo-root .
-```
+Do not replace it with a guessed repo-local scripts path unless the emitted
+command already points there. The validator treats `latest.md` as the strict
+current schema and historical debug records as legacy debug memory; when a
+record fails, the error names the artifact path.
 
 Before writing a new artifact, read existing `debug-*.md` files in the output
 directory. If the current incident relates to a prior one, fill in the
@@ -132,8 +135,9 @@ The durable debug artifact should usually include:
   prior debug artifact)
 
 The canonical heading pattern is `# ... Debug ...`, and the canonical section
-order is the validator order above. Prefer the scaffold helper over hand-typing
-the skeleton from memory.
+order is the validator order above for `latest.md`. Historical dated records
+may keep older extra sections, but they still need the core debug memory
+sections. Prefer the scaffold helper over hand-typing the skeleton from memory.
 
 ## Guardrails
 

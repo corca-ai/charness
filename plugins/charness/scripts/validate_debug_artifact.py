@@ -32,6 +32,7 @@ validate_date_line = _scripts_artifact_validator_module.validate_date_line
 validate_exact_h2_sections = _scripts_artifact_validator_module.validate_exact_h2_sections
 validate_max_lines = _scripts_artifact_validator_module.validate_max_lines
 validate_nonempty_sections = _scripts_artifact_validator_module.validate_nonempty_sections
+validate_section_order = _scripts_artifact_validator_module.validate_section_order
 validate_title = _scripts_artifact_validator_module.validate_title
 
 MAX_ARTIFACT_LINES = 140
@@ -178,16 +179,17 @@ def validate_debug_artifact(path: Path) -> None:
     )
     validate_date_line(lines)
     validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="debug artifact")
-    required_sections = REQUIRED_SECTIONS
-    optional_sections = OPTIONAL_SECTIONS + CURRENT_INTERRUPT_SECTIONS
     if path.name == "latest.md":
         required_sections = REQUIRED_SECTIONS[:8] + CURRENT_INTERRUPT_SECTIONS + ("## Prevention",)
-        optional_sections = OPTIONAL_SECTIONS
-    validate_exact_h2_sections(lines, required_sections, optional_sections=optional_sections)
-    validate_nonempty_sections(lines, required_sections)
-    validate_candidate_causes(lines)
-    if path.name == "latest.md":
+        validate_exact_h2_sections(lines, required_sections, optional_sections=OPTIONAL_SECTIONS)
+        validate_nonempty_sections(lines, required_sections)
+        validate_candidate_causes(lines)
         validate_current_interrupt_sections(lines)
+        return
+
+    validate_section_order(lines, REQUIRED_SECTIONS)
+    validate_nonempty_sections(lines, REQUIRED_SECTIONS)
+    validate_candidate_causes(lines)
 
 
 def main() -> int:
@@ -205,9 +207,18 @@ def main() -> int:
     if not artifacts:
         print(f"No debug artifacts found in {output_dir.relative_to(repo_root)}.", file=sys.stderr)
         return 1
+    errors: list[str] = []
     for artifact_path in artifacts:
-        validate_debug_artifact(artifact_path)
-        print(f"Validated debug artifact {artifact_path.relative_to(repo_root)}.")
+        artifact_label = artifact_path.relative_to(repo_root)
+        try:
+            validate_debug_artifact(artifact_path)
+        except ValidationError as exc:
+            errors.append(f"Invalid debug artifact {artifact_label}: {exc}")
+            continue
+        print(f"Validated debug artifact {artifact_label}.")
+    if errors:
+        print("\n".join(errors), file=sys.stderr)
+        return 1
     return 0
 
 

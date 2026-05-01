@@ -136,6 +136,48 @@ def test_validate_debug_artifact_requires_interrupt_sections_for_latest(tmp_path
     result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "missing required section `## Seam Risk`" in result.stderr
+    assert "Invalid debug artifact charness-artifacts/debug/latest.md" in result.stderr
+
+
+def test_validate_debug_artifact_allows_legacy_extra_sections_for_dated_records(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, valid_current_artifact())
+    latest = repo / "charness-artifacts" / "debug" / "latest.md"
+    latest.unlink()
+    legacy = valid_current_artifact().replace(
+        "## Seam Risk\n\n- Interrupt ID: demo-interrupt\n- Risk Class: none\n- Seam: none\n- Disproving Observation: none\n- What Local Reasoning Cannot Prove: none\n- Generalization Pressure: none\n\n## Interrupt Decision\n\n- Premortem Required: no\n- Next Step: impl\n- Handoff Artifact: none\n\n",
+        "## Legacy Notes\n\nlegacy detail\n\n",
+    )
+    (repo / "charness-artifacts" / "debug" / "2026-04-01-legacy.md").write_text(legacy, encoding="utf-8")
+
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    assert "Validated debug artifact charness-artifacts/debug/2026-04-01-legacy.md" in result.stdout
+
+
+def test_validate_debug_artifact_rejects_latest_legacy_extra_sections(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        valid_current_artifact().replace(
+            "## Seam Risk\n\n- Interrupt ID: demo-interrupt\n- Risk Class: none\n- Seam: none\n- Disproving Observation: none\n- What Local Reasoning Cannot Prove: none\n- Generalization Pressure: none\n\n",
+            "## Legacy Notes\n\nlegacy detail\n\n",
+        ),
+    )
+
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "Invalid debug artifact charness-artifacts/debug/latest.md" in result.stderr
+    assert "canonical sections" in result.stderr
+
+
+def test_validate_debug_artifact_reports_failing_historical_artifact_path(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, valid_current_artifact())
+    broken = valid_current_artifact().replace("## Candidate Causes", "## Candidates")
+    (repo / "charness-artifacts" / "debug" / "2026-04-01-broken.md").write_text(broken, encoding="utf-8")
+
+    result = run_script("scripts/validate_debug_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "Invalid debug artifact charness-artifacts/debug/2026-04-01-broken.md" in result.stderr
+    assert "missing required section `## Candidate Causes`" in result.stderr
 
 
 def test_validate_debug_artifact_forced_interrupt_requires_spec_handoff(tmp_path: Path) -> None:

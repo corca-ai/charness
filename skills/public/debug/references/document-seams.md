@@ -23,3 +23,7 @@ ships the contract helper:
 python3 skills/public/debug/scripts/scaffold_debug_artifact.py --repo-root . --json
 # then run the emitted validator_command
 ```
+
+The current pointer, usually `latest.md`, must use the scaffolded schema.
+Dated records can remain legacy-compatible so old incident memory is still
+readable and does not hide which new artifact failed validation.
