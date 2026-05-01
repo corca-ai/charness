@@ -147,8 +147,8 @@ function translateEvaluationInput(input) {
 	if (input?.schemaVersion !== EVALUATION_INPUT_SCHEMA) {
 		return input;
 	}
-	if (input.surface !== "repo" || input.preset !== "whole-repo") {
-		throw new Error("evaluation_input fixture must use surface=repo and preset=whole-repo");
+	if (input.surface !== "dev" || input.preset !== "repo") {
+		throw new Error("evaluation_input fixture must use surface=dev and preset=repo");
 	}
 	if (!Array.isArray(input.cases) || input.cases.length === 0) {
 		throw new Error("cases must be a non-empty array");

@@ -39,9 +39,12 @@ Treat the scaffold helper as the canonical artifact contract shortcut:
 
 - it prints the default artifact path
 - it prints the required heading / section order
-- it points at the standing validator command
+- it points at the standing validator command for the current installed
+  Charness layout; consumer repos do not need Charness validator scripts copied
+  into their own `scripts/` directory
 
-Before stopping, run:
+Before stopping, run the `validator_command` emitted by the scaffold helper.
+In this repo's source checkout that resolves to:
 
 ```bash
 python3 "$SKILL_DIR/../../../scripts/validate_debug_artifact.py" --repo-root .

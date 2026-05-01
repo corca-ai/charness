@@ -20,6 +20,10 @@ this standalone skill.
 When this standalone `premortem` skill runs, it always means a fresh bounded
 subagent review. `bounded` limits scope and time box, not execution mode. There
 is no same-agent or local standalone `premortem` variant.
+Delegated reviewer fast path: if the current assignment says you are a bounded
+angle reviewer, counterweight reviewer, or fresh-eye reviewer spawned by a
+parent, perform that assigned lens directly and return the requested triage.
+Do not run host capability checks or require nested spawn access. Do not report blocked for missing nested subagents unless the parent explicitly asked for recursive delegation.
 Before any host-capability question, honor `<repo-root>/AGENTS.md` `Subagent Delegation`:
 required bounded review is already delegated.
 If the parent agent already delegated a bounded angle or counterweight review
@@ -77,8 +81,9 @@ decision contract. Do not restate the whole project history.
      setup, resolve any availability uncertainty, and cite the concrete signal
      that made the host unable to provide subagents
    - if you are already the bounded fresh-eye subagent for one assigned angle,
-     do not run the capability check again unless the assignment explicitly asks
-     for nested delegation
+     counterweight, or reviewer lens, do the assignment directly; do not run
+     the capability check again unless the assignment explicitly asks for
+     nested delegation
    - if the host cannot provide subagents, stop and report that the canonical
      premortem path is unavailable; fixing the host-side subagent contract is
      the next move instead of inventing a local substitute

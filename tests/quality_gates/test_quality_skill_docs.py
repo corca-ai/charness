@@ -240,3 +240,23 @@ def test_create_cli_and_create_skill_carry_authenticated_release_probe_pattern()
     assert "GitHub-Hosted Release Metadata" in integration_seams
     assert "use authenticated `gh api` first" in integration_seams
     assert "github-forbidden" in integration_seams
+
+
+def test_create_cli_carries_external_capability_contract() -> None:
+    create_cli = (ROOT / "skills" / "public" / "create-cli" / "SKILL.md").read_text(encoding="utf-8")
+    external = (
+        ROOT / "skills" / "public" / "create-cli" / "references" / "external-capability-clis.md"
+    ).read_text(encoding="utf-8")
+    quality_gates = (
+        ROOT / "skills" / "public" / "create-cli" / "references" / "quality-gates.md"
+    ).read_text(encoding="utf-8")
+
+    assert "external capability boundary" in create_cli
+    assert "host-side" in create_cli
+    assert "redaction tests" in create_cli
+    assert "missing_setup" in external
+    assert "needs_credentials" in external
+    assert "allowed_methods" in external
+    assert "allowed_path_prefixes" in external
+    assert "host-only executor boundary" in external
+    assert "raw request bodies" in quality_gates

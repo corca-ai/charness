@@ -49,8 +49,8 @@ def validate_whole_repo_routing_fixture(repo_root: Path) -> dict[str, object]:
         raise ValidationError(
             f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: schemaVersion must be `cautilus.evaluation_input.v1`"
         )
-    if cases.get("surface") != "repo" or cases.get("preset") != "whole-repo":
-        raise ValidationError(f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: must declare `surface: repo` and `preset: whole-repo`")
+    if cases.get("surface") != "dev" or cases.get("preset") != "repo":
+        raise ValidationError(f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: must declare `surface: dev` and `preset: repo`")
     suite_id = cases.get("suiteId")
     if not isinstance(suite_id, str) or not suite_id:
         raise ValidationError(f"{WHOLE_REPO_ROUTING_FIXTURE_PATH}: `suiteId` must be a non-empty string")

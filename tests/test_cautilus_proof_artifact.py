@@ -335,7 +335,7 @@ def test_plan_cautilus_proof_recommends_skill_dogfood_and_scenario_followups() -
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     expected_command = (
-        "cautilus eval test --repo-root . --adapter-name self-dogfood-eval "
+        "cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml "
         "--fixture evals/cautilus/whole-repo-routing.fixture.json"
     )
     assert payload["recommended_commands"] == [expected_command]

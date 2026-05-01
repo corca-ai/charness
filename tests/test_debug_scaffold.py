@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shlex
 import subprocess
 from pathlib import Path
 
@@ -34,7 +35,7 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["artifact_path"] == "charness-artifacts/debug/latest.md"
-    assert payload["validator_command"] == "python3 scripts/validate_debug_artifact.py --repo-root ."
+    assert payload["validator_command"].endswith("scripts/validate_debug_artifact.py --repo-root .")
     assert "# Debug Review" in payload["template"]
     assert "## Reproduction" in payload["template"]
     assert "## Seam Risk" in payload["template"]
@@ -42,3 +43,15 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     assert "## Interrupt Decision" in payload["template"]
     assert "- Next Step: impl" in payload["template"]
     assert "## Verification" in payload["template"]
+
+    artifact_path = repo / payload["artifact_path"]
+    artifact_path.parent.mkdir(parents=True)
+    artifact_path.write_text(payload["template"], encoding="utf-8")
+    validation = subprocess.run(
+        shlex.split(payload["validator_command"]),
+        cwd=repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert validation.returncode == 0, validation.stderr

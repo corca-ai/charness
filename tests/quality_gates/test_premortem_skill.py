@@ -46,6 +46,11 @@ def test_premortem_skill_surfaces_counterweight_and_deliberately_not_doing() -> 
     assert "only observed tool is shell execution" in capability_text
     assert "Do not replace the misunderstanding premortem with a" in handoff_loop
     assert "Do not replace the fresh-eye premortem with a same-agent" in spec_loop
+    assert "Delegated reviewer fast path" in skill_text
+    assert "Do not report blocked for missing nested subagents" in skill_text
+    assert "First branch for delegated reviewers" in capability_text
+    assert "do not run this capability check" in capability_text
+    assert "return the requested findings or four-bin triage" in capability_text
     assert "Act Before Ship" in counterweight_text
     assert "Over-Worry" in counterweight_text
 

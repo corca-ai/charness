@@ -17,6 +17,8 @@ A repo-owned CLI should usually have:
 - JSON-shape tests when agents consume the output
 - JSON-shape tests for command discovery output when wrappers or agents probe
   the command registry
+- redaction tests for external-capability CLIs that exercise stdout, JSON
+  payloads, bridge logs, and debug logs without exposing raw tokens, raw request bodies, or full external identifiers
 - file-mutation tests for install/update/reset commands
 - validation for any persisted lock or manifest schema
 - command-docs drift checks that compare no-side-effect `--help` output with
@@ -46,6 +48,8 @@ Quality review should ask:
   instead of letting those drift by parser accident
 - is machine-readable command discovery distinct from help text when agents or
   wrappers need to probe the surface
+- if a worker CLI touches an external system, are preflight status, host-only
+  executor boundaries, operation scopes, and audit-safe fields explicit
 - is binary health distinct from repo or install readiness
 - if local plugin or skill discoverability matters, does it have its own
   readiness probe

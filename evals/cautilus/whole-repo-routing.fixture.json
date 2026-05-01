@@ -1,7 +1,7 @@
 {
   "schemaVersion": "cautilus.evaluation_input.v1",
-  "surface": "repo",
-  "preset": "whole-repo",
+  "surface": "dev",
+  "preset": "repo",
   "suiteId": "charness-instruction-surface",
   "suiteDisplayName": "Charness Instruction Surface",
   "cases": [

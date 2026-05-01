@@ -50,6 +50,10 @@ To scaffold the canonical artifact body and validator hint from the repo root:
 python3 skills/public/debug/scripts/scaffold_debug_artifact.py --repo-root . --json
 ```
 
+Use the returned `validator_command` instead of assuming the consumer repo has a
+local `scripts/validate_debug_artifact.py`. Installed Charness layouts keep that
+validator under the plugin or managed checkout, not under every target repo.
+
 ## Example
 
 ```yaml

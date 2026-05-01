@@ -66,6 +66,9 @@ steps call tools outside the baseline shell surface.
    - if wrappers or agents may probe the surface, separate machine-readable
      command discovery such as `commands --json` or `capabilities --json` from
      human help text
+   - if the CLI lets agents interact with an external system, define the
+     external capability boundary separately from parser shape; see
+     `references/external-capability-clis.md`
    - default stdout should stay concise for human operators; reserve full
      structured payloads for explicit `--json` or equivalent machine mode
    - reserve `-v` for `verbose`, not `version`; prefer canonical `version`
@@ -92,6 +95,9 @@ steps call tools outside the baseline shell surface.
    - partial manual steps should still leave machine-readable breadcrumbs
    - when upgrade guidance depends on install channel, persist version
      provenance and define when cached latest-version checks may run
+   - for external-capability CLIs, keep credentials and raw requests host-side;
+     worker commands should emit preflight status and audit-safe metadata until
+     an explicit host executor is available
 4. Pick the smallest honest distribution contract.
    - single checked-in entrypoint when possible
    - one canonical bootstrap script if first install is otherwise awkward
@@ -113,6 +119,8 @@ steps call tools outside the baseline shell surface.
    - validation for generated machine-readable state
    - JSON-shape tests for command discovery output when wrappers or agents
      depend on it
+   - redaction tests for external-capability preflight and bridge logs, proving
+     raw tokens, request bodies, and full external identifiers are not printed
    - checks that docs and examples do not conflate help, healthcheck, and
      readiness semantics
    - a command-docs drift gate when install/update/doctor/reset/uninstall
@@ -145,5 +153,6 @@ steps call tools outside the baseline shell surface.
 - `references/version-provenance.md`
 - `references/machine-readable-state.md`
 - `references/code-shape.md`
+- `references/external-capability-clis.md`
 - `references/quality-gates.md`
 - `references/case-studies.md`

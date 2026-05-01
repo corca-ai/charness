@@ -21,6 +21,14 @@ Delegated reviewers should perform the assigned lens directly. They should not
 try to spawn another subagent unless the parent explicitly requested recursive
 delegation.
 
+First branch for delegated reviewers:
+
+- if your prompt says you are an angle reviewer, counterweight reviewer, or
+  bounded fresh-eye reviewer, complete that lens directly
+- do not run this capability check
+- do not report `blocked` because nested subagent tools are unavailable
+- return the requested findings or four-bin triage to the parent
+
 Record the fresh-eye satisfaction context in the review result:
 
 - `parent-delegated`: the parent spawned this reviewer, and the reviewer
@@ -42,7 +50,7 @@ canonical path blocked.
      angle set just to prove availability.
    - If you are already a bounded fresh-eye subagent spawned by a parent, do not
      run this probe again unless your assignment explicitly requires nested
-     delegation.
+     delegation. This includes assigned angle and counterweight reviewers.
    - Treat refusal-to-spawn, a concrete host error, or a missing agent-spawn
      tool as evidence. Prior belief is *not* evidence.
    - Availability means an actual host-exposed subagent/spawn tool or a real
