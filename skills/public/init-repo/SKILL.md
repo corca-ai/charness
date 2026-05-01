@@ -82,6 +82,7 @@ Then load only the references needed for the detected state:
    - if a mature repo uses equivalent local names, prefer
      `<repo-root>/.agents/init-repo-adapter.yaml` `surfaces` overrides over asking the repo
      to rename docs only to satisfy the inspector
+   - if the run is read-only, classify artifact refresh, commit closeout, and bounded reviewers as unproven
 2. Stabilize the host-facing instruction surface first.
    - if both `<repo-root>/AGENTS.md` and `CLAUDE.md` are missing, create `<repo-root>/AGENTS.md` and
      make `CLAUDE.md` a symlink to it
@@ -196,4 +197,3 @@ Then load only the references needed for the detected state:
 - `references/retro-memory-seam.md`
 - `references/github-actions-defaults.md`
 - `references/operator-acceptance-synthesis.md`
-- `<repo-root>/scripts/inspect_repo.py`, `<repo-root>/scripts/render_skill_routing.py`, `<repo-root>/scripts/seed_retro_memory.py`, `<repo-root>/scripts/synthesize_operator_acceptance.py`

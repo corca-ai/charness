@@ -473,3 +473,46 @@ def test_validate_quality_artifact_requires_blocked_delegated_review_signal(tmp_
     result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
     assert "concrete host signal or tool signal" in result.stderr
+
+
+def test_validate_quality_artifact_rejects_missed_delegated_review(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        "\n".join(
+            [
+                "# Quality Review",
+                "Date: 2026-04-20",
+                "## Scope",
+                "- demo",
+                "## Current Gates",
+                "- gate",
+                "## Runtime Signals",
+                "- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`.",
+                "- runtime hot spots: `pytest` 10s",
+                "- coverage gate: none",
+                "- evaluator depth: adapter bootstrap only",
+                "## Healthy",
+                "- healthy",
+                "## Weak",
+                "- weak",
+                "## Missing",
+                "- missing",
+                "## Deferred",
+                "- deferred",
+                "## Advisory",
+                "- none found by inventory: `inventory_adapter_gate_design.py`.",
+                "## Delegated Review",
+                "- status: missed; not executed in this run.",
+                "## Commands Run",
+                "- cmd",
+                "## Recommended Next Gates",
+                "- active AUTO_CANDIDATE: next",
+                "## History",
+                "- [archive](history/one.md)",
+            ]
+        )
+        + "\n",
+    )
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "must not report a missed review" in result.stderr

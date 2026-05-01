@@ -30,10 +30,12 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 
 _scripts_skill_markdown_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.skill_markdown_lib")
+_scripts_quality_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_adapter_lib")
 count_fence_blocks = _scripts_skill_markdown_lib_module.count_fence_blocks
 extract_h2_section_lines = _scripts_skill_markdown_lib_module.extract_h2_section_lines
 strip_fenced_lines = _scripts_skill_markdown_lib_module.strip_fenced_lines
 strip_frontmatter = _scripts_skill_markdown_lib_module.strip_frontmatter
+load_quality_adapter = _scripts_quality_adapter_lib_module.load_quality_adapter
 
 DEFAULT_REVIEW_PROMPTS = [
     "Keep `SKILL.md` core concise; push nuance and payload into references or scripts.",
@@ -61,16 +63,38 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _iter_skill_path_value(repo_root: Path, value: str) -> Iterable[Path]:
+    path = (repo_root / value).resolve()
+    if path.name == "SKILL.md":
+        yield path
+        return
+    direct_skill = path / "SKILL.md"
+    if direct_skill.is_file():
+        yield direct_skill
+        return
+    if path.is_dir():
+        yield from sorted(candidate for candidate in path.glob("*/SKILL.md") if "generated" not in candidate.parts)
+
+
+def _adapter_skill_paths(repo_root: Path) -> list[str]:
+    adapter = load_quality_adapter(repo_root)
+    data = adapter.get("data", {})
+    values = data.get("skill_ergonomics_skill_paths", [])
+    return values if isinstance(values, list) and all(isinstance(item, str) for item in values) else []
+
+
 def iter_skill_paths(repo_root: Path, requested: list[str]) -> Iterable[Path]:
     seen: set[Path] = set()
-    if requested:
-        for value in requested:
-            path = (repo_root / value).resolve()
-            skill_path = path if path.name == "SKILL.md" else path / "SKILL.md"
-            if skill_path not in seen:
+    values = requested or _adapter_skill_paths(repo_root)
+    if values:
+        for value in values:
+            for skill_path in _iter_skill_path_value(repo_root, value):
+                if skill_path in seen:
+                    continue
                 seen.add(skill_path)
                 yield skill_path
-        return
+        if requested:
+            return
 
     for parent in (repo_root / "skills", repo_root / "skills" / "public", repo_root / "skills" / "support"):
         if not parent.is_dir():
@@ -78,10 +102,9 @@ def iter_skill_paths(repo_root: Path, requested: list[str]) -> Iterable[Path]:
         for skill_path in sorted(parent.glob("*/SKILL.md")):
             if "generated" in skill_path.parts:
                 continue
-            if skill_path in seen:
-                continue
-            seen.add(skill_path)
-            yield skill_path
+            if skill_path not in seen:
+                seen.add(skill_path)
+                yield skill_path
 
 
 def count_files(directory: Path) -> int:

@@ -58,6 +58,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
         "runtime_budget_profiles": "defaulted",
         "startup_probes": "defaulted",
         "skill_ergonomics_gate_rules": "defaulted",
+        "skill_ergonomics_skill_paths": "defaulted",
         "specdown_smoke_patterns": "defaulted",
         "spec_pytest_reference_format": "inferred",
         "security_commands": "installed",
@@ -101,6 +102,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
         "exemption_globs": [],
     }
     assert resolved["data"]["skill_ergonomics_gate_rules"] == []
+    assert resolved["data"]["skill_ergonomics_skill_paths"] == []
     assert resolved["data"]["runtime_profile_default"] == "default"
     assert resolved["data"]["runtime_budgets"] == {}
     assert resolved["data"]["runtime_budget_profiles"] == {}
@@ -156,6 +158,8 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
                 "  - tests/**",
                 "skill_ergonomics_gate_rules:",
                 "  - mode_option_pressure_terms",
+                "skill_ergonomics_skill_paths:",
+                "  - packages/official-skills/ceal-native/skills",
                 "runtime_profile_default: local-fast",
                 "runtime_budgets:",
                 "  pytest: 70000",
@@ -203,6 +207,7 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     assert payload["field_statuses"]["canonical_markdown_surfaces"] == "preserved"
     assert payload["field_statuses"]["prompt_asset_policy"] == "preserved"
     assert payload["field_statuses"]["skill_ergonomics_gate_rules"] == "preserved"
+    assert payload["field_statuses"]["skill_ergonomics_skill_paths"] == "preserved"
     assert payload["field_statuses"]["runtime_profile_default"] == "preserved"
     assert payload["field_statuses"]["runtime_budgets"] == "preserved"
     assert payload["field_statuses"]["runtime_budget_profiles"] == "preserved"
@@ -237,6 +242,7 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
         "exemption_globs": ["tests/**"],
     }
     assert resolved["data"]["skill_ergonomics_gate_rules"] == ["mode_option_pressure_terms"]
+    assert resolved["data"]["skill_ergonomics_skill_paths"] == ["packages/official-skills/ceal-native/skills"]
     assert resolved["data"]["runtime_profile_default"] == "local-fast"
     assert resolved["data"]["runtime_budgets"] == {"pytest": 70000}
     assert resolved["data"]["runtime_budget_profiles"] == {

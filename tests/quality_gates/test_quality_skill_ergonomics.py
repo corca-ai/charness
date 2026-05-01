@@ -107,3 +107,53 @@ def test_inventory_skill_ergonomics_flags_portable_helper_path_ambiguity(tmp_pat
     skill = payload["skills"][0]
     assert "portable_helper_path_ambiguity" in skill["heuristics"]
     assert any("installed-bundle portability" in item for item in skill["review_prompts"])
+
+
+def test_inventory_skill_ergonomics_uses_adapter_skill_paths(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_root = repo / "packages" / "official-skills" / "ceal-native" / "skills"
+    skill_dir = skill_root / "anniversary-roster-sync"
+    skill_dir.mkdir(parents=True)
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_skill_paths:",
+                "  - packages/official-skills/ceal-native/skills",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: anniversary-roster-sync",
+                'description: "Demo native skill."',
+                "---",
+                "",
+                "# Anniversary Roster Sync",
+                "",
+                "Use this when the native roster needs sync review.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert [skill["skill_path"] for skill in payload["skills"]] == [
+        "packages/official-skills/ceal-native/skills/anniversary-roster-sync/SKILL.md"
+    ]

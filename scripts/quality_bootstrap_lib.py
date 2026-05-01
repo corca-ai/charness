@@ -96,6 +96,7 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "canonical_markdown_surfaces": ["AGENTS.md", "CLAUDE.md"],
         "prompt_asset_policy": dict(DEFAULT_PROMPT_ASSET_POLICY),
         "skill_ergonomics_gate_rules": list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES),
+        "skill_ergonomics_skill_paths": [],
         "runtime_profile_default": "default",
         "runtime_budgets": {},
         "runtime_budget_profiles": {},
@@ -138,9 +139,8 @@ def _apply_existing_scalar_fields(data: dict[str, Any], raw: dict[str, Any]) -> 
     spec_pytest_reference_format = raw.get("spec_pytest_reference_format")
     if isinstance(spec_pytest_reference_format, str):
         data["spec_pytest_reference_format"] = spec_pytest_reference_format
-    public_spec_implementation_ref_density_floor = raw.get("public_spec_implementation_ref_density_floor")
-    if isinstance(public_spec_implementation_ref_density_floor, (int, float)):
-        data["public_spec_implementation_ref_density_floor"] = float(public_spec_implementation_ref_density_floor)
+    if isinstance(density_floor := raw.get("public_spec_implementation_ref_density_floor"), (int, float)):
+        data["public_spec_implementation_ref_density_floor"] = float(density_floor)
 
 
 def _apply_existing_policy_fields(data: dict[str, Any], raw: dict[str, Any], validated_skill_rules: list[str] | None) -> None:
@@ -166,8 +166,7 @@ def _apply_existing_policy_fields(data: dict[str, Any], raw: dict[str, Any], val
     runtime_budget_profiles = raw.get("runtime_budget_profiles")
     if isinstance(runtime_budget_profiles, dict):
         data["runtime_budget_profiles"] = dict(runtime_budget_profiles)
-    startup_probes = raw.get("startup_probes")
-    if isinstance(startup_probes, list):
+    if isinstance(startup_probes := raw.get("startup_probes"), list):
         data["startup_probes"] = list(startup_probes)
 
 
@@ -189,7 +188,7 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
     for field in (
         "preset_lineage prompt_asset_roots adapter_review_sources acknowledged_recommendations "
         "gate_design_review_globs product_surfaces cli_skill_surface_probe_commands cli_skill_surface_command_docs "
-        "cli_skill_surface_skill_paths cli_skill_surface_change_globs canonical_markdown_surfaces "
+        "cli_skill_surface_skill_paths cli_skill_surface_change_globs canonical_markdown_surfaces skill_ergonomics_skill_paths "
         "public_spec_section_exemptions public_spec_pointer_proof_markers concept_paths preflight_commands "
         "gate_commands review_commands security_commands"
     ).split():
@@ -273,7 +272,6 @@ def _add_adapter_policy_fields(
     )
     field_statuses["public_spec_implementation_ref_density_floor"] = "preserved" if preserve_density_floor else "defaulted"
 
-
 def _add_prompt_and_runtime_fields(
     final: dict[str, Any], existing: dict[str, Any], explicit_fields: set[str], field_statuses: dict[str, str]
 ) -> None:
@@ -289,6 +287,7 @@ def _add_prompt_and_runtime_fields(
         "cli_skill_surface_skill_paths",
         "cli_skill_surface_change_globs",
         "canonical_markdown_surfaces",
+        "skill_ergonomics_skill_paths",
     ):
         default = ["AGENTS.md", "CLAUDE.md"] if field == "canonical_markdown_surfaces" else []
         final[field] = list(existing.get(field, default)) if field in explicit_fields else default
@@ -415,6 +414,7 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
         ("canonical_markdown_surfaces", data["canonical_markdown_surfaces"]),
         ("prompt_asset_policy", data["prompt_asset_policy"]),
         ("skill_ergonomics_gate_rules", data["skill_ergonomics_gate_rules"]),
+        ("skill_ergonomics_skill_paths", data["skill_ergonomics_skill_paths"]),
         ("runtime_profile_default", data["runtime_profile_default"]),
         ("runtime_budgets", data["runtime_budgets"]),
         ("runtime_budget_profiles", data["runtime_budget_profiles"]),
@@ -430,7 +430,7 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
         "product_surfaces cli_skill_surface_probe_commands cli_skill_surface_command_docs "
         "cli_skill_surface_skill_paths cli_skill_surface_change_globs canonical_markdown_surfaces "
         "public_spec_section_exemptions public_spec_pointer_proof_markers "
-        "skill_ergonomics_gate_rules runtime_budgets runtime_budget_profiles startup_probes concept_paths preflight_commands "
+        "skill_ergonomics_gate_rules skill_ergonomics_skill_paths runtime_budgets runtime_budget_profiles startup_probes concept_paths preflight_commands "
         "gate_commands review_commands security_commands".split()
     )
     policy_items = [

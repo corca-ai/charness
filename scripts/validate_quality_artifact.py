@@ -85,6 +85,7 @@ FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "same-agent pass as equivalent",
 )
 DELEGATED_REVIEW_STATUSES = ("executed", "blocked", "not_applicable")
+FORBIDDEN_DELEGATED_REVIEW_STATUSES = ("missed", "not run", "not executed")
 SLOW_GATE_DELEGATED_LENSES = (
     "fixture-economics",
     "parallel-critical-path",
@@ -205,6 +206,11 @@ def validate_delegated_review_section(lines: list[str]) -> None:
     if not section_lines:
         raise ValidationError("`## Delegated Review` must record executed, blocked, or not_applicable status")
     lowered = "\n".join(section_lines).lower()
+    if any(status in lowered for status in FORBIDDEN_DELEGATED_REVIEW_STATUSES):
+        raise ValidationError(
+            "`## Delegated Review` must not report a missed review; use executed, blocked with a concrete "
+            "host/tool signal, or not_applicable with a reason"
+        )
     if not any(status in lowered for status in DELEGATED_REVIEW_STATUSES):
         raise ValidationError("`## Delegated Review` must include executed, blocked, or not_applicable status")
     if "blocked" in lowered and "host signal:" not in lowered and "tool signal:" not in lowered:

@@ -30,7 +30,7 @@ python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root .
 ```
 
 For evaluator-backed behavior closeout, prompt regression, baseline compare, or operator reading tests, use `quality` before downgrading to HITL/manual review. Generic review, closeout, or "run quality" wording does not require an evaluator; start with deterministic gates and escalate only when they cannot answer the behavior question.
-For task-completing quality reviews, run bounded delegated review after initial inventory and before broad recommendations; add slow-gate lenses from `references/standing-gate-verbosity.md` when runtime is in scope. Report `Delegated Review: executed|blocked|not_applicable`; blocked needs a concrete host/tool signal.
+For task-completing quality reviews, run bounded delegated review after initial inventory and before broad recommendations; add slow-gate lenses from `references/standing-gate-verbosity.md` when runtime is in scope. Report exactly `Delegated Review: executed|blocked|not_applicable`; `missed`, `skipped`, or `not run` is not a valid closeout status. Blocked needs a concrete host/tool signal.
 Before host-capability questions, honor `<repo-root>/AGENTS.md` `Subagent Delegation`.
 When reader-facing Markdown needs rendered readability proof instead of source-only review, bootstrap or execute the repo-local markdown preview seam:
 
@@ -70,6 +70,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 ## Workflow
 
 1. Restate the current quality question: what the user wants checked or improved, whether the scope is repo-wide, one seam, or one proposed change, and which concept boundary or ownership seam is most likely to be wrong.
+   - if the run is read-only, downgrade conclusions that need writes/full gates/delegation and never clean up caller-provided output or evidence directories
 2. Detect the current gate surface.
    - independently enumerate the current source, spec, and gate inventory before letting the previous quality artifact define scope
    - local executable gates already present
@@ -88,11 +89,8 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - inspect first-touch docs such as README and operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist; when the CLI surface is stable, prefer a deterministic command-docs drift gate over repeated prose review
    - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
    - if evaluator-backed review or prompt-sensitive output matters, inspect whether prompt/content bulk stays in checked-in assets or is still embedded inline in source files
-   - inventory adapter/gate design with `$SKILL_DIR/scripts/inventory_adapter_gate_design.py`
-     when the review touches adapter policy, recommendation queues,
-     acknowledgements, or brittle gate promotion; see
-     `references/adapter-gate-review.md`
-   - when skills are in scope, inventory skill ergonomics explicitly with `$SKILL_DIR/scripts/inventory_skill_ergonomics.py` instead of leaving concise-core, progressive-disclosure, or branching-pressure review as vague prose
+   - inventory adapter/gate design with `$SKILL_DIR/scripts/inventory_adapter_gate_design.py` when adapter policy, recommendation queues, acknowledgements, or brittle gate promotion are in scope
+   - when skills are in scope, inventory skill ergonomics explicitly with `$SKILL_DIR/scripts/inventory_skill_ergonomics.py` instead of leaving concise-core, progressive-disclosure, or branching-pressure review as vague prose; if the repo stores skills outside `skills/public` or `skills/support`, record `skill_ergonomics_skill_paths` in the quality adapter so the default inventory does not return an empty scan
    - when public-skill behavior or routing is in scope, scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` so the review names prompt, repo shape, expected artifact, and acceptance evidence explicitly
    - when prompt-sensitive output matters or `prompt_asset_policy.source_globs` is configured, re-derive prompt/content bulk inventory from the current tree instead of trusting prior review prose; `prompt_asset_roots: []` only means no canonical asset root is declared, not that inline bulk inventory should be skipped
    - when advisory inventories, helper scripts, or dead-file review are in scope, run `$SKILL_DIR/scripts/inventory_gitignore_scan_hygiene.py`; for Python run `$SKILL_DIR/scripts/run_dead_code_advisory.py --repo-root .`, and for JavaScript/TypeScript prefer `knip`
