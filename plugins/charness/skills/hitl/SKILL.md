@@ -121,6 +121,11 @@ the repo has named where state, rules, and queue ownership live.
 10. Report Mode. For generated report packets, render first-class decision
     cards with concrete questions, plain-language evidence interpretation,
     optional evidence links, comment fields, and display-only suggested actions.
+    Order cards by decision leverage when priority metadata is present, then
+    recalculate the remaining queue after explicit human review input. If an
+    accepted answer makes the remaining queue stale, present a human-owned
+    restart recommendation instead of mechanically continuing through obsolete
+    chunks.
     Persist only explicit human decisions/comments as structured JSON; untouched
     `unreviewed` cards must be dropped from the saved decisions packet.
 11. Apply Phase. Only after all chunks are accepted and the closing summary is

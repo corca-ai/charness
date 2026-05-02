@@ -7,7 +7,19 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-DECISION_VALUES = ("unreviewed", "approve", "request_changes", "comment_only", "defer")
+from scripts.hitl_adaptive_queue_lib import (
+    first_int,
+    first_string,
+    item_uses_adaptive_metadata,
+    normalize_priority,
+    normalize_review_input,
+    order_items,
+    source_order_queue_state,
+    string_list,
+    uses_adaptive_rendering,
+    validate_review_input_ids,
+)
+
 TABLE_ROW_LIMIT = 4
 
 
@@ -29,13 +41,6 @@ def load_json(path: Path, label: str) -> dict[str, Any]:
     if not isinstance(data, dict):
         raise ReportModeError(f"{label} must be a JSON object: {path}")
     return data
-
-
-def first_string(*values: object, default: str = "") -> str:
-    for value in values:
-        if isinstance(value, str) and value.strip():
-            return value.strip()
-    return default
 
 
 def portable_path(repo_root: Path, value: str) -> str:
@@ -111,13 +116,29 @@ def normalize_items(repo_root: Path, packet: dict[str, Any]) -> list[dict[str, A
         if not isinstance(raw_item, dict):
             raise ReportModeError(f"items[{index - 1}] must be an object")
         table_rows = normalize_table(raw_item.get("table") or raw_item.get("evidence_table"))
-        item_id = first_string(raw_item.get("id"), raw_item.get("card_id"), default=f"item-{index}")
+        explicit_item_id = first_string(raw_item.get("id"), raw_item.get("card_id"))
+        has_explicit_id = bool(explicit_item_id)
+        item_id = first_string(explicit_item_id, default=f"item-{index}")
+        if item_uses_adaptive_metadata(raw_item, packet) and not has_explicit_id:
+            raise ReportModeError("adaptive report items must declare stable explicit `id` values")
         if item_id in seen_ids:
             raise ReportModeError(f"report packet contains duplicate item id `{item_id}`")
         seen_ids.add(item_id)
+        priority = normalize_priority(raw_item.get("priority"))
         items.append(
             {
                 "id": item_id,
+                "adaptive": item_uses_adaptive_metadata(raw_item, packet),
+                "source_order": first_int(raw_item.get("source_order"), default=index),
+                "depends_on": string_list(raw_item.get("depends_on") or priority.get("depends_on")),
+                "blocks": string_list(raw_item.get("blocks") or priority.get("blocks")),
+                "tags": string_list(raw_item.get("tags")),
+                "priority": priority,
+                "why_next": first_string(
+                    raw_item.get("why_next"),
+                    raw_item.get("score_explanation"),
+                    priority.get("reason"),
+                ),
                 "question": first_string(
                     raw_item.get("question"),
                     raw_item.get("review_question"),
@@ -148,43 +169,23 @@ def normalize_items(repo_root: Path, packet: dict[str, Any]) -> list[dict[str, A
     return items
 
 
-def normalize_review_input(review_input: dict[str, Any] | None) -> dict[str, dict[str, str]]:
-    if review_input is None:
-        return {}
-    raw_items = review_input.get("items")
-    if isinstance(raw_items, dict):
-        iterable = [dict(value, id=item_id) for item_id, value in raw_items.items() if isinstance(value, dict)]
-    elif isinstance(raw_items, list):
-        iterable = raw_items
-    elif isinstance(review_input.get("decisions"), dict):
-        iterable = [
-            dict(value, id=item_id)
-            for item_id, value in review_input["decisions"].items()
-            if isinstance(value, dict)
-        ]
-    else:
-        iterable = []
-    normalized: dict[str, dict[str, str]] = {}
-    for item in iterable:
-        if not isinstance(item, dict):
-            continue
-        item_id = first_string(item.get("id"))
-        decision = first_string(item.get("decision"), default="unreviewed")
-        if item_id and decision not in DECISION_VALUES:
-            raise ReportModeError(f"review input item `{item_id}` has unsupported decision `{decision}`")
-        if item_id:
-            normalized[item_id] = {"decision": decision, "comment": first_string(item.get("comment"), item.get("notes"))}
-    return normalized
-
-
-def build_decisions(packet: dict[str, Any], items: list[dict[str, Any]], review_input: dict[str, dict[str, str]]) -> dict[str, Any]:
+def build_decisions(
+    packet: dict[str, Any],
+    items: list[dict[str, Any]],
+    review_input: dict[str, dict[str, Any]],
+    queue_state: dict[str, Any],
+) -> dict[str, Any]:
     reviewed_items: list[dict[str, Any]] = []
     dropped_ids: list[str] = []
+    superseded_ids = set(queue_state["superseded_unreviewed_item_ids"])
     for item in items:
         submitted = review_input.get(item["id"], {})
         decision = submitted.get("decision", "unreviewed")
         comment = submitted.get("comment", "")
-        if decision == "unreviewed" and not comment:
+        queue_effects = submitted.get("queue_effects", [])
+        if item["id"] in superseded_ids:
+            continue
+        if decision == "unreviewed" and not comment and not queue_effects:
             dropped_ids.append(item["id"])
             continue
         reviewed_items.append(
@@ -199,14 +200,17 @@ def build_decisions(packet: dict[str, Any], items: list[dict[str, Any]], review_
                 "table_rows": item["table_rows"],
                 "suggested_decision": item["suggested_decision"],
                 "suggestion_display_only": True,
+                "queue_effects": queue_effects,
             }
         )
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "source_packet_id": first_string(packet.get("id"), packet.get("session_id")),
         "generated_at": utc_now(),
         "items": reviewed_items,
         "dropped_unreviewed_item_ids": dropped_ids,
+        "superseded_unreviewed_item_ids": queue_state["superseded_unreviewed_item_ids"],
+        "queue_state": queue_state,
     }
 
 
@@ -232,6 +236,7 @@ def render_card(item: dict[str, Any], index: int) -> str:
     links = "\n".join(render_link(link) for link in item["evidence_links"]) or "<li>No evidence links supplied.</li>"
     table_html = render_table(item["table_rows"])
     table_details = f"<details><summary>Raw table</summary>{table_html}</details>" if table_html else ""
+    why_next = html.escape(item["why_next"] or "Packet order tie-breaker.")
     radio_rows = [
         ("unreviewed", "Unreviewed"),
         ("approve", "Approve"),
@@ -247,6 +252,7 @@ def render_card(item: dict[str, Any], index: int) -> str:
     return f"""
 <article class="card" data-item-id="{item_id}">
   <header><span class="item-id">{item_id}</span><h2>{html.escape(item["question"])}</h2></header>
+  <p class="why-next"><strong>Why this is next:</strong> {why_next}</p>
   <p class="why">{html.escape(item["why"])}</p>
   <p class="explanation">{html.escape(item["explanation"])}</p>
   <dl>
@@ -260,11 +266,30 @@ def render_card(item: dict[str, Any], index: int) -> str:
 </article>"""
 
 
-def render_html(packet: dict[str, Any], items: list[dict[str, Any]], decisions_path: str) -> str:
+def render_queue_recommendation(queue_state: dict[str, Any]) -> str:
+    recommendation = queue_state.get("queue_recommendation")
+    if not isinstance(recommendation, dict):
+        return ""
+    superseded = ", ".join(recommendation.get("superseded_item_ids", [])) or "None"
+    return f"""
+<article class="card queue-recommendation" data-queue-status="invalidation_recommended">
+  <header><span class="item-id">queue</span><h2>Restart recommendation</h2></header>
+  <p class="why-next"><strong>Decision needed:</strong> Continue this queue, or stop and restart after applying accepted feedback?</p>
+  <p>{html.escape(recommendation.get("reason", ""))}</p>
+  <dl>
+    <dt>Suggested action</dt><dd>{html.escape(recommendation.get("recommended_next_step", ""))}</dd>
+    <dt>Superseded</dt><dd>{html.escape(superseded)}</dd>
+    <dt>Requires approval</dt><dd>Yes</dd>
+  </dl>
+</article>"""
+
+
+def render_html(packet: dict[str, Any], items: list[dict[str, Any]], decisions_path: str, queue_state: dict[str, Any]) -> str:
     title = html.escape(first_string(packet.get("title"), packet.get("name"), default="HITL Decision Queue"))
     summary = html.escape(first_string(packet.get("summary"), packet.get("intro")))
     next_step = html.escape(first_string(packet.get("agent_next_step"), packet.get("next_agent_step")))
-    cards = "\n".join(render_card(item, index) for index, item in enumerate(items, start=1))
+    queue_recommendation = render_queue_recommendation(queue_state)
+    cards = queue_recommendation + "\n".join(render_card(item, index) for index, item in enumerate(items, start=1))
     output_name = html.escape(Path(decisions_path).name, quote=True)
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -329,15 +354,26 @@ def render_report(
     html_path = output_html or default_html
     decisions_path = output_decisions or default_decisions
     review_input = load_json(review_input_path, "review input") if review_input_path else None
-    decisions = build_decisions(packet, items, normalize_review_input(review_input))
+    normalized_review_input = normalize_review_input(review_input)
+    validate_review_input_ids(items, normalized_review_input)
+    if uses_adaptive_rendering(packet, items, normalized_review_input):
+        ordered_items, queue_state = order_items(items, normalized_review_input)
+    else:
+        ordered_items = sorted(items, key=lambda item: (item["source_order"], item["id"]))
+        queue_state = source_order_queue_state(items, normalized_review_input)
+    decisions = build_decisions(packet, items, normalized_review_input, queue_state)
     html_path.parent.mkdir(parents=True, exist_ok=True)
     decisions_path.parent.mkdir(parents=True, exist_ok=True)
-    html_path.write_text(render_html(packet, items, decisions_path.name), encoding="utf-8")
+    html_path.write_text(render_html(packet, ordered_items, decisions_path.name, queue_state), encoding="utf-8")
     decisions_path.write_text(json.dumps(decisions, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return {
         "html_path": repo_relative(html_path, repo_root),
         "decisions_path": repo_relative(decisions_path, repo_root),
         "item_count": len(items),
+        "review_queue_item_count": len(ordered_items),
         "reviewed_item_count": len(decisions["items"]),
         "dropped_unreviewed_count": len(decisions["dropped_unreviewed_item_ids"]),
+        "queue_status": queue_state["status"],
+        "current_queue_order": queue_state["current_queue_order"],
+        "superseded_unreviewed_count": len(queue_state["superseded_unreviewed_item_ids"]),
     }
