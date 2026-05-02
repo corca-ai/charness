@@ -100,6 +100,9 @@ def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
     state_model = (
         ROOT / "skills" / "public" / "hitl" / "references" / "state-model.md"
     ).read_text(encoding="utf-8")
+    report_mode = (
+        ROOT / "skills" / "public" / "hitl" / "references" / "report-mode.md"
+    ).read_text(encoding="utf-8")
     adapter_contract = (
         ROOT / "skills" / "public" / "hitl" / "references" / "adapter-contract.md"
     ).read_text(encoding="utf-8")
@@ -108,8 +111,12 @@ def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
     assert "Never edit the target file mid-chunk" in skill_text
     assert "Do not edit the target file while the review loop is in progress" in skill_text
     assert "display-only pseudo-tags" in skill_text
+    assert "explain dense generated tables" in skill_text
+    assert "Do not persist suggested decisions as human approval" in skill_text
     assert "Accepted Working Text" in skill_text
     assert "last_presented_chunk_id" in skill_text
+    assert "Tables and matrices are not the primary review surface" in report_mode
+    assert "suggestion_display_only: true" in report_mode
     assert "explicit apply instruction" in adapter_contract
     assert "accepted-chunk-or-final-apply-boundary" in adapter_contract
     assert "<bash>" in chunk_contract

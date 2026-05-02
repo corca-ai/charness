@@ -13,6 +13,8 @@ inspection, or a resumable human-in-the-loop pass over a bounded target.
 - insert deliberate human judgment where automation is insufficient
 - keep the review bounded and resumable
 - record rules and decisions so the loop can continue coherently
+- make the review comfortable for the human: explain dense generated tables or
+  matrices in plain language before showing raw structure as evidence
 
 Borrow Atul Gawande-style checklist discipline here: keep the loop explicit
 enough that judgment stays human while omissions, handoff loss, and repeated
@@ -45,6 +47,13 @@ When starting a new HITL run, initialize runtime artifacts:
 
 ```bash
 python3 "$SKILL_DIR/scripts/bootstrap_review.py" --repo-root .
+```
+
+When a generated report should become a decision queue, render a decision-first
+review packet:
+
+```bash
+python3 "$SKILL_DIR/scripts/render_report.py" --repo-root . --input <packet.json>
 ```
 
 If the adapter is missing, stop after surfacing or scaffolding the bounded
@@ -83,6 +92,10 @@ the repo has named where state, rules, and queue ownership live.
      as `<bash>`, `<md>`, or `<json>`
    - include enough related context and the concrete question that needs human
      judgment
+   - if the source material is a table, scorecard, or generated matrix, make
+     the human-readable interpretation the primary review surface and keep the
+     raw table behind evidence/details; do not ask the reviewer to decode table
+     structure before they know the decision being requested
    - pause for user judgment before moving on
 6. Propagate accepted rules.
    - if the user gives a stable rule, write it down and apply it to remaining
@@ -105,7 +118,12 @@ the repo has named where state, rules, and queue ownership live.
    - what was reviewed
    - what rules were accepted
    - what still needs action or follow-up
-10. Apply Phase. Only after all chunks are accepted and the closing summary is
+10. Report Mode. For generated report packets, render first-class decision
+    cards with concrete questions, plain-language evidence interpretation,
+    optional evidence links, comment fields, and display-only suggested actions.
+    Persist only explicit human decisions/comments as structured JSON; untouched
+    `unreviewed` cards must be dropped from the saved decisions packet.
+11. Apply Phase. Only after all chunks are accepted and the closing summary is
     written, propose the consolidated target edit as one reviewable operation.
     Never edit the target file mid-chunk or between accepted chunks while the
     review loop is still in progress. If `require_explicit_apply` is true, wait
@@ -130,8 +148,13 @@ The result should usually include:
 - Do not present isolated snippets without enough context for judgment.
 - Do not ask for judgment on summary-only paraphrases when the underlying text,
   diff, or artifact excerpt can be shown directly.
+- Do not make raw tables or generated matrices the primary human review
+  surface; explain the table's significance first and keep the raw structure as
+  inspectable evidence.
 - Do not put nested fenced code blocks inside user-facing review excerpts; use
   display-only pseudo-tags for inner examples instead.
+- Do not persist suggested decisions as human approval unless the human
+  explicitly changes a card decision.
 - Do not keep advancing when the current item is still unresolved.
 - Do not advance to the next accepted chunk while the scratchpad and state
   cursor still depend on chat memory.
@@ -147,6 +170,9 @@ The result should usually include:
 
 - `references/adapter-contract.md`
 - `references/chunk-contract.md`
+- `references/report-mode.md`
 - `references/state-model.md`
 - `references/rule-propagation.md`
-- `<repo-root>/scripts/bootstrap_review.py`
+- `scripts/bootstrap_review.py`
+- `scripts/render_report.py`
+- `<repo-root>/scripts/hitl_report_mode_lib.py`
