@@ -194,6 +194,110 @@ def test_skill_ergonomics_gate_discovers_direct_skill_layout(tmp_path: Path) -> 
     assert payload["discovery_errors"] == []
 
 
+def test_skill_ergonomics_gate_skips_runtime_install_skills(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    skill_dir = repo / "packages" / "official-skills" / "ceal-native" / "skills" / "demo"
+    references_dir = skill_dir / "references"
+    references_dir.mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_skill_paths:",
+                "  - packages/official-skills/ceal-native/skills",
+                "skill_ergonomics_runtime_install_skill_paths:",
+                "  - packages/official-skills/ceal-native/skills",
+                "skill_ergonomics_gate_rules:",
+                "  - mode_option_pressure_terms",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (references_dir / "note.md").write_text("# Note\n", encoding="utf-8")
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Runtime-install demo."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "Mode choice matters in this mode-heavy workflow.",
+                "Another mode note keeps the mode pressure explicit.",
+                "This option should probably be inference instead of an option.",
+                "A second option mention keeps option pressure visible.",
+                "",
+                "## References",
+                "",
+                "- `references/note.md`",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["violations"] == []
+    assert payload["checked_skills"][0]["skill_type"] == "runtime_install"
+
+
+def test_skill_ergonomics_gate_skips_vendored_skills(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    own = repo / "skills" / "public" / "demo"
+    vendored = repo / "packages" / "official-skills" / "charness-public" / "skills" / "vendored"
+    own.mkdir(parents=True)
+    vendored.mkdir(parents=True)
+    (own / "references").mkdir()
+    (own / "references" / "note.md").write_text("# Note\n", encoding="utf-8")
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: charness-artifacts/quality",
+                "vendored_paths:",
+                "  - packages/official-skills/charness-public",
+                "skill_ergonomics_gate_rules:",
+                "  - mode_option_pressure_terms",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    body_lines = [
+        "---",
+        "name: bad",
+        'description: "Vendored bad skill."',
+        "---",
+        "",
+        "# Bad",
+        "",
+        "Mode choice matters in this mode-heavy workflow.",
+        "Another mode note keeps the mode pressure explicit.",
+        "This option should probably be inference instead of an option.",
+        "A second option mention keeps option pressure visible.",
+    ]
+    (vendored / "SKILL.md").write_text("\n".join(body_lines) + "\n", encoding="utf-8")
+    (own / "SKILL.md").write_text(
+        "---\nname: demo\ndescription: \"clean.\"\n---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["violations"] == []
+    paths = [skill["skill_path"] for skill in payload["checked_skills"]]
+    assert paths == ["skills/public/demo/SKILL.md"]
+
+
 def test_skill_ergonomics_gate_fails_when_opted_in_progressive_disclosure_risk_matches(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)

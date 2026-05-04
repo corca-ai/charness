@@ -96,8 +96,8 @@ scenario review when installed and configured.
 1. If the repo has not been initialized with `charness`, ask the agent to use
    `init-repo` first. It should normalize [AGENTS.md](./AGENTS.md) and related
    operating surfaces without turning the repo into a generic template.
-2. Ask for the concrete work directly: `Implement this`, `Fix this failing
-   test`, or `Debug this behavior`. Routes: `impl` or `debug`.
+2. Ask for the concrete work directly: `Implement this`,
+   `Fix this failing test`, or `Debug this behavior`. Routes: `impl` or `debug`.
 3. If the task is under-specified, ask the agent to shape the contract before
    coding. Routes: `spec`, with premortem review when the change is risky.
 4. When you want to explain progress, rewrite the repo story, or prepare a

@@ -52,28 +52,11 @@ def visible_paths(repo_root: Path, pattern: str) -> list[Path]:
     )
 
 
-def recommendation(
-    action: str,
-    scope: str,
-    target: str,
-    target_items: list[Any],
-    *,
-    guidance: str | None = None,
-    keep_when: list[str] | None = None,
-    delete_when: list[str] | None = None,
-) -> dict[str, Any]:
-    payload: dict[str, Any] = {
-        "action": action,
-        "scope": scope,
-        "target": target,
-        "target_items": target_items,
-    }
-    if guidance is not None:
-        payload["guidance"] = guidance
-    if keep_when is not None:
-        payload["keep_when"] = keep_when
-    if delete_when is not None:
-        payload["delete_when"] = delete_when
+def recommendation(action: str, scope: str, target: str, target_items: list[Any], *, guidance: str | None = None, keep_when: list[str] | None = None, delete_when: list[str] | None = None) -> dict[str, Any]:
+    payload: dict[str, Any] = {"action": action, "scope": scope, "target": target, "target_items": target_items}
+    for key, value in (("guidance", guidance), ("keep_when", keep_when), ("delete_when", delete_when)):
+        if value is not None:
+            payload[key] = value
     return payload
 
 
@@ -170,6 +153,30 @@ def layering_heuristics(
     if (smoke_paths or e2e_paths) and (duplicates or runner_specs):
         heuristics.append("proof_layering_review_needed")
     return heuristics
+
+
+def spec_payload(repo_root: Path, spec_path: Path, blocks: list[dict[str, Any]], commands: list[str], source_guard_rows: int, source_guard_tokens: int, scan: dict[str, Any], heuristics: list[str], total_line_count: int) -> dict[str, Any]:
+    return {
+        "spec_path": spec_path.relative_to(repo_root).as_posix(),
+        "executable_block_count": len(blocks),
+        "command_examples": commands,
+        "total_line_count": total_line_count,
+        "source_guard_row_count": source_guard_rows,
+        "source_guard_token_count": source_guard_tokens,
+        "implementation_path_ref_count": len(scan["impl_refs"]),
+        "implementation_path_ref_total_count": scan["impl_total"],
+        "implementation_path_ref_exempt_count": max(0, scan["impl_total"] - len(scan["impl_refs"])),
+        "implementation_path_ref_density": round(scan["impl_density"], 4),
+        "implementation_path_ref_density_floor": scan["density_floor"],
+        "implementation_guard_min_lines": scan["guard_min_lines"],
+        "future_state_term_count": len(scan["future_terms"]),
+        "future_state_term_total_count": scan["future_total"],
+        "future_state_term_exempt_count": max(0, scan["future_total"] - len(scan["future_terms"])),
+        "pointer_proof_reference_count": scan["pointer"]["pytest_reference_count"],
+        "pointer_proof_marker_count": scan["pointer"]["front_matter_marker_count"],
+        "heuristics": heuristics,
+        "review_prompts": REVIEW_PROMPTS,
+    }
 
 
 def render_text_summary(payload: dict[str, Any]) -> list[str]:

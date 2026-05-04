@@ -32,6 +32,12 @@ inventory_skill = _inventory_skill_ergonomics_module.inventory_skill
 iter_skill_paths = _inventory_skill_ergonomics_module.iter_skill_paths
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+_vendored_path_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.vendored_path_lib")
+
+
+def _string_list(data: dict[str, Any], key: str) -> list[str]:
+    values = data.get(key, [])
+    return values if isinstance(values, list) and all(isinstance(item, str) for item in values) else []
 
 
 def evaluate(repo_root: Path) -> dict[str, Any]:
@@ -40,6 +46,8 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
     requested_paths = adapter["data"].get("skill_ergonomics_skill_paths") or adapter["data"].get(
         "cli_skill_surface_skill_paths"
     ) or []
+    runtime_install_prefixes = _vendored_path_lib.vendored_prefixes(_string_list(adapter["data"], "skill_ergonomics_runtime_install_skill_paths"))
+    vendored_prefixes_list = _vendored_path_lib.vendored_prefixes(_string_list(adapter["data"], "vendored_paths"))
     if not rules:
         return {
             "adapter_path": adapter.get("path"),
@@ -61,7 +69,9 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
                 }
             )
             continue
-        item = inventory_skill(repo_root, skill_path, max_core_lines=160)
+        if _vendored_path_lib.is_vendored(repo_root, skill_path, vendored_prefixes_list):
+            continue
+        item = inventory_skill(repo_root, skill_path, max_core_lines=160, runtime_install_prefixes=runtime_install_prefixes)
         checked_skills.append(
             {
                 "skill_id": item["skill_id"],

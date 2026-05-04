@@ -11,6 +11,20 @@ def test_inventory_public_spec_quality_flags_reader_facing_drift(tmp_path: Path)
     (repo / "docs" / "specs").mkdir(parents=True)
     (repo / "tests").mkdir()
     (repo / "tests" / "cli_smoke_test.py").write_text("def test_smoke():\n    pass\n", encoding="utf-8")
+    (repo / ".agents").mkdir(parents=True, exist_ok=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "language: en",
+                "output_dir: charness-artifacts/quality",
+                "public_spec_implementation_guard_min_lines: 0",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
     (repo / "docs" / "specs" / "current-product.spec.md").write_text(
         "\n".join(
             [
@@ -259,6 +273,20 @@ def test_inventory_public_spec_quality_exempts_contract_sections(tmp_path: Path)
 def test_inventory_public_spec_quality_still_scans_unexempt_headings(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "docs" / "specs").mkdir(parents=True)
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "language: en",
+                "output_dir: charness-artifacts/quality",
+                "public_spec_implementation_guard_min_lines: 0",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
     (repo / "docs" / "specs" / "headings.spec.md").write_text(
         "\n".join(
             [
@@ -422,6 +450,117 @@ def test_inventory_public_spec_quality_exempts_wrapped_pytest_pointer_blocks(tmp
     assert spec["pointer_proof_reference_count"] == 1
     assert "implementation_guard_pressure" not in spec["heuristics"]
     assert "no_executable_proof_blocks" not in spec["heuristics"]
+
+
+def test_inventory_public_spec_quality_skips_implementation_guard_on_small_specs(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "specs").mkdir(parents=True)
+    (repo / "specs" / "tiny.spec.md").write_text(
+        "\n".join(
+            [
+                "# Tiny",
+                "",
+                "Reader-facing claim.",
+                "Implementation note `internal/app/run.py` and `scripts/build.py`.",
+                "",
+                "```bash",
+                "demo status --json",
+                "```",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    spec = json.loads(result.stdout)["public_specs"][0]
+    assert "implementation_guard_pressure" not in spec["heuristics"]
+    assert spec["total_line_count"] < spec["implementation_guard_min_lines"]
+    assert spec["implementation_guard_min_lines"] == 100
+
+
+def test_inventory_public_spec_quality_honors_adapter_implementation_guard_min_lines(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "specs").mkdir(parents=True)
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "output_dir: charness-artifacts/quality",
+                "public_spec_implementation_guard_min_lines: 0",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (repo / "specs" / "tiny.spec.md").write_text(
+        "\n".join(
+            [
+                "# Tiny",
+                "",
+                "Reader-facing claim.",
+                "Implementation note `internal/app/run.py` and `scripts/build.py`.",
+                "",
+                "```bash",
+                "demo status --json",
+                "```",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    spec = json.loads(result.stdout)["public_specs"][0]
+    assert "implementation_guard_pressure" in spec["heuristics"]
+
+
+def test_inventory_public_spec_quality_skips_vendored_specs(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    own_specs = repo / "specs"
+    vendored_specs = repo / "packages" / "official-skills" / "charness-public" / "specs"
+    own_specs.mkdir(parents=True)
+    vendored_specs.mkdir(parents=True)
+    (own_specs / "own.spec.md").write_text("# Own\n\nReader claim.\n", encoding="utf-8")
+    (vendored_specs / "vendored.spec.md").write_text("# Vendored\n\nReader claim.\n", encoding="utf-8")
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "output_dir: charness-artifacts/quality",
+                "vendored_paths:",
+                "  - packages/official-skills/charness-public",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_public_spec_quality.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    spec_paths = [spec["spec_path"] for spec in json.loads(result.stdout)["public_specs"]]
+    assert spec_paths == ["specs/own.spec.md"]
 
 
 def test_inventory_public_spec_quality_rejects_invalid_adapter(tmp_path: Path) -> None:

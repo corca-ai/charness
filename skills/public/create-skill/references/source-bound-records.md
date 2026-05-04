@@ -35,8 +35,8 @@ Name these before implementation:
 
 - source identity: source id/path/digest plus uploader, user, message, thread,
   permalink, or equivalent host evidence
-- cardinality: `SourceRecord -> ExtractionCandidate -> ValidatedIntent(s) ->
-  CommitResult(s)`
+- cardinality:
+  `SourceRecord -> ExtractionCandidate -> ValidatedIntent(s) -> CommitResult(s)`
 - validation: how unknown, missing, and duplicate source item ids are rejected
 - idempotency: destination evidence, ledger, or lookup used to avoid duplicate
   side effects

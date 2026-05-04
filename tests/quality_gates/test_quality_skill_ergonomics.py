@@ -157,3 +157,180 @@ def test_inventory_skill_ergonomics_uses_adapter_skill_paths(tmp_path: Path) -> 
     assert [skill["skill_path"] for skill in payload["skills"]] == [
         "packages/official-skills/ceal-native/skills/anniversary-roster-sync/SKILL.md"
     ]
+
+
+def test_inventory_skill_ergonomics_reports_unconfigured_when_no_skills(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "unconfigured"
+    assert "skill_ergonomics_skill_paths" in payload["reason"]
+    assert payload["skills"] == []
+
+
+def test_inventory_skill_ergonomics_reports_clean_when_skills_present(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "clean"
+    assert payload["skills"] and payload["skills"][0]["skill_id"] == "demo"
+
+
+def test_inventory_skill_ergonomics_skips_vendored_paths(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    own_skill = repo / "skills" / "public" / "demo"
+    vendored_skill = repo / "packages" / "official-skills" / "charness-public" / "skills" / "vendored"
+    own_skill.mkdir(parents=True)
+    vendored_skill.mkdir(parents=True)
+    body = "---\nname: x\ndescription: \"x.\"\n---\n\n# X\n"
+    (own_skill / "SKILL.md").write_text(body, encoding="utf-8")
+    (vendored_skill / "SKILL.md").write_text(body, encoding="utf-8")
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_skill_paths:",
+                "  - skills/public",
+                "  - packages/official-skills/charness-public/skills",
+                "vendored_paths:",
+                "  - packages/official-skills/charness-public",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    paths = [skill["skill_path"] for skill in payload["skills"]]
+    assert paths == ["skills/public/demo/SKILL.md"]
+
+
+def test_inventory_skill_ergonomics_runtime_install_accepts_skill_md_suffix(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "packages" / "official-skills" / "ceal-native" / "skills" / "demo"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Runtime-installed demo."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "Use `scripts/process_receipt.py` before stopping.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_skill_paths:",
+                "  - packages/official-skills/ceal-native/skills",
+                "skill_ergonomics_runtime_install_skill_paths:",
+                "  - packages/official-skills/ceal-native/skills/demo/SKILL.md",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    skill = payload["skills"][0]
+    assert skill["skill_type"] == "runtime_install"
+    assert "portable_helper_path_ambiguity" not in skill["heuristics"]
+
+
+def test_inventory_skill_ergonomics_runtime_install_skips_portable_helper_heuristic(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "packages" / "official-skills" / "ceal-native" / "skills" / "demo"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Runtime-installed demo."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "Use `scripts/process_receipt.py` before stopping.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_skill_paths:",
+                "  - packages/official-skills/ceal-native/skills",
+                "skill_ergonomics_runtime_install_skill_paths:",
+                "  - packages/official-skills/ceal-native/skills",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    skill = payload["skills"][0]
+    assert skill["skill_type"] == "runtime_install"
+    assert "portable_helper_path_ambiguity" not in skill["heuristics"]
+    assert any("runtime-install portability" in prompt for prompt in skill["review_prompts"])
+    assert not any("installed-bundle portability" in prompt for prompt in skill["review_prompts"])

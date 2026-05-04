@@ -24,4 +24,5 @@ if [ "${#markdown_files[@]}" -eq 0 ]; then
   exit 0
 fi
 
+python3 "$REPO_ROOT/scripts/check_markdown_inline_code.py" --repo-root "$REPO_ROOT"
 npm exec -- markdownlint-cli2 --no-globs "${markdown_files[@]}"

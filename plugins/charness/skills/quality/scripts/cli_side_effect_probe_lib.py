@@ -26,13 +26,23 @@ def _git_visible_repo_files(repo_root: Path) -> set[Path] | None:
     return {repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel}
 
 
-def default_paths(repo_root: Path) -> list[Path]:
+def _filter_path(repo_root: Path, path: Path, visible: set[Path] | None, seen: set[Path], vendored_filter) -> bool:
+    if not path.is_file() or path in seen:
+        return False
+    if visible is not None and path not in visible:
+        return False
+    if vendored_filter is not None and vendored_filter(repo_root, path):
+        return False
+    return True
+
+
+def default_paths(repo_root: Path, vendored_filter=None) -> list[Path]:
     visible_files = _git_visible_repo_files(repo_root)
     seen: set[Path] = set()
     found: list[Path] = []
     for pattern in DEFAULT_PATTERNS:
         for path in sorted(repo_root.glob(pattern)):
-            if path.is_file() and path not in seen and (visible_files is None or path in visible_files):
+            if _filter_path(repo_root, path, visible_files, seen, vendored_filter):
                 seen.add(path)
                 found.append(path)
     return found
@@ -176,10 +186,17 @@ def inventory_contract(repo_root: Path, path: Path, *, execute_probes: bool) -> 
     return {"path": str(path.relative_to(repo_root)), "command_count": len(commands), "commands": commands, "findings": findings}
 
 
-def build_inventory(repo_root: Path, *, contract_paths: list[Path], execute_probes: bool) -> dict[str, object]:
-    paths = contract_paths if contract_paths else default_paths(repo_root)
+def build_inventory(repo_root: Path, *, contract_paths: list[Path], execute_probes: bool, vendored_filter=None) -> dict[str, object]:
+    requested = bool(contract_paths)
+    paths = contract_paths if contract_paths else default_paths(repo_root, vendored_filter=vendored_filter)
     contracts = [inventory_contract(repo_root, path, execute_probes=execute_probes) for path in paths]
     findings = [finding for contract in contracts for finding in contract["findings"]]
     if not contracts:
         findings.append(_finding(repo_root, None, -1, "", "cli_side_effect_probe_contract_missing", "Add a cli-side-effect-probes.json contract for mutating operator CLI commands."))
-    return {"repo_root": str(repo_root), "execute_probes": execute_probes, "contracts": contracts, "findings": findings}
+    if contracts:
+        status: dict[str, str] = {"status": "clean"}
+    elif requested:
+        status = {"status": "clean", "reason": "Explicit --contract-file arguments yielded no readable files."}
+    else:
+        status = {"status": "unconfigured", "reason": "No cli-side-effect-probes.json contract file was discovered. Provide --contract-file or commit a contract under repo-visible paths such as .agents/cli-side-effect-probes.json."}
+    return {"repo_root": str(repo_root), "execute_probes": execute_probes, **status, "contracts": contracts, "findings": findings}

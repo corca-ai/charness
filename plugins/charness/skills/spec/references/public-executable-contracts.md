@@ -5,8 +5,8 @@ internal implementation structure.
 
 ## Boundary
 
-Treat `public executable contract` and `maintenance lint / implementation
-guard` as different layers.
+Treat `public executable contract` and
+`maintenance lint / implementation guard` as different layers.
 
 Public executable contract owns:
 

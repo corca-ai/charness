@@ -10,6 +10,7 @@ from scripts.quality_bootstrap_lib import ADAPTER_CANDIDATES
 from scripts.quality_policy_defaults import (
     DEFAULT_COVERAGE_FLOOR_POLICY,
     DEFAULT_PROMPT_ASSET_POLICY,
+    DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_GUARD_MIN_LINES,
     DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR,
     DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS,
     DEFAULT_PUBLIC_SPEC_SECTION_EXEMPTIONS,
@@ -38,6 +39,8 @@ LIST_FIELDS = (
     "gate_design_review_globs",
     "product_surfaces",
     "skill_ergonomics_skill_paths",
+    "skill_ergonomics_runtime_install_skill_paths",
+    "vendored_paths",
     "cli_skill_surface_probe_commands",
     "cli_skill_surface_command_docs",
     "cli_skill_surface_skill_paths",
@@ -106,6 +109,18 @@ def _float_value(value: Any, field: str, errors: list[str]) -> float | None:
     return None
 
 
+def _int_value(value: Any, field: str, errors: list[str]) -> int | None:
+    if value is None:
+        return None
+    if not isinstance(value, int) or isinstance(value, bool):
+        errors.append(f"{field} must be an integer")
+        return None
+    if value < 0:
+        errors.append(f"{field} must be greater than or equal to 0")
+        return None
+    return value
+
+
 def _artifact_path(output_dir: str) -> str:
     return str(Path(output_dir) / ARTIFACT_FILENAME)
 
@@ -127,6 +142,7 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "spec_pytest_reference_format": DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
         "public_spec_section_exemptions": list(DEFAULT_PUBLIC_SPEC_SECTION_EXEMPTIONS),
         "public_spec_implementation_ref_density_floor": DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR,
+        "public_spec_implementation_guard_min_lines": DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_GUARD_MIN_LINES,
         "public_spec_pointer_proof_markers": list(DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS),
         "prompt_asset_roots": [],
         "adapter_review_sources": [],
@@ -134,6 +150,8 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "gate_design_review_globs": [],
         "product_surfaces": [],
         "skill_ergonomics_skill_paths": [],
+        "skill_ergonomics_runtime_install_skill_paths": [],
+        "vendored_paths": [],
         "cli_skill_surface_probe_commands": [],
         "cli_skill_surface_command_docs": [],
         "cli_skill_surface_skill_paths": [],
@@ -199,6 +217,14 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
     )
     if public_spec_implementation_ref_density_floor is not None:
         validated["public_spec_implementation_ref_density_floor"] = public_spec_implementation_ref_density_floor
+
+    public_spec_implementation_guard_min_lines = _int_value(
+        data.get("public_spec_implementation_guard_min_lines"),
+        "public_spec_implementation_guard_min_lines",
+        errors,
+    )
+    if public_spec_implementation_guard_min_lines is not None:
+        validated["public_spec_implementation_guard_min_lines"] = public_spec_implementation_guard_min_lines
 
     prompt_asset_policy = validate_prompt_asset_policy(data.get("prompt_asset_policy"), errors)
     if prompt_asset_policy is not None:
