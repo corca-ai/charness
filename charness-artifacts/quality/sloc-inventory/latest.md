@@ -14,22 +14,20 @@ Tool: tokei 14.0.0 (linuxbrew, arm64).
 
 | engine | source_lines | source_files | test_lines | test_files | ratio |
 |---|---:|---:|---:|---:|---:|
-| splitlines | 83,632 | 606 | 20,378 | 117 | 0.244 |
-| tokei (Python only) | 31,017 | 225 | 18,058 | 117 | 0.582 |
+| splitlines | 32,459 | 224 | 20,484 | 116 | 0.631 |
+| tokei (Python only) | 31,132 | 225 | 18,147 | 116 | 0.583 |
 
 Both pass the current `DEFAULT_MAX_RATIO=1.0`.
 
-## Why The Engines Disagree
-- `splitlines` walks `Path.rglob('*.py')` and only filters by `IGNORED_DIRS`
-  membership. Generated trees that are git-ignored — most notably
-  `.artifacts/cautilus-experiments/premortem-ab-compare/{baseline,candidate}/`
-  — still get counted, inflating the source denominator by ~380 files and
-  ~52,000 lines.
-- `tokei` honors `.gitignore` automatically, so it sees only the source we
-  actually maintain. It also separates code from blank and comment lines, which
-  trims another ~10–15% per file.
-- The denominator gap drives most of the ratio shift: tokei's 0.582 is the
-  honest test-production proportion for `charness`-owned Python.
+## Why The Engines Now Agree
+- `IGNORED_DIRS` in `scripts/check_test_production_ratio.py` now excludes
+  `.artifacts`, so generated `cautilus-experiments` copies no longer count as
+  source. File counts are within one of each other (224 vs 225); tokei's
+  remaining ~1,300-line lead on source is consistent with `.gitignore`-honoring
+  selection plus blank/comment trimming.
+- The 0.05 ratio gap between engines reflects how tokei drops blank and comment
+  lines from the test side too. Either engine answers the same first-order
+  question now: charness is a roughly 0.6-ratio test-production codebase.
 
 ## Repo-Wide SLOC (tokei, .gitignore honored)
 
@@ -49,22 +47,19 @@ Totals: 96,766 code / 33,219 comments / 22,592 blanks across 1,210 files.
 Raw payload: [latest.json](./latest.json).
 
 ## Decision Surface
-- Splitlines stays the default for `check_test_production_ratio.py` because it
-  has zero external dependencies and the gate already passes.
-- Tokei is the honest measurement when the question is "what is our real
-  source-vs-test mix"; promote it to default only after the repo accepts a
-  Rust binary as a hard prerequisite for the gate.
-- Either way, the splitlines `IGNORED_DIRS` set should grow to include
-  `.artifacts` so the zero-dep engine stops crediting `cautilus-experiments`
-  to source. Filed as a follow-up below.
+- Splitlines stays the default for `check_test_production_ratio.py`. With
+  `.artifacts` excluded the zero-dep engine matches tokei within ~5 ratio
+  points, so the Rust dependency is not required to keep the gate honest.
+- Tokei stays available through `--engine tokei` for repos that want the
+  multi-language SLOC view or stricter blank/comment exclusion.
+- `DEFAULT_MAX_RATIO=1.0` continues to pass for both engines; no recalibration
+  is needed.
 
 ## Follow-ups
-- Add `.artifacts` to `IGNORED_DIRS` in `scripts/check_test_production_ratio.py`
-  and update `tests/quality_gates/test_test_production_ratio.py` expectations.
-- Re-run this inventory after the IGNORED_DIRS fix to confirm splitlines
-  ratio rises from 0.244 toward the tokei value of 0.582.
-- Decide whether to promote `inventory_sloc.py` from helper to a standing
-  advisory step in `quality` Bootstrap or `scripts/run-quality.sh`.
+- None outstanding. Tokei is wired into `run-quality.sh` as the
+  `inventory-sloc` advisory phase and refreshes this artifact's
+  `latest.json` every quality run; this `latest.md` is updated by hand
+  when the framing changes.
 
 ## Refresh
 Regenerate with:

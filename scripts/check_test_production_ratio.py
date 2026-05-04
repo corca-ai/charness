@@ -9,6 +9,7 @@ import subprocess
 from pathlib import Path
 
 IGNORED_DIRS = {
+    ".artifacts",
     ".git",
     ".mypy_cache",
     ".pytest_cache",

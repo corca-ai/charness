@@ -20,13 +20,16 @@ ADAPTER_LIB = importlib.util.module_from_spec(ADAPTER_LIB_SPEC)
 ADAPTER_LIB_SPEC.loader.exec_module(ADAPTER_LIB)
 
 
-def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+def run_script(
+    *args: str, cwd: Path | None = None, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["python3", *args],
         cwd=cwd or ROOT,
         check=False,
         capture_output=True,
         text=True,
+        env=env,
     )
 
 
