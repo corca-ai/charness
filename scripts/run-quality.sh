@@ -348,7 +348,15 @@ queue_selected "check-duplicates" python3 scripts/check_duplicates.py --repo-roo
 flush_phase || OVERALL_RC=$?
 
 queue_selected "measure-startup-probes" python3 skills/public/quality/scripts/measure_startup_probes.py --repo-root "$REPO_ROOT" --class standing --record-runtime-signals
-queue_selected "inventory-sloc" python3 skills/public/quality/scripts/inventory_sloc.py --repo-root "$REPO_ROOT" --output "$REPO_ROOT/charness-artifacts/quality/sloc-inventory/latest.json"
+# inventory-sloc writes a git-tracked artifact. Skip the --output redirect when
+# CHARNESS_QUALITY_READ_ONLY=1 is set (e.g. by the pre-push hook) so automated
+# quality runs do not leave a dirty working tree behind. Explicit
+# `./scripts/run-quality.sh` invocations still refresh the artifact.
+if [[ -n "${CHARNESS_QUALITY_READ_ONLY:-}" ]]; then
+  queue_selected "inventory-sloc" python3 skills/public/quality/scripts/inventory_sloc.py --repo-root "$REPO_ROOT"
+else
+  queue_selected "inventory-sloc" python3 skills/public/quality/scripts/inventory_sloc.py --repo-root "$REPO_ROOT" --output "$REPO_ROOT/charness-artifacts/quality/sloc-inventory/latest.json"
+fi
 flush_phase || OVERALL_RC=$?
 
 if [[ -n "$RUN_QUALITY_RUNTIME_PROFILE" ]]; then
