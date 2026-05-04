@@ -29,6 +29,10 @@ adapter needs a sane starting vocabulary.
   `tsc --noEmit` for TypeScript repos
 - confidence extras when justified: coverage, `knip`, `secretlint` or
   `gitleaks`, dependency review, supply-chain audit
+- size advisory when honest code-line measurement matters: `tokei` for SLOC
+  inventory across TypeScript, JavaScript, and any sibling languages; keep
+  advisory and surface it through the `quality` skill's `inventory_sloc.py`
+  before considering a hard size gate
 
 ## Suggested ESLint Baseline
 
