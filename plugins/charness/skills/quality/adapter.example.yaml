@@ -42,6 +42,7 @@ runtime_profile_default: default
 runtime_budgets: {}
 runtime_budget_profiles: {}
 startup_probes: []
+quality_phases: []
 concept_paths: []
 preflight_commands: []
 gate_commands: []

@@ -18,12 +18,14 @@ fi
 echo "charness pre-push: checking current pointers before full quality"
 python3 scripts/validate_current_pointer_freshness.py --repo-root "$REPO_ROOT"
 
-echo "charness pre-push: running ./scripts/run-quality.sh (read-only)"
-env CHARNESS_QUALITY_READ_ONLY=1 ./scripts/run-quality.sh
+echo "charness pre-push: running ./scripts/run-quality.sh --read-only"
+./scripts/run-quality.sh --read-only
 
 if ! git diff --quiet -- charness-artifacts; then
   echo "charness pre-push: charness-artifacts/ mutated during a read-only quality run"
   echo "this is a structural bug — read-only mode should not touch git-tracked artifacts:"
+  echo "review the offending phase against quality_phases.writes_git_tracked_artifact in"
+  echo "skills/public/quality/references/adapter-contract.md, then add a read-only branch."
   git diff --stat -- charness-artifacts
   exit 1
 fi

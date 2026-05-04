@@ -61,6 +61,7 @@ def build_items(repo_name: str, args: argparse.Namespace) -> list[tuple[str, obj
         ("canonical_markdown_surfaces", ["AGENTS.md", "CLAUDE.md"]),
         ("prompt_asset_policy", DEFAULT_PROMPT_ASSET_POLICY),
         ("skill_ergonomics_gate_rules", DEFAULT_SKILL_ERGONOMICS_GATE_RULES),
+        ("quality_phases", []),
         ("concept_paths", []),
         ("preflight_commands", []),
         ("gate_commands", []),

@@ -112,6 +112,9 @@ startup_probes:
     startup_mode: warm
     surface: direct
     samples: 3
+quality_phases:
+  - label: inventory-sloc
+    writes_git_tracked_artifact: true
 concept_paths:
   - docs/control-plane.md
   - docs/public-skill-validation.md

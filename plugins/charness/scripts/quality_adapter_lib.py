@@ -145,6 +145,7 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "runtime_budgets": {},
         "runtime_budget_profiles": {},
         "startup_probes": [],
+        "quality_phases": [],
         "concept_paths": [],
         "preflight_commands": [],
         "gate_commands": [],
@@ -220,6 +221,9 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
     startup_probes = adapter_validators.startup_probes(data.get("startup_probes"), errors)
     if startup_probes is not None:
         validated["startup_probes"] = startup_probes
+    quality_phases = adapter_validators.quality_phases(data.get("quality_phases"), errors)
+    if quality_phases is not None:
+        validated["quality_phases"] = quality_phases
 
 
 def _apply_list_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:

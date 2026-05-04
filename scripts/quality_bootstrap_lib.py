@@ -101,6 +101,7 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "runtime_budgets": {},
         "runtime_budget_profiles": {},
         "startup_probes": [],
+        "quality_phases": [],
         "concept_paths": [],
         "preflight_commands": [],
         "gate_commands": [],
@@ -168,6 +169,8 @@ def _apply_existing_policy_fields(data: dict[str, Any], raw: dict[str, Any], val
         data["runtime_budget_profiles"] = dict(runtime_budget_profiles)
     if isinstance(startup_probes := raw.get("startup_probes"), list):
         data["startup_probes"] = list(startup_probes)
+    if isinstance(quality_phases := raw.get("quality_phases"), list):
+        data["quality_phases"] = [{"label": e["label"], "writes_git_tracked_artifact": bool(e.get("writes_git_tracked_artifact", False))} for e in quality_phases if isinstance(e, dict) and isinstance(e.get("label"), str) and e["label"]]
 
 
 def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
@@ -292,28 +295,20 @@ def _add_prompt_and_runtime_fields(
         default = ["AGENTS.md", "CLAUDE.md"] if field == "canonical_markdown_surfaces" else []
         final[field] = list(existing.get(field, default)) if field in explicit_fields else default
         field_statuses[field] = "preserved" if field in explicit_fields else "defaulted"
-    final["prompt_asset_policy"] = (
-        dict(existing["prompt_asset_policy"]) if "prompt_asset_policy" in explicit_fields else dict(DEFAULT_PROMPT_ASSET_POLICY)
-    )
+    final["prompt_asset_policy"] = dict(existing["prompt_asset_policy"]) if "prompt_asset_policy" in explicit_fields else dict(DEFAULT_PROMPT_ASSET_POLICY)
     field_statuses["prompt_asset_policy"] = "preserved" if "prompt_asset_policy" in explicit_fields else "defaulted"
-    final["skill_ergonomics_gate_rules"] = (
-        list(existing.get("skill_ergonomics_gate_rules", []))
-        if "skill_ergonomics_gate_rules" in explicit_fields
-        else list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES)
-    )
+    final["skill_ergonomics_gate_rules"] = list(existing.get("skill_ergonomics_gate_rules", [])) if "skill_ergonomics_gate_rules" in explicit_fields else list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES)
     field_statuses["skill_ergonomics_gate_rules"] = "preserved" if "skill_ergonomics_gate_rules" in explicit_fields else "defaulted"
-    final["runtime_profile_default"] = (
-        existing.get("runtime_profile_default", "default") if "runtime_profile_default" in explicit_fields else "default"
-    )
+    final["runtime_profile_default"] = existing.get("runtime_profile_default", "default") if "runtime_profile_default" in explicit_fields else "default"
     field_statuses["runtime_profile_default"] = "preserved" if "runtime_profile_default" in explicit_fields else "defaulted"
     final["runtime_budgets"] = dict(existing.get("runtime_budgets", {})) if "runtime_budgets" in explicit_fields else {}
     field_statuses["runtime_budgets"] = "preserved" if "runtime_budgets" in explicit_fields else "defaulted"
-    final["runtime_budget_profiles"] = (
-        dict(existing.get("runtime_budget_profiles", {})) if "runtime_budget_profiles" in explicit_fields else {}
-    )
+    final["runtime_budget_profiles"] = dict(existing.get("runtime_budget_profiles", {})) if "runtime_budget_profiles" in explicit_fields else {}
     field_statuses["runtime_budget_profiles"] = "preserved" if "runtime_budget_profiles" in explicit_fields else "defaulted"
     final["startup_probes"] = list(existing.get("startup_probes", [])) if "startup_probes" in explicit_fields else []
     field_statuses["startup_probes"] = "preserved" if "startup_probes" in explicit_fields else "defaulted"
+    final["quality_phases"] = [dict(e) for e in existing.get("quality_phases", [])] if "quality_phases" in explicit_fields else []
+    field_statuses["quality_phases"] = "preserved" if "quality_phases" in explicit_fields else "defaulted"
 
 
 def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, str], list[dict[str, Any]]]:
@@ -419,6 +414,7 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
         ("runtime_budgets", data["runtime_budgets"]),
         ("runtime_budget_profiles", data["runtime_budget_profiles"]),
         ("startup_probes", data["startup_probes"]),
+        ("quality_phases", data["quality_phases"]),
         ("concept_paths", data["concept_paths"]),
         ("preflight_commands", data["preflight_commands"]),
         ("gate_commands", data["gate_commands"]),
@@ -430,7 +426,7 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
         "product_surfaces cli_skill_surface_probe_commands cli_skill_surface_command_docs "
         "cli_skill_surface_skill_paths cli_skill_surface_change_globs canonical_markdown_surfaces "
         "public_spec_section_exemptions public_spec_pointer_proof_markers "
-        "skill_ergonomics_gate_rules skill_ergonomics_skill_paths runtime_budgets runtime_budget_profiles startup_probes concept_paths preflight_commands "
+        "skill_ergonomics_gate_rules skill_ergonomics_skill_paths runtime_budgets runtime_budget_profiles startup_probes quality_phases concept_paths preflight_commands "
         "gate_commands review_commands security_commands".split()
     )
     policy_items = [

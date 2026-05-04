@@ -57,6 +57,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
         "runtime_budgets": "defaulted",
         "runtime_budget_profiles": "defaulted",
         "startup_probes": "defaulted",
+        "quality_phases": "defaulted",
         "skill_ergonomics_gate_rules": "defaulted",
         "skill_ergonomics_skill_paths": "defaulted",
         "specdown_smoke_patterns": "defaulted",
@@ -107,6 +108,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     assert resolved["data"]["runtime_budgets"] == {}
     assert resolved["data"]["runtime_budget_profiles"] == {}
     assert resolved["data"]["startup_probes"] == []
+    assert resolved["data"]["quality_phases"] == []
     assert resolved["data"]["gate_commands"] == ["./scripts/run-quality.sh"]
     assert resolved["data"]["review_commands"] == ["./scripts/run-quality.sh --review"]
     assert resolved["data"]["preflight_commands"] == ["python3 scripts/validate_maintainer_setup.py --repo-root ."]
