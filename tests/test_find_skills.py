@@ -546,6 +546,8 @@ def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_pa
             },
             "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id gws-cli",
             "next_skill_id": "gather",
+            "manifest_origin": "user-repo",
+            "staged": None,
         }
     ]
 
@@ -593,5 +595,7 @@ def test_list_capabilities_can_emit_tool_recommendations_for_role(tmp_path: Path
             },
             "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id cautilus",
             "next_skill_id": "quality",
+            "manifest_origin": "user-repo",
+            "staged": None,
         }
     ]

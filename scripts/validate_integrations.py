@@ -15,6 +15,8 @@ REPO_ROOT = repo_root_from_script(__file__)
 _scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
 load_lock_schema = _scripts_control_plane_lib_module.load_lock_schema
 load_manifests = _scripts_control_plane_lib_module.load_manifests
+load_manifests_for_discovery = _scripts_control_plane_lib_module.load_manifests_for_discovery
+load_dependencies = _scripts_control_plane_lib_module.load_dependencies
 load_support_capabilities = _scripts_control_plane_lib_module.load_support_capabilities
 lock_paths = _scripts_control_plane_lib_module.lock_paths
 validate_lock_data = _scripts_control_plane_lib_module.validate_lock_data
@@ -148,7 +150,7 @@ def main() -> int:
         manifests = load_manifests(repo_root)
         support_capabilities = load_support_capabilities(repo_root)
         for manifest_path in sorted((repo_root / "integrations" / "tools").glob("*.json")):
-            if manifest_path.name == "manifest.schema.json":
+            if manifest_path.name in {"manifest.schema.json", "dependencies.json", "dependencies.schema.json"}:
                 continue
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             validate_access_mode_order(manifest, manifest_path)
@@ -165,11 +167,23 @@ def main() -> int:
         lock_files = lock_paths(repo_root)
         for path in lock_files:
             validate_lock_data(json.loads(path.read_text(encoding="utf-8")), lock_schema)
+        dependencies = load_dependencies(repo_root)
+        if dependencies is not None:
+            known_ids = {manifest["tool_id"] for manifest in load_manifests_for_discovery(repo_root)}
+            unknown = [tid for tid in dependencies["tool_dependencies"] if tid not in known_ids]
+            if unknown:
+                rendered = ", ".join(f"`{tid}`" for tid in unknown)
+                raise ValidationError(
+                    f"integrations/tools/dependencies.json references unknown tool_ids: {rendered}"
+                )
     except Exception as exc:  # pragma: no cover - surfaced via CLI tests
         raise ValidationError(str(exc)) from exc
+    dep_count = 0 if dependencies is None else len(dependencies["tool_dependencies"])
     print(
         f"Validated {len(manifests)} integration manifests, "
-        f"{len(support_capabilities)} support capabilities, and {len(lock_files)} lock files."
+        f"{len(support_capabilities)} support capabilities, "
+        f"{len(lock_files)} lock files, "
+        f"{dep_count} declared tool dependencies."
     )
     return 0
 

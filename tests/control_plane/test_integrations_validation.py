@@ -288,3 +288,38 @@ def test_doctor_reads_support_owned_capability_metadata(tmp_path: Path) -> None:
     lock_payload = json.loads((locks_dir / "gather-slack.json").read_text(encoding="utf-8"))
     assert lock_payload["manifest_path"] == "skills/support/gather-slack/capability.json"
     assert lock_payload["doctor"]["kind"] == "support_runtime"
+
+
+def test_validate_integrations_accepts_dependencies_referencing_known_tool(tmp_path: Path) -> None:
+    repo = seed_control_plane_repo(tmp_path)
+    deps = {"schema_version": 1, "tool_dependencies": ["demo-tool"]}
+    (repo / "integrations" / "tools" / "dependencies.json").write_text(
+        json.dumps(deps, indent=2) + "\n", encoding="utf-8"
+    )
+    (repo / "integrations" / "tools" / "dependencies.schema.json").write_text(
+        (ROOT / "integrations" / "tools" / "dependencies.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    assert "1 declared tool dependencies" in result.stdout
+
+
+def test_validate_integrations_rejects_dependencies_with_unknown_tool(tmp_path: Path) -> None:
+    repo = seed_control_plane_repo(tmp_path)
+    deps = {"schema_version": 1, "tool_dependencies": ["demo-tool", "ghost-tool"]}
+    (repo / "integrations" / "tools" / "dependencies.json").write_text(
+        json.dumps(deps, indent=2) + "\n", encoding="utf-8"
+    )
+    (repo / "integrations" / "tools" / "dependencies.schema.json").write_text(
+        (ROOT / "integrations" / "tools" / "dependencies.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/validate_integrations.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "unknown tool_ids" in result.stderr
+    assert "ghost-tool" in result.stderr

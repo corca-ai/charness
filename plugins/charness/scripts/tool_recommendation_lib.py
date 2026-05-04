@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from scripts.control_plane_lib import staged_tool_ids
 from scripts.doctor_lib import inspect_capability_state
 
 
@@ -45,7 +46,19 @@ def why_recommended(manifest: dict[str, Any], *, next_skill_id: str) -> str:
     return f"Recommended because `{next_skill_id}` declares this tool as a supported external route."
 
 
-def build_tool_recommendation(repo_root: Path, manifest: dict[str, Any], *, next_skill_id: str) -> dict[str, Any]:
+def _staged_value(repo_root: Path, tool_id: str, *, staged_ids: set[str] | None) -> bool | None:
+    if staged_ids is None:
+        return None
+    return tool_id in staged_ids
+
+
+def build_tool_recommendation(
+    repo_root: Path,
+    manifest: dict[str, Any],
+    *,
+    next_skill_id: str,
+    staged_ids: set[str] | None = None,
+) -> dict[str, Any]:
     state = inspect_capability_state(repo_root, manifest)
     return {
         "tool_id": manifest["tool_id"],
@@ -65,6 +78,8 @@ def build_tool_recommendation(repo_root: Path, manifest: dict[str, Any], *, next
         "install": install_route(manifest),
         "verify_command": verify_command(manifest["tool_id"]),
         "next_skill_id": next_skill_id,
+        "manifest_origin": manifest.get("_manifest_origin", "user-repo"),
+        "staged": _staged_value(repo_root, manifest["tool_id"], staged_ids=staged_ids),
     }
 
 
@@ -74,8 +89,9 @@ def recommendations_for_public_skill(
     *,
     skill_id: str,
 ) -> list[dict[str, Any]]:
+    staged_ids = staged_tool_ids(repo_root)
     return [
-        build_tool_recommendation(repo_root, manifest, next_skill_id=skill_id)
+        build_tool_recommendation(repo_root, manifest, next_skill_id=skill_id, staged_ids=staged_ids)
         for manifest in manifests
         if skill_id in manifest.get("supports_public_skills", [])
     ]
@@ -89,8 +105,9 @@ def recommendations_for_role(
     next_skill_id: str,
     only_blocking: bool = False,
 ) -> list[dict[str, Any]]:
+    staged_ids = staged_tool_ids(repo_root)
     recommendations = [
-        build_tool_recommendation(repo_root, manifest, next_skill_id=next_skill_id)
+        build_tool_recommendation(repo_root, manifest, next_skill_id=next_skill_id, staged_ids=staged_ids)
         for manifest in manifests
         if manifest.get("recommendation_role") == recommendation_role
         and next_skill_id in manifest.get("supports_public_skills", [])

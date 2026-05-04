@@ -155,6 +155,50 @@ Expected fields:
 - `host_notes`
   - optional host-specific install wrinkles
 
+## User-Repo Discovery
+
+User repos that consume `charness` as a plugin do not need to copy every
+manifest. Discovery surfaces (quality `list_tool_recommendations`, narrative
+`list_tool_recommendations`, find-skills `list_capabilities`) merge plugin-
+shipped manifests as a fallback so a user repo without an
+`integrations/tools/` of its own still sees the full charness-owned tool
+set. When a user repo ships a manifest with the same `tool_id`, the user
+copy wins; this is the override path for `install` commands, version
+constraints, or recommendation roles a specific repo wants to pin.
+
+Strict workflows (`install_tools`, `sync_support`, `update_tools`,
+`validate_integrations`) honor the same merge through `load_manifests` so
+`charness install <tool>` works in user repos without requiring local
+manifests. Tests opt out of the fallback through
+`CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS=1`.
+
+User repos that want their tool dependencies visible in git (and in PR
+diffs) can declare them explicitly:
+
+```text
+integrations/tools/dependencies.json
+```
+
+Schema (validated by [`validate_integrations.py`](../scripts/validate_integrations.py)):
+
+```json
+{
+  "schema_version": 1,
+  "tool_dependencies": ["tokei", "ruff"]
+}
+```
+
+Effects:
+
+- `tool_recommendation` payloads gain `staged: true|false`. `null` when no
+  `dependencies.json` is declared.
+- `validate_integrations` rejects unknown `tool_id`s in the list so the
+  declaration cannot drift away from the available manifest set.
+- Discovery and recommendation behavior is otherwise unchanged.
+
+This file is optional and informational; absence means "no explicit staging
+policy" and every plugin-fallback recommendation surfaces as `staged: null`.
+
 ## Desired Commands
 
 These do not need implementation in session 1, but the plan assumes them.

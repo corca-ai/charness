@@ -115,6 +115,8 @@ def test_quality_tool_recommendations_emit_blocking_validation_routes(tmp_path: 
                 },
                 "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id cautilus",
                 "next_skill_id": "quality",
+                "manifest_origin": "user-repo",
+                "staged": None,
             }
         ],
     }
@@ -223,6 +225,8 @@ def test_quality_tool_recommendations_emit_blocking_runtime_routes(tmp_path: Pat
                 },
                 "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id glow",
                 "next_skill_id": "quality",
+                "manifest_origin": "user-repo",
+                "staged": None,
             }
         ],
     }
@@ -292,6 +296,8 @@ def test_narrative_tool_recommendations_emit_blocking_runtime_routes(tmp_path: P
                 },
                 "verify_command": "python3 scripts/doctor.py --repo-root . --json --tool-id glow",
                 "next_skill_id": "narrative",
+                "manifest_origin": "user-repo",
+                "staged": None,
             }
         ],
     }

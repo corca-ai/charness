@@ -42,8 +42,11 @@ def load_lock_schema() -> dict[str, Any]:
 def load_support_capability_schema() -> dict[str, Any]:
     return json.loads(support_capability_schema_path(Path(__file__).resolve().parent.parent).read_text(encoding="utf-8"))
 
+_NON_MANIFEST_TOOLS_FILES = {"manifest.schema.json", "dependencies.json", "dependencies.schema.json"}
+
+
 def manifest_paths(repo_root: Path) -> list[Path]:
-    return [path for path in sorted(integrations_tools_dir(repo_root).glob("*.json")) if path.name != "manifest.schema.json"]
+    return [path for path in sorted(integrations_tools_dir(repo_root).glob("*.json")) if path.name not in _NON_MANIFEST_TOOLS_FILES]
 
 
 def _plugin_fallback_root() -> Path:
@@ -56,7 +59,7 @@ def plugin_fallback_manifest_paths() -> list[Path]:
     fallback_dir = integrations_tools_dir(_plugin_fallback_root())
     if not fallback_dir.is_dir():
         return []
-    return [path for path in sorted(fallback_dir.glob("*.json")) if path.name != "manifest.schema.json"]
+    return [path for path in sorted(fallback_dir.glob("*.json")) if path.name not in _NON_MANIFEST_TOOLS_FILES]
 def load_manifest(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -140,6 +143,39 @@ def load_manifests(repo_root: Path) -> list[dict[str, Any]]:
 
 def load_manifests_for_discovery(repo_root: Path) -> list[dict[str, Any]]:
     return _load_manifests_merged(repo_root, validate=False)
+
+
+def dependencies_path(repo_root: Path) -> Path:
+    return integrations_tools_dir(repo_root) / "dependencies.json"
+
+
+def dependencies_schema_path(repo_root: Path) -> Path:
+    return integrations_tools_dir(repo_root) / "dependencies.schema.json"
+
+
+def load_dependencies_schema() -> dict[str, Any]:
+    plugin_root = _plugin_fallback_root()
+    candidate = dependencies_schema_path(plugin_root)
+    if candidate.is_file():
+        return json.loads(candidate.read_text(encoding="utf-8"))
+    repo_candidate = dependencies_schema_path(Path(__file__).resolve().parent.parent)
+    return json.loads(repo_candidate.read_text(encoding="utf-8"))
+
+
+def load_dependencies(repo_root: Path) -> dict[str, Any] | None:
+    path = dependencies_path(repo_root)
+    if not path.is_file():
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    jsonschema.validate(data, load_dependencies_schema())
+    return data
+
+
+def staged_tool_ids(repo_root: Path) -> set[str] | None:
+    data = load_dependencies(repo_root)
+    if data is None:
+        return None
+    return set(data["tool_dependencies"])
 
 
 def load_support_capabilities(repo_root: Path) -> list[dict[str, Any]]:

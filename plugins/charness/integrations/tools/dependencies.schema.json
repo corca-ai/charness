@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "charness integration dependencies",
+  "description": "Explicit list of integration tool ids the repo depends on. Optional; absence means no explicit staging policy and every plugin-fallback recommendation surfaces as unstaged.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "tool_dependencies"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "tool_dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+      },
+      "uniqueItems": true
+    }
+  }
+}
