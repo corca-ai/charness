@@ -54,6 +54,7 @@ Quality-specific fields:
 - `skill_ergonomics_gate_rules`
 - `runtime_budgets`
 - `startup_probes`
+- `quality_phases`
 - `prompt_asset_roots`
 - `prompt_asset_policy`
 - `concept_paths`
@@ -191,6 +192,28 @@ or agent-facing CLIs. Each record should include:
 
 Use `startup_probes` to describe the startup seam and reuse `runtime_budgets`
 for standing latency budgets keyed by the same `label`.
+
+`quality_phases` declares per-phase write-policy metadata so any quality runner
+that consumes the adapter can split read-only and full modes consistently. Each
+entry should include:
+
+- `label`
+- `writes_git_tracked_artifact`
+
+Only phases whose runner-side behavior depends on mode need an entry; the
+default for unlisted phases is `writes_git_tracked_artifact: false`. A phase
+labelled with `writes_git_tracked_artifact: true` must still execute in
+read-only mode and stay an honest gate; the read-only branch only suppresses
+the artifact write so maintainer hooks (for example pre-push) can run the gate
+without leaving a dirty working tree.
+
+The canonical mode-passing mechanism for the charness-shipped runner is the
+`--read-only` CLI flag on `<repo-root>/scripts/run-quality.sh` and the
+`CHARNESS_QUALITY_MODE=read-only|full` environment variable. Consumer-repo
+runners that interpret the same adapter should accept the same env or expose
+their own equivalent flag. The legacy `CHARNESS_QUALITY_READ_ONLY` env was
+removed when this contract landed; wrappers that still set it now get the
+default full mode and should switch to the canonical surface.
 
 `gate_commands` should stay suitable for quiet maintainer-local enforcement
 such as pre-push. `review_commands` should hold the fuller quality-review path

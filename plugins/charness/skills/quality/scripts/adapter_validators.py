@@ -110,3 +110,32 @@ def startup_probes(value: Any, errors: list[str]) -> list[dict[str, Any]] | None
 
 def skill_ergonomics_gate_rules(value: Any, errors: list[str]) -> list[str] | None:
     return validate_skill_ergonomics_gate_rules(value, errors)
+
+
+def quality_phases(value: Any, errors: list[str]) -> list[dict[str, Any]] | None:
+    if value is None:
+        return None
+    if not isinstance(value, list):
+        errors.append("quality_phases must be a list")
+        return None
+    seen: set[str] = set()
+    validated: list[dict[str, Any]] = []
+    for index, raw in enumerate(value):
+        prefix = f"quality_phases[{index}]"
+        if not isinstance(raw, dict):
+            errors.append(f"{prefix} must be a mapping")
+            continue
+        label = raw.get("label")
+        if not isinstance(label, str) or not label:
+            errors.append(f"{prefix}.label must be a non-empty string")
+            continue
+        if label in seen:
+            errors.append(f"{prefix}.label `{label}` is duplicated")
+            continue
+        seen.add(label)
+        writes = raw.get("writes_git_tracked_artifact", False)
+        if not isinstance(writes, bool):
+            errors.append(f"{prefix}.writes_git_tracked_artifact must be a boolean")
+            continue
+        validated.append({"label": label, "writes_git_tracked_artifact": writes})
+    return validated

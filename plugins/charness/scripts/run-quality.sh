@@ -12,14 +12,23 @@ STANDING_PYTEST_TARGETS=(
 )
 
 RUN_QUALITY_REVIEW=0
+RUN_QUALITY_MODE="${CHARNESS_QUALITY_MODE:-full}"
 for arg in "$@"; do
   case "$arg" in
     --review)
       RUN_QUALITY_REVIEW=1
       ;;
+    --read-only)
+      RUN_QUALITY_MODE="read-only"
+      ;;
+    --full)
+      RUN_QUALITY_MODE="full"
+      ;;
     --help|-h)
-      echo "Usage: ./scripts/run-quality.sh [--review]"
-      echo "  --review  replay passing phase logs and validate external links online"
+      echo "Usage: ./scripts/run-quality.sh [--review] [--read-only|--full]"
+      echo "  --review     replay passing phase logs and validate external links online"
+      echo "  --read-only  skip phases that would mutate git-tracked quality artifacts"
+      echo "  --full       refresh git-tracked quality artifacts (default)"
       exit 0
       ;;
     *)
@@ -28,6 +37,15 @@ for arg in "$@"; do
       ;;
   esac
 done
+
+case "$RUN_QUALITY_MODE" in
+  full|read-only) ;;
+  *)
+    echo "run-quality: CHARNESS_QUALITY_MODE must be 'full' or 'read-only', got '$RUN_QUALITY_MODE'" >&2
+    exit 2
+    ;;
+esac
+export CHARNESS_QUALITY_MODE="$RUN_QUALITY_MODE"
 
 RUN_QUALITY_TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$RUN_QUALITY_TMPDIR"' EXIT
@@ -348,11 +366,10 @@ queue_selected "check-duplicates" python3 scripts/check_duplicates.py --repo-roo
 flush_phase || OVERALL_RC=$?
 
 queue_selected "measure-startup-probes" python3 skills/public/quality/scripts/measure_startup_probes.py --repo-root "$REPO_ROOT" --class standing --record-runtime-signals
-# inventory-sloc writes a git-tracked artifact. Skip the --output redirect when
-# CHARNESS_QUALITY_READ_ONLY=1 is set (e.g. by the pre-push hook) so automated
-# quality runs do not leave a dirty working tree behind. Explicit
-# `./scripts/run-quality.sh` invocations still refresh the artifact.
-if [[ -n "${CHARNESS_QUALITY_READ_ONLY:-}" ]]; then
+# inventory-sloc writes a git-tracked artifact, which the adapter declares via
+# quality_phases. Read-only mode (e.g. the pre-push hook) drops the --output
+# redirect so the working tree stays clean; full mode refreshes the artifact.
+if [[ "$RUN_QUALITY_MODE" == "read-only" ]]; then
   queue_selected "inventory-sloc" python3 skills/public/quality/scripts/inventory_sloc.py --repo-root "$REPO_ROOT"
 else
   queue_selected "inventory-sloc" python3 skills/public/quality/scripts/inventory_sloc.py --repo-root "$REPO_ROOT" --output "$REPO_ROOT/charness-artifacts/quality/sloc-inventory/latest.json"

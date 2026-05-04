@@ -100,16 +100,15 @@ Adapter policy:
      evaluation, prompt regression, baseline compare, or insufficient local proof
    - add or strengthen checks when an important branch would otherwise stay unproven
    - for browser-facing output, treat code-only checks as partial proof by default; resolve browser/runtime support through `find-skills`, run it when available, or say explicitly that it did not run
-   - if the slice changes repo-owned instruction or prompt surfaces such as
-     `<repo-root>/AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or
-     adapter prompt wording, refresh `<repo-root>/charness-artifacts/cautilus/latest.md`
-     from repo-owned cautilus proof before closeout
+   - for slices that depend on an external named target (operator command instance/service/branch/env alias) or a third-party API call, verify the runtime state of the name and the live request/response contract before acting — see `../debug/references/named-target-verification.md` and `references/external-api-contract.md`
+   - if the slice changes repo-owned instruction or prompt surfaces such as `<repo-root>/AGENTS.md`,
+     public/support `SKILL.md`, behavior-steering references, or adapter prompt wording, refresh
+     `<repo-root>/charness-artifacts/cautilus/latest.md` from repo-owned cautilus proof before closeout
    - let the repo's cautilus adapter decide prompt/evaluator proof policy;
      generic review or closeout wording must not silently launch Cautilus
-   - for behavior-preserving prompt changes, keep regression proof anchored by
-     `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` or
-     a repo-owned dogfood wrapper; for behavior-improving claims, also record
-     the baseline compare path with `cautilus workspace prepare-compare` and
+   - for behavior-preserving prompt changes, keep regression proof anchored by `cautilus eval test
+     --repo-root . --adapter-name <repo-owned-adapter>` or a repo-owned dogfood wrapper; for behavior-improving
+     claims, also record the baseline compare path with `cautilus workspace prepare-compare` and
      `cautilus eval evaluate --input <observed.json>`
    - when the slice changes reader fit, truth-surface framing, or skill-core
      reasoning shape, add a short scenario-review note instead of treating
@@ -194,6 +193,7 @@ The closeout should usually include:
 - `references/adapter-contract.md`
 - `references/contract-consumption.md`
 - `references/verification-ladder.md`
+- `references/external-api-contract.md`
 - `references/design-lenses.md`
 - `references/sequence-discipline.md`
 - `references/review-gate.md`

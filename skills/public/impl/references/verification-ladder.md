@@ -40,11 +40,28 @@ If an equivalent local browser seam is used instead, name it explicitly. If no
 browser/runtime pass ran, say the UI or rendered surface was not visually
 verified.
 
+## External Provider API
+
+When the slice adds or changes calls to a third-party API (Slack, Google,
+Notion, GitHub REST, Linear, Jira, or similar), mocked unit tests prove
+orchestration, not the provider contract. Treat at least one executed
+round-trip — request shape plus response parse — against the live provider as
+the strongest honest proof for that seam, and run it before closeout when the
+host has credentials.
+
+If credentials are not available, say so explicitly and mark the integration as
+unverified at the contract level rather than letting green mocked tests imply
+the seam is proven. See `references/external-api-contract.md` for the recurring
+trap shapes that mocked tests routinely miss.
+
 ## Rules
 
 - prefer executed proof over a claim whenever an executable path exists
 - when UI, rendered artifacts, screenshots, or browser paths matter, inspect a
   real render if a browser path exists
+- when the slice adds or changes a third-party API call, run at least one live
+  request + response-parse round-trip when credentials exist; otherwise mark
+  the seam unverified at the contract level
 - when validation-shaped review or closeout work matters, use the validation
   recommendation route before settling for same-agent manual review
 - when user-visible agent or tool invocation matters, run a real invocation if
