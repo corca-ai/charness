@@ -1,0 +1,79 @@
+{
+  "advisory_notes": [
+    "SLOC inventory is advisory; promote a hard gate only after the repo has tuned excludes and confirmed the signal is low-noise."
+  ],
+  "engine": "tokei",
+  "exclude": [
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".tox",
+    ".venv",
+    "__pycache__",
+    "node_modules",
+    "target",
+    "vendor"
+  ],
+  "languages": {
+    "JSON": {
+      "blanks": 0,
+      "code": 17504,
+      "comments": 0,
+      "files": 66
+    },
+    "JavaScript": {
+      "blanks": 152,
+      "code": 2264,
+      "comments": 0,
+      "files": 10
+    },
+    "Markdown": {
+      "blanks": 9980,
+      "code": 0,
+      "comments": 32787,
+      "files": 520
+    },
+    "Plain Text": {
+      "blanks": 2,
+      "code": 0,
+      "comments": 22,
+      "files": 7
+    },
+    "Python": {
+      "blanks": 12254,
+      "code": 75492,
+      "comments": 377,
+      "files": 564
+    },
+    "Shell": {
+      "blanks": 200,
+      "code": 1058,
+      "comments": 19,
+      "files": 19
+    },
+    "TOML": {
+      "blanks": 4,
+      "code": 18,
+      "comments": 0,
+      "files": 1
+    },
+    "YAML": {
+      "blanks": 0,
+      "code": 430,
+      "comments": 14,
+      "files": 24
+    }
+  },
+  "repo_root": "/home/ubuntu/charness",
+  "schema_version": 1,
+  "scope": "tokei-sloc",
+  "status": "ok",
+  "tokei_version": "tokei 14.0.0 compiled with serialization support: json, cbor, yaml",
+  "totals": {
+    "blanks": 22592,
+    "code": 96766,
+    "comments": 33219,
+    "files": 1211
+  }
+}

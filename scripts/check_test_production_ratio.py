@@ -66,7 +66,7 @@ def _tokei_python_code(target: Path, *, exclude: set[str]) -> tuple[int, int]:
             "tokei binary not found on PATH; install per integrations/tools/tokei.json or "
             "fall back to --engine splitlines."
         )
-    cmd = ["tokei", "--output", "json", "--type", "Python"]
+    cmd = ["tokei", "--output", "json", "--types", "Python"]
     for name in sorted(exclude):
         cmd.extend(["--exclude", name])
     cmd.append(str(target))
