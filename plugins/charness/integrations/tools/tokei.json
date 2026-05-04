@@ -1,0 +1,92 @@
+{
+  "schema_version": "1",
+  "tool_id": "tokei",
+  "kind": "external_binary",
+  "display_name": "Tokei",
+  "summary": "Fast multi-language source-lines-of-code counter. Use when `quality` needs an honest SLOC inventory that separates code, comments, and blanks instead of treating raw `splitlines()` totals as code size.",
+  "upstream_repo": "XAMPPRocky/tokei",
+  "homepage": "https://github.com/XAMPPRocky/tokei",
+  "platforms": [
+    "linux",
+    "macos",
+    "windows"
+  ],
+  "status": "active",
+  "lifecycle": {
+    "install": {
+      "mode": "script",
+      "commands": [
+        "if command -v cargo >/dev/null 2>&1; then cargo install tokei; elif command -v brew >/dev/null 2>&1; then brew install tokei; else echo 'Install tokei from https://github.com/XAMPPRocky/tokei#installation'; exit 1; fi"
+      ],
+      "docs_url": "https://github.com/XAMPPRocky/tokei#installation",
+      "install_url": "https://github.com/XAMPPRocky/tokei#installation",
+      "notes": [
+        "Prefer `cargo install tokei` when Rust is already on the machine; otherwise use `brew install tokei` on macOS or download a release binary from the upstream repo.",
+        "After installation, ensure the install bin directory is on PATH and verify with `tokei --version` before trusting any quality SLOC inventory output."
+      ]
+    },
+    "update": {
+      "mode": "manual",
+      "docs_url": "https://github.com/XAMPPRocky/tokei/releases",
+      "notes": [
+        "Update through the same mechanism that originally installed the binary; for cargo installs, run `cargo install tokei --force`."
+      ]
+    }
+  },
+  "checks": {
+    "detect": {
+      "commands": [
+        "tokei --version"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:tokei"
+      ],
+      "failure_hint": "Install `tokei` before running the SLOC inventory advisory; do not report `splitlines()` totals as if they were code-line measurements."
+    },
+    "healthcheck": {
+      "commands": [
+        "tokei --help"
+      ],
+      "success_criteria": [
+        "exit_code:0",
+        "stdout_contains:Usage"
+      ],
+      "failure_hint": "The `tokei` binary exists but its help surface is not healthy. Reinstall or upgrade `tokei`, then rerun the SLOC inventory."
+    }
+  },
+  "access_modes": [
+    "binary",
+    "degraded"
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer a recent upstream-supported tokei release.",
+    "detected_by": "stdout"
+  },
+  "package_managers": {
+    "cargo": {
+      "package_name": "tokei",
+      "notes": [
+        "Upstream documents `cargo install tokei` as the canonical Rust install path."
+      ]
+    }
+  },
+  "supports_public_skills": [
+    "quality"
+  ],
+  "recommendation_role": "validation",
+  "degradation": {
+    "when_missing": [
+      "Multi-language SLOC inventory cannot run without `tokei`; existing `splitlines()`-based length gates still work but include blank and comment lines.",
+      "Quality must not claim SLOC-based ratio or size measurements without `tokei`; report the inventory as not-run instead of substituting `splitlines()` totals."
+    ],
+    "when_version_mismatch": [
+      "Treat unfamiliar language detection or output schema changes as a manual review point before promoting tokei findings into a hard gate."
+    ]
+  },
+  "host_notes": [
+    "Tokei is currently a declared integration only; the SLOC inventory script and any preset wiring belong to a follow-up slice (Phase B).",
+    "Repo-internal `splitlines()` gates such as `check_test_production_ratio.py` continue to work without `tokei`; this manifest does not change those gates."
+  ]
+}
