@@ -33,6 +33,57 @@ def test_inventory_cli_ergonomics_flags_flat_help_registry(tmp_path: Path) -> No
     assert payload["findings"][0]["command_count"] == 12
 
 
+def test_inventory_cli_ergonomics_reports_unconfigured_when_nothing_to_scan(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    result = run_script(
+        "skills/public/quality/scripts/inventory_cli_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "unconfigured"
+    assert payload["registries"] == []
+    assert payload["archetype_contracts"] == []
+
+
+def test_inventory_cli_ergonomics_skips_vendored_registries(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    vendored = repo / "packages" / "official-skills" / "charness-public" / "internal" / "cli"
+    vendored.mkdir(parents=True)
+    (vendored / "command-registry.json").write_text(
+        json.dumps({"commands": [{"path": [f"command-{i}"]} for i in range(20)]}) + "\n",
+        encoding="utf-8",
+    )
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "output_dir: charness-artifacts/quality",
+                "vendored_paths:",
+                "  - packages/official-skills/charness-public",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_cli_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "unconfigured"
+    assert payload["registries"] == []
+
+
 def test_inventory_cli_ergonomics_flags_cross_archetype_contract_overlap(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     contract_path = repo / "docs" / "command-archetypes.json"

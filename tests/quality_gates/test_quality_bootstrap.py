@@ -60,6 +60,9 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
         "quality_phases": "defaulted",
         "skill_ergonomics_gate_rules": "defaulted",
         "skill_ergonomics_skill_paths": "defaulted",
+        "skill_ergonomics_runtime_install_skill_paths": "defaulted",
+        "vendored_paths": "defaulted",
+        "public_spec_implementation_guard_min_lines": "defaulted",
         "specdown_smoke_patterns": "defaulted",
         "spec_pytest_reference_format": "inferred",
         "security_commands": "installed",
@@ -162,6 +165,11 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
                 "  - mode_option_pressure_terms",
                 "skill_ergonomics_skill_paths:",
                 "  - packages/official-skills/ceal-native/skills",
+                "skill_ergonomics_runtime_install_skill_paths:",
+                "  - packages/official-skills/ceal-native/skills",
+                "vendored_paths:",
+                "  - packages/official-skills/charness-public",
+                "public_spec_implementation_guard_min_lines: 80",
                 "runtime_profile_default: local-fast",
                 "runtime_budgets:",
                 "  pytest: 70000",
@@ -196,24 +204,16 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["adapter_status"] == "updated"
-    assert payload["field_statuses"]["gate_commands"] == "preserved"
-    assert payload["field_statuses"]["coverage_fragile_margin_pp"] == "preserved"
-    assert payload["field_statuses"]["coverage_floor_policy"] == "preserved"
-    assert payload["field_statuses"]["specdown_smoke_patterns"] == "preserved"
-    assert payload["field_statuses"]["spec_pytest_reference_format"] == "preserved"
-    assert payload["field_statuses"]["prompt_asset_roots"] == "preserved"
-    assert payload["field_statuses"]["recommendation_defaults_version"] == "preserved"
-    assert payload["field_statuses"]["adapter_review_sources"] == "preserved"
-    assert payload["field_statuses"]["acknowledged_recommendations"] == "preserved"
-    assert payload["field_statuses"]["gate_design_review_globs"] == "preserved"
-    assert payload["field_statuses"]["canonical_markdown_surfaces"] == "preserved"
-    assert payload["field_statuses"]["prompt_asset_policy"] == "preserved"
-    assert payload["field_statuses"]["skill_ergonomics_gate_rules"] == "preserved"
-    assert payload["field_statuses"]["skill_ergonomics_skill_paths"] == "preserved"
-    assert payload["field_statuses"]["runtime_profile_default"] == "preserved"
-    assert payload["field_statuses"]["runtime_budgets"] == "preserved"
-    assert payload["field_statuses"]["runtime_budget_profiles"] == "preserved"
-    assert payload["field_statuses"]["startup_probes"] == "preserved"
+    preserved_keys = (
+        "gate_commands", "coverage_fragile_margin_pp", "coverage_floor_policy", "specdown_smoke_patterns",
+        "spec_pytest_reference_format", "prompt_asset_roots", "recommendation_defaults_version", "adapter_review_sources",
+        "acknowledged_recommendations", "gate_design_review_globs", "canonical_markdown_surfaces", "prompt_asset_policy",
+        "skill_ergonomics_gate_rules", "skill_ergonomics_skill_paths", "skill_ergonomics_runtime_install_skill_paths",
+        "vendored_paths", "public_spec_implementation_guard_min_lines", "runtime_profile_default", "runtime_budgets",
+        "runtime_budget_profiles", "startup_probes",
+    )
+    for key in preserved_keys:
+        assert payload["field_statuses"][key] == "preserved"
 
     resolve_result = run_script("skills/public/quality/scripts/resolve_adapter.py", "--repo-root", str(repo))
     assert resolve_result.returncode == 0, resolve_result.stderr
@@ -230,22 +230,25 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
         "lefthook_path": "config/lefthook.yml",
         "ci_workflow_glob": ".github/workflows/quality-*.yml",
     }
-    assert resolved["data"]["specdown_smoke_patterns"] == []
-    assert resolved["data"]["spec_pytest_reference_format"] == r"Covered by pytest:\s+`tests/custom[^`]+`"
-    assert resolved["data"]["prompt_asset_roots"] == ["prompts"]
-    assert resolved["data"]["recommendation_defaults_version"] == "custom-v1"
-    assert resolved["data"]["adapter_review_sources"] == [".agents/quality-adapter.yaml"]
-    assert resolved["data"]["acknowledged_recommendations"] == ["demo.ack"]
-    assert resolved["data"]["gate_design_review_globs"] == ["scripts/*.py"]
-    assert resolved["data"]["canonical_markdown_surfaces"] == ["AGENTS.md", "CLAUDE.md", "docs/handoff.md"]
-    assert resolved["data"]["prompt_asset_policy"] == {
-        "source_globs": ["src/**/*.py"],
-        "min_multiline_chars": 256,
-        "exemption_globs": ["tests/**"],
+    expected_resolved = {
+        "specdown_smoke_patterns": [],
+        "spec_pytest_reference_format": r"Covered by pytest:\s+`tests/custom[^`]+`",
+        "prompt_asset_roots": ["prompts"],
+        "recommendation_defaults_version": "custom-v1",
+        "adapter_review_sources": [".agents/quality-adapter.yaml"],
+        "acknowledged_recommendations": ["demo.ack"],
+        "gate_design_review_globs": ["scripts/*.py"],
+        "canonical_markdown_surfaces": ["AGENTS.md", "CLAUDE.md", "docs/handoff.md"],
+        "prompt_asset_policy": {"source_globs": ["src/**/*.py"], "min_multiline_chars": 256, "exemption_globs": ["tests/**"]},
+        "skill_ergonomics_gate_rules": ["mode_option_pressure_terms"],
+        "skill_ergonomics_skill_paths": ["packages/official-skills/ceal-native/skills"],
+        "skill_ergonomics_runtime_install_skill_paths": ["packages/official-skills/ceal-native/skills"],
+        "vendored_paths": ["packages/official-skills/charness-public"],
+        "public_spec_implementation_guard_min_lines": 80,
+        "runtime_profile_default": "local-fast",
     }
-    assert resolved["data"]["skill_ergonomics_gate_rules"] == ["mode_option_pressure_terms"]
-    assert resolved["data"]["skill_ergonomics_skill_paths"] == ["packages/official-skills/ceal-native/skills"]
-    assert resolved["data"]["runtime_profile_default"] == "local-fast"
+    for key, value in expected_resolved.items():
+        assert resolved["data"][key] == value
     assert resolved["data"]["runtime_budgets"] == {"pytest": 70000}
     assert resolved["data"]["runtime_budget_profiles"] == {
         "local-fast": {"budgets": {"pytest": 45000}},

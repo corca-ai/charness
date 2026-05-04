@@ -161,9 +161,9 @@ git status --short
 
 ## Output Shape
 
-The result should usually include `Source Map`, `Narrative Drift`, `Updated
-Truth`, `Brief`, `Claim Audit`, `Compression`, `Carry-Forward`, `Open
-Questions`, and `Next Step`.
+The result should usually include `Source Map`, `Narrative Drift`,
+`Updated Truth`, `Brief`, `Claim Audit`, `Compression`, `Carry-Forward`,
+`Open Questions`, and `Next Step`.
 
 ## Guardrails
 

@@ -134,6 +134,7 @@ def test_inventory_cli_side_effect_probes_flags_missing_contract(tmp_path: Path)
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["findings"][0]["type"] == "cli_side_effect_probe_contract_missing"
+    assert payload["status"] == "unconfigured"
 
     failing_result = run_script(
         "skills/public/quality/scripts/inventory_cli_side_effect_probes.py",
@@ -142,6 +143,41 @@ def test_inventory_cli_side_effect_probes_flags_missing_contract(tmp_path: Path)
         "--fail-on-findings",
     )
     assert failing_result.returncode == 1
+
+
+def test_inventory_cli_side_effect_probes_skips_vendored_contracts(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    vendored_dir = repo / "packages" / "official-skills" / "charness-public"
+    vendored_dir.mkdir(parents=True)
+    (vendored_dir / "cli-side-effect-probes.json").write_text(
+        json.dumps({"commands": [{"command": "demo apply", "mutating": True}]}) + "\n",
+        encoding="utf-8",
+    )
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "output_dir: charness-artifacts/quality",
+                "vendored_paths:",
+                "  - packages/official-skills/charness-public",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_cli_side_effect_probes.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "unconfigured"
+    assert payload["contracts"] == []
 
 
 def test_inventory_cli_side_effect_probes_executes_safe_fixture_and_flags_mutation(tmp_path: Path) -> None:

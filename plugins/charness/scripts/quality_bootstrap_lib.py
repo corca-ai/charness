@@ -17,6 +17,7 @@ from scripts.quality_policy_defaults import (
     DEFAULT_COVERAGE_FLOOR_POLICY,
     DEFAULT_COVERAGE_FRAGILE_MARGIN_PP,
     DEFAULT_PROMPT_ASSET_POLICY,
+    DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_GUARD_MIN_LINES,
     DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR,
     DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS,
     DEFAULT_PUBLIC_SPEC_SECTION_EXEMPTIONS,
@@ -97,6 +98,9 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "prompt_asset_policy": dict(DEFAULT_PROMPT_ASSET_POLICY),
         "skill_ergonomics_gate_rules": list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES),
         "skill_ergonomics_skill_paths": [],
+        "skill_ergonomics_runtime_install_skill_paths": [],
+        "vendored_paths": [],
+        "public_spec_implementation_guard_min_lines": DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_GUARD_MIN_LINES,
         "runtime_profile_default": "default",
         "runtime_budgets": {},
         "runtime_budget_profiles": {},
@@ -142,6 +146,9 @@ def _apply_existing_scalar_fields(data: dict[str, Any], raw: dict[str, Any]) -> 
         data["spec_pytest_reference_format"] = spec_pytest_reference_format
     if isinstance(density_floor := raw.get("public_spec_implementation_ref_density_floor"), (int, float)):
         data["public_spec_implementation_ref_density_floor"] = float(density_floor)
+    guard_min_lines = raw.get("public_spec_implementation_guard_min_lines")
+    if isinstance(guard_min_lines, int) and not isinstance(guard_min_lines, bool) and guard_min_lines >= 0:
+        data["public_spec_implementation_guard_min_lines"] = guard_min_lines
 
 
 def _apply_existing_policy_fields(data: dict[str, Any], raw: dict[str, Any], validated_skill_rules: list[str] | None) -> None:
@@ -192,6 +199,7 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
         "preset_lineage prompt_asset_roots adapter_review_sources acknowledged_recommendations "
         "gate_design_review_globs product_surfaces cli_skill_surface_probe_commands cli_skill_surface_command_docs "
         "cli_skill_surface_skill_paths cli_skill_surface_change_globs canonical_markdown_surfaces skill_ergonomics_skill_paths "
+        "skill_ergonomics_runtime_install_skill_paths vendored_paths "
         "public_spec_section_exemptions public_spec_pointer_proof_markers concept_paths preflight_commands "
         "gate_commands review_commands security_commands"
     ).split():
@@ -220,21 +228,17 @@ def _add_adapter_policy_fields(
     final: dict[str, Any], existing: dict[str, Any], explicit_fields: set[str], merged_lineage: list[str], field_statuses: dict[str, str]
 ) -> None:
     python_lineage = "python-quality" in merged_lineage
-    preserve_coverage_margin = "coverage_fragile_margin_pp" in explicit_fields
-    final["coverage_fragile_margin_pp"] = (
-        existing["coverage_fragile_margin_pp"] if preserve_coverage_margin else DEFAULT_COVERAGE_FRAGILE_MARGIN_PP
-    )
-    field_statuses["coverage_fragile_margin_pp"] = "preserved" if preserve_coverage_margin else "defaulted"
+    for field, default in (
+        ("coverage_fragile_margin_pp", DEFAULT_COVERAGE_FRAGILE_MARGIN_PP),
+        ("coverage_floor_policy", dict(DEFAULT_COVERAGE_FLOOR_POLICY)),
+    ):
+        explicit = field in explicit_fields
+        value = existing[field] if explicit else default
+        final[field] = dict(value) if isinstance(default, dict) else value
+        field_statuses[field] = "preserved" if explicit else "defaulted"
 
-    preserve_coverage_policy = "coverage_floor_policy" in explicit_fields
-    final["coverage_floor_policy"] = dict(
-        existing["coverage_floor_policy"] if preserve_coverage_policy else DEFAULT_COVERAGE_FLOOR_POLICY
-    )
-    field_statuses["coverage_floor_policy"] = "preserved" if preserve_coverage_policy else "defaulted"
-
-    existing_patterns = existing.get("specdown_smoke_patterns", [])
     if "specdown_smoke_patterns" in explicit_fields:
-        final["specdown_smoke_patterns"] = list(existing_patterns)
+        final["specdown_smoke_patterns"] = list(existing.get("specdown_smoke_patterns", []))
         field_statuses["specdown_smoke_patterns"] = "preserved"
     elif python_lineage:
         inferred_patterns = default_specdown_smoke_patterns(merged_lineage)
@@ -244,22 +248,16 @@ def _add_adapter_policy_fields(
         final["specdown_smoke_patterns"] = []
         field_statuses["specdown_smoke_patterns"] = "deferred"
 
-    preserve_spec_format = "spec_pytest_reference_format" in explicit_fields
-    if preserve_spec_format:
+    if "spec_pytest_reference_format" in explicit_fields:
         final["spec_pytest_reference_format"] = existing["spec_pytest_reference_format"]
         field_statuses["spec_pytest_reference_format"] = "preserved"
-    elif python_lineage:
-        final["spec_pytest_reference_format"] = DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT
-        field_statuses["spec_pytest_reference_format"] = "inferred"
     else:
-        final["spec_pytest_reference_format"] = ""
-        field_statuses["spec_pytest_reference_format"] = "deferred"
+        final["spec_pytest_reference_format"] = DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT if python_lineage else ""
+        field_statuses["spec_pytest_reference_format"] = "inferred" if python_lineage else "deferred"
 
-    preserve_review_defaults = "recommendation_defaults_version" in explicit_fields
-    final["recommendation_defaults_version"] = (
-        existing.get("recommendation_defaults_version") if preserve_review_defaults else "issue-64"
-    )
-    field_statuses["recommendation_defaults_version"] = "preserved" if preserve_review_defaults else "defaulted"
+    explicit = "recommendation_defaults_version" in explicit_fields
+    final["recommendation_defaults_version"] = existing.get("recommendation_defaults_version") if explicit else "issue-64"
+    field_statuses["recommendation_defaults_version"] = "preserved" if explicit else "defaulted"
 
     for field, default in (
         ("public_spec_section_exemptions", DEFAULT_PUBLIC_SPEC_SECTION_EXEMPTIONS),
@@ -268,12 +266,13 @@ def _add_adapter_policy_fields(
         final[field] = list(existing.get(field, default)) if field in explicit_fields else list(default)
         field_statuses[field] = "preserved" if field in explicit_fields else "defaulted"
 
-    preserve_density_floor = "public_spec_implementation_ref_density_floor" in explicit_fields
-    default_density_floor = DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR
-    final["public_spec_implementation_ref_density_floor"] = (
-        existing.get("public_spec_implementation_ref_density_floor", default_density_floor) if preserve_density_floor else default_density_floor
-    )
-    field_statuses["public_spec_implementation_ref_density_floor"] = "preserved" if preserve_density_floor else "defaulted"
+    for field, default in (
+        ("public_spec_implementation_ref_density_floor", DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR),
+        ("public_spec_implementation_guard_min_lines", DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_GUARD_MIN_LINES),
+    ):
+        explicit = field in explicit_fields
+        final[field] = existing.get(field, default) if explicit else default
+        field_statuses[field] = "preserved" if explicit else "defaulted"
 
 def _add_prompt_and_runtime_fields(
     final: dict[str, Any], existing: dict[str, Any], explicit_fields: set[str], field_statuses: dict[str, str]
@@ -291,6 +290,8 @@ def _add_prompt_and_runtime_fields(
         "cli_skill_surface_change_globs",
         "canonical_markdown_surfaces",
         "skill_ergonomics_skill_paths",
+        "skill_ergonomics_runtime_install_skill_paths",
+        "vendored_paths",
     ):
         default = ["AGENTS.md", "CLAUDE.md"] if field == "canonical_markdown_surfaces" else []
         final[field] = list(existing.get(field, default)) if field in explicit_fields else default
@@ -333,14 +334,7 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
     _add_adapter_policy_fields(final, existing, explicit_fields, merged_lineage, field_statuses)
     _add_prompt_and_runtime_fields(final, existing, explicit_fields, field_statuses)
     if field_statuses.get("spec_pytest_reference_format") == "deferred":
-        deferred_setup.append(
-            {
-                "field": "spec_pytest_reference_format",
-                "status": "deferred",
-                "reason": "No Python quality preset was inferred.",
-                "suggested_families": ["choose a language-specific quality preset or leave pytest references unset"],
-            }
-        )
+        deferred_setup.append({"field": "spec_pytest_reference_format", "status": "deferred", "reason": "No Python quality preset was inferred.", "suggested_families": ["choose a language-specific quality preset or leave pytest references unset"]})
 
     concept_paths = detect_concept_paths(repo_root)
     existing_concepts = [path for path in existing.get("concept_paths", []) if (repo_root / path).is_file()]
@@ -396,6 +390,7 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
         ("recommendation_defaults_version", data["recommendation_defaults_version"]),
         ("public_spec_section_exemptions", data["public_spec_section_exemptions"]),
         ("public_spec_implementation_ref_density_floor", data["public_spec_implementation_ref_density_floor"]),
+        ("public_spec_implementation_guard_min_lines", data["public_spec_implementation_guard_min_lines"]),
         ("public_spec_pointer_proof_markers", data["public_spec_pointer_proof_markers"]),
         ("prompt_asset_roots", data["prompt_asset_roots"]),
         ("adapter_review_sources", data["adapter_review_sources"]),
@@ -410,6 +405,8 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
         ("prompt_asset_policy", data["prompt_asset_policy"]),
         ("skill_ergonomics_gate_rules", data["skill_ergonomics_gate_rules"]),
         ("skill_ergonomics_skill_paths", data["skill_ergonomics_skill_paths"]),
+        ("skill_ergonomics_runtime_install_skill_paths", data["skill_ergonomics_runtime_install_skill_paths"]),
+        ("vendored_paths", data["vendored_paths"]),
         ("runtime_profile_default", data["runtime_profile_default"]),
         ("runtime_budgets", data["runtime_budgets"]),
         ("runtime_budget_profiles", data["runtime_budget_profiles"]),
@@ -426,7 +423,8 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
         "product_surfaces cli_skill_surface_probe_commands cli_skill_surface_command_docs "
         "cli_skill_surface_skill_paths cli_skill_surface_change_globs canonical_markdown_surfaces "
         "public_spec_section_exemptions public_spec_pointer_proof_markers "
-        "skill_ergonomics_gate_rules skill_ergonomics_skill_paths runtime_budgets runtime_budget_profiles startup_probes quality_phases concept_paths preflight_commands "
+        "skill_ergonomics_gate_rules skill_ergonomics_skill_paths skill_ergonomics_runtime_install_skill_paths "
+        "vendored_paths runtime_budgets runtime_budget_profiles startup_probes quality_phases concept_paths preflight_commands "
         "gate_commands review_commands security_commands".split()
     )
     policy_items = [

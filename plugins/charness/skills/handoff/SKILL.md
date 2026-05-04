@@ -65,8 +65,8 @@ the `Workflow Trigger` first and continue with that workflow.
    - for pickup, treat the workflow trigger as authoritative next-step
      instruction
    - for refresh, inspect only the live state that changes the next action
-   - if the current handoff exceeds the size gate or stacks dated `This
-     Session` sections, prune or spill before adding new prose
+   - if the current handoff exceeds the size gate or stacks dated
+     `This Session` sections, prune or spill before adding new prose
 2. Identify the canonical handoff artifact.
    - default to the adapter-resolved artifact path
    - if the repo already has a checked-in handoff surface, point the adapter

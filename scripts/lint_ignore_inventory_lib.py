@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts.repo_file_listing import iter_repo_files
+from scripts.vendored_path_lib import is_vendored, vendored_prefixes
 
 IGNORED_PARTS = {
     ".git",
@@ -27,15 +28,18 @@ ESLINT_RE = re.compile(
 )
 
 
-def _iter_candidate_files(repo_root: Path) -> list[Path]:
+def _iter_candidate_files(repo_root: Path, vendored: list[str]) -> list[Path]:
     paths: list[Path] = []
     for path in iter_repo_files(repo_root):
         if not path.is_file():
             continue
         if any(part in IGNORED_PARTS for part in path.relative_to(repo_root).parts):
             continue
-        if path.suffix.lower() in TEXT_SUFFIXES:
-            paths.append(path)
+        if path.suffix.lower() not in TEXT_SUFFIXES:
+            continue
+        if is_vendored(repo_root, path, vendored):
+            continue
+        paths.append(path)
     return sorted(paths)
 
 
@@ -111,9 +115,10 @@ def _inventory_text_lines(repo_root: Path, path: Path, text: str, findings: list
             _record_finding(findings, repo_root=repo_root, path=path, line_no=line_no, tool="eslint", scope="file" if match.group("scope") is None else "inline", codes=_parse_codes(match.group("codes")), raw=line)
 
 
-def inventory_lint_ignores(repo_root: Path) -> dict[str, Any]:
+def inventory_lint_ignores(repo_root: Path, vendored_paths: list[str] | None = None) -> dict[str, Any]:
     findings: list[dict[str, Any]] = []
-    for path in _iter_candidate_files(repo_root):
+    vendored = vendored_prefixes(vendored_paths)
+    for path in _iter_candidate_files(repo_root, vendored):
         text = path.read_text(encoding="utf-8", errors="replace")
         handled_python = path.suffix.lower() in {".py", ".pyi"} and _inventory_python_comments(repo_root, path, text, findings)
         if handled_python:

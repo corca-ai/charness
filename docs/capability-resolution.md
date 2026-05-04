@@ -47,8 +47,9 @@ This slice does not add:
 - Machine-local install/doctor/version state moves under XDG-style state paths.
 - Public skills and repo adapters do not store raw secret values or secret file
   paths.
-- Shared credential reuse is modeled as `logical capability -> profile ->
-  provider`, not as duplicated per-skill secret settings.
+- Shared credential reuse is modeled as
+  `logical capability -> profile -> provider`, not as duplicated per-skill
+  secret settings.
 - Provider profiles are machine-local and may reference env var names, but not
   env values.
 - Repo bindings are machine-local and map one repo identity to one named

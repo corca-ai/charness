@@ -25,6 +25,7 @@ public_spec_section_exemptions:
   - Deferred Decisions
   - Non-Goals
 public_spec_implementation_ref_density_floor: 0.02
+public_spec_implementation_guard_min_lines: 100
 public_spec_pointer_proof_markers:
   - "proof: pointer"
   - "proof: pointer-spec"
@@ -37,6 +38,9 @@ gate_design_review_globs: []
 canonical_markdown_surfaces:
   - AGENTS.md
   - CLAUDE.md
+skill_ergonomics_skill_paths: []
+skill_ergonomics_runtime_install_skill_paths: []
+vendored_paths: []
 skill_ergonomics_gate_rules: []
 runtime_profile_default: default
 runtime_budgets: {}

@@ -6,6 +6,7 @@ from typing import Any
 
 import public_spec_quality_lib as qlib
 from public_spec_adapter_policy import (
+    DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_GUARD_MIN_LINES,
     DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR,
     DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS,
     DEFAULT_PUBLIC_SPEC_SECTION_EXEMPTIONS,
@@ -163,17 +164,20 @@ def _scan_prose(prose_records: list[dict[str, Any]], body_records: list[dict[str
     impl_lines = _implementation_scan_lines(scan_lines, spec_ref_re)
     impl_refs = [ref for line in impl_lines for ref in IMPLEMENTATION_PATH_RE.findall(line)]
     total_impl = len(IMPLEMENTATION_PATH_RE.findall("\n".join(record["line"] for record in prose_records)))
-    density_floor = option(data, "public_spec_implementation_ref_density_floor", DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR)
-    density_floor = float(density_floor) if isinstance(density_floor, (int, float)) else DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR
+    density_floor_raw = option(data, "public_spec_implementation_ref_density_floor", DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR)
+    density_floor = float(density_floor_raw) if isinstance(density_floor_raw, (int, float)) else DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR
+    guard_raw = option(data, "public_spec_implementation_guard_min_lines", DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_GUARD_MIN_LINES)
+    guard_min_lines = guard_raw if isinstance(guard_raw, int) and not isinstance(guard_raw, bool) and guard_raw >= 0 else DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_GUARD_MIN_LINES
     line_count = sum(1 for line in impl_lines if line.strip())
     density = len(impl_refs) / line_count if line_count else 0.0
     future_terms = [term for line in scan_lines for term in FUTURE_STATE_RE.findall(line)]
     total_future = len(FUTURE_STATE_RE.findall("\n".join(record["line"] for record in prose_records)))
-    return {"impl_refs": impl_refs, "impl_total": total_impl, "impl_density": density, "density_floor": density_floor, "future_terms": future_terms, "future_total": total_future, "pointer": pointer}
+    return {"impl_refs": impl_refs, "impl_total": total_impl, "impl_density": density, "density_floor": density_floor, "guard_min_lines": guard_min_lines, "future_terms": future_terms, "future_total": total_future, "pointer": pointer}
 
 
 def spec_inventory(repo_root: Path, spec_path: Path, data: dict[str, Any]) -> dict[str, Any]:
     text = spec_path.read_text(encoding="utf-8", errors="replace")
+    total_line_count = len(text.splitlines())
     prose_records, blocks = _split_markdown(text)
     prose_lines = [record["line"] for record in prose_records]
     body_records = [record for record in prose_records if not record["is_heading"]]
@@ -184,7 +188,7 @@ def spec_inventory(repo_root: Path, spec_path: Path, data: dict[str, Any]) -> di
     heuristics: list[str] = []
     if source_guard_rows >= 1 or source_guard_tokens >= 2:
         heuristics.append("source_inventory_pressure")
-    if len(scan["impl_refs"]) >= 2 and scan["impl_density"] > scan["density_floor"]:
+    if len(scan["impl_refs"]) >= 2 and scan["impl_density"] > scan["density_floor"] and total_line_count >= scan["guard_min_lines"]:
         heuristics.append("implementation_guard_pressure")
     if scan["future_terms"]:
         heuristics.append("future_state_mixed")
@@ -195,26 +199,4 @@ def spec_inventory(repo_root: Path, spec_path: Path, data: dict[str, Any]) -> di
         heuristics.append("non_command_executable_blocks")
     if any(RUNNER_DELEGATION_RE.match(command) for command in commands):
         heuristics.append("delegated_test_runner_proof")
-    return _spec_payload(repo_root, spec_path, blocks, commands, source_guard_rows, source_guard_tokens, scan, heuristics)
-
-
-def _spec_payload(repo_root: Path, spec_path: Path, blocks: list[dict[str, Any]], commands: list[str], source_guard_rows: int, source_guard_tokens: int, scan: dict[str, Any], heuristics: list[str]) -> dict[str, Any]:
-    return {
-        "spec_path": spec_path.relative_to(repo_root).as_posix(),
-        "executable_block_count": len(blocks),
-        "command_examples": commands,
-        "source_guard_row_count": source_guard_rows,
-        "source_guard_token_count": source_guard_tokens,
-        "implementation_path_ref_count": len(scan["impl_refs"]),
-        "implementation_path_ref_total_count": scan["impl_total"],
-        "implementation_path_ref_exempt_count": max(0, scan["impl_total"] - len(scan["impl_refs"])),
-        "implementation_path_ref_density": round(scan["impl_density"], 4),
-        "implementation_path_ref_density_floor": scan["density_floor"],
-        "future_state_term_count": len(scan["future_terms"]),
-        "future_state_term_total_count": scan["future_total"],
-        "future_state_term_exempt_count": max(0, scan["future_total"] - len(scan["future_terms"])),
-        "pointer_proof_reference_count": scan["pointer"]["pytest_reference_count"],
-        "pointer_proof_marker_count": scan["pointer"]["front_matter_marker_count"],
-        "heuristics": heuristics,
-        "review_prompts": qlib.REVIEW_PROMPTS,
-    }
+    return qlib.spec_payload(repo_root, spec_path, blocks, commands, source_guard_rows, source_guard_tokens, scan, heuristics, total_line_count)

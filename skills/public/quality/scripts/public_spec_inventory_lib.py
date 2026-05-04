@@ -4,8 +4,22 @@ from pathlib import Path
 from typing import Any
 
 import public_spec_quality_lib as qlib
-from public_spec_adapter_policy import load_quality_adapter_data
+from public_spec_adapter_policy import load_quality_adapter_data, load_repo_script_module
 from public_spec_scan_lib import spec_inventory
+
+_VENDORED_LIB = load_repo_script_module("vendored_path_lib")
+
+
+def _vendored_prefixes(data: dict[str, Any]) -> list[str]:
+    if _VENDORED_LIB is None:
+        return []
+    return _VENDORED_LIB.vendored_prefixes(data.get("vendored_paths"))
+
+
+def _filter_vendored(repo_root: Path, paths: list[Path], prefixes: list[str]) -> list[Path]:
+    if _VENDORED_LIB is None or not prefixes:
+        return paths
+    return _VENDORED_LIB.filter_vendored(repo_root, paths, prefixes)
 
 
 def iter_public_specs(repo_root: Path) -> list[Path]:
@@ -39,9 +53,14 @@ def duplicate_commands(specs: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def inventory(repo_root: Path) -> dict[str, Any]:
     data = load_quality_adapter_data(repo_root)
-    specs = [spec_inventory(repo_root, path, data) for path in iter_public_specs(repo_root)]
+    vendored = _vendored_prefixes(data)
+    spec_paths = _filter_vendored(repo_root, iter_public_specs(repo_root), vendored)
+    specs = [spec_inventory(repo_root, path, data) for path in spec_paths]
     duplicates = duplicate_commands(specs)
     smoke_paths, e2e_paths = iter_smoke_like_tests(repo_root)
+    if vendored:
+        smoke_paths = [path for path in smoke_paths if not _VENDORED_LIB.is_vendored_relative(path, vendored)]
+        e2e_paths = [path for path in e2e_paths if not _VENDORED_LIB.is_vendored_relative(path, vendored)]
     runner_specs = sorted(spec["spec_path"] for spec in specs if "delegated_test_runner_proof" in spec["heuristics"])
     source_guard_spec_rows = qlib.source_guard_specs(specs)
     implementation_guard_spec_rows = qlib.implementation_guard_specs(specs)

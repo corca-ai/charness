@@ -3,10 +3,39 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 from pathlib import Path
 
 from cli_side_effect_probe_lib import build_inventory
+
+
+def _load_skill_runtime_bootstrap():
+    script_path = Path(__file__).resolve()
+    for ancestor in script_path.parents:
+        candidate = ancestor / "skill_runtime_bootstrap.py"
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("skill_runtime_bootstrap", candidate)
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+    raise ImportError("skill_runtime_bootstrap.py not found")
+
+
+_SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+_quality_adapter_lib = _SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_adapter_lib")
+_vendored_path_lib = _SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.vendored_path_lib")
+
+
+def _adapter_vendored_prefixes(repo_root: Path) -> list[str]:
+    adapter = _quality_adapter_lib.load_quality_adapter(repo_root)
+    data = adapter.get("data", {}) if isinstance(adapter, dict) else {}
+    values = data.get("vendored_paths", []) if isinstance(data, dict) else []
+    if not isinstance(values, list):
+        return []
+    return _vendored_path_lib.vendored_prefixes(values)
 
 
 def parse_args() -> argparse.Namespace:
@@ -23,14 +52,19 @@ def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
     contract_paths = [(repo_root / path).resolve() for path in args.contract_file]
+    vendored = _adapter_vendored_prefixes(repo_root)
+    vendored_filter = (lambda root, path: _vendored_path_lib.is_vendored(root, path, vendored)) if vendored else None
     payload = build_inventory(
         repo_root,
         contract_paths=contract_paths,
         execute_probes=args.execute_probes,
+        vendored_filter=vendored_filter,
     )
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
+        if payload["status"] == "unconfigured":
+            print(f"status=unconfigured: {payload.get('reason', '')}")
         for finding in payload["findings"]:
             command = finding.get("command", "")
             path = finding.get("path", "<none>")
