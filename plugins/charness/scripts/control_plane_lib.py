@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass
@@ -43,6 +44,19 @@ def load_support_capability_schema() -> dict[str, Any]:
 
 def manifest_paths(repo_root: Path) -> list[Path]:
     return [path for path in sorted(integrations_tools_dir(repo_root).glob("*.json")) if path.name != "manifest.schema.json"]
+
+
+def _plugin_fallback_root() -> Path:
+    return Path(__file__).resolve().parent.parent
+
+
+def plugin_fallback_manifest_paths() -> list[Path]:
+    if os.environ.get("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS"):
+        return []
+    fallback_dir = integrations_tools_dir(_plugin_fallback_root())
+    if not fallback_dir.is_dir():
+        return []
+    return [path for path in sorted(fallback_dir.glob("*.json")) if path.name != "manifest.schema.json"]
 def load_manifest(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -85,20 +99,47 @@ def normalize_support_capability(data: dict[str, Any], path: Path, repo_root: Pa
     }
 
 
-def load_manifests(repo_root: Path) -> list[dict[str, Any]]:
-    schema = load_manifest_schema()
+def _load_manifests_merged(repo_root: Path, *, validate: bool) -> list[dict[str, Any]]:
+    schema = load_manifest_schema() if validate else None
     manifests: list[dict[str, Any]] = []
     seen_tool_ids: set[str] = set()
     for path in manifest_paths(repo_root):
         data = load_manifest(path)
-        validate_manifest_data(data, schema, path)
+        if validate:
+            validate_manifest_data(data, schema, path)
         tool_id = data["tool_id"]
         if tool_id in seen_tool_ids:
             raise ValueError(f"duplicate manifest tool_id `{tool_id}`")
         seen_tool_ids.add(tool_id)
         data["_manifest_path"] = str(path.relative_to(repo_root))
+        data["_manifest_origin"] = "user-repo"
         manifests.append(data)
+    plugin_root = _plugin_fallback_root().resolve()
+    if plugin_root != repo_root.resolve():
+        for path in plugin_fallback_manifest_paths():
+            data = load_manifest(path)
+            if validate:
+                validate_manifest_data(data, schema, path)
+            tool_id = data["tool_id"]
+            if tool_id in seen_tool_ids:
+                continue
+            seen_tool_ids.add(tool_id)
+            try:
+                rel = str(path.relative_to(repo_root))
+            except ValueError:
+                rel = str(path)
+            data["_manifest_path"] = rel
+            data["_manifest_origin"] = "plugin-fallback"
+            manifests.append(data)
     return manifests
+
+
+def load_manifests(repo_root: Path) -> list[dict[str, Any]]:
+    return _load_manifests_merged(repo_root, validate=True)
+
+
+def load_manifests_for_discovery(repo_root: Path) -> list[dict[str, Any]]:
+    return _load_manifests_merged(repo_root, validate=False)
 
 
 def load_support_capabilities(repo_root: Path) -> list[dict[str, Any]]:

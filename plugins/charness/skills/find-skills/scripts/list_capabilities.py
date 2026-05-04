@@ -26,6 +26,8 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _capability_sources_module = SKILL_RUNTIME.load_local_skill_module(__file__, "capability_sources")
 integrations = _capability_sources_module.integrations
 support_capabilities = _capability_sources_module.support_capabilities
+_control_plane_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.control_plane_lib")
+load_manifests = _control_plane_lib_module.load_manifests_for_discovery
 _scripts_repo_layout_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.repo_layout")
 generated_support_dir = _scripts_repo_layout_module.generated_support_dir
 public_skills_dir = _scripts_repo_layout_module.public_skills_dir
@@ -183,11 +185,7 @@ def main() -> None:
         layer="trusted skill",
     )
     trusted_entries = _filter_shadowed(trusted_entries, [*public_entries, *support_entries])
-    manifests = [
-        json.loads(path.read_text(encoding="utf-8"))
-        for path in sorted((local_root / "integrations" / "tools").glob("*.json"))
-        if path.name != "manifest.schema.json"
-    ]
+    manifests = load_manifests(local_root)
     tool_recommendations, recommendation_query = resolve_tool_recommendations(
         args,
         local_root=local_root,

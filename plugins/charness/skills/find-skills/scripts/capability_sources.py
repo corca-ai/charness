@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-from scripts.control_plane_lib import load_support_capabilities
+from scripts.control_plane_lib import load_manifests_for_discovery, load_support_capabilities
 from scripts.repo_layout import discovery_stub_dir, generated_support_dir
 from scripts.support_sync_lib import support_link_name, support_state_for_manifest
 
@@ -49,11 +48,9 @@ def _checks(data: dict[str, object]) -> list[dict[str, object]]:
 
 def integrations(root: Path) -> list[dict[str, object]]:
     items: list[dict[str, object]] = []
-    for manifest in sorted((root / "integrations" / "tools").glob("*.json")):
-        if manifest.name == "manifest.schema.json":
-            continue
-        data = json.loads(manifest.read_text(encoding="utf-8"))
-        tool_id = data.get("tool_id", manifest.stem)
+    for data in load_manifests_for_discovery(root):
+        tool_id = data["tool_id"]
+        origin = data.get("_manifest_origin", "user-repo")
         items.append(
             {
                 "id": tool_id,
@@ -68,8 +65,8 @@ def integrations(root: Path) -> list[dict[str, object]]:
                 "readiness_checks": _checks(data),
                 "supports_public_skills": data.get("supports_public_skills", []),
                 "recommendation_role": data.get("recommendation_role"),
-                "path": str(manifest.relative_to(root)),
-                "source": "local-integration",
+                "path": data["_manifest_path"],
+                "source": "local-integration" if origin == "user-repo" else "plugin-fallback-integration",
                 "layer": "external integration",
             }
         )

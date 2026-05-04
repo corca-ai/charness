@@ -28,14 +28,10 @@ _RECOMMENDATION_LIB = SKILL_RUNTIME.load_repo_module_from_skill_script(
     __file__, "scripts.tool_recommendation_lib"
 )
 recommendations_for_role = _RECOMMENDATION_LIB.recommendations_for_role
-
-
-def _load_manifests(root: Path) -> list[dict[str, object]]:
-    return [
-        json.loads(path.read_text(encoding="utf-8"))
-        for path in sorted((root / "integrations" / "tools").glob("*.json"))
-        if path.name != "manifest.schema.json"
-    ]
+_CONTROL_PLANE_LIB = SKILL_RUNTIME.load_repo_module_from_skill_script(
+    __file__, "scripts.control_plane_lib"
+)
+load_manifests = _CONTROL_PLANE_LIB.load_manifests_for_discovery
 
 
 def main() -> None:
@@ -52,7 +48,7 @@ def main() -> None:
         "next_skill_id": args.next_skill_id,
         "tool_recommendations": recommendations_for_role(
             repo_root,
-            _load_manifests(repo_root),
+            load_manifests(repo_root),
             recommendation_role=args.recommendation_role,
             next_skill_id=args.next_skill_id,
             only_blocking=not args.include_ready,

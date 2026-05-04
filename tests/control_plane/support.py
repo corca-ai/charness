@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -8,6 +9,9 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def run_script(*args: str, cwd: Path | None = None, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+    if env is None:
+        env = os.environ.copy()
+    env.setdefault("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
     return subprocess.run(
         ["python3", *args],
         cwd=cwd or ROOT,
