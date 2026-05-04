@@ -89,6 +89,10 @@ as codebase memory rather than as stale trivia.
      acknowledgement, worker execution, and post-worker side effects; identify
      the earliest component that can produce observable status before reasoning
      only about worker behavior
+   - if the symptom blames a specific named target (instance, service, branch,
+     ref, env alias, channel ID), verify the runtime state of that name with
+     the cheapest available probe before reasoning further
+     (`references/named-target-verification.md`)
 3. Build the smallest honest reproduction.
    - isolate the smallest input, path, or environment that still fails
    - if local reproduction fails, gather stronger observation instead of
@@ -163,3 +167,4 @@ sections. Prefer the scaffold helper over hand-typing the skeleton from memory.
 - `references/debug-memory.md`
 - `references/anti-patterns.md`
 - `references/document-seams.md`
+- `references/named-target-verification.md`
