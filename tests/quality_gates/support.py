@@ -103,6 +103,7 @@ QUALITY_PYTHON_STUBS = (
 )
 QUALITY_RUNTIME_STUBS = (
     ("measure-startup-probes", "measure_startup_probes.py"),
+    ("inventory-sloc", "inventory_sloc.py"),
     ("check-runtime-budget", "check_runtime_budget.py"),
 )
 QUALITY_SHELL_STUBS = (

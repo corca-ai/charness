@@ -203,7 +203,7 @@ def validate_find_skills_integration_claims(repo_root: Path) -> None:
     }
     stale: list[str] = []
     for manifest_path in sorted(integrations_dir.glob("*.json")):
-        if manifest_path.name == "manifest.schema.json":
+        if manifest_path.name in {"manifest.schema.json", "dependencies.json", "dependencies.schema.json"}:
             continue
         manifest = _load_json(manifest_path)
         relative_path = str(manifest_path.relative_to(repo_root))

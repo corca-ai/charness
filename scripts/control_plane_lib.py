@@ -178,6 +178,24 @@ def staged_tool_ids(repo_root: Path) -> set[str] | None:
     return set(data["tool_dependencies"])
 
 
+def add_dependency(repo_root: Path, tool_id: str) -> bool:
+    path = dependencies_path(repo_root)
+    if path.is_file():
+        data = json.loads(path.read_text(encoding="utf-8"))
+    else:
+        data = {"schema_version": 1, "tool_dependencies": []}
+    deps = list(data.get("tool_dependencies", []))
+    if tool_id in deps:
+        return False
+    deps.append(tool_id)
+    deps.sort()
+    data["tool_dependencies"] = deps
+    jsonschema.validate(data, load_dependencies_schema())
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    return True
+
+
 def load_support_capabilities(repo_root: Path) -> list[dict[str, Any]]:
     schema = load_support_capability_schema()
     capabilities: list[dict[str, Any]] = []

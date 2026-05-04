@@ -13,6 +13,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 lifecycle = import_repo_module(__file__, "scripts.control_plane_lifecycle_lib")
 _scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
+add_dependency = _scripts_control_plane_lib_module.add_dependency
 load_manifests = _scripts_control_plane_lib_module.load_manifests
 now_iso = _scripts_control_plane_lib_module.now_iso
 upsert_lock = _scripts_control_plane_lib_module.upsert_lock
@@ -147,17 +148,31 @@ def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload
     return lifecycle.attach_release_metadata(result, provenance=provenance, release=release)
 
 
+_INSTALLED_STATUSES = {"installed", "already-installed"}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--tool-id", action="append", default=[])
     parser.add_argument("--execute", action="store_true")
+    parser.add_argument(
+        "--add-dependency",
+        action="store_true",
+        help="Append successfully installed tool_ids to integrations/tools/dependencies.json",
+    )
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     selected = lifecycle.select_by_tool_id(load_manifests(repo_root), args.tool_id)
     results = [install_one(repo_root, manifest, execute=args.execute) for manifest in selected]
+    if args.add_dependency:
+        for result in results:
+            if result["status"] in _INSTALLED_STATUSES:
+                result["dependency_added"] = add_dependency(repo_root, str(result["tool_id"]))
+            else:
+                result["dependency_added"] = False
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))
     else:

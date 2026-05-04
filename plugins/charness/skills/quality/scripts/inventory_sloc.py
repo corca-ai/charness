@@ -129,12 +129,22 @@ def main() -> int:
         "Defaults to common cache and vendor directories.",
     )
     parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Write the JSON payload to this path in addition to stdout.",
+    )
     args = parser.parse_args()
 
     excludes = list(args.exclude) if args.exclude else list(DEFAULT_EXCLUDES)
     payload = inventory_sloc(args.repo_root.resolve(), excludes=excludes)
+    rendered = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
+    if args.output is not None:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(rendered + "\n", encoding="utf-8")
     if args.json:
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        print(rendered)
     else:
         if payload["status"] == "degraded":
             print(f"SLOC inventory: degraded ({payload['reason']})")
