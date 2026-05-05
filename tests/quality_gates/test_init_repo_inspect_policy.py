@@ -103,6 +103,8 @@ def test_init_repo_render_skill_routing_defaults_to_compact_mode(tmp_path: Path)
     assert "call the shared/public charness skill `find-skills` once at startup before broader exploration" in payload["markdown"]
     assert "default map of installed public skills, support skills, synced support surfaces, and integrations" in payload["markdown"]
     assert "choose the durable work skill that best matches the request" in payload["markdown"]
+    assert "External URLs or source links that should become working context" in payload["markdown"]
+    assert "route through `gather` before summarizing, implementing, or deciding" in payload["markdown"]
     assert "release-note style summary or chat-ready human update" not in payload["markdown"]
 
 

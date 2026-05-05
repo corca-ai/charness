@@ -211,6 +211,7 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
         entries = (
             (repo_root / "charness", ["tool", "doctor", "--repo-root", str(repo_copy), "--json", "agent-browser"]),
             (repo_root / "scripts" / "doctor.py", ["--repo-root", str(repo_copy), "--json", "--write-locks", "--tool-id", "agent-browser"]),
+            (repo_root / "scripts" / "doctor.py", ["--repo-root", str(repo_copy), "--json", "--write-locks", "--tool-id", "cautilus"]),
             (repo_root / "scripts" / "sync_support.py", ["--repo-root", str(repo_copy), "--execute", "--json", "--tool-id", "agent-browser"]),
             (repo_root / "scripts" / "update_tools.py", ["--repo-root", str(repo_copy), "--execute", "--json", "--tool-id", "agent-browser"]),
             (repo_root / "scripts" / "update_tools.py", ["--repo-root", str(repo_copy), "--json", "--tool-id", "cautilus"]),

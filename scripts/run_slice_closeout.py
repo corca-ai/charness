@@ -175,7 +175,12 @@ def _maybe_block_on_cautilus(
 ) -> int | None:
     cautilus_plan = plan_cautilus_proof(repo_root, payload["changed_paths"])
     payload["cautilus_plan"] = cautilus_plan
-    if not (cautilus_plan["required"] and not cautilus_plan["artifact_changed"]):
+    missing_required_proof = (
+        cautilus_plan["required"]
+        and not cautilus_plan["artifact_changed"]
+        and cautilus_plan["run_mode"] != "disabled"
+    )
+    if not missing_required_proof:
         if cautilus_plan["skill_validation_recommendations"] and not ack_skill_review:
             payload["status"] = "blocked"
             payload["error"] = (

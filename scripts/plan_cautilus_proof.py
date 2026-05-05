@@ -152,19 +152,25 @@ def plan_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> dict[str, 
         proof_kinds.append("scenario_review")
     artifact_changed = ARTIFACT_PATH in normalized_paths
     run_mode = data["run_mode"]
+    disabled_reason = str(data.get("disabled_reason") or "").strip()
     scenario_registry_review_required = any(
         item.get("validation_tier") == "evaluator-required" for item in skill_recommendations
     )
     must_ask_before_running = run_mode == "ask"
-    recommended_commands = [EVAL_TEST_COMMAND] if required else []
-    if not required:
+    cautilus_disabled = run_mode == "disabled"
+    recommended_commands = [EVAL_TEST_COMMAND] if required and not cautilus_disabled else []
+    if cautilus_disabled:
+        status = "disabled"
+    elif not required:
         status = "not-required"
     elif artifact_changed:
         status = "ready-for-validation"
     else:
         status = "needs-proof"
     next_action = "none"
-    if status == "needs-proof":
+    if status == "disabled" and required:
+        next_action = "cautilus-disabled"
+    elif status == "needs-proof":
         next_action = "ask-before-running" if must_ask_before_running else "run-proof-and-refresh-artifact"
     notes: list[str] = []
     if run_mode == "ask":
@@ -177,6 +183,9 @@ def plan_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> dict[str, 
         )
     elif run_mode == "auto":
         notes.append("Repo policy is auto: cautilus proof may run without an extra confirmation step when the operator workflow chooses to execute it.")
+    elif run_mode == "disabled":
+        reason = f": {disabled_reason}" if disabled_reason else ""
+        notes.append(f"Repo policy is disabled; do not run cautilus proof{reason}")
     if "scenario_review" in proof_kinds:
         notes.append("This slice needs a scenario review, not only regression proof.")
     if scenario_registry_review_required:
@@ -191,6 +200,7 @@ def plan_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> dict[str, 
         "artifact_path": ARTIFACT_PATH,
         "artifact_changed": artifact_changed,
         "run_mode": run_mode,
+        "disabled_reason": disabled_reason,
         "must_ask_before_running": must_ask_before_running,
         "scenario_registry_review_required": scenario_registry_review_required,
         "goal": "preserve",

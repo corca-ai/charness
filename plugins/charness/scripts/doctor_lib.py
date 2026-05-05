@@ -6,7 +6,11 @@ from pathlib import Path
 from typing import Any
 
 from scripts.control_plane_lib import evaluate_version, read_lock, run_check
-from scripts.control_plane_lifecycle_lib import render_repo_followup
+from scripts.control_plane_lifecycle_lib import (
+    disabled_by_cautilus_adapter,
+    disabled_check_payload,
+    render_repo_followup,
+)
 from scripts.repo_layout import discovery_stub_dir, generated_support_dir
 from scripts.support_sync_lib import (
     inspect_support_sync,
@@ -111,6 +115,38 @@ def evaluate_readiness(capability: dict[str, Any], repo_root: Path) -> dict[str,
 
 
 def inspect_capability_state(repo_root: Path, capability: dict[str, Any]) -> dict[str, Any]:
+    disabled = disabled_by_cautilus_adapter(repo_root, capability)
+    if disabled is not None:
+        disabled_payload = disabled_check_payload(disabled)
+        previous_lock = read_lock(repo_root, capability["tool_id"])
+        support_state = support_state_for_manifest(capability)
+        support_sync = inspect_support_sync(repo_root, previous_lock)
+        support_sync, next_steps = support_sync_guidance(capability, support_state, support_sync)
+        support_discovery, discovery_steps = support_discovery_state(repo_root, capability, support_state)
+        next_steps.extend(discovery_steps)
+        next_steps.append(f"Cautilus is disabled by repo adapter: {disabled['reason']}")
+        return {
+            "kind": capability["kind"],
+            "access_modes": capability["access_modes"],
+            "capability_requirements": capability.get("capability_requirements", {}),
+            "install_route": install_route_for_manifest(repo_root, capability),
+            "support_state": support_state,
+            "detect": disabled_payload,
+            "healthcheck": disabled_payload,
+            "readiness": {"ok": False, "checks": [], "failed_checks": []},
+            "version": {
+                "status": "unknown",
+                "constraint": capability["version_expectation"]["constraint"],
+                "observed_version": None,
+            },
+            "support_sync": support_sync,
+            "support_discovery": support_discovery,
+            "doctor_status": "disabled",
+            "doctor_disposition": "disabled-by-adapter",
+            "next_steps": next_steps,
+            "previous_lock_present": previous_lock is not None,
+        }
+
     detect_result = run_check(capability["checks"]["detect"], repo_root)
     healthcheck_result = run_check(capability["checks"]["healthcheck"], repo_root) if detect_result["ok"] else {
         "ok": False,

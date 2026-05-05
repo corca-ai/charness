@@ -77,7 +77,7 @@
     },
     {
       "surface_id": "prompt-behavior-proof",
-      "description": "Prompt-affecting instruction surfaces must refresh the checked-in cautilus proof artifact.",
+      "description": "Prompt-affecting instruction surfaces must follow the repo Cautilus adapter proof policy.",
       "source_paths": [
         "AGENTS.md",
         "CLAUDE.md",
@@ -98,7 +98,7 @@
         "python3 scripts/validate_cautilus_proof.py --repo-root ."
       ],
       "notes": [
-        "Prompt-affecting changes must refresh `charness-artifacts/cautilus/latest.md`, but adapter policy decides whether cautilus may run automatically, must ask, or may adapt by cost and proof kind.",
+        "Prompt-affecting changes must follow `.agents/cautilus-adapter.yaml`; `disabled` mode forbids Cautilus execution and lets deterministic gates close the slice until re-enabled.",
         "High-leverage prompt changes should leave both regression proof and scenario-review notes when the adapter asks for more than routing preservation.",
         "Behavior-improvement claims must also record a baseline compare path in the cautilus artifact."
       ]
@@ -250,12 +250,12 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/validate_cautilus_scenarios.py --repo-root .",
-        "python3 scripts/eval_cautilus_chatbot_proposals.py --repo-root . --json"
+        "python3 scripts/validate_cautilus_proof.py --repo-root ."
       ],
       "notes": [
         "Keep the checked-in proposal packet and the visible current-pointer artifact in sync.",
-        "This surface is proposal-mining evidence, not yet a compare-backed benchmark claim."
+        "This surface is proposal-mining evidence, not yet a compare-backed benchmark claim.",
+        "While `.agents/cautilus-adapter.yaml` uses `run_mode: disabled`, do not run proposal eval commands."
       ]
     },
     {
@@ -271,10 +271,11 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "python3 scripts/eval_cautilus_chatbot_compare.py --repo-root . --baseline-repo . --candidate-repo . --output-dir /tmp/charness-cautilus-chatbot-benchmark-self-compare"
+        "python3 scripts/validate_cautilus_proof.py --repo-root ."
       ],
       "notes": [
-        "Keep compare artifacts explicit about baseline versus candidate and about proposal keys omitted by the product's current ranking cap."
+        "Keep compare artifacts explicit about baseline versus candidate and about proposal keys omitted by the product's current ranking cap.",
+        "While `.agents/cautilus-adapter.yaml` uses `run_mode: disabled`, do not run benchmark eval commands."
       ]
     },
     {

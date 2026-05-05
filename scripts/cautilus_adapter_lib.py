@@ -7,8 +7,15 @@ from scripts.adapter_lib import load_yaml_file, optional_string, optional_string
 
 ADAPTER_PATH = Path(".agents/cautilus-adapter.yaml")
 ARTIFACT_PATH = "charness-artifacts/cautilus/latest.md"
-VALID_RUN_MODES = ("auto", "ask", "adaptive")
-STRING_FIELDS = ("repo", "run_mode", "eval_test_command", "evaluation_input_default", "profile_default")
+VALID_RUN_MODES = ("auto", "ask", "adaptive", "disabled")
+STRING_FIELDS = (
+    "repo",
+    "run_mode",
+    "disabled_reason",
+    "eval_test_command",
+    "evaluation_input_default",
+    "profile_default",
+)
 LIST_FIELDS = (
     "evaluation_surfaces",
     "baseline_options",
@@ -198,7 +205,7 @@ def load_cautilus_adapter(repo_root: Path) -> dict[str, Any]:
             "warnings": [
                 "No cautilus adapter found. Using safe ask-before-run defaults.",
                 "Prompt-affecting proof may still be required, but explicit operator confirmation is the default without a repo adapter.",
-                "Create .agents/cautilus-adapter.yaml to choose `auto`, `ask`, or `adaptive` and to declare scenario-review patterns.",
+                "Create .agents/cautilus-adapter.yaml to choose `auto`, `ask`, `adaptive`, or `disabled` and to declare scenario-review patterns.",
             ],
         }
 

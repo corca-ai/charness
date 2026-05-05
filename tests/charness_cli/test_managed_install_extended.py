@@ -92,7 +92,8 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     assert tool_update["tool_ids"] == []
     assert tool_update["results"]["agent-browser"]["update"]["status"] == "updated"
     assert tool_update["results"]["agent-browser"]["support"]["status"] == "synced"
-    assert tool_update["results"]["cautilus"]["update"]["status"] == "manual"
+    assert tool_update["results"]["cautilus"]["update"]["status"] == "skipped"
+    assert tool_update["results"]["cautilus"]["update"]["mode"] == "disabled"
     assert tool_update["results"]["cautilus"]["support"]["status"] == "synced"
     assert tool_update["results"]["specdown"]["update"]["status"] == "updated"
     assert tool_update["results"]["specdown"]["update"]["package_manager"] == "go"
@@ -104,9 +105,8 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     assert json.loads((managed_repo / "integrations" / "locks" / "agent-browser.json").read_text(encoding="utf-8"))["update"][
         "update_status"
     ] == "updated"
-    assert json.loads((managed_repo / "integrations" / "locks" / "cautilus.json").read_text(encoding="utf-8"))["update"][
-        "update_status"
-    ] == "manual"
+    cautilus_lock = json.loads((managed_repo / "integrations" / "locks" / "cautilus.json").read_text(encoding="utf-8"))
+    assert cautilus_lock["doctor"]["doctor_status"] == "disabled"
     assert json.loads((managed_repo / "integrations" / "locks" / "specdown.json").read_text(encoding="utf-8"))["update"][
         "package_manager"
     ] == "go"

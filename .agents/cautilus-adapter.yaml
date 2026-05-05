@@ -1,6 +1,7 @@
 version: 1
 repo: charness
-run_mode: adaptive
+run_mode: disabled
+disabled_reason: Cautilus is under active rework; do not run local Cautilus tests or evals until this adapter is re-enabled.
 evaluation_surfaces:
   - skill portability and metadata integrity
   - repo-owned validation workflow

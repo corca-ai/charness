@@ -3,7 +3,34 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from scripts.cautilus_adapter_lib import load_cautilus_adapter
 from scripts.control_plane_lib import CommandResult, run_check, run_shell
+
+
+def disabled_by_cautilus_adapter(repo_root: Path, manifest: dict[str, Any]) -> dict[str, Any] | None:
+    if manifest.get("tool_id") != "cautilus":
+        return None
+    adapter = load_cautilus_adapter(repo_root)
+    if not adapter["valid"]:
+        return None
+    data = adapter["data"]
+    if data.get("run_mode") != "disabled":
+        return None
+    reason = data.get("disabled_reason")
+    return {
+        "tool_id": "cautilus",
+        "reason": reason if isinstance(reason, str) and reason else "Cautilus is disabled by repo adapter.",
+        "adapter_path": adapter["path"],
+    }
+
+
+def disabled_check_payload(disabled: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "ok": False,
+        "results": [],
+        "failure_details": [f"disabled by repo adapter: {disabled['reason']}"],
+        "failure_hint": "Re-enable `.agents/cautilus-adapter.yaml` before running Cautilus checks.",
+    }
 
 
 def failed_healthcheck(manifest: dict[str, Any], *, reason: str) -> dict[str, Any]:

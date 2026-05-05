@@ -49,14 +49,30 @@ def inspect_manifest(
     skip_release_probe: bool,
 ) -> dict[str, object]:
     state = inspect_capability_state(repo_root, manifest)
-    provenance_result = detect_install_provenance(manifest)
+    disabled = state.get("doctor_status") == "disabled"
+    provenance_result = (
+        {
+            "checked_at": None,
+            "binary_name": manifest["tool_id"],
+            "status": "skipped",
+            "install_method": "disabled",
+            "binary_path": None,
+            "resolved_path": None,
+            "package_name": None,
+            "package_manager_prefix": None,
+            "available_package_managers": [],
+            "update_supported": False,
+        }
+        if disabled
+        else detect_install_provenance(manifest)
+    )
     provenance_result["checked_at"] = now_iso()
     payload = {
         "checked_at": now_iso(),
         **state,
         "provenance": provenance_result,
     }
-    release = None if skip_release_probe else probe_release(manifest)
+    release = None if skip_release_probe or disabled else probe_release(manifest)
     if release is not None:
         payload["release"] = release
     if write:

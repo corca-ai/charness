@@ -322,6 +322,33 @@ def test_validate_cautilus_proof_treats_named_cautilus_adapter_as_prompt_affecti
     assert "require refreshing `charness-artifacts/cautilus/latest.md`" in result.stderr
 
 
+def test_validate_cautilus_proof_allows_disabled_adapter_without_artifact(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, None)
+    (repo / ".agents" / "cautilus-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "run_mode: disabled",
+                "disabled_reason: Cautilus is under active rework.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "scripts/validate_cautilus_proof.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "skills/public/impl/SKILL.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "cautilus proof disabled by repo adapter" in result.stdout
+
+
 def test_plan_cautilus_proof_recommends_skill_dogfood_and_scenario_followups() -> None:
     result = run_script(
         "scripts/plan_cautilus_proof.py",
@@ -334,11 +361,9 @@ def test_plan_cautilus_proof_recommends_skill_dogfood_and_scenario_followups() -
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    expected_command = (
-        "cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml "
-        "--fixture evals/cautilus/whole-repo-routing.fixture.json"
-    )
-    assert payload["recommended_commands"] == [expected_command]
+    assert payload["run_mode"] == "disabled"
+    assert payload["status"] == "disabled"
+    assert payload["recommended_commands"] == []
     assert payload["changed_public_skills"] == ["create-skill"]
     recommendation = payload["skill_validation_recommendations"][0]
     assert recommendation["skill_id"] == "create-skill"
@@ -371,13 +396,26 @@ def test_plan_cautilus_proof_fails_closed_when_public_skill_policy_is_invalid(tm
     assert "public-skill validation policy invalid while planning Cautilus proof" in result.stderr
 
 
-def test_plan_cautilus_proof_adaptive_runs_without_ask_for_scenario_review() -> None:
+def test_plan_cautilus_proof_adaptive_runs_without_ask_for_scenario_review(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, None)
+    (repo / ".agents" / "cautilus-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "run_mode: adaptive",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
     result = run_script(
         "scripts/plan_cautilus_proof.py",
         "--repo-root",
-        str(ROOT),
+        str(repo),
         "--paths",
-        "skills/public/create-skill/SKILL.md",
+        "skills/public/impl/SKILL.md",
         "--json",
     )
     assert result.returncode == 0, result.stderr
@@ -385,4 +423,5 @@ def test_plan_cautilus_proof_adaptive_runs_without_ask_for_scenario_review() -> 
     assert payload["run_mode"] == "adaptive"
     assert payload["must_ask_before_running"] is False
     assert payload["scenario_registry_review_required"] is True
+    assert payload["changed_public_skills"] == ["impl"]
     assert payload["next_action"] == "run-proof-and-refresh-artifact"

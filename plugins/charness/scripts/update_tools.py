@@ -31,6 +31,17 @@ probe_release = _scripts_upstream_release_lib_module.probe_release
 
 
 def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -> dict[str, object]:
+    disabled = _scripts_control_plane_lifecycle_lib_module.disabled_by_cautilus_adapter(repo_root, manifest)
+    if disabled is not None:
+        return {
+            "tool_id": manifest["tool_id"],
+            "status": "skipped",
+            "mode": "disabled",
+            "reason": disabled["reason"],
+            "adapter_path": disabled["adapter_path"],
+            "commands": [],
+        }
+
     configured_action = manifest["lifecycle"]["update"]
     provenance = detect_install_provenance(manifest)
     provenance["checked_at"] = now_iso()

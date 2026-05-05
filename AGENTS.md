@@ -6,6 +6,8 @@
 
 - Always call `charness:find-skills` once at the start of each task-oriented session; use [charness-artifacts/find-skills/latest.md](./charness-artifacts/find-skills/latest.md) as the local capability map.
 - Load matching skills before improvising, and continue active repo work from [docs/handoff.md](./docs/handoff.md).
+- Route external URLs or source links that should become repo working context through `gather` before summarizing, implementing, or deciding from them.
+- Do not run Cautilus while its repo-owned adapter is `disabled`; it is under active rework and deterministic gates own closeout until re-enabled.
 - Read [charness-artifacts/retro/recent-lessons.md](./charness-artifacts/retro/recent-lessons.md) before changing repo operating contracts, prompt or skill surfaces, exports, or artifacts.
 - Keep the harness portable: host-specific behavior belongs in adapters, presets, and integration manifests.
 - Prefer validators and scripts over prose rituals; leave structured state when a tool cannot finish end-to-end.

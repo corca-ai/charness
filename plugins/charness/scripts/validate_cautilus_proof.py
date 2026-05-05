@@ -148,6 +148,10 @@ def validate_scenario_review(lines: list[str], planner: dict[str, object]) -> No
 def validate_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> str:
     planner = plan_cautilus_proof(repo_root, changed_paths)
     changed_prompt_paths = planner["prompt_affecting_paths"]
+    if planner["run_mode"] == "disabled":
+        reason = planner.get("disabled_reason")
+        suffix = f": {reason}" if reason else ""
+        return f"cautilus proof disabled by repo adapter{suffix}"
     if not changed_prompt_paths:
         return "no prompt-affecting changes detected"
 

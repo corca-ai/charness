@@ -40,16 +40,18 @@ bucket choices before editing the JSON.
 - the tier only describes extra validation beyond that baseline
 - the tier is routing metadata, not a claim that local CI already runs a
   distinct standing evaluator path for that skill today
-- maintained `cautilus` proof is now part of the repo story:
-  `cautilus.evaluation_input.v1` dogfood is checked in and should be refreshed
-  when prompt-affecting repo surfaces change
+- maintained `cautilus` proof is part of the repo story only when the adapter
+  permits it. If [cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml) uses
+  `run_mode: disabled`, do not run Cautilus; deterministic gates and the
+  disabled validator result own closeout until re-enabled
 - a skill can move upward to a stronger tier later, but should not move
   downward without evidence that the deeper gate is wasted effort
 
 ## Prompt-Affecting Changes
 
 When a slice changes repo-owned instruction or prompt surfaces that can steer
-agent behavior, plan the matching checked-in `cautilus` proof before closeout.
+agent behavior, follow the repo Cautilus adapter before closeout. A `disabled`
+adapter is an explicit do-not-run policy.
 
 Default prompt-affecting surfaces in this repo:
 
@@ -64,7 +66,7 @@ Default proof split:
 - `regression proof`: preserve routing, contract boundaries, and the existing
   first-skill shape with
   `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` or a
-  repo-owned dogfood wrapper
+  repo-owned dogfood wrapper when the adapter permits Cautilus execution
 - `scenario review`: inspect one or two representative scenarios when the
   change is high-leverage enough that "not broken" is weaker than "did the
   intended reader or reasoning behavior actually improve?"
@@ -90,6 +92,8 @@ Repo policy lives in [`.agents/cautilus-adapter.yaml`](../.agents/cautilus-adapt
   and short scenario review may run automatically too; explicit confirmation is
   reserved for maintained scenario-registry mutations such as
   [evals/cautilus/scenarios.json](../evals/cautilus/scenarios.json)
+- `run_mode: disabled`: Cautilus must not run; deterministic gates and disabled
+  validator output own closeout until the adapter is deliberately re-enabled
 
 `run_slice_closeout.py` should act as a gatekeeper, not as the evaluator
 runner: it decides whether proof is required and whether the refreshed artifact

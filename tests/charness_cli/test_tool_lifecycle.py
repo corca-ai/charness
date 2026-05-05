@@ -20,6 +20,14 @@ from .support import (
 from .tool_fakes import make_fake_cautilus
 
 
+def enable_cautilus_adapter(repo_root: Path) -> None:
+    adapter = repo_root / ".agents" / "cautilus-adapter.yaml"
+    text = adapter.read_text(encoding="utf-8")
+    text = text.replace("run_mode: disabled\n", "run_mode: adaptive\n")
+    text = "\n".join(line for line in text.splitlines() if not line.startswith("disabled_reason:")) + "\n"
+    adapter.write_text(text, encoding="utf-8")
+
+
 def make_fake_go_glow(tmp_path: Path) -> tuple[Path, Path]:
     gopath = tmp_path / "go"
     bin_dir = tmp_path / "bin"
@@ -82,6 +90,7 @@ def make_fake_go_glow(tmp_path: Path) -> tuple[Path, Path]:
 
 def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path) -> None:
     repo_root = make_repo_copy(tmp_path)
+    enable_cautilus_adapter(repo_root)
     home_root = tmp_path / "home"
     release_fixture = make_release_fixture(tmp_path)
     support_fixture = make_support_sync_fixture(tmp_path)
@@ -181,6 +190,7 @@ def test_tool_install_recommendation_filter_no_match_does_not_install_all(tmp_pa
 
 def test_installed_cli_tool_install_materializes_cautilus_support(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    enable_cautilus_adapter(home_root / ".agents" / "src" / "charness")
     release_fixture = make_release_fixture(tmp_path)
     support_fixture = make_support_sync_fixture(tmp_path)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
@@ -212,6 +222,7 @@ def test_installed_cli_tool_doctor_reports_ok_for_cautilus_with_binary_and_suppo
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    enable_cautilus_adapter(home_root / ".agents" / "src" / "charness")
     release_fixture = make_release_fixture(tmp_path)
     support_fixture = make_support_sync_fixture(tmp_path)
     fake_cautilus = make_fake_cautilus(tmp_path)
@@ -253,6 +264,7 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    enable_cautilus_adapter(home_root / ".agents" / "src" / "charness")
     release_fixture = make_release_fixture(tmp_path)
     support_fixture = make_support_sync_fixture(tmp_path)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)

@@ -101,11 +101,12 @@ Adapter policy:
    - add or strengthen checks when an important branch would otherwise stay unproven
    - for browser-facing output, treat code-only checks as partial proof by default; resolve browser/runtime support through `find-skills`, run it when available, or say explicitly that it did not run
    - for slices that depend on an external named target (operator command instance/service/branch/env alias) or a third-party API call, verify the runtime state of the name and the live request/response contract before acting — see `../debug/references/named-target-verification.md` and `references/external-api-contract.md`
-   - if the slice changes repo-owned instruction or prompt surfaces such as `<repo-root>/AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or adapter prompt wording, refresh `<repo-root>/charness-artifacts/cautilus/latest.md` from repo-owned cautilus proof before closeout
-   - let the repo's cautilus adapter decide prompt/evaluator proof policy; generic review or closeout wording must not silently launch Cautilus
+   - if the slice changes repo-owned instruction or prompt surfaces such as `<repo-root>/AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or adapter prompt wording, let the repo's cautilus adapter decide prompt/evaluator proof policy before closeout
+   - if the adapter run mode is `disabled`, do not run Cautilus; record the disabled validator result and use deterministic gates until the adapter is re-enabled
+   - generic review or closeout wording must not silently launch Cautilus
    - for behavior-preserving prompt changes, keep regression proof anchored
      by `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>`
-     or a repo-owned dogfood wrapper; for behavior-improving claims, also
+     or a repo-owned dogfood wrapper when the adapter permits Cautilus execution; for behavior-improving claims, also
      record the baseline compare path with `cautilus workspace prepare-compare`
      and `cautilus eval evaluate --input <observed.json>`
    - when the slice changes reader fit, truth-surface framing, or skill-core

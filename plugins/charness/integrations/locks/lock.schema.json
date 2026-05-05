@@ -383,7 +383,8 @@
             "unhealthy",
             "not-ready",
             "version-mismatch",
-            "support-missing"
+            "support-missing",
+            "disabled"
           ]
         },
         "doctor_disposition": {
@@ -393,7 +394,8 @@
             "advisory-install-needed",
             "blocking-install-needed",
             "blocking-support-sync-needed",
-            "blocking-failure"
+            "blocking-failure",
+            "disabled-by-adapter"
           ]
         }
       }
@@ -512,7 +514,8 @@
           "enum": [
             "detected",
             "missing",
-            "unknown"
+            "unknown",
+            "skipped"
           ]
         },
         "install_method": {
@@ -523,7 +526,8 @@
             "go",
             "path",
             "missing",
-            "unknown"
+            "unknown",
+            "disabled"
           ]
         },
         "binary_path": {
