@@ -27,12 +27,44 @@ def _coerce_scalar(value: str) -> Any:
     if value.startswith('"') and value.endswith('"'):
         return value[1:-1].replace('\\"', '"').replace("\\\\", "\\")
     if value.startswith("'") and value.endswith("'"):
-        return value[1:-1]
+        return value[1:-1].replace("''", "'")
     return value
 
 
 def _is_quoted_scalar(value: str) -> bool:
     return (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'"))
+
+
+def _find_mapping_separator(value: str) -> int:
+    quote: str | None = None
+    escaped = False
+    for index, char in enumerate(value):
+        if escaped:
+            escaped = False
+            continue
+        if quote == '"' and char == "\\":
+            escaped = True
+            continue
+        if quote:
+            if char == quote:
+                quote = None
+            continue
+        if char in ("'", '"'):
+            quote = char
+            continue
+        if char == ":":
+            return index
+    return -1
+
+
+def _split_mapping_entry(value: str) -> tuple[str, str] | None:
+    separator = _find_mapping_separator(value)
+    if separator < 0:
+        return None
+    key = _coerce_scalar(value[:separator].strip())
+    if not isinstance(key, str):
+        key = str(key)
+    return key, value[separator + 1 :].strip()
 
 
 def _next_meaningful_line(lines: list[str], start: int) -> tuple[int, str] | None:
@@ -67,12 +99,14 @@ def _parse_list_items(lines: list[str], start: int, indent: int) -> tuple[list[A
                 items.append(_coerce_scalar(item_body))
                 index += 1
                 continue
-            key_candidate = item_body.split(":", 1)[0].strip()
-            if (": " in item_body or item_body.endswith(":")) and " " not in key_candidate:
-                key, _, value = item_body.partition(":")
+            separator = _find_mapping_separator(item_body)
+            mapping_entry = _split_mapping_entry(item_body)
+            has_mapping_separator = separator == len(item_body) - 1 or (
+                separator >= 0 and item_body[separator + 1].isspace()
+            )
+            if mapping_entry is not None and has_mapping_separator and " " not in mapping_entry[0]:
+                key, value = mapping_entry
                 item: dict[str, Any] = {}
-                key = key.strip()
-                value = value.strip()
                 if value:
                     item[key] = [] if value == "[]" else _coerce_scalar(value)
                     index += 1
@@ -122,13 +156,15 @@ def _parse_block(lines: list[str], start: int, indent: int) -> tuple[dict[str, A
         if current_indent > indent:
             index += 1
             continue
-        if stripped.startswith("- ") or ":" not in stripped:
+        if stripped.startswith("- "):
             index += 1
             continue
 
-        key, _, value = stripped.partition(":")
-        key = key.strip()
-        value = value.strip()
+        mapping_entry = _split_mapping_entry(stripped)
+        if mapping_entry is None:
+            index += 1
+            continue
+        key, value = mapping_entry
 
         if value:
             if value == "[]":
@@ -187,22 +223,30 @@ def _yaml_scalar(value: Any) -> str:
     return str(value)
 
 
+def _yaml_key(value: Any) -> str:
+    if isinstance(value, str) and ":" in value:
+        escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+        return f'"{escaped}"'
+    return _yaml_scalar(value)
+
+
 def _render_yaml_value(lines: list[str], key: str, value: Any, *, indent: int) -> None:
     prefix = " " * indent
+    rendered_key = _yaml_key(key)
     if isinstance(value, dict):
-        lines.append(f"{prefix}{key}:")
+        lines.append(f"{prefix}{rendered_key}:")
         for nested_key, nested_value in value.items():
             _render_yaml_value(lines, nested_key, nested_value, indent=indent + 2)
         return
     if isinstance(value, list):
         if not value:
-            lines.append(f"{prefix}{key}: []")
+            lines.append(f"{prefix}{rendered_key}: []")
             return
-        lines.append(f"{prefix}{key}:")
+        lines.append(f"{prefix}{rendered_key}:")
         for item in value:
             _render_yaml_list_item(lines, item, indent=indent + 2)
         return
-    lines.append(f"{prefix}{key}: {_yaml_scalar(value)}")
+    lines.append(f"{prefix}{rendered_key}: {_yaml_scalar(value)}")
 
 
 def _render_yaml_list_item(lines: list[str], item: Any, *, indent: int) -> None:
@@ -211,19 +255,20 @@ def _render_yaml_list_item(lines: list[str], item: Any, *, indent: int) -> None:
         first = True
         for nested_key, nested_value in item.items():
             item_prefix = f"{prefix}- " if first else f"{prefix}  "
+            rendered_key = _yaml_key(nested_key)
             if isinstance(nested_value, dict):
-                lines.append(f"{item_prefix}{nested_key}:")
+                lines.append(f"{item_prefix}{rendered_key}:")
                 for child_key, child_value in nested_value.items():
                     _render_yaml_value(lines, child_key, child_value, indent=indent + 4)
             elif isinstance(nested_value, list):
                 if not nested_value:
-                    lines.append(f"{item_prefix}{nested_key}: []")
+                    lines.append(f"{item_prefix}{rendered_key}: []")
                 else:
-                    lines.append(f"{item_prefix}{nested_key}:")
+                    lines.append(f"{item_prefix}{rendered_key}:")
                     for child in nested_value:
                         _render_yaml_list_item(lines, child, indent=indent + 4)
             else:
-                lines.append(f"{item_prefix}{nested_key}: {_yaml_scalar(nested_value)}")
+                lines.append(f"{item_prefix}{rendered_key}: {_yaml_scalar(nested_value)}")
             first = False
         return
     lines.append(f"{prefix}- {_yaml_scalar(item)}")

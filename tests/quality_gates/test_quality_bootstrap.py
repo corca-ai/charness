@@ -24,6 +24,92 @@ def seed_quality_repo(tmp_path: Path) -> Path:
     return repo
 
 
+def write_explicit_quality_adapter(repo: Path) -> None:
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: charness-artifacts/quality",
+                "preset_id: python-quality",
+                "customized_from: python-quality",
+                "preset_lineage:",
+                "- python-quality",
+                "coverage_fragile_margin_pp: 0.5",
+                "coverage_floor_policy:",
+                "  min_statements_threshold: 45",
+                "  fail_below_pct: 82.0",
+                "  warn_ceiling_pct: 96.0",
+                "  floor_drift_lock_pp: 0.5",
+                "  exemption_list_path: scripts/custom-exemptions.txt",
+                "  gate_script_pattern: \"*-boundary-gate.sh\"",
+                "  lefthook_path: config/lefthook.yml",
+                "  ci_workflow_glob: .github/workflows/quality-*.yml",
+                "specdown_smoke_patterns: []",
+                "spec_pytest_reference_format: \"Covered by pytest:\\s+`tests/custom[^`]+`\"",
+                "prompt_asset_roots:",
+                "- prompts",
+                "recommendation_defaults_version: custom-v1",
+                "adapter_review_sources:",
+                "- .agents/quality-adapter.yaml",
+                "acknowledged_recommendations:",
+                "- demo.ack",
+                "gate_design_review_globs:",
+                "- scripts/*.py",
+                "canonical_markdown_surfaces:",
+                "- AGENTS.md",
+                "- CLAUDE.md",
+                "- docs/handoff.md",
+                "prompt_asset_policy:",
+                "  source_globs:",
+                "  - src/**/*.py",
+                "  min_multiline_chars: 256",
+                "  exemption_globs:",
+                "  - tests/**",
+                "skill_ergonomics_gate_rules:",
+                "  - mode_option_pressure_terms",
+                "skill_ergonomics_skill_paths:",
+                "  - packages/official-skills/ceal-native/skills",
+                "skill_ergonomics_runtime_install_skill_paths:",
+                "  - packages/official-skills/ceal-native/skills",
+                "vendored_paths:",
+                "  - packages/official-skills/charness-public",
+                "public_spec_implementation_guard_min_lines: 80",
+                "runtime_profile_default: local-fast",
+                "runtime_budgets:",
+                "  pytest: 70000",
+                '  "pre-push:full-pytest": 19000',
+                '  "pre-push:meta-fast": 27000',
+                "runtime_budget_profiles:",
+                "  local-fast:",
+                "    budgets:",
+                "      pytest: 45000",
+                '      "pre-push:focused-quality-a": 12000',
+                "  ci-slow:",
+                "    budgets:",
+                "      pytest: 540000",
+                "startup_probes:",
+                "  - label: demo-version",
+                "    command:",
+                "      - python3",
+                "      - -V",
+                "    class: standing",
+                "    startup_mode: warm",
+                "    surface: direct",
+                "    samples: 2",
+                "gate_commands:",
+                "- python3 -m pytest -q",
+                "preflight_commands: []",
+                "security_commands: []",
+                "concept_paths: []",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
     result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
@@ -119,86 +205,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
 
 def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/quality",
-                "preset_id: python-quality",
-                "customized_from: python-quality",
-                "preset_lineage:",
-                "- python-quality",
-                "coverage_fragile_margin_pp: 0.5",
-                "coverage_floor_policy:",
-                "  min_statements_threshold: 45",
-                "  fail_below_pct: 82.0",
-                "  warn_ceiling_pct: 96.0",
-                "  floor_drift_lock_pp: 0.5",
-                "  exemption_list_path: scripts/custom-exemptions.txt",
-                "  gate_script_pattern: \"*-boundary-gate.sh\"",
-                "  lefthook_path: config/lefthook.yml",
-                "  ci_workflow_glob: .github/workflows/quality-*.yml",
-                "specdown_smoke_patterns: []",
-                "spec_pytest_reference_format: \"Covered by pytest:\\s+`tests/custom[^`]+`\"",
-                "prompt_asset_roots:",
-                "- prompts",
-                "recommendation_defaults_version: custom-v1",
-                "adapter_review_sources:",
-                "- .agents/quality-adapter.yaml",
-                "acknowledged_recommendations:",
-                "- demo.ack",
-                "gate_design_review_globs:",
-                "- scripts/*.py",
-                "canonical_markdown_surfaces:",
-                "- AGENTS.md",
-                "- CLAUDE.md",
-                "- docs/handoff.md",
-                "prompt_asset_policy:",
-                "  source_globs:",
-                "  - src/**/*.py",
-                "  min_multiline_chars: 256",
-                "  exemption_globs:",
-                "  - tests/**",
-                "skill_ergonomics_gate_rules:",
-                "  - mode_option_pressure_terms",
-                "skill_ergonomics_skill_paths:",
-                "  - packages/official-skills/ceal-native/skills",
-                "skill_ergonomics_runtime_install_skill_paths:",
-                "  - packages/official-skills/ceal-native/skills",
-                "vendored_paths:",
-                "  - packages/official-skills/charness-public",
-                "public_spec_implementation_guard_min_lines: 80",
-                "runtime_profile_default: local-fast",
-                "runtime_budgets:",
-                "  pytest: 70000",
-                "runtime_budget_profiles:",
-                "  local-fast:",
-                "    budgets:",
-                "      pytest: 45000",
-                "  ci-slow:",
-                "    budgets:",
-                "      pytest: 540000",
-                "startup_probes:",
-                "  - label: demo-version",
-                "    command:",
-                "      - python3",
-                "      - -V",
-                "    class: standing",
-                "    startup_mode: warm",
-                "    surface: direct",
-                "    samples: 2",
-                "gate_commands:",
-                "- python3 -m pytest -q",
-                "preflight_commands: []",
-                "security_commands: []",
-                "concept_paths: []",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    write_explicit_quality_adapter(repo)
 
     result = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
@@ -249,9 +256,13 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     }
     for key, value in expected_resolved.items():
         assert resolved["data"][key] == value
-    assert resolved["data"]["runtime_budgets"] == {"pytest": 70000}
+    assert resolved["data"]["runtime_budgets"] == {
+        "pytest": 70000,
+        "pre-push:full-pytest": 19000,
+        "pre-push:meta-fast": 27000,
+    }
     assert resolved["data"]["runtime_budget_profiles"] == {
-        "local-fast": {"budgets": {"pytest": 45000}},
+        "local-fast": {"budgets": {"pytest": 45000, "pre-push:focused-quality-a": 12000}},
         "ci-slow": {"budgets": {"pytest": 540000}},
     }
     assert resolved["data"]["startup_probes"] == [
