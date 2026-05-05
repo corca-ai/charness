@@ -82,6 +82,7 @@
       "reviewed_on": "2026-04-24",
       "observed_evidence": [
         "The prompt still routes directly to `create-skill`, and the checked-in core keeps public-skill editing anchored on contract freezing, customer-of-this-skill premortem, portable helper extraction, and classifier-aware `SKILL.md` edits rather than generic implementation drift.",
+        "The checked-in core now requires scheduled, async, and external-lookup skill self-tests to replay the commands, inputs, selectors, and adapter state prescribed by `SKILL.md`, with raw provider response evidence before choosing a stable identification signal.",
         "The adapter-pattern reference now says visible artifacts are history-default and `latest.md` is only an optional current pointer, which is the intended portable authoring rule for future skill packages instead of a one-off repo exception.",
         "The current `cautilus` proof policy around `create-skill` no longer treats every scenario-review-worthy prompt change as ask-before-run: adaptive mode now auto-runs proof and reserves confirmation for maintained scenario-registry mutation."
       ]
@@ -365,6 +366,7 @@
       "observed_evidence": [
         "The checked-in public core keeps `impl` downstream of `spec` while still requiring an inline honest contract when no separate spec exists, which matches a direct build-slice prompt instead of collapsing into `spec` or `quality`.",
         "The impl stop gate now requires every task-completing repo slice to record premortem before closeout, using `Premortem: short <scope>` for small local-risk work, `Premortem: full <artifact-or-subagent-status>` for broader decisions, and `Premortem: not-applicable <reason>` only for inspect/status/routing-only requests.",
+        "The impl verification ladder now treats skill self-tests and scheduled or delegated workflows as prescribed-path proof: a passing smoke must start from checked `SKILL.md` commands and selector signals, not an author's free-form external probe.",
         "Repo-owned eval coverage already exercises `impl-adapter-bootstrap`, pinning the inferred adapter defaults for `charness-artifacts/impl` and the verification/truth-surface fields that bootstrap expects.",
         "The impl bootstrap now points at `scripts/plan_risk_interrupt.py`, and the checked-in core tells the agent not to continue plain implementation past a forced debug interrupt until the named spec handoff says that is honest."
       ]

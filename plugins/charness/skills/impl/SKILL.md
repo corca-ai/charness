@@ -4,28 +4,21 @@ description: "Use when work should move into code, config, tests, or operator-fa
 ---
 # Impl
 
-Use this when the work should move from contract into code, config, tests, or
-operator-facing artifacts.
+Use this when the work should move from contract into code, config, tests, or operator-facing artifacts.
 
-`impl` is downstream of `spec`, but it must also handle the common case where a
-user asks for implementation directly and no separate spec step happened. In
-that case, `impl` should bootstrap the smallest honest contract for the current
-slice instead of pretending the task is already well-defined.
+`impl` is downstream of `spec`, but direct implementation prompts still get a
+small honest contract instead of pretending the task is already well-defined.
 Keep sequence discipline, strong verification, and honest premortem use in the
-loop. See `references/sequence-discipline.md`, `references/verification-ladder.md`,
-`references/design-lenses.md`, and `references/review-gate.md`.
+loop. See `references/sequence-discipline.md`, `references/verification-ladder.md`, `references/design-lenses.md`, and `references/review-gate.md`.
 
 ## Continuation Default
 
 - WHEN THE USER EXPLICITLY ASKS FOR AUTONOMOUS CONTINUATION, DO NOT PAUSE AT
   SLICE BOUNDARIES JUST TO REPORT COMPLETION.
-- Treat commits, verification, and contract updates as continuation
-  checkpoints, not default stop points.
+- Treat commits, verification, and contract updates as continuation checkpoints.
 - Continue into the next locally decidable slice after each checkpoint.
-- Ask only when a real product or policy decision is required, an irreversible
-  external side effect needs confirmation, stronger honest verification needs
-  permission or setup you do not have, or new evidence creates a conflict you
-  cannot resolve locally.
+- Ask only for real product/policy decisions, irreversible external side effect,
+  unavailable stronger proof, or evidence conflicts you cannot resolve locally.
 
 ## Bootstrap
 
@@ -65,9 +58,8 @@ Adapter policy:
   capability discovery
 - if the adapter is invalid, repair it using `references/adapter-contract.md`
   before relying on adapter-defined paths or verification preferences
-- if the repo has recurring verification expectations worth encoding, create
-  `<repo-root>/.agents/impl-adapter.yaml` early instead of relearning the same tools each
-  session
+- if recurring verification expectations matter, create
+  `<repo-root>/.agents/impl-adapter.yaml` early
 - treat the verification survey as onboarding, not a closing nicety: look for
   the best self-verification path before you code and again before you stop
 
@@ -92,6 +84,9 @@ Adapter policy:
    - prefer the slice that opens the next good move most cleanly
    - when a probe exists, design the slice so it answers the probe cleanly
    - apply `../create-skill/references/source-bound-records.md` for multi-source external writes
+   - for skill packages, scheduled workflows, or external lookup contracts,
+     design acceptance around the path prescribed in `SKILL.md`, not around an
+     author-composed smoke probe
 4. Verify with the strongest honest path.
    - survey repo and adapter capabilities before coding and again before stopping
    - prefer executed proof over code inspection when an executable path exists
@@ -101,6 +96,9 @@ Adapter policy:
    - add or strengthen checks when an important branch would otherwise stay unproven
    - for browser-facing output, treat code-only checks as partial proof by default; resolve browser/runtime support through `find-skills`, run it when available, or say explicitly that it did not run
    - for slices that depend on an external named target (operator command instance/service/branch/env alias) or a third-party API call, verify the runtime state of the name and the live request/response contract before acting — see `../debug/references/named-target-verification.md` and `references/external-api-contract.md`
+   - for skill self-tests, external lookup contracts, and scheduled or delegated workflows, apply
+     `../create-skill/references/prescribed-path-self-test.md` before accepting
+     a smoke pass
    - if the slice changes repo-owned instruction or prompt surfaces such as `<repo-root>/AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or adapter prompt wording, let the repo's cautilus adapter decide prompt/evaluator proof policy before closeout
    - if the adapter run mode is `disabled`, do not run Cautilus; record the disabled validator result and use deterministic gates until the adapter is re-enabled
    - generic review or closeout wording must not silently launch Cautilus
@@ -149,7 +147,7 @@ The closeout should usually include:
 
 - `Implemented`
 - `Contract Source`
-- `Verification` naming code/fixture, browser/runtime, and evaluator proof
+- `Verification` naming code/fixture and runtime/evaluator proof
 - `Truth Surface Sync`
 - `Premortem`
 - `Contract Updates`

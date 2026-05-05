@@ -17,7 +17,6 @@ Every invocation starts here. Read only the files that affect the current change
 # 1. charness boundary and current product context
 sed -n '1,220p' README.md
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
-sed -n '1,240p' docs/roadmap.md 2>/dev/null || true
 
 # 2. existing target or source skill
 rg --files skills/public skills/support
@@ -34,9 +33,6 @@ sed -n '1,240p' profiles/profile.schema.json
 sed -n '1,220p' presets/README.md
 ```
 
-If the target file does not exist yet, inspect the closest existing upstream
-skill before writing from scratch.
-
 ## Workflow
 
 1. Classify the artifact before editing.
@@ -47,12 +43,13 @@ skill before writing from scratch.
    - integration: external ownership contract, never a hidden dependency
 2. Write a short brief.
    - concept, audience, trigger, external dependencies, accumulated state
-   - candidate named anchors when a real reasoning frame should be retrieved in the public core
-   - any ambient philosophy that should become a behavior rule across adjacent public skills, not only a reference note
-   - for each named anchor, the exact move it should retrieve and any factual claim that needs source verification before you compress it
+   - candidate named anchors, behavior rules for adjacent public skills, and
+     source-checked factual claims before compressing them into core wording
    - simulate cold start, warm start, error recovery, and 5-7 agent failure cases before changing files
    - for multi-source external-write skills, simulate source/principal binding
      drift and apply `references/source-bound-records.md`
+   - for scheduled, async, or external-lookup skills, apply
+     `references/prescribed-path-self-test.md`
 3. Freeze the current consumer contract before editing an existing public skill.
    - read the current reviewed dogfood case or scaffold it first with `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --json`
    - decide whether the slice claims `preserve` or `improve` before changing the core trigger or behavior contract
@@ -106,6 +103,8 @@ skill before writing from scratch.
    - for public-skill changes, run one realistic consumer prompt instead of
      stopping at producer-side validators; include missing, stale, and thin
      adapter states when adapters or repo-local defaults shape the first run
+   - for skill self-tests, use `references/prescribed-path-self-test.md` before
+     accepting a smoke pass or external identification signal
    - use `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` to scaffold prompt, repo shape, expected artifact, and acceptance evidence
    - for public-skill semantic changes, decide in the same slice whether `<repo-root>/docs/public-skill-dogfood.json`, `<repo-root>/evals/cautilus/scenarios.json`, and/or `<repo-root>/charness-artifacts/cautilus/latest.md` should move; do not leave that proof-routing decision implicit
    - trigger collision check against adjacent skills
@@ -133,7 +132,7 @@ skill before writing from scratch.
   non-obvious claims before compressing them into a public skill or reference.
 - Host-specific behavior belongs in adapters and presets, not in `SKILL.md`.
 - Do not reach for user-facing branches or flags just because the design is
-  underspecified. First ask whether the right behavior can be inferred from context, current artifacts, or a stronger default.
+  underspecified; first try context, current artifacts, or a stronger default.
 - Add a new user-visible branch only when the behaviors are genuinely distinct,
   user-meaningful, and unsafe to infer.
 - External tool dependencies must be explicit in manifests and degradation
@@ -155,6 +154,8 @@ skill before writing from scratch.
 - Do not treat a package-valid public skill as customer-valid. For adapter,
   bootstrap, example, or first-touch doc changes, prove the changed skill from
   the customer repo's first prompt before trusting producer-side checks.
+- Do not treat an author's free-form smoke test as proof; the passing path must
+  be reproducible from the installed or checked `SKILL.md` alone.
 - For `evaluator-required` skills, treat maintained scenario coverage and
   `cautilus` proof planning as part of the edit contract, not as optional
   closeout commentary after the behavior already changed.
@@ -171,10 +172,9 @@ step calls a tool outside `CHARNESS_BASELINE` (`sh`, `git`, `python3`, `sed`,
 `find`, `awk`, `grep`, and basic coreutils), declare it inline with
 `# Required Tools: <name>` and point to `references/binary-preflight.md`.
 
-Preflight is lazy, not eager: only trigger it when a command actually fails
-with exit 127 or emits `MISSING_BIN: <name>`. On detection, stop, explain the
-missing binary and why the step needs it, propose the mapped install command,
-and wait for explicit consent. Auto-install is forbidden. Silent skip is forbidden.
+Preflight is lazy, not eager: only trigger it when a command fails with exit 127 or emits
+`MISSING_BIN: <name>`. Explain the missing binary, propose the mapped install
+command, and wait for explicit consent. Auto-install is forbidden. Silent skip is forbidden.
 
 Non-interactive callers use `CHARNESS_BINARY_PREFLIGHT=degraded`, which records
 the degraded step in the durable artifact. Do not swallow `command not found`
@@ -192,4 +192,5 @@ binary and let `capability.json` stay the readiness source of truth.
 - `references/deployable-skill-packaging.md`
 - `references/binary-preflight.md`
 - `references/source-bound-records.md`
+- `references/prescribed-path-self-test.md`
 - `../create-cli/SKILL.md`
