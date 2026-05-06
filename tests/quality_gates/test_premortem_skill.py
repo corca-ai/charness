@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from .support import ROOT
+from pathlib import Path
+
+from .support import ROOT, run_script
 
 
 def test_premortem_skill_surfaces_counterweight_and_deliberately_not_doing() -> None:
@@ -44,6 +46,9 @@ def test_premortem_skill_surfaces_counterweight_and_deliberately_not_doing() -> 
     assert "shell-only runner" in capability_text
     assert "model self-report" in capability_text
     assert "only observed tool is shell execution" in capability_text
+    assert "Subagent Delegation" in capability_text
+    assert "repo-mandated bounded fresh-eye reviews are already delegated" in capability_text
+    assert "`host signal:` or `tool signal:`" in capability_text
     assert "Do not replace the misunderstanding premortem with a" in handoff_loop
     assert "Do not replace the fresh-eye premortem with a same-agent" in spec_loop
     assert "Delegated reviewer fast path" in skill_text
@@ -70,3 +75,122 @@ def test_spec_and_narrative_preserve_rejected_alternatives() -> None:
     assert "Deliberately Not Doing" in spec_text
     assert "rejected alternatives" in rejected
     assert "Deliberately Not Doing" in narrative_text
+
+
+def test_premortem_artifact_validator_rejects_missing_explicit_allowance_blocker(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "AGENTS.md").write_text(
+        "\n".join(
+            [
+                "## Subagent Delegation",
+                "",
+                "- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    artifact = repo / "charness-artifacts" / "premortem" / "demo.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Demo Premortem",
+                "",
+                "## Fresh-Eye Satisfaction",
+                "",
+                "blocked because the current developer instruction only permits spawning subagents when the user explicitly asks.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "scripts/validate_premortem_artifacts.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/premortem/demo.md",
+    )
+
+    assert result.returncode == 1
+    assert "must not treat missing explicit subagent delegation" in result.stderr
+
+
+def test_premortem_artifact_validator_allows_parent_delegated_artifact_with_blocked_domain_content(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "AGENTS.md").write_text(
+        "\n".join(
+            [
+                "## Subagent Delegation",
+                "",
+                "- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    artifact = repo / "charness-artifacts" / "premortem" / "demo.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Demo Premortem",
+                "",
+                "Fresh-Eye Satisfaction: parent-delegated.",
+                "",
+                "The runtime still has blocked JSON endpoints; this is domain content, not a subagent blocker.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "scripts/validate_premortem_artifacts.py",
+        "--repo-root",
+        str(repo),
+        "--all",
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "Validated 1 premortem artifact" in result.stdout
+
+
+def test_premortem_artifact_validator_accepts_concrete_blocked_signal(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    artifact = repo / "charness-artifacts" / "premortem" / "demo.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Demo Premortem",
+                "",
+                "## Fresh-Eye Satisfaction",
+                "",
+                "blocked.",
+                "",
+                "host signal: agent-count budget exhausted before the bounded reviewer could be spawned.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "scripts/validate_premortem_artifacts.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/premortem/demo.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "Validated 1 premortem artifact" in result.stdout

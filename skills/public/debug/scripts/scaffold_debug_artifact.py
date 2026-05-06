@@ -5,6 +5,7 @@ import argparse
 import datetime as dt
 import importlib.util
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -97,14 +98,37 @@ def validator_command(repo_root: Path) -> str:
     raise FileNotFoundError("validate_debug_artifact.py not found in installed Charness layout")
 
 
+def _portable_path(repo_root: Path, path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(repo_root))
+    except ValueError:
+        return str(path)
+
+
+def _current_pointer_write_path(repo_root: Path, artifact_path: Path) -> tuple[str, str, str | None]:
+    absolute_artifact_path = repo_root / artifact_path
+    if not absolute_artifact_path.is_symlink():
+        return str(artifact_path), "current_pointer", None
+    raw_target = os.readlink(absolute_artifact_path)
+    target_path = Path(raw_target)
+    if not target_path.is_absolute():
+        target_path = absolute_artifact_path.parent / target_path
+    return _portable_path(repo_root, target_path), "current_pointer_target", raw_target
+
+
 def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
     adapter = load_adapter(repo_root)
     output_dir = Path(adapter["data"]["output_dir"])
     date_text = dt.date.today().isoformat()
     resolved_title = default_title(title)
+    artifact_path = output_dir / "latest.md"
+    write_path, write_role, symlink_target = _current_pointer_write_path(repo_root, artifact_path)
     return {
-        "artifact_path": str(output_dir / "latest.md"),
+        "artifact_path": str(artifact_path),
         "artifact_role": "current_pointer",
+        "write_artifact_path": write_path,
+        "write_artifact_role": write_role,
+        "current_pointer_symlink_target": symlink_target,
         "date": date_text,
         "title": resolved_title,
         "template": render_template(title=resolved_title, date_text=date_text),

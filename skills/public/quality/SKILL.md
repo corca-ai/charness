@@ -40,11 +40,8 @@ python3 "$SKILL_DIR/scripts/bootstrap_markdown_preview.py" --repo-root .
 python3 "$SKILL_DIR/scripts/bootstrap_markdown_preview.py" --repo-root . --execute
 ```
 
-Keep `latest.md` short and current; move older review detail into sibling `history/*.md` archives when today's posture starts getting buried. If the adapter is missing and the repo only needs a blank scaffold instead of detected bootstrap, scaffold one directly:
-
-```bash
-python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root . --preset-id portable-defaults
-```
+Keep `latest.md` short and current; move older review detail into sibling `history/*.md` archives when today's posture starts getting buried. If the adapter is missing and the repo only needs a blank scaffold, run `python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root . --preset-id portable-defaults`.
+Before editing the artifact, run `python3 "$SKILL_DIR/scripts/resolve_quality_artifact.py" --repo-root . --intent current` and edit `write_artifact_path`, not `latest.md` by habit.
 
 The prior quality artifact is history, not the authoritative universe. Re-derive the current source, spec, and gate surface before trusting what the last artifact happened to mention.
 

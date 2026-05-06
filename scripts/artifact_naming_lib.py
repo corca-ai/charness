@@ -7,12 +7,23 @@ CURRENT_POINTER_FILENAME = "latest.md"
 ROLLING_ARTIFACT_FILENAMES = {
     "handoff": "handoff.md",
 }
+CURRENT_POINTER_EXCEPTION_SKILL_IDS = frozenset(
+    {
+        "find-skills",
+        "hitl",
+        "init-repo",
+    }
+)
 RECORD_PATTERN = "YYYY-MM-DD-<slug>.md"
 SLUG_RE = re.compile(r"[^a-z0-9]+")
 
 
 def current_artifact_filename(skill_id: str) -> str:
     return ROLLING_ARTIFACT_FILENAMES.get(skill_id, CURRENT_POINTER_FILENAME)
+
+
+def record_artifact_supported(skill_id: str) -> bool:
+    return skill_id not in ROLLING_ARTIFACT_FILENAMES and skill_id not in CURRENT_POINTER_EXCEPTION_SKILL_IDS
 
 
 def slugify(value: str) -> str:

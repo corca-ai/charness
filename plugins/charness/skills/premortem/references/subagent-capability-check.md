@@ -42,6 +42,14 @@ Parent sessions that never spawned a fresh-eye reviewer cannot claim
 `parent-delegated`. They must run the capability check below before calling the
 canonical path blocked.
 
+If `<repo-root>/AGENTS.md` contains a dedicated `Subagent Delegation` contract
+that says repo-mandated bounded fresh-eye reviews are already delegated, treat
+that as the explicit delegation request for those named bounded reviewer
+scopes. Do not block merely because the live user message did not repeat the
+word "subagent"; first try the host spawn tool under the repo contract. Only a
+real tool refusal, missing spawn surface, exhausted host budget, or higher
+priority instruction that forbids honoring repo delegation is a blocker.
+
 ## Required before declaring the canonical path blocked
 
 1. Attempt the bounded setup the skill calls for.
@@ -67,6 +75,9 @@ canonical path blocked.
    - Cite the concrete signal: which tool was missing, what error the host
      returned, which operator instruction forbids subagents for this run, or
      which agent-count budget is already exhausted.
+   - If the blocker is recorded in a durable premortem artifact, write it as
+     `host signal:` or `tool signal:` so validators can distinguish a real host
+     block from the old "no explicit subagent request" misread.
 
 ## If the canonical path is blocked
 
@@ -91,3 +102,6 @@ call a same-agent substitute "good enough" just because the probe failed.
   premortem; the next action is to surface the host-side contract gap.
 - Do not name the blocker as "canonical path unavailable" without the concrete
   signal that made it unavailable.
+- Do not report "the user did not explicitly allow subagents" when repo
+  `Subagent Delegation` instructions already delegated bounded fresh-eye review
+  scopes.

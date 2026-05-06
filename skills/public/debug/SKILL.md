@@ -37,11 +37,15 @@ the directory with `<repo-root>/.agents/debug-adapter.yaml`.
 The scaffold helper emits the current pointer artifact, usually `latest.md`.
 When the investigation becomes durable history, preserve it as a dated record
 using the same core debug sections.
+Edit the scaffold payload's `write_artifact_path`, not `latest.md` by habit; it
+resolves a symlinked current pointer to its actual target.
 
 Treat the scaffold helper as the canonical artifact contract shortcut:
 
 - it prints the default artifact path
 - it labels that path as the current pointer artifact
+- it prints the safe write target for a current-pointer scaffold, resolving a
+  symlinked `latest.md` when needed
 - it prints the required heading / section order
 - it points at the standing validator command for the current installed
   Charness layout; consumer repos do not need Charness validator scripts copied

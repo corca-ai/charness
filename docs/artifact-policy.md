@@ -145,6 +145,21 @@ For visible skill artifacts, the default naming pattern is:
 - durable record: `YYYY-MM-DD-<slug>.md`
 - optional current pointer: `latest.md`
 
+Before editing an artifact, resolve the edit target instead of opening
+`latest.md` from memory:
+
+```bash
+python3 scripts/resolve_artifact_path.py --repo-root . --skill-id <skill-id> --slug <slug> --intent record
+python3 scripts/resolve_artifact_path.py --repo-root . --skill-id <skill-id> --slug <slug> --intent current
+```
+
+Use `--intent record` when preserving point-in-time evidence. It returns the
+dated `write_artifact_path` when the skill is history-default and tells the
+caller to refresh the current pointer afterward. Use `--intent current` only
+when the work is deliberately updating the rolling summary; if `latest.md` is a
+symlink, edit the returned symlink target rather than first mutating
+`latest.md` and then rediscovering the target.
+
 Current repo examples:
 
 - [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md)

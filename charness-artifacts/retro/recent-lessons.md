@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- This slice changed the checked-in plugin export, artifact write-target helpers, and premortem validation for downstream repos. (source: `charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md`)
 - The operator had already said Cautilus tests are intentionally excluded during rework, but the session still attempted a Cautilus eval. (source: `charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md`)
-- This session reviewed URL-to-gather routing and the repeated Cautilus exclusion reminder. (source: `charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md`)
 
 ## Repeat Traps
 
+- The first implementation treated a repo-local helper path as if exported plugin skills could invoke it with the same `$SKILL_DIR` depth. (source: `charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md`)
+- The first premortem validator used global text matching, so domain words like `blocked` inside a parent-delegated artifact could be mistaken for blocked fresh-eye state. (source: `charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md`)
+- The helper initially defaulted to dated records, which could create stale current pointers for the common quality/debug update path. (source: `charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md`)
 - The prompt-proof validator pushed toward a Cautilus artifact, so the agent followed the old path instead of treating the tool as unavailable. (source: `charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md`)
-- The workflow relied on chat memory for a temporary but important tool exclusion. (source: `charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md`)
-- The better structural fix was to make scaffold resolution tolerate old hyphenated layouts without adding a new non-conforming source file. (source: `charness-artifacts/retro/2026-05-01-debug-contract-closeout.md`)
-- The first fix tried a hyphenated Python alias for old materialized paths, but the repo's filename gate correctly rejected non-snake-case Python files. (source: `charness-artifacts/retro/2026-05-01-debug-contract-closeout.md`)
 
 ## Next-Time Checklist
 
+- for exported plugin changes, run at least one command from `plugins/charness/...` against a consumer repo before closeout. (source: `charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md`)
+- keep this lesson in recent retro selection because export-path assumptions and broad text validators are recurring traps. (source: `charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md`)
+- later add a current-pointer refresh helper for record writes so `update_current_pointer_after_write` becomes directly actionable. (source: `charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md`)
 - check tool adapter run modes before executing proof commands when the tool is known to be in rework. (source: `charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md`)
-- keep the disabled state in durable repo artifacts until the rework is complete and the adapter is deliberately re-enabled. (source: `charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md`)
-- use an explicit disabled run mode for temporarily unavailable evaluator integrations. (source: `charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md`)
-- keep compatibility in resolution logic when possible instead of adding duplicate helper files that violate repo conventions. (source: `charness-artifacts/retro/2026-05-01-debug-contract-closeout.md`)
 
 ## Selection Policy
 
@@ -27,5 +27,5 @@
 
 ## Sources
 
-- `charness-artifacts/retro/2026-05-01-debug-contract-closeout.md`
 - `charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md`
+- `charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md`

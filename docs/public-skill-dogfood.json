@@ -101,14 +101,15 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-01",
+      "reviewed_on": "2026-05-06",
       "observed_evidence": [
         "The checked-in public core explicitly keeps `debug` in diagnosis-before-repair mode, preserving the exact symptom, a falsifiable hypothesis, and at least three candidate causes before implementation work starts.",
         "For async, scheduled, or user-visible workflows, the debug core now separates pre-worker acknowledgement, worker execution, and post-worker side effects before reasoning only about worker behavior.",
         "The debug core now keeps premortem out of premature fact-gathering while requiring task-completing debug closeout or repair handoff to record short scoped diagnosis/repair risk or full standalone premortem for broader seams.",
         "Repo-owned eval coverage already exercises `debug-adapter-bootstrap`, which pins the current adapter bootstrap and canonical artifact path at `charness-artifacts/debug/latest.md`.",
         "The committed `validate_debug_artifact.py` gate plus `tests/test_debug_artifact.py` now make the current debug artifact carry structured seam risk and interruption data, so a host-boundary miss cannot stay a chat-only handoff.",
-        "`tests/test_debug_scaffold.py` now proves the scaffold-emitted validator command works from an exported plugin layout in a clean consumer repo."
+        "`tests/test_debug_scaffold.py` now proves the scaffold-emitted validator command works from an exported plugin layout in a clean consumer repo.",
+        "The scaffold payload now exposes `write_artifact_path` and resolves a symlinked `latest.md` to the real current-pointer target, so consumer agents do not need to discover the symlink by accidental hand edits."
       ]
     },
     {
@@ -219,7 +220,9 @@
         "The angle-selection reference now names `customer-of-this-capability` so capability changes can test the user's or downstream agent's first real use instead of only producer-side breakage.",
         "That same contract now makes blocked execution explicit in the public output shape, so a host-side subagent gap stays visible as `Execution: blocked <host-signal>` instead of being rewritten as a degraded concern list.",
         "That keeps `premortem-canonical-subagent-followup` live as a reviewed seam: the repo now locks the user push for true subagent premortem in both checked-in wording and validator-backed contract pins.",
-        "The capability check now rejects shell-only runners, routing-only proof, and model self-report as evidence that bounded subagents actually ran; the current Codex dogfood probe blocks with `subagent-spawn-host-contract` instead of claiming a prose-only premortem succeeded."
+        "The capability check now rejects shell-only runners, routing-only proof, and model self-report as evidence that bounded subagents actually ran.",
+        "The capability check now treats an `AGENTS.md` `Subagent Delegation` section as the explicit delegation request for named bounded review scopes, so downstream repos such as `ceal` should try the host spawn tool before recording a blocked premortem.",
+        "`validate_premortem_artifacts.py` now rejects new durable premortem artifacts that preserve the old missing-explicit-subagent-request blocker instead of a concrete `host signal:` or `tool signal:`."
       ]
     },
     {
@@ -240,7 +243,7 @@
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-27",
+      "reviewed_on": "2026-05-06",
       "observed_evidence": [
         "The current quality posture still treats checked-in proof artifacts, public executable readers, and lower deterministic gates as separate layers with different ownership, which keeps `quality` distinct from generic test-running or release work.",
         "Maintainer-local enforcement now asks whether local or pre-push gates hide network, external-repo fetch, latest-release, or supply-chain refresh work that should be an explicit refresh/update/release action instead of default local proof.",
@@ -255,7 +258,8 @@
         "`inventory_entrypoint_docs_ergonomics.py` now surfaces `host_instruction_runbook_pressure` when `AGENTS.md` embeds a multi-step procedure that likely belongs in a deeper doc or repo-owned command surface.",
         "`inventory_brittle_source_guards.py` keeps advisory source-guard review resilient by bounding default scan roots, exposing explicit `--scan-root` overrides, and reporting unreadable specs without crashing the quality run.",
         "The quality core now makes domain-language alignment explicit: user-facing wording, CLI/config names, code names, and artifact names should converge on adapter-declared canonical terms.",
-        "`inventory_ubiquitous_language.py` dogfoods that contract as an advisory inventory that becomes a hard failure only for low-noise deprecated aliases declared in `.agents/quality-adapter.yaml`."
+        "`inventory_ubiquitous_language.py` dogfoods that contract as an advisory inventory that becomes a hard failure only for low-noise deprecated aliases declared in `.agents/quality-adapter.yaml`.",
+        "`docs/artifact-policy.md` and `resolve_artifact_path.py` now tell consumers to resolve `write_artifact_path` before editing quality review artifacts, making symlinked `latest.md` layouts an explicit artifact contract instead of an accidental discovery."
       ]
     },
     {

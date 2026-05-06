@@ -36,6 +36,9 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["artifact_path"] == "charness-artifacts/debug/latest.md"
     assert payload["artifact_role"] == "current_pointer"
+    assert payload["write_artifact_path"] == "charness-artifacts/debug/latest.md"
+    assert payload["write_artifact_role"] == "current_pointer"
+    assert payload["current_pointer_symlink_target"] is None
     assert payload["validator_command"].endswith("scripts/validate_debug_artifact.py --repo-root .")
     assert "# Debug Review" in payload["template"]
     assert "## Reproduction" in payload["template"]
@@ -56,6 +59,34 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
         text=True,
     )
     assert validation.returncode == 0, validation.stderr
+
+
+def test_debug_scaffold_resolves_symlinked_current_pointer_target(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "debug-adapter.yaml").write_text(
+        "\n".join(["version: 1", "repo: demo", "language: en", "output_dir: charness-artifacts/debug", ""]),
+        encoding="utf-8",
+    )
+    debug_dir = repo / "charness-artifacts" / "debug"
+    debug_dir.mkdir(parents=True)
+    target = debug_dir / "debug-2026-05-06-demo.md"
+    target.write_text("# Demo Debug\n", encoding="utf-8")
+    (debug_dir / "latest.md").symlink_to(target.name)
+
+    result = run_script(
+        "skills/public/debug/scripts/scaffold_debug_artifact.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["artifact_path"] == "charness-artifacts/debug/latest.md"
+    assert payload["write_artifact_path"] == "charness-artifacts/debug/debug-2026-05-06-demo.md"
+    assert payload["write_artifact_role"] == "current_pointer_target"
+    assert payload["current_pointer_symlink_target"] == "debug-2026-05-06-demo.md"
 
 
 def test_exported_debug_scaffold_validator_command_runs_from_consumer_repo(tmp_path: Path) -> None:

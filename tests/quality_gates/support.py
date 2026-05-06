@@ -84,6 +84,7 @@ QUALITY_PYTHON_STUBS = (
     ("validate-retro-lesson-index", "build_retro_lesson_selection_index.py"),
     ("validate-quality-artifact", "validate_quality_artifact.py"),
     ("validate-quality-closeout-contract", "validate_quality_closeout_contract.py"),
+    ("validate-premortem-artifacts", "validate_premortem_artifacts.py"),
     ("validate-current-pointer-freshness", "validate_current_pointer_freshness.py"),
     ("inventory-quality-handoff", "inventory_quality_handoff.py"),
     ("validate-maintainer-setup", "validate_maintainer_setup.py"),
