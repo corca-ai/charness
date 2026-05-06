@@ -72,7 +72,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - independently enumerate the current source, spec, and gate inventory before letting the previous quality artifact define scope
    - local executable gates already present
    - if the repo ships an installable CLI, bootstrap command, or operator-facing command surface, inspect whether help, command discovery, binary health, install/readiness, local discoverability, canonical-target vs multi-target lifecycle ownership, and cleanup ownership are separated honestly
-   - when README, docs, or public-spec prose readability is part of the review, run the markdown preview seam or leave an explicit bootstrap payload instead of treating raw Markdown as equivalent proof
+   - when README, docs, or public-spec prose readability is part of the review, run the relevant rendered surface or leave an explicit bootstrap payload instead of treating raw Markdown as equivalent proof; ordinary Markdown uses the markdown preview seam, while executable `*.spec.md` review should use the rendered Specdown report when that is the authoritative human-facing surface
    - when CLI ergonomics are in scope, inventory flat help-list and cross-archetype schema smells with `$SKILL_DIR/scripts/inventory_cli_ergonomics.py`
    - when mutating operator CLI commands are in scope, inventory help/read-only, option-looking positional rejection, dry-run/plan, and side-effect watch contracts with `$SKILL_DIR/scripts/inventory_cli_side_effect_probes.py`; see `references/installable-cli-probes.md`
    - when a standing local gate exists, inventory quiet-default vs verbose-on-demand posture with `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`
@@ -99,6 +99,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - prefer repo-native commands over hypothetical recommendations
    - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage
    - when a standing gate already exists, prefer compact default phase output plus a verbose-on-demand escape hatch over always-on chatter; see `references/standing-gate-verbosity.md`
+   - when standing-test economics are in scope, inventory file/process/startup cost with `$SKILL_DIR/scripts/inventory_standing_test_economics.py` before recommending test pruning; count test files by surface, identify runner isolation/process mode, note TypeScript/transpiler startup shape, and separate nested CLI fanout from the small real-binary/protocol smoke that should remain
    - before reporting runtime trends in `latest.md`, prefer `$SKILL_DIR/scripts/render_runtime_summary.py`; if structured samples are missing, report that as the next gate instead of inventing numbers, and list any `runtime_visibility_findings` under `Weak` or `Missing`
    - when a hot spot becomes the standing single dominator, define a `runtime_budgets` or `runtime_budget_profiles` entry in the adapter and call `$SKILL_DIR/scripts/check_runtime_budget.py` from the repo's standing gate; budgets fail on recent-median drift, report latest-sample spikes separately, and should expose top-N runtime hot spots so unbudgeted slow phases are still visible
 4. Inspect four quality lenses.

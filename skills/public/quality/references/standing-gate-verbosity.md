@@ -75,6 +75,15 @@ total wall time. Confirm whether the intended parallel runner is active, run
 the test runner's native duration report, and separate duplicated proof from
 slow-but-necessary behavior coverage.
 
+Before suggesting test pruning, inspect the runner-startup layer directly:
+count test files by surface, identify whether the runner isolates by file or
+process, note whether a TypeScript/transpiler loader is paid once or repeatedly,
+and look for tests that spawn nested CLIs inside an already isolated runner.
+The useful question is not only "which test is slow?" or "how many tests exist?"
+but whether `test files * runner isolation * loader startup` dominates the
+standing path. Preserve a small real-binary/protocol smoke after moving repeated
+contract proof in-process.
+
 For pytest-shaped repos, that usually means checking `pytest-xdist` readiness,
 serial fallback output, and `pytest --durations` on the standing target set.
 Full integration or coverage traces should move to on-demand or a separate

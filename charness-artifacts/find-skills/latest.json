@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-06T04:41:55Z",
+  "generated_at": "2026-05-06T11:51:01Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -477,6 +477,28 @@
         "referenced_paths": [],
         "source": "local-support",
         "layer": "support skill"
+      },
+      {
+        "id": "cautilus",
+        "name": "cautilus",
+        "description": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
+        "summary": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
+        "path": "skills/support/generated/cautilus/SKILL.md",
+        "skill_dir": "skills/support/generated/cautilus",
+        "canonical_path": "skills/support/generated/cautilus/SKILL.md",
+        "trigger_phrases": [
+          "cautilus",
+          "cautilus skill",
+          "cautilus 스킬",
+          "charness:cautilus",
+          "support/cautilus",
+          "cautilus support",
+          "cautilus support skill",
+          "cautilus helper"
+        ],
+        "referenced_paths": [],
+        "source": "synced-support",
+        "layer": "synced support skill"
       }
     ],
     "support_capabilities": [
@@ -763,7 +785,7 @@
           "degraded"
         ],
         "support_state": "upstream-consumed",
-        "support_skill_path": null,
+        "support_skill_path": "skills/support/generated/cautilus/SKILL.md",
         "discovery_stub_path": null,
         "capability_requirements": {},
         "intent_triggers": [
