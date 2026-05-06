@@ -104,6 +104,38 @@ def run_bump(args: argparse.Namespace, repo_root: Path) -> None:
     run(bump_command, cwd=repo_root)
 
 
+def ensure_release_surface(repo_root: Path, expected_version: str) -> None:
+    release_payload = build_release_payload(repo_root)
+    if release_payload["drift"]:
+        raise SystemExit(f"release surface drift detected: {release_payload['drift']}")
+    if release_payload["surface_versions"]["packaging_manifest"] != expected_version:
+        raise SystemExit(f"expected packaging manifest version `{expected_version}`")
+
+
+def write_current_artifact(
+    repo_root: Path,
+    adapter_data: dict[str, Any],
+    payload: dict[str, Any],
+    host_payload: dict[str, Any],
+    *,
+    quality_status: str = "passed before publish",
+) -> str:
+    return write_release_artifact(
+        repo_root,
+        output_dir=adapter_data["output_dir"],
+        package_id=adapter_data["package_id"],
+        previous_version=payload["previous_version"],
+        target_version=payload["target_version"],
+        remote=payload["remote"],
+        branch=payload["branch"],
+        quality_command=adapter_data["quality_command"],
+        release_url=None,
+        update_instructions=adapter_data["update_instructions"],
+        real_host_payload=host_payload,
+        quality_status=quality_status,
+    )
+
+
 def main() -> None:
     args = parse_args()
     repo_root = args.repo_root.resolve()
@@ -151,47 +183,23 @@ def main() -> None:
 
     run(["gh", "auth", "status"], cwd=repo_root)
     run_bump(args, repo_root)
-
-    release_payload = build_release_payload(repo_root)
-    if release_payload["drift"]:
-        raise SystemExit(f"release surface drift detected: {release_payload['drift']}")
-    if release_payload["surface_versions"]["packaging_manifest"] != next_version:
-        raise SystemExit(f"expected packaging manifest version `{next_version}`")
+    ensure_release_surface(repo_root, next_version)
 
     host_payload = safe_real_host_payload(
         repo_root,
         sorted(set(release_content_paths + changed_paths(repo_root))),
     )
-    write_release_artifact(
+    write_current_artifact(
         repo_root,
-        output_dir=adapter_data["output_dir"],
-        package_id=adapter_data["package_id"],
-        previous_version=current_version,
-        target_version=next_version,
-        remote=args.remote,
-        branch=branch,
-        quality_command=adapter_data["quality_command"],
-        release_url=None,
-        update_instructions=adapter_data["update_instructions"],
-        real_host_payload=host_payload,
+        adapter_data,
+        payload,
         quality_status="is queued for this publish attempt",
+        host_payload=host_payload,
     )
     run_requested_review_gate(repo_root)
     run_cli_skill_surface_gate(repo_root, adapter_data)
     run_shell(str(adapter_data["quality_command"]), cwd=repo_root)
-    artifact_relpath = write_release_artifact(
-        repo_root,
-        output_dir=adapter_data["output_dir"],
-        package_id=adapter_data["package_id"],
-        previous_version=current_version,
-        target_version=next_version,
-        remote=args.remote,
-        branch=branch,
-        quality_command=adapter_data["quality_command"],
-        release_url=None,
-        update_instructions=adapter_data["update_instructions"],
-        real_host_payload=host_payload,
-    )
+    artifact_relpath = write_current_artifact(repo_root, adapter_data, payload, host_payload)
     run(["git", "add", "-A"], cwd=repo_root)
     run(["git", "commit", "-m", payload["commit_message"]], cwd=repo_root)
     run(["git", "tag", tag_name], cwd=repo_root)
