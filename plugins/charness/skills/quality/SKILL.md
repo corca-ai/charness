@@ -99,7 +99,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - prefer repo-native commands over hypothetical recommendations
    - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage
    - when a standing gate already exists, prefer compact default phase output plus a verbose-on-demand escape hatch over always-on chatter; see `references/standing-gate-verbosity.md`
-   - before reporting runtime trends in `latest.md`, prefer `$SKILL_DIR/scripts/render_runtime_summary.py`; if structured samples are missing, report that as the next gate instead of inventing numbers
+   - before reporting runtime trends in `latest.md`, prefer `$SKILL_DIR/scripts/render_runtime_summary.py`; if structured samples are missing, report that as the next gate instead of inventing numbers, and list any `runtime_visibility_findings` under `Weak` or `Missing`
    - when a hot spot becomes the standing single dominator, define a `runtime_budgets` or `runtime_budget_profiles` entry in the adapter and call `$SKILL_DIR/scripts/check_runtime_budget.py` from the repo's standing gate; budgets fail on recent-median drift, report latest-sample spikes separately, and should expose top-N runtime hot spots so unbudgeted slow phases are still visible
 4. Inspect four quality lenses.
    - `concept`: does the repo still match its claimed architecture and ownership model

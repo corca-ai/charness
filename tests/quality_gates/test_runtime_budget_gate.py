@@ -16,6 +16,8 @@ def _seed_repo(
     signals: dict | None,
     budget_profiles: dict[str, dict[str, dict[str, int]]] | None = None,
     smoothing: dict | None = None,
+    explicit_empty_budgets: bool = False,
+    startup_probes: list[dict[str, object]] | None = None,
 ) -> Path:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
@@ -25,6 +27,8 @@ def _seed_repo(
         adapter_lines.append("runtime_budgets:")
         for label, ms in budgets.items():
             adapter_lines.append(f"  {label}: {ms}")
+    elif explicit_empty_budgets:
+        adapter_lines.append("runtime_budgets:")
     if budget_profiles is not None:
         adapter_lines.append("runtime_budget_profiles:")
         for profile_id, profile in budget_profiles.items():
@@ -32,6 +36,23 @@ def _seed_repo(
             adapter_lines.append("    budgets:")
             for label, ms in profile["budgets"].items():
                 adapter_lines.append(f"      {label}: {ms}")
+    if startup_probes is not None:
+        if not startup_probes:
+            adapter_lines.append("startup_probes: []")
+        else:
+            adapter_lines.append("startup_probes:")
+            for probe in startup_probes:
+                adapter_lines.extend(
+                    [
+                        f"  - label: {probe['label']}",
+                        "    command:",
+                        *[f"      - {item}" for item in probe["command"]],
+                        f"    class: {probe['class']}",
+                        f"    startup_mode: {probe['startup_mode']}",
+                        f"    surface: {probe['surface']}",
+                        f"    samples: {probe['samples']}",
+                    ]
+                )
     (repo / ".agents" / "quality-adapter.yaml").write_text("\n".join(adapter_lines) + "\n", encoding="utf-8")
     if signals is not None:
         (repo / ".charness" / "quality" / "runtime-signals.json").write_text(
@@ -52,6 +73,67 @@ def test_runtime_budget_gate_no_budgets_passes(tmp_path: Path) -> None:
     assert payload["budgets_configured"] == 0
     assert payload["runtime_profile"] == "default"
     assert payload["violations"] == []
+    assert [finding["type"] for finding in payload["runtime_visibility_findings"]] == [
+        "runtime_visibility_missing_budgets",
+        "runtime_visibility_missing_startup_probes",
+    ]
+
+    plain_result = run_script(SCRIPT, "--repo-root", str(repo), "--runtime-profile", "default")
+    assert plain_result.returncode == 0, plain_result.stderr
+    assert "WEAK  runtime_visibility_missing_budgets" in plain_result.stdout
+
+
+def test_runtime_budget_gate_reports_explicit_empty_runtime_fields(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path, budgets=None, signals=None, explicit_empty_budgets=True, startup_probes=[])
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert [finding["type"] for finding in payload["runtime_visibility_findings"]] == [
+        "runtime_visibility_missing_budgets",
+        "runtime_visibility_missing_startup_probes",
+    ]
+
+
+def test_runtime_budget_gate_reports_empty_selected_profile_budget(tmp_path: Path) -> None:
+    repo = _seed_repo(
+        tmp_path,
+        budgets=None,
+        budget_profiles={"ci": {"budgets": {}}},
+        signals={"profiles": {"ci": {"commands": {}}}},
+        startup_probes=[],
+    )
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "ci")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["budgets_configured"] == 0
+    assert payload["runtime_visibility_findings"][0]["type"] == "runtime_visibility_missing_budgets"
+
+
+def test_runtime_budget_gate_has_no_visibility_findings_when_budget_and_probe_exist(tmp_path: Path) -> None:
+    repo = _seed_repo(
+        tmp_path,
+        budgets={"pytest": 22000},
+        signals={"commands": {"pytest": {"latest": {"elapsed_ms": 15000, "status": "pass"}}}},
+        startup_probes=[
+            {
+                "label": "cli-version",
+                "command": ["python3", "-c", "print('ok')"],
+                "class": "standing",
+                "startup_mode": "warm",
+                "surface": "direct",
+                "samples": 1,
+            }
+        ],
+    )
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["runtime_visibility_findings"] == []
 
 
 def test_runtime_budget_gate_passes_when_within_budget(tmp_path: Path) -> None:
@@ -345,6 +427,7 @@ def test_render_runtime_summary_uses_structured_runtime_signals(tmp_path: Path) 
     assert payload["markdown_lines"] == [
         "- runtime source: structured metrics from `.charness/quality/runtime-signals.json` rendered by `render_runtime_summary.py`; profile `default`.",
         "- runtime hot spots: `pytest` 15.0s latest / 14.0s median, budget 22.0s.",
+        "- runtime visibility: weak due to `runtime_visibility_missing_startup_probes`; Add at least one standing startup probe for agent-facing CLI or adapter startup.",
     ]
 
 
@@ -358,4 +441,22 @@ def test_render_runtime_summary_reports_missing_structured_signals(tmp_path: Pat
         "- runtime source: not configured; add structured timing capture before reporting timing trends."
         in result.stdout
     )
+    assert "runtime_visibility_missing_startup_probes" in result.stdout
     assert "10s" not in result.stdout
+
+
+def test_render_runtime_summary_escalates_empty_runtime_visibility(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path, budgets=None, signals=None)
+
+    result = run_script(RENDER_SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert [finding["type"] for finding in payload["runtime_visibility_findings"]] == [
+        "runtime_visibility_missing_budgets",
+        "runtime_visibility_missing_startup_probes",
+    ]
+    assert payload["markdown_lines"][2].startswith(
+        "- runtime visibility: weak due to `runtime_visibility_missing_budgets`, "
+        "`runtime_visibility_missing_startup_probes`;"
+    )

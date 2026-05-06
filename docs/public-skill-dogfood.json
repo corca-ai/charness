@@ -259,7 +259,8 @@
         "`inventory_brittle_source_guards.py` keeps advisory source-guard review resilient by bounding default scan roots, exposing explicit `--scan-root` overrides, and reporting unreadable specs without crashing the quality run.",
         "The quality core now makes domain-language alignment explicit: user-facing wording, CLI/config names, code names, and artifact names should converge on adapter-declared canonical terms.",
         "`inventory_ubiquitous_language.py` dogfoods that contract as an advisory inventory that becomes a hard failure only for low-noise deprecated aliases declared in `.agents/quality-adapter.yaml`.",
-        "`docs/artifact-policy.md` and `resolve_artifact_path.py` now tell consumers to resolve `write_artifact_path` before editing quality review artifacts, making symlinked `latest.md` layouts an explicit artifact contract instead of an accidental discovery."
+        "`docs/artifact-policy.md` and `resolve_artifact_path.py` now tell consumers to resolve `write_artifact_path` before editing quality review artifacts, making symlinked `latest.md` layouts an explicit artifact contract instead of an accidental discovery.",
+        "`render_runtime_summary.py` now emits `runtime_visibility_findings`, and a Ceal dogfood run with empty runtime fields surfaces `runtime_visibility_missing_budgets` plus `runtime_visibility_missing_startup_probes` instead of burying the missing timing surface."
       ]
     },
     {

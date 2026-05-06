@@ -149,7 +149,8 @@ run when the recent median exceeds the budget. A single latest sample above
 budget is reported as a spike when the recent median is still inside budget.
 Labels with no recorded sample yet are warnings, not failures, so a budget can
 be defined before its first run. Omit the field entirely (or leave the mapping
-empty) to opt out.
+empty) only as an explicit opt-out; runtime review helpers report that as weak
+runtime visibility when standing-gate speed or startup cost is in scope.
 
 `runtime_budget_profiles` optionally defines named profile-specific budgets.
 Use this when the same standing gate runs on materially different hardware or

@@ -51,11 +51,23 @@ def _format_hotspots(items: list[dict[str, object]]) -> str:
     return "; ".join(parts)
 
 
+def _format_visibility(findings: list[dict[str, object]]) -> str:
+    if not findings:
+        return "- runtime visibility: configured."
+    finding_types = ", ".join(f"`{item['type']}`" for item in findings)
+    actions = "; ".join(str(item["recommended_action"]).rstrip(".") for item in findings)
+    return f"- runtime visibility: weak due to {finding_types}; {actions}."
+
+
 def render_markdown_lines(report: dict[str, object], *, repo_root: Path, signals_present: bool) -> list[str]:
     profile = str(report["runtime_profile"])
     hotspots = report.get("runtime_hotspots")
     if not isinstance(hotspots, list):
         hotspots = []
+    findings = report.get("runtime_visibility_findings")
+    if not isinstance(findings, list):
+        findings = []
+    visibility = _format_visibility(findings)
 
     if hotspots:
         recorder = repo_root / "scripts" / "record_quality_runtime.py"
@@ -69,17 +81,19 @@ def render_markdown_lines(report: dict[str, object], *, repo_root: Path, signals
             f"`{RUNTIME_SIGNALS_PATH}` rendered by `render_runtime_summary.py`{provenance}; profile `{profile}`."
         )
         hot_spots = f"- runtime hot spots: {_format_hotspots(hotspots)}."
-        return [source, hot_spots]
+        return [source, hot_spots, visibility]
 
     if signals_present:
         return [
             "- runtime source: structured metrics file "
             f"`{RUNTIME_SIGNALS_PATH}` has no samples for profile `{profile}`.",
             "- runtime hot spots: unavailable until structured runtime metrics have samples.",
+            visibility,
         ]
     return [
         "- runtime source: not configured; add structured timing capture before reporting timing trends.",
         "- runtime hot spots: unavailable until structured runtime metrics have samples.",
+        visibility,
     ]
 
 
@@ -97,6 +111,7 @@ def build_report(repo_root: Path, *, runtime_profile: str | None, top_runtime_co
         "signals_path": str(RUNTIME_SIGNALS_PATH),
         "signals_present": signals_present,
         "runtime_hotspots": report.get("runtime_hotspots", []),
+        "runtime_visibility_findings": report.get("runtime_visibility_findings", []),
         "missing_samples": report.get("missing_samples", []),
         "markdown_lines": lines,
     }

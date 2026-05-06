@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from runtime_profile_lib import profile_budgets, profile_commands, selected_runtime_profile
+from runtime_visibility_lib import runtime_visibility_findings
 
 SIGNALS_PATH = Path(".charness") / "quality" / "runtime-signals.json"
 SMOOTHING_PATH = Path(".charness") / "quality" / "runtime-smoothing.json"
@@ -163,6 +164,7 @@ def evaluate(
         "latest_spikes": latest_spikes,
         "missing_samples": missing_samples,
         "runtime_hotspots": _runtime_hotspots(commands, budgets, count=top_runtime_count),
+        "runtime_visibility_findings": runtime_visibility_findings(adapter_data, budgets),
     }
 
 
@@ -171,6 +173,8 @@ def format_human(report: dict[str, Any]) -> str:
     lines.append(f"Runtime profile: {report['runtime_profile']}")
     for error in report.get("profile_config_errors", []):
         lines.append(f"ERROR {error}")
+    for finding in report.get("runtime_visibility_findings", []):
+        lines.append(f"WEAK  {finding['type']}: {finding['message']}")
     if not report["budgets_configured"]:
         lines.append("No runtime_budgets configured in adapter; nothing to check.")
     for entry in report["checked"]:

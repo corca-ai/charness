@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-06",
-  "source_artifact_count": 45,
-  "candidate_count": 268,
+  "source_artifact_count": 46,
+  "candidate_count": 272,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:d56ff3eef6a0",
+      "kind": "current_focus",
+      "lesson": "This session closed GitHub issue #102 by making empty quality runtime budget and startup probe surfaces visible as weak runtime visibility findings.",
+      "normalized_key": "this session closed github issue 102 by making empty quality runtime budget and startup",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
+      "latest_source_date": "2026-05-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
+          "date": "2026-05-06",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:be3f2ced61e4",
       "kind": "current_focus",
@@ -55,6 +75,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:1f27c64b7da3",
+      "kind": "next_improvement",
+      "lesson": "exported-plugin dogfood against the affected consumer repo should be cited in closeout when the issue came from that repo.",
+      "normalized_key": "exported plugin dogfood against the affected consumer repo should be cited in closeout when",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
+      "latest_source_date": "2026-05-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
+          "date": "2026-05-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:8df21ce796e6",
       "kind": "next_improvement",
       "lesson": "for exported plugin changes, run at least one command from `plugins/charness/...` against a consumer repo before closeout.",
@@ -89,6 +129,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+          "date": "2026-05-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2728d3745f71",
+      "kind": "next_improvement",
+      "lesson": "keep small quality review lenses in helper modules before they push public skill scripts over length limits.",
+      "normalized_key": "keep small quality review lenses in helper modules before they push public skill scripts",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
+      "latest_source_date": "2026-05-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
           "date": "2026-05-06",
           "section": "Next Improvements"
         }
@@ -175,12 +235,12 @@
       ]
     },
     {
-      "candidate_id": "repeat_trap:e7af0df80d83",
-      "kind": "repeat_trap",
-      "lesson": "The first implementation treated a repo-local helper path as if exported plugin skills could invoke it with the same `$SKILL_DIR` depth.",
-      "normalized_key": "the first implementation treated a repo local helper path as if exported plugin skills",
+      "candidate_id": "next_improvement:06cea8c5943c",
+      "kind": "next_improvement",
+      "lesson": "when an issue describes a concrete adapter shape, add one exact fixture for that shape before broadening the implementation.",
+      "normalized_key": "when an issue describes a concrete adapter shape add one exact fixture for that",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md",
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
       "latest_source_date": "2026-05-06",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -188,75 +248,35 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md",
+          "artifact_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
           "date": "2026-05-06",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:9de805efdf97",
-      "kind": "repeat_trap",
-      "lesson": "The first premortem validator used global text matching, so domain words like `blocked` inside a parent-delegated artifact could be mistaken for blocked fresh-eye state.",
-      "normalized_key": "the first premortem validator used global text matching so domain words like blocked inside",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md",
-      "latest_source_date": "2026-05-06",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md",
-          "date": "2026-05-06",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:643791d6a209",
-      "kind": "repeat_trap",
-      "lesson": "The helper initially defaulted to dated records, which could create stale current pointers for the common quality/debug update path.",
-      "normalized_key": "the helper initially defaulted to dated records which could create stale current pointers for",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md",
-      "latest_source_date": "2026-05-06",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md",
-          "date": "2026-05-06",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:a3c34454d3db",
-      "kind": "current_focus",
-      "lesson": "The operator had already said Cautilus tests are intentionally excluded during rework, but the session still attempted a Cautilus eval.",
-      "normalized_key": "the operator had already said cautilus tests are intentionally excluded during rework but the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md",
-      "latest_source_date": "2026-05-05",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md",
-          "date": "2026-05-05",
-          "section": "Context"
+          "section": "Next Improvements"
         }
       ]
     }
   ],
   "candidates": [
     {
+      "candidate_id": "current_focus:d56ff3eef6a0",
+      "kind": "current_focus",
+      "lesson": "This session closed GitHub issue #102 by making empty quality runtime budget and startup probe surfaces visible as weak runtime visibility findings.",
+      "normalized_key": "this session closed github issue 102 by making empty quality runtime budget and startup",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
+      "latest_source_date": "2026-05-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
+          "date": "2026-05-06",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:be3f2ced61e4",
       "kind": "current_focus",
       "lesson": "This session finished the artifact pointer follow-up: add a current-pointer refresh helper and move record/current/rolling behavior from skill-id exceptions into adapter-declared artifact classes.",
@@ -297,6 +317,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:1f27c64b7da3",
+      "kind": "next_improvement",
+      "lesson": "exported-plugin dogfood against the affected consumer repo should be cited in closeout when the issue came from that repo.",
+      "normalized_key": "exported plugin dogfood against the affected consumer repo should be cited in closeout when",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
+      "latest_source_date": "2026-05-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
+          "date": "2026-05-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:8df21ce796e6",
       "kind": "next_improvement",
       "lesson": "for exported plugin changes, run at least one command from `plugins/charness/...` against a consumer repo before closeout.",
@@ -331,6 +371,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+          "date": "2026-05-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2728d3745f71",
+      "kind": "next_improvement",
+      "lesson": "keep small quality review lenses in helper modules before they push public skill scripts over length limits.",
+      "normalized_key": "keep small quality review lenses in helper modules before they push public skill scripts",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
+      "latest_source_date": "2026-05-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
           "date": "2026-05-06",
           "section": "Next Improvements"
         }
@@ -411,6 +471,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+          "date": "2026-05-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:06cea8c5943c",
+      "kind": "next_improvement",
+      "lesson": "when an issue describes a concrete adapter shape, add one exact fixture for that shape before broadening the implementation.",
+      "normalized_key": "when an issue describes a concrete adapter shape add one exact fixture for that",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
+      "latest_source_date": "2026-05-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
           "date": "2026-05-06",
           "section": "Next Improvements"
         }
