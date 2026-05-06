@@ -34,6 +34,7 @@ def test_resolve_artifact_path_reports_record_and_current_paths() -> None:
     payload = json.loads(result.stdout)
     assert payload["slug"] == "insane-search-review"
     assert payload["record_artifact_path"] == "charness-artifacts/gather/2026-04-15-insane-search-review.md"
+    assert payload["record_artifact_supported"] is True
     assert payload["current_artifact_path"] == "charness-artifacts/gather/latest.md"
     assert payload["frontmatter"]["artifact_kind"] == "record"
 
@@ -53,5 +54,6 @@ def test_handoff_current_path_remains_docs_handoff() -> None:
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["record_artifact_path"] == "docs/2026-04-15-handoff-refresh.md"
+    assert payload["record_artifact_path"] is None
+    assert payload["record_artifact_supported"] is False
     assert payload["current_artifact_path"] == "docs/handoff.md"

@@ -11,6 +11,12 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
+BLOCKING_DOCTOR_DISPOSITIONS = {
+    "blocking-support-sync-needed",
+    "blocking-install-needed",
+    "blocking-failure",
+}
+
 _scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
 load_capabilities = _scripts_control_plane_lib_module.load_capabilities
 now_iso = _scripts_control_plane_lib_module.now_iso
@@ -118,7 +124,7 @@ def main() -> int:
         for result in results:
             print(f"{result['tool_id']}: {result['doctor_status']} ({result['support_state']})")
 
-    if any(result["doctor_status"] in {"missing", "unhealthy", "not-ready", "version-mismatch", "support-missing"} for result in results):
+    if any(result.get("doctor_disposition") in BLOCKING_DOCTOR_DISPOSITIONS for result in results):
         return 1
     return 0
 

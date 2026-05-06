@@ -260,6 +260,14 @@ Connected areas:
 workflow names a human or agent may reasonably ask for; support skills and
 integrations stay underneath to carry tool-specific detail.
 
+Terminology:
+
+- support skill: tool-use instructions that public workflows can consume
+- support capability: `charness`-owned runtime/provider metadata for discovery
+  and doctor context
+- integration manifest: external tool lifecycle metadata for install, update,
+  detect, healthcheck, readiness, and support-skill sync behavior
+
 ### Public Skills
 
 Use [`init-repo`](./skills/public/init-repo/SKILL.md) when a repo needs its
@@ -280,8 +288,8 @@ The rest of the public surface groups by intent:
   [`quality`](./skills/public/quality/SKILL.md),
   [`retro`](./skills/public/retro/SKILL.md)
 - communicate across boundaries:
-  [`announcement`](./skills/public/announcement/SKILL.md) person -> organization,
-  [`narrative`](./skills/public/narrative/SKILL.md) person -> person,
+  [`narrative`](./skills/public/narrative/SKILL.md) durable truth and story alignment,
+  [`announcement`](./skills/public/announcement/SKILL.md) audience/channel adaptation,
   [`handoff`](./skills/public/handoff/SKILL.md) agent -> agent,
   [`hitl`](./skills/public/hitl/SKILL.md) agent -> person
 - operate the harness:
@@ -328,6 +336,8 @@ Current integrations:
 - [`gws-cli`](./integrations/tools/gws-cli.json)
 - [`ruff`](./integrations/tools/ruff.json)
 - [`specdown`](./integrations/tools/specdown.json)
+- [`tokei`](./integrations/tools/tokei.json)
+- [`vulture`](./integrations/tools/vulture.json)
 
 `charness update all` is the operator path for refreshing the installed
 `charness` surface together with tracked external tools and materialized

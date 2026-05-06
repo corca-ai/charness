@@ -9,6 +9,8 @@ Use a concept-integrity lens:
 - stable concepts
 - ownership honesty
 - source-of-truth clarity
+- domain-language alignment across user-facing docs, business concepts,
+  CLI/config names, code terms, and artifacts
 - doc-to-runtime synchronization
 - duplicate documentation that creates competing sources of truth
 - skill trigger-contract honesty when the repo authors skills

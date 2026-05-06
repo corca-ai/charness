@@ -1,11 +1,11 @@
 # Find Skills Inventory
-Date: 2026-05-04
-Updated: 2026-05-04T04:56:12Z
+Date: 2026-05-06
+Updated: 2026-05-06T04:41:55Z
 
 ## Summary
 - public skills: 17
 - support skills: 6
-- synced support skills: 1
+- synced support skills: 0
 - support capabilities: 4
 - integrations: 10
 - trusted skills: 0
@@ -36,7 +36,6 @@ Updated: 2026-05-04T04:56:12Z
 - `markdown-preview` (support skill): Internal support capability for rendering checked-in Markdown into durable preview artifacts so doc-facing workflows can review real terminal output instead of raw source alone.
 - `specdown` (support skill): Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.
 - `web-fetch` (support skill): Internal support capability for routing public-web fetch requests through the strongest honest access path and classifying blocked or partial fetch responses without turning those tactics into a public workflow concept.
-- `cautilus` (synced support skill): Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.
 
 ## Support Capabilities
 - `gather-notion`: charness-owned published Notion gather runtime used by the public gather skill. Supports `gather`.

@@ -374,6 +374,11 @@ if [[ "$RUN_QUALITY_MODE" == "read-only" ]]; then
 else
   queue_selected "inventory-sloc" python3 skills/public/quality/scripts/inventory_sloc.py --repo-root "$REPO_ROOT" --output "$REPO_ROOT/charness-artifacts/quality/sloc-inventory/latest.json"
 fi
+if [[ -f "$REPO_ROOT/skills/public/quality/scripts/inventory_ubiquitous_language.py" ]]; then
+  queue_selected "inventory-ubiquitous-language" python3 skills/public/quality/scripts/inventory_ubiquitous_language.py --repo-root "$REPO_ROOT"
+else
+  queue_selected "inventory-ubiquitous-language" bash -c 'echo "inventory_ubiquitous_language.py unavailable; skipping optional advisory inventory."'
+fi
 flush_phase || OVERALL_RC=$?
 
 if [[ -n "$RUN_QUALITY_RUNTIME_PROFILE" ]]; then

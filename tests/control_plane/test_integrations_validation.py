@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 from pathlib import Path
 
 from .support import ROOT, run_script, seed_control_plane_repo
@@ -193,6 +194,36 @@ def test_doctor_detects_missing_materialized_support_from_previous_sync(tmp_path
     assert "Previously materialized support skill paths are missing." in doctor_payload[0]["next_steps"][0]
 
 
+def test_doctor_missing_manual_tool_is_advisory_exit_zero_for_script_and_cli(tmp_path: Path) -> None:
+    repo = seed_control_plane_repo(tmp_path)
+    (repo / "bin" / "demo-tool").unlink()
+
+    doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--skip-release-probe")
+    assert doctor.returncode == 0, doctor.stderr
+    doctor_payload = json.loads(doctor.stdout)
+    assert doctor_payload[0]["doctor_status"] == "missing"
+    assert doctor_payload[0]["doctor_disposition"] == "advisory-install-needed"
+
+    cli_env = os.environ.copy()
+    cli_env["PATH"] = "/usr/bin:/bin"
+    cli_doctor = run_script(
+        "charness",
+        "tool",
+        "doctor",
+        "--repo-root",
+        str(ROOT),
+        "--json",
+        "--no-write-locks",
+        "gws-cli",
+        env=cli_env,
+    )
+    assert cli_doctor.returncode == 0, cli_doctor.stderr
+    cli_payload = json.loads(cli_doctor.stdout)
+    gws_doctor = cli_payload["results"]["gws-cli"]["doctor"]
+    assert gws_doctor["doctor_status"] == "missing"
+    assert gws_doctor["doctor_disposition"] == "advisory-install-needed"
+
+
 def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path) -> None:
     repo = seed_control_plane_repo(tmp_path)
     (repo / ".demo-ready").unlink()
@@ -204,6 +235,43 @@ def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path) -> 
     payload = doctor_payload[0]["readiness"]
     assert payload["ok"] is False
     assert payload["failed_checks"] == ["demo-ready-file"]
+
+
+def test_tool_doctor_cli_returns_nonzero_for_blocking_disposition(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    shutil.copytree(
+        ROOT,
+        repo,
+        ignore=shutil.ignore_patterns(".git", ".pytest_cache", ".ruff_cache", "__pycache__", ".coverage", ".charness"),
+    )
+    tools_dir = repo / "integrations" / "tools"
+    for manifest_path in tools_dir.glob("*.json"):
+        if manifest_path.name not in {"manifest.schema.json", "demo-tool.json"}:
+            manifest_path.unlink()
+    seeded = seed_control_plane_repo(tmp_path / "seeded")
+    shutil.copy2(seeded / "integrations" / "tools" / "demo-tool.json", tools_dir / "demo-tool.json")
+    (repo / ".demo-ready").write_text("ready\n", encoding="utf-8")
+    (repo / "bin").mkdir(exist_ok=True)
+    shutil.copy2(seeded / "bin" / "demo-tool", repo / "bin" / "demo-tool")
+    (repo / "bin" / "demo-tool").chmod(0o755)
+    (repo / ".demo-ready").unlink()
+
+    cli_doctor = run_script(
+        "charness",
+        "tool",
+        "doctor",
+        "--repo-root",
+        str(repo),
+        "--json",
+        "--no-write-locks",
+        "demo-tool",
+    )
+
+    assert cli_doctor.returncode == 1, cli_doctor.stderr
+    cli_payload = json.loads(cli_doctor.stdout)
+    demo_doctor = cli_payload["results"]["demo-tool"]["doctor"]
+    assert demo_doctor["doctor_status"] == "not-ready"
+    assert demo_doctor["doctor_disposition"] == "blocking-failure"
 
 
 def test_doctor_skip_release_probe_preserves_local_readiness_without_release_lookup(tmp_path: Path) -> None:

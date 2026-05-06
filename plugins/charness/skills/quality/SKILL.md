@@ -83,6 +83,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - when the repo may keep one shipped implementation beside a historical or alternate runtime path, inventory likely dual-implementation parity smells with `$SKILL_DIR/scripts/inventory_dual_implementation.py`, then decide whether the relationship is parity-enforced, canonical-plus-legacy, or intentional divergence
    - when first-touch operator/developer/agent docs are in scope, inventory entrypoint-doc ergonomics with `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py`
    - when public executable specs are in scope, inventory reader-facing public-spec drift and proof-layering overlap with `$SKILL_DIR/scripts/inventory_public_spec_quality.py`; see `references/public-spec-layering.md`
+   - when user-facing docs, CLI names, code/config names, or artifacts may use different words for the same concept, inventory ubiquitous-language drift with `$SKILL_DIR/scripts/inventory_ubiquitous_language.py`; keep it advisory unless the adapter declares low-noise deprecated aliases
    - elevate source-guard pressure as a rollup: total source-guard rows, top specs, brittle count, and next action category should be visible together
    - when fixed-string source guards touch prose, inventory hard-wrap fragility with `$SKILL_DIR/scripts/inventory_brittle_source_guards.py`; see `references/brittle-source-guards.md`
    - when lint suppressions start to accumulate, inventory lint suppression pressure with `$SKILL_DIR/scripts/inventory_lint_ignores.py`; blanket, file-level, or retained policy-level ignores should be explicit review targets with provenance and concrete revisit conditions, not invisible background debt
@@ -115,6 +116,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - `security`: are there meaningful code, secret, or supply-chain risks
    - `operability`: are setup, CI, install/update docs, and maintenance surfaces honest enough to sustain the quality bar
    - make skill ergonomics explicit: concise `SKILL.md` core, progressive disclosure honesty, unnecessary mode/option pressure, trigger overlap/undertrigger risk, and prose ritual that should become a helper script
+   - make domain-language alignment explicit: user-facing wording, business/domain concepts, CLI/config names, and artifact names should use the same canonical terms unless an adapter-declared alias is intentional
    - when the repo keeps major entrypoint docs, include entrypoint-doc ergonomics review: concise first-touch ownership, progressive disclosure into deeper owners, duplicate pressure between nearby entry docs, whether one canonical README-first bootstrap would be clearer than a separate install manual, and whether the prose overexplains branches a smart agent/operator can infer safely
    - make evaluator depth explicit: smoke only, maintained evaluator-backed, or still smoke plus HITL
    - if stronger local proof depends on an external binary or support tool, state whether it is currently installed and healthy, then surface the exact install and post-install verification path instead of vague prose

@@ -14,6 +14,14 @@ without turning those tools into the product's philosophy.
 They are also where host/runtime-specific capability usage guidance can live
 without forcing secret-handling details into a public skill body.
 
+Terminology:
+
+- `support skill`: agent-readable instructions for using a tool capability.
+- `support capability`: Charness-owned runtime or provider metadata that can
+  select or explain a support skill.
+- `integration manifest`: external tool lifecycle, install, doctor, and update
+  metadata.
+
 ## Classification Rule
 
 Ask this first:
@@ -67,7 +75,6 @@ Support capability states should stay explicit:
 - `native-support`
 - `upstream-consumed`
 - `wrapped-upstream`
-- `forked-local`
 - `integration-only`
 
 These labels matter for later sync/update/doctor behavior.

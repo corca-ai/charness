@@ -50,8 +50,9 @@ commands:
     required_doc_contains:
       - Make sure your machine has Python 3.
       - /tmp/charness-init.sh
-      - Use charness to initialize this repo.
       - charness init
+    forbidden_doc_contains:
+      - charness init-repo
   doctor:
     help_command: ./charness doctor --help
     doc_paths:
@@ -119,6 +120,8 @@ commands:
     doc_paths:
       - docs/cli-reference.md
       - docs/control-plane.md
+      - docs/external-integrations.md
+      - docs/handoff.md
     required_help_contains:
       - doctor
       - sync-support
@@ -131,3 +134,131 @@ commands:
       - charness tool update agent-browser
       - charness tool sync-support cautilus
       - persist manual install guidance
+    forbidden_doc_contains:
+      - charness install <tool>
+      - charness sync-support
+      - charness update-tools
+  task-claim:
+    help_command: ./charness task claim --help
+    doc_paths:
+      - docs/cli-reference.md
+    required_help_contains:
+      - --summary
+      - --agent
+    required_doc_contains:
+      - charness task claim
+  task-submit:
+    help_command: ./charness task submit --help
+    doc_paths:
+      - docs/cli-reference.md
+    required_help_contains:
+      - --summary
+      - --artifact
+    required_doc_contains:
+      - charness task submit
+  task-abort:
+    help_command: ./charness task abort --help
+    doc_paths:
+      - docs/cli-reference.md
+    required_help_contains:
+      - --reason
+    required_doc_contains:
+      - charness task abort
+  task-status:
+    help_command: ./charness task status --help
+    doc_paths:
+      - docs/cli-reference.md
+    required_help_contains:
+      - task_id
+    required_doc_contains:
+      - charness task status
+  capability-init:
+    help_command: ./charness capability init --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/capability-resolution.md
+    required_help_contains:
+      - --force
+      - --target-repo-root
+    required_doc_contains:
+      - charness capability init
+  capability-resolve:
+    help_command: ./charness capability resolve --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/capability-resolution.md
+    required_help_contains:
+      - logical_id
+      - --target-repo-root
+    required_doc_contains:
+      - charness capability resolve slack.default
+  capability-doctor:
+    help_command: ./charness capability doctor --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/capability-resolution.md
+    required_help_contains:
+      - logical_id
+      - --json
+    required_doc_contains:
+      - charness capability doctor slack.default
+  capability-env:
+    help_command: ./charness capability env --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/capability-resolution.md
+    required_help_contains:
+      - logical_id
+      - --json
+    required_doc_contains:
+      - charness capability env slack.default
+  capability-explain:
+    help_command: ./charness capability explain --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/capability-resolution.md
+    required_help_contains:
+      - skill_id
+      - --json
+    required_doc_contains:
+      - charness capability explain gather
+  tool-doctor:
+    help_command: ./charness tool doctor --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/control-plane.md
+    required_help_contains:
+      - --no-write-locks
+      - tool_ids
+    required_doc_contains:
+      - charness tool doctor cautilus
+  tool-sync-support:
+    help_command: ./charness tool sync-support --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/control-plane.md
+    required_help_contains:
+      - --upstream-checkout
+      - --dry-run
+    required_doc_contains:
+      - charness tool sync-support cautilus
+  tool-install:
+    help_command: ./charness tool install --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/control-plane.md
+    required_help_contains:
+      - --recommendation-role
+      - --next-skill-id
+    required_doc_contains:
+      - charness tool install --recommendation-role validation --next-skill-id quality
+  tool-update:
+    help_command: ./charness tool update --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/control-plane.md
+    required_help_contains:
+      - --skip-sync-support
+      - tool_ids
+    required_doc_contains:
+      - charness tool update agent-browser

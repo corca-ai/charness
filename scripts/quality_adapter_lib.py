@@ -146,6 +146,7 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "public_spec_pointer_proof_markers": list(DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS),
         "prompt_asset_roots": [],
         "adapter_review_sources": [],
+        "domain_language_contract": {},
         "acknowledged_recommendations": [],
         "gate_design_review_globs": [],
         "product_surfaces": [],
@@ -250,6 +251,14 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
     quality_phases = adapter_validators.quality_phases(data.get("quality_phases"), errors)
     if quality_phases is not None:
         validated["quality_phases"] = quality_phases
+
+    domain_language_contract = data.get("domain_language_contract")
+    if domain_language_contract is None:
+        return
+    if not isinstance(domain_language_contract, dict):
+        errors.append("domain_language_contract must be a mapping")
+        return
+    validated["domain_language_contract"] = dict(domain_language_contract)
 
 
 def _apply_list_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:

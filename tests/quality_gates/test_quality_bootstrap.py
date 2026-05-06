@@ -53,6 +53,12 @@ def write_explicit_quality_adapter(repo: Path) -> None:
                 "recommendation_defaults_version: custom-v1",
                 "adapter_review_sources:",
                 "- .agents/quality-adapter.yaml",
+                "domain_language_contract:",
+                "  surface_globs:",
+                "  - README.md",
+                "  terms:",
+                "  - id: external-tool-cli",
+                "    canonical: charness tool",
                 "acknowledged_recommendations:",
                 "- demo.ack",
                 "gate_design_review_globs:",
@@ -120,6 +126,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
         "coverage_fragile_margin_pp": "defaulted",
         "coverage_floor_policy": "defaulted",
         "adapter_review_sources": "defaulted",
+        "domain_language_contract": "defaulted",
         "acknowledged_recommendations": "defaulted",
         "concept_paths": "inferred",
         "gate_design_review_globs": "defaulted",
@@ -183,6 +190,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     assert resolved["data"]["prompt_asset_roots"] == []
     assert resolved["data"]["recommendation_defaults_version"] == "issue-64"
     assert resolved["data"]["adapter_review_sources"] == []
+    assert resolved["data"]["domain_language_contract"] == {}
     assert resolved["data"]["acknowledged_recommendations"] == []
     assert resolved["data"]["gate_design_review_globs"] == []
     assert resolved["data"]["canonical_markdown_surfaces"] == ["AGENTS.md", "CLAUDE.md"]
@@ -214,10 +222,10 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     preserved_keys = (
         "gate_commands", "coverage_fragile_margin_pp", "coverage_floor_policy", "specdown_smoke_patterns",
         "spec_pytest_reference_format", "prompt_asset_roots", "recommendation_defaults_version", "adapter_review_sources",
-        "acknowledged_recommendations", "gate_design_review_globs", "canonical_markdown_surfaces", "prompt_asset_policy",
-        "skill_ergonomics_gate_rules", "skill_ergonomics_skill_paths", "skill_ergonomics_runtime_install_skill_paths",
-        "vendored_paths", "public_spec_implementation_guard_min_lines", "runtime_profile_default", "runtime_budgets",
-        "runtime_budget_profiles", "startup_probes",
+        "domain_language_contract", "acknowledged_recommendations", "gate_design_review_globs", "canonical_markdown_surfaces",
+        "prompt_asset_policy", "skill_ergonomics_gate_rules", "skill_ergonomics_skill_paths",
+        "skill_ergonomics_runtime_install_skill_paths", "vendored_paths", "public_spec_implementation_guard_min_lines",
+        "runtime_profile_default", "runtime_budgets", "runtime_budget_profiles", "startup_probes",
     )
     for key in preserved_keys:
         assert payload["field_statuses"][key] == "preserved"
@@ -243,6 +251,10 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
         "prompt_asset_roots": ["prompts"],
         "recommendation_defaults_version": "custom-v1",
         "adapter_review_sources": [".agents/quality-adapter.yaml"],
+        "domain_language_contract": {
+            "surface_globs": ["README.md"],
+            "terms": [{"id": "external-tool-cli", "canonical": "charness tool"}],
+        },
         "acknowledged_recommendations": ["demo.ack"],
         "gate_design_review_globs": ["scripts/*.py"],
         "canonical_markdown_surfaces": ["AGENTS.md", "CLAUDE.md", "docs/handoff.md"],
@@ -334,6 +346,7 @@ def test_quality_resolve_rejects_invalid_review_fields(tmp_path: Path) -> None:
                 "output_dir: charness-artifacts/quality",
                 "recommendation_defaults_version: 7",
                 "adapter_review_sources: invalid",
+                "domain_language_contract: invalid",
                 "acknowledged_recommendations: invalid",
                 "gate_design_review_globs: invalid",
                 "canonical_markdown_surfaces: invalid",
@@ -353,6 +366,7 @@ def test_quality_resolve_rejects_invalid_review_fields(tmp_path: Path) -> None:
     assert payload["valid"] is False
     assert "recommendation_defaults_version must be a string" in payload["errors"]
     assert "adapter_review_sources must be a list of strings" in payload["errors"]
+    assert "domain_language_contract must be a mapping" in payload["errors"]
     assert "acknowledged_recommendations must be a list of strings" in payload["errors"]
     assert "gate_design_review_globs must be a list of strings" in payload["errors"]
     assert "canonical_markdown_surfaces must be a list of strings" in payload["errors"]

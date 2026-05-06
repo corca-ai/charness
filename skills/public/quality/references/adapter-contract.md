@@ -42,6 +42,7 @@ Quality-specific fields:
 - `public_spec_pointer_proof_markers`
 - `recommendation_defaults_version`
 - `adapter_review_sources`
+- `domain_language_contract`
 - `acknowledged_recommendations`
 - `gate_design_review_globs`
 - `product_surfaces`
@@ -214,6 +215,38 @@ runners that interpret the same adapter should accept the same env or expose
 their own equivalent flag. The legacy `CHARNESS_QUALITY_READ_ONLY` env was
 removed when this contract landed; wrappers that still set it now get the
 default full mode and should switch to the canonical surface.
+
+`domain_language_contract` optionally declares canonical repo terms for a
+DDD-style ubiquitous-language inventory. The field is advisory by default and is
+consumed by `scripts/inventory_ubiquitous_language.py`.
+
+Shape:
+
+```yaml
+domain_language_contract:
+  surface_globs:
+    - README.md
+    - docs/**/*.md
+    - skills/public/**/*.md
+  exemption_globs:
+    - skills/public/quality/references/adapter-contract.md
+  terms:
+    - id: external-tool-cli
+      canonical: "charness tool"
+      allowed_aliases:
+        - "external tool command"
+      deprecated_aliases:
+        - "charness install <tool>"
+```
+
+Use `allowed_aliases` for deliberately user-friendly phrasing and
+`deprecated_aliases` for low-noise strings that should disappear from
+user-facing docs, CLI references, adapters, or artifacts. A deprecated alias hit
+may hard-fail; an allowed alias without the canonical term is advisory review
+material. Use `exemption_globs` for quoted examples or historical records that
+intentionally document non-canonical wording; the default scan scope excludes
+adapter YAML files so the contract does not fail on its own deprecated alias
+declarations.
 
 `gate_commands` should stay suitable for quiet maintainer-local enforcement
 such as pre-push. `review_commands` should hold the fuller quality-review path

@@ -212,7 +212,7 @@
         "includes a customer-of-this-capability angle when first-use failure is the main risk"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-27",
+      "reviewed_on": "2026-05-06",
       "observed_evidence": [
         "The checked-in public core now says task-completing repo work always records premortem before closeout, scaling the pass rather than leaving applicability optional.",
         "The standalone `premortem` skill remains the full bounded-subagent path for non-trivial design, deletion, rename, release, workflow, compatibility, install/update, host-proof, prompt-surface, public-skill, validator, or export decisions.",
@@ -253,7 +253,9 @@
         "`validate_quality_artifact.py` now requires `Advisory` and `Delegated Review` sections, rejecting green-gate-only summaries that omit advisory or delegated-review status.",
         "The quality adapter resolver now preserves existing `version: 1` adapters while defaulting new review fields to safe empty values.",
         "`inventory_entrypoint_docs_ergonomics.py` now surfaces `host_instruction_runbook_pressure` when `AGENTS.md` embeds a multi-step procedure that likely belongs in a deeper doc or repo-owned command surface.",
-        "`inventory_brittle_source_guards.py` keeps advisory source-guard review resilient by bounding default scan roots, exposing explicit `--scan-root` overrides, and reporting unreadable specs without crashing the quality run."
+        "`inventory_brittle_source_guards.py` keeps advisory source-guard review resilient by bounding default scan roots, exposing explicit `--scan-root` overrides, and reporting unreadable specs without crashing the quality run.",
+        "The quality core now makes domain-language alignment explicit: user-facing wording, CLI/config names, code names, and artifact names should converge on adapter-declared canonical terms.",
+        "`inventory_ubiquitous_language.py` dogfoods that contract as an advisory inventory that becomes a hard failure only for low-noise deprecated aliases declared in `.agents/quality-adapter.yaml`."
       ]
     },
     {

@@ -19,9 +19,21 @@ COMMANDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("charness uninstall", ("./charness", "uninstall", "--help")),
     ("charness reset", ("./charness", "reset", "--help")),
     ("charness task", ("./charness", "task", "--help")),
+    ("charness task claim", ("./charness", "task", "claim", "--help")),
+    ("charness task submit", ("./charness", "task", "submit", "--help")),
+    ("charness task abort", ("./charness", "task", "abort", "--help")),
+    ("charness task status", ("./charness", "task", "status", "--help")),
     ("charness capability", ("./charness", "capability", "--help")),
+    ("charness capability init", ("./charness", "capability", "init", "--help")),
+    ("charness capability resolve", ("./charness", "capability", "resolve", "--help")),
+    ("charness capability doctor", ("./charness", "capability", "doctor", "--help")),
+    ("charness capability env", ("./charness", "capability", "env", "--help")),
+    ("charness capability explain", ("./charness", "capability", "explain", "--help")),
     ("charness tool", ("./charness", "tool", "--help")),
+    ("charness tool doctor", ("./charness", "tool", "doctor", "--help")),
+    ("charness tool sync-support", ("./charness", "tool", "sync-support", "--help")),
     ("charness tool install", ("./charness", "tool", "install", "--help")),
+    ("charness tool update", ("./charness", "tool", "update", "--help")),
 )
 
 EXAMPLES: dict[str, tuple[str, ...]] = {

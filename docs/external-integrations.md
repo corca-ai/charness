@@ -168,7 +168,7 @@ constraints, or recommendation roles a specific repo wants to pin.
 
 Strict workflows (`install_tools`, `sync_support`, `update_tools`,
 `validate_integrations`) honor the same merge through `load_manifests` so
-`charness install <tool>` works in user repos without requiring local
+`charness tool install <tool>` works in user repos without requiring local
 manifests. Tests opt out of the fallback through
 `CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS=1`.
 
@@ -199,15 +199,15 @@ Effects:
 This file is optional and informational; absence means "no explicit staging
 policy" and every plugin-fallback recommendation surfaces as `staged: null`.
 
-## Desired Commands
+## Command Surface
 
-These do not need implementation in session 1, but the plan assumes them.
+The current external-tool command surface is nested under `charness tool`:
 
-- `charness sync-support`
+- `charness tool sync-support`
   - sync upstream support skills and manifests into the local harness view
-- `charness update-tools`
+- `charness tool update`
   - update integrated external tools where safe
-- `charness doctor`
+- `charness tool doctor`
   - verify tool availability, version expectations, and support-skill materialization
 
 ## Scope Guardrails

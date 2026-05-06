@@ -18,6 +18,11 @@ from pathlib import Path
 
 PACKAGE_ID = "charness"
 REPO_URL = "https://github.com/corca-ai/charness"
+BLOCKING_DOCTOR_DISPOSITIONS = {
+    "blocking-support-sync-needed",
+    "blocking-install-needed",
+    "blocking-failure",
+}
 SCRIPT_PATH = Path(__file__).resolve()
 EMBEDDED_REPO_ROOT = SCRIPT_PATH.parent if (SCRIPT_PATH.parent / "packaging" / f"{PACKAGE_ID}.json").is_file() else None
 TASK_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
@@ -3560,7 +3565,7 @@ def cmd_capability_doctor(args: argparse.Namespace) -> int:
     else:
         print_capability_summary(payload)
     doctor = payload["provider_doctor"]
-    if doctor.get("doctor_status") in {"missing", "unhealthy", "not-ready", "version-mismatch", "support-missing"}:
+    if doctor.get("doctor_disposition") in BLOCKING_DOCTOR_DISPOSITIONS:
         return 1
     if payload["missing_env_sources"]:
         return 1
@@ -3661,7 +3666,7 @@ def cmd_tool_doctor(args: argparse.Namespace) -> int:
     else:
         print_tool_human_summary(payload)
     doctor_map = tool_result_map(doctor_results)
-    if any(result.get("doctor_status") in {"missing", "unhealthy", "not-ready", "version-mismatch", "support-missing"} for result in doctor_map.values()):
+    if any(result.get("doctor_disposition") in BLOCKING_DOCTOR_DISPOSITIONS for result in doctor_map.values()):
         return 1
     return 0
 
@@ -3916,7 +3921,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Remove host plugin state for Codex and Claude while preserving the managed checkout and CLI.",
     )
     reset_parser.add_argument("--home-root", type=Path, default=default_home_root())
-    reset_parser.add_argument("--repo-root", type=Path, help="Use an explicit checkout path when removing Claude plugin state.")
+    reset_parser.add_argument("--repo-root", type=Path, help="Use an explicit checkout path when removing host plugin state.")
     reset_parser.add_argument("--plugin-root", type=Path)
     reset_parser.add_argument(
         "--codex-marketplace-path",

@@ -40,6 +40,33 @@ prompt_asset_roots: []
 adapter_review_sources:
   - .agents/quality-adapter.yaml
   - skills/public/quality/references/adapter-contract.md
+domain_language_contract:
+  surface_globs:
+    - README.md
+    - docs/**/*.md
+    - skills/public/**/*.md
+    - charness
+    - scripts/**/*.py
+  exemption_globs:
+    - skills/public/quality/references/adapter-contract.md
+  terms:
+    - id: external-tool-cli
+      canonical: "charness tool"
+      deprecated_aliases:
+        - "charness install <tool>"
+        - "charness sync-support"
+        - "charness update-tools"
+    - id: support-capability-taxonomy
+      canonical: "support capability"
+      allowed_aliases:
+        - "support skill"
+        - "integration manifest"
+        - "integration"
+    - id: repo-initialization-skill
+      canonical: "init-repo"
+      allowed_aliases:
+        - "initialize this repo"
+        - "repo initialization"
 acknowledged_recommendations: []
 gate_design_review_globs:
   - .agents/*-adapter.yaml
@@ -97,6 +124,19 @@ runtime_budget_profiles:
       check-cli-skill-surface: 8000
       pytest: 70000
       check-coverage: 22000
+      check-duplicates: 8000
+      check-markdown: 8000
+      check-secrets: 6000
+      run-evals: 5000
+      specdown: 8000
+  local-linux-x86_64-36cpu:
+    budgets:
+      charness-version: 500
+      check-cli-skill-surface: 8000
+      inventory-sloc: 1000
+      inventory-ubiquitous-language: 1000
+      pytest: 140000
+      check-coverage: 35000
       check-duplicates: 8000
       check-markdown: 8000
       check-secrets: 6000

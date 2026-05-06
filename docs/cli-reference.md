@@ -204,7 +204,7 @@ options:
   -h, --help            show this help message and exit
   --home-root HOME_ROOT
   --repo-root REPO_ROOT
-                        Use an explicit checkout path when removing Claude
+                        Use an explicit checkout path when removing host
                         plugin state.
   --plugin-root PLUGIN_ROOT
   --codex-marketplace-path CODEX_MARKETPLACE_PATH
@@ -237,6 +237,61 @@ options:
   --json
 ```
 
+## `charness task claim`
+
+```text
+usage: charness task claim [-h] [--agent AGENT] [--summary SUMMARY] task_id
+
+positional arguments:
+  task_id
+
+options:
+  -h, --help         show this help message and exit
+  --agent AGENT      Agent identity recorded in the task. Defaults to
+                     CHARNESS_AGENT_ID, CODEX_SESSION_ID, USER, then `agent`.
+  --summary SUMMARY
+```
+
+## `charness task submit`
+
+```text
+usage: charness task submit [-h] [--summary SUMMARY] [--artifact ARTIFACTS]
+                            task_id
+
+positional arguments:
+  task_id
+
+options:
+  -h, --help            show this help message and exit
+  --summary SUMMARY
+  --artifact ARTIFACTS
+```
+
+## `charness task abort`
+
+```text
+usage: charness task abort [-h] --reason REASON task_id
+
+positional arguments:
+  task_id
+
+options:
+  -h, --help       show this help message and exit
+  --reason REASON
+```
+
+## `charness task status`
+
+```text
+usage: charness task status [-h] [task_id]
+
+positional arguments:
+  task_id
+
+options:
+  -h, --help  show this help message and exit
+```
+
 ## `charness capability`
 
 ```text
@@ -259,6 +314,125 @@ options:
   -h, --help            show this help message and exit
 ```
 
+## `charness capability init`
+
+```text
+usage: charness capability init [-h] [--home-root HOME_ROOT]
+                                [--target-repo-root TARGET_REPO_ROOT]
+                                [--force] [--json]
+
+options:
+  -h, --help            show this help message and exit
+  --home-root HOME_ROOT
+  --target-repo-root TARGET_REPO_ROOT
+                        Seed repo-binding examples for this target repo.
+                        Defaults to the current working directory.
+  --force
+  --json
+```
+
+## `charness capability resolve`
+
+```text
+usage: charness capability resolve [-h] [--home-root HOME_ROOT]
+                                   [--repo-root REPO_ROOT]
+                                   [--repo-url REPO_URL]
+                                   [--target-repo-root TARGET_REPO_ROOT]
+                                   [--json]
+                                   logical_id
+
+positional arguments:
+  logical_id
+
+options:
+  -h, --help            show this help message and exit
+  --home-root HOME_ROOT
+  --repo-root REPO_ROOT
+                        Use an explicit charness source checkout instead of
+                        the managed default checkout.
+  --repo-url REPO_URL
+  --target-repo-root TARGET_REPO_ROOT
+                        Resolve repo bindings for this target repo. Defaults
+                        to the current working directory.
+  --json
+```
+
+## `charness capability doctor`
+
+```text
+usage: charness capability doctor [-h] [--home-root HOME_ROOT]
+                                  [--repo-root REPO_ROOT]
+                                  [--repo-url REPO_URL]
+                                  [--target-repo-root TARGET_REPO_ROOT]
+                                  [--json]
+                                  logical_id
+
+positional arguments:
+  logical_id
+
+options:
+  -h, --help            show this help message and exit
+  --home-root HOME_ROOT
+  --repo-root REPO_ROOT
+                        Use an explicit charness source checkout instead of
+                        the managed default checkout.
+  --repo-url REPO_URL
+  --target-repo-root TARGET_REPO_ROOT
+                        Resolve repo bindings for this target repo. Defaults
+                        to the current working directory.
+  --json
+```
+
+## `charness capability env`
+
+```text
+usage: charness capability env [-h] [--home-root HOME_ROOT]
+                               [--repo-root REPO_ROOT] [--repo-url REPO_URL]
+                               [--target-repo-root TARGET_REPO_ROOT] [--json]
+                               logical_id
+
+positional arguments:
+  logical_id
+
+options:
+  -h, --help            show this help message and exit
+  --home-root HOME_ROOT
+  --repo-root REPO_ROOT
+                        Use an explicit charness source checkout instead of
+                        the managed default checkout.
+  --repo-url REPO_URL
+  --target-repo-root TARGET_REPO_ROOT
+                        Resolve repo bindings for this target repo. Defaults
+                        to the current working directory.
+  --json
+```
+
+## `charness capability explain`
+
+```text
+usage: charness capability explain [-h] [--home-root HOME_ROOT]
+                                   [--repo-root REPO_ROOT]
+                                   [--repo-url REPO_URL]
+                                   [--target-repo-root TARGET_REPO_ROOT]
+                                   [--json]
+                                   skill_id
+
+positional arguments:
+  skill_id
+
+options:
+  -h, --help            show this help message and exit
+  --home-root HOME_ROOT
+  --repo-root REPO_ROOT
+                        Use an explicit charness source checkout instead of
+                        the managed default checkout.
+  --repo-url REPO_URL
+  --target-repo-root TARGET_REPO_ROOT
+                        Inspect repo-local adapter context for this target
+                        repo. Defaults to the current working directory.
+  --json
+```
+
 ## `charness tool`
 
 ```text
@@ -279,6 +453,54 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
+```
+
+## `charness tool doctor`
+
+```text
+usage: charness tool doctor [-h] [--home-root HOME_ROOT]
+                            [--repo-root REPO_ROOT] [--repo-url REPO_URL]
+                            [--json] [--no-write-locks]
+                            [tool_ids ...]
+
+positional arguments:
+  tool_ids
+
+options:
+  -h, --help            show this help message and exit
+  --home-root HOME_ROOT
+  --repo-root REPO_ROOT
+                        Use an explicit existing source checkout instead of
+                        the managed default checkout.
+  --repo-url REPO_URL
+  --json
+  --no-write-locks      Skip updating integrations/locks/*.json when you only
+                        want a read-only probe.
+```
+
+## `charness tool sync-support`
+
+```text
+usage: charness tool sync-support [-h] [--home-root HOME_ROOT]
+                                  [--repo-root REPO_ROOT]
+                                  [--repo-url REPO_URL] [--json]
+                                  [--upstream-checkout UPSTREAM_CHECKOUT]
+                                  [--dry-run]
+                                  [tool_ids ...]
+
+positional arguments:
+  tool_ids
+
+options:
+  -h, --help            show this help message and exit
+  --home-root HOME_ROOT
+  --repo-root REPO_ROOT
+                        Use an explicit existing source checkout instead of
+                        the managed default checkout.
+  --repo-url REPO_URL
+  --json
+  --upstream-checkout UPSTREAM_CHECKOUT
+  --dry-run
 ```
 
 ## `charness tool install`
@@ -323,4 +545,29 @@ Examples
 
 ```bash
 charness tool install --recommendation-role validation --next-skill-id quality
+```
+
+## `charness tool update`
+
+```text
+usage: charness tool update [-h] [--home-root HOME_ROOT]
+                            [--repo-root REPO_ROOT] [--repo-url REPO_URL]
+                            [--json] [--upstream-checkout UPSTREAM_CHECKOUT]
+                            [--dry-run] [--skip-sync-support]
+                            [tool_ids ...]
+
+positional arguments:
+  tool_ids
+
+options:
+  -h, --help            show this help message and exit
+  --home-root HOME_ROOT
+  --repo-root REPO_ROOT
+                        Use an explicit existing source checkout instead of
+                        the managed default checkout.
+  --repo-url REPO_URL
+  --json
+  --upstream-checkout UPSTREAM_CHECKOUT
+  --dry-run
+  --skip-sync-support   Skip support skill rematerialization after update.
 ```

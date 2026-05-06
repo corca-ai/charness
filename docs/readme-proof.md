@@ -27,13 +27,16 @@ contract and see proof for each acceptance criterion. The report should include:
 
 - this ledger, or a generated successor with the same claim-to-proof shape;
 - deterministic executable checks for local scripts, docs, and CLI behavior;
-- the latest checked Cautilus behavioral proof at
+- historical Cautilus behavioral proof at
   [`charness-artifacts/cautilus/latest.md`](../charness-artifacts/cautilus/latest.md);
-- future Cautilus claim-discovery and claim-validation outputs when those
-  become stable checked artifacts.
+- future Cautilus claim-discovery and claim-validation outputs after the repo
+  adapter is deliberately re-enabled and those packets become stable checked
+  artifacts.
 
-Until `cautilus claim discover` is distributed as the normal binary surface for
-this repo, use the implementation checkout:
+While the root Cautilus adapter is `disabled`, do not run claim discovery or
+evaluation commands. After the adapter is deliberately re-enabled, use the
+normal distributed binary surface; if that is not available yet, the historical
+implementation-checkout command shape was:
 
 ```bash
 ../cautilus/bin/cautilus claim discover \
@@ -60,7 +63,7 @@ does not search for evidence or decide that the product claim is satisfied.
 | README-UPDATE-ALL | [README.md](../README.md) Quick Start | `charness update all` refreshes tracked external tools and bundled support skills. | Deterministic plus HITL/operator | [scripts/update_tools.py](../scripts/update_tools.py), [scripts/sync_support.py](../scripts/sync_support.py), [docs/development.md](./development.md), [docs/cli-reference.md](./cli-reference.md), [tests/charness_cli/test_update_output.py](../tests/charness_cli/test_update_output.py), [tests/control_plane/test_sync_support.py](../tests/control_plane/test_sync_support.py) | Refresh when update manifests, support-skill sync policy, CLI wiring, or host packaging changes. | Partial | Dry-run and local helpers are checked; real external tool freshness remains operator or CI proof. |
 | README-WORKFLOW-ROUTES | [README.md](../README.md) How You Use It | Common project and existing-repo prompts route to the intended public workflow skills. | Cautilus plus human-auditable docs | [skills/public/](../skills/public/), [charness-artifacts/find-skills/latest.md](../charness-artifacts/find-skills/latest.md), [evals/cautilus/whole-repo-routing.fixture.json](../evals/cautilus/whole-repo-routing.fixture.json), [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md) | Refresh when README route examples, public skill descriptions, find-skills output, or routing eval fixtures change. | Partial | Expand Cautilus fixtures from whole-repo routing into README entrypoint claims. |
 | README-QUALITY | [README.md](../README.md) How You Use It | `quality` covers missing gates, brittle tests, duplicate code, security risks, documentation drift, skill/script ergonomics, tool health, and runtime cost. | Deterministic plus delegated review | [skills/public/quality/SKILL.md](../skills/public/quality/SKILL.md), [.agents/quality-adapter.yaml](../.agents/quality-adapter.yaml), [scripts/run-quality.sh](../scripts/run-quality.sh), [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md), quality inventory scripts, runtime-budget checks | Refresh when quality adapter commands, review scope, runtime budgets, or quality artifact schema change. | Proved for current repo posture | Keep the ledger current when quality adds or removes review lenses. |
-| README-CAUTILUS | [README.md](../README.md) How You Use It | Prompt- or behavior-affecting changes can use Cautilus evaluator-backed scenario review when installed and configured. | Cautilus plus Specdown | [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml), [evals/cautilus/whole-repo-routing.fixture.json](../evals/cautilus/whole-repo-routing.fixture.json), [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md), [specs/on-demand-validation.spec.md](../specs/on-demand-validation.spec.md) | Refresh when adapter run mode, eval fixtures, Cautilus artifact shape, or Specdown viewer changes. | Proved for current proof path | Claim discovery is available from `../cautilus`, but its output is not yet a checked stable artifact. |
+| README-CAUTILUS | [README.md](../README.md) How You Use It | Prompt- or behavior-affecting changes can use Cautilus evaluator-backed scenario review when installed and configured. | Cautilus plus Specdown | [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml), [evals/cautilus/whole-repo-routing.fixture.json](../evals/cautilus/whole-repo-routing.fixture.json), [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md), [specs/on-demand-validation.spec.md](../specs/on-demand-validation.spec.md) | Refresh when adapter run mode, eval fixtures, Cautilus artifact shape, or Specdown viewer changes. | Disabled until re-enabled | Keep prior Cautilus evidence historical while [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml) has `run_mode: disabled`; claim discovery output is not yet a checked stable artifact. |
 | README-PUBLIC-SUPPORT | [README.md](../README.md) Core Concepts | Public skills name user intent while support skills hide tool-specific detail. | Deterministic plus human-auditable docs | [docs/support-skill-policy.md](./support-skill-policy.md), [docs/capability-resolution.md](./capability-resolution.md), [skills/public/](../skills/public/), support-skill manifests, public-skill validation tests | Refresh when public/support boundaries, skill metadata, or capability-resolution policy changes. | Partial | Current proof is mostly structural and reviewable; add a lower-noise boundary validator before hard-gating wording. |
 | README-CONTEXT-FLOW | [README.md](../README.md) Core Concepts and How You Use It | Handoffs, retros, and artifacts preserve decisions so future agents can resume. | Deterministic plus human-auditable artifacts | [docs/handoff.md](./handoff.md), [skills/public/handoff/SKILL.md](../skills/public/handoff/SKILL.md), [skills/public/retro/SKILL.md](../skills/public/retro/SKILL.md), [charness-artifacts/retro/recent-lessons.md](../charness-artifacts/retro/recent-lessons.md), [scripts/validate_handoff_artifact.py](../scripts/validate_handoff_artifact.py), current-pointer freshness validation | Refresh when handoff/retro skill contracts, artifact policy, or current-pointer validators change. | Partial | Structural freshness is checked; quality of resumed judgment remains review-driven. |
 
@@ -69,7 +72,7 @@ does not search for evidence or decide that the product claim is satisfied.
 Use Cautilus discovery as the bridge from entrypoint prose to executable proof,
 not as the final proof by itself.
 
-1. Run `cautilus claim discover` over [README.md](../README.md) and
+1. After the root adapter is re-enabled, run `cautilus claim discover` over [README.md](../README.md) and
    [docs/operator-acceptance.md](./operator-acceptance.md) to produce a
    source-ref-backed proof plan.
 2. Review the candidate claims and merge or split them into stable acceptance

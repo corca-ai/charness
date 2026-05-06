@@ -334,7 +334,6 @@
             "native-support",
             "upstream-consumed",
             "wrapped-upstream",
-            "forked-local",
             "integration-only"
           ]
         },

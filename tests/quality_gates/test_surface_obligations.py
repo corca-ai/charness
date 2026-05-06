@@ -328,6 +328,17 @@ def test_run_slice_closeout_preserves_parent_python_before_login_shell_path(tmp_
         encoding="utf-8",
     )
     fake_pytest.chmod(0o755)
+    fake_node = fake_bin / "node"
+    fake_node.write_text("#!/usr/bin/env bash\necho fake-node\n", encoding="utf-8")
+    fake_node.chmod(0o755)
+    child_script = repo / "child.py"
+    child_script.write_text(
+        "#!/usr/bin/env python3\n"
+        "import sys\n"
+        "print(sys.executable)\n",
+        encoding="utf-8",
+    )
+    child_script.chmod(0o755)
     monkeypatch.setenv("PATH", f"{fake_bin}:{os.environ.get('PATH', '')}")
 
     sys.path.insert(0, str(ROOT / "scripts"))
@@ -336,7 +347,7 @@ def test_run_slice_closeout_preserves_parent_python_before_login_shell_path(tmp_
 
         result = run_slice_closeout.run_command(
             repo,
-            "python3 -c 'import sys; print(sys.executable)' && pytest --version",
+            "python3 -c 'import sys; print(sys.executable)' && ./child.py && pytest --version && node",
             "verify",
         )
     finally:
@@ -346,7 +357,9 @@ def test_run_slice_closeout_preserves_parent_python_before_login_shell_path(tmp_
     assert result["returncode"] == 0, result["stderr"]
     output_lines = result["stdout"].strip().splitlines()
     assert output_lines[0] == sys.executable
-    assert output_lines[1].startswith("pytest ")
+    assert output_lines[1] == sys.executable
+    assert output_lines[2].startswith("pytest ")
+    assert output_lines[3] == "fake-node"
 
 
 def test_check_python_runtime_inheritance_rejects_unpinned_bash_login_shell(tmp_path: Path) -> None:

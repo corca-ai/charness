@@ -53,12 +53,15 @@ def main() -> int:
     slug = slugify(args.slug)
     record_name = dated_artifact_filename(slug, artifact_date=artifact_date)
     output_dir = Path(data["output_dir"])
+    current_path = str(output_dir / current_artifact_filename(args.skill_id))
+    records_supported = args.skill_id != "handoff"
     payload = {
         "skill_id": args.skill_id,
         "slug": slug,
         "date": artifact_date.isoformat(),
-        "record_artifact_path": str(output_dir / record_name),
-        "current_artifact_path": str(output_dir / current_artifact_filename(args.skill_id)),
+        "record_artifact_path": str(output_dir / record_name) if records_supported else None,
+        "record_artifact_supported": records_supported,
+        "current_artifact_path": current_path,
         "frontmatter": {
             "artifact_kind": "record",
             "status": "current",

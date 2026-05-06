@@ -3,14 +3,14 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 13,
-  "indexed_artifact_count": 5,
+  "source_artifact_count": 14,
+  "indexed_artifact_count": 6,
   "risk_class_counts": {
     "contract-freeze-risk": 1,
-    "operator-visible-recovery": 4
+    "operator-visible-recovery": 5
   },
   "generalization_pressure_counts": {
-    "monitor": 5
+    "monitor": 6
   },
   "entries": [
     {
@@ -70,15 +70,29 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "init-repo-unreadable-markdown",
+      "artifact_path": "charness-artifacts/debug/2026-05-06-doctor-advisory-exit.md",
+      "is_current_pointer": false,
+      "interrupt_id": "doctor-advisory-exit",
       "risk_classes": [
         "operator-visible-recovery"
       ],
-      "seam": "consumer repo workflow artifacts scanned during install/update refresh",
+      "seam": "integration readiness status versus process exit severity",
       "generalization_pressure": "monitor",
-      "premortem_required": false,
+      "premortem_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "doctor-advisory-exit",
+      "risk_classes": [
+        "operator-visible-recovery"
+      ],
+      "seam": "integration readiness status versus process exit severity",
+      "generalization_pressure": "monitor",
+      "premortem_required": true,
       "next_step": "impl",
       "handoff_artifact": "none",
       "forced": false

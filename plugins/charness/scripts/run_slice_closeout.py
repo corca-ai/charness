@@ -8,6 +8,7 @@ import os
 import shlex
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
@@ -28,24 +29,26 @@ plan_risk_interrupt = _scripts_risk_interrupt_lib_module.plan_risk_interrupt
 
 def run_command(repo_root: Path, command: str, phase: str) -> dict[str, object]:
     python_executable = shlex.quote(sys.executable)
-    python_bin = Path(sys.executable).resolve().parent
-    inherited_path = os.environ.get("PATH", "")
-    path = f"{python_bin}:{inherited_path}" if inherited_path else str(python_bin)
-    wrapped_command = (
-        f"python3() {{ {python_executable} \"$@\"; }}; "
-        f"pytest() {{ {python_executable} -m pytest \"$@\"; }}; "
-        f"export -f python3; "
-        f"export -f pytest; "
-        f"export PATH={shlex.quote(path)}; "
-        f"{command}"
-    )
-    result = subprocess.run(
-        ["/bin/bash", "-lc", wrapped_command],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    with tempfile.TemporaryDirectory(prefix="charness-closeout-bin-") as wrapper_dir:
+        wrapper_path = Path(wrapper_dir)
+        wrappers = {
+            "python3": f"#!/usr/bin/env bash\nexec {python_executable} \"$@\"\n",
+            "pytest": f"#!/usr/bin/env bash\nexec {python_executable} -m pytest \"$@\"\n",
+        }
+        for name, body in wrappers.items():
+            script = wrapper_path / name
+            script.write_text(body, encoding="utf-8")
+            script.chmod(0o755)
+        inherited_path = os.environ.get("PATH", "")
+        path = f"{wrapper_path}:{inherited_path}" if inherited_path else str(wrapper_path)
+        wrapped_command = f"export PATH={shlex.quote(path)}; {command}"
+        result = subprocess.run(
+            ["/bin/bash", "-lc", wrapped_command],
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
     return {
         "phase": phase,
         "command": command,
