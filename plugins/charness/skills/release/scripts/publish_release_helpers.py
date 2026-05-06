@@ -65,6 +65,17 @@ def changed_paths(repo_root: Path) -> list[str]:
     return [line[3:] for line in git_status(repo_root) if len(line) >= 4]
 
 
+def unreleased_paths(repo_root: Path, *, remote: str, branch: str) -> list[str]:
+    result = run(
+        ["git", "diff", "--name-only", f"{remote}/{branch}..HEAD"],
+        cwd=repo_root,
+        check=False,
+    )
+    if result.returncode != 0:
+        return []
+    return [line for line in result.stdout.splitlines() if line.strip()]
+
+
 def write_release_artifact(
     repo_root: Path,
     *,

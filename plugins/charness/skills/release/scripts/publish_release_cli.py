@@ -40,6 +40,7 @@ current_branch = _helpers.current_branch
 tag_exists = _helpers.tag_exists
 release_exists = _helpers.release_exists
 changed_paths = _helpers.changed_paths
+unreleased_paths = _helpers.unreleased_paths
 write_release_artifact = _helpers.write_release_artifact
 
 
@@ -127,6 +128,7 @@ def main() -> None:
         raise SystemExit(f"tag `{tag_name}` already exists locally or on `{args.remote}`")
     if release_exists(repo_root, tag_name):
         raise SystemExit(f"GitHub release `{tag_name}` already exists")
+    release_content_paths = unreleased_paths(repo_root, remote=args.remote, branch=branch)
 
     payload: dict[str, Any] = {
         "package_id": adapter_data["package_id"],
@@ -156,7 +158,10 @@ def main() -> None:
     if release_payload["surface_versions"]["packaging_manifest"] != next_version:
         raise SystemExit(f"expected packaging manifest version `{next_version}`")
 
-    host_payload = safe_real_host_payload(repo_root, changed_paths(repo_root))
+    host_payload = safe_real_host_payload(
+        repo_root,
+        sorted(set(release_content_paths + changed_paths(repo_root))),
+    )
     write_release_artifact(
         repo_root,
         output_dir=adapter_data["output_dir"],
