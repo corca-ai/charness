@@ -47,7 +47,7 @@ python3 "$SKILL_DIR/scripts/synthesize_operator_acceptance.py" --repo-root .
 
 ```bash
 # Required Tools: rg
-# Missing-binary protocol: create-skill/references/binary-preflight.md
+# Missing-binary protocol: ../../shared/references/binary-preflight.md
 # 1. current repo surface
 python3 "$SKILL_DIR/scripts/inspect_repo.py" --repo-root .
 python3 "$SKILL_DIR/scripts/render_skill_routing.py" --repo-root . --json

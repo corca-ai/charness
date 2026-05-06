@@ -43,7 +43,7 @@ By default, `gather` writes its durable artifact to
 
 ```bash
 # Required Tools: rg
-# Missing-binary protocol: create-skill/references/binary-preflight.md
+# Missing-binary protocol: ../../shared/references/binary-preflight.md
 # 1. local context and existing knowledge assets
 rg --files docs skills
 sed -n '1,220p' <resolved-gather-artifact> 2>/dev/null || true

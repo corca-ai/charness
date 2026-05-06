@@ -90,6 +90,8 @@ def validate_checked_in_plugin_tree(
         require_dir=require_dir,
         validate_relative_path=validate_relative_path,
     )
+    if (root / "skills" / "shared").is_dir():
+        require_dir(plugin_root / "shared", "checked_in_plugin.shared")
     for field in ("profiles_dir", "presets_dir", "integrations_dir"):
         rel_path = validate_relative_path(source.get(field), f"source.{field}")
         require_dir(plugin_root / rel_path, f"checked_in_plugin.{field}")

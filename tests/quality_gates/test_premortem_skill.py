@@ -13,17 +13,17 @@ def test_premortem_skill_surfaces_counterweight_and_deliberately_not_doing() -> 
         ROOT / "skills" / "public" / "premortem" / "references" / "angle-selection.md"
     ).read_text(encoding="utf-8")
     capability_text = (
-        ROOT / "skills" / "public" / "premortem" / "references" / "subagent-capability-check.md"
+        ROOT / "skills" / "shared" / "references" / "fresh-eye-subagent-review.md"
     ).read_text(encoding="utf-8")
     counterweight_text = (
         ROOT / "skills" / "public" / "premortem" / "references" / "counterweight-triage.md"
     ).read_text(encoding="utf-8")
-    handoff_loop = (
-        ROOT / "skills" / "public" / "handoff" / "references" / "premortem-loop.md"
-    ).read_text(encoding="utf-8")
-    spec_loop = (
-        ROOT / "skills" / "public" / "spec" / "references" / "premortem-loop.md"
-    ).read_text(encoding="utf-8")
+    handoff_text = (ROOT / "skills" / "public" / "handoff" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    spec_text = (ROOT / "skills" / "public" / "spec" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
 
     assert "counterweight" in skill_text
     assert "Deliberately Not Doing" in skill_text
@@ -41,21 +41,21 @@ def test_premortem_skill_surfaces_counterweight_and_deliberately_not_doing() -> 
     assert "future maintainer" in angle_text
     assert "minimum: two contrasting angle subagents plus one separate counterweight" in angle_text
     assert "canonical premortem path is unavailable" in angle_text
-    assert "Do not present a local pass as the canonical premortem" in capability_text
-    assert "the next action is to surface the host-side contract gap" in capability_text
+    assert "Do not present a local pass as the canonical fresh-eye review" in capability_text
+    assert "host/runtime contract" in capability_text
     assert "shell-only runner" in capability_text
     assert "model self-report" in capability_text
     assert "only observed tool is shell execution" in capability_text
     assert "Subagent Delegation" in capability_text
     assert "repo-mandated bounded fresh-eye reviews are already delegated" in capability_text
     assert "`host signal:` or `tool signal:`" in capability_text
-    assert "Do not replace the misunderstanding premortem with a" in handoff_loop
-    assert "Do not replace the fresh-eye premortem with a same-agent" in spec_loop
+    assert "wrong next action" in handoff_text
+    assert "likely implementer misread" in spec_text
     assert "Delegated reviewer fast path" in skill_text
     assert "Do not report blocked for missing nested subagents" in skill_text
     assert "First branch for delegated reviewers" in capability_text
     assert "do not run this capability check" in capability_text
-    assert "return the requested findings or four-bin triage" in capability_text
+    assert "return the requested findings or triage" in capability_text
     assert "Act Before Ship" in counterweight_text
     assert "Over-Worry" in counterweight_text
 
@@ -71,7 +71,7 @@ def test_spec_and_narrative_preserve_rejected_alternatives() -> None:
         encoding="utf-8"
     )
 
-    assert "standalone `premortem` skill" in spec_text
+    assert "call `premortem` for non-trivial contract decisions" in spec_text
     assert "Deliberately Not Doing" in spec_text
     assert "rejected alternatives" in rejected
     assert "Deliberately Not Doing" in narrative_text

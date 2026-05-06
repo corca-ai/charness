@@ -15,14 +15,13 @@ def test_prescribed_path_self_test_guidance_is_wired_to_authoring_and_impl() -> 
     reference = (
         ROOT
         / "skills"
-        / "public"
-        / "create-skill"
+        / "shared"
         / "references"
         / "prescribed-path-self-test.md"
     ).read_text(encoding="utf-8")
 
-    assert "references/prescribed-path-self-test.md" in create_skill
-    assert "../create-skill/references/prescribed-path-self-test.md" in impl
+    assert "../../shared/references/prescribed-path-self-test.md" in create_skill
+    assert "../../shared/references/prescribed-path-self-test.md" in impl
     assert "checked or installed `SKILL.md`" in reference
     assert "raw provider response" in reference
     assert "producer-composed smoke test" in reference

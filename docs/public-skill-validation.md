@@ -59,6 +59,8 @@ Default prompt-affecting surfaces in this repo:
 - public/support `SKILL.md` trigger contracts
 - public/support skill `references/**` that materially steer routing or
   operator-facing behavior
+- shared skill references that materially steer routing or operator-facing
+  behavior
 - `.agents/*-adapter.yaml` entries that change prompt or evaluator behavior
 
 Default proof split:

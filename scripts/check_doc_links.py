@@ -27,6 +27,7 @@ DOC_GLOBS = (
     "profiles/**/*.md",
     "skills/public/**/*.md",
     "skills/support/**/*.md",
+    "skills/shared/**/*.md",
 )
 LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")
@@ -182,7 +183,17 @@ def iter_bare_internal_doc_refs(
 ) -> list[str]:
     matches: list[str] = []
     in_fence = False
+    in_html_comment = False
     for line in doc.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if in_html_comment:
+            if "-->" in stripped:
+                in_html_comment = False
+            continue
+        if stripped.startswith("<!--"):
+            if "-->" not in stripped:
+                in_html_comment = True
+            continue
         if FENCE_RE.match(line):
             in_fence = not in_fence
             continue
@@ -258,8 +269,18 @@ def iter_backticked_file_refs(
 ) -> list[tuple[int, str, str]]:
     matches: list[tuple[int, str, str]] = []
     in_fence = False
+    in_html_comment = False
     portable_package_root = portable_skill_package_root(root, doc)
     for lineno, line in enumerate(doc.read_text(encoding="utf-8").splitlines(), start=1):
+        stripped = line.strip()
+        if in_html_comment:
+            if "-->" in stripped:
+                in_html_comment = False
+            continue
+        if stripped.startswith("<!--"):
+            if "-->" not in stripped:
+                in_html_comment = True
+            continue
         if FENCE_RE.match(line):
             in_fence = not in_fence
             continue

@@ -26,10 +26,9 @@ already aligned and the user mainly wants audience adaptation or delivery-ready
 wording, use `announcement`.
 If the repo has little or no durable truth surface yet, use `init-repo` to
 bootstrap that surface before treating the task as narrative alignment.
-If the target is a high-leverage truth surface and the repo-specific narrative
-contract is still missing, shape or scaffold the adapter before rewriting in
-earnest instead of letting fallback inference silently stand in for repo truth.
-This is a repo-level `block` fallback seam, not a best-effort warning.
+If a high-leverage truth surface lacks a repo-specific narrative contract, shape
+or scaffold the adapter before rewriting; fallback inference is a repo-level
+`block` seam, not a best-effort warning.
 
 ## Bootstrap
 
@@ -48,10 +47,6 @@ What you get after one run:
 
 - one aligned truth-surface artifact anchored to the repo's durable docs
 - one audience-neutral brief skeleton that later delivery work can adapt
-
-What this does not do:
-
-- audience-specific adaptation or delivery transport; that belongs to `announcement`
 
 If the repo would benefit from an explicit truth surface, scaffold an adapter:
 
@@ -144,6 +139,8 @@ git status --short
    - when the repo is aligning around a non-trivial design decision, keep one
      short rejected-alternative or `Deliberately Not Doing` block in the
      durable docs instead of leaving that memory in chat or handoff only
+   - for first-touch truth surfaces, run success criteria review with focuses:
+     intended reader action, avoided misread, claim proof, durable next step
 6. Derive the brief second.
    - keep it audience-neutral by default
    - prefer one self-contained compression layer that `announcement` can later
@@ -161,9 +158,8 @@ git status --short
 
 ## Output Shape
 
-The result should usually include `Source Map`, `Narrative Drift`,
-`Updated Truth`, `Brief`, `Claim Audit`, `Compression`, `Carry-Forward`,
-`Open Questions`, and `Next Step`.
+The result should usually include `Source Map`, `Narrative Drift`, `Updated Truth`,
+`Brief`, `Claim Audit`, `Compression`, `Carry-Forward`, `Open Questions`, and `Next Step`.
 
 ## Guardrails
 
@@ -196,5 +192,6 @@ The result should usually include `Source Map`, `Narrative Drift`,
 - `references/scenario-blocks.md`
 - `references/landing-rewrite-loop.md`
 - `references/cross-repo-issue-shaping.md`
+- `../../shared/references/success-criteria-review.md`
 - `<repo-root>/scripts/map_sources.py`
 - `<repo-root>/scripts/review_adapter.py`

@@ -15,7 +15,7 @@ Before drafting a contract or asking follow-up questions, inspect the current im
 
 ```bash
 # Required Tools: rg
-# Missing-binary protocol: create-skill/references/binary-preflight.md
+# Missing-binary protocol: ../../shared/references/binary-preflight.md
 # 1. current concept and adjacent context
 git status --short
 rg --files . | sed -n '1,200p'
@@ -45,7 +45,9 @@ If the repo already treats executable checks as contract artifacts, push accepta
 
 If those executable checks are materially expensive, shape the contract so the standing acceptance bar stays honest about cost. Keep executable examples at the boundary and push duplicated unit-detail coverage downward instead of celebrating broad slow coverage.
 
-Before locking the contract, run one bounded premortem. Ask what a fresh five-minute implementer, reviewer, or operator would most likely misread, and tighten only the lines that create real ambiguity. The canonical path is a fresh-eye subagent with a contrasting lens; run the capability check in `../premortem/references/subagent-capability-check.md`. See `references/premortem-loop.md`. When the decision is non-trivial, use the standalone `premortem` skill as the subroutine rather than reinventing angle selection and triage inline. If the host still cannot provide subagents, stop and surface the host-side contract gap instead of substituting a local pass.
+Before locking the contract, run success criteria review so future-success claims
+become criteria, checks, and tripwires. Routine use may be inline; it does not
+replace the bounded premortem required before finalizing a task-completing contract; call `premortem` for non-trivial contract decisions. Focuses: likely implementer misread, overstated acceptance, hidden sequencing.
 
 ## Workflow
 
@@ -77,7 +79,7 @@ Before locking the contract, run one bounded premortem. Ask what a fresh five-mi
    - constraints
    - success criteria
    - acceptance checks
-   - apply `../create-skill/references/source-bound-records.md` for multi-source external writes
+   - apply `../../shared/references/source-bound-records.md` for multi-source external writes
    - open risks, probe questions, or deferred decisions
    - when the risk interrupt planner reports a forced debug interrupt, consume
      it explicitly in `Premortem` with
@@ -109,17 +111,12 @@ Before locking the contract, run one bounded premortem. Ask what a fresh five-mi
      executable contract artifacts
    - if implementation discovers a fact that changes scope or acceptance, update
      the spec instead of leaving chat-only drift
-7. Run a bounded premortem before finalizing.
-   - ask what a fresh five-minute reader would most likely implement or approve
-     incorrectly from this contract
-   - focus on missing invariants, overloaded examples, hidden sequencing, and
-     acceptance checks that look stronger than they really are
-   - canonical path is one fresh-eye subagent or contrasting reviewer lens;
-     run the capability check in
-     `../premortem/references/subagent-capability-check.md` and cite the
-     concrete host signal
-   - if the host still cannot provide subagents, stop and leave the host-side
-     contract gap visible instead of substituting a local pass
+7. Run bounded premortem before finalizing.
+   - call `premortem` for task-completing contracts and non-trivial contract
+     decisions
+   - focus routine review on missing invariants, overloaded examples, hidden
+     sequencing, and acceptance checks that look stronger than they really are
+   - use `../../shared/references/fresh-eye-subagent-review.md` before reporting blocked
    - keep future re-litigation low by writing the important rejected paths into
      the spec itself instead of leaving them in chat-only memory
    - tighten only the lines that change the likely next action; do not reopen
@@ -177,8 +174,7 @@ as `Entities` or `Stages` instead of recreating them under new names.
   work back to `ideation` rather than writing a fake spec.
 - A good spec refines an existing concept artifact and stays synchronized with
   implementation. It does not discard the artifact or leave it stale.
-- Keep host-specific file locations or template choices outside the core skill
-  body; use repo documents or adapters where needed.
+- Keep host-specific file locations or template choices outside the core skill body.
 
 ## References
 
@@ -189,7 +185,6 @@ as `Entities` or `Stages` instead of recreating them under new names.
 - `references/acceptance-checks.md`
 - `references/public-executable-contracts.md`
 - `references/executable-spec-cost.md`
-- `references/premortem-loop.md`
 - `references/rejected-alternatives.md`
 - `references/design-lenses.md`
 - `references/sequence-discipline.md`
@@ -198,3 +193,6 @@ as `Entities` or `Stages` instead of recreating them under new names.
 - `references/ideation-boundary.md`
 - `references/document-seams.md`
 - `references/taxonomy-axis-checkpoint.md`
+- `../../shared/references/success-criteria-review.md`
+- `../../shared/references/source-bound-records.md`
+- `../../shared/references/fresh-eye-subagent-review.md`

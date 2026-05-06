@@ -22,6 +22,7 @@ DEFAULT_PATTERNS = (
     "docs/*.md",
     "skills/public/*/references/*.md",
     "skills/support/*/references/*.md",
+    "skills/shared/references/*.md",
     "skills/public/*/SKILL.md",
     "skills/support/*/SKILL.md",
     "README.md",

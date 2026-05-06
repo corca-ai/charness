@@ -7,16 +7,17 @@ def test_spec_skill_surfaces_premortem_and_fresh_eye_review() -> None:
     skill_text = (ROOT / "skills" / "public" / "spec" / "SKILL.md").read_text(
         encoding="utf-8"
     )
-    reference_text = (
-        ROOT / "skills" / "public" / "spec" / "references" / "premortem-loop.md"
+    shared_review = (
+        ROOT / "skills" / "shared" / "references" / "fresh-eye-subagent-review.md"
     ).read_text(encoding="utf-8")
 
     assert "premortem" in skill_text.lower()
     assert "fresh-eye" in skill_text
     assert "subagent" in skill_text or "subagents" in skill_text
-    assert "`references/premortem-loop.md`" in skill_text
-    assert "fresh five-minute implementer" in reference_text
-    assert "wrong next action" in reference_text
+    assert "../../shared/references/fresh-eye-subagent-review.md" in skill_text
+    assert "likely implementer misread" in skill_text
+    assert "overstated acceptance" in skill_text
+    assert "Parent sessions that never spawned a fresh-eye reviewer" in shared_review
 
 
 def test_spec_skill_distinguishes_public_executable_contract_from_implementation_guard() -> None:

@@ -354,15 +354,15 @@ def test_quality_skill_carries_blind_spot_policy_and_premortem_refs() -> None:
     floor_policy = (
         ROOT / "skills" / "public" / "quality" / "references" / "coverage-floor-policy.md"
     ).read_text(encoding="utf-8")
-    premortem = (
-        ROOT / "skills" / "public" / "quality" / "references" / "fresh-eye-premortem.md"
+    fresh_eye = (
+        ROOT / "skills" / "shared" / "references" / "fresh-eye-subagent-review.md"
     ).read_text(encoding="utf-8")
     prompt_policy = (
         ROOT / "skills" / "public" / "quality" / "references" / "prompt-asset-policy.md"
     ).read_text(encoding="utf-8")
 
     assert "prior quality artifact is history" in skill_text
-    assert "fresh-eye premortem" in skill_text
+    assert "bounded fresh-eye reviewer" in skill_text
     assert "active` or `passive" in skill_text
     assert "prompt/content bulk" in skill_text
     assert "fresh 5-minute reader" in skill_text
@@ -374,8 +374,8 @@ def test_quality_skill_carries_blind_spot_policy_and_premortem_refs() -> None:
     assert "prompt_asset_policy" in adapter_contract
     assert "gate_script_pattern" in floor_policy
     assert "warn band" in floor_policy
-    assert "authoritative universe" in premortem
-    assert "misclassify as absent" in premortem
+    assert "canonical fresh-eye review" in fresh_eye
+    assert "misclassify as absent" in skill_text
     assert "prompt/content bulk" in prompt_policy
     assert "find_inline_prompt_bulk.py" in prompt_policy
 

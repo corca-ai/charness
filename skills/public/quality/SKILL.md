@@ -47,7 +47,7 @@ The prior quality artifact is history, not the authoritative universe. Re-derive
 
 ```bash
 # Required Tools: rg
-# Missing-binary protocol: create-skill/references/binary-preflight.md
+# Missing-binary protocol: ../../shared/references/binary-preflight.md
 # 1. fresh inventory before the prior artifact can anchor scope
 rg --files .
 # 2. current quality artifact and adjacent contracts
@@ -135,7 +135,7 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
    - if executable specs are slow or overlapping, delete duplicates, move detail into unit-level checks, or add a direct adapter before widening the spec bar
    - when dual-implementation smell is real, recommend exactly one next contract: add a parity harness, pick one side canonical and delete or wrap the other, or document intentional divergence with a test that asserts it
    - do not leave "keep both for safety" as an unpriced middle state
-8. Run one fresh-eye premortem on the drafted report using `references/fresh-eye-premortem.md`. Run the capability check in `../premortem/references/subagent-capability-check.md` before reporting the canonical fresh-eye subagent path as blocked: attempt the bounded setup, resolve availability uncertainty, and cite the concrete host signal. If the host still cannot provide subagents, stop and leave the host-side contract gap visible instead of substituting a local pass.
+8. Run a bounded fresh-eye reviewer on the drafted report before finalizing. Focuses: missing source/gate seams, stale prior-artifact assumptions, active vs passive recommendations, and invariants a fresh reader could misclassify as absent. Use `../../shared/references/fresh-eye-subagent-review.md` before reporting the reviewer path as blocked.
 9. End with a quality posture summary: what ran, which runtime hot spots dominate, whether coverage is standing-gated, whether evaluator-backed depth exists, what the current bar proves and still does not prove, and the next best gate or cleanup. The final user-facing answer must not silently omit `Weak`, `Missing`, `Advisory`, delegated-review status, or active `Recommended Next Gates` findings just because the implemented slice committed cleanly.
 
 - `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`, `Standing Test Economics`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Advisory`, `Delegated Review`, `Commands Run`, `Recommended Next Gates`
@@ -169,7 +169,6 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - `references/coverage_floor_inventory.py`
 - `references/coverage-floor-policy.md`
 - `references/find_inline_prompt_bulk.py`
-- `references/fresh-eye-premortem.md`
 - `references/prompt-asset-policy.md`
 - `references/maintainer-local-enforcement.md`
 - `references/quality-lenses.md`
@@ -196,3 +195,4 @@ If the adapter is missing, use inferred defaults and continue; scaffold one when
 - `references/security-pnpm.md`
 - `references/security-uv.md`
 - `references/validate_spec_pytest_references.py`
+- `../../shared/references/fresh-eye-subagent-review.md`

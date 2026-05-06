@@ -29,7 +29,7 @@ If the CLI already exists, inspect the entrypoint and one representative test
 before changing behavior.
 
 Missing-binary handling follows
-`create-skill/references/binary-preflight.md` when the bootstrap or validation
+`../../shared/references/binary-preflight.md` when the bootstrap or validation
 steps call tools outside the baseline shell surface.
 
 ## Workflow
@@ -156,3 +156,4 @@ steps call tools outside the baseline shell surface.
 - `references/external-capability-clis.md`
 - `references/quality-gates.md`
 - `references/case-studies.md`
+- `../../shared/references/binary-preflight.md`

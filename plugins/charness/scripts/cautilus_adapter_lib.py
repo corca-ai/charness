@@ -38,6 +38,7 @@ DEFAULT_PROMPT_AFFECTING_PATTERNS = [
     ".agents/cautilus-adapters/*.yaml",
     "skills/public/*/SKILL.md",
     "skills/public/*/references/**",
+    "skills/shared/references/**",
     "skills/support/*/SKILL.md",
     "skills/support/*/references/**",
 ]
@@ -48,6 +49,7 @@ DEFAULT_SCENARIO_REVIEW_PATTERNS = [
     "docs/public-skill-validation.md",
     "docs/public-skill-validation.json",
     "skills/public/*/SKILL.md",
+    "skills/shared/references/**",
     "skills/public/narrative/**",
 ]
 DEFAULT_TRUTH_SURFACE_PATTERNS = [

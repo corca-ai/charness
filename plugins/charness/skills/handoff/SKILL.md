@@ -41,7 +41,7 @@ infer stable repo defaults; do not restate those defaults just to feel safe.
 
 ```bash
 # Required Tools: rg
-# Missing-binary protocol: create-skill/references/binary-preflight.md
+# Missing-binary protocol: ../../shared/references/binary-preflight.md
 # 1. current handoff and adjacent plan or roadmap context
 sed -n '1,220p' <resolved-handoff-artifact> 2>/dev/null || true
 wc -l <resolved-handoff-artifact> 2>/dev/null || true
@@ -85,18 +85,12 @@ the `Workflow Trigger` first and continue with that workflow.
 4. Keep the trigger explicit.
    - if a named workflow or skill should run next, say it directly
    - if the next pickup depends on reading specific files first, name them
-5. Run a misunderstanding premortem when the handoff changed materially.
-   - use Gary Klein-style premortem discipline to ask what the next operator is
-     most likely to misunderstand
-   - canonical path is one or two bounded premortem subagent reads that ask
-     what the next operator is most likely to misunderstand
-   - bias the prompts toward workflow trigger ambiguity, ownership boundary
-     confusion, and examples that could be over-literalized
-   - run the capability check in
-     `../premortem/references/subagent-capability-check.md` and cite the
-     concrete host signal; do not assume subagents are unavailable from priors
-   - if the host still cannot provide subagents, stop and leave the host-side
-     contract gap visible instead of substituting a same-agent check
+5. Run a bounded misunderstanding premortem when the handoff changed materially.
+   - call `premortem` for material workflow or ownership changes
+   - focuses: wrong next action, workflow trigger ambiguity, ownership/boundary
+     misread, and examples that could be over-literalized
+   - use `../../shared/references/fresh-eye-subagent-review.md` before reporting
+     the reviewer path as blocked
    - incorporate only concrete clarity fixes, not speculative churn
 6. Finish with a clean baton pass.
    - the next operator should know what to do first without interpretation
@@ -141,5 +135,5 @@ The handoff should usually contain:
 - `references/workflow-trigger.md`
 - `references/state-selection.md`
 - `references/document-seams.md`
-- `references/premortem-loop.md`
 - `references/spill-targets.md`
+- `../../shared/references/fresh-eye-subagent-review.md`

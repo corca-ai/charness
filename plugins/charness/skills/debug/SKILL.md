@@ -64,7 +64,7 @@ summary.
 
 ```bash
 # Required Tools: rg
-# Missing-binary protocol: create-skill/references/binary-preflight.md
+# Missing-binary protocol: ../../shared/references/binary-preflight.md
 # 1. recent context and adjacent contracts
 rg --files docs skills
 sed -n '1,220p' <resolved-debug-artifact> 2>/dev/null || true

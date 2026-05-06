@@ -22,7 +22,7 @@ MAX_SKILL_MD_LINES = 200
 MAX_PUBLIC_FENCE_BLOCKS_WITHOUT_SCRIPTS = 2
 
 # CHARNESS_BASELINE: commands a public skill may call in its Bootstrap block
-# without declaring them. See create-skill/references/binary-preflight.md.
+# without declaring them. See skills/shared/references/binary-preflight.md.
 CHARNESS_BASELINE = frozenset({
     "sh", "bash", "dash", "zsh",
     "if", "then", "else", "elif", "fi", "for", "while", "until",
@@ -45,6 +45,9 @@ FENCE_CLOSE_RE = re.compile(r"^```\s*$")
 REQUIRED_TOOLS_RE = re.compile(r"^\s*#\s*Required Tools:\s*(.+?)\s*$")
 ENV_ASSIGN_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 SCRIPT_EXTENSION_RE = re.compile(r"\.(sh|bash|zsh|py|js|ts|rb|pl|lua|rs|go|json|yaml|yml|md)$")
+BACKTICK_REL_PATH_RE = re.compile(
+    r"`((?:(?:\.\./)+[A-Za-z0-9._/-]+|references|scripts)/[^`]+)`"
+)
 REDIRECT_PREFIX_RE = re.compile(r"^[0-9]*[<>&]")
 NUMERIC_RE = re.compile(r"^[0-9]+$")
 COMMAND_SEPARATORS = frozenset({"|", "||", "&&", ";", "&"})
@@ -185,7 +188,7 @@ def has_swallow_pattern(line: str) -> bool:
 
 def validate_bootstrap_binary_preflight(contents: str) -> None:
     """Enforce the Binary Preflight contract on public SKILL.md Bootstrap
-    fences. See create-skill/references/binary-preflight.md for the contract.
+    fences. See skills/shared/references/binary-preflight.md for the contract.
     """
     fences = extract_bootstrap_fences(contents)
     if not fences:
@@ -218,7 +221,7 @@ def validate_bootstrap_binary_preflight(contents: str) -> None:
                     f"{', '.join(sorted(non_base))} wrapped in "
                     f"`|| true` / `2>/dev/null` swallow; rewrite without the "
                     f"swallow or guard with a `command -v` sentinel (see "
-                    f"`create-skill/references/binary-preflight.md`)"
+                    f"`../../shared/references/binary-preflight.md`)"
                 )
         if swallow_errors:
             raise ValidationError("; ".join(swallow_errors))
@@ -244,7 +247,7 @@ def validate_bootstrap_binary_preflight(contents: str) -> None:
         raise ValidationError(
             "`# Required Tools:` is declared but SKILL.md body has no "
             "`binary-preflight` pointer; add a prose reference to "
-            "`create-skill/references/binary-preflight.md`"
+            "`../../shared/references/binary-preflight.md`"
         )
 
 
@@ -252,6 +255,30 @@ def validate_portable_skill_invocations(root: Path, skill_dir: Path, contents: s
     errors = find_portability_errors(root, skill_dir, contents)
     if errors:
         raise ValidationError("; ".join(errors))
+
+
+def resolve_skill_reference_path(skill_dir: Path, markdown_path: Path, rel_path: str) -> Path:
+    if rel_path.startswith("../"):
+        return (markdown_path.parent / rel_path).resolve()
+    return (skill_dir / rel_path).resolve()
+
+
+def validate_referenced_paths(root: Path, skill_dir: Path, markdown_path: Path) -> None:
+    contents = markdown_path.read_text(encoding="utf-8")
+    for rel_path in BACKTICK_REL_PATH_RE.findall(contents):
+        if not rel_path.startswith("../") and markdown_path.parent != skill_dir:
+            continue
+        candidate = resolve_skill_reference_path(skill_dir, markdown_path, rel_path)
+        try:
+            candidate.relative_to(root)
+        except ValueError as exc:
+            raise ValidationError(
+                f"{markdown_path.relative_to(skill_dir)} references `{rel_path}` outside repo root"
+            ) from exc
+        if not candidate.exists():
+            raise ValidationError(
+                f"{markdown_path.relative_to(skill_dir)} references missing path `{rel_path}`"
+            )
 
 
 def validate_support_files(root: Path, skill_dir: Path, kind: str) -> None:
@@ -275,10 +302,6 @@ def validate_support_files(root: Path, skill_dir: Path, kind: str) -> None:
     if not listed_reference_paths:
         raise ValidationError("`## References` must list at least one `references/...` file")
 
-    for rel in re.findall(r"`((?:references|scripts)/[^`]+)`", contents):
-        if not (skill_dir / rel).exists():
-            raise ValidationError(f"referenced path `{rel}` does not exist")
-
     references_dir = skill_dir / "references"
     if references_dir.exists():
         existing_reference_paths = {
@@ -290,6 +313,11 @@ def validate_support_files(root: Path, skill_dir: Path, kind: str) -> None:
         if missing_reference_listings:
             formatted = ", ".join(f"`{path}`" for path in missing_reference_listings)
             raise ValidationError(f"unlisted reference file(s): {formatted}")
+
+    validate_referenced_paths(root, skill_dir, skill_md)
+    if references_dir.exists():
+        for reference_path in sorted(path for path in references_dir.iterdir() if path.is_file()):
+            validate_referenced_paths(root, skill_dir, reference_path)
 
     has_adapter_example = (skill_dir / "adapter.example.yaml").exists()
     has_scripts_dir = (skill_dir / "scripts").exists()
@@ -326,6 +354,19 @@ def iter_skill_dirs(root: Path) -> list[tuple[str, Path]]:
             continue
         for path in skill_root.iterdir():
             if path.is_dir() and path.name != "generated":
+                skill_dirs.append((kind, path))
+    if skill_dirs:
+        return sorted(skill_dirs, key=lambda item: (item[0], item[1].name))
+
+    flat_roots = (
+        ("public", root / "skills"),
+        ("support", root / "support"),
+    )
+    for kind, skill_root in flat_roots:
+        if not skill_root.exists():
+            continue
+        for path in skill_root.iterdir():
+            if path.is_dir() and (path / "SKILL.md").exists():
                 skill_dirs.append((kind, path))
     return sorted(skill_dirs, key=lambda item: (item[0], item[1].name))
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -343,6 +344,7 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     exported_readme = claude_root / "plugins" / "charness" / "README.md"
     exported_profiles = claude_root / "plugins" / "charness" / "profiles"
     exported_gather_skill = claude_root / "plugins" / "charness" / "skills" / "gather" / "SKILL.md"
+    exported_shared_ref = claude_root / "plugins" / "charness" / "shared" / "references" / "binary-preflight.md"
     exported_support_skill = claude_root / "plugins" / "charness" / "support" / "gather-slack" / "SKILL.md"
     exported_agent_browser = claude_root / "plugins" / "charness" / "support" / "agent-browser" / "SKILL.md"
     exported_specdown = claude_root / "plugins" / "charness" / "support" / "specdown" / "SKILL.md"
@@ -351,6 +353,7 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     assert exported_readme.is_file()
     assert exported_profiles.is_dir()
     assert exported_gather_skill.is_file()
+    assert exported_shared_ref.is_file()
     assert exported_support_skill.is_file()
     assert exported_agent_browser.is_file()
     assert exported_specdown.is_file()
@@ -362,6 +365,26 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     assert exported_readme_text.startswith("<!--\ngenerated_file: true\n")
     assert "source_path: README.md" in exported_readme_text
     assert "sync_command: python3 scripts/sync_root_plugin_manifests.py --repo-root ." in exported_readme_text
+    assert "./skills/public/" not in exported_readme_text
+    assert "./skills/support/" not in exported_readme_text
+    assert "./plugins/charness/support/" not in exported_readme_text
+    assert "(./skills/init-repo/SKILL.md)" in exported_readme_text
+    assert "(./support/agent-browser/SKILL.md)" in exported_readme_text
+    assert "(./support/specdown/SKILL.md)" in exported_readme_text
+    assert "(https://github.com/corca-ai/charness/blob/main/docs/cli-reference.md)" in exported_readme_text
+    assert "(https://github.com/corca-ai/charness/blob/main/packaging/charness.json)" in exported_readme_text
+
+    validate_exported_skills = run_script(
+        "scripts/validate_skills.py",
+        "--repo-root",
+        str(claude_root / "plugins" / "charness"),
+    )
+    assert validate_exported_skills.returncode == 0, validate_exported_skills.stderr
+
+    plugin_root = claude_root / "plugins" / "charness"
+    for target in re.findall(r"\[[^\]]+\]\((\./[^)]+)\)", exported_readme_text):
+        if target.startswith(("./skills/", "./support/", "./integrations/", "./profiles/", "./presets/", "./README.md")):
+            assert (plugin_root / target.removeprefix("./").split("#", 1)[0]).exists(), target
 
     consumer_root = tmp_path / "consumer"
     consumer_root.mkdir()

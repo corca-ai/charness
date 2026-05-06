@@ -8,6 +8,7 @@
         "README.md",
         "packaging/**",
         "skills/public/**",
+        "skills/shared/**",
         "skills/support/**",
         "profiles/**",
         "presets/**",
@@ -87,6 +88,7 @@
         "evals/cautilus/whole-repo-routing.fixture.json",
         "skills/public/*/SKILL.md",
         "skills/public/*/references/**",
+        "skills/shared/references/**",
         "skills/support/*/SKILL.md",
         "skills/support/*/references/**"
       ],
@@ -108,10 +110,12 @@
       "description": "Public and support skill packages plus their helper scripts.",
       "source_paths": [
         "skills/public/**",
+        "skills/shared/**",
         "skills/support/**"
       ],
       "derived_paths": [
         "plugins/charness/skills/**",
+        "plugins/charness/shared/**",
         "plugins/charness/support/**",
         "charness-artifacts/find-skills/latest.md",
         "charness-artifacts/find-skills/latest.json"
@@ -130,6 +134,7 @@
       "description": "Public skill classification policy and validator that must stay aligned with the current public skill set.",
       "source_paths": [
         "skills/public/**",
+        "skills/shared/**",
         "docs/public-skill-validation.json",
         "docs/public-skill-validation.md",
         "scripts/public_skill_validation_lib.py",
@@ -150,6 +155,7 @@
       "description": "Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.",
       "source_paths": [
         "skills/public/**",
+        "skills/shared/**",
         "docs/public-skill-dogfood.json",
         "docs/public-skill-dogfood.md",
         "scripts/public_skill_dogfood_lib.py",

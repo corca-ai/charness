@@ -45,6 +45,7 @@ domain_language_contract:
     - README.md
     - docs/**/*.md
     - skills/public/**/*.md
+    - skills/shared/**/*.md
     - charness
     - scripts/**/*.py
   exemption_globs:
@@ -86,6 +87,7 @@ cli_skill_surface_change_globs:
   - charness
   - scripts/**
   - skills/public/**
+  - skills/shared/**
   - skills/support/**
   - plugins/**
   - .claude-plugin/**
@@ -104,6 +106,7 @@ prompt_asset_policy:
   min_multiline_chars: 400
   exemption_globs:
     - plugins/**
+    - skills/shared/references/success-criteria-review.md
     - .artifacts/**
 skill_ergonomics_gate_rules: []
 runtime_profile_default: default

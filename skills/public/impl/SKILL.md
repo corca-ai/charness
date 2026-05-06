@@ -27,7 +27,7 @@ contract exists, bootstrap a small current-slice contract first.
 
 ```bash
 # Required Tools: rg
-# Missing-binary protocol: create-skill/references/binary-preflight.md
+# Missing-binary protocol: ../../shared/references/binary-preflight.md
 # 1. current contract and nearby context
 rg --files docs skills
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
@@ -83,7 +83,7 @@ Adapter policy:
    - prefer a slice that proves one user-visible behavior or one structural seam
    - prefer the slice that opens the next good move most cleanly
    - when a probe exists, design the slice so it answers the probe cleanly
-   - apply `../create-skill/references/source-bound-records.md` for multi-source external writes
+   - apply `../../shared/references/source-bound-records.md` for multi-source external writes
    - for skill packages, scheduled workflows, or external lookup contracts,
      design acceptance around the path prescribed in `SKILL.md`, not around an
      author-composed smoke probe
@@ -97,7 +97,7 @@ Adapter policy:
    - for browser-facing output, treat code-only checks as partial proof by default; resolve browser/runtime support through `find-skills`, run it when available, or say explicitly that it did not run
    - for slices that depend on an external named target (operator command instance/service/branch/env alias) or a third-party API call, verify the runtime state of the name and the live request/response contract before acting — see `../debug/references/named-target-verification.md` and `references/external-api-contract.md`
    - for skill self-tests, external lookup contracts, and scheduled or delegated workflows, apply
-     `../create-skill/references/prescribed-path-self-test.md` before accepting
+     `../../shared/references/prescribed-path-self-test.md` before accepting
      a smoke pass
    - if the slice changes repo-owned instruction or prompt surfaces such as `<repo-root>/AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or adapter prompt wording, let the repo's cautilus adapter decide prompt/evaluator proof policy before closeout
    - if the adapter run mode is `disabled`, do not run Cautilus; record the disabled validator result and use deterministic gates until the adapter is re-enabled
@@ -195,3 +195,5 @@ The closeout should usually include:
 - `references/sequence-discipline.md`
 - `references/review-gate.md`
 - `references/spec-loop.md`
+- `../../shared/references/source-bound-records.md`
+- `../../shared/references/prescribed-path-self-test.md`

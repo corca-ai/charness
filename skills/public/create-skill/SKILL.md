@@ -47,9 +47,9 @@ sed -n '1,220p' presets/README.md
      source-checked factual claims before compressing them into core wording
    - simulate cold start, warm start, error recovery, and 5-7 agent failure cases before changing files
    - for multi-source external-write skills, simulate source/principal binding
-     drift and apply `references/source-bound-records.md`
+     drift and apply `../../shared/references/source-bound-records.md`
    - for scheduled, async, or external-lookup skills, apply
-     `references/prescribed-path-self-test.md`
+     `../../shared/references/prescribed-path-self-test.md`
 3. Freeze the current consumer contract before editing an existing public skill.
    - read the current reviewed dogfood case or scaffold it first with `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --json`
    - decide whether the slice claims `preserve` or `improve` before changing the core trigger or behavior contract
@@ -57,6 +57,9 @@ sed -n '1,220p' presets/README.md
      or repo-local skill customization, run a customer-of-this-skill premortem
      before editing: name the user or downstream agent, the first prompt they
      will try, and the adapter states that could make the first run fail
+   - run success criteria review for public-skill behavior changes; use it
+     inline for narrow edits and as a bounded subagent review for non-trivial
+     first successful trigger, default, artifact, or proof-path changes
    - if the skill is `evaluator-required`, inspect the maintained scenario surface and current cautilus proof plan before editing so the post-change proof obligation is explicit up front
    - when the checked-in contract is still too vague to freeze honestly, stop and tighten that consumer-facing scenario before broad edits
 4. Decide the portability seams.
@@ -103,8 +106,8 @@ sed -n '1,220p' presets/README.md
    - for public-skill changes, run one realistic consumer prompt instead of
      stopping at producer-side validators; include missing, stale, and thin
      adapter states when adapters or repo-local defaults shape the first run
-   - for skill self-tests, use `references/prescribed-path-self-test.md` before
-     accepting a smoke pass or external identification signal
+   - for skill self-tests, use `../../shared/references/prescribed-path-self-test.md`
+     before accepting a smoke pass or external identification signal
    - use `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` to scaffold prompt, repo shape, expected artifact, and acceptance evidence
    - for public-skill semantic changes, decide in the same slice whether `<repo-root>/docs/public-skill-dogfood.json`, `<repo-root>/evals/cautilus/scenarios.json`, and/or `<repo-root>/charness-artifacts/cautilus/latest.md` should move; do not leave that proof-routing decision implicit
    - trigger collision check against adjacent skills
@@ -170,7 +173,7 @@ sed -n '1,220p' presets/README.md
 Public skills must not silently assume non-baseline binaries. If a Bootstrap
 step calls a tool outside `CHARNESS_BASELINE` (`sh`, `git`, `python3`, `sed`,
 `find`, `awk`, `grep`, and basic coreutils), declare it inline with
-`# Required Tools: <name>` and point to `references/binary-preflight.md`.
+`# Required Tools: <name>` and point to `../../shared/references/binary-preflight.md`.
 
 Preflight is lazy, not eager: only trigger it when a command fails with exit 127 or emits
 `MISSING_BIN: <name>`. Explain the missing binary, propose the mapped install
@@ -190,7 +193,8 @@ binary and let `capability.json` stay the readiness source of truth.
 - `references/integration-seams.md`
 - `references/runtime-capabilities.md`
 - `references/deployable-skill-packaging.md`
-- `references/binary-preflight.md`
-- `references/source-bound-records.md`
-- `references/prescribed-path-self-test.md`
 - `../create-cli/SKILL.md`
+- `../../shared/references/binary-preflight.md`
+- `../../shared/references/source-bound-records.md`
+- `../../shared/references/prescribed-path-self-test.md`
+- `../../shared/references/success-criteria-review.md`

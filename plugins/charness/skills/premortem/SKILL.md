@@ -29,7 +29,7 @@ required bounded review is already delegated.
 If the parent agent already delegated a bounded angle or counterweight review
 to a subagent, that subagent performs its assigned lens directly; it should not
 spawn another reviewer unless the caller explicitly requests recursive
-delegation. See `references/subagent-capability-check.md`.
+delegation. See `../../shared/references/fresh-eye-subagent-review.md`.
 
 Caller contract:
 
@@ -49,7 +49,7 @@ Read only the smallest decision surface that makes the choice legible.
 
 ```bash
 # Required Tools: rg
-# Missing-binary protocol: create-skill/references/binary-preflight.md
+# Missing-binary protocol: ../../shared/references/binary-preflight.md
 rg --files docs skills
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 rg -n "spec|decision|follow-up|non-goal|out of scope|acceptance|risk|rename|delete|remove|migration" .
@@ -76,10 +76,8 @@ decision contract. Do not restate the whole project history.
    - use bounded fresh-eye subagents with one angle each
    - do not collapse the counterweight into one of the angle subagents; keep it
      as a separate skeptical pass
-   - before reporting the canonical path as blocked, run the capability check
-     in `references/subagent-capability-check.md`: attempt the bounded subagent
-     setup, resolve any availability uncertainty, and cite the concrete signal
-     that made the host unable to provide subagents
+   - before reporting the canonical path as blocked, use
+     `../../shared/references/fresh-eye-subagent-review.md`
    - if you are already the bounded fresh-eye subagent for one assigned angle,
      counterweight, or reviewer lens, do the assignment directly; do not run
      the capability check again unless the assignment explicitly asks for
@@ -140,11 +138,10 @@ recursive delegation was explicitly required and actually ran.
 - Do not skip the counterweight pass; a paranoia backlog without triage is not
   decision support.
 - Do not silently downgrade premortem into a same-agent local pass. Before
-  declaring subagents unavailable, run `references/subagent-capability-check.md`
-  and cite the concrete host signal. Assuming a cap from priors is the failure
-  mode the check exists to stop. If the host still cannot provide subagents,
-  stop and leave the host-side contract gap visible instead of improvising a
-  degraded premortem.
+  declaring subagents unavailable, use
+  `../../shared/references/fresh-eye-subagent-review.md` and cite the concrete
+  host signal. If the host still cannot provide subagents, stop and leave the
+  host-side contract gap visible instead of improvising a degraded premortem.
 - Do not make an already delegated angle or counterweight reviewer spawn another
   reviewer unless recursive delegation was explicitly requested.
 
@@ -152,4 +149,4 @@ recursive delegation was explicitly required and actually ran.
 
 - `references/angle-selection.md`
 - `references/counterweight-triage.md`
-- `references/subagent-capability-check.md`
+- `../../shared/references/fresh-eye-subagent-review.md`

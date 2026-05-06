@@ -35,7 +35,7 @@ so existing code, tests, and operator docs can retire fake ambiguity early.
 
 ```bash
 # Required Tools: rg
-# Missing-binary protocol: create-skill/references/binary-preflight.md
+# Missing-binary protocol: ../../shared/references/binary-preflight.md
 # 1. repo and adjacent design context
 git status --short
 rg --files . | sed -n '1,200p'
@@ -83,6 +83,8 @@ incrementally instead of leaving the model only in chat.
    - `edge lens`: wedge, moat, hard part worth doing, easy experiment worth trying first
    - `feedback lens`: early feedback loops, distribution posture, viral hooks when relevant, expansion surfaces
    - `agent-human lens`: agent-first surfaces, API/CLI/skill priority, interface importance, human cognition and social behavior
+   - `success criteria lens`: use future-success review to turn a promising
+     idea into criteria, checks, tripwires, and the first probe
 3. Ask the smallest set of high-leverage questions.
    - check the current repo surfaces first and treat existing code, tests, and
      operator docs as evidence rather than reopening them as chat-only questions
@@ -172,3 +174,4 @@ Use that split as a thinking aid, not as mandatory ceremony.
 - `references/spec-boundary.md`
 - `references/decision-question-response.md`
 - `../spec/references/taxonomy-axis-checkpoint.md`
+- `../../shared/references/success-criteria-review.md`

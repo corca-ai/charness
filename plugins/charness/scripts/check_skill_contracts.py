@@ -29,7 +29,7 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
     ),
     "skills/public/handoff/SKILL.md": (
         "mention-only pickup",
-        "Run a misunderstanding premortem",
+        "Run a bounded misunderstanding premortem when the handoff changed materially.",
         "Assume a competent next operator can follow one good link",
         "one reference to the owning artifact for metrics, history, or proof detail",
         "always-loaded host instruction surfaces out of `References` by",
@@ -78,6 +78,8 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/spec/SKILL.md": (
         "## Contract Shaping",
         "Choose the lightest honest contract shape.",
+        "run success criteria review so future-success claims",
+        "call `premortem` for non-trivial contract decisions",
         "keep the contract",
         "probe-friendly and visible instead of inventing a user-facing mode choice.",
         "public executable contract",

@@ -42,8 +42,8 @@ Use charness to initialize this repo.
 ```
 
 The agent will load
-[`charness:init-repo`](./skills/public/init-repo/SKILL.md) to update the
-repo's [AGENTS.md](./AGENTS.md) and related settings. After that, you can keep
+[`charness:init-repo`](./skills/init-repo/SKILL.md) to update the
+repo's [AGENTS.md](https://github.com/corca-ai/charness/blob/main/AGENTS.md) and related settings. After that, you can keep
 prompting the agent in your usual style, with `charness` giving the agent
 routing context underneath instead of requiring you to name a skill every time.
 
@@ -54,13 +54,13 @@ of guessing. For day-to-day operation, start with `charness --help`,
 Use `charness update all` when you also want to refresh tracked external tools
 and bundled support skills.
 
-For the full command surface, see [CLI Reference](./docs/cli-reference.md).
+For the full command surface, see [CLI Reference](https://github.com/corca-ai/charness/blob/main/docs/cli-reference.md).
 
 ## How You Use It
 
 If you have just installed `charness` and the repo has not been initialized
 yet, it is safer to call the workflow skill directly. Once `init-repo` has
-updated [AGENTS.md](./AGENTS.md) and related settings, use normal
+updated [AGENTS.md](https://github.com/corca-ai/charness/blob/main/AGENTS.md) and related settings, use normal
 product-development prompts; `charness` gives the agent routing context
 underneath.
 
@@ -72,7 +72,7 @@ underneath.
    the concept.
 2. Once the concept is concrete enough, ask the agent to create a directory
    and use `init-repo`. It should propose the first repo surface, including
-   [AGENTS.md](./AGENTS.md), so future sessions can use `charness` more
+   [AGENTS.md](https://github.com/corca-ai/charness/blob/main/AGENTS.md), so future sessions can use `charness` more
    naturally.
 3. Start a fresh session in the new directory. Ask the agent to turn the
    direction into a buildable contract. Routes: `spec`, with premortem-style
@@ -94,7 +94,7 @@ scenario review when installed and configured.
 ### Working In An Existing Repo
 
 1. If the repo has not been initialized with `charness`, ask the agent to use
-   `init-repo` first. It should normalize [AGENTS.md](./AGENTS.md) and related
+   `init-repo` first. It should normalize [AGENTS.md](https://github.com/corca-ai/charness/blob/main/AGENTS.md) and related
    operating surfaces without turning the repo into a generic template.
 2. Ask for the concrete work directly: `Implement this`,
    `Fix this failing test`, or `Debug this behavior`. Routes: `impl` or `debug`.
@@ -133,10 +133,10 @@ distinction the user should control. Strong defaults are better than making
 every operator choose from a menu before work can begin.
 
 Connected areas:
-[`find-skills`](./skills/public/find-skills/SKILL.md),
-[`init-repo`](./skills/public/init-repo/SKILL.md),
-[`quality`](./skills/public/quality/SKILL.md),
-[`create-skill`](./skills/public/create-skill/SKILL.md).
+[`find-skills`](./skills/find-skills/SKILL.md),
+[`init-repo`](./skills/init-repo/SKILL.md),
+[`quality`](./skills/quality/SKILL.md),
+[`create-skill`](./skills/create-skill/SKILL.md).
 
 ### 2. Agents Are First-Class Users
 
@@ -151,10 +151,10 @@ those surfaces, so repo docs do not have to repeat the same operational
 playbook.
 
 Connected areas:
-[`find-skills`](./skills/public/find-skills/SKILL.md),
-[`create-cli`](./skills/public/create-cli/SKILL.md),
-[`handoff`](./skills/public/handoff/SKILL.md),
-[`release`](./skills/public/release/SKILL.md), CLI commands, helper scripts,
+[`find-skills`](./skills/find-skills/SKILL.md),
+[`create-cli`](./skills/create-cli/SKILL.md),
+[`handoff`](./skills/handoff/SKILL.md),
+[`release`](./skills/release/SKILL.md), CLI commands, helper scripts,
 repo docs.
 
 ### 3. Reveal Intent, Hide Detail
@@ -169,8 +169,8 @@ user wants a buildable contract, not an executable-spec tool. The workflow
 stays stable even when the tool path changes.
 
 Connected areas:
-[`gather`](./skills/public/gather/SKILL.md),
-[`spec`](./skills/public/spec/SKILL.md), support skills, integrations.
+[`gather`](./skills/gather/SKILL.md),
+[`spec`](./skills/spec/SKILL.md), support skills, integrations.
 
 ### 4. Human-Code-AI Symbiosis
 
@@ -184,9 +184,9 @@ exploration, drafting, implementation, and synthesis, then hands decisions or
 verification back to the right owner when needed.
 
 Connected areas:
-[`impl`](./skills/public/impl/SKILL.md),
-[`quality`](./skills/public/quality/SKILL.md),
-[`hitl`](./skills/public/hitl/SKILL.md).
+[`impl`](./skills/impl/SKILL.md),
+[`quality`](./skills/quality/SKILL.md),
+[`hitl`](./skills/hitl/SKILL.md).
 
 ### 5. Long-Running Agents Need Quality Software
 
@@ -200,10 +200,10 @@ risk, documentation drift, skill ergonomics, tool health, runtime cost, and
 places where repeated judgment should become a validator or script.
 
 Connected areas:
-[`init-repo`](./skills/public/init-repo/SKILL.md),
-[`quality`](./skills/public/quality/SKILL.md),
-[`debug`](./skills/public/debug/SKILL.md),
-[`premortem`](./skills/public/premortem/SKILL.md).
+[`init-repo`](./skills/init-repo/SKILL.md),
+[`quality`](./skills/quality/SKILL.md),
+[`debug`](./skills/debug/SKILL.md),
+[`premortem`](./skills/premortem/SKILL.md).
 
 ### 6. Tacit Knowledge Becomes Workflow
 
@@ -219,11 +219,11 @@ Weinberg for systems thinking, Atul Gawande for checklists, Barbara Minto for
 structured communication, and more.
 
 Connected areas:
-[`debug`](./skills/public/debug/SKILL.md),
-[`quality`](./skills/public/quality/SKILL.md),
-[`narrative`](./skills/public/narrative/SKILL.md),
-[`find-skills`](./skills/public/find-skills/SKILL.md),
-[`create-skill`](./skills/public/create-skill/SKILL.md).
+[`debug`](./skills/debug/SKILL.md),
+[`quality`](./skills/quality/SKILL.md),
+[`narrative`](./skills/narrative/SKILL.md),
+[`find-skills`](./skills/find-skills/SKILL.md),
+[`create-skill`](./skills/create-skill/SKILL.md).
 
 ### 7. The System Should Get Smarter With Use
 
@@ -240,10 +240,10 @@ patterns. Those lessons can then become better repo instructions, validators,
 quality gates, handoffs, adapters, or skill behavior.
 
 Connected areas:
-[`retro`](./skills/public/retro/SKILL.md),
-[`quality`](./skills/public/quality/SKILL.md),
-[`handoff`](./skills/public/handoff/SKILL.md),
-[`create-skill`](./skills/public/create-skill/SKILL.md), adapters.
+[`retro`](./skills/retro/SKILL.md),
+[`quality`](./skills/quality/SKILL.md),
+[`handoff`](./skills/handoff/SKILL.md),
+[`create-skill`](./skills/create-skill/SKILL.md), adapters.
 
 ### 8. Context Must Keep Flowing
 
@@ -257,10 +257,10 @@ repo story, release update, next-session handoff, and human review loop all
 need different shapes because they move context across different boundaries.
 
 Connected areas:
-[`announcement`](./skills/public/announcement/SKILL.md),
-[`narrative`](./skills/public/narrative/SKILL.md),
-[`handoff`](./skills/public/handoff/SKILL.md),
-[`hitl`](./skills/public/hitl/SKILL.md).
+[`announcement`](./skills/announcement/SKILL.md),
+[`narrative`](./skills/narrative/SKILL.md),
+[`handoff`](./skills/handoff/SKILL.md),
+[`hitl`](./skills/hitl/SKILL.md).
 
 ## Skill Map
 
@@ -278,38 +278,38 @@ Terminology:
 
 ### Public Skills
 
-Use [`init-repo`](./skills/public/init-repo/SKILL.md) when a repo needs its
-first [README.md](./README.md), [AGENTS.md](./AGENTS.md), roadmap, or
+Use [`init-repo`](./skills/init-repo/SKILL.md) when a repo needs its
+first project overview, [AGENTS.md](https://github.com/corca-ai/charness/blob/main/AGENTS.md), roadmap, or
 operator-facing setup.
 
 The rest of the public surface groups by intent:
 
 - shape the work:
-  [`gather`](./skills/public/gather/SKILL.md),
-  [`ideation`](./skills/public/ideation/SKILL.md),
-  [`spec`](./skills/public/spec/SKILL.md)
+  [`gather`](./skills/gather/SKILL.md),
+  [`ideation`](./skills/ideation/SKILL.md),
+  [`spec`](./skills/spec/SKILL.md)
 - build and repair:
-  [`impl`](./skills/public/impl/SKILL.md),
-  [`debug`](./skills/public/debug/SKILL.md),
-  [`premortem`](./skills/public/premortem/SKILL.md)
+  [`impl`](./skills/impl/SKILL.md),
+  [`debug`](./skills/debug/SKILL.md),
+  [`premortem`](./skills/premortem/SKILL.md)
 - raise quality:
-  [`quality`](./skills/public/quality/SKILL.md),
-  [`retro`](./skills/public/retro/SKILL.md)
+  [`quality`](./skills/quality/SKILL.md),
+  [`retro`](./skills/retro/SKILL.md)
 - communicate across boundaries:
-  [`narrative`](./skills/public/narrative/SKILL.md) durable truth and story alignment,
-  [`announcement`](./skills/public/announcement/SKILL.md) audience/channel adaptation,
-  [`handoff`](./skills/public/handoff/SKILL.md) agent -> agent,
-  [`hitl`](./skills/public/hitl/SKILL.md) agent -> person
+  [`narrative`](./skills/narrative/SKILL.md) durable truth and story alignment,
+  [`announcement`](./skills/announcement/SKILL.md) audience/channel adaptation,
+  [`handoff`](./skills/handoff/SKILL.md) agent -> agent,
+  [`hitl`](./skills/hitl/SKILL.md) agent -> person
 - operate the harness:
-  [`find-skills`](./skills/public/find-skills/SKILL.md),
-  [`create-skill`](./skills/public/create-skill/SKILL.md),
-  [`create-cli`](./skills/public/create-cli/SKILL.md),
-  [`release`](./skills/public/release/SKILL.md)
+  [`find-skills`](./skills/find-skills/SKILL.md),
+  [`create-skill`](./skills/create-skill/SKILL.md),
+  [`create-cli`](./skills/create-cli/SKILL.md),
+  [`release`](./skills/release/SKILL.md)
 
-[`gather`](./skills/public/gather/SKILL.md) is often a supporting move inside
-[`ideation`](./skills/public/ideation/SKILL.md),
-[`spec`](./skills/public/spec/SKILL.md), or
-[`impl`](./skills/public/impl/SKILL.md), not necessarily a standalone stage in
+[`gather`](./skills/gather/SKILL.md) is often a supporting move inside
+[`ideation`](./skills/ideation/SKILL.md),
+[`spec`](./skills/spec/SKILL.md), or
+[`impl`](./skills/impl/SKILL.md), not necessarily a standalone stage in
 every workflow.
 
 ### Support Skills And Integrations
@@ -320,13 +320,13 @@ playbooks that public skills can use.
 
 Representative support skills:
 
-- [`agent-browser`](./skills/support/agent-browser/SKILL.md): browser
+- [`agent-browser`](./support/agent-browser/SKILL.md): browser
   automation support
-- [`markdown-preview`](./skills/support/markdown-preview/SKILL.md): rendered
+- [`markdown-preview`](./support/markdown-preview/SKILL.md): rendered
   Markdown review support
-- [`specdown`](./plugins/charness/support/specdown/SKILL.md): executable-spec
+- [`specdown`](./support/specdown/SKILL.md): executable-spec
   support
-- [`web-fetch`](./skills/support/web-fetch/SKILL.md): public-web fetch routing
+- [`web-fetch`](./support/web-fetch/SKILL.md): public-web fetch routing
   support
 
 Integrations are manifests for external tools, usually CLI binaries, that
@@ -356,21 +356,21 @@ support skills.
 README is the first-touch orientation surface. Deeper contracts live in the
 docs and artifacts that own them:
 
-- CLI command reference: [docs/cli-reference.md](./docs/cli-reference.md)
+- CLI command reference: [docs/cli-reference.md](https://github.com/corca-ai/charness/blob/main/docs/cli-reference.md)
 - repo-local development and dogfood paths:
-  [docs/development.md](./docs/development.md)
+  [docs/development.md](https://github.com/corca-ai/charness/blob/main/docs/development.md)
 - packaging and generated host layout:
-  [docs/host-packaging.md](./docs/host-packaging.md)
+  [docs/host-packaging.md](https://github.com/corca-ai/charness/blob/main/docs/host-packaging.md)
 - external tools, support materialization, and update/doctor state:
-  [docs/control-plane.md](./docs/control-plane.md)
+  [docs/control-plane.md](https://github.com/corca-ai/charness/blob/main/docs/control-plane.md)
 - public/support/integration boundaries:
-  [docs/support-skill-policy.md](./docs/support-skill-policy.md)
+  [docs/support-skill-policy.md](https://github.com/corca-ai/charness/blob/main/docs/support-skill-policy.md)
 - public skill validation policy:
-  [docs/public-skill-validation.md](./docs/public-skill-validation.md)
+  [docs/public-skill-validation.md](https://github.com/corca-ai/charness/blob/main/docs/public-skill-validation.md)
 - current dogfood quality posture:
-  [charness-artifacts/quality/latest.md](./charness-artifacts/quality/latest.md)
+  [charness-artifacts/quality/latest.md](https://github.com/corca-ai/charness/blob/main/charness-artifacts/quality/latest.md)
 
 `charness` installs as one managed bundle, not a menu of partially installed
 public skills. The checked-in host plugin surface lives under
-[`plugins/charness/`](./plugins/charness/) and is generated from
-[`packaging/charness.json`](./packaging/charness.json).
+[`plugins/charness/`](https://github.com/corca-ai/charness/tree/main/plugins/charness/) and is generated from
+[`packaging/charness.json`](https://github.com/corca-ai/charness/blob/main/packaging/charness.json).

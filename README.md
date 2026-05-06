@@ -271,7 +271,7 @@ Terminology:
 ### Public Skills
 
 Use [`init-repo`](./skills/public/init-repo/SKILL.md) when a repo needs its
-first [README.md](./README.md), [AGENTS.md](./AGENTS.md), roadmap, or
+first project overview, [AGENTS.md](./AGENTS.md), roadmap, or
 operator-facing setup.
 
 The rest of the public surface groups by intent:

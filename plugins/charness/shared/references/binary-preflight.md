@@ -42,7 +42,7 @@ The skill also keeps a pointer to this reference in its `## References` block
 or body text:
 
 ```markdown
-- `references/binary-preflight.md`
+- `../../shared/references/binary-preflight.md`
 ```
 
 Skills whose Bootstrap touches only baseline tools declare nothing.
@@ -96,14 +96,14 @@ forbidden in every mode.
 `CHARNESS_BINARY_PREFLIGHT` selects runtime behavior when a non-baseline
 binary is missing. Default is `interactive`.
 
-- `interactive` — the full protocol above. Suitable for normal agent
+- `interactive` - the full protocol above. Suitable for normal agent
   sessions where a human can consent.
-- `degraded` — no consent prompt; log `MISSING_BIN: <name> (degraded)` on
+- `degraded` - no consent prompt; log `MISSING_BIN: <name> (degraded)` on
   stderr, skip only the affected step, and continue the rest of Bootstrap.
   The skill records the degradation in its durable artifact when it has one
   (e.g. quality's `Runtime Signals` field) so the gap is visible afterward.
   Suitable for test harnesses, scheduled evals, and CI-bound invocations.
-- `fail` — log `MISSING_BIN: <name>` and abort the skill with a non-zero
+- `fail` - log `MISSING_BIN: <name>` and abort the skill with a non-zero
   exit. Suitable for strict CI where missing tools should break the build.
 
 Skills never select the mode themselves. The operator or host sets it in the
@@ -144,7 +144,7 @@ consistent across skills:
 
 ## Support-skill delegation
 
-Some binaries are not owned by the public skill that invokes them — they
+Some binaries are not owned by the public skill that invokes them - they
 belong to a support skill the public skill dispatches to. Example:
 `gather-slack` declares `command -v jq >/dev/null` in its `capability.json`,
 and `gather/SKILL.md` never touches `jq` directly.

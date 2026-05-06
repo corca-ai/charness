@@ -98,6 +98,75 @@ def test_validate_skills_accepts_support_skill_package(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_validate_skills_rejects_missing_shared_reference_from_reference_file(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    references_dir = skill_dir / "references"
+    references_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "## References",
+                "",
+                "- `references/note.md`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (references_dir / "note.md").write_text(
+        "Apply `../../../shared/references/does-not-exist.md`.\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "references/note.md references missing path" in result.stderr
+    assert "does-not-exist.md" in result.stderr
+
+
+def test_validate_skills_accepts_flat_exported_plugin_layout(tmp_path: Path) -> None:
+    repo = tmp_path / "plugin"
+    skill_dir = repo / "skills" / "demo"
+    references_dir = skill_dir / "references"
+    shared_refs = repo / "shared" / "references"
+    references_dir.mkdir(parents=True)
+    shared_refs.mkdir(parents=True)
+    (shared_refs / "source-bound-records.md").write_text("# Source Bound\n", encoding="utf-8")
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "Apply `../../shared/references/source-bound-records.md`.",
+                "",
+                "## References",
+                "",
+                "- `references/note.md`",
+                "- `../../shared/references/source-bound-records.md`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (references_dir / "note.md").write_text(
+        "Apply `../../../shared/references/source-bound-records.md`.\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/validate_skills.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    assert "Validated 1 skill packages (1 public, 0 support)." in result.stdout
+
+
 def test_validate_skills_rejects_public_skill_with_many_fenced_examples_and_no_scripts(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     skill_dir = repo / "skills" / "public" / "demo"
@@ -242,7 +311,7 @@ def make_public_skill_with_bootstrap(
     skill_dir.mkdir(parents=True)
     pointer_line = (
         "\n"
-        "See `create-skill/references/binary-preflight.md` for the "
+        "See `../../shared/references/binary-preflight.md` for the "
         "binary-preflight protocol.\n"
         if with_preflight_pointer
         else "\n"
@@ -273,6 +342,9 @@ def make_public_skill_with_bootstrap(
     (skill_dir / "SKILL.md").write_text(body, encoding="utf-8")
     (skill_dir / "references").mkdir()
     (skill_dir / "references" / "note.md").write_text("# Note\n", encoding="utf-8")
+    shared_refs = repo / "skills" / "shared" / "references"
+    shared_refs.mkdir(parents=True)
+    (shared_refs / "binary-preflight.md").write_text("# Binary Preflight\n", encoding="utf-8")
     return repo
 
 

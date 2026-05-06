@@ -105,9 +105,14 @@ def _referenced_skill_paths(skill_md: Path, repo_root: Path) -> list[str]:
             token == "adapter.example.yaml"
             or token.startswith("references/")
             or token.startswith("scripts/")
+            or token.startswith("../")
         ):
             continue
-        candidate = skill_md.parent / token
+        candidate = (skill_md.parent / token).resolve()
+        try:
+            candidate.relative_to(repo_root.resolve())
+        except ValueError:
+            continue
         if candidate.is_file():
             paths.append(_render_path(candidate, repo_root))
     return _dedupe(paths)

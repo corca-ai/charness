@@ -123,8 +123,8 @@ def test_quality_skill_prefers_structure_over_heuristic_chasing() -> None:
     automation = (
         ROOT / "skills" / "public" / "quality" / "references" / "automation-promotion.md"
     ).read_text(encoding="utf-8")
-    premortem = (
-        ROOT / "skills" / "public" / "quality" / "references" / "fresh-eye-premortem.md"
+    fresh_eye = (
+        ROOT / "skills" / "shared" / "references" / "fresh-eye-subagent-review.md"
     ).read_text(encoding="utf-8")
 
     assert "structural smell sensors" in skill_text
@@ -143,7 +143,7 @@ def test_quality_skill_prefers_structure_over_heuristic_chasing() -> None:
     assert "tie-breaker, not a veto" in automation
     assert "false positives are low enough" in automation
     assert "smell sensors first" in automation
-    assert "canonical fresh-eye premortem path is blocked" in premortem
+    assert "canonical fresh-eye review" in fresh_eye
 
 
 def test_quality_skill_and_create_cli_carry_language_lint_defaults() -> None:

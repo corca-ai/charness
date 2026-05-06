@@ -9,9 +9,9 @@ def test_source_bound_records_guidance_is_scoped_across_public_skills() -> None:
     create_skill = (ROOT / "skills" / "public" / "create-skill" / "SKILL.md").read_text(
         encoding="utf-8"
     )
-    source_bound = (
-        ROOT / "skills" / "public" / "create-skill" / "references" / "source-bound-records.md"
-    ).read_text(encoding="utf-8")
+    source_bound = (ROOT / "skills" / "shared" / "references" / "source-bound-records.md").read_text(
+        encoding="utf-8"
+    )
     command_surface = (
         ROOT / "skills" / "public" / "create-cli" / "references" / "command-surface.md"
     ).read_text(encoding="utf-8")
@@ -37,5 +37,5 @@ def test_source_bound_records_guidance_is_scoped_across_public_skills() -> None:
     assert "`report.json`" in source_bound
     assert "destination evidence" in source_bound and "ledger lookup" in source_bound
     assert "source-bound records" in command_surface
-    assert "../create-skill/references/source-bound-records.md" in spec_text
-    assert "../create-skill/references/source-bound-records.md" in impl_text
+    assert "../../shared/references/source-bound-records.md" in spec_text
+    assert "../../shared/references/source-bound-records.md" in impl_text

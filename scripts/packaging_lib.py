@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 from pathlib import Path
 
@@ -20,6 +21,19 @@ lookup_generated_markdown = _scripts_surfaces_lib_module.lookup_generated_markdo
 
 class PackagingError(Exception):
     pass
+
+
+PLUGIN_README_LINK_TARGET_RE = re.compile(r"\]\((\./[^)]+)\)")
+PLUGIN_README_SOURCE_ONLY_PREFIXES = (
+    "./.agents/",
+    "./AGENTS.md",
+    "./charness-artifacts/",
+    "./docs/",
+    "./evals/",
+    "./packaging/",
+    "./plugins/",
+    "./tests/",
+)
 
 
 def load_manifest(repo_root: Path, package_id: str) -> dict:
@@ -94,6 +108,27 @@ def copy_markdown_with_generated_header(
     dest.write_text(apply_generated_markdown_header(body, metadata), encoding="utf-8")
 
 
+def rewrite_plugin_readme_links(contents: str, *, repository_url: str) -> str:
+    repo_url = repository_url.removesuffix(".git").rstrip("/")
+
+    def rewrite(match: re.Match[str]) -> str:
+        target = match.group(1)
+        if target.startswith("./skills/public/"):
+            return f"](./skills/{target.removeprefix('./skills/public/')})"
+        if target.startswith("./skills/support/"):
+            return f"](./support/{target.removeprefix('./skills/support/')})"
+        if target.startswith("./plugins/charness/skills/"):
+            return f"](./skills/{target.removeprefix('./plugins/charness/skills/')})"
+        if target.startswith("./plugins/charness/support/"):
+            return f"](./support/{target.removeprefix('./plugins/charness/support/')})"
+        if target.startswith(PLUGIN_README_SOURCE_ONLY_PREFIXES):
+            github_mode = "tree" if target.split("#", 1)[0].endswith("/") else "blob"
+            return f"]({repo_url}/{github_mode}/main/{target.removeprefix('./')})"
+        return match.group(0)
+
+    return PLUGIN_README_LINK_TARGET_RE.sub(rewrite, contents)
+
+
 def export_lock_surface(src: Path, dest: Path) -> None:
     if dest.exists():
         shutil.rmtree(dest)
@@ -137,6 +172,14 @@ def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> No
         plugin_root / readme_rel,
         derived_path=(checked_in_plugin_root(manifest) / readme_rel).as_posix(),
     )
+    readme_path = plugin_root / readme_rel
+    readme_path.write_text(
+        rewrite_plugin_readme_links(
+            readme_path.read_text(encoding="utf-8"),
+            repository_url=manifest["repository"],
+        ),
+        encoding="utf-8",
+    )
 
     public_skills_root = repo_root / source["public_skills_dir"]
     exported_skills_root = plugin_root / "skills"
@@ -145,6 +188,9 @@ def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> No
     exported_skills_root.mkdir(parents=True, exist_ok=True)
     for skill_dir in sorted(path for path in public_skills_root.iterdir() if path.is_dir()):
         copy_tree(skill_dir, exported_skills_root / skill_dir.name)
+
+    shared_refs_root = repo_root / "skills" / "shared"
+    replace_tree_if_present(shared_refs_root, plugin_root / "shared")
 
     support_root = repo_root / source["support_skills_dir"]
     exported_support_root = plugin_root / "support"
