@@ -86,11 +86,11 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "doctor-advisory-exit",
+      "interrupt_id": "markdown-preview-readiness-criterion",
       "risk_classes": [
         "operator-visible-recovery"
       ],
-      "seam": "integration readiness status versus process exit severity",
+      "seam": "capability manifest success criteria versus helper-owned runtime checks",
       "generalization_pressure": "monitor",
       "premortem_required": true,
       "next_step": "impl",

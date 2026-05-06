@@ -57,12 +57,12 @@
       "check_id": "markdown-preview-glow-backend",
       "summary": "The preferred `glow` backend is available for real terminal rendering.",
       "commands": [
-        "command -v glow >/dev/null"
+        "python3 skills/support/markdown-preview/scripts/check_glow_backend.py >/dev/null"
       ],
       "success_criteria": [
         "exit_code:0"
       ],
-      "failure_hint": "Without `glow`, markdown preview falls back to degraded source snapshots."
+      "failure_hint": "If `glow` is missing, markdown preview falls back to degraded source snapshots. If it exists but renders blank or fails, treat the run as backend-error."
     }
   ],
   "config_layers": [

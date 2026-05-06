@@ -10,6 +10,11 @@ problems that only show up after rendering. This support seam keeps that check
 available to workflows such as `narrative`, `announcement`, or `specdown`
 without turning "preview docs" into a new public skill.
 
+The renderer choice follows the source's authoritative human surface. Ordinary
+Markdown prose can use terminal snapshots. Executable `*.spec.md` documents
+whose reader surface is a Specdown report should be reviewed through that
+rendered report; a raw Markdown terminal preview is only a secondary fallback.
+
 ## Backend Posture
 
 - preferred backend: `glow`
@@ -17,6 +22,9 @@ without turning "preview docs" into a new public skill.
   `manifest.json`
 - fallback posture: degraded artifact with explicit backend-missing notice and
   the raw source copied only as a reference aid
+- backend-error posture: an installed backend failed or produced blank output
+  for non-empty Markdown; persist an explicit backend-error artifact, but do
+  not treat it as rendered readability proof
 - supported backend values are explicit, not open-ended; unsupported backend
   config should fail fast instead of pretending the problem is just missing PATH
 
@@ -66,6 +74,7 @@ Recommended artifact naming:
 - selected backend
 - backend version when detected
 - whether rendering was real or degraded
+- renderer status: `rendered`, `degraded`, or `backend-error`
 - config path used, if any
 - source fingerprints for each rendered file
 - current git HEAD when available

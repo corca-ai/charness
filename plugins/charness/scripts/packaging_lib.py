@@ -110,6 +110,17 @@ def rewrite_support_capability_path(capability_path: Path) -> None:
     data = json.loads(capability_path.read_text(encoding="utf-8"))
     skill_dir = capability_path.parent.name
     data["support_skill_path"] = f"support/{skill_dir}/SKILL.md"
+
+    def rewrite(value):
+        if isinstance(value, str):
+            return value.replace("skills/support/", "support/")
+        if isinstance(value, list):
+            return [rewrite(item) for item in value]
+        if isinstance(value, dict):
+            return {key: rewrite(item) for key, item in value.items()}
+        return value
+
+    data = rewrite(data)
     write_json(capability_path, data)
 
 

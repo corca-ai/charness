@@ -83,6 +83,23 @@ def test_dead_code_advisory_scans_untracked_nonignored_python(tmp_path: Path) ->
     ]
 
 
+def test_dead_code_advisory_skips_deleted_tracked_python(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "tracked.py").write_text("TRACKED = True\n", encoding="utf-8")
+    init_git_repo(repo, "tracked.py")
+    (repo / "tracked.py").unlink()
+
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("run_dead_code_advisory", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    assert module.git_visible_python_paths(repo, ("tracked.py",)) == []
+
+
 def test_dead_code_advisory_marks_pytest_conventions() -> None:
     from importlib.util import module_from_spec, spec_from_file_location
 
@@ -96,6 +113,47 @@ def test_dead_code_advisory_marks_pytest_conventions() -> None:
     )
 
     assert findings[0]["classification"] == "likely_framework_convention"
+
+
+def test_dead_code_advisory_marks_pytest_fixture_candidates() -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("run_dead_code_advisory", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    findings = module.parse_findings("tests/conftest.py:12: unused function 'driver' (60% confidence, 5 lines)\n")
+
+    assert findings[0]["classification"] == "likely_pytest_fixture"
+
+
+def test_dead_code_advisory_marks_mock_and_test_protocol_noise() -> None:
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    spec = spec_from_file_location("run_dead_code_advisory", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    findings = module.parse_findings(
+        "\n".join(
+            [
+                "tests/test_driver.py:8: unused attribute 'side_effect' (60% confidence, 1 line)",
+                "tests/test_driver.py:20: unused method 'connect' (60% confidence, 3 lines)",
+            ]
+        )
+        + "\n"
+    )
+
+    assert [finding["classification"] for finding in findings] == [
+        "likely_mock_protocol",
+        "likely_test_protocol",
+    ]
+    assert module.classification_counts(findings) == {
+        "likely_mock_protocol": 1,
+        "likely_test_protocol": 1,
+    }
 
 
 def test_dead_code_advisory_marks_structured_output_fields() -> None:

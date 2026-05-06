@@ -167,6 +167,9 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
     ).read_text(encoding="utf-8")
 
     assert "$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py" in skill_text
+    assert "$SKILL_DIR/scripts/inventory_standing_test_economics.py" in skill_text
+    assert "file/process/startup cost" in skill_text
+    assert "runner isolation/process mode" in skill_text
     assert "verbose-on-demand escape hatch" in skill_text
     assert "quiet failure output must still name the" in skill_text
     assert "top-N runtime hot spots" in skill_text
@@ -176,6 +179,8 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
     assert "Orchestrator output mode" in verbosity
     assert "parallel runner is active" in verbosity
     assert "Slow Test Triage" in verbosity
+    assert "runner-startup layer" in verbosity
+    assert "test files * runner isolation * loader startup" in verbosity
     assert "pytest --durations" in verbosity
     assert "silent serial fallback" in verbosity
     assert "quiet defaults and failure detail" in verbosity.lower()
@@ -188,6 +193,19 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
     assert "fixture-economics" in verbosity
     assert "parallel-critical-path" in verbosity
     assert "duplicated-proof" in verbosity
+
+
+def test_quality_skill_routes_spec_markdown_to_specdown_report() -> None:
+    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    markdown_preview = (ROOT / "skills" / "support" / "markdown-preview" / "SKILL.md").read_text(encoding="utf-8")
+    runtime_contract = (
+        ROOT / "skills" / "support" / "markdown-preview" / "references" / "runtime-contract.md"
+    ).read_text(encoding="utf-8")
+
+    assert "ordinary Markdown uses the markdown preview seam" in skill_text
+    assert "rendered Specdown report" in skill_text
+    assert "not a rule that every Markdown review must use `glow`" in markdown_preview
+    assert "Executable `*.spec.md` documents" in runtime_contract
 
 
 def test_quality_skill_carries_source_guard_rollup_guidance() -> None:
