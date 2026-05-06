@@ -31,6 +31,7 @@ STRING_FIELDS = (
 )
 LIST_FIELDS = ("sections", "audience_tags", "omission_lenses")
 ARTIFACT_FILENAME = "latest.md"
+ARTIFACT_CLASS = "history"
 RECORD_FILENAME = "announcements.jsonl"
 
 
@@ -84,6 +85,7 @@ def infer_announcement_defaults(repo_root: Path) -> dict[str, Any]:
         "product_name": repo_root.name,
         "language": "en",
         "output_dir": "charness-artifacts/announcement",
+        "artifact_class": ARTIFACT_CLASS,
         "sections": ["Highlights", "Changes", "Fixes"],
         "audience_tags": [],
         "omission_lenses": [],
@@ -152,6 +154,7 @@ def load_announcement_adapter(repo_root: Path) -> dict[str, Any]:
             "data": data,
             "field_state": _field_state_map({}),
             "artifact_filename": ARTIFACT_FILENAME,
+            "artifact_class": data["artifact_class"],
             "artifact_path": _artifact_path(data["output_dir"]),
             "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
             "record_path": _record_path(),
@@ -184,6 +187,7 @@ def load_announcement_adapter(repo_root: Path) -> dict[str, Any]:
         "data": data,
         "field_state": _field_state_map(raw_data),
         "artifact_filename": ARTIFACT_FILENAME,
+        "artifact_class": data["artifact_class"],
         "artifact_path": _artifact_path(data["output_dir"]),
         "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
         "record_path": _record_path(),

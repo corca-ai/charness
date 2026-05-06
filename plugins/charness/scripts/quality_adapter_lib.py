@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts.adapter_lib import load_yaml_file
-from scripts.artifact_naming_lib import RECORD_PATTERN
+from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
 from scripts.quality_bootstrap_lib import ADAPTER_CANDIDATES
 from scripts.quality_policy_defaults import (
     DEFAULT_COVERAGE_FLOOR_POLICY,
@@ -55,6 +55,7 @@ LIST_FIELDS = (
     "security_commands",
 )
 ARTIFACT_FILENAME = "latest.md"
+ARTIFACT_CLASS = "history"
 
 
 def _load_adapter_validators():
@@ -135,6 +136,7 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "repo": repo_root.name,
         "language": "en",
         "output_dir": "charness-artifacts/quality",
+        "artifact_class": ARTIFACT_CLASS,
         "preset_lineage": [],
         "coverage_fragile_margin_pp": 1.0,
         "coverage_floor_policy": dict(DEFAULT_COVERAGE_FLOOR_POLICY),
@@ -276,6 +278,13 @@ def validate_quality_adapter_data(
     validated = infer_quality_defaults(repo_root)
     _validate_version_field(data, validated, errors)
     _apply_string_fields(data, validated, errors)
+    configured_artifact_class = data.get("artifact_class")
+    if configured_artifact_class is None:
+        validated["artifact_class"] = ARTIFACT_CLASS
+    elif isinstance(configured_artifact_class, str) and configured_artifact_class in ARTIFACT_CLASSES:
+        validated["artifact_class"] = configured_artifact_class
+    else:
+        errors.append("artifact_class must be one of: current, history, rolling")
     _apply_policy_fields(data, validated, errors)
     _apply_list_fields(data, validated, errors)
 
@@ -297,6 +306,7 @@ def load_quality_adapter(repo_root: Path) -> dict[str, Any]:
             "path": None,
             "data": data,
             "artifact_filename": ARTIFACT_FILENAME,
+            "artifact_class": data["artifact_class"],
             "artifact_path": _artifact_path(data["output_dir"]),
             "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
             "errors": [],
@@ -323,6 +333,7 @@ def load_quality_adapter(repo_root: Path) -> dict[str, Any]:
         "path": str(adapter_path),
         "data": data,
         "artifact_filename": ARTIFACT_FILENAME,
+        "artifact_class": data["artifact_class"],
         "artifact_path": _artifact_path(data["output_dir"]),
         "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
         "errors": errors,

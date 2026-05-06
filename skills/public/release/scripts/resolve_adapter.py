@@ -83,6 +83,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "repo": repo_root.name,
         "language": "en",
         "output_dir": "charness-artifacts/release",
+        "artifact_class": "history",
         "package_id": package_id,
         "packaging_manifest_path": f"packaging/{package_id}.json",
         "checked_in_plugin_root": f"plugins/{package_id}",
@@ -205,8 +206,6 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "warnings": warnings,
         "searched_paths": searched_paths,
     }
-
-
 def main() -> None:
     cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="release resolve_adapter")
     parser = argparse.ArgumentParser()

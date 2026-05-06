@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shlex
 import subprocess
 from datetime import date
 from pathlib import Path
@@ -13,6 +14,8 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_artifact_naming_lib_module = import_repo_module(__file__, "scripts.artifact_naming_lib")
+ArtifactClassError = _scripts_artifact_naming_lib_module.ArtifactClassError
+artifact_class_from_adapter = _scripts_artifact_naming_lib_module.artifact_class_from_adapter
 current_artifact_filename = _scripts_artifact_naming_lib_module.current_artifact_filename
 dated_artifact_filename = _scripts_artifact_naming_lib_module.dated_artifact_filename
 record_artifact_supported = _scripts_artifact_naming_lib_module.record_artifact_supported
@@ -101,6 +104,21 @@ def _current_write_path(repo_root: Path, current_path: Path, pointer_state: dict
     return str(current_path.relative_to(repo_root))
 
 
+def _refresh_current_pointer_argv(skill_id: str, record_path: Path) -> list[str]:
+    helper = Path(__file__).resolve().parent / "refresh_current_pointer.py"
+    return [
+        "python3",
+        str(helper),
+        "--repo-root",
+        ".",
+        "--skill-id",
+        skill_id,
+        "--record-artifact-path",
+        str(record_path),
+        "--execute",
+    ]
+
+
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
@@ -112,8 +130,16 @@ def main() -> int:
     slug = slugify(args.slug)
     record_name = dated_artifact_filename(slug, artifact_date=artifact_date)
     output_dir = Path(data["output_dir"])
-    current_path = output_dir / current_artifact_filename(args.skill_id)
-    records_supported = record_artifact_supported(args.skill_id)
+    artifact_filename = adapter.get("artifact_filename")
+    current_filename = (
+        artifact_filename if isinstance(artifact_filename, str) else current_artifact_filename(args.skill_id)
+    )
+    current_path = output_dir / current_filename
+    try:
+        artifact_class = artifact_class_from_adapter(adapter)
+    except ArtifactClassError as exc:
+        raise SystemExit(str(exc)) from exc
+    records_supported = record_artifact_supported(artifact_class)
     record_path = output_dir / record_name if records_supported else None
     absolute_current_path = repo_root / current_path
     pointer_state = _current_pointer_state(repo_root, absolute_current_path)
@@ -121,12 +147,17 @@ def main() -> int:
         write_path = str(record_path)
         write_role = "durable_record"
         update_current_pointer_after_write = True
+        refresh_argv = _refresh_current_pointer_argv(args.skill_id, record_path)
+        refresh_command = shlex.join(refresh_argv)
     else:
         write_path = _current_write_path(repo_root, absolute_current_path, pointer_state)
         write_role = "current_pointer_target" if pointer_state["current_pointer_is_symlink"] else "current_pointer"
         update_current_pointer_after_write = False
+        refresh_argv = None
+        refresh_command = None
     payload = {
         "skill_id": args.skill_id,
+        "artifact_class": artifact_class,
         "slug": slug,
         "date": artifact_date.isoformat(),
         "intent": args.intent,
@@ -136,6 +167,8 @@ def main() -> int:
         "write_artifact_path": write_path,
         "write_artifact_role": write_role,
         "update_current_pointer_after_write": update_current_pointer_after_write,
+        "refresh_current_pointer_argv": refresh_argv,
+        "refresh_current_pointer_command": refresh_command,
         "frontmatter": {
             "artifact_kind": "record",
             "status": "current",

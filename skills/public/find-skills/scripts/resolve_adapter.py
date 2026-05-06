@@ -41,6 +41,7 @@ ADAPTER_CANDIDATES = (
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
 BOOLEAN_FIELDS = ("prefer_local_first", "allow_external_registry")
 ARTIFACT_FILENAME = "latest.md"
+ARTIFACT_CLASS = "current"
 
 
 def _string(value: Any, field: str, errors: list[str]) -> str | None:
@@ -76,6 +77,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "repo": repo_root.name,
         "language": "en",
         "output_dir": "charness-artifacts/find-skills",
+        "artifact_class": ARTIFACT_CLASS,
         "trusted_skill_roots": [],
         "prefer_local_first": True,
         "allow_external_registry": False,
@@ -158,6 +160,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "path": None,
             "data": data,
             "artifact_filename": ARTIFACT_FILENAME,
+            "artifact_class": data["artifact_class"],
             "artifact_path": _artifact_path(data["output_dir"]),
             "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
             "bootstrap_expectations": _bootstrap_expectations(data),
@@ -187,6 +190,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "path": adapter_path.relative_to(repo_root).as_posix(),
         "data": data,
         "artifact_filename": ARTIFACT_FILENAME,
+        "artifact_class": data["artifact_class"],
         "artifact_path": _artifact_path(data["output_dir"]),
         "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
         "bootstrap_expectations": _bootstrap_expectations(data),

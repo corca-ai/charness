@@ -62,6 +62,9 @@ Prefer repo-owned adapter paths first:
   when the repo genuinely benefits from one current pointer over those dated
   records. Rolling canonical artifacts may keep a clearer fixed filename, such
   as `<repo-root>/docs/handoff.md`.
+- Declare the artifact behavior in the adapter resolver as `artifact_class`:
+  `history` for dated records, `current` for a single maintained surface, or
+  `rolling` for a canonical rolling file.
 - Auto-create missing adapters only when the defaults are low risk.
 - Distinguish `unset` from `explicitly empty` for optional list-like fields.
 - Keep official presets separate from adapters. The adapter records which preset

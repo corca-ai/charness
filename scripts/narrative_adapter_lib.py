@@ -40,6 +40,7 @@ LIST_FIELDS = (
     "landing_danger_checks",
 )
 ARTIFACT_FILENAME = "latest.md"
+ARTIFACT_CLASS = "history"
 SOURCE_DOCUMENT_CANDIDATES = (
     "README.md",
     "docs/master-plan.md",
@@ -92,6 +93,7 @@ def infer_narrative_defaults(repo_root: Path) -> dict[str, Any]:
         "repo": repo_root.name,
         "language": "en",
         "output_dir": "charness-artifacts/narrative",
+        "artifact_class": ARTIFACT_CLASS,
         "source_documents": inferred_docs,
         "mutable_documents": inferred_docs,
         "brief_template": [],
@@ -161,6 +163,7 @@ def load_narrative_adapter(repo_root: Path) -> dict[str, Any]:
             "path": None,
             "data": data,
             "artifact_filename": ARTIFACT_FILENAME,
+            "artifact_class": data["artifact_class"],
             "artifact_path": _artifact_path(data["output_dir"]),
             "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
             "bootstrap_expectations": _bootstrap_expectations(data),
@@ -190,6 +193,7 @@ def load_narrative_adapter(repo_root: Path) -> dict[str, Any]:
         "path": str(adapter_path),
         "data": data,
         "artifact_filename": ARTIFACT_FILENAME,
+        "artifact_class": data["artifact_class"],
         "artifact_path": _artifact_path(data["output_dir"]),
         "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
         "bootstrap_expectations": _bootstrap_expectations(data),

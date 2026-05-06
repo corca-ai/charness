@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts.adapter_lib import load_yaml_file
-from scripts.artifact_naming_lib import RECORD_PATTERN
+from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
 
@@ -58,8 +58,11 @@ def load_simple_adapter(
     skill_id: str,
     artifact_filename: str,
     default_output_dir: str,
+    artifact_class: str = "history",
     missing_warnings: tuple[str, ...],
 ) -> dict[str, Any]:
+    if artifact_class not in ARTIFACT_CLASSES:
+        raise ValueError(f"artifact_class must be one of: {', '.join(sorted(ARTIFACT_CLASSES))}")
     candidates = (
         Path(f".agents/{skill_id}-adapter.yaml"),
         Path(f".codex/{skill_id}-adapter.yaml"),
@@ -72,12 +75,14 @@ def load_simple_adapter(
 
     if adapter_path is None:
         data = infer_simple_adapter_defaults(repo_root, output_dir=default_output_dir)
+        data["artifact_class"] = artifact_class
         return {
             "found": False,
             "valid": True,
             "path": None,
             "data": data,
             "artifact_filename": artifact_filename,
+            "artifact_class": artifact_class,
             "artifact_path": str(Path(data["output_dir"]) / artifact_filename),
             "record_artifact_pattern": str(Path(data["output_dir"]) / RECORD_PATTERN),
             "errors": [],
@@ -94,6 +99,12 @@ def load_simple_adapter(
     if adapter_path.resolve() != canonical_path.resolve():
         warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical_path}.")
     data, errors, extra_warnings = validate_simple_adapter_data(raw_data, repo_root=repo_root, output_dir=default_output_dir)
+    data["artifact_class"] = artifact_class
+    configured_artifact_class = raw_data.get("artifact_class")
+    if isinstance(configured_artifact_class, str) and configured_artifact_class in ARTIFACT_CLASSES:
+        data["artifact_class"] = configured_artifact_class
+    elif configured_artifact_class is not None:
+        errors.append("artifact_class must be one of: current, history, rolling")
     warnings.extend(extra_warnings)
     return {
         "found": True,
@@ -101,6 +112,7 @@ def load_simple_adapter(
         "path": str(adapter_path),
         "data": data,
         "artifact_filename": artifact_filename,
+        "artifact_class": data["artifact_class"],
         "artifact_path": str(Path(data["output_dir"]) / artifact_filename),
         "record_artifact_pattern": str(Path(data["output_dir"]) / RECORD_PATTERN),
         "errors": errors,

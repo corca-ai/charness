@@ -37,6 +37,7 @@ def load_adapter(repo_root: Path) -> dict[str, object]:
         skill_id="handoff",
         artifact_filename="handoff.md",
         default_output_dir="docs",
+        artifact_class="rolling",
         missing_warnings=(
             "No handoff adapter found. Using default docs/handoff.md location.",
             "Create .agents/handoff-adapter.yaml to move the artifact path or record preset provenance.",

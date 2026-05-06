@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-06",
-  "source_artifact_count": 44,
-  "candidate_count": 264,
+  "source_artifact_count": 45,
+  "candidate_count": 268,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:be3f2ced61e4",
+      "kind": "current_focus",
+      "lesson": "This session finished the artifact pointer follow-up: add a current-pointer refresh helper and move record/current/rolling behavior from skill-id exceptions into adapter-declared artifact classes.",
+      "normalized_key": "this session finished the artifact pointer follow up add a current pointer refresh helper",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+      "latest_source_date": "2026-05-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+          "date": "2026-05-06",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:35e95b9338a5",
       "kind": "current_focus",
@@ -55,6 +75,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:8b6c945a2860",
+      "kind": "next_improvement",
+      "lesson": "keep artifact class validation strict at resolver boundaries; avoid permissive normalization for declared adapter fields.",
+      "normalized_key": "keep artifact class validation strict at resolver boundaries avoid permissive normalization for declared adapter",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+      "latest_source_date": "2026-05-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+          "date": "2026-05-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:55ec525a2f47",
       "kind": "next_improvement",
       "lesson": "keep this lesson in recent retro selection because export-path assumptions and broad text validators are recurring traps.",
@@ -89,6 +129,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md",
+          "date": "2026-05-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:93c1ea8404ff",
+      "kind": "next_improvement",
+      "lesson": "treat current-pointer helpers as cross-repo commands, so emitted commands must be portable from plugin context.",
+      "normalized_key": "treat current pointer helpers as cross repo commands so emitted commands must be portable",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+      "latest_source_date": "2026-05-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+          "date": "2026-05-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1bb9d1268cd0",
+      "kind": "next_improvement",
+      "lesson": "when a helper is exported, run the exported helper itself against a temp consumer repo, not only the source helper.",
+      "normalized_key": "when a helper is exported run the exported helper itself against a temp consumer",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+      "latest_source_date": "2026-05-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
           "date": "2026-05-06",
           "section": "Next Improvements"
         }
@@ -173,89 +253,29 @@
           "section": "Context"
         }
       ]
-    },
+    }
+  ],
+  "candidates": [
     {
-      "candidate_id": "current_focus:e14f530512ed",
+      "candidate_id": "current_focus:be3f2ced61e4",
       "kind": "current_focus",
-      "lesson": "This session reviewed URL-to-gather routing and the repeated Cautilus exclusion reminder.",
-      "normalized_key": "this session reviewed url to gather routing and the repeated cautilus exclusion reminder",
+      "lesson": "This session finished the artifact pointer follow-up: add a current-pointer refresh helper and move record/current/rolling behavior from skill-id exceptions into adapter-declared artifact classes.",
+      "normalized_key": "this session finished the artifact pointer follow up add a current pointer refresh helper",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md",
-      "latest_source_date": "2026-05-05",
-      "age_days": 1,
-      "recency_weight": 0.9517,
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+      "latest_source_date": "2026-05-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.07,
-      "selection_weight": 0.9517,
+      "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md",
-          "date": "2026-05-05",
+          "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+          "date": "2026-05-06",
           "section": "Context"
         }
       ]
     },
-    {
-      "candidate_id": "next_improvement:d4818a160647",
-      "kind": "next_improvement",
-      "lesson": "check tool adapter run modes before executing proof commands when the tool is known to be in rework.",
-      "normalized_key": "check tool adapter run modes before executing proof commands when the tool is known",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md",
-      "latest_source_date": "2026-05-05",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md",
-          "date": "2026-05-05",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:1c5c2e8336c0",
-      "kind": "next_improvement",
-      "lesson": "keep the disabled state in durable repo artifacts until the rework is complete and the adapter is deliberately re-enabled.",
-      "normalized_key": "keep the disabled state in durable repo artifacts until the rework is complete and",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md",
-      "latest_source_date": "2026-05-05",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md",
-          "date": "2026-05-05",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:04f5784234a9",
-      "kind": "next_improvement",
-      "lesson": "use an explicit disabled run mode for temporarily unavailable evaluator integrations.",
-      "normalized_key": "use an explicit disabled run mode for temporarily unavailable evaluator integrations",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md",
-      "latest_source_date": "2026-05-05",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-05-cautilus-disabled-after-miss.md",
-          "date": "2026-05-05",
-          "section": "Next Improvements"
-        }
-      ]
-    }
-  ],
-  "candidates": [
     {
       "candidate_id": "current_focus:35e95b9338a5",
       "kind": "current_focus",
@@ -297,6 +317,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:8b6c945a2860",
+      "kind": "next_improvement",
+      "lesson": "keep artifact class validation strict at resolver boundaries; avoid permissive normalization for declared adapter fields.",
+      "normalized_key": "keep artifact class validation strict at resolver boundaries avoid permissive normalization for declared adapter",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+      "latest_source_date": "2026-05-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+          "date": "2026-05-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:55ec525a2f47",
       "kind": "next_improvement",
       "lesson": "keep this lesson in recent retro selection because export-path assumptions and broad text validators are recurring traps.",
@@ -331,6 +371,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md",
+          "date": "2026-05-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:93c1ea8404ff",
+      "kind": "next_improvement",
+      "lesson": "treat current-pointer helpers as cross-repo commands, so emitted commands must be portable from plugin context.",
+      "normalized_key": "treat current pointer helpers as cross repo commands so emitted commands must be portable",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+      "latest_source_date": "2026-05-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+          "date": "2026-05-06",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1bb9d1268cd0",
+      "kind": "next_improvement",
+      "lesson": "when a helper is exported, run the exported helper itself against a temp consumer repo, not only the source helper.",
+      "normalized_key": "when a helper is exported run the exported helper itself against a temp consumer",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
+      "latest_source_date": "2026-05-06",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
           "date": "2026-05-06",
           "section": "Next Improvements"
         }

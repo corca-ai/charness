@@ -38,6 +38,7 @@ def load_adapter(repo_root: Path) -> dict[str, object]:
         skill_id="init-repo",
         artifact_filename="latest.md",
         default_output_dir="charness-artifacts/init-repo",
+        artifact_class="current",
         missing_warnings=(
             "No init-repo adapter found. Using default durable artifact location.",
             "Create .agents/init-repo-adapter.yaml to move the artifact path or record preset provenance.",

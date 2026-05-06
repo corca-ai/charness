@@ -160,6 +160,25 @@ when the work is deliberately updating the rolling summary; if `latest.md` is a
 symlink, edit the returned symlink target rather than first mutating
 `latest.md` and then rediscovering the target.
 
+After writing a dated record, refresh the visible current pointer through the
+helper instead of editing `latest.md` directly:
+
+```bash
+python3 scripts/refresh_current_pointer.py --repo-root . --skill-id <skill-id> --record-artifact-path <record-path> --execute
+```
+
+The helper defaults to copying when the current pointer is a regular file and
+repointing the symlink when the current pointer is already a symlink.
+
+Artifact resolver behavior is owned by the adapter's `artifact_class`:
+
+- `history`: dated records are supported, with an optional current pointer
+- `current`: the checked-in artifact is the current surface, not a dated log
+- `rolling`: the artifact is a rolling canonical file such as `docs/handoff.md`
+
+Do not add skill-id exception lists for artifact behavior. Declare the class in
+the owning adapter resolver or policy document.
+
 Current repo examples:
 
 - [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md)
@@ -180,7 +199,7 @@ The repo currently intends these families to be history-default:
 - `narrative`
 - `cautilus`
 
-The repo currently intends these families to be current-pointer exceptions:
+The repo currently intends these families to be `current`:
 
 - `find-skills`, because the value is the current local-first inventory, not a
   checked-in invocation log
@@ -189,8 +208,8 @@ The repo currently intends these families to be current-pointer exceptions:
 - `init-repo`, because the checked-in surface is a current bootstrap summary
   rather than a long-lived audit trail
 
-The repo currently intends these families to stay outside an adapter-managed
-`latest.md` flow:
+The repo currently intends these families to be `rolling` or outside an
+adapter-managed `latest.md` flow:
 
 - `spec`, because design contracts already live as checked-in named artifacts
 - [`docs/handoff.md`](./handoff.md), because it is the repo entry rolling

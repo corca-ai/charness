@@ -46,6 +46,7 @@ ADAPTER_CANDIDATES = (
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
 ARTIFACT_FILENAME = "latest.md"
+ARTIFACT_CLASS = "history"
 
 
 def _string(value: Any, field: str, errors: list[str]) -> str | None:
@@ -63,6 +64,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "repo": repo_root.name,
         "language": "en",
         "output_dir": "charness-artifacts/gather",
+        "artifact_class": ARTIFACT_CLASS,
     }
 
 
@@ -116,6 +118,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "path": None,
             "data": data,
             "artifact_filename": ARTIFACT_FILENAME,
+            "artifact_class": data["artifact_class"],
             "artifact_path": _artifact_path(data["output_dir"]),
             "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
             "errors": [],
@@ -142,6 +145,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         "path": str(adapter_path),
         "data": data,
         "artifact_filename": ARTIFACT_FILENAME,
+        "artifact_class": data["artifact_class"],
         "artifact_path": _artifact_path(data["output_dir"]),
         "record_artifact_pattern": _record_artifact_pattern(data["output_dir"]),
         "errors": errors,
