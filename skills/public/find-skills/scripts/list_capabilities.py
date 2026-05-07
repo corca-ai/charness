@@ -22,28 +22,19 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
-_capability_sources_module = SKILL_RUNTIME.load_local_skill_module(__file__, "capability_sources")
-integrations = _capability_sources_module.integrations
-support_capabilities = _capability_sources_module.support_capabilities
-_control_plane_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.control_plane_lib")
-load_manifests = _control_plane_lib_module.load_manifests_for_discovery
-_scripts_repo_layout_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.repo_layout")
-generated_support_dir = _scripts_repo_layout_module.generated_support_dir
-public_skills_dir = _scripts_repo_layout_module.public_skills_dir
-support_dir = _scripts_repo_layout_module.support_dir
-_scripts_tool_recommendation_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.tool_recommendation_lib")
-recommendations_for_public_skill = _scripts_tool_recommendation_lib_module.recommendations_for_public_skill
-recommendations_for_role = _scripts_tool_recommendation_lib_module.recommendations_for_role
-_list_capabilities_lib_module = SKILL_RUNTIME.load_local_skill_module(__file__, "list_capabilities_lib")
-build_inventory_payload = _list_capabilities_lib_module.build_inventory_payload
-referenced_skill_paths = _list_capabilities_lib_module.referenced_skill_paths
-_inventory_artifact_module = SKILL_RUNTIME.load_local_skill_module(__file__, "inventory_artifact")
-persist_inventory = _inventory_artifact_module.persist_inventory
-read_only_inventory_artifacts = _inventory_artifact_module.read_only_inventory_artifacts
-resolve_tool_recommendations = _list_capabilities_lib_module.resolve_tool_recommendations
-support_recommendations_for_task = _list_capabilities_lib_module.support_recommendations_for_task
-_resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
-load_adapter = _resolve_adapter_module.load_adapter
+_capability_sources = SKILL_RUNTIME.load_local_skill_module(__file__, "capability_sources")
+integrations, support_capabilities = _capability_sources.integrations, _capability_sources.support_capabilities
+load_manifests = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.control_plane_lib").load_manifests_for_discovery
+_layout = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.repo_layout")
+generated_support_dir, public_skills_dir, support_dir = _layout.generated_support_dir, _layout.public_skills_dir, _layout.support_dir
+_tool_rec = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.tool_recommendation_lib")
+recommendations_for_public_skill, recommendations_for_role = _tool_rec.recommendations_for_public_skill, _tool_rec.recommendations_for_role
+_list_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "list_capabilities_lib")
+build_inventory_payload, referenced_skill_paths = _list_lib.build_inventory_payload, _list_lib.referenced_skill_paths
+resolve_tool_recommendations, support_recommendations_for_task = _list_lib.resolve_tool_recommendations, _list_lib.support_recommendations_for_task
+_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "inventory_artifact")
+persist_inventory, read_only_inventory_artifacts = _artifact.persist_inventory, _artifact.read_only_inventory_artifacts
+load_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter").load_adapter
 
 def _target_has_repo_owned_skill_surface(target_root: Path) -> bool:
     return (target_root / "skills" / "public").is_dir() or (target_root / "skills" / "support").is_dir()
