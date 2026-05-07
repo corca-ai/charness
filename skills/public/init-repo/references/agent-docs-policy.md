@@ -15,6 +15,11 @@
 - when adapter-declared policy sources imply delegated review but
   `<repo-root>/AGENTS.md` lacks the explicit host-spawn rule, emit a reviewable
   recommendation instead of treating phrase matching as a hard fact
+- when the dedicated `## Subagent Delegation` section contains a weakening
+  caveat that conditions the standing delegation on a higher-priority host,
+  tool, or developer policy before any concrete spawn failure, emit an advisory
+  finding so the affirmative repo contract stays the dominant signal at agent
+  read time
 - when a repo uses Charness durable artifacts, `<repo-root>/AGENTS.md` should say
   meaningful `charness-artifacts/` changes are commit targets, and
   current-pointer helpers should no-op when canonical content has not changed
@@ -56,6 +61,19 @@ rule like:
 
 Do not hide `init-repo` and `quality` spawn authorization under a Premortem-only
 heading or a generic operating list.
+
+Avoid weakening caveats inside the same `## Subagent Delegation` section. The
+inspector flags wording that preemptively conditions the standing delegation on
+a higher-priority host, tool, or developer policy before a concrete spawn
+failure, including phrasings like:
+
+- `higher-priority host`
+- `developer policy requires explicit user delegation`
+- `once the user authorizes subagents`
+- `follow that stricter rule`
+
+Keep the repo contract affirmative; report concrete host signals when a runtime
+actually blocks `spawn_agent` instead of pre-conditioning the contract.
 
 When the repo uses Charness artifacts, prefer a short rule like:
 

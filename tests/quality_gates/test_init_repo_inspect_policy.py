@@ -336,6 +336,71 @@ def test_init_repo_inspect_accepts_dedicated_subagent_delegation_section(tmp_pat
     assert "fresh_eye_task_review_scope_drift" not in finding_types
 
 
+_SUBAGENT_DELEGATION_AFFIRMATIVE = (
+    "- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract; this is the explicit user delegation request for named bounded reviewer scopes.",
+    "- Do not wait for a second user message. Task-completing `init-repo` and `quality` review runs may spawn bounded reviewers.",
+    "- If the host blocks subagent spawning, stop and report the host restriction explicitly instead of substituting a same-agent pass.",
+)
+
+
+def _agents_with_delegation_section(*, heading: str = "## Subagent Delegation", caveats: tuple[str, ...] = (), trailing: tuple[str, ...] = ()) -> str:
+    body = ["# Agents", "", heading, "", *_SUBAGENT_DELEGATION_AFFIRMATIVE, *caveats, ""]
+    if trailing:
+        body.extend([*trailing, ""])
+    return "\n".join(body)
+
+
+def test_init_repo_inspect_flags_weakening_caveat_inside_subagent_delegation_section(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    caveat = "- If a higher-priority host, tool, or developer policy requires explicit user delegation, follow that stricter rule before spawning."
+    _seed_normalize_repo(repo, _agents_with_delegation_section(caveats=(caveat,)))
+
+    payload = _run_inspect(repo)
+
+    normalization = payload["agent_docs"]["normalization"]
+    fresh_eye = normalization["fresh_eye_review"]
+    finding_types = {finding["type"] for finding in normalization["findings"]}
+    recommendation_priorities = {item["id"]: item["priority"] for item in normalization["recommendations"]}
+    assert fresh_eye["missing_required_snippets"] == []
+    assert "higher-priority host" in fresh_eye["weakening_caveats_detected"]
+    assert "follow that stricter rule" in fresh_eye["weakening_caveats_detected"]
+    assert "fresh_eye_delegation_caveat_weakens_contract" in finding_types
+    assert recommendation_priorities["fresh_eye_delegation_caveat_weakens_contract"] == "advisory"
+    assert "fresh_eye_delegation_rule_drift" not in finding_types
+    assert "fresh_eye_task_review_scope_drift" not in finding_types
+
+
+def test_init_repo_inspect_flags_weakening_caveat_with_mixed_case_heading(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    caveat = "- If a higher-priority host policy requires explicit user delegation, follow that stricter rule before spawning."
+    _seed_normalize_repo(repo, _agents_with_delegation_section(heading="## Subagent delegation", caveats=(caveat,)))
+
+    payload = _run_inspect(repo)
+
+    fresh_eye = payload["agent_docs"]["normalization"]["fresh_eye_review"]
+    finding_types = {f["type"] for f in payload["agent_docs"]["normalization"]["findings"]}
+    assert fresh_eye["has_subagent_delegation_section"] is True
+    assert "higher-priority host" in fresh_eye["weakening_caveats_detected"]
+    assert "fresh_eye_delegation_caveat_weakens_contract" in finding_types
+
+
+def test_init_repo_inspect_does_not_flag_caveat_phrase_outside_subagent_delegation_section(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    trailing = (
+        "## Notes On Multi-Host Operation",
+        "",
+        "- We sometimes coordinate with a higher-priority host policy in adjacent repos; that does not change this repo's standing delegation contract.",
+    )
+    _seed_normalize_repo(repo, _agents_with_delegation_section(trailing=trailing))
+
+    payload = _run_inspect(repo)
+
+    fresh_eye = payload["agent_docs"]["normalization"]["fresh_eye_review"]
+    finding_types = {f["type"] for f in payload["agent_docs"]["normalization"]["findings"]}
+    assert fresh_eye["weakening_caveats_detected"] == []
+    assert "fresh_eye_delegation_caveat_weakens_contract" not in finding_types
+
+
 def test_init_repo_inspect_reports_charness_artifacts_commit_policy_drift(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _seed_normalize_repo(repo, "# Agents\n\nExisting operating policy.\n")

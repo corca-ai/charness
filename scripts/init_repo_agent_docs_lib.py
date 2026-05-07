@@ -17,6 +17,12 @@ FRESH_EYE_REQUIRED_SNIPPETS = (
     "host blocks",
     "same-agent pass",
 )
+FRESH_EYE_DELEGATION_CAVEAT_PATTERNS = (
+    "higher-priority host",
+    "developer policy requires explicit user delegation",
+    "once the user authorizes subagents",
+    "follow that stricter rule",
+)
 TASK_REVIEW_SCOPE_SNIPPETS = ("init-repo", "quality")
 RECOMMENDATION_PRIORITY_ORDER = {
     "review_required": 0,
@@ -29,6 +35,7 @@ FINDING_RECOMMENDATION_PRIORITIES = {
     "fresh_eye_delegation_rule_drift": "review_required",
     "fresh_eye_task_review_scope_drift": "review_required",
     "fresh_eye_review_still_requires_consent_or_fallback": "review_required",
+    "fresh_eye_delegation_caveat_weakens_contract": "advisory",
     "skill_routing_block_custom_or_drifted": "review_required",
     "charness_artifacts_commit_policy_drift": "review_required",
 }
@@ -70,6 +77,24 @@ def _read_text(path: Path) -> str:
 def _missing_snippets(text: str, snippets: tuple[str, ...]) -> list[str]:
     lowered = text.lower()
     return [snippet for snippet in snippets if snippet.lower() not in lowered]
+
+
+def _extract_section(text: str, heading: str) -> str:
+    lines = text.splitlines()
+    target = heading.strip().lower()
+    start: int | None = None
+    for index, line in enumerate(lines):
+        if line.strip().lower() == target:
+            start = index + 1
+            break
+    if start is None:
+        return ""
+    end = len(lines)
+    for index in range(start, len(lines)):
+        if lines[index].startswith("## "):
+            end = index
+            break
+    return "\n".join(lines[start:end])
 
 
 def _detect_retro_memory_normalization(repo_root: Path, agents_text: str) -> tuple[dict[str, object], list[dict[str, str]]]:
@@ -174,6 +199,13 @@ def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object]
         [snippet for snippet in TASK_REVIEW_SCOPE_SNIPPETS if snippet not in lowered] if stop_gate_detected else []
     )
     stale_markers = [marker for marker in FRESH_EYE_STALE_MARKERS if marker in lowered]
+    section_body = _extract_section(agents_text, FRESH_EYE_SECTION_HEADING) if has_subagent_delegation_section else ""
+    section_lower = section_body.lower()
+    weakening_caveats_detected = (
+        [pattern for pattern in FRESH_EYE_DELEGATION_CAVEAT_PATTERNS if pattern in section_lower]
+        if section_body
+        else []
+    )
     findings: list[dict[str, str]] = []
     if stop_gate_detected and missing_required:
         findings.append(
@@ -199,6 +231,17 @@ def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object]
                 "recommended_action": "replace_with_already_delegated_host_restriction_rule",
             }
         )
+    if weakening_caveats_detected:
+        findings.append(
+            {
+                "type": "fresh_eye_delegation_caveat_weakens_contract",
+                "message": (
+                    "Subagent Delegation section contains caveat wording that weakens the standing delegation "
+                    f"contract: {', '.join(weakening_caveats_detected)}."
+                ),
+                "recommended_action": "remove_weakening_caveats_from_subagent_delegation_section",
+            }
+        )
     return (
         {
             "stop_gate_detected": stop_gate_detected,
@@ -206,6 +249,7 @@ def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object]
             "missing_required_snippets": missing_required,
             "missing_task_review_scopes": missing_task_review_scopes,
             "stale_markers": stale_markers,
+            "weakening_caveats_detected": weakening_caveats_detected,
         },
         findings,
     )
