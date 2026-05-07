@@ -3791,6 +3791,39 @@ def cmd_tool_update(args: argparse.Namespace) -> int:
     return 1 if failed else 0
 
 
+def _load_worktree_lib():
+    if EMBEDDED_REPO_ROOT is None:
+        raise CharnessError(
+            "`charness worktree` requires running from an embedded charness checkout. "
+            "Reinstall via `charness init` or invoke from a managed install."
+        )
+    repo_text = str(EMBEDDED_REPO_ROOT)
+    if repo_text not in sys.path:
+        sys.path.insert(0, repo_text)
+    from scripts import worktree_doctor_lib
+
+    return worktree_doctor_lib
+
+
+def _resolve_worktree_target(args: argparse.Namespace) -> Path:
+    target = args.repo_root if args.repo_root is not None else Path.cwd()
+    return Path(target).resolve()
+
+
+def cmd_worktree_doctor(args: argparse.Namespace) -> int:
+    lib = _load_worktree_lib()
+    payload = lib.run_doctor(_resolve_worktree_target(args))
+    lib.emit_payload(payload, json_mode=args.json, renderer=lib.render_doctor_text)
+    return 0 if payload.get("status") == lib.PASS else 1
+
+
+def cmd_worktree_prepare(args: argparse.Namespace) -> int:
+    lib = _load_worktree_lib()
+    payload = lib.run_prepare(_resolve_worktree_target(args), force=args.force)
+    lib.emit_payload(payload, json_mode=args.json, renderer=lib.render_prepare_text)
+    return 0 if payload.get("status") == lib.PASS else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Thin charness CLI for managed local install, capability resolution, and external tool install/update/doctor flows."
@@ -4134,6 +4167,41 @@ def build_parser() -> argparse.ArgumentParser:
         help="Skip support skill rematerialization after update.",
     )
     tool_update_parser.set_defaults(func=cmd_tool_update)
+
+    worktree_parser = subparsers.add_parser(
+        "worktree",
+        help="Inspect and prepare git worktrees so mutate-phase work runs against installed dependencies and live hooks.",
+    )
+    worktree_subparsers = worktree_parser.add_subparsers(dest="worktree_command", required=True)
+
+    worktree_doctor_parser = worktree_subparsers.add_parser(
+        "doctor",
+        help="Probe worktree readiness (hooksPath, lefthook shim resolution, husky directory, manifest checks).",
+    )
+    worktree_doctor_parser.add_argument(
+        "--repo-root",
+        type=Path,
+        help="Worktree to inspect. Defaults to the current working directory.",
+    )
+    worktree_doctor_parser.add_argument("--json", action="store_true")
+    worktree_doctor_parser.set_defaults(func=cmd_worktree_doctor)
+
+    worktree_prepare_parser = worktree_subparsers.add_parser(
+        "prepare",
+        help="Run the worktree adapter's prepare commands and re-validate readiness.",
+    )
+    worktree_prepare_parser.add_argument(
+        "--repo-root",
+        type=Path,
+        help="Worktree to prepare. Defaults to the current working directory.",
+    )
+    worktree_prepare_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Run prepare even if doctor already reports pass.",
+    )
+    worktree_prepare_parser.add_argument("--json", action="store_true")
+    worktree_prepare_parser.set_defaults(func=cmd_worktree_prepare)
 
     return parser
 

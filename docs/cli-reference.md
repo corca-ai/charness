@@ -7,14 +7,14 @@ Regenerate it with `python3 scripts/render_cli_reference.py --repo-root . --outp
 
 ```text
 usage: charness [-h]
-                {init,update,doctor,version,uninstall,reset,task,capability,tool}
+                {init,update,doctor,version,uninstall,reset,task,capability,tool,worktree}
                 ...
 
 Thin charness CLI for managed local install, capability resolution, and
 external tool install/update/doctor flows.
 
 positional arguments:
-  {init,update,doctor,version,uninstall,reset,task,capability,tool}
+  {init,update,doctor,version,uninstall,reset,task,capability,tool,worktree}
     init                Bootstrap or refresh the managed local install
                         surface, cloning the managed checkout first when it is
                         missing.
@@ -34,6 +34,8 @@ positional arguments:
                         readiness.
     tool                Inspect, install, update, or sync external tool
                         integrations that charness-managed skills depend on.
+    worktree            Inspect and prepare git worktrees so mutate-phase work
+                        runs against installed dependencies and live hooks.
 
 options:
   -h, --help            show this help message and exit

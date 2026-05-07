@@ -126,6 +126,11 @@ Then load only the references needed for the detected state:
      review proof will carry the change
    - use `$SKILL_DIR/scripts/render_skill_routing.py` so mature repos get an
      add-block suggestion instead of a silent rewrite
+   - when the repo uses git worktrees plus a Node hook manager (lefthook,
+     husky, simple-git-hooks), seed `<repo-root>/.agents/worktree-adapter.yaml`
+     with `$SKILL_DIR/scripts/seed_worktree_adapter.py` so
+     `charness worktree prepare` can install dependencies and re-register
+     hooks per worktree
 5. Keep the boundaries honest.
    - `<repo-root>/README.md`: current repo story and user-facing orientation
    - `<repo-root>/AGENTS.md`: agent operating contract for this repo

@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "charness worktree adapter",
+  "description": "Repo-self-config manifest declaring how charness should prepare and validate a freshly-created git worktree. Loaded from .agents/worktree-adapter.yaml.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "prepare"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "repo": {
+      "type": "string",
+      "minLength": 1
+    },
+    "language": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prepare": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commands"
+      ],
+      "properties": {
+        "commands": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "argv"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "argv": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "description": {
+                "type": "string"
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1800
+              }
+            }
+          }
+        },
+        "skip_if_doctor_passes": {
+          "type": "boolean",
+          "default": true,
+          "description": "When true, `charness worktree prepare` is a no-op if `doctor` already reports pass. Override with --force."
+        }
+      }
+    },
+    "doctor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "argv"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[a-z][a-z0-9_.-]*$"
+              },
+              "argv": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "description": {
+                "type": "string"
+              },
+              "expect_exit_code": {
+                "type": "integer",
+                "default": 0
+              },
+              "next_action_hint": {
+                "type": "string",
+                "description": "Human-readable next action surfaced when this check fails."
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 120
+              }
+            }
+          }
+        },
+        "disable_canonical_checks": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "git_common_dir",
+              "hooks_path",
+              "lefthook_shim",
+              "husky_dir"
+            ]
+          },
+          "description": "Opt out of a canonical check by id. Use only when the consumer repo deliberately does not use that hook surface."
+        }
+      }
+    }
+  }
+}

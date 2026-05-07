@@ -1,0 +1,58 @@
+# charness worktree adapter example.
+#
+# Drop this file at .agents/worktree-adapter.yaml in your consumer repo to
+# declare how `charness worktree prepare` should make a freshly-created git
+# worktree usable, and which extra `charness worktree doctor` checks should
+# decide whether the worktree is ready before mutate-phase work proceeds.
+#
+# charness always runs canonical checks (git common dir, core.hooksPath,
+# lefthook shim resolution, husky `_` directory). The fields below extend or
+# narrow that baseline; they never replace the canonical suite unless you
+# disable a check explicitly.
+#
+# `argv` lists must use block-style YAML; charness's repo-local YAML loader
+# does not parse inline `[a, b, c]` arrays.
+version: 1
+repo: my-repo
+language: en
+
+prepare:
+  # Commands run in declared order from the worktree root. argv is parsed as a
+  # list, no shell expansion. Add as many as you need to make the worktree
+  # ready (install deps, install hooks, materialize generated stubs, etc.).
+  commands:
+    - id: install-deps
+      description: "Install workspace dependencies for this worktree."
+      timeout_seconds: 600
+      argv:
+        - pnpm
+        - install
+        - --frozen-lockfile
+    - id: install-hooks
+      description: "Re-run lefthook install so the per-worktree shim points at this checkout's node_modules."
+      timeout_seconds: 60
+      argv:
+        - pnpm
+        - exec
+        - lefthook
+        - install
+  skip_if_doctor_passes: true
+
+doctor:
+  # Optional extra probes layered on top of the canonical checks. Each command
+  # runs from the worktree root with no shell expansion. Exit code matches
+  # `expect_exit_code` (default 0) means pass; anything else means fail and
+  # `next_action_hint` is surfaced to the operator/agent.
+  checks:
+    - id: lefthook_self_check
+      description: "Confirm the lefthook binary the shim points at actually runs from this worktree."
+      next_action_hint: "Run `charness worktree prepare` to install hooks for this worktree."
+      timeout_seconds: 10
+      argv:
+        - pnpm
+        - exec
+        - lefthook
+        - version
+  # Use this only when your repo deliberately does not use a hook manager.
+  # disable_canonical_checks:
+  #   - lefthook_shim

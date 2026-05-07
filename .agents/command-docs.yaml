@@ -15,6 +15,7 @@ commands:
       - task
       - capability
       - tool
+      - worktree
     required_doc_contains:
       - The CLI is there so humans and agents can inspect local harness state instead of guessing.
       - charness --help
@@ -262,3 +263,36 @@ commands:
       - tool_ids
     required_doc_contains:
       - charness tool update agent-browser
+  worktree:
+    help_command: ./charness worktree --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/worktree-prepare.md
+    required_help_contains:
+      - doctor
+      - prepare
+    required_doc_contains:
+      - charness worktree doctor
+      - charness worktree prepare
+      - .agents/worktree-adapter.yaml
+  worktree-doctor:
+    help_command: ./charness worktree doctor --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/worktree-prepare.md
+    required_help_contains:
+      - --repo-root
+      - --json
+    required_doc_contains:
+      - charness worktree doctor
+  worktree-prepare:
+    help_command: ./charness worktree prepare --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/worktree-prepare.md
+    required_help_contains:
+      - --repo-root
+      - --force
+      - --json
+    required_doc_contains:
+      - charness worktree prepare

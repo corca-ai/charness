@@ -28,6 +28,17 @@ Resolve the adapter first.
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 ```
 
+## Worktree Readiness
+
+Before review-driven commits, run a non-fatal worktree readiness probe when
+`charness` is available. If the JSON status is not `pass`, surface
+`charness worktree prepare` as the next action and have the operator confirm
+before continuing. Skip silently when `charness` is not on PATH.
+
+```bash
+command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
+```
+
 Default durable artifact:
 
 - `<repo-root>/charness-artifacts/hitl/latest.md`

@@ -217,6 +217,10 @@ def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> No
     exported_locks_root = plugin_root / "integrations" / "locks"
     export_lock_surface(locks_root, exported_locks_root)
 
+    worktree_root = repo_root / "integrations" / "worktree"
+    if worktree_root.is_dir():
+        replace_tree(worktree_root, plugin_root / "integrations" / "worktree")
+
     scripts_root = repo_root / "scripts"
     exported_scripts_root = plugin_root / "scripts"
     replace_tree_if_present(scripts_root, exported_scripts_root)

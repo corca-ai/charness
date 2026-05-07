@@ -61,6 +61,22 @@ Adapter policy:
   `<repo-root>/.agents/impl-adapter.yaml` early
 - treat the verification survey as onboarding, not a closing nicety: look for
   the best self-verification path before you code and again before you stop
+- if `charness worktree doctor --json` reports a non-pass status, surface the
+  recommended next action (typically `charness worktree prepare`) and have the
+  operator run it before mutating code; do not auto-run prepare and do not
+  silently proceed past missing hook-manager state
+
+## Worktree Readiness
+
+Before mutating code, run a non-fatal worktree readiness probe when the
+`charness` CLI is available. If the JSON status is not `pass`, surface
+`charness worktree prepare` as the next action and have the operator confirm
+before continuing. When `charness` is not on PATH, skip silently — this probe
+must not block work in repos that do not consume charness.
+
+```bash
+command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
+```
 
 ## Workflow
 
