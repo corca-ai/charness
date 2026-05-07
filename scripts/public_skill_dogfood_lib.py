@@ -62,6 +62,7 @@ EVIDENCE_OVERRIDES = {
     ],
     "find-skills": [
         "uses the named skill or capability lookup path before falling back to broad filesystem search",
+        "in `--read-only` mode skips the durable artifact write and reports `artifacts.mode = \"read-only\"` instead of refreshing `charness-artifacts/find-skills/latest.*`",
     ],
     "handoff": [
         "reads the current workflow trigger before broad repo exploration and keeps the baton pass continuation-first",

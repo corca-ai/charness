@@ -161,6 +161,16 @@ Reopen trigger:
 - Impact surfaces: [`skills/public/hitl/SKILL.md`](../skills/public/hitl/SKILL.md), support-layer roadmap
 - Reopen trigger: If current state model cannot sustain real review-loop throughput.
 
+## Open Deferrals (2026-05-07)
+
+### D18. Workspace-Write Workflow Proof Carrier
+
+- Question: Where does the workspace-write half of the read-only versus workspace-write proof split land — a new public-skill dogfood case, an existing dogfood entry, or a separate eval fixture?
+- Current choice: Defer until the next dogfood slice picks the carrier; the no-write half is landed as `find-skills --read-only` ([skills/public/find-skills/SKILL.md](../skills/public/find-skills/SKILL.md), [skills/public/find-skills/scripts/list_capabilities.py](../skills/public/find-skills/scripts/list_capabilities.py)).
+- Why now: Designing the workspace-write carrier needs a decision about whether it lives in [docs/public-skill-dogfood.json](./public-skill-dogfood.json) or in a new fixture under `evals/cautilus/`, and that decision is cleaner once the Cautilus adapter is re-enabled and the upstream eval runner is stable.
+- Impact surfaces: [docs/public-skill-dogfood.json](./public-skill-dogfood.json), [evals/cautilus/](../evals/cautilus/), [charness-artifacts/spec/readme-proof-cautilus-eval-migration.md](../charness-artifacts/spec/readme-proof-cautilus-eval-migration.md), [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml), [scripts/agent-runtime/run-local-instruction-surface-test.mjs](../scripts/agent-runtime/run-local-instruction-surface-test.mjs)
+- Reopen trigger: When the Cautilus adapter `run_mode` leaves `disabled` or when an unrelated workspace-write dogfood slice is started, whichever comes first; the next session that re-enables Cautilus must land both the workspace-write carrier and the routing-eval `--read-only` wiring before treating the read-only versus workspace-write split as closed.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

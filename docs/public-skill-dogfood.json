@@ -124,7 +124,8 @@
         "routes the prompt to `find-skills` instead of an adjacent public skill",
         "names or refreshes `charness-artifacts/find-skills/latest.md` when the skill persists durable state",
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context",
-        "uses the named skill or capability lookup path before falling back to broad filesystem search"
+        "uses the named skill or capability lookup path before falling back to broad filesystem search",
+        "in `--read-only` mode skips the durable artifact write and reports `artifacts.mode = \"read-only\"` instead of refreshing `charness-artifacts/find-skills/latest.*`"
       ],
   "review_status": "reviewed",
       "reviewed_on": "2026-05-07",

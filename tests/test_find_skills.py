@@ -454,6 +454,37 @@ def test_recommendation_queries_do_not_rewrite_canonical_inventory_artifact(tmp_
     assert artifact_json["inventory"]["tool_recommendation_query"] is None
 
 
+def test_list_capabilities_read_only_does_not_write_durable_artifact(tmp_path: Path) -> None:
+    _write_find_skills_adapter(tmp_path)
+    inventory_dir = tmp_path / "charness-artifacts" / "find-skills"
+
+    payload = _run_list_capabilities(tmp_path, "--read-only")
+
+    assert payload["artifacts"] == {
+        "mode": "read-only",
+        "markdown_path": None,
+        "json_path": None,
+        "generated_at": None,
+        "updated": False,
+        "artifact_paths": [],
+        "semantic_content_changed": False,
+        "requires_repo_closeout": False,
+        "commit_recommended": False,
+        "closeout_reason": "canonical find-skills inventory not written in read-only mode",
+    }
+    assert "public_skills" in payload
+    assert not inventory_dir.exists()
+
+
+def test_list_capabilities_default_mode_emits_write_artifacts(tmp_path: Path) -> None:
+    _write_find_skills_adapter(tmp_path)
+
+    payload = _run_list_capabilities(tmp_path)
+
+    assert payload["artifacts"]["mode"] == "write"
+    assert (tmp_path / payload["artifacts"]["json_path"]).is_file()
+
+
 def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_path: Path) -> None:
     _write_skill(tmp_path, "gather", "Gather skill.")
     _write_find_skills_adapter(tmp_path, include_preset=True)

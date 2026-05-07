@@ -39,6 +39,7 @@ build_inventory_payload = _list_capabilities_lib_module.build_inventory_payload
 referenced_skill_paths = _list_capabilities_lib_module.referenced_skill_paths
 _inventory_artifact_module = SKILL_RUNTIME.load_local_skill_module(__file__, "inventory_artifact")
 persist_inventory = _inventory_artifact_module.persist_inventory
+read_only_inventory_artifacts = _inventory_artifact_module.read_only_inventory_artifacts
 resolve_tool_recommendations = _list_capabilities_lib_module.resolve_tool_recommendations
 support_recommendations_for_task = _list_capabilities_lib_module.support_recommendations_for_task
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
@@ -153,6 +154,11 @@ def main() -> None:
     recommendation_group.add_argument("--recommend-for-task")
     parser.add_argument("--next-skill-id")
     parser.add_argument("--only-blocking", action="store_true")
+    parser.add_argument(
+        "--read-only",
+        action="store_true",
+        help="Skip durable inventory artifact write; emit inventory payload to stdout only.",
+    )
     args = parser.parse_args()
     root = args.repo_root.resolve()
     local_root = _local_surface_root(root)
@@ -207,11 +213,14 @@ def main() -> None:
         support_skill_recommendations=support_skill_recommendations,
         support_recommendation_query=support_recommendation_query,
     )
-    payload["artifacts"] = persist_inventory(
-        repo_root=root,
-        output_dir=root / adapter["data"]["output_dir"],
-        inventory=payload,
-    )
+    if args.read_only:
+        payload["artifacts"] = read_only_inventory_artifacts()
+    else:
+        payload["artifacts"] = persist_inventory(
+            repo_root=root,
+            output_dir=root / adapter["data"]["output_dir"],
+            inventory=payload,
+        )
     print(json.dumps(payload, ensure_ascii=False, indent=2))
 
 if __name__ == "__main__":

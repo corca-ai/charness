@@ -11,8 +11,14 @@ Status 2026-04-28: the first migration slice is landed. Charness now uses
 `evals/cautilus/whole-repo-routing.fixture.json`,
 `.agents/cautilus-adapter.yaml` `evaluation_input_default` /
 `eval_test_command_templates`, and `cautilus eval test`; current proof is
-recorded in `charness-artifacts/cautilus/latest.md`. The remaining next move is
-the README proof ledger and the read-only versus workspace-write proof split.
+recorded in `charness-artifacts/cautilus/latest.md`. The README proof ledger
+is now owned by [docs/readme-proof.md](../../docs/readme-proof.md).
+
+Status 2026-05-07: the no-write side of the read-only versus workspace-write
+proof split is landed as the `find-skills --read-only` flag (see the
+`Read-Only Versus Workspace-Write Proof` section below). The remaining next
+move is the workspace-write workflow proof carrier and the actual routing eval
+wiring once the Cautilus adapter is re-enabled.
 
 The goal is not to prove every README sentence with an evaluator. The goal is
 to give every load-bearing README promise an owner:
@@ -126,10 +132,20 @@ Implement or wire two proof modes:
   realistic agent run can execute the workflow without state-cache or artifact
   write failures
 
-The likely Charness-side implementation is a no-write mode in the find-skills
-discovery path, or a Cautilus runner mode that observes routing without
-requiring the discovery artifact refresh. The exact owner should be chosen
-after the upstream eval runner stabilizes.
+Status:
+
+- No-write seam landed on the Charness side as
+  `python3 skills/public/find-skills/scripts/list_capabilities.py --read-only`,
+  documented in [skills/public/find-skills/SKILL.md](../../skills/public/find-skills/SKILL.md)
+  Bootstrap. The flag emits the inventory payload to stdout, sets
+  `artifacts.mode = "read-only"`, and skips the durable artifact write so a
+  read-only sandbox can still complete the routing decision. Default behaviour
+  is unchanged; callers must opt in.
+- Workspace-write workflow proof carrier is still a follow-up. The next slice
+  should pick a dogfood that runs the agent in `--sandbox workspace-write` and
+  proves the durable artifact and any related state-cache writes complete
+  cleanly. Routing-side wiring of the new flag waits until the Cautilus adapter
+  is re-enabled and the upstream eval runner is stable.
 
 ## README Proof Ledger
 

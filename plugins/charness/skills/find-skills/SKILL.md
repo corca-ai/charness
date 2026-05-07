@@ -54,12 +54,19 @@ Start local-first:
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root .
+python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --read-only
 python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommend-for-task "<task summary>"
 python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommend-for-skill <skill-id>
 python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommendation-role <runtime|validation> --next-skill-id <skill-id>
 sed -n '1,220p' docs/external-integrations.md 2>/dev/null || true
 sed -n '1,220p' docs/support-skill-policy.md 2>/dev/null || true
 ```
+
+Pass `--read-only` when the caller must not mutate the workspace (read-only
+sandbox, routing-only eval, or any context where the durable inventory artifact
+refresh is not part of the contract). The payload still contains the inventory
+on stdout, and `artifacts.mode` reports `read-only` so the consumer can tell
+that no durable artifact was written.
 
 If a host-provided installed skill path is missing, resolve the current
 installed path before treating the capability as absent:

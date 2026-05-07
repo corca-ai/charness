@@ -109,6 +109,22 @@ def _canonical_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
     return canonical
 
 
+def read_only_inventory_artifacts() -> dict[str, Any]:
+    return {
+        "mode": "read-only",
+        "markdown_path": None,
+        "json_path": None,
+        "generated_at": None,
+        "updated": False,
+        **artifact_closeout_status(
+            artifact_paths=[],
+            semantic_content_changed=False,
+            reason="canonical find-skills inventory not written in read-only mode",
+            unchanged_reason="canonical find-skills inventory not written in read-only mode",
+        ),
+    }
+
+
 def persist_inventory(
     *,
     repo_root: Path,
@@ -141,6 +157,7 @@ def persist_inventory(
     markdown_relative = str(markdown_path.relative_to(repo_root))
     json_relative = str(json_path.relative_to(repo_root))
     return {
+        "mode": "write",
         "markdown_path": markdown_relative,
         "json_path": json_relative,
         "generated_at": generated_at,
