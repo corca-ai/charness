@@ -328,7 +328,23 @@ def detect_agent_docs(
         agents_text,
         skill_routing_payload,
     )
-    normalization_findings = [*retro_findings, *fresh_eye_findings, *charness_artifact_findings, *skill_routing_findings]
+    from scripts.init_repo_adapter_inspect_lib import (
+        detect_init_repo_adapter_normalization,
+        detect_worktree_adapter_normalization,
+    )
+
+    worktree_adapter, worktree_adapter_findings, worktree_adapter_recommendations = (
+        detect_worktree_adapter_normalization(repo_root)
+    )
+    init_repo_adapter, init_repo_adapter_recommendations = detect_init_repo_adapter_normalization(repo_root)
+    normalization_findings = [
+        *retro_findings,
+        *fresh_eye_findings,
+        *charness_artifact_findings,
+        *skill_routing_findings,
+        *worktree_adapter_findings,
+    ]
+    extra_recommendations = [*worktree_adapter_recommendations, *init_repo_adapter_recommendations]
     return {
         "agents": _file_state(agents),
         "claude": _file_state(claude),
@@ -336,11 +352,14 @@ def detect_agent_docs(
         "agents_has_text": _text_present(agents),
         "claude_has_text": _text_present(claude),
         "normalization": {
-            "status": "needs_normalization" if normalization_findings else "ok",
+            "status": "needs_normalization" if normalization_findings or extra_recommendations else "ok",
             "findings": normalization_findings,
+            "extra_recommendations": extra_recommendations,
             "retro_memory": retro_memory,
             "fresh_eye_review": fresh_eye_review,
             "charness_artifacts": charness_artifacts,
             "skill_routing": skill_routing,
+            "worktree_adapter": worktree_adapter,
+            "init_repo_adapter": init_repo_adapter,
         },
     }

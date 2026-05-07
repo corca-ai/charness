@@ -158,6 +158,9 @@ def build_init_repo_inspection_payload(
         if finding.get("type") in RECOMMENDATION_FINDING_TYPES
     ]
     recommendations.extend(detect_policy_source_recommendations(repo_root, _read_text(repo_root / "AGENTS.md"), policy))
+    extra = normalization.get("extra_recommendations") or []
+    if isinstance(extra, list):
+        recommendations.extend(item for item in extra if isinstance(item, dict))
     recommendations = [
         recommendation
         for recommendation in sort_recommendations(recommendations)
@@ -169,6 +172,7 @@ def build_init_repo_inspection_payload(
             acknowledgement["adapter_path"] = adapter_path
     normalization["findings"] = findings
     normalization["recommendations"] = recommendations
+    normalization.pop("extra_recommendations", None)
     normalization["status"] = "needs_normalization" if findings or recommendations else "ok"
     normalization["recommendation_policy"] = {
         "defaults_version": policy.get("defaults_version"),
