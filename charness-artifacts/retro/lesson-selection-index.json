@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-07",
-  "source_artifact_count": 49,
-  "candidate_count": 292,
+  "source_artifact_count": 50,
+  "candidate_count": 302,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:32c04245cbae",
+      "kind": "current_focus",
+      "lesson": "`charness-artifacts/spec/issue-109-spec-authoring-discipline.md` — design extraction only 다음 세션이 보통 같은 결의 issue closeout을 또 만났을 때 더 빠르게 닿는 게 이번 retro의 목표다.",
+      "normalized_key": "charness artifacts spec issue 109 spec authoring discipline md design extraction only 다음 세션이",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+          "date": "2026-05-07",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:9e70b78f1dbe",
       "kind": "current_focus",
@@ -29,6 +49,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
+          "date": "2026-05-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:ea2963bca3fa",
+      "kind": "current_focus",
+      "lesson": "`plugins/charness/skills/find-skills/references/support-consumption.md` — sync mirror",
+      "normalized_key": "plugins charness skills find skills references support consumption md sync mirror",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+          "date": "2026-05-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:81082dea5a1b",
+      "kind": "current_focus",
+      "lesson": "`skills/public/find-skills/references/support-consumption.md` — `Discoverability Claim` 섹션 추가",
+      "normalized_key": "skills public find skills references support consumption md discoverability claim 섹션 추가",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
           "date": "2026-05-07",
           "section": "Context"
         }
@@ -135,6 +195,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:9317a32c542c",
+      "kind": "next_improvement",
+      "lesson": "**capability**: 현재 가벼운 미스는 따로 capability 변경을 정당화하지 않는다. bootstrap path 미스도 한 번이라 SKILL.md 수정은 과잉.",
+      "normalized_key": "capability 현재 가벼운 미스는 따로 capability 변경을 정당화하지 않는다 bootstrap path 미스도 한 번이라",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:670ba001ac92",
       "kind": "next_improvement",
       "lesson": "keep `check_skill_contracts.py` as the canonical example of body-only core contracts plus package-level reference contracts.",
@@ -169,86 +249,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
-          "date": "2026-05-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:04c8ab16a159",
-      "kind": "next_improvement",
-      "lesson": "prefer reference-aware or scenario-backed validator assertions over exact prose snippets when the protected invariant is not classifier input.",
-      "normalized_key": "prefer reference aware or scenario backed validator assertions over exact prose snippets when the",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
-      "latest_source_date": "2026-05-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
-          "date": "2026-05-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:0b4f2426002f",
-      "kind": "next_improvement",
-      "lesson": "replace some future exact-string checks with reference-aware assertions so `SKILL.md` does not need to carry a growing anchor catalog.",
-      "normalized_key": "replace some future exact string checks with reference aware assertions so skill md does",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
-      "latest_source_date": "2026-05-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
-          "date": "2026-05-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:a74a8b681b3f",
-      "kind": "next_improvement",
-      "lesson": "support-skill discoverability must include workflow-language and file shape triggers, not only explicit `support/<id>` naming.",
-      "normalized_key": "support skill discoverability must include workflow language and file shape triggers not only explicit",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
-      "latest_source_date": "2026-05-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
-          "date": "2026-05-07",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:14780eff74fd",
-      "kind": "next_improvement",
-      "lesson": "when a generated artifact can be produced by both installed-cache and repo-local scripts, use the repo-local source script before final sync.",
-      "normalized_key": "when a generated artifact can be produced by both installed cache and repo local",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
-      "latest_source_date": "2026-05-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
           "date": "2026-05-07",
           "section": "Next Improvements"
         }
@@ -257,6 +257,26 @@
   ],
   "candidates": [
     {
+      "candidate_id": "current_focus:32c04245cbae",
+      "kind": "current_focus",
+      "lesson": "`charness-artifacts/spec/issue-109-spec-authoring-discipline.md` — design extraction only 다음 세션이 보통 같은 결의 issue closeout을 또 만났을 때 더 빠르게 닿는 게 이번 retro의 목표다.",
+      "normalized_key": "charness artifacts spec issue 109 spec authoring discipline md design extraction only 다음 세션이",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+          "date": "2026-05-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:9e70b78f1dbe",
       "kind": "current_focus",
       "lesson": "Compressed the `quality` public skill from a dense manual into a fast-path orchestrator while preserving checked-in plugin export, find-skills discovery, public-skill dogfood, and prompt-surface proof policy.",
@@ -271,6 +291,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
+          "date": "2026-05-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:ea2963bca3fa",
+      "kind": "current_focus",
+      "lesson": "`plugins/charness/skills/find-skills/references/support-consumption.md` — sync mirror",
+      "normalized_key": "plugins charness skills find skills references support consumption md sync mirror",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+          "date": "2026-05-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:81082dea5a1b",
+      "kind": "current_focus",
+      "lesson": "`skills/public/find-skills/references/support-consumption.md` — `Discoverability Claim` 섹션 추가",
+      "normalized_key": "skills public find skills references support consumption md discoverability claim 섹션 추가",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
           "date": "2026-05-07",
           "section": "Context"
         }
@@ -377,6 +437,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:9317a32c542c",
+      "kind": "next_improvement",
+      "lesson": "**capability**: 현재 가벼운 미스는 따로 capability 변경을 정당화하지 않는다. bootstrap path 미스도 한 번이라 SKILL.md 수정은 과잉.",
+      "normalized_key": "capability 현재 가벼운 미스는 따로 capability 변경을 정당화하지 않는다 bootstrap path 미스도 한 번이라",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:670ba001ac92",
       "kind": "next_improvement",
       "lesson": "keep `check_skill_contracts.py` as the canonical example of body-only core contracts plus package-level reference contracts.",
@@ -411,6 +491,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4bc9b2d78f72",
+      "kind": "next_improvement",
+      "lesson": "**memory**: 본 retro 자체가 lesson durable persistence. 다음 trap은 recent-lessons.md가 다음 세션에 surface한다.",
+      "normalized_key": "memory 본 retro 자체가 lesson durable persistence 다음 trap은 recent lessons md가 다음 세션에",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
           "date": "2026-05-07",
           "section": "Next Improvements"
         }
@@ -493,6 +593,66 @@
           "artifact_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
           "date": "2026-05-07",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b762369ee837",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: routing/claim-shaped issue 처리 시 첫 1분 안에 `tests/` grep + `docs/public-skill-dogfood.json` lookup으로 \"이미 wired된 surface인가?\"를 판정한다. 그 뒤에야 SKILL.md/lib 코드를 본다.",
+      "normalized_key": "workflow routing claim shaped issue 처리 시 첫 1분 안에 tests grep docs public",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:004835246901",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: 다중 issue close 커밋 메시지에서 모든 이슈 번호 앞에 closing 키워드를 붙인다 (`Close #108, close #109`). 단일 키워드는 첫 번째 #N에만 fire 한다.",
+      "normalized_key": "workflow 다중 issue close 커밋 메시지에서 모든 이슈 번호 앞에 closing 키워드를 붙인다 close",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:b631dfe3f1c4",
+      "kind": "repeat_trap",
+      "lesson": "**`Close` 키워드를 첫 번째 이슈에만 붙였다.** 커밋 메시지가 `Close #108 by claim, #109 by design extraction`이었는데, GitHub auto-close는 키워드가 직전 토큰일 때만 fire 한다. 결과적으로 #108은 자동 close, #109는 수동 close + comment를 따로 호출해야 했다. 한 줄짜리 손해지만 실제 동작이 정확히 검증돼야 하는 흐름.",
+      "normalized_key": "close 키워드를 첫 번째 이슈에만 붙였다 커밋 메시지가 close 108 by claim 109 by",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+          "date": "2026-05-07",
+          "section": "Waste"
         }
       ]
     },
@@ -531,6 +691,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+          "date": "2026-05-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:708c3763f2b1",
+      "kind": "repeat_trap",
+      "lesson": "**find-skills bootstrap 경로 가정 미스.** SKILL.md의 bootstrap이 `python3 \"$SKILL_DIR/scripts/resolve_adapter.py\"`를 권하는데 처음에 repo root의 `scripts/resolve_adapter.py`로 호출했다 — 존재하지 않는 path. 즉시 정정했지만 매번 반복하면 지속 비용.",
+      "normalized_key": "find skills bootstrap 경로 가정 미스 skill md의 bootstrap이 python3 skill dir scripts resolve",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
           "date": "2026-05-07",
           "section": "Waste"
         }
@@ -651,6 +831,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
+          "date": "2026-05-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:38686155455b",
+      "kind": "repeat_trap",
+      "lesson": "**이미 구현된 표면을 다시 탐색했다.** #108의 routing 인프라는 `STRONG_TASK_TRIGGERS_BY_SUPPORT_ID`, positive/negative fixture, dogfood JSON observed_evidence 라인까지 이미 landing되어 있었다. SKILL.md/lib 코드 → 테스트 → dogfood JSON 순서로 봤지만, 거꾸로 dogfood JSON을 먼저 봤다면 \"이 claim은 이미 명시돼 있다\"를 5분 일찍 알았을 것이다.",
+      "normalized_key": "이미 구현된 표면을 다시 탐색했다 108의 routing 인프라는 strong task triggers by support id",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
           "date": "2026-05-07",
           "section": "Waste"
         }
