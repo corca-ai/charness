@@ -22,12 +22,28 @@ MODE_TERMS_RE = re.compile(r"\bmode(?:s)?\b", re.IGNORECASE)
 OPTION_TERMS_RE = re.compile(r"\boption(?:s)?\b", re.IGNORECASE)
 BARE_HELPER_PATH_RE = re.compile(r"`scripts/[A-Za-z0-9._/-]+\.(?:py|sh|bash|zsh|js|ts|rb|pl|lua)`")
 SOURCE_TREE_FILE_PATH_RE = re.compile(r"`skills/(?:public|support)/[A-Za-z0-9._-]+/[A-Za-z0-9._/-]+\.(?:md|py|sh|bash|zsh|js|ts|rb|pl|lua|yaml|yml|json)`")
+PRESSURE_EXEMPT_H2_SECTIONS = {"Load-Bearing Anchors"}
 
 
 def count_files(directory: Path) -> int:
     if not directory.is_dir():
         return 0
     return sum(1 for path in directory.rglob("*") if path.is_file())
+
+
+def remove_pressure_exempt_sections(lines: list[str]) -> list[str]:
+    kept: list[str] = []
+    skip = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("## "):
+            section = stripped[3:].strip()
+            skip = section in PRESSURE_EXEMPT_H2_SECTIONS
+            if skip:
+                continue
+        if not skip:
+            kept.append(line)
+    return kept
 
 
 def has_portable_path_ambiguity(lines: list[str]) -> bool:
@@ -62,7 +78,7 @@ def inventory_skill(
     relative_skill = skill_dir.relative_to(repo_root)
     skill_type = classify_skill_type(relative_skill, is_runtime_install)
     body = markdown_helpers["strip_frontmatter"](skill_path.read_text(encoding="utf-8"))
-    body_lines = body.splitlines()
+    body_lines = remove_pressure_exempt_sections(body.splitlines())
     nonempty_lines = [line for line in body_lines if line.strip()]
     prose_lines = markdown_helpers["strip_fenced_lines"](body_lines)
     prose = "\n".join(prose_lines)

@@ -4,195 +4,188 @@ description: "Use when the goal is to understand and improve the repo's current 
 ---
 # Quality
 
-Use this when the task is overall quality posture, not only one narrow bug or one isolated test. `quality` covers concept integrity review, test confidence, security and supply-chain posture, skill and maintenance drift, and documentation drift. The job is to understand the current quality surface, run the meaningful gates that already exist, and propose the missing ones concretely. Use Gerald Weinberg-style systems thinking when the question crosses code, tests, docs, operators, and local process: inspect the whole system producing quality, not only the last failed check. `quality` may also install or refresh the repo-local quality posture when the next move is deterministic setup work instead of only review. Keep that inside the same public concept: review posture and bootstrap posture are two states of `quality`, not separate skills. When the next quality move is repo-local, deterministic, and low-risk, prefer implementing that gate in the same turn.
-Deterministic gates should define pass/fail authority wherever possible. If a concern can be enforced by a linter, validator, test, hook, or script, promote it into that gate instead of leaving it as repeated prose advice. Maintainer-local enforcement counts when the repo depends on it; if the final stop-before-finish gate has no checked-in hook, installer, or documented no-hook policy, name that as a missing enforcement gap. Use concept review instead when the real problem is unresolved boundary or ownership design. See `references/maintainer-local-enforcement.md` and `references/quality-lenses.md`. Treat length, duplicate, and pressure heuristics as structural smell sensors, not goals in themselves. When one of those signals fires, look first for the structural move it points at: delete dead surface, merge competing copies, split ownership, extract a repeated helper, or narrow an interface. Do not call a cosmetic shrink-to-fit edit a quality win if the underlying design pressure is still present.
-This is a routing default, not a veto against good deterministic enforcement. For length, duplicate, and pressure signals, default to concept-review advisory first; if the repo can state one explicit low-noise invariant and a failure implies a clear structural response, the same seam may still graduate to `AUTO_CANDIDATE` or `AUTO_EXISTING`. Do not generalize this caution to standing threshold gates such as coverage floors, runtime budgets, or other already-honest enforced limits.
-When the repo lacks concrete lint defaults, prefer explicit language baselines over taste-driven tool sprawl. For Python, default to `ruff check` as the standing lint path, include `C90`/mccabe for complexity, and choose exactly one type checker (`mypy` or `pyright`). Ruff catches file-local unused imports and variables, not unreferenced modules or whole-repo dead files; when stale files, dead modules, migrations, or broad cleanup risk are in scope, recommend a separate dead-code/dead-file advisory pass such as `vulture` before promoting any finding to a hard gate. For JavaScript/TypeScript, default to `eslint` and, when TypeScript is present, `tsc --noEmit`; if `eslint` is the standing linter, turn on a `complexity` rule instead of relying only on file/function length, and use `knip` as the repo-surface-driven unused files/exports/dependencies advisory. Treat `B`, `UP`, `SIM`, `deptry`, `knip`, `vulture`, `shellcheck`, `lychee`, `secretlint`, or `gitleaks` as repo-surface-driven escalations, not mandatory first-day defaults. See `references/sample-presets.md` and the shipped `python-quality` / `typescript-quality` presets.
+Use this when the task is overall quality posture, not one narrow bug or one
+isolated test. `quality` covers concept integrity, behavior proof, security and
+supply-chain posture, documentation drift, skill maintenance drift, and
+operator sustainability.
+
+Default to inspecting the system that produces quality, running existing gates,
+and making concrete next gates or cleanups. Prefer deterministic enforcement
+over repeated prose when a linter, validator, test, hook, script, or command
+can own the concern. Use concept review when unresolved boundary, ownership, or
+architecture is the real issue. Length, duplicate, and pressure heuristics are
+structural smell sensors; the win is delete, merge, split ownership, extract a
+helper, or narrow an interface.
+
+`quality` may also install or refresh deterministic, low-risk repo-local
+quality posture. Review posture and bootstrap posture remain one public concept.
 
 ## Bootstrap
 
-Resolve the adapter first, then inspect the current quality surface. Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
+Resolve the adapter first, then re-derive the current source, spec, artifact,
+and gate surface before trusting a prior review.
 
-```bash
-python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
-```
-
-If the repo already has repo-owned quality commands or needs a first-pass installed posture, bootstrap the adapter and capture deferred setup in a machine-readable report:
-
-```bash
-python3 "$SKILL_DIR/scripts/bootstrap_adapter.py" --repo-root .
-```
-
-When stronger local proof depends on a missing validation tool, reuse the shared recommendation/install payload instead of inventing prose-only install advice. If an existing gate is blocked only by a missing validation binary, treat that as setup work: name the missing binary and verify command, install when the user already asked for installation or local closeout, otherwise ask, then rerun the blocked gate.
-
-```bash
-python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root .
-```
-
-For evaluator-backed behavior closeout, prompt regression, baseline compare, or operator reading tests, use `quality` before downgrading to HITL/manual review. Generic review, closeout, or "run quality" wording does not require an evaluator; start with deterministic gates and escalate only when they cannot answer the behavior question.
-For task-completing quality reviews, run bounded delegated review after initial inventory and before broad recommendations; add slow-gate lenses from `references/standing-gate-verbosity.md` when runtime is in scope. Report exactly `Delegated Review: executed|blocked|not_applicable`; `missed`, `skipped`, or `not run` is not a valid closeout status. Blocked needs a concrete host/tool signal.
-Before host-capability questions, honor `<repo-root>/AGENTS.md` `Subagent Delegation`.
-When reader-facing Markdown needs rendered readability proof instead of source-only review, bootstrap or execute the repo-local markdown preview seam:
-
-```bash
-python3 "$SKILL_DIR/scripts/list_tool_recommendations.py" --repo-root . --recommendation-role runtime --next-skill-id quality
-python3 "$SKILL_DIR/scripts/bootstrap_markdown_preview.py" --repo-root .
-python3 "$SKILL_DIR/scripts/bootstrap_markdown_preview.py" --repo-root . --execute
-```
-
-Keep `latest.md` short and current; move older review detail into sibling `history/*.md` archives when today's posture starts getting buried. If the adapter is missing and the repo only needs a blank scaffold, run `python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root . --preset-id portable-defaults`.
-Before editing the artifact, run `python3 "$SKILL_DIR/scripts/resolve_quality_artifact.py" --repo-root . --intent current` and edit `write_artifact_path`, not `latest.md` by habit.
-
-The prior quality artifact is history, not the authoritative universe. Re-derive the current source, spec, and gate surface before trusting what the last artifact happened to mention.
+Key references for the frequent path are `references/bootstrap-escalations.md`,
+`references/inventory-dispatch.md`, `references/skill-ergonomics.md`, and
+`references/skill-quality.md`.
 
 ```bash
 # Required Tools: rg
 # Missing-binary protocol: ../../shared/references/binary-preflight.md
-# 1. fresh inventory before the prior artifact can anchor scope
+python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+python3 "$SKILL_DIR/scripts/bootstrap_adapter.py" --repo-root .
+python3 "$SKILL_DIR/scripts/resolve_quality_artifact.py" --repo-root . --intent current
 rg --files .
-# 2. current quality artifact and adjacent contracts
-sed -n '1,220p' <resolved-quality-artifact> 2>/dev/null || true
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
-rg --files docs skills
-# 3. repo signals and maintainer-local enforcement surface
-rg -n "eslint|ruff|mypy|pyright|tsc|pytest|vitest|jest|coverage|deptry|knip|audit|sast|owasp|threat|architecture|concept|markdownlint|secretlint|shellcheck|lychee|gitleaks|trufflehog|pre-push|prepush|githook|husky|simple-git-hooks|lefthook|core\.hooksPath|actions/checkout|actions/setup-node|actions/setup-go|actions/setup-python|actions/cache|actions/github-script|check-github-actions" .
-git config --get core.hooksPath || true
-find .git/hooks -maxdepth 1 -type f 2>/dev/null | sort
-# 4. current repo state
 git status --short
 ```
 
-If the adapter is missing, use inferred defaults and continue; scaffold one when the repo already has stable gate commands worth recording. Prefer `bootstrap_adapter.py` when the adapter should record installed command groups, inferred concept paths, preset lineage, or deferred setup in one pass.
+If the adapter is missing, continue with inferred defaults. Scaffold or refresh
+one when the repo already has stable gate commands, installed command groups,
+concept paths, preset lineage, or deferred setup worth recording.
+
+Use `references/bootstrap-escalations.md` for missing validation tools,
+reader-facing Markdown preview, evaluator-backed behavior proof, artifact
+write-path handling, and other non-default bootstrap paths.
+When writing the quality artifact, edit the resolved `write_artifact_path`, not
+`latest.md` by habit.
 
 ## Workflow
 
-1. Restate the current quality question: what the user wants checked or improved, whether the scope is repo-wide, one seam, or one proposed change, and which concept boundary or ownership seam is most likely to be wrong.
-   - if the run is read-only, downgrade conclusions that need writes/full gates/delegation and never clean up caller-provided output or evidence directories
-2. Detect the current gate surface.
-   - independently enumerate the current source, spec, and gate inventory before letting the previous quality artifact define scope
-   - local executable gates already present
-   - if the repo ships an installable CLI, bootstrap command, or operator-facing command surface, inspect whether help, command discovery, binary health, install/readiness, local discoverability, canonical-target vs multi-target lifecycle ownership, and cleanup ownership are separated honestly
-   - when README, docs, or public-spec prose readability is part of the review, run the relevant rendered surface or leave an explicit bootstrap payload instead of treating raw Markdown as equivalent proof; ordinary Markdown uses the markdown preview seam, while executable `*.spec.md` review should use the rendered Specdown report when that is the authoritative human-facing surface
-   - when CLI ergonomics are in scope, inventory flat help-list and cross-archetype schema smells with `$SKILL_DIR/scripts/inventory_cli_ergonomics.py`
-   - when mutating operator CLI commands are in scope, inventory help/read-only, option-looking positional rejection, dry-run/plan, and side-effect watch contracts with `$SKILL_DIR/scripts/inventory_cli_side_effect_probes.py`; see `references/installable-cli-probes.md`
-   - when a standing local gate exists, inventory quiet-default vs verbose-on-demand posture with `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`
-   - quiet failure output must still name the failing unit/spec/case and show a short actual/error snippet without a second manual rerun
-   - when the repo may keep one shipped implementation beside a historical or alternate runtime path, inventory likely dual-implementation parity smells with `$SKILL_DIR/scripts/inventory_dual_implementation.py`, then decide whether the relationship is parity-enforced, canonical-plus-legacy, or intentional divergence
-   - when first-touch operator/developer/agent docs are in scope, inventory entrypoint-doc ergonomics with `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py`
-   - when public executable specs are in scope, inventory reader-facing public-spec drift and proof-layering overlap with `$SKILL_DIR/scripts/inventory_public_spec_quality.py`; see `references/public-spec-layering.md`
-   - when user-facing docs, CLI names, code/config names, or artifacts may use different words for the same concept, inventory ubiquitous-language drift with `$SKILL_DIR/scripts/inventory_ubiquitous_language.py`; keep it advisory unless the adapter declares low-noise deprecated aliases
-   - elevate source-guard pressure as a rollup: total source-guard rows, top specs, brittle count, and next action category should be visible together
-   - when fixed-string source guards touch prose, inventory hard-wrap fragility with `$SKILL_DIR/scripts/inventory_brittle_source_guards.py`; see `references/brittle-source-guards.md`
-   - when lint suppressions start to accumulate, inventory lint suppression pressure with `$SKILL_DIR/scripts/inventory_lint_ignores.py`; blanket, file-level, or retained policy-level ignores should be explicit review targets with provenance and concrete revisit conditions, not invisible background debt
-   - inspect first-touch docs such as README and operator docs for drift against install, update, doctor, reset, or uninstall behavior when those commands exist; when the CLI surface is stable, prefer a deterministic command-docs drift gate over repeated prose review
-   - executable-spec frameworks, adapter depth, and overlap controls when the repo keeps acceptance checks in specs
-   - if evaluator-backed review or prompt-sensitive output matters, inspect whether prompt/content bulk stays in checked-in assets or is still embedded inline in source files
-   - inventory adapter/gate design with `$SKILL_DIR/scripts/inventory_adapter_gate_design.py` when adapter policy, recommendation queues, acknowledgements, or brittle gate promotion are in scope
-   - when skills are in scope, inventory skill ergonomics explicitly with `$SKILL_DIR/scripts/inventory_skill_ergonomics.py` instead of leaving concise-core, progressive-disclosure, or branching-pressure review as vague prose; if the repo stores skills outside `skills/public` or `skills/support`, record `skill_ergonomics_skill_paths` in the quality adapter so the default inventory does not return an empty scan
-   - when public-skill behavior or routing is in scope, scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` so the review names prompt, repo shape, expected artifact, and acceptance evidence explicitly
-   - when prompt-sensitive output matters or `prompt_asset_policy.source_globs` is configured, re-derive prompt/content bulk inventory from the current tree instead of trusting prior review prose; `prompt_asset_roots: []` only means no canonical asset root is declared, not that inline bulk inventory should be skipped
-   - when advisory inventories, helper scripts, or dead-file review are in scope, run `$SKILL_DIR/scripts/inventory_gitignore_scan_hygiene.py`; for Python run `$SKILL_DIR/scripts/run_dead_code_advisory.py --repo-root .`, and for JavaScript/TypeScript prefer `knip`
-   - if the repo keeps standing coverage floors, tag seams within `coverage_fragile_margin_pp` as `FRAGILE` instead of burying near-miss risk in prose
-   - for blind-spot prevention, apply `references/coverage-floor-policy.md`: adapter-owned `coverage_floor_policy`, real unfloored-file inventory, and `Covered by pytest:` reference validation when those notes exist
-   - maintainer-local enforcement for the final stop-before-finish gate: a checked-in hook, installer, explicit no-hook policy, hidden network/external-repo work, and whether the next move is review-only or a bounded bootstrap/install pass
+1. Restate the quality question: scope, likely wrong boundary or ownership
+   seam, and whether read-only constraints downgrade conclusions.
+2. Detect the current gate and source surface.
+   - enumerate source, specs, docs, adapters, skill surfaces, and commands
+     before letting the previous quality artifact define scope
+   - use `references/inventory-dispatch.md` to choose focused inventories for
+     CLI/operator surfaces, docs/readability, skills, runtime/economics,
+     source hygiene, security/supply chain, coverage/eval depth, and adapter
+     policy
+   - when skills are in scope, run skill ergonomics inventory; when
+     public-skill or durable artifact behavior is in scope, scaffold one
+     consumer-side dogfood case with
+     `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`
 3. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
-   - if the repo has executable-spec overlap or cost guards, run those before proposing more spec coverage
-   - when a standing gate already exists, prefer compact default phase output plus a verbose-on-demand escape hatch over always-on chatter; see `references/standing-gate-verbosity.md`
-   - when standing-test economics are in scope, inventory file/process/startup cost with `$SKILL_DIR/scripts/inventory_standing_test_economics.py` before recommending test pruning; count test files by surface, identify runner isolation/process mode, note TypeScript/transpiler startup shape, and separate nested CLI fanout from the small real-binary/protocol smoke that should remain
-   - before reporting runtime trends in `latest.md`, prefer `$SKILL_DIR/scripts/render_runtime_summary.py`; if structured samples are missing, report that as the next gate instead of inventing numbers, and list any `runtime_visibility_findings` under `Weak` or `Missing`
-   - when a hot spot becomes the standing single dominator, define a `runtime_budgets` or `runtime_budget_profiles` entry in the adapter and call `$SKILL_DIR/scripts/check_runtime_budget.py` from the repo's standing gate; budgets fail on recent-median drift, report latest-sample spikes separately, and should expose top-N runtime hot spots so unbudgeted slow phases are still visible
+   - run executable-spec overlap or cost guards before proposing more spec
+     coverage
+   - for standing-test economics, inspect duplicated proof, runner isolation,
+     startup cost, and hot spots before pruning tests or widening budgets
+   - before reporting runtime trends, prefer
+     `$SKILL_DIR/scripts/render_runtime_summary.py`; if structured samples are
+     missing, report that as the next gate instead of inventing numbers
 4. Inspect four quality lenses.
-   - `concept`: does the repo still match its claimed architecture and ownership model
-   - before proposing a new gate for length, duplicate, or pressure findings, ask which structural question the signal is exposing: delete, merge, split ownership, extract a helper, or narrow the interface
-   - `behavior`: do tests, evals, checks, and command-surface probes say something falsifiable about real behavior, and does the repo-owned test code stay maintainable
-   - when dual-implementation smell is real, treat it as `weak` until the repo proves one honest contract: parity harness, canonical side plus deletion/wrapper plan, or intentional divergence backed by an assertion
-   - if a fresh 5-minute reader could misread a present invariant as absent, treat that as a quality gap in declaration or gating rather than dismissing the reader
-   - when the same confidence gap could be closed either by shrinking production branches/interfaces or by adding more tests, prefer the smaller production surface first if behavior and signal both improve
-   - when executable specs exist, classify smoke vs behavior using the adapter's `specdown_smoke_patterns`, report the ratio, and treat bounded test-ratio posture as a named positive pattern when the repo constrains both under-testing and test-surface inflation
-   - ask not only what proof is missing, but which proof is duplicated at the wrong layer now that a public executable contract exists
-   - `security`: are there meaningful code, secret, or supply-chain risks
-   - `operability`: are setup, CI, install/update docs, and maintenance surfaces honest enough to sustain the quality bar
-   - make skill ergonomics explicit: concise `SKILL.md` core, progressive disclosure honesty, unnecessary mode/option pressure, trigger overlap/undertrigger risk, and prose ritual that should become a helper script
-   - make domain-language alignment explicit: user-facing wording, business/domain concepts, CLI/config names, and artifact names should use the same canonical terms unless an adapter-declared alias is intentional
-   - when the repo keeps major entrypoint docs, include entrypoint-doc ergonomics review: concise first-touch ownership, progressive disclosure into deeper owners, duplicate pressure between nearby entry docs, whether one canonical README-first bootstrap would be clearer than a separate install manual, and whether the prose overexplains branches a smart agent/operator can infer safely
-   - make evaluator depth explicit: smoke only, maintained evaluator-backed, or still smoke plus HITL
-   - if stronger local proof depends on an external binary or support tool, state whether it is currently installed and healthy, then surface the exact install and post-install verification path instead of vague prose
-5. Classify each issue by enforcement tier first: `AUTO_EXISTING`, `AUTO_CANDIDATE`, or `NON_AUTOMATABLE`.
-6. Classify gaps: `healthy`, `weak`, `missing`, or `defer`.
-7. Propose the next quality moves concretely.
-   - for missing or weak gates, name the exact setup or command family to add
-   - tag every recommended next gate as `active` or `passive`; passive entries require an explicit reason such as future-tool dependency, broader product decision, or runtime budget tradeoff
-   - prefer the smallest gate that materially improves confidence
-   - keep standing-test economics runner-neutral in the public skill body: ask which standing proof is duplicated, which slices belong in `standing` vs `ci_only` vs `on_demand`, and what dominates critical-path wall time without hardcoding one runner family
-   - before adding or tightening a gate around length, duplicate, or pressure signals, ask whether deleting code/docs, merging duplicated proof, splitting ownership, or extracting a helper is the cheaper and clearer fix
-   - do not force one stack's tooling when the repo does not use that stack
-   - when the problem is automatable, prefer a deterministic gate over prose
-   - for every new `AUTO_CANDIDATE`, state the structural question it protects, why the invariant is low-noise enough to automate, and what concrete structural action a failure should trigger; otherwise keep it advisory or `NON_AUTOMATABLE`
-   - when the automatable move is already clear and repo-owned, implement it in the same turn unless the user asked to stay review-only
-   - when an agent-facing CLI needs latency proof, prefer adapter-owned `startup_probes` plus standing `runtime_budgets` over prose-only advice
-   - when the next deterministic move is to install or refresh the repo-local quality surface itself, prefer the bootstrap posture and leave a machine-readable deferred-setup report
-   - if executable specs are slow or overlapping, delete duplicates, move detail into unit-level checks, or add a direct adapter before widening the spec bar
-   - when dual-implementation smell is real, recommend exactly one next contract: add a parity harness, pick one side canonical and delete or wrap the other, or document intentional divergence with a test that asserts it
-   - do not leave "keep both for safety" as an unpriced middle state
-8. Run a bounded fresh-eye reviewer on the drafted report before finalizing. Focuses: missing source/gate seams, stale prior-artifact assumptions, active vs passive recommendations, and invariants a fresh reader could misclassify as absent. Use `../../shared/references/fresh-eye-subagent-review.md` before reporting the reviewer path as blocked.
-9. End with a quality posture summary: what ran, which runtime hot spots dominate, whether coverage is standing-gated, whether evaluator-backed depth exists, what the current bar proves and still does not prove, and the next best gate or cleanup. The final user-facing answer must not silently omit `Weak`, `Missing`, `Advisory`, delegated-review status, or active `Recommended Next Gates` findings just because the implemented slice committed cleanly.
+   - `concept`: does the repo still match its claimed architecture and
+     ownership model
+   - `behavior`: do tests, evals, checks, probes, and command surfaces prove
+     falsifiable behavior without making the test surface unmaintainable
+   - `security`: are code, secret, dependency, and supply-chain risks covered
+     by repo-local proof or honestly deferred
+   - `operability`: are setup, CI, hooks, docs, install/update flows, runtime
+     budgets, and maintenance surfaces honest enough to sustain the bar
+5. Classify each finding by enforcement tier first.
+   - `AUTO_EXISTING`: an existing deterministic gate owns it
+   - `AUTO_CANDIDATE`: a low-noise invariant could own it with a clear
+     structural failure response
+   - `NON_AUTOMATABLE`: judgment, ownership, or product context decides it
+6. Classify posture as `healthy`, `weak`, `missing`, or `defer`.
+7. Propose concrete next quality moves.
+   - tag each recommended next gate as `active` or `passive`
+   - name the exact seam, command family, setup, or deletion/merge/split move
+   - implement clear repo-owned automation unless the user asked for review only
+   - do not leave dual implementations, duplicated proof, or stale command
+     surfaces in an unpriced "keep both for safety" state
+8. Run bounded fresh-eye review after initial inventory and before broad
+   recommendations. Report exactly `Delegated Review: executed|blocked|not_applicable`.
+   Blocked requires a concrete host or tool signal; use
+   `../../shared/references/fresh-eye-subagent-review.md`.
+9. End with a quality posture summary that does not hide `Weak`, `Missing`,
+   `Advisory`, delegated-review status, or active recommended next gates just
+   because the implemented slice or final gate passed.
 
-- `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`, `Standing Test Economics`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Advisory`, `Delegated Review`, `Commands Run`, `Recommended Next Gates`
-- Do not reduce quality to one aggregate score.
-- Do not split quality bootstrap into a second public concept when the work is still bounded repo-local quality setup.
+## Load-Bearing Anchors
+
+These phrases stay in core because validators and consumer prompts use them as
+routing anchors; references carry the detail.
+
+- The prior quality artifact is history; a fresh 5-minute reader can misclassify as absent an invariant that is merely scattered, so do not dismiss that as reader noise.
+- For evaluator-backed behavior closeout, prompt regression, baseline compare, or operator reading test, use `quality` before downgrading to HITL. Generic review, closeout, or "run quality" wording is not enough to run an evaluator.
+- When the next quality move is repo-local, deterministic, and low-risk, prefer implementing that gate in the same turn; when the automatable move is already clear and repo-owned, implement it in the same turn unless review-only was requested. If you stop short of an obvious repo-owned deterministic gate, name the unresolved enforcement gap.
+- Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior; scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`.
+- Skill review uses `$SKILL_DIR/scripts/inventory_skill_ergonomics.py`, skill ergonomics, mode/option pressure, trigger overlap, undertrigger risk, taste policing, and repeated prose ritual checks.
+- CLI/operator review uses `$SKILL_DIR/scripts/inventory_cli_ergonomics.py`, flat help-list, multiple archetype schema namespaces, `$SKILL_DIR/scripts/inventory_cli_side_effect_probes.py`, option-looking positional rejection, mutating command probes, and command-docs drift gate checks.
+- Docs/spec review uses `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py`, entrypoint-doc ergonomics, smart agent/operator can infer safely, doc-set dogma, ordinary Markdown uses the markdown preview seam, and executable specs use the rendered Specdown report.
+- Public-spec review uses `$SKILL_DIR/scripts/inventory_public_spec_quality.py`; ask what proof is duplicated at the wrong layer before adding more specs, and surface total source-guard rows, top specs, brittle count, and next action category together.
+- Runtime review uses `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`, `$SKILL_DIR/scripts/inventory_standing_test_economics.py`, standing-gate-verbosity.md, file/process/startup cost, runner isolation/process mode, verbose-on-demand escape hatch, quiet failure output must still name the failing unit, top-N runtime hot spots, serial fallback, runtime_budget_profiles, Pytest Economics, and bounded test-ratio posture.
+- Source hygiene review uses `$SKILL_DIR/scripts/inventory_dual_implementation.py`, free safety oracle checks, `$SKILL_DIR/scripts/inventory_lint_ignores.py`, lint suppressions start to accumulate, lint suppression pressure, growing lint suppressions, retained policy-level ignores, and concrete revisit conditions.
+- Language baselines stay explicit: For Python, default to `ruff check` as the standing lint path, include `C90`, and choose exactly one type checker (`mypy` or `pyright`). For JavaScript/TypeScript, default to `eslint`, use `tsc --noEmit` when TypeScript is present, and turn on a `complexity` rule.
+- This is a routing default, not a veto against good deterministic enforcement; do not over-apply it to standing threshold gates such as coverage floors, runtime budgets, or other already-honest enforced limits.
+- prefer the smaller production surface first when the same confidence gap can be closed by shrinking production branches/interfaces or adding more tests.
+- Watch stale gate wiring and hidden network/external-repo work in maintainer-local enforcement.
+- when prompt-sensitive output matters or `prompt_asset_policy.source_globs` is configured, inspect prompt/content bulk. `prompt_asset_roots: []` only means no canonical asset root is declared, not that inline prompt/content bulk inventory should be skipped. The final user-facing answer must not silently omit `Weak`, `Missing`, `Advisory`, delegated-review status, or active `Recommended Next Gates` findings.
+- Do not treat a passing length, duplicate, or pressure heuristic as the goal; delete, merge, split ownership, extract a helper, or narrow the interface.
+- Run a bounded fresh-eye reviewer after initial inventory and before broad recommendations.
+
+## Output Shape
+
+Use the sections that match the scope, without reducing quality to one score:
+
+- `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`,
+  `Standing Test Economics`, `Coverage and Eval Depth`,
+  `Maintainer-Local Enforcement`, `Enforcement Triage`, `Healthy`, `Weak`,
+  `Missing`, `Deferred`, `Advisory`, `Delegated Review`, `Commands Run`,
+  `Recommended Next Gates`
+
+## Guardrails
+
+- Do not split bounded repo-local quality setup into another public concept.
 - Do not recommend gates the repo cannot realistically run without saying why.
-- Do not treat a passing length, duplicate, or pressure heuristic as the goal; the goal is the structural simplification or ownership clarification that made the heuristic quiet again.
-- Do not ignore runtime drift just because a gate still passes functionally. Preserve these review anchors: stale gate wiring, free safety oracle, taste policing, doc-set dogma, and multiple archetype schema namespaces.
-- Do not treat `pytest-xdist`, worker pools, or other parallel runners as present because a package is expected; prove the active command is actually using the parallel path or surface the serial fallback.
-- Do not ask only what proof is missing when executable public specs land; ask what is duplicated at the wrong layer too.
-- Do not wait for operator follow-up before stating current runtime hot spots, coverage-gate presence or absence, and evaluator-depth status when the repo signals are available.
-- Keep runner-specific naming such as `Pytest Economics` or `Vitest Hotspots` in the repo adapter or repo-owned artifact, not in the portable public skill body.
-- Do not treat slow or broad executable specs as automatically strong quality when they mostly duplicate cheaper deterministic coverage.
-- Do not leave an automatable quality rule as prose-only guidance when a linter, validator, test, hook, or script could own it.
-- Do not normalize growing lint suppressions as harmless cleanup debt; inventory them and ask whether structure should absorb the rule instead.
-- Do not promote a heuristic to a hard gate unless the invariant is clear, false positives are low, and the expected structural response to failure is obvious.
-- If you stop short of an obvious repo-owned deterministic gate, name that as an unresolved enforcement gap explicitly.
-- Do not treat a passing final local gate as sufficient posture when clones have no repo-owned way to run it before push and no documented no-hook waiver.
-- Do not propose generic "add more tests" or "improve security" without naming the actual seam, the next concrete setup, or whether the test surface now needs a maintainability gate.
-- Do not dismiss a fresh-eye misread of a present invariant as reader noise when the real problem is undeclared enforcement or scattered evidence.
-- Do not treat inline prompt/content bulk as automatically wrong; flag it as advisory inventory unless the repo already made it a standing local policy.
-- If a gate already exists, prefer tightening or reusing it before adding a new parallel tool.
-- Do not let whole-worktree scans fail on gitignored runtime artifacts unless the gate explicitly exists to validate that machine-local state.
-- Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior; run one realistic consumer prompt and name the expected artifact.
+- Do not treat a passing metric or green gate as the goal; name the structural
+  simplification or ownership clarification.
+- Do not leave automatable rules as prose-only guidance.
+- Do not treat a passing final local gate as sufficient when clones lack a
+  repo-owned pre-push path and no documented no-hook waiver exists.
+- Do not give generic "add tests" or "improve security" advice without the
+  seam and next setup.
+- Do not dismiss fresh-eye misreads when scattered evidence or undeclared
+  enforcement is the real gap.
+- Do not stop at producer-side validators when public-skill routing or durable
+  artifact behavior is the risk; run or name a consumer prompt and artifact.
 
 ## References
 
 - `references/adapter-contract.md`
 - `references/adapter-gate-review.md`
+- `references/automation-promotion.md`
+- `references/bootstrap-escalations.md`
+- `references/bootstrap-posture.md`
+- `references/brittle-source-guards.md`
+- `references/cli-ergonomics-smells.md`
 - `references/coverage-floor-exemptions.txt`
 - `references/coverage_floor_inventory.py`
 - `references/coverage-floor-policy.md`
-- `references/find_inline_prompt_bulk.py`
-- `references/prompt-asset-policy.md`
-- `references/maintainer-local-enforcement.md`
-- `references/quality-lenses.md`
-- `references/installable-cli-probes.md`
-- `references/startup-probes.md`
-- `references/skill-quality.md`
-- `references/skill-ergonomics.md`
-- `references/entrypoint-docs-ergonomics.md`
-- `references/cli-ergonomics-smells.md`
-- `references/standing-gate-verbosity.md`
 - `references/dual-implementation-parity.md`
-- `references/gate-classification.md`
-- `references/automation-promotion.md`
-- `references/proposal-flow.md`
-- `references/bootstrap-posture.md`
-- `references/operability-signals.md`
-- `references/brittle-source-guards.md`
-- `references/lint-ignore-discipline.md`
-- `references/sample-presets.md`
+- `references/entrypoint-docs-ergonomics.md`
 - `references/executable-spec-economics.md`
+- `references/find_inline_prompt_bulk.py`
+- `references/gate-classification.md`
+- `references/installable-cli-probes.md`
+- `references/inventory-dispatch.md`
+- `references/lint-ignore-discipline.md`
+- `references/maintainer-local-enforcement.md`
+- `references/operability-signals.md`
+- `references/prompt-asset-policy.md`
+- `references/proposal-flow.md`
 - `references/public-spec-layering.md`
+- `references/quality-lenses.md`
+- `references/sample-presets.md`
 - `references/security-overview.md`
 - `references/security-npm.md`
 - `references/security-pnpm.md`
 - `references/security-uv.md`
+- `references/skill-quality.md`
+- `references/skill-ergonomics.md`
+- `references/standing-gate-verbosity.md`
+- `references/startup-probes.md`
 - `references/validate_spec_pytest_references.py`
 - `../../shared/references/fresh-eye-subagent-review.md`

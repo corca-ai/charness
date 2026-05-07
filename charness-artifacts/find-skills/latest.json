@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-06T21:17:06Z",
+  "generated_at": "2026-05-07T00:16:15Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -281,9 +281,10 @@
           "charness:quality"
         ],
         "referenced_paths": [
-          "skills/public/quality/references/maintainer-local-enforcement.md",
-          "skills/public/quality/references/quality-lenses.md",
-          "skills/public/quality/references/sample-presets.md"
+          "skills/public/quality/references/bootstrap-escalations.md",
+          "skills/public/quality/references/inventory-dispatch.md",
+          "skills/public/quality/references/skill-ergonomics.md",
+          "skills/public/quality/references/skill-quality.md"
         ],
         "source": "local-public",
         "layer": "public skill"

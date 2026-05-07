@@ -101,7 +101,7 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-06",
+      "reviewed_on": "2026-05-07",
       "observed_evidence": [
         "The checked-in public core explicitly keeps `debug` in diagnosis-before-repair mode, preserving the exact symptom, a falsifiable hypothesis, and at least three candidate causes before implementation work starts.",
         "For async, scheduled, or user-visible workflows, the debug core now separates pre-worker acknowledgement, worker execution, and post-worker side effects before reasoning only about worker behavior.",
@@ -262,7 +262,10 @@
         "The quality core now makes domain-language alignment explicit: user-facing wording, CLI/config names, code names, and artifact names should converge on adapter-declared canonical terms.",
         "`inventory_ubiquitous_language.py` dogfoods that contract as an advisory inventory that becomes a hard failure only for low-noise deprecated aliases declared in `.agents/quality-adapter.yaml`.",
         "`docs/artifact-policy.md` and `resolve_artifact_path.py` now tell consumers to resolve `write_artifact_path` before editing quality review artifacts, making symlinked `latest.md` layouts an explicit artifact contract instead of an accidental discovery.",
-        "`render_runtime_summary.py` now emits `runtime_visibility_findings`, and a Ceal dogfood run with empty runtime fields surfaces `runtime_visibility_missing_budgets` plus `runtime_visibility_missing_startup_probes` instead of burying the missing timing surface."
+        "`render_runtime_summary.py` now emits `runtime_visibility_findings`, and a Ceal dogfood run with empty runtime fields surfaces `runtime_visibility_missing_budgets` plus `runtime_visibility_missing_startup_probes` instead of burying the missing timing surface.",
+        "The quality core was compressed into a fast-path orchestrator while `references/bootstrap-escalations.md` and `references/inventory-dispatch.md` keep rare bootstrap and inventory detail discoverable from the capability map.",
+        "The current `quality` consumer contract remains preserved: existing gates, runtime/test-economics review, delegated-review status, artifact path resolution, and public-skill dogfood remain visible in the core or key references.",
+        "Scenario review for this HITL-recommended skill found no need for a new Cautilus artifact while the repo adapter is disabled; deterministic gates, checked-in dogfood, and bounded fresh-eye review own this slice."
       ]
     },
     {
