@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
-import re
 from pathlib import Path
 
 
@@ -37,13 +36,14 @@ recommendations_for_public_skill = _scripts_tool_recommendation_lib_module.recom
 recommendations_for_role = _scripts_tool_recommendation_lib_module.recommendations_for_role
 _list_capabilities_lib_module = SKILL_RUNTIME.load_local_skill_module(__file__, "list_capabilities_lib")
 build_inventory_payload = _list_capabilities_lib_module.build_inventory_payload
+referenced_skill_paths = _list_capabilities_lib_module.referenced_skill_paths
 _inventory_artifact_module = SKILL_RUNTIME.load_local_skill_module(__file__, "inventory_artifact")
 persist_inventory = _inventory_artifact_module.persist_inventory
 resolve_tool_recommendations = _list_capabilities_lib_module.resolve_tool_recommendations
+support_recommendations_for_task = _list_capabilities_lib_module.support_recommendations_for_task
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
 
-REFERENCE_TOKEN_RE = re.compile(r"`([^`]+)`")
 def _target_has_repo_owned_skill_surface(target_root: Path) -> bool:
     return (target_root / "skills" / "public").is_dir() or (target_root / "skills" / "support").is_dir()
 
@@ -96,26 +96,6 @@ def _skill_trigger_phrases(name: str, layer: str) -> list[str]:
             ]
         )
     return _dedupe(phrases)
-def _referenced_skill_paths(skill_md: Path, repo_root: Path) -> list[str]:
-    text = skill_md.read_text(encoding="utf-8")
-    paths: list[str] = []
-    for match in REFERENCE_TOKEN_RE.findall(text):
-        token = match.strip()
-        if not (
-            token == "adapter.example.yaml"
-            or token.startswith("references/")
-            or token.startswith("scripts/")
-            or token.startswith("../")
-        ):
-            continue
-        candidate = (skill_md.parent / token).resolve()
-        try:
-            candidate.relative_to(repo_root.resolve())
-        except ValueError:
-            continue
-        if candidate.is_file():
-            paths.append(_render_path(candidate, repo_root))
-    return _dedupe(paths)
 def _collect_skill_entries(
     skill_roots: list[tuple[str, Path]],
     *,
@@ -151,7 +131,7 @@ def _collect_skill_entries(
                     "skill_dir": _render_path(skill_md.parent, repo_root),
                     "canonical_path": _render_path(skill_md, repo_root),
                     "trigger_phrases": _skill_trigger_phrases(name, layer),
-                    "referenced_paths": _referenced_skill_paths(skill_md, repo_root),
+                    "referenced_paths": referenced_skill_paths(skill_md, repo_root),
                     "source": source_id,
                     "layer": layer,
                 }
@@ -170,6 +150,7 @@ def main() -> None:
     recommendation_group = parser.add_mutually_exclusive_group()
     recommendation_group.add_argument("--recommend-for-skill")
     recommendation_group.add_argument("--recommendation-role", choices=("runtime", "validation"))
+    recommendation_group.add_argument("--recommend-for-task")
     parser.add_argument("--next-skill-id")
     parser.add_argument("--only-blocking", action="store_true")
     args = parser.parse_args()
@@ -191,6 +172,8 @@ def main() -> None:
     )
     trusted_entries = _filter_shadowed(trusted_entries, [*public_entries, *support_entries])
     manifests = load_manifests(local_root)
+    support_capability_entries = support_capabilities(local_root)
+    integration_entries = integrations(local_root)
     tool_recommendations, recommendation_query = resolve_tool_recommendations(
         args,
         local_root=local_root,
@@ -198,16 +181,31 @@ def main() -> None:
         recommendations_for_public_skill=recommendations_for_public_skill,
         recommendations_for_role=recommendations_for_role,
     )
+    support_skill_recommendations = []
+    support_recommendation_query = None
+    if args.recommend_for_task:
+        support_skill_recommendations = support_recommendations_for_task(
+            args.recommend_for_task,
+            support_entries=support_entries,
+            support_capabilities=support_capability_entries,
+            integrations=integration_entries,
+        )
+        support_recommendation_query = {
+            "mode": "task_text",
+            "task_text": args.recommend_for_task,
+        }
     payload = build_inventory_payload(
         adapter=adapter,
         trusted_skill_roots=trusted_skill_roots,
         public_entries=public_entries,
         support_entries=support_entries,
-        support_capabilities=support_capabilities(local_root),
-        integrations=integrations(local_root),
+        support_capabilities=support_capability_entries,
+        integrations=integration_entries,
         trusted_entries=trusted_entries,
         tool_recommendations=tool_recommendations,
         recommendation_query=recommendation_query,
+        support_skill_recommendations=support_skill_recommendations,
+        support_recommendation_query=support_recommendation_query,
     )
     payload["artifacts"] = persist_inventory(
         repo_root=root,

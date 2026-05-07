@@ -65,6 +65,9 @@ When writing the quality artifact, edit the resolved `write_artifact_path`, not
      public-skill or durable artifact behavior is in scope, scaffold one
      consumer-side dogfood case with
      `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`
+   - when validators pin prose or support-skill routing is implicit, inspect
+     whether the gate proves a behavior contract or only freezes wording and
+     whether `find-skills` can surface the support seam from task language
 3. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
    - run executable-spec overlap or cost guards before proposing more spec

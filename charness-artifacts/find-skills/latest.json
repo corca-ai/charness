@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-07T00:16:15Z",
+  "generated_at": "2026-05-07T00:48:50Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -33,7 +33,12 @@
           "announcement 스킬",
           "charness:announcement"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/public/announcement/references/adapter-contract.md",
+          "skills/public/announcement/references/draft-shape.md",
+          "skills/public/announcement/references/delivery-seams.md",
+          "skills/public/announcement/references/audience-policy.md"
+        ],
         "source": "local-public",
         "layer": "public skill"
       },
@@ -51,7 +56,18 @@
           "create-cli 스킬",
           "charness:create-cli"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/shared/references/binary-preflight.md",
+          "skills/public/create-cli/references/command-conventions.md",
+          "skills/public/create-cli/references/command-surface.md",
+          "skills/public/create-cli/references/external-capability-clis.md",
+          "skills/public/create-cli/references/install-update.md",
+          "skills/public/create-cli/references/version-provenance.md",
+          "skills/public/create-cli/references/machine-readable-state.md",
+          "skills/public/create-cli/references/code-shape.md",
+          "skills/public/create-cli/references/quality-gates.md",
+          "skills/public/create-cli/references/case-studies.md"
+        ],
         "source": "local-public",
         "layer": "public skill"
       },
@@ -69,7 +85,20 @@
           "create-skill 스킬",
           "charness:create-skill"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/shared/references/source-bound-records.md",
+          "skills/shared/references/prescribed-path-self-test.md",
+          "skills/public/create-skill/SKILL.md",
+          "skills/shared/references/binary-preflight.md",
+          "skills/public/create-skill/references/portable-authoring.md",
+          "skills/public/create-skill/references/adapter-pattern.md",
+          "skills/public/create-skill/references/preset-conventions.md",
+          "skills/public/create-skill/references/integration-seams.md",
+          "skills/public/create-skill/references/runtime-capabilities.md",
+          "skills/public/create-skill/references/deployable-skill-packaging.md",
+          "skills/public/create-cli/SKILL.md",
+          "skills/shared/references/success-criteria-review.md"
+        ],
         "source": "local-public",
         "layer": "public skill"
       },
@@ -87,7 +116,15 @@
           "debug 스킬",
           "charness:debug"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/public/debug/SKILL.md",
+          "skills/public/debug/references/named-target-verification.md",
+          "skills/public/debug/references/adapter-contract.md",
+          "skills/public/debug/references/five-steps.md",
+          "skills/public/debug/references/debug-memory.md",
+          "skills/public/debug/references/anti-patterns.md",
+          "skills/public/debug/references/document-seams.md"
+        ],
         "source": "local-public",
         "layer": "public skill"
       },
@@ -105,7 +142,16 @@
           "find-skills 스킬",
           "charness:find-skills"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/public/find-skills/SKILL.md",
+          "skills/public/find-skills/adapter.example.yaml",
+          "skills/public/find-skills/references/adapter-contract.md",
+          "skills/public/find-skills/references/discovery-order.md",
+          "skills/public/find-skills/references/support-consumption.md",
+          "skills/public/ideation/references/decision-question-response.md",
+          "skills/public/find-skills/scripts/list_capabilities.py",
+          "skills/public/find-skills/scripts/list_capabilities_lib.py"
+        ],
         "source": "local-public",
         "layer": "public skill"
       },
@@ -123,7 +169,16 @@
           "gather 스킬",
           "charness:gather"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/public/gather/SKILL.md",
+          "skills/public/gather/references/browser-mediated-private-sources.md",
+          "skills/public/gather/references/adapter-contract.md",
+          "skills/public/gather/references/source-priority.md",
+          "skills/public/gather/references/asset-refresh.md",
+          "skills/public/gather/references/document-seams.md",
+          "skills/public/gather/references/capability-contract.md",
+          "skills/public/gather/references/google-workspace-via-gws.md"
+        ],
         "source": "local-public",
         "layer": "public skill"
       },
@@ -142,7 +197,14 @@
           "charness:handoff"
         ],
         "referenced_paths": [
-          "skills/public/handoff/references/continuation-sequence.md"
+          "skills/public/handoff/references/continuation-sequence.md",
+          "skills/public/handoff/SKILL.md",
+          "skills/public/handoff/references/spill-targets.md",
+          "skills/shared/references/fresh-eye-subagent-review.md",
+          "skills/public/handoff/references/adapter-contract.md",
+          "skills/public/handoff/references/workflow-trigger.md",
+          "skills/public/handoff/references/state-selection.md",
+          "skills/public/handoff/references/document-seams.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -161,7 +223,15 @@
           "hitl 스킬",
           "charness:hitl"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/public/hitl/references/adapter-contract.md",
+          "skills/public/hitl/references/chunk-contract.md",
+          "skills/public/hitl/references/report-mode.md",
+          "skills/public/hitl/references/state-model.md",
+          "skills/public/hitl/references/rule-propagation.md",
+          "skills/public/hitl/scripts/bootstrap_review.py",
+          "skills/public/hitl/scripts/render_report.py"
+        ],
         "source": "local-public",
         "layer": "public skill"
       },
@@ -182,7 +252,14 @@
         "referenced_paths": [
           "skills/public/ideation/references/sequence-discipline.md",
           "skills/public/ideation/references/effectuation.md",
-          "skills/public/ideation/references/decision-question-response.md"
+          "skills/public/ideation/references/decision-question-response.md",
+          "skills/public/ideation/references/concept-architecture.md",
+          "skills/public/ideation/references/truth-and-edge.md",
+          "skills/public/ideation/references/world-modeling.md",
+          "skills/public/ideation/references/agent-human-lens.md",
+          "skills/public/ideation/references/spec-boundary.md",
+          "skills/public/spec/references/taxonomy-axis-checkpoint.md",
+          "skills/shared/references/success-criteria-review.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -205,7 +282,15 @@
           "skills/public/impl/references/sequence-discipline.md",
           "skills/public/impl/references/verification-ladder.md",
           "skills/public/impl/references/design-lenses.md",
-          "skills/public/impl/references/review-gate.md"
+          "skills/public/impl/references/review-gate.md",
+          "skills/public/impl/references/adapter-contract.md",
+          "skills/shared/references/source-bound-records.md",
+          "skills/public/impl/SKILL.md",
+          "skills/public/debug/references/named-target-verification.md",
+          "skills/public/impl/references/external-api-contract.md",
+          "skills/shared/references/prescribed-path-self-test.md",
+          "skills/public/impl/references/contract-consumption.md",
+          "skills/public/impl/references/spec-loop.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -224,7 +309,17 @@
           "init-repo 스킬",
           "charness:init-repo"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/public/init-repo/SKILL.md",
+          "skills/public/init-repo/references/greenfield-flow.md",
+          "skills/public/init-repo/references/normalization-flow.md",
+          "skills/public/init-repo/references/agent-docs-policy.md",
+          "skills/public/init-repo/references/default-surfaces.md",
+          "skills/public/init-repo/references/probe-surface.md",
+          "skills/public/init-repo/references/retro-memory-seam.md",
+          "skills/public/init-repo/references/github-actions-defaults.md",
+          "skills/public/init-repo/references/operator-acceptance-synthesis.md"
+        ],
         "source": "local-public",
         "layer": "public skill"
       },
@@ -242,7 +337,15 @@
           "narrative 스킬",
           "charness:narrative"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/public/narrative/references/landing-rewrite-loop.md",
+          "skills/public/narrative/references/cross-repo-issue-shaping.md",
+          "skills/public/narrative/references/scenario-blocks.md",
+          "skills/public/narrative/references/adapter-contract.md",
+          "skills/public/narrative/references/source-map.md",
+          "skills/public/narrative/references/brief-shape.md",
+          "skills/shared/references/success-criteria-review.md"
+        ],
         "source": "local-public",
         "layer": "public skill"
       },
@@ -261,7 +364,9 @@
           "charness:premortem"
         ],
         "referenced_paths": [
-          "skills/shared/references/fresh-eye-subagent-review.md"
+          "skills/shared/references/fresh-eye-subagent-review.md",
+          "skills/public/premortem/references/angle-selection.md",
+          "skills/public/premortem/references/counterweight-triage.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -284,7 +389,38 @@
           "skills/public/quality/references/bootstrap-escalations.md",
           "skills/public/quality/references/inventory-dispatch.md",
           "skills/public/quality/references/skill-ergonomics.md",
-          "skills/public/quality/references/skill-quality.md"
+          "skills/public/quality/references/skill-quality.md",
+          "skills/shared/references/fresh-eye-subagent-review.md",
+          "skills/public/quality/references/adapter-contract.md",
+          "skills/public/quality/references/adapter-gate-review.md",
+          "skills/public/quality/references/automation-promotion.md",
+          "skills/public/quality/references/bootstrap-posture.md",
+          "skills/public/quality/references/brittle-source-guards.md",
+          "skills/public/quality/references/cli-ergonomics-smells.md",
+          "skills/public/quality/references/coverage-floor-exemptions.txt",
+          "skills/public/quality/references/coverage_floor_inventory.py",
+          "skills/public/quality/references/coverage-floor-policy.md",
+          "skills/public/quality/references/dual-implementation-parity.md",
+          "skills/public/quality/references/entrypoint-docs-ergonomics.md",
+          "skills/public/quality/references/executable-spec-economics.md",
+          "skills/public/quality/references/find_inline_prompt_bulk.py",
+          "skills/public/quality/references/gate-classification.md",
+          "skills/public/quality/references/installable-cli-probes.md",
+          "skills/public/quality/references/lint-ignore-discipline.md",
+          "skills/public/quality/references/maintainer-local-enforcement.md",
+          "skills/public/quality/references/operability-signals.md",
+          "skills/public/quality/references/prompt-asset-policy.md",
+          "skills/public/quality/references/proposal-flow.md",
+          "skills/public/quality/references/public-spec-layering.md",
+          "skills/public/quality/references/quality-lenses.md",
+          "skills/public/quality/references/sample-presets.md",
+          "skills/public/quality/references/security-overview.md",
+          "skills/public/quality/references/security-npm.md",
+          "skills/public/quality/references/security-pnpm.md",
+          "skills/public/quality/references/security-uv.md",
+          "skills/public/quality/references/standing-gate-verbosity.md",
+          "skills/public/quality/references/startup-probes.md",
+          "skills/public/quality/references/validate_spec_pytest_references.py"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -303,7 +439,11 @@
           "release 스킬",
           "charness:release"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/public/release/references/adapter-contract.md",
+          "skills/public/release/references/version-policy.md",
+          "skills/public/release/references/install-surface.md"
+        ],
         "source": "local-public",
         "layer": "public skill"
       },
@@ -321,7 +461,14 @@
           "retro 스킬",
           "charness:retro"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/public/retro/references/adapter-contract.md",
+          "skills/public/retro/references/mode-guide.md",
+          "skills/public/retro/references/section-guide.md",
+          "skills/public/retro/references/expert-lens.md",
+          "skills/public/retro/references/trigger-and-persistence.md",
+          "skills/public/retro/references/weekly-trends.md"
+        ],
         "source": "local-public",
         "layer": "public skill"
       },
@@ -339,7 +486,26 @@
           "spec 스킬",
           "charness:spec"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/public/spec/references/public-executable-contracts.md",
+          "skills/public/spec/references/sequence-discipline.md",
+          "skills/public/spec/references/design-lenses.md",
+          "skills/public/spec/references/taxonomy-axis-checkpoint.md",
+          "skills/shared/references/source-bound-records.md",
+          "skills/shared/references/fresh-eye-subagent-review.md",
+          "skills/public/spec/references/contract-modes.md",
+          "skills/public/spec/references/fixed-probe-defer.md",
+          "skills/public/spec/references/ingest-and-refine.md",
+          "skills/public/spec/references/success-criteria.md",
+          "skills/public/spec/references/acceptance-checks.md",
+          "skills/public/spec/references/executable-spec-cost.md",
+          "skills/public/spec/references/rejected-alternatives.md",
+          "skills/public/spec/references/ambiguity-rules.md",
+          "skills/public/spec/references/impl-loop.md",
+          "skills/public/spec/references/ideation-boundary.md",
+          "skills/public/spec/references/document-seams.md",
+          "skills/shared/references/success-criteria-review.md"
+        ],
         "source": "local-public",
         "layer": "public skill"
       }
@@ -363,7 +529,10 @@
           "agent-browser support skill",
           "agent-browser helper"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/support/agent-browser/references/auth-bootstrap.md",
+          "skills/support/agent-browser/references/runtime.md"
+        ],
         "source": "local-support",
         "layer": "support skill"
       },
@@ -385,7 +554,10 @@
           "gather-notion support skill",
           "gather-notion helper"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/support/gather-notion/references/runtime-contract.md",
+          "skills/support/gather-notion/references/provenance.md"
+        ],
         "source": "local-support",
         "layer": "support skill"
       },
@@ -407,7 +579,10 @@
           "gather-slack support skill",
           "gather-slack helper"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/support/gather-slack/references/runtime-contract.md",
+          "skills/support/gather-slack/references/provenance.md"
+        ],
         "source": "local-support",
         "layer": "support skill"
       },
@@ -429,15 +604,17 @@
           "markdown-preview support skill",
           "markdown-preview helper"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/support/markdown-preview/references/runtime-contract.md"
+        ],
         "source": "local-support",
         "layer": "support skill"
       },
       {
         "id": "specdown",
         "name": "specdown",
-        "description": "Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.",
-        "summary": "Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.",
+        "description": "Write, run, and fix Specdown executable specifications. Use when task language mentions `*.spec.md`, `docs/specs`, `run:shell`, doctest output, check tables, `check:jq`, `report.json`, Specdown HTML reports, executable specs, adapter checks, or focused Specdown iteration.",
+        "summary": "Write, run, and fix Specdown executable specifications. Use when task language mentions `*.spec.md`, `docs/specs`, `run:shell`, doctest output, check tables, `check:jq`, `report.json`, Specdown HTML reports, executable specs, adapter checks, or focused Specdown iteration.",
         "path": "skills/support/specdown/SKILL.md",
         "skill_dir": "skills/support/specdown",
         "canonical_path": "skills/support/specdown/SKILL.md",
@@ -452,6 +629,13 @@
           "specdown helper"
         ],
         "referenced_paths": [
+          "skills/support/specdown/syntax.md",
+          "skills/support/specdown/best-practices.md",
+          "skills/support/specdown/cli.md",
+          "skills/support/specdown/report.md",
+          "skills/support/specdown/config.md",
+          "skills/support/specdown/adapter-protocol.md",
+          "skills/support/specdown/validation.md",
           "skills/support/specdown/references/source-notes.md"
         ],
         "source": "local-support",
@@ -475,7 +659,11 @@
           "web-fetch support skill",
           "web-fetch helper"
         ],
-        "referenced_paths": [],
+        "referenced_paths": [
+          "skills/support/web-fetch/references/runtime-contract.md",
+          "skills/support/web-fetch/references/routing-table.md",
+          "skills/support/web-fetch/references/provenance.md"
+        ],
         "source": "local-support",
         "layer": "support skill"
       },
@@ -982,7 +1170,23 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
-        "intent_triggers": [],
+        "intent_triggers": [
+          "*.spec.md",
+          ".spec.md",
+          "docs/specs",
+          "run:shell",
+          "doctest",
+          "check table",
+          "check:jq",
+          "specdown report",
+          "specdown HTML report",
+          "report.json",
+          "executable spec",
+          "spec syntax",
+          "adapter check",
+          "specdown -filter",
+          "reduce full specdown run cost"
+        ],
         "config_layers": [],
         "readiness_checks": [],
         "supports_public_skills": [],
@@ -1039,6 +1243,8 @@
     ],
     "trusted_skills": [],
     "tool_recommendations": [],
-    "tool_recommendation_query": null
+    "tool_recommendation_query": null,
+    "support_skill_recommendations": [],
+    "support_recommendation_query": null
   }
 }

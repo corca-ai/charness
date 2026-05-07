@@ -511,4 +511,82 @@ def test_check_skill_contracts_rejects_missing_required_snippet(tmp_path: Path) 
 
     result = run_script("scripts/check_skill_contracts.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "missing required contract snippet" in result.stderr
+    assert "missing required core contract snippet" in result.stderr
+
+
+def test_check_skill_contracts_allows_reference_level_package_contract(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    (skill_dir / "references").mkdir(parents=True)
+    skill_path = skill_dir / "SKILL.md"
+    skill_path.write_text(
+        "---\nname: demo\ndescription: \"demo\"\n---\n\n# Demo\n\nCore promise.\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "references" / "details.md").write_text(
+        "# Details\n\nReference-level package promise.\n",
+        encoding="utf-8",
+    )
+
+    module_path = ROOT / "scripts" / "check_skill_contracts.py"
+    spec = importlib.util.spec_from_file_location("check_skill_contracts_reference_test", module_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    module.validate_package_contract(skill_path, ("Reference-level package promise.",))
+
+
+def test_check_skill_contracts_keeps_core_contract_in_skill_body(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    (skill_dir / "references").mkdir(parents=True)
+    skill_path = skill_dir / "SKILL.md"
+    skill_path.write_text(
+        "---\nname: demo\ndescription: \"demo\"\n---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "references" / "details.md").write_text(
+        "# Details\n\nCore-only promise.\n",
+        encoding="utf-8",
+    )
+
+    module_path = ROOT / "scripts" / "check_skill_contracts.py"
+    spec = importlib.util.spec_from_file_location("check_skill_contracts_core_test", module_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    try:
+        module.validate_core_contract(skill_path, ("Core-only promise.",))
+    except module.ValidationError as exc:
+        assert "missing required core contract snippet" in str(exc)
+    else:
+        raise AssertionError("expected core-only contract to fail when it only appears in references")
+
+
+def test_check_skill_contracts_ignores_non_text_reference_artifacts(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    (skill_dir / "references" / "__pycache__").mkdir(parents=True)
+    skill_path = skill_dir / "SKILL.md"
+    skill_path.write_text(
+        "---\nname: demo\ndescription: \"demo\"\n---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "references" / "__pycache__" / "details.pyc").write_bytes(
+        b"Reference-level package promise."
+    )
+
+    module_path = ROOT / "scripts" / "check_skill_contracts.py"
+    spec = importlib.util.spec_from_file_location("check_skill_contracts_non_text_test", module_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    try:
+        module.validate_package_contract(skill_path, ("Reference-level package promise.",))
+    except module.ValidationError as exc:
+        assert "missing required package contract snippet" in str(exc)
+    else:
+        raise AssertionError("expected non-text reference artifact to be ignored")

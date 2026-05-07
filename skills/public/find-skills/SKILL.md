@@ -27,6 +27,13 @@ When the user names a capability directly, including phrases like `X skill`,
 skills are intentionally hidden from the default public skill list; this is the
 canonical discovery path for them.
 
+When workflow language implies a support skill even though the user did not
+name it directly, query task-text recommendations before proceeding through a
+nearby public workflow. Examples include executable-spec terms such as
+`*.spec.md`, `docs/specs`, `run:shell`, `check:jq`, Specdown reports, or
+`report.json`; the correct next step should surface `support/<skill-id>` and
+its referenced support docs before ordinary Markdown, HITL, spec, or impl work.
+
 `find-skills` is one public concept:
 
 - discover the right capability surface
@@ -49,6 +56,7 @@ Start local-first:
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root .
+python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommend-for-task "<task summary>"
 python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommend-for-skill <skill-id>
 python3 "$SKILL_DIR/scripts/list_capabilities.py" --repo-root . --recommendation-role <runtime|validation> --next-skill-id <skill-id>
 sed -n '1,220p' docs/external-integrations.md 2>/dev/null || true
@@ -86,16 +94,13 @@ What you get after one run:
 - public/support skill descriptions, canonical paths, trigger phrases, and
   directly referenced skill files
 - the smallest next usable path across public skills, support seams, and integrations
-- a stale host-path diagnosis when a reported installed skill path no longer
-  matches the current stable plugin or cache location
 - refreshed capability inventory artifacts at
   `<repo-root>/charness-artifacts/find-skills/latest.md` and
   `<repo-root>/charness-artifacts/find-skills/latest.json`
-- a closeout signal under `artifacts`: `artifact_paths`,
-  `semantic_content_changed`, `requires_repo_closeout`, `commit_recommended`,
-  and `closeout_reason`
+- a closeout signal under `artifacts`
 - recommendation-query payloads in the current command output when
-  `--recommend-for-skill` or `--recommendation-role` is used
+  `--recommend-for-task`, `--recommend-for-skill`, or `--recommendation-role`
+  is used
 
 What this does not do:
 
@@ -110,6 +115,9 @@ What this does not do:
    - public skills for user-facing workflow concepts
    - support skills and synced support skills for tool-usage helpers
    - integration manifests for external binaries or upstream support skills
+   - when task language names a file shape, syntax, report, or runtime command
+     owned by a support skill, use the task-text recommendation payload instead
+     of waiting for the user to say the support skill name
 3. Expand to trusted skill roots when the adapter provides them.
    - host-trusted skill packs
    - other maintained skill roots that the current harness is allowed to
@@ -144,16 +152,6 @@ What this does not do:
    - what is already shipped
    - what is not yet shipped
    - whether an external skill ecosystem search is allowed by the current host
-
-The Vercel-style skill-ecosystem flow is still useful here:
-
-- understand what the user needs
-- search the best existing capability surface before inventing a new one
-- verify source quality before recommending installation
-- offer the smallest trustworthy next step
-
-In `charness`, that flow is local-first. External skill registries are optional
-and host-governed rather than the default.
 
 ## Output Shape
 
@@ -194,6 +192,8 @@ The result should usually include:
 - `references/discovery-order.md`
 - `references/support-consumption.md`
 - `../ideation/references/decision-question-response.md`
+- `scripts/list_capabilities.py`
+- `scripts/list_capabilities_lib.py`
 - `<repo-root>/scripts/resolve_adapter.py`
 - `<repo-root>/scripts/init_adapter.py`
 - `<repo-root>/scripts/list_capabilities.py`

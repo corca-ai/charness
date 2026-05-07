@@ -11,14 +11,16 @@ class ValidationError(Exception):
     pass
 
 
-# Each tuple below pins the exact substrings a SKILL.md must contain so that
-# load-bearing authoring contracts cannot be silently rewritten. When a pinned
-# snippet is removed, the gate fails with a generic "missing snippet" error,
-# so new pins should be grouped under their own dict entry with a short
-# comment explaining the contract they protect — not added to an unrelated
-# skill's tuple. When a pinned snippet is edited, the gate will fail and the
-# fix is to update both the skill body and this list in the same commit.
-REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
+REFERENCE_CONTRACT_SUFFIXES = {".md", ".txt"}
+
+
+# The checks below are representative contract guards, not prose snapshots.
+# Keep selection/routing promises in CORE_CONTRACTS, where the exact phrase must
+# stay in SKILL.md. Move detail-heavy, reference-worthy promises to
+# PACKAGE_CONTRACTS, where they may live in SKILL.md or references/*. This keeps
+# the gate useful during skill compression without forcing SKILL.md to carry an
+# ever-growing anchor catalog.
+CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/premortem/SKILL.md": (
         "Task-completing repo work always records premortem before closeout.",
         "Scale the\npass, not the obligation",
@@ -31,8 +33,6 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "mention-only pickup",
         "Run a bounded misunderstanding premortem when the handoff changed materially.",
         "Assume a competent next operator can follow one good link",
-        "one reference to the owning artifact for metrics, history, or proof detail",
-        "always-loaded host instruction surfaces out of `References` by",
         "The handoff should usually contain:",
         "- `Workflow Trigger`",
         "- `Current State`",
@@ -45,7 +45,6 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "Refresh in place when the source identity matches.",
         "local files before external summaries",
         "browser-mediated fallback through `agent-browser`",
-        "official API/export docs before browser automation",
         "- `Requested Facts`",
         "- `Open Gaps`",
     ),
@@ -56,24 +55,8 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "decide whether the slice claims `preserve` or `improve` before changing the core trigger or behavior contract",
         "run a customer-of-this-skill premortem",
         "the customer repo's first prompt before trusting producer-side checks",
-        "For `evaluator-required` skills, treat maintained scenario coverage and",
         "if an upstream support skill already exists, prefer reference, sync, or a",
-        "keep manifest",
-        "metadata rich enough to reveal capability kind and supported access modes",
-        "express them as manifest readiness checks",
-        "If a skill needs the same bootstrap, adapter resolution, artifact upsert, or",
         "Treat public-skill frontmatter and generated AGENTS hints as classifier input",
-        'python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>',
-        # Binary Preflight Philosophy — pins the lazy-preflight contract so
-        # that future edits cannot silently drop the "declare, detect, ask"
-        # loop or the CHARNESS_BASELINE / CHARNESS_BINARY_PREFLIGHT names.
-        "## Binary Preflight Philosophy",
-        "Public skills must not silently assume non-baseline binaries",
-        "CHARNESS_BASELINE",
-        "Preflight is lazy, not eager",
-        "CHARNESS_BINARY_PREFLIGHT=degraded",
-        "Auto-install is forbidden",
-        "Silent skip is forbidden",
     ),
     "skills/public/spec/SKILL.md": (
         "## Contract Shaping",
@@ -82,11 +65,6 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "call `premortem` for non-trivial contract decisions",
         "keep the contract",
         "probe-friendly and visible instead of inventing a user-facing mode choice.",
-        "public executable contract",
-        "maintenance lint / implementation guard",
-        'python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --json 2>/dev/null || true',
-        "risk interrupt planner reports a forced debug interrupt",
-        "`Interrupt Source`, `Seam Summary`, `Chosen Next Step`, `Impl Status`",
         "- `Fixed Decisions`",
         "- `Probe Questions`",
         "- `Deferred Decisions`",
@@ -95,16 +73,10 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
     ),
     "skills/public/impl/SKILL.md": (
         "impl adapter resolution and verification survey",
-        'python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --json 2>/dev/null || true',
         "risk interrupt planner reports a forced interrupt",
         "best self-verification path before you code and again before you stop",
         "re-read `Fixed Decisions` and named acceptance checks",
         "reflected in the delivered slice or explicitly",
-        "$SKILL_DIR/../retro/scripts/check_auto_trigger.py",
-        "`Premortem: short <scope>`",
-        "`Premortem: full <artifact-or-subagent-status>`",
-        "`Premortem: not-applicable <reason>`",
-        "`Premortem: blocked <host-signal>`",
         "Do not call a same-agent review a premortem.",
         "plain implementation until the named spec handoff says this slice may",
     ),
@@ -122,9 +94,6 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "implementing that gate in the same turn",
         "when the automatable move is already clear and repo-owned, implement it in",
         "If you stop short of an obvious repo-owned deterministic gate",
-        "$SKILL_DIR/scripts/inventory_public_spec_quality.py",
-        "duplicated at the wrong layer",
-        'scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`',
         "Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior",
     ),
     "skills/public/init-repo/SKILL.md": (
@@ -152,19 +121,77 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "Do not hand-edit generated plugin manifests",
         "Do not push, tag, or announce a release without explicit user confirmation",
         "Every task-completing release slice records premortem before closeout.",
-        "`Premortem: short <scope>`",
-        "`Premortem: full <artifact-or-subagent-status>`",
-        "`Premortem: not-applicable <reason>`",
-        "`Premortem: blocked <host-signal>`",
     ),
     "skills/public/retro/SKILL.md": (
         "If the user correctly points out a missed issue",
         "`Persisted`: whether the retro was written to a durable artifact",
         "never stop without stating `Persisted: yes <path>` or `Persisted: no <reason>`",
         "Trigger a short `session` retro automatically when a user correction exposes a",
+    ),
+}
+
+PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
+    "skills/public/handoff/SKILL.md": (
+        "one reference to the owning artifact for metrics, history, or proof detail",
+        "always-loaded host instruction surfaces out of `References` by",
+    ),
+    "skills/public/gather/SKILL.md": (
+        "official API/export docs before browser automation",
+    ),
+    "skills/public/create-skill/SKILL.md": (
+        "For `evaluator-required` skills, treat maintained scenario coverage and",
+        "keep manifest",
+        "metadata rich enough to reveal capability kind and supported access modes",
+        "express them as manifest readiness checks",
+        "If a skill needs the same bootstrap, adapter resolution, artifact upsert, or",
+        'python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>',
+        # Binary Preflight Philosophy — preserves the lazy "declare, detect,
+        # ask" contract while allowing the details to move into references.
+        "## Binary Preflight Philosophy",
+        "Public skills must not silently assume non-baseline binaries",
+        "CHARNESS_BASELINE",
+        "Preflight is lazy, not eager",
+        "CHARNESS_BINARY_PREFLIGHT=degraded",
+        "Auto-install is forbidden",
+        "Silent skip is forbidden",
+    ),
+    "skills/public/spec/SKILL.md": (
+        "public executable contract",
+        "maintenance lint / implementation guard",
+        'python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --json 2>/dev/null || true',
+        "risk interrupt planner reports a forced debug interrupt",
+        "`Interrupt Source`, `Seam Summary`, `Chosen Next Step`, `Impl Status`",
+    ),
+    "skills/public/impl/SKILL.md": (
+        'python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --json 2>/dev/null || true',
+        "$SKILL_DIR/../retro/scripts/check_auto_trigger.py",
+        "`Premortem: short <scope>`",
+        "`Premortem: full <artifact-or-subagent-status>`",
+        "`Premortem: not-applicable <reason>`",
+        "`Premortem: blocked <host-signal>`",
+    ),
+    "skills/public/quality/SKILL.md": (
+        "$SKILL_DIR/scripts/inventory_public_spec_quality.py",
+        "duplicated at the wrong layer",
+        'scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`',
+    ),
+    "skills/public/release/SKILL.md": (
+        "`Premortem: short <scope>`",
+        "`Premortem: full <artifact-or-subagent-status>`",
+        "`Premortem: not-applicable <reason>`",
+        "`Premortem: blocked <host-signal>`",
+    ),
+    "skills/public/retro/SKILL.md": (
         "`Trends vs Last Retro`: for `weekly`, compare against the last durable weekly retro when one exists",
         "Only write a weekly snapshot when the adapter gives an explicit `snapshot_path`",
     ),
+}
+
+# Backward-compatible rollup for tests and diagnostics that need to copy all
+# representative skill files into a fixture repo.
+REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
+    rel_path: (*CORE_CONTRACTS.get(rel_path, ()), *PACKAGE_CONTRACTS.get(rel_path, ()))
+    for rel_path in sorted({*CORE_CONTRACTS, *PACKAGE_CONTRACTS})
 }
 
 FORBIDDEN_SNIPPETS: dict[str, tuple[str, ...]] = {
@@ -177,14 +204,34 @@ FORBIDDEN_SNIPPETS: dict[str, tuple[str, ...]] = {
 }
 
 
-def validate_contract(path: Path, snippets: tuple[str, ...]) -> None:
+def _package_text(path: Path) -> str:
+    if not path.exists():
+        raise ValidationError(f"missing representative contract file `{path}`")
+    parts = [path.read_text(encoding="utf-8")]
+    references_dir = path.parent / "references"
+    if references_dir.is_dir():
+        for reference in sorted(references_dir.rglob("*")):
+            if reference.is_file() and reference.suffix in REFERENCE_CONTRACT_SUFFIXES:
+                parts.append(reference.read_text(encoding="utf-8", errors="ignore"))
+    return "\n".join(parts)
+
+
+def validate_core_contract(path: Path, snippets: tuple[str, ...]) -> None:
     if not path.exists():
         raise ValidationError(f"missing representative contract file `{path}`")
     contents = path.read_text(encoding="utf-8")
     missing = [snippet for snippet in snippets if snippet not in contents]
     if missing:
         formatted = ", ".join(f"`{snippet}`" for snippet in missing)
-        raise ValidationError(f"{path}: missing required contract snippet(s): {formatted}")
+        raise ValidationError(f"{path}: missing required core contract snippet(s): {formatted}")
+
+
+def validate_package_contract(path: Path, snippets: tuple[str, ...]) -> None:
+    contents = _package_text(path)
+    missing = [snippet for snippet in snippets if snippet not in contents]
+    if missing:
+        formatted = ", ".join(f"`{snippet}`" for snippet in missing)
+        raise ValidationError(f"{path}: missing required package contract snippet(s): {formatted}")
 
 
 def validate_forbidden_snippets(path: Path, snippets: tuple[str, ...]) -> None:
@@ -203,13 +250,16 @@ def main() -> int:
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
-    for rel_path, snippets in REPRESENTATIVE_CONTRACTS.items():
-        validate_contract(root / rel_path, snippets)
+    for rel_path, snippets in CORE_CONTRACTS.items():
+        validate_core_contract(root / rel_path, snippets)
+    for rel_path, snippets in PACKAGE_CONTRACTS.items():
+        validate_package_contract(root / rel_path, snippets)
     for rel_path, snippets in FORBIDDEN_SNIPPETS.items():
         validate_forbidden_snippets(root / rel_path, snippets)
 
     print(
-        f"Validated {len(REPRESENTATIVE_CONTRACTS)} representative skill contracts "
+        f"Validated {len(CORE_CONTRACTS)} core skill contracts, "
+        f"{len(PACKAGE_CONTRACTS)} package skill contracts, "
         f"and {len(FORBIDDEN_SNIPPETS)} forbidden-snippet rules."
     )
     return 0

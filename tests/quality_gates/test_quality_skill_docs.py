@@ -23,6 +23,9 @@ def test_quality_skill_carries_explicit_skill_ergonomics_lens() -> None:
     assert "model is smart" in ergonomics
     assert "Treat these as prompts, not automatic failures." in ergonomics
     assert "trigger overlap or undertrigger risk" in skill_quality
+    assert "support-skill discoverability" in skill_quality
+    assert "reference-aware contract checks" in skill_quality
+    assert "overfit exact prose snippets" in skill_quality
     assert "repeated prose ritual" in skill_quality
     assert "growing lint suppressions" in skill_quality
 

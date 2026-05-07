@@ -3,21 +3,21 @@
 ## Current Focus
 
 - Compressed the `quality` public skill from a dense manual into a fast-path orchestrator while preserving checked-in plugin export, find-skills discovery, public-skill dogfood, and prompt-surface proof policy. (source: `charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md`)
-- This session closed GitHub issue #102 by making empty quality runtime budget and startup probe surfaces visible as weak runtime visibility findings. (source: `charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md`)
+- This session followed a user correction: `check_skill_contracts.py` had become too exact-snippet driven, and `quality` had not surfaced that brittleness or the hidden support-skill discoverability issue earlier. (source: `charness-artifacts/retro/2026-05-07-validator-support-discovery.md`)
 
 ## Repeat Traps
 
+- Exact snippet pins were meant to keep load-bearing behavior from being deleted, but they also made useful skill compression look unsafe unless anchor text stayed in `SKILL.md`. (source: `charness-artifacts/retro/2026-05-07-validator-support-discovery.md`)
+- `quality` saw skill ergonomics in general but did not directly ask whether a validator was freezing wording instead of behavior. (source: `charness-artifacts/retro/2026-05-07-validator-support-discovery.md`)
 - Restoring those anchors briefly made skill ergonomics report `long_core` and pressure terms again, even though the section was a validator-facing index rather than workflow prose. (source: `charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md`)
-- The first compression removed exact contract snippets that validators expect in `SKILL.md`, so the full gate failed before the load-bearing anchors were restored. (source: `charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md`)
-- The first implementation treated a repo-local helper path as if exported plugin skills could invoke it with the same `$SKILL_DIR` depth. (source: `charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md`)
-- The first premortem validator used global text matching, so domain words like `blocked` inside a parent-delegated artifact could be mistaken for blocked fresh-eye state. (source: `charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md`)
+- Support skills were present in the capability map, but workflow-language triggers such as `docs/specs`, `run:shell`, or `check:jq` did not have a deterministic recommendation path. (source: `charness-artifacts/retro/2026-05-07-validator-support-discovery.md`)
 
 ## Next-Time Checklist
 
+- before compressing or judging a public skill, inspect exact-string validators and classify each checked phrase as core, package detail, or a candidate for behavior-level proof. (source: `charness-artifacts/retro/2026-05-07-validator-support-discovery.md`)
 - before shrinking a public skill, inspect exact-string contract validators first and decide which snippets are real core versus anchor-only. (source: `charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md`)
 - keep this as the current example that anchor sections should be excluded from ergonomics pressure calculations. (source: `charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md`)
-- replace some future exact-string checks with reference-aware assertions so `SKILL.md` does not need to carry a growing anchor catalog. (source: `charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md`)
-- exported-plugin dogfood against the affected consumer repo should be cited in closeout when the issue came from that repo. (source: `charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md`)
+- prefer reference-aware or scenario-backed validator assertions over exact prose snippets when the protected invariant is not classifier input. (source: `charness-artifacts/retro/2026-05-07-validator-support-discovery.md`)
 
 ## Selection Policy
 
@@ -27,6 +27,5 @@
 
 ## Sources
 
-- `charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md`
-- `charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md`
 - `charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md`
+- `charness-artifacts/retro/2026-05-07-validator-support-discovery.md`

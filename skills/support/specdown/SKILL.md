@@ -1,12 +1,15 @@
 ---
 name: specdown
-description: "Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs."
+description: "Write, run, and fix Specdown executable specifications. Use when task language mentions `*.spec.md`, `docs/specs`, `run:shell`, doctest output, check tables, `check:jq`, `report.json`, Specdown HTML reports, executable specs, adapter checks, or focused Specdown iteration."
 allowed-tools: Bash, Read, Edit, Glob, Grep
 ---
 
 # specdown
 
 Write, run, and fix executable specifications.
+
+Key references: `syntax.md`, `best-practices.md`, `cli.md`, `report.md`,
+`config.md`, `adapter-protocol.md`, `validation.md`.
 
 ## Project Context
 

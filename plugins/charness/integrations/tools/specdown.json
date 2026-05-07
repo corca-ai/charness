@@ -54,6 +54,23 @@
     "human-only",
     "degraded"
   ],
+  "intent_triggers": [
+    "*.spec.md",
+    ".spec.md",
+    "docs/specs",
+    "run:shell",
+    "doctest",
+    "check table",
+    "check:jq",
+    "specdown report",
+    "specdown HTML report",
+    "report.json",
+    "executable spec",
+    "spec syntax",
+    "adapter check",
+    "specdown -filter",
+    "reduce full specdown run cost"
+  ],
   "version_expectation": {
     "policy": "advisory",
     "constraint": "Prefer a recent upstream-supported release.",

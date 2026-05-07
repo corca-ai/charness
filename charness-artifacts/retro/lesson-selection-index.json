@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-07",
-  "source_artifact_count": 47,
-  "candidate_count": 278,
+  "source_artifact_count": 48,
+  "candidate_count": 285,
   "top_candidates": [
     {
       "candidate_id": "current_focus:9e70b78f1dbe",
@@ -31,6 +31,46 @@
           "artifact_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
           "date": "2026-05-07",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:4729219a57df",
+      "kind": "current_focus",
+      "lesson": "This session followed a user correction: `check_skill_contracts.py` had become too exact-snippet driven, and `quality` had not surfaced that brittleness or the hidden support-skill discoverability issue earlier.",
+      "normalized_key": "this session followed a user correction check skill contracts py had become too exact",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "date": "2026-05-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:63401b7e8b25",
+      "kind": "next_improvement",
+      "lesson": "before compressing or judging a public skill, inspect exact-string validators and classify each checked phrase as core, package detail, or a candidate for behavior-level proof.",
+      "normalized_key": "before compressing or judging a public skill inspect exact string validators and classify each",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -75,6 +115,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:04c8ab16a159",
+      "kind": "next_improvement",
+      "lesson": "prefer reference-aware or scenario-backed validator assertions over exact prose snippets when the protected invariant is not classifier input.",
+      "normalized_key": "prefer reference aware or scenario backed validator assertions over exact prose snippets when the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:0b4f2426002f",
       "kind": "next_improvement",
       "lesson": "replace some future exact-string checks with reference-aware assertions so `SKILL.md` does not need to carry a growing anchor catalog.",
@@ -91,6 +151,66 @@
           "artifact_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
           "date": "2026-05-07",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a74a8b681b3f",
+      "kind": "next_improvement",
+      "lesson": "support-skill discoverability must include workflow-language and file shape triggers, not only explicit `support/<id>` naming.",
+      "normalized_key": "support skill discoverability must include workflow language and file shape triggers not only explicit",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e81c811c9545",
+      "kind": "repeat_trap",
+      "lesson": "Exact snippet pins were meant to keep load-bearing behavior from being deleted, but they also made useful skill compression look unsafe unless anchor text stayed in `SKILL.md`.",
+      "normalized_key": "exact snippet pins were meant to keep load bearing behavior from being deleted but",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "date": "2026-05-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c03b2f709b3e",
+      "kind": "repeat_trap",
+      "lesson": "`quality` saw skill ergonomics in general but did not directly ask whether a validator was freezing wording instead of behavior.",
+      "normalized_key": "quality saw skill ergonomics in general but did not directly ask whether a validator",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "date": "2026-05-07",
+          "section": "Waste"
         }
       ]
     },
@@ -115,12 +235,12 @@
       ]
     },
     {
-      "candidate_id": "repeat_trap:8b1a66cb1a8d",
+      "candidate_id": "repeat_trap:813164418a46",
       "kind": "repeat_trap",
-      "lesson": "The first compression removed exact contract snippets that validators expect in `SKILL.md`, so the full gate failed before the load-bearing anchors were restored.",
-      "normalized_key": "the first compression removed exact contract snippets that validators expect in skill md so",
+      "lesson": "Support skills were present in the capability map, but workflow-language triggers such as `docs/specs`, `run:shell`, or `check:jq` did not have a deterministic recommendation path.",
+      "normalized_key": "support skills were present in the capability map but workflow language triggers such as",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
       "latest_source_date": "2026-05-07",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -128,129 +248,9 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
+          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
           "date": "2026-05-07",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:d56ff3eef6a0",
-      "kind": "current_focus",
-      "lesson": "This session closed GitHub issue #102 by making empty quality runtime budget and startup probe surfaces visible as weak runtime visibility findings.",
-      "normalized_key": "this session closed github issue 102 by making empty quality runtime budget and startup",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
-      "latest_source_date": "2026-05-06",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
-          "date": "2026-05-06",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:be3f2ced61e4",
-      "kind": "current_focus",
-      "lesson": "This session finished the artifact pointer follow-up: add a current-pointer refresh helper and move record/current/rolling behavior from skill-id exceptions into adapter-declared artifact classes.",
-      "normalized_key": "this session finished the artifact pointer follow up add a current pointer refresh helper",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
-      "latest_source_date": "2026-05-06",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
-          "date": "2026-05-06",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:35e95b9338a5",
-      "kind": "current_focus",
-      "lesson": "This slice changed the checked-in plugin export, artifact write-target helpers, and premortem validation for downstream repos.",
-      "normalized_key": "this slice changed the checked in plugin export artifact write target helpers and premortem",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md",
-      "latest_source_date": "2026-05-06",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md",
-          "date": "2026-05-06",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:1f27c64b7da3",
-      "kind": "next_improvement",
-      "lesson": "exported-plugin dogfood against the affected consumer repo should be cited in closeout when the issue came from that repo.",
-      "normalized_key": "exported plugin dogfood against the affected consumer repo should be cited in closeout when",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
-      "latest_source_date": "2026-05-06",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-06-runtime-visibility-quality.md",
-          "date": "2026-05-06",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:8df21ce796e6",
-      "kind": "next_improvement",
-      "lesson": "for exported plugin changes, run at least one command from `plugins/charness/...` against a consumer repo before closeout.",
-      "normalized_key": "for exported plugin changes run at least one command from plugins charness against a",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md",
-      "latest_source_date": "2026-05-06",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-premortem-contract.md",
-          "date": "2026-05-06",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:8b6c945a2860",
-      "kind": "next_improvement",
-      "lesson": "keep artifact class validation strict at resolver boundaries; avoid permissive normalization for declared adapter fields.",
-      "normalized_key": "keep artifact class validation strict at resolver boundaries avoid permissive normalization for declared adapter",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
-      "latest_source_date": "2026-05-06",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-06-artifact-pointer-refresh.md",
-          "date": "2026-05-06",
-          "section": "Next Improvements"
         }
       ]
     }
@@ -277,6 +277,46 @@
       ]
     },
     {
+      "candidate_id": "current_focus:4729219a57df",
+      "kind": "current_focus",
+      "lesson": "This session followed a user correction: `check_skill_contracts.py` had become too exact-snippet driven, and `quality` had not surfaced that brittleness or the hidden support-skill discoverability issue earlier.",
+      "normalized_key": "this session followed a user correction check skill contracts py had become too exact",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "date": "2026-05-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:63401b7e8b25",
+      "kind": "next_improvement",
+      "lesson": "before compressing or judging a public skill, inspect exact-string validators and classify each checked phrase as core, package detail, or a candidate for behavior-level proof.",
+      "normalized_key": "before compressing or judging a public skill inspect exact string validators and classify each",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:764379473d01",
       "kind": "next_improvement",
       "lesson": "before shrinking a public skill, inspect exact-string contract validators first and decide which snippets are real core versus anchor-only.",
@@ -317,6 +357,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:04c8ab16a159",
+      "kind": "next_improvement",
+      "lesson": "prefer reference-aware or scenario-backed validator assertions over exact prose snippets when the protected invariant is not classifier input.",
+      "normalized_key": "prefer reference aware or scenario backed validator assertions over exact prose snippets when the",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:0b4f2426002f",
       "kind": "next_improvement",
       "lesson": "replace some future exact-string checks with reference-aware assertions so `SKILL.md` does not need to carry a growing anchor catalog.",
@@ -337,6 +397,66 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:a74a8b681b3f",
+      "kind": "next_improvement",
+      "lesson": "support-skill discoverability must include workflow-language and file shape triggers, not only explicit `support/<id>` naming.",
+      "normalized_key": "support skill discoverability must include workflow language and file shape triggers not only explicit",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e81c811c9545",
+      "kind": "repeat_trap",
+      "lesson": "Exact snippet pins were meant to keep load-bearing behavior from being deleted, but they also made useful skill compression look unsafe unless anchor text stayed in `SKILL.md`.",
+      "normalized_key": "exact snippet pins were meant to keep load bearing behavior from being deleted but",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "date": "2026-05-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c03b2f709b3e",
+      "kind": "repeat_trap",
+      "lesson": "`quality` saw skill ergonomics in general but did not directly ask whether a validator was freezing wording instead of behavior.",
+      "normalized_key": "quality saw skill ergonomics in general but did not directly ask whether a validator",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "date": "2026-05-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:4f64c61c4318",
       "kind": "repeat_trap",
       "lesson": "Restoring those anchors briefly made skill ergonomics report `long_core` and pressure terms again, even though the section was a validator-facing index rather than workflow prose.",
@@ -351,6 +471,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
+          "date": "2026-05-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:813164418a46",
+      "kind": "repeat_trap",
+      "lesson": "Support skills were present in the capability map, but workflow-language triggers such as `docs/specs`, `run:shell`, or `check:jq` did not have a deterministic recommendation path.",
+      "normalized_key": "support skills were present in the capability map but workflow language triggers such as",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
           "date": "2026-05-07",
           "section": "Waste"
         }

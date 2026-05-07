@@ -21,6 +21,9 @@ Check for:
 - unnecessary mode or option pressure when stronger defaults or inference would
   do
 - trigger overlap or undertrigger risk against nearby public skills
+- support-skill discoverability when workflow language implies hidden support
+  surfaces such as executable specs, browser automation, markdown preview, or
+  external-source gather providers
 - references that exist and still match the body
 - cold-start bootstrap that actually works on a clean repo
 - durable artifact seams that are explicit and overridable
@@ -34,6 +37,9 @@ Check for:
   a reference into a second workflow instead of progressive disclosure
 - stale E2E, eval, or smoke paths that still pay standing runtime after a
   cheaper and more direct proof now covers the same seam
+- validator assertions that overfit exact prose snippets instead of checking the
+  behavior, routing, package-level reference, or machine-readable contract they
+  are meant to protect
 
 Preferred deterministic gates:
 
@@ -44,6 +50,10 @@ Preferred deterministic gates:
 - markdown and link checks for checked-in skill docs
 - repo-owned validators that fail on bare internal markdown references in prose
   when the project expects document mentions to stay clickable
+- reference-aware contract checks for skill packages where `SKILL.md` owns the
+  core trigger and `references/` may own detailed rules
+- task-text support recommendation checks when a support skill should be
+  discoverable before nearby public workflows continue
 
 Preferred manual findings:
 
@@ -52,3 +62,6 @@ Preferred manual findings:
 - a skill that assumes the model is too dumb to infer the obvious next move,
   causing needless user-facing branching
 - portability drift that is conceptually real but not fully machine-checkable
+- source-guard style tests over prose that should become package-level,
+  structure-aware, or scenario-backed assertions before they block useful
+  skill compression
