@@ -25,6 +25,8 @@ if [[ -z "$JSON" ]]; then
 fi
 
 THREAD_URL="https://${WORKSPACE}.slack.com/archives/${CHANNEL_ID}/p${THREAD_TS//./}"
+REQUESTED_URL="${REQUESTED_SLACK_URL:-$THREAD_URL}"
+REQUESTED_MESSAGE_TS="${REQUESTED_MESSAGE_TS:-$THREAD_TS}"
 
 mkdir -p "$(dirname "$OUTPUT_FILE")"
 
@@ -34,7 +36,9 @@ cat > "$OUTPUT_FILE" << EOF
 # $TITLE
 
 > Slack thread archive
-> Source: $THREAD_URL
+> Source: $REQUESTED_URL
+> Resolved thread: $CHANNEL_ID:$THREAD_TS
+> Requested message: $REQUESTED_MESSAGE_TS
 > Last updated: $UPDATED_AT
 
 EOF
