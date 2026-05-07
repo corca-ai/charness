@@ -47,3 +47,32 @@ Classify the gap:
 - new integration manifest
 
 Do not blur these just to make the answer sound more complete.
+
+## Discoverability Claim
+
+`find-skills --recommend-for-task` proves that workflow language can route a
+task to a hidden support skill without the user naming `support/<id>` first.
+
+The canonical example is `support/specdown` (corca-ai/charness#108):
+
+- the strong-trigger set lives in
+  `STRONG_TASK_TRIGGERS_BY_SUPPORT_ID["specdown"]` inside
+  `scripts/list_capabilities_lib.py` and currently lists `*.spec.md`,
+  `.spec.md`, `docs/specs`, `run:shell`, `check:jq`, `specdown`,
+  `specdown report`, `specdown html report`, `specdown -filter`,
+  `executable spec`, and `spec syntax`
+- positive routing is exercised by
+  `tests/test_find_skills_task_recommendations.py::test_list_capabilities_recommends_support_skill_from_task_text`,
+  which asserts that a task mentioning `docs/specs`, `.spec.md`, `check:jq`,
+  and `specdown` returns the support skill, its key references
+  (`syntax.md`, `best-practices.md`, `cli.md`, `report.md`, `config.md`),
+  and a `next_step` that points at the SKILL body; the other configured
+  triggers are not individually proven by this fixture
+- negative proof keeps generic `report.json` or `doctest output` from routing
+  unrelated work through `support/specdown`
+  (`test_list_capabilities_does_not_recommend_specdown_from_weak_task_text`)
+
+This claim is reusable. To prove the same routing for another support skill,
+add the strong-trigger set, ship a positive fixture that asserts the support
+skill, references, and `next_step`, and ship at least one negative fixture so
+incidental terminology overlap does not cause false positives.
