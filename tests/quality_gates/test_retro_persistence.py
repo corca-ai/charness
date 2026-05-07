@@ -118,3 +118,144 @@ def test_persist_retro_artifact_skips_self_refresh_for_summary_target(tmp_path: 
     payload = json.loads(result.stdout)
     assert payload["artifact_path"] == "charness-artifacts/retro/recent-lessons.md"
     assert payload["summary_refreshed"] is False
+
+
+def _write_default_adapter(repo: Path) -> None:
+    (repo / ".agents").mkdir(parents=True, exist_ok=True)
+    (repo / ".agents" / "retro-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: charness-artifacts/retro",
+                "summary_path: charness-artifacts/retro/recent-lessons.md",
+                "evidence_paths: []",
+                "metrics_commands: []",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def test_persist_retro_artifact_normalizes_artifact_name_without_md_extension(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    output_dir = repo / "charness-artifacts" / "retro"
+    output_dir.mkdir(parents=True)
+    _write_default_adapter(repo)
+    markdown_file = repo / "session.md"
+    markdown_file.write_text(
+        "\n".join(
+            [
+                "# Retro",
+                "",
+                "## Context",
+                "",
+                "- Slice closed without lesson loss.",
+                "",
+                "## Waste",
+                "",
+                "- Lost time rediscovering trivia.",
+                "",
+                "## Next Improvements",
+                "",
+                "- `capability`: Keep the persistence helper safe by default.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/retro/scripts/persist_retro_artifact.py",
+        "--repo-root",
+        str(repo),
+        "--artifact-name",
+        "2026-05-07-session-no-extension",
+        "--markdown-file",
+        str(markdown_file),
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["artifact_path"].endswith(".md"), payload
+    assert payload["artifact_path"] == "charness-artifacts/retro/2026-05-07-session-no-extension.md"
+    assert payload["artifact_name_normalized"] is True
+    assert payload["summary_refreshed"] is True
+    assert (output_dir / "2026-05-07-session-no-extension.md").is_file()
+    assert "lacks .md" in result.stderr
+
+
+def test_persist_retro_artifact_preserves_legacy_summary_when_no_candidates(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    output_dir = repo / "charness-artifacts" / "retro"
+    output_dir.mkdir(parents=True)
+    _write_default_adapter(repo)
+    legacy_summary = output_dir / "recent-lessons.md"
+    legacy_text = (
+        "# Recent Retro Lessons\n\n"
+        "## Repeat Traps\n\n"
+        "- Hand-curated trap line that predates the retro skill.\n"
+    )
+    legacy_summary.write_text(legacy_text, encoding="utf-8")
+
+    markdown_file = repo / "session.md"
+    markdown_file.write_text(
+        "# Retro\n\nA narrative-only retro with no Context/Waste/Next Improvements headers.\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/retro/scripts/persist_retro_artifact.py",
+        "--repo-root",
+        str(repo),
+        "--artifact-name",
+        "2026-05-07-narrative-only.md",
+        "--markdown-file",
+        str(markdown_file),
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["summary_refreshed"] is False
+    assert payload["summary_skipped_reason"] == "no_candidates_existing_summary_protected"
+    preserved = legacy_summary.read_text(encoding="utf-8")
+    assert preserved == legacy_text
+    assert "Hand-curated trap line that predates the retro skill." in preserved
+    assert "refusing to overwrite" in result.stderr
+
+
+def test_persist_retro_artifact_force_empty_summary_opts_in(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    output_dir = repo / "charness-artifacts" / "retro"
+    output_dir.mkdir(parents=True)
+    _write_default_adapter(repo)
+    legacy_summary = output_dir / "recent-lessons.md"
+    legacy_text = (
+        "# Recent Retro Lessons\n\n"
+        "## Repeat Traps\n\n"
+        "- Hand-curated trap line that the operator has chosen to drop.\n"
+    )
+    legacy_summary.write_text(legacy_text, encoding="utf-8")
+
+    markdown_file = repo / "session.md"
+    markdown_file.write_text(
+        "# Retro\n\nA narrative-only retro with no Context/Waste/Next Improvements headers.\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/retro/scripts/persist_retro_artifact.py",
+        "--repo-root",
+        str(repo),
+        "--artifact-name",
+        "2026-05-07-narrative-only.md",
+        "--markdown-file",
+        str(markdown_file),
+        "--force-empty-summary",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["summary_refreshed"] is True
+    refreshed = legacy_summary.read_text(encoding="utf-8")
+    assert "Hand-curated trap line that the operator has chosen to drop." not in refreshed
+    assert "No current focus bullets found in retro lesson index." in refreshed

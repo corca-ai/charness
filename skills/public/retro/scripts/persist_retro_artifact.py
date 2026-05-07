@@ -43,6 +43,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--artifact-name", required=True)
     parser.add_argument("--markdown-file", type=Path, required=True)
     parser.add_argument("--snapshot-file", type=Path)
+    parser.add_argument(
+        "--force-empty-summary",
+        action="store_true",
+        help=(
+            "Allow the summary refresh to write an empty-stub digest even when "
+            "lesson extraction returns 0 candidates and a non-stub summary "
+            "already exists. Default behavior preserves the existing summary."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -68,6 +77,7 @@ def main() -> int:
         summary_path=(repo_root / summary_rel) if isinstance(summary_rel, str) else None,
         snapshot_path=(repo_root / snapshot_rel) if isinstance(snapshot_rel, str) and args.snapshot_file else None,
         snapshot_data=_load_json(args.snapshot_file),
+        force_empty_summary=args.force_empty_summary,
     )
     print(json.dumps(result, ensure_ascii=False))
     return 0
