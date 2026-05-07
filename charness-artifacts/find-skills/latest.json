@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-07T00:48:50Z",
+  "generated_at": "2026-05-07T01:18:09Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -86,17 +86,18 @@
           "charness:create-skill"
         ],
         "referenced_paths": [
-          "skills/shared/references/source-bound-records.md",
-          "skills/shared/references/prescribed-path-self-test.md",
           "skills/public/create-skill/SKILL.md",
-          "skills/shared/references/binary-preflight.md",
           "skills/public/create-skill/references/portable-authoring.md",
           "skills/public/create-skill/references/adapter-pattern.md",
           "skills/public/create-skill/references/preset-conventions.md",
           "skills/public/create-skill/references/integration-seams.md",
           "skills/public/create-skill/references/runtime-capabilities.md",
           "skills/public/create-skill/references/deployable-skill-packaging.md",
+          "skills/public/create-skill/references/binary-preflight.md",
           "skills/public/create-cli/SKILL.md",
+          "skills/shared/references/binary-preflight.md",
+          "skills/shared/references/source-bound-records.md",
+          "skills/shared/references/prescribed-path-self-test.md",
           "skills/shared/references/success-criteria-review.md"
         ],
         "source": "local-public",
@@ -143,7 +144,6 @@
           "charness:find-skills"
         ],
         "referenced_paths": [
-          "skills/public/find-skills/SKILL.md",
           "skills/public/find-skills/adapter.example.yaml",
           "skills/public/find-skills/references/adapter-contract.md",
           "skills/public/find-skills/references/discovery-order.md",
@@ -286,10 +286,9 @@
           "skills/public/impl/references/adapter-contract.md",
           "skills/shared/references/source-bound-records.md",
           "skills/public/impl/SKILL.md",
-          "skills/public/debug/references/named-target-verification.md",
-          "skills/public/impl/references/external-api-contract.md",
           "skills/shared/references/prescribed-path-self-test.md",
           "skills/public/impl/references/contract-consumption.md",
+          "skills/public/impl/references/external-api-contract.md",
           "skills/public/impl/references/spec-loop.md"
         ],
         "source": "local-public",

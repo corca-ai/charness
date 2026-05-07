@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-07",
-  "source_artifact_count": 48,
-  "candidate_count": 285,
+  "source_artifact_count": 49,
+  "candidate_count": 292,
   "top_candidates": [
     {
       "candidate_id": "current_focus:9e70b78f1dbe",
@@ -35,6 +35,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:2a7f9c8e546a",
+      "kind": "current_focus",
+      "lesson": "This session finished the public-skill compression and validator flexibility slice before push.",
+      "normalized_key": "this session finished the public skill compression and validator flexibility slice before push",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+          "date": "2026-05-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:4729219a57df",
       "kind": "current_focus",
       "lesson": "This session followed a user correction: `check_skill_contracts.py` had become too exact-snippet driven, and `quality` had not surfaced that brittleness or the hidden support-skill discoverability issue earlier.",
@@ -51,6 +71,26 @@
           "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
           "date": "2026-05-07",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:55868c5b4c52",
+      "kind": "next_improvement",
+      "lesson": "before broad skill compression, classify each sentence as trigger, stop gate, proof route, or reference detail.",
+      "normalized_key": "before broad skill compression classify each sentence as trigger stop gate proof route or",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -89,6 +129,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:670ba001ac92",
+      "kind": "next_improvement",
+      "lesson": "keep `check_skill_contracts.py` as the canonical example of body-only core contracts plus package-level reference contracts.",
+      "normalized_key": "keep check skill contracts py as the canonical example of body only core contracts",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
           "date": "2026-05-07",
           "section": "Next Improvements"
         }
@@ -175,12 +235,12 @@
       ]
     },
     {
-      "candidate_id": "repeat_trap:e81c811c9545",
-      "kind": "repeat_trap",
-      "lesson": "Exact snippet pins were meant to keep load-bearing behavior from being deleted, but they also made useful skill compression look unsafe unless anchor text stayed in `SKILL.md`.",
-      "normalized_key": "exact snippet pins were meant to keep load bearing behavior from being deleted but",
+      "candidate_id": "next_improvement:14780eff74fd",
+      "kind": "next_improvement",
+      "lesson": "when a generated artifact can be produced by both installed-cache and repo-local scripts, use the repo-local source script before final sync.",
+      "normalized_key": "when a generated artifact can be produced by both installed cache and repo local",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
       "latest_source_date": "2026-05-07",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -188,69 +248,9 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "artifact_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
           "date": "2026-05-07",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:c03b2f709b3e",
-      "kind": "repeat_trap",
-      "lesson": "`quality` saw skill ergonomics in general but did not directly ask whether a validator was freezing wording instead of behavior.",
-      "normalized_key": "quality saw skill ergonomics in general but did not directly ask whether a validator",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
-      "latest_source_date": "2026-05-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
-          "date": "2026-05-07",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:4f64c61c4318",
-      "kind": "repeat_trap",
-      "lesson": "Restoring those anchors briefly made skill ergonomics report `long_core` and pressure terms again, even though the section was a validator-facing index rather than workflow prose.",
-      "normalized_key": "restoring those anchors briefly made skill ergonomics report long core and pressure terms again",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
-      "latest_source_date": "2026-05-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
-          "date": "2026-05-07",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:813164418a46",
-      "kind": "repeat_trap",
-      "lesson": "Support skills were present in the capability map, but workflow-language triggers such as `docs/specs`, `run:shell`, or `check:jq` did not have a deterministic recommendation path.",
-      "normalized_key": "support skills were present in the capability map but workflow language triggers such as",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
-      "latest_source_date": "2026-05-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
-          "date": "2026-05-07",
-          "section": "Waste"
+          "section": "Next Improvements"
         }
       ]
     }
@@ -277,6 +277,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:2a7f9c8e546a",
+      "kind": "current_focus",
+      "lesson": "This session finished the public-skill compression and validator flexibility slice before push.",
+      "normalized_key": "this session finished the public skill compression and validator flexibility slice before push",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+          "date": "2026-05-07",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:4729219a57df",
       "kind": "current_focus",
       "lesson": "This session followed a user correction: `check_skill_contracts.py` had become too exact-snippet driven, and `quality` had not surfaced that brittleness or the hidden support-skill discoverability issue earlier.",
@@ -293,6 +313,26 @@
           "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
           "date": "2026-05-07",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:55868c5b4c52",
+      "kind": "next_improvement",
+      "lesson": "before broad skill compression, classify each sentence as trigger, stop gate, proof route, or reference detail.",
+      "normalized_key": "before broad skill compression classify each sentence as trigger stop gate proof route or",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -331,6 +371,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:670ba001ac92",
+      "kind": "next_improvement",
+      "lesson": "keep `check_skill_contracts.py` as the canonical example of body-only core contracts plus package-level reference contracts.",
+      "normalized_key": "keep check skill contracts py as the canonical example of body only core contracts",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
           "date": "2026-05-07",
           "section": "Next Improvements"
         }
@@ -417,6 +477,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:14780eff74fd",
+      "kind": "next_improvement",
+      "lesson": "when a generated artifact can be produced by both installed-cache and repo-local scripts, use the repo-local source script before final sync.",
+      "normalized_key": "when a generated artifact can be produced by both installed cache and repo local",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+          "date": "2026-05-07",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:e81c811c9545",
       "kind": "repeat_trap",
       "lesson": "Exact snippet pins were meant to keep load-bearing behavior from being deleted, but they also made useful skill compression look unsafe unless anchor text stayed in `SKILL.md`.",
@@ -431,6 +511,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "date": "2026-05-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:996e188001d6",
+      "kind": "repeat_trap",
+      "lesson": "Existing tests still asserted exact `SKILL.md` snippets for detail that now belongs in references. That reproduced the validator brittleness the user had flagged.",
+      "normalized_key": "existing tests still asserted exact skill md snippets for detail that now belongs in",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
           "date": "2026-05-07",
           "section": "Waste"
         }
@@ -477,6 +577,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:9c38d972c49c",
+      "kind": "repeat_trap",
+      "lesson": "Running a sync/read command from a stale installed cache earlier rewrote `find-skills/latest.*` without rich references; final sync had to be repeated with the repo-local script.",
+      "normalized_key": "running a sync read command from a stale installed cache earlier rewrote find skills",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+          "date": "2026-05-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:813164418a46",
       "kind": "repeat_trap",
       "lesson": "Support skills were present in the capability map, but workflow-language triggers such as `docs/specs`, `run:shell`, or `check:jq` did not have a deterministic recommendation path.",
@@ -491,6 +611,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "date": "2026-05-07",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e126ba57a7dc",
+      "kind": "repeat_trap",
+      "lesson": "The first compression pass removed some strings that were not just prose: validation-route discovery, success-criteria review escalation, impl fresh-eye stop gate, and prompt-surface proof policy.",
+      "normalized_key": "the first compression pass removed some strings that were not just prose validation route",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
+      "latest_source_date": "2026-05-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md",
           "date": "2026-05-07",
           "section": "Waste"
         }

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .support import ROOT, run_script
+from .support import ROOT, run_script, skill_package_text
 
 
 def test_narrative_skill_carries_scenario_block_guidance() -> None:
@@ -14,9 +14,10 @@ def test_narrative_skill_carries_scenario_block_guidance() -> None:
     adapter_contract = (
         ROOT / "skills" / "public" / "narrative" / "references" / "adapter-contract.md"
     ).read_text(encoding="utf-8")
+    package_text = skill_package_text("narrative")
 
     assert "scenario_surfaces" in skill_text
-    assert "checked-in fixtures" in skill_text
+    assert "checked-in fixtures" in package_text
     assert "define it inline at first use" in skill_text
     assert "What you bring" in scenario_blocks
     assert "Input (CLI)" in scenario_blocks

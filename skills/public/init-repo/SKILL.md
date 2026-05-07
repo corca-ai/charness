@@ -103,16 +103,11 @@ Then load only the references needed for the detected state:
    - `<repo-root>/docs/operator-acceptance.md`
    - optionally separate bootstrap and uninstall docs only when the repo
      actually ships an installable surface
-   - when the repo ships an installable CLI, plugin, package, or local
-     agent-facing integration surface, make `<repo-root>/README.md` and/or a repo-local bootstrap doc
-     name a small probe surface explicitly instead of collapsing everything into
-     one vague "run doctor" instruction
+   - when the repo ships an installable CLI, plugin, package, or agent-facing
+     integration, make the README or bootstrap doc name a small probe surface
    - when the repo wants durable retrospective memory, seed
      `<repo-root>/.agents/retro-adapter.yaml` and `<repo-root>/charness-artifacts/retro/recent-lessons.md`
      with `$SKILL_DIR/scripts/seed_retro_memory.py` instead of hand-writing the seam
-   - when that seam is enabled, make `<repo-root>/AGENTS.md` name
-     `<repo-root>/charness-artifacts/retro/recent-lessons.md` as a repo memory surface so future
-     sessions can actually discover it
    - when Charness workflows write durable artifacts, make `<repo-root>/AGENTS.md`
      say meaningful `charness-artifacts/` changes are repo state and
      current-pointer helpers no-op without canonical content changes
@@ -121,14 +116,9 @@ Then load only the references needed for the detected state:
      agents should not wait for a second user message asking for delegation,
      and host spawn restrictions should be reported explicitly instead of
      replaced with a same-agent pass
-   - for Charness-managed repos, include task-completing `init-repo` and
-     `quality` review runs in that rule; do not hide it under Premortem only
    - add a short `Skill Routing` block to `<repo-root>/AGENTS.md` when
      installed charness skills are present
-   - keep that block startup-bootstrap-heavy and discovery-first: task-oriented
-     sessions should call the shared/public charness skill `find-skills` once
-     before broader exploration, then choose the durable work skill from the
-     installed surface
+   - keep that block startup-bootstrap-heavy and discovery-first
    - when the repo keeps repo-owned skills under `skills/public/` or
      `skills/support/`, make `<repo-root>/AGENTS.md` say that semantic skill changes should
      freeze the current consumer intent before broad edits by deciding whether
@@ -138,17 +128,10 @@ Then load only the references needed for the detected state:
      add-block suggestion instead of a silent rewrite
 5. Keep the boundaries honest.
    - `<repo-root>/README.md`: current repo story and user-facing orientation
-     - if the repo ships an installable surface, README should point at the
-       canonical install path and the probe-surface doc section without trying
-       to explain every command inline
    - `<repo-root>/AGENTS.md`: agent operating contract for this repo
    - `<repo-root>/docs/roadmap.md`: near-term work direction and ordered priorities
    - `<repo-root>/docs/operator-acceptance.md`: what a human maintainer must do to take over
-   - an optional repo-local bootstrap doc: install/update/probe semantics for repos that really expose
-     an install contract
-     - the minimum honest probe surface is usually: install/update path,
-       binary healthcheck, machine-readable discovery if it exists, repo
-       readiness, and any local discoverability/materialization step
+   - optional bootstrap docs: install/update/probe semantics for repos with an install contract
    - do not create `<repo-root>/docs/handoff.md` by default; use `handoff` only when the
      next session truly needs a baton-pass artifact
 6. End with a quality-style sanity pass.
@@ -157,10 +140,8 @@ Then load only the references needed for the detected state:
    - check that the next human operator can tell what to read and what to do
    - for nontrivial source trees, recommend a dead-file advisory detector
      (`vulture` for Python, `knip` for JavaScript/TypeScript)
-   - for task-completing normalization, spawn bounded reviewers for
-     host-instruction policy, operating-surface adapter fit, operator takeover
-     flow, and any broad test/runtime gate surface introduced by the new
-     operating contract; report `executed`, `blocked`, or `not_applicable`
+   - for task-completing normalization, spawn bounded reviewers for host
+     policy, adapter fit, operator takeover, and any broad new gate surface
    - use deterministic inspection as reviewer evidence and emit queued
      `recommendations[]` separately from `normalization.findings`
    - if deeper repo-wide posture review is still needed, hand off to `quality`

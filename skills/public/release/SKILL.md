@@ -12,15 +12,10 @@ not just to describe recent changes.
 surfaces that ship checked-in install metadata. It should keep one repo's
 release contract honest instead of improvising version bumps, CLI update
 advice, or generated-file edits by hand.
-Borrow Jez Humble-style release discipline: keep the path small, repeatable,
-and honest about which boundary is actually closed: local verification, publish
-workflow completion, or public release visibility.
 Every task-completing release slice records premortem before closeout. Scale
-the pass, not the obligation: routine release hygiene may use a short scoped
-premortem for version drift, generated surfaces, publish boundary, and operator
-risk; compatibility, install/update, deletion, host-proof, or public-visibility
-decisions use standalone `premortem` before mutating versions. Before any
-host-capability question, honor `<repo-root>/AGENTS.md` `Subagent Delegation`.
+the pass, not the obligation. Routine release hygiene may use a short scoped
+premortem; compatibility, install/update, deletion, host-proof, or public
+visibility decisions use standalone `premortem` before mutating versions.
 
 ## Bootstrap
 
@@ -83,9 +78,6 @@ verified.
    - every task-completing release slice records premortem before closeout; scale the pass instead of asking whether it is needed
    - record `Premortem: short <scope>` for routine release hygiene focused on version drift, generated surfaces, publish boundary, and operator risk
    - record `Premortem: full <artifact-or-subagent-status>` after standalone `premortem` when compatibility, install/update, deletion, host-proof, or public visibility could be misread
-   - carry back `Act Before Ship`, `Bundle Anyway`, `Over-Worry`, and
-     `Valid but Defer` into the release plan instead of keeping them as chat
-     debris
    - use `Premortem: not-applicable <reason>` only for inspect/status/routing-only release requests that do not mutate or close repo work
    - if the required premortem is blocked because the host cannot provide
      subagents after the capability check, stop and record
@@ -113,22 +105,13 @@ verified.
    - if `check_requested_review_gate.py` reports requested review unavailability,
      fix the gate, select a correct adapter, or record an explicit waiver before
      publish/tag
-   - if the adapter declares both `installable_cli` and `bundled_skill`, run the
-     CLI plus bundled-skill disclosure check for relevant CLI, shipped-skill,
-     plugin, package, or install-surface changes
-   - if launcher or install seams moved, include `Startup Proof` and point to
-     measured release-class startup probes instead of only restating generic
-     smoke success
+   - if CLI, bundled-skill, launcher, or install seams moved, run the declared
+     surface checks and report startup proof when applicable
 7. Close the public release boundary.
    - distinguish `local/tag state complete`, `workflow publication complete`,
      and `public release surface verified`
    - if a repo has tag-triggered or otherwise async publication, do not treat
      helper success or tag push alone as publish completion
-   - if the repo's true product boundary is externally consumed release
-     visibility, the closure point is public release surface verification
-   - when public APIs, package indexes, or taps converge eventually, treat
-     bounded retry/backoff as normal verification behavior rather than
-     incidental flakiness
    - if the repo has no repo-owned public verifier yet, leave the release
      explicitly open at that boundary instead of implying it already closed
 8. End with operator-facing update steps.

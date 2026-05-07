@@ -41,15 +41,11 @@ sed -n '1,220p' presets/README.md
    - profile: default bundle of public and support skills
    - preset: opt-in default values for adapters or hosts
    - integration: external ownership contract, never a hidden dependency
-2. Write a short brief.
+2. Write a short brief before changing files.
    - concept, audience, trigger, external dependencies, accumulated state
-   - candidate named anchors, behavior rules for adjacent public skills, and
-     source-checked factual claims before compressing them into core wording
-   - simulate cold start, warm start, error recovery, and 5-7 agent failure cases before changing files
-   - for multi-source external-write skills, simulate source/principal binding
-     drift and apply `../../shared/references/source-bound-records.md`
-   - for scheduled, async, or external-lookup skills, apply
-     `../../shared/references/prescribed-path-self-test.md`
+   - candidate anchors and adjacent-skill behavior rules
+   - cold start, warm start, error recovery, and concrete failure modes
+   - source/principal binding drift or prescribed-path self-test concerns when relevant
 3. Freeze the current consumer contract before editing an existing public skill.
    - read the current reviewed dogfood case or scaffold it first with `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --json`
    - decide whether the slice claims `preserve` or `improve` before changing the core trigger or behavior contract
@@ -60,8 +56,9 @@ sed -n '1,220p' presets/README.md
    - run success criteria review for public-skill behavior changes; use it
      inline for narrow edits and as a bounded subagent review for non-trivial
      first successful trigger, default, artifact, or proof-path changes
-   - if the skill is `evaluator-required`, inspect the maintained scenario surface and current cautilus proof plan before editing so the post-change proof obligation is explicit up front
-   - when the checked-in contract is still too vague to freeze honestly, stop and tighten that consumer-facing scenario before broad edits
+   - if the skill is `evaluator-required`, inspect scenario coverage and proof
+     planning before editing
+   - when the checked-in contract is too vague to freeze, tighten the scenario first
 4. Decide the portability seams.
    - skill body stays generic
    - repo or host specifics move to adapter files or presets
@@ -69,26 +66,14 @@ sed -n '1,220p' presets/README.md
    - prefer strong defaults and inference over user-facing branches or flags
 5. Decide dependency ownership honestly.
    - harness-owned support logic belongs in `skills/support/`
-   - if `charness` owns the runtime capability, keep its machine-readable
-     metadata next to the support skill as
-     `skills/support/<skill-id>/capability.json`
+   - if `charness` owns the runtime capability, keep its machine-readable metadata next to the support skill as `skills/support/<skill-id>/capability.json`
    - external tools and upstream support skills belong in
      `<repo-root>/integrations/tools/<tool-id>.json`
    - if an upstream support skill already exists, prefer reference, sync, or a
      thin wrapper over copying
-   - if private access is involved, model capability grants, authenticated
-     binaries, env fallback, and degradation explicitly instead of hiding
-     secret assumptions in the skill body
-   - when discovery surfaces should expose the dependency, keep manifest
-     metadata rich enough to reveal capability kind and supported access modes
-   - when setup prerequisites matter, express them as manifest readiness checks
-     instead of burying them in operator prose only
-   - if the work is really a repo-owned command-line product, use
-     `create-cli` instead of burying CLI lifecycle decisions inside a generic
-     skill migration
-   - if the skill must ship inside a host plugin bundle, keep discovery,
-     manifest, and install-surface proof in packaging, integrations, or the
-     owning CLI contract rather than in the public skill body
+   - keep manifest metadata rich enough to reveal capability kind and supported access modes
+   - express setup prerequisites as manifest readiness checks
+   - use `create-cli` for repo-owned command lifecycle; use deployable packaging refs for plugin bundle proof
 6. Implement the smallest coherent package.
    - `SKILL.md` contains trigger contract and decision skeleton only
    - treat sparse named person anchors in `SKILL.md` core as a deliberate
@@ -98,24 +83,18 @@ sed -n '1,220p' presets/README.md
      moves; put factual essence, nuance, and reference contents in
      `references/`
    - move schemas, examples, and theory into `references/`
-   - add scripts for deterministic repeated checks, adapter bootstrap, and
-     durable artifact handling when the skill would otherwise rely on hand-wavy
-     repeated steps
+   - add scripts for repeated bootstrap, adapter resolution, artifact upsert,
+     or recovery behavior that would otherwise become prose-only ritual
 7. Verify before stopping.
    - cold-start test from repo root
    - for public-skill changes, run one realistic consumer prompt instead of
      stopping at producer-side validators; include missing, stale, and thin
      adapter states when adapters or repo-local defaults shape the first run
-   - for skill self-tests, use `../../shared/references/prescribed-path-self-test.md`
-     before accepting a smoke pass or external identification signal
    - use `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>` to scaffold prompt, repo shape, expected artifact, and acceptance evidence
-   - for public-skill semantic changes, decide in the same slice whether `<repo-root>/docs/public-skill-dogfood.json`, `<repo-root>/evals/cautilus/scenarios.json`, and/or `<repo-root>/charness-artifacts/cautilus/latest.md` should move; do not leave that proof-routing decision implicit
+   - decide whether dogfood, evaluator scenarios, or scenario-review artifacts move in the same slice
    - trigger collision check against adjacent skills
    - path check for every file named in the skill
    - schema or example validation for any profile, preset, or manifest touched
-   - if the skill is meant to be deployable through Claude or Codex plugin
-     surfaces, prove the packaging layout and host-visible payload delta at the
-     install surface instead of claiming discovery from source-only inspection
 
 ## Rules
 
@@ -160,30 +139,12 @@ sed -n '1,220p' presets/README.md
 - Do not treat an author's free-form smoke test as proof; the passing path must
   be reproducible from the installed or checked `SKILL.md` alone.
 - For `evaluator-required` skills, treat maintained scenario coverage and
-  `cautilus` proof planning as part of the edit contract, not as optional
-  closeout commentary after the behavior already changed.
+  `cautilus` proof planning as part of the edit contract.
 - When adding a high-leverage reasoning or review pattern to one public skill,
   inspect adjacent public skills for obvious propagation opportunities before
   stopping.
 - Keep `SKILL.md` concise. If the body approaches 200 lines, move detail into
   `references/`.
-
-## Binary Preflight Philosophy
-
-Public skills must not silently assume non-baseline binaries. If a Bootstrap
-step calls a tool outside `CHARNESS_BASELINE` (`sh`, `git`, `python3`, `sed`,
-`find`, `awk`, `grep`, and basic coreutils), declare it inline with
-`# Required Tools: <name>` and point to `../../shared/references/binary-preflight.md`.
-
-Preflight is lazy, not eager: only trigger it when a command fails with exit 127 or emits
-`MISSING_BIN: <name>`. Explain the missing binary, propose the mapped install
-command, and wait for explicit consent. Auto-install is forbidden. Silent skip is forbidden.
-
-Non-interactive callers use `CHARNESS_BINARY_PREFLIGHT=degraded`, which records
-the degraded step in the durable artifact. Do not swallow `command not found`
-with `2>/dev/null || true`; either let it fail or guard it with `command -v`.
-If a support skill owns the binary, declare the support skill instead of the
-binary and let `capability.json` stay the readiness source of truth.
 
 ## References
 
@@ -193,6 +154,7 @@ binary and let `capability.json` stay the readiness source of truth.
 - `references/integration-seams.md`
 - `references/runtime-capabilities.md`
 - `references/deployable-skill-packaging.md`
+- `references/binary-preflight.md`
 - `../create-cli/SKILL.md`
 - `../../shared/references/binary-preflight.md`
 - `../../shared/references/source-bound-records.md`

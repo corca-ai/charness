@@ -13,10 +13,9 @@ loop. See `references/sequence-discipline.md`, `references/verification-ladder.m
 
 ## Continuation Default
 
-- WHEN THE USER EXPLICITLY ASKS FOR AUTONOMOUS CONTINUATION, DO NOT PAUSE AT
-  SLICE BOUNDARIES JUST TO REPORT COMPLETION.
-- Treat commits, verification, and contract updates as continuation checkpoints.
-- Continue into the next locally decidable slice after each checkpoint.
+- When the user explicitly asks for autonomous continuation, do not pause at
+  slice boundaries just to report completion; treat commits, verification, and
+  contract updates as checkpoints and continue into the next locally decidable slice.
 - Ask only for real product/policy decisions, irreversible external side effect,
   unavailable stronger proof, or evidence conflicts you cannot resolve locally.
 
@@ -84,9 +83,8 @@ Adapter policy:
    - prefer the slice that opens the next good move most cleanly
    - when a probe exists, design the slice so it answers the probe cleanly
    - apply `../../shared/references/source-bound-records.md` for multi-source external writes
-   - for skill packages, scheduled workflows, or external lookup contracts,
-     design acceptance around the path prescribed in `SKILL.md`, not around an
-     author-composed smoke probe
+   - for skill packages, scheduled workflows, or external lookup contracts, use
+     the prescribed path from `SKILL.md`, not an author-composed smoke probe
 4. Verify with the strongest honest path.
    - survey repo and adapter capabilities before coding and again before stopping
    - prefer executed proof over code inspection when an executable path exists
@@ -94,22 +92,18 @@ Adapter policy:
      deterministic gates first; query evaluator tools only for explicit behavior
      evaluation, prompt regression, baseline compare, or insufficient local proof
    - add or strengthen checks when an important branch would otherwise stay unproven
-   - for browser-facing output, treat code-only checks as partial proof by default; resolve browser/runtime support through `find-skills`, run it when available, or say explicitly that it did not run
-   - for slices that depend on an external named target (operator command instance/service/branch/env alias) or a third-party API call, verify the runtime state of the name and the live request/response contract before acting — see `../debug/references/named-target-verification.md` and `references/external-api-contract.md`
-   - for skill self-tests, external lookup contracts, and scheduled or delegated workflows, apply
-     `../../shared/references/prescribed-path-self-test.md` before accepting
-     a smoke pass
+   - for browser-facing output, resolve browser/runtime support through `find-skills`
+     and say explicitly that it did not run when runtime proof is unavailable
+   - for external named targets or third-party APIs, verify runtime state before acting
+   - for skill self-tests, external lookup contracts, and scheduled or delegated workflows, apply `../../shared/references/prescribed-path-self-test.md`
    - if the slice changes repo-owned instruction or prompt surfaces such as `<repo-root>/AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or adapter prompt wording, let the repo's cautilus adapter decide prompt/evaluator proof policy before closeout
    - if the adapter run mode is `disabled`, do not run Cautilus; record the disabled validator result and use deterministic gates until the adapter is re-enabled
    - generic review or closeout wording must not silently launch Cautilus
-   - for behavior-preserving prompt changes, keep regression proof anchored
-     by `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>`
-     or a repo-owned dogfood wrapper when the adapter permits Cautilus execution; for behavior-improving claims, also
-     record the baseline compare path with `cautilus workspace prepare-compare`
-     and `cautilus eval evaluate --input <observed.json>`
-   - when the slice changes reader fit, truth-surface framing, or skill-core
-     reasoning shape, add a short scenario-review note instead of treating
-     routing preservation as sufficient evidence
+   - for behavior-preserving prompt changes, keep regression proof anchored by
+     `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` or
+     a repo-owned dogfood wrapper when the adapter permits Cautilus execution;
+     for behavior-improving claims, also record the baseline compare path with
+     `cautilus workspace prepare-compare` and `cautilus eval evaluate --input <observed.json>`
    - if stronger proof needs setup or permission, ask instead of silently
      downgrading the claim
 5. Sync truth surfaces and re-read the contract before closeout.
@@ -130,11 +124,8 @@ Adapter policy:
    - run a fresh-eye review for runtime behavior, boundary honesty, and
      docs/spec synchronization
 7. End with execution status.
-   - what changed
-   - what was verified
-   - what truth surfaces were updated, or why none changed
-   - what the premortem found
-   - what contract updates were made
+   - what changed, what was verified, and what truth surfaces moved
+   - what the premortem found and what contract updates were made
    - what remains for the next slice
    - if `$SKILL_DIR/../retro/scripts/check_auto_trigger.py` reports `triggered: true`
      for the current repo, run a short `session` retro before the final stop
@@ -145,21 +136,14 @@ Adapter policy:
 
 The closeout should usually include:
 
-- `Implemented`
-- `Contract Source`
-- `Verification` naming code/fixture and runtime/evaluator proof
-- `Truth Surface Sync`
-- `Premortem`
-- `Contract Updates`
-- `Residual Risks`
-- `Next Slice`
+`Implemented`, `Contract Source`, `Verification` naming code/fixture and
+runtime/evaluator proof, `Truth Surface Sync`, `Premortem`, `Contract Updates`,
+`Residual Risks`, and `Next Slice`.
 
 ## Guardrails
 
-- Do not implement against a stale or imaginary contract.
-- Do not require a separate `spec` session when an honest current-slice
-  contract can be written inline.
-- Do not silently expand scope because the adjacent code makes it tempting.
+- Do not implement against a stale or imaginary contract, require a separate
+  `spec` session when an honest inline contract works, or silently expand scope.
 - Do not close the task without checking the named acceptance behaviors.
 - Do not close a contract-backed slice without re-reading `Fixed Decisions` and
   named acceptance checks against the delivered slice.
@@ -175,8 +159,6 @@ The closeout should usually include:
   available verification capability instead of relying on code inspection alone.
 - If a stronger verification path exists but needs permissions, setup, or an
   external tool, ask for it rather than pretending the weaker proof is enough.
-- If the change touches shared seams or architectural ownership, do not stop at
-  same-context self-review alone.
 - Do not call a same-agent review a premortem.
 - Do not skip premortem for task-completing repo work just because the code
   looks locally clean.

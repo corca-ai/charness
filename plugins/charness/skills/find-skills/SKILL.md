@@ -29,10 +29,8 @@ canonical discovery path for them.
 
 When workflow language implies a support skill even though the user did not
 name it directly, query task-text recommendations before proceeding through a
-nearby public workflow. Examples include executable-spec terms such as
-`*.spec.md`, `docs/specs`, `run:shell`, `check:jq`, Specdown reports, or
-`report.json`; the correct next step should surface `support/<skill-id>` and
-its referenced support docs before ordinary Markdown, HITL, spec, or impl work.
+nearby public workflow. For example, executable-spec terms should surface
+`support/specdown` before ordinary Markdown, HITL, spec, or impl work.
 
 `find-skills` is one public concept:
 
@@ -63,17 +61,12 @@ sed -n '1,220p' docs/external-integrations.md 2>/dev/null || true
 sed -n '1,220p' docs/support-skill-policy.md 2>/dev/null || true
 ```
 
-If a host-provided installed skill path is missing, do not treat the skill as
-absent. Resolve the current installed path first, then continue from that
-`SKILL.md`:
+If a host-provided installed skill path is missing, resolve the current
+installed path before treating the capability as absent:
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_skill_path.py" --repo-root . --skill-id find-skills --reported-path <missing-path>
 ```
-
-Prefer the stable host plugin path over versioned cache paths when both exist.
-Versioned cache paths can drift after `charness update`; the resolver should
-report that as a stale host path, not as a missing capability.
 
 If the user's need sounds like a public workflow, inspect `skills/public/`
 first. If it sounds like a tool-use capability, inspect support skills and
@@ -91,16 +84,11 @@ Default durable artifact:
 What you get after one run:
 
 - a local-first capability inventory
-- public/support skill descriptions, canonical paths, trigger phrases, and
-  directly referenced skill files
+- public/support skill descriptions, canonical paths, trigger phrases, and directly referenced skill files
 - the smallest next usable path across public skills, support seams, and integrations
-- refreshed capability inventory artifacts at
-  `<repo-root>/charness-artifacts/find-skills/latest.md` and
-  `<repo-root>/charness-artifacts/find-skills/latest.json`
+- refreshed capability inventory artifacts at `charness-artifacts/find-skills/latest.*`
 - a closeout signal under `artifacts`
-- recommendation-query payloads in the current command output when
-  `--recommend-for-task`, `--recommend-for-skill`, or `--recommendation-role`
-  is used
+- recommendation-query payloads in command output for task, skill, or route queries
 
 What this does not do:
 
@@ -115,13 +103,10 @@ What this does not do:
    - public skills for user-facing workflow concepts
    - support skills and synced support skills for tool-usage helpers
    - integration manifests for external binaries or upstream support skills
-   - when task language names a file shape, syntax, report, or runtime command
-     owned by a support skill, use the task-text recommendation payload instead
-     of waiting for the user to say the support skill name
+   - use task-text recommendation payloads when file shapes, syntax, reports,
+     or runtime commands imply an unmentioned support skill
 3. Expand to trusted skill roots when the adapter provides them.
-   - host-trusted skill packs
-   - other maintained skill roots that the current harness is allowed to
-     consult
+   - host-trusted or repo-trusted skill packs the current harness may consult
 4. Classify the best match honestly.
    - `public skill`
    - `trusted skill`
@@ -135,16 +120,12 @@ What this does not do:
    - use a support capability through the right workflow
    - install or wire an external integration if the policy already supports it,
      and surface the supported access modes when that changes the next step
-   - when the best-match public skill has a declared external-tool route, use
-     the structured recommendation payload instead of prose-only install advice,
-     including whether the route is a runtime path or a validation path
-   - when the user is asking about stronger validation itself, about
-     prompt-affecting / behavior-affecting changes, or about validation-shaped
-     review/closeout work, query the validation route directly with
-     `--recommendation-role validation --next-skill-id <skill-id>`
-   - treat issue closeout and operator reading test wording as validation-shaped
-     when the user needs evaluator-backed judgment; do not route to HITL or
-     manual review only because the request uses the word review
+   - use structured recommendation payloads for external-tool, runtime, validation, or support routes
+   - when the user asks about stronger validation, prompt-affecting or
+     behavior-affecting changes, validation-shaped review/closeout, issue
+     closeout, or operator reading test wording, query
+     `--recommendation-role validation --next-skill-id <skill-id>` instead of
+     routing to HITL or manual review only
    - if the capability is genuinely missing, say whether it belongs in a new
      public skill, support skill, or integration manifest
 6. Explain why.

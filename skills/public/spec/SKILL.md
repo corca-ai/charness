@@ -34,7 +34,12 @@ sed -n '1,220p' "$SKILL_DIR/../create-skill/SKILL.md" 2>/dev/null || true
 sed -n '1,220p' "$SKILL_DIR/../impl/SKILL.md" 2>/dev/null || true
 ```
 
-If an ideation document already exists, refine it into a spec instead of restating the full discovery history. If the repo already has executable acceptance artifacts, treat them as part of the spec surface rather than as a separate world, and inspect whether they still stay at the acceptance boundary instead of duplicating low-level test detail and runtime cost. Borrow Ward Cunningham-style executable-spec discipline when the repo uses tools such as `specdown`: executable acceptance artifacts should make the contract concrete at the boundary, not replace the unit suite or hide low-level test detail. Distinguish `public executable contract` from `maintenance lint / implementation guard`: public pages should carry current reader-facing claims plus cheap proof, while source inventory, implementation-file pinning, and future roadmap notes move below or beside that surface. Keep Christopher Alexander-style sequence discipline by ordering `Fixed Decisions`, `Probe Questions`, and `Deferred Decisions` so upstream commitments land before downstream detail hardens; when the slice is still noisy, borrow Kent Beck for thin feedback-bearing slices and John Ousterhout for simpler interfaces and deeper seams. See `references/public-executable-contracts.md`, `references/sequence-discipline.md`, and `references/design-lenses.md`.
+If an ideation document already exists, refine it instead of restating the full
+discovery history. If executable acceptance artifacts already exist, treat them
+as part of the spec surface and keep them at the acceptance boundary. Distinguish
+`public executable contract` from `maintenance lint / implementation guard`.
+Use `references/public-executable-contracts.md`, `references/sequence-discipline.md`,
+and `references/design-lenses.md` for the detailed shaping rules.
 
 ## Contract Shaping
 
@@ -43,7 +48,8 @@ When implementation churn would be expensive, reduce ambiguity earlier and make 
 
 If the repo already treats executable checks as contract artifacts, push acceptance into those checks instead of managing a separate prose-only branch. For public executable pages, keep current-state claims and bounded proof only; move future-state planning, source inventory, and low-level implementation guards down a layer. If the repo wants the latest on-demand validation visible to readers, project the checked artifact into a viewer-style executable page instead of rebuilding the evaluator logic inline or promoting source guards into the public spec.
 
-If those executable checks are materially expensive, shape the contract so the standing acceptance bar stays honest about cost. Keep executable examples at the boundary and push duplicated unit-detail coverage downward instead of celebrating broad slow coverage.
+If executable checks are materially expensive, keep the standing acceptance bar
+honest about cost and push duplicated unit-detail coverage downward.
 
 Before locking the contract, run success criteria review so future-success claims
 become criteria, checks, and tripwires. Routine use may be inline; it does not
@@ -72,13 +78,8 @@ replace the bounded premortem required before finalizing a task-completing contr
      opening broad branch trees
    - check taxonomy-axis consistency before adding public enum vocabulary
 4. Define the current execution contract.
-   - current slice
-   - non-goals
-   - deliberately not doing or rejected alternatives when future readers are
-     likely to reopen the same branch
-   - constraints
-   - success criteria
-   - acceptance checks
+   - current slice, non-goals, constraints, success criteria, and acceptance checks
+   - deliberately not doing or rejected alternatives when future readers may reopen the branch
    - apply `../../shared/references/source-bound-records.md` for multi-source external writes
    - open risks, probe questions, or deferred decisions
    - when the risk interrupt planner reports a forced debug interrupt, consume
@@ -91,18 +92,13 @@ replace the bounded premortem required before finalizing a task-completing contr
    - add negative cases when failure would matter to users or operators
    - if the repo already uses executable specs or tests as contract artifacts,
      prefer promoting acceptance checks into that form
-   - if executable specs already exist, keep them at acceptance level and move
-     repeated low-level detail into unit tests, source guards, or more direct
-     adapters
-   - if the repo wants the latest on-demand proof visible in executable docs,
-     keep the underlying evaluator result in a checked artifact and let the
-     executable page act as a viewer over that artifact
-   - when one acceptance path is materially slower than the rest, document why
-     that cost is justified and which cheaper layers should absorb the detail
    - if the contract edits repo-owned instruction or prompt surfaces that steer
      agent behavior, define whether the intended claim is `preserve` or
-     `improve`, leave the matching cautilus proof path visible in
-     `<repo-root>/charness-artifacts/cautilus/latest.md`, and do not assume cautilus auto-runs: adapter policy decides whether the repo asks first, auto-runs low-cost proof, or adapts by proof kind and cost; reader-facing reasoning-shape changes should also plan a short scenario review instead of equating preserve-proof with semantic success
+     `improve`, leave the matching Cautilus proof path visible, and let adapter
+     policy decide whether proof asks first, auto-runs low-cost checks, or adapts
+     by proof kind and cost
+   - for reader-facing reasoning-shape or reader-fit changes, plan a short
+     scenario review instead of equating preserve-proof with semantic success
 6. Keep the contract alive during implementation.
    - stabilize the contract earlier when churn would otherwise be expensive
    - keep unresolved items visible as probes when answers should emerge through
@@ -114,8 +110,6 @@ replace the bounded premortem required before finalizing a task-completing contr
 7. Run bounded premortem before finalizing.
    - call `premortem` for task-completing contracts and non-trivial contract
      decisions
-   - focus routine review on missing invariants, overloaded examples, hidden
-     sequencing, and acceptance checks that look stronger than they really are
    - use `../../shared/references/fresh-eye-subagent-review.md` before reporting blocked
    - keep future re-litigation low by writing the important rejected paths into
      the spec itself instead of leaving them in chat-only memory
@@ -149,10 +143,8 @@ as `Entities` or `Stages` instead of recreating them under new names.
 
 ## Guardrails
 
-- Do not reopen broad concept exploration that belongs in `ideation`.
-- Do not treat `spec` as mandatory upfront completeness. A thin honest contract
-  is better than a fake complete one.
-- Do not leave success criteria as vague aspirations.
+- Do not reopen broad concept exploration that belongs in `ideation`, treat
+  `spec` as mandatory upfront completeness, or leave success criteria vague.
 - Do not allow an important success criterion without at least one acceptance
   check.
 - Do not clear a forced debug interrupt with generic spec churn; if the planner
@@ -164,16 +156,13 @@ as `Entities` or `Stages` instead of recreating them under new names.
   branch is likely to be reopened by the next maintainer.
 - Do not let acceptance checks become a second copy of the unit suite just
   because the repo already has executable specs.
-- Do not silently assume implementation details when they materially change
-  scope or user-visible behavior.
-- Do not ignore current code, tests, or operator docs when they already
-  resolve a spec question honestly.
+- Do not silently assume implementation details or ignore current code, tests,
+  or operator docs when they materially affect the contract.
 - Do not keep broad shell-driven executable checks in the contract when a
   cheaper deterministic lower layer would prove the same behavior honestly.
 - If the concept artifact is still unstable in a concept-defining way, send the
   work back to `ideation` rather than writing a fake spec.
-- A good spec refines an existing concept artifact and stays synchronized with
-  implementation. It does not discard the artifact or leave it stale.
+- A good spec refines an existing concept artifact and stays synchronized with implementation.
 - Keep host-specific file locations or template choices outside the core skill body.
 
 ## References

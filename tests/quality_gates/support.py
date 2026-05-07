@@ -33,6 +33,17 @@ def run_script(
     )
 
 
+def skill_package_text(skill_id: str) -> str:
+    skill_dir = ROOT / "skills" / "public" / skill_id
+    parts = [(skill_dir / "SKILL.md").read_text(encoding="utf-8")]
+    references_dir = skill_dir / "references"
+    if references_dir.is_dir():
+        for path in sorted(references_dir.rglob("*")):
+            if path.is_file() and path.suffix in {".md", ".txt"}:
+                parts.append(path.read_text(encoding="utf-8", errors="ignore"))
+    return "\n".join(parts)
+
+
 def run_shell_script(
     script: Path, *args: str, cwd: Path | None = None, env: dict[str, str] | None = None
 ) -> subprocess.CompletedProcess[str]:

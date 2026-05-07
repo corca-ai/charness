@@ -524,7 +524,7 @@ def test_impl_skill_carries_truth_surface_sync_guardrail() -> None:
 
 def test_impl_skill_defaults_to_autonomous_continuation() -> None:
     skill_text = (ROOT / "skills" / "public" / "impl" / "SKILL.md").read_text(encoding="utf-8")
-    assert "AUTONOMOUS CONTINUATION" in skill_text
+    assert "autonomous continuation" in skill_text.lower()
     assert "continuation" in skill_text and "checkpoints" in skill_text
     assert "irreversible" in skill_text and "external side effect" in skill_text
     assert "next locally decidable slice" in skill_text

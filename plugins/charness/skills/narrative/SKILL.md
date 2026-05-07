@@ -76,8 +76,7 @@ git status --short
    - bootstrap a new durable story surface
    - realign stale source-of-truth docs
    - realign docs and also produce an audience-neutral brief skeleton
-   - state the primary reader context before rewriting a first-touch surface;
-     if the user wants delivery-local adaptation, keep that for `announcement`
+   - state the primary reader context before rewriting a first-touch surface
 2. Map the current truth surface.
    - read the source documents before inventing a fresh summary
    - review adapter fitness before trusting its source set, mutable documents,
@@ -87,14 +86,8 @@ git status --short
      explicitly waive thin-adapter `warn`s before drafting
    - surface stale-git or stale-context risk before editing when freshness is
      ambiguous
-   - if the adapter is missing and the target is README, landing copy, operator
-     docs, or another first-touch truth surface, stop to shape the truth
-     surface and primary reader contract before rewriting in earnest
-   - repair or downgrade missing, volatile, internal, archived, or handoff
-     adapter inputs before using them as ordinary README truth
-   - if the adapter had to be scaffolded, do not stop at file creation; shape
-     readers, preserve-intents, owner boundaries, and landing danger checks
-     from the actual repo before drafting
+   - shape the truth-surface contract before rewriting first-touch docs when the adapter is missing or thin
+   - repair or downgrade missing, volatile, internal, archived, or handoff inputs
    - if the source map is effectively empty or only placeholder-level, stop and
      recommend `init-repo` rather than pretending there is already a narrative
      surface to align
@@ -103,16 +96,12 @@ git status --short
      user-confirmed direction from the current thread
    - classify high-signal prior blocks as preserved, moved, compressed, or
      intentionally deleted
-   - when the user reviews section by section, keep the accepted working text
-     itself as durable state, not only a summary of which option won
    - treat preserved meaning as the contract; headings and section order are
      flexible
 4. Run the landing rewrite loop when the target is a high-leverage first-touch
    surface.
-   - use `references/landing-rewrite-loop.md` for comparables, tension log,
-     decision log, compression metric, opening-language filter, quick-start
-     actor check, accepted-text ledger, claim audit, reader premortem, and
-     carry-forward review
+   - use `references/landing-rewrite-loop.md` for comparables, intent inventory,
+     claim audit, compression metric, reader premortem, and carry-forward review
    - if the work is really a cross-repo issue or proposal packet, use
      `references/cross-repo-issue-shaping.md` so `why` and `what` stay ahead
      of `how`
@@ -128,14 +117,8 @@ git status --short
      `scenario_surfaces`, add short scenario blocks for the main use-case
      paths; use the relevant subset of `references/scenario-blocks.md` instead
      of forcing every slot
-   - prefer checked-in fixtures, schemas, or example files over abstract prose
-     when the block needs a concrete input example
    - if the docs coin product-local jargon, define it inline at first use
      instead of sending the reader to a later glossary
-   - when the repo identity depends on a few high-leverage concepts, prefer a
-     compact concept table or concept list before a flat feature inventory
-   - if the adapter carries quick-start execution guidance, respect who should
-     actually act instead of assuming inline human CLI steps
    - when the repo is aligning around a non-trivial design decision, keep one
      short rejected-alternative or `Deliberately Not Doing` block in the
      durable docs instead of leaving that memory in chat or handoff only
