@@ -8,12 +8,13 @@ from pathlib import Path
 
 import pytest
 
+from tests.repo_copy import clone_seeded_charness_repo
+
 from .support import (
     CLI,
     build_test_path,
     clone_seeded_managed_home,
     make_fake_claude,
-    make_git_repo_copy,
     run_cli,
 )
 
@@ -70,10 +71,10 @@ def assert_managed_checkout_has_no_tracked_runtime_dirt(managed_checkout: Path) 
     assert ".charness/retro/weekly-latest.json" in ignored.stdout
 
 
-def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
+def test_charness_init_exports_managed_surface(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
-    source_repo = make_git_repo_copy(source_root)
+    source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
     home_root = tmp_path / "home"
     fake_claude = make_fake_claude(tmp_path)
     legacy_skills = home_root / ".agents" / "skills"
@@ -110,10 +111,10 @@ def test_charness_init_exports_managed_surface(tmp_path: Path) -> None:
 
 
 @pytest.mark.ci_only
-def test_standalone_cli_bootstraps_managed_checkout_without_explicit_clone(tmp_path: Path) -> None:
+def test_standalone_cli_bootstraps_managed_checkout_without_explicit_clone(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
-    source_repo = make_git_repo_copy(source_root)
+    source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
     home_root = tmp_path / "home"
     fake_claude = make_fake_claude(tmp_path)
     standalone_cli = tmp_path / "bin" / "charness"
@@ -145,13 +146,13 @@ def test_standalone_cli_bootstraps_managed_checkout_without_explicit_clone(tmp_p
 
 
 @pytest.mark.ci_only
-def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_path: Path) -> None:
+def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     embedded_root = tmp_path / "embedded"
     embedded_root.mkdir()
-    embedded_repo = make_git_repo_copy(embedded_root)
+    embedded_repo = clone_seeded_charness_repo(embedded_root, seeded_charness_git_repo)
     upstream_root = tmp_path / "upstream"
     upstream_root.mkdir()
-    upstream_repo = make_git_repo_copy(upstream_root)
+    upstream_repo = clone_seeded_charness_repo(upstream_root, seeded_charness_git_repo)
 
     packaging_path = upstream_repo / "packaging" / "charness.json"
     packaging = json.loads(packaging_path.read_text(encoding="utf-8"))
@@ -265,10 +266,10 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
 
 
 @pytest.mark.ci_only
-def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(tmp_path: Path) -> None:
+def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
-    source_repo = make_git_repo_copy(source_root)
+    source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
     home_root, env = init_managed_home_from_repo(tmp_path, source_repo, cli_source=CLI)
 
     source_cli = source_repo / "charness"
@@ -309,10 +310,10 @@ def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(t
 
 
 @pytest.mark.ci_only
-def test_installed_cli_update_allows_untracked_files_in_managed_checkout(tmp_path: Path) -> None:
+def test_installed_cli_update_allows_untracked_files_in_managed_checkout(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
-    source_repo = make_git_repo_copy(source_root)
+    source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
     home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
 
     managed_checkout = home_root / ".agents" / "src" / "charness"
@@ -338,10 +339,10 @@ def test_installed_cli_update_allows_untracked_files_in_managed_checkout(tmp_pat
 
 
 @pytest.mark.ci_only
-def test_installed_cli_update_skips_cwd_onboarding_by_default(tmp_path: Path) -> None:
+def test_installed_cli_update_skips_cwd_onboarding_by_default(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
-    source_repo = make_git_repo_copy(source_root)
+    source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
     home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
     cwd_repo = tmp_path / "cwd-repo"
     (cwd_repo / ".agents").mkdir(parents=True)
@@ -373,10 +374,10 @@ def test_installed_cli_update_skips_cwd_onboarding_by_default(tmp_path: Path) ->
 
 
 @pytest.mark.ci_only
-def test_installed_cli_update_blocks_tracked_changes_in_managed_checkout(tmp_path: Path) -> None:
+def test_installed_cli_update_blocks_tracked_changes_in_managed_checkout(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
-    source_repo = make_git_repo_copy(source_root)
+    source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
     home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
 
     managed_checkout = home_root / ".agents" / "src" / "charness"
@@ -397,10 +398,10 @@ def test_installed_cli_update_blocks_tracked_changes_in_managed_checkout(tmp_pat
 
 
 @pytest.mark.ci_only
-def test_installed_cli_update_reports_diverged_managed_checkout(tmp_path: Path) -> None:
+def test_installed_cli_update_reports_diverged_managed_checkout(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
-    source_repo = make_git_repo_copy(source_root)
+    source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
     home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
 
     managed_checkout = home_root / ".agents" / "src" / "charness"

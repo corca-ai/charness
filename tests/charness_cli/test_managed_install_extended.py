@@ -8,6 +8,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.repo_copy import clone_seeded_charness_repo
+
 from .support import (
     CLI,
     build_test_path,
@@ -16,7 +18,6 @@ from .support import (
     make_fake_claude,
     make_fake_go_specdown,
     make_fake_npm_gws,
-    make_git_repo_copy,
     make_release_fixture,
     make_support_sync_fixture,
     run_cli,
@@ -26,10 +27,10 @@ from .tool_fakes import make_fake_cautilus
 
 
 @pytest.mark.ci_only
-def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp_path: Path) -> None:
+def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
-    source_repo = make_git_repo_copy(source_root)
+    source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
     home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
 
     updated_checkout_cli = source_repo / "charness"

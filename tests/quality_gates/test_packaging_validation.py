@@ -6,23 +6,9 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests.repo_copy import clone_seeded_charness_repo
+
 from .support import EVAL_REGISTRY, ROOT, run_script
-
-REPO_COPY_IGNORE = shutil.ignore_patterns(
-    ".git",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".mypy_cache",
-    "__pycache__",
-    ".coverage",
-    ".venv",
-    "node_modules",
-    "history",
-)
-
-
-def copy_repo_snapshot(repo: Path) -> None:
-    shutil.copytree(ROOT, repo, ignore=REPO_COPY_IGNORE)
 
 
 def make_demo_packaging_repo(
@@ -129,9 +115,8 @@ def init_committed_repo(repo: Path) -> None:
     subprocess.run(["git", "commit", "-m", "seed repo"], cwd=repo, check=True, capture_output=True, text=True)
 
 
-def test_validate_packaging_rejects_checked_in_plugin_tree_drift(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    copy_repo_snapshot(repo)
+def test_validate_packaging_rejects_checked_in_plugin_tree_drift(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     readme_path = repo / "README.md"
     readme_path.write_text(readme_path.read_text(encoding="utf-8") + "\nDrift.\n", encoding="utf-8")
 
@@ -235,19 +220,15 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
     assert validate.returncode == 0, validate.stderr
 
 
-def test_validate_packaging_committed_accepts_clean_head(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    copy_repo_snapshot(repo)
-    init_committed_repo(repo)
+def test_validate_packaging_committed_accepts_clean_head(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
+    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
 
     result = run_script("scripts/validate_packaging_committed.py", "--repo-root", str(repo), cwd=repo)
     assert result.returncode == 0, result.stderr
 
 
-def test_validate_packaging_committed_rejects_partial_commit_with_uncommitted_export(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    copy_repo_snapshot(repo)
-    init_committed_repo(repo)
+def test_validate_packaging_committed_rejects_partial_commit_with_uncommitted_export(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
+    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
 
     source_skill = repo / "skills" / "public" / "create-cli" / "SKILL.md"
     source_skill.write_text(source_skill.read_text(encoding="utf-8") + "\nPartial commit sentinel.\n", encoding="utf-8")
@@ -292,9 +273,8 @@ def test_validate_packaging_rejects_unknown_top_level_field(tmp_path: Path) -> N
     assert "Additional properties are not allowed" in result.stderr
 
 
-def test_validate_packaging_rejects_invalid_public_skill_policy_when_present(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    copy_repo_snapshot(repo)
+def test_validate_packaging_rejects_invalid_public_skill_policy_when_present(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     policy_path = repo / "docs" / "public-skill-validation.json"
     policy = json.loads(policy_path.read_text(encoding="utf-8"))
     policy["tiers"]["hitl-recommended"].remove("premortem")

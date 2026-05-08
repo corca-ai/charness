@@ -10,20 +10,9 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
+from tests.repo_copy import ROOT
+
 CLI = ROOT / "charness"
-REPO_COPY_IGNORE = shutil.ignore_patterns(
-    ".git",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".mypy_cache",
-    "__pycache__",
-    ".coverage",
-    ".charness",
-    ".venv",
-    "node_modules",
-    "history",
-)
 
 
 def run_cli(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
@@ -62,34 +51,6 @@ def build_test_path(*bin_dirs: Path) -> str:
         seen.add(value)
         unique.append(value)
     return os.pathsep.join(unique)
-
-
-def make_repo_copy(tmp_path: Path) -> Path:
-    repo_copy = tmp_path / "repo"
-    shutil.copytree(ROOT, repo_copy, ignore=REPO_COPY_IGNORE)
-    return repo_copy
-
-
-def make_git_repo_copy(tmp_path: Path) -> Path:
-    repo_copy = make_repo_copy(tmp_path)
-    subprocess.run(["git", "init"], cwd=repo_copy, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo_copy, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "config", "user.email", "codex-test@example.com"],
-        cwd=repo_copy,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    subprocess.run(["git", "add", "."], cwd=repo_copy, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "commit", "-m", "seed repo copy"],
-        cwd=repo_copy,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    return repo_copy
 
 
 def _current_charness_release_tag() -> str:
@@ -388,11 +349,15 @@ raise SystemExit(0)
     script.chmod(0o755)
     return script
 @pytest.fixture(scope="session")
-def seeded_managed_home(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Path]:
+def seeded_managed_home(
+    tmp_path_factory: pytest.TempPathFactory, seeded_charness_git_repo: Path
+) -> dict[str, Path]:
+    from tests.repo_copy import clone_seeded_charness_repo
+
     seed_root = tmp_path_factory.mktemp("managed-home-seed")
     source_root = seed_root / "source"
     source_root.mkdir()
-    source_repo = make_git_repo_copy(source_root)
+    source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
     home_root = seed_root / "home"
     fake_claude = make_fake_claude(seed_root)
     env = os.environ.copy()

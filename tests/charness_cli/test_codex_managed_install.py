@@ -8,13 +8,14 @@ from pathlib import Path
 
 import pytest
 
+from tests.repo_copy import clone_seeded_charness_repo
+
 from .support import (
     CLI,
     build_test_path,
     clone_seeded_managed_home,
     make_fake_claude,
     make_fake_codex,
-    make_git_repo_copy,
     run_cli,
 )
 
@@ -22,10 +23,10 @@ CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_t
 
 
 @pytest.mark.ci_only
-def test_charness_init_installs_codex_via_official_app_server(tmp_path: Path) -> None:
+def test_charness_init_installs_codex_via_official_app_server(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
-    source_repo = make_git_repo_copy(source_root)
+    source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
     home_root = tmp_path / "home"
     fake_claude = make_fake_claude(tmp_path)
     fake_codex = make_fake_codex(tmp_path)

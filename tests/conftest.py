@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-pytest_plugins = ["tests.quality_gates.support", "tests.charness_cli.support"]
+pytest_plugins = ["tests.repo_copy", "tests.quality_gates.support", "tests.charness_cli.support"]
 
 
 @pytest.fixture(autouse=True)

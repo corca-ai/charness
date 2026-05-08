@@ -7,16 +7,18 @@ from pathlib import Path
 
 import pytest
 
-from .support import make_fake_claude, make_git_repo_copy
+from tests.repo_copy import clone_seeded_charness_repo
+
+from .support import make_fake_claude
 
 PROBE_SKILL_ID = "update-probe-extra"
 pytestmark = pytest.mark.ci_only
 
 
-def test_installed_cli_update_propagates_new_skill_into_exported_plugin_root(tmp_path: Path) -> None:
+def test_installed_cli_update_propagates_new_skill_into_exported_plugin_root(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
-    source_repo = make_git_repo_copy(source_root)
+    source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
     home_root = tmp_path / "home"
     fake_claude = make_fake_claude(tmp_path)
     standalone_cli = tmp_path / "bin" / "charness"

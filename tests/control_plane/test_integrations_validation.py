@@ -5,6 +5,8 @@ import os
 import shutil
 from pathlib import Path
 
+from tests.repo_copy import clone_seeded_charness_repo
+
 from .support import ROOT, run_script, seed_control_plane_repo
 
 
@@ -237,13 +239,8 @@ def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path) -> 
     assert payload["failed_checks"] == ["demo-ready-file"]
 
 
-def test_tool_doctor_cli_returns_nonzero_for_blocking_disposition(tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    shutil.copytree(
-        ROOT,
-        repo,
-        ignore=shutil.ignore_patterns(".git", ".pytest_cache", ".ruff_cache", "__pycache__", ".coverage", ".charness"),
-    )
+def test_tool_doctor_cli_returns_nonzero_for_blocking_disposition(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     tools_dir = repo / "integrations" / "tools"
     for manifest_path in tools_dir.glob("*.json"):
         if manifest_path.name not in {"manifest.schema.json", "demo-tool.json"}:

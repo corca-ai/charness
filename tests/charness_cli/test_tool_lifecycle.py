@@ -5,6 +5,8 @@ import os
 import textwrap
 from pathlib import Path
 
+from tests.repo_copy import clone_seeded_charness_repo
+
 from .support import (
     build_test_path,
     clone_seeded_managed_home,
@@ -12,7 +14,6 @@ from .support import (
     make_fake_go_specdown,
     make_fake_npm_gws,
     make_release_fixture,
-    make_repo_copy,
     make_support_sync_fixture,
     run_cli,
     run_cli_in_repo,
@@ -88,8 +89,8 @@ def make_fake_go_glow(tmp_path: Path) -> tuple[Path, Path]:
     return script, gopath
 
 
-def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path) -> None:
-    repo_root = make_repo_copy(tmp_path)
+def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     enable_cautilus_adapter(repo_root)
     home_root = tmp_path / "home"
     release_fixture = make_release_fixture(tmp_path)
@@ -126,8 +127,8 @@ def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path)
     assert (repo_root / "skills" / "support" / "generated" / "cautilus").is_symlink()
 
 
-def test_tool_install_can_select_quality_validation_recommendations(tmp_path: Path) -> None:
-    repo_root = make_repo_copy(tmp_path)
+def test_tool_install_can_select_quality_validation_recommendations(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     release_fixture = make_release_fixture(tmp_path)
     env = os.environ.copy()
     env["PATH"] = build_test_path()
@@ -161,8 +162,8 @@ def test_tool_install_can_select_quality_validation_recommendations(tmp_path: Pa
     assert set(payload["results"]) == {"cautilus", "gitleaks", "ruff", "tokei", "vulture"}
 
 
-def test_tool_install_recommendation_filter_no_match_does_not_install_all(tmp_path: Path) -> None:
-    repo_root = make_repo_copy(tmp_path)
+def test_tool_install_recommendation_filter_no_match_does_not_install_all(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     release_fixture = make_release_fixture(tmp_path)
     env = os.environ.copy()
     env["PATH"] = build_test_path()
@@ -314,8 +315,8 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
     assert "Follow-up command: `cautilus install --repo-root" in cautilus["next_step"]
 
 
-def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Path) -> None:
-    repo_root = make_repo_copy(tmp_path)
+def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     home_root = tmp_path / "home"
     fake_agent_browser = make_fake_agent_browser(tmp_path)
     release_fixture = make_release_fixture(tmp_path)
@@ -341,8 +342,8 @@ def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Pa
     assert lock_payload["doctor"]["doctor_status"] == "ok"
 
 
-def test_tool_doctor_records_npm_provenance(tmp_path: Path) -> None:
-    repo_root = make_repo_copy(tmp_path)
+def test_tool_doctor_records_npm_provenance(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     home_root = tmp_path / "home"
     npm_script, _ = make_fake_npm_gws(tmp_path)
     release_fixture = make_release_fixture(tmp_path)
@@ -361,8 +362,8 @@ def test_tool_doctor_records_npm_provenance(tmp_path: Path) -> None:
     assert gws["release"]["latest_tag"] == "v0.22.5"
 
 
-def test_tool_doctor_reports_specdown_binary_contract_without_support_sync(tmp_path: Path) -> None:
-    repo_root = make_repo_copy(tmp_path)
+def test_tool_doctor_reports_specdown_binary_contract_without_support_sync(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     home_root = tmp_path / "home"
     go_script, specdown_script = make_fake_go_specdown(tmp_path)
     release_fixture = make_release_fixture(tmp_path)
@@ -388,8 +389,8 @@ def test_tool_doctor_reports_specdown_binary_contract_without_support_sync(tmp_p
     assert doctor["release"]["latest_tag"] == "v0.47.2"
 
 
-def test_tool_install_executes_glow_install_script_and_refreshes_doctor(tmp_path: Path) -> None:
-    repo_root = make_repo_copy(tmp_path)
+def test_tool_install_executes_glow_install_script_and_refreshes_doctor(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     home_root = tmp_path / "home"
     fake_go, gopath = make_fake_go_glow(tmp_path)
     release_fixture = make_release_fixture(tmp_path)
@@ -414,8 +415,8 @@ def test_tool_install_executes_glow_install_script_and_refreshes_doctor(tmp_path
     assert (gopath / "bin" / "glow").is_file()
 
 
-def test_tool_update_routes_go_provenance_for_specdown(tmp_path: Path) -> None:
-    repo_root = make_repo_copy(tmp_path)
+def test_tool_update_routes_go_provenance_for_specdown(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     home_root = tmp_path / "home"
     go_script, specdown_script = make_fake_go_specdown(tmp_path)
     release_fixture = make_release_fixture(tmp_path)
@@ -450,8 +451,8 @@ def test_tool_update_routes_go_provenance_for_specdown(tmp_path: Path) -> None:
     assert lock_payload["update"]["package_name"] == "github.com/corca-ai/specdown/cmd/specdown"
 
 
-def test_tool_update_routes_npm_provenance_for_gws(tmp_path: Path) -> None:
-    repo_root = make_repo_copy(tmp_path)
+def test_tool_update_routes_npm_provenance_for_gws(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     home_root = tmp_path / "home"
     npm_script, _ = make_fake_npm_gws(tmp_path)
     release_fixture = make_release_fixture(tmp_path)
