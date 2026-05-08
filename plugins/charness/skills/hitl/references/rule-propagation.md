@@ -14,3 +14,19 @@ When the user gives a stable rule:
   record whether it should become an `automation_candidate`
 
 Do not keep the rule only in conversational memory.
+
+## Active Pre-Edit Constraints
+
+Before editing or rewriting a chunk, reread accepted rules for the current HITL
+run and select the rules relevant to the current chunk. State those active
+constraints briefly before patching so the human can see which rule set is
+guiding the edit.
+
+The pre-edit gate should also verify that target, cursor, queue item, and line
+bounds match the chunk being edited. If the cursor is stale, the target differs,
+or the line bounds exclude evidence needed for judgment, stop on the same chunk
+and repair the review state before editing.
+
+After editing, scan the changed chunk for known forbidden or risky term classes
+before presenting it. If a violation is found, keep the cursor on the same chunk
+until the rule violation is repaired or the reviewer changes the rule.

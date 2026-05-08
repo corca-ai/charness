@@ -1,3 +1,3 @@
-# Gather: GitHub Issue 118 HITL applied rewrite review
+# Gather: GitHub Issue 120 HITL runtime artifact sync
 
-See [2026-05-08-github-issue-118-hitl-applied-rewrite.md](./2026-05-08-github-issue-118-hitl-applied-rewrite.md).
+See [2026-05-08-github-issue-120-hitl-runtime-artifact-sync.md](./2026-05-08-github-issue-120-hitl-runtime-artifact-sync.md).

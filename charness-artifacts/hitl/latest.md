@@ -1,46 +1,75 @@
-# HITL Review: AGENTS.md Craken Refactor
+# HITL Runtime Checkpoint
 
-Date: 2026-04-25
+<!-- hitl-runtime-sync
+session_id: hitl-20260424-222546
+runtime_session_dir: .charness/hitl/runtime/hitl-20260424-222546
+runtime_updated_at: 2026-04-25T07:17:27+00:00
+target: AGENTS.md
+last_presented_chunk_id: C11
+queue_epoch: 
+queue_status: 
+accepted_rules_digest: 4f53cda18c2baa0c
+queue_items_digest: 5b9ec97a42aa056a
+queue_state_digest: c9b6876066a76e59
+approval_state_digest: 3a82341cec978855
+-->
 
-## Review Goal
+- Synced At: 2026-05-08T11:27:17+00:00
+- Synced From Session: `hitl-20260424-222546`
+- Runtime Session Dir: `.charness/hitl/runtime/hitl-20260424-222546`
+- Runtime Updated At: 2026-04-25T07:17:27+00:00
 
-Carry the handoff's first implementation slice forward: inventory `docs/`,
-decide each document's fate conservatively, and rewrite `AGENTS.md` as a
-craken-style map-first entry without changing Charness policy semantics.
+## Active Target
 
-## Target
-
-- [AGENTS.md](../../AGENTS.md)
-- [docs/conventions/operating-contract.md](../../docs/conventions/operating-contract.md)
-- [docs/conventions/implementation-discipline.md](../../docs/conventions/implementation-discipline.md)
-- [CLAUDE.md](../../CLAUDE.md)
+- Target: `AGENTS.md`
+- Status: `completed`
+- Last Presented Chunk ID: `C11`
+- Queue Epoch: `unknown`
+- Queue Status: `unknown`
+- Explicit Apply Required: `True`
+- Apply Mode: `batch_after_all_chunks`
 
 ## Accepted Rules
 
-- The user asked to implement [docs/handoff.md](../../docs/handoff.md); that is
-  treated as approval to apply the handoff's AGENTS refactor slice.
-- No `docs/` file satisfies the spec's stale deletion criterion because all
-  markdown docs had a meaningful git change in April 2026. Deletion requires
-  explicit user agreement, so every existing doc stays.
-- The docs net-file-count limit is preserved by using two convention files
-  instead of one file per old AGENTS subsection.
-- Host-entry normalization follows `init-repo`: with `AGENTS.md` present and
-  `CLAUDE.md` missing, create `CLAUDE.md -> AGENTS.md`.
-- Because `CLAUDE.md` is now an intentional host-entry alias, add it to the
-  repo markdown and prompt-behavior surfaces in [.agents/surfaces.json](../../.agents/surfaces.json).
-- Refresh the compact synthetic Cautilus instruction-surface cases so final
-  proof exercises the new Start Here / Subagent Delegation / Phase Rules shape.
+- none
 
-## Docs Inventory Decisions
+## Queue State
 
-- Current pickup: keep [docs/handoff.md](../../docs/handoff.md).
-- Operator surfaces: keep [docs/operator-acceptance.md](../../docs/operator-acceptance.md), [docs/development.md](../../docs/development.md), [docs/cli-reference.md](../../docs/cli-reference.md), and [docs/host-packaging.md](../../docs/host-packaging.md).
-- Architecture and control plane: keep [docs/harness-composition.md](../../docs/harness-composition.md), [docs/control-plane.md](../../docs/control-plane.md), [docs/external-integrations.md](../../docs/external-integrations.md), [docs/support-skill-policy.md](../../docs/support-skill-policy.md), [docs/runtime-capability-contract.md](../../docs/runtime-capability-contract.md), [docs/capability-resolution.md](../../docs/capability-resolution.md), and [docs/agent-task-envelope.md](../../docs/agent-task-envelope.md).
-- Skill and validation policy: keep [docs/public-skill-validation.md](../../docs/public-skill-validation.md), [docs/public-skill-dogfood.md](../../docs/public-skill-dogfood.md), [docs/narrative-announcement-boundary.md](../../docs/narrative-announcement-boundary.md), and [docs/gather-provider-ownership.md](../../docs/gather-provider-ownership.md).
-- Memory and deferred work: keep [docs/artifact-policy.md](../../docs/artifact-policy.md), [docs/deferred-decisions.md](../../docs/deferred-decisions.md), [docs/retro-self-improvement-spec.md](../../docs/retro-self-improvement-spec.md), and [docs/support-tool-followup.md](../../docs/support-tool-followup.md).
+- Current Queue Order: `[]`
+- Reviewed Item IDs: `[]`
+- Superseded Unreviewed Item IDs: `[]`
 
-## Next State
+### Items
 
-After the AGENTS/docs implementation settles, run the final Cautilus proof
-against the refreshed scenarios, run quality gates, update handoff with the new
-first move, then commit and push the accumulated branch.
+- C1: accepted Title + intro (1-5)
+- C2: accepted Operating Stance (refactor + Guiding Principles insert) (6-42)
+- C3: accepted Subagent Delegation (44-54)
+- C4: accepted Skill Routing (56-74)
+- C5: accepted Repo Memory (76-88)
+- C6: accepted Non-Derivable Conventions / Commit Discipline (90-97)
+- C7: accepted Skill and Metadata Discipline (99-110)
+- C8: accepted Validation Discipline (112-148)
+- C9: accepted Change Discipline (150-166)
+- C10: accepted Skill Dogfood Discipline (168-178)
+- C11: accepted Session Discipline (180-191)
+- C12: deferred-to-spec Further Reading (new section, append after Session Discipline) ((append))
+
+## Next Chunk To Present
+
+- `none`
+
+## Approval Boundaries
+
+- Applied Rewrite Review Status: `unknown`
+- Full Target Review Status: `unknown`
+- Target/Cursor Checked: `unknown`
+- Target/Cursor Check Result: ``
+
+## Runtime Links
+
+- State: `.charness/hitl/runtime/hitl-20260424-222546/state.yaml`
+- Queue: `.charness/hitl/runtime/hitl-20260424-222546/queue.json`
+- Rules: `.charness/hitl/runtime/hitl-20260424-222546/rules.yaml`
+- Scratchpad: `.charness/hitl/runtime/hitl-20260424-222546/hitl-scratchpad.md`
+- Events: `.charness/hitl/runtime/hitl-20260424-222546/events.log`
+- Durable Artifact: `charness-artifacts/hitl/latest.md`

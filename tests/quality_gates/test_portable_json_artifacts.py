@@ -128,12 +128,21 @@ def test_hitl_bootstrap_normalizes_target_and_output_paths(tmp_path: Path) -> No
     state = (repo / payload["state_file"]).read_text(encoding="utf-8")
     assert "require_explicit_apply: true" in state
     assert "apply_mode: explicit-after-all-chunks" in state
+    assert "accepted_rules: []" in state
+    assert "active_rules_applied: []" in state
+    assert "target_cursor_checked: false" in state
+    assert 'target_cursor_check_result: ""' in state
     assert "applied_rewrite_review_status: inactive" in state
     assert 'pending_rewrite_chunk_id: ""' in state
     assert 'pending_rewrite_source_anchor: ""' in state
     assert "full_target_review_item_id: full_target_review" in state
     assert "full_target_review_status: pending_after_chunks" in state
     scratchpad = (repo / payload["scratchpad"]).read_text(encoding="utf-8")
+    assert "## Pre-Edit Constraints" in scratchpad
+    assert "- Accepted Rules: []" in scratchpad
+    assert "- Active Rules Applied:" in scratchpad
+    assert "- Target/Cursor Checked: false" in scratchpad
+    assert "Target/Cursor Check Result:" in scratchpad
     assert "## Applied Rewrite Review" in scratchpad
     assert "inactive until a reviewer-requested rewrite is applied" in scratchpad
     assert "applied chunk excerpt with line or hunk anchor" in scratchpad
@@ -206,6 +215,178 @@ def test_hitl_bootstrap_surfaces_adapter_apply_mode(tmp_path: Path) -> None:
     state = (repo / payload["state_file"]).read_text(encoding="utf-8")
     assert "require_explicit_apply: false" in state
     assert "apply_mode: accepted-chunk-or-final-apply-boundary" in state
+
+
+def test_hitl_sync_review_artifact_projects_runtime_and_checks_freshness(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    target = repo / "docs" / "decision.md"
+    target.parent.mkdir(parents=True)
+    target.write_text("# Decision\n", encoding="utf-8")
+
+    bootstrap = run_script(
+        "skills/public/hitl/scripts/bootstrap_review.py",
+        "--repo-root",
+        str(repo),
+        "--session-id",
+        "hitl-sync",
+        "--target",
+        str(target),
+    )
+
+    assert bootstrap.returncode == 0, bootstrap.stderr
+    payload = json.loads(bootstrap.stdout)
+    state_path = repo / payload["state_file"]
+    state = state_path.read_text(encoding="utf-8")
+    state_path.write_text(
+        state.replace("accepted_rules: []", "accepted_rules:\n  - avoid summary-only chunks")
+        .replace('last_presented_chunk_id: ""', "last_presented_chunk_id: C1")
+        .replace("target_cursor_checked: false", "target_cursor_checked: true")
+        .replace('target_cursor_check_result: ""', "target_cursor_check_result: C1 docs/decision.md lines 1-1 epoch 1"),
+        encoding="utf-8",
+    )
+
+    sync = run_script(
+        "skills/public/hitl/scripts/sync_review_artifact.py",
+        "--repo-root",
+        str(repo),
+        "--session-id",
+        "hitl-sync",
+    )
+
+    assert sync.returncode == 0, sync.stderr
+    sync_payload = json.loads(sync.stdout)
+    assert sync_payload["status"] == "synced"
+    assert sync_payload["artifact_path"] == "charness-artifacts/hitl/latest.md"
+    artifact = (repo / "charness-artifacts" / "hitl" / "latest.md").read_text(encoding="utf-8")
+    assert "<!-- hitl-runtime-sync" in artifact
+    assert "accepted_rules_digest:" in artifact
+    assert "queue_items_digest:" in artifact
+    assert "queue_state_digest:" in artifact
+    assert "approval_state_digest:" in artifact
+    assert "Synced From Session: `hitl-sync`" in artifact
+    assert "Target: `docs/decision.md`" in artifact
+    assert "- avoid summary-only chunks" in artifact
+    assert "Target/Cursor Checked: `True`" in artifact
+    assert "Next Chunk To Present" in artifact
+    assert ".charness/hitl/runtime/hitl-sync/state.yaml" in artifact
+
+    check = run_script(
+        "skills/public/hitl/scripts/sync_review_artifact.py",
+        "--repo-root",
+        str(repo),
+        "--session-id",
+        "hitl-sync",
+        "--check",
+    )
+
+    assert check.returncode == 0, check.stderr
+    assert json.loads(check.stdout)["status"] == "current"
+    state_path.write_text(state_path.read_text(encoding="utf-8").replace("target: docs/decision.md", "target: docs/other.md"), encoding="utf-8")
+    stale = run_script(
+        "skills/public/hitl/scripts/sync_review_artifact.py",
+        "--repo-root",
+        str(repo),
+        "--session-id",
+        "hitl-sync",
+        "--check",
+    )
+
+    assert stale.returncode == 1
+    assert json.loads(stale.stdout)["status"] == "stale"
+    assert "target mismatch" in stale.stdout
+    _assert_no_repo_absolute_path(sync_payload, repo)
+
+
+def test_hitl_check_review_state_blocks_unsafe_transitions(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    bootstrap = run_script(
+        "skills/public/hitl/scripts/bootstrap_review.py",
+        "--repo-root",
+        str(repo),
+        "--session-id",
+        "hitl-check",
+    )
+
+    assert bootstrap.returncode == 0, bootstrap.stderr
+    payload = json.loads(bootstrap.stdout)
+    state_path = repo / payload["state_file"]
+    blocked = run_script(
+        "skills/public/hitl/scripts/check_review_state.py",
+        "--repo-root",
+        str(repo),
+        "--session-id",
+        "hitl-check",
+        "--phase",
+        "cursor-advance",
+    )
+
+    assert blocked.returncode == 1
+    blocked_payload = json.loads(blocked.stdout)
+    assert blocked_payload["status"] == "blocked"
+    assert "target_cursor_checked must be true before editing or advancing" in blocked.stdout
+
+    state = state_path.read_text(encoding="utf-8")
+    state_path.write_text(
+        state.replace("accepted_rules: []", "accepted_rules:\n  - keep public terms")
+        .replace("active_rules_applied: []", "active_rules_applied:\n  - keep public terms")
+        .replace("target_cursor_checked: false", "target_cursor_checked: true")
+        .replace('target_cursor_check_result: ""', "target_cursor_check_result: git-diff C1 item C1 lines 1-5 epoch 1")
+        .replace("applied_rewrite_review_status: inactive", "applied_rewrite_review_status: pending"),
+        encoding="utf-8",
+    )
+    pending = run_script(
+        "skills/public/hitl/scripts/check_review_state.py",
+        "--repo-root",
+        str(repo),
+        "--session-id",
+        "hitl-check",
+        "--phase",
+        "cursor-advance",
+    )
+
+    assert pending.returncode == 1
+    assert "applied_rewrite_review_status is pending" in pending.stdout
+    state_path.write_text(
+        state_path.read_text(encoding="utf-8").replace(
+            "target_cursor_check_result: git-diff C1 item C1 lines 1-5 epoch 1",
+            "target_cursor_check_result: C1 item C1 epoch 1",
+        ),
+        encoding="utf-8",
+    )
+    malformed = run_script(
+        "skills/public/hitl/scripts/check_review_state.py",
+        "--repo-root",
+        str(repo),
+        "--session-id",
+        "hitl-check",
+        "--phase",
+        "pre-edit",
+    )
+
+    assert malformed.returncode == 1
+    assert "must name the current target" in malformed.stdout
+    assert "must name line bounds" in malformed.stdout
+    state_path.write_text(
+        state_path.read_text(encoding="utf-8").replace(
+            "target_cursor_check_result: C1 item C1 epoch 1",
+            "target_cursor_check_result: git-diff C1 item C1 lines 1-5 epoch 1",
+        ).replace(
+            "applied_rewrite_review_status: pending", "applied_rewrite_review_status: accepted"
+        ),
+        encoding="utf-8",
+    )
+    passed = run_script(
+        "skills/public/hitl/scripts/check_review_state.py",
+        "--repo-root",
+        str(repo),
+        "--session-id",
+        "hitl-check",
+        "--phase",
+        "cursor-advance",
+    )
+
+    assert passed.returncode == 0, passed.stderr
+    assert json.loads(passed.stdout)["status"] == "pass"
 
 
 def test_retro_snapshot_sanitizes_path_fields(tmp_path: Path) -> None:

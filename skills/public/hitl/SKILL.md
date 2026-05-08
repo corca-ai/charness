@@ -54,18 +54,14 @@ state location, scaffold one:
 python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .
 ```
 
-When starting a new HITL run, initialize runtime artifacts:
+Runtime helpers:
 
-```bash
-python3 "$SKILL_DIR/scripts/bootstrap_review.py" --repo-root .
-```
-
-When a generated report should become a decision queue, render a decision-first
-review packet:
-
-```bash
-python3 "$SKILL_DIR/scripts/render_report.py" --repo-root . --input <packet.json>
-```
+- start: `python3 "$SKILL_DIR/scripts/bootstrap_review.py" --repo-root .`
+- report queue: `python3 "$SKILL_DIR/scripts/render_report.py" --repo-root . --input <packet.json>`
+- pre-edit gate: `python3 "$SKILL_DIR/scripts/check_review_state.py" --repo-root . --session-id <session-id> --phase pre-edit`
+- cursor gate: `python3 "$SKILL_DIR/scripts/check_review_state.py" --repo-root . --session-id <session-id> --phase cursor-advance`
+- closeout sync: `python3 "$SKILL_DIR/scripts/sync_review_artifact.py" --repo-root . --session-id <session-id>`
+- durable artifact freshness check: `python3 "$SKILL_DIR/scripts/sync_review_artifact.py" --repo-root . --session-id <session-id> --check`
 
 If the adapter is missing, stop after surfacing or scaffolding the bounded
 review contract. Do not start a resumable human-review loop in earnest until
@@ -110,6 +106,8 @@ the repo has named where state, rules, and queue ownership live.
 6. Propagate accepted rules.
    - if the user gives a stable rule, write it down and apply it to remaining
      chunks in the same run
+   - before editing or rewriting a chunk, read accepted rules, state the active
+     constraints, and verify target, cursor, queue item, and line bounds
 7. Record accepted chunk state.
    - after every accepted chunk, write the accepted working text to the
      scratchpad before presenting the next chunk
@@ -131,6 +129,8 @@ the repo has named where state, rules, and queue ownership live.
    - what was reviewed
    - what rules were accepted
    - what still needs action or follow-up
+   - sync live runtime state into `charness-artifacts/hitl/latest.md` and run
+     the durable artifact freshness check
 10. Report Mode. For generated report packets, render first-class decision
     cards with concrete questions, plain-language evidence interpretation,
     optional evidence links, comment fields, and display-only suggested actions.
@@ -153,8 +153,8 @@ the repo has named where state, rules, and queue ownership live.
 ## Output Shape
 
 The result should usually include Review Goal, Target, Current Chunk, Original
-Material, Related Context, Decision Needed, Accepted Working Text, Accepted
-Rules, and Next State.
+Material, Related Context, Decision Needed, Active Rules Applied, Target/Cursor
+Checked, Accepted Working Text, Accepted Rules, and Next State.
 
 ## Guardrails
 
@@ -171,14 +171,18 @@ Rules, and Next State.
 - Do not keep advancing when the current item is still unresolved.
 - Do not advance to the next accepted chunk while the scratchpad and state
   cursor still depend on chat memory.
+- Do not edit a chunk while `target_cursor_checked` is stale or accepted rules
+  have not been selected into `active_rules_applied`.
 - Do not summarize a requested rewrite as "applied and checked" or advance
   `last_presented_chunk_id` while `applied_rewrite_review_status` is pending.
 - Do not silently apply edits that require explicit human approval.
-- Do not edit the target file while the review loop is in progress. Touch the
-  target only in the Apply Phase, after all chunks are accepted and, when
-  `require_explicit_apply` is true, after explicit user instruction.
+- Do not edit the target file while the review loop is in progress; touch it
+  only in the Apply Phase and after explicit approval when required.
 - Do not close a target as accepted until the `full_target_review` item records
   whole-target acceptance or the explicit need for another pass.
+- Do not close or hand off a HITL run while runtime state is newer than the
+  durable artifact, or while durable target, cursor, queue, or accepted rules
+  disagree with the runtime session.
 - Do not lose accepted review rules between chunks in the same session.
 - If manual edits changed the target out of band, resync intent before the next
   chunk.
@@ -191,5 +195,6 @@ Rules, and Next State.
 - `references/state-model.md`
 - `references/rule-propagation.md`
 - `scripts/bootstrap_review.py`
+- `scripts/check_review_state.py`
 - `scripts/render_report.py`
-- `<repo-root>/scripts/hitl_report_mode_lib.py`
+- `scripts/sync_review_artifact.py`

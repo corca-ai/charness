@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -23,7 +22,6 @@ def _load_skill_runtime_bootstrap():
     raise ImportError("skill_runtime_bootstrap.py not found")
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
-
 
 _scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
 render_yaml_mapping = _scripts_adapter_lib_module.render_yaml_mapping
@@ -98,6 +96,11 @@ def scratchpad_text(session_id: str, portable_target: str, base_ref: str, scope:
 
 ## Open Questions
 
+## Pre-Edit Constraints
+- Accepted Rules: []
+- Active Rules Applied:
+- Target/Cursor Checked: false; Target/Cursor Check Result:
+
 ## Applied Rewrite Review
 
 - Status: inactive until a reviewer-requested rewrite is applied
@@ -143,6 +146,10 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
                 ("apply_mode", mode),
                 ("queue_epoch", 1),
                 ("queue_status", "ready"),
+                ("accepted_rules", []),
+                ("active_rules_applied", []),
+                ("target_cursor_checked", False),
+                ("target_cursor_check_result", ""),
                 ("intent_resync_required", False),
                 ("last_presented_chunk_id", ""),
                 ("last_intent_resync_at", ""),
@@ -205,14 +212,8 @@ def main() -> None:
     parser.add_argument("--base-ref", default="main")
     parser.add_argument("--scope", default="all")
     args = parser.parse_args()
-    sys.stdout.write(
-        json.dumps(
-            bootstrap_review(args.repo_root.resolve(), args.session_id, args.target, args.base_ref, args.scope),
-            ensure_ascii=False,
-            indent=2,
-        )
-        + "\n"
-    )
+    payload = bootstrap_review(args.repo_root.resolve(), args.session_id, args.target, args.base_ref, args.scope)
+    sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
 
 
 if __name__ == "__main__":

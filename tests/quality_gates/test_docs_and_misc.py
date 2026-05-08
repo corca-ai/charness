@@ -115,6 +115,13 @@ def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
     assert "Do not persist suggested decisions as human approval" in skill_text
     assert "Accepted Working Text" in skill_text
     assert "last_presented_chunk_id" in skill_text
+    assert "active_rules_applied" in skill_text
+    assert "target_cursor_checked" in skill_text
+    assert "sync live runtime state into `charness-artifacts/hitl/latest.md`" in skill_text
+    assert "durable artifact freshness check" in skill_text
+    assert "check_review_state.py" in skill_text
+    assert "Active Rules Applied" in skill_text
+    assert "Target/Cursor\nChecked" in skill_text
     assert "applied_rewrite_review_status" in skill_text
     assert "rewritten chunk excerpt" in skill_text
     assert "working text or session" in skill_text
@@ -126,17 +133,32 @@ def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
     assert "suggestion_display_only: true" in report_mode
     assert "explicit apply instruction" in adapter_contract
     assert "accepted-chunk-or-final-apply-boundary" in adapter_contract
+    assert "Runtime-To-Artifact Sync" in adapter_contract
+    assert "runtime changed after the durable\nartifact sync" in adapter_contract
+    assert "accepted-rules metadata" in adapter_contract
+    assert "approval state" in adapter_contract
+    assert "explicit next chunk to present" in adapter_contract
     assert "<bash>" in chunk_contract
     assert "not instructions to\nedit the target document" in chunk_contract
     assert "Minimum applied-rewrite surface" in chunk_contract
     assert "verification results only as secondary information" in chunk_contract
+    assert "Active Pre-Edit Constraints" in (
+        ROOT / "skills" / "public" / "hitl" / "references" / "rule-propagation.md"
+    ).read_text(encoding="utf-8")
     assert "Accepted working text" in state_model
+    assert "accepted_rules" in state_model
+    assert "active_rules_applied" in state_model
+    assert "target_cursor_checked" in state_model
+    assert "target_cursor_check_result" in state_model
+    assert "chunk id, queue item, line" in state_model
     assert "applied_rewrite_review_status" in state_model
     assert "pending_rewrite_chunk_id" in state_model
     assert "Only after that judgment is recorded" in state_model
     assert "full_target_review_status" in state_model
     assert "needs_another_pass" in state_model
     assert "persist accepted decisions before advancing the cursor" in state_model
+    assert "HITL runtime sync metadata block" in state_model
+    assert "applied rewrite is\nstill pending human judgment" in state_model
 
 
 def test_impl_skill_routes_validation_and_browser_proof_explicitly() -> None:

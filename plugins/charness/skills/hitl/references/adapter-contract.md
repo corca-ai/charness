@@ -66,3 +66,27 @@ Dated HITL review records should use `<repo-root>/charness-artifacts/hitl/YYYY-M
 The runtime state directory defaults to:
 
 - `.charness/hitl/runtime`
+
+## Runtime-To-Artifact Sync
+
+`.charness/hitl/runtime/<session-id>` is hidden resumable state, not checked-in
+truth. Before HITL closeout or handoff, `sync_review_artifact.py` must project
+the active runtime session into `charness-artifacts/hitl/latest.md` and then run
+`--check`.
+
+The durable checkpoint must include:
+
+- synced runtime session id and runtime directory
+- runtime updated timestamp
+- active target, cursor, queue epoch, and queue status
+- accepted rules and active approval boundaries, with metadata digests for
+  accepted rules, queue items, queue state, and approval state
+- reviewed, applied, pending, and superseded queue state
+- explicit next chunk to present
+- links back to `state.yaml`, `queue.json`, `rules.yaml`, scratchpad, and
+  events log
+
+The freshness check must warn or fail when runtime changed after the durable
+artifact sync, when the durable target/cursor/queue or accepted-rules metadata
+differs from the runtime session, or when the artifact lacks the HITL runtime
+sync metadata.

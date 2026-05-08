@@ -23,6 +23,10 @@ Recommended state fields:
 - `origin`
 - `base_ref`
 - `scope`
+- `accepted_rules`
+- `active_rules_applied`
+- `target_cursor_checked`
+- `target_cursor_check_result`
 - `last_presented_chunk_id`
 - `applied_rewrite_review_status`
 - `pending_rewrite_chunk_id`
@@ -67,6 +71,17 @@ needs another revision. Only after that judgment is recorded should state update
 revision, keep the same chunk active and refresh the pending applied-rewrite
 record instead of advancing.
 
+Before editing or rewriting a chunk, copy the relevant accepted rules into
+`active_rules_applied` and record `target_cursor_checked` only with a
+`target_cursor_check_result` that names the target, chunk id, queue item, line
+bounds, and queue epoch checked. If a rule violation or stale cursor is found
+after the edit, keep the same chunk active and record the repair need in
+`target_cursor_check_result` instead of advancing.
+`check_review_state.py --phase pre-edit` and `--phase cursor-advance` provide a
+minimal runtime gate for these transitions: they fail when accepted rules have
+not been activated, target/cursor evidence is missing, or an applied rewrite is
+still pending human judgment.
+
 Bootstrap may seed `full_target_review` as a pending completion item with an
 activation condition. After the target edit has been applied or staged at the
 end of the chunk queue, the run must advance that item before the target can be
@@ -83,3 +98,7 @@ Portable rule:
 - persist before every user pause
 - persist accepted decisions before advancing the cursor
 - keep enough cursor data to resume honestly
+- before closeout or handoff, sync hidden runtime state into the checked-in
+  `charness-artifacts/hitl/latest.md` checkpoint
+- treat a missing or stale HITL runtime sync metadata block as a closeout
+  failure, not as a cosmetic artifact drift
