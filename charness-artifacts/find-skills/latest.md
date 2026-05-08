@@ -1,6 +1,6 @@
 # Find Skills Inventory
-Date: 2026-05-07
-Updated: 2026-05-07T01:18:09Z
+Date: 2026-05-08
+Updated: 2026-05-08T09:58:05Z
 
 ## Summary
 - public skills: 17
@@ -50,7 +50,7 @@ Updated: 2026-05-07T01:18:09Z
 - `github-gh` (external_binary, integration-only): access modes `binary, public, degraded`
 - `gitleaks` (external_binary, integration-only): access modes `binary, degraded`
 - `glow` (external_binary, integration-only): access modes `binary, degraded`
-- `gws-cli` (external_binary, integration-only): access modes `binary, env, human-only, degraded`
+- `gws-cli` (external_binary, integration-only): access modes `binary, human-only, degraded`
 - `ruff` (external_binary, integration-only): access modes `binary`
 - `specdown` (external_binary, integration-only): access modes `binary, human-only, degraded`
 - `tokei` (external_binary, integration-only): access modes `binary, degraded`

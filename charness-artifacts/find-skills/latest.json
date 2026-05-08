@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-07T01:18:09Z",
+  "generated_at": "2026-05-08T09:58:05Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -34,9 +34,9 @@
           "charness:announcement"
         ],
         "referenced_paths": [
-          "skills/public/announcement/references/adapter-contract.md",
           "skills/public/announcement/references/draft-shape.md",
           "skills/public/announcement/references/delivery-seams.md",
+          "skills/public/announcement/references/adapter-contract.md",
           "skills/public/announcement/references/audience-policy.md"
         ],
         "source": "local-public",
@@ -1083,7 +1083,6 @@
         "kind": "external_binary",
         "access_modes": [
           "binary",
-          "env",
           "human-only",
           "degraded"
         ],
@@ -1091,12 +1090,6 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {
-          "env_vars": [
-            "GOOGLE_WORKSPACE_CLI_TOKEN",
-            "GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE",
-            "GOOGLE_WORKSPACE_CLI_CLIENT_ID",
-            "GOOGLE_WORKSPACE_CLI_CLIENT_SECRET"
-          ],
           "permission_scopes": [
             "https://www.googleapis.com/auth/drive.readonly",
             "https://www.googleapis.com/auth/documents.readonly",
@@ -1112,14 +1105,9 @@
             "summary": "Prefer an already authenticated `gws` session for private Google Workspace gather."
           },
           {
-            "layer_id": "gws-env-fallback",
-            "layer_type": "env",
-            "summary": "Fall back to the documented `GOOGLE_WORKSPACE_CLI_*` environment variables in ordinary local operator setups."
-          },
-          {
             "layer_id": "gws-auth-operator-step",
             "layer_type": "operator-step",
-            "summary": "When no auth state exists yet, the operator may need `gws auth setup --login` or `gws auth login` before gather can proceed."
+            "summary": "When no auth state exists yet, the operator may need `gws auth setup --login` or `gws auth login` before gather can proceed. This is a human-driven step and is not advertised as an agent-runtime fallback path."
           }
         ],
         "readiness_checks": [
