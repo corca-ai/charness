@@ -123,8 +123,12 @@ Authenticated upstream release probe note:
 
 - when a GitHub-hosted upstream release probe is useful, prefer an already
   authenticated provider path such as `gh api` before public HTTP
-- if `gh` is unavailable, attach `GH_TOKEN` or `GITHUB_TOKEN` to the HTTP
-  fallback when present
+- if `gh` is unavailable, an operator-local CLI invocation may attach
+  `GH_TOKEN` or `GITHUB_TOKEN` to the HTTP fallback when those env vars are
+  already present in the operator shell. Treat that as an operator-only
+  convenience, not as an agent-consumable contract: do not advertise raw
+  `GH_TOKEN`/`GITHUB_TOKEN` env-var fallback as the normal path inside skills,
+  manifests, or adapter docs that ship to model-controlled runtimes.
 - keep public unauthenticated HTTP as a final fallback only
 - persist structured `status`, `reason`, and `error` fields so later agents can
   distinguish `no-release`, `github-forbidden`, invalid JSON, and network

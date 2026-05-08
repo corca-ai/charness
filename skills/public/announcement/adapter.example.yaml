@@ -11,8 +11,33 @@ sections:
 - Fixes
 audience_tags: []
 omission_lenses: []
+# Optional input candidates for the "in progress" section. Each entry is one of:
+#   {kind: handoff, path: docs/handoff.md}
+#   {kind: issues, query: "is:issue is:open label:status/in-progress"}
+#   {kind: path, path: docs/roadmap.md}
+in_progress_sources: []
 delivery_kind: none
 delivery_target: ""
 release_notes_path: ""
 post_command_template: ""
 delivery_capability: ""
+# Optional path to repo-owned chat-format conversion rules (e.g. CommonMark to
+# Slack mrkdwn). The skill consults this contract before sending a chat draft.
+format_rules_path: ""
+# Optional per-backend message size limit in characters (0 disables splitting).
+# When > 0 and the draft exceeds the limit, the skill splits on paragraph
+# boundaries into numbered parts before posting.
+message_size_limit: 0
+# Optional dual-output configuration. When set, audience tags route bullets to
+# named outputs that the delivery seam treats as parent message + thread reply
+# (or two release files, etc.). Default is one single-output draft.
+#
+# Example:
+#   outputs:
+#     - id: body
+#       audience_tags: [user]
+#       delivery_role: parent
+#     - id: maintainer_comment
+#       audience_tags: [operator, developer]
+#       delivery_role: thread_reply
+outputs: []

@@ -73,26 +73,44 @@ repo had already declared them.
    - if no delivery record exists yet, use a bounded recent commit window
    - inspect commit intent or adjacent docs when the user-visible value is not
      obvious from the subject alone
+   - if the announcement scope plausibly covers ongoing or backlog work that
+     has not yet landed, ask up front whether to include in-progress items.
+     When the adapter declares `in_progress_sources`, walk those sources
+     (handoff doc, open issue queries, named paths) before drafting.
 3. Recover audience value before wording.
    - who benefits
    - what surface changed
    - what humans can now do, avoid, or understand better
 4. Apply adapter policy.
    - ordered sections
-   - audience tags when configured
+   - audience tags when configured (steer wording per
+     `references/draft-shape.md`; user-tagged bullets must be reframed away
+     from commit-message vocabulary)
    - omission lenses that force high-value but easy-to-miss items into the
      draft
+   - when `outputs` is non-empty, route each bullet to the matching output by
+     audience tag (see `references/draft-shape.md` Dual-Output Drafts)
 5. Draft the message first.
    - prefer short sections and concrete bullets
    - explain why a change matters, not only the mechanism
    - omit low-signal hygiene unless the user explicitly wants a full changelog
-6. Show the draft before delivery.
+6. Show the draft inline before delivery.
+   - paste the draft body verbatim into the response, in addition to writing
+     the artifact file. The artifact alone is invisible work; reviewers cannot
+     critique what they cannot see in chat.
+   - when `outputs` is non-empty, paste each output body separately and label
+     it with its `id` and `delivery_role`.
 7. If the user wants delivery, resolve the backend seam only then.
    - `none`: draft only
    - `release-notes`: update a checked-in markdown file
    - `human-backend`: deliver through an adapter-defined human-facing backend
    - if the backend depends on reusable private access, prefer one logical
      capability in `delivery_capability` over adapter-local secret plumbing
+   - if the delivery seam targets a chat backend, run the format conversion
+     described in `references/delivery-seams.md` (Slack mrkdwn baseline, or
+     the path declared by `format_rules_path`) before posting raw CommonMark
+   - if `message_size_limit` is positive and any output exceeds it, split on
+     paragraph boundaries into numbered parts before posting
 8. Record the result after delivery or explicit draft finalization.
    - append a JSONL record so the next run can continue from the current head
 
@@ -115,6 +133,12 @@ The result should usually include:
 - Do not deliver anything without explicit user confirmation.
 - If delivery depends on a repo helper, command template, or permission, say so
   explicitly before posting.
+- Draft body must appear inline in the response in addition to the artifact,
+  so the user can review without opening a file.
+- Do not let CommonMark go to a chat backend unconverted; apply the
+  format-rules conversion before posting.
+- Do not assume one chat message can hold the whole draft; honor
+  `message_size_limit` and split when configured.
 
 ## References
 

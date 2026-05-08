@@ -18,7 +18,8 @@
       "notes": [
         "Install `gws` through the upstream npm package or another host-approved package path.",
         "For gather-oriented Google Workspace access, prefer `gws auth login --readonly -s drive,docs,sheets,slides` after install.",
-        "If no OAuth client is configured yet, use `gws auth setup --login` first."
+        "If no OAuth client is configured yet, use `gws auth setup --login` first.",
+        "Operator-only: a human-driven CLI session may set `GOOGLE_WORKSPACE_CLI_*` env vars on the operator's shell during manual setup. These names are not advertised as an agent-runtime fallback path. Agent-controlled runtimes should rely on the authenticated `gws` session or a host-provided grant only."
       ]
     },
     "update": {
@@ -53,17 +54,10 @@
   },
   "access_modes": [
     "binary",
-    "env",
     "human-only",
     "degraded"
   ],
   "capability_requirements": {
-    "env_vars": [
-      "GOOGLE_WORKSPACE_CLI_TOKEN",
-      "GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE",
-      "GOOGLE_WORKSPACE_CLI_CLIENT_ID",
-      "GOOGLE_WORKSPACE_CLI_CLIENT_SECRET"
-    ],
     "permission_scopes": [
       "https://www.googleapis.com/auth/drive.readonly",
       "https://www.googleapis.com/auth/documents.readonly",
@@ -81,7 +75,7 @@
       "success_criteria": [
         "exit_code:0"
       ],
-      "failure_hint": "Run `gws auth login --readonly -s drive,docs,sheets,slides` or provide the approved env fallback before relying on Google Workspace gather."
+      "failure_hint": "Run `gws auth login --readonly -s drive,docs,sheets,slides` (operator-local) before relying on Google Workspace gather."
     }
   ],
   "config_layers": [
@@ -91,14 +85,9 @@
       "summary": "Prefer an already authenticated `gws` session for private Google Workspace gather."
     },
     {
-      "layer_id": "gws-env-fallback",
-      "layer_type": "env",
-      "summary": "Fall back to the documented `GOOGLE_WORKSPACE_CLI_*` environment variables in ordinary local operator setups."
-    },
-    {
       "layer_id": "gws-auth-operator-step",
       "layer_type": "operator-step",
-      "summary": "When no auth state exists yet, the operator may need `gws auth setup --login` or `gws auth login` before gather can proceed."
+      "summary": "When no auth state exists yet, the operator may need `gws auth setup --login` or `gws auth login` before gather can proceed. This is a human-driven step and is not advertised as an agent-runtime fallback path."
     }
   ],
   "version_expectation": {
@@ -129,6 +118,7 @@
   },
   "host_notes": [
     "This manifest models the `gws` CLI path only. A future host-provided Google Workspace grant can sit alongside it as a stronger provider path.",
-    "The binary is the ownership boundary; `charness` should not reintroduce a copied Google public-export helper path."
+    "The binary is the ownership boundary; `charness` should not reintroduce a copied Google public-export helper path.",
+    "Raw `GOOGLE_WORKSPACE_CLI_*` env vars are intentionally not advertised as an agent-consumable access mode. They may exist in an operator-local shell but are not part of the agent runtime contract."
   ]
 }

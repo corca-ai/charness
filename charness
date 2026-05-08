@@ -126,12 +126,19 @@ def default_version_state_path(home_root: Path) -> Path:
     return default_state_root(home_root) / "version-state.json"
 
 
-def default_capability_profiles_path(home_root: Path) -> Path:
-    return default_config_root(home_root) / "capability-profiles.json"
+def repo_capability_local_path(target_repo_root: Path) -> Path:
+    return target_repo_root / ".charness" / "local" / "capability.json"
 
 
-def default_repo_bindings_path(home_root: Path) -> Path:
-    return default_config_root(home_root) / "repo-bindings.json"
+def repo_capability_example_path(target_repo_root: Path) -> Path:
+    return target_repo_root / ".charness" / "capability.example.json"
+
+
+def repo_gitignore_path(target_repo_root: Path) -> Path:
+    return target_repo_root / ".gitignore"
+
+
+CAPABILITY_LOCAL_GITIGNORE_LINE = "/.charness/local/"
 
 
 def shell_quote(value: str) -> str:
@@ -307,13 +314,21 @@ def source_env_present(name: str) -> bool:
     return bool(os.environ.get(name, ""))
 
 
-def load_capability_profiles(home_root: Path) -> dict[str, object]:
-    path = default_capability_profiles_path(home_root)
-    payload = read_json_mapping(path, default={"schema_version": 1, "profiles": {}})
-    profiles = payload.get("profiles")
+def load_repo_capability_config(target_repo_root: Path) -> dict[str, object]:
+    path = repo_capability_local_path(target_repo_root)
+    payload = read_json_mapping(path, default={"schema_version": 1, "bindings": {}, "profiles": {}})
+    bindings = payload.get("bindings", {})
+    if not isinstance(bindings, dict):
+        raise CharnessError(f"`{path}` must keep `bindings` as an object mapping logical ids to profile ids.")
+    normalized_bindings: dict[str, str] = {}
+    for logical_id, profile_id in bindings.items():
+        if not isinstance(logical_id, str) or not logical_id or not isinstance(profile_id, str) or not profile_id:
+            raise CharnessError(f"`{path}` `bindings` must map string capability ids to string profile ids.")
+        normalized_bindings[logical_id] = profile_id
+    profiles = payload.get("profiles", {})
     if not isinstance(profiles, dict):
-        raise CharnessError(f"`{path}` must contain a top-level `profiles` object.")
-    normalized: dict[str, dict[str, object]] = {}
+        raise CharnessError(f"`{path}` must keep `profiles` as an object.")
+    normalized_profiles: dict[str, dict[str, object]] = {}
     for profile_id, raw in profiles.items():
         if not isinstance(profile_id, str) or not profile_id:
             raise CharnessError(f"`{path}` contains an invalid profile id.")
@@ -330,37 +345,18 @@ def load_capability_profiles(home_root: Path) -> dict[str, object]:
             isinstance(key, str) and key and isinstance(value, str) and value for key, value in env_bindings.items()
         ):
             raise CharnessError(f"`{path}` profile `{profile_id}` has invalid `env_bindings`.")
-        normalized[profile_id] = {
+        normalized_profiles[profile_id] = {
             "provider": provider,
             "access_mode_preference": access_mode_preference,
             "env_bindings": env_bindings,
         }
-    payload["profiles"] = normalized
-    payload["path"] = str(path)
-    return payload
-
-
-def load_repo_bindings(home_root: Path) -> dict[str, object]:
-    path = default_repo_bindings_path(home_root)
-    payload = read_json_mapping(path, default={"schema_version": 1, "repos": {}})
-    repos = payload.get("repos")
-    if not isinstance(repos, dict):
-        raise CharnessError(f"`{path}` must contain a top-level `repos` object.")
-    normalized: dict[str, dict[str, str]] = {}
-    for repo_id, raw in repos.items():
-        if not isinstance(repo_id, str) or not repo_id:
-            raise CharnessError(f"`{path}` contains an invalid repo binding key.")
-        if not isinstance(raw, dict):
-            raise CharnessError(f"`{path}` repo binding `{repo_id}` must be an object.")
-        binding_map: dict[str, str] = {}
-        for logical_id, profile_id in raw.items():
-            if not isinstance(logical_id, str) or not logical_id or not isinstance(profile_id, str) or not profile_id:
-                raise CharnessError(f"`{path}` repo binding `{repo_id}` must map string capability ids to string profile ids.")
-            binding_map[logical_id] = profile_id
-        normalized[repo_id] = binding_map
-    payload["repos"] = normalized
-    payload["path"] = str(path)
-    return payload
+    return {
+        "schema_version": payload.get("schema_version", 1),
+        "path": str(path),
+        "exists": path.is_file(),
+        "bindings": normalized_bindings,
+        "profiles": normalized_profiles,
+    }
 
 
 def provider_index(repo_root: Path) -> dict[str, dict[str, object]]:
@@ -392,47 +388,6 @@ def provider_index(repo_root: Path) -> dict[str, dict[str, object]]:
     return providers
 
 
-def canonical_repo_remote_id(repo_root: Path) -> str | None:
-    if not is_git_checkout(repo_root):
-        return None
-    result = run(["git", "remote", "get-url", "origin"], cwd=repo_root)
-    if result.returncode != 0:
-        return None
-    raw = result.stdout.strip()
-    if not raw:
-        return None
-    ssh_match = re.match(r"^(?:[^@]+@)?([^:]+):/?(.+)$", raw)
-    if ssh_match and "://" not in raw:
-        host = ssh_match.group(1).lower()
-        path = ssh_match.group(2)
-        return f"{host}/{path.removesuffix('.git').strip('/')}"
-    scheme_match = re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://(?:[^@/]+@)?([^/]+)/(.+)$", raw)
-    if scheme_match:
-        host = scheme_match.group(1).lower()
-        path = scheme_match.group(2)
-        return f"{host}/{path.removesuffix('.git').strip('/')}"
-    local_path = Path(raw).expanduser()
-    if local_path.exists():
-        return f"path:{local_path.resolve()}"
-    return None
-
-
-def repo_binding_keys(target_repo_root: Path) -> list[str]:
-    keys: list[str] = []
-    remote_id = canonical_repo_remote_id(target_repo_root)
-    if remote_id is not None:
-        keys.append(remote_id)
-    keys.append(f"path:{target_repo_root.resolve()}")
-    unique: list[str] = []
-    seen: set[str] = set()
-    for key in keys:
-        if key in seen:
-            continue
-        seen.add(key)
-        unique.append(key)
-    return unique
-
-
 def resolve_target_repo_root(target_repo_root: Path | None) -> Path:
     return target_repo_root.resolve() if target_repo_root is not None else Path.cwd().resolve()
 
@@ -459,15 +414,15 @@ def looks_like_repo_root(path: Path) -> bool:
     return any((path / marker).exists() or (path / marker).is_symlink() for marker in repo_candidate_markers())
 
 
-def capability_setup_guidance(home_root: Path) -> list[str]:
-    profiles_path = default_capability_profiles_path(home_root)
-    bindings_path = default_repo_bindings_path(home_root)
+def capability_setup_guidance(target_repo_root: Path) -> list[str]:
+    local_path = repo_capability_local_path(target_repo_root)
+    example_path = repo_capability_example_path(target_repo_root)
     return [
-        f"Run `charness capability init --home-root {shell_quote(str(home_root))}` to scaffold the machine-local config files.",
-        f"Create `{profiles_path}` with machine-local provider profiles.",
-        f"Create `{bindings_path}` with repo-to-profile bindings.",
-        'Example profile: {"schema_version":1,"profiles":{"slack.ceal-dev":{"provider":"gather-slack","access_mode_preference":["grant","env"],"env_bindings":{"SLACK_BOT_TOKEN":"SLACK_BOT_TOKEN_CEAL_DEV"}}}}',
-        'Example binding: {"schema_version":1,"repos":{"github.com/corca-ai/charness":{"slack.default":"slack.ceal-dev"}}}',
+        f"Run `charness capability init --target-repo-root {shell_quote(str(target_repo_root))}` to scaffold the repo-local capability files.",
+        f"Edit `{local_path}` (gitignored) with real bindings and profiles for this machine.",
+        f"`{example_path}` is committed and should describe the shape without secret-name leakage.",
+        'Example: {"version":1,"bindings":{"slack.default":"slack.ceal-dev"},"profiles":{"slack.ceal-dev":{"provider":"gather-slack","access_mode_preference":["grant","env"],"env_bindings":{"SLACK_BOT_TOKEN":"SLACK_BOT_TOKEN_CEAL_DEV"}}}}',
+        "If you previously used the retired `~/.config/charness/capability-profiles.json` and `~/.config/charness/repo-bindings.json` layout, copy each binding/profile entry into the file above. The old machine-local config is no longer read.",
     ]
 
 
@@ -548,35 +503,28 @@ def build_repo_onboarding_payload(
 
 def resolve_capability(
     *,
-    home_root: Path,
     charness_repo_root: Path,
     target_repo_root: Path,
     logical_id: str,
 ) -> dict[str, object]:
-    profiles_payload = load_capability_profiles(home_root)
-    bindings_payload = load_repo_bindings(home_root)
-    profiles = profiles_payload["profiles"]
-    bindings = bindings_payload["repos"]
-    binding_key = None
-    binding_map: dict[str, str] | None = None
-    for candidate in repo_binding_keys(target_repo_root):
-        repo_binding = bindings.get(candidate)
-        if isinstance(repo_binding, dict) and logical_id in repo_binding:
-            binding_key = candidate
-            binding_map = repo_binding
-            break
-    if binding_map is None or binding_key is None:
-        guidance = "\n".join(capability_setup_guidance(home_root))
+    config = load_repo_capability_config(target_repo_root)
+    bindings = config["bindings"]
+    profiles = config["profiles"]
+    profile_id = bindings.get(logical_id)
+    if not profile_id:
+        guidance = "\n".join(capability_setup_guidance(target_repo_root))
+        if not config["exists"]:
+            raise CharnessError(
+                f"No repo-local capability config found at `{config['path']}`.\n{guidance}"
+            )
         raise CharnessError(
-            f"No repo binding for `{logical_id}` matched `{target_repo_root}`.\n"
-            f"Tried repo keys: {', '.join(repo_binding_keys(target_repo_root))}\n{guidance}"
+            f"`{config['path']}` does not bind logical capability `{logical_id}`.\n{guidance}"
         )
-    profile_id = binding_map[logical_id]
     profile = profiles.get(profile_id)
     if not isinstance(profile, dict):
-        guidance = "\n".join(capability_setup_guidance(home_root))
+        guidance = "\n".join(capability_setup_guidance(target_repo_root))
         raise CharnessError(
-            f"Repo binding `{binding_key}` points `{logical_id}` at unknown profile `{profile_id}`.\n{guidance}"
+            f"`{config['path']}` binds `{logical_id}` to unknown profile `{profile_id}`.\n{guidance}"
         )
     providers = provider_index(charness_repo_root)
     provider_id = profile["provider"]
@@ -596,8 +544,6 @@ def resolve_capability(
     return {
         "logical_id": logical_id,
         "target_repo_root": str(target_repo_root),
-        "candidate_repo_keys": repo_binding_keys(target_repo_root),
-        "matched_repo_key": binding_key,
         "profile_id": profile_id,
         "provider_id": provider_id,
         "provider_kind": provider.get("kind"),
@@ -605,14 +551,19 @@ def resolve_capability(
         "access_mode_preference": profile.get("access_mode_preference", []),
         "env_bindings": env_bindings,
         "env_binding_status": env_status,
-        "capability_profiles_path": profiles_payload["path"],
-        "repo_bindings_path": bindings_payload["path"],
+        "capability_config_path": config["path"],
     }
 
 
-def capability_profiles_template() -> dict[str, object]:
+def capability_local_template() -> dict[str, object]:
     return {
-        "schema_version": 1,
+        "version": 1,
+        "$schema_note": "This file is gitignored. Replace `*.change-me` profiles with real provider identities for THIS machine. Source env names below are non-secret aliases that point at machine-local env vars holding the actual secret.",
+        "bindings": {
+            "slack.default": "slack.change-me",
+            "github.default": "github.change-me",
+            "gws.default": "gws.change-me",
+        },
         "profiles": {
             "slack.change-me": {
                 "provider": "gather-slack",
@@ -628,35 +579,45 @@ def capability_profiles_template() -> dict[str, object]:
             },
             "gws.change-me": {
                 "provider": "gws-cli",
-                "access_mode_preference": ["binary", "env"],
+                "access_mode_preference": ["binary"],
                 "env_bindings": {},
             },
         },
-        "notes": [
-            "Keep raw secret values out of this file.",
-            "Use profile ids to describe one reusable provider identity on this machine.",
-        ],
     }
 
 
-def repo_bindings_template(target_repo_root: Path) -> dict[str, object]:
-    repo_keys = repo_binding_keys(target_repo_root)
-    primary_key = repo_keys[0]
+def capability_example_template() -> dict[str, object]:
     return {
-        "schema_version": 1,
-        "repos": {
-            primary_key: {
-                "slack.default": "slack.change-me",
-                "github.default": "github.change-me",
-                "gws.default": "gws.change-me",
-            }
+        "version": 1,
+        "$schema_note": "Committed example. The real config lives at `.charness/local/capability.json` (gitignored). `bindings` map skill-facing logical ids to local profile ids. `profiles` declare one reusable provider identity each. `env_bindings` map runtime env names to non-secret SOURCE env names this machine already exports; raw secret values must never appear here.",
+        "bindings": {
+            "slack.default": "slack.example-workspace",
         },
-        "notes": [
-            "Map repo-local logical capability ids to one machine-local profile id.",
-            "Repo keys prefer canonical git remote ids and fall back to absolute path ids.",
-        ],
-        "candidate_repo_keys": repo_keys,
+        "profiles": {
+            "slack.example-workspace": {
+                "provider": "gather-slack",
+                "access_mode_preference": ["grant", "env"],
+                "env_bindings": {
+                    "SLACK_BOT_TOKEN": "SLACK_BOT_TOKEN_EXAMPLE_WORKSPACE",
+                },
+            },
+        },
     }
+
+
+def update_gitignore_for_capability_local(target_repo_root: Path) -> str:
+    path = repo_gitignore_path(target_repo_root)
+    line = CAPABILITY_LOCAL_GITIGNORE_LINE
+    if path.is_file():
+        existing = path.read_text(encoding="utf-8")
+        existing_lines = existing.splitlines()
+        if line in existing_lines:
+            return "already-present"
+        suffix = "" if existing.endswith("\n") or existing == "" else "\n"
+        path.write_text(existing + suffix + line + "\n", encoding="utf-8")
+        return "appended"
+    path.write_text(line + "\n", encoding="utf-8")
+    return "created"
 
 
 def write_json_scaffold(path: Path, payload: dict[str, object], *, force: bool) -> str:
@@ -3443,7 +3404,7 @@ def capability_doctor_payload(
 def print_capability_summary(payload: dict[str, object]) -> None:
     print(f"LOGICAL_ID: {payload['logical_id']}")
     print(f"TARGET_REPO_ROOT: {payload['target_repo_root']}")
-    print(f"MATCHED_REPO_KEY: {payload['matched_repo_key']}")
+    print(f"CONFIG: {payload['capability_config_path']}")
     print(f"PROFILE: {payload['profile_id']}")
     print(f"PROVIDER: {payload['provider_id']} ({payload['provider_kind']})")
     print(f"PROVIDER_MANIFEST: {payload['provider_manifest_path']}")
@@ -3493,23 +3454,23 @@ def print_capability_explain_summary(payload: dict[str, object]) -> None:
 
 
 def cmd_capability_init(args: argparse.Namespace) -> int:
-    home_root = args.home_root.resolve()
     target_repo_root = resolve_target_repo_root(args.target_repo_root)
-    profiles_path = default_capability_profiles_path(home_root)
-    bindings_path = default_repo_bindings_path(home_root)
-    profiles_status = write_json_scaffold(profiles_path, capability_profiles_template(), force=args.force)
-    bindings_status = write_json_scaffold(bindings_path, repo_bindings_template(target_repo_root), force=args.force)
+    local_path = repo_capability_local_path(target_repo_root)
+    example_path = repo_capability_example_path(target_repo_root)
+    local_status = write_json_scaffold(local_path, capability_local_template(), force=args.force)
+    example_status = write_json_scaffold(example_path, capability_example_template(), force=args.force)
+    gitignore_status = update_gitignore_for_capability_local(target_repo_root)
     payload = {
-        "config_root": str(default_config_root(home_root)),
-        "profiles_path": str(profiles_path),
-        "repo_bindings_path": str(bindings_path),
-        "profiles_status": profiles_status,
-        "repo_bindings_status": bindings_status,
         "target_repo_root": str(target_repo_root),
-        "candidate_repo_keys": repo_binding_keys(target_repo_root),
+        "capability_local_path": str(local_path),
+        "capability_example_path": str(example_path),
+        "capability_local_status": local_status,
+        "capability_example_status": example_status,
+        "gitignore_path": str(repo_gitignore_path(target_repo_root)),
+        "gitignore_status": gitignore_status,
         "next_steps": [
-            f"Edit `{profiles_path}` to replace `*.change-me` profiles with real provider identities.",
-            f"Edit `{bindings_path}` to bind the current repo keys to the real profile ids you want.",
+            f"Edit `{local_path}` to replace `*.change-me` bindings/profiles with real values for THIS machine.",
+            f"`{example_path}` is committed and should describe the shape without leaking real source env names.",
             "Run `charness capability explain gather` or `charness capability explain announcement` to see skill-facing logical capability expectations.",
         ],
     }
@@ -3520,8 +3481,8 @@ def cmd_capability_init(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_capability_resolve(args: argparse.Namespace) -> int:
-    home_root = args.home_root.resolve()
+def _resolve_charness_repo_root(args: argparse.Namespace) -> Path:
+    home_root = getattr(args, "home_root", default_home_root()).resolve()
     charness_repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
     charness_repo_root = ensure_checkout(
         charness_repo_root,
@@ -3530,9 +3491,13 @@ def cmd_capability_resolve(args: argparse.Namespace) -> int:
         allow_clone=False,
         allow_pull=False,
     )["repo_root"]
+    return Path(charness_repo_root)
+
+
+def cmd_capability_resolve(args: argparse.Namespace) -> int:
+    charness_repo_root = _resolve_charness_repo_root(args)
     resolved = resolve_capability(
-        home_root=home_root,
-        charness_repo_root=Path(charness_repo_root),
+        charness_repo_root=charness_repo_root,
         target_repo_root=resolve_target_repo_root(args.target_repo_root),
         logical_id=args.logical_id,
     )
@@ -3544,22 +3509,13 @@ def cmd_capability_resolve(args: argparse.Namespace) -> int:
 
 
 def cmd_capability_doctor(args: argparse.Namespace) -> int:
-    home_root = args.home_root.resolve()
-    charness_repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
-    charness_repo_root = ensure_checkout(
-        charness_repo_root,
-        managed=managed_checkout,
-        repo_url=getattr(args, "repo_url", REPO_URL),
-        allow_clone=False,
-        allow_pull=False,
-    )["repo_root"]
+    charness_repo_root = _resolve_charness_repo_root(args)
     resolved = resolve_capability(
-        home_root=home_root,
-        charness_repo_root=Path(charness_repo_root),
+        charness_repo_root=charness_repo_root,
         target_repo_root=resolve_target_repo_root(args.target_repo_root),
         logical_id=args.logical_id,
     )
-    payload = capability_doctor_payload(charness_repo_root=Path(charness_repo_root), resolved=resolved)
+    payload = capability_doctor_payload(charness_repo_root=charness_repo_root, resolved=resolved)
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
@@ -3573,18 +3529,9 @@ def cmd_capability_doctor(args: argparse.Namespace) -> int:
 
 
 def cmd_capability_env(args: argparse.Namespace) -> int:
-    home_root = args.home_root.resolve()
-    charness_repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
-    charness_repo_root = ensure_checkout(
-        charness_repo_root,
-        managed=managed_checkout,
-        repo_url=getattr(args, "repo_url", REPO_URL),
-        allow_clone=False,
-        allow_pull=False,
-    )["repo_root"]
+    charness_repo_root = _resolve_charness_repo_root(args)
     resolved = resolve_capability(
-        home_root=home_root,
-        charness_repo_root=Path(charness_repo_root),
+        charness_repo_root=charness_repo_root,
         target_repo_root=resolve_target_repo_root(args.target_repo_root),
         logical_id=args.logical_id,
     )
@@ -3623,17 +3570,9 @@ def cmd_capability_env(args: argparse.Namespace) -> int:
 
 
 def cmd_capability_explain(args: argparse.Namespace) -> int:
-    home_root = args.home_root.resolve()
-    charness_repo_root, managed_checkout = resolve_repo_root(home_root, args.repo_root)
-    charness_repo_root = ensure_checkout(
-        charness_repo_root,
-        managed=managed_checkout,
-        repo_url=getattr(args, "repo_url", REPO_URL),
-        allow_clone=False,
-        allow_pull=False,
-    )["repo_root"]
+    charness_repo_root = _resolve_charness_repo_root(args)
     payload = explain_skill_capabilities(
-        charness_repo_root=Path(charness_repo_root),
+        charness_repo_root=charness_repo_root,
         target_repo_root=resolve_target_repo_root(args.target_repo_root),
         skill_id=args.skill_id,
     )
@@ -4022,31 +3961,29 @@ def build_parser() -> argparse.ArgumentParser:
 
     capability_parser = subparsers.add_parser(
         "capability",
-        help="Resolve repo-local logical capabilities into machine-local provider profiles and inspect provider readiness.",
+        help="Resolve repo-local logical capabilities through `<repo-root>/.charness/local/capability.json` and inspect provider readiness.",
     )
     capability_subparsers = capability_parser.add_subparsers(dest="capability_command", required=True)
 
     def add_common_capability_args(command: argparse.ArgumentParser) -> None:
-        command.add_argument("--home-root", type=Path, default=default_home_root())
         command.add_argument("--repo-root", type=Path, help="Use an explicit charness source checkout instead of the managed default checkout.")
         command.add_argument("--repo-url", default=REPO_URL)
         command.add_argument(
             "--target-repo-root",
             type=Path,
-            help="Resolve repo bindings for this target repo. Defaults to the current working directory.",
+            help="Resolve repo-local capability config for this target repo. Defaults to the current working directory.",
         )
         command.add_argument("--json", action="store_true")
         command.add_argument("logical_id")
 
     capability_init_parser = capability_subparsers.add_parser(
         "init",
-        help="Scaffold machine-local capability profile and repo binding config files for first use.",
+        help="Scaffold repo-local capability config (`.charness/local/capability.json` + `.charness/capability.example.json`) and update `.gitignore`.",
     )
-    capability_init_parser.add_argument("--home-root", type=Path, default=default_home_root())
     capability_init_parser.add_argument(
         "--target-repo-root",
         type=Path,
-        help="Seed repo-binding examples for this target repo. Defaults to the current working directory.",
+        help="Scaffold capability config under this target repo. Defaults to the current working directory.",
     )
     capability_init_parser.add_argument("--force", action="store_true")
     capability_init_parser.add_argument("--json", action="store_true")
@@ -4068,7 +4005,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     capability_env_parser = capability_subparsers.add_parser(
         "env",
-        help="Emit shell exports that alias runtime env names from machine-local source env names.",
+        help="Emit shell exports that alias runtime env names from non-secret source env names declared in the repo-local capability config.",
     )
     add_common_capability_args(capability_env_parser)
     capability_env_parser.set_defaults(func=cmd_capability_env)
@@ -4077,7 +4014,6 @@ def build_parser() -> argparse.ArgumentParser:
         "explain",
         help="Explain which logical capabilities a public skill may need and what the current repo adapter adds.",
     )
-    capability_explain_parser.add_argument("--home-root", type=Path, default=default_home_root())
     capability_explain_parser.add_argument("--repo-root", type=Path, help="Use an explicit charness source checkout instead of the managed default checkout.")
     capability_explain_parser.add_argument("--repo-url", default=REPO_URL)
     capability_explain_parser.add_argument(

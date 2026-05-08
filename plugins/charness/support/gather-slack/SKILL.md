@@ -13,13 +13,17 @@ to become a durable local asset.
 ## Runtime Contract
 
 - prefer a host-provided runtime grant when one exists
-- otherwise rely on a process environment `SLACK_BOT_TOKEN`
-- when `SLACK_BOT_TOKEN` is unset, prefer
-  `charness capability env slack.default` so one machine-local Slack profile
-  can be reused across support runtimes instead of hardcoding one token name
-  per script
-- keep provider-specific fetching and markdown conversion in this package so
-  consumer repos do not have to recreate them
+- otherwise resolve the runtime token through the consumer repo's
+  `<repo-root>/.charness/local/capability.json` (gitignored), looked up by
+  the logical capability id `slack.default` (overridable through
+  `CHARNESS_SLACK_CAPABILITY`)
+- the wrapper invokes `charness capability env <logical-id>` to materialize the
+  runtime env name from a non-secret source env name declared by the repo's
+  capability profile; it does **not** advertise a direct `SLACK_BOT_TOKEN`
+  process-env fallback to model-controlled agent runtimes
+- a pre-set `SLACK_BOT_TOKEN` in the process environment is honored for
+  ordinary operator-local CLI use only and is not part of the agent-consumable
+  contract
 
 Use the wrapper:
 
@@ -33,7 +37,10 @@ Use the wrapper:
 ## Guardrails
 
 - Do not ask the user to paste tokens into chat.
-- Do not promise private Slack access when no grant or token is available.
+- Do not promise private Slack access when no grant or capability binding is
+  available.
+- Do not advertise raw process-env tokens as the agent-runtime fallback path
+  in any contract or doc that ships with this support skill.
 - Preserve the source thread URL and attachment links in the exported markdown.
 
 ## References

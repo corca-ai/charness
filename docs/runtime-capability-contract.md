@@ -9,22 +9,30 @@ runtimes.
 `charness` should assume that it may run inside an isolated agent runtime where
 the agent cannot read arbitrary local secret files directly.
 
-That means public skills should not treat raw `.env` access as the primary
-integration model.
+That means public skills, support skills, and integration manifests must not
+advertise raw process-environment fallbacks (`SLACK_BOT_TOKEN`,
+`GOOGLE_WORKSPACE_CLI_*`, `GH_TOKEN`, etc.) as agent-consumable paths inside
+their own contracts.
 
 The preferred model is:
 
 1. host grants a capability for one run or one session
 2. support and integration layers resolve how to consume that capability
-3. `.env` or process environment fallback exists for ordinary local operator
-   setups when no stronger runtime grant surface exists
+3. each repo declares which logical capability ids its skills depend on and
+   how those resolve to provider profiles in its own repo-local capability
+   config
+4. raw env-variable fallbacks may still exist for human/operator CLIs that
+   live outside agent-controlled runtimes, but the support skill, public
+   skill, and integration contracts must not present them as the normal
+   agent-consumable path
 
-Machine-local provider choice should stay separate from repo portability:
+Repo-local capability config keeps secret-name choices repo-scoped:
 
-- machine-local capability profiles live in the config layer
-- machine-local repo bindings map one repo identity to one profile per logical
-  capability
-- machine-local install and doctor snapshots live in the state layer
+- repo-local profiles and bindings live at
+  `<repo-root>/.charness/local/capability.json` (gitignored)
+- the committed shape lives at `<repo-root>/.charness/capability.example.json`
+- machine-local install and doctor snapshots stay in the XDG state layer and
+  remain unrelated to capability resolution
 
 ## Access Modes
 
@@ -102,24 +110,26 @@ setup, or adapter references.
 
 ## Local Resolution Layer
 
-When one machine reuses the same private provider across multiple `charness`
-skills or scripts, model that reuse through:
+When one repo wants to reuse the same private provider across multiple
+`charness` skills or scripts, model that reuse repo-locally through:
 
 1. logical capability id, for example `slack.default`
-2. machine-local profile id, for example `slack.ceal-dev`
-3. provider id already modeled by manifests or support capability metadata, for
-   example `gather-slack`
+2. repo-local profile id, for example `slack.ceal-dev`
+3. provider id already modeled by manifests or support capability metadata,
+   for example `gather-slack`
 
-The profile may record non-secret env var aliases such as:
+The repo-local capability config (`<repo-root>/.charness/local/capability.json`)
+may record non-secret env var aliases such as:
 
 - runtime env name expected by the provider
-- source env var name currently present on the machine
+- source env var name currently present on the operator's machine
 
 It must not record:
 
 - the secret value itself
 - a copied token file
 - adapter-local secret plumbing
+- machine-global capability state shared across unrelated repos
 
 ## Gather As Exemplar
 

@@ -14,11 +14,20 @@ This support package turns a Slack thread URL into a local markdown artifact.
 - `node`
 - `jq`
 - `perl`
-- `SLACK_BOT_TOKEN` in the process environment when the host does not provide a
-  stronger mediated grant path
-- if the runtime token name is repo- or workspace-specific, use
-  `charness capability env slack.default` to alias the runtime env name from a
-  machine-local source env name before invoking the wrapper
+- a Slack token resolved through one of:
+  - a host-provided runtime grant (preferred)
+  - `charness capability env <logical-id>` against the consumer repo's
+    `<repo-root>/.charness/local/capability.json`, where `<logical-id>`
+    defaults to `slack.default` and may be overridden via
+    `CHARNESS_SLACK_CAPABILITY`
+  - a pre-set `SLACK_BOT_TOKEN` in an operator-local CLI shell only — this
+    path exists for human-driven debugging and is not advertised to
+    model-controlled agent runtimes
+
+The wrapper never reads `SLACK_BOT_TOKEN` from a `.env` file or an unbound
+process env on the agent's behalf. If neither a grant nor a repo-local
+capability binding produces a token, the wrapper stops with an explicit
+missing-capability message instead of silently falling through to ambient env.
 
 ## Behavior
 

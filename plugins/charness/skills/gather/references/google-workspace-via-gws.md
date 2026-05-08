@@ -7,8 +7,9 @@ That means:
 - do not reintroduce copied Google export helpers under `skills/support/`
 - prefer a host grant when one exists
 - otherwise reuse authenticated `gws` CLI state
-- fall back to documented `GOOGLE_WORKSPACE_CLI_*` env vars only when the host
-  lacks a stronger path
+- treat raw `GOOGLE_WORKSPACE_CLI_*` env vars as an operator-local manual setup
+  detail, not as an agent-consumable fallback. The integration manifest
+  intentionally does not advertise an `env` access mode for `gws-cli`.
 
 ## Operator Guidance
 

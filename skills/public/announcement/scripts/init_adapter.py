@@ -37,11 +37,15 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
         ("sections", ["Highlights", "Changes", "Fixes"]),
         ("audience_tags", []),
         ("omission_lenses", []),
+        ("in_progress_sources", []),
         ("delivery_kind", "none"),
         ("delivery_target", ""),
         ("release_notes_path", ""),
         ("post_command_template", ""),
         ("delivery_capability", ""),
+        ("format_rules_path", ""),
+        ("message_size_limit", 0),
+        ("outputs", []),
     ]
 
 

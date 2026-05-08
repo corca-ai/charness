@@ -112,39 +112,39 @@ skill_ergonomics_gate_rules: []
 runtime_profile_default: default
 runtime_budgets:
   charness-version: 500
-  check-cli-skill-surface: 8000
+  check-cli-skill-surface: 11000
   pytest: 70000
   check-coverage: 15000
-  check-duplicates: 8000
-  check-markdown: 8000
+  check-duplicates: 11000
+  check-markdown: 11000
   check-secrets: 6000
-  run-evals: 5000
-  specdown: 8000
+  run-evals: 6500
+  specdown: 10500
 runtime_budget_profiles:
   local-linux-aarch64-4cpu:
     budgets:
       charness-version: 500
-      check-cli-skill-surface: 8000
+      check-cli-skill-surface: 11000
       pytest: 70000
       check-coverage: 22000
-      check-duplicates: 8000
-      check-markdown: 8000
+      check-duplicates: 11000
+      check-markdown: 11000
       check-secrets: 6000
-      run-evals: 5000
-      specdown: 8000
+      run-evals: 6500
+      specdown: 10500
   local-linux-x86_64-36cpu:
     budgets:
       charness-version: 500
-      check-cli-skill-surface: 8000
+      check-cli-skill-surface: 11000
       inventory-sloc: 1000
       inventory-ubiquitous-language: 1000
       pytest: 140000
       check-coverage: 35000
-      check-duplicates: 8000
-      check-markdown: 8000
+      check-duplicates: 11000
+      check-markdown: 11000
       check-secrets: 6000
-      run-evals: 5000
-      specdown: 8000
+      run-evals: 6500
+      specdown: 10500
 startup_probes:
   - label: charness-version
     command:

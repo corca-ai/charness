@@ -3,130 +3,110 @@
 ## Problem
 
 `charness` already models provider capability metadata for external tools and
-support runtimes, but it does not yet give operators one machine-local place
-to say:
+support runtimes, but it does not yet give each repo one local place to say:
 
-- which reusable credential or authenticated provider identity exists on this
-  machine
-- which repo should use which provider identity by default
-- how one skill or script can reuse that choice without reintroducing secret
-  plumbing into adapters
+- which logical capability ids that repo's skills/scripts care about
+- which provider profile resolves each id on this machine for this repo
+- how skills consume that resolution without reintroducing raw secret env names
+  into committed adapters or skill contracts
 
 The missing seam is not "store secrets in `charness`." The missing seam is a
 portable resolver that maps:
 
-- repo-local logical capability name
-- to machine-local provider profile
+- a skill-facing logical capability id
+- to a repo-local provider profile
 - to one real provider capability already modeled by manifests or support
   capability metadata
 
 ## Current Slice
 
-Add one machine-local capability resolution surface and wire the first real
-runtime consumer through it.
+Capability resolution is **repo-local**, not machine-global. Each repo carries
+its own capability surface so the same machine can host two repos that use
+different Slack workspaces, different GitHub identities, or different Workspace
+auth without one repo's choice silently affecting another.
 
 This slice covers:
 
-- machine-local capability profile config
-- machine-local repo binding config
+- one repo-local capability config file at
+  `<repo-root>/.charness/local/capability.json` (gitignored)
+- one repo-committed example shape at
+  `<repo-root>/.charness/capability.example.json`
 - CLI commands to scaffold, resolve, inspect, explain, and emit env alias
-  exports
-- Slack gather runtime reuse through the new env export flow
-- XDG-style config/state directory helpers for machine-local `charness` state
+  exports against that repo-local config
+- Slack gather runtime reuse through `charness capability env`
 
 This slice does not add:
 
 - a secret vault
 - host-specific grant orchestration
-- repo-checked-in personal credential binding
-- full adapter migration for every existing skill in one pass
+- machine-global capability state shared across repos
+- automatic migration helpers for repos that previously used the retired
+  machine-local config layout (operators move bindings into the new repo-local
+  file by hand)
 
 ## Fixed Decisions
 
-- Machine-local config uses XDG-style config paths, not `~/.charness`.
-- Machine-local install/doctor/version state moves under XDG-style state paths.
-- Public skills and repo adapters do not store raw secret values or secret file
-  paths.
-- Shared credential reuse is modeled as
+- Capability config is repo-local. The real values live at
+  `<repo-root>/.charness/local/capability.json` and are gitignored. The
+  committed example lives at `<repo-root>/.charness/capability.example.json`.
+- Public skills, repo adapters, and committed capability example files do not
+  store raw secret values or copied secret-file paths.
+- Shared credential reuse for one repo is modeled as
   `logical capability -> profile -> provider`, not as duplicated per-skill
   secret settings.
-- Provider profiles are machine-local and may reference env var names, but not
-  env values.
-- Repo bindings are machine-local and map one repo identity to one named
-  profile per logical capability.
-- Repo identity resolves from canonical git remote first, then absolute path
-  fallback.
-- First implementation uses JSON so the CLI can stay stdlib-only.
-- Backward compatibility for older per-skill credential adapter fields is not a
-  goal for this slice.
-
-## Probe Questions
-
-- Whether a checked-in repo capability contract file should become required
-  later. For this slice, it stays optional and out of band.
-- Whether future host runtimes need a richer `grant` binding format than the
-  current profile metadata.
-- Whether more support runtimes besides Slack should adopt the env export flow
-  immediately after this slice.
-
-## Deferred Decisions
-
-- UI or interactive setup commands for editing profiles and bindings
-- automatic migration from legacy machine-local state paths
-- support for profile inheritance or shared profile groups
-- storing richer repo metadata than repo id plus binding map
+- Profiles may reference env var names, but not env values.
+- Bindings are repo-local. One repo binds one logical capability id to one
+  named profile per logical capability.
+- The CLI uses JSON so it stays stdlib-only.
+- Backward compatibility for older machine-global capability config layouts is
+  not a goal.
 
 ## Non-Goals
 
 - secret storage or encryption
 - generic cross-product credential management
 - replacing `gh auth`, host grants, or existing external auth flows
-- making `announcement` deliver to Slack in this same slice
-- forcing every provider to use env export when authenticated binary or grant is
-  the honest primary path
+- forcing every provider to use env export when authenticated binary or grant
+  is the honest primary path
 
 ## Constraints
 
 - installed `charness` CLI must remain runnable from a managed checkout without
   extra Python dependencies
-- machine-local config must survive checkout replacement or reclone
 - support runtimes should be able to consume resolved env aliases without
   learning the full config model themselves
-- durable docs must explain the separation between config and state
+- durable docs must explain the separation between the gitignored real config
+  and the committed example shape
 
 ## Success Criteria
 
-- `charness` resolves a logical capability like `slack.default` for a target
-  repo into one machine-local profile and one provider id.
-- the resolver prefers canonical git remote repo id when available and falls
-  back to absolute path binding when not.
-- machine-local config lives under config paths and machine-local CLI state
-  lives under state paths.
-- `charness capability doctor` can show the resolved provider and current
-  provider health using existing manifest/support metadata.
-- `charness capability env` can emit shell exports that alias runtime env names
-  from machine-local source env names without printing secret values.
-- `charness capability init` can create the machine-local config files on first
-  use instead of requiring manual file creation first.
-- `charness capability explain <skill-id>` can show which logical capabilities
+- `charness capability resolve <logical-id>` reads
+  `<target-repo-root>/.charness/local/capability.json` and returns the bound
+  profile and provider for that repo.
+- `charness capability env <logical-id>` emits shell exports that alias runtime
+  env names from machine-local source env names without printing secret values.
+- `charness capability init` scaffolds the gitignored real config plus the
+  committed example shape and updates the repo's `.gitignore`.
+- `charness capability doctor <logical-id>` reuses provider manifest metadata
+  to inspect provider readiness for the resolved profile.
+- `charness capability explain <skill-id>` shows which logical capabilities
   one public skill may need and, for `announcement`, which delivery capability
   the current repo adapter configured.
-- Slack gather runtime can reuse that env export flow before falling back to its
-  direct process-environment expectation.
-- first-run failure messages point to the exact config files and expected JSON
-  shapes.
+- Slack gather runtime can consume the env export flow before falling back to
+  any operator-only direct-env path.
+- First-run failure messages point to the exact file path and shape that the
+  operator should edit.
 
 ## Acceptance Checks
 
-- create a temporary repo with an `origin` remote and verify that
-  `charness capability resolve slack.default` matches the remote-based binding
-  instead of only the path fallback.
-- create a profile with `env_bindings` and verify that `charness capability env`
-  prints alias exports like `export SLACK_BOT_TOKEN="${SLACK_BOT_TOKEN_CEAL}"`.
-- verify that Slack export helper can consume the new env export path when the
-  runtime env alias is configured.
-- verify that install/doctor/version state paths now point at the state
-  directory helpers.
+- run `charness capability init --target-repo-root <repo>` against a fresh
+  repo and verify that `<repo>/.charness/local/capability.json`,
+  `<repo>/.charness/capability.example.json`, and a `/.charness/local/`
+  entry in `<repo>/.gitignore` all exist.
+- write a profile with `env_bindings` and verify that
+  `charness capability env slack.default` prints alias exports such as
+  `export SLACK_BOT_TOKEN="${SLACK_BOT_TOKEN_CEAL_DEV}"`.
+- verify that the Slack gather export helper can consume that env export path.
 - run repo validators and standing tests after syncing the checked-in plugin
   export surface.
 
@@ -135,18 +115,7 @@ This slice does not add:
 - this document for the current contract
 - CLI implementation in `charness`
 
-## First Implementation Slice
-
-1. add config/state path helpers and move existing machine-local state paths
-2. add capability profile and repo binding loaders
-3. add capability init / resolve / doctor / env / explain CLI commands
-4. wire Slack gather export through `charness capability env`
-5. update docs, tests, and checked-in plugin export
-
 ## Command Surface
-
-Machine-local capability config lives under `~/.config/charness/` and stays
-separate from repo-checked-in adapter state.
 
 ```bash
 charness capability init
@@ -155,3 +124,33 @@ charness capability doctor slack.default
 charness capability env slack.default
 charness capability explain gather
 ```
+
+All subcommands accept `--target-repo-root <path>` (defaults to the current
+working directory) and `--repo-root <charness-checkout>` to override which
+charness checkout supplies provider manifests.
+
+## File Shape
+
+`<repo-root>/.charness/local/capability.json` (gitignored, real values):
+
+```json
+{
+  "version": 1,
+  "bindings": {
+    "slack.default": "slack.ceal-dev"
+  },
+  "profiles": {
+    "slack.ceal-dev": {
+      "provider": "gather-slack",
+      "access_mode_preference": ["grant", "env"],
+      "env_bindings": {
+        "SLACK_BOT_TOKEN": "SLACK_BOT_TOKEN_CEAL_DEV"
+      }
+    }
+  }
+}
+```
+
+`<repo-root>/.charness/capability.example.json` (committed) keeps the same
+shape with placeholder source env names. It must not contain real source env
+names that would identify another repo's secret material.

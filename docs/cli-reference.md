@@ -29,9 +29,9 @@ positional arguments:
                         preserving the managed checkout and CLI.
     task                Claim, submit, abort, or inspect a repo-local agent
                         task envelope.
-    capability          Resolve repo-local logical capabilities into machine-
-                        local provider profiles and inspect provider
-                        readiness.
+    capability          Resolve repo-local logical capabilities through
+                        `<repo-root>/.charness/local/capability.json` and
+                        inspect provider readiness.
     tool                Inspect, install, update, or sync external tool
                         integrations that charness-managed skills depend on.
     worktree            Inspect and prepare git worktrees so mutate-phase work
@@ -301,14 +301,17 @@ usage: charness capability [-h] {init,resolve,doctor,env,explain} ...
 
 positional arguments:
   {init,resolve,doctor,env,explain}
-    init                Scaffold machine-local capability profile and repo
-                        binding config files for first use.
+    init                Scaffold repo-local capability config
+                        (`.charness/local/capability.json` +
+                        `.charness/capability.example.json`) and update
+                        `.gitignore`.
     resolve             Resolve one logical capability for the current repo
                         into a profile and provider.
     doctor              Resolve one logical capability and inspect the
                         underlying provider state.
     env                 Emit shell exports that alias runtime env names from
-                        machine-local source env names.
+                        non-secret source env names declared in the repo-local
+                        capability config.
     explain             Explain which logical capabilities a public skill may
                         need and what the current repo adapter adds.
 
@@ -319,15 +322,13 @@ options:
 ## `charness capability init`
 
 ```text
-usage: charness capability init [-h] [--home-root HOME_ROOT]
-                                [--target-repo-root TARGET_REPO_ROOT]
+usage: charness capability init [-h] [--target-repo-root TARGET_REPO_ROOT]
                                 [--force] [--json]
 
 options:
   -h, --help            show this help message and exit
-  --home-root HOME_ROOT
   --target-repo-root TARGET_REPO_ROOT
-                        Seed repo-binding examples for this target repo.
+                        Scaffold capability config under this target repo.
                         Defaults to the current working directory.
   --force
   --json
@@ -336,8 +337,7 @@ options:
 ## `charness capability resolve`
 
 ```text
-usage: charness capability resolve [-h] [--home-root HOME_ROOT]
-                                   [--repo-root REPO_ROOT]
+usage: charness capability resolve [-h] [--repo-root REPO_ROOT]
                                    [--repo-url REPO_URL]
                                    [--target-repo-root TARGET_REPO_ROOT]
                                    [--json]
@@ -348,22 +348,20 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  --home-root HOME_ROOT
   --repo-root REPO_ROOT
                         Use an explicit charness source checkout instead of
                         the managed default checkout.
   --repo-url REPO_URL
   --target-repo-root TARGET_REPO_ROOT
-                        Resolve repo bindings for this target repo. Defaults
-                        to the current working directory.
+                        Resolve repo-local capability config for this target
+                        repo. Defaults to the current working directory.
   --json
 ```
 
 ## `charness capability doctor`
 
 ```text
-usage: charness capability doctor [-h] [--home-root HOME_ROOT]
-                                  [--repo-root REPO_ROOT]
+usage: charness capability doctor [-h] [--repo-root REPO_ROOT]
                                   [--repo-url REPO_URL]
                                   [--target-repo-root TARGET_REPO_ROOT]
                                   [--json]
@@ -374,22 +372,21 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  --home-root HOME_ROOT
   --repo-root REPO_ROOT
                         Use an explicit charness source checkout instead of
                         the managed default checkout.
   --repo-url REPO_URL
   --target-repo-root TARGET_REPO_ROOT
-                        Resolve repo bindings for this target repo. Defaults
-                        to the current working directory.
+                        Resolve repo-local capability config for this target
+                        repo. Defaults to the current working directory.
   --json
 ```
 
 ## `charness capability env`
 
 ```text
-usage: charness capability env [-h] [--home-root HOME_ROOT]
-                               [--repo-root REPO_ROOT] [--repo-url REPO_URL]
+usage: charness capability env [-h] [--repo-root REPO_ROOT]
+                               [--repo-url REPO_URL]
                                [--target-repo-root TARGET_REPO_ROOT] [--json]
                                logical_id
 
@@ -398,22 +395,20 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  --home-root HOME_ROOT
   --repo-root REPO_ROOT
                         Use an explicit charness source checkout instead of
                         the managed default checkout.
   --repo-url REPO_URL
   --target-repo-root TARGET_REPO_ROOT
-                        Resolve repo bindings for this target repo. Defaults
-                        to the current working directory.
+                        Resolve repo-local capability config for this target
+                        repo. Defaults to the current working directory.
   --json
 ```
 
 ## `charness capability explain`
 
 ```text
-usage: charness capability explain [-h] [--home-root HOME_ROOT]
-                                   [--repo-root REPO_ROOT]
+usage: charness capability explain [-h] [--repo-root REPO_ROOT]
                                    [--repo-url REPO_URL]
                                    [--target-repo-root TARGET_REPO_ROOT]
                                    [--json]
@@ -424,7 +419,6 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  --home-root HOME_ROOT
   --repo-root REPO_ROOT
                         Use an explicit charness source checkout instead of
                         the managed default checkout.

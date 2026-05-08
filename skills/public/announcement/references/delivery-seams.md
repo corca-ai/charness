@@ -14,7 +14,8 @@ Draft only. No posting or file update.
 
 ### `release-notes`
 
-Append or update a checked-in markdown file such as `<repo-root>/docs/release-notes.md`.
+Append or update a checked-in markdown file such as
+`<repo-root>/docs/release-notes.md`.
 
 ### `human-backend`
 
@@ -36,3 +37,79 @@ through a repo-owned backend seam.
 If that backend depends on reusable private access, keep the adapter-level
 binding portable by setting `delivery_capability` to one logical capability id
 such as `slack.default`.
+
+## Format Rules
+
+Different chat backends have different markdown dialects. Slack rejects
+CommonMark-style `# Headers`, `**bold**`, and `[label](https://example.com)` links and instead
+expects mrkdwn (`*bold*`, `<url|text>`, `_italic_`, no `#` headers).
+
+When the delivery seam targets a chat backend, the skill must not let raw
+CommonMark go to the wire. Two ways to express that contract:
+
+1. Adapter-declared rules path. The adapter may set `format_rules_path` to a
+   repo-owned conversion contract (for example, the runtime prompt that
+   describes the chat dialect). The skill loads that contract before
+   delivery and converts the draft accordingly.
+2. Skill-built-in rules. When `format_rules_path` is unset and the delivery
+   target is Slack-shaped, apply the built-in mrkdwn conversion below.
+
+### Slack mrkdwn (built-in baseline)
+
+Slack's chat surface accepts a constrained dialect:
+
+- bold: `*bold*` (single asterisk), not `**bold**`
+- italic: `_italic_`, not `*italic*`
+- inline code: backtick-fenced is supported
+- code block: triple-backtick block is supported
+- links: `<https://example.com|label>`, not `[label](https://example.com)`
+- bullets: dash-prefixed list items render reliably; asterisk-prefixed lists may render but are less predictable
+- headers: there are no `#` headers; use a bold first line instead
+- horizontal rules: not rendered
+
+Convert before posting:
+
+- replace `**x**` with `*x*`
+- replace `*x*` (italic) with `_x_` if the source intended italic
+- replace `[label](https://example.com)` with `<url|text>`
+- strip leading `#`/`##`/`###` and bold the resulting line
+- strip horizontal rules (`---`)
+
+If the adapter declares a different chat backend (for example Discord,
+Microsoft Teams), point the skill at the repo's own conversion contract via
+`format_rules_path` instead of pretending Slack's rules apply.
+
+## Per-Backend Size Limits
+
+Most chat backends reject messages above a per-message size limit (Slack's
+effective `chat.update` ceiling is around 4000 characters; other backends
+have their own limits). The skill must not assume the draft fits.
+
+The adapter declares the limit through `message_size_limit` (characters; `0`
+disables splitting). When the limit is positive and the draft exceeds it, the
+skill splits the draft on paragraph boundaries (blank lines) into numbered
+parts before posting:
+
+- prefix each part with `(part N/total)` so the recipient can tell what they
+  have
+- never split inside a fenced code block
+- never split inside a numbered list step that was meant to stay contiguous;
+  split on blank lines first, fall back to bullet boundaries only if a single
+  paragraph alone exceeds the limit
+
+The split policy belongs to the skill; the size limit belongs to the adapter
+because every backend has its own ceiling.
+
+## Dual Outputs
+
+When the adapter declares an `outputs` list (see `draft-shape.md`), the
+delivery seam reads each output's `delivery_role`:
+
+- `single` — one draft body, one delivery (default when `outputs` is empty)
+- `parent` — top-level message; for chat backends this is the thread starter
+- `thread_reply` — posted as a reply to the most recent `parent` output
+
+For non-chat backends (`release-notes`), `parent` and `thread_reply` may be
+expressed as primary file plus an adjacent comment, primary file plus a PR
+description, or whatever the repo's seam declares. The portable concept is
+"primary surface vs. follow-up surface", not "Slack thread."

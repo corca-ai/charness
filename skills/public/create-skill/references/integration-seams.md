@@ -60,8 +60,11 @@ Preferred behavior:
 
 - use authenticated `gh api` first when an already authenticated GitHub CLI is
   available
-- fall back to HTTP with `GH_TOKEN` or `GITHUB_TOKEN` before public
-  unauthenticated HTTP
+- treat `GH_TOKEN`/`GITHUB_TOKEN` HTTP attachment as an operator-local fallback
+  only — it may apply when an operator runs the helper from a shell where
+  those env vars are already present, but it is not advertised as an
+  agent-runtime fallback inside skill, manifest, or adapter contracts that
+  ship to model-controlled runtimes
 - keep `gh` optional unless the integration truly requires private GitHub
   access
 - persist `status`, `reason`, and `error` in lock or state output so

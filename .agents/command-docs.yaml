@@ -115,7 +115,7 @@ commands:
       - charness capability init
       - charness capability resolve slack.default
       - charness capability doctor slack.default
-      - Machine-local capability config
+      - repo-local capability config
   tool:
     help_command: ./charness tool --help
     doc_paths:

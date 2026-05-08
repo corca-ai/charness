@@ -23,8 +23,17 @@ for tool in node jq perl; do
   fi
 done
 
-if [[ -z "${SLACK_BOT_TOKEN:-}" ]] && command -v charness >/dev/null 2>&1; then
-  ENV_EXPORTS="$(charness capability env "$CAPABILITY_LOGICAL_ID" --target-repo-root "$TARGET_REPO_ROOT")" || exit 1
+if [[ -z "${SLACK_BOT_TOKEN:-}" ]]; then
+  if ! command -v charness >/dev/null 2>&1; then
+    echo "Slack token not resolved: \`charness\` CLI is not on PATH." >&2
+    echo "Install charness or expose a runtime grant before invoking the agent-side flow." >&2
+    exit 1
+  fi
+  ENV_EXPORTS="$(charness capability env "$CAPABILITY_LOGICAL_ID" --target-repo-root "$TARGET_REPO_ROOT")" || {
+    echo "Slack token not resolved through \`charness capability env $CAPABILITY_LOGICAL_ID\`." >&2
+    echo "Ensure $TARGET_REPO_ROOT/.charness/local/capability.json binds $CAPABILITY_LOGICAL_ID to a profile whose env_bindings name a present source env." >&2
+    exit 1
+  }
   eval "$ENV_EXPORTS"
 fi
 

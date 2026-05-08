@@ -31,11 +31,15 @@ Search order:
 - `sections`
 - `audience_tags`
 - `omission_lenses`
+- `in_progress_sources`
 - `delivery_kind`
 - `delivery_target`
 - `release_notes_path`
 - `post_command_template`
 - `delivery_capability`
+- `format_rules_path`
+- `message_size_limit`
+- `outputs`
 
 ## Defaults
 
@@ -45,8 +49,18 @@ Search order:
 - `audience_tags`: empty list in data, but resolver should expose whether the
   field was unset or explicitly empty
 - `omission_lenses`: empty list
+- `in_progress_sources`: empty list. Each item is a mapping with
+  `kind` (`handoff`, `issues`, or `path`), an optional `path` (required when
+  `kind` is `path`), and an optional `query` (issue-tracker filter)
 - `delivery_kind`: `none`
 - `delivery_capability`: empty string
+- `format_rules_path`: empty string (skill applies built-in baseline rules
+  when the delivery seam targets a chat backend)
+- `message_size_limit`: `0` (disables splitting; positive integer enables
+  per-message size-aware split)
+- `outputs`: empty list. When non-empty each item is
+  `{id, audience_tags, delivery_role: single|parent|thread_reply}` and the
+  delivery seam routes outputs accordingly
 
 ## Artifact Rule
 
