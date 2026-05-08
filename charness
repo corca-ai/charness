@@ -3865,6 +3865,16 @@ def _load_worktree_lib(args: argparse.Namespace):
     return worktree_doctor_lib
 
 
+def _load_worktree_audit_lib(args: argparse.Namespace):
+    repo_root = _resolve_worktree_lib_root(args)
+    repo_text = str(repo_root)
+    if repo_text not in sys.path:
+        sys.path.insert(0, repo_text)
+    from scripts import worktree_audit_lib
+
+    return worktree_audit_lib
+
+
 def _resolve_worktree_target(args: argparse.Namespace) -> Path:
     target = args.repo_root if args.repo_root is not None else Path.cwd()
     return Path(target).resolve()
@@ -3882,6 +3892,31 @@ def cmd_worktree_prepare(args: argparse.Namespace) -> int:
     payload = lib.run_prepare(_resolve_worktree_target(args), force=args.force)
     lib.emit_payload(payload, json_mode=args.json, renderer=lib.render_prepare_text)
     return 0 if payload.get("status") == lib.PASS else 1
+
+
+def cmd_worktree_audit(args: argparse.Namespace) -> int:
+    lib = _load_worktree_audit_lib(args)
+    target = _resolve_worktree_target(args)
+    audit_payload = lib.run_audit(target, stale_days=args.stale_days)
+    lib.emit_payload(audit_payload, json_mode=args.json, renderer=lib.render_audit_text)
+
+    if audit_payload.get("status") == lib.PASS:
+        exit_code = 0
+    elif audit_payload.get("status") == lib.WARN:
+        exit_code = 1
+    else:
+        exit_code = 2
+
+    if args.prune and audit_payload.get("status") != lib.FAIL:
+        prune_payload = lib.run_prune(target)
+        lib.emit_payload(prune_payload, json_mode=args.json, renderer=lib.render_prune_text)
+        if prune_payload["status"] != lib.PASS:
+            exit_code = max(exit_code, 2)
+        else:
+            remaining = prune_payload.get("remaining_after_prune") or {}
+            if remaining.get("prunable", 0) == 0 and remaining.get("stale", 0) == 0:
+                exit_code = 0
+    return exit_code
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -4274,6 +4309,30 @@ def build_parser() -> argparse.ArgumentParser:
     worktree_prepare_parser.add_argument("--json", action="store_true")
     add_worktree_lib_args(worktree_prepare_parser)
     worktree_prepare_parser.set_defaults(func=cmd_worktree_prepare)
+
+    worktree_audit_parser = worktree_subparsers.add_parser(
+        "audit",
+        help="Survey all worktrees registered to the repository and classify primary/active/prunable/stale.",
+    )
+    worktree_audit_parser.add_argument(
+        "--repo-root",
+        type=Path,
+        help="Repository to inspect. Defaults to the current working directory.",
+    )
+    worktree_audit_parser.add_argument(
+        "--stale-days",
+        type=int,
+        default=14,
+        help="Detached-HEAD worktrees older than this many days are reported as stale (default: 14).",
+    )
+    worktree_audit_parser.add_argument(
+        "--prune",
+        action="store_true",
+        help="After audit, run `git worktree prune` to drop metadata for prunable worktrees.",
+    )
+    worktree_audit_parser.add_argument("--json", action="store_true")
+    add_worktree_lib_args(worktree_audit_parser)
+    worktree_audit_parser.set_defaults(func=cmd_worktree_audit)
 
     return parser
 

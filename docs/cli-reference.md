@@ -567,3 +567,94 @@ options:
   --dry-run
   --skip-sync-support   Skip support skill rematerialization after update.
 ```
+
+## `charness worktree`
+
+```text
+usage: charness worktree [-h] {doctor,prepare,audit} ...
+
+positional arguments:
+  {doctor,prepare,audit}
+    doctor              Probe worktree readiness (hooksPath, lefthook shim
+                        resolution, husky directory, manifest checks).
+    prepare             Run the worktree adapter's prepare commands and re-
+                        validate readiness.
+    audit               Survey all worktrees registered to the repository and
+                        classify primary/active/prunable/stale.
+
+options:
+  -h, --help            show this help message and exit
+```
+
+## `charness worktree doctor`
+
+```text
+usage: charness worktree doctor [-h] [--repo-root REPO_ROOT] [--json]
+                                [--home-root HOME_ROOT]
+                                [--charness-checkout CHARNESS_CHECKOUT]
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Worktree to inspect. Defaults to the current working
+                        directory.
+  --json
+  --home-root HOME_ROOT
+                        Home root used to locate the managed charness checkout
+                        when the entrypoint is a PATH shim.
+  --charness-checkout CHARNESS_CHECKOUT
+                        Explicit charness source checkout to load worktree
+                        helpers from. Defaults to the embedded or managed
+                        checkout.
+```
+
+## `charness worktree prepare`
+
+```text
+usage: charness worktree prepare [-h] [--repo-root REPO_ROOT] [--force]
+                                 [--json] [--home-root HOME_ROOT]
+                                 [--charness-checkout CHARNESS_CHECKOUT]
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Worktree to prepare. Defaults to the current working
+                        directory.
+  --force               Run prepare even if doctor already reports pass.
+  --json
+  --home-root HOME_ROOT
+                        Home root used to locate the managed charness checkout
+                        when the entrypoint is a PATH shim.
+  --charness-checkout CHARNESS_CHECKOUT
+                        Explicit charness source checkout to load worktree
+                        helpers from. Defaults to the embedded or managed
+                        checkout.
+```
+
+## `charness worktree audit`
+
+```text
+usage: charness worktree audit [-h] [--repo-root REPO_ROOT]
+                               [--stale-days STALE_DAYS] [--prune] [--json]
+                               [--home-root HOME_ROOT]
+                               [--charness-checkout CHARNESS_CHECKOUT]
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Repository to inspect. Defaults to the current working
+                        directory.
+  --stale-days STALE_DAYS
+                        Detached-HEAD worktrees older than this many days are
+                        reported as stale (default: 14).
+  --prune               After audit, run `git worktree prune` to drop metadata
+                        for prunable worktrees.
+  --json
+  --home-root HOME_ROOT
+                        Home root used to locate the managed charness checkout
+                        when the entrypoint is a PATH shim.
+  --charness-checkout CHARNESS_CHECKOUT
+                        Explicit charness source checkout to load worktree
+                        helpers from. Defaults to the embedded or managed
+                        checkout.
+```

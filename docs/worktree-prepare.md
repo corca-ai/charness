@@ -1,11 +1,14 @@
-# Worktree Prepare and Doctor
+# Worktree Prepare, Doctor, and Audit
 
-`charness worktree` is the structural answer to "agent created a git worktree, hooks went silent, and node_modules was never installed." Two subcommands keep mutate-phase work honest in fresh worktrees:
+`charness worktree` is the structural answer to "agent created a git worktree, hooks went silent, and node_modules was never installed" — and to "eval/bench tools created dozens of throwaway worktrees and never cleaned up."
 
-- `charness worktree doctor` — fast, read-only health probe.
+Three subcommands keep mutate-phase work honest:
+
+- `charness worktree doctor` — fast, read-only health probe of a single worktree.
 - `charness worktree prepare` — runs the consumer repo's adapter-declared prepare commands and re-validates.
+- `charness worktree audit` — surveys every worktree registered to the repository and classifies primary/active/prunable/stale. Optional `--prune` drops git metadata for missing worktrees.
 
-Both subcommands operate on the worktree at `--repo-root` (defaults to the current working directory).
+`doctor` and `prepare` operate on the worktree at `--repo-root`. `audit` operates on the repository's full worktree set (also via `--repo-root`).
 
 ## Why this exists
 
@@ -31,9 +34,24 @@ cp "$CHARNESS_REPO/integrations/worktree/adapter.example.yaml" .agents/worktree-
 charness worktree doctor          # read-only probe
 charness worktree prepare         # runs adapter prepare, re-validates
 charness worktree prepare --force # run prepare even when doctor already passes
+
+# Periodically (or before disk pressure builds):
+charness worktree audit                          # classify primary/active/prunable/stale
+charness worktree audit --prune                  # also run `git worktree prune`
+charness worktree audit --stale-days 30 --json   # custom stale threshold, JSON output
 ```
 
-Both commands accept `--json` for machine-readable output. Exit code is 0 only when status is `pass`.
+All commands accept `--json` for machine-readable output. `doctor` and `prepare` exit 0 only when status is `pass`. `audit` exits 0 on `pass`, 1 on `warn` (prunable or stale present), 2 on `fail`.
+
+## When to run `audit`
+
+Run `charness worktree audit` when:
+
+- A repo has been used for eval/bench/agent runs that call `git worktree add` to set up sandboxes. Those tools often skip cleanup; `audit` surfaces the residue.
+- `git worktree list` output gets long enough that activity is hard to read.
+- Disk pressure builds in `~/.cache` or `/tmp` and you want to confirm whether stale worktrees are contributing.
+
+`audit` never deletes worktree directories on its own. `--prune` only invokes `git worktree prune`, which drops git metadata for worktrees whose directory is already gone. Use `git worktree remove --force <path>` to remove a still-existing stale worktree manually.
 
 ## Manifest contract
 
