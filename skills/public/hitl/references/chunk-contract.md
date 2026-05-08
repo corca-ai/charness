@@ -57,3 +57,20 @@ Bad chunks are:
 - questions with no surrounding rationale
 - "needs human review" labels with no decision, observation point, or revisit
   cadence
+
+## Applied Rewrite Review
+
+When the reviewer asks for a rewrite, revision, or other current-chunk change,
+the next review surface after applying that edit must show the rewritten chunk
+itself. A verification summary alone is not enough.
+
+Minimum applied-rewrite surface:
+
+- `applied_rewrite_review` state or scratchpad entry tying the rewrite to the
+  chunk id
+- applied chunk excerpt with a line anchor, hunk anchor, or explicit source
+  boundary when possible
+- enough surrounding context for the human to judge whether the rewrite fits
+- verification results only as secondary information
+- a decision prompt asking whether the rewritten chunk is accepted or still
+  needs another revision

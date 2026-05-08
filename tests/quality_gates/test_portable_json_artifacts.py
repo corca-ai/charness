@@ -128,9 +128,20 @@ def test_hitl_bootstrap_normalizes_target_and_output_paths(tmp_path: Path) -> No
     state = (repo / payload["state_file"]).read_text(encoding="utf-8")
     assert "require_explicit_apply: true" in state
     assert "apply_mode: explicit-after-all-chunks" in state
+    assert "applied_rewrite_review_status: inactive" in state
+    assert 'pending_rewrite_chunk_id: ""' in state
+    assert 'pending_rewrite_source_anchor: ""' in state
     assert "full_target_review_item_id: full_target_review" in state
     assert "full_target_review_status: pending_after_chunks" in state
     scratchpad = (repo / payload["scratchpad"]).read_text(encoding="utf-8")
+    assert "## Applied Rewrite Review" in scratchpad
+    assert "inactive until a reviewer-requested rewrite is applied" in scratchpad
+    assert "applied chunk excerpt with line or hunk anchor" in scratchpad
+    assert "- Pending Chunk ID:" in scratchpad
+    assert "- Source Anchor:" in scratchpad
+    assert "- Applied Excerpt:" in scratchpad
+    assert "- Verification:" in scratchpad
+    assert "- Review Result:" in scratchpad
     assert "## Full Target Review" in scratchpad
     assert "Review the full updated target before accepting the target as complete." in scratchpad
     queue = json.loads((repo / payload["queue_file"]).read_text(encoding="utf-8"))
@@ -138,6 +149,15 @@ def test_hitl_bootstrap_normalizes_target_and_output_paths(tmp_path: Path) -> No
     assert queue["target_provenance"]["kind"] == "repo-root-relative"
     assert queue["require_explicit_apply"] is True
     assert queue["apply_mode"] == "explicit-after-all-chunks"
+    assert queue["applied_rewrite_review"] == {
+        "id": "applied_rewrite_review",
+        "type": "applied_rewrite_review_policy",
+        "status": "inactive_until_reviewer_requested_rewrite_is_applied",
+        "requires_applied_excerpt_before_cursor_advance": True,
+        "anchor_preference": "line-or-hunk-anchor",
+        "verification_role": "secondary",
+        "decision_needed": "Decide whether the rewritten chunk is accepted or needs another revision.",
+    }
     assert queue["full_target_review"] == {
         "id": "full_target_review",
         "type": "full_target_review",

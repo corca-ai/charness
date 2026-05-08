@@ -24,6 +24,11 @@ Recommended state fields:
 - `base_ref`
 - `scope`
 - `last_presented_chunk_id`
+- `applied_rewrite_review_status`
+- `pending_rewrite_chunk_id`
+- `pending_rewrite_source_anchor`
+- `last_rewritten_chunk_id`
+- `last_rewrite_review_result`
 - `full_target_review_item_id`
 - `full_target_review_status`
 - `full_target_review_result`
@@ -51,6 +56,16 @@ After each accepted chunk:
 
 If the accepted output is still unsettled, record the current working text and
 name the open question instead of storing only a summary of the conversation.
+
+When a reviewer asks for a rewrite, revision, or current-chunk change, set
+`applied_rewrite_review_status: pending` after the edit is applied and before
+the cursor moves. The scratchpad should record the applied excerpt, source
+anchor, surrounding context, and any verification result. The next assistant
+response shows that material and asks whether the rewritten chunk is accepted or
+needs another revision. Only after that judgment is recorded should state update
+`last_presented_chunk_id` to a later chunk. If the reviewer requests another
+revision, keep the same chunk active and refresh the pending applied-rewrite
+record instead of advancing.
 
 Bootstrap may seed `full_target_review` as a pending completion item with an
 activation condition. After the target edit has been applied or staged at the

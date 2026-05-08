@@ -115,6 +115,10 @@ def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
     assert "Do not persist suggested decisions as human approval" in skill_text
     assert "Accepted Working Text" in skill_text
     assert "last_presented_chunk_id" in skill_text
+    assert "applied_rewrite_review_status" in skill_text
+    assert "rewritten chunk excerpt" in skill_text
+    assert "working text or session" in skill_text
+    assert "accept-or-revise" in skill_text
     assert "Full Target Review" in skill_text
     assert "full_target_review" in skill_text
     assert "whole-target acceptance" in skill_text
@@ -124,7 +128,12 @@ def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
     assert "accepted-chunk-or-final-apply-boundary" in adapter_contract
     assert "<bash>" in chunk_contract
     assert "not instructions to\nedit the target document" in chunk_contract
+    assert "Minimum applied-rewrite surface" in chunk_contract
+    assert "verification results only as secondary information" in chunk_contract
     assert "Accepted working text" in state_model
+    assert "applied_rewrite_review_status" in state_model
+    assert "pending_rewrite_chunk_id" in state_model
+    assert "Only after that judgment is recorded" in state_model
     assert "full_target_review_status" in state_model
     assert "needs_another_pass" in state_model
     assert "persist accepted decisions before advancing the cursor" in state_model

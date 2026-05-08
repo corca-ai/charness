@@ -23,12 +23,6 @@ def _load_skill_runtime_bootstrap():
     raise ImportError("skill_runtime_bootstrap.py not found")
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
-REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
-
-
-
-
-
 
 
 _scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
@@ -38,9 +32,7 @@ load_adapter = _resolve_adapter_module.load_adapter
 
 
 def apply_mode(require_explicit_apply: bool) -> str:
-    if require_explicit_apply:
-        return "explicit-after-all-chunks"
-    return "accepted-chunk-or-final-apply-boundary"
+    return "explicit-after-all-chunks" if require_explicit_apply else "accepted-chunk-or-final-apply-boundary"
 
 
 def utc_now() -> str:
@@ -81,6 +73,49 @@ def full_target_review_item(portable_target: str, scope: str) -> dict[str, objec
     }
 
 
+def applied_rewrite_review_policy() -> dict[str, object]:
+    return {
+        "id": "applied_rewrite_review",
+        "type": "applied_rewrite_review_policy",
+        "status": "inactive_until_reviewer_requested_rewrite_is_applied",
+        "requires_applied_excerpt_before_cursor_advance": True,
+        "anchor_preference": "line-or-hunk-anchor",
+        "verification_role": "secondary",
+        "decision_needed": "Decide whether the rewritten chunk is accepted or needs another revision.",
+    }
+
+
+def scratchpad_text(session_id: str, portable_target: str, base_ref: str, scope: str, mode: str) -> str:
+    return f"""# HITL Scratchpad: {session_id}
+
+- Updated: {utc_now()}
+- Target: {portable_target}
+- Base Ref: {base_ref}
+- Scope: {scope}
+- Apply Mode: {mode}
+
+## Agreements
+
+## Open Questions
+
+## Applied Rewrite Review
+
+- Status: inactive until a reviewer-requested rewrite is applied
+- Decision Needed: Decide whether the rewritten chunk is accepted or needs another revision.
+- Required Surface: applied chunk excerpt with line or hunk anchor when possible, surrounding context, and secondary verification results if available.
+- Pending Chunk ID:
+- Source Anchor:
+- Applied Excerpt:
+- Verification:
+- Review Result:
+
+## Full Target Review
+
+- Status: pending after all chunks and apply/stage boundary
+- Decision Needed: Review the full updated target before accepting the target as complete.
+"""
+
+
 def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: str, scope: str) -> dict[str, object]:
     output_dir = repo_root / ".charness" / "hitl" / "runtime" / session_id
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -90,30 +125,10 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
     portable_target = portable_path(repo_root, target)
     provenance = target_provenance(repo_root, target)
     full_target_review = full_target_review_item(portable_target, scope)
+    applied_rewrite_review = applied_rewrite_review_policy()
 
     (output_dir / "hitl-scratchpad.md").write_text(
-        "\n".join(
-            [
-                f"# HITL Scratchpad: {session_id}",
-                "",
-                f"- Updated: {utc_now()}",
-                f"- Target: {portable_target}",
-                f"- Base Ref: {base_ref}",
-                f"- Scope: {scope}",
-                f"- Apply Mode: {mode}",
-                "",
-                "## Agreements",
-                "",
-                "## Open Questions",
-                "",
-                "## Full Target Review",
-                "",
-                "- Status: pending after all chunks and apply/stage boundary",
-                "- Decision Needed: Review the full updated target before accepting the target as complete.",
-                "",
-            ]
-        )
-        + "\n",
+        scratchpad_text(session_id, portable_target, base_ref, scope, mode),
         encoding="utf-8",
     )
     (output_dir / "state.yaml").write_text(
@@ -131,6 +146,11 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
                 ("intent_resync_required", False),
                 ("last_presented_chunk_id", ""),
                 ("last_intent_resync_at", ""),
+                ("applied_rewrite_review_status", "inactive"),
+                ("pending_rewrite_chunk_id", ""),
+                ("pending_rewrite_source_anchor", ""),
+                ("last_rewritten_chunk_id", ""),
+                ("last_rewrite_review_result", ""),
                 ("full_target_review_item_id", "full_target_review"),
                 ("full_target_review_status", "pending_after_chunks"),
                 ("full_target_review_result", ""),
@@ -155,6 +175,7 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
                 "reviewed_item_ids": [],
                 "superseded_unreviewed_item_ids": [],
                 "queue_recommendation": None,
+                "applied_rewrite_review": applied_rewrite_review,
                 "completion_item_ids": ["full_target_review"],
                 "full_target_review": full_target_review,
                 "items": [full_target_review],

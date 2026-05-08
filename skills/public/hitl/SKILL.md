@@ -104,9 +104,8 @@ the repo has named where state, rules, and queue ownership live.
    - include enough related context and the concrete question that needs human
      judgment
    - if the source material is a table, scorecard, or generated matrix, make
-     the human-readable interpretation the primary review surface and keep the
-     raw table behind evidence/details; do not ask the reviewer to decode table
-     structure before they know the decision being requested
+     the human-readable interpretation primary and keep the raw table behind
+     evidence/details
    - pause for user judgment before moving on
 6. Propagate accepted rules.
    - if the user gives a stable rule, write it down and apply it to remaining
@@ -118,6 +117,9 @@ the repo has named where state, rules, and queue ownership live.
      the only durable state
    - update the state cursor, such as `last_presented_chunk_id`, after the
      accepted text is recorded
+   - after a requested rewrite is applied to HITL working text or session
+     state, show the rewritten chunk excerpt before advancing, ask
+     accept-or-revise, and record `applied_rewrite_review_status`
    - treat chat as the review UI and the scratchpad/state files as the durable
      review state
    - if the user points out a missed state update, run a short retro and repair
@@ -145,22 +147,14 @@ the repo has named where state, rules, and queue ownership live.
     review loop is still in progress. If `require_explicit_apply` is true, wait
     for an explicit apply instruction before touching the target file.
 12. Full Target Review. After accepted edits are applied or staged, present the
-    updated target for whole-document judgment and record `full_target_review`
-    before closing that target as accepted.
+    updated target and record `full_target_review` before closing the target as
+    accepted.
 
 ## Output Shape
 
-The result should usually include:
-
-- `Review Goal`
-- `Target`
-- `Current Chunk`
-- `Original Material`
-- `Related Context`
-- `Decision Needed`
-- `Accepted Working Text`
-- `Accepted Rules`
-- `Next State`
+The result should usually include Review Goal, Target, Current Chunk, Original
+Material, Related Context, Decision Needed, Accepted Working Text, Accepted
+Rules, and Next State.
 
 ## Guardrails
 
@@ -177,6 +171,8 @@ The result should usually include:
 - Do not keep advancing when the current item is still unresolved.
 - Do not advance to the next accepted chunk while the scratchpad and state
   cursor still depend on chat memory.
+- Do not summarize a requested rewrite as "applied and checked" or advance
+  `last_presented_chunk_id` while `applied_rewrite_review_status` is pending.
 - Do not silently apply edits that require explicit human approval.
 - Do not edit the target file while the review loop is in progress. Touch the
   target only in the Apply Phase, after all chunks are accepted and, when
