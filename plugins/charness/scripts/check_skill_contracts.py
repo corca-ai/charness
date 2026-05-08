@@ -106,6 +106,13 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "should not wait for a second user message",
         "same-agent pass",
     ),
+    "skills/public/issue/SKILL.md": (
+        "GitHub is the source of truth.",
+        "Do not prefer session memory",
+        "one numeric token or `start-end` token is the issue\n  selector, not a repository name",
+        "With no selector, `select` queries the newest open GitHub issue",
+        "Do not ask for approval unless the user explicitly asks to review first.",
+    ),
     "skills/public/narrative/SKILL.md": (
         "map the current source-of-truth surface",
         "rewrite the durable docs so the current story is honest in one place",

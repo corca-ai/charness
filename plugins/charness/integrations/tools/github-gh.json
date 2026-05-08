@@ -54,6 +54,9 @@
     "public",
     "degraded"
   ],
+  "supports_public_skills": [
+    "issue"
+  ],
   "config_layers": [
     {
       "layer_id": "authenticated-gh",

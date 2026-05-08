@@ -49,6 +49,12 @@
           ]
         },
         {
+          "skill_id": "issue",
+          "scenario_ids": [
+            "representative-skill-contracts"
+          ]
+        },
+        {
           "skill_id": "spec",
           "scenario_ids": [
             "representative-skill-contracts"

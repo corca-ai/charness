@@ -26,6 +26,7 @@ stays as the short human-readable contract for the same reviewed cases.
 - `ideation`
 - `impl`
 - `init-repo`
+- `issue`
 - `narrative`
 - `premortem`
 - `quality`

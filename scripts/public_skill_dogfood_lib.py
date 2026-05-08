@@ -26,6 +26,7 @@ REPO_SHAPE_HINTS = {
     "ideation": "minimal or loosely defined repo context where the request is still concept-shaping rather than implementation-ready",
     "impl": "repo with an active build slice, existing code or config surfaces, and at least one verification path",
     "init-repo": "partially initialized mature repo with divergent but valid naming and intentionally missing optional surfaces",
+    "issue": "repo connected to GitHub where issue creation or issue resolution should use `gh` and GitHub state as the source of truth",
     "narrative": "repo with existing source-of-truth docs that drift from the current product or project story",
     "premortem": "repo with a non-trivial pending decision whose main risk is choosing the wrong plan too early",
     "quality": "mature repo with standing local gates, runtime budgets, possible local-vs-CI machine variance, and at least one final stop-before-finish command",
@@ -46,6 +47,7 @@ PROMPT_HINTS = {
     "ideation": "The concept is still fuzzy; help shape the workflow before we commit to a spec or implementation.",
     "impl": "Implement the smallest meaningful slice now and verify it against the current repo contract.",
     "init-repo": "Normalize this partially initialized repo without pretending it needs a greenfield rewrite.",
+    "issue": "File or resolve this GitHub issue through `gh`, keeping issue identity and freshness grounded in GitHub state.",
     "narrative": "Tighten the repo's durable story first, then derive one concise brief from that source of truth.",
     "premortem": "Stress this pending decision before we lock it in and separate real blockers from over-worry.",
     "quality": "Review why the standing test gate feels slow, including local vs CI runtime differences, and install the next deterministic gate if the move is obvious.",
@@ -66,6 +68,11 @@ EVIDENCE_OVERRIDES = {
     ],
     "handoff": [
         "reads the current workflow trigger before broad repo exploration and keeps the baton pass continuation-first",
+    ],
+    "issue": [
+        "uses GitHub as the source of truth for omitted issue selection instead of session memory",
+        "keeps `issue new` problem-first and solution direction weak unless the user already fixed the implementation contract",
+        "uses the `github-gh` integration path for GitHub mutations instead of inventing a separate provider",
     ],
     "premortem": [
         "includes a customer-of-this-capability angle when first-use failure is the main risk",

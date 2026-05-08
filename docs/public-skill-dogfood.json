@@ -12,6 +12,7 @@
     "ideation",
     "impl",
     "init-repo",
+    "issue",
     "narrative",
     "premortem",
     "quality",
@@ -178,6 +179,29 @@
         "`inspect_repo.py` now emits `recommendations[]` separately from `normalization.findings`, so adapter-declared policy sources can raise `agents.delegated_review_policy` without pretending phrase matching is a hard fact.",
         "`inspect_repo.py` now flags `fresh_eye_task_review_scope_drift` when `AGENTS.md` carries a premortem or fresh-eye delegation rule but does not name task-completing `init-repo` and `quality` review runs as spawn-authorized scopes.",
         "`inspect_repo.py` keeps explicit repo inspection resilient by bounding source-guard discovery to AGENTS.md, README.md, docs/, and specs/ by default; repos that keep guards elsewhere can set `source_guard_scan_roots`, and unreadable specs become structured warnings instead of aborting install/update recovery."
+      ]
+    },
+    {
+      "skill_id": "issue",
+      "prompt": "File or resolve this GitHub issue through `gh`, keeping issue identity and freshness grounded in GitHub state.",
+      "repo_shape": "repo connected to GitHub where issue creation or issue resolution should use `gh` and GitHub state as the source of truth",
+      "expected_skill": "issue",
+      "expected_artifact": null,
+      "validation_tier": "evaluator-required",
+      "adapter_requirement": "required",
+      "acceptance_evidence": [
+        "routes the prompt to `issue` instead of an adjacent public skill",
+        "handles the skill's load-bearing contract without needing the user to restate obvious repo context",
+        "uses GitHub as the source of truth for omitted issue selection instead of session memory",
+        "keeps `issue new` problem-first and solution direction weak unless the user already fixed the implementation contract",
+        "uses the `github-gh` integration path for GitHub mutations instead of inventing a separate provider"
+      ],
+      "review_status": "reviewed",
+      "reviewed_on": "2026-05-08",
+      "observed_evidence": [
+        "The checked-in public core explicitly fixes GitHub as the source of truth for issue identity and freshness, including the omitted-selector rule that queries newest open GitHub issue state instead of the current session.",
+        "`issue new` keeps the receiving repo's problem context first and only allows weak candidate solution direction, preserving the cross-repo issue hygiene already used by narrative.",
+        "`issue_tool.py` gives the first-use path structured helpers for target resolution, `gh` preflight, and issue selector parsing, with tests covering default `corca-ai` ownership, current-repo inference, numeric ranges, and the GitHub-SoT wording."
       ]
     },
     {

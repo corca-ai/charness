@@ -180,6 +180,7 @@ Current assignment:
 - `gather`
 - `handoff`
 - `impl`
+- `issue`
 - `spec`
 
 ## Provisional Rationale
@@ -194,8 +195,8 @@ Current assignment:
   makes it a poor standing evaluator target. Keep repo-owned seam checks for
   the contract and use on-demand proof or reviewed dogfood for the real
   behavioral question.
-- `create-skill`, `find-skills`, `gather`, `handoff`, `init-repo`, `spec`, `impl`, and
-  `debug` shape later execution or durable repo state. Those are the highest
+- `create-skill`, `find-skills`, `gather`, `handoff`, `init-repo`, `issue`,
+  `spec`, `impl`, and `debug` shape later execution or durable repo state. Those are the highest
   leverage candidates for maintained scenario evaluation now that `cautilus`
   is the tracked evaluator boundary.
 
@@ -217,6 +218,7 @@ Current assignment:
 - `hitl`
 - `impl`
 - `init-repo`
+- `issue`
 - `narrative`
 - `quality`
 - `release`
@@ -250,6 +252,7 @@ Current assignment:
 - `gather`
 - `ideation`
 - `impl`
+- `issue`
 - `premortem`
 - `retro`
 

@@ -291,7 +291,8 @@ The rest of the public surface groups by intent:
   [`narrative`](./skills/public/narrative/SKILL.md) durable truth and story alignment,
   [`announcement`](./skills/public/announcement/SKILL.md) audience/channel adaptation,
   [`handoff`](./skills/public/handoff/SKILL.md) agent -> agent,
-  [`hitl`](./skills/public/hitl/SKILL.md) agent -> person
+  [`hitl`](./skills/public/hitl/SKILL.md) agent -> person,
+  [`issue`](./skills/public/issue/SKILL.md) GitHub issue filing and resolution
 - operate the harness:
   [`find-skills`](./skills/public/find-skills/SKILL.md),
   [`create-skill`](./skills/public/create-skill/SKILL.md),

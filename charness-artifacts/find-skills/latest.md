@@ -1,11 +1,11 @@
 # Find Skills Inventory
 Date: 2026-05-08
-Updated: 2026-05-08T09:58:05Z
+Updated: 2026-05-08T11:30:10Z
 
 ## Summary
-- public skills: 17
+- public skills: 18
 - support skills: 6
-- synced support skills: 1
+- synced support skills: 0
 - support capabilities: 4
 - integrations: 10
 - trusted skills: 0
@@ -22,6 +22,7 @@ Updated: 2026-05-08T09:58:05Z
 - `ideation`: Use when the user is still shaping a product, system, or workflow concept and needs discovery before `spec` or implementation. Build the concept through conversation because the user may not know the full shape yet: maintain a living world model, separate verified facts from assumptions, test demand/status quo/wedge/moat early, think about feedback and expansion from the start, and treat agents, APIs, CLI, and interface choices as first-class design constraints.
 - `impl`: Use when work should move into code, config, tests, or operator-facing artifacts. Consume the current implementation contract when it exists, bootstrap a small honest contract inline when it does not, implement the smallest meaningful slice, verify it aggressively, and keep the contract synchronized when reality changes it.
 - `init-repo`: Use when a repo needs its initial operating surface created or normalized. Bootstrap README, AGENTS.md, CLAUDE.md symlink policy, roadmap, and operator-acceptance docs from minimal ideation for greenfield repos, or realign those same surfaces for partially-initialized repos without pretending quality review or deep product ideation already happened.
+- `issue`: Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through `gh`. Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth.
 - `narrative`: Use when a repo's source-of-truth docs and current product or project story need to be aligned together. Tighten the durable narrative first, then derive one audience-neutral brief skeleton when a compressed handoff artifact would help.
 - `premortem`: Use when a non-trivial design, deletion, rename, release, or workflow decision needs a before-the-fact failure review. Probe distinct failure angles, then run a counterweight pass that separates real blockers from over-worry before the caller locks the decision.
 - `quality`: Use when the goal is to understand and improve the repo's current quality bar. Detect existing gates, run the available ones, inspect concept integrity, test confidence, and security posture, then propose concrete next gates instead of only complaining about what is missing.
@@ -36,7 +37,6 @@ Updated: 2026-05-08T09:58:05Z
 - `markdown-preview` (support skill): Internal support capability for rendering checked-in Markdown into durable preview artifacts so doc-facing workflows can review real terminal output instead of raw source alone.
 - `specdown` (support skill): Write, run, and fix Specdown executable specifications. Use when task language mentions `*.spec.md`, `docs/specs`, `run:shell`, doctest output, check tables, `check:jq`, `report.json`, Specdown HTML reports, executable specs, adapter checks, or focused Specdown iteration.
 - `web-fetch` (support skill): Internal support capability for routing public-web fetch requests through the strongest honest access path and classifying blocked or partial fetch responses without turning those tactics into a public workflow concept.
-- `cautilus` (synced support skill): Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.
 
 ## Support Capabilities
 - `gather-notion`: charness-owned published Notion gather runtime used by the public gather skill. Supports `gather`.

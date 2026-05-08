@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-08T09:58:05Z",
+  "generated_at": "2026-05-08T11:30:10Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -318,6 +318,32 @@
           "skills/public/init-repo/references/retro-memory-seam.md",
           "skills/public/init-repo/references/github-actions-defaults.md",
           "skills/public/init-repo/references/operator-acceptance-synthesis.md"
+        ],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "issue",
+        "name": "issue",
+        "description": "Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through `gh`. Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth.",
+        "summary": "Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through `gh`. Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth.",
+        "path": "skills/public/issue/SKILL.md",
+        "skill_dir": "skills/public/issue",
+        "canonical_path": "skills/public/issue/SKILL.md",
+        "trigger_phrases": [
+          "issue",
+          "issue skill",
+          "issue 스킬",
+          "charness:issue"
+        ],
+        "referenced_paths": [
+          "skills/shared/references/binary-preflight.md",
+          "skills/public/issue/SKILL.md",
+          "skills/public/issue/references/issue-shaping.md",
+          "skills/public/issue/references/resolve-flow.md",
+          "skills/public/issue/scripts/issue_tool.py",
+          "skills/public/issue/scripts/resolve_adapter.py",
+          "skills/public/issue/scripts/init_adapter.py"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -665,28 +691,6 @@
         ],
         "source": "local-support",
         "layer": "support skill"
-      },
-      {
-        "id": "cautilus",
-        "name": "cautilus",
-        "description": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
-        "summary": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
-        "path": "skills/support/generated/cautilus/SKILL.md",
-        "skill_dir": "skills/support/generated/cautilus",
-        "canonical_path": "skills/support/generated/cautilus/SKILL.md",
-        "trigger_phrases": [
-          "cautilus",
-          "cautilus skill",
-          "cautilus 스킬",
-          "charness:cautilus",
-          "support/cautilus",
-          "cautilus support",
-          "cautilus support skill",
-          "cautilus helper"
-        ],
-        "referenced_paths": [],
-        "source": "synced-support",
-        "layer": "synced support skill"
       }
     ],
     "support_capabilities": [
@@ -973,7 +977,7 @@
           "degraded"
         ],
         "support_state": "upstream-consumed",
-        "support_skill_path": "skills/support/generated/cautilus/SKILL.md",
+        "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
         "intent_triggers": [
@@ -1027,7 +1031,9 @@
           }
         ],
         "readiness_checks": [],
-        "supports_public_skills": [],
+        "supports_public_skills": [
+          "issue"
+        ],
         "recommendation_role": null,
         "path": "integrations/tools/github-gh.json",
         "source": "local-integration",

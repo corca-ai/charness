@@ -21,6 +21,7 @@
       "handoff",
       "impl",
       "init-repo",
+      "issue",
       "spec"
     ]
   },
@@ -34,6 +35,7 @@
       "hitl",
       "impl",
       "init-repo",
+      "issue",
       "narrative",
       "quality",
       "release",
@@ -55,6 +57,7 @@
       "gather",
       "ideation",
       "impl",
+      "issue",
       "premortem",
       "retro"
     ],
