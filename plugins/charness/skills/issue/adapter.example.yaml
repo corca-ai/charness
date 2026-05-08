@@ -1,3 +1,4 @@
 version: 1
 default_org: corca-ai
+default_repo: ceal
 remote_name: origin

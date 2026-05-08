@@ -39,27 +39,35 @@ def git_remote_url(repo_root: Path, remote_name: str) -> str | None:
     return value or None
 
 
+def parse_target(value: str, default_org: str, *, source_prefix: str) -> tuple[str, str, str]:
+    cleaned = value.strip().removeprefix("https://github.com/").removeprefix("http://github.com/")
+    cleaned = cleaned[:-4] if cleaned.endswith(".git") else cleaned
+    parts = [part for part in cleaned.split("/") if part]
+    if len(parts) == 1:
+        return default_org, parts[0], f"{source_prefix}-default-org"
+    if len(parts) == 2:
+        owner, repo = parts
+        return owner, repo, source_prefix
+    raise ValueError("target must be empty, repo, or org/repo")
+
+
 def resolve_target(repo_root: Path, target: str | None, adapter_data: dict[str, Any]) -> dict[str, Any]:
     default_org = str(adapter_data["default_org"])
     remote_name = str(adapter_data["remote_name"])
-    source = "argument"
     if target and target.strip():
-        cleaned = target.strip().removeprefix("https://github.com/").removeprefix("http://github.com/")
-        cleaned = cleaned[:-4] if cleaned.endswith(".git") else cleaned
-        parts = [part for part in cleaned.split("/") if part]
-        if len(parts) == 1:
-            owner, repo = default_org, parts[0]
-            source = "argument-default-org"
-        elif len(parts) == 2:
-            owner, repo = parts
-        else:
-            raise ValueError("target must be empty, repo, or org/repo")
+        owner, repo, source = parse_target(target, default_org, source_prefix="argument")
     else:
         remote_url = git_remote_url(repo_root, remote_name)
         parsed = parse_remote_url(remote_url) if remote_url else None
         if parsed is not None:
             owner, repo = parsed
             source = f"git-remote:{remote_name}"
+        elif adapter_data.get("default_repo"):
+            owner, repo, source = parse_target(
+                str(adapter_data["default_repo"]),
+                default_org,
+                source_prefix="adapter-default-repo",
+            )
         else:
             owner, repo = default_org, repo_root.name
             source = "cwd-default-org"
@@ -88,14 +96,21 @@ def split_resolve_args(values: list[str]) -> tuple[str | None, str | None]:
         return None, None
     if len(values) == 1:
         value = values[0]
-        if parse_selector(value) is not None:
+        if is_selector(value):
             return None, value
         return value, None
     target, selector = values
-    if parse_selector(target) is not None:
+    if is_selector(target):
         raise ValueError("when two arguments are provided, the first must be a repo target")
     parse_selector(selector)
     return target, selector
+
+
+def is_selector(value: str) -> bool:
+    try:
+        return parse_selector(value) is not None
+    except ValueError:
+        return False
 
 
 def gh_json(args: list[str]) -> Any:
