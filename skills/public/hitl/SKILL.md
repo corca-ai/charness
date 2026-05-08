@@ -144,6 +144,9 @@ the repo has named where state, rules, and queue ownership live.
     Never edit the target file mid-chunk or between accepted chunks while the
     review loop is still in progress. If `require_explicit_apply` is true, wait
     for an explicit apply instruction before touching the target file.
+12. Full Target Review. After accepted edits are applied or staged, present the
+    updated target for whole-document judgment and record `full_target_review`
+    before closing that target as accepted.
 
 ## Output Shape
 
@@ -178,6 +181,8 @@ The result should usually include:
 - Do not edit the target file while the review loop is in progress. Touch the
   target only in the Apply Phase, after all chunks are accepted and, when
   `require_explicit_apply` is true, after explicit user instruction.
+- Do not close a target as accepted until the `full_target_review` item records
+  whole-target acceptance or the explicit need for another pass.
 - Do not lose accepted review rules between chunks in the same session.
 - If manual edits changed the target out of band, resync intent before the next
   chunk.

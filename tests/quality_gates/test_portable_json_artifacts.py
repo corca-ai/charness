@@ -128,11 +128,28 @@ def test_hitl_bootstrap_normalizes_target_and_output_paths(tmp_path: Path) -> No
     state = (repo / payload["state_file"]).read_text(encoding="utf-8")
     assert "require_explicit_apply: true" in state
     assert "apply_mode: explicit-after-all-chunks" in state
+    assert "full_target_review_item_id: full_target_review" in state
+    assert "full_target_review_status: pending_after_chunks" in state
+    scratchpad = (repo / payload["scratchpad"]).read_text(encoding="utf-8")
+    assert "## Full Target Review" in scratchpad
+    assert "Review the full updated target before accepting the target as complete." in scratchpad
     queue = json.loads((repo / payload["queue_file"]).read_text(encoding="utf-8"))
     assert queue["target"] == "docs/decision.md"
     assert queue["target_provenance"]["kind"] == "repo-root-relative"
     assert queue["require_explicit_apply"] is True
     assert queue["apply_mode"] == "explicit-after-all-chunks"
+    assert queue["full_target_review"] == {
+        "id": "full_target_review",
+        "type": "full_target_review",
+        "status": "pending_after_chunks",
+        "target": "docs/decision.md",
+        "scope": "all",
+        "requires_whole_target_judgment": True,
+        "activation_condition": "all_chunks_reviewed_and_target_edit_applied_or_staged",
+        "decision_needed": "Review the full updated target before accepting the target as complete.",
+    }
+    assert queue["completion_item_ids"] == ["full_target_review"]
+    assert queue["items"] == [queue["full_target_review"]]
     _assert_no_repo_absolute_path(payload, repo)
     _assert_no_repo_absolute_path(queue, repo)
 

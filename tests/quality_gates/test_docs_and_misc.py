@@ -115,6 +115,9 @@ def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
     assert "Do not persist suggested decisions as human approval" in skill_text
     assert "Accepted Working Text" in skill_text
     assert "last_presented_chunk_id" in skill_text
+    assert "Full Target Review" in skill_text
+    assert "full_target_review" in skill_text
+    assert "whole-target acceptance" in skill_text
     assert "Tables and matrices are not the primary review surface" in report_mode
     assert "suggestion_display_only: true" in report_mode
     assert "explicit apply instruction" in adapter_contract
@@ -122,6 +125,8 @@ def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
     assert "<bash>" in chunk_contract
     assert "not instructions to\nedit the target document" in chunk_contract
     assert "Accepted working text" in state_model
+    assert "full_target_review_status" in state_model
+    assert "needs_another_pass" in state_model
     assert "persist accepted decisions before advancing the cursor" in state_model
 
 

@@ -24,6 +24,9 @@ Recommended state fields:
 - `base_ref`
 - `scope`
 - `last_presented_chunk_id`
+- `full_target_review_item_id`
+- `full_target_review_status`
+- `full_target_review_result`
 - `intent_resync_required`
 - `last_intent_resync_at`
 - `revisit_cadence`
@@ -48,6 +51,16 @@ After each accepted chunk:
 
 If the accepted output is still unsettled, record the current working text and
 name the open question instead of storing only a summary of the conversation.
+
+Bootstrap may seed `full_target_review` as a pending completion item with an
+activation condition. After the target edit has been applied or staged at the
+end of the chunk queue, the run must advance that item before the target can be
+closed as accepted. The item asks for whole-target judgment over the full
+updated document, or a clearly bounded full target-scope view when the file is
+too large. Record the final judgment in both `state.yaml` and
+`hitl-scratchpad.md`; use `needs_another_pass` instead of `accepted` when the
+composed document has duplicated concepts, terminology drift, missing
+transitions, or stale earlier prose.
 
 Portable rule:
 

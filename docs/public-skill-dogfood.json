@@ -331,12 +331,13 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-02",
+      "reviewed_on": "2026-05-08",
       "observed_evidence": [
         "The checked-in public core keeps `hitl` narrowly scoped to bounded human review, explicitly preserving what must not be auto-decided and routing state through resumable review artifacts rather than chat-only judgment.",
+        "The workflow now requires a Full Target Review after accepted edits are applied or staged: `full_target_review` must record whole-target acceptance or the need for another pass before the target is closed as accepted.",
         "The workflow now defines an explicit Apply Phase: target file edits happen only after accepted chunks and closing summary, and `require_explicit_apply: true` requires a user apply instruction before touching the target.",
         "The current adapter resolver already pins the visible artifact to `charness-artifacts/hitl/latest.md` and the runtime directory to `.charness/hitl/runtime`, with portable defaults when no adapter is present.",
-        "`bootstrap_review.py` now surfaces `require_explicit_apply` and `apply_mode` in JSON, queue, scratchpad, and state so the apply policy is visible at session start.",
+        "`bootstrap_review.py` now surfaces `require_explicit_apply`, `apply_mode`, and pending `full_target_review` completion metadata in JSON, queue, scratchpad, and state so the apply policy and final whole-target gate are visible at session start.",
         "Repo-owned helper scripts make the review loop concrete: `bootstrap_review.py` creates scratchpad, state, queue, rules, and event-log files for a new session, which is current evidence that resumable HITL state is a maintained seam rather than prose-only guidance.",
         "`render_report.py` now turns generated report packets into decision-first HTML cards and structured decisions JSON, with tests proving suggested decisions stay display-only and untouched `unreviewed` cards are dropped.",
         "`render_report.py` now treats adaptive queue metadata as a deterministic decision-ordering contract: explicit stable IDs are required, priority and dependency metadata can reorder source items, and structured review-input effects can reprioritize only the remaining unreviewed queue.",

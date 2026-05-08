@@ -68,6 +68,19 @@ def target_provenance(repo_root: Path, value: str) -> dict[str, str]:
     return {"kind": "repo-root-relative"}
 
 
+def full_target_review_item(portable_target: str, scope: str) -> dict[str, object]:
+    return {
+        "id": "full_target_review",
+        "type": "full_target_review",
+        "status": "pending_after_chunks",
+        "target": portable_target,
+        "scope": scope,
+        "requires_whole_target_judgment": True,
+        "activation_condition": "all_chunks_reviewed_and_target_edit_applied_or_staged",
+        "decision_needed": "Review the full updated target before accepting the target as complete.",
+    }
+
+
 def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: str, scope: str) -> dict[str, object]:
     output_dir = repo_root / ".charness" / "hitl" / "runtime" / session_id
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -76,6 +89,7 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
     mode = apply_mode(require_explicit_apply)
     portable_target = portable_path(repo_root, target)
     provenance = target_provenance(repo_root, target)
+    full_target_review = full_target_review_item(portable_target, scope)
 
     (output_dir / "hitl-scratchpad.md").write_text(
         "\n".join(
@@ -91,6 +105,11 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
                 "## Agreements",
                 "",
                 "## Open Questions",
+                "",
+                "## Full Target Review",
+                "",
+                "- Status: pending after all chunks and apply/stage boundary",
+                "- Decision Needed: Review the full updated target before accepting the target as complete.",
                 "",
             ]
         )
@@ -112,6 +131,9 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
                 ("intent_resync_required", False),
                 ("last_presented_chunk_id", ""),
                 ("last_intent_resync_at", ""),
+                ("full_target_review_item_id", "full_target_review"),
+                ("full_target_review_status", "pending_after_chunks"),
+                ("full_target_review_result", ""),
             ]
         ),
         encoding="utf-8",
@@ -133,7 +155,9 @@ def bootstrap_review(repo_root: Path, session_id: str, target: str, base_ref: st
                 "reviewed_item_ids": [],
                 "superseded_unreviewed_item_ids": [],
                 "queue_recommendation": None,
-                "items": [],
+                "completion_item_ids": ["full_target_review"],
+                "full_target_review": full_target_review,
+                "items": [full_target_review],
             },
             ensure_ascii=False,
             indent=2,
