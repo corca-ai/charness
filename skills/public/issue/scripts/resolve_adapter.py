@@ -40,6 +40,7 @@ def infer_defaults() -> dict[str, Any]:
     return {
         "version": 1,
         "default_org": "corca-ai",
+        "default_repo": None,
         "remote_name": "origin",
     }
 
@@ -74,7 +75,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "errors": [],
             "warnings": [
                 "No issue adapter found. Using default_org=corca-ai and current-repo inference.",
-                "Create .agents/issue-adapter.yaml to change default GitHub ownership or labels.",
+                "Create .agents/issue-adapter.yaml to change default GitHub ownership, default repo, or labels.",
             ],
             "searched_paths": searched_paths,
         }
@@ -94,7 +95,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         else:
             errors.append("version must be an integer")
 
-    for field in ("default_org", "remote_name"):
+    for field in ("default_org", "default_repo", "remote_name"):
         value = _string(raw_data.get(field), field, errors)
         if value is not None:
             data[field] = value

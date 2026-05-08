@@ -58,6 +58,32 @@ def test_issue_resolve_invocation_treats_single_number_as_selector(tmp_path: Pat
     assert payload["selector_source"] == "argument"
 
 
+def test_issue_resolve_invocation_accepts_repo_plus_selector(tmp_path: Path) -> None:
+    result = run_script(SCRIPT, "resolve-invocation", "--repo-root", str(tmp_path), "--", "ceal", "120")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["target"]["full_name"] == "corca-ai/ceal"
+    assert payload["selector"] == "120"
+    assert payload["numbers"] == [120]
+
+
+def test_issue_target_uses_adapter_default_repo_without_remote(tmp_path: Path) -> None:
+    adapter_dir = tmp_path / ".agents"
+    adapter_dir.mkdir()
+    (adapter_dir / "issue-adapter.yaml").write_text(
+        "\n".join(["version: 1", "default_org: corca-ai", "default_repo: ceal", "remote_name: origin", ""]),
+        encoding="utf-8",
+    )
+
+    result = run_script(SCRIPT, "resolve-target", "--repo-root", str(tmp_path))
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["target"]["full_name"] == "corca-ai/ceal"
+    assert payload["target"]["source"] == "adapter-default-repo-default-org"
+
+
 def test_issue_preflight_fails_when_gh_auth_fails(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
