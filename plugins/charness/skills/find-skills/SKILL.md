@@ -75,6 +75,14 @@ installed path before treating the capability as absent:
 python3 "$SKILL_DIR/scripts/resolve_skill_path.py" --repo-root . --skill-id find-skills --reported-path <missing-path>
 ```
 
+For non-charness plugins whose absolute cache paths went stale after
+`charness update` rotated cache hashes, pass `--marketplace`/`--plugin` to
+search any other Codex plugin's cache:
+
+```bash
+python3 "$SKILL_DIR/scripts/resolve_skill_path.py" --skill-id <id> --marketplace <m> --plugin <p> --reported-path <missing-path>
+```
+
 If the user's need sounds like a public workflow, inspect `skills/public/`
 first. If it sounds like a tool-use capability, inspect support skills and
 integration manifests before proposing a new public skill.

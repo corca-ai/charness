@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -311,6 +313,100 @@ def test_cli_prepare_subcommand_runs_command(tmp_path: Path) -> None:
     )
     assert result.returncode == 0, result.stderr
     assert marker.read_text(encoding="utf-8").strip() == "cli"
+
+
+def _install_path_shim(tmp_path: Path) -> tuple[Path, Path]:
+    home = tmp_path / "home"
+    managed = home / ".agents" / "src" / "charness"
+    managed.parent.mkdir(parents=True)
+    managed.symlink_to(ROOT)
+    shim_dir = home / ".local" / "bin"
+    shim_dir.mkdir(parents=True)
+    shim = shim_dir / "charness"
+    shutil.copy2(ROOT / "charness", shim)
+    return home, shim
+
+
+def test_cli_worktree_doctor_via_path_shim_routes_to_managed_checkout(tmp_path: Path) -> None:
+    repo = _make_git_worktree(tmp_path)
+    home, shim = _install_path_shim(tmp_path)
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(shim),
+            "worktree",
+            "doctor",
+            "--home-root",
+            str(home),
+            "--repo-root",
+            str(repo),
+            "--json",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "pass"
+
+
+def test_cli_worktree_doctor_via_path_shim_missing_checkout_emits_actionable_error(tmp_path: Path) -> None:
+    repo = _make_git_worktree(tmp_path)
+    home = tmp_path / "home-empty"
+    shim_dir = home / ".local" / "bin"
+    shim_dir.mkdir(parents=True)
+    shim = shim_dir / "charness"
+    shutil.copy2(ROOT / "charness", shim)
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(shim),
+            "worktree",
+            "doctor",
+            "--home-root",
+            str(home),
+            "--repo-root",
+            str(repo),
+            "--json",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "charness init" in result.stderr
+    assert "--charness-checkout" in result.stderr
+
+
+def test_cli_worktree_doctor_via_path_shim_explicit_checkout(tmp_path: Path) -> None:
+    repo = _make_git_worktree(tmp_path)
+    home = tmp_path / "home-explicit"
+    shim_dir = home / ".local" / "bin"
+    shim_dir.mkdir(parents=True)
+    shim = shim_dir / "charness"
+    shutil.copy2(ROOT / "charness", shim)
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(shim),
+            "worktree",
+            "doctor",
+            "--home-root",
+            str(home),
+            "--charness-checkout",
+            str(ROOT),
+            "--repo-root",
+            str(repo),
+            "--json",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "pass"
 
 
 def test_disable_canonical_check_honored(tmp_path: Path) -> None:

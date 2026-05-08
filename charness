@@ -1327,10 +1327,18 @@ def ensure_claude_plugin(repo_root: Path, *, home_root: Path, update: bool) -> t
 
 
 def codex_cache_entries(cache_root: Path) -> list[dict[str, str]]:
+    return _codex_cache_entries(cache_root, plugin_glob=PACKAGE_ID)
+
+
+def codex_all_plugin_cache_entries(cache_root: Path) -> list[dict[str, str]]:
+    return _codex_cache_entries(cache_root, plugin_glob="*")
+
+
+def _codex_cache_entries(cache_root: Path, *, plugin_glob: str) -> list[dict[str, str]]:
     if not cache_root.is_dir():
         return []
     entries: list[dict[str, str]] = []
-    for manifest_path in sorted(cache_root.glob(f"*/{PACKAGE_ID}/*/.codex-plugin/plugin.json")):
+    for manifest_path in sorted(cache_root.glob(f"*/{plugin_glob}/*/.codex-plugin/plugin.json")):
         version_root = manifest_path.parents[1]
         plugin_root = manifest_path.parents[2]
         marketplace_root = manifest_path.parents[3]
@@ -1346,11 +1354,89 @@ def codex_cache_entries(cache_root: Path) -> list[dict[str, str]]:
                 "marketplace": marketplace_root.name,
                 "plugin": plugin_root.name,
                 "version": version_root.name,
+                "version_dir": str(version_root),
                 "manifest_path": str(manifest_path),
                 "manifest_version": manifest_version or "",
             }
         )
     return entries
+
+
+def diff_cache_entries(
+    before: list[dict[str, str]],
+    after: list[dict[str, str]],
+) -> dict[str, list[dict[str, str]]]:
+    after_by_pair: dict[tuple[str, str], list[dict[str, str]]] = {}
+    for entry in after:
+        key = (entry.get("marketplace") or "", entry.get("plugin") or "")
+        after_by_pair.setdefault(key, []).append(entry)
+    removed: list[dict[str, str]] = []
+    rotated: list[dict[str, str]] = []
+    for entry in before:
+        version_dir = entry.get("version_dir") or ""
+        if version_dir and Path(version_dir).is_dir():
+            continue
+        key = (entry.get("marketplace") or "", entry.get("plugin") or "")
+        successors = [
+            successor for successor in after_by_pair.get(key, [])
+            if successor.get("version_dir") != version_dir
+        ]
+        record = {
+            "marketplace": entry.get("marketplace") or "",
+            "plugin": entry.get("plugin") or "",
+            "old_version": entry.get("version") or "",
+            "old_version_dir": version_dir,
+        }
+        if successors:
+            successor = successors[0]
+            record["new_version"] = successor.get("version") or ""
+            record["new_version_dir"] = successor.get("version_dir") or ""
+            rotated.append(record)
+        else:
+            removed.append(record)
+    before_dirs = {entry.get("version_dir") for entry in before}
+    added = [
+        {
+            "marketplace": entry.get("marketplace") or "",
+            "plugin": entry.get("plugin") or "",
+            "version": entry.get("version") or "",
+            "version_dir": entry.get("version_dir") or "",
+        }
+        for entry in after
+        if entry.get("version_dir") not in before_dirs
+    ]
+    return {"rotated": rotated, "removed": removed, "added": added}
+
+
+def session_staleness_payload(
+    cache_diff: dict[str, list[dict[str, str]]],
+    *,
+    home_root: Path,
+    repo_root: Path,
+) -> dict[str, object] | None:
+    rotated = cache_diff.get("rotated") or []
+    removed = cache_diff.get("removed") or []
+    if not rotated and not removed:
+        return None
+    resolver_path = repo_root / "skills" / "public" / "find-skills" / "scripts" / "resolve_skill_path.py"
+    fallback_resolver_path = managed_checkout_root(home_root) / "skills" / "public" / "find-skills" / "scripts" / "resolve_skill_path.py"
+    resolver = str(resolver_path if resolver_path.is_file() else fallback_resolver_path)
+    affected = [
+        f"{record.get('marketplace')}/{record.get('plugin')} {record.get('old_version')} -> {record.get('new_version', '(removed)')}"
+        for record in [*rotated, *removed]
+    ]
+    return {
+        "rotated": rotated,
+        "removed": removed,
+        "affected": affected,
+        "message": (
+            "Updated plugin caches were rotated. Active Codex/Claude sessions may have stale absolute skill paths "
+            "injected into their system prompt. Restart those sessions, or re-resolve a stale charness skill path with "
+            f"`python3 {resolver} --skill-id <id> --reported-path <stale> "
+            "[--marketplace <m> --plugin <p>]`."
+        ),
+        "resolver_path": resolver,
+    }
 
 
 def codex_source_manifest_path(plugin_root: Path) -> Path:
@@ -2246,7 +2332,22 @@ def print_update_human_summary(payload: dict[str, object]) -> None:
         summary = _tool_update_summary(tool_update)
         if summary:
             print(f"TOOLS: {summary}")
+    _print_session_staleness(payload.get("session_staleness"))
     _print_next_actions(payload)
+
+
+def _print_session_staleness(session_staleness: object) -> None:
+    if not isinstance(session_staleness, dict):
+        return
+    affected = session_staleness.get("affected")
+    message = session_staleness.get("message")
+    if not isinstance(affected, list) or not affected:
+        return
+    print("SESSION_STALENESS: cache paths rotated for active sessions")
+    for line in affected:
+        print(f"  - {line}")
+    if isinstance(message, str) and message:
+        print(f"  -> {message}")
 
 
 def build_version_payload(
@@ -3117,6 +3218,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         skip_cli_install=args.skip_cli_install,
     )
     plugin_root, codex_marketplace_path, claude_wrapper_path, cli_path = resolve_runtime_paths(args)
+    pre_update_cache_entries = codex_all_plugin_cache_entries(default_codex_cache_root(home_root))
     emit_progress("STEP: refreshing source checkout", json_mode=args.json)
     checkout = ensure_checkout(
         repo_root,
@@ -3193,6 +3295,15 @@ def cmd_update(args: argparse.Namespace) -> int:
                 codex_cache_refresh["status"] = "refreshed"
                 payload.setdefault("completed_actions", []).append("codex_cache_refreshed")
     payload["codex_cache_refresh"] = codex_cache_refresh
+    post_update_cache_entries = codex_all_plugin_cache_entries(default_codex_cache_root(home_root))
+    cache_diff = diff_cache_entries(pre_update_cache_entries, post_update_cache_entries)
+    session_staleness = session_staleness_payload(
+        cache_diff,
+        home_root=home_root,
+        repo_root=Path(checkout["repo_root"]),
+    )
+    if session_staleness is not None:
+        payload["session_staleness"] = session_staleness
     payload["codex_host_guidance"] = doctor_payload["codex_host_guidance"]
     payload["claude_host_guidance"] = doctor_payload["claude_host_guidance"]
     payload["repo_onboarding"] = doctor_payload["repo_onboarding"]
@@ -3730,13 +3841,23 @@ def cmd_tool_update(args: argparse.Namespace) -> int:
     return 1 if failed else 0
 
 
-def _load_worktree_lib():
-    if EMBEDDED_REPO_ROOT is None:
+def _resolve_worktree_lib_root(args: argparse.Namespace) -> Path:
+    if EMBEDDED_REPO_ROOT is not None:
+        return EMBEDDED_REPO_ROOT
+    home_root = getattr(args, "home_root", default_home_root()).resolve()
+    repo_root, _managed = resolve_repo_root(home_root, getattr(args, "charness_checkout", None))
+    if not (repo_root / "packaging" / f"{PACKAGE_ID}.json").is_file():
         raise CharnessError(
-            "`charness worktree` requires running from an embedded charness checkout. "
-            "Reinstall via `charness init` or invoke from a managed install."
+            "`charness worktree` could not locate a charness source checkout. "
+            f"Expected `{repo_root}` to contain `packaging/{PACKAGE_ID}.json`. "
+            "Run `charness init` to install the managed checkout, or pass `--charness-checkout <path>`."
         )
-    repo_text = str(EMBEDDED_REPO_ROOT)
+    return repo_root
+
+
+def _load_worktree_lib(args: argparse.Namespace):
+    repo_root = _resolve_worktree_lib_root(args)
+    repo_text = str(repo_root)
     if repo_text not in sys.path:
         sys.path.insert(0, repo_text)
     from scripts import worktree_doctor_lib
@@ -3750,14 +3871,14 @@ def _resolve_worktree_target(args: argparse.Namespace) -> Path:
 
 
 def cmd_worktree_doctor(args: argparse.Namespace) -> int:
-    lib = _load_worktree_lib()
+    lib = _load_worktree_lib(args)
     payload = lib.run_doctor(_resolve_worktree_target(args))
     lib.emit_payload(payload, json_mode=args.json, renderer=lib.render_doctor_text)
     return 0 if payload.get("status") == lib.PASS else 1
 
 
 def cmd_worktree_prepare(args: argparse.Namespace) -> int:
-    lib = _load_worktree_lib()
+    lib = _load_worktree_lib(args)
     payload = lib.run_prepare(_resolve_worktree_target(args), force=args.force)
     lib.emit_payload(payload, json_mode=args.json, renderer=lib.render_prepare_text)
     return 0 if payload.get("status") == lib.PASS else 1
@@ -4110,6 +4231,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     worktree_subparsers = worktree_parser.add_subparsers(dest="worktree_command", required=True)
 
+    def add_worktree_lib_args(command: argparse.ArgumentParser) -> None:
+        command.add_argument(
+            "--home-root",
+            type=Path,
+            default=default_home_root(),
+            help="Home root used to locate the managed charness checkout when the entrypoint is a PATH shim.",
+        )
+        command.add_argument(
+            "--charness-checkout",
+            type=Path,
+            help="Explicit charness source checkout to load worktree helpers from. Defaults to the embedded or managed checkout.",
+        )
+
     worktree_doctor_parser = worktree_subparsers.add_parser(
         "doctor",
         help="Probe worktree readiness (hooksPath, lefthook shim resolution, husky directory, manifest checks).",
@@ -4120,6 +4254,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Worktree to inspect. Defaults to the current working directory.",
     )
     worktree_doctor_parser.add_argument("--json", action="store_true")
+    add_worktree_lib_args(worktree_doctor_parser)
     worktree_doctor_parser.set_defaults(func=cmd_worktree_doctor)
 
     worktree_prepare_parser = worktree_subparsers.add_parser(
@@ -4137,6 +4272,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Run prepare even if doctor already reports pass.",
     )
     worktree_prepare_parser.add_argument("--json", action="store_true")
+    add_worktree_lib_args(worktree_prepare_parser)
     worktree_prepare_parser.set_defaults(func=cmd_worktree_prepare)
 
     return parser

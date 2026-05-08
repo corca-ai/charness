@@ -30,17 +30,18 @@ def _existing(paths: list[tuple[str, Path]]) -> list[tuple[str, Path]]:
     return result
 
 
-def _cache_candidates(codex_home: Path, skill_id: str) -> list[tuple[str, Path]]:
-    cache_root = codex_home / "plugins" / "cache" / "local" / "charness"
+def _cache_candidates(codex_home: Path, skill_id: str, marketplace: str, plugin: str) -> list[tuple[str, Path]]:
+    cache_root = codex_home / "plugins" / "cache" / marketplace / plugin
     if not cache_root.is_dir():
         return []
+    source = "codex-versioned-cache" if (marketplace, plugin) == ("local", "charness") else "codex-plugin-cache"
     versions = sorted(
         [path for path in cache_root.iterdir() if path.is_dir()],
-        key=_version_key,
+        key=lambda path: (_version_key(path), path.stat().st_mtime),
         reverse=True,
     )
     return [
-        ("codex-versioned-cache", version / "skills" / skill_id / "SKILL.md")
+        (source, version / "skills" / skill_id / "SKILL.md")
         for version in versions
     ]
 
@@ -52,32 +53,37 @@ def candidate_paths(
     home: Path,
     codex_home: Path,
     reported_path: Path | None,
+    marketplace: str,
+    plugin: str,
 ) -> list[tuple[str, Path]]:
     candidates: list[tuple[str, Path]] = []
     if reported_path is not None:
         candidates.append(("reported", reported_path))
-    candidates.extend(
-        [
-            ("codex-stable-plugin", codex_home / "plugins" / "charness" / "skills" / skill_id / "SKILL.md"),
-            ("repo-plugin-export", repo_root / "plugins" / "charness" / "skills" / skill_id / "SKILL.md"),
-            ("repo-public-skill", repo_root / "skills" / "public" / skill_id / "SKILL.md"),
-            ("repo-support-skill", repo_root / "skills" / "support" / skill_id / "SKILL.md"),
-            ("repo-synced-support-skill", repo_root / "skills" / "support" / "generated" / skill_id / "SKILL.md"),
-        ]
-    )
-    candidates.extend(_cache_candidates(codex_home, skill_id))
-    candidates.extend(
-        [
-            (
-                "managed-checkout-plugin",
-                home / ".agents" / "src" / "charness" / "plugins" / "charness" / "skills" / skill_id / "SKILL.md",
-            ),
-            (
-                "managed-checkout-public",
-                home / ".agents" / "src" / "charness" / "skills" / "public" / skill_id / "SKILL.md",
-            ),
-        ]
-    )
+    is_charness = (marketplace, plugin) == ("local", "charness")
+    if is_charness:
+        candidates.extend(
+            [
+                ("codex-stable-plugin", codex_home / "plugins" / "charness" / "skills" / skill_id / "SKILL.md"),
+                ("repo-plugin-export", repo_root / "plugins" / "charness" / "skills" / skill_id / "SKILL.md"),
+                ("repo-public-skill", repo_root / "skills" / "public" / skill_id / "SKILL.md"),
+                ("repo-support-skill", repo_root / "skills" / "support" / skill_id / "SKILL.md"),
+                ("repo-synced-support-skill", repo_root / "skills" / "support" / "generated" / skill_id / "SKILL.md"),
+            ]
+        )
+    candidates.extend(_cache_candidates(codex_home, skill_id, marketplace, plugin))
+    if is_charness:
+        candidates.extend(
+            [
+                (
+                    "managed-checkout-plugin",
+                    home / ".agents" / "src" / "charness" / "plugins" / "charness" / "skills" / skill_id / "SKILL.md",
+                ),
+                (
+                    "managed-checkout-public",
+                    home / ".agents" / "src" / "charness" / "skills" / "public" / skill_id / "SKILL.md",
+                ),
+            ]
+        )
     return candidates
 
 
@@ -88,6 +94,8 @@ def resolve_skill_path(
     home: Path,
     codex_home: Path,
     reported_path: Path | None,
+    marketplace: str = "local",
+    plugin: str = "charness",
 ) -> dict[str, Any]:
     candidates = candidate_paths(
         skill_id=skill_id,
@@ -95,6 +103,8 @@ def resolve_skill_path(
         home=home,
         codex_home=codex_home,
         reported_path=reported_path,
+        marketplace=marketplace,
+        plugin=plugin,
     )
     existing = _existing(candidates)
     resolved_source = existing[0][0] if existing else None
@@ -109,13 +119,15 @@ def resolve_skill_path(
         warnings.append("Reported host skill path is missing, but a current skill path was found.")
     elif reported_path is not None and reported_exists:
         status = "reported-ok"
-    if resolved_source == "codex-versioned-cache":
+    if resolved_source in ("codex-versioned-cache", "codex-plugin-cache"):
         warnings.append("Resolved to a versioned cache path; prefer a stable plugin path when available.")
     if resolved_path is None:
         warnings.append("No installed or repo-local skill path was found for the requested skill id.")
     return {
         "schema_version": 1,
         "skill_id": skill_id,
+        "marketplace": marketplace,
+        "plugin": plugin,
         "reported_path": str(reported_path) if reported_path is not None else None,
         "reported_exists": reported_exists,
         "status": status,
@@ -135,12 +147,17 @@ def resolve_skill_path(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Resolve a current charness skill path when a host-reported path is stale.")
+    parser = argparse.ArgumentParser(
+        description="Resolve a current installed skill path when a host-injected path is stale. "
+        "Defaults to charness skills; pass --marketplace/--plugin to resolve any other Codex plugin's cache.",
+    )
     parser.add_argument("--skill-id", required=True)
     parser.add_argument("--reported-path", type=Path)
     parser.add_argument("--repo-root", type=Path, default=Path("."))
     parser.add_argument("--home", type=Path, default=Path.home())
     parser.add_argument("--codex-home", type=Path, default=Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")))
+    parser.add_argument("--marketplace", default="local", help="Codex marketplace name. Defaults to `local` (charness).")
+    parser.add_argument("--plugin", default="charness", help="Codex plugin name. Defaults to `charness`.")
     args = parser.parse_args()
     payload = resolve_skill_path(
         skill_id=args.skill_id,
@@ -148,6 +165,8 @@ def main() -> int:
         home=args.home.expanduser().resolve(),
         codex_home=args.codex_home.expanduser().resolve(),
         reported_path=args.reported_path,
+        marketplace=args.marketplace,
+        plugin=args.plugin,
     )
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0 if payload["resolved_path"] else 1
