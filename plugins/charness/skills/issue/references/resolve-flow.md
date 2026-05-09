@@ -11,9 +11,10 @@ GitHub owns issue identity and freshness:
 - issue body, comments, labels, state, and linked PR state should be read from
   GitHub before design
 
-Resolution order should reduce uncertainty. Start with issues that clarify
-shared contracts, unblock later issues, or remove failing gates that would make
-the rest hard to verify.
+Resolution order is a generative sequence in Christopher Alexander's sense:
+each move should create the conditions that make the next move cheaper and
+more correct. Start with issues that clarify shared contracts, unblock later
+issues, or remove failing gates that would make the rest hard to verify.
 
 Bug-class issues run a causal review subagent before design and a resolution
 premortem before close. See `causal-review.md` for the lenses, the subagent

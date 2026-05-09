@@ -125,6 +125,7 @@ routing anchors; references carry the detail.
 - This is a routing default, not a veto against good deterministic enforcement; do not over-apply it to standing threshold gates such as coverage floors, runtime budgets, or other already-honest enforced limits.
 - prefer the smaller production surface first when the same confidence gap can be closed by shrinking production branches/interfaces or adding more tests.
 - Watch stale gate wiring and hidden network/external-repo work in maintainer-local enforcement.
+- For external/runtime capability slices, treat readiness-only proof (`surface`, `worker_queued`, healthcheck-style `host_decision`) as `Weak` until at least one `provider_roundtrip` is observed; see `../../shared/references/external-capability-proof-ladder.md`.
 - when prompt-sensitive output matters or `prompt_asset_policy.source_globs` is configured, inspect prompt/content bulk. `prompt_asset_roots: []` only means no canonical asset root is declared, not that inline prompt/content bulk inventory should be skipped. The final user-facing answer must not silently omit `Weak`, `Missing`, `Advisory`, delegated-review status, or active `Recommended Next Gates` findings.
 - Do not treat a passing length, duplicate, or pressure heuristic as the goal; delete, merge, split ownership, extract a helper, or narrow the interface.
 - Run a bounded fresh-eye reviewer after initial inventory and before broad recommendations.
@@ -192,3 +193,4 @@ Use the sections that match the scope, without reducing quality to one score:
 - `references/startup-probes.md`
 - `references/validate_spec_pytest_references.py`
 - `../../shared/references/fresh-eye-subagent-review.md`
+- `../../shared/references/external-capability-proof-ladder.md`

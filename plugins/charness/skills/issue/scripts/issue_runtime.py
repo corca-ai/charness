@@ -114,34 +114,53 @@ def is_selector(value: str) -> bool:
 
 
 def gh_json(args: list[str]) -> Any:
-    result = subprocess.run(["gh", *args], check=False, capture_output=True, text=True)
+    return _backend_json(["gh", *args])
+
+
+def _backend_json(argv: list[str]) -> Any:
+    result = subprocess.run(argv, check=False, capture_output=True, text=True)
     if result.returncode != 0:
-        raise RuntimeError(result.stderr.strip() or result.stdout.strip() or "gh command failed")
+        raise RuntimeError(result.stderr.strip() or result.stdout.strip() or f"{argv[0]} command failed")
     return json.loads(result.stdout or "null")
 
 
-def newest_open_issue(repo: str) -> dict[str, Any]:
-    payload = gh_json(
-        [
-            "search",
-            "issues",
-            "--repo",
-            repo,
-            "--state",
-            "open",
-            "--limit",
-            "1",
-            "--json",
-            "number,title,createdAt,url,state",
-            "--sort",
-            "created",
-            "--order",
-            "desc",
-        ]
-    )
+GH_NEWEST_OPEN_ARGS = [
+    "search",
+    "issues",
+    "--repo",
+    "{repo}",
+    "--state",
+    "open",
+    "--limit",
+    "1",
+    "--json",
+    "number,title,createdAt,url,state",
+    "--sort",
+    "created",
+    "--order",
+    "desc",
+]
+
+
+def newest_open_issue(repo: str, backend: dict[str, Any] | None = None) -> dict[str, Any]:
+    backend = backend or {"id": "gh", "binary": "gh", "commands": None}
+    binary = backend.get("binary") or backend.get("id") or "gh"
+    commands = backend.get("commands") or {}
+    template = commands.get("search_newest_open")
+    if template is None:
+        if backend.get("id", "gh") != "gh":
+            raise RuntimeError(
+                f"issue_backend.id={backend.get('id')} did not declare commands.search_newest_open; "
+                "configure the adapter or pass an explicit selector."
+            )
+        template = GH_NEWEST_OPEN_ARGS
+    argv = [binary] + [part.replace("{repo}", repo) for part in template]
+    payload = _backend_json(argv)
+    if isinstance(payload, dict) and "issues" in payload:
+        payload = payload.get("issues")
     if not isinstance(payload, list) or not payload:
         raise RuntimeError(f"No open issues found for {repo}")
     issue = payload[0]
     if not isinstance(issue, dict) or "number" not in issue:
-        raise RuntimeError("GitHub issue search returned an unexpected payload")
+        raise RuntimeError("issue search returned an unexpected payload")
     return issue

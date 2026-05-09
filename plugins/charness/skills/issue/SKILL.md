@@ -1,12 +1,12 @@
 ---
 name: issue
-description: "Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through `gh`. Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth, classifies the issue, runs a causal review for bug-class issues before designing the fix, and runs a resolution premortem so the same class of issue does not recur."
+description: "Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through the adapter-resolved backend (`gh` by default, or a host-mediated capability such as `ceal github`). Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth, classifies the issue, runs a causal review for bug-class issues before designing the fix, and runs a resolution premortem so the same class of issue does not recur."
 ---
 
 # Issue
 
-Use this when the user wants the agent to file or resolve GitHub issues with
-`gh`.
+Use this when the user wants the agent to file or resolve GitHub issues
+through the adapter-resolved backend.
 
 `issue` has two command-shaped intents:
 
@@ -17,10 +17,13 @@ GitHub is the source of truth. Do not prefer session memory, a just-created
 issue, a local note, or a stale artifact over the target repository's current
 GitHub state.
 
-This skill consumes the `github-gh` integration. When `gh` is missing or not
-authenticated enough for the requested operation, follow
-`../../shared/references/binary-preflight.md` and stop with the exact missing
-capability.
+The skill resolves the issue backend through the adapter; default is `gh`,
+hosts that mediate GitHub through a runtime capability (e.g. `ceal github`)
+register an alternate `issue_backend`. `preflight` reports `selected_backend`;
+when its `id` is not `gh`, follow `selected_backend.commands` or the host's
+documented shape. See `references/issue-backend.md` and
+`../../shared/references/external-capability-proof-ladder.md` for contract
+and action-proof expectations.
 
 ## Bootstrap
 
@@ -65,11 +68,16 @@ repo by created date. It must not use the current session's last created issue.
      line); record `JTBD: not inferable` when the situation does not reveal it
    - what evidence or commands show it
    - why the current behavior is confusing, costly, or blocked
+   - target-repo labels that apply (`bug`, `enhancement`, `docs`, ...);
+     check `gh label list --repo <org/repo>` first if the vocabulary is unclear
 4. Add solution direction only as an optional weak candidate:
    - "This may be solved by..."
    - "A useful outcome might be..."
    - avoid prescribing the receiving agent's design or implementation
-5. Create the issue immediately with `gh issue create --repo <org/repo>`.
+5. Create the issue immediately using `selected_backend` (default
+   `gh issue create --repo <org/repo>`; host-mediated backends use
+   `selected_backend.commands.create` or the host's shape). Apply the chosen
+   labels via `--label <name>` or the backend's equivalent.
    Do not ask for approval unless the user explicitly asks to review first.
 6. Report the created issue URL and a one-line summary.
 
@@ -118,13 +126,13 @@ repo by created date. It must not use the current session's last created issue.
    self-evident from the diff, no public contract changes, and no plausible
    siblings exist, record `Causal review: trivial; root cause = <one line>` and
    skip the subagent. Step 8 still runs.
-5. Choose the resolution order that reduces uncertainty. If one issue unlocks
-   another, do it first. If causal review at step 4 surfaced sibling problems,
-   decide here whether to bundle their fix into this commit, file them as
-   separate issues via `issue new` (resolve owns the "ask first" decision; the
-   filing itself follows `issue new`'s create-immediately rule), or leave them
-   in the close comment as deferred items. Do not file siblings as new issues
-   silently.
+5. Order the resolutions as a generative sequence (Christopher Alexander):
+   the move that reduces uncertainty or unlocks the next issue comes first.
+   If causal review at step 4 surfaced sibling problems, decide here whether
+   to bundle their fix into this commit, file them as separate issues via
+   `issue new` (resolve owns the "ask first" decision; the filing itself
+   follows `issue new`'s create-immediately rule), or leave them in the close
+   comment as deferred items. Do not file siblings as new issues silently.
 6. Discuss with the user before designing when the issue exposes a product,
    policy, scope, permission, or external-side-effect decision the agent
    should not own.
@@ -163,8 +171,9 @@ repo by created date. It must not use the current session's last created issue.
   context and keep solution ideas tentative.
 - Do not resolve an omitted issue selector from session memory. Query GitHub.
 - Do not close an issue before the pushed branch contains the fix.
-- Do not hide missing `gh` auth behind a public fetch fallback when the task
-  requires creating, pushing, commenting, or closing.
+- Do not hardcode `gh` when the adapter advertises a stronger backend, and
+  do not hide missing backend auth behind a public fetch fallback for
+  create, push, comment, or close.
 - Do not treat multiple issues as independent when one issue changes the design
   boundary for another.
 - Do not skip causal review on bug-class issues by classifying them as
@@ -182,7 +191,9 @@ repo by created date. It must not use the current session's last created issue.
 - `references/issue-shaping.md`
 - `references/resolve-flow.md`
 - `references/causal-review.md`
+- `references/issue-backend.md`
 - `../../shared/references/fresh-eye-subagent-review.md`
+- `../../shared/references/external-capability-proof-ladder.md`
 - `scripts/issue_tool.py`
 - `scripts/issue_runtime.py`
 - `scripts/resolve_adapter.py`

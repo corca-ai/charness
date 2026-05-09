@@ -122,6 +122,8 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
      `cautilus workspace prepare-compare` and `cautilus eval evaluate --input <observed.json>`
    - if stronger proof needs setup or permission, ask instead of silently
      downgrading the claim
+   - when the slice crosses a worker → host → provider seam, label the highest
+     executed proof level per `../../shared/references/external-capability-proof-ladder.md`
 5. Sync truth surfaces and re-read the contract before closeout.
    - if the slice changed user-visible capability, operating philosophy,
      supported integrations, install/usage surface, or honest stage claims,
@@ -195,3 +197,4 @@ runtime/evaluator proof, `Truth Surface Sync`, `Premortem`, `Contract Updates`,
 - `references/spec-loop.md`
 - `../../shared/references/source-bound-records.md`
 - `../../shared/references/prescribed-path-self-test.md`
+- `../../shared/references/external-capability-proof-ladder.md`

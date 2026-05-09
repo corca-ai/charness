@@ -104,13 +104,118 @@ def test_issue_preflight_fails_when_gh_auth_fails(tmp_path: Path) -> None:
     )
     gh.chmod(0o755)
 
-    result = run_script(SCRIPT, "preflight", "--json", env={**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"})
+    result = run_script(
+        SCRIPT,
+        "preflight",
+        "--json",
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"},
+    )
 
     assert result.returncode == 1
     payload = json.loads(result.stdout)
     assert payload["gh_found"] is True
     assert payload["ok"] is False
     assert payload["auth_status"]["exit_code"] == 1
+    assert payload["selected_backend"]["id"] == "gh"
+    assert payload["selected_backend"]["binary"] == "gh"
+
+
+def _write_adapter_with_backend(tmp_path: Path, *, backend_id: str, binary: str) -> None:
+    adapter_dir = tmp_path / ".agents"
+    adapter_dir.mkdir(exist_ok=True)
+    (adapter_dir / "issue-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "default_org: corca-ai",
+                "remote_name: origin",
+                "issue_backend:",
+                f"  id: {backend_id}",
+                f"  binary: {binary}",
+                "  commands:",
+                "    create:",
+                "      - github",
+                "      - issue",
+                "      - create",
+                "      - '-R'",
+                "      - '{repo}'",
+                "    search_newest_open:",
+                "      - github",
+                "      - issue",
+                "      - list",
+                "      - '-R'",
+                "      - '{repo}'",
+                "      - '--json'",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_issue_preflight_resolves_adapter_backend_when_gh_absent(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake = bin_dir / "ceal"
+    fake.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "if [[ \"$1\" == \"--version\" ]]; then",
+                "  echo 'ceal 0.0.1'",
+                "  exit 0",
+                "fi",
+                "exit 0",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    _write_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+
+    result = run_script(
+        SCRIPT,
+        "preflight",
+        "--json",
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    backend = payload["selected_backend"]
+    assert backend["id"] == "ceal-github"
+    assert backend["binary"] == "ceal"
+    assert backend["found"] is True
+    assert backend["commands"]["create"][0] == "github"
+    assert "gh_found" not in payload
+
+
+def test_issue_preflight_reports_missing_backend_binary_with_explicit_error(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _write_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+
+    result = run_script(
+        SCRIPT,
+        "preflight",
+        "--json",
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert payload["selected_backend"]["id"] == "ceal-github"
+    assert payload["selected_backend"]["found"] is False
+    assert "ceal" in payload["error"]
 
 
 def test_issue_skill_records_github_sot_for_omitted_selector() -> None:
@@ -122,3 +227,15 @@ def test_issue_skill_records_github_sot_for_omitted_selector() -> None:
     assert "GitHub is the source of truth" in skill_text
     assert "It must not use the current session's last created issue" in skill_text
     assert "omitted selector means newest open GitHub issue" in resolve_flow
+
+
+def test_issue_skill_documents_backend_resolution() -> None:
+    skill_text = (ROOT / "skills" / "public" / "issue" / "SKILL.md").read_text(encoding="utf-8")
+    backend_ref = (ROOT / "skills" / "public" / "issue" / "references" / "issue-backend.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "resolves the issue backend through the adapter" in skill_text
+    assert "selected_backend" in skill_text
+    assert "issue_backend" in backend_ref
+    assert "ceal" in backend_ref

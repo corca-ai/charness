@@ -74,6 +74,10 @@ sed -n '1,220p' presets/README.md
    - keep manifest metadata rich enough to reveal capability kind and supported access modes
    - express setup prerequisites as manifest readiness checks
    - use `create-cli` for repo-owned command lifecycle; use deployable packaging refs for plugin bundle proof
+   - when the skill depends on an external or runtime capability, name which
+     proof levels apply per `../../shared/references/external-capability-proof-ladder.md`
+     (`surface`, `worker_queued`, `host_decision`, `provider_roundtrip`,
+     `agent_choice`) and which the host must satisfy
 6. Implement the smallest coherent package.
    - `SKILL.md` contains trigger contract and decision skeleton only
    - treat sparse named person anchors in `SKILL.md` core as a deliberate
@@ -160,3 +164,4 @@ sed -n '1,220p' presets/README.md
 - `../../shared/references/source-bound-records.md`
 - `../../shared/references/prescribed-path-self-test.md`
 - `../../shared/references/success-criteria-review.md`
+- `../../shared/references/external-capability-proof-ladder.md`

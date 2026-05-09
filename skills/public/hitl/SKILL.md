@@ -87,22 +87,16 @@ the repo has named where state, rules, and queue ownership live.
 4. Start with agreement-level context.
    - record the user's review criteria and concerns first
    - capture any high-level rule that should apply to every later chunk
-5. Review in bounded chunks.
-   - each chunk should include the original material under review, shown
-     directly as the smallest excerpt sufficient for judgment rather than as a
-     summary-only paraphrase
-   - keep the excerpt line-anchored or hunk-anchored when possible so the user
-     can tell exactly what is being judged
-   - when a user-facing review excerpt shows Markdown that itself contains
-     fenced code examples, keep only the outer review excerpt as a normal
-     Markdown fence and render inner examples as display-only pseudo-tags such
-     as `<bash>`, `<md>`, or `<json>`
-   - include enough related context and the concrete question that needs human
-     judgment
-   - if the source material is a table, scorecard, or generated matrix, make
-     the human-readable interpretation primary and keep the raw table behind
-     evidence/details
-   - pause for user judgment before moving on
+5. Review in bounded chunks per `references/chunk-contract.md`.
+   - each chunk: original material as direct, line- or hunk-anchored excerpt;
+     related context; Agent Assessment against active criteria; non-binding
+     Recommended Disposition; concrete decision for the human; then pause
+   - render Markdown-in-Markdown excerpts with display-only pseudo-tags such
+     as `<bash>`, `<md>`, or `<json>`; do not nest fenced code blocks
+   - if the source is a table, scorecard, or generated matrix, lead with the
+     plain-language interpretation and keep raw structure as evidence
+   - question-only chunks are not enough; the agent commits to a recommended
+     disposition before asking the human
 6. Propagate accepted rules.
    - if the user gives a stable rule, write it down and apply it to remaining
      chunks in the same run
@@ -153,12 +147,14 @@ the repo has named where state, rules, and queue ownership live.
 ## Output Shape
 
 The result should usually include Review Goal, Target, Current Chunk, Original
-Material, Related Context, Decision Needed, Active Rules Applied, Target/Cursor
+Material, Related Context, Agent Assessment, Recommended Disposition (display-only), Decision Needed, Active Rules Applied, Target/Cursor
 Checked, Accepted Working Text, Accepted Rules, and Next State.
 
 ## Guardrails
 
 - Do not present isolated snippets without enough context for judgment.
+- Do not present a chunk that asks for a disposition without an Agent
+  Assessment and a non-binding Recommended Disposition.
 - Do not ask for judgment on summary-only paraphrases when the underlying text,
   diff, or artifact excerpt can be shown directly.
 - Do not make raw tables or generated matrices the primary human review

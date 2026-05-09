@@ -121,6 +121,10 @@ steps call tools outside the baseline shell surface.
      depend on it
    - redaction tests for external-capability preflight and bridge logs, proving
      raw tokens, request bodies, and full external identifiers are not printed
+   - for external-capability mutating commands, action-shaped self-tests, not
+     only readiness probes; reach `provider_roundtrip` per
+     `../../shared/references/external-capability-proof-ladder.md` or record
+     the concrete reason the round-trip cannot run in CI
    - checks that docs and examples do not conflate help, healthcheck, and
      readiness semantics
    - a command-docs drift gate when install/update/doctor/reset/uninstall
@@ -157,3 +161,4 @@ steps call tools outside the baseline shell surface.
 - `references/quality-gates.md`
 - `references/case-studies.md`
 - `../../shared/references/binary-preflight.md`
+- `../../shared/references/external-capability-proof-ladder.md`

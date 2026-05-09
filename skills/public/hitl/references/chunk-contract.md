@@ -9,7 +9,19 @@ Minimum contract:
 - source anchor for that material when possible: file path plus line span,
   diff hunk, or stable artifact section
 - related context that explains why it matters
-- the concrete decision or question for the human
+- agent assessment against the active review criteria and accepted rules:
+  whether the chunk meets them, with concrete risks, gaps, or drift the agent
+  noticed
+- recommended disposition (`accept`, `revise`, `defer`, or a chunk-specific
+  verb), explicitly non-binding and display-only — the human still owns the
+  decision
+- the concrete decision or question for the human, presented after the
+  assessment and recommendation
+
+Suggestions never auto-record as approval. See `report-mode.md` for the
+persistence rules; the same rule applies to ordinary chunks: the recommended
+disposition is metadata, not a default that becomes a decision when the
+human stays silent.
 
 When the chunk comes from a `quality` `NON_AUTOMATABLE` handoff, preserve:
 
