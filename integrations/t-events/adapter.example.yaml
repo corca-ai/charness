@@ -1,0 +1,41 @@
+# charness t-events adapter example.
+#
+# Drop this file at .agents/t-events-adapter.yaml in your consumer repo to
+# opt this repo into capturing T-loop events emitted by charness skills.
+# T-events are the artifact-level analog of hermes-agent runtime telemetry:
+# charness skills emit lifecycle records (skill invocations, lesson cites,
+# anchor selections) so downstream skills can populate Tier C evidence in
+# the Skill-T mechanism inventory.
+#
+# Without this manifest, charness emits nothing for this repo and Tier C
+# inventory stays "awaiting events" — that is a valid, deliberate state,
+# not a missing capability.
+#
+# Schema:    integrations/t-events/manifest.schema.json
+# Records:   integrations/t-events/event.schema.json
+# Spec:      charness-artifacts/spec/issue-135-t-first-self-evolving-unit.md
+version: 1
+repo: my-repo
+
+# Master switch. When false, the manifest still parses cleanly but charness
+# suppresses all emit. Useful to keep the file but pause capture.
+enabled: true
+
+# Where charness appends records, relative to consumer repo root. Each event
+# type writes to <storage_path>/<event_type>.jsonl with one JSON object per
+# line. Default is `.charness/t-events`.
+storage_path: .charness/t-events
+
+# Subset of v1 event types this consumer captures. Omit the key to capture
+# all v1 events. Subsetting is honest: e.g., a privacy-sensitive consumer can
+# capture lesson_cited and anchor_invoked while suppressing trigger phrases
+# from skill_invoked.
+events:
+  - skill_invoked
+  - lesson_cited
+  - anchor_invoked
+
+# Optional retention. Absent fields mean unbounded retention.
+rotation:
+  max_files: 10
+  max_size_mb: 5

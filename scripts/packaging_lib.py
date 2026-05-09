@@ -221,6 +221,10 @@ def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> No
     if worktree_root.is_dir():
         replace_tree(worktree_root, plugin_root / "integrations" / "worktree")
 
+    t_events_root = repo_root / "integrations" / "t-events"
+    if t_events_root.is_dir():
+        replace_tree(t_events_root, plugin_root / "integrations" / "t-events")
+
     scripts_root = repo_root / "scripts"
     exported_scripts_root = plugin_root / "scripts"
     replace_tree_if_present(scripts_root, exported_scripts_root)

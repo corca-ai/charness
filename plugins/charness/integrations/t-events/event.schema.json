@@ -1,0 +1,126 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "charness t-event record",
+  "description": "Single T-event record, one JSON object per line in the consumer repo's <storage_path>/<event_type>.jsonl. Records are append-only and ordered by emit timestamp. Schema v1 covers three event types; downstream consumers (e.g., Skill-T mechanism inventory) read these to populate Tier C evidence.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/skill_invoked"
+    },
+    {
+      "$ref": "#/$defs/lesson_cited"
+    },
+    {
+      "$ref": "#/$defs/anchor_invoked"
+    }
+  ],
+  "$defs": {
+    "skill_invoked": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_type",
+        "timestamp",
+        "skill_id"
+      ],
+      "properties": {
+        "event_type": {
+          "const": "skill_invoked"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of skill invocation."
+        },
+        "skill_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Public skill identifier (e.g., 'critique', 'retro', 'spec'). Matches the directory name under skills/public/."
+        },
+        "session_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional host-provided session identifier. Used to correlate consecutive invocations within a single operator session."
+        },
+        "trigger_phrase": {
+          "type": "string",
+          "description": "Optional raw user phrase that triggered the skill. Captured only when surfaced by the host adapter; agents may omit for privacy."
+        }
+      }
+    },
+    "lesson_cited": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_type",
+        "timestamp",
+        "lesson_path",
+        "citing_skill"
+      ],
+      "properties": {
+        "event_type": {
+          "const": "lesson_cited"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lesson_path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path (relative to repo root) of the cited retro lesson, typically under charness-artifacts/retro/."
+        },
+        "citing_skill": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Skill that performed the cite (e.g., 'retro', 'critique', 'impl')."
+        },
+        "citing_artifact_path": {
+          "type": "string",
+          "description": "Optional path of the artifact in which the cite landed (e.g., a SKILL.md, a closeout doc, a spec). Absent for transient in-conversation cites."
+        }
+      }
+    },
+    "anchor_invoked": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_type",
+        "timestamp",
+        "anchor_id",
+        "applies_when",
+        "citing_skill"
+      ],
+      "properties": {
+        "event_type": {
+          "const": "anchor_invoked"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "anchor_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Anchor lineup identifier (e.g., 'jackson', 'raskin', 'engelbart')."
+        },
+        "applies_when": {
+          "type": "string",
+          "enum": [
+            "lam-critique",
+            "system-improving-itself"
+          ],
+          "description": "Closed value set matching the anchor's `applies_when:` scope metadata. Engelbart anchor is the only v1 entry with `system-improving-itself` scope."
+        },
+        "citing_skill": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Skill that selected the anchor (typically 'critique' or 'retro')."
+        },
+        "previous_anchor_id": {
+          "type": "string",
+          "description": "Optional previous anchor in the same session, when known. Consumers derive 'switched' signal by comparing this against anchor_id."
+        }
+      }
+    }
+  }
+}

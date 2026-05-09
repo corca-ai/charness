@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "charness t-events adapter",
+  "description": "Repo-self-config manifest declaring how charness should emit T-loop events into this consumer repo. Loaded from .agents/t-events-adapter.yaml. T-events are the artifact-level analog of hermes-agent runtime telemetry: charness skills emit lifecycle records that downstream skills (e.g., the Skill-T mechanism inventory) consume to populate Tier C evidence. Emit is opt-in per consumer; absence of this manifest means events are not captured for this repo.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "enabled"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "repo": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional consumer repo identifier. Reserved for future cross-repo aggregation; v1 ignores it."
+    },
+    "enabled": {
+      "type": "boolean",
+      "description": "Whether charness skills should emit T-events for this consumer. When false, the manifest still parses cleanly but emit is suppressed."
+    },
+    "storage_path": {
+      "type": "string",
+      "minLength": 1,
+      "default": ".charness/t-events",
+      "description": "Path (relative to consumer repo root) where charness appends event records. Each event type writes to <storage_path>/<event_type>.jsonl with one JSON object per line."
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "skill_invoked",
+          "lesson_cited",
+          "anchor_invoked"
+        ]
+      },
+      "description": "Subset of v1 event types this consumer captures. When absent, all v1 events are captured."
+    },
+    "rotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_files": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Maximum rotated files to retain per event type. Older files are deleted. Absent means unbounded."
+        },
+        "max_size_mb": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024,
+          "description": "Rotation threshold in MB. When the active jsonl file exceeds this size, charness rotates it."
+        }
+      },
+      "description": "Optional retention policy for emitted records. Absent fields mean no cap."
+    }
+  }
+}
