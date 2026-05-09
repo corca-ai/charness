@@ -28,7 +28,7 @@ stays as the short human-readable contract for the same reviewed cases.
 - `init-repo`
 - `issue`
 - `narrative`
-- `premortem`
+- `critique`
 - `quality`
 - `release`
 - `retro`

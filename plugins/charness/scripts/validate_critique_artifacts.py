@@ -11,7 +11,7 @@ from runtime_bootstrap import repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-PREMORTEM_ARTIFACT_PREFIX = "charness-artifacts/premortem/"
+CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/premortem/"
 FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "did not explicitly allow subagents",
     "explicit subagent allowance",
@@ -51,10 +51,10 @@ def changed_paths(repo_root: Path) -> list[str]:
 
 def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -> list[Path]:
     if all_artifacts:
-        return sorted((repo_root / PREMORTEM_ARTIFACT_PREFIX).glob("*.md"))
+        return sorted((repo_root / CRITIQUE_ARTIFACT_PREFIX).glob("*.md"))
     candidates: list[Path] = []
     for relpath in paths:
-        if relpath.startswith(PREMORTEM_ARTIFACT_PREFIX) and relpath.endswith(".md"):
+        if relpath.startswith(CRITIQUE_ARTIFACT_PREFIX) and relpath.endswith(".md"):
             path = repo_root / relpath
             if path.is_file():
                 candidates.append(path)
@@ -90,7 +90,7 @@ def fresh_eye_satisfaction_status(text: str) -> str | None:
     return None
 
 
-def validate_premortem_artifact(path: Path, *, repo_has_delegation_contract: bool) -> None:
+def validate_critique_artifact(path: Path, *, repo_has_delegation_contract: bool) -> None:
     text = path.read_text(encoding="utf-8")
     status = fresh_eye_satisfaction_status(text)
     status_lowered = status.lower() if status is not None else ""
@@ -98,7 +98,7 @@ def validate_premortem_artifact(path: Path, *, repo_has_delegation_contract: boo
         for phrase in FORBIDDEN_SUBAGENT_BLOCKER_PHRASES:
             if phrase in status_lowered:
                 raise ValidationError(
-                    f"{path}: premortem artifact must not treat missing explicit subagent delegation "
+                    f"{path}: critique artifact must not treat missing explicit subagent delegation "
                     "as the canonical blocker; honor repo `Subagent Delegation` instructions, then cite "
                     "the concrete spawn-tool refusal, missing tool surface, or exhausted host budget if "
                     "delegation is still blocked"
@@ -107,7 +107,7 @@ def validate_premortem_artifact(path: Path, *, repo_has_delegation_contract: boo
         text_lowered = text.lower()
         if "host signal:" not in text_lowered and "tool signal:" not in text_lowered:
             raise ValidationError(
-                f"{path}: blocked premortem fresh-eye satisfaction must cite `host signal:` or `tool signal:`"
+                f"{path}: blocked critique fresh-eye satisfaction must cite `host signal:` or `tool signal:`"
             )
 
 
@@ -115,7 +115,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to changed paths.")
-    parser.add_argument("--all", action="store_true", help="Validate every checked premortem artifact.")
+    parser.add_argument("--all", action="store_true", help="Validate every checked critique artifact.")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -123,8 +123,8 @@ def main() -> int:
     artifacts = candidate_paths(repo_root, paths, all_artifacts=args.all)
     repo_has_delegation_contract = has_repo_delegation_contract(repo_root)
     for artifact in artifacts:
-        validate_premortem_artifact(artifact, repo_has_delegation_contract=repo_has_delegation_contract)
-    print(f"Validated {len(artifacts)} premortem artifact(s).")
+        validate_critique_artifact(artifact, repo_has_delegation_contract=repo_has_delegation_contract)
+    print(f"Validated {len(artifacts)} critique artifact(s).")
     return 0
 
 

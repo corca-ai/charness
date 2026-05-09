@@ -167,7 +167,7 @@ non-goal이며, 별도 이슈로 분리한다.
   잘못 읽히지 않도록, agent-facing 한정임을 문서에서 `rg -n "agent-facing"`으로
   확인 가능해야 한다.
 
-## Premortem (bounded, inline)
+## Critique (bounded, inline)
 
 5분 fresh reviewer/implementer가 본 spec을 보고 범하기 쉬운 오독:
 
@@ -191,14 +191,14 @@ non-goal이며, 별도 이슈로 분리한다.
   둔다. 이 검증은 `impl` review-gate의 "boundary honesty" 렌즈로 자연
   포섭된다.
 
-Premortem 결과 tighten 항목:
+Critique 결과 tighten 항목:
 
 - 안티패턴에 "human-first CLI에서는 단일 명령이 보통 낫다"를 포함 (P1)
 - 결정 질문에 "아티팩트 경계가 명령 경계보다 안정적인 계약인가?"를 포함 (P2)
 - 각 안티패턴에 한 줄 실물 시나리오 부착 (P3)
 
-Bounded premortem으로 충분한 근거: 본 변경은 문서 한정·가역적이며, 영향이
-공개 가이드 reader로 제한된다. standalone `premortem` 스킬은 deletion/rename,
+Bounded critique으로 충분한 근거: 본 변경은 문서 한정·가역적이며, 영향이
+공개 가이드 reader로 제한된다. standalone `critique` 스킬은 deletion/rename,
 breaking, runtime behavior 변경에 예약한다. impl 단계에서 cross-surface 마찰이
 발견되면 그 시점에 호출한다.
 

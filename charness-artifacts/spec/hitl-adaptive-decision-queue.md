@@ -104,7 +104,7 @@ means the target should be fixed before further review.
 - Existing `tests/quality_gates/test_portable_json_artifacts.py` report-mode
   tests still pass.
 
-## Premortem
+## Critique
 
 Fresh-Eye Satisfaction: parent-delegated.
 
@@ -133,7 +133,7 @@ Valid But Defer:
 - Cross-session learning, global priority tuning, concurrent queue locking, and
   broader non-HITL queue infrastructure.
 
-## Post-Implementation Premortem
+## Post-Implementation Critique
 
 Fresh-Eye Satisfaction: parent-delegated.
 

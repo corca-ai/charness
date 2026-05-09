@@ -155,7 +155,7 @@ Then connect them from:
   Prompt-surface proof is refreshed or the release closeout records the exact
   cautilus blocker instead of calling same-agent review enough.
 
-## Premortem
+## Critique
 
 Spec review should stress these risks before implementation:
 
@@ -182,4 +182,4 @@ hook. Detailed examples and anti-overuse rules belong in references.
 3. Wire concise hooks into `ideation/SKILL.md`, `spec/SKILL.md`, and
    `find-skills/SKILL.md`.
 4. Run acceptance checks and prompt-surface proof planning.
-5. Run implementation premortem with bounded subagents before release prep.
+5. Run implementation critique with bounded subagents before release prep.

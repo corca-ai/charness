@@ -103,10 +103,10 @@ even if the next session only skims this document.
 
 - `corca-ai/charness#14`
   Landed. `quality` now treats prior artifacts as non-authoritative scope,
-  adds a fresh-eye premortem step, carries adapter-owned blind-spot policy
+  adds a fresh-eye critique step, carries adapter-owned blind-spot policy
   (`coverage_floor_policy`, `spec_pytest_reference_format`), and ships
   reference implementations for unfloored-file inventory and
-  `Covered by pytest:` note validation. The second premortem refinements also
+  `Covered by pytest:` note validation. The second critique refinements also
   shaped the reference posture: glob-based gate discovery, lefthook/CI
   meta-checks, contradiction detection, exemption-path existence checks, and
   an explicit honesty note that pytest-reference validation proves collection,

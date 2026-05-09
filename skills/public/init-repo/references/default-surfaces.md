@@ -40,7 +40,7 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   `charness-artifacts/`, say those meaningful artifact changes are repo state
   and commit targets, while current-pointer helpers should no-op when
   canonical content has not changed
-- when the repo uses bounded fresh-eye or premortem-style subagent review as a
+- when the repo uses bounded fresh-eye or critique-style subagent review as a
   stop gate, a dedicated `## Subagent Delegation` section with one short rule
   that says `explicit user delegation request` for the bounded scope, the review
   is already delegated by the repo contract, agents should not wait for a
@@ -48,7 +48,7 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   be reported explicitly instead of replaced with a same-agent pass
 - for Charness-managed repos, the same rule should explicitly cover
   task-completing `init-repo` and `quality` review runs instead of implying
-  that only premortem may spawn reviewers
+  that only critique may spawn reviewers
 - a short `Skill Routing` block that tells task-oriented sessions to call the
   shared/public charness skill `find-skills` once at startup before broader
   exploration

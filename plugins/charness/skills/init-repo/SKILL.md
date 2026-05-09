@@ -111,7 +111,7 @@ Then load only the references needed for the detected state:
    - when Charness workflows write durable artifacts, make `<repo-root>/AGENTS.md`
      say meaningful `charness-artifacts/` changes are repo state and
      current-pointer helpers no-op without canonical content changes
-   - when the repo uses bounded fresh-eye or premortem-style subagent review
+   - when the repo uses bounded fresh-eye or critique-style subagent review
      as a stop gate, make `<repo-root>/AGENTS.md` say that the review is already delegated,
      agents should not wait for a second user message asking for delegation,
      and host spawn restrictions should be reported explicitly instead of
@@ -169,7 +169,7 @@ Then load only the references needed for the detected state:
 - Do not invent a full evaluator regime for repos that do not actually keep
   repo-owned skills; skill-proof policy belongs only where the repo really
   maintains skills as a first-class surface.
-- Do not leave repo-mandated bounded fresh-eye or premortem review as an implicit
+- Do not leave repo-mandated bounded fresh-eye or critique review as an implicit
   convention. If the repo relies on that stop gate, make the delegation rule
   explicit in `<repo-root>/AGENTS.md`.
 

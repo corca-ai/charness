@@ -10,7 +10,7 @@ policy_sources:
     path: AGENTS.md
     evidence_terms:
       - bounded subagent reviews
-      - premortem
+      - critique
       - quality
     recommendations:
       - agents.delegated_review_policy

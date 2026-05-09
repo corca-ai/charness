@@ -240,7 +240,7 @@ Layer 진입 규칙(권고):
 - A5: 본 spec의 "Evidence Required" 섹션이 5개 항목과 "3개 이상" 게이트를
   명시한다.
 
-## Premortem (bounded, inline)
+## Critique (bounded, inline)
 
 5분 fresh reviewer가 본 spec을 보고 범하기 쉬운 오독:
 
@@ -261,7 +261,7 @@ Layer 진입 규칙(권고):
   하위 한 파일이며, 공개 스킬 표면에 진입하지 않는다. Success Criteria 5번과
   Acceptance Check A4가 이를 강제한다.
 
-Premortem 결과 tighten 항목:
+Critique 결과 tighten 항목:
 
 - Acceptance Check A4를 "본 spec이 강제하는 prose가 다른 표면에 landing되지
   않는다"로 명시화 (P1, P5).
@@ -269,7 +269,7 @@ Premortem 결과 tighten 항목:
 - Probe Question Q1을 substrate-agnostic 모호성을 다루도록 유지 (P3).
 
 본 패스는 문서 한정·가역적이며 영향이 design 의사결정 reader로 제한된다.
-독립 `premortem` 스킬 호출은 implementation 패스에서 실제 owner 분포가
+독립 `critique` 스킬 호출은 implementation 패스에서 실제 owner 분포가
 landing할 때 사용한다.
 
 ## Canonical Artifact

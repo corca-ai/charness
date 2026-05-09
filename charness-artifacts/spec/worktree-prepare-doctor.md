@@ -98,7 +98,7 @@ Output contract:
 - Unit/library tests in `tests/charness_cli/test_worktree_doctor.py` covering: no-manifest pass, lefthook shim missing fallback, husky `_` missing, manifest command success, manifest command failure, post-prepare doctor still failing.
 - Manual proof: create a temp git worktree on this repo with `git worktree add /tmp/charness-wt-proof HEAD`, then run `python3 scripts/worktree_doctor.py --json --repo-root /tmp/charness-wt-proof` and confirm clean pass (charness has no node_modules / lefthook so canonical checks should be `skipped` not `fail`).
 - Render proof: run `python3 scripts/render_cli_reference.py --repo-root . --output docs/cli-reference.md` and confirm no drift after the wiring slice.
-- Closeout: bounded fresh-eye subagent premortem against the new manifest contract before commit.
+- Closeout: bounded fresh-eye subagent critique against the new manifest contract before commit.
 
 ## References
 

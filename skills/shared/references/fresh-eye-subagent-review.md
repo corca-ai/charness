@@ -5,7 +5,7 @@ that path as blocked, confirm the host actually cannot provide them. Guessing
 from priors is the exact failure mode this reference exists to stop.
 
 Use this for bounded reviewer scopes owned by another skill, including
-`premortem`, `spec`, `quality`, `handoff`, and any skill that names a
+`critique`, `spec`, `quality`, `handoff`, and any skill that names a
 fresh-eye subagent review as its canonical path.
 
 ## Delegation Context
@@ -13,7 +13,7 @@ fresh-eye subagent review as its canonical path.
 The caller that owns the review decides whether it needs fresh-eye subagents and
 spawns them. Once a parent agent has delegated a bounded review task to a
 subagent, that delegated subagent is already the fresh-eye reviewer for its
-assigned lens. Premortem angle and counterweight reviews are examples of bounded
+assigned lens. Critique angle and counterweight reviews are examples of bounded
 review tasks; other skills may reuse the same parent-delegated rule for their
 own fresh-eye reviewers.
 
@@ -53,7 +53,7 @@ priority instruction that forbids honoring repo delegation is a blocker.
 ## Required Before Declaring The Canonical Path Blocked
 
 1. Attempt the bounded setup the skill calls for.
-   - Try to open one fresh-eye or premortem subagent with a tight scope and
+   - Try to open one fresh-eye or critique subagent with a tight scope and
      time box. A single probe is enough; you are not required to spawn the full
      reviewer set just to prove availability.
    - If you are already a bounded fresh-eye subagent spawned by a parent, do not

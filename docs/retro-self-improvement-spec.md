@@ -79,7 +79,7 @@ memory.
   behavior around discoverability, modelessness, and next-step clarity rather
   than serving as decorative philosophy.
 
-## Premortem
+## Critique
 
 If this work is implemented badly, the likely failure modes are:
 

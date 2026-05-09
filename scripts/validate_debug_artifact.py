@@ -134,7 +134,7 @@ def validate_current_interrupt_sections(lines: list[str]) -> None:
     interrupt_values = extract_prefixed_values(
         interrupt_lines,
         (
-            "- Premortem Required: ",
+            "- Critique Required: ",
             "- Next Step: ",
             "- Handoff Artifact: ",
         ),
@@ -152,16 +152,16 @@ def validate_current_interrupt_sections(lines: list[str]) -> None:
     if generalization_pressure not in ALLOWED_GENERALIZATION_PRESSURE:
         raise ValidationError("`Generalization Pressure` must be `none`, `monitor`, or `factor-now`")
 
-    premortem_required = interrupt_values["- Premortem Required: "]
-    if premortem_required not in {"yes", "no"}:
-        raise ValidationError("`Premortem Required` must be `yes` or `no`")
+    critique_required = interrupt_values["- Critique Required: "]
+    if critique_required not in {"yes", "no"}:
+        raise ValidationError("`Critique Required` must be `yes` or `no`")
     next_step = interrupt_values["- Next Step: "]
     if next_step not in {"impl", "spec"}:
         raise ValidationError("`Next Step` must be `impl` or `spec`")
 
     forced = bool(set(risk_classes) & FORCED_RISK_CLASSES or generalization_pressure == "factor-now")
-    if forced and premortem_required != "yes":
-        raise ValidationError("forced risk interrupt must record `Premortem Required: yes`")
+    if forced and critique_required != "yes":
+        raise ValidationError("forced risk interrupt must record `Critique Required: yes`")
     if forced and next_step != "spec":
         raise ValidationError("forced risk interrupt must record `Next Step: spec`")
     if forced:

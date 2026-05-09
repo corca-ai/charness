@@ -35,7 +35,7 @@ incrementally:
    - add one canonical doc that maps layer ownership, instruction precedence,
      and context assembly order using existing `charness` terms
 2. `Review Evidence Contract`
-   - tighten review-oriented guidance so `quality`, `premortem`, and adjacent
+   - tighten review-oriented guidance so `quality`, `critique`, and adjacent
      review flows explicitly ask for the minimum evidence bundle they rely on
 3. `Artifact Durability Contract`
    - add one short policy doc that maps fixed / semi-fixed / variable knowledge
@@ -192,7 +192,7 @@ incrementally:
   - relevant diff or changed surface
   - command output or logs when the claim depends on runtime behavior
   - prior artifact only as context, not as authoritative truth
-- `skills/public/premortem/` or another adjacent review reference explicitly
+- `skills/public/critique/` or another adjacent review reference explicitly
   calls out document/source-of-truth cascade risk when a rule change should
   propagate across multiple surfaces
 - `docs/handoff.md` points the next implementation session at this spec when the
@@ -208,7 +208,7 @@ incrementally:
   - `python3 scripts/validate_skills.py --repo-root .` if public skill
     references change
 
-## Premortem
+## Critique
 
 - A rushed implementer may overreact and create a big new architecture doc that
   duplicates existing policy instead of naming the few missing contracts. The

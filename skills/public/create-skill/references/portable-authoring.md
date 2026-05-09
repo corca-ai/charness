@@ -123,7 +123,7 @@ Good:
 
 - Daniel Jackson in a concept-shaping skill where boundary honesty, source of
   truth, and one clear user-facing concept are central
-- Gary Klein in a premortem-bearing skill where likely failure modes and wrong
+- Gary Klein in a critique-bearing skill where likely failure modes and wrong
   next actions should be surfaced before closeout
 - Ward Cunningham in a spec skill where executable acceptance artifacts should
   stay at the boundary instead of becoming a duplicate unit suite

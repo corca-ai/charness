@@ -8,7 +8,7 @@ Use this when the work should move from contract into code, config, tests, or op
 
 `impl` is downstream of `spec`, but direct implementation prompts still get a
 small honest contract instead of pretending the task is already well-defined.
-Keep sequence discipline, strong verification, and honest premortem use in the
+Keep sequence discipline, strong verification, and honest critique use in the
 loop. See `references/sequence-discipline.md`, `references/verification-ladder.md`, `references/design-lenses.md`, and `references/review-gate.md`.
 
 ## Continuation Default
@@ -133,17 +133,17 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
    - confirm each item is reflected in the delivered slice or explicitly
      deferred or reclassified in the contract
 6. Run the stop gate.
-   - every task-completing repo slice records premortem before closeout; scale the pass instead of asking whether it is needed
-   - record `Premortem: short <scope>` for small local-risk slices, or `Premortem: full <artifact-or-subagent-status>` after using standalone `premortem` for design, release, workflow, compatibility, host-proof, prompt-surface, public-skill, validator, or export decisions
-   - `premortem` always means a fresh bounded subagent review, never a same-agent pass
-   - use `Premortem: not-applicable <reason>` only for inspect/status/routing-only requests that do not complete repo work
-   - if the required premortem is blocked because the host cannot provide
-     subagents after the capability check, stop and record `Premortem: blocked <host-signal>`
+   - every task-completing repo slice records critique before closeout; scale the pass instead of asking whether it is needed
+   - record `Critique: short <scope>` for small local-risk slices, or `Critique: full <artifact-or-subagent-status>` after using standalone `critique` for design, release, workflow, compatibility, host-proof, prompt-surface, public-skill, validator, or export decisions
+   - `critique` always means a fresh bounded subagent review, never a same-agent pass
+   - use `Critique: not-applicable <reason>` only for inspect/status/routing-only requests that do not complete repo work
+   - if the required critique is blocked because the host cannot provide
+     subagents after the capability check, stop and record `Critique: blocked <host-signal>`
    - run a fresh-eye review for runtime behavior, boundary honesty, and
      docs/spec synchronization
 7. End with execution status.
    - what changed, what was verified, and what truth surfaces moved
-   - what the premortem found and what contract updates were made
+   - what the critique found and what contract updates were made
    - what remains for the next slice
    - if `$SKILL_DIR/../retro/scripts/check_auto_trigger.py` reports `triggered: true`
      for the current repo, run a short `session` retro before the final stop
@@ -155,7 +155,7 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
 The closeout should usually include:
 
 `Implemented`, `Contract Source`, `Verification` naming code/fixture and
-runtime/evaluator proof, `Truth Surface Sync`, `Premortem`, `Contract Updates`,
+runtime/evaluator proof, `Truth Surface Sync`, `Critique`, `Contract Updates`,
 `Residual Risks`, and `Next Slice`.
 
 ## Guardrails
@@ -177,12 +177,12 @@ runtime/evaluator proof, `Truth Surface Sync`, `Premortem`, `Contract Updates`,
   available verification capability instead of relying on code inspection alone.
 - If a stronger verification path exists but needs permissions, setup, or an
   external tool, ask for it rather than pretending the weaker proof is enough.
-- Do not call a same-agent review a premortem.
-- Do not skip premortem for task-completing repo work just because the code
+- Do not call a same-agent review a critique.
+- Do not skip critique for task-completing repo work just because the code
   looks locally clean.
-- Do not reinvent one-off premortem angle selection when the standalone
-  `premortem` skill fits the slice.
-- If the required premortem is blocked, stop instead of downgrading to a local
+- Do not reinvent one-off critique angle selection when the standalone
+  `critique` skill fits the slice.
+- If the required critique is blocked, stop instead of downgrading to a local
   substitute and still calling the slice reviewed.
 
 ## References

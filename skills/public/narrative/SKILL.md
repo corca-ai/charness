@@ -101,7 +101,7 @@ git status --short
 4. Run the landing rewrite loop when the target is a high-leverage first-touch
    surface.
    - use `references/landing-rewrite-loop.md` for comparables, intent inventory,
-     claim audit, compression metric, reader premortem, and carry-forward review
+     claim audit, compression metric, reader critique, and carry-forward review
    - if the work is really a cross-repo issue or proposal packet, use
      `references/cross-repo-issue-shaping.md` so `why` and `what` stay ahead
      of `how`

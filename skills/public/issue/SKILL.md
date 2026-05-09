@@ -1,6 +1,6 @@
 ---
 name: issue
-description: "Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through the adapter-resolved backend (`gh` by default, or a host-mediated capability such as `ceal github`). Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth, classifies the issue, runs a causal review for bug-class issues before designing the fix, and runs a resolution premortem so the same class of issue does not recur."
+description: "Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through the adapter-resolved backend (`gh` by default, or a host-mediated capability such as `ceal github`). Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth, classifies the issue, runs a causal review for bug-class issues before designing the fix, and runs a resolution critique so the same class of issue does not recur."
 ---
 
 # Issue
@@ -105,7 +105,7 @@ repo by created date. It must not use the current session's last created issue.
    `deferred-work`. Discriminator: if real-world behavior diverges from a
    documented or implied contract, it is `bug`; default to `bug` when unsure.
    Only `bug` requires the full causal review at step 4. `feature` and
-   `deferred-work` skip step 4 and go to step 8 with a design-only premortem.
+   `deferred-work` skip step 4 and go to step 8 with a design-only critique.
    `question` and `decision-needed` route to step 6 first. Record the
    classification in the resolution notes.
 4. For `bug`-class issues, run a **causal review** before design via a bounded
@@ -116,7 +116,7 @@ repo by created date. It must not use the current session's last created issue.
    sibling search (same pattern at the same layer, abstracted up, or
    specialized down). The subagent must not invoke skills that themselves
    spawn reviewers. See `references/causal-review.md` for prompts, contract,
-   and the premortem handoff template. If the host blocks subagent spawning,
+   and the critique handoff template. If the host blocks subagent spawning,
    stop and report; step 8 is also blocked. Do not substitute a same-agent
    pass.
    Run causal review per bug-class issue when resolving a range; share
@@ -140,13 +140,13 @@ repo by created date. It must not use the current session's last created issue.
    `docs/conventions/implementation-discipline.md`: sync generated, plugin,
    and export surfaces before validators. Verify with the strongest honest
    local gate.
-8. Run a **resolution premortem** focused on recurrence: delegate to the
-   `premortem` skill (it spawns its own bounded angle + counterweight
+8. Run a **resolution critique** focused on recurrence: delegate to the
+   `critique` skill (it spawns its own bounded angle + counterweight
    subagents), passing causal-review output via
    `references/causal-review.md`. Satisfies the CLAUDE.md task-completion
-   premortem; when invoked from `impl`, declare
-   `Premortem: full <issue-resolution-artifact>`. If step 4 was blocked, do not run
-   premortem against an empty prior context — report the blocked state.
+   critique; when invoked from `impl`, declare
+   `Critique: full <issue-resolution-artifact>`. If step 4 was blocked, do not run
+   critique against an empty prior context — report the blocked state.
    One per fix-unit, not per selector. Bundle cheap prevention; record
    deferred.
 9. Commit, push, and close the GitHub issue only after the fix is on
@@ -179,7 +179,7 @@ repo by created date. It must not use the current session's last created issue.
   `feature`, `question`, `decision-needed`, or `deferred-work` to bypass the
   subagent step. Misclassification is the failure mode this guard exists to
   catch; default to `bug` when unsure.
-- Do not collapse the causal-review or resolution-premortem subagent into a
+- Do not collapse the causal-review or resolution-critique subagent into a
   same-agent local pass. If the host blocks subagent spawning, stop and report
   the blocked state with the concrete host signal.
 - Do not file siblings surfaced by causal review as new issues without first

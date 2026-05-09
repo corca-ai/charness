@@ -7,7 +7,7 @@ from scripts.init_repo_artifact_policy_lib import detect_charness_artifact_polic
 
 RETRO_ADAPTER_RELATIVE_PATH = Path(".agents/retro-adapter.yaml")
 RETRO_SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
-FRESH_EYE_MARKERS = ("fresh-eye", "fresh eye", "premortem", "subagent review", "subagent reviews")
+FRESH_EYE_MARKERS = ("fresh-eye", "fresh eye", "critique", "subagent review", "subagent reviews")
 FRESH_EYE_STALE_MARKERS = ("explicit consent", "local fallback")
 FRESH_EYE_SECTION_HEADING = "## Subagent Delegation"
 FRESH_EYE_REQUIRED_SNIPPETS = (
@@ -211,7 +211,7 @@ def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object]
         findings.append(
             {
                 "type": "fresh_eye_delegation_rule_drift",
-                "message": "Fresh-eye or premortem review is present but AGENTS.md is missing the delegated-review stop-gate rule.",
+                "message": "Fresh-eye or critique review is present but AGENTS.md is missing the delegated-review stop-gate rule.",
                 "recommended_action": "normalize_fresh_eye_delegation_rule",
             }
         )
@@ -219,7 +219,7 @@ def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object]
         findings.append(
             {
                 "type": "fresh_eye_task_review_scope_drift",
-                "message": "Fresh-eye or premortem review is present but AGENTS.md does not name task-completing init-repo and quality review runs as spawn-authorized scopes.",
+                "message": "Fresh-eye or critique review is present but AGENTS.md does not name task-completing init-repo and quality review runs as spawn-authorized scopes.",
                 "recommended_action": "add_init_repo_quality_delegated_review_scope",
             }
         )
@@ -279,7 +279,7 @@ def detect_policy_source_recommendations(
         enabled_requests_recommendation = "agents.delegated_review_policy" in enabled
         if not (source_mentions_review or source_requests_recommendation or enabled_requests_recommendation):
             continue
-        evidence = [f"{raw_path} implies bounded fresh-eye, premortem, or subagent review policy"]
+        evidence = [f"{raw_path} implies bounded fresh-eye, critique, or subagent review policy"]
         if missing_required:
             evidence.append("AGENTS.md lacks delegated-review host restriction wording")
         if missing_scopes:

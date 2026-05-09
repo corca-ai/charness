@@ -37,7 +37,7 @@ runtime bootstrap state.
   real chunk queue drains. This slice defines the portable state contract and
   closeout rule without inventing a larger HITL execution engine.
 
-## Premortem
+## Critique
 
 - Fresh-eye runtime/state angle found an item-vs-gate mismatch and a temporal
   naming mismatch in the first draft. Resolution: model `full_target_review` as

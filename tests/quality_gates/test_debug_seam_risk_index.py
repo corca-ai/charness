@@ -86,7 +86,7 @@ def debug_artifact(
                 "",
                 "## Interrupt Decision",
                 "",
-                "- Premortem Required: yes",
+                "- Critique Required: yes",
                 "- Next Step: spec",
                 "- Handoff Artifact: charness-artifacts/spec/host-seam.md",
                 "",

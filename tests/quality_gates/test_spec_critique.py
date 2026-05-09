@@ -3,7 +3,7 @@ from __future__ import annotations
 from .support import ROOT, skill_package_text
 
 
-def test_spec_skill_surfaces_premortem_and_fresh_eye_review() -> None:
+def test_spec_skill_surfaces_critique_and_fresh_eye_review() -> None:
     skill_text = (ROOT / "skills" / "public" / "spec" / "SKILL.md").read_text(
         encoding="utf-8"
     )
@@ -11,7 +11,7 @@ def test_spec_skill_surfaces_premortem_and_fresh_eye_review() -> None:
         ROOT / "skills" / "shared" / "references" / "fresh-eye-subagent-review.md"
     ).read_text(encoding="utf-8")
 
-    assert "premortem" in skill_text.lower()
+    assert "critique" in skill_text.lower()
     assert "fresh-eye" in skill_text
     assert "subagent" in skill_text or "subagents" in skill_text
     assert "../../shared/references/fresh-eye-subagent-review.md" in skill_text
@@ -39,10 +39,10 @@ def test_spec_skill_distinguishes_public_executable_contract_from_implementation
     assert "viewer over the latest artifact" in reference_text
 
 
-def test_specdown_on_demand_viewer_keeps_artifact_and_premortem_policy_visible() -> None:
+def test_specdown_on_demand_viewer_keeps_artifact_and_critique_policy_visible() -> None:
     spec_text = (ROOT / "specs" / "on-demand-validation.spec.md").read_text(encoding="utf-8")
 
     assert "viewer for the latest checked on-demand validation" in spec_text
     assert "charness-artifacts/cautilus/latest.md" in spec_text
-    assert "premortem" in spec_text
+    assert "critique" in spec_text
     assert "hitl-recommended" in spec_text

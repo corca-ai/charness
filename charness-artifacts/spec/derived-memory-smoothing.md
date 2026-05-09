@@ -95,9 +95,9 @@ the sixth added release-version and retro-digest consistency checks.
 - Do not create a new visible artifact family for smoothed memory until a
   current pointer demonstrably needs it.
 
-## Premortem
+## Critique
 
-Execution: bounded subagent premortem ran with skill-coverage, memory-safety,
+Execution: bounded subagent critique ran with skill-coverage, memory-safety,
 and counterweight angles.
 
 Act Before Ship:

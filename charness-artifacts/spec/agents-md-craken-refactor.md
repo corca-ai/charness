@@ -118,7 +118,7 @@ One implementation session does all of:
 6. User manual review: read AGENTS.md as an external reader, confirm
    entry friendliness.
 
-## Premortem
+## Critique
 
 Fresh-eye subagent review on the spec contract surfaced six patches
 (stale-criterion default, Success #2 arithmetic, "immediately actionable"

@@ -20,7 +20,7 @@ policy_sources:
     path: AGENTS.md
     evidence_terms:
       - bounded fresh-eye review
-      - premortem
+      - critique
     recommendations:
       - agents.delegated_review_policy
 recommendation_sets:

@@ -8,7 +8,7 @@
       "hitl",
       "ideation",
       "narrative",
-      "premortem",
+      "critique",
       "quality",
       "release",
       "retro"
@@ -45,7 +45,7 @@
       "create-cli",
       "create-skill",
       "ideation",
-      "premortem",
+      "critique",
       "spec"
     ]
   },
@@ -58,7 +58,7 @@
       "ideation",
       "impl",
       "issue",
-      "premortem",
+      "critique",
       "retro"
     ],
     "visible": [

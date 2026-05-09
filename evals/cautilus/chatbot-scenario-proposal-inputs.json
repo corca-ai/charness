@@ -70,14 +70,14 @@
       ]
     },
     {
-      "proposalKey": "premortem-canonical-subagent-followup",
-      "title": "Refresh premortem canonical-subagent follow-up scenario from dogfood contracts",
+      "proposalKey": "critique-canonical-subagent-followup",
+      "title": "Refresh critique canonical-subagent follow-up scenario from dogfood contracts",
       "family": "fast_regression",
-      "name": "Premortem Canonical Subagent Follow-up",
-      "description": "The user clarifies that premortem must stay on the canonical subagent path, and the assistant must preserve that policy instead of silently collapsing into a same-agent fallback or confusing it with standing evaluator scope.",
-      "brief": "Current premortem contracts explicitly require a subagent capability check before any degraded local path, so long-context behavior regresses if that policy boundary is forgotten.",
+      "name": "Critique Canonical Subagent Follow-up",
+      "description": "The user clarifies that critique must stay on the canonical subagent path, and the assistant must preserve that policy instead of silently collapsing into a same-agent fallback or confusing it with standing evaluator scope.",
+      "brief": "Current critique contracts explicitly require a subagent capability check before any degraded local path, so long-context behavior regresses if that policy boundary is forgotten.",
       "tags": [
-        "premortem",
+        "critique",
         "subagent",
         "policy-clarification"
       ],
@@ -90,8 +90,8 @@
       "evidence": [
         {
           "sourceKind": "skill_contract",
-          "title": "premortem canonical subagent contract",
-          "threadKey": "dogfood-premortem-canonical-subagent",
+          "title": "critique canonical subagent contract",
+          "threadKey": "dogfood-critique-canonical-subagent",
           "observedAt": "2026-04-19T01:00:00.000Z",
           "messages": [
             "프리모르템은 무조건 서브에이전트로 명시하자는 의도입니다.",

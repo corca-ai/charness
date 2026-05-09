@@ -52,7 +52,7 @@ does not define a generic batch intake schema or runtime helper.
 - Focused quality tests pass for the new public guidance.
 - Plugin manifests are synced before validation.
 
-## Premortem
+## Critique
 
 - Misread: future agents turn this into a universal schema. Counterweight: keep
   non-goals and "not a generic schema" explicit.
@@ -63,7 +63,7 @@ does not define a generic batch intake schema or runtime helper.
 - Misread: final response recomputes facts from chat context. Counterweight:
   make `report.json` or commit artifacts the final report owner.
 
-## Fresh-Eye Premortem
+## Fresh-Eye Critique
 
 Fresh-Eye Satisfaction: parent-delegated.
 

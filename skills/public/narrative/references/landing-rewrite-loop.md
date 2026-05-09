@@ -170,9 +170,9 @@ materialization, or another implementation surface that does not exist yet,
 record the doc-code alignment follow-up with its likely owner instead of
 polishing the landing page as if the gap were closed.
 
-## Reader Premortem
+## Reader Critique
 
-Run a short fresh-eye premortem before finalizing:
+Run a short fresh-eye critique before finalizing:
 
 - Do any two sections assert contradictory requirements?
 - For each claim, is scope fixed while implementation remains open where it

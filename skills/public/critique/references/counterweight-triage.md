@@ -1,11 +1,11 @@
 # Counterweight Triage
 
-Premortem should not end as a flat list of fears.
+Critique should not end as a flat list of fears.
 
 After the angle pass, run one counterweight review that pushes back on
 speculation, YAGNI, and maintenance cost amnesia.
 
-In the canonical premortem path, the counterweight reviewer is a separate
+In the canonical critique path, the counterweight reviewer is a separate
 subagent spawned by the parent. That reviewer should triage directly and record
 `Fresh-Eye Satisfaction: parent-delegated`; it should not spawn a further
 reviewer unless the parent explicitly requested recursive delegation.
@@ -13,7 +13,7 @@ reviewer unless the parent explicitly requested recursive delegation.
 Use four bins:
 
 - `Act Before Ship`
-  The concern changes the decision, acceptance, or release requirement now.
+  The concern changes the change, acceptance, or release requirement now.
 - `Bundle Anyway`
   The concern is real and cheap to fix while touching the surface already.
 - `Over-Worry`
@@ -44,5 +44,5 @@ Counterweight prompts should push especially hard on:
   they depend on
 
 The purpose is not bravado.
-The purpose is to stop a good premortem from turning into an unowned paranoia
+The purpose is to stop a good critique from turning into an unowned paranoia
 backlog.

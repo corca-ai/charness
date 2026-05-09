@@ -1,8 +1,8 @@
-# Causal Review and Resolution Premortem
+# Causal Review and Resolution Critique
 
 `issue resolve` runs two reviewer-driven passes that the smallest-fix design
 loop alone keeps missing: a **causal review** before design (step 4) and a
-**resolution premortem** before close (step 8). Both use bounded fresh-eye
+**resolution critique** before close (step 8). Both use bounded fresh-eye
 subagents so the analysis is not anchored on the implementer's first hypothesis.
 
 ## Classification gate
@@ -11,8 +11,8 @@ Only `bug`-class issues require the full causal review. Other classes use a
 lighter pass:
 
 - `bug`: full three-lens causal review (root cause, detection gap, sibling
-  search), then resolution premortem
-- `feature`: skip causal review, run resolution premortem on the design only
+  search), then resolution critique
+- `feature`: skip causal review, run resolution critique on the design only
 - `question`: usually no implementation, no review pass; respond and close
 - `decision-needed`: discuss with the user before either review pass; the
   decision often reshapes what `bug` vs `feature` even means
@@ -34,10 +34,10 @@ The subagent's prompt must:
 - bound the time and scope ("under 600 words", "cite file:line")
 - forbid prescribing the fix; the implementer designs the fix in step 7
 - explicitly tell the subagent it is the bounded fresh-eye reviewer and must
-  not invoke `issue`, `premortem`, `debug`, or any other skill that itself
+  not invoke `issue`, `critique`, `debug`, or any other skill that itself
   spawns reviewers; complete the three lenses in-process
 
-The single-subagent multi-lens shape (versus premortem's multi-angle shape) is
+The single-subagent multi-lens shape (versus critique's multi-angle shape) is
 appropriate here because the three lenses share evidence (the same diff, the
 same test surface, the same neighboring files) and one reviewer can hold them
 without triangulation. When evidence does not flow across lenses — for
@@ -126,22 +126,22 @@ keep the single-subagent shape honest without requiring a second spawn.
 
 If the host blocks subagent spawning, stop and surface the blocked state. Do
 not run a same-agent local causal review. Step 8 is also blocked for this run
-since premortem has no prior context to chain into; report both blocked states
+since critique has no prior context to chain into; report both blocked states
 in the close artifact.
 
-## Resolution premortem (step 8)
+## Resolution critique (step 8)
 
-After the fix verifies, delegate to the `premortem` skill with a recurrence
-focus. The premortem skill already owns its own bounded subagent contract
-(angle reviewers + counterweight). This resolution premortem satisfies the
-CLAUDE.md task-completion premortem obligation: when `issue resolve` is
+After the fix verifies, delegate to the `critique` skill with a recurrence
+focus. The critique skill already owns its own bounded subagent contract
+(angle reviewers + counterweight). This resolution critique satisfies the
+CLAUDE.md task-completion critique obligation: when `issue resolve` is
 invoked from `impl`, the implementer should declare
-`Premortem: full <issue-resolution-artifact>` instead of running a second
-generic premortem at impl's closeout step.
+`Critique: full <issue-resolution-artifact>` instead of running a second
+generic critique at impl's closeout step.
 
-### Premortem handoff template
+### Critique handoff template
 
-Pass the following fields when delegating to `premortem`:
+Pass the following fields when delegating to `critique`:
 
 - `decision_artifact`: the issue URL, the implemented diff (or commit hash),
   and the close comment draft
@@ -155,12 +155,12 @@ Pass the following fields when delegating to `premortem`:
   re-classifying the issue
 
 If step 4 was blocked (no causal-review output available), do not run
-premortem against an empty `prior_context`. Report both blocked states in the
+critique against an empty `prior_context`. Report both blocked states in the
 close artifact and stop.
 
 ### Consuming the result
 
-`premortem` returns the four-bin triage (`Act Before Ship`, `Bundle Anyway`,
+`critique` returns the four-bin triage (`Act Before Ship`, `Bundle Anyway`,
 `Over-Worry`, `Valid but Defer`). Map it onto the close comment:
 
 - `Act Before Ship`: hold commit, fix before close
@@ -169,7 +169,7 @@ close artifact and stop.
   reader inherits them without reopening the issue
 - `Over-Worry`: do not surface in the close comment
 
-Run one premortem per fix-unit (single issue or bundled siblings), not per
+Run one critique per fix-unit (single issue or bundled siblings), not per
 issue selector when resolving a range.
 
 ## Close comment shape
@@ -191,7 +191,7 @@ For `feature` or `deferred-work`:
 
 - the reporter's JTBD
 - what was implemented (capability + entry point)
-- any premortem-bundled prevention; "no recurrence prevention applicable" is a
+- any critique-bundled prevention; "no recurrence prevention applicable" is a
   valid line for greenfield features
 
 For `question` or `decision-needed`:

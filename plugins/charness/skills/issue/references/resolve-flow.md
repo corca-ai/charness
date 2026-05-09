@@ -17,7 +17,7 @@ more correct. Start with issues that clarify shared contracts, unblock later
 issues, or remove failing gates that would make the rest hard to verify.
 
 Bug-class issues run a causal review subagent before design and a resolution
-premortem before close. See `causal-review.md` for the lenses, the subagent
+critique before close. See `causal-review.md` for the lenses, the subagent
 contract, and the close-comment shape that carries the analysis forward.
 
 Discuss with the user before implementation when the issue asks for a decision

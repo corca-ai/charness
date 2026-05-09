@@ -10,7 +10,7 @@ This reference captures what `charness` should and should not borrow from
 - compare against the last durable weekly retro when one exists
 - persist a compact snapshot only when the adapter defines an explicit durable path
 
-## Premortem
+## Critique
 
 If `weekly` borrows too much from `gstack` without a portability filter, the
 likely failure modes are:

@@ -273,7 +273,7 @@ def test_init_repo_inspect_reports_fresh_eye_delegation_drift(tmp_path: Path) ->
     assert recommendation_priorities["fresh_eye_review_still_requires_consent_or_fallback"] == "review_required"
 
 
-def test_init_repo_inspect_reports_task_review_scope_drift_when_premortem_rule_is_present(tmp_path: Path) -> None:
+def test_init_repo_inspect_reports_task_review_scope_drift_when_critique_rule_is_present(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     _seed_normalize_repo(
         repo,
@@ -545,7 +545,7 @@ def test_init_repo_inspect_acknowledgement_suppresses_only_named_recommendation(
     _seed_normalize_repo(repo, "# Agents\n\n## Skill Routing\n\nUse local judgment.\n")
     (repo / ".agents").mkdir(parents=True)
     (repo / "docs" / "review-policy.md").write_text(
-        "# Review Policy\n\nTask-completing quality runs require premortem review.\n",
+        "# Review Policy\n\nTask-completing quality runs require critique review.\n",
         encoding="utf-8",
     )
     (repo / ".agents" / "init-repo-adapter.yaml").write_text(
@@ -606,7 +606,7 @@ def test_init_repo_inspect_dedupes_policy_source_recommendations(tmp_path: Path)
     _seed_normalize_repo(repo, "# Agents\n\nExisting operating policy.\n")
     (repo / ".agents").mkdir(parents=True)
     (repo / "docs" / "review-a.md").write_text("fresh-eye review required\n", encoding="utf-8")
-    (repo / "docs" / "review-b.md").write_text("premortem required\n", encoding="utf-8")
+    (repo / "docs" / "review-b.md").write_text("critique required\n", encoding="utf-8")
     (repo / ".agents" / "init-repo-adapter.yaml").write_text(
         "\n".join(
             [

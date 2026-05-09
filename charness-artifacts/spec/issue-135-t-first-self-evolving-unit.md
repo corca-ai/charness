@@ -135,8 +135,12 @@ acceptance check가 PR review의 1차 기준.
     section: `Fixed/Probe/Defer Coherence`, `Acceptance Check Coverage`.
 - 기존 `references/angle-selection.md`, `references/counterweight-triage.md`는
   substrate references로 보존 (모든 target이 cross-cite).
-- `closeout-discipline.md`의 *"Treat premortem ... as part of task-completing
-  repo work"* 라인을 critique으로 단어 갱신. substrate 의도 그대로.
+- substrate wording인 *"Treat premortem ... as part of task-completing repo
+  work"* 라인을 critique으로 단어 갱신. PR 1 시점 확인: 이 라인의 owning
+  surface는 `closeout-discipline.md`가 아니라 `<repo-root>/AGENTS.md` line 30
+  (그리고 `<repo-root>/CLAUDE.md` mirror)이며, `closeout-discipline.md` 본문
+  에는 `premortem` 단어가 없다. churn으로 두 surface 모두 자연 갱신,
+  substrate 의도 그대로.
 - `premortem` 단어는 skill 이름이 아니라 reference 안의 *target lens 이름* 으
   로 보존됨.
 

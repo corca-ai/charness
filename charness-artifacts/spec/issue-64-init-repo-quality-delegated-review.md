@@ -6,7 +6,7 @@ Issue [#64](https://github.com/corca-ai/charness/issues/64) shows that
 `init-repo` and `quality` can miss operating-surface and quality-posture issues
 when a single agent follows deterministic gates too literally.
 
-The original failure was not only a missing premortem phrase. The deeper problem
+The original failure was not only a missing critique phrase. The deeper problem
 is that contextual operating guidance is currently delivered as prose or narrow
 text detectors instead of as a reviewable recommendation queue, and the
 review posture for high-judgment surfaces is not explicit enough. A later
@@ -19,7 +19,7 @@ Define the implementation contract for making `init-repo` and `quality`
 explicit delegated-review workflows:
 
 - `AGENTS.md` should authorize bounded subagent spawning for repo-mandated
-  `init-repo` and `quality` review work, similar to the existing premortem
+  `init-repo` and `quality` review work, similar to the existing critique
   host-restriction rule.
 - `init-repo` should emit structured recommendation queues instead of hiding
   contextual policy recommendations behind generic normalization findings.
@@ -221,7 +221,7 @@ review is `blocked` or when no advisory findings are reported.
   "confidence": "medium",
   "enforcement_tier": "NON_AUTOMATABLE",
   "evidence": [
-    "adapter-declared policy source mentions premortem or bounded fresh-eye review",
+    "adapter-declared policy source mentions critique or bounded fresh-eye review",
     "AGENTS.md lacks delegated-review host restriction wording"
   ],
   "suggested_action": "Review whether AGENTS.md should carry the delegated review rule.",
@@ -268,7 +268,7 @@ review is `blocked` or when no advisory findings are reported.
 
 - implementation proof expectations:
   - `init-repo inspect` emits `normalization.findings` and `recommendations[]`
-    separately. A synthetic repo with adapter-declared fresh-eye/premortem
+    separately. A synthetic repo with adapter-declared fresh-eye/critique
     policy sources produces `agents.delegated_review_policy` even when
     `AGENTS.md` lacks the old marker text.
   - recommendation priority sorts host-policy `review_required` above generated
@@ -299,9 +299,9 @@ review is `blocked` or when no advisory findings are reported.
   - `python3 scripts/run_slice_closeout.py --repo-root .`
   - `./scripts/run-quality.sh`
 
-## Premortem
+## Critique
 
-- Likely wrong next move: implement a stronger premortem phrase detector and
+- Likely wrong next move: implement a stronger critique phrase detector and
   call #64 fixed. That would preserve the brittle-gate problem and miss the
   adapter-policy source issue.
 - Likely wrong next move: make delegated review unconditional for every helper

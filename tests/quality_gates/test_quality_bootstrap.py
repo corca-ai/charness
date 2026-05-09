@@ -477,7 +477,7 @@ def test_quality_inventory_adapter_gate_design_emits_required_classes(tmp_path: 
         encoding="utf-8",
     )
     (repo / "scripts" / "review_policy.py").write_text(
-        "FRESH_EYE_MARKERS = ('premortem',)\nrecommendations = [{'enforcement_tier': 'NON_AUTOMATABLE'}]\n",
+        "FRESH_EYE_MARKERS = ('critique',)\nrecommendations = [{'enforcement_tier': 'NON_AUTOMATABLE'}]\n",
         encoding="utf-8",
     )
 
@@ -507,11 +507,11 @@ def test_quality_inventory_adapter_gate_design_uses_configured_review_scope(tmp_
     repo = seed_quality_repo(tmp_path)
     (repo / "custom").mkdir()
     (repo / "custom" / "review_policy.py").write_text(
-        "FRESH_EYE_MARKERS = ('premortem',)\n",
+        "FRESH_EYE_MARKERS = ('critique',)\n",
         encoding="utf-8",
     )
     (repo / "scripts" / "ignored_policy.py").write_text(
-        "FRESH_EYE_MARKERS = ('premortem',)\n",
+        "FRESH_EYE_MARKERS = ('critique',)\n",
         encoding="utf-8",
     )
     (repo / ".agents" / "quality-adapter.yaml").write_text(

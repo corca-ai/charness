@@ -91,7 +91,7 @@ def test_select_verifiers_includes_public_skill_policy_for_public_skill_changes(
         "--repo-root",
         str(ROOT),
         "--paths",
-        "skills/public/premortem/SKILL.md",
+        "skills/public/critique/SKILL.md",
         "--json",
     )
     assert result.returncode == 0, result.stderr
@@ -480,7 +480,7 @@ def test_run_slice_closeout_blocks_hitl_recommended_public_skill_review_until_ac
         "--repo-root",
         str(ROOT),
         "--paths",
-        "skills/public/premortem/SKILL.md",
+        "skills/public/critique/SKILL.md",
         "charness-artifacts/cautilus/latest.md",
         "--skip-sync",
         "--skip-verify",
@@ -495,7 +495,7 @@ def test_run_slice_closeout_blocks_hitl_recommended_public_skill_review_until_ac
     assert payload["cautilus_plan"]["required"] is True
     assert payload["cautilus_plan"]["artifact_changed"] is True
     assert payload["cautilus_plan"]["scenario_registry_review_required"] is False
-    assert payload["cautilus_plan"]["changed_public_skills"] == ["premortem"]
+    assert payload["cautilus_plan"]["changed_public_skills"] == ["critique"]
     assert payload["cautilus_plan"]["skill_validation_recommendations"][0]["validation_tier"] == "hitl-recommended"
     assert "public-skill validation review is required" in payload["error"]
 
@@ -590,7 +590,7 @@ def test_run_slice_closeout_blocks_for_forced_risk_interrupt_without_spec_refres
                 "",
                 "## Interrupt Decision",
                 "",
-                "- Premortem Required: yes",
+                "- Critique Required: yes",
                 "- Next Step: spec",
                 "- Handoff Artifact: charness-artifacts/spec/interrupt-demo.md",
                 "",
@@ -604,7 +604,7 @@ def test_run_slice_closeout_blocks_for_forced_risk_interrupt_without_spec_refres
         encoding="utf-8",
     )
     (repo / "charness-artifacts" / "spec" / "interrupt-demo.md").write_text(
-        "# Premortem\n\n- Interrupt Source: seam-demo\n",
+        "# Critique\n\n- Interrupt Source: seam-demo\n",
         encoding="utf-8",
     )
 

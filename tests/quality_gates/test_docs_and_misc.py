@@ -220,10 +220,10 @@ def test_development_doc_carries_mutation_phase_barrier_rule() -> None:
     assert "parallelism is only safe for read-only inventory" in development
 
 
-def test_public_skill_validation_doc_keeps_premortem_and_on_demand_boundary_visible() -> None:
+def test_public_skill_validation_doc_keeps_critique_and_on_demand_boundary_visible() -> None:
     validation_doc = (ROOT / "docs" / "public-skill-validation.md").read_text(encoding="utf-8")
 
-    assert "`premortem`" in validation_doc
+    assert "`critique`" in validation_doc
     assert "on-demand proof through" in validation_doc
     assert "underlying evaluator state or storage layer" in validation_doc
 
@@ -383,7 +383,7 @@ def test_release_bump_version_updates_manifest_and_runs_sync(tmp_path: Path) -> 
     assert (repo / "sync-version.txt").read_text(encoding="utf-8").strip() == "0.0.1"
 
 
-def test_quality_skill_carries_blind_spot_policy_and_premortem_refs() -> None:
+def test_quality_skill_carries_blind_spot_policy_and_critique_refs() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
     adapter_contract = (
         ROOT / "skills" / "public" / "quality" / "references" / "adapter-contract.md"

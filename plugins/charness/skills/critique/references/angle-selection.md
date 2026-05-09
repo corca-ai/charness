@@ -3,7 +3,7 @@
 Pick angles that create different failure stories, not five copies of "what if
 this breaks."
 
-Good default angles for a non-trivial decision:
+Good default angles for a non-trivial change:
 
 - `customer-of-this-capability`: what the user or downstream agent experiences
   on the first real use, including missing setup, stale adapters, thin defaults,
@@ -31,7 +31,7 @@ Subagent sizing:
 - minimum: two contrasting angle subagents plus one separate counterweight
   subagent
 - default: three angle subagents plus one counterweight subagent
-- widen to four angle subagents only when the decision spans multiple durable
+- widen to four angle subagents only when the change spans multiple durable
   surfaces, a breaking migration, or a release/install/doc cascade
 - if you cannot name four meaningfully different angles, stay at two or three
   instead of inventing filler
@@ -41,9 +41,9 @@ subagents. A delegated angle reviewer should run the assigned lens directly and
 should not spawn another reviewer unless the parent explicitly asks for
 recursive delegation.
 
-Canonical execution uses subagents. Before a parent reports that path as unavailable, use `../../../shared/references/fresh-eye-subagent-review.md`: attempt the bounded subagent setup, resolve availability uncertainty, and cite the concrete host signal. If the host still cannot provide subagents, say the canonical premortem path is unavailable and leave the host-side contract gap visible. Do not collapse into a same-agent self-review.
+Canonical execution uses subagents. Before a parent reports that path as unavailable, use `../../../shared/references/fresh-eye-subagent-review.md`: attempt the bounded subagent setup, resolve availability uncertainty, and cite the concrete host signal. If the host still cannot provide subagents, say the canonical critique path is unavailable and leave the host-side contract gap visible. Do not collapse into a same-agent self-review.
 
-Rotate or swap angles when the decision is narrower:
+Rotate or swap angles when the change is narrower:
 
 - skill, adapter, bootstrap, or example changes where the main risk is a bad
   first run for the skill's customer
@@ -53,7 +53,7 @@ Rotate or swap angles when the decision is narrower:
 - install/update/support behavior
 - policy or security posture
 
-Include the `first-reader` angle when the decision changes durable docs, spec
+Include the `first-reader` angle when the change touches durable docs, spec
 indexes, public skill prose, README-like surfaces, or source-of-truth
 narrative. For rename-heavy edits, the title-slug coherence lens belongs in
 the same angle so structural rewrites do not hide stale slugs, links, or

@@ -277,7 +277,7 @@ def test_validate_packaging_rejects_invalid_public_skill_policy_when_present(tmp
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     policy_path = repo / "docs" / "public-skill-validation.json"
     policy = json.loads(policy_path.read_text(encoding="utf-8"))
-    policy["tiers"]["hitl-recommended"].remove("premortem")
+    policy["tiers"]["hitl-recommended"].remove("critique")
     policy_path.write_text(json.dumps(policy, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     result = run_script("scripts/validate_packaging.py", "--repo-root", str(repo))

@@ -113,7 +113,7 @@ def test_agent_assessment_invariant_is_cited_across_chunk_surfaces() -> None:
         "quality proposal-flow.md": (
             ROOT / "skills" / "public" / "quality" / "references" / "proposal-flow.md"
         ),
-        "premortem SKILL.md": ROOT / "skills" / "public" / "premortem" / "SKILL.md",
+        "critique SKILL.md": ROOT / "skills" / "public" / "critique" / "SKILL.md",
         "spec SKILL.md": ROOT / "skills" / "public" / "spec" / "SKILL.md",
         "narrative SKILL.md": ROOT / "skills" / "public" / "narrative" / "SKILL.md",
         "init-repo SKILL.md": ROOT / "skills" / "public" / "init-repo" / "SKILL.md",

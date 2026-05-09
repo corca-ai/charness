@@ -1,0 +1,64 @@
+# Allowlist for `premortem` cites preserved through the Leg 5 rename
+# (premortem -> critique). Each line is `<path>\t<reason>`. Lines with a
+# trailing `/` apply to every tracked file under that directory prefix.
+#
+# Owned by `scripts/check_premortem_rename.py`. Adding an entry without a
+# concrete reason fails the validator at PR review time.
+
+# Self-references — the rename validator and its allowlist must use the
+# old word in their own paths so the validator can find the cite to enforce.
+scripts/check_premortem_rename.py	validator self (file path uses old word so it can grep for it)
+scripts/check_premortem_rename.allowlist.txt	allowlist self (path contains old word)
+plugins/charness/scripts/check_premortem_rename.py	plugin mirror of the validator
+plugins/charness/scripts/check_premortem_rename.allowlist.txt	plugin mirror of the allowlist
+
+# The umbrella spec for issue #135 names this rename and explains why the
+# substrate is identical to code/release/rename/spec critique. The word
+# `premortem` appears as the *target lens name* inside `critique`, so the
+# spec must keep it.
+charness-artifacts/spec/issue-135-t-first-self-evolving-unit.md	owns the rename contract; preserves substrate-identity narrative
+
+# critique skill surfaces — `decision premortem` is the trigger phrase
+# routed to `references/premortem-decision.md`, and other target references
+# preserve `<target> premortem` trigger phrases plus the path cite to
+# premortem-decision.md.
+skills/public/critique/SKILL.md	target dispatch table preserves `decision premortem` trigger and `references/premortem-decision.md` cite
+skills/public/critique/references/premortem-decision.md	Klein-lineage decision pre-mortem reference (word preserved as target lens name)
+skills/public/critique/references/code-critique.md	cites `references/premortem-decision.md` cross-target
+skills/public/critique/references/release-critique.md	preserves `release premortem` trigger and cites `premortem-decision.md`
+skills/public/critique/references/rename-critique.md	preserves `rename premortem` trigger and cites `premortem-decision.md`
+skills/public/critique/references/spec-critique.md	preserves `spec premortem` trigger phrase
+
+# Plugin mirror — synced from `skills/public/critique/` by
+# `scripts/sync_root_plugin_manifests.py`. Mirrors the same target dispatch
+# table, lineage cite, and trigger phrases as the root surface.
+plugins/charness/skills/critique/	plugin mirror of skills/public/critique/
+
+# Validator that audits durable artifacts under `charness-artifacts/premortem/`
+# (historical directory name preserved). The script reads the prefix as a
+# string constant; the directory name itself is not renamed in this slice.
+scripts/validate_critique_artifacts.py	historical artifact dir prefix `charness-artifacts/premortem/`
+plugins/charness/scripts/validate_critique_artifacts.py	mirror of validate_critique_artifacts.py
+tests/quality_gates/test_critique_skill.py	historical fixture path `charness-artifacts/premortem/demo.md`
+
+# Documentation that cites historical retro filenames as illustrative
+# examples. Closed-history filenames are not renamed even when prose
+# vocabulary moves to `critique`.
+docs/artifact-policy.md	cites historical retro filename (closed-history) as a dated-record example
+
+# Historical artifact directories — the word `premortem` is preserved in
+# closed-history records because changing it inside a historical record
+# rewrites the past. New artifacts under these directories use the new
+# `critique` vocabulary.
+charness-artifacts/premortem/	historical premortem artifact records (directory name preserved)
+charness-artifacts/retro/	historical retro records cite `premortem` as the contemporaneous skill name
+charness-artifacts/debug/	historical debug records cite the contemporaneous spec/closeout protocol
+charness-artifacts/dogfood/	historical dogfood evidence
+charness-artifacts/cautilus/	historical cautilus proposals/benchmarks reference the old skill name
+charness-artifacts/design-studies/	historical design studies
+charness-artifacts/gather/	historical gathered external artifacts
+charness-artifacts/quality/history/	historical quality reports
+
+# Cautilus run outputs — checked-in artifacts captured before the rename.
+.cautilus/runs/	historical cautilus run outputs
+.cautilus/repos/	historical cautilus per-repo state

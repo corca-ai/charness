@@ -159,7 +159,7 @@ Current assignment:
 - `hitl`
 - `ideation`
 - `narrative`
-- `premortem`
+- `critique`
 - `quality`
 - `release`
 - `retro`
@@ -185,13 +185,13 @@ Current assignment:
 
 ## Provisional Rationale
 
-- `announcement`, `create-cli`, `ideation`, `narrative`, `premortem`,
+- `announcement`, `create-cli`, `ideation`, `narrative`, `critique`,
   `quality`, `release`, and `retro` are valuable, but their output quality
   still depends heavily on human judgment and context setting.
 - `hitl` already exists to insert human judgment into a bounded loop, so its
   own quality bar should emphasize operator review rather than pretending the
   whole workflow can be scored automatically.
-- `premortem` now has a stronger canonical subagent contract, but that still
+- `critique` now has a stronger canonical subagent contract, but that still
   makes it a poor standing evaluator target. Keep repo-owned seam checks for
   the contract and use on-demand proof or reviewed dogfood for the real
   behavioral question.
@@ -234,7 +234,7 @@ Current assignment:
 - `create-cli`
 - `create-skill`
 - `ideation`
-- `premortem`
+- `critique`
 - `spec`
 
 ## Fallback Policy
@@ -253,7 +253,7 @@ Current assignment:
 - `ideation`
 - `impl`
 - `issue`
-- `premortem`
+- `critique`
 - `retro`
 
 ### `visible`

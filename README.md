@@ -67,10 +67,10 @@ underneath.
    [AGENTS.md](./AGENTS.md), so future sessions can use `charness` more
    naturally.
 3. Start a fresh session in the new directory. Ask the agent to turn the
-   direction into a buildable contract. Routes: `spec`, with premortem-style
+   direction into a buildable contract. Routes: `spec`, with critique-style
    review when the decision is risky enough.
 4. Ask for the first real implementation slice. Routes: `impl`, with
-   verification, debugging, and premortem review pulled in as needed.
+   verification, debugging, and critique review pulled in as needed.
 5. If the agent moved in a frustrating direction, or if it found a pattern you
    want future sessions to repeat, ask for a retro. Routes: `retro`.
 6. Once enough code or docs exist, ask for a quality check. Routes: `quality`,
@@ -91,7 +91,7 @@ scenario review when installed and configured.
 2. Ask for the concrete work directly: `Implement this`,
    `Fix this failing test`, or `Debug this behavior`. Routes: `impl` or `debug`.
 3. If the task is under-specified, ask the agent to shape the contract before
-   coding. Routes: `spec`, with premortem review when the change is risky.
+   coding. Routes: `spec`, with critique review when the change is risky.
 4. When you want to explain progress, rewrite the repo story, or prepare a
    human-facing update, ask for that communication. Routes: `narrative` or
    `announcement`.
@@ -195,7 +195,7 @@ Connected areas:
 [`init-repo`](./skills/public/init-repo/SKILL.md),
 [`quality`](./skills/public/quality/SKILL.md),
 [`debug`](./skills/public/debug/SKILL.md),
-[`premortem`](./skills/public/premortem/SKILL.md).
+[`critique`](./skills/public/critique/SKILL.md).
 
 ### 6. Tacit Knowledge Becomes Workflow
 
@@ -283,7 +283,7 @@ The rest of the public surface groups by intent:
 - build and repair:
   [`impl`](./skills/public/impl/SKILL.md),
   [`debug`](./skills/public/debug/SKILL.md),
-  [`premortem`](./skills/public/premortem/SKILL.md)
+  [`critique`](./skills/public/critique/SKILL.md)
 - raise quality:
   [`quality`](./skills/public/quality/SKILL.md),
   [`retro`](./skills/public/retro/SKILL.md)

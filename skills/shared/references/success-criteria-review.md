@@ -33,8 +33,8 @@ Use the lightest honest reviewer path.
 - Non-trivial public skill, prompt, first-touch doc, release, or workflow
   changes should use one bounded fresh-eye subagent focused on overstated
   success and missing proof.
-- Broad or high-risk decisions should pair this review with `premortem`:
-  success criteria review owns the success path; `premortem` owns failure
+- Broad or high-risk decisions should pair this review with `critique`:
+  success criteria review owns the success path; `critique` owns failure
   angles and counterweight triage.
 
 When this review uses a subagent, follow
@@ -49,5 +49,5 @@ the canonical reviewer path as blocked.
   success would otherwise be fake.
 - Do not treat stakeholder enthusiasm, cleaner prose, or local command success
   as proof without naming the actor behavior or artifact boundary it changes.
-- Do not duplicate `premortem`: this review sharpens what success means, while
-  `premortem` tests why the decision might fail.
+- Do not duplicate `critique`: this review sharpens what success means, while
+  `critique` tests why the decision might fail.

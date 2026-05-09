@@ -28,7 +28,7 @@ REPO_SHAPE_HINTS = {
     "init-repo": "partially initialized mature repo with divergent but valid naming and intentionally missing optional surfaces",
     "issue": "repo connected to GitHub where issue creation or issue resolution should use `gh` and GitHub state as the source of truth",
     "narrative": "repo with existing source-of-truth docs that drift from the current product or project story",
-    "premortem": "repo with a non-trivial pending decision whose main risk is choosing the wrong plan too early",
+    "critique": "repo with a non-trivial pending decision whose main risk is choosing the wrong plan too early",
     "quality": "mature repo with standing local gates, runtime budgets, possible local-vs-CI machine variance, and at least one final stop-before-finish command",
     "release": "repo with checked-in version or packaging surfaces and a maintainer-facing release workflow",
     "retro": "repo that just completed a meaningful slice or exposed a missed issue that should feed repeat-trap memory",
@@ -49,7 +49,7 @@ PROMPT_HINTS = {
     "init-repo": "Normalize this partially initialized repo without pretending it needs a greenfield rewrite.",
     "issue": "File or resolve this GitHub issue through `gh`, keeping issue identity and freshness grounded in GitHub state.",
     "narrative": "Tighten the repo's durable story first, then derive one concise brief from that source of truth.",
-    "premortem": "Stress this pending decision before we lock it in and separate real blockers from over-worry.",
+    "critique": "Stress this pending decision before we lock it in and separate real blockers from over-worry.",
     "quality": "Review why the standing test gate feels slow, including local vs CI runtime differences, and install the next deterministic gate if the move is obvious.",
     "release": "Verify and advance the checked-in release surface without hand-editing generated packaging artifacts.",
     "retro": "Run a short retro on this slice and persist the repeat trap if the workflow should have caught it.",
@@ -74,7 +74,7 @@ EVIDENCE_OVERRIDES = {
         "keeps `issue new` problem-first and solution direction weak unless the user already fixed the implementation contract",
         "uses the `github-gh` integration path for GitHub mutations instead of inventing a separate provider",
     ],
-    "premortem": [
+    "critique": [
         "includes a customer-of-this-capability angle when first-use failure is the main risk",
     ],
     "quality": [

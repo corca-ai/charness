@@ -21,12 +21,12 @@ implementation.
 python3 -c "from pathlib import Path; text = Path('charness-artifacts/cautilus/latest.md').read_text(encoding='utf-8'); assert '## Commands Run' in text; assert '## Outcome' in text; assert 'recommendation:' in text"
 ```
 
-## `premortem` Stays On-Demand
+## `critique` Stays On-Demand
 
-`premortem` is a judgment-heavy, canonical-subagent workflow. The standing repo
+`critique` is a judgment-heavy, canonical-subagent workflow. The standing repo
 bar should keep seam checks for the contract itself, while the real behavioral
 question stays on-demand through `cautilus` or explicit reviewed HITL proof.
 
 ```run:shell
-python3 -c "import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'premortem' in policy['tiers']['hitl-recommended']; assert 'premortem' in policy['adapter_requirements']['adapter-free']; skill = Path('skills/public/premortem/SKILL.md').read_text(encoding='utf-8'); assert 'use subagents as the canonical path' in skill"
+python3 -c "import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['adapter-free']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use subagents as the canonical path' in skill"
 ```

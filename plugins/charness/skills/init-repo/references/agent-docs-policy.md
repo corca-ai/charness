@@ -4,14 +4,14 @@
 
 - `<repo-root>/AGENTS.md` is the canonical repo instruction file
 - `CLAUDE.md` should symlink to `<repo-root>/AGENTS.md` when Claude compatibility is needed
-- when the repo requires bounded fresh-eye or premortem-style subagent review
+- when the repo requires bounded fresh-eye or critique-style subagent review
   as a stop gate, `<repo-root>/AGENTS.md` should carry a dedicated
   `## Subagent Delegation` section that says this review is the explicit user
   delegation request for that bounded scope and is already delegated by the
   repo contract
 - for Charness-managed repos, that rule should also name task-completing
   `init-repo` and `quality` review runs as authorized to spawn bounded
-  reviewers; a Premortem-only heading is too narrow for this policy
+  reviewers; a Critique-only heading is too narrow for this policy
 - when adapter-declared policy sources imply delegated review but
   `<repo-root>/AGENTS.md` lacks the explicit host-spawn rule, emit a reviewable
   recommendation instead of treating phrase matching as a hard fact
@@ -47,7 +47,7 @@
 
 Do not silently overwrite or merge meaningful user-authored host instructions.
 
-When the repo uses bounded fresh-eye or premortem-style subagent review as a
+When the repo uses bounded fresh-eye or critique-style subagent review as a
 stop gate, prefer a dedicated `## Subagent Delegation` section that opens with
 an override-style admonition before the rule list. Host system prompts that
 default to "ask user before spawning subagents" are the most common silent
@@ -85,7 +85,7 @@ The block above keeps every required substring the inspector checks for:
 admonition makes the override-priority over upper-level instructions visible
 at agent read time.
 
-Do not hide `init-repo` and `quality` spawn authorization under a Premortem-only
+Do not hide `init-repo` and `quality` spawn authorization under a Critique-only
 heading or a generic operating list.
 
 Avoid weakening caveats inside the same `## Subagent Delegation` section. The

@@ -15,9 +15,9 @@ multiple plausible causes, and only then test the next hypothesis.
 `debug` is part of the execution cluster, but its job is diagnosis before
 repair. A bug investigation without a durable record only solves the current
 incident and wastes the next one.
-Do not run premortem before the facts needed for diagnosis exist. Once a debug
+Do not run critique before the facts needed for diagnosis exist. Once a debug
 slice closes repo work, hands off a fix, or authorizes repair, record the
-required premortem before closeout so the next move does not inherit an
+required critique before closeout so the next move does not inherit an
 untested repair story.
 
 ## Bootstrap
@@ -118,7 +118,7 @@ as codebase memory rather than as stale trivia.
      spec handoff artifact instead of handing directly to ordinary `impl`
    - record prevention or follow-up
    - before closing task-completing debug work or handing off a repair, record
-     the required premortem as short scoped diagnosis/repair risk or full
+     the required critique as short scoped diagnosis/repair risk or full
      standalone review when the fix affects design, workflow, compatibility,
      host-proof, prompt-surface, public-skill, validator, or export behavior
    - if the fix belongs to normal implementation work, hand off cleanly to
@@ -161,7 +161,7 @@ sections. Prefer the scaffold helper over hand-typing the skeleton from memory.
 - Do not leave the learning only in chat when the repo has a durable debug
   artifact path or document style.
 - Do not close task-completing debug work or hand off repair without recording
-  the premortem required for the next move.
+  the critique required for the next move.
 - Web search is the default tool for any "gather more information" step.
 
 ## References

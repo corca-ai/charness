@@ -17,12 +17,12 @@ parallel templates.
 - if the repo wants durable retrospective pickup, is there one stable retro
   memory seam instead of scattered weekly/session notes
 - do `<repo-root>/AGENTS.md` and `CLAUDE.md` express one clear host-facing contract
-- when the repo requires bounded fresh-eye or premortem-style subagent review,
+- when the repo requires bounded fresh-eye or critique-style subagent review,
   does `<repo-root>/AGENTS.md` say that this stop gate is already delegated and that
   host spawn restrictions must stay visible
 - when Charness `init-repo` or `quality` completes a task by running bounded
   review, does `<repo-root>/AGENTS.md` name those skills as spawn-authorized instead of
-  placing all delegated-review policy under a Premortem-only heading
+  placing all delegated-review policy under a Critique-only heading
 - when adapter-declared policy sources imply delegated review, does
   `inspect_repo.py` emit a `recommendations[]` queue item with priority,
   confidence, evidence, suggested action, and acknowledgement state

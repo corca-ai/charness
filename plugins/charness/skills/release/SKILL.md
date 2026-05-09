@@ -12,10 +12,10 @@ not just to describe recent changes.
 surfaces that ship checked-in install metadata. It should keep one repo's
 release contract honest instead of improvising version bumps, CLI update
 advice, or generated-file edits by hand.
-Every task-completing release slice records premortem before closeout. Scale
+Every task-completing release slice records critique before closeout. Scale
 the pass, not the obligation. Routine release hygiene may use a short scoped
-premortem; compatibility, install/update, deletion, host-proof, or public
-visibility decisions use standalone `premortem` before mutating versions.
+critique; compatibility, install/update, deletion, host-proof, or public
+visibility decisions use standalone `critique` before mutating versions.
 
 ## Bootstrap
 
@@ -74,14 +74,14 @@ verified.
    - generated plugin manifest versions
    - generated compatibility metadata version
    - dirty or drifted working tree state
-3. Run or record the required premortem before release mutation.
-   - every task-completing release slice records premortem before closeout; scale the pass instead of asking whether it is needed
-   - record `Premortem: short <scope>` for routine release hygiene focused on version drift, generated surfaces, publish boundary, and operator risk
-   - record `Premortem: full <artifact-or-subagent-status>` after standalone `premortem` when compatibility, install/update, deletion, host-proof, or public visibility could be misread
-   - use `Premortem: not-applicable <reason>` only for inspect/status/routing-only release requests that do not mutate or close repo work
-   - if the required premortem is blocked because the host cannot provide
+3. Run or record the required critique before release mutation.
+   - every task-completing release slice records critique before closeout; scale the pass instead of asking whether it is needed
+   - record `Critique: short <scope>` for routine release hygiene focused on version drift, generated surfaces, publish boundary, and operator risk
+   - record `Critique: full <artifact-or-subagent-status>` after standalone `critique` when compatibility, install/update, deletion, host-proof, or public visibility could be misread
+   - use `Critique: not-applicable <reason>` only for inspect/status/routing-only release requests that do not mutate or close repo work
+   - if the required critique is blocked because the host cannot provide
      subagents after the capability check, stop and record
-     `Premortem: blocked <host-signal>` instead of continuing the release slice
+     `Critique: blocked <host-signal>` instead of continuing the release slice
 4. Choose the lightest honest bump.
    - patch for bug fixes, copy fixes, and behavior repairs
    - minor for new maintained capability or additive operator surface
@@ -130,7 +130,7 @@ The result should usually include:
 - `Current Version`
 - `Target Version`
 - `Release Scope`
-- `Premortem`
+- `Critique`
 - `Verification`
 - `Release State`
 - `Public Release Verification`
@@ -157,12 +157,12 @@ The result should usually include:
   still owes bounded retry/backoff or a public visibility check.
 - Do not run sync, export, bump, install/update, or git-mutation commands in
   parallel with validators. Use parallelism only for read-only inspection.
-- Do not skip premortem for task-completing release work. Use the standalone
-  `premortem` pass when a release changes compatibility, install/update flow,
+- Do not skip critique for task-completing release work. Use the standalone
+  `critique` pass when a release changes compatibility, install/update flow,
   public visibility, or host-proof expectations in a way the next maintainer
   could misread.
-- Do not call a same-agent review a premortem.
-- If the required premortem is blocked, stop instead of downgrading to a local
+- Do not call a same-agent review a critique.
+- If the required critique is blocked, stop instead of downgrading to a local
   substitute and still calling the release reviewed.
 - Do not downgrade a user-requested review gate failure into a release caveat.
   A release record that says review was unavailable needs a fix, an explicitly

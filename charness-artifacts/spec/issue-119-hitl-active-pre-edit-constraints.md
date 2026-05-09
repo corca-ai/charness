@@ -44,7 +44,7 @@ bootstrap state.
   slots, and minimal transition checks without inventing the full execution
   engine.
 
-## Premortem
+## Critique
 
 - Fresh-eye HITL loop angle found that `target_cursor_checked: true` could go
   stale unless the check result names the chunk, queue item, line bounds, and

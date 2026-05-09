@@ -9,7 +9,7 @@ the root instruction file but still apply to Charness maintenance work.
   use `python3 scripts/check_changed_surfaces.py --repo-root .` to inspect them.
 - Run `python3 scripts/run_slice_closeout.py --repo-root .` before commit when
   the slice spans generated surfaces or multiple validator families.
-- Run and record the premortem required by
+- Run and record the critique required by
   [operating-contract.md](./operating-contract.md) before final closeout for
   task-completing repo work.
 - `python3 scripts/sync_support.py --json` and

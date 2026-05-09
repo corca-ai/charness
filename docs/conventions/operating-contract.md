@@ -28,19 +28,19 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
   [charness-artifacts/](../../charness-artifacts/), include meaningful artifact
   changes in the same commit as the work they support.
 
-## Premortem Discipline
+## Critique Discipline
 
-- Every task-completing repo change runs premortem before closeout. Scale the
+- Every task-completing repo change runs critique before closeout. Scale the
   pass, not the obligation.
-- Small local-risk slices may use a short scoped premortem artifact that names
+- Small local-risk slices may use a short scoped critique artifact that names
   the decision, the likely misread, counterweight triage, and the next move.
 - Non-trivial design, deletion, rename, release, workflow, compatibility,
   install/update, host-proof, prompt-surface, public-skill, validator, or export
-  decisions use the standalone `premortem` skill.
-- `Premortem: not-applicable <reason>` is reserved for inspect-only, status-only,
+  decisions use the standalone `critique` skill.
+- `Critique: not-applicable <reason>` is reserved for inspect-only, status-only,
   or routing-only requests that do not complete repo work.
 - If the required bounded-review path is blocked by the host, stop and record
-  `Premortem: blocked <host-signal>` instead of substituting same-agent review.
+  `Critique: blocked <host-signal>` instead of substituting same-agent review.
 
 ## Skill And Metadata Discipline
 

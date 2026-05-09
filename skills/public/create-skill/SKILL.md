@@ -50,7 +50,7 @@ sed -n '1,220p' presets/README.md
    - read the current reviewed dogfood case or scaffold it first with `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --json`
    - decide whether the slice claims `preserve` or `improve` before changing the core trigger or behavior contract
    - when the change touches adapters, examples, bootstrap, first-touch docs,
-     or repo-local skill customization, run a customer-of-this-skill premortem
+     or repo-local skill customization, run a customer-of-this-skill critique
      before editing: name the user or downstream agent, the first prompt they
      will try, and the adapter states that could make the first run fail
    - run success criteria review for public-skill behavior changes; use it

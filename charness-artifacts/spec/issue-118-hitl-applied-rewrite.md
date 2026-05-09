@@ -40,7 +40,7 @@ runtime bootstrap state.
   and applying the accept/revise decision. This slice defines the portable loop
   contract and resumable state slots without inventing a full execution engine.
 
-## Premortem
+## Critique
 
 - Fresh-eye HITL loop angle found that "applied" could be misread as permission
   to edit the target file mid-loop. Resolution: the public skill now says the

@@ -53,7 +53,7 @@ honest about cost and push duplicated unit-detail coverage downward.
 
 Before locking the contract, run success criteria review so future-success claims
 become criteria, checks, and tripwires. Routine use may be inline; it does not
-replace the bounded premortem required before finalizing a task-completing contract; call `premortem` for non-trivial contract decisions. Focuses: likely implementer misread, overstated acceptance, hidden sequencing.
+replace the bounded critique required before finalizing a task-completing contract; call `critique` for non-trivial contract decisions. Focuses: likely implementer misread, overstated acceptance, hidden sequencing.
 
 ## Workflow
 
@@ -83,7 +83,7 @@ replace the bounded premortem required before finalizing a task-completing contr
    - apply `../../shared/references/source-bound-records.md` for multi-source external writes
    - open risks, probe questions, or deferred decisions
    - when the risk interrupt planner reports a forced debug interrupt, consume
-     it explicitly in `Premortem` with
+     it explicitly in `Critique` with
      `Interrupt Source`, `Seam Summary`, `Chosen Next Step`, `Impl Status`,
      `Impl Status Reason`, and `What Disproving Observation Is Resolved`
 5. Tie the contract to verification.
@@ -107,8 +107,8 @@ replace the bounded premortem required before finalizing a task-completing contr
      executable contract artifacts
    - if implementation discovers a fact that changes scope or acceptance, update
      the spec instead of leaving chat-only drift
-7. Run bounded premortem before finalizing.
-   - call `premortem` for task-completing contracts and non-trivial contract
+7. Run bounded critique before finalizing.
+   - call `critique` for task-completing contracts and non-trivial contract
      decisions
    - use `../../shared/references/fresh-eye-subagent-review.md` before reporting blocked
    - keep future re-litigation low by writing the important rejected paths into
@@ -134,7 +134,7 @@ The final spec should usually include:
 - `Constraints`
 - `Success Criteria`
 - `Acceptance Checks`
-- `Premortem`
+- `Critique`
 - `Canonical Artifact`
 - `First Implementation Slice`
 
@@ -149,8 +149,8 @@ as `Entities` or `Stages` instead of recreating them under new names.
   check.
 - Do not clear a forced debug interrupt with generic spec churn; if the planner
   surfaced one, the spec must explicitly consume that interrupt in
-  `Premortem`.
-- Do not skip the bounded premortem before finalizing a task-completing
+  `Critique`.
+- Do not skip the bounded critique before finalizing a task-completing
   contract just because the document reads clearly to the current author.
 - Do not leave important rejected alternatives only in chat when the same
   branch is likely to be reopened by the next maintainer.

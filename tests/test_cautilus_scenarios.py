@@ -64,14 +64,14 @@ def test_eval_cautilus_chatbot_proposals_writes_summary(tmp_path: Path) -> None:
     assert payload["proposal_count"] == 12
     assert len(payload["candidate_keys"]) == 12
     assert payload["proposal_keys"][:5] == [
-        "premortem-canonical-subagent-followup",
+        "critique-canonical-subagent-followup",
         "handoff-workflow-trigger-followup",
         "find-skills-canonical-artifact-followup",
         "retro-structural-cause-followup",
         "gather-official-path-before-browser-followup",
     ]
     assert payload["attention_view_proposal_keys"] == [
-        "premortem-canonical-subagent-followup",
+        "critique-canonical-subagent-followup",
         "handoff-workflow-trigger-followup",
         "find-skills-canonical-artifact-followup",
         "retro-structural-cause-followup",

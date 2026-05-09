@@ -89,8 +89,8 @@ the `Workflow Trigger` first and continue with that workflow.
 4. Keep the trigger explicit.
    - if a named workflow or skill should run next, say it directly
    - if the next pickup depends on reading specific files first, name them
-5. Run a bounded misunderstanding premortem when the handoff changed materially.
-   - call `premortem` for material workflow or ownership changes
+5. Run a bounded misunderstanding critique when the handoff changed materially.
+   - call `critique` for material workflow or ownership changes
    - focuses: wrong next action, workflow trigger ambiguity, ownership/boundary
      misread, and examples that could be over-literalized
    - use `../../shared/references/fresh-eye-subagent-review.md` before reporting
@@ -128,7 +128,7 @@ The handoff should usually contain:
 - Do not list always-loaded host instruction surfaces in `References` by
   default when the host already injects them automatically at session start.
 - Do not assume your own interpretation of the handoff is the only plausible
-  one when a bounded premortem could catch a likely misread.
+  one when a bounded critique could catch a likely misread.
 - If the handoff changed materially, treat it as a real artifact update rather
   than an afterthought.
 

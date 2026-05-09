@@ -19,7 +19,7 @@ This invariant applies to:
 - HITL chunk presentation (`hitl/references/chunk-contract.md`).
 - HITL applied-rewrite and full-target review surfaces.
 - `quality` `NON_AUTOMATABLE` proposal handoff to HITL.
-- `premortem` findings or counterweight triage when a decision is returned to
+- `critique` findings or counterweight triage when a decision is returned to
   the caller for a human-owned choice.
 - `spec` interactive ambiguity-reduction prompts that ask the user to choose.
 - `narrative` rewrite-loop human-facing surfaces and brief-draft review.

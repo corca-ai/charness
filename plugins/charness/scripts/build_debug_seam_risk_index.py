@@ -96,7 +96,7 @@ def build_index(repo_root: Path) -> dict[str, Any]:
                 "risk_classes": risk_classes,
                 "seam": interrupt["seam"],
                 "generalization_pressure": generalization_pressure,
-                "premortem_required": interrupt["premortem_required"],
+                "critique_required": interrupt["critique_required"],
                 "next_step": interrupt["next_step"],
                 "handoff_artifact": interrupt["handoff_artifact"],
                 "forced": interrupt["forced"],

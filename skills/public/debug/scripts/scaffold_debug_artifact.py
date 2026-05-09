@@ -74,7 +74,7 @@ def render_template(*, title: str, date_text: str) -> str:
                 [
                     heading,
                     "",
-                    "- Premortem Required: no",
+                    "- Critique Required: no",
                     "- Next Step: impl",
                     "- Handoff Artifact: none",
                     "",

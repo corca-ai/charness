@@ -42,7 +42,7 @@ contract to require it before closeout.
   superseded-decision detection. This slice adds the missing closeout projection
   and freshness gate without turning HITL into a host-specific runtime product.
 
-## Premortem Notes
+## Critique Notes
 
 - Root-cause review across issues 118, 119, and 120 found that HITL has durable
   fields but not enough transition helpers. Resolution: add runtime projection

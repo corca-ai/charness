@@ -92,7 +92,7 @@ A slice that only proves through `host_decision` is not closable as
 - `create-cli` action-shaped self-tests → mutating subcommands should have at
   least one `provider_roundtrip` fixture or a recorded reason it cannot run
   in CI.
-- `issue` resolution premortem → recurrence prevention should name the proof
+- `issue` resolution critique → recurrence prevention should name the proof
   level that, if monitored, would catch the regression earliest.
 
 ## Common Anti-Patterns

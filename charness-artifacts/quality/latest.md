@@ -120,7 +120,7 @@ runtime signals, security, and low-noise next gates.
 - `../cautilus/bin/cautilus claim discover --repo-root . --source README.md --source docs/operator-acceptance.md --output /tmp/charness-readme-claims.json`
 - `../cautilus/bin/cautilus claim validate --claims /tmp/charness-readme-claims.json --output /tmp/charness-readme-claims-validation.json`
 
-## Fresh-Eye Premortem
+## Fresh-Eye Critique
 - Misread risk: pooled command-doc checks look like README proof. Counterweight:
   keep the ledger and future Cautilus claim plans separate from CLI parity.
 - Misread risk: runtime budgets fail on one-off spikes. Counterweight:

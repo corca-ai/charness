@@ -88,7 +88,7 @@ def valid_current_artifact(*, next_step: str = "impl", handoff_artifact: str = "
                 "",
                 "## Interrupt Decision",
                 "",
-                f"- Premortem Required: {'yes' if next_step == 'spec' else 'no'}",
+                f"- Critique Required: {'yes' if next_step == 'spec' else 'no'}",
                 f"- Next Step: {next_step}",
                 f"- Handoff Artifact: {handoff_artifact}",
                 "",
@@ -129,7 +129,7 @@ def test_validate_debug_artifact_requires_interrupt_sections_for_latest(tmp_path
     repo = seed_repo(
         tmp_path,
         valid_current_artifact().replace(
-            "## Seam Risk\n\n- Interrupt ID: demo-interrupt\n- Risk Class: none\n- Seam: none\n- Disproving Observation: none\n- What Local Reasoning Cannot Prove: none\n- Generalization Pressure: none\n\n## Interrupt Decision\n\n- Premortem Required: no\n- Next Step: impl\n- Handoff Artifact: none\n\n",
+            "## Seam Risk\n\n- Interrupt ID: demo-interrupt\n- Risk Class: none\n- Seam: none\n- Disproving Observation: none\n- What Local Reasoning Cannot Prove: none\n- Generalization Pressure: none\n\n## Interrupt Decision\n\n- Critique Required: no\n- Next Step: impl\n- Handoff Artifact: none\n\n",
             "",
         ),
     )
@@ -144,7 +144,7 @@ def test_validate_debug_artifact_allows_legacy_extra_sections_for_dated_records(
     latest = repo / "charness-artifacts" / "debug" / "latest.md"
     latest.unlink()
     legacy = valid_current_artifact().replace(
-        "## Seam Risk\n\n- Interrupt ID: demo-interrupt\n- Risk Class: none\n- Seam: none\n- Disproving Observation: none\n- What Local Reasoning Cannot Prove: none\n- Generalization Pressure: none\n\n## Interrupt Decision\n\n- Premortem Required: no\n- Next Step: impl\n- Handoff Artifact: none\n\n",
+        "## Seam Risk\n\n- Interrupt ID: demo-interrupt\n- Risk Class: none\n- Seam: none\n- Disproving Observation: none\n- What Local Reasoning Cannot Prove: none\n- Generalization Pressure: none\n\n## Interrupt Decision\n\n- Critique Required: no\n- Next Step: impl\n- Handoff Artifact: none\n\n",
         "## Legacy Notes\n\nlegacy detail\n\n",
     )
     (repo / "charness-artifacts" / "debug" / "2026-04-01-legacy.md").write_text(legacy, encoding="utf-8")

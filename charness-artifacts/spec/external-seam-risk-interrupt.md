@@ -1,13 +1,13 @@
 # Problem
 
-`#52` is still open because `charness` can talk about premortem and stop gates
+`#52` is still open because `charness` can talk about critique and stop gates
 without reliably interrupting a live patch-debug-patch loop. The current public
 skills still let external-seam risk stay too implicit:
 
 - `debug` preserves diagnosis, but it does not force seam-specific risk,
   disproving observations, or the next interruption decision into a structured
   handoff.
-- `impl` says to use premortem, but there is no repo-owned planner/gate that
+- `impl` says to use critique, but there is no repo-owned planner/gate that
   makes a risky `debug -> impl` transition stop before ordinary implementation
   continues.
 - repeated seam-shaped fixes can still look locally productive enough that the
@@ -67,7 +67,7 @@ Ship a first repo-owned `risk interrupt` contract that makes `#52` closeable:
   rather than letting one stale `debug/latest.md` block unrelated work forever.
 - `run_slice_closeout.py` will treat missing or unresolved spec carry-forward as
   the concrete block condition for now.
-- This slice does not add a standalone `premortem` durable artifact; it uses
+- This slice does not add a standalone `critique` durable artifact; it uses
   refreshed spec/debug artifacts as the visible carry-forward seam.
 - the planner must not trust debug self-report alone when stronger evidence is
   already present. `host-disproves-local` and `repeated-symptom` evidence must
@@ -79,13 +79,13 @@ Ship a first repo-owned `risk interrupt` contract that makes `#52` closeable:
   clear the block when a spec explicitly resolves the interruption decision?
 - Should the planner eventually key off implementation-diff evidence, not just
   debug latest + spec refresh?
-- Should `premortem` gain a dedicated durable artifact once the trigger policy
+- Should `critique` gain a dedicated durable artifact once the trigger policy
   is stable?
 
 # Deferred Decisions
 
 - a global planner for all review-worthy decisions
-- a standalone premortem artifact schema
+- a standalone critique artifact schema
 - automatic repeated-seam detection from git history or code ownership
 - extending the same required interrupt contract to `release`, `quality`, or
   other caller skills
@@ -139,7 +139,7 @@ Ship a first repo-owned `risk interrupt` contract that makes `#52` closeable:
 - `./scripts/check-secrets.sh`
 - `python3 scripts/run_slice_closeout.py --repo-root . --plan-only`
 
-# Premortem
+# Critique
 
 - Likely wrong move: add a planner that only echoes the debug artifact without
   creating a real blocking condition before the next patch.

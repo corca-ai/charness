@@ -21,17 +21,17 @@ REFERENCE_CONTRACT_SUFFIXES = {".md", ".txt"}
 # the gate useful during skill compression without forcing SKILL.md to carry an
 # ever-growing anchor catalog.
 CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
-    "skills/public/premortem/SKILL.md": (
-        "Task-completing repo work always records premortem before closeout.",
+    "skills/public/critique/SKILL.md": (
+        "Task-completing repo work always records critique before closeout.",
         "Scale the\npass, not the obligation",
-        "When this standalone `premortem` skill runs, it always means a fresh bounded\nsubagent review.",
-        "There\nis no same-agent or local standalone `premortem` variant.",
+        "When this standalone `critique` skill runs, it always means a fresh bounded\nsubagent review.",
+        "There\nis no same-agent or local standalone `critique` variant.",
         "If the host blocks the canonical subagent path before execution, report",
         "- `Execution`",
     ),
     "skills/public/handoff/SKILL.md": (
         "mention-only pickup",
-        "Run a bounded misunderstanding premortem when the handoff changed materially.",
+        "Run a bounded misunderstanding critique when the handoff changed materially.",
         "Assume a competent next operator can follow one good link",
         "The handoff should usually contain:",
         "- `Workflow Trigger`",
@@ -53,7 +53,7 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "support skill: teaches tool usage without becoming product philosophy",
         "Freeze the current consumer contract before editing an existing public skill",
         "decide whether the slice claims `preserve` or `improve` before changing the core trigger or behavior contract",
-        "run a customer-of-this-skill premortem",
+        "run a customer-of-this-skill critique",
         "the customer repo's first prompt before trusting producer-side checks",
         "if an upstream support skill already exists, prefer reference, sync, or a",
         "Treat public-skill frontmatter and generated AGENTS hints as classifier input",
@@ -62,7 +62,7 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "## Contract Shaping",
         "Choose the lightest honest contract shape.",
         "run success criteria review so future-success claims",
-        "call `premortem` for non-trivial contract decisions",
+        "call `critique` for non-trivial contract decisions",
         "keep the contract",
         "probe-friendly and visible instead of inventing a user-facing mode choice.",
         "- `Fixed Decisions`",
@@ -77,14 +77,14 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "best self-verification path before you code and again before you stop",
         "re-read `Fixed Decisions` and named acceptance checks",
         "reflected in the delivered slice or explicitly",
-        "Do not call a same-agent review a premortem.",
+        "Do not call a same-agent review a critique.",
         "plain implementation until the named spec handoff says this slice may",
     ),
     "skills/public/debug/SKILL.md": (
         "classify seam risk explicitly",
         "set the next step to `spec`",
         "structured handoff fields",
-        "Do not run premortem before the facts needed for diagnosis exist.",
+        "Do not run critique before the facts needed for diagnosis exist.",
         "before closing task-completing debug work or handing off a repair",
         "- `Seam Risk`",
         "- `Interrupt Decision`",
@@ -101,7 +101,7 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "AGENTS.md",
         "CLAUDE.md",
         "into one explicit host-facing policy",
-        "when the repo uses bounded fresh-eye or premortem-style subagent review",
+        "when the repo uses bounded fresh-eye or critique-style subagent review",
         "already delegated",
         "should not wait for a second user message",
         "same-agent pass",
@@ -127,7 +127,7 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "patch for bug fixes, copy fixes, and behavior repairs",
         "Do not hand-edit generated plugin manifests",
         "Do not push, tag, or announce a release without explicit user confirmation",
-        "Every task-completing release slice records premortem before closeout.",
+        "Every task-completing release slice records critique before closeout.",
     ),
     "skills/public/retro/SKILL.md": (
         "If the user correctly points out a missed issue",
@@ -172,10 +172,10 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/impl/SKILL.md": (
         'python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --json 2>/dev/null || true',
         "$SKILL_DIR/../retro/scripts/check_auto_trigger.py",
-        "`Premortem: short <scope>`",
-        "`Premortem: full <artifact-or-subagent-status>`",
-        "`Premortem: not-applicable <reason>`",
-        "`Premortem: blocked <host-signal>`",
+        "`Critique: short <scope>`",
+        "`Critique: full <artifact-or-subagent-status>`",
+        "`Critique: not-applicable <reason>`",
+        "`Critique: blocked <host-signal>`",
     ),
     "skills/public/quality/SKILL.md": (
         "$SKILL_DIR/scripts/inventory_public_spec_quality.py",
@@ -183,10 +183,10 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
         'scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`',
     ),
     "skills/public/release/SKILL.md": (
-        "`Premortem: short <scope>`",
-        "`Premortem: full <artifact-or-subagent-status>`",
-        "`Premortem: not-applicable <reason>`",
-        "`Premortem: blocked <host-signal>`",
+        "`Critique: short <scope>`",
+        "`Critique: full <artifact-or-subagent-status>`",
+        "`Critique: not-applicable <reason>`",
+        "`Critique: blocked <host-signal>`",
     ),
     "skills/public/retro/SKILL.md": (
         "`Trends vs Last Retro`: for `weekly`, compare against the last durable weekly retro when one exists",
@@ -202,11 +202,11 @@ REPRESENTATIVE_CONTRACTS: dict[str, tuple[str, ...]] = {
 }
 
 FORBIDDEN_SNIPPETS: dict[str, tuple[str, ...]] = {
-    "skills/public/premortem/SKILL.md": (
+    "skills/public/critique/SKILL.md": (
         "short bounded local pass",
     ),
     "skills/public/release/SKILL.md": (
-        "local premortem",
+        "local critique",
     ),
 }
 

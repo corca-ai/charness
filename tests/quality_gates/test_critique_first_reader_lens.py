@@ -4,7 +4,7 @@ from .support import ROOT
 
 
 def test_angle_selection_lists_first_reader_lens() -> None:
-    text = (ROOT / "skills" / "public" / "premortem" / "references" / "angle-selection.md").read_text(
+    text = (ROOT / "skills" / "public" / "critique" / "references" / "angle-selection.md").read_text(
         encoding="utf-8"
     )
 
@@ -16,7 +16,7 @@ def test_angle_selection_lists_first_reader_lens() -> None:
 
 
 def test_angle_selection_triggers_first_reader_lens_for_durable_doc_decisions() -> None:
-    text = (ROOT / "skills" / "public" / "premortem" / "references" / "angle-selection.md").read_text(
+    text = (ROOT / "skills" / "public" / "critique" / "references" / "angle-selection.md").read_text(
         encoding="utf-8"
     )
     normalized = " ".join(text.split())
