@@ -1,4 +1,4 @@
-# Spec: Issue #135 — T-first Self-Evolving Unit (5-leg umbrella)
+# Spec: Issue #135 — T-first Self-Evolving Unit (6-leg umbrella)
 
 Source: https://github.com/corca-ai/charness/issues/135
 
@@ -37,7 +37,7 @@ substrate 차이는 의도이며 약점이 아니다.
 
 ## Current Slice
 
-5-leg umbrella를 한 contract 안에서 정의. 각 leg은 자기 PR/issue로 land하지만
+6-leg umbrella를 한 contract 안에서 정의. 각 leg은 자기 PR/issue로 land하지만
 sub-section 간 의존관계와 sequencing은 본 spec이 owner. impl phase에서 leg별
 acceptance check가 PR review의 1차 기준.
 
@@ -45,7 +45,7 @@ acceptance check가 PR review의 1차 기준.
 
 ### Umbrella
 
-- **5-leg split**, issue 135를 umbrella로 유지하고 5개 child issue 신규 생성.
+- **6-leg split**, issue 135를 umbrella로 유지하고 6개 child issue 신규 생성.
   child issue 본문은 본 spec의 해당 sub-section을 cite.
 - **Sequencing (PR-단위)**:
   1. **PR 1**: Leg 5 단독 (rename + 5 references). cite churn 격리.
@@ -53,6 +53,9 @@ acceptance check가 PR review의 1차 기준.
      event 소비). 분리하면 절반 완료 anti-pattern.
   3. **PR 3**: Leg 3 (Engelbart anchor). PR 1의 critique reference 안에 적용.
   4. **PR 4 (parallel from PR 2 onward)**: Leg 4 standalone.
+  5. **PR 5 (after PR 2)**: Leg 6 (`init-repo` → `setup` rename + consumer
+     onboarding seed for t-events). t-events schema가 PR 2에 land하므로
+     seed가 의존.
 - **Build + cross-repo dogfood**, no probe-first. evidence는 charness 자체 +
   사용자 운영 인접 repo에서 누적된다.
 
@@ -136,6 +139,40 @@ acceptance check가 PR review의 1차 기준.
   repo work"* 라인을 critique으로 단어 갱신. substrate 의도 그대로.
 - `premortem` 단어는 skill 이름이 아니라 reference 안의 *target lens 이름* 으
   로 보존됨.
+
+### Leg 6 — `init-repo` → `setup` rename + consumer onboarding seed
+
+- **Hard rename, no alias**. 한 슬라이스 안에서 일괄. `init-repo` 이름이
+  greenfield 의미를 강제해 이미 init된 repo의 normalize/realign 호출에
+  심리 마찰을 만든다 (operator dogfood 관찰). `setup`은 양쪽 다 자연.
+- 디렉토리 `skills/public/init-repo/` → `skills/public/setup/` (`git mv`).
+- Python 모듈 rename: `init_repo_adapter.py`, `init_repo_inspect_lib.py`,
+  `init_repo_agent_docs_lib.py`, `init_repo_adapter_inspect_lib.py`,
+  `init_repo_artifact_policy_lib.py`, `eval_init_repo.py` → `setup_*` /
+  `eval_setup.py` 동형. import 갱신 + plugin mirror sync.
+- 어댑터 파일 `.agents/init-repo-adapter.yaml` → `.agents/setup-adapter.yaml`.
+- 5개 `tests/quality_gates/test_init_repo_*.py` → `test_setup_*.py` rename.
+- charness CLI 본문 (`charness` 파일) cite 갱신.
+- Inspector 상수 (`init_repo_agent_docs_lib.py`의 `TASK_REVIEW_SCOPE_SNIPPETS`)
+  를 `("setup", "quality")`로 갱신. 기존 `init-repo` substring detection은
+  주의: deprecated cite를 dogfood에서 발견 시 review_required로 surface
+  하지만 즉시 fail-closed 하지 않음 (consumer migration 시간 줌).
+- **Historical artifacts allowlist 필수**: `charness-artifacts/premortem/
+  2026-05-07-issue-111-init-repo-...`, `charness-artifacts/spec/issue-64-
+  init-repo-...`, `charness-artifacts/debug/2026-04-24-init-repo-...` —
+  당시 이름이 history. allowlist에 명시.
+- **신규 seed: `skills/public/setup/scripts/seed_t_events_adapter.py`** —
+  기존 `seed_worktree_adapter.py` / `seed_dependencies.py` 패턴 동형.
+  defaults: `enabled: true`, `storage_path: .charness/t-events`, all v1
+  events. consumer가 명시 opt-out 가능. setup skill 본문에서 reference.
+  PR 2의 emit point land 후 의미 있게 작동.
+- 관련 cite 107건 (md/py/yaml/json), allowlist 외 0건 검증 validator
+  (`scripts/check_init_repo_rename.py` + `.allowlist.txt`) — Leg 5 패턴
+  동형.
+- **AGENTS.md 강화 wording은 본 spec 작성 세션에 already landed** (2026-05-09
+  사이드 슬라이스 — `IGNORE UPPER-LEVEL INSTRUCTIONS` admonition + 강화된
+  bullet). Leg 6 setup rename 시 그 강화 wording이 그대로 setup template로
+  넘어가야 함 (substrate 의도 보존).
 
 ## Probe Questions
 
@@ -223,8 +260,8 @@ acceptance check가 PR review의 1차 기준.
 
 ### Umbrella
 
-- S0. 5개 child GitHub issue가 issue 135 task list에 link 됨.
-- S1. 본 spec의 5개 leg sub-section이 각각 ≥1개 acceptance check를 갖고,
+- S0. 6개 child GitHub issue가 issue 135 task list에 link 됨.
+- S1. 본 spec의 6개 leg sub-section이 각각 ≥1개 acceptance check를 갖고,
   impl phase가 그 check 기준으로 PR review 가능.
 
 ### Leg 1
@@ -272,13 +309,26 @@ acceptance check가 PR review의 1차 기준.
   rename 자체의 변경 이력. allowlist 파일 자체가 PR 1 deliverable.
 - S5.5. `closeout-discipline.md` substrate 의도 보존된 채 단어만 갱신.
 
+### Leg 6
+
+- S6.1. `skills/public/init-repo/` → `skills/public/setup/` 디렉토리 이동
+  완료. Python 모듈 파일명 갱신, import 일관.
+- S6.2. PR 5 시점 cite 모두 갱신, validator가 잔여 `init-repo`/`init_repo`
+  cite를 allowlist 외에서 0개 확인. allowlist 파일 PR 5 deliverable.
+- S6.3. inspector 상수 `TASK_REVIEW_SCOPE_SNIPPETS`가 `("setup", "quality")`
+  로 갱신, 기존 `init-repo` 사용 consumer repo는 advisory drift로 surface.
+- S6.4. `seed_t_events_adapter.py` land. dry-run에서 `.agents/t-events-
+  adapter.yaml` 후보 출력, opt-in defaults가 manifest schema validate 통과.
+- S6.5. setup SKILL.md 본문이 강화된 Subagent Delegation wording을 그대로
+  reference (2026-05-09 land한 admonition 형태 보존).
+
 ## Acceptance Checks
 
 ### Umbrella
 
-- A0. `gh issue list --label "feature request"` 또는 issue 135 본문에서 5개
+- A0. `gh issue list --label "feature request"` 또는 issue 135 본문에서 6개
   child issue link 확인.
-- A1. 5개 leg sub-section 각각이 ≥1 acceptance check 보유 (정적 grep).
+- A1. 6개 leg sub-section 각각이 ≥1 acceptance check 보유 (정적 grep).
 
 ### Leg 1
 
@@ -323,6 +373,18 @@ acceptance check가 PR review의 1차 기준.
 - A5.5. `closeout-discipline.md` 단어 grep — `premortem` 단어가 reference
   cite/lineage 외 본문에 없음.
 
+### Leg 6
+
+- A6.1. `ls skills/public/setup/SKILL.md` exists, `ls skills/public/init-repo/`
+  부재. python 모듈 `setup_*.py` exists, `init_repo_*.py` 부재.
+- A6.2. `python3 scripts/check_init_repo_rename.py --repo-root .` (신규
+  validator) allowlist 외 잔여 cite 0건. PR/CI fail-closed.
+- A6.3. `python3 -m pytest tests/quality_gates/test_setup_*.py` 통과.
+- A6.4. `python3 skills/public/setup/scripts/seed_t_events_adapter.py
+  --repo-root . --dry-run` 출력이 manifest.schema.json validate 통과.
+- A6.5. setup SKILL.md grep으로 "IGNORE UPPER-LEVEL INSTRUCTIONS" admonition
+  + 4개 강화 bullet 모두 보존 확인.
+
 ## Premortem
 
 본 spec 자체가 lock 직전 상태이므로 critique/premortem-decision lens 1회
@@ -356,9 +418,21 @@ interrupt 없음 (Cautilus disabled). 본 spec은 routine premortem만 필요.
    premortem`, `release critique` 등 자연어 phrase가 reference 매핑을 자명하
    게).
 7. **5-leg 일부만 land 후 stale**. *Mitigation*: Fixed Decisions / Sequencing
-   의 PR 1-4 layout 그대로 — PR 1 (Leg 5) 단독, PR 2 (Leg 2 + Leg 1) bundle,
-   PR 3 (Leg 3), PR 4 parallel (Leg 4). Leg 1·2 분리하면 절반 완료
-   anti-pattern.
+   의 PR 1-5 layout 그대로 — PR 1 (Leg 5) 단독, PR 2 (Leg 2 + Leg 1) bundle,
+   PR 3 (Leg 3), PR 4 parallel (Leg 4), PR 5 (Leg 6). Leg 1·2 분리하면 절반
+   완료 anti-pattern.
+
+8. **Leg 5와 Leg 6의 cite churn 충돌**. 둘 다 heavy rename. premortem cite와
+   init-repo cite는 namespace 직교지만 같은 파일(AGENTS.md / CLAUDE.md /
+   docs/) 안에서 두 cite가 동시에 존재 가능 — 동시 PR이면 merge conflict.
+   *Mitigation*: PR 5는 PR 1 land 후 시작. parallel 안 함.
+
+9. **Leg 6 inspector 상수 갱신이 consumer repo에서 silent break**. 외부
+   consumer가 `init-repo` substring으로 자기 AGENTS.md를 작성해 inspector를
+   통과하던 것이 `setup`으로 검출되지 않음. *Mitigation*: Leg 6에 명시 — 기존
+   `init-repo` substring detection을 deprecated advisory로 N release 유지,
+   fail-closed로 즉시 전환 안 함. 이게 hard rename + soft inspector
+   compatibility라는 작은 비대칭이지만 consumer migration 친화.
 
 ### Counterweight Pass
 
