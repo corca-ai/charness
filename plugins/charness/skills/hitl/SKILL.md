@@ -142,8 +142,9 @@ the repo has named where state, rules, and queue ownership live.
     review loop is still in progress. If `require_explicit_apply` is true, wait
     for an explicit apply instruction before touching the target file.
 12. Full Target Review. After accepted edits are applied or staged, present the
-    updated target and record `full_target_review` before closing the target as
-    accepted.
+    updated target with an Agent Assessment and Recommended Disposition per
+    `../../shared/references/agent-assessment-invariant.md`, record
+    `full_target_review`, and only then close the target as accepted.
 
 ## Output Shape
 

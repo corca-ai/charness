@@ -44,7 +44,7 @@
     - **`quality` sweep gate (#124 follow-up)** — external-capability 슬라이스가 readiness-only proof로 닫히는 패턴 자동 감지. 현재 ladder는 prose-only enforcement.
     - **Defensive runtime layer (premortem이 Valid-but-Defer)** — (a) `issue` 두-콜 retry runtime fixture (#126), (b) `issue_tool.py validate-body --external-source` 런타임 린터 (#127), (c) `.charness/issue/` durable session-state 레이어 (#126의 더 강한 형태).
     - **HITL chunk_contract marker robustness (#129 follow-up)** — `check_chunk_contract`가 `?`/`Decision Needed`를 안 쓰는 결정 chunk(예: "Approve or revise.")를 놓친다. marker 셋 확장은 다음 회 같은 트랩 반복 시 짓는다.
-    - **HITL SKILL.md step 12 inline cite (#129 follow-up)** — agent-assessment-invariant가 References list만 cite한다. step 12에 inline cite를 추가하면 traceability 강해진다.
+    - **HITL applied-rewrite (step 7) inline cite (#129 follow-up)** — step 12는 inline cite landed. step 7의 `applied_rewrite_review_status` 흐름은 "ask accept-or-revise"로 끝나며 invariant cite가 본문에 없다. 같은 트랩 재발 시 짓는다.
     - **Title-slug drift `--strict` CI/pre-push wiring (#131 follow-up)** — [check_title_slug_drift.py](../scripts/check_title_slug_drift.py)는 advisory-only로 ship됐다. 실제 rename event dogfood 후 wiring.
     - **`quality` proposal-flow 도큐 hygiene 추가 entries** — `Status`/`Changelog`/`Notes` 같은 structural-H1 entries 확장은 false positive 발생 시 짓는다.
     - **`{reason}` placeholder asymmetry (#134 follow-up)** — `_resolve_op` default `gh comment` 템플릿은 `{reason}`을 안 쓰는데 substitution kwargs는 받는다. adapter가 `comment`에서 `{reason}`을 쓰면 asymmetry가 숨는다. per-op placeholder allowlist 또는 default `comment` 템플릿에 명시 추가가 필요.

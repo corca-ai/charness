@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-09T02:38:09Z",
+  "generated_at": "2026-05-09T05:37:28Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -36,6 +36,7 @@
         "referenced_paths": [
           "skills/public/announcement/references/draft-shape.md",
           "skills/public/announcement/references/delivery-seams.md",
+          "skills/shared/references/closeout-discipline.md",
           "skills/public/announcement/references/adapter-contract.md",
           "skills/public/announcement/references/audience-policy.md"
         ],
@@ -174,6 +175,7 @@
         "referenced_paths": [
           "skills/public/gather/SKILL.md",
           "skills/public/gather/references/browser-mediated-private-sources.md",
+          "skills/shared/references/closeout-discipline.md",
           "skills/public/gather/references/adapter-contract.md",
           "skills/public/gather/references/source-priority.md",
           "skills/public/gather/references/asset-refresh.md",
@@ -202,6 +204,7 @@
           "skills/public/handoff/references/continuation-sequence.md",
           "skills/public/handoff/SKILL.md",
           "skills/public/handoff/references/spill-targets.md",
+          "skills/shared/references/closeout-discipline.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/public/handoff/references/adapter-contract.md",
           "skills/public/handoff/references/workflow-trigger.md",
@@ -231,7 +234,9 @@
           "skills/public/hitl/references/report-mode.md",
           "skills/public/hitl/references/state-model.md",
           "skills/public/hitl/references/rule-propagation.md",
+          "skills/shared/references/agent-assessment-invariant.md",
           "skills/public/hitl/scripts/bootstrap_review.py",
+          "skills/public/hitl/scripts/check_chunk_contract.py",
           "skills/public/hitl/scripts/check_review_state.py",
           "skills/public/hitl/scripts/render_report.py",
           "skills/public/hitl/scripts/sync_review_artifact.py"
@@ -322,7 +327,8 @@
           "skills/public/init-repo/references/probe-surface.md",
           "skills/public/init-repo/references/retro-memory-seam.md",
           "skills/public/init-repo/references/github-actions-defaults.md",
-          "skills/public/init-repo/references/operator-acceptance-synthesis.md"
+          "skills/public/init-repo/references/operator-acceptance-synthesis.md",
+          "skills/shared/references/agent-assessment-invariant.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -376,9 +382,11 @@
           "skills/public/narrative/references/landing-rewrite-loop.md",
           "skills/public/narrative/references/cross-repo-issue-shaping.md",
           "skills/public/narrative/references/scenario-blocks.md",
+          "skills/shared/references/closeout-discipline.md",
           "skills/public/narrative/references/adapter-contract.md",
           "skills/public/narrative/references/source-map.md",
           "skills/public/narrative/references/brief-shape.md",
+          "skills/shared/references/agent-assessment-invariant.md",
           "skills/shared/references/success-criteria-review.md"
         ],
         "source": "local-public",
@@ -401,7 +409,8 @@
         "referenced_paths": [
           "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/public/premortem/references/angle-selection.md",
-          "skills/public/premortem/references/counterweight-triage.md"
+          "skills/public/premortem/references/counterweight-triage.md",
+          "skills/shared/references/agent-assessment-invariant.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -456,7 +465,8 @@
           "skills/public/quality/references/security-uv.md",
           "skills/public/quality/references/standing-gate-verbosity.md",
           "skills/public/quality/references/startup-probes.md",
-          "skills/public/quality/references/validate_spec_pytest_references.py"
+          "skills/public/quality/references/validate_spec_pytest_references.py",
+          "skills/shared/references/agent-assessment-invariant.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -476,6 +486,7 @@
           "charness:release"
         ],
         "referenced_paths": [
+          "skills/shared/references/closeout-discipline.md",
           "skills/public/release/references/adapter-contract.md",
           "skills/public/release/references/version-policy.md",
           "skills/public/release/references/install-surface.md"
@@ -540,6 +551,7 @@
           "skills/public/spec/references/impl-loop.md",
           "skills/public/spec/references/ideation-boundary.md",
           "skills/public/spec/references/document-seams.md",
+          "skills/shared/references/agent-assessment-invariant.md",
           "skills/shared/references/success-criteria-review.md"
         ],
         "source": "local-public",

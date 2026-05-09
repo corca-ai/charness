@@ -355,10 +355,10 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-08",
+      "reviewed_on": "2026-05-09",
       "observed_evidence": [
         "The checked-in public core keeps `hitl` narrowly scoped to bounded human review, explicitly preserving what must not be auto-decided and routing state through resumable review artifacts rather than chat-only judgment.",
-        "The workflow now requires a Full Target Review after accepted edits are applied or staged: `full_target_review` must record whole-target acceptance or the need for another pass before the target is closed as accepted.",
+        "The workflow now requires a Full Target Review after accepted edits are applied or staged: the updated target is presented with an Agent Assessment and Recommended Disposition per `skills/shared/references/agent-assessment-invariant.md`, then `full_target_review` records whole-target acceptance or the need for another pass before the target is closed as accepted.",
         "The workflow now defines an explicit Apply Phase: target file edits happen only after accepted chunks and closing summary, and `require_explicit_apply: true` requires a user apply instruction before touching the target.",
         "The current adapter resolver already pins the visible artifact to `charness-artifacts/hitl/latest.md` and the runtime directory to `.charness/hitl/runtime`, with portable defaults when no adapter is present.",
         "`bootstrap_review.py` now surfaces `require_explicit_apply`, `apply_mode`, and pending `full_target_review` completion metadata in JSON, queue, scratchpad, and state so the apply policy and final whole-target gate are visible at session start.",
