@@ -34,6 +34,25 @@ copy changed.
   copy matched the exported source, rather than forcing the public skill body
   to describe lifecycle recovery.
 
+## Downstream Materialization
+
+When a downstream repo materializes Charness public skills (vendoring the
+skill tree under a path like `packages/official-skills/charness-public/`),
+the materialized files are upstream-owned. A downstream repo that needs
+new behavior should:
+
+- file an upstream issue or PR against Charness so all consumers benefit
+- and only as a stopgap, edit the materialized copy locally with an
+  explicit drift marker so the materialization gate can flag
+  `local_modifications` / `upstream_sync_needed` instead of reporting
+  `offline-unchanged`
+
+The drift signal belongs in the downstream materialization gate
+(comparing materialized content against the pinned Charness commit), not
+in the upstream skill body. Charness names this expectation here so
+downstream tooling has a contract to point at when it implements the
+gate.
+
 ## Where The Contract Lives
 
 Use `create-cli` when the repo owns:

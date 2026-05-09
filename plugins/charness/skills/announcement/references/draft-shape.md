@@ -50,6 +50,23 @@ If a bullet is hard to phrase for a user-tagged audience, that is a signal that
 it does not actually belong on the user-facing track. Move it to an
 operator/developer-tagged bullet, or drop it.
 
+## Release-Note Digest Density
+
+Release-note style digests default to 2-4 actionable items, not a verbatim
+commit list. Each item should answer four questions concisely:
+
+- what changed on a real human surface
+- who cares (which audience uses or operates this)
+- one concrete usage or operator example so the change is recognizable
+- source links (commit, PR, issue, or relevant doc) for traceability
+
+When the source set is large or source-dense (many commits, many PRs, a
+wide release window), favor a compact top-level message plus a detail
+thread/reply rather than padding the top-level digest. For Slack
+delivery in this shape, disable URL unfurls so the source links do not
+explode the surface area; the format-rules conversion path
+(`references/delivery-seams.md`) names the unfurl-disable knob.
+
 ## Dual-Output Drafts
 
 Some announcements have two genuine audiences in the same delivery (a

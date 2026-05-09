@@ -83,3 +83,27 @@ At the end of the slice, state:
   not run when relevant
 - what stronger verification was unavailable and why
 - what remains unverified
+
+## Completion Report Categories
+
+Completion reports separate these categories instead of mixing them as one
+"done" claim. The reader needs to distinguish what now lives in the repo from
+what was only test scaffolding or external side effect.
+
+- **Durable changes**: code, docs, schemas, generated surfaces that landed in
+  the working tree and are committed (or staged for commit).
+- **External writes / registrations**: side effects on systems outside the
+  repo — issues filed, releases published, messages posted, registry rows
+  created, third-party records mutated. Name the target and the verified
+  identifier (URL, number, ARN, message ts).
+- **Test-only artifacts**: fixtures, harnesses, sandbox state, throwaway
+  scripts created during the slice. State explicitly when these are not
+  intended to ship.
+- **Verification**: which executed proof carried the slice — local tests,
+  browser/runtime pass, provider round-trip, evaluator scenario — and at
+  what level (`worker_queued`, `provider_roundtrip`, `agent_choice` per
+  `shared/references/external-capability-proof-ladder.md`).
+- **Unverified future behavior**: behavior that the slice introduces but
+  does not prove — async effects, downstream consumers, manual operator
+  steps, observability that has not been re-checked. Naming this
+  explicitly is the contract; collapsing it into "done" is a regression.

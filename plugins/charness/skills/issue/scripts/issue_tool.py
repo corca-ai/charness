@@ -36,6 +36,7 @@ newest_open_issue = RUNTIME.newest_open_issue
 parse_selector = RUNTIME.parse_selector
 resolve_target = RUNTIME.resolve_target
 split_resolve_args = RUNTIME.split_resolve_args
+close_with_comment = RUNTIME.close_with_comment
 
 
 def emit(payload: dict[str, Any]) -> None:
@@ -157,6 +158,28 @@ def command_select(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_close_with_comment(args: argparse.Namespace) -> int:
+    repo_root = args.repo_root.resolve()
+    resolved = _resolve_backend(repo_root)
+    if not resolved["adapter_ok"]:
+        emit({"ok": False, "adapter": resolved["adapter"]})
+        return 1
+    try:
+        result = close_with_comment(
+            args.repo,
+            args.number,
+            args.body_file.resolve(),
+            backend=resolved["backend"],
+            reason=args.reason,
+        )
+    except RuntimeError as exc:
+        emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
+        return 2
+    result["selected_backend"] = resolved["backend"]
+    emit(result)
+    return 0
+
+
 def command_resolve_invocation(args: argparse.Namespace) -> int:
     adapter = ADAPTER.load_adapter(args.repo_root.resolve())
     if not adapter["valid"]:
@@ -207,6 +230,14 @@ def build_parser() -> argparse.ArgumentParser:
     select.add_argument("--selector")
     select.add_argument("--repo-root", type=Path, default=cwd_default)
     select.set_defaults(func=command_select)
+
+    close = subparsers.add_parser("close-with-comment")
+    close.add_argument("--repo", required=True)
+    close.add_argument("--number", type=int, required=True)
+    close.add_argument("--body-file", type=Path, required=True)
+    close.add_argument("--reason", default="completed")
+    close.add_argument("--repo-root", type=Path, default=cwd_default)
+    close.set_defaults(func=command_close_with_comment)
     return parser
 
 

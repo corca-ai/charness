@@ -275,6 +275,17 @@ from zero.
 Before stopping:
 
 - check trigger overlap with nearby skills
+- check ownership overlap: when the edited skill writes the same durable
+  surface (artifact path, generated file, validator scope) as another
+  skill, decide which skill owns the write and document the boundary in
+  both SKILL.md files; silent overlap creates drift the next operator
+  will hit
+- check semantic message-shape regression: when the edit changes a
+  message body, JSON payload, output shape, or chunk contract that
+  downstream consumers (HITL, evaluator scenarios, support runtimes)
+  depend on, name the consumer, run the consumer's regression test or
+  evaluator scenario, and record the proof level reached. A green skill
+  unit test does not prove the consumer still parses the new shape.
 - verify every mentioned path exists
 - validate changed JSON examples against repo schemas
 - run scripts with `--help` or dry-run paths when present

@@ -253,6 +253,172 @@ def test_issue_preflight_reports_missing_backend_binary_with_explicit_error(tmp_
     assert "ceal" in payload["error"]
 
 
+def test_issue_close_with_comment_runs_adapter_comment_then_close(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    log = tmp_path / "gh-log.json"
+    fake = bin_dir / "gh"
+    fake.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import json, os, sys",
+                "from pathlib import Path",
+                "log = Path(os.environ['GH_LOG'])",
+                "entries = json.loads(log.read_text()) if log.exists() else []",
+                "entries.append(sys.argv[1:])",
+                "log.write_text(json.dumps(entries))",
+                "if 'comment' in sys.argv: print('commented')",
+                "if 'close' in sys.argv: print('closed')",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    body = tmp_path / "body.md"
+    body.write_text("Multi-line\nclose comment.\n", encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "close-with-comment",
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "42",
+        "--body-file",
+        str(body),
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_LOG": str(log)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["repo"] == "corca-ai/charness"
+    assert payload["number"] == 42
+    entries = json.loads(log.read_text(encoding="utf-8"))
+    assert ["issue", "comment", "--repo", "corca-ai/charness", "42", "--body-file", str(body)] in entries
+    assert ["issue", "close", "--repo", "corca-ai/charness", "42", "--reason", "completed"] in entries
+
+
+def test_issue_close_with_comment_surfaces_partial_state_when_close_fails(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake = bin_dir / "gh"
+    fake.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "if [[ \"$2\" == \"close\" ]]; then",
+                "  echo 'forbidden' >&2",
+                "  exit 1",
+                "fi",
+                "exit 0",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    body = tmp_path / "body.md"
+    body.write_text("Body.\n", encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "close-with-comment",
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "5",
+        "--body-file",
+        str(body),
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+    )
+
+    assert result.returncode == 2, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "comment_succeeded=True" in payload["error"]
+    assert "do not re-comment on retry" in payload["error"]
+
+
+def test_issue_close_with_comment_uses_adapter_template(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    log = tmp_path / "ceal-log.json"
+    fake = bin_dir / "ceal"
+    fake.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import json, os, sys",
+                "from pathlib import Path",
+                "log = Path(os.environ['CEAL_LOG'])",
+                "entries = json.loads(log.read_text()) if log.exists() else []",
+                "entries.append(sys.argv[1:])",
+                "log.write_text(json.dumps(entries))",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    _write_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "\n".join(
+            [
+                "    comment:",
+                "      - github",
+                "      - issue",
+                "      - comment",
+                "      - '-R'",
+                "      - '{repo}'",
+                "      - '{number}'",
+                "      - '--body-file'",
+                "      - '{body_file}'",
+                "    close:",
+                "      - github",
+                "      - issue",
+                "      - close",
+                "      - '-R'",
+                "      - '{repo}'",
+                "      - '{number}'",
+                "      - '--reason'",
+                "      - '{reason}'",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    body = tmp_path / "body.md"
+    body.write_text("Body.\n", encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "close-with-comment",
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "7",
+        "--body-file",
+        str(body),
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "CEAL_LOG": str(log)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    entries = json.loads(log.read_text(encoding="utf-8"))
+    assert ["github", "issue", "comment", "-R", "corca-ai/charness", "7", "--body-file", str(body)] in entries
+    assert ["github", "issue", "close", "-R", "corca-ai/charness", "7", "--reason", "completed"] in entries
+
+
 def test_issue_skill_records_github_sot_for_omitted_selector() -> None:
     skill_text = (ROOT / "skills" / "public" / "issue" / "SKILL.md").read_text(encoding="utf-8")
     resolve_flow = (ROOT / "skills" / "public" / "issue" / "references" / "resolve-flow.md").read_text(

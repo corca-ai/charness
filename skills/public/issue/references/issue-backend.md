@@ -96,6 +96,24 @@ When `id != "gh"` and `commands.search_newest_open` is missing, `select`
 without an explicit selector stops with a clear error. Pass an explicit
 issue number or range instead.
 
+## File-Backed Close Comments
+
+For multi-line close comments, route through the backend rather than
+reconstructing the `gh` invocation. `gh issue close --comment-file` does
+not exist; the working pattern is `gh issue comment --body-file <path>`
+followed by `gh issue close --reason completed`. The helper subcommand
+`close-with-comment` on `issue_tool.py` runs both ops through the
+adapter (default `gh`, or a host-mediated backend when the adapter
+declares `commands.comment` and `commands.close`):
+
+```bash
+python3 "$SKILL_DIR/scripts/issue_tool.py" close-with-comment \
+  --repo <full_name> --number <n> --body-file <path>
+```
+
+Adapter templates for `comment` and `close` already accept `{repo}`,
+`{number}`, `{body_file}`, and `{reason}` placeholders.
+
 ## Placeholders
 
 Adapter-supplied templates substitute:

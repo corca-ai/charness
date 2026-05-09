@@ -141,23 +141,23 @@ repo by created date. It must not use the current session's last created issue.
    and export surfaces before validators. Verify with the strongest honest
    local gate.
 8. Run a **resolution premortem** focused on recurrence: delegate to the
-   `premortem` skill (which spawns its own bounded angle + counterweight
-   subagents), passing causal-review output via the
-   `references/causal-review.md` handoff template. This satisfies the
-   CLAUDE.md task-completion premortem obligation; when invoked from `impl`,
-   declare `Premortem: full <issue-resolution-artifact>`. If step 4 was
-   blocked, do not run premortem against an empty prior context — report
-   the blocked state. One premortem per fix-unit, not per selector. Bundle
-   cheap structural prevention with the fix; record what is deferred.
-9. Commit, push, and close the GitHub issue only after the fix is on the
-   remote. Use explicit close keywords per issue (`Close #1. Close #2.` and
-   so on) when relying on GitHub auto-close behavior. The close comment
-   shape depends on classification, restated per issue when resolving a range:
-   - `bug`: JTBD, root cause, sibling decisions (bundled or deferred with
-     locations), recurrence-prevention move
-   - `feature` / `deferred-work`: JTBD, what was implemented, any
-     premortem-bundled prevention
-   - `question` / `decision-needed`: JTBD, the answer or recorded decision
+   `premortem` skill (it spawns its own bounded angle + counterweight
+   subagents), passing causal-review output via
+   `references/causal-review.md`. Satisfies the CLAUDE.md task-completion
+   premortem; when invoked from `impl`, declare
+   `Premortem: full <issue-resolution-artifact>`. If step 4 was blocked, do not run
+   premortem against an empty prior context — report the blocked state.
+   One per fix-unit, not per selector. Bundle cheap prevention; record
+   deferred.
+9. Commit, push, and close the GitHub issue only after the fix is on
+   the remote. Use explicit close keywords (`Close #1. Close #2.`) for
+   GitHub auto-close, or `issue_tool.py close-with-comment` for
+   multi-line backend-routed close comments
+   (`gh issue close --comment-file` does not exist). Close comment shape by
+   classification, restated per issue in a range:
+   - `bug`: JTBD, root cause, siblings (bundled/deferred+location), prevention
+   - `feature`/`deferred-work`: JTBD, implementation, bundled prevention
+   - `question`/`decision-needed`: JTBD, the answer or recorded decision
 
 ## Guardrails
 
