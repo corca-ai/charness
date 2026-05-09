@@ -41,9 +41,9 @@ terms_to_avoid_in_opening:
 - repo-owned agent work
 quick_start_execution_model: Keep README Quick Start thin but pasteable: prerequisites, direct bootstrap commands, and the next repo-owned probe or next-action command. Do not require a remote install document fetch for the first successful bootstrap.
 special_entrypoints:
-- init-repo
+- setup
 skill_grouping_rules:
-- Keep init-repo distinct from the ordinary public skill list.
+- Keep setup distinct from the ordinary public skill list.
 - Treat quality and retro as quality-improvement loops, not post-implementation cleanup.
 - Group communication skills by who speaks to whom.
 - Explain support skills and integrations as tool layers, not public workflow concepts.

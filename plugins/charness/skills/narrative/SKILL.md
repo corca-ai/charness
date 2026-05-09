@@ -24,7 +24,7 @@ the reader can recover the argument without reverse-engineering it.
 If the idea is still under-shaped, use `ideation` first. If the docs are
 already aligned and the user mainly wants audience adaptation or delivery-ready
 wording, use `announcement`.
-If the repo has little or no durable truth surface yet, use `init-repo` to
+If the repo has little or no durable truth surface yet, use `setup` to
 bootstrap that surface before treating the task as narrative alignment.
 If a high-leverage truth surface lacks a repo-specific narrative contract, shape
 or scaffold the adapter before rewriting; fallback inference is a repo-level
@@ -89,7 +89,7 @@ git status --short
    - shape the truth-surface contract before rewriting first-touch docs when the adapter is missing or thin
    - repair or downgrade missing, volatile, internal, archived, or handoff inputs
    - if the source map is effectively empty or only placeholder-level, stop and
-     recommend `init-repo` rather than pretending there is already a narrative
+     recommend `setup` rather than pretending there is already a narrative
      surface to align
 3. Inventory intent before rewriting a high-leverage first-touch surface.
    - recover explicit intent from source docs, repo-local adapter guidance, and

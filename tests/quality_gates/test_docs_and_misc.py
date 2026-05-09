@@ -27,10 +27,10 @@ def test_narrative_map_sources_reports_checked_in_docs() -> None:
     assert payload["freshness"]["status"] in {"ahead", "current", "missing-remote", "not-git", "unavailable"}
 
 
-def test_init_repo_skill_bootstraps_probe_surface_guidance() -> None:
-    skill_text = (ROOT / "skills" / "public" / "init-repo" / "SKILL.md").read_text(encoding="utf-8")
+def test_setup_skill_bootstraps_probe_surface_guidance() -> None:
+    skill_text = (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_text(encoding="utf-8")
     probe_reference = (
-        ROOT / "skills" / "public" / "init-repo" / "references" / "probe-surface.md"
+        ROOT / "skills" / "public" / "setup" / "references" / "probe-surface.md"
     ).read_text(encoding="utf-8")
 
     assert "probe surface" in skill_text
@@ -40,9 +40,9 @@ def test_init_repo_skill_bootstraps_probe_surface_guidance() -> None:
     assert "local discoverability" in probe_reference
 
 
-def test_init_repo_default_surfaces_carry_early_quality_baseline() -> None:
+def test_setup_default_surfaces_carry_early_quality_baseline() -> None:
     default_surfaces = (
-        ROOT / "skills" / "public" / "init-repo" / "references" / "default-surfaces.md"
+        ROOT / "skills" / "public" / "setup" / "references" / "default-surfaces.md"
     ).read_text(encoding="utf-8")
 
     assert "## Early Quality Baseline" in default_surfaces
@@ -52,15 +52,15 @@ def test_init_repo_default_surfaces_carry_early_quality_baseline() -> None:
     assert "ratcheting" in default_surfaces
 
 
-def test_init_repo_agent_docs_carry_bounded_subagent_delegation_rule() -> None:
-    skill_text = (ROOT / "skills" / "public" / "init-repo" / "SKILL.md").read_text(
+def test_setup_agent_docs_carry_bounded_subagent_delegation_rule() -> None:
+    skill_text = (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_text(
         encoding="utf-8"
     ).lower()
     agent_docs = (
-        ROOT / "skills" / "public" / "init-repo" / "references" / "agent-docs-policy.md"
+        ROOT / "skills" / "public" / "setup" / "references" / "agent-docs-policy.md"
     ).read_text(encoding="utf-8").lower()
     default_surfaces = (
-        ROOT / "skills" / "public" / "init-repo" / "references" / "default-surfaces.md"
+        ROOT / "skills" / "public" / "setup" / "references" / "default-surfaces.md"
     ).read_text(encoding="utf-8").lower()
 
     assert "already delegated" in skill_text
@@ -77,11 +77,11 @@ def test_init_repo_agent_docs_carry_bounded_subagent_delegation_rule() -> None:
     assert "already delegated by the repo" in default_surfaces
     assert "same-agent pass" in default_surfaces
 
-def test_init_repo_docs_carry_charness_artifact_commit_policy() -> None:
-    skill_text = (ROOT / "skills/public/init-repo/SKILL.md").read_text(encoding="utf-8").lower()
-    agent_docs = (ROOT / "skills/public/init-repo/references/agent-docs-policy.md").read_text(encoding="utf-8").lower()
-    default_surfaces = (ROOT / "skills/public/init-repo/references/default-surfaces.md").read_text(encoding="utf-8").lower()
-    normalization_flow = (ROOT / "skills/public/init-repo/references/normalization-flow.md").read_text(encoding="utf-8").lower()
+def test_setup_docs_carry_charness_artifact_commit_policy() -> None:
+    skill_text = (ROOT / "skills/public/setup/SKILL.md").read_text(encoding="utf-8").lower()
+    agent_docs = (ROOT / "skills/public/setup/references/agent-docs-policy.md").read_text(encoding="utf-8").lower()
+    default_surfaces = (ROOT / "skills/public/setup/references/default-surfaces.md").read_text(encoding="utf-8").lower()
+    normalization_flow = (ROOT / "skills/public/setup/references/normalization-flow.md").read_text(encoding="utf-8").lower()
 
     for text in (skill_text, agent_docs, default_surfaces, normalization_flow):
         assert "charness-artifacts/" in text
@@ -238,7 +238,7 @@ def test_control_plane_documents_authenticated_release_probe_contract() -> None:
     assert "github-forbidden" in control_plane
 
 
-def test_init_repo_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Path) -> None:
+def test_setup_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "docs" / "specs").mkdir(parents=True)
     (repo / "scripts").mkdir(parents=True)
@@ -275,7 +275,7 @@ def test_init_repo_synthesize_operator_acceptance_outputs_tiered_draft(tmp_path:
     )
 
     result = run_script(
-        "skills/public/init-repo/scripts/synthesize_operator_acceptance.py",
+        "skills/public/setup/scripts/synthesize_operator_acceptance.py",
         "--repo-root",
         str(repo),
         "--json",

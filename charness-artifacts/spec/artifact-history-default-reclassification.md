@@ -51,7 +51,7 @@ That means:
   Why: startup inventory is high-frequency and the checked-in value is the current capability map, not a log of invocations.
 - `hitl`
   Why: checked-in value is a live review surface, while queue/event detail already belongs in hidden runtime state.
-- `init-repo`
+- `setup`
   Why: the checked-in artifact is a current bootstrap summary rather than a durable sequence of audits.
 
 ### Fixed / Named-Artifact Exceptions

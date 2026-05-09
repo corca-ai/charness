@@ -96,7 +96,7 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "If you stop short of an obvious repo-owned deterministic gate",
         "Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior",
     ),
-    "skills/public/init-repo/SKILL.md": (
+    "skills/public/setup/SKILL.md": (
         "normalize",
         "AGENTS.md",
         "CLAUDE.md",

@@ -22,7 +22,7 @@ curl -fsSLo /tmp/charness-init.sh \
 bash /tmp/charness-init.sh
 ```
 
-If you prefer, inspect the install script before running it. `init-repo`
+If you prefer, inspect the install script before running it. `setup`
 changes repo files by proposing ordinary diffs; review those diffs before
 committing them.
 
@@ -34,7 +34,7 @@ Use charness to initialize this repo.
 ```
 
 The agent will load
-[`charness:init-repo`](./skills/public/init-repo/SKILL.md) to update the
+[`charness:setup`](./skills/public/setup/SKILL.md) to update the
 repo's [AGENTS.md](./AGENTS.md) and related settings. After that, you can keep
 prompting the agent in your usual style, with `charness` giving the agent
 routing context underneath instead of requiring you to name a skill every time.
@@ -51,7 +51,7 @@ For the full command surface, see [CLI Reference](./docs/cli-reference.md).
 ## How You Use It
 
 If you have just installed `charness` and the repo has not been initialized
-yet, it is safer to call the workflow skill directly. Once `init-repo` has
+yet, it is safer to call the workflow skill directly. Once `setup` has
 updated [AGENTS.md](./AGENTS.md) and related settings, use normal
 product-development prompts; `charness` gives the agent routing context
 underneath.
@@ -63,7 +63,7 @@ underneath.
    when you provide URLs, threads, or other outside context that would sharpen
    the concept.
 2. Once the concept is concrete enough, ask the agent to create a directory
-   and use `init-repo`. It should propose the first repo surface, including
+   and use `setup`. It should propose the first repo surface, including
    [AGENTS.md](./AGENTS.md), so future sessions can use `charness` more
    naturally.
 3. Start a fresh session in the new directory. Ask the agent to turn the
@@ -86,7 +86,7 @@ scenario review when installed and configured.
 ### Working In An Existing Repo
 
 1. If the repo has not been initialized with `charness`, ask the agent to use
-   `init-repo` first. It should normalize [AGENTS.md](./AGENTS.md) and related
+   `setup` first. It should normalize [AGENTS.md](./AGENTS.md) and related
    operating surfaces without turning the repo into a generic template.
 2. Ask for the concrete work directly: `Implement this`,
    `Fix this failing test`, or `Debug this behavior`. Routes: `impl` or `debug`.
@@ -126,7 +126,7 @@ every operator choose from a menu before work can begin.
 
 Connected areas:
 [`find-skills`](./skills/public/find-skills/SKILL.md),
-[`init-repo`](./skills/public/init-repo/SKILL.md),
+[`setup`](./skills/public/setup/SKILL.md),
 [`quality`](./skills/public/quality/SKILL.md),
 [`create-skill`](./skills/public/create-skill/SKILL.md).
 
@@ -192,7 +192,7 @@ risk, documentation drift, skill ergonomics, tool health, runtime cost, and
 places where repeated judgment should become a validator or script.
 
 Connected areas:
-[`init-repo`](./skills/public/init-repo/SKILL.md),
+[`setup`](./skills/public/setup/SKILL.md),
 [`quality`](./skills/public/quality/SKILL.md),
 [`debug`](./skills/public/debug/SKILL.md),
 [`critique`](./skills/public/critique/SKILL.md).
@@ -270,7 +270,7 @@ Terminology:
 
 ### Public Skills
 
-Use [`init-repo`](./skills/public/init-repo/SKILL.md) when a repo needs its
+Use [`setup`](./skills/public/setup/SKILL.md) when a repo needs its
 first project overview, [AGENTS.md](./AGENTS.md), roadmap, or
 operator-facing setup.
 

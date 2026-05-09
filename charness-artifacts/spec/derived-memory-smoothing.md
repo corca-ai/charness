@@ -102,7 +102,7 @@ and counterweight angles.
 
 Act Before Ship:
 
-- Treat `docs/artifact-policy.md`, `docs/handoff.md`, and `init-repo` as
+- Treat `docs/artifact-policy.md`, `docs/handoff.md`, and `setup` as
   first-class consumers before making smoothing a reusable repo pattern.
 - Keep smoothed values separate from dated history and make every derived
   current pointer trace back to evidence.

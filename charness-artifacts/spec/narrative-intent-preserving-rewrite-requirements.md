@@ -189,7 +189,7 @@ The adapter should let `charness` say that Quick Start usually means:
 The adapter should let `charness` preserve repo-specific grouping choices such
 as:
 
-- `init-repo` as a distinct entrypoint, not just one item in a flat list
+- `setup` as a distinct entrypoint, not just one item in a flat list
 - `quality` and `retro` as quality-improvement loops, not mere post-impl cleanup
 - communication grouped by speaker/receiver direction
 - support skills and integrations explained as non-public tool layers

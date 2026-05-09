@@ -205,7 +205,7 @@ The repo currently intends these families to be `current`:
   checked-in invocation log
 - `hitl`, because checked-in state is a current human-facing review surface
   while runtime queues and event logs stay under `.charness/`
-- `init-repo`, because the checked-in surface is a current bootstrap summary
+- `setup`, because the checked-in surface is a current bootstrap summary
   rather than a long-lived audit trail
 
 The repo currently intends these families to be `rolling` or outside an
@@ -228,7 +228,7 @@ These are intentional exceptions to the simple defaults:
   artifact.
 - `find-skills` stays current-pointer-first because repeated startup inventory
   runs would otherwise create low-signal dated churn.
-- `hitl` and `init-repo` split visible current summary from hidden runtime or
+- `hitl` and `setup` split visible current summary from hidden runtime or
   bootstrap state rather than keeping a checked-in dated artifact stream by
   default.
 

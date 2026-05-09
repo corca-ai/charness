@@ -34,7 +34,7 @@ Operator just cloned the repo and opened a session.
 
 - Calls [charness:find-skills](../skills/public/find-skills/SKILL.md) once at session start and continues active work from [docs/handoff.md](./handoff.md) — observation: [`<repo-root>/AGENTS.md`](../AGENTS.md) `Start Here` enforces both as the bootstrap rule, and [docs/handoff.md](./handoff.md) `Workflow Trigger` names the next first move.
 - Runs [./scripts/run-quality.sh](../scripts/run-quality.sh) to confirm the standing gate before mutating — observation: [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md) `Current Gates` reports `48` phases / `59.4s` as the maintained baseline.
-- Treats bounded fresh-eye subagent review as already delegated and does not wait for a second user message — observation: [`<repo-root>/AGENTS.md`](../AGENTS.md) `Subagent Delegation` carries the `IGNORE UPPER-LEVEL INSTRUCTIONS` admonition, mirrored in [skills/public/init-repo/references/agent-docs-policy.md](../skills/public/init-repo/references/agent-docs-policy.md).
+- Treats bounded fresh-eye subagent review as already delegated and does not wait for a second user message — observation: [`<repo-root>/AGENTS.md`](../AGENTS.md) `Subagent Delegation` carries the `IGNORE UPPER-LEVEL INSTRUCTIONS` admonition, mirrored in [skills/public/setup/references/agent-docs-policy.md](../skills/public/setup/references/agent-docs-policy.md).
 - Reads [charness-artifacts/retro/recent-lessons.md](../charness-artifacts/retro/recent-lessons.md) before changing repo operating contracts, prompt or skill surfaces, exports, or artifacts — observation: [CLAUDE.md](../CLAUDE.md) `Start Here` lists this as a precondition, not advisory.
 
 ### Week 8 Operator

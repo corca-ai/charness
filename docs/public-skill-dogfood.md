@@ -25,7 +25,7 @@ stays as the short human-readable contract for the same reviewed cases.
 - `hitl`
 - `ideation`
 - `impl`
-- `init-repo`
+- `setup`
 - `issue`
 - `narrative`
 - `critique`

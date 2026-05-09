@@ -7,7 +7,7 @@ depends too much on explicit human intent and manual upkeep:
 
 - a user can ask for `retro`, but ordinary `impl` or support-tool work does not
   reliably leave behind a compact lesson digest
-- new repos created through `init-repo` do not yet inherit the same
+- new repos created through `setup` do not yet inherit the same
   `recent-lessons` memory seam that `charness` now uses for itself
 - `retro` can narrate waste and improvement ideas, but it does not yet own a
   stable mechanism for refreshing a compact next-session digest
@@ -29,7 +29,7 @@ The first implementation batch has landed:
   durable retro artifact
 - `persist_retro_artifact.py` now auto-refreshes the digest when a durable
   retro artifact is written
-- `init-repo` can seed [`.agents/retro-adapter.yaml`](../.agents/retro-adapter.yaml) and
+- `setup` can seed [`.agents/retro-adapter.yaml`](../.agents/retro-adapter.yaml) and
   [`charness-artifacts/retro/recent-lessons.md`](../charness-artifacts/retro/recent-lessons.md) for repos that opt into durable retro
   memory
 - `quality` now treats skill ergonomics as an explicit lens with an advisory
@@ -52,7 +52,7 @@ memory.
 - Implement the host-log probe as a standalone helper first. `retro` may
   consume it later, but this slice should not make host-log collection an
   always-on retro dependency.
-- Extend `init-repo` so newly scaffolded repos can inherit the same memory seam:
+- Extend `setup` so newly scaffolded repos can inherit the same memory seam:
   a retro adapter with `summary_path`, an AGENTS memory entry, and a lightweight
   digest file.
 - Let `retro` own digest refresh. Weekly and session retros may both update the
@@ -88,7 +88,7 @@ If this work is implemented badly, the likely failure modes are:
 - host-specific telemetry leaks into the portable public core and breaks on one
   host while appearing authoritative on another
 - the digest becomes another hand-maintained stale file that no workflow owns
-- `init-repo` scaffolds too much policy, making small repos pay for a
+- `setup` scaffolds too much policy, making small repos pay for a
   sophistication they do not want
 - `quality` starts judging style preferences instead of real ergonomics and
   progressive-disclosure honesty
@@ -109,7 +109,7 @@ If this work is implemented badly, the likely failure modes are:
 - How much of skill ergonomics should live in `quality` versus
   `public-skill-validation`?
 - Which skill families would actually benefit from a Jef Raskin anchor:
-  `create-cli`, `find-skills`, `init-repo`, or a smaller discoverability-only
+  `create-cli`, `find-skills`, `setup`, or a smaller discoverability-only
   reference?
 
 ## Deferred Decisions
@@ -143,9 +143,9 @@ If this work is implemented badly, the likely failure modes are:
 
 ## Success Criteria
 
-- `init-repo` can scaffold a repo with a retro adapter that includes
+- `setup` can scaffold a repo with a retro adapter that includes
   `summary_path: charness-artifacts/retro/recent-lessons.md`.
-- `init-repo` also scaffolds AGENTS memory that points at the recent-lessons
+- `setup` also scaffolds AGENTS memory that points at the recent-lessons
   digest when retro memory is enabled.
 - `retro` owns a helper that refreshes `summary_path` from the latest durable
   retro in a bounded, predictable shape.
@@ -156,7 +156,7 @@ If this work is implemented badly, the likely failure modes are:
   [`skills/public/retro/scripts/probe_host_logs.py`](../skills/public/retro/scripts/probe_host_logs.py).
 - The second implementation slice ships a standalone helper at
   [`skills/public/retro/scripts/refresh_recent_lessons.py`](../skills/public/retro/scripts/refresh_recent_lessons.py).
-- The third implementation slice ships [`skills/public/init-repo/scripts/seed_retro_memory.py`](../skills/public/init-repo/scripts/seed_retro_memory.py)
+- The third implementation slice ships [`skills/public/setup/scripts/seed_retro_memory.py`](../skills/public/setup/scripts/seed_retro_memory.py)
   so new repos can opt into the same seam without hand-writing it.
 - A repo-owned helper can probe Claude/Codex local logs and return structured
   availability status for:
@@ -170,7 +170,7 @@ If this work is implemented badly, the likely failure modes are:
 
 - `python3 skills/public/retro/scripts/resolve_adapter.py --repo-root .`
   returns `summary_path` when configured.
-- `init-repo` tests prove that the retro memory seam can be scaffolded into a
+- `setup` tests prove that the retro memory seam can be scaffolded into a
   fresh repo.
 - `retro` tests prove that the digest refresh helper updates
   [`recent-lessons.md`](../charness-artifacts/retro/recent-lessons.md) deterministically from a bounded source artifact.
@@ -196,7 +196,7 @@ If this work is implemented badly, the likely failure modes are:
    updated, or whether the current explicit script boundary is the intended
    product posture. Landed in favor of auto-refresh through
    `persist_retro_artifact.py`.
-3. Decide whether `init-repo` should also wire the recent-lessons seam into
+3. Decide whether `setup` should also wire the recent-lessons seam into
    scaffolded [`AGENTS.md`](../AGENTS.md) memory by default when retro memory is enabled.
    Landed.
 

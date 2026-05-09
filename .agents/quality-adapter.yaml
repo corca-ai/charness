@@ -64,7 +64,7 @@ domain_language_contract:
         - "integration manifest"
         - "integration"
     - id: repo-initialization-skill
-      canonical: "init-repo"
+      canonical: "setup"
       allowed_aliases:
         - "initialize this repo"
         - "repo initialization"

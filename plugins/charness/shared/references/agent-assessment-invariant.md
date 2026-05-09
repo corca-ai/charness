@@ -23,7 +23,7 @@ This invariant applies to:
   the caller for a human-owned choice.
 - `spec` interactive ambiguity-reduction prompts that ask the user to choose.
 - `narrative` rewrite-loop human-facing surfaces and brief-draft review.
-- `init-repo` ideation-pass and scaffold decisions returned to the maintainer.
+- `setup` ideation-pass and scaffold decisions returned to the maintainer.
 
 Suggestions never auto-record as approval; the human still owns the decision.
 

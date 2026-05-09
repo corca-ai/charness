@@ -348,7 +348,7 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     assert "./skills/public/" not in exported_readme_text
     assert "./skills/support/" not in exported_readme_text
     assert "./plugins/charness/support/" not in exported_readme_text
-    assert "(./skills/init-repo/SKILL.md)" in exported_readme_text
+    assert "(./skills/setup/SKILL.md)" in exported_readme_text
     assert "(./support/agent-browser/SKILL.md)" in exported_readme_text
     assert "(./support/specdown/SKILL.md)" in exported_readme_text
     assert "(https://github.com/corca-ai/charness/blob/main/docs/cli-reference.md)" in exported_readme_text

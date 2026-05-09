@@ -1,0 +1,235 @@
+from __future__ import annotations
+
+import json
+import tempfile
+from pathlib import Path
+from typing import Callable
+
+
+def run_setup_inspect_states(
+    root: Path,
+    *,
+    run_command: Callable[..., object],
+    expect_success: Callable[..., None],
+    error_type: type[Exception],
+) -> None:
+    inspect_script = root / "skills" / "public" / "setup" / "scripts" / "inspect_repo.py"
+
+    with tempfile.TemporaryDirectory(prefix="charness-eval-setup-greenfield-") as tmpdir:
+        tmp = Path(tmpdir)
+        greenfield_result = run_command(["python3", str(inspect_script), "--repo-root", str(tmp)], cwd=root)
+        expect_success(greenfield_result, "setup greenfield inspect")
+        greenfield = json.loads(greenfield_result.stdout)
+        if greenfield.get("repo_mode") != "GREENFIELD":
+            raise error_type(f"setup greenfield inspect: unexpected repo_mode {greenfield.get('repo_mode')!r}")
+        if greenfield.get("agent_docs", {}).get("recommended_action") != "create_agents_and_symlink":
+            raise error_type(
+                "setup greenfield inspect: unexpected agent-doc action "
+                f"{greenfield.get('agent_docs', {}).get('recommended_action')!r}"
+            )
+
+    with tempfile.TemporaryDirectory(prefix="charness-eval-setup-partial-") as tmpdir:
+        tmp = Path(tmpdir)
+        (tmp / "docs").mkdir(parents=True)
+        (tmp / "README.md").write_text("# Demo\n", encoding="utf-8")
+        (tmp / "CLAUDE.md").write_text("project-specific instructions\n", encoding="utf-8")
+        partial_result = run_command(["python3", str(inspect_script), "--repo-root", str(tmp)], cwd=root)
+        expect_success(partial_result, "setup partial inspect")
+        partial = json.loads(partial_result.stdout)
+        if partial.get("repo_mode") != "PARTIAL":
+            raise error_type(f"setup partial inspect: unexpected repo_mode {partial.get('repo_mode')!r}")
+        if partial.get("agent_docs", {}).get("recommended_action") != "ask_to_promote_claude_into_agents":
+            raise error_type(
+                "setup partial inspect: unexpected agent-doc action "
+                f"{partial.get('agent_docs', {}).get('recommended_action')!r}"
+            )
+        if partial.get("agent_docs", {}).get("claude_has_text") is not True:
+            raise error_type("setup partial inspect: expected CLAUDE.md content to be detected")
+
+    with tempfile.TemporaryDirectory(prefix="charness-eval-setup-targeted-") as tmpdir:
+        tmp = Path(tmpdir)
+        (tmp / "docs").mkdir(parents=True)
+        (tmp / "README.md").write_text("# Demo\n", encoding="utf-8")
+        (tmp / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
+        (tmp / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
+        targeted_result = run_command(["python3", str(inspect_script), "--repo-root", str(tmp)], cwd=root)
+        expect_success(targeted_result, "setup targeted partial inspect")
+        targeted = json.loads(targeted_result.stdout)
+        if targeted.get("repo_mode") != "PARTIAL":
+            raise error_type(f"setup targeted partial inspect: unexpected repo_mode {targeted.get('repo_mode')!r}")
+        if targeted.get("partial_kind") != "targeted_missing_surface":
+            raise error_type(
+                "setup targeted partial inspect: unexpected partial_kind "
+                f"{targeted.get('partial_kind')!r}"
+            )
+        if targeted.get("missing_surfaces") != ["operator_acceptance"]:
+            raise error_type(
+                "setup targeted partial inspect: unexpected missing_surfaces "
+                f"{targeted.get('missing_surfaces')!r}"
+            )
+
+    run_setup_review_scope_inspect(
+        root,
+        inspect_script=inspect_script,
+        run_command=run_command,
+        expect_success=expect_success,
+        error_type=error_type,
+    )
+
+
+def run_setup_review_scope_inspect(
+    root: Path,
+    *,
+    inspect_script: Path,
+    run_command: Callable[..., object],
+    expect_success: Callable[..., None],
+    error_type: type[Exception],
+) -> None:
+    with tempfile.TemporaryDirectory(prefix="charness-eval-setup-review-scope-") as tmpdir:
+        tmp = Path(tmpdir)
+        (tmp / "docs").mkdir(parents=True)
+        (tmp / "README.md").write_text("# Demo\n", encoding="utf-8")
+        (tmp / "AGENTS.md").write_text(
+            "\n".join(
+                [
+                    "# Agents",
+                    "",
+                    "This rule is the explicit user delegation request for the bounded review scopes it names.",
+                    "Repo-mandated bounded fresh-eye subagent reviews are already delegated by the repo contract.",
+                    "Do not wait for a second user message asking for delegation.",
+                    "If the host blocks subagent spawning, stop and report the host restriction explicitly instead of substituting a same-agent pass.",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        (tmp / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
+        (tmp / "docs" / "operator-acceptance.md").write_text("# Acceptance\n", encoding="utf-8")
+        result = run_command(["python3", str(inspect_script), "--repo-root", str(tmp)], cwd=root)
+        expect_success(result, "setup delegated-review scope inspect")
+        review_scope = json.loads(result.stdout)
+        normalization = review_scope.get("agent_docs", {}).get("normalization", {})
+        missing_scopes = normalization.get("fresh_eye_review", {}).get("missing_task_review_scopes")
+        if missing_scopes != ["setup", "quality"]:
+            raise error_type(
+                "setup delegated-review scope inspect: unexpected missing_task_review_scopes "
+                f"{missing_scopes!r}"
+            )
+        recommendation_ids = [item.get("id") for item in review_scope.get("recommendations", [])]
+        if "fresh_eye_task_review_scope_drift" not in recommendation_ids:
+            raise error_type(
+                "setup delegated-review scope inspect: expected fresh_eye_task_review_scope_drift recommendation"
+            )
+        priorities = {item.get("id"): item.get("priority") for item in review_scope.get("recommendations", [])}
+        if priorities.get("fresh_eye_task_review_scope_drift") != "review_required":
+            raise error_type(
+                "setup delegated-review scope inspect: expected fresh_eye_task_review_scope_drift to require review"
+            )
+
+
+def run_setup_operator_acceptance_synthesis(
+    root: Path,
+    *,
+    run_command: Callable[..., object],
+    expect_success: Callable[..., None],
+    error_type: type[Exception],
+) -> None:
+    with tempfile.TemporaryDirectory(prefix="charness-eval-setup-acceptance-") as tmpdir:
+        tmp = Path(tmpdir)
+        (tmp / "docs" / "specs").mkdir(parents=True)
+        (tmp / "scripts").mkdir(parents=True)
+        (tmp / "README.md").write_text("# Demo\n", encoding="utf-8")
+        (tmp / "docs" / "handoff.md").write_text("# Handoff\n", encoding="utf-8")
+        (tmp / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
+        (tmp / "pyproject.toml").write_text("[project]\nname='demo'\n", encoding="utf-8")
+        (tmp / "docs" / "specs" / "smoke.spec.md").write_text(
+            "\n".join(
+                [
+                    "# Demo Spec",
+                    "",
+                    "## CLI Smoke",
+                    "",
+                    "### Functional Check",
+                    "",
+                    "```bash",
+                    "./scripts/run-quality.sh",
+                    "```",
+                    "",
+                    "## Hosted Publish",
+                    "",
+                    "### Functional Check",
+                    "",
+                    "```bash",
+                    "gh workflow run release.yml",
+                    "```",
+                    "",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (tmp / "scripts" / "run-quality.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+
+        result = run_command(
+            [
+                "python3",
+                "skills/public/setup/scripts/synthesize_operator_acceptance.py",
+                "--repo-root",
+                str(tmp),
+                "--json",
+            ],
+            cwd=root,
+        )
+        expect_success(result, "setup operator acceptance synthesis")
+        payload = json.loads(result.stdout)
+        cheap = payload["acceptance_buckets"]["cheap_first"]
+        external = payload["acceptance_buckets"]["external_or_costly"]
+        human = payload["acceptance_buckets"]["human_judgment"]
+        if len(cheap) != 1 or cheap[0]["commands"] != "./scripts/run-quality.sh":
+            raise error_type(f"setup operator acceptance synthesis: unexpected cheap bucket {cheap!r}")
+        if len(external) != 1 or "gh workflow run" not in external[0]["commands"]:
+            raise error_type(f"setup operator acceptance synthesis: unexpected external bucket {external!r}")
+        if not human:
+            raise error_type(f"setup operator acceptance synthesis: expected human review items {payload!r}")
+        if "## Environment Prerequisites" not in payload["markdown"]:
+            raise error_type(f"setup operator acceptance synthesis: missing prerequisites section {payload!r}")
+
+
+def run_setup_compact_skill_routing_discoverability(
+    root: Path,
+    *,
+    run_command: Callable[..., object],
+    expect_success: Callable[..., None],
+    error_type: type[Exception],
+) -> None:
+    render_script = root / "skills" / "public" / "setup" / "scripts" / "render_skill_routing.py"
+
+    with tempfile.TemporaryDirectory(prefix="charness-eval-setup-routing-") as tmpdir:
+        tmp = Path(tmpdir)
+
+        compact_result = run_command(["python3", str(render_script), "--repo-root", str(tmp), "--json"], cwd=root)
+        expect_success(compact_result, "setup compact skill routing")
+        compact = json.loads(compact_result.stdout)
+        if compact.get("skill_routing_mode") != "compact":
+            raise error_type(f"setup compact skill routing: unexpected mode {compact.get('skill_routing_mode')!r}")
+        if compact.get("skill_routing_mode_source") != "default":
+            raise error_type(
+                "setup compact skill routing: unexpected mode source "
+                f"{compact.get('skill_routing_mode_source')!r}"
+            )
+        if compact.get("listed_skill_ids") != ["find-skills"]:
+            raise error_type(
+                "setup compact skill routing: unexpected listed_skill_ids "
+                f"{compact.get('listed_skill_ids')!r}"
+            )
+        markdown = compact.get("markdown", "")
+        expected_snippets = (
+            "call the shared/public charness skill `find-skills` once at startup before broader exploration",
+            "default map of installed public skills, support skills, synced support surfaces, and integrations",
+            "After that bootstrap pass, choose the durable work skill",
+        )
+        for snippet in expected_snippets:
+            if snippet not in markdown:
+                raise error_type(f"setup compact skill routing: missing snippet {snippet!r}")
+        if "release-note style summary or chat-ready human update" in markdown:
+            raise error_type("setup compact skill routing: compact mode should not inline the checked-in skill catalog")

@@ -66,13 +66,13 @@
   },
   "supports_public_skills": [
     "quality",
-    "init-repo"
+    "setup"
   ],
   "recommendation_role": "validation",
   "degradation": {
     "when_missing": [
       "Python repos still get Ruff's file-local unused import and variable checks, but Ruff does not detect unreferenced modules or whole-repo dead files.",
-      "Quality and init-repo should recommend a dead-code/dead-file advisory pass rather than treating migration-like stale files as a special case."
+      "Quality and setup should recommend a dead-code/dead-file advisory pass rather than treating migration-like stale files as a special case."
     ],
     "when_version_mismatch": [
       "Treat changed confidence behavior or whitelist syntax in newer Vulture releases as an advisory review point before promoting findings to a hard gate."

@@ -41,11 +41,11 @@
           ]
         },
         {
-          "skill_id": "init-repo",
+          "skill_id": "setup",
           "scenario_ids": [
-            "init-repo-adapter-bootstrap",
-            "init-repo-inspect-states",
-            "init-repo-compact-skill-routing-discoverability"
+            "setup-adapter-bootstrap",
+            "setup-inspect-states",
+            "setup-compact-skill-routing-discoverability"
           ]
         },
         {

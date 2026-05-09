@@ -95,7 +95,7 @@ even if the next session only skims this document.
   overlap, and fragile coverage-floor tagging.
 
 - `corca-ai/charness#11`
-  Landed. `init-repo` now points installable-surface repos at an explicit probe
+  Landed. `setup` now points installable-surface repos at an explicit probe
   surface, keeps that guidance narrow, and teaches [`README.md`](../README.md)
   to name install, healthcheck, discovery, readiness, and local
   discoverability semantics without forcing boilerplate onto repos that do not
@@ -302,14 +302,14 @@ Dogfood requirement:
   - one tool that is manual-only or currently missing
 - verify that the structured output and any persisted machine state stay honest
 
-### 4. `init-repo`: Follow-On, Not Next
+### 4. `setup`: Follow-On, Not Next
 
 Transform `#11` into a follow-on that only lands after the first three slices.
 
 The intended shape is small:
 
 - when a repo actually ships an installable CLI or local agent/plugin surface,
-  `init-repo` may recommend a small probe-surface doc section
+  `setup` may recommend a small probe-surface doc section
 - do not add boilerplate before the probe-contract language stabilizes in
   `create-cli` and `quality`
 
@@ -372,7 +372,7 @@ Not the next slice, but worth preserving as a probable later follow-on:
 3. land the shared recommendation/install helper and first consumers
 4. land `quality` executable-spec / fragile-margin follow-on only after the
    first-wave `quality` rewrite settles
-5. revisit `init-repo` only if the earlier slices settled cleanly
+5. revisit `setup` only if the earlier slices settled cleanly
 
 ## Acceptance For The Next Session
 

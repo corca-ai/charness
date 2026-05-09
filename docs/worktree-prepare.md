@@ -25,7 +25,7 @@ In a consumer repo that uses `git worktree add` plus a Node hook manager:
 
 ```bash
 # One-time: seed a starter manifest and edit it for your package manager / hooks.
-python3 "$CHARNESS_REPO/skills/public/init-repo/scripts/seed_worktree_adapter.py" --repo-root .
+python3 "$CHARNESS_REPO/skills/public/setup/scripts/seed_worktree_adapter.py" --repo-root .
 
 # Or copy from the example and edit:
 cp "$CHARNESS_REPO/integrations/worktree/adapter.example.yaml" .agents/worktree-adapter.yaml

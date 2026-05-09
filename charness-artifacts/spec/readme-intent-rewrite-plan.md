@@ -37,7 +37,7 @@ Examples already surfaced by the user:
   `narrative` is person -> person,
   `handoff` is agent -> agent,
   `hitl` is agent -> person
-- `init-repo` may need special handling instead of being flattened into the
+- `setup` may need special handling instead of being flattened into the
   same cluster logic as the other public skills
 - `Repository Shape` is not currently valuable enough to keep in the README
 

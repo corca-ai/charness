@@ -7,9 +7,11 @@ handoff:artifact:release:read-only spill target -- handoff cites release/latest.
 handoff:artifact:quality:read-only spill target -- handoff cites quality/latest.md as where quality numbers belong
 handoff:artifact:retro:read-only spill target -- handoff cites retro/recent-lessons.md as where repeat-trap memory belongs
 handoff:artifact:debug:read-only spill target -- handoff cites debug/ artifacts as where debug detail belongs
-init-repo:artifact:retro:seed-only -- init-repo seeds initial recent-lessons.md via seed_retro_memory.py; ongoing writes own to retro
-init-repo:adapter:retro:seed-only -- init-repo seeds .agents/retro-adapter.yaml via seed_retro_memory.py; runtime owns to retro
-init-repo:adapter:worktree:seed-only -- init-repo seeds .agents/worktree-adapter.yaml; runtime owns to worktree integration
+setup:artifact:retro:seed-only -- setup seeds initial recent-lessons.md via seed_retro_memory.py; ongoing writes own to retro
+setup:adapter:retro:seed-only -- setup seeds .agents/retro-adapter.yaml via seed_retro_memory.py; runtime owns to retro
+setup:adapter:worktree:seed-only -- setup seeds .agents/worktree-adapter.yaml; runtime owns to worktree integration
+setup:adapter:t-events:seed-only -- setup seeds .agents/t-events-adapter.yaml via seed_t_events_adapter.py; runtime owns to t-events integration
+setup:artifact:spec:read-only cite -- seed_t_events_adapter.py template comment cites issue-135 umbrella spec for traceability; runtime owns to spec
 issue:artifact:gather:read-only cite -- issue resolve flow references gather artifacts as evidence sources
 critique:artifact:retro:read-only cite -- code-critique reference cross-links charness-artifacts/retro/recent-lessons.md as the defect-class memory home
 critique:artifact:skill-t-mechanism:read-only cite -- angle-selection lineup cites skill-t-mechanism/inventory as the Tier C anchor_invoked evidence sink

@@ -21,7 +21,7 @@ Date: 2026-04-20
 - Quick Start still read like a human-operated install recipe instead of a thin
   README-first bootstrap plus repo-owned next-step guidance.
 - The public skill map still under-expressed intent distinctions the user
-  considered load-bearing: `init-repo` as a distinct entrypoint, `quality` and
+  considered load-bearing: `setup` as a distinct entrypoint, `quality` and
   `retro` as quality-raising loops for people and agents, and communication
   skills grouped by who is speaking to whom.
 - `cautilus` was over-exposed in the README front door instead of being
@@ -37,7 +37,7 @@ Date: 2026-04-20
   keep seeing, without requiring separate install or uninstall manuals as the
   first-touch owner docs.
 - The public skill map now groups skills by intent rather than flattening them
-  into one list, with `init-repo` separated as a special entrypoint.
+  into one list, with `setup` separated as a special entrypoint.
 - `quality` and `retro` now read as dedicated quality-raising loops rather
   than implementation cleanup.
 - `announcement`, `narrative`, `handoff`, and `hitl` now read by speaking
@@ -69,7 +69,7 @@ intent, and keep support binaries and deeper contracts in their owner sections.
 - Replaced the flat "what to use when" framing with an intent-based skill map.
 - Moved Quick Start to a pasteable README-first bootstrap plus
   `doctor --next-action`.
-- Separated `init-repo` from the ordinary implementation flow.
+- Separated `setup` from the ordinary implementation flow.
 - Reframed `quality` and `retro` as distinct quality-improvement loops.
 - Reframed communication skills by speaker/recipient direction.
 - Removed the low-value repository-shape section from the README.
@@ -80,7 +80,7 @@ intent, and keep support binaries and deeper contracts in their owner sections.
 
 - Claim: the README now preserves the user's stated intent distinctions rather
   than only improving surface polish.
-  Evidence: `quality`/`retro`, `init-repo`, communication directions, and the
+  Evidence: `quality`/`retro`, `setup`, communication directions, and the
   Quick Start handoff model all reflect the explicit carry-forward feedback from
   the 2026-04-17 retro and follow-up discussion.
 - Claim: install truth still belongs outside the README.

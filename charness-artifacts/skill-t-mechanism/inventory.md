@@ -18,7 +18,7 @@ Per-skill view of the (H + agent) T-loop substrate. Each row carries four column
 | `hitl` | 2 | 1 / 24 | Gawande | awaiting events |
 | `ideation` | 0 | 0 / — | Jackson | awaiting events |
 | `impl` | 6 | 1 / 12 | — | awaiting events |
-| `init-repo` | 5 | 1 / 15 | — | awaiting events |
+| `setup` | 5 | 1 / 15 | — | awaiting events |
 | `issue` | 1 | 0 / — | — | awaiting events |
 | `narrative` | 2 | 1 / 15 | Minto | awaiting events |
 | `quality` | 14 | 1 / 2 | Weinberg | awaiting events |

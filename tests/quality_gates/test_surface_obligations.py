@@ -35,7 +35,7 @@ def test_check_changed_surfaces_treats_charness_artifacts_as_repo_markdown() -> 
         "--repo-root",
         str(ROOT),
         "--paths",
-        "charness-artifacts/init-repo/latest.md",
+        "charness-artifacts/setup/latest.md",
         "--json",
     )
     assert result.returncode == 0, result.stderr
@@ -432,7 +432,7 @@ def test_run_slice_closeout_blocks_public_skill_review_until_acknowledged() -> N
         "--repo-root",
         str(ROOT),
         "--paths",
-        "skills/public/init-repo/scripts/inspect_repo.py",
+        "skills/public/setup/scripts/inspect_repo.py",
         "--skip-sync",
         "--skip-verify",
         "--json",
@@ -447,9 +447,9 @@ def test_run_slice_closeout_blocks_public_skill_review_until_acknowledged() -> N
     assert payload["cautilus_plan"]["status"] == "not-required"
     assert payload["cautilus_plan"]["required"] is False
     assert payload["cautilus_plan"]["scenario_registry_review_required"] is True
-    assert payload["cautilus_plan"]["changed_public_skills"] == ["init-repo"]
+    assert payload["cautilus_plan"]["changed_public_skills"] == ["setup"]
     assert any(
-        item["skill_id"] == "init-repo"
+        item["skill_id"] == "setup"
         for item in payload["cautilus_plan"]["skill_validation_recommendations"]
     )
 
@@ -460,7 +460,7 @@ def test_run_slice_closeout_allows_acknowledged_public_skill_review() -> None:
         "--repo-root",
         str(ROOT),
         "--paths",
-        "skills/public/init-repo/scripts/inspect_repo.py",
+        "skills/public/setup/scripts/inspect_repo.py",
         "--skip-sync",
         "--skip-verify",
         "--ack-cautilus-skill-review",

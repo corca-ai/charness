@@ -11,7 +11,7 @@
     "hitl",
     "ideation",
     "impl",
-    "init-repo",
+    "setup",
     "issue",
     "narrative",
     "critique",
@@ -161,16 +161,16 @@
       ]
     },
     {
-      "skill_id": "init-repo",
+      "skill_id": "setup",
       "prompt": "Normalize this partially initialized repo without pretending it needs a greenfield rewrite.",
       "repo_shape": "partially initialized mature repo with divergent but valid naming and intentionally missing optional surfaces",
-      "expected_skill": "init-repo",
-      "expected_artifact": "charness-artifacts/init-repo/latest.md",
+      "expected_skill": "setup",
+      "expected_artifact": "charness-artifacts/setup/latest.md",
       "validation_tier": "evaluator-required",
       "adapter_requirement": "required",
       "acceptance_evidence": [
-        "routes the prompt to `init-repo` instead of an adjacent public skill",
-        "names or refreshes `charness-artifacts/init-repo/latest.md` when the skill persists durable state",
+        "routes the prompt to `setup` instead of an adjacent public skill",
+        "names or refreshes `charness-artifacts/setup/latest.md` when the skill persists durable state",
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
@@ -178,7 +178,7 @@
       "observed_evidence": [
         "The checked-in public core keeps repo-mode detection explicit while adding a task-completing delegated-review gate for normalization runs; inspect/help/routing calls stay cheap.",
         "`inspect_repo.py` now emits `recommendations[]` separately from `normalization.findings`, so adapter-declared policy sources can raise `agents.delegated_review_policy` without pretending phrase matching is a hard fact.",
-        "`inspect_repo.py` now flags `fresh_eye_task_review_scope_drift` when `AGENTS.md` carries a critique or fresh-eye delegation rule but does not name task-completing `init-repo` and `quality` review runs as spawn-authorized scopes.",
+        "`inspect_repo.py` now flags `fresh_eye_task_review_scope_drift` when `AGENTS.md` carries a critique or fresh-eye delegation rule but does not name task-completing `setup` and `quality` review runs as spawn-authorized scopes.",
         "`inspect_repo.py` keeps explicit repo inspection resilient by bounding source-guard discovery to AGENTS.md, README.md, docs/, and specs/ by default; repos that keep guards elsewhere can set `source_guard_scan_roots`, and unreadable specs become structured warnings instead of aborting install/update recovery."
       ]
     },

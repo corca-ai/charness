@@ -185,7 +185,7 @@ def _write_fake_gh(bin_dir: Path) -> None:
     )
 
 
-def _init_repo_git(repo: Path, remote: Path) -> None:
+def _setup_git(repo: Path, remote: Path) -> None:
     subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "config", "user.email", "codex-test@example.com"], cwd=repo, check=True, capture_output=True, text=True)
@@ -204,7 +204,7 @@ def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
     _write_sync_script(repo)
     _write_quality_script(repo)
     _write_fake_gh(bin_dir)
-    _init_repo_git(repo, remote)
+    _setup_git(repo, remote)
     return repo, remote, bin_dir
 
 

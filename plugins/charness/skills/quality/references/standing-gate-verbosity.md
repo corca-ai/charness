@@ -98,7 +98,7 @@ would block the review, skip it and report the limitation. A single global
 threshold is acceptable only when the repo intentionally measures one stable
 runner class.
 
-For broad quality or init-repo reviews, run bounded delegated exploration when
+For broad quality or setup reviews, run bounded delegated exploration when
 the host supports it before finalizing slow-gate advice. Useful lenses are:
 fixture economics, parallel critical path, duplicated proof, adapter/runtime
 budget policy, and operator signal. Report whether delegated review was

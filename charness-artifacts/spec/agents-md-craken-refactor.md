@@ -154,7 +154,7 @@ this artifact before saving. The spec is ready for implementation.
   [docs/conventions/operating-contract.md](../../docs/conventions/operating-contract.md)
   and
   [docs/conventions/implementation-discipline.md](../../docs/conventions/implementation-discipline.md).
-- Host-specific entry resolution used the deterministic `init-repo` case:
+- Host-specific entry resolution used the deterministic `setup` case:
   [CLAUDE.md](../../CLAUDE.md) is now a symlink to [AGENTS.md](../../AGENTS.md).
 - The surface manifest now treats `CLAUDE.md` as a repo markdown and
   prompt-behavior source path so future alias changes carry the same closeout

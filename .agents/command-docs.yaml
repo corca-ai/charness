@@ -53,7 +53,7 @@ commands:
       - /tmp/charness-init.sh
       - charness init
     forbidden_doc_contains:
-      - charness init-repo
+      - charness setup
   doctor:
     help_command: ./charness doctor --help
     doc_paths:

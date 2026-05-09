@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-09T08:14:25Z",
+  "generated_at": "2026-05-09T11:49:06Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -333,35 +333,6 @@
         "layer": "public skill"
       },
       {
-        "id": "init-repo",
-        "name": "init-repo",
-        "description": "Use when a repo needs its initial operating surface created or normalized. Bootstrap README, AGENTS.md, CLAUDE.md symlink policy, roadmap, and operator-acceptance docs from minimal ideation for greenfield repos, or realign those same surfaces for partially-initialized repos without pretending quality review or deep product ideation already happened.",
-        "summary": "Use when a repo needs its initial operating surface created or normalized. Bootstrap README, AGENTS.md, CLAUDE.md symlink policy, roadmap, and operator-acceptance docs from minimal ideation for greenfield repos, or realign those same surfaces for partially-initialized repos without pretending quality review or deep product ideation already happened.",
-        "path": "skills/public/init-repo/SKILL.md",
-        "skill_dir": "skills/public/init-repo",
-        "canonical_path": "skills/public/init-repo/SKILL.md",
-        "trigger_phrases": [
-          "init-repo",
-          "init-repo skill",
-          "init-repo 스킬",
-          "charness:init-repo"
-        ],
-        "referenced_paths": [
-          "skills/public/init-repo/SKILL.md",
-          "skills/public/init-repo/references/greenfield-flow.md",
-          "skills/public/init-repo/references/normalization-flow.md",
-          "skills/public/init-repo/references/agent-docs-policy.md",
-          "skills/public/init-repo/references/default-surfaces.md",
-          "skills/public/init-repo/references/probe-surface.md",
-          "skills/public/init-repo/references/retro-memory-seam.md",
-          "skills/public/init-repo/references/github-actions-defaults.md",
-          "skills/public/init-repo/references/operator-acceptance-synthesis.md",
-          "skills/shared/references/agent-assessment-invariant.md"
-        ],
-        "source": "local-public",
-        "layer": "public skill"
-      },
-      {
         "id": "issue",
         "name": "issue",
         "description": "Use when filing a GitHub issue from current context or resolving GitHub issues end-to-end through the adapter-resolved backend (`gh` by default, or a host-mediated capability such as `ceal github`). Issue creation reports the observed problem before suggesting solutions; issue resolution treats GitHub as the source of truth, classifies the issue, runs a causal review for bug-class issues before designing the fix, and runs a resolution critique so the same class of issue does not recur.",
@@ -520,6 +491,35 @@
           "skills/public/retro/references/expert-lens.md",
           "skills/public/retro/references/trigger-and-persistence.md",
           "skills/public/retro/references/weekly-trends.md"
+        ],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "setup",
+        "name": "setup",
+        "description": "Use when a repo needs its initial operating surface created or normalized. Bootstrap README, AGENTS.md, CLAUDE.md symlink policy, roadmap, and operator-acceptance docs from minimal ideation for greenfield repos, or realign those same surfaces for partially-initialized repos without pretending quality review or deep product ideation already happened.",
+        "summary": "Use when a repo needs its initial operating surface created or normalized. Bootstrap README, AGENTS.md, CLAUDE.md symlink policy, roadmap, and operator-acceptance docs from minimal ideation for greenfield repos, or realign those same surfaces for partially-initialized repos without pretending quality review or deep product ideation already happened.",
+        "path": "skills/public/setup/SKILL.md",
+        "skill_dir": "skills/public/setup",
+        "canonical_path": "skills/public/setup/SKILL.md",
+        "trigger_phrases": [
+          "setup",
+          "setup skill",
+          "setup 스킬",
+          "charness:setup"
+        ],
+        "referenced_paths": [
+          "skills/public/setup/SKILL.md",
+          "skills/public/setup/references/greenfield-flow.md",
+          "skills/public/setup/references/normalization-flow.md",
+          "skills/public/setup/references/agent-docs-policy.md",
+          "skills/public/setup/references/default-surfaces.md",
+          "skills/public/setup/references/probe-surface.md",
+          "skills/public/setup/references/retro-memory-seam.md",
+          "skills/public/setup/references/github-actions-defaults.md",
+          "skills/public/setup/references/operator-acceptance-synthesis.md",
+          "skills/shared/references/agent-assessment-invariant.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -1276,7 +1276,7 @@
         "readiness_checks": [],
         "supports_public_skills": [
           "quality",
-          "init-repo"
+          "setup"
         ],
         "recommendation_role": "validation",
         "path": "integrations/tools/vulture.json",

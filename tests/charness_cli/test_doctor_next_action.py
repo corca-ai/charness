@@ -109,4 +109,4 @@ def test_charness_doctor_can_surface_repo_onboarding_as_primary_next_action(
     assert payload["repo_onboarding"]["status"] == "required"
     assert payload["next_action"]["kind"] == "repo-init"
     assert payload["next_action"]["source"] == "repo_onboarding"
-    assert "init-repo" in payload["next_action"]["message"]
+    assert "setup" in payload["next_action"]["message"]

@@ -20,7 +20,7 @@
       "gather",
       "handoff",
       "impl",
-      "init-repo",
+      "setup",
       "issue",
       "spec"
     ]
@@ -34,7 +34,7 @@
       "handoff",
       "hitl",
       "impl",
-      "init-repo",
+      "setup",
       "issue",
       "narrative",
       "quality",
@@ -65,7 +65,7 @@
       "announcement",
       "find-skills",
       "handoff",
-      "init-repo",
+      "setup",
       "quality",
       "spec"
     ],

@@ -247,7 +247,7 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert payload["repo_root"] == str(home_root / ".agents" / "src" / "charness")
     assert payload["target_repo_root"] == str(CLI.parents[0])
     assert payload["repo_onboarding"]["status"] == "required"
-    assert "init-repo" in payload["repo_onboarding"]["message"]
+    assert "setup" in payload["repo_onboarding"]["message"]
     assert payload["managed_checkout"] is True
     assert payload["claude_marketplace_entry"]["source"]["path"] == str(home_root / ".agents" / "src" / "charness")
     assert payload["claude_installed_entry"]["version"] == "local"
@@ -347,7 +347,7 @@ def test_installed_cli_update_skips_cwd_onboarding_by_default(tmp_path: Path, se
     cwd_repo = tmp_path / "cwd-repo"
     (cwd_repo / ".agents").mkdir(parents=True)
     (cwd_repo / "README.md").write_text("# CWD repo\n", encoding="utf-8")
-    (cwd_repo / ".agents" / "init-repo-adapter.yaml").write_text("- malformed\n", encoding="utf-8")
+    (cwd_repo / ".agents" / "setup-adapter.yaml").write_text("- malformed\n", encoding="utf-8")
 
     installed_cli = home_root / ".local" / "bin" / "charness"
     update_result = subprocess.run(

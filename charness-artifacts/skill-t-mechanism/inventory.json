@@ -326,7 +326,7 @@
         "max_source_count": 1,
         "tier": "B+"
       },
-      "skill_id": "init-repo",
+      "skill_id": "setup",
       "tier_c_events": {
         "event_count": 0,
         "event_types": {},

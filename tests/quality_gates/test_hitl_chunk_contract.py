@@ -116,7 +116,7 @@ def test_agent_assessment_invariant_is_cited_across_chunk_surfaces() -> None:
         "critique SKILL.md": ROOT / "skills" / "public" / "critique" / "SKILL.md",
         "spec SKILL.md": ROOT / "skills" / "public" / "spec" / "SKILL.md",
         "narrative SKILL.md": ROOT / "skills" / "public" / "narrative" / "SKILL.md",
-        "init-repo SKILL.md": ROOT / "skills" / "public" / "init-repo" / "SKILL.md",
+        "setup SKILL.md": ROOT / "skills" / "public" / "setup" / "SKILL.md",
     }
     missing = [name for name, path in surfaces.items() if target not in path.read_text(encoding="utf-8")]
 

@@ -457,7 +457,7 @@ def build_repo_onboarding_payload(
     inspect_payload = json.loads(
         invoke_repo_script(
             source_repo_root,
-            "skills/public/init-repo/scripts/inspect_repo.py",
+            "skills/public/setup/scripts/inspect_repo.py",
             "--repo-root",
             str(resolved_target),
         )
@@ -465,7 +465,7 @@ def build_repo_onboarding_payload(
     skill_routing_payload = json.loads(
         invoke_repo_script(
             source_repo_root,
-            "skills/public/init-repo/scripts/render_skill_routing.py",
+            "skills/public/setup/scripts/render_skill_routing.py",
             "--repo-root",
             str(resolved_target),
             "--json",
@@ -494,7 +494,7 @@ def build_repo_onboarding_payload(
             else "This repo does not look fully charness-onboarded yet."
         )
         payload["message"] = (
-            f"{opener} After restarting the host, start a repo-root session and run the `init-repo` skill before broader work."
+            f"{opener} After restarting the host, start a repo-root session and run the `setup` skill before broader work."
         )
         return payload
     payload["status"] = "ready"

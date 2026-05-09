@@ -1,0 +1,60 @@
+# Allowlist for `init-repo` / `init_repo` cites preserved through the Leg 6
+# rename (init-repo -> setup). Each line is `<path>\t<reason>`. Lines with a
+# trailing `/` apply to every tracked file under that directory prefix.
+#
+# Owned by `scripts/check_init_repo_rename.py`. Adding an entry without a
+# concrete reason fails the validator at PR review time.
+
+# Self-references — the rename validator and its allowlist must use the
+# old word in their own paths so the validator can find the cite to enforce.
+scripts/check_init_repo_rename.py	validator self (file path uses old word so it can grep for it)
+scripts/check_init_repo_rename.allowlist.txt	allowlist self (path contains old word)
+plugins/charness/scripts/check_init_repo_rename.py	plugin mirror of the validator
+plugins/charness/scripts/check_init_repo_rename.allowlist.txt	plugin mirror of the allowlist
+
+# The umbrella spec for issue #135 names this rename and explains the Leg 6
+# substrate. The word `init-repo` / `init_repo` appears as the historical
+# skill name inside the rename narrative, so the spec must keep it.
+charness-artifacts/spec/issue-135-t-first-self-evolving-unit.md	owns the rename contract; preserves substrate-identity narrative
+
+# Historical artifact directories — the words `init-repo` / `init_repo` are
+# preserved in closed-history records because changing them inside historical
+# records rewrites the past. New artifacts under these directories use the
+# new `setup` vocabulary.
+charness-artifacts/premortem/	historical premortem records cite the contemporaneous skill name
+charness-artifacts/retro/	historical retro records cite `init-repo` as the contemporaneous skill name
+charness-artifacts/debug/	historical debug records cite the contemporaneous skill name
+charness-artifacts/dogfood/	historical dogfood evidence cites the contemporaneous skill name
+charness-artifacts/cautilus/	historical cautilus proposals/benchmarks reference the old skill name
+charness-artifacts/design-studies/	historical design studies
+charness-artifacts/hitl/	historical hitl artifacts cite the contemporaneous skill name
+
+# Historical specs whose filenames carry the old word and whose body documents
+# past design intent at the time of writing. New specs use `setup`.
+charness-artifacts/spec/issue-64-init-repo-quality-delegated-review.md	historical spec; filename and body record the issue at the time of writing
+
+# Cautilus run outputs — checked-in artifacts captured before the rename.
+.cautilus/runs/	historical cautilus run outputs
+.cautilus/repos/	historical cautilus per-repo state
+
+# Generated capability inventory — find-skills enumerates each skill's
+# trigger phrases and referenced paths. After the rename the inventory
+# regenerates with `setup` ids; intermediate stale state during the slice is
+# tolerated because the validator scans tracked content. The JSON form mirrors
+# the markdown trigger surface.
+charness-artifacts/find-skills/latest.md	generated inventory; refreshed by find-skills after the rename
+charness-artifacts/find-skills/latest.json	generated inventory; refreshed by find-skills after the rename
+
+# Rolling handoff: the deferred follow-up entry that documents this rename
+# (#135 Leg 6) intentionally preserves the `init-repo` -> `setup` arrow so
+# the next reader can identify the rename event. The arrow is the cite.
+docs/handoff.md	rolling handoff cites the rename event itself with the `init-repo` -> `setup` arrow
+
+# Legacy snippet detection — Leg 6 spec line 436-439 keeps `init-repo` as a
+# deprecated advisory snippet so consumer repos still using the legacy AGENTS.md
+# scope wording surface migration drift instead of silently passing. The cites
+# below are the legacy snippet constant, the advisory finding type, and the
+# test that pins the consumer-migration contract.
+scripts/setup_agent_docs_lib.py	keeps `LEGACY_TASK_REVIEW_SCOPE_SNIPPET = "init-repo"` for the deprecated-advisory consumer-migration contract
+plugins/charness/scripts/setup_agent_docs_lib.py	plugin mirror of the legacy snippet detector
+tests/quality_gates/test_setup_inspect_policy.py	pins the legacy `init-repo` advisory contract for consumer migration

@@ -5,7 +5,7 @@ Each public skill owns its `charness-artifacts/<skill-id>/` namespace and its
 `.agents/<skill-id>-adapter.yaml` adapter file. When a SKILL.md, references,
 or scripts under one skill mention another skill's namespace, the boundary
 must be explicit -- either documented as a known cross-skill write (seed,
-init-repo bootstrap) or as a known read (cite, spill target, evidence) --
+setup bootstrap) or as a known read (cite, spill target, evidence) --
 via the allowlist at scripts/check_skill_ownership_overlap.allowlist.txt.
 
 Silent overlap creates drift the next operator hits. This validator surfaces

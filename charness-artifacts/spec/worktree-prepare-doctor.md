@@ -20,7 +20,7 @@ Canonical surfaces:
 2. `charness worktree doctor` — read-only, fast, deterministic. Inspects `core.hooksPath`, lefthook/husky shim resolution, and the manifest's declared `doctor.checks`. Exit 0 = ready, non-zero = next-action surfaced.
 3. `charness worktree prepare` — runs the manifest's `prepare.commands`, then re-runs `doctor` and reports. No-op when `doctor` already passes unless `--force` is passed.
 4. Mutate-phase public skills (`impl`, `hitl`) call `charness worktree doctor` in their bootstrap. On failure they surface `charness worktree prepare` as the next action — they do not auto-run it.
-5. `init-repo` seeds `.agents/worktree-adapter.yaml` from a portable preset when a consumer repo opts in, and links `docs/worktree-prepare.md` as the operator surface.
+5. `setup` seeds `.agents/worktree-adapter.yaml` from a portable preset when a consumer repo opts in, and links `docs/worktree-prepare.md` as the operator surface.
 
 Canonical doctor checks (always run, manifest-independent):
 
@@ -56,7 +56,7 @@ Output contract:
 4. Wire `impl` SKILL.md `Bootstrap` block to call `charness worktree doctor --json` non-fatally and surface the next action only when status is non-pass. Same wiring on `hitl`.
 5. Add `tests/charness_cli/test_worktree_doctor.py` with deterministic fixtures for: clean worktree, missing `node_modules` + lefthook present, husky `_` directory missing, manifest-declared command failure.
 6. Sync `docs/cli-reference.md` (`scripts/render_cli_reference.py`) and `docs/worktree-prepare.md`. Update `docs/handoff.md` `Current State` and `Next Session`.
-7. Add a portable `init-repo` preset slot for the worktree adapter (seeded only when the consumer repo opts in via `--seed-worktree-adapter` or equivalent post-init prompt).
+7. Add a portable `setup` preset slot for the worktree adapter (seeded only when the consumer repo opts in via `--seed-worktree-adapter` or equivalent post-init prompt).
 
 ## Fixed Decisions
 

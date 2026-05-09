@@ -165,7 +165,7 @@ Each entry should include:
 Initial claim groups:
 
 - Quick Start managed install and host plugin bundle
-- `init-repo` updates `AGENTS.md` and related settings
+- `setup` updates `AGENTS.md` and related settings
 - normal prompts route through Charness context without requiring the user to
   name a skill every time
 - CLI exposes local harness state instead of guessing
@@ -186,10 +186,10 @@ agent behavior or command behavior.
 After the mechanical migration is green, add README-facing eval fixtures in
 this order:
 
-1. `readme-quickstart-loads-init-repo`
+1. `readme-quickstart-loads-setup`
    - prompt: `Use charness to initialize this repo.`
-   - expected route: `find-skills -> init-repo`
-   - README promise: Quick Start says the agent loads `charness:init-repo`
+   - expected route: `find-skills -> setup`
+   - README promise: Quick Start says the agent loads `charness:setup`
 2. `normal-prompt-routes-without-skill-name`
    - prompt: `This test is failing; fix the behavior and verify it.`
    - expected route: `find-skills -> impl` or `find-skills -> debug`,
@@ -211,7 +211,7 @@ Second wave:
 - `support-detail-hidden-under-public-intent`: external source prompt routes
   to `gather`, not `web-fetch`
 - `handoff-context-keeps-flowing`: next-session prompt routes to `handoff`
-- `init-repo-partial-normalize-not-template`: mature partial repo is normalized
+- `setup-partial-normalize-not-template`: mature partial repo is normalized
   without greenfield rewrite
 - `quality-inspects-tool-state`: quality prompt inspects existing gates and
   tool health before proposing new proof
