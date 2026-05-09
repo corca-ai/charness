@@ -124,10 +124,12 @@
       "sync_commands": [],
       "verify_commands": [
         "python3 scripts/validate_skills.py --repo-root .",
-        "python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py"
+        "python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py",
+        "python3 scripts/check_skill_ownership_overlap.py --repo-root ."
       ],
       "notes": [
-        "Skill trigger contracts stay source-owned under skills/, not under plugins/."
+        "Skill trigger contracts stay source-owned under skills/, not under plugins/.",
+        "Cross-namespace mentions (charness-artifacts/<other>/, .agents/<other>-adapter.yaml) require an allowlist entry in scripts/check_skill_ownership_overlap.allowlist.txt with a written reason."
       ]
     },
     {

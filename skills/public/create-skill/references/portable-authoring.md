@@ -279,7 +279,12 @@ Before stopping:
   surface (artifact path, generated file, validator scope) as another
   skill, decide which skill owns the write and document the boundary in
   both SKILL.md files; silent overlap creates drift the next operator
-  will hit
+  will hit. The runtime validator
+  `scripts/check_skill_ownership_overlap.py --repo-root .` flags any
+  cross-namespace mention of `charness-artifacts/<other>/` or
+  `.agents/<other>-adapter.yaml`; declare intentional cross-skill cites
+  (read-only spill targets, init-repo seeds) in
+  `scripts/check_skill_ownership_overlap.allowlist.txt` with a reason
 - check semantic message-shape regression: when the edit changes a
   message body, JSON payload, output shape, or chunk contract that
   downstream consumers (HITL, evaluator scenarios, support runtimes)

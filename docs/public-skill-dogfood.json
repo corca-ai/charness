@@ -80,12 +80,13 @@
         "starts public-skill adapter/bootstrap/example changes from the changed skill's customer journey"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-04-24",
+      "reviewed_on": "2026-05-09",
       "observed_evidence": [
         "The prompt still routes directly to `create-skill`, and the checked-in core keeps public-skill editing anchored on contract freezing, customer-of-this-skill premortem, portable helper extraction, and classifier-aware `SKILL.md` edits rather than generic implementation drift.",
         "The checked-in core now requires scheduled, async, and external-lookup skill self-tests to replay the commands, inputs, selectors, and adapter state prescribed by `SKILL.md`, with raw provider response evidence before choosing a stable identification signal.",
         "The adapter-pattern reference now says visible artifacts are history-default and `latest.md` is only an optional current pointer, which is the intended portable authoring rule for future skill packages instead of a one-off repo exception.",
-        "The current `cautilus` proof policy around `create-skill` no longer treats every scenario-review-worthy prompt change as ask-before-run: adaptive mode now auto-runs proof and reserves confirmation for maintained scenario-registry mutation."
+        "The current `cautilus` proof policy around `create-skill` no longer treats every scenario-review-worthy prompt change as ask-before-run: adaptive mode now auto-runs proof and reserves confirmation for maintained scenario-registry mutation.",
+        "The portable-authoring Verification step now backs the ownership-overlap rule with a runtime validator: `scripts/check_skill_ownership_overlap.py` flags any cross-namespace mention of `charness-artifacts/<other>/` or `.agents/<other>-adapter.yaml` and requires an explicit allowlist entry with a written reason, so the boundary is no longer prose-only enforcement."
       ]
     },
     {
