@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-09",
-  "source_artifact_count": 52,
-  "candidate_count": 322,
+  "source_artifact_count": 53,
+  "candidate_count": 332,
   "top_candidates": [
     {
       "candidate_id": "current_focus:addaa5dd5817",
@@ -35,6 +35,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:82af9eb56f43",
+      "kind": "current_focus",
+      "lesson": "debug ↔ issue substrate-vs-target First Implementation Slice landed (commit `424504e`): RCA substrate now owned by `skills/public/debug/references/five-whys-causal-chain.md`, `issue/references/causal-review.md` Lens 1 compressed to dispatch paragraph, `issue/SKILL.md` step 4 + close-comment `Debug artifact: <path>` slot wired, `debug` marked standalone-callable, 9 grep-based anchor citation chain assertions land.",
+      "normalized_key": "debug issue substrate vs target first implementation slice landed commit 424504e rca substrate now",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+          "date": "2026-05-09",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:73a29be989df",
       "kind": "current_focus",
       "lesson": "이번 세션은 [#122](https://github.com/corca-ai/charness/issues/122)·[#123](https://github.com/corca-ai/charness/issues/123)·[#124](https://github.com/corca-ai/charness/issues/124)을 묶어 한 번, 이어 [#125](https://github.com/corca-ai/charness/issues/125)·[#126](https://github.com/corca-ai/charness/issues/126)·[#127](https://github.com/corca-ai/charness/issues/127)을 묶어 한 번 — 총 두 슬라이스로 닫았다.",
@@ -51,6 +71,26 @@
           "artifact_path": "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md",
           "date": "2026-05-09",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:96ac1e1b6ac7",
+      "kind": "next_improvement",
+      "lesson": "**capability** (deferred, single occurrence): markdownlint MD004 trap on wrapped continuation lines beginning with `  + ` (literal text). If this trap repeats, a pre-commit hint that names continuation-line bullet-style ambiguity would cut the cycle. One occurrence — defer per recent-lessons \"한 번 패턴\" heuristic.",
+      "normalized_key": "capability deferred single occurrence markdownlint md004 trap on wrapped continuation lines beginning with literal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+          "date": "2026-05-09",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -95,6 +135,66 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:8fc6e19c2a0c",
+      "kind": "next_improvement",
+      "lesson": "**memory** (active deferred follow-up — close): the Compact-AGENTS.md routing discriminator follow-up surfaced in the v0.5.20 cautilus refresh batch is *not* triggered by this slice (cautilus eval 5/5 pass). Stays as the next-after-this slice when a natural surface change arrives.",
+      "normalized_key": "memory active deferred follow up close the compact agents md routing discriminator follow up",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+          "date": "2026-05-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f7e450122dbd",
+      "kind": "next_improvement",
+      "lesson": "**memory** (next slice candidate): P4 sequencing decision (debug-call as `prior_context` vs cite-only consume) needs first dogfood retro observation from a *real* bug-class issue resolved through the new contract. Today's synthetic dogfood confirmed the close-comment shape but not the (a)/(b) sequencing question. Defer until first real bug-class `issue resolve` lands.",
+      "normalized_key": "memory next slice candidate p4 sequencing decision debug call as prior context vs cite",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+          "date": "2026-05-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f7969c483b74",
+      "kind": "next_improvement",
+      "lesson": "**memory**: spec-critique 4-bin triage Act-Before-Ship items applied at *contract-driving surfaces* (Output Shape, subagent prompt contract, validator gates), not only at the lens body, when the slice compresses a lens. surface in recent-lessons.",
+      "normalized_key": "memory spec critique 4 bin triage act before ship items applied at contract driving",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+          "date": "2026-05-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:045da4c4871f",
       "kind": "next_improvement",
       "lesson": "**memory**: spec-slice ↔ impl-slice acceptance 분리가 본 슬라이스에서 처음 명시 적용. 다음 spec slice는 이 구분을 spec 첫 draft에 직접 fold — spec section이 \"Spec-slice acceptance\" 와 \"Impl-slice acceptance\" 두 sub- block으로 나뉘는 형식. recent-lessons.md에 surface.",
@@ -115,130 +215,30 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:cfa063044aa7",
+      "kind": "next_improvement",
+      "lesson": "**memory**: when expanding a single-line bullet to a multi-line shape in close-comment / output-shape contracts, name explicit fallbacks for short-circuit branches inline (here: trivial-bug → `cite-only` / `none (trivial fix)`). Apply to next contract that introduces multi-line shape.",
+      "normalized_key": "memory when expanding a single line bullet to a multi line shape in close",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+          "date": "2026-05-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:8ccd0237a6f3",
       "kind": "next_improvement",
       "lesson": "**memory**: 본 retro가 lesson durable persistence. 다음 세션은 recent-lessons.md 로 surface된다.",
       "normalized_key": "memory 본 retro가 lesson durable persistence 다음 세션은 recent lessons md 로 surface된다",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md",
-      "latest_source_date": "2026-05-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md",
-          "date": "2026-05-09",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:3892e049ac21",
-      "kind": "next_improvement",
-      "lesson": "**memory** (본 retro가 lesson persistence): 미존재 future-path를 handoff/ spec/PR-description에서 인용할 때 backtick 안에 둘 단일 path가 들어가지 않게. 옵션: (a) 디렉토리만 backtick + 파일명 평문, (b) 본문 평문 표기, (c) 파일이 land된 commit에서만 markdown link로 표기. 본 retro의 첫 lesson.",
-      "normalized_key": "memory 본 retro가 lesson persistence 미존재 future path를 handoff spec pr description에서 인용할 때",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-spec.md",
-      "latest_source_date": "2026-05-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-spec.md",
-          "date": "2026-05-09",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:812894a25e11",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: contract test에 \"anchor citation chain\" 검증을 묶어 작성한다. 새 reference를 만들 때 SKILL.md/closeout/관련 reference에서 해당 파일을 cite 했는지 grep-기반 한 줄 테스트가 prose-only revert를 막는다.",
-      "normalized_key": "workflow contract test에 anchor citation chain 검증을 묶어 작성한다 새 reference를 만들 때 skill",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md",
-      "latest_source_date": "2026-05-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md",
-          "date": "2026-05-09",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:f4d668e07854",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: critique invocation 시 counterweight subagent를 angle subagent와 *parallel* spawn (counterweight가 angle 결과를 보지 않은 독립 perspective). 본 슬라이스에서 valuable했으므로 다음 critique 호출도 같은 병렬 패턴. 직렬 spawn (angle 후 counterweight)은 counterweight가 angle 결과 anchored 되어 over-worry 차단력이 약해짐.",
-      "normalized_key": "workflow critique invocation 시 counterweight subagent를 angle subagent와 parallel spawn counterweight가 angle 결과를 보지",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-spec.md",
-      "latest_source_date": "2026-05-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-spec.md",
-          "date": "2026-05-09",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:e98e9c746b71",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: SKILL.md 추가 분량이 명확할 때, _먼저_ 기존 텍스트의 압축 슬롯을 확보한 뒤 새 contract를 추가한다. budget(200) 직격 후 압축하는 패턴은 매번 검증 비용을 두 배로 만든다.",
-      "normalized_key": "workflow skill md 추가 분량이 명확할 때 먼저 기존 텍스트의 압축 슬롯을 확보한 뒤",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md",
-      "latest_source_date": "2026-05-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md",
-          "date": "2026-05-09",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:68a7aa0be45c",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: spec 첫 draft 자체 self-check — \"Probe Questions 각 항목에 대해, default가 First Implementation Slice 본문에 hard-code 되어 있다면 Fixed로 promote해야 한다\". critique이 surface 하기 전에 self-detect 가능. recent-lessons.md repeat-trap 후보로 surface (반복 시 contract test로 upgrade).",
-      "normalized_key": "workflow spec 첫 draft 자체 self check probe questions 각 항목에 대해 default가 first",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-spec.md",
-      "latest_source_date": "2026-05-09",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-spec.md",
-          "date": "2026-05-09",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:26c8ae20724f",
-      "kind": "next_improvement",
-      "lesson": "**workflow**: 인라인 backtick span은 라인 시작 근처에 둔다. `... record \\`Causal review: trivial; root cause = <one line>\\`` 같이 줄 끝에 걸쳐 시작 하면 wrap 검출에 잡히기 쉽다.",
-      "normalized_key": "workflow 인라인 backtick span은 라인 시작 근처에 둔다 record causal review trivial root cause",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md",
       "latest_source_date": "2026-05-09",
@@ -277,6 +277,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:82af9eb56f43",
+      "kind": "current_focus",
+      "lesson": "debug ↔ issue substrate-vs-target First Implementation Slice landed (commit `424504e`): RCA substrate now owned by `skills/public/debug/references/five-whys-causal-chain.md`, `issue/references/causal-review.md` Lens 1 compressed to dispatch paragraph, `issue/SKILL.md` step 4 + close-comment `Debug artifact: <path>` slot wired, `debug` marked standalone-callable, 9 grep-based anchor citation chain assertions land.",
+      "normalized_key": "debug issue substrate vs target first implementation slice landed commit 424504e rca substrate now",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+          "date": "2026-05-09",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:73a29be989df",
       "kind": "current_focus",
       "lesson": "이번 세션은 [#122](https://github.com/corca-ai/charness/issues/122)·[#123](https://github.com/corca-ai/charness/issues/123)·[#124](https://github.com/corca-ai/charness/issues/124)을 묶어 한 번, 이어 [#125](https://github.com/corca-ai/charness/issues/125)·[#126](https://github.com/corca-ai/charness/issues/126)·[#127](https://github.com/corca-ai/charness/issues/127)을 묶어 한 번 — 총 두 슬라이스로 닫았다.",
@@ -293,6 +313,26 @@
           "artifact_path": "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md",
           "date": "2026-05-09",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:96ac1e1b6ac7",
+      "kind": "next_improvement",
+      "lesson": "**capability** (deferred, single occurrence): markdownlint MD004 trap on wrapped continuation lines beginning with `  + ` (literal text). If this trap repeats, a pre-commit hint that names continuation-line bullet-style ambiguity would cut the cycle. One occurrence — defer per recent-lessons \"한 번 패턴\" heuristic.",
+      "normalized_key": "capability deferred single occurrence markdownlint md004 trap on wrapped continuation lines beginning with literal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+          "date": "2026-05-09",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -337,6 +377,66 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:8fc6e19c2a0c",
+      "kind": "next_improvement",
+      "lesson": "**memory** (active deferred follow-up — close): the Compact-AGENTS.md routing discriminator follow-up surfaced in the v0.5.20 cautilus refresh batch is *not* triggered by this slice (cautilus eval 5/5 pass). Stays as the next-after-this slice when a natural surface change arrives.",
+      "normalized_key": "memory active deferred follow up close the compact agents md routing discriminator follow up",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+          "date": "2026-05-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f7e450122dbd",
+      "kind": "next_improvement",
+      "lesson": "**memory** (next slice candidate): P4 sequencing decision (debug-call as `prior_context` vs cite-only consume) needs first dogfood retro observation from a *real* bug-class issue resolved through the new contract. Today's synthetic dogfood confirmed the close-comment shape but not the (a)/(b) sequencing question. Defer until first real bug-class `issue resolve` lands.",
+      "normalized_key": "memory next slice candidate p4 sequencing decision debug call as prior context vs cite",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+          "date": "2026-05-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f7969c483b74",
+      "kind": "next_improvement",
+      "lesson": "**memory**: spec-critique 4-bin triage Act-Before-Ship items applied at *contract-driving surfaces* (Output Shape, subagent prompt contract, validator gates), not only at the lens body, when the slice compresses a lens. surface in recent-lessons.",
+      "normalized_key": "memory spec critique 4 bin triage act before ship items applied at contract driving",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+          "date": "2026-05-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:045da4c4871f",
       "kind": "next_improvement",
       "lesson": "**memory**: spec-slice ↔ impl-slice acceptance 분리가 본 슬라이스에서 처음 명시 적용. 다음 spec slice는 이 구분을 spec 첫 draft에 직접 fold — spec section이 \"Spec-slice acceptance\" 와 \"Impl-slice acceptance\" 두 sub- block으로 나뉘는 형식. recent-lessons.md에 surface.",
@@ -351,6 +451,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-spec.md",
+          "date": "2026-05-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:cfa063044aa7",
+      "kind": "next_improvement",
+      "lesson": "**memory**: when expanding a single-line bullet to a multi-line shape in close-comment / output-shape contracts, name explicit fallbacks for short-circuit branches inline (here: trivial-bug → `cite-only` / `none (trivial fix)`). Apply to next contract that introduces multi-line shape.",
+      "normalized_key": "memory when expanding a single line bullet to a multi line shape in close",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
           "date": "2026-05-09",
           "section": "Next Improvements"
         }
@@ -411,6 +531,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md",
+          "date": "2026-05-09",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7e8f6067514a",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: contractual literal-phrase tests in `test_issue_skill.py` + `check_skill_contracts.py` already catch line-wrap drift; no new gate needed (this is the *intended* surface). Confirmed by this session's repro. No capability change.",
+      "normalized_key": "workflow contractual literal phrase tests in test issue skill py check skill contracts py",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
           "date": "2026-05-09",
           "section": "Next Improvements"
         }
@@ -537,6 +677,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:5688f4f59bde",
+      "kind": "repeat_trap",
+      "lesson": "**Bootstrap line-wrap broke a contractual literal phrase**. First pass rewrapped \"It must not use the current session's last created issue\" across a newline; `test_issue_skill_records_github_sot_for_omitted_selector` and `check_skill_contracts.py` both use literal substring assertions, so the broken wrap surfaced as a fail, not a silent drift. Fixed by restructuring the bootstrap merge so both contractual phrases (\"With no selector, `select` queries the newest open GitHub issue\", \"It must not use the current session's last created issue\") stay continuous within a single line. ~2 retry cycles.",
+      "normalized_key": "bootstrap line wrap broke a contractual literal phrase first pass rewrapped it must not",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+          "date": "2026-05-09",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:152c3f0442e6",
       "kind": "repeat_trap",
       "lesson": "**Bundle Anyway 항목을 사후에야 발견.** premortem이 \"closeout-discipline.md를 SKILL.md 세 anchor에서 cite 했는지 검증하는 cheap test 추가\"를 짚어줬는데, 이는 첫 contract test 작성 시 같이 들어갔어야 하는 패턴이었다.",
@@ -577,6 +737,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:a4d2745302fa",
+      "kind": "repeat_trap",
+      "lesson": "**MD004 list-style snag on a wrapped Output Shape bullet**. Lines starting with `  + ` (two-space indent + plus + space) made markdownlint think `+ \\`Over-reach check\\`` opened a `+`-style sublist. Rewrapped so `+` lands mid-line, not at the start of a continuation line. ~1 retry.",
+      "normalized_key": "md004 list style snag on a wrapped output shape bullet lines starting with two",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+          "date": "2026-05-09",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:33a902df1bf3",
       "kind": "repeat_trap",
       "lesson": "**Pre-commit `check-doc-links` missing-artifact fail**. handoff item 1을 갱신할 때 미존재 future-path `skills/public/debug/references/five-whys- causal-chain.md`를 backtick 안에 인용 — hook이 \"backticked file reference ... use markdown links so renames do not rot\"으로 차단. 평문 표기 (디렉토리 backtick + 파일명 평문)로 풀고 재 commit. 미리 mental model이 없어 1회 retry 비용.",
@@ -591,6 +771,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-spec.md",
+          "date": "2026-05-09",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:173a41ae0b38",
+      "kind": "repeat_trap",
+      "lesson": "**Ruff I001 phantom error**. First pre-commit run flagged the test file's import block as unsorted; `ruff check --fix` reported \"1 fixed\" without changing the file content. Adding/removing the noqa cleared cache; net zero file-content delta but ~1 cycle lost. Likely ruff cache/symbol state, not a real defect.",
+      "normalized_key": "ruff i001 phantom error first pre commit run flagged the test file s import",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
+      "latest_source_date": "2026-05-09",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-09-debug-issue-substrate-vs-target-impl.md",
           "date": "2026-05-09",
           "section": "Waste"
         }
