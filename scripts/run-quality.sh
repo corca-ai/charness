@@ -367,6 +367,7 @@ queue_selected "run-evals" python3 scripts/run_evals.py --repo-root "$REPO_ROOT"
 queue_selected "check-duplicates" python3 scripts/check_duplicates.py --repo-root "$REPO_ROOT" --fail-on-match
 flush_phase || OVERALL_RC=$?
 
+queue_selected "inventory-ci-local-gate-parity" python3 skills/public/quality/scripts/inventory_ci_local_gate_parity.py --repo-root "$REPO_ROOT"
 queue_selected "measure-startup-probes" python3 skills/public/quality/scripts/measure_startup_probes.py --repo-root "$REPO_ROOT" --class standing --record-runtime-signals
 # inventory-sloc writes a git-tracked artifact, which the adapter declares via
 # quality_phases. Read-only mode (e.g. the pre-push hook) drops the --output

@@ -125,3 +125,39 @@ local gate is actually wired into clone setup through a checked-in hook, a
 repo-owned installer or checker, a CI parity note, or an explicit decision
 not to do so. If none of those are true, the operability lens alone is enough
 to classify the gap as `missing`.
+
+## CI/local gate parity
+
+Maintainer-local enforcement closes "the local clone can push without running
+the gate". `CI/local gate parity` closes the adjacent failure mode: the local
+clone runs the gate, the CI workflow runs the same gate, **and** the CI
+workflow appends required `run:` steps after the canonical gate that the
+local gate graph does not enforce. The local gate stays green while CI fails
+on a step that should have been part of the local bar.
+
+This is an enforcement gap even when each individual step is healthy. If a
+required CI step lives outside the canonical local gate, classify it as
+`weak` or `missing` unless one of these holds:
+
+- the step is also represented inside the canonical local gate (e.g., the
+  step's `run:` line is also one of the phases that the local gate
+  invokes);
+- the step is explicitly documented as CI-only with a reason — the
+  `inventory_ci_local_gate_parity` helper accepts an inline `CI-only`
+  marker on the step's `name`, `run`, or the immediately preceding YAML
+  comment line;
+- the step is setup or provisioning (e.g., `actions/checkout`,
+  `actions/setup-*`, `npm ci`, `pip install`, package cache restore) rather
+  than a required quality assertion.
+
+Use `skills/public/quality/scripts/inventory_ci_local_gate_parity.py` to
+inventory parity. The helper takes `--workflow-glob`,
+`--canonical-gate-pattern` (repeatable), and `--ci-only-marker`. With
+`--require-empty-parity-issues` it returns exit 1 when any subsequent step
+is classified as `parity-issue`, which is the right shape for a standing
+gate or pre-push hook in repos where the parity contract is intentional.
+
+The default canonical-gate patterns cover `npm run verify`, `make verify`,
+`bash scripts/run-quality.sh`, `bash scripts/run-verify.{mjs,sh}`, and
+`charness verify`. Repos with custom local-gate names should pass
+`--canonical-gate-pattern` to surface their own shape.

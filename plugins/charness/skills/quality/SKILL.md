@@ -136,9 +136,9 @@ Use the sections that match the scope, without reducing quality to one score:
 
 - `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`,
   `Standing Test Economics`, `Coverage and Eval Depth`,
-  `Maintainer-Local Enforcement`, `Enforcement Triage`, `Healthy`, `Weak`,
-  `Missing`, `Deferred`, `Advisory`, `Delegated Review`, `Commands Run`,
-  `Recommended Next Gates`
+  `Maintainer-Local Enforcement`, `CI/Local Gate Parity`,
+  `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Advisory`,
+  `Delegated Review`, `Commands Run`, `Recommended Next Gates`
 
 ## Guardrails
 
@@ -149,6 +149,9 @@ Use the sections that match the scope, without reducing quality to one score:
 - Do not leave automatable rules as prose-only guidance.
 - Do not treat a passing final local gate as sufficient when clones lack a
   repo-owned pre-push path and no documented no-hook waiver exists.
+- Do not treat a passing local gate as healthy when CI appends required
+  `run:` steps after it; see `references/maintainer-local-enforcement.md`
+  and `scripts/inventory_ci_local_gate_parity.py`.
 - Do not give generic "add tests" or "improve security" advice without the
   seam and next setup.
 - Do not dismiss fresh-eye misreads when scattered evidence or undeclared
