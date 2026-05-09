@@ -33,12 +33,16 @@ A good operator-acceptance section usually contains:
 
 - shared start commands
 - prerequisites for external or privileged steps
+- a progressive operator path with day-1 / 8-week / 6-month operator
+  capability, each item grounded in an observation source from this repo or
+  an adjacent operating repo (no hypothesis words)
 - remaining items with read-first pointers
 - acceptance bullets that say what proves completion
 
-Use `<repo-root>/scripts/synthesize_operator_acceptance.py` when the repo already has
-functional-check style Markdown specs or repo-owned command surfaces and needs
-the first honest draft before manual tightening.
+Use `$SKILL_DIR/scripts/synthesize_operator_acceptance.py` (resolved through the
+init-repo skill directory) when the repo already has functional-check style
+Markdown specs or repo-owned command surfaces and needs the first honest draft
+before manual tightening.
 
 ## Avoid
 

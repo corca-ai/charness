@@ -113,6 +113,10 @@ The operator takeover document, usually
 - what commands to run first
 - what takeover or acceptance tasks remain
 - what counts as done for each item
+- a `Progressive Operator Path` section with day-1 / 8-week / 6-month
+  operator capability when the repo is mature enough to ground each
+  horizon in observed evidence; leave a horizon empty or remove it rather
+  than assert an unverified capability
 
 When the repo already has real functional checks, synthesize operator
 acceptance from them instead of inventing a disconnected checklist:

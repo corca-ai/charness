@@ -172,6 +172,29 @@ def _render_check_section(title: str, items: list[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
+def _render_progressive_path_section() -> str:
+    return "\n".join(
+        [
+            "## Progressive Operator Path",
+            "",
+            "Operator capability that the repo expects at each horizon. Ground each item in an observation source from this repo (or an adjacent operating repo). Avoid hypothesis words; if no observation exists yet, leave the bullet blank or remove it instead of asserting an unverified capability.",
+            "",
+            "### Day 1 Operator",
+            "",
+            "- ground bullet 1: what an operator just landing in this repo can do today, with the source path that proves it",
+            "",
+            "### Week 8 Operator",
+            "",
+            "- ground bullet 1: what an operator who has shipped several slices recognizes, with the source path that proves it",
+            "",
+            "### Month 6 Operator",
+            "",
+            "- ground bullet 1: what a mature operator authors or shapes, with the source path that proves it",
+            "",
+        ]
+    )
+
+
 def _render_human_section(items: list[dict[str, str]]) -> str:
     lines = ["## Human Judgment", ""]
     if not items:
@@ -208,6 +231,7 @@ def _render_markdown(payload: dict[str, Any]) -> str:
     lines.extend(
         [
             "",
+            _render_progressive_path_section(),
             _render_check_section("Cheap First", payload["acceptance_buckets"]["cheap_first"]),
             _render_check_section("External Or Costly Checks", payload["acceptance_buckets"]["external_or_costly"]),
             _render_human_section(payload["acceptance_buckets"]["human_judgment"]),
