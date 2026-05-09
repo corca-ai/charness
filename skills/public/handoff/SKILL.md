@@ -82,6 +82,10 @@ the `Workflow Trigger` first and continue with that workflow.
    - leave always-loaded host instruction surfaces out of `References` by
      default; include them only when omitting them would realistically change
      the first action
+   - when the next action depends on an external originating context, carry
+     canonical source identity (URL, gathered-artifact path, access mode,
+     freshness) per `../../shared/references/closeout-discipline.md` so the
+     next session does not rediscover the source
 4. Keep the trigger explicit.
    - if a named workflow or skill should run next, say it directly
    - if the next pickup depends on reading specific files first, name them
@@ -136,4 +140,5 @@ The handoff should usually contain:
 - `references/state-selection.md`
 - `references/document-seams.md`
 - `references/spill-targets.md`
+- `../../shared/references/closeout-discipline.md`
 - `../../shared/references/fresh-eye-subagent-review.md`

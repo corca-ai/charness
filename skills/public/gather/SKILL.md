@@ -116,6 +116,10 @@ For the browser-mediated private-source ladder, read
    - give the directly requested facts first
    - only widen into adjacent context if the user asked for it or the current
      question cannot be answered honestly otherwise
+   - render closeout only from the verified gathered-asset ledger (canonical
+     source URL, asset path, access mode, freshness); reuse the resolved
+     source on retry instead of re-walking discovery, per
+     `../../shared/references/closeout-discipline.md`
 
 ## Output Shape
 
@@ -153,4 +157,5 @@ The result should usually include:
 - `references/capability-contract.md`
 - `references/browser-mediated-private-sources.md`
 - `references/google-workspace-via-gws.md`
+- `../../shared/references/closeout-discipline.md`
 - `<repo-root>/scripts/advise_google_workspace_path.py`

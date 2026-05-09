@@ -1,7 +1,10 @@
 # Issue Closeout Discipline
 
 This reference owns the durable contracts that keep `issue new` and
-`issue resolve` honest at the end of the operation.
+`issue resolve` honest at the end of the operation. The Verified Ledger,
+Target Durability, and External-Source Identity sections below are the
+issue-specific instantiation of the shared
+`../../../shared/references/closeout-discipline.md` patterns.
 
 ## Created-Issue Ledger
 

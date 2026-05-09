@@ -42,6 +42,7 @@ release_exists = _helpers.release_exists
 changed_paths = _helpers.changed_paths
 unreleased_paths = _helpers.unreleased_paths
 write_release_artifact = _helpers.write_release_artifact
+backend_command = _helpers.backend_command
 
 
 def parse_args() -> argparse.Namespace:
@@ -158,7 +159,8 @@ def main() -> None:
     tag_state = tag_exists(repo_root, tag_name, remote=args.remote)
     if tag_state["local"] or tag_state["remote"]:
         raise SystemExit(f"tag `{tag_name}` already exists locally or on `{args.remote}`")
-    if release_exists(repo_root, tag_name):
+    backend = adapter_data["release_backend"]
+    if release_exists(repo_root, tag_name, backend):
         raise SystemExit(f"GitHub release `{tag_name}` already exists")
     release_content_paths = unreleased_paths(repo_root, remote=args.remote, branch=branch)
 
@@ -181,7 +183,7 @@ def main() -> None:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return
 
-    run(["gh", "auth", "status"], cwd=repo_root)
+    run(backend_command(backend, "auth_check", ["gh", "auth", "status"]), cwd=repo_root)
     run_bump(args, repo_root)
     ensure_release_surface(repo_root, next_version)
 
@@ -205,7 +207,13 @@ def main() -> None:
     run(["git", "tag", tag_name], cwd=repo_root)
     run(["git", "push", args.remote, branch, tag_name], cwd=repo_root)
 
-    release_command = ["gh", "release", "create", tag_name, "--verify-tag", "--title", title]
+    release_command = backend_command(
+        backend,
+        "release_create",
+        ["gh", "release", "create", "{tag}", "--verify-tag", "--title", "{title}"],
+        tag=tag_name,
+        title=title,
+    )
     release_command.extend(["--notes-file", str(args.notes_file.resolve())] if args.notes_file else ["--generate-notes"])
     release_result = run(release_command, cwd=repo_root)
     payload["commit_sha"] = run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()

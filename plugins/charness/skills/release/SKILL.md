@@ -114,6 +114,10 @@ verified.
      helper success or tag push alone as publish completion
    - if the repo has no repo-owned public verifier yet, leave the release
      explicitly open at that boundary instead of implying it already closed
+   - render closeout only from the verified release ledger (tag, version,
+     URL when available) per `../../shared/references/closeout-discipline.md`;
+     once the target package is named, treat it as durable workflow state
+     and surface `target_unavailable` instead of silently retargeting
 8. End with operator-facing update steps.
    - how operators refresh the managed `charness` install
    - what Claude and Codex still need after `charness update`
@@ -171,6 +175,7 @@ The result should usually include:
 - `references/adapter-contract.md`
 - `references/version-policy.md`
 - `references/install-surface.md`
+- `../../shared/references/closeout-discipline.md`
 - `<repo-root>/scripts/current_release.py`
 - `<repo-root>/scripts/check_real_host_proof.py`
 - `<repo-root>/scripts/check_requested_review_gate.py`

@@ -44,6 +44,7 @@ Search order:
 - `cli_skill_surface_command_docs`
 - `cli_skill_surface_skill_paths`
 - `cli_skill_surface_change_globs`
+- `release_backend`
 
 ## Defaults
 
@@ -104,3 +105,14 @@ freshness checks belong in the release-specific proof that is intentionally
 checking freshness. Use
 `cli_skill_surface_skill_paths` when the shipped skill does not live under
 `skills/public/*` or `skills/support/*`.
+
+`release_backend` mirrors the `issue_backend` shape so release auth probes,
+release-existence checks, and release-create calls can route through the
+adapter-resolved CLI binary. Default is `{id: gh, binary: gh, commands: null}`,
+which keeps the existing `gh release ...` shape. Hosts that resolve releases
+through a different binary supply `commands` templates for `auth_check`,
+`release_view` (uses `{tag}` substitution), and `release_create` (uses `{tag}`
+and `{title}` substitution). Without commands, a non-`gh` backend errors at
+runtime instead of falling back to `gh`. The current placeholder set is
+`{tag}` and `{title}`; adding a new placeholder requires updating the
+substitution kwargs at the call site and a regression test.

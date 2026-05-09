@@ -136,6 +136,10 @@ git status --short
      preserved, challenged, or left unresolved
    - when the rewrite creates doc-code or generated-reference obligations,
      name the owning follow-up instead of hiding the gap in polished prose
+   - when the realignment depends on an external originating context (Slack
+     thread, Notion page, Drive file, gathered artifact, or web URL),
+     include canonical source identity per
+     `../../shared/references/closeout-discipline.md`
 8. Hand off to `announcement` only when the user explicitly wants human-facing
    adaptation or backend delivery after the narrative itself is aligned.
 
@@ -176,6 +180,7 @@ The result should usually include `Source Map`, `Narrative Drift`, `Updated Trut
 - `references/landing-rewrite-loop.md`
 - `references/cross-repo-issue-shaping.md`
 - `../../shared/references/agent-assessment-invariant.md`
+- `../../shared/references/closeout-discipline.md`
 - `../../shared/references/success-criteria-review.md`
 - `<repo-root>/scripts/map_sources.py`
 - `<repo-root>/scripts/review_adapter.py`

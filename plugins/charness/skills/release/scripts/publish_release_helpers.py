@@ -57,8 +57,27 @@ def tag_exists(repo_root: Path, tag_name: str, *, remote: str) -> dict[str, bool
     return {"local": local, "remote": bool(remote_result.stdout.strip())}
 
 
-def release_exists(repo_root: Path, tag_name: str) -> bool:
-    return run(["gh", "release", "view", tag_name], cwd=repo_root, check=False).returncode == 0
+def backend_command(
+    backend: dict[str, Any],
+    op: str,
+    default: list[str],
+    **subs: str,
+) -> list[str]:
+    commands = backend.get("commands") or {}
+    template = commands.get(op)
+    if template is None:
+        if backend.get("id", "gh") != "gh":
+            raise SystemExit(
+                f"release_backend `{backend.get('id')}` did not declare a `{op}` command template"
+            )
+        template = default
+    return [part.format(**subs) if subs and "{" in part else part for part in template]
+
+
+def release_exists(repo_root: Path, tag_name: str, backend: dict[str, Any] | None = None) -> bool:
+    backend = backend or {"id": "gh", "binary": "gh", "commands": None}
+    command = backend_command(backend, "release_view", ["gh", "release", "view", "{tag}"], tag=tag_name)
+    return run(command, cwd=repo_root, check=False).returncode == 0
 
 
 def changed_paths(repo_root: Path) -> list[str]:
