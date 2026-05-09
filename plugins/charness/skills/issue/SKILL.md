@@ -32,12 +32,7 @@ Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`.
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/issue_tool.py" preflight --repo-root . --json
 python3 "$SKILL_DIR/scripts/issue_tool.py" resolve-invocation --repo-root . -- <issue-resolve-args>
-```
-
-Before `issue resolve`, select issue numbers through GitHub when the user did
-not provide them:
-
-```bash
+# `select` runs only when the user did not pass an issue number to `issue resolve`.
 python3 "$SKILL_DIR/scripts/issue_tool.py" select --repo <org/repo> --selector "<optional-number-or-range>"
 ```
 
@@ -110,19 +105,20 @@ repo by created date. It must not use the current session's last created issue.
    classification in the resolution notes.
 4. For `bug`-class issues, run a **causal review** before design via a bounded
    fresh-eye subagent (not anchored on the implementer's first hypothesis).
-   The subagent answers three lenses with `file:line` evidence and an
-   `Over-reach check` per lens: root cause (causal chain to a structural
-   reason), detection gap (why existing tests/gates did not fire), and
-   sibling search (same pattern at the same layer, abstracted up, or
-   specialized down). The subagent must not invoke skills that themselves
-   spawn reviewers. See `references/causal-review.md` for prompts, contract,
-   and the critique handoff template. If the host blocks subagent spawning,
-   stop and report; step 8 is also blocked. Do not substitute a same-agent
-   pass.
+   The subagent consumes the `debug` skill substrate
+   (`../debug/references/five-whys-causal-chain.md`) and triages it through
+   three lenses with `file:line` evidence and an `Over-reach check` per lens:
+   root cause, detection gap, sibling search. Do not re-derive the RCA body
+   in causal review. The subagent must not invoke skills that themselves
+   spawn reviewers. See `references/causal-review.md` for prompts and the
+   critique handoff template. If the host blocks subagent spawning, stop
+   and report; step 8 is also blocked. Do not substitute a same-agent pass.
    Run causal review per bug-class issue when resolving a range; share
-   findings only when step 5 bundles fixes.
-   **Trivial-bug short-circuit**: if the fix is single-line and self-evident
-   with no public contract change or plausible siblings, record
+   findings only when step 5 bundles fixes. Invoking `debug` standalone
+   before causal review is optional (default is cite-only consumption); the
+   `Debug artifact:` slot is filled only when a debug session actually ran.
+   **Trivial-bug short-circuit**: single-line, self-evident fix with no
+   public contract change or plausible siblings — record
    `Causal review: trivial; root cause = <one line>` and skip step 4.
    Step 8 still runs.
 5. Order resolutions as a generative sequence (Christopher Alexander): the
@@ -142,20 +138,23 @@ repo by created date. It must not use the current session's last created issue.
    local gate.
 8. Run a **resolution critique** focused on recurrence: delegate to the
    `critique` skill (it spawns its own bounded angle + counterweight
-   subagents), passing causal-review output via
-   `references/causal-review.md`. Satisfies the CLAUDE.md task-completion
-   critique; when invoked from `impl`, declare
-   `Critique: full <issue-resolution-artifact>`. If step 4 was blocked, do not run
-   critique against an empty prior context — report the blocked state.
-   One per fix-unit, not per selector. Bundle cheap prevention; record
-   deferred.
+   subagents), passing causal-review output via `references/causal-review.md`.
+   When invoked from `impl`, declare `Critique: full <issue-resolution-artifact>`
+   to satisfy the CLAUDE.md task-completion critique. If step 4 was blocked,
+   report the blocked state instead of running critique on empty context. One
+   per fix-unit, not per selector; bundle cheap prevention and record deferred.
 9. Commit, push, and close the GitHub issue only after the fix is on
    the remote. Use explicit close keywords (`Close #1. Close #2.`) for
    GitHub auto-close, or `issue_tool.py close-with-comment` for
    multi-line backend-routed close comments
    (`gh issue close --comment-file` does not exist). Close comment shape by
    classification, restated per issue in a range:
-   - `bug`: JTBD, root cause, siblings (bundled/deferred+location), prevention
+   - `bug`:
+     - JTBD
+     - root cause (one line)
+     - `Debug artifact: <path>` (or `none (trivial fix)` / `cite-only`)
+     - siblings (bundled/deferred+location)
+     - prevention
    - `feature`/`deferred-work`: JTBD, implementation, bundled prevention
    - `question`/`decision-needed`: JTBD, the answer or recorded decision
 

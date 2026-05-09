@@ -31,6 +31,9 @@ The subagent's prompt must:
 
 - restate the issue body and the reporter's JTBD verbatim
 - name the three lenses below and require evidence for each
+- include the substrate cite
+  (`../../debug/references/five-whys-causal-chain.md`) and the
+  "do not re-derive the RCA body" guard verbatim
 - bound the time and scope ("under 600 words", "cite file:line")
 - forbid prescribing the fix; the implementer designs the fix in step 7
 - explicitly tell the subagent it is the bounded fresh-eye reviewer and must
@@ -47,26 +50,17 @@ subagents (root-cause + detection together; sibling search separately) and
 add a counterweight. That upgrade is rare; document it in the resolution
 notes when used.
 
-### Lens 1 — Root cause (5 whys or causal chain)
+### Lens 1 — Root cause (close-ledger triage)
 
-The subagent walks from the reported symptom to a structural cause. Stop when
-the next "why" would be either out of scope (organization-level), already
-mitigated by a different gate, or untestable. The bottom of the chain should
-be something a guard, test, or contract change could prevent — not "the
-developer made a mistake."
-
-Common bottoms that count:
-
-- a missing invariant (no single source of truth for X)
-- a missing contract (caller and callee agree implicitly, drift on edits)
-- a missing gate (existing tests do not cover the failure mode)
-- a missing observability surface (the bug was undetectable until manual)
-
-Common bottoms that do not count and should keep the chain going:
-
-- "human error" — the next why is "what made the error easy to commit"
-- "race condition" — the next why is "what synchronization contract is missing"
-- "edge case" — the next why is "what classifier put it outside the test set"
+Consume the `debug` skill substrate
+(`../../debug/references/five-whys-causal-chain.md`) and triage the resulting
+structural cause through the close-ledger lens: does the named bottom map to
+the issue body and the reporter's JTBD, and is the prevention surface (guard,
+test, doc, tool) in scope for the close comment? **Do not re-derive the RCA
+body in causal review.** If the substrate's chain is missing, weak, or
+contradicts the issue body, return that as a
+`Causal review: substrate incomplete` block instead of regrowing it inside
+this lens.
 
 ### Lens 2 — Detection gap
 
@@ -109,8 +103,12 @@ The subagent returns:
 - `JTBD`
 - `Classification confirmation` (agreeing or pushing back on the caller's
   classification)
-- `Root cause` (chain with citations) + `Over-reach check`: simplest evidence
-  this lens did not invent a structural cause where there was a real symptom
+- `Root cause` (substrate cite from
+  `../../debug/references/five-whys-causal-chain.md`, plus close-ledger
+  triage; do not regrow the chain) + `Over-reach check`: simplest evidence
+  the lens did not invent a structural cause where there was a real symptom
+- `Debug artifact: <path>` when a debug session wrote one; otherwise
+  `Debug artifact: none (trivial fix)` or `Debug artifact: cite-only`
 - `Detection gap` (which gates existed, which did not fire, smallest change to
   fix that) + `Over-reach check`: simplest evidence the gap is real, not "no
   test exists in this corner"
@@ -182,6 +180,7 @@ For `bug`:
 
 - the reporter's JTBD
 - the root cause in one sentence
+- `Debug artifact: <path>` (or `none (trivial fix)` / `cite-only`)
 - which siblings were bundled into this commit and which were deferred (and
   where they live so future readers can find them)
 - the structural recurrence-prevention move (guard, test, doc, tool) and

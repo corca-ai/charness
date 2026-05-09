@@ -14,7 +14,9 @@ multiple plausible causes, and only then test the next hypothesis.
 
 `debug` is part of the execution cluster, but its job is diagnosis before
 repair. A bug investigation without a durable record only solves the current
-incident and wastes the next one.
+incident and wastes the next one. `debug` is callable directly when no
+GitHub issue exists; bug-class `issue resolve` invokes the same RCA
+substrate through `../issue/references/causal-review.md` Lens 1.
 Do not run critique before the facts needed for diagnosis exist. Once a debug
 slice closes repo work, hands off a fix, or authorizes repair, record the
 required critique before closeout so the next move does not inherit an
@@ -105,6 +107,10 @@ as codebase memory rather than as stale trivia.
    - list at least three plausible causes before verifying any one of them
    - include environment, dependency, state, and control-flow causes alongside
      obvious logic bugs
+   - walk from symptom to structural cause per
+     `references/five-whys-causal-chain.md` — `debug` is callable directly
+     when no GitHub issue exists; bug-class `issue resolve` invokes the same
+     substrate through `../issue/references/causal-review.md` Lens 1
 5. Test a falsifiable hypothesis.
    - state what should change if the hypothesis is true
    - make the smallest change or observation that can verify or falsify it
@@ -168,6 +174,7 @@ sections. Prefer the scaffold helper over hand-typing the skeleton from memory.
 
 - `references/adapter-contract.md`
 - `references/five-steps.md`
+- `references/five-whys-causal-chain.md`
 - `references/debug-memory.md`
 - `references/anti-patterns.md`
 - `references/document-seams.md`
