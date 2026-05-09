@@ -19,7 +19,11 @@ def public_skill_ids(repo_root: Path) -> list[str]:
     skills_root = repo_root / "skills" / "public"
     if not skills_root.exists():
         return []
-    return sorted(path.name for path in skills_root.iterdir() if path.is_dir() and path.name != "generated")
+    return sorted(
+        path.name
+        for path in skills_root.iterdir()
+        if path.is_dir() and path.name != "generated" and (path / "SKILL.md").is_file()
+    )
 
 
 def load_policy(repo_root: Path) -> dict[str, object]:

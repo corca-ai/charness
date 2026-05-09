@@ -191,6 +191,36 @@ def test_validate_public_skill_validation_rejects_adapter_helpers_for_adapter_fr
     assert "adapter-free skill should not ship `adapter.example.yaml`" in result.stderr
 
 
+def test_validate_public_skill_validation_ignores_orphan_skill_dir_without_skill_md(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        policy={
+            "schema_version": 1,
+            "tiers": {
+                "smoke-only": [],
+                "hitl-recommended": ["demo-a"],
+                "evaluator-required": [],
+            },
+            "adapter_requirements": {
+                "required": ["demo-a"],
+                "adapter-free": [],
+            },
+            "fallback_policy": {
+                "allow": ["demo-a"],
+                "visible": [],
+                "block": [],
+            },
+        },
+    )
+    seed_skill(repo, "demo-a", adapter=True)
+    orphan = repo / "skills" / "public" / "demo-removed" / "scripts" / "__pycache__"
+    orphan.mkdir(parents=True)
+    (orphan / "stale.cpython-310.pyc").write_bytes(b"\x00")
+
+    result = run_script("scripts/validate_public_skill_validation.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
 def test_suggest_public_skill_validation_reports_missing_bucket_choices(tmp_path: Path) -> None:
     repo = seed_repo(
         tmp_path,
