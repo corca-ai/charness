@@ -61,3 +61,8 @@ In that mode:
   layer for evaluator output
 - the page should verify artifact presence, shape, and current claim framing
   without rebuilding the whole evaluator inline
+
+The inverse also holds: a generated or gitignored path is not a durable proof
+target. Public executable pages must not link such paths as if they were
+checked-in evidence; they may be referenced as reproduction sources only.
+See `evidence-durability.md`.

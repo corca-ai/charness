@@ -22,7 +22,7 @@ runtime signals, security, and low-noise next gates.
 - `.githooks/pre-push` is active through `core.hooksPath`.
 
 ## Runtime Signals
-- runtime source: `.charness/quality/runtime-signals.json` rendered by
+- runtime source: `.charness/quality/runtime-signals.json` <!-- reproduction-source --> rendered by
   `check_runtime_budget.py`; profile `local-linux-aarch64-4cpu`.
 - runtime hot spots: `pytest` 36.9s latest / 35.1s median, budget 70.0s;
   `check-coverage` 17.9s / 16.9s, budget 22.0s; `specdown` 8.8s / 6.2s,

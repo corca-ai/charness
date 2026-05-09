@@ -11,7 +11,7 @@ checkout.
 ## Correct Behavior
 
 Given a managed `charness` checkout that contains an existing
-`integrations/locks/<tool>.json` lock file written by an earlier CLI version,
+`integrations/locks/<tool>.json` <!-- reproduction-source --> lock file written by an earlier CLI version,
 when a newer CLI runs `charness update`, then `read_lock` should not hard-fail
 on fields that the current schema no longer recognizes. Stale machine-local
 state should either be migrated, ignored, or transparently rewritten — not
@@ -22,7 +22,7 @@ escalated to a process-killing exception.
 - Failure stack: `plugin_preamble.main` → `build_payload` →
   `collect_readiness_summary` → `read_lock` → `validate_lock_data` →
   `jsonschema.validate`. Triggered file:
-  managed-checkout `integrations/locks/cautilus.json`.
+  managed-checkout `integrations/locks/cautilus.json`. <!-- reproduction-source -->
 - Offending instance has `support.sync_strategy: "reference"` plus `support`
   fields that the new schema requires (`cache_path`, `content_digest`) are
   also missing — both directions of drift in one record.
@@ -42,7 +42,7 @@ escalated to a process-killing exception.
   `scripts/support_sync_lib.py` and `scripts/sync_support.py` no longer emit
   that key (`rg sync_strategy` returns 0 hits in the source tree).
 - The lock file in the user working tree
-  (`integrations/locks/cautilus.json`) has no `support`
+  (`integrations/locks/cautilus.json`) <!-- reproduction-source --> has no `support`
   section at all — only `doctor`/`release`/`provenance` — so it validates
   fine. Only the managed checkout's lock blew up.
 - Lock files themselves are not git-tracked (`git log -- ...cautilus.json`

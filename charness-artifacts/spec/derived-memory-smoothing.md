@@ -47,7 +47,7 @@ the sixth added release-version and retro-digest consistency checks.
 - `validate-current-pointer-freshness` rejects known-stale current-pointer
   freshness claims in `docs/handoff.md` and `charness-artifacts/quality/latest.md`.
 - Quality runtime EWMA is stored under
-  `.charness/quality/runtime-smoothing.json`.
+  `.charness/quality/runtime-smoothing.json`. <!-- reproduction-source -->
 - Runtime EWMA uses `alpha_t = alpha_base * min(1, sample_count / warmup_n)`
   with `alpha_base = 0.35` and `warmup_n = 5`.
 - `check_runtime_budget.py` reports EWMA as advisory and does not use it for
@@ -66,7 +66,7 @@ the sixth added release-version and retro-digest consistency checks.
   `repeat_trap=4`, and `next_improvement=4`.
 - `validate-current-pointer-freshness` checks quality runtime EWMA claims and,
   when local runtime signals exist, quality runtime hot-spot and budget-median
-  claims against `.charness/quality/runtime-signals.json` with bounded tolerance
+  claims against `.charness/quality/runtime-signals.json` <!-- reproduction-source --> with bounded tolerance
   for normal per-run timing variance.
 - `validate-current-pointer-freshness` checks `release/latest.md` target-version
   claims against the packaging manifest and generated plugin manifests.

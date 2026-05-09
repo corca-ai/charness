@@ -107,6 +107,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-plugin-import-smoke", "check_plugin_import_smoke.py"),
     ("check-command-docs", "check_command_docs.py"),
     ("check-doc-links", "check_doc_links.py"),
+    ("check-spec-evidence-durability", "check_spec_evidence_durability.py"),
     ("check-supply-chain", "check_supply_chain.py"),
     ("check-github-actions", "check_github_actions.py"),
     ("check-supply-chain-online", "check_supply_chain_online.py"),

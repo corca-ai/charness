@@ -34,6 +34,16 @@ If the repo uses executable specs such as `specdown`:
 - name the expected scope and cost when one acceptance check is substantially
   slower than the rest of the bar
 
+## Evidence Durability
+
+Acceptance checks cite proof from checked-in durable artifacts, not from
+generated or gitignored paths. When a check's source of truth is a generated
+output, copy the cited fields into a selected proof artifact under
+`charness-artifacts/<scope>/` or declare the check as reproduction-only.
+
+See `evidence-durability.md` for the full contract and the
+`<!-- reproduction-source -->` marker convention.
+
 ## Negative Cases
 
 For important paths, include at least one negative case.

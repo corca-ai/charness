@@ -92,6 +92,8 @@ replace the bounded critique required before finalizing a task-completing contra
    - add negative cases when failure would matter to users or operators
    - if the repo already uses executable specs or tests as contract artifacts,
      prefer promoting acceptance checks into that form
+   - cite proof from checked-in durable evidence; treat generated or ignored
+     paths as reproduction sources only. See `references/evidence-durability.md`
    - if the contract edits repo-owned instruction or prompt surfaces that steer
      agent behavior, define whether the intended claim is `preserve` or
      `improve`, leave the matching Cautilus proof path visible, and let adapter
@@ -156,6 +158,9 @@ as `Entities` or `Stages` instead of recreating them under new names.
   branch is likely to be reopened by the next maintainer.
 - Do not let acceptance checks become a second copy of the unit suite just
   because the repo already has executable specs.
+- Do not cite generated or gitignored output paths as durable proof. Either
+  check in a selected proof artifact with the cited fields, or declare the
+  proof as reproduction-only. See `references/evidence-durability.md`.
 - Do not silently assume implementation details or ignore current code, tests,
   or operator docs when they materially affect the contract.
 - Do not keep broad shell-driven executable checks in the contract when a
@@ -172,6 +177,7 @@ as `Entities` or `Stages` instead of recreating them under new names.
 - `references/ingest-and-refine.md`
 - `references/success-criteria.md`
 - `references/acceptance-checks.md`
+- `references/evidence-durability.md`
 - `references/public-executable-contracts.md`
 - `references/executable-spec-cost.md`
 - `references/rejected-alternatives.md`

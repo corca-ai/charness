@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-09T11:49:06Z",
+  "generated_at": "2026-05-09T15:22:54Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -149,8 +149,10 @@
           "charness:debug"
         ],
         "referenced_paths": [
+          "skills/public/issue/references/causal-review.md",
           "skills/public/debug/SKILL.md",
           "skills/public/debug/references/named-target-verification.md",
+          "skills/public/debug/references/five-whys-causal-chain.md",
           "skills/public/debug/references/adapter-contract.md",
           "skills/public/debug/references/five-steps.md",
           "skills/public/debug/references/debug-memory.md",
@@ -351,6 +353,7 @@
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/public/issue/SKILL.md",
           "skills/public/issue/references/closeout-discipline.md",
+          "skills/public/debug/references/five-whys-causal-chain.md",
           "skills/public/issue/references/causal-review.md",
           "skills/public/issue/references/issue-shaping.md",
           "skills/public/issue/references/resolve-flow.md",

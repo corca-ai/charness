@@ -27,6 +27,12 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
 - When a Charness workflow creates or updates durable artifacts under
   [charness-artifacts/](../../charness-artifacts/), include meaningful artifact
   changes in the same commit as the work they support.
+- Cite proof from checked-in durable evidence in spec, quality, release,
+  dogfood, debug, premortem, and design-study artifacts. Paths matching
+  [.gitignore](../../.gitignore) are reproduction sources only and must
+  carry an inline `<!-- reproduction-source -->` marker; otherwise check in a
+  selected proof artifact with the cited fields. See
+  [skills/public/spec/references/evidence-durability.md](../../skills/public/spec/references/evidence-durability.md).
 
 ## Critique Discipline
 
