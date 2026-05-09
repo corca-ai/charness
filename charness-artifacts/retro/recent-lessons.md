@@ -2,22 +2,22 @@
 
 ## Current Focus
 
+- 이번 세션은 [#122](https://github.com/corca-ai/charness/issues/122)·[#123](https://github.com/corca-ai/charness/issues/123)·[#124](https://github.com/corca-ai/charness/issues/124)을 묶어 한 번, 이어 [#125](https://github.com/corca-ai/charness/issues/125)·[#126](https://github.com/corca-ai/charness/issues/126)·[#127](https://github.com/corca-ai/charness/issues/127)을 묶어 한 번 — 총 두 슬라이스로 닫았다. (source: `charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md`)
 - `charness-artifacts/spec/issue-109-spec-authoring-discipline.md` — design extraction only 다음 세션이 보통 같은 결의 issue closeout을 또 만났을 때 더 빠르게 닿는 게 이번 retro의 목표다. (source: `charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md`)
-- Compressed the `quality` public skill from a dense manual into a fast-path orchestrator while preserving checked-in plugin export, find-skills discovery, public-skill dogfood, and prompt-surface proof policy. (source: `charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md`)
 
 ## Repeat Traps
 
-- **`Close` 키워드를 첫 번째 이슈에만 붙였다.** 커밋 메시지가 `Close #108 by claim, #109 by design extraction`이었는데, GitHub auto-close는 키워드가 직전 토큰일 때만 fire 한다. 결과적으로 #108은 자동 close, #109는 수동 close + comment를 따로 호출해야 했다. 한 줄짜리 손해지만 실제 동작이 정확히 검증돼야 하는 흐름. (source: `charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md`)
-- Exact snippet pins were meant to keep load-bearing behavior from being deleted, but they also made useful skill compression look unsafe unless anchor text stayed in `SKILL.md`. (source: `charness-artifacts/retro/2026-05-07-validator-support-discovery.md`)
-- Existing tests still asserted exact `SKILL.md` snippets for detail that now belongs in references. That reproduced the validator brittleness the user had flagged. (source: `charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md`)
-- **find-skills bootstrap 경로 가정 미스.** SKILL.md의 bootstrap이 `python3 "$SKILL_DIR/scripts/resolve_adapter.py"`를 권하는데 처음에 repo root의 `scripts/resolve_adapter.py`로 호출했다 — 존재하지 않는 path. 즉시 정정했지만 매번 반복하면 지속 비용. (source: `charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md`)
+- **Bundle Anyway 항목을 사후에야 발견.** premortem이 "closeout-discipline.md를 SKILL.md 세 anchor에서 cite 했는지 검증하는 cheap test 추가"를 짚어줬는데, 이는 첫 contract test 작성 시 같이 들어갔어야 하는 패턴이었다. (source: `charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md`)
+- **`MAX_SKILL_MD_LINES=200` 직격을 두 번 맞았다.** 1차 슬라이스에서 HITL SKILL.md(208줄) → impl SKILL.md(202줄) → issue SKILL.md(216줄) 순으로 budget을 넘겼고, 2차 슬라이스에서도 issue SKILL.md(214줄)가 또 넘었다. 매번 검증→압축→ 재검증 사이클을 돌았다. 추가 분량을 알고 있을 때 _먼저_ 기존 텍스트를 압축해 슬롯을 확보한 뒤 새 contract를 추가하는 순서였다면 한 번에 끝났다. (source: `charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md`)
+- **인라인 코드 스팬이 markdown lint에서 wrap 검출에 걸렸다.** 두 슬라이스 모두 `gh issue create --repo <org/repo>` 같은 긴 backtick span이 줄 끝에 걸쳐 pre-commit이 한 번 더 실패했다. 본문 작성 시 backtick span 시작을 줄 머리 가까이 두는 mental model이 없었다. (source: `charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md`)
+- **테스트 환경 변수 PATH 설정 미스.** `test_issue_preflight_resolves_adapter_backend_when_gh_absent`에서 `env={"PATH": f"{bin_dir}"}`로 시작했더니 `python3` 자체가 PATH에 없어 SubprocessError로 죽었다. 즉시 `:/usr/bin:/bin`을 추가했지만 테스트 작성 시 흔히 잊는 디테일. (source: `charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md`)
 
 ## Next-Time Checklist
 
-- before broad skill compression, classify each sentence as trigger, stop gate, proof route, or reference detail. (source: `charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md`)
-- before compressing or judging a public skill, inspect exact-string validators and classify each checked phrase as core, package detail, or a candidate for behavior-level proof. (source: `charness-artifacts/retro/2026-05-07-validator-support-discovery.md`)
-- before shrinking a public skill, inspect exact-string contract validators first and decide which snippets are real core versus anchor-only. (source: `charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md`)
-- **capability**: 현재 가벼운 미스는 따로 capability 변경을 정당화하지 않는다. bootstrap path 미스도 한 번이라 SKILL.md 수정은 과잉. (source: `charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md`)
+- **capability**: SKILL.md 압축-친화 helper 후보가 떠올랐다 — `inventory_skill_ ergonomics.py`나 `validate_skills.py` 옆에 "MAX_SKILL_MD_LINES까지 N줄 남았다" 를 보여주는 dry-run 헬퍼가 있다면 budget 초과 전에 압축 슬롯 확보가 자연스 러워진다. 다만 한 번 패턴이라 capability 변경은 미루고 다음 회 같은 트랩이 반복되면 그때 짓는다. (source: `charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md`)
+- **memory**: 본 retro가 lesson durable persistence. 다음 세션은 recent-lessons.md 로 surface된다. (source: `charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md`)
+- **workflow**: contract test에 "anchor citation chain" 검증을 묶어 작성한다. 새 reference를 만들 때 SKILL.md/closeout/관련 reference에서 해당 파일을 cite 했는지 grep-기반 한 줄 테스트가 prose-only revert를 막는다. (source: `charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md`)
+- **workflow**: SKILL.md 추가 분량이 명확할 때, _먼저_ 기존 텍스트의 압축 슬롯을 확보한 뒤 새 contract를 추가한다. budget(200) 직격 후 압축하는 패턴은 매번 검증 비용을 두 배로 만든다. (source: `charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md`)
 
 ## Selection Policy
 
@@ -28,6 +28,4 @@
 ## Sources
 
 - `charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md`
-- `charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md`
-- `charness-artifacts/retro/2026-05-07-skill-compression-validator-flex.md`
-- `charness-artifacts/retro/2026-05-07-validator-support-discovery.md`
+- `charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md`
