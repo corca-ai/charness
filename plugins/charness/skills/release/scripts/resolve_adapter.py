@@ -38,16 +38,8 @@ ADAPTER_CANDIDATES = (
 )
 
 STRING_FIELDS = (
-    "repo",
-    "language",
-    "output_dir",
-    "preset_id",
-    "preset_version",
-    "customized_from",
-    "package_id",
-    "packaging_manifest_path",
-    "checked_in_plugin_root",
-    "sync_command",
+    "repo", "language", "output_dir", "preset_id", "preset_version", "customized_from",
+    "package_id", "packaging_manifest_path", "checked_in_plugin_root", "sync_command",
     "quality_command",
 )
 LIST_FIELDS = (
@@ -76,36 +68,9 @@ def _string_list(value: Any, field: str, errors: list[str]) -> list[str] | None:
     return list(value)
 
 
-def default_release_backend() -> dict[str, Any]:
-    return {"id": "gh", "binary": "gh", "commands": None}
-
-
-def _parse_release_backend(raw: Any, errors: list[str], warnings: list[str]) -> dict[str, Any]:
-    if raw is None:
-        return default_release_backend()
-    if not isinstance(raw, dict):
-        errors.append("release_backend must be a mapping")
-        return default_release_backend()
-    backend_id = _string(raw.get("id"), "release_backend.id", errors) or "gh"
-    binary = _string(raw.get("binary"), "release_backend.binary", errors) or backend_id
-    commands: dict[str, list[str]] | None = None
-    raw_commands = raw.get("commands")
-    if raw_commands is not None:
-        if not isinstance(raw_commands, dict):
-            errors.append("release_backend.commands must be a mapping")
-        else:
-            commands = {}
-            for op, argv in raw_commands.items():
-                if not isinstance(argv, list) or not all(isinstance(part, str) for part in argv):
-                    errors.append(f"release_backend.commands.{op} must be a list of strings")
-                    continue
-                commands[op] = list(argv)
-    if backend_id != "gh" and not commands:
-        warnings.append(
-            f"release_backend.id={backend_id} declared without commands; "
-            "agent must follow the host-documented command shape until commands templates are filled in"
-        )
-    return {"id": backend_id, "binary": binary, "commands": commands}
+_release_backend_module = SKILL_RUNTIME.load_local_skill_module(__file__, "release_backend")
+default_release_backend = _release_backend_module.default_release_backend
+_parse_release_backend = _release_backend_module.parse_release_backend
 
 
 def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
@@ -127,17 +92,11 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "real_host_checklist": [],
         "requested_review_commands": [],
         "review_unavailable_patterns": [
-            "review unavailable",
-            "requested review unavailable",
-            "review gate unavailable",
-            "review skipped because",
-            "executor_variants",
-            "no executor_variants",
+            "review unavailable", "requested review unavailable", "review gate unavailable",
+            "review skipped because", "executor_variants", "no executor_variants",
         ],
         "review_waiver_phrases": [
-            "review waiver:",
-            "explicit review waiver:",
-            "requested review waiver:",
+            "review waiver:", "explicit review waiver:", "requested review waiver:",
         ],
         "product_surfaces": [],
         "cli_skill_surface_probe_commands": [],

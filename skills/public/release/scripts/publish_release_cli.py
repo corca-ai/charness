@@ -114,26 +114,16 @@ def ensure_release_surface(repo_root: Path, expected_version: str) -> None:
 
 
 def write_current_artifact(
-    repo_root: Path,
-    adapter_data: dict[str, Any],
-    payload: dict[str, Any],
-    host_payload: dict[str, Any],
-    *,
-    quality_status: str = "passed before publish",
+    repo_root: Path, adapter_data: dict[str, Any], payload: dict[str, Any],
+    host_payload: dict[str, Any], *, quality_status: str = "passed before publish",
 ) -> str:
     return write_release_artifact(
-        repo_root,
-        output_dir=adapter_data["output_dir"],
-        package_id=adapter_data["package_id"],
-        previous_version=payload["previous_version"],
-        target_version=payload["target_version"],
-        remote=payload["remote"],
-        branch=payload["branch"],
-        quality_command=adapter_data["quality_command"],
-        release_url=None,
+        repo_root, output_dir=adapter_data["output_dir"], package_id=adapter_data["package_id"],
+        previous_version=payload["previous_version"], target_version=payload["target_version"],
+        remote=payload["remote"], branch=payload["branch"],
+        quality_command=adapter_data["quality_command"], release_url=None,
         update_instructions=adapter_data["update_instructions"],
-        real_host_payload=host_payload,
-        quality_status=quality_status,
+        real_host_payload=host_payload, quality_status=quality_status,
     )
 
 

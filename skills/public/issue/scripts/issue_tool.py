@@ -10,9 +10,9 @@ from pathlib import Path
 from typing import Any
 
 
-def _load_resolve_adapter():
-    module_path = Path(__file__).resolve().parent / "resolve_adapter.py"
-    spec = importlib.util.spec_from_file_location("issue_resolve_adapter", module_path)
+def _load_local(module_name: str, alias: str | None = None):
+    module_path = Path(__file__).resolve().parent / f"{module_name}.py"
+    spec = importlib.util.spec_from_file_location(alias or module_name, module_path)
     if spec is None or spec.loader is None:
         raise ImportError(f"Unable to load {module_path}")
     module = importlib.util.module_from_spec(spec)
@@ -20,23 +20,14 @@ def _load_resolve_adapter():
     return module
 
 
-def _load_issue_runtime():
-    module_path = Path(__file__).resolve().parent / "issue_runtime.py"
-    spec = importlib.util.spec_from_file_location("issue_runtime", module_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to load {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-ADAPTER = _load_resolve_adapter()
-RUNTIME = _load_issue_runtime()
+ADAPTER = _load_local("resolve_adapter", "issue_resolve_adapter")
+RUNTIME = _load_local("issue_runtime")
+CLOSE = _load_local("issue_close")
 newest_open_issue = RUNTIME.newest_open_issue
 parse_selector = RUNTIME.parse_selector
 resolve_target = RUNTIME.resolve_target
 split_resolve_args = RUNTIME.split_resolve_args
-close_with_comment = RUNTIME.close_with_comment
+close_with_comment = CLOSE.close_with_comment
 
 
 def emit(payload: dict[str, Any]) -> None:
@@ -60,13 +51,9 @@ def _probe_backend(backend: dict[str, Any]) -> dict[str, Any]:
     binary = backend.get("binary") or backend.get("id") or "gh"
     binary_path = shutil.which(binary)
     selected: dict[str, Any] = {
-        "id": backend.get("id", "gh"),
-        "binary": binary,
-        "binary_path": binary_path,
-        "found": binary_path is not None,
-        "commands": backend.get("commands"),
-        "auth_status": None,
-        "version": None,
+        "id": backend.get("id", "gh"), "binary": binary, "binary_path": binary_path,
+        "found": binary_path is not None, "commands": backend.get("commands"),
+        "auth_status": None, "version": None,
     }
     if binary_path is None:
         return selected
@@ -86,15 +73,10 @@ def _backend_ok(selected: dict[str, Any]) -> bool:
 
 
 def command_preflight(args: argparse.Namespace) -> int:
-    repo_root = args.repo_root.resolve()
-    resolved = _resolve_backend(repo_root)
+    resolved = _resolve_backend(args.repo_root.resolve())
     selected = _probe_backend(resolved["backend"])
     ok = resolved["adapter_ok"] and _backend_ok(selected)
-    payload: dict[str, Any] = {
-        "ok": ok,
-        "selected_backend": selected,
-        "adapter": resolved["adapter"],
-    }
+    payload: dict[str, Any] = {"ok": ok, "selected_backend": selected, "adapter": resolved["adapter"]}
     if selected["id"] == "gh":
         payload["gh_found"] = selected["found"]
         payload["gh_path"] = selected["binary_path"]
@@ -106,13 +88,12 @@ def command_preflight(args: argparse.Namespace) -> int:
         )
     if args.json:
         emit(payload)
+    elif ok:
+        print(f"{selected['id']} backend ready")
+    elif selected["found"]:
+        print(f"{selected['id']} found but not authenticated/healthy")
     else:
-        if ok:
-            print(f"{selected['id']} backend ready")
-        elif selected["found"]:
-            print(f"{selected['id']} found but not authenticated/healthy")
-        else:
-            print(f"{selected['id']} backend binary {selected['binary']!r} missing")
+        print(f"{selected['id']} backend binary {selected['binary']!r} missing")
     return 0 if ok else 1
 
 
@@ -145,32 +126,20 @@ def command_select(args: argparse.Namespace) -> int:
     except (RuntimeError, ValueError) as exc:
         emit({"ok": False, "error": str(exc), "repo": args.repo, "selected_backend": backend})
         return 1
-    emit(
-        {
-            "ok": True,
-            "repo": args.repo,
-            "numbers": numbers,
-            "source": source,
-            "issue": issue,
-            "selected_backend": backend,
-        }
-    )
+    emit({"ok": True, "repo": args.repo, "numbers": numbers, "source": source,
+          "issue": issue, "selected_backend": backend})
     return 0
 
 
 def command_close_with_comment(args: argparse.Namespace) -> int:
-    repo_root = args.repo_root.resolve()
-    resolved = _resolve_backend(repo_root)
+    resolved = _resolve_backend(args.repo_root.resolve())
     if not resolved["adapter_ok"]:
         emit({"ok": False, "adapter": resolved["adapter"]})
         return 1
     try:
         result = close_with_comment(
-            args.repo,
-            args.number,
-            args.body_file.resolve(),
-            backend=resolved["backend"],
-            reason=args.reason,
+            args.repo, args.number, args.body_file.resolve(),
+            backend=resolved["backend"], reason=args.reason,
         )
     except RuntimeError as exc:
         emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
@@ -192,16 +161,9 @@ def command_resolve_invocation(args: argparse.Namespace) -> int:
     except ValueError as exc:
         emit({"ok": False, "error": str(exc), "adapter": adapter})
         return 2
-    emit(
-        {
-            "ok": True,
-            "target": target,
-            "selector": selector,
-            "numbers": numbers,
-            "selector_source": "github-newest-open" if numbers is None else "argument",
-            "adapter": adapter,
-        }
-    )
+    emit({"ok": True, "target": target, "selector": selector, "numbers": numbers,
+          "selector_source": "github-newest-open" if numbers is None else "argument",
+          "adapter": adapter})
     return 0
 
 
