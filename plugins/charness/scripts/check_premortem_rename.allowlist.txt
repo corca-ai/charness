@@ -28,6 +28,12 @@ skills/public/critique/references/code-critique.md	cites `references/premortem-d
 skills/public/critique/references/release-critique.md	preserves `release premortem` trigger and cites `premortem-decision.md`
 skills/public/critique/references/rename-critique.md	preserves `rename premortem` trigger and cites `premortem-decision.md`
 skills/public/critique/references/spec-critique.md	preserves `spec premortem` trigger phrase
+skills/public/critique/references/angle-selection.md	Anchor Lineup names `decision premortem` as a `lam-critique` trigger phrase
+
+# Generated Skill-T mechanism inventory (Leg 1) cites historical retro
+# filenames as Tier B evidence; the filenames themselves are closed-history
+# and not renamed by Leg 5.
+charness-artifacts/skill-t-mechanism/inventory.json	generated inventory cites historical premortem retro filenames as evidence
 
 # Plugin mirror — synced from `skills/public/critique/` by
 # `scripts/sync_root_plugin_manifests.py`. Mirrors the same target dispatch

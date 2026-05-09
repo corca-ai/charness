@@ -3,6 +3,62 @@
 Pick angles that create different failure stories, not five copies of "what if
 this breaks."
 
+## Anchor Lineup
+
+The named anchors below shape angle distribution across all `critique` target
+references and the `retro` `Expert Counterfactuals` lens. Each entry carries an
+`applies_when:` scope tag drawn from a closed value set
+(`lam-critique`, `system-improving-itself`) so a target reference or retro
+session knows which anchors are eligible for the surface it is reviewing.
+
+The substrate matters more than the persona voice. If a real-person name does
+not sharpen the next move, write the lens directly. The lineup is the agreed
+shorthand, not a required cast.
+
+- `anchor_id: jackson` — Michael Jackson (problem framing).
+  `applies_when: lam-critique`. Trigger: is the change framed against the
+  user's actual problem, or against the most convenient implementation slice?
+- `anchor_id: weinberg` — Gerald Weinberg (diagnostic).
+  `applies_when: lam-critique`. Trigger: is the cause located where the
+  change puts the fix, or only the symptom?
+- `anchor_id: gawande` — Atul Gawande (checklist / operational).
+  `applies_when: lam-critique`. Trigger: which concrete operator step is
+  added, removed, or silently broken by this change?
+- `anchor_id: raskin` — Jef Raskin (humane interface / first-time-use).
+  `applies_when: lam-critique`. Trigger: what does the first real reader,
+  user, or downstream agent hit on first contact with this change?
+- `anchor_id: minto` — Barbara Minto (structure / communication).
+  `applies_when: lam-critique`. Trigger: when this change is read later
+  with no chat context, will the why/what/how chain still hold?
+- `anchor_id: engelbart` — Douglas Engelbart (co-evolution of human, tool,
+  and training). `applies_when: system-improving-itself`. Trigger:
+  *treat (H + LAM + T) as one unit; design T alongside LAM.* Fires when the
+  pending change designs the system that designs work — T-loop wiring,
+  skill self-evolution mechanism, retro contract change, anchor lineup
+  metadata, capability discovery surface — not when the change is an
+  ordinary code/PR/release/rename/spec critique.
+  - Falsifier: if this anchor is observed to fire on a `lam-critique`
+    surface in dogfood and distorts the verdict at least once, escalate to
+    option B (separate lineup). Escalation cost is bounded — change the
+    lineup metadata format inside `skills/public/critique/references/` and
+    keep `applies_when:` as the routing seam. This is not a second rename
+    event.
+
+A target reference or retro session selects from this lineup using its own
+weighting; it does not redefine the lineup. The `applies_when:` scope is the
+contract: a `lam-critique` surface (code/PR critique, release critique,
+rename critique, decision premortem, spec critique, ordinary retro lessons)
+draws from the five `lam-critique` anchors. A `system-improving-itself`
+surface (designing a T-loop, changing how skills self-evolve, changing the
+retro/critique substrate itself) draws Engelbart in addition.
+
+When a `critique` or `retro` run actually selects an anchor from this lineup,
+the `anchor_invoked` t-event (see `<repo-root>/integrations/t-events/event.schema.json`)
+captures `anchor_id` and `applies_when` so Tier C evidence in
+`charness-artifacts/skill-t-mechanism/inventory.{md,json}` can show which
+anchors fire on which surfaces over time. New `applies_when:` values require
+both this spec update and at least one positive dogfood case before landing.
+
 Good default angles for a non-trivial change:
 
 - `customer-of-this-capability`: what the user or downstream agent experiences

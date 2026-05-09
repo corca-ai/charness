@@ -27,6 +27,13 @@ Examples:
 - software design: John Ousterhout + Charity Majors
 - engineering management: Camille Fournier + Andrew Grove
 - decision quality under uncertainty: Gary Klein + Daniel Kahneman
+- system that designs work (T-loop wiring, skill self-evolution mechanism,
+  retro/critique contract change, anchor lineup metadata): Douglas Engelbart.
+  Trigger: *treat (H + LAM + T) as one unit; design T alongside LAM.*
+  Anchor metadata lives in `<repo-root>/skills/public/critique/references/angle-selection.md`
+  `Anchor Lineup` (`applies_when: system-improving-itself`). Skip this lens
+  for ordinary lesson retros where the surface under review is plain code,
+  decisions, or product work.
 
 ## Rules
 
