@@ -15,12 +15,12 @@ target reference shapes the angle distribution and output. Decision pre-mortem
 (Klein lineage) is one of those targets; code/PR critique, release critique,
 rename critique, and spec critique reuse the same substrate.
 
-Task-completing repo work always records this critique pass before closeout.
-Scale the pass, not the obligation: small local-risk slices may use a short
-scoped critique in the caller's closeout artifact, while non-trivial design,
+Task-completing repo work always records critique before closeout. Scale the
+pass, not the obligation: small local-risk slices may use a short scoped
+critique in the caller's closeout artifact, while non-trivial design,
 deletion, rename, release, workflow, compatibility, install/update,
-host-proof, prompt-surface, public-skill, validator, or export changes use this
-standalone skill.
+host-proof, prompt-surface, public-skill, validator, or export changes use
+this standalone skill.
 
 When this standalone `critique` skill runs, it always means a fresh bounded
 subagent review. `bounded` limits scope and time box, not execution mode. There
@@ -29,9 +29,9 @@ is no same-agent or local standalone `critique` variant.
 Delegated reviewer fast path: if the current assignment says you are a bounded
 angle reviewer, counterweight reviewer, or fresh-eye reviewer spawned by a
 parent, perform that assigned lens directly and return the requested triage.
-Do not run host capability checks or require nested spawn access. Do not
-report blocked for missing nested subagents unless the parent explicitly asked
-for recursive delegation.
+Do not run host capability checks or require nested spawn access.
+Do not report blocked for missing nested subagents unless the parent
+explicitly asked for recursive delegation.
 
 Before any host-capability question, honor `<repo-root>/AGENTS.md`
 `Subagent Delegation`: required bounded review is already delegated. If the

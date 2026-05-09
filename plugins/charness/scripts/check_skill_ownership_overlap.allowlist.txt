@@ -11,3 +11,5 @@ init-repo:artifact:retro:seed-only -- init-repo seeds initial recent-lessons.md 
 init-repo:adapter:retro:seed-only -- init-repo seeds .agents/retro-adapter.yaml via seed_retro_memory.py; runtime owns to retro
 init-repo:adapter:worktree:seed-only -- init-repo seeds .agents/worktree-adapter.yaml; runtime owns to worktree integration
 issue:artifact:gather:read-only cite -- issue resolve flow references gather artifacts as evidence sources
+critique:artifact:retro:read-only cite -- code-critique reference cross-links charness-artifacts/retro/recent-lessons.md as the defect-class memory home
+critique:artifact:skill-t-mechanism:read-only cite -- angle-selection lineup cites skill-t-mechanism/inventory as the Tier C anchor_invoked evidence sink

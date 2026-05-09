@@ -93,7 +93,7 @@ def test_critique_artifact_validator_rejects_missing_explicit_allowance_blocker(
         ),
         encoding="utf-8",
     )
-    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
+    artifact = repo / "charness-artifacts" / "premortem" / "demo.md"
     artifact.parent.mkdir(parents=True)
     artifact.write_text(
         "\n".join(
@@ -137,7 +137,7 @@ def test_critique_artifact_validator_allows_parent_delegated_artifact_with_block
         ),
         encoding="utf-8",
     )
-    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
+    artifact = repo / "charness-artifacts" / "premortem" / "demo.md"
     artifact.parent.mkdir(parents=True)
     artifact.write_text(
         "\n".join(
@@ -166,7 +166,7 @@ def test_critique_artifact_validator_allows_parent_delegated_artifact_with_block
 
 def test_critique_artifact_validator_accepts_concrete_blocked_signal(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
+    artifact = repo / "charness-artifacts" / "premortem" / "demo.md"
     artifact.parent.mkdir(parents=True)
     artifact.write_text(
         "\n".join(

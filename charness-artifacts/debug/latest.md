@@ -67,7 +67,7 @@ so the extra criterion duplicated that assertion at an unsupported layer.
 
 ## Interrupt Decision
 
-- Premortem Required: yes
+- Critique Required: yes
 - Next Step: impl
 - Handoff Artifact: none
 
