@@ -34,6 +34,25 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
   selected proof artifact with the cited fields. See
   [skills/public/spec/references/evidence-durability.md](../../skills/public/spec/references/evidence-durability.md).
 
+## Pointer-Write Discipline
+
+- Skill `latest.*` artifacts are read-mostly current pointers. When a skill
+  refreshes the pointer to a new canonical record, never overwrite or unlink
+  the prior canonical record by writing through a stale symlink target. The
+  trap (issue #138, gather): `latest.md -> 2026-01-01.md` symlink combined
+  with a writer that opens `latest.md` for writing rewrites the prior dated
+  record in place. The fix shape is `lstat` the pointer first, write a fresh
+  canonical record under its dated filename, then atomically swap the pointer
+  via `unlink + symlink_to` (acceptable small-window race for read-mostly
+  pointers).
+- The reference implementation lives in
+  [skills/public/gather/scripts/write_record.py](../../skills/public/gather/scripts/write_record.py)
+  and [`gather_writer_lib`](../../skills/public/gather/scripts/gather_writer_lib.py).
+  Other skills that publish a `latest.*` rolling pointer
+  (find-skills/quality/release/cautilus/debug/hitl/narrative/retro/critique)
+  inherit the same hazard and should reuse this writer once promoted to a
+  shared helper, not reimplement open-and-overwrite.
+
 ## Critique Discipline
 
 - Every task-completing repo change runs critique before closeout. Scale the
