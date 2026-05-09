@@ -23,8 +23,16 @@ def validate_exported_public_skills(
     require_dir(exported_skills_dir, "checked_in_plugin.skills")
     if (exported_skills_dir / "public").exists() or (exported_skills_dir / "support").exists():
         raise RuntimeError("checked-in plugin skills must be flat public skill directories, not `skills/public` or `skills/support`")
-    expected = sorted(path.name for path in source_public_dir.iterdir() if path.is_dir())
-    actual = sorted(path.name for path in exported_skills_dir.iterdir() if path.is_dir())
+    expected = sorted(
+        path.name
+        for path in source_public_dir.iterdir()
+        if path.is_dir() and (path / "SKILL.md").is_file()
+    )
+    actual = sorted(
+        path.name
+        for path in exported_skills_dir.iterdir()
+        if path.is_dir() and (path / "SKILL.md").is_file()
+    )
     if actual != expected:
         raise RuntimeError("checked-in plugin public skills do not match source public skills")
     for skill_id in expected:
@@ -44,8 +52,16 @@ def validate_exported_support_assets(
     require_dir(exported_support_dir, "checked_in_plugin.support")
     if (exported_support_dir / "generated").exists():
         raise RuntimeError("checked-in plugin support assets must exclude machine-generated support artifacts")
-    expected = sorted(path.name for path in source_support_dir.iterdir() if path.name != "generated")
-    actual = sorted(path.name for path in exported_support_dir.iterdir())
+    expected = sorted(
+        path.name
+        for path in source_support_dir.iterdir()
+        if path.is_dir() and path.name != "generated" and (path / "SKILL.md").is_file()
+    )
+    actual = sorted(
+        path.name
+        for path in exported_support_dir.iterdir()
+        if path.is_dir() and (path / "SKILL.md").is_file()
+    )
     if actual != expected:
         raise RuntimeError("checked-in plugin support assets do not match source support assets")
     for entry in expected:
