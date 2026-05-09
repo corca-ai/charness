@@ -45,6 +45,7 @@ tests/quality_gates/test_critique_skill.py	historical fixture path `charness-art
 # examples. Closed-history filenames are not renamed even when prose
 # vocabulary moves to `critique`.
 docs/artifact-policy.md	cites historical retro filename (closed-history) as a dated-record example
+docs/handoff.md	carries the closed-durable-architecture record of the rename event itself
 
 # Historical artifact directories — the word `premortem` is preserved in
 # closed-history records because changing it inside a historical record
