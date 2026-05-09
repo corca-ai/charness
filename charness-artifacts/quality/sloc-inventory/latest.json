@@ -42,13 +42,13 @@
     },
     "Python": {
       "blanks": 15405,
-      "code": 95732,
+      "code": 95733,
       "comments": 460,
       "files": 690
     },
     "Shell": {
       "blanks": 202,
-      "code": 1172,
+      "code": 1174,
       "comments": 25,
       "files": 19
     },
@@ -72,7 +72,7 @@
   "tokei_version": "tokei 14.0.0 compiled with serialization support: json, cbor, yaml",
   "totals": {
     "blanks": 27676,
-    "code": 120549,
+    "code": 120552,
     "comments": 41810,
     "files": 1440
   }
