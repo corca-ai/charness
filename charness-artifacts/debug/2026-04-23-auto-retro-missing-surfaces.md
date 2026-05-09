@@ -88,7 +88,7 @@ defaults existed, but they were read only after the helper had already required
 
 ## Interrupt Decision
 
-- Premortem Required: no
+- Critique Required: no
 - Next Step: impl
 - Handoff Artifact: none
 

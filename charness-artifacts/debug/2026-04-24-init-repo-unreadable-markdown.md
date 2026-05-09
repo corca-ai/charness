@@ -91,7 +91,7 @@ volatile files violate that assumption.
 
 ## Interrupt Decision
 
-- Premortem Required: no
+- Critique Required: no
 - Next Step: impl
 - Handoff Artifact: none
 

@@ -22,7 +22,7 @@
       ],
       "seam": "consumer repo closeout using installed charness retro helper",
       "generalization_pressure": "monitor",
-      "premortem_required": false,
+      "critique_required": false,
       "next_step": "impl",
       "handoff_artifact": "none",
       "forced": false
@@ -36,7 +36,7 @@
       ],
       "seam": "machine-local Python and managed checkout state",
       "generalization_pressure": "monitor",
-      "premortem_required": false,
+      "critique_required": false,
       "next_step": "impl",
       "handoff_artifact": "none",
       "forced": false
@@ -50,7 +50,7 @@
       ],
       "seam": "consumer repo workflow artifacts scanned during install/update refresh",
       "generalization_pressure": "monitor",
-      "premortem_required": false,
+      "critique_required": false,
       "next_step": "impl",
       "handoff_artifact": "none",
       "forced": false
@@ -64,7 +64,7 @@
       ],
       "seam": "repo instruction contract vs host subagent tool policy",
       "generalization_pressure": "monitor",
-      "premortem_required": false,
+      "critique_required": false,
       "next_step": "impl",
       "handoff_artifact": "none",
       "forced": false
@@ -78,7 +78,7 @@
       ],
       "seam": "integration readiness status versus process exit severity",
       "generalization_pressure": "monitor",
-      "premortem_required": true,
+      "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "none",
       "forced": false
@@ -92,7 +92,7 @@
       ],
       "seam": "capability manifest success criteria versus helper-owned runtime checks",
       "generalization_pressure": "monitor",
-      "premortem_required": true,
+      "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "none",
       "forced": false

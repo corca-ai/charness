@@ -87,7 +87,7 @@ contract directly.
 
 ## Interrupt Decision
 
-- Premortem Required: no
+- Critique Required: no
 - Next Step: impl
 - Handoff Artifact: none
 

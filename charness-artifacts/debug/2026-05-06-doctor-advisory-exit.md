@@ -66,7 +66,7 @@ hard doctor failure even though Cautilus was correctly disabled.
 
 ## Interrupt Decision
 
-- Premortem Required: yes
+- Critique Required: yes
 - Next Step: impl
 - Handoff Artifact: none
 

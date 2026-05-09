@@ -79,7 +79,7 @@ instructions already contained the user's explicit delegation request and
 
 ## Interrupt Decision
 
-- Premortem Required: no
+- Critique Required: no
 - Next Step: impl
 - Handoff Artifact: none
 
