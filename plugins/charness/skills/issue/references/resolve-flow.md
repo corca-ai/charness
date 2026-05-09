@@ -23,3 +23,9 @@ contract, and the close-comment shape that carries the analysis forward.
 Discuss with the user before implementation when the issue asks for a decision
 outside the agent's authority, such as product direction, policy, scope cuts,
 secret access, external billing, or irreversible publication.
+
+Target repo is durable workflow state. Once named or first-resolved, retries
+within the same session reuse it; if the prior target becomes unreachable,
+surface `target_unavailable: <full_name>` and stop. Closeout for `issue new`
+must render only from the verified `{repo, number, url}` ledger. See
+`closeout-discipline.md` for the full contract.

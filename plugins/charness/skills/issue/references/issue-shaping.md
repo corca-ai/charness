@@ -11,6 +11,10 @@ The receiver should understand what happened before seeing any proposed fix:
 - labels: pick from the target repo's existing label vocabulary; check
   `gh label list --repo <org/repo>` if unfamiliar, and add `--label <name>`
   on the create call
+- source identity (required when the originating context is external —
+  Slack thread, Notion page, doc, gathered artifact, web URL): canonical
+  URL plus local gathered-artifact path, access mode, and freshness when
+  available. See `closeout-discipline.md` for the section shape.
 - weak direction: optional candidate outcome, explicitly non-binding
 
 Avoid writing the issue as "implement this mechanism" unless the user is

@@ -17,13 +17,12 @@ GitHub is the source of truth. Do not prefer session memory, a just-created
 issue, a local note, or a stale artifact over the target repository's current
 GitHub state.
 
-The skill resolves the issue backend through the adapter; default is `gh`,
-hosts that mediate GitHub through a runtime capability (e.g. `ceal github`)
-register an alternate `issue_backend`. `preflight` reports `selected_backend`;
-when its `id` is not `gh`, follow `selected_backend.commands` or the host's
-documented shape. See `references/issue-backend.md` and
-`../../shared/references/external-capability-proof-ladder.md` for contract
-and action-proof expectations.
+The skill resolves the issue backend through the adapter (default `gh`;
+host-mediated alternates like `ceal github` register `issue_backend`).
+`preflight` reports `selected_backend`; when its `id` is not `gh`, follow
+`selected_backend.commands` or the host's shape. See
+`references/issue-backend.md` and proof-level discipline in
+`../../shared/references/external-capability-proof-ladder.md`.
 
 ## Bootstrap
 
@@ -54,6 +53,10 @@ repo by created date. It must not use the current session's last created issue.
 - for `issue resolve`, one numeric token or `start-end` token is the issue
   selector, not a repository name
 - adapter defaults live in `.agents/issue-adapter.yaml`
+- once named or first-resolved, the target is durable workflow state for the
+  session; on retry, reuse it; if unreachable, surface
+  `target_unavailable: <full_name>` and stop instead of silently switching to
+  another accessible repo (see `references/closeout-discipline.md`)
 
 ## New Issue
 
@@ -68,18 +71,21 @@ repo by created date. It must not use the current session's last created issue.
      line); record `JTBD: not inferable` when the situation does not reveal it
    - what evidence or commands show it
    - why the current behavior is confusing, costly, or blocked
-   - target-repo labels that apply (`bug`, `enhancement`, `docs`, ...);
-     check `gh label list --repo <org/repo>` first if the vocabulary is unclear
-4. Add solution direction only as an optional weak candidate:
-   - "This may be solved by..."
-   - "A useful outcome might be..."
-   - avoid prescribing the receiving agent's design or implementation
+   - target-repo labels (`gh label list --repo <org/repo>` if the vocabulary
+     is unclear)
+   - external source identity when filed from a Slack thread, Notion page,
+     doc, or gathered artifact, per `references/closeout-discipline.md`
+4. Add only an optional weak solution direction (`This may be solved by...`,
+   `A useful outcome might be...`); avoid prescribing.
 5. Create the issue immediately using `selected_backend` (default
    `gh issue create --repo <org/repo>`; host-mediated backends use
-   `selected_backend.commands.create` or the host's shape). Apply the chosen
+   `selected_backend.commands.create` or the host's shape). Apply chosen
    labels via `--label <name>` or the backend's equivalent.
    Do not ask for approval unless the user explicitly asks to review first.
-6. Report the created issue URL and a one-line summary.
+6. Verify each created issue with
+   `gh issue view --repo <full_name> <number> --json number,url,state` (or
+   the backend equivalent); render closeout only from the verified
+   `{repo, number, url}` ledger. See `references/closeout-discipline.md`.
 
 ## Resolve Issue
 
@@ -102,37 +108,29 @@ repo by created date. It must not use the current session's last created issue.
    `deferred-work` skip step 4 and go to step 8 with a design-only premortem.
    `question` and `decision-needed` route to step 6 first. Record the
    classification in the resolution notes.
-4. For `bug`-class issues, run a **causal review** before design. Use a bounded
-   fresh-eye subagent so the analysis is not anchored on the implementer's
-   first hypothesis. The subagent answers three lenses with evidence cited as
-   `file:line`, plus an `Over-reach check` line per lens stating the simplest
-   evidence the lens found nothing real:
-   - root cause: 5-whys or causal chain ending in a structural reason, not a
-     symptom
-   - detection gap: why this slipped past existing tests, gates, reviews, or
-     monitoring until a human reported it
-   - sibling search: same pattern at the same layer, abstracted up, or
-     specialized down — list concrete locations to inspect
-   The subagent prompt must explicitly forbid invoking `issue`, `premortem`,
-   `debug`, or other skills that themselves spawn reviewers; nested delegation
-   is not allowed unless this skill explicitly requests it. See
-   `references/causal-review.md` for the exact prompts, subagent contract, and
-   premortem handoff template. If the host blocks subagent spawning, stop and
-   report the blocked path; step 8 is also blocked for this run. Do not
-   substitute a same-agent pass.
-   Run causal review per bug-class issue when resolving a range; share findings
-   only when step 5 bundles fixes.
-   **Trivial-bug short-circuit**: if the fix is single-line, the root cause is
-   self-evident from the diff, no public contract changes, and no plausible
-   siblings exist, record `Causal review: trivial; root cause = <one line>` and
-   skip the subagent. Step 8 still runs.
-5. Order the resolutions as a generative sequence (Christopher Alexander):
-   the move that reduces uncertainty or unlocks the next issue comes first.
-   If causal review at step 4 surfaced sibling problems, decide here whether
-   to bundle their fix into this commit, file them as separate issues via
-   `issue new` (resolve owns the "ask first" decision; the filing itself
-   follows `issue new`'s create-immediately rule), or leave them in the close
-   comment as deferred items. Do not file siblings as new issues silently.
+4. For `bug`-class issues, run a **causal review** before design via a bounded
+   fresh-eye subagent (not anchored on the implementer's first hypothesis).
+   The subagent answers three lenses with `file:line` evidence and an
+   `Over-reach check` per lens: root cause (causal chain to a structural
+   reason), detection gap (why existing tests/gates did not fire), and
+   sibling search (same pattern at the same layer, abstracted up, or
+   specialized down). The subagent must not invoke skills that themselves
+   spawn reviewers. See `references/causal-review.md` for prompts, contract,
+   and the premortem handoff template. If the host blocks subagent spawning,
+   stop and report; step 8 is also blocked. Do not substitute a same-agent
+   pass.
+   Run causal review per bug-class issue when resolving a range; share
+   findings only when step 5 bundles fixes.
+   **Trivial-bug short-circuit**: if the fix is single-line and self-evident
+   with no public contract change or plausible siblings, record
+   `Causal review: trivial; root cause = <one line>` and skip step 4.
+   Step 8 still runs.
+5. Order resolutions as a generative sequence (Christopher Alexander): the
+   move that reduces uncertainty or unlocks the next issue comes first. If
+   step 4 surfaced sibling problems, decide whether to bundle into this
+   commit, file as separate issues via `issue new` (ask first; filing itself
+   follows `issue new`'s create-immediately rule), or leave in the close
+   comment as deferred. Do not file siblings as new issues silently.
 6. Discuss with the user before designing when the issue exposes a product,
    policy, scope, permission, or external-side-effect decision the agent
    should not own.
@@ -142,19 +140,15 @@ repo by created date. It must not use the current session's last created issue.
    `docs/conventions/implementation-discipline.md`: sync generated, plugin,
    and export surfaces before validators. Verify with the strongest honest
    local gate.
-8. Run a **resolution premortem** focused on recurrence: what would let this
-   class of issue (and the siblings surfaced at step 4) come back. Delegate
-   to the `premortem` skill, which spawns its own bounded angle and
-   counterweight subagents. Pass causal-review output as prior context using
-   the handoff template in `references/causal-review.md`. This resolution
-   premortem satisfies the CLAUDE.md task-completion premortem obligation;
-   when invoked from `impl`, declare `Premortem: full <issue-resolution-artifact>`
-   instead of running a second generic pass. If step 4 was blocked and there
-   is no causal-review output to chain, do not run premortem against an empty
-   prior context — report the blocked state in the close artifact. Run one
-   premortem per fix-unit (single issue or bundled siblings), not per issue
-   selector. Bundle structural prevention (guard, test, doc, tool) with the
-   fix when cheap; record what is deliberately deferred.
+8. Run a **resolution premortem** focused on recurrence: delegate to the
+   `premortem` skill (which spawns its own bounded angle + counterweight
+   subagents), passing causal-review output via the
+   `references/causal-review.md` handoff template. This satisfies the
+   CLAUDE.md task-completion premortem obligation; when invoked from `impl`,
+   declare `Premortem: full <issue-resolution-artifact>`. If step 4 was
+   blocked, do not run premortem against an empty prior context — report
+   the blocked state. One premortem per fix-unit, not per selector. Bundle
+   cheap structural prevention with the fix; record what is deferred.
 9. Commit, push, and close the GitHub issue only after the fix is on the
    remote. Use explicit close keywords per issue (`Close #1. Close #2.` and
    so on) when relying on GitHub auto-close behavior. The close comment
@@ -174,6 +168,11 @@ repo by created date. It must not use the current session's last created issue.
 - Do not hardcode `gh` when the adapter advertises a stronger backend, and
   do not hide missing backend auth behind a public fetch fallback for
   create, push, comment, or close.
+- Do not silently retarget on retry: surface `target_unavailable` instead of
+  falling through to another accessible repo.
+- Render `issue new` closeout only from the verified `{repo, number, url}`
+  ledger; include canonical source identity (URL, gathered-artifact path,
+  access mode, freshness) when filed from an external source.
 - Do not treat multiple issues as independent when one issue changes the design
   boundary for another.
 - Do not skip causal review on bug-class issues by classifying them as
@@ -192,6 +191,7 @@ repo by created date. It must not use the current session's last created issue.
 - `references/resolve-flow.md`
 - `references/causal-review.md`
 - `references/issue-backend.md`
+- `references/closeout-discipline.md`
 - `../../shared/references/fresh-eye-subagent-review.md`
 - `../../shared/references/external-capability-proof-ladder.md`
 - `scripts/issue_tool.py`
