@@ -7,6 +7,7 @@ from typing import Any
 
 from scripts.portable_artifact_lib import sanitize_artifact_json
 from scripts.recent_lessons_lib import build_indexed_recent_lessons, write_lesson_selection_index
+from scripts.t_events_emit_lib import emit_retro_lesson_cites
 
 _STUB_SUMMARY_MARKERS: tuple[str, ...] = (
     "No current focus bullets found in retro lesson index.",
@@ -70,6 +71,14 @@ def persist_retro_artifact(
     }
     if was_normalized:
         result["artifact_name_normalized"] = True
+
+    emit_summary = emit_retro_lesson_cites(
+        repo_root,
+        markdown_text=markdown_text,
+        citing_artifact_path=str(artifact_path.relative_to(repo_root)),
+    )
+    if emit_summary["cite_count"] or emit_summary["emitted_count"]:
+        result["t_events"] = emit_summary
 
     if snapshot_path is not None and snapshot_data is not None:
         _write_snapshot(snapshot_path, snapshot_data, repo_root=repo_root)

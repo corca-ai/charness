@@ -47,6 +47,12 @@ tests/quality_gates/test_critique_skill.py	historical fixture path `charness-art
 docs/artifact-policy.md	cites historical retro filename (closed-history) as a dated-record example
 docs/handoff.md	carries the closed-durable-architecture record of the rename event itself
 
+# Generated capability inventory — find-skills enumerates each skill's
+# referenced_paths, which for `critique` includes the Klein-lineage
+# `references/premortem-decision.md` reference. Markdown digest only lists
+# trigger phrases, so it is unaffected; the JSON form mirrors the path list.
+charness-artifacts/find-skills/latest.json	generated inventory cites critique's premortem-decision.md (Klein lineage)
+
 # Historical artifact directories — the word `premortem` is preserved in
 # closed-history records because changing it inside a historical record
 # rewrites the past. New artifacts under these directories use the new

@@ -15,6 +15,7 @@ plugins/charness/support/gather-slack/.cache/
 .charness/retro/
 .charness/tasks/
 .charness/hitl/runtime/
+.charness/t-events/
 integrations/locks/*.json
 !integrations/locks/.gitkeep
 !integrations/locks/lock.schema.json

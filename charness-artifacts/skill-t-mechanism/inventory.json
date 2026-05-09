@@ -1,0 +1,516 @@
+{
+  "kind": "skill-t-mechanism-inventory",
+  "skills": [
+    {
+      "anchor_wiring": {
+        "anchors": [],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 0,
+        "retro_artifacts": [],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": null,
+        "matched_lesson_count": 0,
+        "max_source_count": 0,
+        "tier": "B+"
+      },
+      "skill_id": "announcement",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [
+          "Raskin"
+        ],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 1,
+        "retro_artifacts": [
+          "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md"
+        ],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": null,
+        "matched_lesson_count": 0,
+        "max_source_count": 0,
+        "tier": "B+"
+      },
+      "skill_id": "create-cli",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [
+          "Jackson",
+          "Klein"
+        ],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 2,
+        "retro_artifacts": [
+          "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md"
+        ],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": 15,
+        "matched_lesson_count": 2,
+        "max_source_count": 1,
+        "tier": "B+"
+      },
+      "skill_id": "create-skill",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [
+          "Klein",
+          "Jackson",
+          "Raskin",
+          "Weinberg",
+          "Gawande",
+          "Minto"
+        ],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 0,
+        "retro_artifacts": [],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": null,
+        "matched_lesson_count": 0,
+        "max_source_count": 0,
+        "tier": "B+"
+      },
+      "skill_id": "critique",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 2,
+        "retro_artifacts": [
+          "charness-artifacts/retro/2026-04-20-debug-artifact-contract-late-discovery.md",
+          "charness-artifacts/retro/2026-05-01-debug-contract-closeout.md"
+        ],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": 8,
+        "matched_lesson_count": 3,
+        "max_source_count": 1,
+        "tier": "B+"
+      },
+      "skill_id": "debug",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [
+          "Raskin"
+        ],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 9,
+        "retro_artifacts": [
+          "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
+          "charness-artifacts/retro/2026-04-18-find-skills-artifact-invocation-drift.md",
+          "charness-artifacts/retro/2026-04-19-find-skills-late-detection.md",
+          "charness-artifacts/retro/2026-04-19-find-skills-startup-artifact-classification.md",
+          "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
+          "charness-artifacts/retro/2026-05-07-issue-108-109-closeout.md",
+          "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "charness-artifacts/retro/retro.md"
+        ],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": 2,
+        "matched_lesson_count": 7,
+        "max_source_count": 1,
+        "tier": "B+"
+      },
+      "skill_id": "find-skills",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 1,
+        "retro_artifacts": [
+          "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md"
+        ],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": null,
+        "matched_lesson_count": 0,
+        "max_source_count": 0,
+        "tier": "B+"
+      },
+      "skill_id": "gather",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 1,
+        "retro_artifacts": [
+          "charness-artifacts/retro/2026-04-15-handoff-signal-trim.md"
+        ],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": 24,
+        "matched_lesson_count": 1,
+        "max_source_count": 1,
+        "tier": "B+"
+      },
+      "skill_id": "handoff",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [
+          "Gawande"
+        ],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 2,
+        "retro_artifacts": [
+          "charness-artifacts/retro/2026-04-15-hitl-quality-handoff.md",
+          "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md"
+        ],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": 24,
+        "matched_lesson_count": 2,
+        "max_source_count": 1,
+        "tier": "B+"
+      },
+      "skill_id": "hitl",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [
+          "Jackson"
+        ],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 0,
+        "retro_artifacts": [],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": null,
+        "matched_lesson_count": 0,
+        "max_source_count": 0,
+        "tier": "B+"
+      },
+      "skill_id": "ideation",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 6,
+        "retro_artifacts": [
+          "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
+          "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+          "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md",
+          "charness-artifacts/retro/session-2026-04-10.md",
+          "charness-artifacts/retro/weekly-2026-04-14.md"
+        ],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": 12,
+        "matched_lesson_count": 4,
+        "max_source_count": 1,
+        "tier": "B+"
+      },
+      "skill_id": "impl",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 5,
+        "retro_artifacts": [
+          "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
+          "charness-artifacts/retro/2026-04-23-cautilus-gate-miss.md",
+          "charness-artifacts/retro/2026-04-23-public-skill-closeout-gate.md",
+          "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
+          "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md"
+        ],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": 15,
+        "matched_lesson_count": 5,
+        "max_source_count": 1,
+        "tier": "B+"
+      },
+      "skill_id": "init-repo",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 1,
+        "retro_artifacts": [
+          "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md"
+        ],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": null,
+        "matched_lesson_count": 0,
+        "max_source_count": 0,
+        "tier": "B+"
+      },
+      "skill_id": "issue",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [
+          "Minto"
+        ],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 2,
+        "retro_artifacts": [
+          "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
+          "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md"
+        ],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": 15,
+        "matched_lesson_count": 2,
+        "max_source_count": 1,
+        "tier": "B+"
+      },
+      "skill_id": "narrative",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [
+          "Weinberg"
+        ],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 14,
+        "retro_artifacts": [
+          "charness-artifacts/retro/2026-04-15-hitl-quality-handoff.md",
+          "charness-artifacts/retro/2026-04-15-quality-review-diagnostics.md",
+          "charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md",
+          "charness-artifacts/retro/2026-04-20-subagent-blocker-reasoning.md",
+          "charness-artifacts/retro/2026-04-23-issue-routing-closeout.md",
+          "charness-artifacts/retro/2026-04-24-delegation-policy-phrasing.md",
+          "charness-artifacts/retro/2026-04-24-runtime-profile-subagent-review.md",
+          "charness-artifacts/retro/2026-04-29-quality-command-budget-gates.md",
+          "charness-artifacts/retro/2026-04-29-quality-runtime-metrics-premortem.md",
+          "charness-artifacts/retro/2026-05-07-quality-skill-core-compression.md",
+          "charness-artifacts/retro/2026-05-07-validator-support-discovery.md",
+          "charness-artifacts/retro/2026-05-09-issue-122-127-resolve.md",
+          "charness-artifacts/retro/session-ruff-missing-binary.md",
+          "charness-artifacts/retro/weekly-2026-04-14.md"
+        ],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": 2,
+        "matched_lesson_count": 14,
+        "max_source_count": 1,
+        "tier": "B+"
+      },
+      "skill_id": "quality",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 2,
+        "retro_artifacts": [
+          "charness-artifacts/retro/2026-04-27-mandatory-premortem-closeout-retro.md",
+          "charness-artifacts/retro/weekly-2026-04-14.md"
+        ],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": 12,
+        "matched_lesson_count": 2,
+        "max_source_count": 1,
+        "tier": "B+"
+      },
+      "skill_id": "release",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [
+          "Klein",
+          "Kahneman"
+        ],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 4,
+        "retro_artifacts": [
+          "charness-artifacts/retro/2026-04-15-evidence-panel-adaptation.md",
+          "charness-artifacts/retro/2026-04-23-auto-retro-missing-surfaces-closeout.md",
+          "charness-artifacts/retro/2026-04-24-narrative-adapter-customer-retro.md",
+          "charness-artifacts/retro/retro.md"
+        ],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": 24,
+        "matched_lesson_count": 1,
+        "max_source_count": 1,
+        "tier": "B+"
+      },
+      "skill_id": "retro",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    },
+    {
+      "anchor_wiring": {
+        "anchors": [],
+        "orthogonal_to_t_tier": true
+      },
+      "lesson_cite_chain": {
+        "retro_artifact_count": 2,
+        "retro_artifacts": [
+          "charness-artifacts/retro/2026-04-23-subagent-delegation-misread.md",
+          "charness-artifacts/retro/weekly-2026-04-14.md"
+        ],
+        "tier": "B"
+      },
+      "lifecycle_survival": {
+        "freshest_age_days": 25,
+        "matched_lesson_count": 1,
+        "max_source_count": 1,
+        "tier": "B+"
+      },
+      "skill_id": "spec",
+      "tier_c_events": {
+        "event_count": 0,
+        "event_types": {},
+        "status": "awaiting events"
+      }
+    }
+  ],
+  "spec": "charness-artifacts/spec/issue-135-t-first-self-evolving-unit.md",
+  "tier_c_marker": "awaiting events",
+  "version": 1
+}

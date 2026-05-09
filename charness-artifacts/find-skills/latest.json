@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-09T05:37:28Z",
+  "generated_at": "2026-05-09T08:14:25Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -102,6 +102,34 @@
           "skills/shared/references/source-bound-records.md",
           "skills/shared/references/prescribed-path-self-test.md",
           "skills/shared/references/success-criteria-review.md"
+        ],
+        "source": "local-public",
+        "layer": "public skill"
+      },
+      {
+        "id": "critique",
+        "name": "critique",
+        "description": "Use when a non-trivial design decision, code change, release, rename, deletion, spec, or workflow change needs a before-the-fact critique. Probe distinct failure angles, then run a counterweight pass that separates real blockers from over-worry before the change locks in.",
+        "summary": "Use when a non-trivial design decision, code change, release, rename, deletion, spec, or workflow change needs a before-the-fact critique. Probe distinct failure angles, then run a counterweight pass that separates real blockers from over-worry before the change locks in.",
+        "path": "skills/public/critique/SKILL.md",
+        "skill_dir": "skills/public/critique",
+        "canonical_path": "skills/public/critique/SKILL.md",
+        "trigger_phrases": [
+          "critique",
+          "critique skill",
+          "critique 스킬",
+          "charness:critique"
+        ],
+        "referenced_paths": [
+          "skills/shared/references/fresh-eye-subagent-review.md",
+          "skills/public/critique/references/premortem-decision.md",
+          "skills/public/critique/references/code-critique.md",
+          "skills/public/critique/references/release-critique.md",
+          "skills/public/critique/references/rename-critique.md",
+          "skills/public/critique/references/spec-critique.md",
+          "skills/public/critique/references/angle-selection.md",
+          "skills/public/critique/references/counterweight-triage.md",
+          "skills/shared/references/agent-assessment-invariant.md"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -230,11 +258,11 @@
         ],
         "referenced_paths": [
           "skills/public/hitl/references/chunk-contract.md",
+          "skills/shared/references/agent-assessment-invariant.md",
           "skills/public/hitl/references/adapter-contract.md",
           "skills/public/hitl/references/report-mode.md",
           "skills/public/hitl/references/state-model.md",
           "skills/public/hitl/references/rule-propagation.md",
-          "skills/shared/references/agent-assessment-invariant.md",
           "skills/public/hitl/scripts/bootstrap_review.py",
           "skills/public/hitl/scripts/check_chunk_contract.py",
           "skills/public/hitl/scripts/check_review_state.py",
@@ -388,29 +416,6 @@
           "skills/public/narrative/references/brief-shape.md",
           "skills/shared/references/agent-assessment-invariant.md",
           "skills/shared/references/success-criteria-review.md"
-        ],
-        "source": "local-public",
-        "layer": "public skill"
-      },
-      {
-        "id": "critique",
-        "name": "critique",
-        "description": "Use when a non-trivial design, deletion, rename, release, or workflow decision needs a before-the-fact failure review. Probe distinct failure angles, then run a counterweight pass that separates real blockers from over-worry before the caller locks the decision.",
-        "summary": "Use when a non-trivial design, deletion, rename, release, or workflow decision needs a before-the-fact failure review. Probe distinct failure angles, then run a counterweight pass that separates real blockers from over-worry before the caller locks the decision.",
-        "path": "skills/public/critique/SKILL.md",
-        "skill_dir": "skills/public/critique",
-        "canonical_path": "skills/public/critique/SKILL.md",
-        "trigger_phrases": [
-          "critique",
-          "critique skill",
-          "critique 스킬",
-          "charness:critique"
-        ],
-        "referenced_paths": [
-          "skills/shared/references/fresh-eye-subagent-review.md",
-          "skills/public/critique/references/angle-selection.md",
-          "skills/public/critique/references/counterweight-triage.md",
-          "skills/shared/references/agent-assessment-invariant.md"
         ],
         "source": "local-public",
         "layer": "public skill"

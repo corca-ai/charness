@@ -1,0 +1,20 @@
+# charness self-config: capture T-events emitted by charness skills running
+# inside this repo. This is the first dogfood consumer per Leg 2 of the
+# issue 135 umbrella spec — the Skill-T mechanism inventory will read these
+# records as Tier C evidence.
+#
+# Schema:    integrations/t-events/manifest.schema.json
+# Records:   integrations/t-events/event.schema.json
+# Spec:      charness-artifacts/spec/issue-135-t-first-self-evolving-unit.md
+# Storage:   .charness/t-events/<event_type>.jsonl (gitignored)
+version: 1
+repo: charness
+enabled: true
+storage_path: .charness/t-events
+events:
+  - skill_invoked
+  - lesson_cited
+  - anchor_invoked
+rotation:
+  max_files: 5
+  max_size_mb: 5

@@ -224,6 +224,122 @@ def test_persist_retro_artifact_preserves_legacy_summary_when_no_candidates(tmp_
     assert "refusing to overwrite" in result.stderr
 
 
+def test_persist_retro_artifact_emits_t_events_lesson_cited_when_adapter_present(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    output_dir = repo / "charness-artifacts" / "retro"
+    output_dir.mkdir(parents=True)
+    _write_default_adapter(repo)
+    (repo / ".agents" / "t-events-adapter.yaml").write_text(
+        "version: 1\nenabled: true\nstorage_path: .charness/t-events\n",
+        encoding="utf-8",
+    )
+    cited_one = output_dir / "2026-05-08-prior-a.md"
+    cited_two = output_dir / "2026-05-08-prior-b.md"
+    cited_one.write_text("# prior a\n", encoding="utf-8")
+    cited_two.write_text("# prior b\n", encoding="utf-8")
+
+    markdown_file = repo / "session.md"
+    markdown_file.write_text(
+        "\n".join(
+            [
+                "# Retro",
+                "",
+                "## Context",
+                "",
+                "- One trap surfaced (source: charness-artifacts/retro/2026-05-08-prior-a.md)",
+                "- Another trap surfaced (source: charness-artifacts/retro/2026-05-08-prior-b.md)",
+                "",
+                "## Waste",
+                "",
+                "- Time lost without dedicated trace.",
+                "",
+                "## Next Improvements",
+                "",
+                "- `capability`: surface the cite chain in inventory.",
+                "",
+                "## Sources",
+                "",
+                "- charness-artifacts/retro/2026-05-08-prior-a.md",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/retro/scripts/persist_retro_artifact.py",
+        "--repo-root",
+        str(repo),
+        "--artifact-name",
+        "2026-05-09-emit-smoke.md",
+        "--markdown-file",
+        str(markdown_file),
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["t_events"]["emitted_count"] == 2
+    assert payload["t_events"]["cite_count"] == 2
+
+    jsonl = repo / ".charness/t-events/lesson_cited.jsonl"
+    rows = [json.loads(line) for line in jsonl.read_text(encoding="utf-8").splitlines() if line.strip()]
+    assert len(rows) == 2
+    assert {row["lesson_path"] for row in rows} == {
+        "charness-artifacts/retro/2026-05-08-prior-a.md",
+        "charness-artifacts/retro/2026-05-08-prior-b.md",
+    }
+    assert all(
+        row["citing_artifact_path"] == "charness-artifacts/retro/2026-05-09-emit-smoke.md"
+        for row in rows
+    )
+    assert all(row["citing_skill"] == "retro" for row in rows)
+
+
+def test_persist_retro_artifact_t_events_emit_silent_without_adapter(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    output_dir = repo / "charness-artifacts" / "retro"
+    output_dir.mkdir(parents=True)
+    _write_default_adapter(repo)
+    markdown_file = repo / "session.md"
+    markdown_file.write_text(
+        "\n".join(
+            [
+                "# Retro",
+                "",
+                "## Context",
+                "",
+                "- A trap (source: charness-artifacts/retro/2026-05-08-prior.md)",
+                "",
+                "## Waste",
+                "",
+                "- Lost time.",
+                "",
+                "## Next Improvements",
+                "",
+                "- `capability`: keep the emit hook silent without adapter.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result = run_script(
+        "skills/public/retro/scripts/persist_retro_artifact.py",
+        "--repo-root",
+        str(repo),
+        "--artifact-name",
+        "2026-05-09-no-adapter.md",
+        "--markdown-file",
+        str(markdown_file),
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["t_events"]["emitted_count"] == 0
+    assert payload["t_events"]["cite_count"] == 1
+    assert payload["t_events"]["reasons"] == {"no_adapter": 1}
+    assert not (repo / ".charness/t-events").exists()
+
+
 def test_persist_retro_artifact_force_empty_summary_opts_in(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     output_dir = repo / "charness-artifacts" / "retro"
