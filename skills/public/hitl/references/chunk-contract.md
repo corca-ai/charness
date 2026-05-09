@@ -83,6 +83,18 @@ Minimum applied-rewrite surface:
 - applied chunk excerpt with a line anchor, hunk anchor, or explicit source
   boundary when possible
 - enough surrounding context for the human to judge whether the rewrite fits
+- Agent Assessment of how the rewrite fits the original criteria, with any
+  remaining risks or drift, before the decision prompt
+- Recommended Disposition (`accept`, `revise`, `defer`), explicitly
+  display-only
 - verification results only as secondary information
 - a decision prompt asking whether the rewritten chunk is accepted or still
   needs another revision
+
+## Full Target Review
+
+When all chunks are accepted and edits are applied or staged, the full target
+review surface presents the updated target as a whole. The same invariant
+applies: include Agent Assessment + Recommended Disposition (display-only)
+before the human's accept-or-revise decision. See
+`../../../shared/references/agent-assessment-invariant.md`.

@@ -153,7 +153,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
 def main() -> int:
     cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="issue resolve_adapter")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     try:
         args = parser.parse_args()
         payload = load_adapter(args.repo_root.resolve())

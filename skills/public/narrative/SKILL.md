@@ -175,6 +175,7 @@ The result should usually include `Source Map`, `Narrative Drift`, `Updated Trut
 - `references/scenario-blocks.md`
 - `references/landing-rewrite-loop.md`
 - `references/cross-repo-issue-shaping.md`
+- `../../shared/references/agent-assessment-invariant.md`
 - `../../shared/references/success-criteria-review.md`
 - `<repo-root>/scripts/map_sources.py`
 - `<repo-root>/scripts/review_adapter.py`

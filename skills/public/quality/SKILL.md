@@ -192,5 +192,6 @@ Use the sections that match the scope, without reducing quality to one score:
 - `references/standing-gate-verbosity.md`
 - `references/startup-probes.md`
 - `references/validate_spec_pytest_references.py`
+- `../../shared/references/agent-assessment-invariant.md`
 - `../../shared/references/fresh-eye-subagent-review.md`
 - `../../shared/references/external-capability-proof-ladder.md`

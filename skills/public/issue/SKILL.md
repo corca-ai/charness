@@ -30,7 +30,7 @@ Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`.
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
-python3 "$SKILL_DIR/scripts/issue_tool.py" preflight --json
+python3 "$SKILL_DIR/scripts/issue_tool.py" preflight --repo-root . --json
 python3 "$SKILL_DIR/scripts/issue_tool.py" resolve-invocation --repo-root . -- <issue-resolve-args>
 ```
 

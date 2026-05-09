@@ -182,6 +182,7 @@ as `Entities` or `Stages` instead of recreating them under new names.
 - `references/ideation-boundary.md`
 - `references/document-seams.md`
 - `references/taxonomy-axis-checkpoint.md`
+- `../../shared/references/agent-assessment-invariant.md`
 - `../../shared/references/success-criteria-review.md`
 - `../../shared/references/source-bound-records.md`
 - `../../shared/references/fresh-eye-subagent-review.md`

@@ -53,6 +53,10 @@ Examples:
 When a `NON_AUTOMATABLE` proposal needs deliberate human judgment, shape it so
 `hitl` can start a bounded review loop without rediscovering the problem.
 
+Before handoff, include the agent's Agent Assessment + Recommended Disposition
+per `../../../shared/references/agent-assessment-invariant.md`. The human
+reviews judgment, not first-pass thinking.
+
 Include:
 
 - `target`: the bounded artifacts, diffs, conversations, or decisions to review

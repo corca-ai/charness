@@ -152,6 +152,27 @@ def _metadata(repo_root: Path, session: dict[str, Any]) -> dict[str, str]:
     }
 
 
+_CHUNK_REQUIRED_SECTIONS = (
+    ("agent_assessment", ("agent assessment",)),
+    ("recommended_disposition", ("recommended disposition",)),
+    ("decision_for_human", ("decision needed", "decision for human", "decision for the human")),
+)
+
+
+def check_chunk_contract(chunk_text: str) -> list[str]:
+    text = chunk_text.lower()
+    found = {key: any(marker in text for marker in markers) for key, markers in _CHUNK_REQUIRED_SECTIONS}
+    asks_for_decision = found["decision_for_human"] or "?" in chunk_text
+    errors: list[str] = []
+    if not asks_for_decision:
+        return errors
+    if not found["agent_assessment"]:
+        errors.append("chunk asks for a decision without an Agent Assessment section")
+    if not found["recommended_disposition"]:
+        errors.append("chunk asks for a decision without a Recommended Disposition (display-only)")
+    return errors
+
+
 def check_runtime_phase(session: dict[str, Any], phase: str) -> list[str]:
     state = session["state"]
     errors: list[str] = []

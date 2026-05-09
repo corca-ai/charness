@@ -85,7 +85,7 @@ def _backend_ok(selected: dict[str, Any]) -> bool:
 
 
 def command_preflight(args: argparse.Namespace) -> int:
-    repo_root = args.repo_root.resolve() if args.repo_root else ADAPTER.REPO_ROOT
+    repo_root = args.repo_root.resolve()
     resolved = _resolve_backend(repo_root)
     selected = _probe_backend(resolved["backend"])
     ok = resolved["adapter_ok"] and _backend_ok(selected)
@@ -130,7 +130,7 @@ def command_resolve_target(args: argparse.Namespace) -> int:
 
 
 def command_select(args: argparse.Namespace) -> int:
-    repo_root = args.repo_root.resolve() if args.repo_root else ADAPTER.REPO_ROOT
+    repo_root = args.repo_root.resolve()
     resolved = _resolve_backend(repo_root)
     backend = resolved["backend"]
     try:
@@ -186,25 +186,26 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    cwd_default = Path.cwd()
     preflight = subparsers.add_parser("preflight")
     preflight.add_argument("--json", action="store_true")
-    preflight.add_argument("--repo-root", type=Path, default=ADAPTER.REPO_ROOT)
+    preflight.add_argument("--repo-root", type=Path, default=cwd_default)
     preflight.set_defaults(func=command_preflight)
 
     target = subparsers.add_parser("resolve-target")
-    target.add_argument("--repo-root", type=Path, default=ADAPTER.REPO_ROOT)
+    target.add_argument("--repo-root", type=Path, default=cwd_default)
     target.add_argument("--target")
     target.set_defaults(func=command_resolve_target)
 
     invocation = subparsers.add_parser("resolve-invocation")
-    invocation.add_argument("--repo-root", type=Path, default=ADAPTER.REPO_ROOT)
+    invocation.add_argument("--repo-root", type=Path, default=cwd_default)
     invocation.add_argument("values", nargs="*")
     invocation.set_defaults(func=command_resolve_invocation)
 
     select = subparsers.add_parser("select")
     select.add_argument("--repo", required=True)
     select.add_argument("--selector")
-    select.add_argument("--repo-root", type=Path, default=ADAPTER.REPO_ROOT)
+    select.add_argument("--repo-root", type=Path, default=cwd_default)
     select.set_defaults(func=command_select)
     return parser
 

@@ -149,4 +149,5 @@ recursive delegation was explicitly required and actually ran.
 
 - `references/angle-selection.md`
 - `references/counterweight-triage.md`
+- `../../shared/references/agent-assessment-invariant.md`
 - `../../shared/references/fresh-eye-subagent-review.md`

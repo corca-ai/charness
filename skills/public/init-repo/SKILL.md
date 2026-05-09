@@ -183,3 +183,4 @@ Then load only the references needed for the detected state:
 - `references/retro-memory-seam.md`
 - `references/github-actions-defaults.md`
 - `references/operator-acceptance-synthesis.md`
+- `../../shared/references/agent-assessment-invariant.md`

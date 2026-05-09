@@ -62,6 +62,7 @@ Runtime helpers:
 - cursor gate: `python3 "$SKILL_DIR/scripts/check_review_state.py" --repo-root . --session-id <session-id> --phase cursor-advance`
 - closeout sync: `python3 "$SKILL_DIR/scripts/sync_review_artifact.py" --repo-root . --session-id <session-id>`
 - durable artifact freshness check: `python3 "$SKILL_DIR/scripts/sync_review_artifact.py" --repo-root . --session-id <session-id> --check`
+- chunk self-check: `python3 "$SKILL_DIR/scripts/check_chunk_contract.py" --chunk-file <path>`
 
 If the adapter is missing, stop after surfacing or scaffolding the bounded
 review contract. Do not start a resumable human-review loop in earnest until
@@ -190,7 +191,9 @@ Checked, Accepted Working Text, Accepted Rules, and Next State.
 - `references/report-mode.md`
 - `references/state-model.md`
 - `references/rule-propagation.md`
+- `../../shared/references/agent-assessment-invariant.md`
 - `scripts/bootstrap_review.py`
+- `scripts/check_chunk_contract.py`
 - `scripts/check_review_state.py`
 - `scripts/render_report.py`
 - `scripts/sync_review_artifact.py`

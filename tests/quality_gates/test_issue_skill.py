@@ -196,6 +196,41 @@ def test_issue_preflight_resolves_adapter_backend_when_gh_absent(tmp_path: Path)
     assert "gh_found" not in payload
 
 
+def test_issue_preflight_resolves_adapter_from_process_cwd_when_repo_root_omitted(
+    tmp_path: Path,
+) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake = bin_dir / "ceal"
+    fake.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "if [[ \"$1\" == \"--version\" ]]; then echo 'ceal 0.0.1'; exit 0; fi",
+                "exit 0",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    _write_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+
+    result = run_script(
+        str(ROOT / SCRIPT),
+        "preflight",
+        "--json",
+        cwd=tmp_path,
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["adapter"]["found"] is True, payload
+    assert payload["adapter"]["path"] == str(tmp_path / ".agents" / "issue-adapter.yaml")
+    assert payload["selected_backend"]["id"] == "ceal-github"
+
+
 def test_issue_preflight_reports_missing_backend_binary_with_explicit_error(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
