@@ -125,11 +125,15 @@ def make_release_fixture(tmp_path: Path, *, charness_tag: str | None = None) -> 
 def make_support_sync_fixture(tmp_path: Path) -> Path:
     fixture_root = tmp_path / "support-fixtures"
     mappings: dict[str, str] = {}
-    for tool_id, repo in {"cautilus": "corca-ai/cautilus@main", "agent-browser": "vercel-labs/agent-browser@main"}.items():
-        skill_root = fixture_root / tool_id / "skills" / tool_id
+    tool_layouts = {
+        "cautilus": ("corca-ai/cautilus@main", "skills/cautilus-agent"),
+        "agent-browser": ("vercel-labs/agent-browser@main", "skills/agent-browser"),
+    }
+    for tool_id, (repo, skill_subpath) in tool_layouts.items():
+        skill_root = fixture_root / tool_id / skill_subpath
         skill_root.mkdir(parents=True, exist_ok=True)
         skill_root.joinpath("SKILL.md").write_text(f"---\nname: {tool_id}\ndescription: \"fixture\"\n---\n\n# {tool_id}\n", encoding="utf-8")
-        mappings[repo] = str(skill_root.parents[1])
+        mappings[repo] = str(fixture_root / tool_id)
     fixture_path = tmp_path / "support-sync-fixtures.json"
     fixture_path.write_text(json.dumps(mappings, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return fixture_path

@@ -361,9 +361,11 @@ def test_plan_cautilus_proof_recommends_skill_dogfood_and_scenario_followups() -
     )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["run_mode"] == "disabled"
-    assert payload["status"] == "disabled"
-    assert payload["recommended_commands"] == []
+    assert payload["run_mode"] == "ask"
+    assert payload["status"] == "ready-for-validation"
+    assert any(
+        "cautilus eval test" in command for command in payload["recommended_commands"]
+    )
     assert payload["changed_public_skills"] == ["create-skill"]
     recommendation = payload["skill_validation_recommendations"][0]
     assert recommendation["skill_id"] == "create-skill"

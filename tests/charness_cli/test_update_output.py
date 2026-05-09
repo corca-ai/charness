@@ -69,4 +69,4 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     assert "SCOPE: all" in update_result.stdout
     assert "TOOLS:" in update_result.stdout
     assert "agent-browser=updated" in update_result.stdout
-    assert "cautilus=skipped" in update_result.stdout
+    assert "cautilus=manual" in update_result.stdout

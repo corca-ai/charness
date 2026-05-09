@@ -24,9 +24,15 @@ from .tool_fakes import make_fake_cautilus
 def enable_cautilus_adapter(repo_root: Path) -> None:
     adapter = repo_root / ".agents" / "cautilus-adapter.yaml"
     text = adapter.read_text(encoding="utf-8")
-    text = text.replace("run_mode: disabled\n", "run_mode: adaptive\n")
-    text = "\n".join(line for line in text.splitlines() if not line.startswith("disabled_reason:")) + "\n"
-    adapter.write_text(text, encoding="utf-8")
+    lines = []
+    for line in text.splitlines():
+        if line.startswith("run_mode:"):
+            lines.append("run_mode: adaptive")
+        elif line.startswith("disabled_reason:"):
+            continue
+        else:
+            lines.append(line)
+    adapter.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def make_fake_go_glow(tmp_path: Path) -> tuple[Path, Path]:
