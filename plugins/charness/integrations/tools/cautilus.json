@@ -89,10 +89,11 @@
   "support_skill_source": {
     "source_type": "upstream_repo",
     "path": "skills/cautilus-agent",
-    "ref": "main",
+    "ref": "v0.14.2",
     "notes": [
       "Prefer the upstream bundled skill instead of copying evaluator workflow guidance into `charness`.",
-      "Upstream renamed the skill root from `skills/cautilus` to `skills/cautilus-agent` during the eval-only migration; see corca-ai/cautilus#32."
+      "Upstream renamed the skill root from `skills/cautilus` to `skills/cautilus-agent` during the eval-only migration; see corca-ai/cautilus#32.",
+      "Pinned to a tagged release per corca-ai/cautilus#32 pinning guidance — `main` is not stable across the active promise-spec/HITL rewrite. Bump this ref when adopting a newer Cautilus release after verifying the bundled skill layout."
     ]
   },
   "degradation": {
