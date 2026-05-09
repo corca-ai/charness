@@ -4,6 +4,7 @@
 
 - 다음 세션의 첫 행동은 [Next Session](#next-session) item 1을 시도하는 것이다. handoff 자체는 모든 task-oriented 세션이 무조건 읽는 pickup pointer다 ([AGENTS.md](../AGENTS.md) Start Here).
 - repo operating contract, prompt/skill surface, export sync, 또는 checked-in artifact policy를 건드리면 [charness-artifacts/retro/recent-lessons.md](../charness-artifacts/retro/recent-lessons.md)를 같이 읽고 `impl`로 이어간다.
+- 세션 시작 시 `git status` / `git log origin/main..HEAD` 확인 — 이전 세션 종료 시 cautilus migration commit 1건 (`22fe0c5`)이 사용자 의도로 unpushed 상태일 수 있다. 다음 작업 시작 전 `git push` 통과 여부 확인.
 
 ## Current State
 
@@ -27,7 +28,7 @@
 4. Active deferred follow-ups:
     - **#135 PR 3 follow-up — `skill_invoked`/`anchor_invoked` emit point.** Leg 3 anchor entry land 됨; `anchor_invoked` 한 번 emit이 자연스러운 dogfood (critique 또는 retro에서 anchor 선택 시점). 첫 dogfood retro가 Engelbart Falsifier 관찰 window도 같이 연다 — A3.3 manual smoke가 그 관찰로 충족. `skill_invoked`는 charness CLI 또는 host-injected hook 결정 후.
     - **Title-slug `--strict` CI/pre-push wiring (#131 follow-up)** — [check_title_slug_drift.py](../scripts/check_title_slug_drift.py)는 advisory-only ship됨; 다음 슬라이스에서 wiring.
-    - **#135 PR 1 (Leg 5) test 갱신 누락** — [tests/quality_gates/test_critique_skill.py](../tests/quality_gates/test_critique_skill.py) 4 fail은 b3312e9에서 정렬 land. follow-up 닫음.
+    - **debug ↔ issue substrate-vs-target spec slice (PR 4·5 land 후)** — RCA/falsifiable hypothesis substrate를 [skills/public/debug/](../skills/public/debug/)가 owner로, issue lifecycle target lens를 [skills/public/issue/](../skills/public/issue/)가 owner로 분리. 동형 패턴은 #135 Leg 5 (premortem→critique substrate-vs-target). churn map: 5-whys/causal-chain → debug references로 이동 (현재 [issue/causal-review.md](../skills/public/issue/references/causal-review.md)), root-cause discipline 본문 → debug master, "structural cause" / "Over-reach check" / detection-gap / sibling-search 는 issue/causal-review.md 유지 (close-ledger 특화). dispatch: `issue/SKILL.md` step 3가 bug branch에서 debug skill을 명시 호출 + close-comment ledger에 debug artifact path link. **sequencing**: PR 4·5 land 후 시작 — PR 5 (init-repo→setup rename)의 SKILL.md 본문 churn과 conflict 회피. 본 슬라이스는 issue 135 5-leg 외부, 새 GitHub issue + 새 spec.
     - **Cautilus instruction-surface filename rename** — [scripts/agent-runtime/run-local-instruction-surface-test.mjs](../scripts/agent-runtime/run-local-instruction-surface-test.mjs)는 wording이 PR 1 시점 `instruction-surface` 그대로다. issue #32에 맞춰 `run-local-eval-test.mjs` 로 rename + adapter `eval_test_command_templates` 본문 갱신은 별도 슬라이스 (cite churn small).
     - **issue-135 spec historical Cautilus wording** — [charness-artifacts/spec/issue-135-t-first-self-evolving-unit.md](../charness-artifacts/spec/issue-135-t-first-self-evolving-unit.md) L185·L257·L401 의 "Cautilus disabled" 문구는 spec 작성 시점 historical context. preserved 상태이지만 다음 spec revision에 맞춰 갱신 가능.
     - **Upstream support-source drift deterministic gate (corca-ai/cautilus#32 root-cause prevention)** — `integrations/tools/*.json`의 `support_skill_source.path` 가 upstream에 실제 존재하는지 검사하는 online preflight (CI nightly 또는 `charness update doctor`)를 [scripts/validate_integrations.py](../scripts/validate_integrations.py) 옆에 추가. 이번 슬라이스는 ref `main` → `v0.14.2`로 pin해서 즉시 drift 빈도를 낮췄지만, 본격 deterministic 검사가 같이 들어와야 silent rename 이 update all 첫 실행 fail로 surface하는 패턴이 사라진다.
@@ -42,6 +43,7 @@
 - README/CLI reference/operator docs overlap을 더 줄일지 — consumer-repo dogfood로 탐색 마찰 본 뒤 결정.
 - Cautilus claim discovery output을 checked artifact로 둘지 transient proof-plan input으로 둘지 — 열려 있다.
 - release artifact가 GitHub release creation/public verification state를 얼마나 닫아야 하는지 — helper contract 차원에서 한 번 더 본다.
+- debug ↔ issue substrate-vs-target 분리 결정 — 사용자 관찰 가설 (RCA wording 이 두 skill에 silent overlap, GitHub issue 없는 RCA 도 정당한 surface): debug 가 substrate owner, issue 는 close-ledger lens owner. PR 4·5 land 후 spec slice 로 본격 평가.
 
 ## References
 
