@@ -197,11 +197,12 @@
         "uses the `github-gh` integration path for GitHub mutations instead of inventing a separate provider"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-08",
+      "reviewed_on": "2026-05-09",
       "observed_evidence": [
         "The checked-in public core explicitly fixes GitHub as the source of truth for issue identity and freshness, including the omitted-selector rule that queries newest open GitHub issue state instead of the current session.",
         "`issue new` keeps the receiving repo's problem context first and only allows weak candidate solution direction, preserving the cross-repo issue hygiene already used by narrative.",
-        "`issue_tool.py` gives the first-use path structured helpers for target resolution, `gh` preflight, and issue selector parsing, with tests covering default `corca-ai` ownership, current-repo inference, numeric ranges, and the GitHub-SoT wording."
+        "`issue_tool.py` gives the first-use path structured helpers for target resolution, `gh` preflight, and issue selector parsing, with tests covering default `corca-ai` ownership, current-repo inference, numeric ranges, and the GitHub-SoT wording.",
+        "`issue_close.close_with_comment` now enforces a per-op placeholder allowlist at runtime: `comment` accepts `{repo,number,body_file,reason}` and `close` accepts `{repo,number,reason}`. An adapter template using an unknown placeholder fails fast with the offending placeholder named, so the documented contract no longer relies on test-only enforcement."
       ]
     },
     {

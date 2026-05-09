@@ -419,6 +419,156 @@ def test_issue_close_with_comment_uses_adapter_template(tmp_path: Path) -> None:
     assert ["github", "issue", "close", "-R", "corca-ai/charness", "7", "--reason", "completed"] in entries
 
 
+def test_issue_close_with_comment_substitutes_reason_when_adapter_comment_uses_it(
+    tmp_path: Path,
+) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    log = tmp_path / "ceal-log.json"
+    fake = bin_dir / "ceal"
+    fake.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import json, os, sys",
+                "from pathlib import Path",
+                "log = Path(os.environ['CEAL_LOG'])",
+                "entries = json.loads(log.read_text()) if log.exists() else []",
+                "entries.append(sys.argv[1:])",
+                "log.write_text(json.dumps(entries))",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    _write_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "\n".join(
+            [
+                "    comment:",
+                "      - github",
+                "      - issue",
+                "      - comment",
+                "      - '-R'",
+                "      - '{repo}'",
+                "      - '{number}'",
+                "      - '--body-file'",
+                "      - '{body_file}'",
+                "      - '--reason'",
+                "      - '{reason}'",
+                "    close:",
+                "      - github",
+                "      - issue",
+                "      - close",
+                "      - '-R'",
+                "      - '{repo}'",
+                "      - '{number}'",
+                "      - '--reason'",
+                "      - '{reason}'",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    body = tmp_path / "body.md"
+    body.write_text("Body.\n", encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "close-with-comment",
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "11",
+        "--body-file",
+        str(body),
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "CEAL_LOG": str(log)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    entries = json.loads(log.read_text(encoding="utf-8"))
+    assert [
+        "github",
+        "issue",
+        "comment",
+        "-R",
+        "corca-ai/charness",
+        "11",
+        "--body-file",
+        str(body),
+        "--reason",
+        "completed",
+    ] in entries
+
+
+def test_issue_close_with_comment_rejects_adapter_template_with_unknown_placeholder(
+    tmp_path: Path,
+) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake = bin_dir / "ceal"
+    fake.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    fake.chmod(0o755)
+    _write_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "\n".join(
+            [
+                "    comment:",
+                "      - github",
+                "      - issue",
+                "      - comment",
+                "      - '-R'",
+                "      - '{repo}'",
+                "      - '{number}'",
+                "      - '--body-file'",
+                "      - '{body_file}'",
+                "      - '--audit'",
+                "      - '{audit_id}'",
+                "    close:",
+                "      - github",
+                "      - issue",
+                "      - close",
+                "      - '-R'",
+                "      - '{repo}'",
+                "      - '{number}'",
+                "      - '--reason'",
+                "      - '{reason}'",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    body = tmp_path / "body.md"
+    body.write_text("Body.\n", encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "close-with-comment",
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "13",
+        "--body-file",
+        str(body),
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+    )
+
+    assert result.returncode != 0, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "audit_id" in payload["error"]
+    assert "unknown placeholders" in payload["error"]
+
+
 def test_issue_skill_records_github_sot_for_omitted_selector() -> None:
     skill_text = (ROOT / "skills" / "public" / "issue" / "SKILL.md").read_text(encoding="utf-8")
     resolve_flow = (ROOT / "skills" / "public" / "issue" / "references" / "resolve-flow.md").read_text(

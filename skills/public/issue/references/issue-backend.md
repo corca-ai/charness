@@ -111,8 +111,11 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" close-with-comment \
   --repo <full_name> --number <n> --body-file <path>
 ```
 
-Adapter templates for `comment` and `close` already accept `{repo}`,
-`{number}`, `{body_file}`, and `{reason}` placeholders.
+Adapter templates for `comment` accept `{repo}`, `{number}`, `{body_file}`,
+and `{reason}` placeholders. Templates for `close` accept `{repo}`, `{number}`,
+and `{reason}`. The runtime enforces the allowlist per op: a template using
+an unknown placeholder fails fast with the offending placeholder named, so
+adapter command templates do not silently grow undocumented variables.
 
 ## Placeholders
 

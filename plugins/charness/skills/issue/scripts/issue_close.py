@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -24,8 +25,25 @@ GH_CLOSE_DEFAULT = [
     "{reason}",
 ]
 
+COMMENT_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "body_file", "reason"})
+CLOSE_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "reason"})
 
-def _resolve_op(backend: dict[str, Any], op: str, default: list[str], **subs: str) -> list[str]:
+_PLACEHOLDER_RE = re.compile(r"\{([a-z_]+)\}")
+
+
+def _resolve_op(
+    backend: dict[str, Any],
+    op: str,
+    default: list[str],
+    allowed: frozenset[str],
+    **subs: str,
+) -> list[str]:
+    extra_subs = sorted(set(subs) - allowed)
+    if extra_subs:
+        raise RuntimeError(
+            f"_resolve_op({op}): caller passed placeholders {extra_subs!r} "
+            f"not in op's allowlist {sorted(allowed)!r}"
+        )
     binary = backend.get("binary") or backend.get("id") or "gh"
     commands = backend.get("commands") or {}
     template = commands.get(op)
@@ -36,6 +54,13 @@ def _resolve_op(backend: dict[str, Any], op: str, default: list[str], **subs: st
                 "configure the adapter command template before calling this op."
             )
         template = default
+    used = {match for part in template for match in _PLACEHOLDER_RE.findall(part)}
+    unknown = sorted(used - allowed)
+    if unknown:
+        raise RuntimeError(
+            f"_resolve_op({op}): adapter template uses unknown placeholders {unknown!r}; "
+            f"allowed for {op}: {sorted(allowed)!r}"
+        )
     rendered = [part.format(**subs) if "{" in part else part for part in template]
     return [binary, *rendered]
 
@@ -55,6 +80,7 @@ def close_with_comment(
         backend,
         "comment",
         GH_COMMENT_DEFAULT,
+        COMMENT_PLACEHOLDERS,
         repo=repo,
         number=str(number),
         body_file=str(body_file),
@@ -64,6 +90,7 @@ def close_with_comment(
         backend,
         "close",
         GH_CLOSE_DEFAULT,
+        CLOSE_PLACEHOLDERS,
         repo=repo,
         number=str(number),
         reason=reason,
