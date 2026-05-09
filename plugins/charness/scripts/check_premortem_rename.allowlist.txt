@@ -52,6 +52,13 @@ tests/quality_gates/test_critique_skill.py	historical fixture path `charness-art
 # vocabulary moves to `critique`.
 docs/artifact-policy.md	cites historical retro filename (closed-history) as a dated-record example
 docs/handoff.md	carries the closed-durable-architecture record of the rename event itself
+docs/operator-acceptance.md	Month-6 progressive-path bullet cites the umbrella-spec section heading `Premortem` verbatim
+
+# Cross-validator allowlists — the Leg 6 rename validator allowlists the
+# historical `charness-artifacts/premortem/` directory prefix; that path
+# string then surfaces here as a `premortem` cite.
+scripts/check_init_repo_rename.allowlist.txt	cites `charness-artifacts/premortem/` historical-dir prefix in its own allowlist
+plugins/charness/scripts/check_init_repo_rename.allowlist.txt	plugin mirror of the init-repo rename allowlist
 
 # Generated capability inventory — find-skills enumerates each skill's
 # referenced_paths, which for `critique` includes the Klein-lineage

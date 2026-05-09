@@ -50,6 +50,12 @@ charness-artifacts/find-skills/latest.json	generated inventory; refreshed by fin
 # the next reader can identify the rename event. The arrow is the cite.
 docs/handoff.md	rolling handoff cites the rename event itself with the `init-repo` -> `setup` arrow
 
+# Cross-validator allowlists — the Leg 5 rename validator allowlists
+# `scripts/check_init_repo_rename.allowlist.txt` (and its plugin mirror) so
+# that the `init_repo` path string surfaces here as a `premortem` cite.
+scripts/check_premortem_rename.allowlist.txt	cites init-repo rename allowlist paths in its own cross-validator entries
+plugins/charness/scripts/check_premortem_rename.allowlist.txt	plugin mirror of the premortem rename allowlist
+
 # Legacy snippet detection — Leg 6 spec line 436-439 keeps `init-repo` as a
 # deprecated advisory snippet so consumer repos still using the legacy AGENTS.md
 # scope wording surface migration drift instead of silently passing. The cites
