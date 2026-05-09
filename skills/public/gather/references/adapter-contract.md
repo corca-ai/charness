@@ -43,3 +43,12 @@ Default path:
 Dated knowledge records should use `<repo-root>/charness-artifacts/gather/YYYY-MM-DD-<slug>.md`.
 
 To change the location, override `output_dir` in the adapter.
+
+## Pointer vs Canonical Record Target
+
+The artifact path the adapter exposes is a **current pointer**, not the
+canonical storage target. It may be empty, a regular file, or a symlink to
+a dated record under the same directory. Writers must never edit the
+pointer path directly — see `asset-refresh.md` for the symlink-aware
+recipe and the scripted writer
+`<repo-root>/skills/public/gather/scripts/write_record.py`.

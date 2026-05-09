@@ -112,6 +112,13 @@ For the browser-mediated private-source ladder, read
    - if an asset for the same source already exists, update that asset rather
      than creating duplicates
    - preserve a concise change note when freshness matters
+   - the resolved gather artifact path may be a current pointer (regular
+     file or a symlink to a dated canonical record). Never edit it directly
+     with `apply_patch` or other writers that follow symlinks; the edit
+     will silently overwrite the prior canonical asset. Write a new dated
+     record under the gather output directory first, then update the
+     pointer atomically. See `references/asset-refresh.md` and the
+     scripted writer `scripts/write_record.py`.
 5. Answer the immediate request.
    - give the directly requested facts first
    - only widen into adjacent context if the user asked for it or the current
@@ -147,6 +154,10 @@ The result should usually include:
   export path already exists.
 - Do not treat local desktop profile reuse as equivalent to a remote/headless
   runner; say when a one-time manual or headed bootstrap is still required.
+- Do not edit the resolved gather artifact path (e.g., `latest.md`) when it
+  is a symlink; the write follows the link and overwrites the canonical
+  dated record. Use the scripted writer or the atomic pointer-refresh path
+  in `references/asset-refresh.md`.
 
 ## References
 
@@ -159,3 +170,5 @@ The result should usually include:
 - `references/google-workspace-via-gws.md`
 - `../../shared/references/closeout-discipline.md`
 - `<repo-root>/scripts/advise_google_workspace_path.py`
+- `<repo-root>/scripts/refresh_current_pointer.py`
+- `scripts/write_record.py`
