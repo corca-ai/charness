@@ -1,9 +1,22 @@
 from __future__ import annotations
 
+import re
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+RELEASE_VIEW_PLACEHOLDERS: frozenset[str] = frozenset({"tag"})
+RELEASE_CREATE_PLACEHOLDERS: frozenset[str] = frozenset({"tag", "title"})
+AUTH_CHECK_PLACEHOLDERS: frozenset[str] = frozenset()
+
+_PLACEHOLDER_RE = re.compile(r"\{([a-z_]+)\}")
+
+OP_PLACEHOLDERS: dict[str, frozenset[str]] = {
+    "release_view": RELEASE_VIEW_PLACEHOLDERS,
+    "release_create": RELEASE_CREATE_PLACEHOLDERS,
+    "auth_check": AUTH_CHECK_PLACEHOLDERS,
+}
 
 
 def run(command: list[str], *, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -63,6 +76,17 @@ def backend_command(
     default: list[str],
     **subs: str,
 ) -> list[str]:
+    allowed = OP_PLACEHOLDERS.get(op)
+    if allowed is None:
+        raise SystemExit(
+            f"backend_command({op}): unknown op; declare a placeholder allowlist in OP_PLACEHOLDERS"
+        )
+    extra_subs = sorted(set(subs) - allowed)
+    if extra_subs:
+        raise SystemExit(
+            f"backend_command({op}): caller passed placeholders {extra_subs!r} "
+            f"not in op's allowlist {sorted(allowed)!r}"
+        )
     commands = backend.get("commands") or {}
     template = commands.get(op)
     if template is None:
@@ -71,6 +95,13 @@ def backend_command(
                 f"release_backend `{backend.get('id')}` did not declare a `{op}` command template"
             )
         template = default
+    used = {match for part in template for match in _PLACEHOLDER_RE.findall(part)}
+    unknown = sorted(used - allowed)
+    if unknown:
+        raise SystemExit(
+            f"backend_command({op}): adapter template uses unknown placeholders {unknown!r}; "
+            f"allowed for {op}: {sorted(allowed)!r}"
+        )
     return [part.format(**subs) if subs and "{" in part else part for part in template]
 
 

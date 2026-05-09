@@ -113,6 +113,14 @@ which keeps the existing `gh release ...` shape. Hosts that resolve releases
 through a different binary supply `commands` templates for `auth_check`,
 `release_view` (uses `{tag}` substitution), and `release_create` (uses `{tag}`
 and `{title}` substitution). Without commands, a non-`gh` backend errors at
-runtime instead of falling back to `gh`. The current placeholder set is
-`{tag}` and `{title}`; adding a new placeholder requires updating the
-substitution kwargs at the call site and a regression test.
+runtime instead of falling back to `gh`.
+
+The placeholder set is enforced per op at runtime by
+`publish_release_helpers.backend_command`: `release_view` accepts `{tag}`,
+`release_create` accepts `{tag}` and `{title}`, and `auth_check` accepts no
+placeholders. An adapter template using an unknown placeholder fails fast with
+the offending placeholder named, matching the issue-backend close-with-comment
+pattern (`issue_close._resolve_op` per-op allowlist) so both backend surfaces
+share the same hardening shape. Adding a new placeholder requires updating
+`OP_PLACEHOLDERS` in `publish_release_helpers.py` plus the call site and a
+regression test.

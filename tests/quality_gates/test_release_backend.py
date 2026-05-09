@@ -130,3 +130,50 @@ def test_backend_command_errors_on_non_gh_without_template() -> None:
 
     assert "ceal-github" in str(exc.value)
     assert "release_create" in str(exc.value)
+
+
+def test_backend_command_rejects_caller_sub_outside_op_allowlist() -> None:
+    helpers = _load_release_module("publish_release_helpers")
+    backend = {"id": "gh", "binary": "gh", "commands": None}
+
+    with pytest.raises(SystemExit) as exc:
+        helpers.backend_command(
+            backend,
+            "release_view",
+            ["gh", "release", "view", "{tag}"],
+            tag="v1.2.3",
+            title="not allowed for view",
+        )
+
+    assert "title" in str(exc.value)
+    assert "release_view" in str(exc.value)
+
+
+def test_backend_command_rejects_adapter_template_with_unknown_placeholder() -> None:
+    helpers = _load_release_module("publish_release_helpers")
+    backend = {
+        "id": "ceal-github",
+        "binary": "ceal",
+        "commands": {
+            "release_view": ["ceal", "release", "view", "{tag}", "--audit", "{audit_id}"],
+        },
+    }
+
+    with pytest.raises(SystemExit) as exc:
+        helpers.backend_command(
+            backend, "release_view", ["gh", "release", "view", "{tag}"], tag="v1.2.3"
+        )
+
+    assert "audit_id" in str(exc.value)
+    assert "unknown placeholders" in str(exc.value)
+
+
+def test_backend_command_rejects_unknown_op() -> None:
+    helpers = _load_release_module("publish_release_helpers")
+    backend = {"id": "gh", "binary": "gh", "commands": None}
+
+    with pytest.raises(SystemExit) as exc:
+        helpers.backend_command(backend, "rogue_op", ["gh", "release", "list"])
+
+    assert "rogue_op" in str(exc.value)
+    assert "OP_PLACEHOLDERS" in str(exc.value)
