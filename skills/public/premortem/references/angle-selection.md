@@ -14,6 +14,16 @@ Good default angles for a non-trivial decision:
 - `future maintainer`: what a new reader will misread, reopen, or delete
 - `doc and source-of-truth cascade`: what named docs, examples, or packaged
   mirrors become misleading after the change
+- `first-reader`: for durable docs, spec indexes, public skill prose,
+  README-like surfaces, and source-of-truth narrative, what the plain-language
+  first-time reader will hit before any taxonomy lands. Lenses to include:
+  plain-language reading path (does the structure teach the product before the
+  document architecture); legacy-coupled negative phrasing (does the doc still
+  define itself against a removed concept); product-story-before-taxonomy
+  (does the first heading path lead with reader tasks instead of model,
+  projection, or proof-view labels); title-slug coherence after rename-heavy
+  edits (do filenames, slugs, compact keys, and link labels still match the
+  new H1 titles, and is any concept-home page duplicated)
 - `devil's advocate`: strongest argument for keeping the current design
 
 Subagent sizing:
@@ -42,6 +52,15 @@ Rotate or swap angles when the decision is narrower:
 - external consumer migration
 - install/update/support behavior
 - policy or security posture
+
+Include the `first-reader` angle when the decision changes durable docs, spec
+indexes, public skill prose, README-like surfaces, or source-of-truth
+narrative. For rename-heavy edits, the title-slug coherence lens belongs in
+the same angle so structural rewrites do not hide stale slugs, links, or
+duplicated concept-home pages behind a polished outline. Run
+`<repo-root>/scripts/check_title_slug_drift.py` against the affected spec or
+docs roots as deterministic evidence for the title-slug lens before relying
+on prose judgment alone.
 
 Keep the angle set bounded.
 Three strong angles plus one counterweight pass is usually better than six weak

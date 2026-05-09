@@ -44,6 +44,9 @@ Examples:
   invisible in pull requests
 - replace repeated documentation guidance with `markdownlint` or a repo-owned
   validator because the rule is deterministic and repeated manually today
+- run `scripts/check_title_slug_drift.py` against `docs/specs/` and other
+  rename-prone Markdown roots after concept renames because H1-vs-slug drift
+  is detectable mechanically and easy to miss in prose review
 - run a one-week HITL review over three real handoffs because the issue is
   judgment quality rather than a deterministic lint rule, and record which
   observations would justify automation later
