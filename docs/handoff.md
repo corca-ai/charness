@@ -9,7 +9,7 @@
 
 - [AGENTS.md](../AGENTS.md)는 craken-style compact entry, 세부 운영 규칙은 [docs/conventions/](./conventions/)가 owner. handoff 본 파일은 rolling pointer — gate 수치, dogfood evidence, 긴 history는 owning artifact로 보내고 next action을 바꾸는 사실만 남긴다.
 - `critique`/`quality`/`handoff`의 fresh-eye loop는 mandatory subagent다. spawn 불가 시 same-agent fallback 금지, host signal 남기고 stop. `init-repo`/`AGENTS.md`가 "already delegated"로 surface한다 (second-message 대기 금지).
-- prompt-affecting surface는 [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml) `run_mode`가 owner. 현재 `disabled`(전면 재작업 중) — Cautilus 바이너리/평가 안 돌리고, deterministic gate + adapter-disabled proof validator가 closeout을 맡는다.
+- prompt-affecting surface는 [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml) `run_mode`가 owner. 현재 `ask` (eval-only re-enabled per corca-ai/cautilus#32) — `cautilus eval test` / `cautilus eval evaluate` 만 지원. claim discovery, optimize, review-learning, `eval live`, broader Agent orchestration은 contract rewrite 중이라 호출 금지.
 - checked-in plugin export가 걸린 source를 바꾸면 validator 전에 `python3 scripts/sync_root_plugin_manifests.py --repo-root .`로 sync. 같은 원칙으로 README/help text를 건드리면 먼저 `python3 scripts/render_cli_reference.py --repo-root . --output docs/cli-reference.md`.
 - charness가 ship한 manifest는 사용자 리포에서도 자동 fallback 노출 (`tool_id` 충돌 시 user 우선). 사용자 리포는 [integrations/tools/dependencies.json](../integrations/tools/dependencies.json)에 staging.
 - worktree readiness contract land — `.agents/worktree-adapter.yaml`로 prepare/doctor 등록, `impl`/`hitl` bootstrap이 `charness worktree doctor --json`을 non-fatal probe로 호출. owner는 [scripts/worktree_doctor_lib.py](../scripts/worktree_doctor_lib.py) + [docs/worktree-prepare.md](./worktree-prepare.md).

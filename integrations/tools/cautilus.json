@@ -88,10 +88,11 @@
   "recommendation_role": "validation",
   "support_skill_source": {
     "source_type": "upstream_repo",
-    "path": "skills/cautilus",
+    "path": "skills/cautilus-agent",
     "ref": "main",
     "notes": [
-      "Prefer the upstream bundled skill instead of copying evaluator workflow guidance into `charness`."
+      "Prefer the upstream bundled skill instead of copying evaluator workflow guidance into `charness`.",
+      "Upstream renamed the skill root from `skills/cautilus` to `skills/cautilus-agent` during the eval-only migration; see corca-ai/cautilus#32."
     ]
   },
   "degradation": {

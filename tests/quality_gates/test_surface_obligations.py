@@ -443,8 +443,8 @@ def test_run_slice_closeout_blocks_public_skill_review_until_acknowledged() -> N
     assert payload["status"] == "blocked"
     assert "public-skill validation review is required" in payload["error"]
     assert "--ack-cautilus-skill-review" in payload["error"]
-    assert payload["cautilus_plan"]["run_mode"] == "disabled"
-    assert payload["cautilus_plan"]["status"] == "disabled"
+    assert payload["cautilus_plan"]["run_mode"] == "ask"
+    assert payload["cautilus_plan"]["status"] == "not-required"
     assert payload["cautilus_plan"]["required"] is False
     assert payload["cautilus_plan"]["scenario_registry_review_required"] is True
     assert payload["cautilus_plan"]["changed_public_skills"] == ["init-repo"]
@@ -490,8 +490,8 @@ def test_run_slice_closeout_blocks_hitl_recommended_public_skill_review_until_ac
     assert result.returncode == 1
     payload = json.loads(result.stdout)
     assert payload["status"] == "blocked"
-    assert payload["cautilus_plan"]["run_mode"] == "disabled"
-    assert payload["cautilus_plan"]["status"] == "disabled"
+    assert payload["cautilus_plan"]["run_mode"] == "ask"
+    assert payload["cautilus_plan"]["status"] == "ready-for-validation"
     assert payload["cautilus_plan"]["required"] is True
     assert payload["cautilus_plan"]["artifact_changed"] is True
     assert payload["cautilus_plan"]["scenario_registry_review_required"] is False

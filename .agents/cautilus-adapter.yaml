@@ -1,7 +1,10 @@
 version: 1
 repo: charness
-run_mode: disabled
-disabled_reason: Cautilus is under active rework; do not run local Cautilus tests or evals until this adapter is re-enabled.
+run_mode: ask
+# Eval-only re-enabled per corca-ai/cautilus#32. Other Cautilus surfaces
+# (claim discovery, optimize, review-learning, eval live, broader Agent
+# orchestration) are still under active contract rewrite; this adapter
+# only opts into `cautilus eval test` / `cautilus eval evaluate`.
 evaluation_surfaces:
   - skill portability and metadata integrity
   - repo-owned validation workflow
