@@ -1,140 +1,132 @@
 # Quality Review
-Date: 2026-04-30
+Date: 2026-05-10
 
 ## Scope
-Repo-wide quality posture for `charness`: gates, adapter policy, operator proof,
-runtime signals, security, and low-noise next gates.
+Repo-wide posture pickup after the compact-AGENTS.md refactor and the
+#136-#139 close batch, triggered by `/charness:setup and /quality`. Setup ran
+a NORMALIZE-mode no-op (operating surfaces aligned; `Skill Routing` block
+acknowledged drift in `.agents/setup-adapter.yaml`).
 
 ## Concept Risks
-- Architecture remains coherent: public workflow skills, support capabilities,
-  adapters, operator docs, generated exports, and durable artifacts are still
-  separate.
-- Fixed: the Charness quality adapter now rejects stale `gate_commands` and
-  `review_commands` instead of requiring only non-empty lists.
-- Remaining risk: README/operator proof layering has a manual ledger, but not checked Cautilus claim-discovery output or evidence refs for every criterion.
+- `bootstrap_quality_adapter` writes semantically no-op canonicalization to
+  `.agents/quality-adapter.yaml` (filling
+  `public_spec_implementation_guard_min_lines: 100` equal to the default),
+  tripping `validate-cautilus-proof` and violating the "no-op without
+  canonical content change" invariant.
+- `check-coverage` is change-gated; `scripts/doctor.py` standalone coverage
+  79.8% violates the 85% per-file floor, but the pre-push lane skipped it
+  this slice (no control-plane source changed).
 
 ## Current Gates
-- `./scripts/run-quality.sh --review`: passed `48` phases, `0` failed, total
-  `59.4s`; includes 515 pytest cases and 20 evals.
-- Targeted README-proof checks passed: markdown links, markdown lint, Specdown,
-  handoff/quality/current-pointer validators, and Cautilus claim
-  discover/validate through `../cautilus`.
-- `.githooks/pre-push` is active through `core.hooksPath`.
+- `./scripts/run-quality.sh`: 54 passed / 0 failed across 3 runs today
+  (~66-79s). The first run reported 53/54 because bootstrap had rewritten
+  the quality adapter; reverting the no-op diff restored 54/54.
+- `validate-cautilus-proof` clean once the adapter diff was reverted.
+- `core.hooksPath = .githooks` confirmed; `.githooks/pre-push` active.
 
 ## Runtime Signals
-- runtime source: `.charness/quality/runtime-signals.json` <!-- reproduction-source --> rendered by
-  `check_runtime_budget.py`; profile `local-linux-aarch64-4cpu`.
-- runtime hot spots: `pytest` 36.9s latest / 35.1s median, budget 70.0s;
-  `check-coverage` 17.9s / 16.9s, budget 22.0s; `specdown` 8.8s / 6.2s,
-  budget 8.0s; `check-duplicates` 8.2s / 5.7s, budget 8.0s;
-  `check-markdown` 9.7s / 5.4s, budget 8.0s.
-- coverage gate: enforced at `96.8%` with `0` files below floor.
-- evaluator depth: 20 evals plus Cautilus `accept-now`.
-- `check-cli-skill-surface` is also budgeted at 8.0s after repeated 5s-class samples.
+- runtime source: `.charness/quality/runtime-signals.json` <!-- reproduction-source --> rendered by `render_runtime_summary.py`; profile `local-linux-aarch64-4cpu`.
+- runtime hot spots: `pytest` 56.1s / 56.1s / 70.0s budget (prior 35.1s, ~25% headroom); `check-coverage` 33.6s / 17.9s / 22.0s (last sample 2026-05-09; today skipped); `check-duplicates` 9.2s / 9.3s / 11.0s.
+- coverage gate: control-plane standalone 91.1% (1250/1372); 1 file below 85% floor (`scripts/doctor.py` 79.8%); 5 in 85-95% warn band.
+- evaluator depth: 20 evals pass; Cautilus proof not re-run today (policy `ask`).
+- 4 phases unbudgeted on aarch64: `check-spec-evidence-durability` (~1.5s), `inventory-ci-local-gate-parity` (~60ms), `inventory-sloc` (~150ms), `inventory-ubiquitous-language` (~1.6s).
 
 ## Standing Test Economics
-- Pytest passed `515` tests in `35.61s`; phase time was `36.9s`.
-- Test-production ratio is `0.23` (`19087/82166` Python lines), below `1.00`.
-
-## Coverage and Eval Depth
-- Coverage: `96.8%` (`1187/1226`), with `2` files in the warn band.
-- Weakest tracked files: `doctor.py` `90.7%`, `support_sync_lib.py` `92.8%`,
-  `upstream_release_lib.py` `95.3%`.
-- `run-evals` passed `20` scenarios; Cautilus proof passed `accept-now`.
+- Pytest collected `844/866` (22 deselected) — up from 515 in the prior
+  artifact (+64%); 139 test files; 46 nested CLI tests in
+  `tests/charness_cli/**` are a duplicated-proof candidate.
 
 ## Maintainer-Local Enforcement
-- `validate_maintainer_setup.py` passed and confirmed `.githooks` is active.
-- The final local gate is checked in through `.githooks/pre-push`; no no-hook
-  waiver is in effect.
-- `doctor.py --json --skip-release-probe` reports validation/runtime tools healthy.
+- `validate_maintainer_setup.py` passed; `.githooks` active. `doctor.py
+  --json --skip-release-probe` reports `agent-browser 0.27.0` healthy.
+  CI/local parity vacuously healthy (no `.github/workflows/*.yml`).
 
 ## Enforcement Triage
-- `AUTO_EXISTING`: full quality gate, maintainer hook validation, adapter
-  validation, exact quality gate/review command validation, current-pointer
-  freshness, command docs, CLI probes, coverage floor, test ratio, secrets,
-  supply-chain, ruff, pytest, specdown, evals, duplicates, startup probes,
-  runtime budgets, markdown links.
-- `AUTO_CANDIDATE`: wire README/operator proof ledger to Cautilus claim
-  discovery and evidence refs; split README first-touch claims from generated
-  CLI-reference parity.
-- `NON_AUTOMATABLE`: broad skill and entrypoint ergonomics pressure until the
-  repo defines low-noise structural invariants.
+- `AUTO_EXISTING`: 54-phase quality gate covering hooks, adapter validation,
+  pointer freshness, command docs, CLI probes, secrets, supply-chain
+  offline, ruff/pytest/specdown/evals/duplicates, runtime budgets, markdown
+  links, spec evidence durability, parity tripwire.
+- `AUTO_CANDIDATE`: bootstrap no-op short-circuit; 4 unbudgeted phases;
+  check-coverage standing cadence; pytest growth target.
+- `NON_AUTOMATABLE`: operator-acceptance Progressive Operator Path extract;
+  skill-ergonomics mode/option heuristic tightening.
 
 ## Healthy
-- Delegated `adapter/gate-design`, `operator-proof-layering`, and
-  `gate-economics/security` reviews executed.
-- CLI help, doctor readiness, command docs, hooks, current pointers, artifact
-  validation, budgets, coverage floor, and security scans have executable proof.
-- CLI ergonomics, lint-ignore, dual-implementation, brittle source-guard, and
-  public-spec source-guard inventories are clean.
+- 54/54 quality gate after revert; cautilus-proof clean.
+- Compact-AGENTS.md operator orientation honest; bounded fresh-eye review
+  contract executed today (4 reviewers). Skill ergonomics `status: clean`.
+- Pre-push active; supply-chain offline gate covers JS lockfile + Python.
 
 ## Weak
-- `README.md` remains `long_entrypoint`; `docs/operator-acceptance.md` remains
-  `long_entrypoint`.
-- Command-docs checks pooled README plus generated CLI-reference content, so
-  generated reference text can mask a missing README first-touch cue.
-- Public skill ergonomics still flags long mature skill cores; keep this
-  advisory until a structural split is obvious.
+- `scripts/doctor.py` coverage 79.8% violates the 85% per-file floor;
+  standalone `check_coverage.py` exits 1 today. Change-gated pre-push
+  silences this regression (doctor.py last touched in `796491c`).
+- `bootstrap_quality_adapter` writes semantically no-op canonicalization
+  that trips `validate-cautilus-proof`. Reverted manually this slice.
+- `pytest` 515 -> 844 in 10 days; ~25% headroom against 70s budget.
+- `docs/operator-acceptance.md` (227 lines) `long_entrypoint`: Progressive
+  Operator Path on lines 25-57 delays `## Remaining Items` to ~line 60.
+- 4 quality phases unbudgeted on `local-linux-aarch64-4cpu`.
 
 ## Missing
-- README/operator proof ledger exists at `docs/readme-proof.md`, but Cautilus
-  claim discovery output is not yet a stable checked proof source.
-- Generated CLI reference proves help parity, not full semantic command success.
+- Periodic / release-time full coverage gate independent of changed paths.
+- `inventory_cli_ergonomics.py` runs `unconfigured` (no
+  `command-registry.json` / `command-archetypes.json`).
 
 ## Deferred
-- Do not promote online supply-chain audit into default pre-push. The checked
-  online audit passed at `--audit-level=high`; broader freshness belongs in
-  review or CI-only lanes unless the repo first prices the noise.
-- Do not hard-gate skill/entrypoint ergonomics as taste checks.
-- Do not widen specdown coverage before removing duplicated cheaper proof.
+- README/operator proof ledger Cautilus claim-discovery wiring (gated on
+  cautilus rework re-enable per #32).
+- Online supply-chain audit promotion (passive; CI lane absent).
+- `runtime_profile_default: default` synthesizes a profile not in
+  `runtime_budget_profiles` (silent fall-through; reviewer-flagged latent).
 
 ## Advisory
-- Inline prompt/content bulk inventory remains advisory; `prompt_asset_roots: []`
-  is not an inventory opt-out.
-- Adapter-gate phrase-detector policy seams remain `NON_AUTOMATABLE`.
+- `validate-cautilus-proof` will trip on any future
+  `.agents/quality-adapter.yaml` write until the helper short-circuit lands.
+- `coverage_relevant_changes_present` (run-quality.sh:112-132) is a
+  hardcoded path list — new control-plane code outside it will not enable
+  check-coverage.
 
 ## Delegated Review
 - status: executed.
-- slow-gate lenses: fixture-economics, parallel-critical-path, duplicated-proof.
-- Adapter/gate design found stale command strings could pass validation; fixed.
-- Operator proof layering found the README/operator proof ledger was missing;
-  initial ledger now exists.
-- Gate economics/security found stable unbudgeted 5s-class phases; runtime
-  budgets now cover them. Secrets and manifest/lockfile checks are locally
-  enforced.
+- adapter/gate-design: bootstrap rewrite is a real defect; smallest fix at
+  `scripts/quality_bootstrap_lib.py:447-466`.
+- runtime/economics (slow-gate lenses: fixture-economics,
+  parallel-critical-path, duplicated-proof): check-coverage 33.6s spike
+  advisory; 4 unbudgeted phases real; pytest test-count growth dominant.
+- security/CI parity: vacuously healthy; offline supply-chain adequate;
+  pre-push active.
+- skill/operator ergonomics: critique long_core leave; mode/option pressure
+  flags heuristic noise; only moveable surface is operator-acceptance
+  Progressive Operator Path.
 
 ## Commands Run
-- `python3 skills/public/quality/scripts/bootstrap_adapter.py --repo-root .`
-- `./scripts/run-quality.sh --review`
-- `python3 scripts/validate_maintainer_setup.py --repo-root .`
+- `./scripts/run-quality.sh` (3 runs)
+- `python3 skills/public/quality/scripts/bootstrap_adapter.py --repo-root .` (mutated; reverted after no-op diff confirmed)
+- `python3 scripts/validate_cautilus_proof.py --repo-root .` plus `plan_cautilus_proof.py --json`
+- `python3 scripts/check_coverage.py --repo-root .` (standalone — exit 1, doctor.py 79.8%)
 - `python3 scripts/doctor.py --repo-root . --json --skip-release-probe`
-- `python3 scripts/check_coverage.py --repo-root . --json`
-- `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root . --json`
-- `python3 skills/public/quality/scripts/bootstrap_markdown_preview.py --repo-root . --execute`
-- quality inventory scripts for CLI, docs, spec, guard, lint, adapter, skill,
-  gitignore, and inline prompt/content pressure.
-- `python3 scripts/check_supply_chain_online.py --repo-root . --audit-level=high --triage-owner repo-maintainers`
-- focused adapter-validation pytest; targeted Ruff and adapter validation.
-- `../cautilus/bin/cautilus eval test ... 20260429T232900000Z-quality-budget-command-gates`
-- `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- `../cautilus/bin/cautilus claim discover --repo-root . --source README.md --source docs/operator-acceptance.md --output /tmp/charness-readme-claims.json`
-- `../cautilus/bin/cautilus claim validate --claims /tmp/charness-readme-claims.json --output /tmp/charness-readme-claims-validation.json`
-
-## Fresh-Eye Critique
-- Misread risk: pooled command-doc checks look like README proof. Counterweight:
-  keep the ledger and future Cautilus claim plans separate from CLI parity.
-- Misread risk: runtime budgets fail on one-off spikes. Counterweight:
-  budgets fail on recent medians and report latest spikes separately.
-- Misread risk: stale adapter command strings stay invisible. Counterweight:
-  exact command validation now owns this invariant.
+- `python3 skills/public/quality/scripts/render_runtime_summary.py --repo-root .` and inventory_* (skill_ergonomics, cli_ergonomics, lint_ignores, standing_test_economics, standing_gate_verbosity, public_spec_quality) `--json` runs.
 
 ## Recommended Next Gates
-- active `AUTO_CANDIDATE`: validate README/operator proof ledger through
-  Cautilus claim discovery and direct evidence refs.
-- active `AUTO_CANDIDATE`: split command-docs ownership so README first-touch
-  claims and generated CLI-reference parity cannot satisfy each other.
-- passive `AUTO_CANDIDATE`: online supply-chain freshness stays passive because
-  CI/review ownership is unresolved.
+- active `AUTO_CANDIDATE`: fix bootstrap no-op rewrite at
+  `scripts/quality_bootstrap_lib.py:447-466` — short-circuit when every diff
+  is appending defaulted-equals-default fields. Helper edit is not
+  prompt-affecting alone.
+- active `AUTO_CANDIDATE`: surface the silent doctor.py coverage regression.
+  Either remove change-gating on `check-coverage` in
+  `scripts/run-quality.sh:362` or add a release-time non-conditional
+  coverage invocation.
+- active `AUTO_CANDIDATE`: fill 4 budgets in `.agents/quality-adapter.yaml`
+  `runtime_budget_profiles.local-linux-aarch64-4cpu.budgets`
+  (`check-spec-evidence-durability: 2500`, `inventory-ci-local-gate-parity: 500`,
+  `inventory-sloc: 1000`, `inventory-ubiquitous-language: 3000`). Adapter
+  edit is prompt-affecting (cautilus eval refresh required; policy `ask`).
+- active `NON_AUTOMATABLE`: extract `docs/operator-acceptance.md:25-57`
+  Progressive Operator Path into `docs/operator-progressive-path.md` with a
+  2-line pointer.
+- passive `AUTO_CANDIDATE` because budget headroom is still 25% (no immediate breach): pytest growth target — consolidate the 46 nested CLI test files toward in-process tests; aim median 50s.
 
 ## History
+- [2026-04-30 archive](history/2026-04-30-quality-review.md)
 - [2026-04-09 through 2026-04-10 archive](history/2026-04-09-through-2026-04-10.md)
