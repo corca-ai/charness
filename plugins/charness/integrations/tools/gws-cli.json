@@ -98,6 +98,18 @@
   "supports_public_skills": [
     "gather"
   ],
+  "intent_triggers": [
+    "google docs",
+    "google drive",
+    "google sheets",
+    "google slides",
+    "gmail api",
+    "gmail message",
+    "google calendar",
+    "google workspace",
+    "gws gather",
+    "workspace gather"
+  ],
   "recommendation_role": "runtime",
   "package_managers": {
     "npm": {

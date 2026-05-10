@@ -80,6 +80,20 @@
   "supports_public_skills": [
     "gather"
   ],
+  "intent_triggers": [
+    "browser automation",
+    "headless browser",
+    "headless screenshot",
+    "browser screenshot",
+    "playwright",
+    "js-rendered",
+    "javascript-rendered",
+    "dom inspection",
+    "live dom",
+    "browser debugging",
+    "headed verification",
+    "browser-mediated gather"
+  ],
   "recommendation_role": "runtime",
   "support_skill_source": {
     "source_type": "upstream_repo",

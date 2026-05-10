@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-09T15:22:54Z",
+  "generated_at": "2026-05-10T02:37:46Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -205,10 +205,11 @@
         "referenced_paths": [
           "skills/public/gather/SKILL.md",
           "skills/public/gather/references/browser-mediated-private-sources.md",
+          "skills/public/gather/references/asset-refresh.md",
+          "skills/public/gather/scripts/write_record.py",
           "skills/shared/references/closeout-discipline.md",
           "skills/public/gather/references/adapter-contract.md",
           "skills/public/gather/references/source-priority.md",
-          "skills/public/gather/references/asset-refresh.md",
           "skills/public/gather/references/document-seams.md",
           "skills/public/gather/references/capability-contract.md",
           "skills/public/gather/references/google-workspace-via-gws.md"
@@ -415,6 +416,8 @@
           "skills/public/quality/references/skill-quality.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/shared/references/external-capability-proof-ladder.md",
+          "skills/public/quality/references/maintainer-local-enforcement.md",
+          "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
           "skills/public/quality/references/adapter-contract.md",
           "skills/public/quality/references/adapter-gate-review.md",
           "skills/public/quality/references/automation-promotion.md",
@@ -431,7 +434,6 @@
           "skills/public/quality/references/gate-classification.md",
           "skills/public/quality/references/installable-cli-probes.md",
           "skills/public/quality/references/lint-ignore-discipline.md",
-          "skills/public/quality/references/maintainer-local-enforcement.md",
           "skills/public/quality/references/operability-signals.md",
           "skills/public/quality/references/prompt-asset-policy.md",
           "skills/public/quality/references/proposal-flow.md",
@@ -547,6 +549,7 @@
           "skills/public/spec/references/design-lenses.md",
           "skills/public/spec/references/taxonomy-axis-checkpoint.md",
           "skills/shared/references/source-bound-records.md",
+          "skills/public/spec/references/evidence-durability.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/public/spec/references/contract-modes.md",
           "skills/public/spec/references/fixed-probe-defer.md",
@@ -994,7 +997,20 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
-        "intent_triggers": [],
+        "intent_triggers": [
+          "browser automation",
+          "headless browser",
+          "headless screenshot",
+          "browser screenshot",
+          "playwright",
+          "js-rendered",
+          "javascript-rendered",
+          "dom inspection",
+          "live dom",
+          "browser debugging",
+          "headed verification",
+          "browser-mediated gather"
+        ],
         "config_layers": [
           {
             "layer_id": "agent-browser-saved-auth-state",
@@ -1070,7 +1086,15 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
-        "intent_triggers": [],
+        "intent_triggers": [
+          "github issue",
+          "github pull request",
+          "github discussion",
+          "github repository",
+          "github gather",
+          "gh cli",
+          "github private"
+        ],
         "config_layers": [
           {
             "layer_id": "authenticated-gh",
@@ -1103,7 +1127,14 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
-        "intent_triggers": [],
+        "intent_triggers": [
+          "secret scan",
+          "secret detection",
+          "credential scan",
+          "secret leak detection",
+          "gitleaks",
+          "git secret scan"
+        ],
         "config_layers": [],
         "readiness_checks": [],
         "supports_public_skills": [
@@ -1125,7 +1156,14 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
-        "intent_triggers": [],
+        "intent_triggers": [
+          "render markdown",
+          "markdown render",
+          "rendered markdown",
+          "glow",
+          "rendered review",
+          "narrative render"
+        ],
         "config_layers": [],
         "readiness_checks": [],
         "supports_public_skills": [
@@ -1156,7 +1194,18 @@
             "https://www.googleapis.com/auth/presentations.readonly"
           ]
         },
-        "intent_triggers": [],
+        "intent_triggers": [
+          "google docs",
+          "google drive",
+          "google sheets",
+          "google slides",
+          "gmail api",
+          "gmail message",
+          "google calendar",
+          "google workspace",
+          "gws gather",
+          "workspace gather"
+        ],
         "config_layers": [
           {
             "layer_id": "authenticated-gws-cli",
@@ -1193,7 +1242,14 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
-        "intent_triggers": [],
+        "intent_triggers": [
+          "python lint",
+          "lint python",
+          "ruff",
+          "mccabe",
+          "python complexity check",
+          "python complexity"
+        ],
         "config_layers": [],
         "readiness_checks": [],
         "supports_public_skills": [
@@ -1252,7 +1308,15 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
-        "intent_triggers": [],
+        "intent_triggers": [
+          "sloc",
+          "source lines of code",
+          "lines of code",
+          "tokei",
+          "code count",
+          "sloc inventory",
+          "language inventory"
+        ],
         "config_layers": [],
         "readiness_checks": [],
         "supports_public_skills": [
@@ -1274,7 +1338,14 @@
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
-        "intent_triggers": [],
+        "intent_triggers": [
+          "dead code",
+          "dead file",
+          "vulture",
+          "unused python",
+          "unreachable python",
+          "stale module"
+        ],
         "config_layers": [],
         "readiness_checks": [],
         "supports_public_skills": [
@@ -1291,6 +1362,7 @@
     "tool_recommendations": [],
     "tool_recommendation_query": null,
     "support_skill_recommendations": [],
-    "support_recommendation_query": null
+    "support_recommendation_query": null,
+    "support_recommendation_note": null
   }
 }

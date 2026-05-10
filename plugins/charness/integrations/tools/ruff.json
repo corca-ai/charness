@@ -66,6 +66,14 @@
   "supports_public_skills": [
     "quality"
   ],
+  "intent_triggers": [
+    "python lint",
+    "lint python",
+    "ruff",
+    "mccabe",
+    "python complexity check",
+    "python complexity"
+  ],
   "recommendation_role": "validation",
   "degradation": {
     "when_missing": [

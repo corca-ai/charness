@@ -75,6 +75,15 @@
   "supports_public_skills": [
     "quality"
   ],
+  "intent_triggers": [
+    "sloc",
+    "source lines of code",
+    "lines of code",
+    "tokei",
+    "code count",
+    "sloc inventory",
+    "language inventory"
+  ],
   "recommendation_role": "validation",
   "degradation": {
     "when_missing": [

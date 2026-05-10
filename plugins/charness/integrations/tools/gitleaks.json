@@ -61,6 +61,14 @@
   "supports_public_skills": [
     "quality"
   ],
+  "intent_triggers": [
+    "secret scan",
+    "secret detection",
+    "credential scan",
+    "secret leak detection",
+    "gitleaks",
+    "git secret scan"
+  ],
   "recommendation_role": "validation",
   "degradation": {
     "when_missing": [

@@ -68,6 +68,14 @@
     "quality",
     "setup"
   ],
+  "intent_triggers": [
+    "dead code",
+    "dead file",
+    "vulture",
+    "unused python",
+    "unreachable python",
+    "stale module"
+  ],
   "recommendation_role": "validation",
   "degradation": {
     "when_missing": [

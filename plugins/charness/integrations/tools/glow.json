@@ -72,6 +72,14 @@
     "narrative",
     "quality"
   ],
+  "intent_triggers": [
+    "render markdown",
+    "markdown render",
+    "rendered markdown",
+    "glow",
+    "rendered review",
+    "narrative render"
+  ],
   "recommendation_role": "runtime",
   "degradation": {
     "when_missing": [

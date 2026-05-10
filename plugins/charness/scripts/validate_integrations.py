@@ -120,6 +120,21 @@ def validate_support_install_entrypoint(manifest: dict[str, object], path: Path)
         )
 
 
+def detect_missing_intent_triggers_for_external_binary_with_skill(
+    manifest: dict[str, object], path: Path
+) -> str | None:
+    if manifest.get("kind") != "external_binary_with_skill":
+        return None
+    triggers = manifest.get("intent_triggers")
+    if isinstance(triggers, list) and triggers:
+        return None
+    return (
+        f"{path}: kind=external_binary_with_skill manifests should declare a non-empty "
+        "intent_triggers list so find-skills --recommend-for-task can match natural-language "
+        "queries against this support-bearing manifest. Advisory only; will not fail CI."
+    )
+
+
 def validate_cautilus_trigger_specificity(manifest: dict[str, object], path: Path) -> None:
     if manifest.get("tool_id") != "cautilus":
         return
@@ -149,6 +164,7 @@ def main() -> int:
         repo_root = args.repo_root.resolve()
         manifests = load_manifests(repo_root)
         support_capabilities = load_support_capabilities(repo_root)
+        advisories: list[str] = []
         for manifest_path in sorted((repo_root / "integrations" / "tools").glob("*.json")):
             if manifest_path.name in {"manifest.schema.json", "dependencies.json", "dependencies.schema.json"}:
                 continue
@@ -158,6 +174,9 @@ def main() -> int:
             validate_config_layers(manifest, manifest_path)
             validate_support_install_entrypoint(manifest, manifest_path)
             validate_cautilus_trigger_specificity(manifest, manifest_path)
+            advisory = detect_missing_intent_triggers_for_external_binary_with_skill(manifest, manifest_path)
+            if advisory is not None:
+                advisories.append(advisory)
         for capability_path in sorted((repo_root / "skills" / "support").glob("*/capability.json")):
             capability = json.loads(capability_path.read_text(encoding="utf-8"))
             validate_access_mode_order(capability, capability_path)
@@ -179,11 +198,14 @@ def main() -> int:
     except Exception as exc:  # pragma: no cover - surfaced via CLI tests
         raise ValidationError(str(exc)) from exc
     dep_count = 0 if dependencies is None else len(dependencies["tool_dependencies"])
+    for advisory in advisories:
+        print(f"advisory: {advisory}", file=sys.stderr)
     print(
         f"Validated {len(manifests)} integration manifests, "
         f"{len(support_capabilities)} support capabilities, "
         f"{len(lock_files)} lock files, "
         f"{dep_count} declared tool dependencies."
+        + (f" {len(advisories)} advisory note(s)." if advisories else "")
     )
     return 0
 

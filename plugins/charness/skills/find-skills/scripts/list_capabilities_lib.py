@@ -81,8 +81,7 @@ def _strip_fenced_code_blocks(text: str) -> str:
     for line in text.splitlines():
         if line.lstrip().startswith("```"):
             in_fence = not in_fence
-            continue
-        if not in_fence:
+        elif not in_fence:
             lines.append(line)
     return "\n".join(lines)
 
@@ -111,18 +110,13 @@ def referenced_skill_paths(skill_md: Path, repo_root: Path) -> list[str]:
 
 
 def _task_text_matches(task_text: str, candidate: str) -> bool:
-    normalized_task = task_text.casefold()
-    normalized_candidate = candidate.casefold().strip()
-    if not normalized_candidate:
-        return False
-    return normalized_candidate in normalized_task
+    normalized = candidate.casefold().strip()
+    return bool(normalized) and normalized in task_text.casefold()
 
 
 def _strong_trigger_matched(skill_id: str, matched: list[str]) -> bool:
     strong = STRONG_TASK_TRIGGERS_BY_SUPPORT_ID.get(skill_id)
-    if not strong:
-        return True
-    return any(item.casefold() in strong for item in matched)
+    return not strong or any(item.casefold() in strong for item in matched)
 
 
 def _enough_task_signal(skill_id: str, matched: list[str]) -> bool:
@@ -143,10 +137,9 @@ def _support_skill_triggers(
         *_strings(entry.get("trigger_phrases", [])),
         *_strings([entry.get("id"), entry.get("name"), entry.get("description")]),
     ]
-    for capability in support_capabilities:
-        if capability.get("support_skill_path") == skill_path or capability.get("id") == skill_id:
-            triggers.extend(_strings(capability.get("trigger_phrases", [])))
-            triggers.extend(_strings(capability.get("intent_triggers", [])))
+    for cap in support_capabilities:
+        if cap.get("support_skill_path") == skill_path or cap.get("id") == skill_id:
+            triggers.extend(_strings(cap.get("trigger_phrases", [])) + _strings(cap.get("intent_triggers", [])))
     for integration in integrations:
         if integration.get("id") == skill_id or integration.get("support_skill_path") == skill_path:
             triggers.extend(_strings(integration.get("intent_triggers", [])))
@@ -198,6 +191,12 @@ def build_inventory_payload(
     support_skill_recommendations: list[dict[str, Any]] | None = None,
     support_recommendation_query: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    show_note = support_recommendation_query is not None and not support_skill_recommendations and support_entries
+    note = (
+        f"No support skill matched the task text via registered intent_triggers, but "
+        f"{len(support_entries)} support skill(s) are available locally. Inspect `support_skills` "
+        "or rerun with --recommend-for-skill <id>; empty result is not proof that no capability exists."
+    ) if show_note else None
     return {
         "adapter": {
             "found": adapter["found"],
@@ -217,4 +216,5 @@ def build_inventory_payload(
         "tool_recommendation_query": recommendation_query,
         "support_skill_recommendations": support_skill_recommendations or [],
         "support_recommendation_query": support_recommendation_query,
+        "support_recommendation_note": note,
     }

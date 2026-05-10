@@ -141,3 +141,100 @@ def test_list_capabilities_does_not_recommend_specdown_from_weak_task_text(tmp_p
     )
 
     assert payload["support_skill_recommendations"] == []
+
+
+def _write_browserlike_surface(root: Path, *, populate_intent_triggers: bool) -> None:
+    support = root / "skills" / "support" / "browserlike"
+    support.mkdir(parents=True)
+    (support / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: browserlike",
+                (
+                    'description: "Use browserlike CLI for browser automation, JS-rendered pages, '
+                    'and interactive browser debugging."'
+                ),
+                "---",
+                "",
+                "# Browserlike",
+                "",
+                "Key references: `runtime.md`.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (support / "runtime.md").write_text("# runtime.md\n", encoding="utf-8")
+    (root / "integrations" / "tools").mkdir(parents=True)
+    manifest: dict[str, object] = {
+        "schema_version": "1",
+        "tool_id": "browserlike",
+        "kind": "external_binary_with_skill",
+        "display_name": "browserlike",
+        "summary": "Browser automation CLI for JS-rendered pages.",
+        "upstream_repo": "example/browserlike",
+        "homepage": "https://example.com/browserlike",
+        "lifecycle": {
+            "install": {
+                "mode": "manual",
+                "docs_url": "https://example.com/browserlike",
+                "install_url": "https://example.com/browserlike#installation",
+                "notes": ["Install browserlike."],
+            },
+            "update": {
+                "mode": "manual",
+                "docs_url": "https://example.com/browserlike",
+                "notes": ["Update browserlike."],
+            },
+        },
+        "checks": {
+            "detect": {"commands": ["browserlike --version"], "success_criteria": ["exit_code:0"]},
+            "healthcheck": {"commands": ["browserlike --version"], "success_criteria": ["exit_code:0"]},
+        },
+        "access_modes": ["binary", "degraded"],
+        "support_skill_source": {"source_type": "upstream_repo", "path": "skills/browserlike"},
+        "version_expectation": {"policy": "advisory", "constraint": "latest"},
+    }
+    if populate_intent_triggers:
+        manifest["intent_triggers"] = [
+            "browser automation",
+            "headless browser",
+            "playwright",
+            "js-rendered",
+        ]
+    (root / "integrations" / "tools" / "browserlike.json").write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    _write_find_skills_adapter(root)
+
+
+def test_recommend_for_task_surfaces_support_skill_via_intent_triggers(tmp_path: Path) -> None:
+    _write_browserlike_surface(tmp_path, populate_intent_triggers=True)
+
+    payload = _run_list_capabilities(tmp_path, "--recommend-for-task", "browser automation")
+
+    matched_ids = [entry["id"] for entry in payload["support_skill_recommendations"]]
+    assert matched_ids == ["browserlike"]
+    assert payload["support_recommendation_note"] is None
+
+
+def test_recommend_for_task_emits_empty_result_hint_when_intent_triggers_absent(tmp_path: Path) -> None:
+    _write_browserlike_surface(tmp_path, populate_intent_triggers=False)
+
+    payload = _run_list_capabilities(tmp_path, "--recommend-for-task", "browser automation")
+
+    assert payload["support_skill_recommendations"] == []
+    note = payload["support_recommendation_note"]
+    assert isinstance(note, str)
+    assert "1 support skill" in note
+    assert "intent_triggers" in note
+
+
+def test_recommend_for_task_note_absent_when_recommendation_query_absent(tmp_path: Path) -> None:
+    _write_specdown_surface(tmp_path)
+
+    payload = _run_list_capabilities(tmp_path)
+
+    assert payload["support_recommendation_note"] is None
