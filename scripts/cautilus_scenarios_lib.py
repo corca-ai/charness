@@ -254,7 +254,7 @@ def _validate_adapter_wiring(repo_root: Path) -> None:
         "evals/cautilus/scenarios.json",
         "evals/cautilus/whole-repo-routing.fixture.json",
         "scripts/eval_cautilus_scenarios.py",
-        "scripts/agent-runtime/run-local-instruction-surface-test.mjs",
+        "scripts/agent-runtime/run-local-eval-test.mjs",
     )
     missing_snippets = [snippet for snippet in required_snippets if snippet not in adapter_text]
     if missing_snippets:
@@ -265,7 +265,7 @@ def _validate_adapter_wiring(repo_root: Path) -> None:
         "scripts/agent-runtime/contract-versions.mjs",
         "scripts/agent-runtime/instruction-surface-case-suite.mjs",
         "scripts/agent-runtime/instruction-surface-support.mjs",
-        "scripts/agent-runtime/run-local-instruction-surface-test.mjs",
+        "scripts/agent-runtime/run-local-eval-test.mjs",
         "scripts/agent-runtime/skill-test-telemetry.mjs",
     )
     missing_runtime_files = [path for path in required_runtime_files if not (repo_root / path).is_file()]

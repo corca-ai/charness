@@ -127,7 +127,7 @@ def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> 
     result = subprocess.run(
         [
             "node",
-            "scripts/agent-runtime/run-local-instruction-surface-test.mjs",
+            "scripts/agent-runtime/run-local-eval-test.mjs",
             "--repo-root",
             str(ROOT),
             "--workspace",
@@ -166,7 +166,7 @@ def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> 
 
 def test_instruction_surface_codex_session_mode_is_configurable() -> None:
     script = """
-        import { codexArgs } from './scripts/agent-runtime/run-local-instruction-surface-test.mjs';
+        import { codexArgs } from './scripts/agent-runtime/run-local-eval-test.mjs';
         const base = { workspace: '/tmp/work', sandbox: 'read-only', codexSessionMode: 'ephemeral' };
         const persistent = { ...base, codexSessionMode: 'persistent' };
         console.log(JSON.stringify({
@@ -239,7 +239,7 @@ def test_instruction_surface_runner_normalizes_markdown_link_entry_file(tmp_path
     result = subprocess.run(
         [
             "node",
-            "scripts/agent-runtime/run-local-instruction-surface-test.mjs",
+            "scripts/agent-runtime/run-local-eval-test.mjs",
             "--repo-root",
             str(ROOT),
             "--workspace",
