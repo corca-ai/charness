@@ -30,15 +30,14 @@ Delegated reviewer fast path: if the current assignment says you are a bounded
 angle reviewer, counterweight reviewer, or fresh-eye reviewer spawned by a
 parent, perform that assigned lens directly and return the requested triage.
 Do not run host capability checks or require nested spawn access.
-Do not report blocked for missing nested subagents unless the parent
-explicitly asked for recursive delegation.
+Do not report blocked for missing nested subagents unless the parent asked for recursion.
 
 Before any host-capability question, honor `<repo-root>/AGENTS.md`
 `Subagent Delegation`: required bounded review is already delegated. If the
 parent agent already delegated a bounded angle or counterweight review to a
 subagent, that subagent performs its assigned lens directly; it should not
-spawn another reviewer unless the caller explicitly requests recursive
-delegation. See `../../shared/references/fresh-eye-subagent-review.md`.
+spawn another reviewer unless recursive delegation was requested. See
+`../../shared/references/fresh-eye-subagent-review.md`.
 
 Caller contract:
 
@@ -51,6 +50,11 @@ Caller contract:
   `parent-delegated`, `nested-delegated`, or `blocked <host-signal>`
 - if the host blocks the canonical subagent path, treat that as a blocked state
   for this run instead of rewriting the outcome as a local review
+
+Autonomous trigger: if no pending artifact or source summary is supplied, do
+not ask first by default; follow `references/autonomous-trigger.md`, infer a
+bounded target with low inference risk when repo evidence converges, and ask
+only when ambiguity changes the target reference, stakes, or effects.
 
 ## Target Selection
 
@@ -74,6 +78,7 @@ loses the surface-lock inventory).
 ## Bootstrap
 
 Read only the smallest change surface that makes the next move legible.
+For no-argument slash-command use, run the autonomous trigger scan first.
 
 ```bash
 # Required Tools: rg
@@ -170,18 +175,15 @@ recursive delegation was explicitly required and actually ran.
 - Do not pick a target reference that changes the angle distribution from
   what the caller actually asked for.
 - Do not open more angles than you can triage honestly.
-- Do not keep rejected alternatives only in chat when the same debate will
-  likely recur.
+- Do not keep rejected alternatives only in chat when the same debate will recur.
 - Do not treat every surfaced concern as equally important.
 - Do not skip the counterweight pass; a paranoia backlog without triage is
   not change support.
 - Do not silently downgrade critique into a same-agent local pass. Before
-  declaring subagents unavailable, use
-  `../../shared/references/fresh-eye-subagent-review.md` and cite the concrete
-  host signal. If the host still cannot provide subagents, stop and leave the
-  host-side contract gap visible instead of improvising a degraded critique.
-- Do not make an already delegated angle or counterweight reviewer spawn
-  another reviewer unless recursive delegation was explicitly requested.
+  declaring subagents unavailable, use the fresh-eye reference and cite the
+  host signal; if still blocked, stop instead of improvising degraded critique.
+- Do not make an already delegated angle or counterweight reviewer spawn another
+  reviewer unless recursive delegation was explicitly requested.
 
 ## References
 
@@ -190,6 +192,7 @@ recursive delegation was explicitly required and actually ran.
 - `references/release-critique.md`
 - `references/rename-critique.md`
 - `references/spec-critique.md`
+- `references/autonomous-trigger.md`
 - `references/angle-selection.md`
 - `references/counterweight-triage.md`
 - `../../shared/references/agent-assessment-invariant.md`

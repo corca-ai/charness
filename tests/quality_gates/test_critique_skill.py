@@ -18,6 +18,9 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     counterweight_text = (
         ROOT / "skills" / "public" / "critique" / "references" / "counterweight-triage.md"
     ).read_text(encoding="utf-8")
+    autonomous_text = (
+        ROOT / "skills" / "public" / "critique" / "references" / "autonomous-trigger.md"
+    ).read_text(encoding="utf-8")
     handoff_text = (ROOT / "skills" / "public" / "handoff" / "SKILL.md").read_text(
         encoding="utf-8"
     )
@@ -58,6 +61,16 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert "return the requested findings or triage" in capability_text
     assert "Act Before Ship" in counterweight_text
     assert "Over-Worry" in counterweight_text
+    assert "Autonomous trigger" in skill_text
+    assert "do\nnot ask first by default" in skill_text
+    assert "`references/autonomous-trigger.md`" in skill_text
+    assert "docs/handoff.md" in autonomous_text
+    assert "git status --short" in autonomous_text
+    assert "git log --oneline origin/main..HEAD" in autonomous_text
+    assert "otherwise continue from local\n   status and diff evidence" in autonomous_text
+    assert "Proceed autonomously" in autonomous_text
+    assert "Ask one concise clarifying question" in autonomous_text
+    assert "Do not ask the user to provide a change artifact merely because none was\nsupplied" in autonomous_text
 
 
 def test_spec_and_narrative_preserve_rejected_alternatives() -> None:
