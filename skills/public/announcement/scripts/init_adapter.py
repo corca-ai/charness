@@ -45,6 +45,7 @@ def build_items(repo_name: str, _args: object) -> list[tuple[str, object]]:
         ("delivery_capability", ""),
         ("format_rules_path", ""),
         ("message_size_limit", 0),
+        ("public_body_shape", "chat_update"),
         ("outputs", []),
     ]
 

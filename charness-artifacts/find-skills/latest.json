@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-11T00:35:42Z",
+  "generated_at": "2026-05-11T04:43:09Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -355,15 +355,16 @@
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/public/issue/SKILL.md",
           "skills/public/issue/references/closeout-discipline.md",
-          "skills/public/debug/references/five-whys-causal-chain.md",
           "skills/public/issue/references/causal-review.md",
+          "skills/public/issue/references/resolution-brief.md",
           "skills/public/issue/references/issue-shaping.md",
           "skills/public/issue/references/resolve-flow.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/public/issue/scripts/issue_tool.py",
           "skills/public/issue/scripts/issue_runtime.py",
           "skills/public/issue/scripts/resolve_adapter.py",
-          "skills/public/issue/scripts/init_adapter.py"
+          "skills/public/issue/scripts/init_adapter.py",
+          "skills/public/issue/scripts/audit_brief.py"
         ],
         "source": "local-public",
         "layer": "public skill"

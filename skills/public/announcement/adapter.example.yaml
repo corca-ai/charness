@@ -28,6 +28,10 @@ format_rules_path: ""
 # When > 0 and the draft exceeds the limit, the skill splits on paragraph
 # boundaries into numbered parts before posting.
 message_size_limit: 0
+# Public rendering shape. `chat_update` treats sections as coverage hints and
+# groups the public body by reader-visible outcomes; `release_notes` allows
+# adapter sections to render as the public taxonomy.
+public_body_shape: chat_update
 # Optional dual-output configuration. When set, audience tags route bullets to
 # named outputs that the delivery seam treats as parent message + thread reply
 # (or two release files, etc.). Default is one single-output draft.

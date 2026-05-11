@@ -39,6 +39,7 @@ Search order:
 - `delivery_capability`
 - `format_rules_path`
 - `message_size_limit`
+- `public_body_shape`
 - `outputs`
 
 ## Defaults
@@ -66,6 +67,11 @@ Search order:
   when the delivery seam targets a chat backend)
 - `message_size_limit`: `0` (disables splitting; positive integer enables
   per-message size-aware split)
+- `public_body_shape`: `chat_update` for ordinary human-backend or draft-only
+  announcements; `release_notes` when `delivery_kind: release-notes` is set
+  and no explicit value is declared. In `chat_update`, adapter `sections` are
+  collection and coverage hints, not mandatory public headings. In
+  `release_notes`, adapter `sections` may render as the public taxonomy.
 - `outputs`: empty list. When non-empty each item is
   `{id, audience_tags, delivery_role: single|parent|thread_reply}` and the
   delivery seam routes outputs accordingly

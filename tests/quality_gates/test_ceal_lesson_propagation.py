@@ -16,6 +16,19 @@ def test_announcement_draft_shape_lists_release_note_digest_density() -> None:
     assert "unfurls" in text
 
 
+def test_announcement_draft_shape_lists_public_body_shape_reframing() -> None:
+    text = (ROOT / "skills" / "public" / "announcement" / "references" / "draft-shape.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "Public Body Shape" in text
+    assert "public_body_shape" in text
+    assert "chat_update" in text
+    assert "reader-visible outcomes" in text
+    assert "coverage hints" in text
+    assert "proof vocabulary" in text
+
+
 def test_gather_source_priority_includes_official_url_before_websearch() -> None:
     text = (ROOT / "skills" / "public" / "gather" / "references" / "source-priority.md").read_text(
         encoding="utf-8"

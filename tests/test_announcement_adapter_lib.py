@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 from scripts.announcement_adapter_lib import (
     load_announcement_adapter,
     validate_announcement_adapter_data,
 )
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def write_adapter(repo_root: Path, body: str) -> None:
@@ -43,6 +46,48 @@ def test_legacy_adapter_without_new_fields_validates_with_default_values(tmp_pat
     assert data["in_progress_sources"] == []
     assert data["format_rules_path"] == ""
     assert data["message_size_limit"] == 0
+    assert data["public_body_shape"] == "chat_update"
+
+
+def test_release_notes_delivery_defaults_public_body_shape_to_release_notes(tmp_path: Path) -> None:
+    validated, errors, _warnings = validate_announcement_adapter_data(
+        {"delivery_kind": "release-notes", "release_notes_path": "CHANGELOG.md"}, tmp_path
+    )
+    assert errors == []
+    assert validated["public_body_shape"] == "release_notes"
+
+
+def test_public_body_shape_can_be_set_explicitly(tmp_path: Path) -> None:
+    validated, errors, _warnings = validate_announcement_adapter_data(
+        {"delivery_kind": "release-notes", "public_body_shape": "chat_update"}, tmp_path
+    )
+    assert errors == []
+    assert validated["public_body_shape"] == "chat_update"
+
+
+def test_public_body_shape_rejects_unknown_values(tmp_path: Path) -> None:
+    _validated, errors, _warnings = validate_announcement_adapter_data(
+        {"public_body_shape": "adapter_taxonomy"}, tmp_path
+    )
+    assert any("public_body_shape" in error for error in errors)
+
+
+def test_init_adapter_scaffolds_public_body_shape(tmp_path: Path) -> None:
+    result = subprocess.run(
+        [
+            "python3",
+            str(ROOT / "skills" / "public" / "announcement" / "scripts" / "init_adapter.py"),
+            "--repo-root",
+            str(tmp_path),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    adapter_text = (tmp_path / ".agents" / "announcement-adapter.yaml").read_text(encoding="utf-8")
+    assert "public_body_shape: chat_update" in adapter_text
 
 
 def test_outputs_validation_rejects_duplicate_id_and_unknown_delivery_role(tmp_path: Path) -> None:

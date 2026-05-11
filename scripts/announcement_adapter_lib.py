@@ -36,6 +36,7 @@ STRING_FIELDS = (
 )
 LIST_FIELDS = ("sections", "audience_tags", "omission_lenses")
 INT_FIELDS = ("message_size_limit",)
+PUBLIC_BODY_SHAPES = frozenset({"chat_update", "release_notes"})
 ARTIFACT_FILENAME = "latest.md"
 ARTIFACT_CLASS = "history"
 RECORD_FILENAME = "announcements.jsonl"
@@ -186,6 +187,7 @@ def infer_announcement_defaults(repo_root: Path) -> dict[str, Any]:
         "delivery_capability": "",
         "format_rules_path": "",
         "message_size_limit": 0,
+        "public_body_shape": "chat_update",
         "outputs": [],
     }
 
@@ -248,6 +250,25 @@ def _delivery_warnings(
         warnings.append("human-backend delivery_kind is set but delivery_capability is empty.")
 
 
+def _apply_public_body_shape(
+    data: dict[str, Any], validated: dict[str, Any], errors: list[str]
+) -> None:
+    raw_value = data.get("public_body_shape")
+    if raw_value is None:
+        validated["public_body_shape"] = (
+            "release_notes" if validated["delivery_kind"] == "release-notes" else "chat_update"
+        )
+        return
+    value = optional_string(raw_value, "public_body_shape", errors)
+    if value is None:
+        return
+    if value not in PUBLIC_BODY_SHAPES:
+        allowed = ", ".join(sorted(PUBLIC_BODY_SHAPES))
+        errors.append(f"public_body_shape must be one of: {allowed}")
+        return
+    validated["public_body_shape"] = value
+
+
 def validate_announcement_adapter_data(
     data: dict[str, Any], repo_root: Path
 ) -> tuple[dict[str, Any], list[str], list[str]]:
@@ -257,6 +278,7 @@ def validate_announcement_adapter_data(
     _apply_simple_fields(data, validated, errors)
     _apply_structured_fields(data, validated, errors)
     _delivery_warnings(data, validated, warnings, errors)
+    _apply_public_body_shape(data, validated, errors)
     return validated, errors, warnings
 
 

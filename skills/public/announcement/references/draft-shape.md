@@ -67,6 +67,24 @@ delivery in this shape, disable URL unfurls so the source links do not
 explode the surface area; the format-rules conversion path
 (`references/delivery-seams.md`) names the unfurl-disable knob.
 
+## Public Body Shape
+
+`public_body_shape` decides whether adapter sections are rendered taxonomy or
+only coverage hints:
+
+- `chat_update`: group the public body by reader-visible outcomes. Headings
+  should sound like what a person can now do, avoid, or trust, not like the
+  adapter taxonomy. Use prior successful announcements as style exemplars
+  when available: section rhythm, opener, audience split, and specificity.
+- `release_notes`: adapter sections may appear as public headings, but each
+  bullet still needs human consequence and source traceability.
+
+For chat updates, keep proof vocabulary, host/provider internals, file paths,
+eval field names, and adapter taxonomy in maintainer-facing outputs unless
+they directly change user behavior. The public body should not expose terms
+like `provider_roundtrip`, `host_decision`, or backend command syntax when the
+actual user experience is natural-language chat.
+
 ## Dual-Output Drafts
 
 Some announcements have two genuine audiences in the same delivery (a

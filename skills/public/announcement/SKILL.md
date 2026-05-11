@@ -86,6 +86,9 @@ repo had already declared them.
    - what humans can now do, avoid, or understand better
 4. Apply adapter policy.
    - ordered sections
+   - `public_body_shape`: in `chat_update`, treat sections as coverage hints
+     and group public output by reader-visible outcomes; in `release_notes`,
+     sections may render as the public taxonomy
    - audience tags when configured (steer wording per
      `references/draft-shape.md`; user-tagged bullets must be reframed away
      from commit-message vocabulary)
@@ -94,6 +97,11 @@ repo had already declared them.
    - when `outputs` is non-empty, route each bullet to the matching output by
      audience tag (see `references/draft-shape.md` Dual-Output Drafts)
 5. Draft the message first.
+   - run a public-body pass before writing: for chat updates, prefer
+     reader-visible outcome headings and keep proof/backend vocabulary in
+     maintainer outputs unless it directly changes user behavior
+   - when a previous announcement is the baseline, recover its shape before
+     drafting: opener, section rhythm, audience split, and specificity
    - prefer short sections and concrete bullets
    - explain why a change matters, not only the mechanism
    - omit low-signal hygiene unless the user explicitly wants a full changelog
