@@ -195,15 +195,17 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context",
         "uses GitHub as the source of truth for omitted issue selection instead of session memory",
         "keeps `issue new` problem-first and solution direction weak unless the user already fixed the implementation contract",
-        "uses the `github-gh` integration path for GitHub mutations instead of inventing a separate provider"
+        "uses the `github-gh` integration path for GitHub mutations instead of inventing a separate provider",
+        "emits a pre-mutation resolution brief for `feature` and `deferred-work` issues and pauses for user discussion when `open decisions` is non-empty"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-09",
+      "reviewed_on": "2026-05-11",
       "observed_evidence": [
         "The checked-in public core explicitly fixes GitHub as the source of truth for issue identity and freshness, including the omitted-selector rule that queries newest open GitHub issue state instead of the current session.",
         "`issue new` keeps the receiving repo's problem context first and only allows weak candidate solution direction, preserving the cross-repo issue hygiene already used by narrative.",
         "`issue_tool.py` gives the first-use path structured helpers for target resolution, `gh` preflight, and issue selector parsing, with tests covering default `corca-ai` ownership, current-repo inference, numeric ranges, and the GitHub-SoT wording.",
-        "`issue_close.close_with_comment` now enforces a per-op placeholder allowlist at runtime: `comment` accepts `{repo,number,body_file,reason}` and `close` accepts `{repo,number,reason}`. An adapter template using an unknown placeholder fails fast with the offending placeholder named, so the documented contract no longer relies on test-only enforcement."
+        "`issue_close.close_with_comment` now enforces a per-op placeholder allowlist at runtime: `comment` accepts `{repo,number,body_file,reason}` and `close` accepts `{repo,number,reason}`. An adapter template using an unknown placeholder fails fast with the offending placeholder named, so the documented contract no longer relies on test-only enforcement.",
+        "Step 6 of the resolve flow now requires a pre-mutation resolution brief for `feature` and `deferred-work` issues. The adapter exposes `feature_brief_pause` (`on-open-decisions` default, `always`, `never`); invocation flags `--auto` and `--pause` override per call. Non-empty `open decisions` always force a pause. `issue_tool.py brief-path` resolves the persistent artifact under `charness-artifacts/issue/`, and `audit_brief.py` plus the bundled transcript fixtures verify that mutation events never precede brief events for feature-class fix-units."
       ]
     },
     {

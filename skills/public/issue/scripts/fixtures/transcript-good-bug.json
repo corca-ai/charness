@@ -1,0 +1,8 @@
+{
+  "description": "Bug-class fix-units do not require a resolution brief; audit must ignore them.",
+  "events": [
+    {"kind": "classification", "issue": 145, "classification": "bug"},
+    {"kind": "mutation", "issue": 145, "tool": "Edit"},
+    {"kind": "close", "issue": 145}
+  ]
+}

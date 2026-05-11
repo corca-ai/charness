@@ -2,7 +2,7 @@
 
 `issue resolve` runs two reviewer-driven passes that the smallest-fix design
 loop alone keeps missing: a **causal review** before design (step 4) and a
-**resolution critique** before close (step 8). Both use bounded fresh-eye
+**resolution critique** before close (step 9). Both use bounded fresh-eye
 subagents so the analysis is not anchored on the implementer's first hypothesis.
 
 ## Classification gate

@@ -96,67 +96,60 @@ repo by created date. It must not use the current session's last created issue.
    this, and what outcome were they trying to reach. If the body does not
    reveal JTBD, record `JTBD: not stated by reporter; inferred from <evidence>`
    or `JTBD: not inferable — proceed from observed problem`. Do not invent.
-3. Classify the issue: `bug`, `feature`, `question`, `decision-needed`,
-   `deferred-work`. Discriminator: if real-world behavior diverges from a
-   documented or implied contract, it is `bug`; default to `bug` when unsure.
-   Only `bug` requires the full causal review at step 4. `feature` and
-   `deferred-work` skip step 4 and go to step 8 with a design-only critique.
-   `question` and `decision-needed` route to step 6 first. Record the
-   classification in the resolution notes.
-4. For `bug`-class issues, run a **causal review** before design via a bounded
-   fresh-eye subagent (not anchored on the implementer's first hypothesis).
-   The subagent consumes the `debug` skill substrate
-   (`../debug/references/five-whys-causal-chain.md`) and triages it through
-   three lenses with `file:line` evidence and an `Over-reach check` per lens:
-   root cause, detection gap, sibling search. Do not re-derive the RCA body
-   in causal review. The subagent must not invoke skills that themselves
-   spawn reviewers. See `references/causal-review.md` for prompts and the
-   critique handoff template. If the host blocks subagent spawning, stop
-   and report; step 8 is also blocked. Do not substitute a same-agent pass.
-   Run causal review per bug-class issue when resolving a range; share
-   findings only when step 5 bundles fixes. Invoking `debug` standalone
-   before causal review is optional (default is cite-only consumption); the
-   `Debug artifact:` slot is filled only when a debug session actually ran.
-   **Trivial-bug short-circuit**: single-line, self-evident fix with no
-   public contract change or plausible siblings — record
-   `Causal review: trivial; root cause = <one line>` and skip step 4.
-   Step 8 still runs.
+3. Classify as `bug`, `feature`, `question`, `decision-needed`, or
+   `deferred-work` (default `bug` when real-world behavior diverges from a
+   documented or implied contract). Routing: `bug` → step 4 causal review;
+   `feature`/`deferred-work` → step 6 brief; `question`/`decision-needed`
+   → step 7 discussion. Record the classification in the resolution notes.
+4. For `bug`-class issues, run a **causal review** before design via a
+   bounded fresh-eye subagent (no nested reviewers, no same-agent fallback)
+   that consumes the `debug` substrate cite-only. See
+   `references/causal-review.md` for the three-lens triage shape, the
+   `file:line` + over-reach evidence rules, and the trivial-bug short-
+   circuit. If the host blocks subagent spawning, stop and report; step 9
+   is also blocked. Per-issue in a range; share findings only when step 5
+   bundles fixes.
 5. Order resolutions as a generative sequence (Christopher Alexander): the
-   move that reduces uncertainty or unlocks the next issue comes first. If
-   step 4 surfaced sibling problems, decide whether to bundle into this
-   commit, file as separate issues via `issue new` (ask first; filing itself
-   follows `issue new`'s create-immediately rule), or leave in the close
-   comment as deferred. Do not file siblings as new issues silently.
-6. Discuss with the user before designing when the issue exposes a product,
+   move that reduces uncertainty or unlocks the next issue comes first. For
+   siblings surfaced by step 4, decide whether to bundle into this commit,
+   file via `issue new` (ask first), or record as deferred in the close
+   comment. Do not file siblings as new issues silently.
+6. For `feature` and `deferred-work` issues, emit a **pre-mutation
+   resolution brief** to the transcript before invoking any mutation tool.
+   Non-empty `open decisions` always forces a pause; the adapter
+   `feature_brief_pause` and the invocation flags `--auto`/`--pause` only
+   control the empty-decisions case. See `references/resolution-brief.md`
+   for the brief template, persistence rule (`issue_tool.py brief-path`
+   resolves the dated artifact under `charness-artifacts/issue/` when the
+   brief pauses), trivial-feature short-circuit, range-resolve handling,
+   and close-comment coupling.
+7. Discuss with the user before designing when the issue exposes a product,
    policy, scope, permission, or external-side-effect decision the agent
    should not own.
-7. Otherwise, design and implement the smallest complete fix, keeping the
+8. Otherwise, design and implement the smallest complete fix, keeping the
    issue problem statement and the reporter's JTBD as the acceptance boundary.
    Follow the `mutate -> sync -> verify` order from
    `docs/conventions/implementation-discipline.md`: sync generated, plugin,
    and export surfaces before validators. Verify with the strongest honest
    local gate.
-8. Run a **resolution critique** focused on recurrence: delegate to the
-   `critique` skill (it spawns its own bounded angle + counterweight
-   subagents), passing causal-review output via `references/causal-review.md`.
-   When invoked from `impl`, declare `Critique: full <issue-resolution-artifact>`
-   to satisfy the CLAUDE.md task-completion critique. If step 4 was blocked,
-   report the blocked state instead of running critique on empty context. One
-   per fix-unit, not per selector; bundle cheap prevention and record deferred.
-9. Commit, push, and close the GitHub issue only after the fix is on
-   the remote. Use explicit close keywords (`Close #1. Close #2.`) for
-   GitHub auto-close, or `issue_tool.py close-with-comment` for
-   multi-line backend-routed close comments
-   (`gh issue close --comment-file` does not exist). Close comment shape by
-   classification, restated per issue in a range:
-   - `bug`:
-     - JTBD
-     - root cause (one line)
-     - `Debug artifact: <path>` (or `none (trivial fix)` / `cite-only`)
-     - siblings (bundled/deferred+location)
-     - prevention
-   - `feature`/`deferred-work`: JTBD, implementation, bundled prevention
-   - `question`/`decision-needed`: JTBD, the answer or recorded decision
+9. Run a **resolution critique** focused on recurrence by delegating to
+   the `critique` skill (which spawns its own bounded angle + counterweight
+   subagents). Pass causal-review output via `references/causal-review.md`.
+   When invoked from `impl`, declare `Critique: full <issue-resolution-artifact>`.
+   One per fix-unit, not per selector; bundle cheap prevention and record
+   deferred. If step 4 was blocked, report blocked state instead of running.
+10. Commit, push, and close the GitHub issue only after the fix is on
+    the remote. Use explicit close keywords (`Close #1. Close #2.`) for
+    GitHub auto-close, or `issue_tool.py close-with-comment` for
+    multi-line backend-routed close comments
+    (`gh issue close --comment-file` does not exist). Close comment shape by
+    classification, restated per issue in a range:
+    - `bug`: JTBD, root cause, `Debug artifact: <path>` (or
+      `none (trivial fix)` / `cite-only`), siblings (bundled/deferred+
+      location), prevention
+    - `feature`/`deferred-work`: JTBD, boundary, `Resolution brief: <path>`
+      (or `inline (no pause)` / `trivial`), implementation, prevention
+    - `question`/`decision-needed`: JTBD, the answer or recorded decision
 
 ## Guardrails
 
@@ -174,13 +167,18 @@ repo by created date. It must not use the current session's last created issue.
   access mode, freshness) when filed from an external source.
 - Do not treat multiple issues as independent when one issue changes the design
   boundary for another.
-- Do not skip causal review on bug-class issues by classifying them as
-  `feature`, `question`, `decision-needed`, or `deferred-work` to bypass the
-  subagent step. Misclassification is the failure mode this guard exists to
-  catch; default to `bug` when unsure.
+- Do not misclassify to bypass review or brief: bug → other (skips causal
+  review), feature/deferred-work → bug (uses trivial-bug short-circuit),
+  feature/deferred-work → question/decision-needed (routes around both).
+  Default to `bug` when unsure about real-world divergence; default to
+  `feature` when unsure between `feature` and `question`/`decision-needed`.
+- Do not skip the step 6 brief or its pause for non-empty `open decisions`
+  regardless of adapter setting or `--auto`/`--pause` flags, and do not
+  declare a brief "trivial" outside the strict single-file / no-contract /
+  no-alternative-surface short-circuit.
 - Do not collapse the causal-review or resolution-critique subagent into a
-  same-agent local pass. If the host blocks subagent spawning, stop and report
-  the blocked state with the concrete host signal.
+  same-agent local pass; if the host blocks subagent spawning, stop and
+  report the blocked state with the concrete host signal.
 - Do not file siblings surfaced by causal review as new issues without first
   asking whether they should be bundled into the current fix.
 
@@ -188,6 +186,7 @@ repo by created date. It must not use the current session's last created issue.
 
 - `references/issue-shaping.md`
 - `references/resolve-flow.md`
+- `references/resolution-brief.md`
 - `references/causal-review.md`
 - `references/issue-backend.md`
 - `references/closeout-discipline.md`
@@ -197,3 +196,4 @@ repo by created date. It must not use the current session's last created issue.
 - `scripts/issue_runtime.py`
 - `scripts/resolve_adapter.py`
 - `scripts/init_adapter.py`
+- `scripts/audit_brief.py`

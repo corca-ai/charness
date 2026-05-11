@@ -73,6 +73,7 @@ EVIDENCE_OVERRIDES = {
         "uses GitHub as the source of truth for omitted issue selection instead of session memory",
         "keeps `issue new` problem-first and solution direction weak unless the user already fixed the implementation contract",
         "uses the `github-gh` integration path for GitHub mutations instead of inventing a separate provider",
+        "emits a pre-mutation resolution brief for `feature` and `deferred-work` issues and pauses for user discussion when `open decisions` is non-empty",
     ],
     "critique": [
         "includes a customer-of-this-capability angle when first-use failure is the main risk",

@@ -20,9 +20,19 @@ Bug-class issues run a causal review subagent before design and a resolution
 critique before close. See `causal-review.md` for the lenses, the subagent
 contract, and the close-comment shape that carries the analysis forward.
 
+Feature-class and deferred-work issues run a **pre-mutation resolution brief**
+between ordering and design. The brief makes the proposed product or workflow
+boundary visible in the transcript before any file or state mutation begins,
+so scope and tradeoff disagreements can be caught while they are still cheap.
+See `resolution-brief.md` for the brief template, the pause-vs-continue
+rules, and the trivial-feature short-circuit.
+
 Discuss with the user before implementation when the issue asks for a decision
 outside the agent's authority, such as product direction, policy, scope cuts,
-secret access, external billing, or irreversible publication.
+secret access, external billing, or irreversible publication. For
+feature-class and deferred-work issues, the resolution brief is the place
+where this surfaces; for `question` and `decision-needed`, this is the
+primary routing.
 
 Target repo is durable workflow state. Once named or first-resolved, retries
 within the same session reuse it; if the prior target becomes unreachable,

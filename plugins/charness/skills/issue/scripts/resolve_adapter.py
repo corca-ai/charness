@@ -36,6 +36,10 @@ ADAPTER_CANDIDATES = (
 )
 
 
+FEATURE_BRIEF_PAUSE_VALUES = ("on-open-decisions", "always", "never")
+DEFAULT_FEATURE_BRIEF_PAUSE = "on-open-decisions"
+
+
 def infer_defaults() -> dict[str, Any]:
     return {
         "version": 1,
@@ -43,11 +47,24 @@ def infer_defaults() -> dict[str, Any]:
         "default_repo": None,
         "remote_name": "origin",
         "issue_backend": default_backend(),
+        "feature_brief_pause": DEFAULT_FEATURE_BRIEF_PAUSE,
     }
 
 
 def default_backend() -> dict[str, Any]:
     return {"id": "gh", "binary": "gh", "commands": None}
+
+
+def _parse_feature_brief_pause(raw: Any, errors: list[str]) -> str:
+    if raw is None:
+        return DEFAULT_FEATURE_BRIEF_PAUSE
+    if not isinstance(raw, str) or raw not in FEATURE_BRIEF_PAUSE_VALUES:
+        errors.append(
+            "feature_brief_pause must be one of: "
+            + ", ".join(FEATURE_BRIEF_PAUSE_VALUES)
+        )
+        return DEFAULT_FEATURE_BRIEF_PAUSE
+    return raw
 
 
 def _string(value: Any, field: str, errors: list[str]) -> str | None:
@@ -134,6 +151,9 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             data[field] = value
 
     data["issue_backend"] = _parse_backend(raw_data.get("issue_backend"), errors, warnings)
+    data["feature_brief_pause"] = _parse_feature_brief_pause(
+        raw_data.get("feature_brief_pause"), errors
+    )
 
     canonical_path = repo_root / ".agents" / "issue-adapter.yaml"
     if adapter_path.resolve() != canonical_path.resolve():

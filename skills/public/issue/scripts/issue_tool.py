@@ -22,11 +22,11 @@ def _load_local(module_name: str, alias: str | None = None):
 
 ADAPTER = _load_local("resolve_adapter", "issue_resolve_adapter")
 RUNTIME = _load_local("issue_runtime")
+BRIEF = _load_local("issue_brief")
 CLOSE = _load_local("issue_close")
 newest_open_issue = RUNTIME.newest_open_issue
 parse_selector = RUNTIME.parse_selector
 resolve_target = RUNTIME.resolve_target
-split_resolve_args = RUNTIME.split_resolve_args
 close_with_comment = CLOSE.close_with_comment
 
 
@@ -78,9 +78,8 @@ def command_preflight(args: argparse.Namespace) -> int:
     ok = resolved["adapter_ok"] and _backend_ok(selected)
     payload: dict[str, Any] = {"ok": ok, "selected_backend": selected, "adapter": resolved["adapter"]}
     if selected["id"] == "gh":
-        payload["gh_found"] = selected["found"]
-        payload["gh_path"] = selected["binary_path"]
-        payload["auth_status"] = selected["auth_status"]
+        payload.update(gh_found=selected["found"], gh_path=selected["binary_path"],
+                       auth_status=selected["auth_status"])
     if not selected["found"]:
         payload["error"] = (
             f"issue_backend binary {selected['binary']!r} not found on PATH. "
@@ -155,15 +154,17 @@ def command_resolve_invocation(args: argparse.Namespace) -> int:
         emit({"ok": False, "adapter": adapter})
         return 1
     try:
-        target_arg, selector = split_resolve_args(args.values)
-        target = resolve_target(args.repo_root.resolve(), target_arg, adapter["data"])
-        numbers = parse_selector(selector)
+        payload = BRIEF.build_invocation_payload(args.repo_root.resolve(), args.values, adapter,
+            ADAPTER.DEFAULT_FEATURE_BRIEF_PAUSE)
     except ValueError as exc:
         emit({"ok": False, "error": str(exc), "adapter": adapter})
         return 2
-    emit({"ok": True, "target": target, "selector": selector, "numbers": numbers,
-          "selector_source": "github-newest-open" if numbers is None else "argument",
-          "adapter": adapter})
+    emit(payload)
+    return 0
+
+
+def command_brief_path(args: argparse.Namespace) -> int:
+    emit(BRIEF.build_brief_path_payload(args.repo_root.resolve(), args.number, args.date))
     return 0
 
 
@@ -200,6 +201,12 @@ def build_parser() -> argparse.ArgumentParser:
     close.add_argument("--reason", default="completed")
     close.add_argument("--repo-root", type=Path, default=cwd_default)
     close.set_defaults(func=command_close_with_comment)
+
+    brief = subparsers.add_parser("brief-path")
+    brief.add_argument("--number", type=int, required=True)
+    brief.add_argument("--repo-root", type=Path, default=cwd_default)
+    brief.add_argument("--date", help="ISO date (YYYY-MM-DD); defaults to today")
+    brief.set_defaults(func=command_brief_path)
     return parser
 
 

@@ -1,0 +1,10 @@
+{
+  "description": "Feature issue with brief emitted before any mutation; passes the audit.",
+  "events": [
+    {"kind": "classification", "issue": 143, "classification": "feature"},
+    {"kind": "brief", "issue": 143, "open_decisions": 2, "paused": true},
+    {"kind": "mutation", "issue": 143, "tool": "Edit"},
+    {"kind": "mutation", "issue": 143, "tool": "Write"},
+    {"kind": "close", "issue": 143}
+  ]
+}

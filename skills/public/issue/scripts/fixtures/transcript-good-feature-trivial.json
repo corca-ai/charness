@@ -1,0 +1,9 @@
+{
+  "description": "Feature issue that legitimately uses the trivial-feature short-circuit; passes the audit.",
+  "events": [
+    {"kind": "classification", "issue": 144, "classification": "feature"},
+    {"kind": "trivial_brief", "issue": 144, "boundary": "rename internal helper for clarity"},
+    {"kind": "mutation", "issue": 144, "tool": "Edit"},
+    {"kind": "close", "issue": 144}
+  ]
+}

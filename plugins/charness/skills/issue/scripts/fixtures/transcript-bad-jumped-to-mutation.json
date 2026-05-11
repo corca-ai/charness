@@ -1,0 +1,8 @@
+{
+  "description": "Feature issue jumped from classification directly to mutation without a brief; audit must fail.",
+  "events": [
+    {"kind": "classification", "issue": 146, "classification": "feature"},
+    {"kind": "mutation", "issue": 146, "tool": "Edit"},
+    {"kind": "close", "issue": 146}
+  ]
+}

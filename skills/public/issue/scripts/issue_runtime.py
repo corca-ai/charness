@@ -125,20 +125,8 @@ def _backend_json(argv: list[str]) -> Any:
 
 
 GH_NEWEST_OPEN_ARGS = [
-    "search",
-    "issues",
-    "--repo",
-    "{repo}",
-    "--state",
-    "open",
-    "--limit",
-    "1",
-    "--json",
-    "number,title,createdAt,url,state",
-    "--sort",
-    "created",
-    "--order",
-    "desc",
+    "search", "issues", "--repo", "{repo}", "--state", "open", "--limit", "1",
+    "--json", "number,title,createdAt,url,state", "--sort", "created", "--order", "desc",
 ]
 
 
