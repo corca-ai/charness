@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
 from scripts.adapter_lib import load_yaml_file, optional_string, optional_string_list
 from scripts.artifact_naming_lib import RECORD_PATTERN
+
+KIND_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
+BUILTIN_KINDS = frozenset({"handoff", "issues", "path"})
 
 ADAPTER_CANDIDATES = (
     Path(".agents/announcement-adapter.yaml"),
@@ -100,9 +104,9 @@ def _validate_in_progress_sources(value: Any, errors: list[str]) -> list[dict[st
             errors.append(f"in_progress_sources[{index}] must be a mapping")
             continue
         kind = raw.get("kind")
-        if kind not in {"handoff", "issues", "path"}:
+        if not isinstance(kind, str) or not KIND_PATTERN.match(kind):
             errors.append(
-                f"in_progress_sources[{index}].kind must be one of: handoff, issues, path"
+                f"in_progress_sources[{index}].kind must be a lowercase identifier matching {KIND_PATTERN.pattern}"
             )
             continue
         entry: dict[str, Any] = {"kind": kind}
@@ -112,9 +116,17 @@ def _validate_in_progress_sources(value: Any, errors: list[str]) -> list[dict[st
         elif kind == "path":
             errors.append(f"in_progress_sources[{index}] of kind=path requires a non-empty `path`")
             continue
+        summary = raw.get("summary")
+        if isinstance(summary, str) and summary:
+            entry["summary"] = summary
         query = raw.get("query")
         if isinstance(query, str) and query:
             entry["query"] = query
+        if kind not in BUILTIN_KINDS and not (entry.get("path") or entry.get("summary") or entry.get("query")):
+            errors.append(
+                f"in_progress_sources[{index}] of host-defined kind `{kind}` requires at least one of: path, summary, query"
+            )
+            continue
         normalized.append(entry)
     return normalized
 

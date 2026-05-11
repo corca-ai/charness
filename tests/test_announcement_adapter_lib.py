@@ -67,6 +67,32 @@ def test_in_progress_sources_validation_requires_path_for_kind_path(tmp_path: Pa
     assert any("kind=path" in error for error in errors)
 
 
+def test_in_progress_sources_accepts_host_extensible_kind(tmp_path: Path) -> None:
+    data = {
+        "in_progress_sources": [
+            {"kind": "control_repo", "path": "/srv/ceal-prod/workspace/control"},
+            {"kind": "channel_automation", "summary": "Slack workspace events"},
+        ]
+    }
+    validated, errors, _warnings = validate_announcement_adapter_data(data, tmp_path)
+    assert errors == []
+    kinds = [entry["kind"] for entry in validated["in_progress_sources"]]
+    assert kinds == ["control_repo", "channel_automation"]
+    assert validated["in_progress_sources"][1]["summary"] == "Slack workspace events"
+
+
+def test_in_progress_sources_rejects_invalid_kind_identifier(tmp_path: Path) -> None:
+    data = {"in_progress_sources": [{"kind": "Control Repo", "path": "/srv"}]}
+    _validated, errors, _warnings = validate_announcement_adapter_data(data, tmp_path)
+    assert any("kind" in error.lower() for error in errors)
+
+
+def test_in_progress_sources_unknown_kind_requires_at_least_one_field(tmp_path: Path) -> None:
+    data = {"in_progress_sources": [{"kind": "control_repo"}]}
+    _validated, errors, _warnings = validate_announcement_adapter_data(data, tmp_path)
+    assert any("requires at least one of" in error for error in errors)
+
+
 def test_message_size_limit_rejects_negative_int(tmp_path: Path) -> None:
     data = {"message_size_limit": -5}
     _validated, errors, _warnings = validate_announcement_adapter_data(data, tmp_path)

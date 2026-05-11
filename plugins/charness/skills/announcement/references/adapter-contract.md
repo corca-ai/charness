@@ -49,9 +49,17 @@ Search order:
 - `audience_tags`: empty list in data, but resolver should expose whether the
   field was unset or explicitly empty
 - `omission_lenses`: empty list
-- `in_progress_sources`: empty list. Each item is a mapping with
-  `kind` (`handoff`, `issues`, or `path`), an optional `path` (required when
-  `kind` is `path`), and an optional `query` (issue-tracker filter)
+- `in_progress_sources`: empty list. Each item is a mapping with `kind`
+  (host-extensible identifier matching `^[a-z][a-z0-9_]*$`; built-in kinds
+  `handoff`, `issues`, `path` keep their semantics), and at least one of
+  `path` (required when `kind` is `path`; existence verified by preflight),
+  `summary` (free text identifying the surface), or `query`
+  (issue-tracker filter). Hosts may declare additional kinds such as
+  `control_repo` or `channel_automation`; charness validates shape and the
+  draft preflight records each surface without interpreting host-defined
+  kinds. Each declared entry must appear in the draft artifact's
+  `## Source surfaces` section as `collected: <summary>` or
+  `unavailable: <reason>` before delivery is allowed.
 - `delivery_kind`: `none`
 - `delivery_capability`: empty string
 - `format_rules_path`: empty string (skill applies built-in baseline rules

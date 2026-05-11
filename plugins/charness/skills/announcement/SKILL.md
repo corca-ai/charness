@@ -75,8 +75,11 @@ repo had already declared them.
      obvious from the subject alone
    - if the announcement scope plausibly covers ongoing or backlog work that
      has not yet landed, ask up front whether to include in-progress items.
-     When the adapter declares `in_progress_sources`, walk those sources
-     (handoff doc, open issue queries, named paths) before drafting.
+     When the adapter declares `in_progress_sources` (kind is host-extensible,
+     for example `control_repo` or `channel_automation`), walk every entry and
+     record it in the draft artifact's `## Source surfaces` section as
+     `collected: <summary>` or `unavailable: <reason>` before drafting body
+     content.
 3. Recover audience value before wording.
    - who benefits
    - what surface changed
@@ -111,6 +114,10 @@ repo had already declared them.
      the path declared by `format_rules_path`) before posting raw CommonMark
    - if `message_size_limit` is positive and any output exceeds it, split on
      paragraph boundaries into numbered parts before posting
+   - before posting, run
+     `python3 "$SKILL_DIR/scripts/preflight_sources.py" --repo-root .`; if any
+     declared `in_progress_sources` entry is reported as `unverified`, surface
+     the gap and require explicit user confirmation before delivery
 8. Record the result after delivery or explicit draft finalization.
    - append a JSONL record so the next run can continue from the current head
    - render closeout only from the verified delivery ledger (which channel,
@@ -154,4 +161,5 @@ The result should usually include:
 - `../../shared/references/closeout-discipline.md`
 - `<repo-root>/scripts/collect_commits.py`
 - `<repo-root>/scripts/infer_audience_tags.py`
+- `<repo-root>/scripts/preflight_sources.py`
 - `<repo-root>/scripts/record_announcement.py`
