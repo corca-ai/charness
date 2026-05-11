@@ -29,6 +29,8 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+_fresh_checkout_module = SKILL_RUNTIME.load_local_skill_module(__file__, "check_fresh_checkout_probes")
+build_fresh_checkout_payload = _fresh_checkout_module.build_payload
 
 
 def _read_json(path: Path) -> dict[str, object]:
@@ -108,6 +110,7 @@ def build_payload(repo_root: Path) -> dict[str, object]:
             "codex_plugin": _version_at(plugin_root / ".codex-plugin" / "plugin.json"),
         },
         "git_status": _git_status(repo_root),
+        "fresh_checkout_probes": build_fresh_checkout_payload(repo_root, run_probes=False),
     }
     payload["surface_versions"].update(_marketplace_versions(repo_root, package_id))
     expected = payload["surface_versions"]["packaging_manifest"]

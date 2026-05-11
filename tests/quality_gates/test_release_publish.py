@@ -473,3 +473,111 @@ def test_publish_release_blocks_failed_requested_review_command(tmp_path: Path) 
     assert "requested release review gate blocked publish" in result.stderr
     gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
     assert not any(entry[:2] == ["release", "create"] for entry in gh_log)
+
+
+def test_publish_release_blocks_failed_fresh_checkout_probe_before_tag_push(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    (repo / ".git" / "info" / "exclude").write_text(".fresh-checkout-only-missing\n", encoding="utf-8")
+    (repo / ".fresh-checkout-only-missing").write_text("maintainer local only\n", encoding="utf-8")
+    adapter_path = repo / ".agents" / "release-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "\nfresh_checkout_probes:\n- \"test ! -f .fresh-checkout-only-missing\"\n- \"test \\\"$(git rev-list --count HEAD)\\\" = 1\"\n- \"bash -c 'echo fresh checkout failed >&2; exit 1'\"\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "add", ".agents/release-adapter.yaml"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "Configure fresh checkout probe"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    env = os.environ.copy()
+    env["PATH"] = f"{bin_dir}:{env['PATH']}"
+    env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
+    env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/publish_release.py",
+            "--repo-root",
+            str(repo),
+            "--part",
+            "patch",
+            "--execute",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 1
+    assert "fresh checkout release probes blocked publish" in result.stderr
+    assert "fresh checkout failed" in result.stderr
+    assert ".fresh-checkout-only-missing" not in result.stderr
+    assert "git rev-list --count HEAD" not in result.stderr
+    assert subprocess.run(["git", "tag", "--list", "v0.0.1"], cwd=repo, check=True, capture_output=True, text=True).stdout.strip() == ""
+    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
+    assert not any(entry and entry[0] == "push" for entry in git_log)
+    gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
+    assert not any(entry[:2] == ["release", "create"] for entry in gh_log)
+
+
+def test_publish_release_records_passed_fresh_checkout_probes_before_push(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    (repo / ".git" / "info" / "exclude").write_text(".fresh-checkout-only-missing\n", encoding="utf-8")
+    (repo / ".fresh-checkout-only-missing").write_text("maintainer local only\n", encoding="utf-8")
+    adapter_path = repo / ".agents" / "release-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "\nfresh_checkout_probes:\n- \"test ! -f .fresh-checkout-only-missing\"\n- \"test \\\"$(git rev-list --count HEAD)\\\" = 1\"\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "add", ".agents/release-adapter.yaml"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "Configure passing fresh checkout probes"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    env = os.environ.copy()
+    env["PATH"] = f"{bin_dir}:{env['PATH']}"
+    env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
+    env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/publish_release.py",
+            "--repo-root",
+            str(repo),
+            "--part",
+            "patch",
+            "--execute",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["fresh_checkout_probe_status"] == "passed"
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    assert "Fresh-checkout probe status: passed." in artifact_text
+    assert "`test ! -f .fresh-checkout-only-missing`" in artifact_text
+    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
+    clone_entries = [entry for entry in git_log if entry and entry[0] == "clone"]
+    assert clone_entries
+    assert all("--depth" in entry and "1" in entry for entry in clone_entries)
+    assert ["commit", "--amend", "--no-edit"] in git_log
+    amend_index = git_log.index(["commit", "--amend", "--no-edit"])
+    push_index = next(index for index, entry in enumerate(git_log) if entry and entry[0] == "push")
+    assert amend_index < push_index

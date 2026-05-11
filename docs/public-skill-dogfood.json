@@ -315,13 +315,14 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-09",
+      "reviewed_on": "2026-05-11",
       "observed_evidence": [
         "The public core tells release work to inspect `current_release.py`, `check_real_host_proof.py`, `check_requested_review_gate.py`, git state, and the current release artifact before mutating anything.",
         "The checked-in release core no longer reopens a local-critique loophole: every task-completing release slice records critique, with routine hygiene using a short scoped pass and higher-risk release decisions using the standalone `critique` skill.",
         "The release closeout contract now distinguishes `Critique: short <scope>`, `Critique: full <artifact-or-subagent-status>`, `Critique: not-applicable <reason>`, and `Critique: blocked <host-signal>`, which matches the maintainer-facing path better than implying that a same-agent substitute still counted as release review.",
         "`check_requested_review_gate.py` blocks publish when a configured requested-review command fails or when the release record says review was unavailable without an explicit review waiver.",
-        "`publish_release_helpers.backend_command` now enforces a per-op placeholder allowlist at runtime: `release_view` accepts `{tag}`, `release_create` accepts `{tag}` and `{title}`, and `auth_check` accepts none. Adapter templates with unknown placeholders fail fast with the offending placeholder named, mirroring the issue-backend `_resolve_op` hardening so both backend surfaces share the same shape."
+        "`publish_release_helpers.backend_command` now enforces a per-op placeholder allowlist at runtime: `release_view` accepts `{tag}`, `release_create` accepts `{tag}` and `{title}`, and `auth_check` accepts none. Adapter templates with unknown placeholders fail fast with the offending placeholder named, mirroring the issue-backend `_resolve_op` hardening so both backend surfaces share the same shape.",
+        "`fresh_checkout_probes` is now part of the release adapter contract: `current_release.py` reports whether probes are configured, and `publish_release.py --execute` runs declared probes in a temporary fresh clone after the release commit and before tag push or release creation."
       ]
     },
     {

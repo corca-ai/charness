@@ -27,12 +27,14 @@ _current_release = SKILL_RUNTIME.load_local_skill_module(__file__, "current_rele
 _bump_version = SKILL_RUNTIME.load_local_skill_module(__file__, "bump_version")
 _check_real_host = SKILL_RUNTIME.load_local_skill_module(__file__, "check_real_host_proof")
 _check_review_gate = SKILL_RUNTIME.load_local_skill_module(__file__, "check_requested_review_gate")
+_fresh_checkout = SKILL_RUNTIME.load_local_skill_module(__file__, "check_fresh_checkout_probes")
 _helpers = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_helpers")
 load_adapter = _resolve_adapter.load_adapter
 build_release_payload = _current_release.build_payload
 bump_part = _bump_version.bump_part
 build_real_host_payload = _check_real_host.build_payload
 build_review_gate_payload = _check_review_gate.build_payload
+build_fresh_checkout_payload = _fresh_checkout.build_payload
 run = _helpers.run
 run_shell = _helpers.run_shell
 git_status = _helpers.git_status
@@ -72,14 +74,7 @@ def safe_real_host_payload(repo_root: Path, repo_paths: list[str]) -> dict[str, 
     try:
         return build_real_host_payload(repo_root, repo_paths)
     except Exception as exc:  # pragma: no cover - fallback only
-        return {
-            "required": False,
-            "changed_paths": repo_paths,
-            "surface_hits": [],
-            "path_hits": [],
-            "checklist": [],
-            "reason": f"Real-host/public verification probe could not run: {exc}",
-        }
+        return {"required": False, "changed_paths": repo_paths, "surface_hits": [], "path_hits": [], "checklist": [], "reason": f"Real-host/public verification probe could not run: {exc}"}
 
 
 def run_requested_review_gate(repo_root: Path) -> None:
@@ -96,6 +91,12 @@ def run_cli_skill_surface_gate(repo_root: Path, adapter_data: dict[str, Any]) ->
             command.extend(["--changed-path", path])
         run(command, cwd=repo_root)
 
+
+def run_fresh_checkout_probes(repo_root: Path) -> dict[str, Any]:
+    payload = build_fresh_checkout_payload(repo_root, run_probes=True)
+    if payload["status"] == "blocked":
+        raise SystemExit("fresh checkout release probes blocked publish:\n" + "\n".join(payload.get("blockers", [])))
+    return payload
 
 def run_bump(args: argparse.Namespace, repo_root: Path) -> None:
     if args.publish_current:
@@ -116,14 +117,14 @@ def ensure_release_surface(repo_root: Path, expected_version: str) -> None:
 def write_current_artifact(
     repo_root: Path, adapter_data: dict[str, Any], payload: dict[str, Any],
     host_payload: dict[str, Any], *, quality_status: str = "passed before publish",
+    fresh_checkout_payload: dict[str, Any] | None = None,
 ) -> str:
     return write_release_artifact(
         repo_root, output_dir=adapter_data["output_dir"], package_id=adapter_data["package_id"],
-        previous_version=payload["previous_version"], target_version=payload["target_version"],
-        remote=payload["remote"], branch=payload["branch"],
-        quality_command=adapter_data["quality_command"], release_url=None,
-        update_instructions=adapter_data["update_instructions"],
-        real_host_payload=host_payload, quality_status=quality_status,
+        previous_version=payload["previous_version"], target_version=payload["target_version"], remote=payload["remote"],
+        branch=payload["branch"], quality_command=adapter_data["quality_command"], release_url=None,
+        update_instructions=adapter_data["update_instructions"], real_host_payload=host_payload,
+        fresh_checkout_payload=fresh_checkout_payload, quality_status=quality_status,
     )
 
 
@@ -165,6 +166,7 @@ def main() -> None:
         "title": title,
         "mode": "publish-current" if args.publish_current else "bump-and-publish",
         "quality_command": adapter_data["quality_command"],
+        "fresh_checkout_probes": adapter_data["fresh_checkout_probes"],
         "commit_message": f"Release {adapter_data['package_id']} {next_version}",
         "notes_mode": "notes-file" if args.notes_file else "generate-notes",
         "execute": args.execute,
@@ -177,23 +179,26 @@ def main() -> None:
     run_bump(args, repo_root)
     ensure_release_surface(repo_root, next_version)
 
-    host_payload = safe_real_host_payload(
-        repo_root,
-        sorted(set(release_content_paths + changed_paths(repo_root))),
-    )
+    host_payload = safe_real_host_payload(repo_root, sorted(set(release_content_paths + changed_paths(repo_root))))
+    fresh_checkout_plan = build_fresh_checkout_payload(repo_root, run_probes=False)
     write_current_artifact(
-        repo_root,
-        adapter_data,
-        payload,
-        quality_status="is queued for this publish attempt",
-        host_payload=host_payload,
+        repo_root, adapter_data, payload, host_payload=host_payload,
+        quality_status="is queued for this publish attempt", fresh_checkout_payload=fresh_checkout_plan,
     )
     run_requested_review_gate(repo_root)
     run_cli_skill_surface_gate(repo_root, adapter_data)
     run_shell(str(adapter_data["quality_command"]), cwd=repo_root)
-    artifact_relpath = write_current_artifact(repo_root, adapter_data, payload, host_payload)
+    artifact_relpath = write_current_artifact(repo_root, adapter_data, payload, host_payload, fresh_checkout_payload=fresh_checkout_plan)
     run(["git", "add", "-A"], cwd=repo_root)
     run(["git", "commit", "-m", payload["commit_message"]], cwd=repo_root)
+    fresh_checkout_payload = run_fresh_checkout_probes(repo_root)
+    payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
+    if fresh_checkout_payload["status"] == "passed":
+        write_current_artifact(repo_root, adapter_data, payload, host_payload, fresh_checkout_payload=fresh_checkout_payload)
+        run(["git", "add", artifact_relpath], cwd=repo_root)
+        run(["git", "commit", "--amend", "--no-edit"], cwd=repo_root)
+        fresh_checkout_payload = run_fresh_checkout_probes(repo_root)
+        payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
     run(["git", "tag", tag_name], cwd=repo_root)
     run(["git", "push", args.remote, branch, tag_name], cwd=repo_root)
 

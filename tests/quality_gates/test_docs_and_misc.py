@@ -14,6 +14,7 @@ def test_release_current_release_reports_packaging_version() -> None:
     assert payload["package_id"] == "charness"
     assert payload["surface_versions"]["packaging_manifest"] == expected
     assert payload["checked_in_plugin_root"].endswith("plugins/charness")
+    assert payload["fresh_checkout_probes"]["status"] in {"configured", "not_configured"}
 
 
 def test_narrative_map_sources_reports_checked_in_docs() -> None:

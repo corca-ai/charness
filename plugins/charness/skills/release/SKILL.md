@@ -43,6 +43,8 @@ Then inspect current release state:
 
 ```bash
 python3 "$SKILL_DIR/scripts/current_release.py" --repo-root .
+python3 "$SKILL_DIR/scripts/check_fresh_checkout_probes.py" --repo-root . --json
+python3 "$SKILL_DIR/scripts/check_fresh_checkout_probes.py" --repo-root . --run-probes --json
 python3 "$SKILL_DIR/scripts/check_real_host_proof.py" --repo-root .
 python3 "$SKILL_DIR/scripts/check_requested_review_gate.py" --repo-root .
 python3 "$SKILL_DIR/../../../scripts/check_cli_skill_surface.py" --repo-root . --adapter-path .agents/release-adapter.yaml --json 2>/dev/null || true
@@ -102,6 +104,9 @@ verified.
    - distinguish local/tag success from later workflow or public verification
    - if `check_real_host_proof.py` says release-time proof is required, carry
      that checklist into the closeout instead of claiming local CI replaced it
+   - if `fresh_checkout_probes` are declared, run them before tag publish and
+     report their status; if none are declared, say that no fresh-checkout
+     proof was configured
    - if `check_requested_review_gate.py` reports requested review unavailability,
      fix the gate, select a correct adapter, or record an explicit waiver before
      publish/tag

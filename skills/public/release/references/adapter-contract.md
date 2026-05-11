@@ -44,6 +44,7 @@ Search order:
 - `cli_skill_surface_command_docs`
 - `cli_skill_surface_skill_paths`
 - `cli_skill_surface_change_globs`
+- `fresh_checkout_probes`
 - `release_backend`
 
 ## Defaults
@@ -66,6 +67,7 @@ Search order:
   `requested review waiver:`
 - `product_surfaces`: empty list
 - `cli_skill_surface_*`: empty lists
+- `fresh_checkout_probes`: empty list
 
 ## Artifact Rule
 
@@ -94,6 +96,16 @@ fails, `check_requested_review_gate.py` blocks publish/tag instead of treating
 the missing review surface as a caveat. The same helper scans release records
 for configured unavailable-review phrases; those records need a fix or an
 explicit review waiver phrase before release.
+
+`fresh_checkout_probes` is optional command data owned by the repo adapter.
+Each entry is a bash shell string executed from the temporary clone root. Use
+it for release evidence that can pass in a maintainer worktree but fail from a
+fresh checkout because of clone depth, generated artifact determinism, or other
+checkout-shape assumptions. `current_release.py` reports whether probes are
+configured. `publish_release.py --execute` runs declared probes in a temporary
+shallow fresh clone after the release commit is created and before tag push or
+release creation, records passing status in the release artifact, and reruns
+the probes against that amended release commit. A failing probe blocks publish.
 
 When `product_surfaces` contains both `installable_cli` and `bundled_skill`,
 release runs the CLI plus bundled-skill disclosure gate only for matching CLI,

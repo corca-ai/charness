@@ -72,6 +72,55 @@ def test_release_adapter_parses_custom_backend(tmp_path: Path) -> None:
     assert backend["commands"]["release_view"] == ["ceal", "github", "release", "view", "{tag}"]
 
 
+def test_release_adapter_preserves_fresh_checkout_probes(tmp_path: Path) -> None:
+    adapter_dir = tmp_path / ".agents"
+    adapter_dir.mkdir()
+    (adapter_dir / "release-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "fresh_checkout_probes:",
+                "- npm run claims:evidence-state:check",
+                "- npm run generated:drift:check",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    resolve = _load_release_module("resolve_adapter")
+    payload = resolve.load_adapter(tmp_path)
+
+    assert payload["valid"] is True
+    assert payload["data"]["fresh_checkout_probes"] == [
+        "npm run claims:evidence-state:check",
+        "npm run generated:drift:check",
+    ]
+
+
+def test_release_adapter_rejects_invalid_fresh_checkout_probes(tmp_path: Path) -> None:
+    adapter_dir = tmp_path / ".agents"
+    adapter_dir.mkdir()
+    (adapter_dir / "release-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "fresh_checkout_probes:",
+                "- npm run ok",
+                "- 12",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    resolve = _load_release_module("resolve_adapter")
+    payload = resolve.load_adapter(tmp_path)
+
+    assert payload["valid"] is False
+    assert "fresh_checkout_probes must be a list of strings" in payload["errors"]
+
+
 def test_release_adapter_warns_when_non_gh_backend_lacks_commands(tmp_path: Path) -> None:
     adapter_dir = tmp_path / ".agents"
     adapter_dir.mkdir()

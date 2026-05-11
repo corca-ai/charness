@@ -139,6 +139,7 @@ def write_release_artifact(
     release_url: str | None,
     update_instructions: list[str],
     real_host_payload: dict[str, Any],
+    fresh_checkout_payload: dict[str, Any] | None = None,
     quality_status: str = "passed before publish",
 ) -> str:
     artifact_dir = repo_root / output_dir
@@ -174,14 +175,7 @@ def write_release_artifact(
         lines.append(f"- GitHub release record: created ({release_url})")
     else:
         lines.append("- GitHub release record: not created by this helper run")
-    lines.extend(
-        [
-            "- public release surface verification: not checked by this helper",
-            "",
-            "## Public Release Verification",
-            "",
-        ]
-    )
+    lines.extend(["- public release surface verification: not checked by this helper", "", "## Public Release Verification", ""])
     if real_host_payload.get("required"):
         lines.append(
             "- This slice still requires configured public/real-host verification before the release is fully closed."
@@ -195,6 +189,15 @@ def write_release_artifact(
         lines.extend(
             ["", "## Real-Host Proof", "", "- No configured release-time real-host proof trigger matched this slice."]
         )
+    lines.extend(["", "## Fresh Checkout Probes", ""])
+    if fresh_checkout_payload is None:
+        lines.append("- Fresh-checkout probe status: pending release-helper execution.")
+    elif fresh_checkout_payload.get("status") == "not_configured":
+        lines.append("- No repo-declared fresh checkout probes were configured for this release.")
+    else:
+        lines.append(f"- Fresh-checkout probe status: {fresh_checkout_payload.get('status')}.")
+        for command in fresh_checkout_payload.get("fresh_checkout_probes", []):
+            lines.append(f"- `{command}`")
     user_update_steps = update_instructions or [
         "Document the operator-facing refresh path before calling the release fully closed.",
     ]

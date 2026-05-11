@@ -46,7 +46,7 @@ LIST_FIELDS = (
     "update_instructions", "real_host_required_surfaces", "real_host_required_path_globs", "real_host_checklist",
     "requested_review_commands", "review_unavailable_patterns", "review_waiver_phrases", "product_surfaces",
     "cli_skill_surface_probe_commands", "cli_skill_surface_command_docs", "cli_skill_surface_skill_paths",
-    "cli_skill_surface_change_globs",
+    "cli_skill_surface_change_globs", "fresh_checkout_probes",
 )
 ARTIFACT_FILENAME = "latest.md"
 
@@ -103,6 +103,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "cli_skill_surface_command_docs": [],
         "cli_skill_surface_skill_paths": [],
         "cli_skill_surface_change_globs": [],
+        "fresh_checkout_probes": [],
         "release_backend": default_release_backend(),
     }
 
