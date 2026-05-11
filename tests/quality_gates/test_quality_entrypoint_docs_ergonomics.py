@@ -90,3 +90,31 @@ def test_inventory_entrypoint_docs_ergonomics_flags_agents_runbook_pressure(tmp_
     doc = payload["documents"][0]
     assert doc["numbered_procedure_count"] == 4
     assert "host_instruction_runbook_pressure" in doc["heuristics"]
+
+
+def test_inventory_entrypoint_docs_ergonomics_reports_inbound_and_audience_signals(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "docs"
+    docs.mkdir(parents=True)
+    (repo / "README.md").write_text(
+        "# Project\n\nSee [guide](./docs/guide.md).\n",
+        encoding="utf-8",
+    )
+    (docs / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    (docs / "token-efficiency.md").write_text("# Token Efficiency\n", encoding="utf-8")
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_entrypoint_docs_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    docs_by_path = {item["doc_path"]: item for item in payload["documents"]}
+    assert docs_by_path["docs/guide.md"]["inbound_internal_doc_links"] == ["README.md"]
+    assert "top_level_doc_audience_folder_review" in docs_by_path["docs/guide.md"]["heuristics"]
+    orphan = docs_by_path["docs/token-efficiency.md"]
+    assert orphan["inbound_internal_doc_link_count"] == 0
+    assert "top_level_doc_without_inbound_link" in orphan["heuristics"]

@@ -224,7 +224,7 @@ def run_setup_compact_skill_routing_discoverability(
             )
         markdown = compact.get("markdown", "")
         expected_snippets = (
-            "call the shared/public charness skill `find-skills` once at startup before broader exploration",
+            "At session startup in this repo, call the shared/public charness skill `find-skills` once before broader exploration",
             "default map of installed public skills, support skills, synced support surfaces, and integrations",
             "After that bootstrap pass, choose the durable work skill",
         )

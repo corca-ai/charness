@@ -49,7 +49,7 @@ def _render_skill_routing(public_skill_ids: list[str]) -> tuple[str, list[str]]:
     lines = [
         "## Skill Routing",
         "",
-        "For task-oriented sessions in this repo, call the shared/public charness skill `find-skills` once at startup before broader exploration.",
+        "At session startup in this repo, call the shared/public charness skill `find-skills` once before broader exploration.",
         "",
         "Use its capability inventory as the default map of installed public skills, support skills, synced support surfaces, and integrations.",
         "",
@@ -72,20 +72,27 @@ def _build_payload(repo_root: Path) -> dict[str, object]:
     support_skill_ids = _installed_skill_ids(support_root)
     agents = repo_root / "AGENTS.md"
     agents_text = agents.read_text(encoding="utf-8", errors="replace") if agents.is_file() else ""
+    markdown, listed_skill_ids = _render_skill_routing(public_skill_ids)
     has_skill_routing = "## Skill Routing" in agents_text
+    matches_compact_block = bool(markdown and markdown in agents_text)
+    expected_lines = tuple(line for line in markdown.splitlines() if line.strip() and line != "## Skill Routing")
+    missing_expected_snippets = [line for line in expected_lines if line not in agents_text] if has_skill_routing else []
     if not agents.exists():
         action = "create_agents_with_skill_routing"
-    elif has_skill_routing:
+    elif matches_compact_block:
         action = "leave_as_is"
+    elif has_skill_routing:
+        action = "review_existing_skill_routing"
     else:
         action = "add_skill_routing_block"
-    markdown, listed_skill_ids = _render_skill_routing(public_skill_ids)
     return {
         "public_skills": public_skill_ids,
         "support_skills": support_skill_ids,
         "available_modes": ["compact"],
         "agents_path": "AGENTS.md",
         "agents_has_skill_routing": has_skill_routing,
+        "skill_routing_matches_compact_block": matches_compact_block,
+        "missing_expected_snippets": missing_expected_snippets,
         "recommended_action": action,
         "skill_routing_mode": "compact",
         "skill_routing_mode_source": "default",

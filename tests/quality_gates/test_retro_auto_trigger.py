@@ -60,8 +60,41 @@ def test_retro_auto_trigger_skips_missing_surfaces_when_no_trigger_config(tmp_pa
     payload = json.loads(result.stdout)
     assert payload["triggered"] is False
     assert payload["reason"] == "No auto-retro trigger surfaces or path globs are configured."
+    assert payload["configuration_status"] == "missing"
+    assert "intentional opt-out" in payload["remediation"]
     assert payload["surface_hits"] == []
     assert payload["path_hits"] == []
+
+
+def test_retro_auto_trigger_distinguishes_intentional_empty_trigger_config(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "retro-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: consumer",
+                "output_dir: charness-artifacts/retro",
+                "auto_session_trigger_surfaces: []",
+                "auto_session_trigger_path_globs: []",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/retro/scripts/check_auto_trigger.py",
+        "--repo-root",
+        str(repo),
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["triggered"] is False
+    assert payload["configuration_status"] == "intentional-empty"
+    assert payload["reason"] == "Auto-retro trigger surfaces and path globs are explicitly empty."
+    assert "remediation" not in payload
 
 
 def test_retro_auto_trigger_reports_missing_surfaces_remediation_when_configured(

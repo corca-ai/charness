@@ -48,6 +48,10 @@ It only inventories signals that deserve a human quality pass:
   branching
 - high inline-code density with no deeper doc link, which can suggest a doc is
   trying to carry too much procedural detail itself
+- inbound markdown links, so top-level docs with no discoverable owner do not
+  look healthy only because their outbound links are tidy
+- top-level `docs/*.md` audience-folder review, where a doc may belong under a
+  clearer audience or owner directory even when it is already linked
 - host instruction runbook pressure, where `<repo-root>/AGENTS.md` embeds a multi-step
   recovery or setup procedure that likely belongs in a deeper maintained doc
   or repo-owned command surface

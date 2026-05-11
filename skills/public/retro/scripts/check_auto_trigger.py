@@ -53,15 +53,31 @@ def matches_any(path: str, patterns: list[str]) -> bool:
     return any(fnmatch.fnmatch(path, pattern) for pattern in patterns)
 
 
-def no_config_payload(paths: list[str]) -> dict[str, object]:
-    return {
+def no_config_payload(paths: list[str], field_state: dict[str, object]) -> dict[str, object]:
+    surface_state = field_state.get("auto_session_trigger_surfaces")
+    glob_state = field_state.get("auto_session_trigger_path_globs")
+    intentional_empty = surface_state == "explicit-empty" and glob_state == "explicit-empty"
+    payload = {
         "triggered": False,
         "changed_paths": paths,
         "surface_hits": [],
         "path_hits": [],
         "suggested_mode": None,
-        "reason": "No auto-retro trigger surfaces or path globs are configured.",
+        "configuration_status": "intentional-empty" if intentional_empty else "missing",
+        "field_state": {
+            "auto_session_trigger_surfaces": surface_state,
+            "auto_session_trigger_path_globs": glob_state,
+        },
     }
+    if intentional_empty:
+        payload["reason"] = "Auto-retro trigger surfaces and path globs are explicitly empty."
+    else:
+        payload["reason"] = "No auto-retro trigger surfaces or path globs are configured."
+        payload["remediation"] = (
+            "Add auto_session_trigger_surfaces or auto_session_trigger_path_globs, "
+            "or set both fields to [] to record an intentional opt-out."
+        )
+    return payload
 
 
 def surface_error_payload(error: str) -> dict[str, object]:
@@ -84,7 +100,7 @@ def main() -> int:
     trigger_surfaces = adapter["data"].get("auto_session_trigger_surfaces", [])
     trigger_globs = adapter["data"].get("auto_session_trigger_path_globs", [])
     if not trigger_surfaces and not trigger_globs:
-        print(json.dumps(no_config_payload(args.paths or []), ensure_ascii=False, indent=2))
+        print(json.dumps(no_config_payload(args.paths or [], adapter.get("field_state", {})), ensure_ascii=False, indent=2))
         return 0
 
     changed_paths = args.paths if args.paths else collect_changed_paths(repo_root)
