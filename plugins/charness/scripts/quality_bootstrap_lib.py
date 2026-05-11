@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import load_yaml_file, render_yaml_mapping
+from scripts.adapter_lib import load_yaml, load_yaml_file, render_yaml_mapping
 from scripts.path_portability_lib import repo_relative
 from scripts.quality_bootstrap_detect import (
     detect_concept_paths,
@@ -121,16 +121,10 @@ def _existing_adapter_path(repo_root: Path) -> Path | None:
 
 def _load_explicit_skill_rules(raw: dict[str, Any], adapter_path: Path) -> list[str] | None:
     skill_rule_errors: list[str] = []
-    validated_skill_rules = validate_skill_ergonomics_gate_rules(
-        raw.get("skill_ergonomics_gate_rules"),
-        skill_rule_errors,
-    )
+    validated_skill_rules = validate_skill_ergonomics_gate_rules(raw.get("skill_ergonomics_gate_rules"), skill_rule_errors)
     if "skill_ergonomics_gate_rules" in raw and skill_rule_errors:
         rendered = "; ".join(skill_rule_errors)
-        raise BootstrapValidationError(
-            f"{adapter_path}: invalid `skill_ergonomics_gate_rules`; {rendered}. "
-            "Repair the adapter before rerunning bootstrap."
-        )
+        raise BootstrapValidationError(f"{adapter_path}: invalid `skill_ergonomics_gate_rules`; {rendered}. Repair the adapter before rerunning bootstrap.")
     return validated_skill_rules
 
 
@@ -139,17 +133,15 @@ def _apply_existing_scalar_fields(data: dict[str, Any], raw: dict[str, Any]) -> 
         value = raw.get(field)
         if value is not None:
             data[field] = value
-    coverage_fragile_margin_pp = raw.get("coverage_fragile_margin_pp")
-    if isinstance(coverage_fragile_margin_pp, (int, float)):
-        data["coverage_fragile_margin_pp"] = float(coverage_fragile_margin_pp)
-    spec_pytest_reference_format = raw.get("spec_pytest_reference_format")
-    if isinstance(spec_pytest_reference_format, str):
-        data["spec_pytest_reference_format"] = spec_pytest_reference_format
-    if isinstance(density_floor := raw.get("public_spec_implementation_ref_density_floor"), (int, float)):
-        data["public_spec_implementation_ref_density_floor"] = float(density_floor)
-    guard_min_lines = raw.get("public_spec_implementation_guard_min_lines")
-    if isinstance(guard_min_lines, int) and not isinstance(guard_min_lines, bool) and guard_min_lines >= 0:
-        data["public_spec_implementation_guard_min_lines"] = guard_min_lines
+    if isinstance(cfm := raw.get("coverage_fragile_margin_pp"), (int, float)):
+        data["coverage_fragile_margin_pp"] = float(cfm)
+    if isinstance(sprf := raw.get("spec_pytest_reference_format"), str):
+        data["spec_pytest_reference_format"] = sprf
+    if isinstance(df := raw.get("public_spec_implementation_ref_density_floor"), (int, float)):
+        data["public_spec_implementation_ref_density_floor"] = float(df)
+    gml = raw.get("public_spec_implementation_guard_min_lines")
+    if isinstance(gml, int) and not isinstance(gml, bool) and gml >= 0:
+        data["public_spec_implementation_guard_min_lines"] = gml
 
 
 def _apply_existing_policy_fields(data: dict[str, Any], raw: dict[str, Any], validated_skill_rules: list[str] | None) -> None:
@@ -166,11 +158,7 @@ def _apply_existing_policy_fields(data: dict[str, Any], raw: dict[str, Any], val
         data["skill_ergonomics_gate_rules"] = validated_skill_rules
     runtime_budgets = raw.get("runtime_budgets")
     if isinstance(runtime_budgets, dict) and all(
-        isinstance(label, str)
-        and label
-        and isinstance(value, int)
-        and not isinstance(value, bool)
-        and value > 0
+        isinstance(label, str) and label and isinstance(value, int) and not isinstance(value, bool) and value > 0
         for label, value in runtime_budgets.items()
     ):
         data["runtime_budgets"] = dict(runtime_budgets)
@@ -444,6 +432,16 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
     return render_yaml_mapping(items)
 
 
+def _diff_is_defaulted_only(existing_text: str, rendered_text: str, statuses: dict[str, str]) -> bool:
+    existing = load_yaml(existing_text)
+    rendered = load_yaml(rendered_text)
+    if not isinstance(existing, dict) or not isinstance(rendered, dict):
+        return False
+    if any(key not in rendered or rendered[key] != value for key, value in existing.items()):
+        return False
+    return all(key in existing or statuses.get(key) in {"defaulted", "deferred"} for key in rendered)
+
+
 def bootstrap_quality_adapter(
     *, repo_root: Path, output_path: Path, report_path: Path, dry_run: bool
 ) -> dict[str, Any]:
@@ -459,7 +457,7 @@ def bootstrap_quality_adapter(
         adapter_path.parent.mkdir(parents=True, exist_ok=True)
         adapter_path.write_text(adapter_text, encoding="utf-8")
         adapter_status = "written"
-    elif existing_text == adapter_text:
+    elif existing_text == adapter_text or _diff_is_defaulted_only(existing_text, adapter_text, field_statuses):
         adapter_status = "unchanged"
     else:
         adapter_path.write_text(adapter_text, encoding="utf-8")

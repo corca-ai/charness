@@ -186,7 +186,7 @@ def test_run_quality_can_select_cautilus_proof_gate(tmp_path: Path, seeded_quali
     assert "Quality summary: 1 passed, 0 failed" in result.stdout
 
 
-def test_run_quality_skips_check_coverage_without_control_plane_changes(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+def test_run_quality_read_only_skips_check_coverage_without_control_plane_changes(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     (repo / "README.md").write_text("# demo\n", encoding="utf-8")
     init_git_repo(repo)
@@ -194,10 +194,38 @@ def test_run_quality_skips_check_coverage_without_control_plane_changes(tmp_path
     subprocess.run(["git", "config", "user.email", "codex-test@example.com"], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
-    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--read-only", cwd=repo, env=env)
     assert result.returncode == 0, result.stderr
     assert "PASS pytest" in result.stdout
     assert "PASS check-coverage" not in result.stdout
+
+
+def test_run_quality_full_runs_check_coverage_without_control_plane_changes(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    (repo / "README.md").write_text("# demo\n", encoding="utf-8")
+    init_git_repo(repo)
+    subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.email", "codex-test@example.com"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--full", cwd=repo, env=env)
+    assert result.returncode == 0, result.stderr
+    assert "PASS check-coverage" in result.stdout
+
+
+def test_run_quality_full_surfaces_planted_check_coverage_regression(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    (repo / "README.md").write_text("# demo\n", encoding="utf-8")
+    init_git_repo(repo)
+    subprocess.run(["git", "config", "user.name", "Codex Test"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.email", "codex-test@example.com"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
+    env["QUALITY_FAIL_LABEL"] = "check-coverage"
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--full", cwd=repo, env=env)
+    assert result.returncode != 0
+    assert "FAIL check-coverage" in result.stdout
+    assert "quality failure output from check-coverage" in result.stdout
 
 
 def test_run_quality_verbose_replays_success_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:

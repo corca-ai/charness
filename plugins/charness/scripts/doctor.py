@@ -11,11 +11,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-BLOCKING_DOCTOR_DISPOSITIONS = {
-    "blocking-support-sync-needed",
-    "blocking-install-needed",
-    "blocking-failure",
-}
+BLOCKING_DOCTOR_DISPOSITIONS = {"blocking-support-sync-needed", "blocking-install-needed", "blocking-failure"}
 
 _scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
 load_capabilities = _scripts_control_plane_lib_module.load_capabilities
@@ -47,13 +43,7 @@ def lock_safe_doctor_payload(payload: dict[str, object]) -> dict[str, object]:
     return lock_payload
 
 
-def inspect_manifest(
-    repo_root: Path,
-    manifest: dict[str, object],
-    *,
-    write: bool,
-    skip_release_probe: bool,
-) -> dict[str, object]:
+def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: bool, skip_release_probe: bool) -> dict[str, object]:
     state = inspect_capability_state(repo_root, manifest)
     disabled = state.get("doctor_status") == "disabled"
     provenance_result = (

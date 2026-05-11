@@ -211,6 +211,30 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     assert resolved["data"]["preflight_commands"] == ["python3 scripts/validate_maintainer_setup.py --repo-root ."]
 
 
+def test_quality_bootstrap_short_circuits_when_only_defaulted_fields_added(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    first = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    assert first.returncode == 0, first.stderr
+    assert json.loads(first.stdout)["adapter_status"] == "written"
+
+    adapter_path = repo / ".agents" / "quality-adapter.yaml"
+    canonical_text = adapter_path.read_text(encoding="utf-8")
+    trimmed = "".join(
+        line + "\n"
+        for line in canonical_text.splitlines()
+        if not line.startswith("public_spec_implementation_guard_min_lines:")
+    )
+    assert trimmed != canonical_text
+    adapter_path.write_text(trimmed, encoding="utf-8")
+
+    second = run_script("skills/public/quality/scripts/bootstrap_adapter.py", "--repo-root", str(repo))
+    assert second.returncode == 0, second.stderr
+    payload = json.loads(second.stdout)
+    assert payload["adapter_status"] == "unchanged"
+    assert payload["field_statuses"]["public_spec_implementation_guard_min_lines"] == "defaulted"
+    assert adapter_path.read_text(encoding="utf-8") == trimmed
+
+
 def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
     write_explicit_quality_adapter(repo)

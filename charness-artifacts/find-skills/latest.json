@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-10T02:37:46Z",
+  "generated_at": "2026-05-11T00:35:42Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -122,6 +122,7 @@
         ],
         "referenced_paths": [
           "skills/shared/references/fresh-eye-subagent-review.md",
+          "skills/public/critique/references/autonomous-trigger.md",
           "skills/public/critique/references/premortem-decision.md",
           "skills/public/critique/references/code-critique.md",
           "skills/public/critique/references/release-critique.md",

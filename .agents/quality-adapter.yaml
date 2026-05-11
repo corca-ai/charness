@@ -126,7 +126,7 @@ runtime_budget_profiles:
       charness-version: 500
       check-cli-skill-surface: 11000
       pytest: 70000
-      check-coverage: 22000
+      check-coverage: 40000
       check-duplicates: 11000
       check-markdown: 11000
       check-secrets: 6000

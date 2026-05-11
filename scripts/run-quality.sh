@@ -358,7 +358,7 @@ if ((${#PYTEST_PARALLEL_FLAGS[@]})); then
 else
   queue_selected "pytest" "${PYTEST_CMD[@]}" -q -m "not ci_only" "${STANDING_PYTEST_TARGETS[@]}"
 fi
-if coverage_relevant_changes_present; then
+if [[ "$RUN_QUALITY_MODE" == "full" ]] || coverage_relevant_changes_present; then
   queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
 fi
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
