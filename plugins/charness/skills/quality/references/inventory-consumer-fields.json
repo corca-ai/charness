@@ -1,0 +1,44 @@
+{
+  "_purpose": "Map quality inventory scripts to non-headline fields a consuming quality artifact should engage with. Used by scripts/validate_inventory_consumption.py to close the consumer-side of issue #145: helpers expose review-state, but agents were collapsing them into headline-only summaries. Opt-in per inventory — only scripts listed here are enforced.",
+  "_contract": "For each inventory in ## Commands Run, the artifact body must literally contain at least one of `non_headline_fields`. Add new entries when a new inventory exposes review-state beyond status/heuristics. Remove entries only when the inventory is deleted.",
+  "inventories": {
+    "inventory_skill_ergonomics.py": {
+      "non_headline_fields": [
+        "core_nonempty_lines",
+        "reference_file_count",
+        "script_file_count",
+        "bootstrap_fence_count"
+      ]
+    },
+    "inventory_entrypoint_docs_ergonomics.py": {
+      "non_headline_fields": [
+        "inbound_internal_doc_link_count",
+        "internal_doc_link_count",
+        "numbered_procedure_count"
+      ]
+    },
+    "inventory_standing_test_economics.py": {
+      "non_headline_fields": [
+        "test_file_count",
+        "nested_cli_file_count",
+        "nested_cli_files",
+        "runner_snippets"
+      ]
+    },
+    "inventory_lint_ignores.py": {
+      "non_headline_fields": [
+        "blanket",
+        "codes",
+        "scope"
+      ]
+    },
+    "inventory_public_spec_quality.py": {
+      "non_headline_fields": [
+        "source_guard_row_count",
+        "implementation_path_ref_density",
+        "pointer_proof_marker_count",
+        "executable_block_count"
+      ]
+    }
+  }
+}

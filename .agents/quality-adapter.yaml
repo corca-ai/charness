@@ -121,17 +121,6 @@ runtime_budgets:
   run-evals: 6500
   specdown: 10500
 runtime_budget_profiles:
-  local-linux-aarch64-4cpu:
-    budgets:
-      charness-version: 500
-      check-cli-skill-surface: 11000
-      pytest: 70000
-      check-coverage: 40000
-      check-duplicates: 11000
-      check-markdown: 11000
-      check-secrets: 6000
-      run-evals: 6500
-      specdown: 10500
   local-linux-x86_64-36cpu:
     budgets:
       charness-version: 500

@@ -114,7 +114,7 @@ routing anchors; references carry the detail.
 - The prior quality artifact is history; a fresh 5-minute reader can misclassify as absent an invariant that is merely scattered, so do not dismiss that as reader noise.
 - For evaluator-backed behavior closeout, prompt regression, baseline compare, or operator reading test, use `quality` before downgrading to HITL. Generic review, closeout, or "run quality" wording is not enough to run an evaluator.
 - When the next quality move is repo-local, deterministic, and low-risk, prefer implementing that gate in the same turn; when the automatable move is already clear and repo-owned, implement it in the same turn unless review-only was requested. If you stop short of an obvious repo-owned deterministic gate, name the unresolved enforcement gap.
-- Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior; scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`.
+- Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior; scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`. Inventories named in `## Commands Run` must engage with at least one declared non-headline field; the `validate-inventory-consumption` phase fails closeout when the artifact summarizes a cited inventory by headline only (declaration: `references/inventory-consumer-fields.json`).
 - Skill review uses `$SKILL_DIR/scripts/inventory_skill_ergonomics.py`, skill ergonomics, mode/option pressure, trigger overlap, undertrigger risk, taste policing, and repeated prose ritual checks.
 - CLI/operator review uses `$SKILL_DIR/scripts/inventory_cli_ergonomics.py`, flat help-list, multiple archetype schema namespaces, `$SKILL_DIR/scripts/inventory_cli_side_effect_probes.py`, option-looking positional rejection, mutating command probes, and command-docs drift gate checks.
 - Docs/spec review uses `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py`, entrypoint-doc ergonomics, smart agent/operator can infer safely, doc-set dogma, ordinary Markdown uses the markdown preview seam, and executable specs use the rendered Specdown report.
@@ -147,11 +147,7 @@ Use the sections that match the scope, without reducing quality to one score:
 - Do not treat a passing metric or green gate as the goal; name the structural
   simplification or ownership clarification.
 - Do not leave automatable rules as prose-only guidance.
-- Do not treat a passing final local gate as sufficient when clones lack a
-  repo-owned pre-push path and no documented no-hook waiver exists.
-- Do not treat a passing local gate as healthy when CI appends required
-  `run:` steps after it or uses `CI-only` quality gates; required proof must
-  be reachable locally. See `references/maintainer-local-enforcement.md`.
+- Do not treat a passing local gate as sufficient when clones lack a repo-owned pre-push path (no no-hook waiver), or when CI appends required `run:` steps or `CI-only` gates after it; required proof must be reachable locally. See `references/maintainer-local-enforcement.md`.
 - Do not give generic "add tests" or "improve security" advice without the
   seam and next setup.
 - Do not dismiss fresh-eye misreads when scattered evidence or undeclared
@@ -177,6 +173,7 @@ Use the sections that match the scope, without reducing quality to one score:
 - `references/find_inline_prompt_bulk.py`
 - `references/gate-classification.md`
 - `references/installable-cli-probes.md`
+- `references/inventory-consumer-fields.json`
 - `references/inventory-dispatch.md`
 - `references/lint-ignore-discipline.md`
 - `references/maintainer-local-enforcement.md`

@@ -122,9 +122,11 @@ def validate_charness_quality_adapter_contract(path: Path, data: dict) -> None:
         )
 
     runtime_profiles = data.get("runtime_budget_profiles")
-    if not isinstance(runtime_profiles, dict) or "local-linux-aarch64-4cpu" not in runtime_profiles:
+    if not isinstance(runtime_profiles, dict) or not runtime_profiles:
         raise ValidationError(
-            f"{path}: runtime_budget_profiles must explicitly include `local-linux-aarch64-4cpu`"
+            f"{path}: runtime_budget_profiles must declare at least one observed host profile "
+            f"(e.g. `local-linux-x86_64-36cpu`); profile names follow `<os>-<arch>-<cpu>` and "
+            "should match an actual maintainer machine, not an aspirational target."
         )
 
     for field in (
