@@ -95,7 +95,7 @@
     ]
   },
   "host_notes": [
-    "Tokei is currently a declared integration only; the SLOC inventory script and any preset wiring belong to a follow-up slice (Phase B).",
+    "Tokei is a quality validation support binary: it is discovered and installed through the external integration manifest, then consumed by quality SLOC inventory and test-ratio probes when that evidence is needed.",
     "Repo-internal `splitlines()` gates such as `check_test_production_ratio.py` continue to work without `tokei`; this manifest does not change those gates."
   ]
 }

@@ -88,6 +88,15 @@ should not require checked-in secret values or adapter-level secret transport.
 
 ## Support Skill Reuse Rule
 
+Some external binaries are support binaries: they do not need a support skill,
+but they do support a public workflow through a manifest-backed install,
+doctor, update, and recommendation path.
+
+Use that lighter path when the tool has no agent-readable operating surface to
+sync, and the public skill only needs to discover, install, verify, or degrade
+around the binary. Examples include `tokei`, `ruff`, `gitleaks`, and `vulture`
+for `quality`.
+
 When an external tool repo already ships a support skill:
 
 1. Prefer that upstream skill.

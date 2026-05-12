@@ -34,6 +34,18 @@ If it is a workflow concept, it belongs in `skills/public/`.
 If it is tool-use knowledge, it may belong in `skills/support/` or an external
 integration.
 
+If the missing knowledge is only "this public skill benefits from this binary,
+and here is how to install, doctor, update, and degrade around it," keep it as a
+support binary in an integration manifest. Do not create a support skill just to
+name a CLI that has no additional agent operating contract.
+
+Examples:
+
+- `tokei` for `quality` SLOC inventory and test-ratio probes
+- `ruff` for Python lint validation
+- `gitleaks` for fast secret scanning
+- `vulture` for Python dead-code and dead-file advisory review
+
 ## Keep A Support Skill In `charness` When
 
 - the harness needs local instructions that are not well expressed by a plain

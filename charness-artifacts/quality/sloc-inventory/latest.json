@@ -29,9 +29,9 @@
       "files": 10
     },
     "Markdown": {
-      "blanks": 10204,
+      "blanks": 10209,
       "code": 0,
-      "comments": 36369,
+      "comments": 36385,
       "files": 570
     },
     "Plain Text": {
@@ -71,9 +71,9 @@
   "status": "ok",
   "tokei_version": "tokei 14.0.0 compiled with serialization support: json",
   "totals": {
-    "blanks": 26486,
+    "blanks": 26491,
     "code": 124302,
-    "comments": 37338,
+    "comments": 37354,
     "files": 1432
   }
 }
