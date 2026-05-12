@@ -21,6 +21,10 @@ upsert_lock = _scripts_control_plane_lib_module.upsert_lock
 Payload = dict[str, object]
 
 
+def default_plugin_root() -> Path:
+    return Path.home().resolve() / ".codex" / "plugins" / "charness"
+
+
 def sync_one(
     repo_root: Path,
     manifest: Payload,
@@ -100,10 +104,7 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    plugin_root = args.plugin_root.resolve() if args.plugin_root else None
-    if args.execute and plugin_root is None:
-        print("sync_support.py --execute requires --plugin-root so upstream support skills materialize into an installed plugin surface.", file=sys.stderr)
-        return 1
+    plugin_root = args.plugin_root.resolve() if args.plugin_root else default_plugin_root() if args.execute else None
     upstream_checkouts = dict(support_sync.parse_upstream_checkout(value) for value in args.upstream_checkout)
     selected = lifecycle.select_by_tool_id(load_manifests(repo_root), args.tool_id)
     results = [

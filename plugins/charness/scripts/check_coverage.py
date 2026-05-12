@@ -243,6 +243,10 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
                 repo_root / "scripts" / "sync_support.py",
                 ["--repo-root", str(repo_copy), "--plugin-root", str(plugin_root), "--execute", "--json", "--tool-id", "agent-browser"],
             ),
+            (
+                repo_root / "scripts" / "sync_support.py",
+                ["--repo-root", str(repo_copy), "--execute", "--json", "--tool-id", "agent-browser"],
+            ),
             (repo_root / "scripts" / "update_tools.py", ["--repo-root", str(repo_copy), "--execute", "--json", "--tool-id", "agent-browser"]),
             (repo_root / "scripts" / "update_tools.py", ["--repo-root", str(repo_copy), "--json", "--tool-id", "cautilus"]),
             (repo_root / "scripts" / "install_tools.py", ["--repo-root", str(repo_copy), "--execute", "--json", "--tool-id", "agent-browser"]),
