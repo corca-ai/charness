@@ -20,9 +20,10 @@ parallel templates.
 - when the repo requires bounded fresh-eye or critique-style subagent review,
   does `<repo-root>/AGENTS.md` say that this stop gate is already delegated and that
   host spawn restrictions must stay visible
-- when Charness `setup` or `quality` completes a task by running bounded
-  review, does `<repo-root>/AGENTS.md` name those skills as spawn-authorized instead of
-  placing all delegated-review policy under a Critique-only heading
+- when Charness `setup`, `quality`, `critique`, `release`, or GitHub `issue`
+  resolution/closeout completes a task by running bounded review, does
+  `<repo-root>/AGENTS.md` name those skills as spawn-authorized instead of
+  placing all delegated-review policy under one narrow skill heading
 - when adapter-declared policy sources imply delegated review, does
   `inspect_repo.py` emit a `recommendations[]` queue item with priority,
   confidence, evidence, suggested action, and acknowledgement state

@@ -47,8 +47,9 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   second user message asking for delegation, and host spawn restrictions should
   be reported explicitly instead of replaced with a same-agent pass
 - for Charness-managed repos, the same rule should explicitly cover
-  task-completing `setup` and `quality` review runs instead of implying
-  that only critique may spawn reviewers
+  task-completing `setup`, `quality`, `critique`, `release`, and GitHub
+  `issue` resolution/closeout review runs instead of implying that only one
+  named skill may spawn reviewers
 - a short `Skill Routing` block that tells sessions to call the shared/public
   charness skill `find-skills` once at startup before broader exploration
 - after that bootstrap pass, tell the agent to choose the durable work skill

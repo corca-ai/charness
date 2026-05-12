@@ -23,7 +23,7 @@ FRESH_EYE_DELEGATION_CAVEAT_PATTERNS = (
     "once the user authorizes subagents",
     "follow that stricter rule",
 )
-TASK_REVIEW_SCOPE_SNIPPETS = ("setup", "quality")
+TASK_REVIEW_SCOPE_SNIPPETS = ("setup", "quality", "critique", "release", "issue")
 LEGACY_TASK_REVIEW_SCOPE_SNIPPET = "init-repo"
 RECOMMENDATION_PRIORITY_ORDER = {
     "review_required": 0,
@@ -226,8 +226,8 @@ def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object]
         findings.append(
             {
                 "type": "fresh_eye_task_review_scope_drift",
-                "message": "Fresh-eye or critique review is present but AGENTS.md does not name task-completing setup and quality review runs as spawn-authorized scopes.",
-                "recommended_action": "add_setup_quality_delegated_review_scope",
+                "message": "Fresh-eye or critique review is present but AGENTS.md does not name all repo-mandated review runs as spawn-authorized scopes.",
+                "recommended_action": "add_repo_mandated_delegated_review_scopes",
             }
         )
     if legacy_init_repo_scope_present:
@@ -236,7 +236,7 @@ def _detect_fresh_eye_normalization(agents_text: str) -> tuple[dict[str, object]
                 "type": "fresh_eye_task_review_scope_uses_legacy_init_repo",
                 "message": (
                     "AGENTS.md still names the legacy `init-repo` scope for the delegated-review stop gate. "
-                    "The skill was renamed to `setup`; migrate the scope to `setup` and `quality`. "
+                    "The skill was renamed to `setup`; migrate the scope to the repo-mandated review set. "
                     "This is advisory during consumer migration and will tighten in a future release."
                 ),
                 "recommended_action": "rename_legacy_init_repo_scope_to_setup",
@@ -282,7 +282,7 @@ def detect_policy_source_recommendations(
 ) -> list[dict[str, object]]:
     lowered_agents = agents_text.lower()
     missing_required = _missing_snippets(agents_text, FRESH_EYE_REQUIRED_SNIPPETS)
-    missing_scopes = [scope for scope in ("setup", "quality") if scope not in lowered_agents]
+    missing_scopes = [scope for scope in TASK_REVIEW_SCOPE_SNIPPETS if scope not in lowered_agents]
     if not missing_required and not missing_scopes:
         return []
 
@@ -303,7 +303,7 @@ def detect_policy_source_recommendations(
         if missing_required:
             evidence.append("AGENTS.md lacks delegated-review host restriction wording")
         if missing_scopes:
-            evidence.append("AGENTS.md does not name setup and quality as task-completing review scopes")
+            evidence.append("AGENTS.md does not name all repo-mandated task-completing review scopes")
         existing = recommendations_by_id.get("agents.delegated_review_policy")
         if existing is not None:
             existing_evidence = existing.setdefault("evidence", [])

@@ -225,7 +225,7 @@ def test_setup_inspect_reports_fresh_eye_delegation_drift(tmp_path: Path) -> Non
     finding_types = {finding["type"] for finding in normalization["findings"]}
     assert normalization["fresh_eye_review"]["stop_gate_detected"] is True
     assert "already delegated" in normalization["fresh_eye_review"]["missing_required_snippets"]
-    assert normalization["fresh_eye_review"]["missing_task_review_scopes"] == ["setup", "quality"]
+    assert normalization["fresh_eye_review"]["missing_task_review_scopes"] == ["setup", "quality", "critique", "release", "issue"]
     assert "explicit consent" in normalization["fresh_eye_review"]["stale_markers"]
     assert "local fallback" in normalization["fresh_eye_review"]["stale_markers"]
     assert "fresh_eye_delegation_rule_drift" in finding_types
@@ -266,7 +266,7 @@ def test_setup_inspect_reports_task_review_scope_drift_when_critique_rule_is_pre
     recommendation_priorities = {item["id"]: item["priority"] for item in normalization["recommendations"]}
     assert normalization["fresh_eye_review"]["has_subagent_delegation_section"] is False
     assert normalization["fresh_eye_review"]["missing_required_snippets"] == ["## Subagent Delegation"]
-    assert normalization["fresh_eye_review"]["missing_task_review_scopes"] == ["setup", "quality"]
+    assert normalization["fresh_eye_review"]["missing_task_review_scopes"] == ["setup", "quality", "critique", "release", "issue"]
     assert "fresh_eye_delegation_rule_drift" in finding_types
     assert "fresh_eye_task_review_scope_drift" in finding_types
     assert "fresh_eye_delegation_rule_drift" in recommendation_ids
@@ -316,7 +316,7 @@ def test_setup_inspect_accepts_dedicated_subagent_delegation_section(tmp_path: P
                 "## Subagent Delegation",
                 "",
                 "- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract; this is the explicit user delegation request for named bounded reviewer scopes.",
-                "- Do not wait for a second user message. Task-completing `setup` and `quality` review runs may spawn bounded reviewers.",
+                "- Do not wait for a second user message. Task-completing `setup`, `quality`, `critique`, `release`, and GitHub `issue` resolution/closeout review runs may spawn bounded reviewers.",
                 "- If the host blocks subagent spawning, stop and report the host restriction explicitly instead of substituting a same-agent pass.",
                 "",
             ]
@@ -336,7 +336,7 @@ def test_setup_inspect_accepts_dedicated_subagent_delegation_section(tmp_path: P
 
 _SUBAGENT_DELEGATION_AFFIRMATIVE = (
     "- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract; this is the explicit user delegation request for named bounded reviewer scopes.",
-    "- Do not wait for a second user message. Task-completing `setup` and `quality` review runs may spawn bounded reviewers.",
+    "- Do not wait for a second user message. Task-completing `setup`, `quality`, `critique`, `release`, and GitHub `issue` resolution/closeout review runs may spawn bounded reviewers.",
     "- If the host blocks subagent spawning, stop and report the host restriction explicitly instead of substituting a same-agent pass.",
 )
 
@@ -499,7 +499,7 @@ def test_setup_inspect_emits_policy_source_recommendation_without_agents_marker(
     _seed_normalize_repo(repo, "# Agents\n\nExisting operating policy.\n")
     (repo / ".agents").mkdir(parents=True)
     (repo / "docs" / "review-policy.md").write_text(
-        "# Review Policy\n\nTask-completing setup and quality runs need bounded fresh-eye review.\n",
+        "# Review Policy\n\nTask-completing setup, quality, critique, release, and issue runs need bounded fresh-eye review.\n",
         encoding="utf-8",
     )
     (repo / ".agents" / "setup-adapter.yaml").write_text(

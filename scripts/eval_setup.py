@@ -110,7 +110,7 @@ def run_setup_review_scope_inspect(
         review_scope = json.loads(result.stdout)
         normalization = review_scope.get("agent_docs", {}).get("normalization", {})
         missing_scopes = normalization.get("fresh_eye_review", {}).get("missing_task_review_scopes")
-        if missing_scopes != ["setup", "quality"]:
+        if missing_scopes != ["setup", "quality", "critique", "release", "issue"]:
             raise error_type(
                 "setup delegated-review scope inspect: unexpected missing_task_review_scopes "
                 f"{missing_scopes!r}"
