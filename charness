@@ -2789,7 +2789,7 @@ def run_tool_update_flow(
             support_args.append("--execute")
         support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *support_args, allow_failure=True)
     emit_progress("STEP: refreshing tool doctor state", json_mode=json_mode)
-    doctor_args = ["--repo-root", str(repo_root), "--json"]
+    doctor_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
     for tool_id in tool_ids:
         doctor_args.extend(["--tool-id", tool_id])
     if not dry_run:
@@ -3713,7 +3713,8 @@ def cmd_capability_explain(args: argparse.Namespace) -> int:
 
 def cmd_tool_doctor(args: argparse.Namespace) -> int:
     repo_root, managed_checkout = resolve_tool_repo_root(args)
-    script_args = ["--repo-root", str(repo_root), "--json"]
+    plugin_root = args.plugin_root.resolve() if args.plugin_root else default_plugin_root(args.home_root.resolve())
+    script_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
     for tool_id in tool_ids_from_args(args):
         script_args.extend(["--tool-id", tool_id])
     if not args.no_write_locks:
@@ -3749,7 +3750,7 @@ def cmd_tool_sync_support(args: argparse.Namespace) -> int:
     if not args.dry_run:
         script_args.append("--execute")
     support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *script_args, allow_failure=True)
-    doctor_args = ["--repo-root", str(repo_root), "--json"]
+    doctor_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
     for tool_id in tool_ids_from_args(args):
         doctor_args.extend(["--tool-id", tool_id])
     if not args.dry_run:
@@ -3804,7 +3805,7 @@ def cmd_tool_install(args: argparse.Namespace) -> int:
         if not args.dry_run:
             support_args.append("--execute")
         support_results = invoke_repo_json_script(repo_root, "scripts/sync_support.py", *support_args, allow_failure=True)
-    doctor_args = ["--repo-root", str(repo_root), "--json"]
+    doctor_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
     for tool_id in selected_tool_ids:
         doctor_args.extend(["--tool-id", tool_id])
     if not args.dry_run:

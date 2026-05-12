@@ -22,11 +22,13 @@
       ]
     },
     "update": {
-      "mode": "script",
-      "commands": [
-        "agent-browser upgrade"
-      ],
-      "docs_url": "https://github.com/vercel-labs/agent-browser"
+      "mode": "manual",
+      "docs_url": "https://github.com/vercel-labs/agent-browser",
+      "install_url": "https://github.com/vercel-labs/agent-browser#installation",
+      "notes": [
+        "Use the same package manager or release asset path that installed the current binary.",
+        "Charness promotes this manual route to a package-manager update only when install provenance proves an npm or Cargo-managed binary."
+      ]
     }
   },
   "checks": {
@@ -76,6 +78,20 @@
     "policy": "advisory",
     "constraint": "Prefer a recent upstream-supported release.",
     "detected_by": "stdout"
+  },
+  "package_managers": {
+    "npm": {
+      "package_name": "agent-browser",
+      "notes": [
+        "Upstream publishes the npm package as `agent-browser`; update with `npm install -g agent-browser@latest` only when the detected binary is managed by the active npm global prefix."
+      ]
+    },
+    "cargo": {
+      "package_name": "agent-browser",
+      "notes": [
+        "Upstream publishes the Cargo crate as `agent-browser`; update with `cargo install agent-browser --force` only when the detected binary is managed by Cargo."
+      ]
+    }
   },
   "supports_public_skills": [
     "gather"

@@ -50,7 +50,12 @@ def support_materialized_roots(repo_root: Path, support: dict[str, Any]) -> list
     return roots
 
 
-def inspect_support_sync(repo_root: Path, previous_lock: dict[str, Any] | None) -> dict[str, Any]:
+def inspect_support_sync(
+    repo_root: Path,
+    previous_lock: dict[str, Any] | None,
+    *,
+    plugin_root: Path | None = None,
+) -> dict[str, Any]:
     support = previous_lock.get("support") if previous_lock else None
     if not support:
         return {
@@ -60,6 +65,16 @@ def inspect_support_sync(repo_root: Path, previous_lock: dict[str, Any] | None) 
             "materialized_kind": None,
             "missing_paths": [],
         }
+    if plugin_root is not None and support.get("materialized_kind") == "installed-plugin-copy":
+        materialized_base = support.get("materialized_base")
+        if not isinstance(materialized_base, str) or Path(materialized_base).resolve() != plugin_root.resolve():
+            return {
+                "status": "not-tracked",
+                "expected_paths": [],
+                "materialized_base": str(plugin_root),
+                "materialized_kind": "installed-plugin-copy",
+                "missing_paths": [],
+            }
     expected_paths = support.get("materialized_paths", [])
     materialized_roots = support_materialized_roots(repo_root, support)
     missing_paths = [

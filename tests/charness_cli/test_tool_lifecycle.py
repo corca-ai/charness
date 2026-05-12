@@ -12,6 +12,7 @@ from .support import (
     clone_seeded_managed_home,
     make_fake_agent_browser,
     make_fake_go_specdown,
+    make_fake_npm_agent_browser,
     make_fake_npm_gws,
     make_release_fixture,
     make_support_sync_fixture,
@@ -325,7 +326,7 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
     assert "Follow-up command: `cautilus install --repo-root" in cautilus["next_step"]
 
 
-def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Path, seeded_charness_repo: Path) -> None:
+def test_tool_update_does_not_run_agent_browser_upgrade_for_path_install(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     home_root = tmp_path / "home"
     fake_agent_browser = make_fake_agent_browser(tmp_path)
@@ -342,16 +343,49 @@ def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Pa
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     browser = payload["results"]["agent-browser"]
-    assert browser["update"]["status"] == "updated"
+    assert browser["update"]["status"] == "manual"
+    assert browser["update"]["mode"] == "manual"
+    assert browser["update"]["commands"] == []
     assert browser["update"]["release"]["latest_tag"] == "v0.25.3"
     assert browser["support"]["status"] == "synced"
     assert browser["doctor"]["doctor_status"] == "ok"
     lock_payload = json.loads((repo_root / "integrations" / "locks" / "agent-browser.json").read_text(encoding="utf-8"))
     assert lock_payload["release"]["latest_tag"] == "v0.25.3"
-    assert lock_payload["update"]["update_status"] == "updated"
+    assert lock_payload["update"]["update_status"] == "manual"
+    assert lock_payload["update"]["commands"] == []
     assert lock_payload["support"]["materialized_paths"] == ["support/agent-browser"]
     assert (plugin_root / "support" / "agent-browser" / "SKILL.md").is_file()
     assert lock_payload["doctor"]["doctor_status"] == "ok"
+
+
+def test_tool_update_routes_npm_provenance_for_agent_browser(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
+    home_root = tmp_path / "home"
+    npm_script, browser_link = make_fake_npm_agent_browser(tmp_path)
+    release_fixture = make_release_fixture(tmp_path)
+    support_fixture = make_support_sync_fixture(tmp_path)
+    plugin_root = home_root / ".codex" / "plugins" / "charness"
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{npm_script.parent}:{browser_link.parent}:{env.get('PATH', '')}"
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+    env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
+
+    result = run_cli_in_repo(repo_root, "tool", "update", "--repo-root", str(repo_root), "--json", "agent-browser", env=env)
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    browser = payload["results"]["agent-browser"]
+    assert browser["update"]["status"] == "updated"
+    assert browser["update"]["mode"] == "package_manager"
+    assert browser["update"]["package_manager"] == "npm"
+    assert browser["update"]["package_name"] == "agent-browser"
+    assert browser["doctor"]["provenance"]["install_method"] == "npm"
+    assert browser["support"]["status"] == "synced"
+    assert (plugin_root / "support" / "agent-browser" / "SKILL.md").is_file()
+    lock_payload = json.loads((repo_root / "integrations" / "locks" / "agent-browser.json").read_text(encoding="utf-8"))
+    assert lock_payload["provenance"]["install_method"] == "npm"
+    assert lock_payload["update"]["mode"] == "package_manager"
+    assert lock_payload["update"]["package_name"] == "agent-browser"
 
 
 def test_tool_doctor_records_npm_provenance(tmp_path: Path, seeded_charness_repo: Path) -> None:

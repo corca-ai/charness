@@ -397,9 +397,6 @@ def make_fake_agent_browser(tmp_path: Path) -> Path:
             if args == ["--help"]:
                 print("agent-browser")
                 raise SystemExit(0)
-            if args == ["upgrade"]:
-                print("upgraded")
-                raise SystemExit(0)
             raise SystemExit(0)
             """
         ),
@@ -407,6 +404,58 @@ def make_fake_agent_browser(tmp_path: Path) -> Path:
     )
     script.chmod(0o755)
     return script
+
+
+def make_fake_npm_agent_browser(tmp_path: Path) -> tuple[Path, Path]:
+    npm_prefix = tmp_path / "npm-global"
+    bin_dir = npm_prefix / "bin"
+    package_bin = npm_prefix / "lib" / "node_modules" / "agent-browser"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    package_bin.mkdir(parents=True, exist_ok=True)
+    npm_script = tmp_path / "bin" / "npm"
+    npm_script.parent.mkdir(parents=True, exist_ok=True)
+    npm_script.write_text(
+        textwrap.dedent(
+            f"""\
+            #!/usr/bin/env python3
+            import sys
+
+            args = sys.argv[1:]
+            if args == ["prefix", "-g"]:
+                print({str(npm_prefix)!r})
+                raise SystemExit(0)
+            if args == ["install", "-g", "agent-browser@latest"]:
+                print("updated agent-browser")
+                raise SystemExit(0)
+            raise SystemExit(1)
+            """
+        ),
+        encoding="utf-8",
+    )
+    npm_script.chmod(0o755)
+    browser_impl = package_bin / "agent-browser-linux-x64"
+    browser_impl.write_text(
+        textwrap.dedent(
+            """\
+            #!/usr/bin/env python3
+            import sys
+
+            args = sys.argv[1:]
+            if args == ["--version"]:
+                print("agent-browser 0.25.3")
+                raise SystemExit(0)
+            if args == ["--help"]:
+                print("agent-browser")
+                raise SystemExit(0)
+            raise SystemExit(0)
+            """
+        ),
+        encoding="utf-8",
+    )
+    browser_impl.chmod(0o755)
+    browser_link = bin_dir / "agent-browser"
+    browser_link.symlink_to(browser_impl)
+    return npm_script, browser_link
 
 
 def make_fake_go_specdown(tmp_path: Path) -> tuple[Path, Path]:

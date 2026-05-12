@@ -61,6 +61,8 @@ def support_discovery_state(
     capability: dict[str, Any],
     support_state: str,
     previous_lock: dict[str, Any] | None = None,
+    *,
+    plugin_root: Path | None = None,
 ) -> tuple[dict[str, Any] | None, list[str]]:
     local_support_path = capability.get("support_skill_path")
     if isinstance(local_support_path, str) and local_support_path and (repo_root / local_support_path).is_file():
@@ -80,6 +82,12 @@ def support_discovery_state(
         return None, []
 
     support = previous_lock.get("support") if previous_lock else None
+    if isinstance(support, dict):
+        if plugin_root is not None and support.get("materialized_kind") == "installed-plugin-copy":
+            materialized_base = support.get("materialized_base")
+            if not isinstance(materialized_base, str) or Path(materialized_base).resolve() != plugin_root.resolve():
+                support = None
+
     if isinstance(support, dict):
         for materialized_root in support_materialized_roots(repo_root, support):
             materialized_path = materialized_root / "SKILL.md"
@@ -142,16 +150,36 @@ def evaluate_readiness(capability: dict[str, Any], repo_root: Path) -> dict[str,
     }
 
 
-def inspect_capability_state(repo_root: Path, capability: dict[str, Any]) -> dict[str, Any]:
+def inspect_support_state(
+    repo_root: Path,
+    capability: dict[str, Any],
+    *,
+    plugin_root: Path | None,
+) -> tuple[dict[str, Any] | None, str, dict[str, Any], dict[str, Any] | None, list[str]]:
+    previous_lock = read_lock(repo_root, capability["tool_id"])
+    support_state = support_state_for_manifest(capability)
+    support_sync = inspect_support_sync(repo_root, previous_lock, plugin_root=plugin_root)
+    support_sync, next_steps = support_sync_guidance(capability, support_state, support_sync)
+    support_discovery, discovery_steps = support_discovery_state(
+        repo_root,
+        capability,
+        support_state,
+        previous_lock,
+        plugin_root=plugin_root,
+    )
+    next_steps.extend(discovery_steps)
+    return previous_lock, support_state, support_sync, support_discovery, next_steps
+
+
+def inspect_capability_state(repo_root: Path, capability: dict[str, Any], *, plugin_root: Path | None = None) -> dict[str, Any]:
     disabled = disabled_by_cautilus_adapter(repo_root, capability)
     if disabled is not None:
         disabled_payload = disabled_check_payload(disabled)
-        previous_lock = read_lock(repo_root, capability["tool_id"])
-        support_state = support_state_for_manifest(capability)
-        support_sync = inspect_support_sync(repo_root, previous_lock)
-        support_sync, next_steps = support_sync_guidance(capability, support_state, support_sync)
-        support_discovery, discovery_steps = support_discovery_state(repo_root, capability, support_state, previous_lock)
-        next_steps.extend(discovery_steps)
+        previous_lock, support_state, support_sync, support_discovery, next_steps = inspect_support_state(
+            repo_root,
+            capability,
+            plugin_root=plugin_root,
+        )
         next_steps.append(f"Cautilus is disabled by repo adapter: {disabled['reason']}")
         return {
             "kind": capability["kind"],
@@ -184,12 +212,11 @@ def inspect_capability_state(repo_root: Path, capability: dict[str, Any]) -> dic
     }
     readiness_result = evaluate_readiness(capability, repo_root)
     version_result = evaluate_version(capability, detect_result)
-    previous_lock = read_lock(repo_root, capability["tool_id"])
-    support_state = support_state_for_manifest(capability)
-    support_sync = inspect_support_sync(repo_root, previous_lock)
-    support_sync, next_steps = support_sync_guidance(capability, support_state, support_sync)
-    support_discovery, discovery_steps = support_discovery_state(repo_root, capability, support_state, previous_lock)
-    next_steps.extend(discovery_steps)
+    previous_lock, support_state, support_sync, support_discovery, next_steps = inspect_support_state(
+        repo_root,
+        capability,
+        plugin_root=plugin_root,
+    )
 
     install_route = install_route_for_manifest(repo_root, capability)
 

@@ -43,8 +43,15 @@ def lock_safe_doctor_payload(payload: dict[str, object]) -> dict[str, object]:
     return lock_payload
 
 
-def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: bool, skip_release_probe: bool) -> dict[str, object]:
-    state = inspect_capability_state(repo_root, manifest)
+def inspect_manifest(
+    repo_root: Path,
+    manifest: dict[str, object],
+    *,
+    write: bool,
+    skip_release_probe: bool,
+    plugin_root: Path | None = None,
+) -> dict[str, object]:
+    state = inspect_capability_state(repo_root, manifest, plugin_root=plugin_root)
     disabled = state.get("doctor_status") == "disabled"
     provenance_result = (
         {
@@ -85,6 +92,11 @@ def inspect_manifest(repo_root: Path, manifest: dict[str, object], *, write: boo
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument(
+        "--plugin-root",
+        type=Path,
+        help="Installed plugin root whose support/ materialization should be treated as the active support surface.",
+    )
     parser.add_argument("--tool-id", action="append", default=[])
     parser.add_argument("--write-locks", action="store_true")
     parser.add_argument(
@@ -96,6 +108,7 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
+    plugin_root = args.plugin_root.resolve() if args.plugin_root else None
     capabilities = load_capabilities(repo_root)
     selected = [capability for capability in capabilities if not args.tool_id or capability["tool_id"] in args.tool_id]
     results = [
@@ -104,6 +117,7 @@ def main() -> int:
             capability,
             write=args.write_locks,
             skip_release_probe=args.skip_release_probe,
+            plugin_root=plugin_root,
         )
         for capability in selected
     ]

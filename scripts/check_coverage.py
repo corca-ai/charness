@@ -14,6 +14,7 @@ import sys
 import tempfile
 import trace
 from pathlib import Path
+from unittest import mock
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
 
@@ -185,6 +186,31 @@ def run_traced_function(tracer: trace.Trace, function: object) -> None:
         tracer.runfunc(function)
 
 
+def exercise_doctor_scenarios() -> None:
+    import scripts.doctor as doctor
+
+    disabled_state = {
+        "doctor_status": "disabled",
+        "previous_lock_present": False,
+        "support_sync": {"status": "not-tracked", "expected_paths": [], "missing_paths": []},
+    }
+    manifest = {"tool_id": "cautilus", "version_expectation": {"constraint": "local"}}
+    with mock.patch.object(doctor, "inspect_capability_state", return_value=disabled_state):
+        doctor.inspect_manifest(Path("."), manifest, write=False, skip_release_probe=False)
+
+    payload = {
+        "tool_id": "demo",
+        "doctor_status": "missing",
+        "support_state": "integration-only",
+        "doctor_disposition": "blocking-install-needed",
+        "previous_lock_present": False,
+    }
+    with mock.patch.object(doctor, "load_capabilities", return_value=[manifest]):
+        with mock.patch.object(doctor, "inspect_manifest", return_value=payload):
+            with mock.patch.object(sys, "argv", ["doctor.py", "--repo-root", "."]):
+                doctor.main()
+
+
 def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
     with tempfile.TemporaryDirectory(prefix="charness-coverage-") as tmpdir:
         tmp = Path(tmpdir)
@@ -225,6 +251,7 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
         scenario_functions = (
             exercise_control_plane_scenarios,
             exercise_control_plane_helper_scenarios,
+            exercise_doctor_scenarios,
             exercise_install_provenance_scenarios,
             exercise_install_provenance_helper_scenarios,
             exercise_install_tool_helper_scenarios,
