@@ -40,6 +40,11 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   `charness-artifacts/`, say those meaningful artifact changes are repo state
   and commit targets, while current-pointer helpers should no-op when
   canonical content has not changed
+- when the repo uses Charness announcement or release-note workflows, say that
+  meaningful behavior commits should include a concise body with issue linkage,
+  human-visible value, verification, and operator/apply notes when relevant;
+  merge commits that close issues should include close keywords and a summary
+  body when the implementation branch commits are terse
 - when the repo uses bounded fresh-eye or critique-style subagent review as a
   stop gate, a dedicated `## Subagent Delegation` section with one short rule
   that says `explicit user delegation request` for the bounded scope, the review

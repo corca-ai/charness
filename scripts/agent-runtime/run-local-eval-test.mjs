@@ -17,6 +17,7 @@ import { extractClaudeTelemetry } from "./skill-test-telemetry.mjs";
 export { normalizeInstructionSurfaceCaseSuite } from "./instruction-surface-case-suite.mjs";
 
 const CODEX_SESSION_MODES = ["ephemeral", "persistent"];
+const CODEX_HOME_MODES = ["isolated", "inherit"];
 
 const CLAUDE_CLI_ENV = {
 	CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1",
@@ -32,7 +33,7 @@ const CLAUDE_CLI_ENV = {
 function usage(exitCode = 0) {
 	const text = [
 		"Usage:",
-		"  node ./scripts/agent-runtime/run-local-eval-test.mjs --repo-root <dir> --workspace <dir> --cases-file <file> --output-file <file> [--artifact-dir <dir>] [--backend codex_exec|claude_code|fixture] [--fixture-results-file <file>] [--sandbox read-only|workspace-write] [--timeout-ms <ms>] [--model <model>] [--reasoning-effort <level>] [--codex-model <model>] [--codex-reasoning-effort <level>] [--codex-session-mode ephemeral|persistent] [--codex-ephemeral true|false] [--codex-config <key=value>] [--claude-model <model>] [--claude-permission-mode <mode>] [--claude-allowed-tools <rules>]",
+		"  node ./scripts/agent-runtime/run-local-eval-test.mjs --repo-root <dir> --workspace <dir> --cases-file <file> --output-file <file> [--artifact-dir <dir>] [--backend codex_exec|claude_code|fixture] [--fixture-results-file <file>] [--sandbox read-only|workspace-write] [--timeout-ms <ms>] [--model <model>] [--reasoning-effort <level>] [--codex-model <model>] [--codex-reasoning-effort <level>] [--codex-session-mode ephemeral|persistent] [--codex-ephemeral true|false] [--codex-home-mode isolated|inherit] [--codex-home <dir>] [--codex-config <key=value>] [--claude-model <model>] [--claude-permission-mode <mode>] [--claude-allowed-tools <rules>]",
 	].join("\n");
 	const out = exitCode === 0 ? process.stdout : process.stderr;
 	out.write(`${text}\n`);
@@ -92,6 +93,8 @@ function defaultOptions() {
 		codexModel: null,
 		codexReasoningEffort: null,
 		codexSessionMode: "ephemeral",
+		codexHomeMode: "isolated",
+		codexHome: null,
 		codexConfigOverrides: [],
 		claudeModel: null,
 		claudePermissionMode: null,
@@ -138,6 +141,15 @@ const VALUE_OPTIONS = {
 	},
 	"--codex-session-mode": (options, value) => {
 		options.codexSessionMode = parseCodexSessionMode(value, "--codex-session-mode");
+	},
+	"--codex-home-mode": (options, value) => {
+		if (!CODEX_HOME_MODES.includes(value)) {
+			fail("--codex-home-mode must be isolated or inherit");
+		}
+		options.codexHomeMode = value;
+	},
+	"--codex-home": (options, value) => {
+		options.codexHome = resolve(value);
 	},
 	"--codex-config": (options, value) => {
 		options.codexConfigOverrides.push(value);
@@ -193,6 +205,12 @@ function parseArgs(argv) {
 	}
 	if (!CODEX_SESSION_MODES.includes(options.codexSessionMode)) {
 		fail("--codex-session-mode must be ephemeral or persistent");
+	}
+	if (!CODEX_HOME_MODES.includes(options.codexHomeMode)) {
+		fail("--codex-home-mode must be isolated or inherit");
+	}
+	if (options.codexHome && options.codexHomeMode === "inherit") {
+		fail("--codex-home cannot be used with --codex-home-mode inherit");
 	}
 	if (options.backend === "fixture" && !options.fixtureResultsFile) {
 		fail("--fixture-results-file is required when --backend fixture");
@@ -349,6 +367,35 @@ export function codexArgs(options, schemaFile, outputFile) {
 	return args;
 }
 
+export function codexEnvironment(options, outputDir) {
+	const env = {
+		...process.env,
+		PATH: `${join(options.repoRoot, "bin")}:${process.env.PATH ?? ""}`,
+	};
+	const configuredHome = options.codexHome ? resolve(options.codexHome) : null;
+	if (configuredHome || options.codexHomeMode !== "inherit") {
+		const codexHome = configuredHome ?? join(outputDir, "codex-home");
+		mkdirSync(codexHome, { recursive: true });
+		env.CODEX_HOME = codexHome;
+		return {
+			env,
+			telemetry: {
+				codex_home_mode: configuredHome ? "custom" : "isolated",
+				codex_home_isolated: true,
+				codex_home_path: codexHome,
+			},
+		};
+	}
+	return {
+		env,
+		telemetry: {
+			codex_home_mode: "inherit",
+			codex_home_isolated: false,
+			...(process.env.CODEX_HOME ? { codex_home_path: process.env.CODEX_HOME } : {}),
+		},
+	};
+}
+
 function normalizeExpectedFields(evaluation) {
 	return {
 		...(evaluation.taskPath ? { taskPath: evaluation.taskPath } : {}),
@@ -357,8 +404,35 @@ function normalizeExpectedFields(evaluation) {
 		...(evaluation.forbiddenInstructionFiles.length > 0 ? { forbiddenInstructionFiles: evaluation.forbiddenInstructionFiles } : {}),
 		...(evaluation.requiredSupportingFiles.length > 0 ? { requiredSupportingFiles: evaluation.requiredSupportingFiles } : {}),
 		...(evaluation.forbiddenSupportingFiles.length > 0 ? { forbiddenSupportingFiles: evaluation.forbiddenSupportingFiles } : {}),
+		...(evaluation.requiredConcepts.length > 0 ? { requiredConcepts: evaluation.requiredConcepts } : {}),
 		...(evaluation.expectedRouting ? { expectedRouting: evaluation.expectedRouting } : {}),
 	};
+}
+
+function conceptSourceText(observed, sourceField) {
+	if (sourceField === "summary") {
+		return observed.summary ?? "";
+	}
+	if (sourceField === "routingDecision.reasonSummary") {
+		return observed.routingDecision?.reasonSummary ?? "";
+	}
+	return "";
+}
+
+function evaluateConceptAssertions(evaluation, observed) {
+	return evaluation.requiredConcepts.map((concept) => {
+		const sourceText = concept.sourceFields.map((field) => conceptSourceText(observed, field)).join("\n").toLocaleLowerCase();
+		const matchedTerms = concept.terms.filter((term) => sourceText.includes(term.toLocaleLowerCase()));
+		const missingTerms = concept.terms.filter((term) => !sourceText.includes(term.toLocaleLowerCase()));
+		return {
+			id: concept.id,
+			status: missingTerms.length === 0 ? "passed" : "failed",
+			sourceFields: concept.sourceFields,
+			requiredTerms: concept.terms,
+			matchedTerms,
+			missingTerms,
+		};
+	});
 }
 
 function normalizeObservedCore(evaluation, observed, artifactRefs, startedAt) {
@@ -455,9 +529,11 @@ function normalizeObservedResult(evaluation, observed, artifactRefs, startedAt, 
 	if (!["observed", "blocked"].includes(observationStatus)) {
 		throw new Error("observed.observationStatus must be observed or blocked");
 	}
+	const conceptAssertions = evaluateConceptAssertions(evaluation, observed);
 	return {
 		...normalizeObservedCore(evaluation, observed, artifactRefs, startedAt),
 		...normalizeExpectedFields(evaluation),
+		...(conceptAssertions.length > 0 ? { conceptAssertions } : {}),
 		...normalizeObservedOptionalFields(evaluation.workspace, observed, telemetry),
 	};
 }
@@ -485,14 +561,12 @@ function runCodexEvaluation(options, evaluation, outputDir, startedAt) {
 	const prompt = renderPrompt(evaluation);
 	writeFileSync(promptFile, prompt);
 	writeFileSync(schemaFile, `${JSON.stringify(baseSchema(), null, 2)}\n`);
+	const runtime = codexEnvironment(options, outputDir);
 
 	const result = spawnSync("codex", codexArgs(options, schemaFile, outputFile), {
 		cwd: options.workspace,
 		encoding: "utf-8",
-		env: {
-			...process.env,
-			PATH: `${join(options.repoRoot, "bin")}:${process.env.PATH ?? ""}`,
-		},
+		env: runtime.env,
 		input: prompt,
 		timeout: options.timeoutMs,
 	});
@@ -531,6 +605,7 @@ function runCodexEvaluation(options, evaluation, outputDir, startedAt) {
 	const telemetry = {
 		...(model ? { model } : {}),
 		session_mode: sessionMode,
+		...runtime.telemetry,
 	};
 	return normalizeObservedResult(evaluation, observed, artifactRefs, startedAt, telemetry);
 }
@@ -631,11 +706,32 @@ export function buildObservedInstructionSurfaceInput(options) {
 	};
 }
 
+function failedConceptAssertions(packet) {
+	const failures = [];
+	for (const evaluation of packet.evaluations ?? []) {
+		for (const assertion of evaluation.conceptAssertions ?? []) {
+			if (assertion.status === "failed") {
+				failures.push({
+					evaluationId: evaluation.evaluationId,
+					conceptId: assertion.id,
+					missingTerms: assertion.missingTerms ?? [],
+				});
+			}
+		}
+	}
+	return failures;
+}
+
 function main() {
 	const options = parseArgs(process.argv.slice(2));
 	mkdirSync(options.artifactDir, { recursive: true });
 	const packet = buildObservedInstructionSurfaceInput(options);
 	writeFileSync(options.outputFile, `${JSON.stringify(packet, null, 2)}\n`);
+	const conceptFailures = failedConceptAssertions(packet);
+	if (conceptFailures.length > 0) {
+		process.stderr.write(`Concept assertion failure(s): ${JSON.stringify(conceptFailures)}\n`);
+		process.exit(1);
+	}
 }
 
 if (import.meta.url === new URL(process.argv[1], "file:").href) {

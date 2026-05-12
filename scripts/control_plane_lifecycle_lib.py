@@ -52,6 +52,18 @@ def detect_and_healthcheck(repo_root: Path, manifest: dict[str, Any], *, failure
     return detect_result, healthcheck_result
 
 
+def evaluate_readiness(manifest: dict[str, Any], repo_root: Path) -> dict[str, Any]:
+    checks: list[dict[str, Any]] = []
+    for check in manifest.get("readiness_checks", []):
+        result = run_check(check, repo_root)
+        checks.append({"check_id": check["check_id"], "summary": check["summary"], **result})
+    return {
+        "ok": all(check["ok"] for check in checks),
+        "checks": checks,
+        "failed_checks": [check["check_id"] for check in checks if not check["ok"]],
+    }
+
+
 def command_result_payload(result: CommandResult) -> dict[str, Any]:
     return {
         "command": result.command,

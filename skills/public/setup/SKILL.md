@@ -111,6 +111,10 @@ Then load only the references needed for the detected state:
    - when Charness workflows write durable artifacts, make `<repo-root>/AGENTS.md`
      say meaningful `charness-artifacts/` changes are repo state and
      current-pointer helpers no-op without canonical content changes
+   - when the repo uses announcement or release-note workflows, make
+     `<repo-root>/AGENTS.md` say meaningful behavior commits should include a
+     short body with issue linkage, human-visible value, verification, and
+     operator/apply notes when relevant
    - when the repo uses bounded fresh-eye or critique-style subagent review
      as a stop gate, make `<repo-root>/AGENTS.md` say that the review is already delegated,
      agents should not wait for a second user message asking for delegation,

@@ -35,6 +35,8 @@ COMMANDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("charness tool install", ("./charness", "tool", "install", "--help")),
     ("charness tool update", ("./charness", "tool", "update", "--help")),
     ("charness worktree", ("./charness", "worktree", "--help")),
+    ("charness worktree create", ("./charness", "worktree", "create", "--help")),
+    ("charness worktree add", ("./charness", "worktree", "add", "--help")),
     ("charness worktree doctor", ("./charness", "worktree", "doctor", "--help")),
     ("charness worktree prepare", ("./charness", "worktree", "prepare", "--help")),
     ("charness worktree audit", ("./charness", "worktree", "audit", "--help")),

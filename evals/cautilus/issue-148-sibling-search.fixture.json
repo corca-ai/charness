@@ -12,6 +12,22 @@
       "expectedRouting": {
         "workSkill": "issue"
       },
+      "requiredConcepts": [
+        {
+          "id": "issue-resolution-structural-sibling-search",
+          "terms": [
+            "recurrence-focused review",
+            "mental model",
+            "structural sibling",
+            "keyword",
+            "proximity"
+          ],
+          "sourceFields": [
+            "summary",
+            "routingDecision.reasonSummary"
+          ]
+        }
+      ],
       "requiredInstructionFiles": [
         "skills/public/issue/SKILL.md",
         "skills/public/issue/references/causal-review.md"

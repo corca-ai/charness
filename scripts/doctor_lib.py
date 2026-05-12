@@ -9,6 +9,7 @@ from scripts.control_plane_lib import evaluate_version, read_lock, run_check
 from scripts.control_plane_lifecycle_lib import (
     disabled_by_cautilus_adapter,
     disabled_check_payload,
+    evaluate_readiness,
     render_repo_followup,
 )
 from scripts.repo_layout import discovery_stub_dir, generated_support_dir
@@ -136,18 +137,6 @@ def support_discovery_state(
     guidance = " ".join(guidance_parts)
     discovery["guidance"] = guidance
     return discovery, [guidance]
-
-
-def evaluate_readiness(capability: dict[str, Any], repo_root: Path) -> dict[str, Any]:
-    checks: list[dict[str, Any]] = []
-    for check in capability.get("readiness_checks", []):
-        result = run_check(check, repo_root)
-        checks.append({"check_id": check["check_id"], "summary": check["summary"], **result})
-    return {
-        "ok": all(check["ok"] for check in checks),
-        "checks": checks,
-        "failed_checks": [check["check_id"] for check in checks if not check["ok"]],
-    }
 
 
 def inspect_support_state(

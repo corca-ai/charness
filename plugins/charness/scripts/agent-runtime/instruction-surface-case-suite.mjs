@@ -53,6 +53,36 @@ function normalizeExpectedRouting(value, field) {
 	return normalized;
 }
 
+function normalizeRequiredConcept(value, field) {
+	const record = assertObject(value, field);
+	const conceptId = assertString(record.id, `${field}.id`);
+	const terms = normalizePathList(record.terms, `${field}.terms`);
+	if (terms.length === 0) {
+		throw new Error(`${field}.terms must be a non-empty array`);
+	}
+	const sourceFields = normalizePathList(record.sourceFields, `${field}.sourceFields`);
+	for (const sourceField of sourceFields) {
+		if (!["summary", "routingDecision.reasonSummary"].includes(sourceField)) {
+			throw new Error(`${field}.sourceFields must contain only summary or routingDecision.reasonSummary`);
+		}
+	}
+	return {
+		id: conceptId,
+		terms,
+		sourceFields: sourceFields.length > 0 ? sourceFields : ["summary", "routingDecision.reasonSummary"],
+	};
+}
+
+function normalizeRequiredConcepts(value, field) {
+	if (value === undefined || value === null) {
+		return [];
+	}
+	if (!Array.isArray(value)) {
+		throw new Error(`${field} must be an array`);
+	}
+	return value.map((entry, index) => normalizeRequiredConcept(entry, `${field}[${index}]`));
+}
+
 function normalizeInstructionSurfaceFileEntry(path, record, field) {
 	const content = optionalString(record.content, `${field}.content`);
 	const sourceFile = optionalString(record.sourceFile, `${field}.sourceFile`);
@@ -114,6 +144,7 @@ function normalizeEvaluation(record, index) {
 	const instructionSurface = normalizeInstructionSurface(record.instructionSurface, `evaluations[${index}].instructionSurface`);
 	const expectedEntryFile = optionalString(record.expectedEntryFile, `evaluations[${index}].expectedEntryFile`);
 	const expectedRouting = normalizeExpectedRouting(record.expectedRouting, `evaluations[${index}].expectedRouting`);
+	const requiredConcepts = normalizeRequiredConcepts(record.requiredConcepts, `evaluations[${index}].requiredConcepts`);
 	return {
 		evaluationId: assertString(record.evaluationId, `evaluations[${index}].evaluationId`),
 		displayName:
@@ -135,6 +166,7 @@ function normalizeEvaluation(record, index) {
 			record.requiredSupportingFiles,
 			`evaluations[${index}].requiredSupportingFiles`,
 		),
+		requiredConcepts,
 		forbiddenSupportingFiles: normalizePathList(
 			record.forbiddenSupportingFiles,
 			`evaluations[${index}].forbiddenSupportingFiles`,

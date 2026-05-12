@@ -25,6 +25,10 @@
 - when a repo uses Charness durable artifacts, `<repo-root>/AGENTS.md` should say
   meaningful `charness-artifacts/` changes are commit targets, and
   current-pointer helpers should no-op when canonical content has not changed
+- when a repo uses Charness announcement or release-note workflows,
+  `<repo-root>/AGENTS.md` should ask agents to preserve announcement-ready
+  commit bodies for meaningful behavior changes: issue linkage,
+  human-visible value, verification, and operator/apply notes when relevant
 
 ## Deterministic Cases
 
@@ -114,3 +118,13 @@ When the repo uses Charness artifacts, prefer a short rule like:
 - Current-pointer helpers should no-op when canonical content has not changed.
 - If a helper rewrites an artifact without canonical change, treat that as
   invocation drift or a helper bug to fix.
+
+When the repo uses Charness announcement or release-note workflows, prefer a
+short commit-message rule like:
+
+- For meaningful behavior changes, write a commit body when the subject alone
+  does not preserve the announcement-ready intent.
+- Include issue linkage, human-visible value, verification, and operator/apply
+  notes when relevant.
+- Merge commits that close issues should include close keywords and a summary
+  body when the implementation branch commits are terse.

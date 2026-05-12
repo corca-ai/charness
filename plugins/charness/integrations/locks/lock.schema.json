@@ -606,6 +606,7 @@
           "type": "string",
           "enum": [
             "installed",
+            "installed-not-ready",
             "failed",
             "noop",
             "manual",
@@ -634,6 +635,9 @@
         },
         "healthcheck": {
           "$ref": "#/definitions/checkResult"
+        },
+        "readiness": {
+          "$ref": "#/definitions/readinessResult"
         },
         "docs_url": {
           "type": [
@@ -682,6 +686,7 @@
           "type": "string",
           "enum": [
             "updated",
+            "updated-not-ready",
             "failed",
             "noop",
             "manual",
@@ -709,6 +714,9 @@
         },
         "healthcheck": {
           "$ref": "#/definitions/checkResult"
+        },
+        "readiness": {
+          "$ref": "#/definitions/readinessResult"
         },
         "package_manager": {
           "type": [

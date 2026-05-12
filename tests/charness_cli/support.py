@@ -510,7 +510,7 @@ def make_fake_go_specdown(tmp_path: Path) -> tuple[Path, Path]:
     )
     specdown_script.chmod(0o755)
     return go_script, specdown_script
-def make_fake_npm_gws(tmp_path: Path) -> tuple[Path, Path]:
+def make_fake_npm_gws(tmp_path: Path, *, auth_ready: bool = True) -> tuple[Path, Path]:
     npm_prefix = tmp_path / "npm-global"
     bin_dir = npm_prefix / "bin"
     package_bin = npm_prefix / "lib" / "node_modules" / "@googleworkspace" / "cli"
@@ -538,9 +538,11 @@ def make_fake_npm_gws(tmp_path: Path) -> tuple[Path, Path]:
     )
     npm_script.chmod(0o755)
     gws_impl = package_bin / "run-gws.js"
+    auth_status_exit = 0 if auth_ready else 1
+    auth_status_payload = '{"token_valid": true}' if auth_ready else '{"token_valid": false}'
     gws_impl.write_text(
         textwrap.dedent(
-            """\
+            f"""\
             #!/usr/bin/env python3
             import json
             import sys
@@ -554,8 +556,8 @@ def make_fake_npm_gws(tmp_path: Path) -> tuple[Path, Path]:
                 print("login")
                 raise SystemExit(0)
             if args == ["auth", "status"]:
-                print(json.dumps({"token_valid": True}))
-                raise SystemExit(0)
+                print({auth_status_payload!r})
+                raise SystemExit({auth_status_exit})
             raise SystemExit(1)
             """
         ),

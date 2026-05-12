@@ -36,6 +36,13 @@ def enable_cautilus_adapter(repo_root: Path) -> None:
     adapter.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def set_gws_lifecycle_mode(repo_root: Path, action: str, mode: str) -> None:
+    manifest_path = repo_root / "integrations" / "tools" / "gws-cli.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["lifecycle"][action] = {"mode": mode}
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def make_fake_go_glow(tmp_path: Path) -> tuple[Path, Path]:
     gopath = tmp_path / "go"
     bin_dir = tmp_path / "bin"
@@ -408,6 +415,82 @@ def test_tool_doctor_records_npm_provenance(tmp_path: Path, seeded_charness_repo
     assert gws["release"]["latest_tag"] == "v0.22.5"
 
 
+def test_tool_install_reports_installed_not_ready_when_manifest_readiness_fails(
+    tmp_path: Path, seeded_charness_repo: Path
+) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
+    home_root = tmp_path / "home"
+    npm_script, _ = make_fake_npm_gws(tmp_path, auth_ready=False)
+    release_fixture = make_release_fixture(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{npm_script.parent}:{(npm_script.parent.parent / 'npm-global' / 'bin')}:{env.get('PATH', '')}"
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+
+    result = run_cli_in_repo(
+        repo_root,
+        "tool",
+        "install",
+        "--repo-root",
+        str(repo_root),
+        "--json",
+        "--skip-sync-support",
+        "gws-cli",
+        env=env,
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    gws = payload["results"]["gws-cli"]
+    assert gws["install"]["status"] == "installed-not-ready"
+    assert gws["install"]["detect"]["ok"] is True
+    assert gws["install"]["healthcheck"]["ok"] is True
+    assert gws["install"]["readiness"]["ok"] is False
+    assert gws["install"]["readiness"]["failed_checks"] == ["gws-auth-ready"]
+    assert gws["doctor"]["doctor_status"] == "not-ready"
+    assert "`gws-cli` is installed but not ready" in gws["next_step"]
+    assert "gws-auth-ready" in gws["next_step"]
+    lock_payload = json.loads((repo_root / "integrations" / "locks" / "gws-cli.json").read_text(encoding="utf-8"))
+    assert lock_payload["install"]["install_status"] == "installed-not-ready"
+    assert lock_payload["install"]["readiness"]["failed_checks"] == ["gws-auth-ready"]
+
+
+def test_tool_install_mode_none_still_fails_when_manifest_readiness_fails(
+    tmp_path: Path, seeded_charness_repo: Path
+) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
+    set_gws_lifecycle_mode(repo_root, "install", "none")
+    home_root = tmp_path / "home"
+    npm_script, _ = make_fake_npm_gws(tmp_path, auth_ready=False)
+    release_fixture = make_release_fixture(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{npm_script.parent}:{(npm_script.parent.parent / 'npm-global' / 'bin')}:{env.get('PATH', '')}"
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+
+    result = run_cli_in_repo(
+        repo_root,
+        "tool",
+        "install",
+        "--repo-root",
+        str(repo_root),
+        "--json",
+        "--skip-sync-support",
+        "gws-cli",
+        env=env,
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    gws = payload["results"]["gws-cli"]
+    assert gws["install"]["status"] == "installed-not-ready"
+    assert gws["install"]["mode"] == "none"
+    assert gws["install"]["readiness"]["failed_checks"] == ["gws-auth-ready"]
+    lock_payload = json.loads((repo_root / "integrations" / "locks" / "gws-cli.json").read_text(encoding="utf-8"))
+    assert lock_payload["install"]["install_status"] == "installed-not-ready"
+    assert lock_payload["install"]["mode"] == "none"
+
+
 def test_tool_doctor_reports_specdown_binary_contract_without_support_sync(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     home_root = tmp_path / "home"
@@ -529,3 +612,79 @@ def test_tool_update_routes_npm_provenance_for_gws(tmp_path: Path, seeded_charne
     lock_payload = json.loads((repo_root / "integrations" / "locks" / "gws-cli.json").read_text(encoding="utf-8"))
     assert lock_payload["provenance"]["install_method"] == "npm"
     assert lock_payload["update"]["package_name"] == "@googleworkspace/cli"
+
+
+def test_tool_update_reports_updated_not_ready_when_manifest_readiness_fails(
+    tmp_path: Path, seeded_charness_repo: Path
+) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
+    home_root = tmp_path / "home"
+    npm_script, _ = make_fake_npm_gws(tmp_path, auth_ready=False)
+    release_fixture = make_release_fixture(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{npm_script.parent}:{(npm_script.parent.parent / 'npm-global' / 'bin')}:{env.get('PATH', '')}"
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+
+    result = run_cli_in_repo(
+        repo_root,
+        "tool",
+        "update",
+        "--repo-root",
+        str(repo_root),
+        "--json",
+        "--skip-sync-support",
+        "gws-cli",
+        env=env,
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    gws = payload["results"]["gws-cli"]
+    assert gws["update"]["status"] == "updated-not-ready"
+    assert gws["update"]["mode"] == "package_manager"
+    assert gws["update"]["detect"]["ok"] is True
+    assert gws["update"]["healthcheck"]["ok"] is True
+    assert gws["update"]["readiness"]["ok"] is False
+    assert gws["update"]["readiness"]["failed_checks"] == ["gws-auth-ready"]
+    assert gws["doctor"]["doctor_status"] == "not-ready"
+    assert "`gws-cli` is installed but not ready" in gws["next_step"]
+    lock_payload = json.loads((repo_root / "integrations" / "locks" / "gws-cli.json").read_text(encoding="utf-8"))
+    assert lock_payload["update"]["update_status"] == "updated-not-ready"
+    assert lock_payload["update"]["readiness"]["failed_checks"] == ["gws-auth-ready"]
+
+
+def test_tool_update_mode_none_still_fails_when_manifest_readiness_fails(
+    tmp_path: Path, seeded_charness_repo: Path
+) -> None:
+    repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
+    set_gws_lifecycle_mode(repo_root, "update", "none")
+    home_root = tmp_path / "home"
+    npm_script, _ = make_fake_npm_gws(tmp_path, auth_ready=False)
+    release_fixture = make_release_fixture(tmp_path)
+    env = os.environ.copy()
+    env["HOME"] = str(home_root)
+    env["PATH"] = f"{npm_script.parent}:{(npm_script.parent.parent / 'npm-global' / 'bin')}:{env.get('PATH', '')}"
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+
+    result = run_cli_in_repo(
+        repo_root,
+        "tool",
+        "update",
+        "--repo-root",
+        str(repo_root),
+        "--json",
+        "--skip-sync-support",
+        "gws-cli",
+        env=env,
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    gws = payload["results"]["gws-cli"]
+    assert gws["update"]["status"] == "updated-not-ready"
+    assert gws["update"]["mode"] == "none"
+    assert gws["update"]["readiness"]["failed_checks"] == ["gws-auth-ready"]
+    lock_payload = json.loads((repo_root / "integrations" / "locks" / "gws-cli.json").read_text(encoding="utf-8"))
+    assert lock_payload["update"]["update_status"] == "updated-not-ready"
+    assert lock_payload["update"]["mode"] == "none"

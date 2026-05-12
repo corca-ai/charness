@@ -29,6 +29,19 @@ def test_announcement_draft_shape_lists_public_body_shape_reframing() -> None:
     assert "proof vocabulary" in text
 
 
+def test_announcement_draft_shape_lists_affordance_and_alias_rewrite() -> None:
+    text = (ROOT / "skills" / "public" / "announcement" / "references" / "draft-shape.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "Affordance Rewrite Pass" in text
+    assert "non-maintainer" in text
+    assert "reader-visible affordances" in text
+    assert "canonical behavior first" in text
+    assert "$ceal:ignore" in text
+    assert "$cig" in text
+
+
 def test_gather_source_priority_includes_official_url_before_websearch() -> None:
     text = (ROOT / "skills" / "public" / "gather" / "references" / "source-priority.md").read_text(
         encoding="utf-8"

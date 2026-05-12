@@ -20,6 +20,7 @@ _scripts_control_plane_lifecycle_lib_module = import_repo_module(__file__, "scri
 attach_release_metadata = _scripts_control_plane_lifecycle_lib_module.attach_release_metadata
 command_result_payload = _scripts_control_plane_lifecycle_lib_module.command_result_payload
 detect_and_healthcheck = _scripts_control_plane_lifecycle_lib_module.detect_and_healthcheck
+evaluate_readiness = _scripts_control_plane_lifecycle_lib_module.evaluate_readiness
 has_any_status = _scripts_control_plane_lifecycle_lib_module.has_any_status
 print_tool_statuses = _scripts_control_plane_lifecycle_lib_module.print_tool_statuses
 select_by_tool_id = _scripts_control_plane_lifecycle_lib_module.select_by_tool_id
@@ -50,8 +51,43 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
     mode = update_action["mode"]
     release = probe_release(manifest)
     if mode == "none":
+        detect_result, healthcheck_result = detect_and_healthcheck(
+            repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
+        )
+        readiness_result = evaluate_readiness(manifest, repo_root) if detect_result["ok"] and healthcheck_result["ok"] else {
+            "ok": False,
+            "checks": [],
+            "failed_checks": [],
+        }
+        status = "updated-not-ready" if detect_result["ok"] and healthcheck_result["ok"] and not readiness_result["ok"] else "noop"
+        if execute:
+            upsert_lock(
+                repo_root,
+                manifest,
+                release=release,
+                provenance=provenance,
+                update={
+                    "updated_at": now_iso(),
+                    "update_status": status,
+                    "mode": mode,
+                    "commands": [],
+                    "detect": detect_result,
+                    "healthcheck": healthcheck_result,
+                    "readiness": readiness_result,
+                    "package_manager": None,
+                    "package_name": None,
+                },
+            )
         return attach_release_metadata(
-            {"tool_id": manifest["tool_id"], "status": "noop", "mode": mode},
+            {
+                "tool_id": manifest["tool_id"],
+                "status": status,
+                "mode": mode,
+                "commands": [],
+                "detect": detect_result,
+                "healthcheck": healthcheck_result,
+                "readiness": readiness_result,
+            },
             provenance=provenance,
             release=release,
         )
@@ -59,6 +95,11 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
         detect_result, healthcheck_result = detect_and_healthcheck(
             repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
         )
+        readiness_result = evaluate_readiness(manifest, repo_root) if detect_result["ok"] and healthcheck_result["ok"] else {
+            "ok": False,
+            "checks": [],
+            "failed_checks": [],
+        }
         result = {
             "tool_id": manifest["tool_id"],
             "status": "manual",
@@ -69,6 +110,7 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
             "commands": [],
             "detect": detect_result,
             "healthcheck": healthcheck_result,
+            "readiness": readiness_result,
         }
         if execute:
             upsert_lock(
@@ -83,6 +125,7 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
                     "commands": [],
                     "detect": detect_result,
                     "healthcheck": healthcheck_result,
+                    "readiness": readiness_result,
                     "package_manager": None,
                     "package_name": None,
                 },
@@ -106,7 +149,16 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
     detect_result, healthcheck_result = detect_and_healthcheck(
         repo_root, manifest, failure_reason="detect failed after update"
     )
-    status = "updated" if all(result.exit_code == 0 for result in command_results) and detect_result["ok"] and healthcheck_result["ok"] else "failed"
+    readiness_result = evaluate_readiness(manifest, repo_root) if detect_result["ok"] and healthcheck_result["ok"] else {
+        "ok": False,
+        "checks": [],
+        "failed_checks": [],
+    }
+    command_ok = all(result.exit_code == 0 for result in command_results)
+    if command_ok and detect_result["ok"] and healthcheck_result["ok"]:
+        status = "updated" if readiness_result["ok"] else "updated-not-ready"
+    else:
+        status = "failed"
     payload = {
         "updated_at": now_iso(),
         "update_status": status,
@@ -114,6 +166,7 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
         "commands": [command_result_payload(result) for result in command_results],
         "detect": detect_result,
         "healthcheck": healthcheck_result,
+        "readiness": readiness_result,
         "package_manager": update_action.get("package_manager"),
         "package_name": update_action.get("package_name"),
     }
@@ -123,6 +176,9 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
         "status": status,
         "mode": mode,
         "commands": payload["commands"],
+        "detect": detect_result,
+        "healthcheck": healthcheck_result,
+        "readiness": readiness_result,
         "package_manager": payload["package_manager"],
         "package_name": payload["package_name"],
     }
@@ -144,7 +200,7 @@ def main() -> int:
         print(json.dumps(results, ensure_ascii=False, indent=2))
     else:
         print_tool_statuses(results)
-    if has_any_status(results, status_key="status", statuses={"failed"}):
+    if has_any_status(results, status_key="status", statuses={"failed", "updated-not-ready"}):
         return 1
     return 0
 

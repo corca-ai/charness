@@ -51,6 +51,7 @@
         {
           "skill_id": "issue",
           "scenario_ids": [
+            "issue-sibling-search-concept-fixtures",
             "representative-skill-contracts"
           ]
         },

@@ -22,6 +22,44 @@ STRONG_TASK_TRIGGERS_BY_SUPPORT_ID = {
         "spec syntax",
     },
 }
+WORKFLOW_RECOMMENDATIONS = [
+    {
+        "id": "worktree-create",
+        "intent": "create",
+        "layer": "workflow integration",
+        "path": "docs/worktree-prepare.md",
+        "summary": "Create and prepare git worktrees through the Charness worktree CLI.",
+        "triggers": [
+            "worktree",
+            "git worktree",
+            "create worktree",
+            "add worktree",
+            "worktree create",
+            "worktree add",
+            "fresh worktree",
+            "new worktree",
+            "prepare worktree",
+        ],
+        "next_step": "Use `charness worktree create --path <path> --branch <branch> --base <ref>` instead of raw `git worktree add`; add `--prepare` when the operator wants adapter-declared setup to run immediately.",
+    },
+    {
+        "id": "worktree-cleanup",
+        "intent": "cleanup",
+        "layer": "workflow integration",
+        "path": "docs/worktree-prepare.md",
+        "summary": "Safely remove finished git worktrees through the Charness worktree CLI.",
+        "triggers": [
+            "cleanup worktree",
+            "clean up worktree",
+            "remove worktree",
+            "delete worktree",
+            "worktree cleanup",
+            "worktree remove",
+            "worktree teardown",
+        ],
+        "next_step": "Use `charness worktree cleanup --path <worktree>` for a dry-run plan; add `--delete-merged-branch --yes` only after local branch containment is the intended cleanup policy.",
+    },
+]
 
 
 def resolve_tool_recommendations(
@@ -31,6 +69,7 @@ def resolve_tool_recommendations(
     manifests: list[dict[str, Any]],
     recommendations_for_public_skill: Any,
     recommendations_for_role: Any,
+    recommendations_for_task: Any,
 ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
     if args.recommend_for_skill:
         return recommendations_for_public_skill(local_root, manifests, skill_id=args.recommend_for_skill), {
@@ -49,6 +88,19 @@ def resolve_tool_recommendations(
             "mode": "recommendation_role",
             "recommendation_role": args.recommendation_role,
             "next_skill_id": next_skill_id,
+            "only_blocking": args.only_blocking,
+        }
+    if args.recommend_for_task:
+        return recommendations_for_task(
+            local_root,
+            manifests,
+            task_text=args.recommend_for_task,
+            next_skill_id=args.next_skill_id,
+            only_blocking=args.only_blocking,
+        ), {
+            "mode": "task_text",
+            "task_text": args.recommend_for_task,
+            "next_skill_id": args.next_skill_id,
             "only_blocking": args.only_blocking,
         }
     return [], None
@@ -114,6 +166,19 @@ def _task_text_matches(task_text: str, candidate: str) -> bool:
     return bool(normalized) and normalized in task_text.casefold()
 
 
+def _task_words(task_text: str) -> set[str]:
+    return set(re.findall(r"[a-z0-9]+", task_text.casefold()))
+
+
+def _cleanup_worktree_intent(task_text: str) -> bool:
+    normalized = task_text.casefold()
+    words = _task_words(task_text)
+    return "worktree" in words and (
+        bool(words & {"cleanup", "remove", "delete", "teardown"})
+        or "clean up" in normalized
+    )
+
+
 def _strong_trigger_matched(skill_id: str, matched: list[str]) -> bool:
     strong = STRONG_TASK_TRIGGERS_BY_SUPPORT_ID.get(skill_id)
     return not strong or any(item.casefold() in strong for item in matched)
@@ -177,6 +242,40 @@ def support_recommendations_for_task(
     return recommendations
 
 
+def workflow_recommendations_for_task(task_text: str) -> list[dict[str, Any]]:
+    recommendations: list[dict[str, Any]] = []
+    cleanup_intent = _cleanup_worktree_intent(task_text)
+    for workflow in WORKFLOW_RECOMMENDATIONS:
+        if cleanup_intent and workflow.get("intent") == "create":
+            continue
+        matched = [trigger for trigger in workflow["triggers"] if _task_text_matches(task_text, trigger)]
+        if not matched and cleanup_intent and workflow.get("intent") == "cleanup":
+            matched = ["cleanup+worktree"]
+        if not matched:
+            continue
+        recommendations.append(
+            {
+                "id": workflow["id"],
+                "layer": workflow["layer"],
+                "path": workflow["path"],
+                "summary": workflow["summary"],
+                "matched_triggers": matched,
+                "next_step": workflow["next_step"],
+            }
+        )
+    return recommendations
+
+
+def _validation_shaped_task(query: dict[str, Any] | None) -> bool:
+    if not isinstance(query, dict):
+        return False
+    task_text = query.get("task_text")
+    if not isinstance(task_text, str):
+        return False
+    normalized = task_text.casefold()
+    return any(token in normalized for token in ("validate", "validation", "evaluate", "eval", "검증", "평가"))
+
+
 def build_inventory_payload(
     *,
     adapter: dict[str, Any],
@@ -190,12 +289,21 @@ def build_inventory_payload(
     recommendation_query: dict[str, Any] | None,
     support_skill_recommendations: list[dict[str, Any]] | None = None,
     support_recommendation_query: dict[str, Any] | None = None,
+    workflow_recommendations: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    show_note = support_recommendation_query is not None and not support_skill_recommendations and support_entries
+    show_note = (
+        support_recommendation_query is not None
+        and not support_skill_recommendations
+        and not tool_recommendations
+        and not workflow_recommendations
+        and (support_entries or _validation_shaped_task(support_recommendation_query))
+    )
     note = (
         f"No support skill matched the task text via registered intent_triggers, but "
         f"{len(support_entries)} support skill(s) are available locally. Inspect `support_skills` "
-        "or rerun with --recommend-for-skill <id>; empty result is not proof that no capability exists."
+        "or rerun with --recommend-for-skill <id>; empty result is not proof that no capability exists. "
+        "For validation-shaped requests, rerun with "
+        "`--recommendation-role validation --next-skill-id <skill-id>`."
     ) if show_note else None
     return {
         "adapter": {
@@ -216,5 +324,6 @@ def build_inventory_payload(
         "tool_recommendation_query": recommendation_query,
         "support_skill_recommendations": support_skill_recommendations or [],
         "support_recommendation_query": support_recommendation_query,
+        "workflow_recommendations": workflow_recommendations or [],
         "support_recommendation_note": note,
     }

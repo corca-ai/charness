@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -46,6 +47,17 @@ def test_eval_cautilus_scenarios_writes_summary(tmp_path: Path) -> None:
 def test_validate_cautilus_scenarios_covers_eval_surface_wiring() -> None:
     result = run_script("scripts/validate_cautilus_scenarios.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
+
+
+def test_issue_evaluator_profile_includes_sibling_search_concept_fixture() -> None:
+    registry = json.loads((ROOT / "evals" / "cautilus" / "scenarios.json").read_text(encoding="utf-8"))
+    issue_entry = next(
+        entry
+        for entry in registry["profiles"]["evaluator-required"]["skills"]
+        if entry["skill_id"] == "issue"
+    )
+
+    assert "issue-sibling-search-concept-fixtures" in issue_entry["scenario_ids"]
 
 
 def test_eval_cautilus_chatbot_proposals_writes_summary(tmp_path: Path) -> None:
@@ -164,6 +176,198 @@ def test_instruction_surface_runner_supports_fixture_backend(tmp_path: Path) -> 
     assert by_id["compact-startup-bootstrap-before-spec"]["expectedRouting"]["workSkill"] == "spec"
 
 
+def test_instruction_surface_runner_fails_required_concept_assertions(tmp_path: Path) -> None:
+    cases = {
+        "schemaVersion": "cautilus.evaluation_cases.v1",
+        "suiteId": "concept-assertions",
+        "evaluations": [
+            {
+                "evaluationId": "concept-pass",
+                "prompt": "Inspect the issue resolution requirement.",
+                "requiredConcepts": [
+                    {
+                        "id": "mental-model-sibling-search",
+                        "terms": ["mental model", "structural sibling", "keyword", "proximity"],
+                    }
+                ],
+            },
+            {
+                "evaluationId": "concept-fail",
+                "prompt": "Inspect the issue resolution requirement.",
+                "requiredConcepts": [
+                    {
+                        "id": "mental-model-sibling-search",
+                        "terms": ["mental model", "structural sibling"],
+                    }
+                ],
+            },
+        ],
+    }
+    cases_path = tmp_path / "cases.json"
+    cases_path.write_text(json.dumps(cases, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    workspace_path = tmp_path / "workspace"
+    workspace_path.mkdir()
+    workspace = str(workspace_path)
+    base_observed = {
+        "observationStatus": "observed",
+        "blockerKind": "",
+        "entryFile": f"{workspace}/AGENTS.md",
+        "loadedInstructionFiles": [f"{workspace}/AGENTS.md"],
+        "loadedSupportingFiles": [],
+        "routingDecision": {
+            "selectedSkill": "issue",
+            "bootstrapHelper": "none",
+            "workSkill": "issue",
+            "selectedSupport": "none",
+            "firstToolCall": "none",
+            "reasonSummary": "issue resolution names the mental model and structural sibling search beyond keyword or proximity matches",
+        },
+    }
+    fixture_results = {
+        "concept-pass": {
+            **base_observed,
+            "summary": "Names the mental model and structural sibling search beyond keyword/proximity matching.",
+        },
+        "concept-fail": {
+            **base_observed,
+            "summary": "Names only the mental model.",
+            "routingDecision": {
+                **base_observed["routingDecision"],
+                "reasonSummary": "Names only the mental model.",
+            },
+        },
+    }
+    fixture_path = tmp_path / "fixture-results.json"
+    output_path = tmp_path / "instruction-surface-inputs.json"
+    artifact_dir = tmp_path / "artifacts"
+    fixture_path.write_text(json.dumps(fixture_results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            "node",
+            "scripts/agent-runtime/run-local-eval-test.mjs",
+            "--repo-root",
+            str(ROOT),
+            "--workspace",
+            workspace,
+            "--cases-file",
+            str(cases_path),
+            "--output-file",
+            str(output_path),
+            "--artifact-dir",
+            str(artifact_dir),
+            "--backend",
+            "fixture",
+            "--fixture-results-file",
+            str(fixture_path),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert "Concept assertion failure" in result.stderr
+    packet = json.loads(output_path.read_text(encoding="utf-8"))
+    by_id = {item["evaluationId"]: item for item in packet["evaluations"]}
+    passing = by_id["concept-pass"]["conceptAssertions"][0]
+    assert passing["status"] == "passed"
+    assert passing["missingTerms"] == []
+    assert by_id["concept-pass"]["requiredConcepts"][0]["sourceFields"] == [
+        "summary",
+        "routingDecision.reasonSummary",
+    ]
+    failing = by_id["concept-fail"]["conceptAssertions"][0]
+    assert failing["status"] == "failed"
+    assert failing["missingTerms"] == ["structural sibling"]
+
+
+def test_issue_sibling_search_fixtures_emit_passing_required_concept_assertions(tmp_path: Path) -> None:
+    workspace_path = tmp_path / "workspace"
+    workspace_path.mkdir()
+    workspace = str(workspace_path)
+    fixture_results = {
+        "issue-146-mental-model-sibling-search": {
+            "observationStatus": "observed",
+            "blockerKind": "",
+            "summary": "The causal review must name the mental model and scan structural sibling patterns beyond keyword and proximity matches.",
+            "entryFile": f"{workspace}/AGENTS.md",
+            "loadedInstructionFiles": [
+                f"{workspace}/skills/public/issue/SKILL.md",
+                f"{workspace}/skills/public/issue/references/causal-review.md",
+            ],
+            "loadedSupportingFiles": [],
+            "routingDecision": {
+                "selectedSkill": "issue",
+                "bootstrapHelper": "none",
+                "workSkill": "issue",
+                "selectedSupport": "none",
+                "firstToolCall": "none",
+                "reasonSummary": "The issue skill requires mental model sibling search beyond keyword or proximity matching.",
+            },
+        },
+        "issue-148-mental-model-sibling-search": {
+            "observationStatus": "observed",
+            "blockerKind": "",
+            "summary": "The issue resolution requires recurrence-focused review, names the mental model, and scans structural sibling patterns beyond keyword and proximity matches.",
+            "entryFile": f"{workspace}/AGENTS.md",
+            "loadedInstructionFiles": [
+                f"{workspace}/skills/public/issue/SKILL.md",
+                f"{workspace}/skills/public/issue/references/causal-review.md",
+            ],
+            "loadedSupportingFiles": [],
+            "routingDecision": {
+                "selectedSkill": "issue",
+                "bootstrapHelper": "none",
+                "workSkill": "issue",
+                "selectedSupport": "none",
+                "firstToolCall": "none",
+                "reasonSummary": "The recurrence-focused review must preserve mental model structural sibling search beyond keyword/proximity matches.",
+            },
+        },
+    }
+    fixture_path = tmp_path / "fixture-results.json"
+    fixture_path.write_text(json.dumps(fixture_results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    for cases_path in (
+        ROOT / "evals" / "cautilus" / "issue-146-sibling-search.fixture.json",
+        ROOT / "evals" / "cautilus" / "issue-148-sibling-search.fixture.json",
+    ):
+        output_path = tmp_path / f"{cases_path.stem}.observed.json"
+        artifact_dir = tmp_path / f"{cases_path.stem}.artifacts"
+        result = subprocess.run(
+            [
+                "node",
+                "scripts/agent-runtime/run-local-eval-test.mjs",
+                "--repo-root",
+                str(ROOT),
+                "--workspace",
+                workspace,
+                "--cases-file",
+                str(cases_path),
+                "--output-file",
+                str(output_path),
+                "--artifact-dir",
+                str(artifact_dir),
+                "--backend",
+                "fixture",
+                "--fixture-results-file",
+                str(fixture_path),
+            ],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+
+        assert result.returncode == 0, result.stderr
+        packet = json.loads(output_path.read_text(encoding="utf-8"))
+        assertion = packet["evaluations"][0]["conceptAssertions"][0]
+        assert assertion["status"] == "passed"
+        assert assertion["missingTerms"] == []
+
+
 def test_instruction_surface_codex_session_mode_is_configurable() -> None:
     script = """
         import { codexArgs } from './scripts/agent-runtime/run-local-eval-test.mjs';
@@ -185,6 +389,189 @@ def test_instruction_surface_codex_session_mode_is_configurable() -> None:
     payload = json.loads(result.stdout)
     assert "--ephemeral" in payload["defaultArgs"]
     assert "--ephemeral" not in payload["persistentArgs"]
+
+
+def test_instruction_surface_codex_home_mode_inherit_preserves_host_home() -> None:
+    script = """
+        import { codexEnvironment } from './scripts/agent-runtime/run-local-eval-test.mjs';
+        process.env.CODEX_HOME = '/tmp/inherited-codex-home';
+        const runtime = codexEnvironment(
+          { repoRoot: '/tmp/repo', codexHomeMode: 'inherit', codexHome: null },
+          '/tmp/output'
+        );
+        console.log(JSON.stringify({
+          codeHome: runtime.env.CODEX_HOME,
+          telemetry: runtime.telemetry
+        }));
+    """
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["codeHome"] == "/tmp/inherited-codex-home"
+    assert payload["telemetry"] == {
+        "codex_home_mode": "inherit",
+        "codex_home_isolated": False,
+        "codex_home_path": "/tmp/inherited-codex-home",
+    }
+
+
+def test_instruction_surface_codex_home_override_uses_custom_home(tmp_path: Path) -> None:
+    custom_home = tmp_path / "custom-codex-home"
+    output_dir = tmp_path / "output"
+    script = f"""
+        import {{ codexEnvironment }} from './scripts/agent-runtime/run-local-eval-test.mjs';
+        const runtime = codexEnvironment(
+          {{ repoRoot: '/tmp/repo', codexHomeMode: 'isolated', codexHome: {json.dumps(str(custom_home))} }},
+          {json.dumps(str(output_dir))}
+        );
+        console.log(JSON.stringify({{
+          codeHome: runtime.env.CODEX_HOME,
+          telemetry: runtime.telemetry
+        }}));
+    """
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["codeHome"] == str(custom_home)
+    assert payload["telemetry"] == {
+        "codex_home_mode": "custom",
+        "codex_home_isolated": True,
+        "codex_home_path": str(custom_home),
+    }
+    assert custom_home.is_dir()
+
+
+def test_instruction_surface_codex_exec_isolates_codex_home_by_default(tmp_path: Path) -> None:
+    stale_codex_home = tmp_path / "stale-codex-home"
+    stale_skill = stale_codex_home / "plugins/cache/local/charness/0.5.21/skills/issue/SKILL.md"
+    stale_skill.parent.mkdir(parents=True)
+    stale_skill.write_text("# stale installed issue skill\n", encoding="utf-8")
+
+    workspace_path = tmp_path / "workspace"
+    workspace_path.mkdir()
+    cases_path = tmp_path / "cases.json"
+    cases_path.write_text(
+        json.dumps(
+            {
+                "schemaVersion": "cautilus.evaluation_cases.v1",
+                "suiteId": "codex-home-isolation",
+                "evaluations": [
+                    {
+                        "evaluationId": "repo-local-instruction-surface",
+                        "prompt": "Route this request.",
+                        "instructionSurface": {
+                            "surfaceLabel": "repo-local",
+                            "files": [
+                                {
+                                    "path": "AGENTS.md",
+                                    "content": "# repo local instructions\n",
+                                }
+                            ],
+                        },
+                    }
+                ],
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    fake_codex = fake_bin / "codex"
+    fake_codex.write_text(
+        """#!/usr/bin/env python3
+import json
+import os
+import sys
+
+output_file = sys.argv[sys.argv.index("-o") + 1]
+stale_home = os.environ["STALE_CODEX_HOME"]
+codex_home = os.environ.get("CODEX_HOME", "")
+loaded = (
+    [os.path.join(stale_home, "plugins/cache/local/charness/0.5.21/skills/issue/SKILL.md")]
+    if codex_home == stale_home
+    else [os.path.join(os.getcwd(), "AGENTS.md")]
+)
+with open(output_file, "w", encoding="utf-8") as handle:
+    json.dump(
+        {
+            "observationStatus": "observed",
+            "blockerKind": "",
+            "summary": f"CODEX_HOME={codex_home}",
+            "entryFile": os.path.join(os.getcwd(), "AGENTS.md"),
+            "loadedInstructionFiles": loaded,
+            "loadedSupportingFiles": [],
+            "routingDecision": {
+                "selectedSkill": "none",
+                "bootstrapHelper": "none",
+                "workSkill": "none",
+                "selectedSupport": "none",
+                "firstToolCall": "none",
+                "reasonSummary": "fake codex",
+            },
+        },
+        handle,
+    )
+""",
+        encoding="utf-8",
+    )
+    fake_codex.chmod(0o755)
+
+    output_path = tmp_path / "observed.json"
+    artifact_dir = tmp_path / "artifacts"
+    env = {
+        **os.environ,
+        "PATH": f"{fake_bin}:{os.environ.get('PATH', '')}",
+        "CODEX_HOME": str(stale_codex_home),
+        "STALE_CODEX_HOME": str(stale_codex_home),
+    }
+    result = subprocess.run(
+        [
+            "node",
+            "scripts/agent-runtime/run-local-eval-test.mjs",
+            "--repo-root",
+            str(ROOT),
+            "--workspace",
+            str(workspace_path),
+            "--cases-file",
+            str(cases_path),
+            "--output-file",
+            str(output_path),
+            "--artifact-dir",
+            str(artifact_dir),
+            "--backend",
+            "codex_exec",
+        ],
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    packet = json.loads(output_path.read_text(encoding="utf-8"))
+    evaluation = packet["evaluations"][0]
+    assert evaluation["loadedInstructionFiles"] == ["AGENTS.md"]
+    assert stale_skill.as_posix() not in json.dumps(evaluation, ensure_ascii=False)
+    assert evaluation["telemetry"]["codex_home_mode"] == "isolated"
+    assert evaluation["telemetry"]["codex_home_isolated"] is True
+    assert evaluation["telemetry"]["codex_home_path"] != str(stale_codex_home)
 
 
 def test_instruction_surface_runner_normalizes_markdown_link_entry_file(tmp_path: Path) -> None:

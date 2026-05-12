@@ -115,3 +115,73 @@ def recommendations_for_role(
     if not only_blocking:
         return recommendations
     return [item for item in recommendations if item["recommendation_status"] != "ready"]
+
+
+def _task_text_matches(task_text: str, candidate: str) -> bool:
+    normalized = candidate.casefold().strip()
+    return bool(normalized) and normalized in task_text.casefold()
+
+
+def _manifest_task_triggers(manifest: dict[str, Any]) -> list[str]:
+    raw = [
+        manifest.get("tool_id"),
+        manifest.get("display_name"),
+        *manifest.get("intent_triggers", []),
+    ]
+    seen: set[str] = set()
+    triggers: list[str] = []
+    for item in raw:
+        if not isinstance(item, str) or not item:
+            continue
+        normalized = item.casefold()
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        triggers.append(item)
+    return triggers
+
+
+def _task_next_skill_id(manifest: dict[str, Any], next_skill_id: str | None) -> str:
+    if next_skill_id:
+        return next_skill_id
+    supports = manifest.get("supports_public_skills", [])
+    if isinstance(supports, list):
+        for skill_id in supports:
+            if isinstance(skill_id, str) and skill_id:
+                return skill_id
+    return "quality"
+
+
+def _manifest_supports_skill(manifest: dict[str, Any], skill_id: str) -> bool:
+    supports = manifest.get("supports_public_skills", [])
+    return isinstance(supports, list) and skill_id in supports
+
+
+def recommendations_for_task(
+    repo_root: Path,
+    manifests: list[dict[str, Any]],
+    *,
+    task_text: str,
+    next_skill_id: str | None = None,
+    only_blocking: bool = False,
+) -> list[dict[str, Any]]:
+    staged_ids = staged_tool_ids(repo_root)
+    recommendations: list[dict[str, Any]] = []
+    for manifest in manifests:
+        if next_skill_id and not _manifest_supports_skill(manifest, next_skill_id):
+            continue
+        triggers = _manifest_task_triggers(manifest)
+        matched = [trigger for trigger in triggers if _task_text_matches(task_text, trigger)]
+        if not matched:
+            continue
+        item = build_tool_recommendation(
+            repo_root,
+            manifest,
+            next_skill_id=_task_next_skill_id(manifest, next_skill_id),
+            staged_ids=staged_ids,
+        )
+        item["matched_triggers"] = matched
+        recommendations.append(item)
+    if not only_blocking:
+        return recommendations
+    return [item for item in recommendations if item["recommendation_status"] != "ready"]

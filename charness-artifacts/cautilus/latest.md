@@ -3,98 +3,95 @@ Date: 2026-05-12
 
 ## Trigger
 
-- slice: issue #146/#148 follow-up plus support-skill installation policy.
-- source: operator correction that sibling search must generalize from the
-  mistaken mental model, followed by a policy decision that upstream support
-  skills belong in the installed Charness plugin, not in this repo source or
-  checked-in plugin export.
+- slice: grouped fixes for issues #146, #147, #148, #149, #150, #151,
+  #152, #153, and #154.
+- source: operator direction to finish all issue chunks first, then run
+  Cautilus once at the end.
 
 ## Validation Goal
 
 - goal: preserve
-- reason: this slice should preserve issue-skill routing while changing where
-  upstream support skills are discovered and materialized.
+- reason: this slice changes routing, prompt, scenario, and adapter surfaces
+  while preserving the whole-repo instruction-surface contract.
 
 ## Change Intent
 
 - `prompt_affecting_change`
 - `skill_core_change`
-- `truth_surface_change`
+- `adapter_contract_change`
 - `scenario_review_change`
-- changed public skills: `find-skills`, `issue`, `spec`
-- scenario-registry decision: no maintained registry mutation in this slice;
-  issue-specific fixtures remain under `evals/cautilus/`, while broader
-  fixture-quality work is tracked in corca-ai/charness#151.
+- changed public skills: `announcement`, `find-skills`, `setup`
+- scenario-registry decision: maintained issue coverage now includes
+  `issue-sibling-search-concept-fixtures`; no additional scenario IDs were
+  needed for announcement/setup because focused deterministic tests and
+  scenario review cover those prompt edits.
 
 ## Prompt Surfaces
 
-- `skills/public/issue/SKILL.md` requires mental-model sibling search.
-- `skills/public/issue/references/causal-review.md` expands Lens 3 with
-  mental-model siblings.
-- `skills/public/spec/SKILL.md` remains part of the worktree-readiness prompt
-  surface from #146.
-- `skills/public/find-skills/references/support-consumption.md` now describes
-  installed-plugin support materialization instead of repo-local generated
-  support as the active synced-support model.
-- `skills/shared/references/source-bound-records.md` was adjusted to keep the
-  source-bound report-owner concept while satisfying durable link rules.
-- Removed upstream support bodies from source prompt surfaces:
-  `skills/support/agent-browser/SKILL.md`,
-  `skills/support/agent-browser/references/auth-bootstrap.md`,
-  `skills/support/agent-browser/references/runtime.md`,
-  `skills/support/specdown/SKILL.md`, and
-  `skills/support/specdown/references/source-notes.md`.
-- Truth docs changed through `README.md`: upstream support skills are
-  materialized into the installed Charness plugin support surface.
+- `.agents/cautilus-adapter.yaml` now passes isolated Codex home mode into the
+  local eval runner template.
+- `skills/public/announcement/SKILL.md` requires release drafting to inspect
+  commit bodies, trailers, closing references, and merge descriptions before
+  adjacent docs.
+- `skills/public/announcement/references/draft-shape.md` adds the affordance
+  rewrite pass and canonical-before-alias examples.
+- `skills/public/setup/SKILL.md` seeds announcement-ready commit-body
+  expectations during initial repo setup.
+- `skills/public/setup/references/agent-docs-policy.md` records commit-body
+  guidance for generated agent docs.
+- `skills/public/setup/references/default-surfaces.md` adds release-friendly
+  commit-message expectations to default operating surfaces.
 
 ## Commands Run
 
-- `cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/issue-146-sibling-search.fixture.json --runtime codex`
-- `cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/issue-148-sibling-search.fixture.json --runtime codex`
-- `cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/whole-repo-routing.fixture.json --runtime codex`
-- `python3 scripts/eval_support_sync_contracts.py --repo-root .`
-- `python3 scripts/validate_skills.py --repo-root .`
-- `python3 scripts/validate_integrations.py --repo-root .`
-- `python3 scripts/validate_packaging.py --repo-root .`
+- `cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/whole-repo-routing.fixture.json`
+- `cautilus eval evaluate --input .cautilus/runs/20260512T040635596Z-run/eval-observed.json`
+- `python3 scripts/eval_cautilus_scenarios.py --repo-root . --mode held_out --baseline-ref origin/main --output-dir /tmp/charness-cautilus-held-out-check`
+- `python3 scripts/validate_cautilus_scenarios.py --repo-root .`
+- `pytest -q tests/test_cautilus_scenarios.py`
+- broad deterministic gate set: packaging, docs, skills, adapters, surfaces,
+  integrations, support sync, tool update, markdown, secrets, py_compile, and
+  repo pytest suites.
 
 ## Regression Proof
 
-- eval test result: issue #146 fixture passed, recommendation `accept-now`.
-  Run artifact: `.cautilus/runs/20260511T224215741Z-run/`.
-- eval test result: issue #148 fixture passed, recommendation `accept-now`.
-  Run artifact: `.cautilus/runs/20260511T224230330Z-run/`.
-- eval test result: standing whole-repo routing fixture rejected with 4 passed
-  / 1 failed / 0 blocked. Run artifact:
-  `.cautilus/runs/20260511T224400482Z-run/`.
-- deterministic support proof passed: support-sync contracts, skill
-  validation, integration validation, packaging validation, py_compile, and
-  focused pytest suites for sync, doctor, install, packaging, runtime guard,
-  and find-skills all passed.
+- eval test result: whole-repo routing fixture completed with 0 failed
+  observed cases at `.cautilus/runs/20260512T040635596Z-run/`; the summary
+  recommendation is `defer` because each live Codex runner case was blocked by
+  authentication before producing routing JSON.
+- eval evaluate result: 5 blocked / 0 failed / 0 passed. The blocker is
+  `runner_execution_failed`; stderr records `401 Unauthorized: Missing bearer
+  or basic authentication` from the Codex API.
+- deterministic scenario proof passed: 13 Cautilus scenario tests, scenario
+  validation, and held-out eval registry execution all passed.
+- deterministic repo proof passed: 852 pytest tests passed with 4 skipped, and
+  all packaging, docs, skill, adapter, surface, integration, support-sync,
+  tool-update, markdown, secret, and py_compile gates passed.
 
 ## Scenario Review
 
-- The issue-specific fixtures remain useful for the mental-model sibling-search
-  behavior, but they still rely on manual inspection for concept-level claims.
-- The support-skill policy change is mostly a truth/control-plane relocation:
-  source-owned support remains under `skills/support`, while upstream support
-  skills are copied into the installed plugin during install/update/sync.
-- The standing route failure predates the support relocation and is still
-  tracked in corca-ai/charness#151.
+- Issue #151 now has behavior-backed concept assertions in real #146/#148
+  sibling-search fixtures, a maintained registry scenario, and evaluator
+  profile inclusion for the issue skill.
+- Issue #146/#148 workflow routing is backed by deterministic CLI and
+  find-skills recommendation tests rather than a new live prompt scenario.
+- Announcement/setup prompt edits are bounded to release-readiness guidance and
+  commit-context collection; deterministic tests assert the collector behavior
+  that the prompt asks agents to rely on.
+- The Cautilus live runner result is blocked by external authentication, not by
+  a routing mismatch produced by the observed agent output.
 
 ## Outcome
 
-- recommendation: accept deterministic support-policy implementation, but do
-  not claim full Cautilus closeout because the standing whole-repo fixture still
-  rejects.
-- The installed-plugin direction is implemented: checked-in source and plugin
-  exports no longer carry upstream agent-browser/specdown bodies; install and
-  tool update/sync materialize upstream support skills under
-  `support/<tool-id>/` in the installed Charness plugin.
+- recommendation: defer full Cautilus acceptance until the Codex eval runner
+  has valid API authentication, but accept the deterministic issue fixes and
+  checked-in scenario coverage.
+- The operator-requested single end-of-slice Cautilus run was performed; its
+  blocker is captured in the run artifact and this proof record.
 
 ## Follow-ups
 
-- Resolve corca-ai/charness#151 for brittle prompt-surface tests and standing
-  fixture quality.
-- Keep any future upstream support body updates source-bound through tool
-  manifests and installed-plugin materialization, not checked-in vendored
-  copies.
+- Re-run `cautilus eval test` and `cautilus eval evaluate` after runner
+  authentication is available.
+- Use the new `issue-sibling-search-concept-fixtures` scenario as the standing
+  proof path for future #146/#148 sibling-search regressions.

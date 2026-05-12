@@ -57,6 +57,11 @@ python3 "$SKILL_DIR/scripts/infer_audience_tags.py" --repo-root .
 git status --short
 ```
 
+`collect_commits.py` returns `subject`, bounded `body`, `trailers`,
+`closing_references`, `parents`, and `is_merge` per commit. Treat commit-authored
+body context as the first source of implementation intent before broader file
+archaeology.
+
 If the adapter is missing, say that you are drafting against inferred defaults
 and keep the result draft-only. Missing delivery config must not block
 drafting, but do not present inferred audience or delivery defaults as if the
@@ -71,7 +76,8 @@ repo had already declared them.
 2. Resolve drafting context.
    - collect commits since the last recorded announcement when possible
    - if no delivery record exists yet, use a bounded recent commit window
-   - inspect commit intent or adjacent docs when the user-visible value is not
+   - inspect commit bodies, trailers, closing references, and merge commit
+     descriptions before adjacent docs when the user-visible value is not
      obvious from the subject alone
    - if the announcement scope plausibly covers ongoing or backlog work that
      has not yet landed, ask up front whether to include in-progress items.
@@ -102,6 +108,12 @@ repo had already declared them.
      maintainer outputs unless it directly changes user behavior
    - when a previous announcement is the baseline, recover its shape before
      drafting: opener, section rhythm, audience split, and specificity
+   - for top-level user-facing output, translate implementation-shaped source
+     language into reader affordances before preserving mechanism details in
+     maintainer-facing output
+   - when a change introduces both a canonical command, directive, or behavior
+     and a shorter alias, explain the canonical behavior first and mention the
+     alias second
    - prefer short sections and concrete bullets
    - explain why a change matters, not only the mechanism
    - omit low-signal hygiene unless the user explicitly wants a full changelog

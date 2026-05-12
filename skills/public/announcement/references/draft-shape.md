@@ -85,6 +85,32 @@ they directly change user behavior. The public body should not expose terms
 like `provider_roundtrip`, `host_decision`, or backend command syntax when the
 actual user experience is natural-language chat.
 
+## Affordance Rewrite Pass
+
+Before writing the public `body`, assume the reader has not followed the
+implementation work. A source phrase from a commit subject or body is only
+ready for the public body when a non-maintainer can tell what action it enables,
+what confusion it removes, or what risk it reduces.
+
+For the public body:
+
+- convert implementation-shaped terms into reader-visible affordances
+- keep runtime, queue, intake, provider, source-bound, redaction, adapter, and
+  proof details in `maintainer_comment` unless they directly change user action
+- when a new canonical command, directive, or behavior also has a short alias,
+  explain the canonical behavior first and mention the alias second
+- do not let a convenient alias become the first mention if the canonical
+  behavior is the durable concept users need to learn
+
+Examples:
+
+- bad: "root-message opt-in reply intake"
+- good: "Ceal이 올린 질문에 사람이 답글을 달면, 그 답글을 다음 작업 입력으로 받을 수 있습니다."
+- bad: "source-bound thread context retrieval"
+- good: "Slack 링크를 보고 답할 때 실제 대화 내용을 먼저 확인합니다."
+- bad: "`$cig` short alias was added"
+- good: "Ceal에게 맡길 말이 아니라 사람들끼리 참고만 남기는 댓글은 `$ceal:ignore`로 표시할 수 있습니다. 짧게 쓰고 싶으면 `$cig`도 같은 뜻으로 동작합니다."
+
 ## Dual-Output Drafts
 
 Some announcements have two genuine audiences in the same delivery (a

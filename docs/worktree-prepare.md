@@ -2,14 +2,15 @@
 
 `charness worktree` is the structural answer to "agent created a git worktree, hooks went silent, and node_modules was never installed" — and to "eval/bench tools created dozens of throwaway worktrees and never cleaned up."
 
-Three subcommands keep mutate-phase work honest:
+Five subcommands keep mutate-phase work honest:
 
+- `charness worktree create` / `charness worktree add` — wraps `git worktree add`, then runs readiness doctor; optional `--prepare` runs the adapter-declared setup immediately.
 - `charness worktree doctor` — fast, read-only health probe of a single worktree.
 - `charness worktree prepare` — runs the consumer repo's adapter-declared prepare commands and re-validates.
 - `charness worktree audit` — surveys every worktree registered to the repository and classifies primary/active/prunable/stale. Optional `--doctor` adds readiness summaries for existing worktrees; optional `--prune` drops git metadata for missing worktrees.
 - `charness worktree cleanup` — dry-runs safe teardown for a registered feature worktree, then removes it with `--yes`; optional branch deletion requires local containment proof.
 
-`doctor` and `prepare` operate on the worktree at `--repo-root`. `audit` operates on the repository's full worktree set (also via `--repo-root`).
+`create`, `audit`, and `cleanup` operate from the repository at `--repo-root`. `doctor` and `prepare` operate on the worktree at `--repo-root`.
 
 ## Why this exists
 
@@ -31,7 +32,12 @@ python3 "$CHARNESS_REPO/skills/public/setup/scripts/seed_worktree_adapter.py" --
 # Or copy from the example and edit:
 cp "$CHARNESS_REPO/integrations/worktree/adapter.example.yaml" .agents/worktree-adapter.yaml
 
-# After creating a fresh worktree:
+# Create a fresh worktree through Charness so readiness is checked immediately:
+charness worktree create --path ../feature-worktree --branch feature-worktree --base main
+charness worktree create --path ../feature-worktree --branch feature-worktree --base main --prepare
+charness worktree add --path ../feature-worktree --branch feature-worktree --base main
+
+# If a worktree was created raw or readiness changes later:
 charness worktree doctor          # read-only probe
 charness worktree prepare         # runs adapter prepare, re-validates
 charness worktree prepare --force # run prepare even when doctor already passes
@@ -47,7 +53,13 @@ charness worktree cleanup --path ../feature-worktree --delete-merged-branch
 charness worktree cleanup --path ../feature-worktree --delete-merged-branch --yes
 ```
 
-All commands accept `--json` for machine-readable output. `doctor` and `prepare` exit 0 only when status is `pass`. `audit` exits 0 on `pass`, 1 on `warn` (prunable or stale present), 2 on `fail`.
+All commands accept `--json` for machine-readable output. `doctor` and `prepare` exit 0 only when status is `pass`. `create` exits 0 on `pass`, 1 on `warn` (created but readiness still needs preparation), and 2 on `fail`. `audit` exits 0 on `pass`, 1 on `warn` (prunable, stale, or readiness failures present), 2 on `fail`.
+
+## When to run `create`
+
+Run `charness worktree create --path <path> --branch <branch> --base <ref>` instead of raw `git worktree add` when an agent or operator is starting an isolated feature, spec, eval, or review slice. The command creates the worktree, runs `worktree doctor` against the new checkout, and returns the exact next action when the adapter reports missing dependencies or hook readiness.
+
+Use `--prepare` when the operator wants Charness to run the repo-declared setup immediately after creation. Without `--prepare`, a readiness failure is a warning with a next action; this keeps dependency installation under operator control while still making the missing step visible at creation time.
 
 ## When to run `audit`
 

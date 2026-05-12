@@ -2815,7 +2815,7 @@ def run_tool_update_flow(
     failed = any(
         isinstance(result, dict)
         and isinstance(result.get("update"), dict)
-        and result["update"].get("status") == "failed"
+        and result["update"].get("status") in {"failed", "updated-not-ready"}
         for result in payload["results"].values()
     )
     return payload, failed
@@ -3001,6 +3001,30 @@ def _doctor_support_next_step(
     return f"{message} {discovery_suffix}".strip() if discovery_suffix else message
 
 
+def _doctor_not_ready_next_step(tool_id: str, doctor_result: dict[str, object]) -> str | None:
+    if doctor_result.get("doctor_status") != "not-ready":
+        return None
+    readiness = doctor_result.get("readiness")
+    failed_checks = []
+    hint = None
+    if isinstance(readiness, dict):
+        raw_failed = readiness.get("failed_checks")
+        if isinstance(raw_failed, list):
+            failed_checks = [str(check) for check in raw_failed if isinstance(check, str)]
+        checks = readiness.get("checks")
+        if isinstance(checks, list):
+            for check in checks:
+                if not isinstance(check, dict) or check.get("ok") is not False:
+                    continue
+                failure_hint = check.get("failure_hint")
+                if isinstance(failure_hint, str) and failure_hint:
+                    hint = failure_hint
+                    break
+    check_text = f" Failed readiness check(s): {', '.join(failed_checks)}." if failed_checks else ""
+    hint_text = f" {hint}" if hint else ""
+    return f"`{tool_id}` is installed but not ready for its consuming workflow.{check_text}{hint_text}".strip()
+
+
 def _support_only_next_step(
     tool_id: str,
     support_result: dict[str, object] | None,
@@ -3023,6 +3047,10 @@ def tool_next_step(
     support_result: dict[str, object] | None,
 ) -> str:
     release_suffix = _tool_release_suffix(action_result, doctor_result, support_result)
+    if isinstance(doctor_result, dict):
+        not_ready_message = _doctor_not_ready_next_step(tool_id, doctor_result)
+        if not_ready_message is not None:
+            return _with_release_suffix(not_ready_message, release_suffix)
     if isinstance(action_result, dict) and action_result.get("status") == "manual":
         return _with_release_suffix(_manual_tool_next_step(tool_id, action_result, doctor_result), release_suffix)
     if isinstance(action_result, dict):
@@ -3836,7 +3864,7 @@ def cmd_tool_install(args: argparse.Namespace) -> int:
     if any(
         isinstance(result, dict)
         and isinstance(result.get("install"), dict)
-        and result["install"].get("status") == "failed"
+        and result["install"].get("status") in {"failed", "installed-not-ready"}
         for result in payload["results"].values()
     ):
         return 1
@@ -3907,6 +3935,16 @@ def _load_worktree_cleanup_lib(args: argparse.Namespace):
     return worktree_cleanup_lib
 
 
+def _load_worktree_create_lib(args: argparse.Namespace):
+    repo_root = _resolve_worktree_lib_root(args)
+    repo_text = str(repo_root)
+    if repo_text not in sys.path:
+        sys.path.insert(0, repo_text)
+    from scripts import worktree_create_lib
+
+    return worktree_create_lib
+
+
 def _resolve_worktree_target(args: argparse.Namespace) -> Path:
     target = args.repo_root if args.repo_root is not None else Path.cwd()
     return Path(target).resolve()
@@ -3963,6 +4001,26 @@ def cmd_worktree_cleanup(args: argparse.Namespace) -> int:
     )
     lib.emit_payload(payload, json_mode=args.json)
     return 0 if payload.get("status") == lib.PASS else 1
+
+
+def cmd_worktree_create(args: argparse.Namespace) -> int:
+    lib = _load_worktree_create_lib(args)
+    payload = lib.run_create(
+        _resolve_worktree_target(args),
+        target_path=args.path,
+        branch=args.branch,
+        base=args.base,
+        detach=args.detach,
+        prepare=args.prepare,
+        dry_run=args.dry_run,
+        force=args.force,
+    )
+    lib.emit_payload(payload, json_mode=args.json)
+    if payload.get("status") == lib.PASS:
+        return 0
+    if payload.get("status") == lib.WARN:
+        return 1
+    return 2
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -4309,7 +4367,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     worktree_parser = subparsers.add_parser(
         "worktree",
-        help="Inspect and prepare git worktrees so mutate-phase work runs against installed dependencies and live hooks.",
+        help="Create, inspect, prepare, and clean up git worktrees so mutate-phase work runs against installed dependencies and live hooks.",
     )
     worktree_subparsers = worktree_parser.add_subparsers(dest="worktree_command", required=True)
 
@@ -4325,6 +4383,33 @@ def build_parser() -> argparse.ArgumentParser:
             type=Path,
             help="Explicit charness source checkout to load worktree helpers from. Defaults to the embedded or managed checkout.",
         )
+
+    def add_worktree_create_parser(command_name: str, *, help_text: str) -> None:
+        command = worktree_subparsers.add_parser(command_name, help=help_text)
+        command.add_argument(
+            "--repo-root",
+            type=Path,
+            help="Repository to create the worktree from. Defaults to the current working directory.",
+        )
+        command.add_argument("--path", type=Path, required=True, help="Path for the new git worktree.")
+        command.add_argument("--branch", help="Create a new local branch for the worktree.")
+        command.add_argument("--base", help="Base ref passed to `git worktree add` after the path.")
+        command.add_argument("--detach", action="store_true", help="Create a detached-HEAD worktree.")
+        command.add_argument("--prepare", action="store_true", help="Run readiness prepare after creation.")
+        command.add_argument("--dry-run", action="store_true", help="Print the planned git command without creating the worktree.")
+        command.add_argument("--force", action="store_true", help="Pass --force to `git worktree add`.")
+        command.add_argument("--json", action="store_true")
+        add_worktree_lib_args(command)
+        command.set_defaults(func=cmd_worktree_create)
+
+    add_worktree_create_parser(
+        "create",
+        help_text="Create a git worktree, then run readiness doctor and optional prepare.",
+    )
+    add_worktree_create_parser(
+        "add",
+        help_text="Alias for `create`: wrap `git worktree add` with readiness doctor and optional prepare.",
+    )
 
     worktree_doctor_parser = worktree_subparsers.add_parser(
         "doctor",

@@ -269,16 +269,43 @@ commands:
       - docs/cli-reference.md
       - docs/worktree-prepare.md
     required_help_contains:
+      - create
+      - add
       - doctor
       - prepare
       - audit
       - cleanup
     required_doc_contains:
+      - charness worktree create
       - charness worktree doctor
       - charness worktree prepare
       - charness worktree audit --doctor
       - charness worktree cleanup
       - .agents/worktree-adapter.yaml
+  worktree-create:
+    help_command: ./charness worktree create --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/worktree-prepare.md
+    required_help_contains:
+      - --path
+      - --branch
+      - --prepare
+      - --json
+    required_doc_contains:
+      - charness worktree create --path
+  worktree-add:
+    help_command: ./charness worktree add --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/worktree-prepare.md
+    required_help_contains:
+      - --path
+      - --branch
+      - --prepare
+      - --json
+    required_doc_contains:
+      - charness worktree add --path
   worktree-doctor:
     help_command: ./charness worktree doctor --help
     doc_paths:

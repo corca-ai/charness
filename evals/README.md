@@ -14,6 +14,25 @@ that prove the harness still works as a product:
 - checked-in adapters still resolve to the declared repo contract
 - representative discovery workflows still honor local-first packaging rules
 - representative public skills still retain their required contract markers
+- Cautilus instruction-surface fixtures can declare `requiredConcepts` so
+  summary-level behavior checks are structured in the observed packet instead
+  of relying on manual `result.json` inspection or brittle prose pins
+
+## Cautilus Required Concepts
+
+Instruction-surface fixtures under `evals/cautilus/*.fixture.json` may add
+`requiredConcepts` to a case:
+
+- `id`: stable assertion id for the concept being checked
+- `terms`: non-empty list of exact terms that must all appear
+- `sourceFields`: optional list of observed fields to scan; supported values
+  are `summary` and `routingDecision.reasonSummary`
+
+When `sourceFields` is omitted, the runner scans both `summary` and
+`routingDecision.reasonSummary`. The observed packet records
+`conceptAssertions[].matchedTerms`, `missingTerms`, and `status`; any failed
+concept assertion makes `run-local-eval-test.mjs` exit non-zero after writing
+the packet.
 
 Canonical runner:
 

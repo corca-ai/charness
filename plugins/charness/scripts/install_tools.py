@@ -26,7 +26,7 @@ Payload = dict[str, object]
 CommandList = list[Payload] | list[str]
 
 
-def base_result(repo_root: Path, manifest: Payload, install_action: Payload, *, status: str, mode: str, commands: CommandList, detect: Payload | None = None, healthcheck: Payload | None = None) -> Payload:
+def base_result(repo_root: Path, manifest: Payload, install_action: Payload, *, status: str, mode: str, commands: CommandList, detect: Payload | None = None, healthcheck: Payload | None = None, readiness: Payload | None = None) -> Payload:
     result = {
         "tool_id": manifest["tool_id"],
         "status": status,
@@ -41,6 +41,8 @@ def base_result(repo_root: Path, manifest: Payload, install_action: Payload, *, 
         result["detect"] = detect
     if healthcheck is not None:
         result["healthcheck"] = healthcheck
+    if readiness is not None:
+        result["readiness"] = readiness
     return result
 
 
@@ -50,7 +52,7 @@ def capture_provenance(manifest: Payload) -> Payload:
     return provenance
 
 
-def persist_install_lock(repo_root: Path, manifest: Payload, install_action: Payload, *, status: str, mode: str, commands: list[Payload], detect: Payload, healthcheck: Payload, release: Payload | None, provenance: Payload) -> None:
+def persist_install_lock(repo_root: Path, manifest: Payload, install_action: Payload, *, status: str, mode: str, commands: list[Payload], detect: Payload, healthcheck: Payload, readiness: Payload, release: Payload | None, provenance: Payload) -> None:
     upsert_lock(
         repo_root,
         manifest,
@@ -63,6 +65,7 @@ def persist_install_lock(repo_root: Path, manifest: Payload, install_action: Pay
             "commands": commands,
             "detect": detect,
             "healthcheck": healthcheck,
+            "readiness": readiness,
             "docs_url": install_action.get("docs_url"),
             "package_manager": provenance.get("install_method") if provenance.get("install_method") in {"npm", "cargo", "go"} else None,
             "package_name": provenance.get("package_name"),
@@ -99,9 +102,17 @@ def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload
         detect_result, healthcheck_result = lifecycle.detect_and_healthcheck(
             repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
         )
+        readiness_result = lifecycle.evaluate_readiness(manifest, repo_root) if detect_result["ok"] and healthcheck_result["ok"] else {
+            "ok": False,
+            "checks": [],
+            "failed_checks": [],
+        }
         status = "noop" if mode == "none" else "manual"
-        if status == "manual" and detect_result["ok"] and healthcheck_result["ok"]:
-            status = "already-installed"
+        if detect_result["ok"] and healthcheck_result["ok"]:
+            if readiness_result["ok"]:
+                status = "noop" if mode == "none" else "already-installed"
+            else:
+                status = "installed-not-ready"
         if execute:
             persist_install_lock(
                 repo_root,
@@ -112,6 +123,7 @@ def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload
                 commands=[],
                 detect=detect_result,
                 healthcheck=healthcheck_result,
+                readiness=readiness_result,
                 release=release,
                 provenance=provenance,
             )
@@ -124,6 +136,7 @@ def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload
             commands=[],
             detect=detect_result,
             healthcheck=healthcheck_result,
+            readiness=readiness_result,
         )
         return lifecycle.attach_release_metadata(result, provenance=provenance, release=release)
     if not execute:
@@ -134,12 +147,17 @@ def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload
     detect_result, healthcheck_result = lifecycle.detect_and_healthcheck(
         repo_root, manifest, failure_reason="detect failed after install"
     )
+    readiness_result = lifecycle.evaluate_readiness(manifest, repo_root) if detect_result["ok"] and healthcheck_result["ok"] else {
+        "ok": False,
+        "checks": [],
+        "failed_checks": [],
+    }
     provenance = capture_provenance(manifest)
-    status = (
-        "installed"
-        if all(result["exit_code"] == 0 for result in command_results) and detect_result["ok"] and healthcheck_result["ok"]
-        else "failed"
-    )
+    command_ok = all(result["exit_code"] == 0 for result in command_results)
+    if command_ok and detect_result["ok"] and healthcheck_result["ok"]:
+        status = "installed" if readiness_result["ok"] else "installed-not-ready"
+    else:
+        status = "failed"
     persist_install_lock(
         repo_root,
         manifest,
@@ -149,6 +167,7 @@ def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload
         commands=command_results,
         detect=detect_result,
         healthcheck=healthcheck_result,
+        readiness=readiness_result,
         release=release,
         provenance=provenance,
     )
@@ -161,11 +180,13 @@ def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload
         commands=command_results,
         detect=detect_result,
         healthcheck=healthcheck_result,
+        readiness=readiness_result,
     )
     return lifecycle.attach_release_metadata(result, provenance=provenance, release=release)
 
 
 _INSTALLED_STATUSES = {"installed", "already-installed"}
+_FAILURE_STATUSES = {"failed", "installed-not-ready"}
 
 
 def main() -> int:
@@ -194,7 +215,7 @@ def main() -> int:
         print(json.dumps(results, ensure_ascii=False, indent=2))
     else:
         lifecycle.print_tool_statuses(results)
-    if lifecycle.has_any_status(results, status_key="status", statuses={"failed"}):
+    if lifecycle.has_any_status(results, status_key="status", statuses=_FAILURE_STATUSES):
         return 1
     return 0
 

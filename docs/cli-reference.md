@@ -34,8 +34,9 @@ positional arguments:
                         inspect provider readiness.
     tool                Inspect, install, update, or sync external tool
                         integrations that charness-managed skills depend on.
-    worktree            Inspect and prepare git worktrees so mutate-phase work
-                        runs against installed dependencies and live hooks.
+    worktree            Create, inspect, prepare, and clean up git worktrees
+                        so mutate-phase work runs against installed
+                        dependencies and live hooks.
 
 options:
   -h, --help            show this help message and exit
@@ -587,10 +588,14 @@ options:
 ## `charness worktree`
 
 ```text
-usage: charness worktree [-h] {doctor,prepare,audit,cleanup} ...
+usage: charness worktree [-h] {create,add,doctor,prepare,audit,cleanup} ...
 
 positional arguments:
-  {doctor,prepare,audit,cleanup}
+  {create,add,doctor,prepare,audit,cleanup}
+    create              Create a git worktree, then run readiness doctor and
+                        optional prepare.
+    add                 Alias for `create`: wrap `git worktree add` with
+                        readiness doctor and optional prepare.
     doctor              Probe worktree readiness (hooksPath, lefthook shim
                         resolution, husky directory, manifest checks).
     prepare             Run the worktree adapter's prepare commands and re-
@@ -602,6 +607,70 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
+```
+
+## `charness worktree create`
+
+```text
+usage: charness worktree create [-h] [--repo-root REPO_ROOT] --path PATH
+                                [--branch BRANCH] [--base BASE] [--detach]
+                                [--prepare] [--dry-run] [--force] [--json]
+                                [--home-root HOME_ROOT]
+                                [--charness-checkout CHARNESS_CHECKOUT]
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Repository to create the worktree from. Defaults to
+                        the current working directory.
+  --path PATH           Path for the new git worktree.
+  --branch BRANCH       Create a new local branch for the worktree.
+  --base BASE           Base ref passed to `git worktree add` after the path.
+  --detach              Create a detached-HEAD worktree.
+  --prepare             Run readiness prepare after creation.
+  --dry-run             Print the planned git command without creating the
+                        worktree.
+  --force               Pass --force to `git worktree add`.
+  --json
+  --home-root HOME_ROOT
+                        Home root used to locate the managed charness checkout
+                        when the entrypoint is a PATH shim.
+  --charness-checkout CHARNESS_CHECKOUT
+                        Explicit charness source checkout to load worktree
+                        helpers from. Defaults to the embedded or managed
+                        checkout.
+```
+
+## `charness worktree add`
+
+```text
+usage: charness worktree add [-h] [--repo-root REPO_ROOT] --path PATH
+                             [--branch BRANCH] [--base BASE] [--detach]
+                             [--prepare] [--dry-run] [--force] [--json]
+                             [--home-root HOME_ROOT]
+                             [--charness-checkout CHARNESS_CHECKOUT]
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Repository to create the worktree from. Defaults to
+                        the current working directory.
+  --path PATH           Path for the new git worktree.
+  --branch BRANCH       Create a new local branch for the worktree.
+  --base BASE           Base ref passed to `git worktree add` after the path.
+  --detach              Create a detached-HEAD worktree.
+  --prepare             Run readiness prepare after creation.
+  --dry-run             Print the planned git command without creating the
+                        worktree.
+  --force               Pass --force to `git worktree add`.
+  --json
+  --home-root HOME_ROOT
+                        Home root used to locate the managed charness checkout
+                        when the entrypoint is a PATH shim.
+  --charness-checkout CHARNESS_CHECKOUT
+                        Explicit charness source checkout to load worktree
+                        helpers from. Defaults to the embedded or managed
+                        checkout.
 ```
 
 ## `charness worktree doctor`

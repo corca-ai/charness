@@ -94,6 +94,23 @@ def test_setup_docs_carry_charness_artifact_commit_policy() -> None:
     assert "commit targets" in default_surfaces
 
 
+def test_setup_docs_seed_announcement_ready_commit_bodies() -> None:
+    skill_text = (ROOT / "skills/public/setup/SKILL.md").read_text(encoding="utf-8").lower()
+    agent_docs = (ROOT / "skills/public/setup/references/agent-docs-policy.md").read_text(encoding="utf-8").lower()
+    default_surfaces = (ROOT / "skills/public/setup/references/default-surfaces.md").read_text(encoding="utf-8").lower()
+
+    for text in (skill_text, agent_docs, default_surfaces):
+        assert "announcement" in text
+        assert "commit" in text
+        assert "issue linkage" in text
+        assert "human-visible value" in text
+        assert "verification" in text
+        assert "operator/apply notes" in text
+
+    assert "close keywords" in agent_docs
+    assert "merge commits" in default_surfaces
+
+
 def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
     skill_text = (ROOT / "skills" / "public" / "hitl" / "SKILL.md").read_text(encoding="utf-8")
     chunk_contract = (

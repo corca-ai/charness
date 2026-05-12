@@ -28,10 +28,13 @@ load_manifests = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scr
 _layout = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.repo_layout")
 generated_support_dir, public_skills_dir, support_dir = _layout.generated_support_dir, _layout.public_skills_dir, _layout.support_dir
 _tool_rec = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.tool_recommendation_lib")
-recommendations_for_public_skill, recommendations_for_role = _tool_rec.recommendations_for_public_skill, _tool_rec.recommendations_for_role
+recommendations_for_public_skill = _tool_rec.recommendations_for_public_skill
+recommendations_for_role = _tool_rec.recommendations_for_role
+recommendations_for_task = _tool_rec.recommendations_for_task
 _list_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "list_capabilities_lib")
 build_inventory_payload, referenced_skill_paths = _list_lib.build_inventory_payload, _list_lib.referenced_skill_paths
 resolve_tool_recommendations, support_recommendations_for_task = _list_lib.resolve_tool_recommendations, _list_lib.support_recommendations_for_task
+workflow_recommendations_for_task = _list_lib.workflow_recommendations_for_task
 _artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "inventory_artifact")
 persist_inventory, read_only_inventory_artifacts = _artifact.persist_inventory, _artifact.read_only_inventory_artifacts
 load_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter").load_adapter
@@ -180,9 +183,11 @@ def main() -> None:
         manifests=manifests,
         recommendations_for_public_skill=recommendations_for_public_skill,
         recommendations_for_role=recommendations_for_role,
+        recommendations_for_task=recommendations_for_task,
     )
     support_skill_recommendations = []
     support_recommendation_query = None
+    workflow_recommendations = []
     if args.recommend_for_task:
         support_skill_recommendations = support_recommendations_for_task(
             args.recommend_for_task,
@@ -190,6 +195,7 @@ def main() -> None:
             support_capabilities=support_capability_entries,
             integrations=integration_entries,
         )
+        workflow_recommendations = workflow_recommendations_for_task(args.recommend_for_task)
         support_recommendation_query = {
             "mode": "task_text",
             "task_text": args.recommend_for_task,
@@ -206,6 +212,7 @@ def main() -> None:
         recommendation_query=recommendation_query,
         support_skill_recommendations=support_skill_recommendations,
         support_recommendation_query=support_recommendation_query,
+        workflow_recommendations=workflow_recommendations,
     )
     if args.read_only:
         payload["artifacts"] = read_only_inventory_artifacts()

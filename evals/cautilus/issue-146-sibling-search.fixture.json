@@ -12,6 +12,21 @@
       "expectedRouting": {
         "workSkill": "issue"
       },
+      "requiredConcepts": [
+        {
+          "id": "mental-model-structural-sibling-search",
+          "terms": [
+            "mental model",
+            "structural sibling",
+            "keyword",
+            "proximity"
+          ],
+          "sourceFields": [
+            "summary",
+            "routingDecision.reasonSummary"
+          ]
+        }
+      ],
       "requiredInstructionFiles": [
         "skills/public/issue/SKILL.md",
         "skills/public/issue/references/causal-review.md"
