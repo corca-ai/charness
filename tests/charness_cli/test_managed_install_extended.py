@@ -14,9 +14,9 @@ from .support import (
     CLI,
     build_test_path,
     clone_seeded_managed_home,
-    make_fake_agent_browser,
     make_fake_claude,
     make_fake_go_specdown,
+    make_fake_npm_agent_browser,
     make_fake_npm_gws,
     make_release_fixture,
     make_support_sync_fixture,
@@ -47,7 +47,7 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
         text=True,
     )
 
-    fake_agent_browser = make_fake_agent_browser(tmp_path)
+    _fake_agent_browser_npm, fake_agent_browser = make_fake_npm_agent_browser(tmp_path)
     fake_go, specdown_bin = make_fake_go_specdown(tmp_path)
     fake_npm, fake_gws = make_fake_npm_gws(tmp_path)
     fake_cautilus = make_fake_cautilus(tmp_path)

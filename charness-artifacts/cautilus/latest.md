@@ -3,80 +3,81 @@ Date: 2026-05-12
 
 ## Trigger
 
-- slice: `issue resolve` closeout guidance now prefers GitHub auto-close
-  through commit, PR, or merge bodies before manual close commands.
-- source: operator observation that issue resolution tends not to use
-  auto-closing commit/PR linkage.
+- slice: Charness eval runner now preserves Codex authentication while keeping
+  isolated user config/plugin state.
+- source: Cautilus 0.15.3 fixed its own runner auth inheritance, but Charness
+  still invoked the repo-local `run-local-eval-test.mjs` runner and reproduced
+  `401 Unauthorized: Missing bearer or basic authentication`.
 
 ## Validation Goal
 
-- goal: preserve
-- reason: this slice tightens issue-skill closeout sequencing without changing
-  the existing evaluator scenario registry.
+- goal: improve
+- reason: restore live Cautilus whole-repo routing proof for Codex-backed evals
+  under isolated `CODEX_HOME`.
 
 ## Change Intent
 
 - `prompt_affecting_change`
-- `skill_core_change`
 - `scenario_review_change`
-- changed public skills: `issue`
-- scenario-registry decision: no new scenario ID is needed; the existing issue
-  evaluator scenarios cover routing and sibling-search behavior, while this
-  closeout-carrier rule is guarded by deterministic text-contract tests.
+- `eval_runner_change`
+- changed surfaces:
+  - `.agents/cautilus-adapter.yaml`
+  - `scripts/agent-runtime/run-local-eval-test.mjs`
+  - `scripts/agent-runtime/codex-eval-runtime.mjs`
+  - `evals/cautilus/whole-repo-routing.fixture.json`
 
 ## Prompt Surfaces
 
-- `skills/public/issue/SKILL.md` now makes auto-close linkage the preferred
-  issue-resolution closeout path.
-- `skills/public/issue/references/closeout-discipline.md` adds the
-  resolve auto-close linkage contract.
-- `skills/public/issue/references/resolve-flow.md` records PR-body and
-  direct-to-default commit-body close keyword expectations.
-- `skills/public/issue/references/resolution-brief.md` carries the same
-  boundary into PR or commit closeout carriers.
+- The Codex eval runner adds `--codex-auth-mode inherit|env|none`; the default
+  inherited mode copies only `auth.json` into an isolated temporary
+  `CODEX_HOME`.
+- Isolated Codex runs pass `--ignore-user-config`, preserving plugin/config
+  isolation while retaining authentication.
+- Route-only evaluator prompts now explicitly separate mandatory startup
+  discovery from the durable work skill.
+- The compact Cautilus fixture includes the minimal Work Phase Map needed to
+  evaluate `impl`, `spec`, and `quality` routing from a compact instruction
+  surface.
 
 ## Commands Run
 
+- `pytest -q tests/test_cautilus_scenarios.py tests/quality_gates/test_docs_and_misc.py::test_current_cautilus_guidance_uses_eval_surface`
+- `python3 scripts/validate_cautilus_scenarios.py --repo-root .`
+- `python3 scripts/validate_adapters.py --repo-root .`
 - `cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/whole-repo-routing.fixture.json`
-- `cautilus eval evaluate --input .cautilus/runs/20260512T054024489Z-run/eval-observed.json`
-- `pytest -q tests/quality_gates/test_issue_closeout_discipline.py tests/quality_gates/test_issue_skill.py`
-- `python3 scripts/validate_skills.py --repo-root .`
-- `python3 scripts/validate_packaging.py --repo-root .`
-- `python3 scripts/check_doc_links.py --repo-root .`
+- `cautilus eval evaluate --input .cautilus/runs/20260512T060610029Z-run/eval-observed.json`
+- `pytest -q`
 
 ## Regression Proof
 
-- eval test result: whole-repo routing fixture command passed at runner-command
-  level; run artifact `.cautilus/runs/20260512T054024489Z-run/`; summary
-  recommendation is `defer`.
-- eval evaluate result: 5 blocked / 0 failed / 0 passed. Stderr still records
-  `401 Unauthorized: Missing bearer or basic authentication`; Cautilus binary
-  version was `0.15.3`.
-- deterministic issue proof passed: issue closeout-discipline and issue-tool
-  tests passed, including the auto-close carrier contract.
-- skill, packaging, and markdown link validators passed for this slice.
+- live eval run: `.cautilus/runs/20260512T060610029Z-run/`
+- eval test result: runner command passed; recommendation `accept-now`.
+- eval evaluate result: 5 passed / 0 failed / 0 blocked.
+- proof class: `declared-eval-runner`, runtime `codex`, target surface
+  `dev/repo`, `productProofReady: true`.
+- deterministic proof passed for Codex auth inheritance, isolated config
+  suppression, auth-missing classification, adapter template wiring, and
+  scenario validation.
+- full test suite passed: 929 passed / 4 skipped.
 
 ## Scenario Review
 
-- Existing issue evaluator scenarios remain focused on routing and
-  mental-model sibling search; they are not the right carrier for this
-  commit/PR-body closeout rule.
-- The new deterministic assertion pins the behavior where it lives: the issue
-  skill and closeout references must prefer PR-body or direct-to-default
-  commit-body close keywords before manual close.
-- The live Cautilus runner remains blocked by the Codex isolated-home auth
-  issue tracked upstream as corca-ai/cautilus#35.
+- The previous Cautilus 0.15.3 run proved the upstream binary was no longer
+  the remaining blocker; Charness had an independent repo-local runner auth
+  gap.
+- The fixed Charness runner preserves auth without importing host config or
+  installed plugin state.
+- The remaining route-only fixture instability was corrected by making
+  bootstrap versus durable work-skill expectations explicit in both the runner
+  prompt and compact fixture surface.
 
 ## Outcome
 
-- recommendation: accept the deterministic issue-skill closeout tightening,
-  but defer live evaluator acceptance until Cautilus runner auth is fixed.
-- The latest local Cautilus binary was checked and is `0.15.3`; the isolated
-  Codex auth blocker still reproduces.
+- recommendation: accept.
+- Charness can resolve this class internally; no additional Cautilus change is
+  required for the observed auth failure.
 
 ## Follow-ups
 
-- Re-run the whole-repo Cautilus eval after corca-ai/cautilus#35 is fixed.
-- Consider a later Charness integration-manifest improvement if `charness
-  update all` should make manual external-binary update boundaries more
-  visible to operators.
+- Release this slice so plugin installs receive the fixed eval runner and
+  adapter template.

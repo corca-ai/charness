@@ -10,8 +10,8 @@ import pytest
 from tests.repo_copy import clone_seeded_charness_repo
 
 from .support import (
-    make_fake_agent_browser,
     make_fake_go_specdown,
+    make_fake_npm_agent_browser,
     make_fake_npm_gws,
     make_release_fixture,
     make_support_sync_fixture,
@@ -28,7 +28,7 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
     home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
 
-    fake_agent_browser = make_fake_agent_browser(tmp_path)
+    _fake_agent_browser_npm, fake_agent_browser = make_fake_npm_agent_browser(tmp_path)
     fake_go, specdown_bin = make_fake_go_specdown(tmp_path)
     fake_npm, fake_gws = make_fake_npm_gws(tmp_path)
     fake_cautilus = make_fake_cautilus(tmp_path)

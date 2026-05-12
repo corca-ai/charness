@@ -86,10 +86,10 @@ export function normalizeRoutingDecision(value, field = "observed.routingDecisio
 	return normalized;
 }
 
-export function backendFailureResult(message) {
+export function backendFailureResult(message, blockerKind = "runner_execution_failed") {
 	return {
 		observationStatus: "blocked",
-		blockerKind: "runner_execution_failed",
+		blockerKind,
 		summary: message,
 		entryFile: "",
 		loadedInstructionFiles: [],

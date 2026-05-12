@@ -12,12 +12,19 @@ import {
 	normalizeRoutingDecision,
 	relativizeObservedPath,
 } from "./instruction-surface-support.mjs";
+import {
+	CODEX_AUTH_MODES,
+	CODEX_HOME_MODES,
+	codexArgs,
+	codexFailureBlockerKind,
+	prepareCodexRuntimeEnv,
+} from "./codex-eval-runtime.mjs";
 import { extractClaudeTelemetry } from "./skill-test-telemetry.mjs";
 
 export { normalizeInstructionSurfaceCaseSuite } from "./instruction-surface-case-suite.mjs";
+export { codexArgs, codexFailureBlockerKind, prepareCodexRuntimeEnv } from "./codex-eval-runtime.mjs";
 
 const CODEX_SESSION_MODES = ["ephemeral", "persistent"];
-const CODEX_HOME_MODES = ["isolated", "inherit"];
 
 const CLAUDE_CLI_ENV = {
 	CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1",
@@ -33,7 +40,7 @@ const CLAUDE_CLI_ENV = {
 function usage(exitCode = 0) {
 	const text = [
 		"Usage:",
-		"  node ./scripts/agent-runtime/run-local-eval-test.mjs --repo-root <dir> --workspace <dir> --cases-file <file> --output-file <file> [--artifact-dir <dir>] [--backend codex_exec|claude_code|fixture] [--fixture-results-file <file>] [--sandbox read-only|workspace-write] [--timeout-ms <ms>] [--model <model>] [--reasoning-effort <level>] [--codex-model <model>] [--codex-reasoning-effort <level>] [--codex-session-mode ephemeral|persistent] [--codex-ephemeral true|false] [--codex-home-mode isolated|inherit] [--codex-home <dir>] [--codex-config <key=value>] [--claude-model <model>] [--claude-permission-mode <mode>] [--claude-allowed-tools <rules>]",
+		"  node ./scripts/agent-runtime/run-local-eval-test.mjs --repo-root <dir> --workspace <dir> --cases-file <file> --output-file <file> [--artifact-dir <dir>] [--backend codex_exec|claude_code|fixture] [--fixture-results-file <file>] [--sandbox read-only|workspace-write] [--timeout-ms <ms>] [--model <model>] [--reasoning-effort <level>] [--codex-model <model>] [--codex-reasoning-effort <level>] [--codex-session-mode ephemeral|persistent] [--codex-ephemeral true|false] [--codex-home-mode isolated|inherit] [--codex-auth-mode inherit|env|none] [--codex-home <dir>] [--codex-config <key=value>] [--claude-model <model>] [--claude-permission-mode <mode>] [--claude-allowed-tools <rules>]",
 	].join("\n");
 	const out = exitCode === 0 ? process.stdout : process.stderr;
 	out.write(`${text}\n`);
@@ -94,6 +101,7 @@ function defaultOptions() {
 		codexReasoningEffort: null,
 		codexSessionMode: "ephemeral",
 		codexHomeMode: "isolated",
+		codexAuthMode: "inherit",
 		codexHome: null,
 		codexConfigOverrides: [],
 		claudeModel: null,
@@ -150,6 +158,12 @@ const VALUE_OPTIONS = {
 	},
 	"--codex-home": (options, value) => {
 		options.codexHome = resolve(value);
+	},
+	"--codex-auth-mode": (options, value) => {
+		if (!CODEX_AUTH_MODES.includes(value)) {
+			fail("--codex-auth-mode must be inherit, env, or none");
+		}
+		options.codexAuthMode = value;
 	},
 	"--codex-config": (options, value) => {
 		options.codexConfigOverrides.push(value);
@@ -208,6 +222,9 @@ function parseArgs(argv) {
 	}
 	if (!CODEX_HOME_MODES.includes(options.codexHomeMode)) {
 		fail("--codex-home-mode must be isolated or inherit");
+	}
+	if (!CODEX_AUTH_MODES.includes(options.codexAuthMode)) {
+		fail("--codex-auth-mode must be inherit, env, or none");
 	}
 	if (options.codexHome && options.codexHomeMode === "inherit") {
 		fail("--codex-home cannot be used with --codex-home-mode inherit");
@@ -321,10 +338,12 @@ function renderPrompt(evaluation) {
 		"Before you begin the task, identify the first instruction file you intentionally used as the entry point.",
 		"Only list instruction or supporting files that you actually read before or during the first routing decision.",
 		"Report the first routing decision you made, including any bootstrap helper, the eventual durable work skill if one was chosen, any support helper, and the first tool call if one happened.",
+		"For route-only evaluations, do not block solely because a named helper tool is unavailable; record the helper required by the instruction surface and the durable work skill implied by the task.",
 		"Use `bootstrapHelper` for helpers such as discovery/bootstrap skills that precede the real work skill.",
 		"If the repo instructions require a startup discovery or routing pass such as a mandatory `find-skills` check before broader exploration, record that helper in `bootstrapHelper` even when the eventual `workSkill` is already clear.",
 		"Use `workSkill` for the durable task skill once it becomes clear.",
 		"Keep `selectedSkill` as the single-lane alias when there is no meaningful bootstrap/work split; otherwise set it to the same value as `workSkill`.",
+		"Even if the durable work skill is obvious from the repo instructions, still record a mandatory startup discovery pass such as `find-skills` in `bootstrapHelper`.",
 		"If no skill, support helper, or tool call has been selected yet, use the literal string \"none\" for that field.",
 		"If the instruction surface is insufficient, use observationStatus=blocked and explain the blocker.",
 		"Return only JSON matching the provided schema after you finish.",
@@ -336,64 +355,12 @@ function renderPrompt(evaluation) {
 	return `${lines.join("\n")}\n`;
 }
 
-export function codexArgs(options, schemaFile, outputFile) {
-	const sessionMode = options.codexSessionMode ?? "ephemeral";
-	const args = [
-		"exec",
-		"-C",
-		options.workspace,
-		"--sandbox",
-		options.sandbox,
-	];
-	if (sessionMode === "ephemeral") {
-		args.push("--ephemeral");
-	}
-	args.push(
-		"--output-schema",
-		schemaFile,
-		"-o",
-		outputFile,
-	);
-	if (options.codexModel ?? options.model) {
-		args.push("--model", options.codexModel ?? options.model);
-	}
-	if (options.codexReasoningEffort ?? options.reasoningEffort) {
-		args.push("-c", `model_reasoning_effort="${options.codexReasoningEffort ?? options.reasoningEffort}"`);
-	}
-	for (const override of options.codexConfigOverrides ?? []) {
-		args.push("-c", override);
-	}
-	args.push("-");
-	return args;
-}
-
 export function codexEnvironment(options, outputDir) {
-	const env = {
+	void outputDir;
+	return prepareCodexRuntimeEnv(options, {
 		...process.env,
 		PATH: `${join(options.repoRoot, "bin")}:${process.env.PATH ?? ""}`,
-	};
-	const configuredHome = options.codexHome ? resolve(options.codexHome) : null;
-	if (configuredHome || options.codexHomeMode !== "inherit") {
-		const codexHome = configuredHome ?? join(outputDir, "codex-home");
-		mkdirSync(codexHome, { recursive: true });
-		env.CODEX_HOME = codexHome;
-		return {
-			env,
-			telemetry: {
-				codex_home_mode: configuredHome ? "custom" : "isolated",
-				codex_home_isolated: true,
-				codex_home_path: codexHome,
-			},
-		};
-	}
-	return {
-		env,
-		telemetry: {
-			codex_home_mode: "inherit",
-			codex_home_isolated: false,
-			...(process.env.CODEX_HOME ? { codex_home_path: process.env.CODEX_HOME } : {}),
-		},
-	};
+	});
 }
 
 function normalizeExpectedFields(evaluation) {
@@ -562,16 +529,39 @@ function runCodexEvaluation(options, evaluation, outputDir, startedAt) {
 	writeFileSync(promptFile, prompt);
 	writeFileSync(schemaFile, `${JSON.stringify(baseSchema(), null, 2)}\n`);
 	const runtime = codexEnvironment(options, outputDir);
-
-	const result = spawnSync("codex", codexArgs(options, schemaFile, outputFile), {
-		cwd: options.workspace,
-		encoding: "utf-8",
-		env: runtime.env,
-		input: prompt,
-		timeout: options.timeoutMs,
-	});
-	writeFileSync(stderrFile, result.stderr ?? "");
 	const artifactRefs = [artifactRef("prompt", promptFile), artifactRef("schema", schemaFile), artifactRef("stderr", stderrFile)];
+	const model = options.codexModel ?? options.model;
+	const sessionMode = options.codexSessionMode ?? "ephemeral";
+	const telemetry = {
+		...(model ? { model } : {}),
+		session_mode: sessionMode,
+		...runtime.telemetry,
+	};
+	if (runtime.preflightBlocker) {
+		writeFileSync(stderrFile, `${runtime.preflightBlocker.summary}\n`);
+		runtime.cleanup?.();
+		return normalizeObservedResult(
+			evaluation,
+			backendFailureResult(runtime.preflightBlocker.summary, runtime.preflightBlocker.blockerKind),
+			artifactRefs,
+			startedAt,
+			telemetry,
+		);
+	}
+
+	let result;
+	try {
+		result = spawnSync("codex", codexArgs(options, schemaFile, outputFile), {
+			cwd: options.workspace,
+			encoding: "utf-8",
+			env: runtime.env,
+			input: prompt,
+			timeout: options.timeoutMs,
+		});
+	} finally {
+		runtime.cleanup?.();
+	}
+	writeFileSync(stderrFile, result.stderr ?? "");
 	if (result.error?.code === "ETIMEDOUT") {
 		return normalizeObservedResult(
 			evaluation,
@@ -581,11 +571,17 @@ function runCodexEvaluation(options, evaluation, outputDir, startedAt) {
 		);
 	}
 	if (result.status !== 0) {
+		const blockerKind = codexFailureBlockerKind(result.stderr ?? "");
+		const message =
+			blockerKind === "runner_auth_missing"
+				? `The codex_exec runner could not authenticate and exited with status ${result.status}.`
+				: `The codex_exec runner exited with status ${result.status}.`;
 		return normalizeObservedResult(
 			evaluation,
-			backendFailureResult(`The codex_exec runner exited with status ${result.status}.`),
+			backendFailureResult(message, blockerKind),
 			artifactRefs,
 			startedAt,
+			telemetry,
 		);
 	}
 	let observed;
@@ -600,13 +596,6 @@ function runCodexEvaluation(options, evaluation, outputDir, startedAt) {
 		);
 	}
 	artifactRefs.push(artifactRef("result", outputFile));
-	const model = options.codexModel ?? options.model;
-	const sessionMode = options.codexSessionMode ?? "ephemeral";
-	const telemetry = {
-		...(model ? { model } : {}),
-		session_mode: sessionMode,
-		...runtime.telemetry,
-	};
 	return normalizeObservedResult(evaluation, observed, artifactRefs, startedAt, telemetry);
 }
 

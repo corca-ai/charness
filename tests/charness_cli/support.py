@@ -531,6 +531,9 @@ def make_fake_npm_gws(tmp_path: Path, *, auth_ready: bool = True) -> tuple[Path,
             if args == ["install", "-g", "@googleworkspace/cli@latest"]:
                 print("updated @googleworkspace/cli")
                 raise SystemExit(0)
+            if args == ["install", "-g", "agent-browser@latest"]:
+                print("updated agent-browser")
+                raise SystemExit(0)
             raise SystemExit(1)
             """
         ),

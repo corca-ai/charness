@@ -391,6 +391,27 @@ def test_instruction_surface_codex_session_mode_is_configurable() -> None:
     assert "--ephemeral" not in payload["persistentArgs"]
 
 
+def test_instruction_surface_codex_isolated_home_ignores_user_config() -> None:
+    script = """
+        import { codexArgs } from './scripts/agent-runtime/run-local-eval-test.mjs';
+        const args = codexArgs(
+          { workspace: '/tmp/work', sandbox: 'read-only', codexHomeMode: 'isolated' },
+          '/tmp/schema.json',
+          '/tmp/output.json'
+        );
+        console.log(JSON.stringify(args));
+    """
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "--ignore-user-config" in json.loads(result.stdout)
+
+
 def test_instruction_surface_codex_home_mode_inherit_preserves_host_home() -> None:
     script = """
         import { codexEnvironment } from './scripts/agent-runtime/run-local-eval-test.mjs';
@@ -453,11 +474,95 @@ def test_instruction_surface_codex_home_override_uses_custom_home(tmp_path: Path
     assert custom_home.is_dir()
 
 
+def test_instruction_surface_codex_isolated_home_inherits_only_auth(tmp_path: Path) -> None:
+    source_home = tmp_path / "source-codex-home"
+    source_home.mkdir()
+    (source_home / "auth.json").write_text('{"token":"test"}\n', encoding="utf-8")
+    (source_home / "config.toml").write_text("model = 'stale'\n", encoding="utf-8")
+    output_dir = tmp_path / "output"
+    script = f"""
+        import {{ existsSync, readFileSync }} from 'node:fs';
+        import {{ join }} from 'node:path';
+        import {{ codexEnvironment }} from './scripts/agent-runtime/run-local-eval-test.mjs';
+        process.env.CODEX_HOME = {json.dumps(str(source_home))};
+        const runtime = codexEnvironment(
+          {{ repoRoot: '/tmp/repo', codexHomeMode: 'isolated', codexHome: null, codexAuthMode: 'inherit' }},
+          {json.dumps(str(output_dir))}
+        );
+        const home = runtime.env.CODEX_HOME;
+        console.log(JSON.stringify({{
+          sourceHome: process.env.CODEX_HOME,
+          codeHome: home,
+          auth: readFileSync(join(home, 'auth.json'), 'utf-8'),
+          hasConfig: existsSync(join(home, 'config.toml')),
+          preflightBlocker: runtime.preflightBlocker
+        }}));
+        runtime.cleanup?.();
+    """
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["codeHome"] != payload["sourceHome"]
+    assert payload["auth"] == '{"token":"test"}\n'
+    assert payload["hasConfig"] is False
+    assert payload["preflightBlocker"] is None
+
+
+def test_instruction_surface_codex_isolated_home_reports_missing_auth(tmp_path: Path) -> None:
+    source_home = tmp_path / "source-codex-home"
+    source_home.mkdir()
+    script = f"""
+        import {{ codexEnvironment }} from './scripts/agent-runtime/run-local-eval-test.mjs';
+        process.env.CODEX_HOME = {json.dumps(str(source_home))};
+        delete process.env.OPENAI_API_KEY;
+        const runtime = codexEnvironment(
+          {{ repoRoot: '/tmp/repo', codexHomeMode: 'isolated', codexHome: null, codexAuthMode: 'inherit' }},
+          '/tmp/output'
+        );
+        console.log(JSON.stringify(runtime.preflightBlocker));
+        runtime.cleanup?.();
+    """
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["blockerKind"] == "runner_auth_missing"
+    assert "could not inherit" in payload["summary"]
+
+
+def test_instruction_surface_codex_auth_failure_is_classified() -> None:
+    script = """
+        import { codexFailureBlockerKind } from './scripts/agent-runtime/run-local-eval-test.mjs';
+        console.log(codexFailureBlockerKind('401 Unauthorized: Missing bearer or basic authentication'));
+    """
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "runner_auth_missing"
+
+
 def test_instruction_surface_codex_exec_isolates_codex_home_by_default(tmp_path: Path) -> None:
     stale_codex_home = tmp_path / "stale-codex-home"
     stale_skill = stale_codex_home / "plugins/cache/local/charness/0.5.21/skills/issue/SKILL.md"
     stale_skill.parent.mkdir(parents=True)
     stale_skill.write_text("# stale installed issue skill\n", encoding="utf-8")
+    (stale_codex_home / "auth.json").write_text('{"token":"test"}\n', encoding="utf-8")
 
     workspace_path = tmp_path / "workspace"
     workspace_path.mkdir()

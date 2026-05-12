@@ -8,7 +8,7 @@
     {
       "caseId": "checked-in-bootstrap-before-impl",
       "displayName": "Checked-in surface keeps bootstrap helper distinct from work skill",
-      "prompt": "Route only: you need the first charness skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.",
+      "prompt": "Route only: after any required startup discovery pass, identify the durable Charness work skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.",
       "expectedRouting": {
         "bootstrapHelper": "find-skills",
         "workSkill": "impl"
@@ -17,13 +17,13 @@
     {
       "caseId": "compact-startup-bootstrap-before-impl",
       "displayName": "Craken compact surface still makes startup find-skills bootstrap explicit before impl",
-      "prompt": "Route only: you need the first charness skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.",
+      "prompt": "Route only: after any required startup discovery pass, identify the durable Charness work skill for a code/config/test change to an operator-facing artifact in this repo. Do not perform the change.",
       "instructionSurface": {
         "surfaceLabel": "compact_with_startup_bootstrap",
         "files": [
           {
             "path": "AGENTS.md",
-            "content": "# demo\n\n## Start Here\n\n- Always call `charness:find-skills` once at the start of each task-oriented session; use its capability inventory as the local map.\n- Load matching skills before improvising.\n- Keep the harness portable: host-specific behavior belongs in adapters, presets, and integration manifests.\n\n## Subagent Delegation\n\n- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract; this is the explicit user delegation request for named bounded reviewer scopes.\n\n## Phase Rules\n\n- Treat `mutate -> sync -> verify -> publish` as hard phase barriers.\n"
+            "content": "# demo\n\n## Start Here\n\n- Always call `charness:find-skills` once at the start of each task-oriented session; use its capability inventory as the local map.\n- Load matching skills before improvising.\n- Keep the harness portable: host-specific behavior belongs in adapters, presets, and integration manifests.\n\n## Work Phase Map\n\n- Before mutating code, scripts, docs, skills, generated exports, or validation behavior, route through `impl`.\n- Before turning a concept into a living implementation contract, route through `spec`.\n- Before reviewing slow gates, local-vs-CI validation cost, evaluator-backed validation, or quality-contract changes, route through `quality`.\n\n## Subagent Delegation\n\n- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract; this is the explicit user delegation request for named bounded reviewer scopes.\n\n## Phase Rules\n\n- Treat `mutate -> sync -> verify -> publish` as hard phase barriers.\n"
           }
         ]
       },
@@ -35,13 +35,13 @@
     {
       "caseId": "compact-startup-bootstrap-before-spec",
       "displayName": "Craken compact surface keeps startup find-skills bootstrap explicit before spec",
-      "prompt": "Route only: you need the first charness skill for turning a concept into a living implementation contract before coding. Do not produce the contract.",
+      "prompt": "Route only: after any required startup discovery pass, identify the durable Charness work skill for turning a concept into a living implementation contract before coding. Do not produce the contract.",
       "instructionSurface": {
         "surfaceLabel": "compact_with_startup_bootstrap",
         "files": [
           {
             "path": "AGENTS.md",
-            "content": "# demo\n\n## Start Here\n\n- Always call `charness:find-skills` once at the start of each task-oriented session; use its capability inventory as the local map.\n- Load matching skills before improvising.\n- Keep the harness portable: host-specific behavior belongs in adapters, presets, and integration manifests.\n\n## Subagent Delegation\n\n- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract; this is the explicit user delegation request for named bounded reviewer scopes.\n\n## Phase Rules\n\n- Treat `mutate -> sync -> verify -> publish` as hard phase barriers.\n"
+            "content": "# demo\n\n## Start Here\n\n- Always call `charness:find-skills` once at the start of each task-oriented session; use its capability inventory as the local map.\n- Load matching skills before improvising.\n- Keep the harness portable: host-specific behavior belongs in adapters, presets, and integration manifests.\n\n## Work Phase Map\n\n- Before mutating code, scripts, docs, skills, generated exports, or validation behavior, route through `impl`.\n- Before turning a concept into a living implementation contract, route through `spec`.\n- Before reviewing slow gates, local-vs-CI validation cost, evaluator-backed validation, or quality-contract changes, route through `quality`.\n\n## Subagent Delegation\n\n- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this repo contract; this is the explicit user delegation request for named bounded reviewer scopes.\n\n## Phase Rules\n\n- Treat `mutate -> sync -> verify -> publish` as hard phase barriers.\n"
           }
         ]
       },
@@ -53,7 +53,7 @@
     {
       "caseId": "validation-closeout-routes-before-hitl",
       "displayName": "Validation-shaped closeout routes to evaluator-backed quality before HITL",
-      "prompt": "Route only: the user asks for evaluator-backed validation while closing out a non-deterministic issue, described as an operator reading test, in this repo. They did not name Cautilus. What Charness routing path should you choose before HITL or same-agent manual review? Do not perform the review.",
+      "prompt": "Route only: include any required startup discovery pass, then identify the durable Charness work skill when the user asks for evaluator-backed validation while closing out a non-deterministic issue, described as an operator reading test, in this repo. They did not name Cautilus. What Charness routing path should you choose before HITL or same-agent manual review? Do not perform the review.",
       "expectedRouting": {
         "bootstrapHelper": "find-skills",
         "selectedSkill": "quality",
@@ -63,7 +63,7 @@
     {
       "caseId": "slow-gate-routes-to-quality",
       "displayName": "Slow standing gate review routes to quality",
-      "prompt": "Route only: the user says the standing test gate is too slow and asks whether local vs CI machine differences and parallel critical path should change the Charness quality contract. Do not perform the review.",
+      "prompt": "Route only: include any required startup discovery pass, then identify the durable Charness work skill when the user says the standing test gate is too slow and asks whether local vs CI machine differences and parallel critical path should change the Charness quality contract. Do not perform the review.",
       "expectedRouting": {
         "bootstrapHelper": "find-skills",
         "selectedSkill": "quality",

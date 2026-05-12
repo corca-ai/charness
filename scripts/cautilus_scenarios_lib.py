@@ -303,6 +303,7 @@ def _validate_adapter_wiring(repo_root: Path) -> None:
 
     required_runtime_files = (
         "scripts/agent-runtime/contract-versions.mjs",
+        "scripts/agent-runtime/codex-eval-runtime.mjs",
         "scripts/agent-runtime/instruction-surface-case-suite.mjs",
         "scripts/agent-runtime/instruction-surface-support.mjs",
         "scripts/agent-runtime/run-local-eval-test.mjs",

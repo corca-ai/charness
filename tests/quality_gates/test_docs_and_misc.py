@@ -611,6 +611,7 @@ def test_current_cautilus_guidance_uses_eval_surface() -> None:
     assert "cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>" in public_skill_validation
     assert "eval_test_command_templates:" in adapter_text
     assert "evaluation_input_default: evals/cautilus/whole-repo-routing.fixture.json" in adapter_text
+    assert "--codex-auth-mode inherit" in adapter_text
     assert "cautilus instruction-surface test --repo-root ." not in impl_text
     assert "cautilus instruction-surface test --repo-root ." not in public_skill_validation
 
