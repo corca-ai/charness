@@ -31,6 +31,108 @@ _scripts_upstream_release_lib_module = import_repo_module(__file__, "scripts.ups
 probe_release = _scripts_upstream_release_lib_module.probe_release
 
 
+def capture_provenance(manifest: dict[str, object]) -> dict[str, object]:
+    provenance = detect_install_provenance(manifest)
+    provenance["checked_at"] = now_iso()
+    return provenance
+
+
+def readiness_after_successful_checks(
+    repo_root: Path,
+    manifest: dict[str, object],
+    detect_result: dict[str, object],
+    healthcheck_result: dict[str, object],
+) -> dict[str, object]:
+    if detect_result["ok"] and healthcheck_result["ok"]:
+        return evaluate_readiness(manifest, repo_root)
+    return {"ok": False, "checks": [], "failed_checks": []}
+
+
+def persist_update_lock(
+    repo_root: Path,
+    manifest: dict[str, object],
+    *,
+    release: dict[str, object] | None,
+    provenance: dict[str, object],
+    payload: dict[str, object],
+) -> None:
+    upsert_lock(repo_root, manifest, release=release, provenance=provenance, update=payload)
+
+
+def update_payload(
+    *,
+    status: str,
+    mode: str,
+    commands: list[dict[str, object]],
+    detect_result: dict[str, object],
+    healthcheck_result: dict[str, object],
+    readiness_result: dict[str, object],
+    package_manager: object = None,
+    package_name: object = None,
+) -> dict[str, object]:
+    return {
+        "updated_at": now_iso(),
+        "update_status": status,
+        "mode": mode,
+        "commands": commands,
+        "detect": detect_result,
+        "healthcheck": healthcheck_result,
+        "readiness": readiness_result,
+        "package_manager": package_manager,
+        "package_name": package_name,
+    }
+
+
+def passive_update(
+    repo_root: Path,
+    manifest: dict[str, object],
+    *,
+    update_action: dict[str, object],
+    mode: str,
+    execute: bool,
+    release: dict[str, object] | None,
+    provenance: dict[str, object],
+) -> dict[str, object]:
+    detect_result, healthcheck_result = detect_and_healthcheck(
+        repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
+    )
+    readiness_result = readiness_after_successful_checks(repo_root, manifest, detect_result, healthcheck_result)
+    status = "manual" if mode == "manual" else (
+        "updated-not-ready" if detect_result["ok"] and healthcheck_result["ok"] and not readiness_result["ok"] else "noop"
+    )
+    if execute:
+        persist_update_lock(
+            repo_root,
+            manifest,
+            release=release,
+            provenance=provenance,
+            payload=update_payload(
+                status=status,
+                mode=mode,
+                commands=[],
+                detect_result=detect_result,
+                healthcheck_result=healthcheck_result,
+                readiness_result=readiness_result,
+            ),
+        )
+    result = {
+        "tool_id": manifest["tool_id"],
+        "status": status,
+        "mode": mode,
+        "commands": [],
+        "detect": detect_result,
+        "healthcheck": healthcheck_result,
+        "readiness": readiness_result,
+    }
+    if mode == "manual":
+        result |= {
+            "docs_url": update_action.get("docs_url"),
+            "install_url": update_action.get("install_url"),
+            "notes": update_action.get("notes", []),
+        }
+    return attach_release_metadata(result, provenance=provenance, release=release)
+
+
 def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -> dict[str, object]:
     disabled = _scripts_control_plane_lifecycle_lib_module.disabled_by_cautilus_adapter(repo_root, manifest)
     if disabled is not None:
@@ -44,93 +146,21 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
         }
 
     configured_action = manifest["lifecycle"]["update"]
-    provenance = detect_install_provenance(manifest)
-    provenance["checked_at"] = now_iso()
+    provenance = capture_provenance(manifest)
     routed_action = package_manager_update_action(manifest, provenance) if configured_action["mode"] == "manual" else None
     update_action = routed_action or configured_action
     mode = update_action["mode"]
     release = probe_release(manifest)
-    if mode == "none":
-        detect_result, healthcheck_result = detect_and_healthcheck(
-            repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
-        )
-        readiness_result = evaluate_readiness(manifest, repo_root) if detect_result["ok"] and healthcheck_result["ok"] else {
-            "ok": False,
-            "checks": [],
-            "failed_checks": [],
-        }
-        status = "updated-not-ready" if detect_result["ok"] and healthcheck_result["ok"] and not readiness_result["ok"] else "noop"
-        if execute:
-            upsert_lock(
-                repo_root,
-                manifest,
-                release=release,
-                provenance=provenance,
-                update={
-                    "updated_at": now_iso(),
-                    "update_status": status,
-                    "mode": mode,
-                    "commands": [],
-                    "detect": detect_result,
-                    "healthcheck": healthcheck_result,
-                    "readiness": readiness_result,
-                    "package_manager": None,
-                    "package_name": None,
-                },
-            )
-        return attach_release_metadata(
-            {
-                "tool_id": manifest["tool_id"],
-                "status": status,
-                "mode": mode,
-                "commands": [],
-                "detect": detect_result,
-                "healthcheck": healthcheck_result,
-                "readiness": readiness_result,
-            },
-            provenance=provenance,
+    if mode in {"none", "manual"}:
+        return passive_update(
+            repo_root,
+            manifest,
+            update_action=update_action,
+            mode=mode,
+            execute=execute,
             release=release,
+            provenance=provenance,
         )
-    if mode == "manual":
-        detect_result, healthcheck_result = detect_and_healthcheck(
-            repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
-        )
-        readiness_result = evaluate_readiness(manifest, repo_root) if detect_result["ok"] and healthcheck_result["ok"] else {
-            "ok": False,
-            "checks": [],
-            "failed_checks": [],
-        }
-        result = {
-            "tool_id": manifest["tool_id"],
-            "status": "manual",
-            "mode": mode,
-            "docs_url": update_action.get("docs_url"),
-            "install_url": update_action.get("install_url"),
-            "notes": update_action.get("notes", []),
-            "commands": [],
-            "detect": detect_result,
-            "healthcheck": healthcheck_result,
-            "readiness": readiness_result,
-        }
-        if execute:
-            upsert_lock(
-                repo_root,
-                manifest,
-                release=release,
-                provenance=provenance,
-                update={
-                    "updated_at": now_iso(),
-                    "update_status": "manual",
-                    "mode": mode,
-                    "commands": [],
-                    "detect": detect_result,
-                    "healthcheck": healthcheck_result,
-                    "readiness": readiness_result,
-                    "package_manager": None,
-                    "package_name": None,
-                },
-            )
-        return attach_release_metadata(result, provenance=provenance, release=release)
     if not execute:
         return attach_release_metadata(
             {
@@ -149,28 +179,23 @@ def update_one(repo_root: Path, manifest: dict[str, object], *, execute: bool) -
     detect_result, healthcheck_result = detect_and_healthcheck(
         repo_root, manifest, failure_reason="detect failed after update"
     )
-    readiness_result = evaluate_readiness(manifest, repo_root) if detect_result["ok"] and healthcheck_result["ok"] else {
-        "ok": False,
-        "checks": [],
-        "failed_checks": [],
-    }
+    readiness_result = readiness_after_successful_checks(repo_root, manifest, detect_result, healthcheck_result)
     command_ok = all(result.exit_code == 0 for result in command_results)
     if command_ok and detect_result["ok"] and healthcheck_result["ok"]:
         status = "updated" if readiness_result["ok"] else "updated-not-ready"
     else:
         status = "failed"
-    payload = {
-        "updated_at": now_iso(),
-        "update_status": status,
-        "mode": mode,
-        "commands": [command_result_payload(result) for result in command_results],
-        "detect": detect_result,
-        "healthcheck": healthcheck_result,
-        "readiness": readiness_result,
-        "package_manager": update_action.get("package_manager"),
-        "package_name": update_action.get("package_name"),
-    }
-    upsert_lock(repo_root, manifest, release=release, provenance=provenance, update=payload)
+    payload = update_payload(
+        status=status,
+        mode=mode,
+        commands=[command_result_payload(result) for result in command_results],
+        detect_result=detect_result,
+        healthcheck_result=healthcheck_result,
+        readiness_result=readiness_result,
+        package_manager=update_action.get("package_manager"),
+        package_name=update_action.get("package_name"),
+    )
+    persist_update_lock(repo_root, manifest, release=release, provenance=provenance, payload=payload)
     result = {
         "tool_id": manifest["tool_id"],
         "status": status,

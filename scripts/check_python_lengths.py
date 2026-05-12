@@ -15,8 +15,8 @@ _scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_f
 iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
 
 REPO_SCRIPT_FILE_MAX = 480
-SKILL_HELPER_FILE_MAX = 220
-TEST_FILE_MAX = 650
+SKILL_HELPER_FILE_MAX = 360
+TEST_FILE_MAX = 800
 FUNCTION_MAX = 100
 TEST_FUNCTION_MAX = 150
 

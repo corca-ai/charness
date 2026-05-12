@@ -74,6 +74,25 @@ def persist_install_lock(repo_root: Path, manifest: Payload, install_action: Pay
     )
 
 
+def readiness_after_successful_checks(repo_root: Path, manifest: Payload, detect_result: Payload, healthcheck_result: Payload) -> Payload:
+    if detect_result["ok"] and healthcheck_result["ok"]:
+        return lifecycle.evaluate_readiness(manifest, repo_root)
+    return {
+        "ok": False,
+        "checks": [],
+        "failed_checks": [],
+    }
+
+
+def passive_install_status(mode: str, detect_result: Payload, healthcheck_result: Payload, readiness_result: Payload) -> str:
+    status = "noop" if mode == "none" else "manual"
+    if not (detect_result["ok"] and healthcheck_result["ok"]):
+        return status
+    if readiness_result["ok"]:
+        return "noop" if mode == "none" else "already-installed"
+    return "installed-not-ready"
+
+
 def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload:
     disabled = lifecycle.disabled_by_cautilus_adapter(repo_root, manifest)
     if disabled is not None:
@@ -102,17 +121,8 @@ def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload
         detect_result, healthcheck_result = lifecycle.detect_and_healthcheck(
             repo_root, manifest, failure_reason="detect failed; healthcheck skipped"
         )
-        readiness_result = lifecycle.evaluate_readiness(manifest, repo_root) if detect_result["ok"] and healthcheck_result["ok"] else {
-            "ok": False,
-            "checks": [],
-            "failed_checks": [],
-        }
-        status = "noop" if mode == "none" else "manual"
-        if detect_result["ok"] and healthcheck_result["ok"]:
-            if readiness_result["ok"]:
-                status = "noop" if mode == "none" else "already-installed"
-            else:
-                status = "installed-not-ready"
+        readiness_result = readiness_after_successful_checks(repo_root, manifest, detect_result, healthcheck_result)
+        status = passive_install_status(mode, detect_result, healthcheck_result, readiness_result)
         if execute:
             persist_install_lock(
                 repo_root,
@@ -147,11 +157,7 @@ def install_one(repo_root: Path, manifest: Payload, *, execute: bool) -> Payload
     detect_result, healthcheck_result = lifecycle.detect_and_healthcheck(
         repo_root, manifest, failure_reason="detect failed after install"
     )
-    readiness_result = lifecycle.evaluate_readiness(manifest, repo_root) if detect_result["ok"] and healthcheck_result["ok"] else {
-        "ok": False,
-        "checks": [],
-        "failed_checks": [],
-    }
+    readiness_result = readiness_after_successful_checks(repo_root, manifest, detect_result, healthcheck_result)
     provenance = capture_provenance(manifest)
     command_ok = all(result["exit_code"] == 0 for result in command_results)
     if command_ok and detect_result["ok"] and healthcheck_result["ok"]:

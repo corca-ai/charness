@@ -189,6 +189,7 @@ def exercise_install_tool_helper_scenarios() -> None:
         install_action = {"docs_url": "https://example.com/install", "notes": ["demo"]}
         detect_result = {"ok": True, "results": [], "failure_details": [], "failure_hint": None}
         healthcheck_result = {"ok": True, "results": [], "failure_details": [], "failure_hint": None}
+        readiness_result = {"ok": True, "checks": [], "failed_checks": []}
         with mock.patch.object(install_tools, "detect_install_provenance", return_value={"install_method": "npm"}):
             install_tools.capture_provenance(manifest)
         for install_method in ("npm", "path"):
@@ -203,6 +204,7 @@ def exercise_install_tool_helper_scenarios() -> None:
                     commands=[{"command": "demo install", "exit_code": 0}],
                     detect=detect_result,
                     healthcheck=healthcheck_result,
+                    readiness=readiness_result,
                     release={"status": "ok"},
                     provenance=provenance,
                 )
