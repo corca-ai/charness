@@ -31,13 +31,7 @@ angle reviewer, counterweight reviewer, or fresh-eye reviewer spawned by a
 parent, perform that assigned lens directly and return the requested triage.
 Do not run host capability checks or require nested spawn access.
 Do not report blocked for missing nested subagents unless the parent asked for recursion.
-
-Before any host-capability question, honor `<repo-root>/AGENTS.md`
-`Subagent Delegation`: required bounded review is already delegated. If the
-parent agent already delegated a bounded angle or counterweight review to a
-subagent, that subagent performs its assigned lens directly; it should not
-spawn another reviewer unless recursive delegation was requested. See
-`../../shared/references/fresh-eye-subagent-review.md`.
+Honor `<repo-root>/AGENTS.md` `Subagent Delegation` — required bounded review is already delegated — and consult `../../shared/references/fresh-eye-subagent-review.md` before treating the canonical path as blocked.
 
 Caller contract:
 
@@ -113,10 +107,6 @@ history.
      it as a separate skeptical pass
    - before reporting the canonical path as blocked, use
      `../../shared/references/fresh-eye-subagent-review.md`
-   - if you are already the bounded fresh-eye subagent for one assigned angle,
-     counterweight, or reviewer lens, do the assignment directly; do not run
-     the capability check again unless the assignment explicitly asks for
-     nested delegation
    - if the host cannot provide subagents, stop and report that the canonical
      critique path is unavailable; fixing the host-side subagent contract is
      the next move instead of inventing a local substitute
@@ -162,11 +152,10 @@ required for that target (for example, release surface-lock inventory or
 rename slug-drift evidence).
 
 If the host blocks the canonical subagent path before execution, report
-`Execution: blocked <host-signal>` and the next move instead of inventing a
-degraded concern list.
-If parent-level delegation satisfied the fresh-eye requirement, report
-`Fresh-Eye Satisfaction: parent-delegated`; use `nested-delegated` only when
-recursive delegation was explicitly required and actually ran.
+`Execution: blocked <host-signal>` and the next move; record
+`Fresh-Eye Satisfaction` as `parent-delegated` when parent-level delegation
+satisfied the contract, or `nested-delegated` only when recursive delegation
+actually ran.
 
 ## Guardrails
 

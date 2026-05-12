@@ -136,6 +136,8 @@ runtime_budget_profiles:
     budgets:
       charness-version: 500
       check-cli-skill-surface: 11000
+      check-spec-evidence-durability: 2500
+      inventory-ci-local-gate-parity: 500
       inventory-sloc: 1000
       inventory-ubiquitous-language: 1000
       pytest: 140000
