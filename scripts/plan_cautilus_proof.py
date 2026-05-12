@@ -144,13 +144,13 @@ def plan_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> dict[str, 
     truth_surface_patterns = data.get("truth_surface_patterns") or list(TRUTH_SURFACE_FALLBACKS)
     truth_surface_paths = _matched_paths(normalized_paths, truth_surface_patterns)
     cross_repo_paths = _matched_paths(normalized_paths, data.get("cross_repo_issue_patterns", []))
-    required = bool(prompt_paths)
+    artifact_changed = ARTIFACT_PATH in normalized_paths
+    required = False
     proof_kinds: list[str] = []
-    if required:
+    if artifact_changed:
         proof_kinds.append("regression")
     if scenario_paths or truth_surface_paths or cross_repo_paths:
         proof_kinds.append("scenario_review")
-    artifact_changed = ARTIFACT_PATH in normalized_paths
     run_mode = data["run_mode"]
     disabled_reason = str(data.get("disabled_reason") or "").strip()
     scenario_registry_review_required = any(
@@ -158,34 +158,35 @@ def plan_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> dict[str, 
     )
     must_ask_before_running = run_mode == "ask"
     cautilus_disabled = run_mode == "disabled"
-    recommended_commands = [EVAL_TEST_COMMAND] if required and not cautilus_disabled else []
+    recommended_commands: list[str] = []
     if cautilus_disabled:
         status = "disabled"
-    elif not required:
-        status = "not-required"
     elif artifact_changed:
         status = "ready-for-validation"
     else:
-        status = "needs-proof"
+        status = "not-required"
     next_action = "none"
-    if status == "disabled" and required:
-        next_action = "cautilus-disabled"
-    elif status == "needs-proof":
-        next_action = "ask-before-running" if must_ask_before_running else "run-proof-and-refresh-artifact"
     notes: list[str] = []
     if run_mode == "ask":
-        notes.append("Repo policy is ask-before-run: closeout must stop before any cautilus execution.")
+        notes.append(
+            "Repo policy is ask-before-run: Cautilus execution needs an explicit log-backed behavior proof request."
+        )
     elif run_mode == "adaptive":
         notes.append(
-            "Repo policy is adaptive: generic review, closeout, or quality wording is not a cautilus "
-            "execution trigger; run only when prompt-affecting or evaluator-backed behavior proof is "
-            "required, and ask before scenario-registry mutations."
+            "Repo policy is adaptive: generic review, closeout, quality wording, and prompt-affecting "
+            "diffs are not Cautilus execution triggers by themselves; run only for explicit log-backed "
+            "behavior proof, and ask before scenario-registry mutations."
         )
     elif run_mode == "auto":
         notes.append("Repo policy is auto: cautilus proof may run without an extra confirmation step when the operator workflow chooses to execute it.")
     elif run_mode == "disabled":
         reason = f": {disabled_reason}" if disabled_reason else ""
         notes.append(f"Repo policy is disabled; do not run cautilus proof{reason}")
+    if prompt_paths and not artifact_changed:
+        notes.append(
+            "Prompt-affecting paths were detected, but routine live Cautilus proof is not required; "
+            "deterministic validation owns closeout unless this slice records a log-backed behavior proof."
+        )
     if "scenario_review" in proof_kinds:
         notes.append("This slice needs a scenario review, not only regression proof.")
     if scenario_registry_review_required:

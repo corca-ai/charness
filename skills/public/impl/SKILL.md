@@ -6,8 +6,7 @@ description: "Use when work should move into code, config, tests, or operator-fa
 
 Use this when the work should move from contract into code, config, tests, or operator-facing artifacts.
 
-`impl` is downstream of `spec`, but direct implementation prompts still get a
-small honest contract instead of pretending the task is already well-defined.
+`impl` is downstream of `spec`, but direct implementation prompts still get a small honest contract instead of pretending the task is already well-defined.
 Keep sequence discipline, strong verification, and honest critique use in the
 loop. See `references/sequence-discipline.md`, `references/verification-ladder.md`, `references/design-lenses.md`, and `references/review-gate.md`.
 
@@ -115,10 +114,11 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
    - if the slice changes repo-owned instruction or prompt surfaces such as `<repo-root>/AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or adapter prompt wording, let the repo's cautilus adapter decide prompt/evaluator proof policy before closeout
    - if the adapter run mode is `disabled`, do not run Cautilus; record the disabled validator result and use deterministic gates until the adapter is re-enabled
    - generic review or closeout wording must not silently launch Cautilus
-   - for behavior-preserving prompt changes, keep regression proof anchored by
-     `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` or
-     a repo-owned dogfood wrapper when the adapter permits Cautilus execution;
-     for behavior-improving claims, also record the baseline compare path with
+   - prompt-affecting diffs alone do not require a live Cautilus run; keep
+     deterministic proof-artifact and fixture validation local, and use
+     `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` or a
+     repo-owned dogfood wrapper only for explicit log-backed behavior proof; for
+     behavior-improving claims, also record the baseline compare path with
      `cautilus workspace prepare-compare` and `cautilus eval evaluate --input <observed.json>`
    - if stronger proof needs setup or permission, ask instead of silently
      downgrading the claim

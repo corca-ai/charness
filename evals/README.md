@@ -18,6 +18,18 @@ that prove the harness still works as a product:
   summary-level behavior checks are structured in the observed packet instead
   of relying on manual `result.json` inspection or brittle prose pins
 
+## Cautilus Fixture Tiers
+
+Current route-only fixtures under `evals/cautilus/*.fixture.json` are legacy
+sentinels. They are kept so schema, runner, and concept-assertion contracts stay
+deterministically validated, but they are not routine live Cautilus closeout
+proof.
+
+New behavior-proving Cautilus fixtures should be log-backed: start from a real
+failing prompt, transcript, or operator log, then assert that the same input now
+produces the intended behavior. Those fixtures are run on demand for the bug or
+regression they protect, not as a standing substitute for the local quality bar.
+
 ## Cautilus Required Concepts
 
 Instruction-surface fixtures under `evals/cautilus/*.fixture.json` may add

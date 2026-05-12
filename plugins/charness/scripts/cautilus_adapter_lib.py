@@ -70,8 +70,8 @@ def infer_cautilus_defaults(repo_root: Path, *, run_mode: str = "ask") -> dict[s
         "repo": repo_root.name,
         "run_mode": run_mode,
         "evaluation_surfaces": [
-            "skill portability and metadata integrity",
-            "repo-owned validation workflow",
+            "deterministic Cautilus adapter and fixture contract validation",
+            "on-demand log-backed behavior proof",
         ],
         "baseline_options": ["compare against a git ref in the same repo via {baseline_ref}"],
         "required_prerequisites": [
@@ -82,7 +82,7 @@ def infer_cautilus_defaults(repo_root: Path, *, run_mode: str = "ask") -> dict[s
             "python3 scripts/validate_public_skill_validation.py --repo-root .",
             "python3 scripts/validate_cautilus_scenarios.py --repo-root .",
         ],
-        "eval_test_command": "cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/whole-repo-routing.fixture.json",
+        "eval_test_command": "log-backed fixture required; no default live proof command",
         "evaluation_input_default": "evals/cautilus/whole-repo-routing.fixture.json",
         "eval_test_command_templates": [
             "node ./scripts/agent-runtime/run-local-eval-test.mjs --repo-root . --workspace {candidate_repo} --cases-file {eval_cases_file} --output-file {eval_observed_file} --artifact-dir {output_dir}/eval-test --backend {backend} --sandbox read-only --timeout-ms 180000 --codex-model gpt-5.4-mini --codex-reasoning-effort low --codex-home-mode isolated --codex-auth-mode inherit --claude-permission-mode dontAsk"

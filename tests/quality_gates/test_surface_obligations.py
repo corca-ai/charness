@@ -492,7 +492,7 @@ def test_run_slice_closeout_blocks_hitl_recommended_public_skill_review_until_ac
     assert payload["status"] == "blocked"
     assert payload["cautilus_plan"]["run_mode"] == "ask"
     assert payload["cautilus_plan"]["status"] == "ready-for-validation"
-    assert payload["cautilus_plan"]["required"] is True
+    assert payload["cautilus_plan"]["required"] is False
     assert payload["cautilus_plan"]["artifact_changed"] is True
     assert payload["cautilus_plan"]["scenario_registry_review_required"] is False
     assert payload["cautilus_plan"]["changed_public_skills"] == ["critique"]

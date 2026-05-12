@@ -17,6 +17,7 @@ REQUIRED_SECTIONS = (
     "## Validation Goal",
     "## Change Intent",
     "## Prompt Surfaces",
+    "## Behavior Source",
     "## Commands Run",
     "## Regression Proof",
     "## Outcome",
@@ -36,6 +37,16 @@ REGRESSION_COMMAND_SNIPPETS = (
     "npm run dogfood:self",
 )
 REMOVED_COMMAND_SNIPPET = "cautilus instruction-surface test"
+LEGACY_ROUTE_ONLY_FIXTURE = "evals/cautilus/whole-repo-routing.fixture.json"
+BEHAVIOR_SOURCE_KIND_PREFIX = "- source-kind: "
+BEHAVIOR_SOURCE_REF_PREFIX = "- source-ref: "
+VALID_BEHAVIOR_SOURCE_KINDS = {
+    "failing-prompt",
+    "transcript",
+    "operator-log",
+    "issue-log",
+    "regression-log",
+}
 
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
 ValidationError = _scripts_artifact_validator_module.ValidationError
@@ -97,6 +108,10 @@ def validate_commands_run(lines: list[str], goal: str) -> None:
         raise ValidationError(
             "`## Commands Run` must not use the removed `cautilus instruction-surface test` command"
         )
+    if any(LEGACY_ROUTE_ONLY_FIXTURE in line for line in command_lines):
+        raise ValidationError(
+            "`## Commands Run` must not use the legacy route-only fixture as log-backed behavior proof"
+        )
     if not any(any(snippet in line for snippet in REGRESSION_COMMAND_SNIPPETS) for line in command_lines):
         raise ValidationError(
             "`## Commands Run` must include `cautilus eval test` or a repo-owned dogfood wrapper"
@@ -129,6 +144,27 @@ def validate_change_intent(lines: list[str], intent_tags: list[str]) -> None:
         raise ValidationError("`## Change Intent` must list the active planner intent tag(s); missing " + rendered)
 
 
+def validate_behavior_source(lines: list[str]) -> None:
+    source_lines = section_lines(lines, "## Behavior Source")
+    kind_values = [
+        line[len(BEHAVIOR_SOURCE_KIND_PREFIX) :].strip(" `")
+        for line in source_lines
+        if line.startswith(BEHAVIOR_SOURCE_KIND_PREFIX)
+    ]
+    if len(kind_values) != 1 or kind_values[0] not in VALID_BEHAVIOR_SOURCE_KINDS:
+        valid = "|".join(sorted(VALID_BEHAVIOR_SOURCE_KINDS))
+        raise ValidationError(f"`## Behavior Source` must contain exactly one `- source-kind: {valid}` line")
+    ref_values = [
+        line[len(BEHAVIOR_SOURCE_REF_PREFIX) :].strip(" `")
+        for line in source_lines
+        if line.startswith(BEHAVIOR_SOURCE_REF_PREFIX)
+    ]
+    if len(ref_values) != 1 or not ref_values[0]:
+        raise ValidationError("`## Behavior Source` must contain exactly one non-empty `- source-ref: ...` line")
+    if any(LEGACY_ROUTE_ONLY_FIXTURE in line for line in source_lines):
+        raise ValidationError("`## Behavior Source` must not cite the legacy route-only fixture as the behavior source")
+
+
 def validate_regression_proof(lines: list[str]) -> None:
     regression_lines = section_lines(lines, "## Regression Proof")
     if not any("eval test" in line and any(token in line for token in ("passed", "accept-now", "0 failed")) for line in regression_lines):
@@ -148,26 +184,18 @@ def validate_scenario_review(lines: list[str], planner: dict[str, object]) -> No
 def validate_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> str:
     planner = plan_cautilus_proof(repo_root, changed_paths)
     changed_prompt_paths = planner["prompt_affecting_paths"]
+    artifact_repo_path = ARTIFACT_PATH.as_posix()
     if planner["run_mode"] == "disabled":
         reason = planner.get("disabled_reason")
         suffix = f": {reason}" if reason else ""
         return f"cautilus proof disabled by repo adapter{suffix}"
-    if not changed_prompt_paths:
-        return "no prompt-affecting changes detected"
-
-    artifact_repo_path = ARTIFACT_PATH.as_posix()
     if artifact_repo_path not in changed_paths:
-        next_action = planner["next_action"]
-        run_mode = planner["run_mode"]
-        if next_action == "ask-before-running":
-            raise ValidationError(
-                "prompt-affecting changes require refreshing "
-                f"`{artifact_repo_path}` in the same slice; repo policy is `{run_mode}` so ask before running cautilus"
+        if changed_prompt_paths:
+            return (
+                "no live cautilus proof artifact changed; deterministic validation owns "
+                f"{len(changed_prompt_paths)} prompt-affecting path(s)"
             )
-        raise ValidationError(
-            "prompt-affecting changes require refreshing "
-            f"`{artifact_repo_path}` in the same slice"
-        )
+        return "no cautilus proof artifact changed"
 
     lines = read_lines(repo_root / ARTIFACT_PATH)
     validate_title(lines)
@@ -178,6 +206,7 @@ def validate_cautilus_proof(repo_root: Path, changed_paths: list[str]) -> str:
     goal = validate_validation_goal(lines)
     validate_change_intent(lines, planner["intent_tags"])
     validate_prompt_surfaces(lines, changed_prompt_paths)
+    validate_behavior_source(lines)
     validate_commands_run(lines, goal)
     validate_regression_proof(lines)
     validate_scenario_review(lines, planner)

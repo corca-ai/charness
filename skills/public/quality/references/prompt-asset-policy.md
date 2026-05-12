@@ -36,14 +36,17 @@ behavioral proof:
 - if the adapter run mode is `disabled`, do not run Cautilus; record the
   disabled validator result and use deterministic gates until re-enabled
 - let the repo adapter choose whether Cautilus runs in `auto`, `ask`,
-  `adaptive`, or `disabled` mode instead of assuming one global execution policy
+  `adaptive`, or `disabled` mode, but do not treat a prompt-affecting diff alone
+  as a live-evaluator trigger
 - generic review, closeout, or quality-gate wording is not a Cautilus execution
   trigger; deterministic gates and checked proof-artifact validation come first
-- for `preserve` claims, keep a regression-proof record anchored by
+- for `preserve` claims backed by a real failing input, keep a regression-proof
+  record anchored by
   `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` or a
   repo-owned dogfood wrapper when the adapter permits Cautilus execution
-- for high-leverage prompt changes, add a short scenario-review note rather
-  than pretending routing preservation alone answered the behavioral question
+- for high-leverage prompt changes, add a short scenario-review note and prefer
+  a log-backed fixture over pretending route-only preservation answered the
+  behavioral question
 - in `adaptive` mode, do not stop just because scenario review is needed; stop
   only if you are about to add, remove, or update maintained scenario-registry
   coverage

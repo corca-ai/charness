@@ -45,7 +45,7 @@ def seed_repo(tmp_path: Path, artifact_body: str | None) -> Path:
     return repo
 
 
-def test_validate_cautilus_proof_requires_artifact_for_prompt_changes(tmp_path: Path) -> None:
+def test_validate_cautilus_proof_keeps_prompt_changes_deterministic_without_artifact(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, None)
     result = run_script(
         "scripts/validate_cautilus_proof.py",
@@ -54,8 +54,8 @@ def test_validate_cautilus_proof_requires_artifact_for_prompt_changes(tmp_path: 
         "--paths",
         "skills/public/impl/SKILL.md",
     )
-    assert result.returncode == 1
-    assert "require refreshing `charness-artifacts/cautilus/latest.md`" in result.stderr
+    assert result.returncode == 0, result.stderr
+    assert "deterministic validation owns 1 prompt-affecting path(s)" in result.stdout
 
 
 def test_validate_cautilus_proof_requires_ab_compare_for_improve_claim(tmp_path: Path) -> None:
@@ -85,6 +85,11 @@ def test_validate_cautilus_proof_requires_ab_compare_for_improve_claim(tmp_path:
                 "## Prompt Surfaces",
                 "",
                 "- `skills/public/impl/SKILL.md`",
+                "",
+                "## Behavior Source",
+                "",
+                "- source-kind: `failing-prompt`",
+                "- source-ref: `charness-artifacts/debug/demo-transcript.md`",
                 "",
                 "## Commands Run",
                 "",
@@ -148,6 +153,11 @@ def test_validate_cautilus_proof_rejects_removed_instruction_surface_command(tmp
                 "",
                 "- `skills/public/impl/SKILL.md`",
                 "",
+                "## Behavior Source",
+                "",
+                "- source-kind: `failing-prompt`",
+                "- source-ref: `charness-artifacts/debug/demo-transcript.md`",
+                "",
                 "## Commands Run",
                 "",
                 "- `cautilus instruction-surface test --repo-root .`",
@@ -209,6 +219,11 @@ def test_validate_cautilus_proof_requires_eval_result_not_generic_passed_line(tm
                 "## Prompt Surfaces",
                 "",
                 "- `skills/public/impl/SKILL.md`",
+                "",
+                "## Behavior Source",
+                "",
+                "- source-kind: `failing-prompt`",
+                "- source-ref: `charness-artifacts/debug/demo-transcript.md`",
                 "",
                 "## Commands Run",
                 "",
@@ -274,6 +289,11 @@ def test_validate_cautilus_proof_accepts_preserve_claim(tmp_path: Path) -> None:
                 "",
                 "- `skills/public/impl/SKILL.md`",
                 "",
+                "## Behavior Source",
+                "",
+                "- source-kind: `failing-prompt`",
+                "- source-ref: `charness-artifacts/debug/demo-transcript.md`",
+                "",
                 "## Commands Run",
                 "",
                 "- `cautilus eval test --repo-root . --adapter-name self-dogfood-eval`",
@@ -309,7 +329,76 @@ def test_validate_cautilus_proof_accepts_preserve_claim(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
 
 
-def test_validate_cautilus_proof_treats_named_cautilus_adapter_as_prompt_affecting(tmp_path: Path) -> None:
+def test_validate_cautilus_proof_rejects_legacy_route_only_fixture_as_behavior_proof(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        "\n".join(
+            [
+                "# Cautilus Dogfood",
+                "Date: 2026-04-18",
+                "",
+                "## Trigger",
+                "",
+                "- slice: demo",
+                "- claim: `preserve`",
+                "",
+                "## Validation Goal",
+                "",
+                "- goal: `preserve`",
+                "- reason: demo",
+                "",
+                "## Change Intent",
+                "",
+                "- prompt_affecting_change",
+                "- skill_core_change",
+                "- scenario_review_change",
+                "",
+                "## Prompt Surfaces",
+                "",
+                "- `skills/public/impl/SKILL.md`",
+                "",
+                "## Behavior Source",
+                "",
+                "- source-kind: `failing-prompt`",
+                "- source-ref: `charness-artifacts/debug/demo-transcript.md`",
+                "",
+                "## Commands Run",
+                "",
+                "- `cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/whole-repo-routing.fixture.json`",
+                "",
+                "## Regression Proof",
+                "",
+                "- eval test result: 5 passed / 0 failed / 0 blocked",
+                "",
+                "## Scenario Review",
+                "",
+                "- scenario: demo",
+                "",
+                "## Outcome",
+                "",
+                "- recommendation: `accept-now`",
+                "",
+                "## Follow-ups",
+                "",
+                "- demo",
+                "",
+            ]
+        )
+        + "\n",
+    )
+    result = run_script(
+        "scripts/validate_cautilus_proof.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "skills/public/impl/SKILL.md",
+        "charness-artifacts/cautilus/latest.md",
+    )
+    assert result.returncode == 1
+    assert "legacy route-only fixture" in result.stderr
+
+
+def test_validate_cautilus_proof_treats_named_cautilus_adapter_as_deterministic_without_artifact(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, None)
     result = run_script(
         "scripts/validate_cautilus_proof.py",
@@ -318,8 +407,8 @@ def test_validate_cautilus_proof_treats_named_cautilus_adapter_as_prompt_affecti
         "--paths",
         ".agents/cautilus-adapters/chatbot-proposals.yaml",
     )
-    assert result.returncode == 1
-    assert "require refreshing `charness-artifacts/cautilus/latest.md`" in result.stderr
+    assert result.returncode == 0, result.stderr
+    assert "deterministic validation owns 1 prompt-affecting path(s)" in result.stdout
 
 
 def test_validate_cautilus_proof_allows_disabled_adapter_without_artifact(tmp_path: Path) -> None:
@@ -363,9 +452,7 @@ def test_plan_cautilus_proof_recommends_skill_dogfood_and_scenario_followups() -
     payload = json.loads(result.stdout)
     assert payload["run_mode"] == "ask"
     assert payload["status"] == "ready-for-validation"
-    assert any(
-        "cautilus eval test" in command for command in payload["recommended_commands"]
-    )
+    assert payload["recommended_commands"] == []
     assert payload["changed_public_skills"] == ["create-skill"]
     recommendation = payload["skill_validation_recommendations"][0]
     assert recommendation["skill_id"] == "create-skill"
@@ -426,4 +513,4 @@ def test_plan_cautilus_proof_adaptive_runs_without_ask_for_scenario_review(tmp_p
     assert payload["must_ask_before_running"] is False
     assert payload["scenario_registry_review_required"] is True
     assert payload["changed_public_skills"] == ["impl"]
-    assert payload["next_action"] == "run-proof-and-refresh-artifact"
+    assert payload["next_action"] == "none"

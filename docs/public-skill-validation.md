@@ -65,8 +65,12 @@ Default prompt-affecting surfaces in this repo:
 
 Default proof split:
 
-- `regression proof`: preserve routing, contract boundaries, and the existing
-  first-skill shape with
+- `deterministic validation`: schema, adapter, fixture syntax, and proof-artifact
+  format checks stay in the local quality bar for every relevant slice
+- `legacy routing fixture`: existing route-only fixtures are preserved as
+  archived sentinels, but they are not routine live Cautilus closeout proof
+- `log-backed regression proof`: when a slice records a real behavior failure
+  or operator log, prove the same input now behaves correctly with
   `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` or a
   repo-owned dogfood wrapper when the adapter permits Cautilus execution
 - `scenario review`: inspect one or two representative scenarios when the
@@ -78,12 +82,20 @@ Default proof split:
   `cautilus eval evaluate --input <observed.json>`
 
 The checked-in artifact should say whether the slice claims `preserve` or
-`improve`, list the touched prompt surfaces, record the active intent tags, and
-separate regression proof from scenario review when both matter.
+`improve`, list the touched prompt surfaces, record the active intent tags,
+include a `Behavior Source` section with the failing prompt, transcript,
+operator log, issue log, or regression log, and separate regression proof from
+scenario review when both matter. The legacy
+[whole-repo routing fixture](../evals/cautilus/whole-repo-routing.fixture.json)
+must not be cited as behavior proof.
 
 ## Execution Policy
 
-`cautilus` is on-demand proof, not an always-run closeout side effect.
+`cautilus` is on-demand behavior proof, not an always-run closeout side effect.
+Prompt-affecting diffs alone do not require a live Cautilus run or a refreshed
+[Cautilus proof artifact](../charness-artifacts/cautilus/latest.md);
+deterministic local gates own closeout unless the slice intentionally records
+log-backed behavior proof.
 
 Repo policy lives in [`.agents/cautilus-adapter.yaml`](../.agents/cautilus-adapter.yaml):
 
@@ -98,8 +110,9 @@ Repo policy lives in [`.agents/cautilus-adapter.yaml`](../.agents/cautilus-adapt
   validator output own closeout until the adapter is deliberately re-enabled
 
 `run_slice_closeout.py` should act as a gatekeeper, not as the evaluator
-runner: it decides whether proof is required and whether the refreshed artifact
-is present, but it should not silently launch cautilus itself.
+runner: it validates deterministic obligations and any checked proof artifact,
+but it should not silently launch cautilus or require the route-only fixture for
+ordinary prompt-surface edits.
 
 ## Intent Classes
 
