@@ -77,7 +77,8 @@ def test_plugin_export_prefers_repo_owned_skill_surface_for_source_repo(tmp_path
             "layer": "public skill",
         }
     ]
-    assert payload["support_skills"] == [
+    generated_support = [entry for entry in payload["support_skills"] if entry["source"] == "synced-support"]
+    assert generated_support == [
         {
             "id": "cautilus",
             "name": "cautilus",

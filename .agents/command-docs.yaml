@@ -271,9 +271,13 @@ commands:
     required_help_contains:
       - doctor
       - prepare
+      - audit
+      - cleanup
     required_doc_contains:
       - charness worktree doctor
       - charness worktree prepare
+      - charness worktree audit --doctor
+      - charness worktree cleanup
       - .agents/worktree-adapter.yaml
   worktree-doctor:
     help_command: ./charness worktree doctor --help
@@ -296,3 +300,26 @@ commands:
       - --json
     required_doc_contains:
       - charness worktree prepare
+  worktree-audit:
+    help_command: ./charness worktree audit --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/worktree-prepare.md
+    required_help_contains:
+      - --repo-root
+      - --doctor
+      - --json
+    required_doc_contains:
+      - charness worktree audit --doctor
+  worktree-cleanup:
+    help_command: ./charness worktree cleanup --help
+    doc_paths:
+      - docs/cli-reference.md
+      - docs/worktree-prepare.md
+    required_help_contains:
+      - --path
+      - --delete-merged-branch
+      - --yes
+      - --json
+    required_doc_contains:
+      - charness worktree cleanup --path

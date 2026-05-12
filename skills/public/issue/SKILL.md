@@ -102,13 +102,12 @@ repo by created date. It must not use the current session's last created issue.
    `feature`/`deferred-work` → step 6 brief; `question`/`decision-needed`
    → step 7 discussion. Record the classification in the resolution notes.
 4. For `bug`-class issues, run a **causal review** before design via a
-   bounded fresh-eye subagent (no nested reviewers, no same-agent fallback)
-   that consumes the `debug` substrate cite-only. See
-   `references/causal-review.md` for the three-lens triage shape, the
-   `file:line` + over-reach evidence rules, and the trivial-bug short-
-   circuit. If the host blocks subagent spawning, stop and report; step 9
-   is also blocked. Per-issue in a range; share findings only when step 5
-   bundles fixes.
+   bounded fresh-eye subagent that consumes the `debug` substrate cite-only.
+   It must include **mental-model sibling search**: abstract the mistaken
+   model that allowed the bug, then scan structural siblings beyond keywords
+   or nearby files. See `references/causal-review.md` for shape, evidence,
+   over-reach rules, and trivial-bug handling. If subagent spawning is
+   blocked, stop and report; step 9 is also blocked.
 5. Order resolutions as a generative sequence (Christopher Alexander): the
    move that reduces uncertainty or unlocks the next issue comes first. For
    siblings surfaced by step 4, decide whether to bundle into this commit,
@@ -179,6 +178,8 @@ repo by created date. It must not use the current session's last created issue.
 - Do not collapse the causal-review or resolution-critique subagent into a
   same-agent local pass; if the host blocks subagent spawning, stop and
   report the blocked state with the concrete host signal.
+- Do not satisfy sibling search with keyword or proximity matches alone; name
+  the mental model and structural patterns scanned.
 - Do not file siblings surfaced by causal review as new issues without first
   asking whether they should be bundled into the current fix.
 

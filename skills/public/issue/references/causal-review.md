@@ -81,7 +81,11 @@ fixture, fix an assertion, or accept that this class is human-detection?
 
 ### Lens 3 — Sibling search
 
-Look for the same pattern elsewhere. The reviewer scans three axes:
+Look for the same pattern elsewhere. Start from the mental model that allowed
+the issue, not from the issue title's nouns. Keyword and nearby-file search
+are useful, but they are only the first pass.
+
+The reviewer scans four axes:
 
 - **same layer**: the literal same code shape in other modules, scripts, or
   configs (concrete duplications)
@@ -92,9 +96,15 @@ Look for the same pattern elsewhere. The reviewer scans three axes:
 - **specialization down**: the issue is the surface of a more specific
   problem. Name the narrower problem and check whether it shows up in finer
   granularity within the same module.
+- **mental-model siblings**: name the operator or implementer assumption that
+  made the bug plausible, then scan structurally similar traps even when they
+  use different names. Common shapes include missing lifecycle endpoints,
+  local checks not composed into aggregate surfaces, mutation paths missing a
+  readiness probe, renderers hiding failing details, and safety checks that
+  trust current working directory or an implicit default as the authority.
 
-Return concrete locations the implementer should inspect. The implementer
-decides at step 5 whether to bundle the sibling fix or defer.
+Return the exact patterns searched plus concrete locations the implementer
+should inspect. The implementer decides at step 5 whether to bundle or defer.
 
 ### Output shape (causal review)
 
@@ -112,9 +122,9 @@ The subagent returns:
 - `Detection gap` (which gates existed, which did not fire, smallest change to
   fix that) + `Over-reach check`: simplest evidence the gap is real, not "no
   test exists in this corner"
-- `Sibling search` (concrete locations on each axis) + `Over-reach check`:
-  simplest evidence the listed locations are actual instances of the same
-  pattern, not surface-level keyword matches
+- `Sibling search` (mental model, patterns scanned, concrete locations on
+  each axis) + `Over-reach check`: simplest evidence the listed locations are
+  actual instances of the same pattern, not surface-level keyword matches
 - `Bundle vs Defer recommendation` (a list, with cheap-now flagged)
 - `Fresh-Eye Satisfaction`: `parent-delegated` / `nested-delegated` /
   `blocked <host-signal>`

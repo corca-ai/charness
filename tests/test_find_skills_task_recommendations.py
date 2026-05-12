@@ -228,7 +228,7 @@ def test_recommend_for_task_emits_empty_result_hint_when_intent_triggers_absent(
     assert payload["support_skill_recommendations"] == []
     note = payload["support_recommendation_note"]
     assert isinstance(note, str)
-    assert "1 support skill" in note
+    assert "support skill(s) are available locally" in note
     assert "intent_triggers" in note
 
 

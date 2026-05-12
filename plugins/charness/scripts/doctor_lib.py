@@ -15,6 +15,7 @@ from scripts.repo_layout import discovery_stub_dir, generated_support_dir
 from scripts.support_sync_lib import (
     inspect_support_sync,
     support_link_name,
+    support_materialized_roots,
     support_state_for_manifest,
 )
 
@@ -40,12 +41,12 @@ def support_sync_guidance(capability: dict[str, Any], support_state: str, suppor
     if status == "not-tracked":
         guidance = (
             "Local support skill surface is not materialized yet. "
-            f"Run `{suggested_command}` if you want the upstream or wrapper support skill available in this repo."
+            f"Run `{suggested_command}` to materialize the upstream or wrapper support skill into the installed Charness plugin."
         )
     else:
         guidance = (
             "Previously materialized support skill paths are missing. "
-            f"Run `{suggested_command}` to rematerialize the local support surface."
+            f"Run `{suggested_command}` to rematerialize the installed plugin support surface."
         )
     return {
         **support_sync,
@@ -55,7 +56,12 @@ def support_sync_guidance(capability: dict[str, Any], support_state: str, suppor
     }, [guidance]
 
 
-def support_discovery_state(repo_root: Path, capability: dict[str, Any], support_state: str) -> tuple[dict[str, Any] | None, list[str]]:
+def support_discovery_state(
+    repo_root: Path,
+    capability: dict[str, Any],
+    support_state: str,
+    previous_lock: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any] | None, list[str]]:
     local_support_path = capability.get("support_skill_path")
     if isinstance(local_support_path, str) and local_support_path and (repo_root / local_support_path).is_file():
         guidance = (
@@ -72,6 +78,28 @@ def support_discovery_state(repo_root: Path, capability: dict[str, Any], support
 
     if support_state not in {"upstream-consumed", "wrapped-upstream"}:
         return None, []
+
+    support = previous_lock.get("support") if previous_lock else None
+    if isinstance(support, dict):
+        for materialized_root in support_materialized_roots(repo_root, support):
+            materialized_path = materialized_root / "SKILL.md"
+            if not materialized_path.is_file():
+                continue
+            rendered_path = str(materialized_path)
+            materialized_kind = support.get("materialized_kind") or "materialized"
+            guidance = (
+                f"Support skill is available at `{rendered_path}`. "
+                "Use the installed Charness plugin support surface for this upstream-consumed skill."
+            )
+            return {
+                "status": "materialized",
+                "support_skill_path": rendered_path,
+                "layer": "installed support skill" if materialized_kind == "installed-plugin-copy" else "synced support skill",
+                "intent_triggers": capability.get("intent_triggers", []),
+                "materialized_base": support.get("materialized_base"),
+                "materialized_kind": materialized_kind,
+                "guidance": guidance,
+            }, [guidance]
 
     materialized_path = generated_support_dir(repo_root) / support_link_name(capability) / "SKILL.md"
     if not materialized_path.is_file():
@@ -122,7 +150,7 @@ def inspect_capability_state(repo_root: Path, capability: dict[str, Any]) -> dic
         support_state = support_state_for_manifest(capability)
         support_sync = inspect_support_sync(repo_root, previous_lock)
         support_sync, next_steps = support_sync_guidance(capability, support_state, support_sync)
-        support_discovery, discovery_steps = support_discovery_state(repo_root, capability, support_state)
+        support_discovery, discovery_steps = support_discovery_state(repo_root, capability, support_state, previous_lock)
         next_steps.extend(discovery_steps)
         next_steps.append(f"Cautilus is disabled by repo adapter: {disabled['reason']}")
         return {
@@ -160,7 +188,7 @@ def inspect_capability_state(repo_root: Path, capability: dict[str, Any]) -> dic
     support_state = support_state_for_manifest(capability)
     support_sync = inspect_support_sync(repo_root, previous_lock)
     support_sync, next_steps = support_sync_guidance(capability, support_state, support_sync)
-    support_discovery, discovery_steps = support_discovery_state(repo_root, capability, support_state)
+    support_discovery, discovery_steps = support_discovery_state(repo_root, capability, support_state, previous_lock)
     next_steps.extend(discovery_steps)
 
     install_route = install_route_for_manifest(repo_root, capability)

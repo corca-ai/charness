@@ -89,6 +89,57 @@ def test_audit_classifies_active_and_prunable(tmp_path: Path) -> None:
     assert classifications["missing"] == lib.CLASSIFICATION_PRUNABLE
 
 
+def test_audit_doctor_surfaces_active_unprepared_worktree(tmp_path: Path, monkeypatch) -> None:
+    repo = _make_primary(tmp_path)
+    active_path = tmp_path / "feature"
+    _git("worktree", "add", "-b", "feature", str(active_path), cwd=repo)
+
+    hooks_dir = repo / ".git" / "hooks"
+    hooks_dir.mkdir(parents=True, exist_ok=True)
+    shim = hooks_dir / "pre-commit"
+    shim.write_text("#!/bin/sh\nexec lefthook run pre-commit\n", encoding="utf-8")
+    shim.chmod(0o755)
+    binary_dir = repo / "node_modules" / "lefthook-linux-x64" / "bin"
+    binary_dir.mkdir(parents=True)
+    binary = binary_dir / "lefthook"
+    binary.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    binary.chmod(0o755)
+    monkeypatch.setenv(
+        "PATH",
+        str(Path(sys.executable).resolve().parent) + os.pathsep + "/usr/bin" + os.pathsep + "/bin",
+    )
+
+    payload = lib.run_audit(repo, include_doctor=True)
+
+    assert payload["status"] == lib.WARN
+    assert payload["doctor_summary"] == {"pass": 1, "fail": 1, "skipped": 0}
+    active = next(entry for entry in payload["entries"] if Path(entry["path"]) == active_path)
+    assert active["classification"] == lib.CLASSIFICATION_ACTIVE
+    assert active["doctor"]["status"] == lib.FAIL
+    assert active["doctor"]["failed_checks"][0]["id"] == "lefthook_shim"
+    assert "worktree prepare --repo-root <path>" in payload["next_action"]
+
+
+def test_audit_text_shows_primary_readiness_failure(tmp_path: Path, monkeypatch) -> None:
+    repo = _make_primary(tmp_path)
+    hooks_dir = repo / ".git" / "hooks"
+    hooks_dir.mkdir(parents=True, exist_ok=True)
+    shim = hooks_dir / "pre-commit"
+    shim.write_text("#!/bin/sh\nexec lefthook run pre-commit\n", encoding="utf-8")
+    shim.chmod(0o755)
+    monkeypatch.setenv(
+        "PATH",
+        str(Path(sys.executable).resolve().parent) + os.pathsep + "/usr/bin" + os.pathsep + "/bin",
+    )
+
+    payload = lib.run_audit(repo, include_doctor=True)
+    rendered = lib.render_audit_text(payload)
+
+    assert payload["doctor_summary"]["fail"] == 1
+    assert f"[{lib.CLASSIFICATION_PRIMARY}] {repo.resolve()}" in rendered
+    assert "readiness=fail" in rendered
+
+
 def test_audit_classifies_stale_detached_head(tmp_path: Path) -> None:
     repo = _make_primary(tmp_path)
     stale_path = tmp_path / "stale"

@@ -155,7 +155,10 @@ def main() -> None:
     local_root = _local_surface_root(root)
     adapter = load_adapter(root)
     trusted_skill_roots = adapter["data"].get("trusted_skill_roots", [])
-    support_entries = _collect_skill_entries([("local-support", support_dir(local_root))], repo_root=local_root, layer="support skill")
+    support_roots = [("local-support", support_dir(local_root))]
+    if REPO_ROOT != local_root and (REPO_ROOT / ".codex-plugin" / "plugin.json").is_file() and support_dir(REPO_ROOT).is_dir():
+        support_roots.append(("installed-plugin-support", support_dir(REPO_ROOT)))
+    support_entries = _collect_skill_entries(support_roots, repo_root=local_root, layer="support skill")
     support_entries += _collect_skill_entries([("synced-support", generated_support_dir(local_root))], repo_root=local_root, layer="synced support skill")
     public_entries = _collect_skill_entries(
         [("local-public", public_skills_dir(local_root))],
@@ -213,6 +216,5 @@ def main() -> None:
             inventory=payload,
         )
     print(json.dumps(payload, ensure_ascii=False, indent=2))
-
 if __name__ == "__main__":
     main()

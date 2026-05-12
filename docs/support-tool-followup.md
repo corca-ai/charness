@@ -12,14 +12,14 @@ skill changes inside `charness`, and keep issue triage explicit.
 - decision window: 2026-04-13 support-tool follow-up planning
 - upstream context: `cautilus` consumer-integration issues were picked up and
   resolved upstream
-- local prerequisite already landed: cache-backed user-cache materialization +
-  repo-local support-skill symlink exposure
+- local prerequisite already landed: cache-backed upstream materialization into
+  the installed Charness plugin support surface
 
 ## Current Decisions
 
 - Portable skill bodies should not depend on Claude-style `!` execution.
 - Support skills stay locally consumable through cache-backed materialization
-  plus repo-local symlinks.
+  into the installed Charness plugin, without repo-local convenience symlinks.
 - `external_skill` and `external_binary_with_skill` both materialize a local
   support-skill surface. The difference is binary lifecycle, not support-skill
   discoverability.
@@ -43,8 +43,8 @@ even if the next session only skims this document.
   skill surface. If `charness` says a binary is supported-with-skill, the skill
   must be locally readable and usable for both dogfood and downstream use.
 - That requirement does **not** justify vendoring upstream skill clones into
-  the tracked repo. The current answer is user-cache materialization plus
-  repo-local symlink exposure.
+  the tracked repo. The current answer is user-cache materialization into the
+  installed Charness plugin support surface.
 - Prefer upstream-provided skill content when it is usable as-is. A
   `charness`-owned wrapper is an exception path, not the new default.
 - The old `reference` support-sync model is intentionally gone from the active

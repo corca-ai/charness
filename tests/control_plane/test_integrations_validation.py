@@ -178,19 +178,29 @@ def test_validate_integrations_rejects_unsorted_config_layers(tmp_path: Path) ->
 
 def test_doctor_detects_missing_materialized_support_from_previous_sync(tmp_path: Path) -> None:
     repo = seed_control_plane_repo(tmp_path)
+    plugin_root = tmp_path / "plugin"
     env = os.environ.copy()
     env["CHARNESS_CACHE_HOME"] = str(tmp_path / "cache-home")
-    sync = run_script("scripts/sync_support.py", "--repo-root", str(repo), "--execute", "--json", env=env)
+    sync = run_script(
+        "scripts/sync_support.py",
+        "--repo-root",
+        str(repo),
+        "--plugin-root",
+        str(plugin_root),
+        "--execute",
+        "--json",
+        env=env,
+    )
     assert sync.returncode == 0, sync.stderr
-    generated_skill_root = repo / "skills" / "support" / "generated" / "demo-tool-wrapper"
-    generated_skill_root.unlink()
+    generated_skill_root = plugin_root / "support" / "demo-tool-wrapper"
+    shutil.rmtree(generated_skill_root)
 
     doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--write-locks")
     assert doctor.returncode == 1, doctor.stderr
     doctor_payload = json.loads(doctor.stdout)
     assert doctor_payload[0]["doctor_status"] == "support-missing"
     assert doctor_payload[0]["support_sync"]["status"] == "missing"
-    assert doctor_payload[0]["support_sync"]["missing_paths"] == ["skills/support/generated/demo-tool-wrapper"]
+    assert doctor_payload[0]["support_sync"]["missing_paths"] == ["support/demo-tool-wrapper"]
     assert doctor_payload[0]["support_sync"]["action_required"] is True
     assert doctor_payload[0]["support_sync"]["suggested_command"] == "charness tool sync-support demo-tool"
     assert "Previously materialized support skill paths are missing." in doctor_payload[0]["next_steps"][0]

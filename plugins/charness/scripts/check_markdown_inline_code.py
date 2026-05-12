@@ -27,7 +27,7 @@ iter_matching_repo_files = _repo_file_listing.iter_matching_repo_files
 FENCE_RE = re.compile(r"^\s*(```|~~~)")
 SCAN_GLOBS = ("*.md", "**/*.md")
 EXCLUDE_PARTS = {"node_modules", "charness-artifacts", ".charness", ".cautilus", ".pytest_cache"}
-EXCLUDE_PREFIXES = ("skills/support/specdown/", "plugins/charness/support/specdown/")
+EXCLUDE_PREFIXES: tuple[str, ...] = ()
 
 
 def _strip_fences(text: str) -> str:

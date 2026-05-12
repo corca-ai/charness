@@ -95,12 +95,17 @@ What it materializes today:
 
 - [`README.md`](../README.md)
 - flat public `skills/`
-- `support/` without `support/generated/`
+- Charness-owned `support/` assets only
 - `profiles/`
 - `presets/`
 - `integrations/tools/`
 - both host plugin manifests inside one checked-in plugin root
 - an optional Codex repo marketplace file
+
+Upstream-consumed support skills such as `agent-browser`, `specdown`, and
+`cautilus` are intentionally absent from the checked-in plugin tree. Install
+and update commands materialize those skill bodies into the machine-local
+installed plugin from `support_skill_source` metadata.
 
 What it intentionally does not materialize yet:
 

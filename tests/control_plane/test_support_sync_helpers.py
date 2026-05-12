@@ -38,15 +38,24 @@ def test_inspect_support_sync_reports_not_tracked_missing_and_ok(tmp_path: Path)
     assert support.inspect_support_sync(repo, None) == {
         "status": "not-tracked",
         "expected_paths": [],
+        "materialized_base": None,
+        "materialized_kind": None,
         "missing_paths": [],
     }
 
-    previous = {"support": {"materialized_paths": ["skills/support/generated/demo"]}}
+    plugin = tmp_path / "plugin"
+    previous = {
+        "support": {
+            "materialized_base": str(plugin),
+            "materialized_kind": "installed-plugin-copy",
+            "materialized_paths": ["support/demo"],
+        }
+    }
     missing = support.inspect_support_sync(repo, previous)
     assert missing["status"] == "missing"
-    assert missing["missing_paths"] == ["skills/support/generated/demo"]
+    assert missing["missing_paths"] == ["support/demo"]
 
-    materialized = repo / "skills" / "support" / "generated"
+    materialized = plugin / "support"
     materialized.mkdir(parents=True)
     (materialized / "demo").write_text("# demo\n", encoding="utf-8")
     ok = support.inspect_support_sync(repo, previous)

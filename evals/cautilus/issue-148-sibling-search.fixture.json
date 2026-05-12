@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "cautilus.evaluation_input.v1",
+  "surface": "dev",
+  "preset": "repo",
+  "suiteId": "charness-issue-148-sibling-search",
+  "suiteDisplayName": "Charness Issue 148 Mental-Model Sibling Search",
+  "cases": [
+    {
+      "caseId": "issue-148-mental-model-sibling-search",
+      "displayName": "Issue 148 routes through issue causal review context before cleanup design",
+      "prompt": "Route and inspect only: using only this provided issue summary and the repo-local files `skills/public/issue/SKILL.md` and `skills/public/issue/references/causal-review.md`, resolve GitHub issue corca-ai/charness#148, a feature request titled \"Add a safe worktree cleanup command\". The reporter's JTBD is to safely remove a finished Charness-prepared worktree and optionally delete the local branch after merge without remembering raw Git cleanup or deleting unmerged work. Before implementation, identify what issue resolution and recurrence-focused review require for structural sibling search. Do not fetch GitHub, do not modify files, and do not implement the fix.",
+      "expectedRouting": {
+        "workSkill": "issue"
+      },
+      "requiredInstructionFiles": [
+        "skills/public/issue/SKILL.md",
+        "skills/public/issue/references/causal-review.md"
+      ]
+    }
+  ]
+}

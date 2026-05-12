@@ -34,7 +34,7 @@ def test_source_bound_records_guidance_is_scoped_across_public_skills() -> None:
     assert "source-bound, not row-bound" in source_bound
     assert "duplicate candidate envelopes for the same source" in source_bound
     assert "generic batch intake schema" in source_bound
-    assert "`report.json`" in source_bound
+    assert "JSON report artifact" in source_bound
     assert "destination evidence" in source_bound and "ledger lookup" in source_bound
     assert "source-bound records" in command_surface
     assert "../../shared/references/source-bound-records.md" in spec_text

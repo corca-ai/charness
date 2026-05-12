@@ -5,8 +5,7 @@ description: "Use when a concept needs to become a living implementation contrac
 
 # Spec
 
-Use this when the next job is to make the build contract explicit enough that implementation can move without rediscovering the problem.
-`spec` is not only a document-writing phase before `impl`. It is the skill for managing the current implementation contract, whether that contract is mostly settled up front or becomes sharper while implementation proceeds.
+Use this when the next job is to make the build contract explicit enough that implementation can move without rediscovering the problem. `spec` manages the current implementation contract, whether it is mostly settled up front or becomes sharper while implementation proceeds.
 
 ## Bootstrap
 
@@ -40,6 +39,10 @@ as part of the spec surface and keep them at the acceptance boundary. Distinguis
 `public executable contract` from `maintenance lint / implementation guard`.
 Use `references/public-executable-contracts.md`, `references/sequence-discipline.md`,
 and `references/design-lenses.md` for the detailed shaping rules.
+
+## Worktree Readiness
+
+Before mutating spec/design docs in a worktree, run `command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true`. If JSON status is not `pass`, surface `charness worktree prepare` as next action and have the operator confirm before continuing.
 
 ## Contract Shaping
 

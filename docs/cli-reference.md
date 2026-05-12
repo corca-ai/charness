@@ -456,7 +456,8 @@ options:
 ```text
 usage: charness tool doctor [-h] [--home-root HOME_ROOT]
                             [--repo-root REPO_ROOT] [--repo-url REPO_URL]
-                            [--json] [--no-write-locks]
+                            [--plugin-root PLUGIN_ROOT] [--json]
+                            [--no-write-locks]
                             [tool_ids ...]
 
 positional arguments:
@@ -469,6 +470,9 @@ options:
                         Use an explicit existing source checkout instead of
                         the managed default checkout.
   --repo-url REPO_URL
+  --plugin-root PLUGIN_ROOT
+                        Installed plugin root where upstream support skills
+                        are materialized.
   --json
   --no-write-locks      Skip updating integrations/locks/*.json when you only
                         want a read-only probe.
@@ -479,7 +483,8 @@ options:
 ```text
 usage: charness tool sync-support [-h] [--home-root HOME_ROOT]
                                   [--repo-root REPO_ROOT]
-                                  [--repo-url REPO_URL] [--json]
+                                  [--repo-url REPO_URL]
+                                  [--plugin-root PLUGIN_ROOT] [--json]
                                   [--upstream-checkout UPSTREAM_CHECKOUT]
                                   [--dry-run]
                                   [tool_ids ...]
@@ -494,6 +499,9 @@ options:
                         Use an explicit existing source checkout instead of
                         the managed default checkout.
   --repo-url REPO_URL
+  --plugin-root PLUGIN_ROOT
+                        Installed plugin root where upstream support skills
+                        are materialized.
   --json
   --upstream-checkout UPSTREAM_CHECKOUT
   --dry-run
@@ -504,7 +512,8 @@ options:
 ```text
 usage: charness tool install [-h] [--home-root HOME_ROOT]
                              [--repo-root REPO_ROOT] [--repo-url REPO_URL]
-                             [--json] [--upstream-checkout UPSTREAM_CHECKOUT]
+                             [--plugin-root PLUGIN_ROOT] [--json]
+                             [--upstream-checkout UPSTREAM_CHECKOUT]
                              [--dry-run] [--skip-sync-support]
                              [--recommend-for-skill RECOMMEND_FOR_SKILL]
                              [--recommendation-role {runtime,validation}]
@@ -521,6 +530,9 @@ options:
                         Use an explicit existing source checkout instead of
                         the managed default checkout.
   --repo-url REPO_URL
+  --plugin-root PLUGIN_ROOT
+                        Installed plugin root where upstream support skills
+                        are materialized.
   --json
   --upstream-checkout UPSTREAM_CHECKOUT
   --dry-run
@@ -548,7 +560,8 @@ charness tool install --recommendation-role validation --next-skill-id quality
 ```text
 usage: charness tool update [-h] [--home-root HOME_ROOT]
                             [--repo-root REPO_ROOT] [--repo-url REPO_URL]
-                            [--json] [--upstream-checkout UPSTREAM_CHECKOUT]
+                            [--plugin-root PLUGIN_ROOT] [--json]
+                            [--upstream-checkout UPSTREAM_CHECKOUT]
                             [--dry-run] [--skip-sync-support]
                             [tool_ids ...]
 
@@ -562,6 +575,9 @@ options:
                         Use an explicit existing source checkout instead of
                         the managed default checkout.
   --repo-url REPO_URL
+  --plugin-root PLUGIN_ROOT
+                        Installed plugin root where upstream support skills
+                        are materialized.
   --json
   --upstream-checkout UPSTREAM_CHECKOUT
   --dry-run
@@ -571,16 +587,18 @@ options:
 ## `charness worktree`
 
 ```text
-usage: charness worktree [-h] {doctor,prepare,audit} ...
+usage: charness worktree [-h] {doctor,prepare,audit,cleanup} ...
 
 positional arguments:
-  {doctor,prepare,audit}
+  {doctor,prepare,audit,cleanup}
     doctor              Probe worktree readiness (hooksPath, lefthook shim
                         resolution, husky directory, manifest checks).
     prepare             Run the worktree adapter's prepare commands and re-
                         validate readiness.
     audit               Survey all worktrees registered to the repository and
                         classify primary/active/prunable/stale.
+    cleanup             Safely remove a registered git worktree and optionally
+                        delete its merged local branch.
 
 options:
   -h, --help            show this help message and exit
@@ -635,8 +653,8 @@ options:
 
 ```text
 usage: charness worktree audit [-h] [--repo-root REPO_ROOT]
-                               [--stale-days STALE_DAYS] [--prune] [--json]
-                               [--home-root HOME_ROOT]
+                               [--stale-days STALE_DAYS] [--prune] [--doctor]
+                               [--json] [--home-root HOME_ROOT]
                                [--charness-checkout CHARNESS_CHECKOUT]
 
 options:
@@ -649,6 +667,41 @@ options:
                         reported as stale (default: 14).
   --prune               After audit, run `git worktree prune` to drop metadata
                         for prunable worktrees.
+  --doctor              Run readiness doctor for existing worktrees and
+                        include per-worktree readiness summaries.
+  --json
+  --home-root HOME_ROOT
+                        Home root used to locate the managed charness checkout
+                        when the entrypoint is a PATH shim.
+  --charness-checkout CHARNESS_CHECKOUT
+                        Explicit charness source checkout to load worktree
+                        helpers from. Defaults to the embedded or managed
+                        checkout.
+```
+
+## `charness worktree cleanup`
+
+```text
+usage: charness worktree cleanup [-h] [--repo-root REPO_ROOT] --path PATH
+                                 [--delete-merged-branch]
+                                 [--branch-base BRANCH_BASE] [--yes] [--force]
+                                 [--json] [--home-root HOME_ROOT]
+                                 [--charness-checkout CHARNESS_CHECKOUT]
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Repository to operate from. Defaults to the current
+                        working directory.
+  --path PATH           Registered worktree path to remove.
+  --delete-merged-branch
+                        Delete the local branch only after it is contained in
+                        --branch-base.
+  --branch-base BRANCH_BASE
+                        Local ref that must contain the target branch before
+                        branch deletion; defaults to HEAD.
+  --yes                 Execute the planned cleanup. Defaults to dry-run.
+  --force               Pass --force to git worktree remove for dirty targets.
   --json
   --home-root HOME_ROOT
                         Home root used to locate the managed charness checkout

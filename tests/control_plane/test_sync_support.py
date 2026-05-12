@@ -18,6 +18,7 @@ def write_manifest_schema(repo: Path) -> None:
 
 def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     repo = seed_control_plane_repo(tmp_path)
+    plugin_root = tmp_path / "plugin"
     env = os.environ.copy()
     env["CHARNESS_CACHE_HOME"] = str(tmp_path / "cache-home")
     doctor = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--write-locks")
@@ -45,6 +46,8 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
         "scripts/sync_support.py",
         "--repo-root",
         str(repo),
+        "--plugin-root",
+        str(plugin_root),
         "--execute",
         "--json",
         env=env,
@@ -52,22 +55,19 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     assert sync.returncode == 0, sync.stderr
     sync_payload = json.loads(sync.stdout)[0]
     assert sync_payload["status"] == "synced"
-    generated_skill_root = repo / "skills" / "support" / "generated" / "demo-tool-wrapper"
-    assert generated_skill_root.is_symlink()
-    assert (generated_skill_root / "SKILL.md").exists()
-    assert sync_payload["discovery_stub_path"] == ".agents/charness-discovery/demo-tool.md"
-    discovery_stub = repo / ".agents" / "charness-discovery" / "demo-tool.md"
-    assert discovery_stub.is_file()
-    discovery_text = discovery_stub.read_text(encoding="utf-8")
-    assert "support skill: `skills/support/generated/demo-tool-wrapper/SKILL.md`" in discovery_text
-    assert "install docs: https://example.com/demo-tool/install" in discovery_text
-    assert "no explicit trigger hints recorded" in discovery_text
+    installed_skill_root = plugin_root / "support" / "demo-tool-wrapper"
+    assert installed_skill_root.is_dir()
+    assert (installed_skill_root / "SKILL.md").exists()
+    assert sync_payload["materialized_paths"] == ["support/demo-tool-wrapper"]
+    assert sync_payload["materialized_base"] == str(plugin_root.resolve())
+    assert sync_payload["materialized_kind"] == "installed-plugin-copy"
+    assert sync_payload["discovery_stub_path"] is None
 
     doctor_after_sync = run_script("scripts/doctor.py", "--repo-root", str(repo), "--json", "--write-locks")
     assert doctor_after_sync.returncode == 0, doctor_after_sync.stderr
     doctor_after_sync_payload = json.loads(doctor_after_sync.stdout)
-    assert doctor_after_sync_payload[0]["support_discovery"]["discovery_stub_path"] == ".agents/charness-discovery/demo-tool.md"
-    assert "Repo-local discovery stub is available at `.agents/charness-discovery/demo-tool.md`" in doctor_after_sync_payload[0]["next_steps"][0]
+    assert doctor_after_sync_payload[0]["support_discovery"]["support_skill_path"] == str(installed_skill_root / "SKILL.md")
+    assert "installed Charness plugin support surface" in doctor_after_sync_payload[0]["next_steps"][0]
 
     update = run_script("scripts/update_tools.py", "--repo-root", str(repo), "--execute", "--json")
     assert update.returncode == 0, update.stderr
@@ -85,10 +85,11 @@ def test_doctor_sync_and_update_work_on_seed_repo(tmp_path: Path) -> None:
     assert lock_payload["update"]["update_status"] == "updated"
 
 
-def test_sync_support_materializes_upstream_checkout_into_cache_and_repo_symlink(tmp_path: Path) -> None:
+def test_sync_support_materializes_upstream_checkout_into_installed_plugin(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     upstream = tmp_path / "upstream"
     cache_home = tmp_path / "cache-home"
+    plugin_root = tmp_path / "plugin"
     tools_dir = repo / "integrations" / "tools"
     locks_dir = repo / "integrations" / "locks"
     generated_dir = repo / "skills" / "support" / "generated"
@@ -137,6 +138,8 @@ def test_sync_support_materializes_upstream_checkout_into_cache_and_repo_symlink
         "scripts/sync_support.py",
         "--repo-root",
         str(repo),
+        "--plugin-root",
+        str(plugin_root),
         "--execute",
         "--upstream-checkout",
         f"example/demo-copy={upstream}",
@@ -146,12 +149,14 @@ def test_sync_support_materializes_upstream_checkout_into_cache_and_repo_symlink
     )
     assert sync.returncode == 0, sync.stderr
     payload = json.loads(sync.stdout)[0]
-    link_root = repo / "skills" / "support" / "generated" / "demo-copy"
-    assert payload["materialized_paths"] == ["skills/support/generated/demo-copy"]
-    assert link_root.is_symlink()
-    assert (link_root / "SKILL.md").read_text(encoding="utf-8") == "# demo\n"
-    assert (link_root / "helper.sh").read_text(encoding="utf-8") == "echo demo\n"
-    assert (link_root / "references" / "note.md").read_text(encoding="utf-8") == "# note\n"
+    installed_root = plugin_root / "support" / "demo-copy"
+    assert payload["materialized_paths"] == ["support/demo-copy"]
+    assert payload["materialized_base"] == str(plugin_root.resolve())
+    assert payload["materialized_kind"] == "installed-plugin-copy"
+    assert installed_root.is_dir()
+    assert (installed_root / "SKILL.md").read_text(encoding="utf-8") == "# demo\n"
+    assert (installed_root / "helper.sh").read_text(encoding="utf-8") == "echo demo\n"
+    assert (installed_root / "references" / "note.md").read_text(encoding="utf-8") == "# note\n"
     cache_path = Path(payload["cache_path"])
     assert cache_path.is_dir()
     assert str(cache_path).startswith(str(cache_home.resolve()))
@@ -161,6 +166,7 @@ def test_sync_support_uses_fixture_checkout_without_explicit_override(tmp_path: 
     repo = tmp_path / "repo"
     fixture_root = tmp_path / "fixture-upstream"
     cache_home = tmp_path / "cache-home"
+    plugin_root = tmp_path / "plugin"
     tools_dir = repo / "integrations" / "tools"
     locks_dir = repo / "integrations" / "locks"
     generated_dir = repo / "skills" / "support" / "generated"
@@ -213,6 +219,8 @@ def test_sync_support_uses_fixture_checkout_without_explicit_override(tmp_path: 
         "scripts/sync_support.py",
         "--repo-root",
         str(repo),
+        "--plugin-root",
+        str(plugin_root),
         "--execute",
         "--json",
         env=env,
@@ -220,7 +228,7 @@ def test_sync_support_uses_fixture_checkout_without_explicit_override(tmp_path: 
     assert sync.returncode == 0, sync.stderr
     payload = json.loads(sync.stdout)[0]
     assert payload["status"] == "synced"
-    assert (repo / "skills" / "support" / "generated" / "fixture-skill").is_symlink()
+    assert (plugin_root / "support" / "fixture-skill" / "SKILL.md").is_file()
 
 
 def test_sync_support_rejects_upstream_skill_file_path(tmp_path: Path) -> None:

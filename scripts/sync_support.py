@@ -21,7 +21,14 @@ upsert_lock = _scripts_control_plane_lib_module.upsert_lock
 Payload = dict[str, object]
 
 
-def sync_one(repo_root: Path, manifest: Payload, *, execute: bool, upstream_checkouts: dict[str, Path]) -> Payload:
+def sync_one(
+    repo_root: Path,
+    manifest: Payload,
+    *,
+    execute: bool,
+    upstream_checkouts: dict[str, Path],
+    plugin_root: Path | None = None,
+) -> Payload:
     support = manifest.get("support_skill_source")
     if not support:
         return {
@@ -39,6 +46,8 @@ def sync_one(repo_root: Path, manifest: Payload, *, execute: bool, upstream_chec
         "source_type": support["source_type"],
         "source_path": support["path"],
         "materialized_paths": [],
+        "materialized_base": None,
+        "materialized_kind": None,
         "cache_path": None,
         "content_digest": None,
         "discovery_stub_path": None,
@@ -48,9 +57,10 @@ def sync_one(repo_root: Path, manifest: Payload, *, execute: bool, upstream_chec
             repo_root,
             manifest,
             upstream_checkouts=upstream_checkouts,
+            plugin_root=plugin_root,
         )
         result.update(materialized)
-        if result["materialized_paths"]:
+        if result["materialized_paths"] and result["materialized_kind"] == "repo-generated-symlink":
             result["discovery_stub_path"] = support_sync.write_discovery_stub(
                 repo_root,
                 manifest,
@@ -67,6 +77,8 @@ def sync_one(repo_root: Path, manifest: Payload, *, execute: bool, upstream_chec
                 "ref": support.get("ref"),
                 "cache_path": result["cache_path"],
                 "content_digest": result["content_digest"],
+                "materialized_base": result["materialized_base"],
+                "materialized_kind": result["materialized_kind"],
                 "materialized_paths": result["materialized_paths"],
             },
         )
@@ -76,6 +88,11 @@ def sync_one(repo_root: Path, manifest: Payload, *, execute: bool, upstream_chec
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument(
+        "--plugin-root",
+        type=Path,
+        help="Materialize support skills into this installed plugin root's support/ directory instead of repo-local skills/support/generated symlinks.",
+    )
     parser.add_argument("--tool-id", action="append", default=[])
     parser.add_argument("--upstream-checkout", action="append", default=[])
     parser.add_argument("--execute", action="store_true")
@@ -83,6 +100,10 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
+    plugin_root = args.plugin_root.resolve() if args.plugin_root else None
+    if args.execute and plugin_root is None:
+        print("sync_support.py --execute requires --plugin-root so upstream support skills materialize into an installed plugin surface.", file=sys.stderr)
+        return 1
     upstream_checkouts = dict(support_sync.parse_upstream_checkout(value) for value in args.upstream_checkout)
     selected = lifecycle.select_by_tool_id(load_manifests(repo_root), args.tool_id)
     results = [
@@ -91,6 +112,7 @@ def main() -> int:
             manifest,
             execute=args.execute,
             upstream_checkouts=upstream_checkouts,
+            plugin_root=plugin_root,
         )
         for manifest in selected
     ]

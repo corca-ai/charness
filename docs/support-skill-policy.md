@@ -126,8 +126,9 @@ Session 12 should turn these rules into:
 For the current seam, support skills should always be consumable locally:
 
 - if the source is upstream-owned, fetch and materialize the skill root into a
-  user cache and expose it through a repo-local symlink
+  user cache and expose it through the installed Charness plugin under
+  `support/<tool-id>/`
 - if the source is a charness-owned wrapper, generate it into the same cache
-  and expose it through the same repo-local symlink pattern
+  and expose it through the same installed plugin support layout
 - provenance should live in the manifest and lock state rather than in a
   reference-only pseudo-skill

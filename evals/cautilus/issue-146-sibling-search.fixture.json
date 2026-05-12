@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "cautilus.evaluation_input.v1",
+  "surface": "dev",
+  "preset": "repo",
+  "suiteId": "charness-issue-146-sibling-search",
+  "suiteDisplayName": "Charness Issue 146 Mental-Model Sibling Search",
+  "cases": [
+    {
+      "caseId": "issue-146-mental-model-sibling-search",
+      "displayName": "Issue 146 routes through issue causal review and structural sibling search",
+      "prompt": "Route and inspect only: using only this provided issue summary and the repo-local files `skills/public/issue/SKILL.md` and `skills/public/issue/references/causal-review.md`, resolve GitHub issue corca-ai/charness#146, a bug titled \"Worktree readiness is not discoverable for spec/design work\". The reporter's JTBD is to create an isolated worktree for a Ceal design/spec task, edit docs/specs there, and run expected verification without rediscovering setup requirements late. Before implementation, identify what the issue skill requires for causal-review sibling search. Do not fetch GitHub, do not modify files, and do not implement the fix.",
+      "expectedRouting": {
+        "workSkill": "issue"
+      },
+      "requiredInstructionFiles": [
+        "skills/public/issue/SKILL.md",
+        "skills/public/issue/references/causal-review.md"
+      ]
+    }
+  ]
+}

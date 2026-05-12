@@ -38,6 +38,7 @@ COMMANDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("charness worktree doctor", ("./charness", "worktree", "doctor", "--help")),
     ("charness worktree prepare", ("./charness", "worktree", "prepare", "--help")),
     ("charness worktree audit", ("./charness", "worktree", "audit", "--help")),
+    ("charness worktree cleanup", ("./charness", "worktree", "cleanup", "--help")),
 )
 
 EXAMPLES: dict[str, tuple[str, ...]] = {

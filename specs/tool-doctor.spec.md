@@ -14,14 +14,14 @@ should remain readable and executable here.
 
 ## `specdown` Binary Contract, Task Envelope, And Doctor Next Action
 
-The `specdown` integration is both a support-skill source in this repo and an
-external binary managed through the tool control plane. The binary side should
-remain `integration-only`: doctor checks the installed command and release
-metadata, but support sync should not pretend there is a generated support
-surface for this manifest.
+The `specdown` integration consumes an upstream support skill and remains an
+external binary managed through the tool control plane. Doctor checks the
+installed command and release metadata, and it should report the support source
+as upstream-consumed until sync materializes the installed plugin support
+surface.
 
 ```run:shell
-python3 ./charness tool doctor --repo-root . --json specdown | python3 -c "import json,sys; payload=json.load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='integration-only'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['results'][0]['command']=='specdown run -help'"
+python3 ./charness tool doctor --repo-root . --json specdown | python3 -c "import json,sys; payload=json.load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='upstream-consumed'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['results'][0]['command']=='specdown run -help'"
 ```
 
 The repo-local task envelope should provide the sah-inspired claim, submit, and

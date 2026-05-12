@@ -6,7 +6,8 @@ Three subcommands keep mutate-phase work honest:
 
 - `charness worktree doctor` — fast, read-only health probe of a single worktree.
 - `charness worktree prepare` — runs the consumer repo's adapter-declared prepare commands and re-validates.
-- `charness worktree audit` — surveys every worktree registered to the repository and classifies primary/active/prunable/stale. Optional `--prune` drops git metadata for missing worktrees.
+- `charness worktree audit` — surveys every worktree registered to the repository and classifies primary/active/prunable/stale. Optional `--doctor` adds readiness summaries for existing worktrees; optional `--prune` drops git metadata for missing worktrees.
+- `charness worktree cleanup` — dry-runs safe teardown for a registered feature worktree, then removes it with `--yes`; optional branch deletion requires local containment proof.
 
 `doctor` and `prepare` operate on the worktree at `--repo-root`. `audit` operates on the repository's full worktree set (also via `--repo-root`).
 
@@ -37,8 +38,13 @@ charness worktree prepare --force # run prepare even when doctor already passes
 
 # Periodically (or before disk pressure builds):
 charness worktree audit                          # classify primary/active/prunable/stale
+charness worktree audit --doctor                 # also surface readiness failures
 charness worktree audit --prune                  # also run `git worktree prune`
 charness worktree audit --stale-days 30 --json   # custom stale threshold, JSON output
+
+# After a feature worktree has been merged locally:
+charness worktree cleanup --path ../feature-worktree --delete-merged-branch
+charness worktree cleanup --path ../feature-worktree --delete-merged-branch --yes
 ```
 
 All commands accept `--json` for machine-readable output. `doctor` and `prepare` exit 0 only when status is `pass`. `audit` exits 0 on `pass`, 1 on `warn` (prunable or stale present), 2 on `fail`.
@@ -51,7 +57,11 @@ Run `charness worktree audit` when:
 - `git worktree list` output gets long enough that activity is hard to read.
 - Disk pressure builds in `~/.cache` or `/tmp` and you want to confirm whether stale worktrees are contributing.
 
-`audit` never deletes worktree directories on its own. `--prune` only invokes `git worktree prune`, which drops git metadata for worktrees whose directory is already gone. Use `git worktree remove --force <path>` to remove a still-existing stale worktree manually.
+`audit --doctor` runs the same read-only readiness probe that `doctor` runs for each existing registered worktree, so active-but-unprepared worktrees are visible before verification fails. `audit` never deletes worktree directories on its own. `--prune` only invokes `git worktree prune`, which drops git metadata for worktrees whose directory is already gone. Use `git worktree remove --force <path>` to remove a still-existing stale worktree manually.
+
+## When to run `cleanup`
+
+Run `charness worktree cleanup --path <worktree>` after the feature worktree has been merged into the local base you trust. Cleanup refuses the primary worktree, refuses dirty targets unless `--force` is passed, and defaults to dry-run. `--delete-merged-branch` deletes the local branch only when the branch is contained in `--branch-base` (default `HEAD`), then uses `git branch -D` to avoid Git's upstream-aware `-d` refusal when the branch is merged locally but the base has not been pushed yet.
 
 ## Manifest contract
 
@@ -104,7 +114,7 @@ Checks return `pass`, `fail`, or `skipped` (precondition not met — e.g., no `c
 
 ## Wiring with mutate-phase skills
 
-`impl` and `hitl` bootstrap probe `charness worktree doctor --json` non-fatally. On non-pass status, the recommended next action is surfaced; the operator decides whether to run `charness worktree prepare`. charness never auto-runs prepare from inside a public skill.
+`spec`, `impl`, and `hitl` bootstrap probe `charness worktree doctor --json` non-fatally before mutating repo content. On non-pass status, the recommended next action is surfaced; the operator decides whether to run `charness worktree prepare`. charness never auto-runs prepare from inside a public skill.
 
 ## Limitations
 

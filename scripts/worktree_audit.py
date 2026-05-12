@@ -36,10 +36,15 @@ def main() -> int:
         action="store_true",
         help="After auditing, run `git worktree prune` to drop metadata for missing worktrees.",
     )
+    parser.add_argument(
+        "--doctor",
+        action="store_true",
+        help="Run readiness doctor for existing worktrees and include per-worktree readiness summaries.",
+    )
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON instead of human text.")
     args = parser.parse_args()
 
-    audit_payload = run_audit(args.repo_root, stale_days=args.stale_days)
+    audit_payload = run_audit(args.repo_root, stale_days=args.stale_days, include_doctor=args.doctor)
     emit_payload(audit_payload, json_mode=args.json, renderer=render_audit_text)
 
     if audit_payload.get("status") == PASS:

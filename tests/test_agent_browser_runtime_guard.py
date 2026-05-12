@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNTIME_GUARD_PATH = ROOT / "skills" / "support" / "agent-browser" / "scripts" / "runtime_guard.py"
+RUNTIME_GUARD_PATH = ROOT / "scripts" / "agent_browser_runtime_guard.py"
 
 
 def load_runtime_guard_module():

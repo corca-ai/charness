@@ -9,12 +9,12 @@ concepts.
   skills consume under the hood
 - colocated capability metadata at `skills/support/<skill-id>/capability.json`
   when `charness` owns the runtime surface
-- `generated/`: machine-generated wrapper or reference material created by the
-  control plane
-
 Checked-in plugin exports flatten public skills for host discovery and copy
-non-generated support assets into `<repo-root>/plugins/charness/support/`. Machine-local
-`generated/` artifacts are not part of the shipped plugin bundle.
+Charness-owned support assets into `<repo-root>/plugins/charness/support/`.
+Upstream-consumed support skills are not checked into this source tree or the
+checked-in plugin tree; they are materialized into the installed plugin under
+`support/<tool-id>/` during `charness init`, `charness update`, or
+`charness tool sync-support`.
 
 ## Rules
 
@@ -22,7 +22,5 @@ non-generated support assets into `<repo-root>/plugins/charness/support/`. Machi
 - keep the public surface stable even when support/runtime lives here
 - prefer upstream consumption plus manifests when the external repo already
   ships a usable support surface
-- generated reference artifacts may live here even when `charness` does not own
-  a local `SKILL.md`
 - generated wrappers or references should be regenerated through
   [`scripts/sync_support.py`](../../scripts/sync_support.py) instead of edited by hand

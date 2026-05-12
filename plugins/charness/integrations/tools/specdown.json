@@ -14,6 +14,7 @@
   "lifecycle": {
     "install": {
       "mode": "manual",
+      "install_url": "https://github.com/corca-ai/specdown",
       "docs_url": "https://github.com/corca-ai/specdown",
       "notes": [
         "Preferred install paths are the upstream install script or `go install`.",
@@ -83,6 +84,15 @@
         "Upstream documents `go install github.com/corca-ai/specdown/cmd/specdown@latest`."
       ]
     }
+  },
+  "support_skill_source": {
+    "source_type": "upstream_repo",
+    "path": "cmd/specdown/skills/specdown",
+    "ref": "main",
+    "notes": [
+      "Prefer the upstream Specdown support skill instead of keeping a vendored Charness copy.",
+      "The installed Charness plugin materializes this skill under `support/specdown/` during update or support sync."
+    ]
   },
   "degradation": {
     "when_missing": [

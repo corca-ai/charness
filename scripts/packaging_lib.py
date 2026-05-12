@@ -17,6 +17,10 @@ SURFACES_PATH = _scripts_surfaces_lib_module.SURFACES_PATH
 apply_generated_markdown_header = _scripts_surfaces_lib_module.apply_generated_markdown_header
 load_surfaces = _scripts_surfaces_lib_module.load_surfaces
 lookup_generated_markdown = _scripts_surfaces_lib_module.lookup_generated_markdown
+_scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
+load_manifests_for_discovery = _scripts_control_plane_lib_module.load_manifests_for_discovery
+_scripts_support_sync_lib_module = import_repo_module(__file__, "scripts.support_sync_lib")
+support_link_name = _scripts_support_sync_lib_module.support_link_name
 
 
 class PackagingError(Exception):
@@ -197,8 +201,13 @@ def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> No
     if exported_support_root.exists():
         shutil.rmtree(exported_support_root)
     exported_support_root.mkdir(parents=True, exist_ok=True)
+    upstream_consumed_support_ids = {
+        support_link_name(tool_manifest)
+        for tool_manifest in load_manifests_for_discovery(repo_root)
+        if isinstance(tool_manifest.get("support_skill_source"), dict)
+    }
     for path in sorted(support_root.iterdir()):
-        if path.name == "generated":
+        if path.name == "generated" or path.name in upstream_consumed_support_ids:
             continue
         destination = exported_support_root / path.name
         if path.is_dir():

@@ -313,19 +313,15 @@ playbooks that public skills can use.
 
 Representative support skills:
 
-- [`agent-browser`](./skills/support/agent-browser/SKILL.md): browser
-  automation support
 - [`markdown-preview`](./skills/support/markdown-preview/SKILL.md): rendered
   Markdown review support
-- [`specdown`](./plugins/charness/support/specdown/SKILL.md): executable-spec
-  support
 - [`web-fetch`](./skills/support/web-fetch/SKILL.md): public-web fetch routing
   support
 
 Integrations are manifests for external tools, usually CLI binaries, that
 `charness` does not own directly. They declare install, update, detection,
 healthcheck, readiness, and sync behavior; some integrations also point at
-upstream support skills that can be materialized locally.
+upstream support skills that are materialized into the installed Charness plugin.
 
 Current integrations:
 

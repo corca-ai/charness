@@ -7,6 +7,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from runtime_bootstrap import import_repo_module
+
+_doctor_lib = import_repo_module(__file__, "scripts.worktree_doctor_lib")
+
 PASS = "pass"
 WARN = "warn"
 FAIL = "fail"
@@ -113,6 +117,50 @@ def classify(entry: dict[str, Any], *, primary_path: Path, stale_days: int, now:
     }
 
 
+def _doctor_summary(path: Path) -> dict[str, Any]:
+    payload = _doctor_lib.run_doctor(path)
+    failed_checks = [
+        {
+            "id": check.get("id"),
+            "detail": check.get("detail"),
+            "next_action": check.get("next_action"),
+            "source": check.get("source"),
+        }
+        for check in payload.get("checks", [])
+        if check.get("status") == FAIL
+    ]
+    return {
+        "status": payload.get("status"),
+        "checked_at": payload.get("checked_at"),
+        "manifest": payload.get("manifest"),
+        "check_count": len(payload.get("checks", [])),
+        "failed_checks": failed_checks,
+        "next_action": payload.get("next_action"),
+    }
+
+
+def _attach_doctor_summaries(entries: list[dict[str, Any]]) -> dict[str, int]:
+    summary = {"pass": 0, "fail": 0, "skipped": 0}
+    for entry in entries:
+        path = Path(entry["path"])
+        if entry["classification"] == CLASSIFICATION_PRUNABLE or not path.exists():
+            entry["doctor"] = {
+                "status": "skipped",
+                "reason": "worktree path is missing or prunable",
+            }
+            summary["skipped"] += 1
+            continue
+        doctor = _doctor_summary(path)
+        entry["doctor"] = doctor
+        if doctor.get("status") == FAIL:
+            summary["fail"] += 1
+        elif doctor.get("status") == PASS:
+            summary["pass"] += 1
+        else:
+            summary["skipped"] += 1
+    return summary
+
+
 def _git_common_dir(repo_root: Path) -> Path | None:
     proc = subprocess.run(
         ["git", "rev-parse", "--git-common-dir"],
@@ -159,7 +207,7 @@ def _primary_worktree_path(repo_root: Path, entries: list[dict[str, Any]]) -> Pa
     return repo_root.resolve()
 
 
-def run_audit(repo_root: Path, *, stale_days: int = DEFAULT_STALE_DAYS) -> dict[str, Any]:
+def run_audit(repo_root: Path, *, stale_days: int = DEFAULT_STALE_DAYS, include_doctor: bool = False) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     rc, stdout, stderr = _run_git_worktree_list(repo_root)
     if rc != 0:
@@ -176,6 +224,7 @@ def run_audit(repo_root: Path, *, stale_days: int = DEFAULT_STALE_DAYS) -> dict[
     now = datetime.now(tz=timezone.utc)
 
     classified = [classify(entry, primary_path=primary_path, stale_days=stale_days, now=now) for entry in raw_entries]
+    doctor_summary = _attach_doctor_summaries(classified) if include_doctor else None
 
     summary = {
         "primary": sum(1 for c in classified if c["classification"] == CLASSIFICATION_PRIMARY),
@@ -185,24 +234,36 @@ def run_audit(repo_root: Path, *, stale_days: int = DEFAULT_STALE_DAYS) -> dict[
         "total": len(classified),
     }
 
-    if summary["prunable"] > 0 or summary["stale"] > 0:
+    doctor_failures = doctor_summary["fail"] if doctor_summary is not None else 0
+    if summary["prunable"] > 0 or summary["stale"] > 0 or doctor_failures > 0:
         status = WARN
     else:
         status = PASS
 
-    next_action: str | None = None
+    next_actions: list[str] = []
     if summary["prunable"] > 0:
-        next_action = "Run `charness worktree audit --prune` to drop prunable git metadata. Inspect stale worktrees manually before removing."
+        next_actions.append(
+            "Run `charness worktree audit --prune` to drop prunable git metadata."
+        )
     elif summary["stale"] > 0:
-        next_action = "Inspect stale worktrees and remove them with `git worktree remove --force <path>` if no longer needed."
+        next_actions.append(
+            "Inspect stale worktrees and remove them with `git worktree remove --force <path>` if no longer needed."
+        )
+    if doctor_failures > 0:
+        next_actions.append(
+            "Inspect entries with `doctor.status=fail`; run `charness worktree prepare --repo-root <path>` where preparation is appropriate."
+        )
+    next_action = " ".join(next_actions) if next_actions else None
 
     return {
         "status": status,
         "repo_root": str(repo_root),
         "primary_worktree": str(primary_path),
         "stale_days": stale_days,
+        "doctor_enabled": include_doctor,
         "entries": classified,
         "summary": summary,
+        "doctor_summary": doctor_summary,
         "next_action": next_action,
     }
 
@@ -247,12 +308,25 @@ def render_audit_text(payload: dict[str, Any]) -> str:
             f"prunable={summary['prunable']}, stale={summary['stale']})"
         ),
     ]
+    if payload.get("doctor_enabled"):
+        doctor = payload.get("doctor_summary") or {}
+        lines.append(
+            "readiness: "
+            f"pass={doctor.get('pass', 0)}, fail={doctor.get('fail', 0)}, skipped={doctor.get('skipped', 0)}"
+        )
     for entry in payload["entries"]:
         cls = entry["classification"]
-        if cls == CLASSIFICATION_PRIMARY:
+        doctor = entry.get("doctor") or {}
+        if cls == CLASSIFICATION_PRIMARY and doctor.get("status") != FAIL:
             continue
         age_part = f" age={entry['age_days']:.1f}d" if entry.get("age_days") is not None else ""
         reasons = "; ".join(entry["reasons"]) if entry["reasons"] else ""
+        if doctor:
+            doctor_status = doctor.get("status")
+            doctor_part = f" readiness={doctor_status}"
+            if doctor_status == FAIL and doctor.get("next_action"):
+                doctor_part += f" next={doctor['next_action']}"
+            reasons = "; ".join(part for part in (reasons, doctor_part.strip()) if part)
         suffix = f" — {reasons}" if reasons else ""
         lines.append(f"  [{cls}] {entry['path']}{age_part}{suffix}")
     if payload.get("next_action"):

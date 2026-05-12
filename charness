@@ -1989,6 +1989,21 @@ def install_surface(
     )
     payload = json.loads(install_output)
     completed_actions = ["codex_source_prepared", "codex_marketplace_registered"]
+    support_sync_results = invoke_repo_json_script(
+        repo_root,
+        "scripts/sync_support.py",
+        "--repo-root",
+        str(repo_root),
+        "--plugin-root",
+        str(plugin_root),
+        "--execute",
+        "--json",
+    )
+    payload["support_sync"] = support_sync_results
+    if isinstance(support_sync_results, list) and any(
+        isinstance(item, dict) and item.get("status") == "synced" for item in support_sync_results
+    ):
+        completed_actions.append("upstream_support_skills_synced")
     if removed_legacy_skills_symlink:
         completed_actions.append("legacy_skills_symlink_removed")
     if cli_path is not None:
@@ -2748,6 +2763,7 @@ def run_tool_update_flow(
     *,
     repo_root: Path,
     managed_checkout: bool,
+    plugin_root: Path,
     tool_ids: list[str],
     dry_run: bool,
     skip_sync_support: bool,
@@ -2764,7 +2780,7 @@ def run_tool_update_flow(
     support_results: object = []
     if not skip_sync_support:
         emit_progress("STEP: syncing support surfaces", json_mode=json_mode)
-        support_args = ["--repo-root", str(repo_root), "--json"]
+        support_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
         for tool_id in tool_ids:
             support_args.extend(["--tool-id", tool_id])
         for upstream_checkout in upstream_checkouts:
@@ -3333,6 +3349,7 @@ def cmd_update(args: argparse.Namespace) -> int:
         tool_update_payload, tool_update_failed = run_tool_update_flow(
             repo_root=Path(checkout["repo_root"]),
             managed_checkout=managed_checkout,
+            plugin_root=plugin_root,
             tool_ids=[],
             dry_run=False,
             skip_sync_support=False,
@@ -3723,7 +3740,8 @@ def cmd_tool_doctor(args: argparse.Namespace) -> int:
 
 def cmd_tool_sync_support(args: argparse.Namespace) -> int:
     repo_root, managed_checkout = resolve_tool_repo_root(args)
-    script_args = ["--repo-root", str(repo_root), "--json"]
+    plugin_root = args.plugin_root.resolve() if args.plugin_root else default_plugin_root(args.home_root.resolve())
+    script_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
     for tool_id in tool_ids_from_args(args):
         script_args.extend(["--tool-id", tool_id])
     for upstream_checkout in args.upstream_checkout:
@@ -3768,6 +3786,7 @@ def cmd_tool_sync_support(args: argparse.Namespace) -> int:
 
 def cmd_tool_install(args: argparse.Namespace) -> int:
     repo_root, managed_checkout = resolve_tool_repo_root(args)
+    plugin_root = args.plugin_root.resolve() if args.plugin_root else default_plugin_root(args.home_root.resolve())
     selected_tool_ids = selected_tool_ids_from_args(args, repo_root)
     install_args = ["--repo-root", str(repo_root), "--json"]
     for tool_id in selected_tool_ids:
@@ -3777,7 +3796,7 @@ def cmd_tool_install(args: argparse.Namespace) -> int:
     install_results = invoke_repo_json_script(repo_root, "scripts/install_tools.py", *install_args, allow_failure=True)
     support_results: object = []
     if not args.skip_sync_support:
-        support_args = ["--repo-root", str(repo_root), "--json"]
+        support_args = ["--repo-root", str(repo_root), "--plugin-root", str(plugin_root), "--json"]
         for tool_id in selected_tool_ids:
             support_args.extend(["--tool-id", tool_id])
         for upstream_checkout in args.upstream_checkout:
@@ -3825,9 +3844,11 @@ def cmd_tool_install(args: argparse.Namespace) -> int:
 
 def cmd_tool_update(args: argparse.Namespace) -> int:
     repo_root, managed_checkout = resolve_tool_repo_root(args)
+    plugin_root = args.plugin_root.resolve() if args.plugin_root else default_plugin_root(args.home_root.resolve())
     payload, failed = run_tool_update_flow(
         repo_root=repo_root,
         managed_checkout=managed_checkout,
+        plugin_root=plugin_root,
         tool_ids=tool_ids_from_args(args),
         dry_run=args.dry_run,
         skip_sync_support=args.skip_sync_support,
@@ -3875,6 +3896,16 @@ def _load_worktree_audit_lib(args: argparse.Namespace):
     return worktree_audit_lib
 
 
+def _load_worktree_cleanup_lib(args: argparse.Namespace):
+    repo_root = _resolve_worktree_lib_root(args)
+    repo_text = str(repo_root)
+    if repo_text not in sys.path:
+        sys.path.insert(0, repo_text)
+    from scripts import worktree_cleanup_lib
+
+    return worktree_cleanup_lib
+
+
 def _resolve_worktree_target(args: argparse.Namespace) -> Path:
     target = args.repo_root if args.repo_root is not None else Path.cwd()
     return Path(target).resolve()
@@ -3897,7 +3928,7 @@ def cmd_worktree_prepare(args: argparse.Namespace) -> int:
 def cmd_worktree_audit(args: argparse.Namespace) -> int:
     lib = _load_worktree_audit_lib(args)
     target = _resolve_worktree_target(args)
-    audit_payload = lib.run_audit(target, stale_days=args.stale_days)
+    audit_payload = lib.run_audit(target, stale_days=args.stale_days, include_doctor=args.doctor)
     lib.emit_payload(audit_payload, json_mode=args.json, renderer=lib.render_audit_text)
 
     if audit_payload.get("status") == lib.PASS:
@@ -3917,6 +3948,20 @@ def cmd_worktree_audit(args: argparse.Namespace) -> int:
             if remaining.get("prunable", 0) == 0 and remaining.get("stale", 0) == 0:
                 exit_code = 0
     return exit_code
+
+
+def cmd_worktree_cleanup(args: argparse.Namespace) -> int:
+    lib = _load_worktree_cleanup_lib(args)
+    payload = lib.run_cleanup(
+        _resolve_worktree_target(args),
+        target_path=args.path,
+        delete_merged_branch=args.delete_merged_branch,
+        branch_base=args.branch_base,
+        yes=args.yes,
+        force=args.force,
+    )
+    lib.emit_payload(payload, json_mode=args.json)
+    return 0 if payload.get("status") == lib.PASS else 1
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -4191,6 +4236,7 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("--home-root", type=Path, default=default_home_root())
         command.add_argument("--repo-root", type=Path, help="Use an explicit existing source checkout instead of the managed default checkout.")
         command.add_argument("--repo-url", default=REPO_URL)
+        command.add_argument("--plugin-root", type=Path, help="Installed plugin root where upstream support skills are materialized.")
         command.add_argument("--json", action="store_true")
         command.add_argument("tool_ids", nargs="*")
 
@@ -4330,9 +4376,48 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="After audit, run `git worktree prune` to drop metadata for prunable worktrees.",
     )
+    worktree_audit_parser.add_argument(
+        "--doctor",
+        action="store_true",
+        help="Run readiness doctor for existing worktrees and include per-worktree readiness summaries.",
+    )
     worktree_audit_parser.add_argument("--json", action="store_true")
     add_worktree_lib_args(worktree_audit_parser)
     worktree_audit_parser.set_defaults(func=cmd_worktree_audit)
+
+    worktree_cleanup_parser = worktree_subparsers.add_parser(
+        "cleanup",
+        help="Safely remove a registered git worktree and optionally delete its merged local branch.",
+    )
+    worktree_cleanup_parser.add_argument(
+        "--repo-root",
+        type=Path,
+        help="Repository to operate from. Defaults to the current working directory.",
+    )
+    worktree_cleanup_parser.add_argument("--path", type=Path, required=True, help="Registered worktree path to remove.")
+    worktree_cleanup_parser.add_argument(
+        "--delete-merged-branch",
+        action="store_true",
+        help="Delete the local branch only after it is contained in --branch-base.",
+    )
+    worktree_cleanup_parser.add_argument(
+        "--branch-base",
+        default="HEAD",
+        help="Local ref that must contain the target branch before branch deletion; defaults to HEAD.",
+    )
+    worktree_cleanup_parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Execute the planned cleanup. Defaults to dry-run.",
+    )
+    worktree_cleanup_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Pass --force to git worktree remove for dirty targets.",
+    )
+    worktree_cleanup_parser.add_argument("--json", action="store_true")
+    add_worktree_lib_args(worktree_cleanup_parser)
+    worktree_cleanup_parser.set_defaults(func=cmd_worktree_cleanup)
 
     return parser
 

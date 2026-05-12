@@ -282,6 +282,23 @@
           "type": "string",
           "minLength": 1
         },
+        "materialized_base": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "materialized_kind": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "repo-generated-symlink",
+            "installed-plugin-copy",
+            null
+          ]
+        },
         "materialized_paths": {
           "type": "array",
           "items": {

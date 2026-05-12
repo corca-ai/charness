@@ -80,6 +80,7 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     assert update_result.returncode == 0, update_result.stderr
     payload = json.loads(update_result.stdout)
     managed_repo = home_root / ".agents" / "src" / "charness"
+    plugin_root = home_root / ".codex" / "plugins" / "charness"
 
     assert payload["scope"] == "all"
     assert payload["previous_checkout_version"] == payload["checkout_version"]
@@ -101,8 +102,9 @@ def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp
     assert tool_update["results"]["gws-cli"]["update"]["status"] == "updated"
     assert tool_update["results"]["gws-cli"]["update"]["package_manager"] == "npm"
 
-    assert (managed_repo / "skills" / "support" / "generated" / "agent-browser").is_symlink()
-    assert (managed_repo / "skills" / "support" / "generated" / "cautilus").is_symlink()
+    assert (plugin_root / "support" / "agent-browser" / "SKILL.md").is_file()
+    assert (plugin_root / "support" / "cautilus" / "SKILL.md").is_file()
+    assert (plugin_root / "support" / "specdown" / "SKILL.md").is_file()
     assert json.loads((managed_repo / "integrations" / "locks" / "agent-browser.json").read_text(encoding="utf-8"))["update"][
         "update_status"
     ] == "updated"

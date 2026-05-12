@@ -34,7 +34,7 @@ run_process = _subprocess_guard.run_process
 HELP_TIMEOUT_SECONDS = 10
 PS_TIMEOUT_SECONDS = 10
 TERM_GRACE_SECONDS = 2.0
-CLEANUP_COMMAND = "python3 skills/support/agent-browser/scripts/runtime_guard.py --repo-root . --cleanup-orphans --execute"
+CLEANUP_COMMAND = "python3 scripts/agent_browser_runtime_guard.py --repo-root . --cleanup-orphans --execute"
 
 
 @dataclass(frozen=True)

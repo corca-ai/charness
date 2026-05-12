@@ -19,8 +19,8 @@ support-owned runtime capability metadata, and upstream support-skill reuse in
 - support capability source policy: `skills/support/*/capability.json`
 - support capability schema: [capability.schema.json](../skills/support/capability.schema.json)
 - generated live state: `integrations/locks/*.json`
-- repo-local generated support symlinks: `skills/support/generated/`
 - user-cache support payloads: `${XDG_CACHE_HOME:-~/.cache}/charness/support-skills/`
+- installed plugin support payloads: `<plugin-root>/support/<tool-id>/`
 
 External manifests are authoritative for external ownership intent. Support
 capability metadata is authoritative for `charness`-owned runtime capability
@@ -32,9 +32,9 @@ strategy. If a manifest declares `support_skill_source`, `charness` should
 produce a real local skill surface:
 
 - `upstream_repo`: fetch or reuse the upstream skill root into the user cache,
-  then expose it through a repo-local symlink
+  then copy it into the installed Charness plugin under `support/<tool-id>/`
 - `local_wrapper`: render a charness-owned wrapper skill into the user cache,
-  then expose it through a repo-local symlink
+  then copy it into the same installed plugin support layout
 
 Support capability state should stay explicit in doctor and lock output:
 
@@ -59,7 +59,7 @@ without re-deriving machine conditions.
 
 - command stdout should stay structured and machine-readable
 - mutations should persist under `integrations/locks/*.json`, the user cache,
-  and repo-local support symlinks when relevant
+  and installed plugin support paths when relevant
 - manual-only steps should still record explicit upstream docs and remaining
   guidance instead of disappearing into prose
 - when the manifest points at a GitHub repo, control-plane output should try to
@@ -87,7 +87,7 @@ Writes:
 
 - lock entry under one stable per-tool shape with a `support` section
 - cache-backed materialized support payload under the user cache
-- repo-local symlink under `skills/support/generated/`
+- installed plugin copy under `support/<tool-id>/`
 - explicit upstream checkout overrides may still be supplied for local
   maintainer iteration or deterministic tests, for example
   `--upstream-checkout corca-ai/claude-plugins=/abs/path/to/claude-plugins`
@@ -100,8 +100,7 @@ Rules:
 - remote fetch is the default path for `upstream_repo`; an explicit local
   checkout is only an override
 - materialization should use immutable-ish cache directories keyed by content
-  digest, then repoint the repo-local symlink instead of mutating the old
-  target in place
+  digest, then replace the installed plugin support copy from that cache
 - leaves public skill taxonomy untouched
 - should support `--dry-run` before any write mode exists
 

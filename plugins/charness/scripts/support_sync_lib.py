@@ -32,19 +32,46 @@ def support_state_for_manifest(manifest: dict[str, Any]) -> str:
     return "upstream-consumed"
 
 
+def support_materialized_base(repo_root: Path, support: dict[str, Any]) -> Path:
+    materialized_base = support.get("materialized_base")
+    if isinstance(materialized_base, str) and materialized_base:
+        return Path(materialized_base)
+    return repo_root
+
+
+def support_materialized_roots(repo_root: Path, support: dict[str, Any]) -> list[Path]:
+    base = support_materialized_base(repo_root, support)
+    roots: list[Path] = []
+    for raw_path in support.get("materialized_paths", []):
+        if not isinstance(raw_path, str) or not raw_path:
+            continue
+        path = Path(raw_path)
+        roots.append(path if path.is_absolute() else base / path)
+    return roots
+
+
 def inspect_support_sync(repo_root: Path, previous_lock: dict[str, Any] | None) -> dict[str, Any]:
     support = previous_lock.get("support") if previous_lock else None
     if not support:
         return {
             "status": "not-tracked",
             "expected_paths": [],
+            "materialized_base": None,
+            "materialized_kind": None,
             "missing_paths": [],
         }
     expected_paths = support.get("materialized_paths", [])
-    missing_paths = [path for path in expected_paths if not (repo_root / path).exists()]
+    materialized_roots = support_materialized_roots(repo_root, support)
+    missing_paths = [
+        expected_paths[index]
+        for index, path in enumerate(materialized_roots)
+        if not path.exists()
+    ]
     return {
         "status": "ok" if not missing_paths else "missing",
         "expected_paths": expected_paths,
+        "materialized_base": support.get("materialized_base"),
+        "materialized_kind": support.get("materialized_kind"),
         "missing_paths": missing_paths,
     }
 
@@ -210,6 +237,13 @@ def materialize_repo_symlink(target_root: Path, dest_root: Path, repo_root: Path
     return [str(dest_root.relative_to(repo_root))]
 
 
+def materialize_plugin_copy(target_root: Path, dest_root: Path, plugin_root: Path) -> list[str]:
+    clear_materialized_target(dest_root)
+    dest_root.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(target_root, dest_root, symlinks=True)
+    return [str(dest_root.relative_to(plugin_root))]
+
+
 def materialize_upstream_support(manifest: dict[str, Any], *, upstream_checkouts: dict[str, Path]) -> tuple[Path, str]:
     source_path = _resolve_upstream_source_path(manifest, upstream_checkouts=upstream_checkouts)
     digest = _compute_tree_digest(source_path)
@@ -217,7 +251,13 @@ def materialize_upstream_support(manifest: dict[str, Any], *, upstream_checkouts
     return cache_path, digest
 
 
-def materialize_support(repo_root: Path, manifest: dict[str, Any], *, upstream_checkouts: dict[str, Path]) -> dict[str, Any]:
+def materialize_support(
+    repo_root: Path,
+    manifest: dict[str, Any],
+    *,
+    upstream_checkouts: dict[str, Path],
+    plugin_root: Path | None = None,
+) -> dict[str, Any]:
     support = manifest["support_skill_source"]
 
     if support["source_type"] == "local_wrapper":
@@ -232,10 +272,20 @@ def materialize_support(repo_root: Path, manifest: dict[str, Any], *, upstream_c
             upstream_checkouts=upstream_checkouts,
         )
 
-    link_root = generated_support_dir(repo_root) / support_link_name(manifest)
-    materialized_paths = materialize_repo_symlink(cache_path, link_root, repo_root)
+    materialized_base = repo_root
+    materialized_kind = "repo-generated-symlink"
+    if plugin_root is None:
+        link_root = generated_support_dir(repo_root) / support_link_name(manifest)
+        materialized_paths = materialize_repo_symlink(cache_path, link_root, repo_root)
+    else:
+        materialized_base = plugin_root
+        materialized_kind = "installed-plugin-copy"
+        link_root = plugin_root / "support" / support_link_name(manifest)
+        materialized_paths = materialize_plugin_copy(cache_path, link_root, plugin_root)
     return {
         "materialized_paths": materialized_paths,
+        "materialized_base": str(materialized_base),
+        "materialized_kind": materialized_kind,
         "cache_path": str(cache_path),
         "content_digest": content_digest,
     }

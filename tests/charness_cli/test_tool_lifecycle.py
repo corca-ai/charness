@@ -101,6 +101,7 @@ def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path,
     home_root = tmp_path / "home"
     release_fixture = make_release_fixture(tmp_path)
     support_fixture = make_support_sync_fixture(tmp_path)
+    plugin_root = home_root / ".codex" / "plugins" / "charness"
     env = os.environ.copy()
     env["HOME"] = str(home_root)
     env["PATH"] = build_test_path()
@@ -116,7 +117,8 @@ def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path,
     assert cautilus["install"]["install_url"] == "https://github.com/corca-ai/cautilus/blob/main/install.sh"
     assert cautilus["install"]["release"]["latest_tag"] == "v1.2.3"
     assert cautilus["support"]["status"] == "synced"
-    assert cautilus["support"]["materialized_paths"] == ["skills/support/generated/cautilus"]
+    assert cautilus["support"]["materialized_paths"] == ["support/cautilus"]
+    assert cautilus["support"]["materialized_base"] == str(plugin_root)
     assert cautilus["doctor"]["doctor_status"] == "missing"
     assert cautilus["doctor"]["doctor_disposition"] == "advisory-install-needed"
     assert cautilus["install"]["repo_followup"]["rendered_command"] == f"cautilus install --repo-root {repo_root}"
@@ -128,9 +130,9 @@ def test_tool_install_persists_manual_guidance_and_support_state(tmp_path: Path,
     lock_payload = json.loads((repo_root / "integrations" / "locks" / "cautilus.json").read_text(encoding="utf-8"))
     assert lock_payload["release"]["latest_tag"] == "v1.2.3"
     assert lock_payload["install"]["install_status"] == "manual"
-    assert lock_payload["support"]["materialized_paths"] == ["skills/support/generated/cautilus"]
+    assert lock_payload["support"]["materialized_paths"] == ["support/cautilus"]
     assert lock_payload["doctor"]["doctor_status"] == "missing"
-    assert (repo_root / "skills" / "support" / "generated" / "cautilus").is_symlink()
+    assert (plugin_root / "support" / "cautilus" / "SKILL.md").is_file()
 
 
 def test_tool_install_can_select_quality_validation_recommendations(tmp_path: Path, seeded_charness_repo: Path) -> None:
@@ -200,6 +202,7 @@ def test_installed_cli_tool_install_materializes_cautilus_support(tmp_path: Path
     enable_cautilus_adapter(home_root / ".agents" / "src" / "charness")
     release_fixture = make_release_fixture(tmp_path)
     support_fixture = make_support_sync_fixture(tmp_path)
+    plugin_root = home_root / ".codex" / "plugins" / "charness"
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
 
@@ -215,13 +218,13 @@ def test_installed_cli_tool_install_materializes_cautilus_support(tmp_path: Path
     assert cautilus["install"]["install_url"] == "https://github.com/corca-ai/cautilus/blob/main/install.sh"
     assert cautilus["install"]["release"]["latest_tag"] == "v1.2.3"
     assert cautilus["support"]["status"] == "synced"
-    assert cautilus["support"]["materialized_paths"] == ["skills/support/generated/cautilus"]
+    assert cautilus["support"]["materialized_paths"] == ["support/cautilus"]
     assert cautilus["doctor"]["doctor_status"] == "missing"
-    assert (managed_repo / "skills" / "support" / "generated" / "cautilus").is_symlink()
+    assert (plugin_root / "support" / "cautilus" / "SKILL.md").is_file()
 
     lock_payload = json.loads((managed_repo / "integrations" / "locks" / "cautilus.json").read_text(encoding="utf-8"))
     assert lock_payload["install"]["install_status"] == "manual"
-    assert lock_payload["support"]["materialized_paths"] == ["skills/support/generated/cautilus"]
+    assert lock_payload["support"]["materialized_paths"] == ["support/cautilus"]
     assert lock_payload["doctor"]["doctor_status"] == "missing"
 
 
@@ -232,6 +235,7 @@ def test_installed_cli_tool_doctor_reports_ok_for_cautilus_with_binary_and_suppo
     enable_cautilus_adapter(home_root / ".agents" / "src" / "charness")
     release_fixture = make_release_fixture(tmp_path)
     support_fixture = make_support_sync_fixture(tmp_path)
+    plugin_root = home_root / ".codex" / "plugins" / "charness"
     fake_cautilus = make_fake_cautilus(tmp_path)
     env["PATH"] = build_test_path(fake_cautilus.parent)
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
@@ -262,8 +266,8 @@ def test_installed_cli_tool_doctor_reports_ok_for_cautilus_with_binary_and_suppo
         "프롬프트 회귀",
         "동작 평가",
     ]
-    assert cautilus["support_discovery"]["support_skill_path"] == "skills/support/generated/cautilus/SKILL.md"
-    assert cautilus["support_discovery"]["discovery_stub_path"] == ".agents/charness-discovery/cautilus.md"
+    assert cautilus["support_discovery"]["support_skill_path"] == str(plugin_root / "support" / "cautilus" / "SKILL.md")
+    assert cautilus["support_discovery"]["materialized_kind"] == "installed-plugin-copy"
     assert cautilus["release"]["latest_tag"] == "v1.2.3"
 
 
@@ -274,6 +278,7 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
     enable_cautilus_adapter(home_root / ".agents" / "src" / "charness")
     release_fixture = make_release_fixture(tmp_path)
     support_fixture = make_support_sync_fixture(tmp_path)
+    plugin_root = home_root / ".codex" / "plugins" / "charness"
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
 
@@ -283,8 +288,9 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
     cautilus = payload["results"]["cautilus"]
 
     assert cautilus["support"]["status"] == "synced"
-    assert cautilus["support"]["materialized_paths"] == ["skills/support/generated/cautilus"]
-    assert cautilus["support"]["discovery_stub_path"] == ".agents/charness-discovery/cautilus.md"
+    assert cautilus["support"]["materialized_paths"] == ["support/cautilus"]
+    assert cautilus["support"]["materialized_base"] == str(plugin_root)
+    assert cautilus["support"]["discovery_stub_path"] is None
     assert cautilus["support"]["intent_triggers"] == [
         "evaluator-backed behavior review",
         "behavior evaluation",
@@ -307,17 +313,15 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
         f"cautilus install --repo-root {home_root / '.agents' / 'src' / 'charness'}"
     )
     assert cautilus["doctor"]["support_discovery"]["status"] == "materialized"
-    assert cautilus["doctor"]["support_discovery"]["support_skill_path"] == "skills/support/generated/cautilus/SKILL.md"
-    assert cautilus["doctor"]["support_discovery"]["discovery_stub_path"] == ".agents/charness-discovery/cautilus.md"
+    assert cautilus["doctor"]["support_discovery"]["support_skill_path"] == str(plugin_root / "support" / "cautilus" / "SKILL.md")
+    assert cautilus["doctor"]["support_discovery"]["materialized_kind"] == "installed-plugin-copy"
     assert cautilus["doctor"]["install_route"]["commands"] == []
-    assert "Support skill materialization for `cautilus` was refreshed under skills/support/generated/cautilus" in cautilus["next_step"]
+    assert "Support skill materialization for `cautilus` was refreshed under support/cautilus" in cautilus["next_step"]
     assert "the standalone binary is still missing" in cautilus["next_step"]
     assert "Install docs: https://github.com/corca-ai/cautilus/blob/main/install.sh" in cautilus["next_step"]
     assert "Docs: https://github.com/corca-ai/cautilus" in cautilus["next_step"]
-    assert "Support skill is available at `skills/support/generated/cautilus/SKILL.md`." in cautilus["next_step"]
-    assert "Repo-local discovery stub is available at `.agents/charness-discovery/cautilus.md` for host-repo grep and cold-start pickup." in cautilus["next_step"]
-    assert "Use `find-skills` to surface it on demand or inspect that path directly." in cautilus["next_step"]
-    assert "You can also grep the discovery stub from the host repo." in cautilus["next_step"]
+    assert f"Support skill is available at `{plugin_root / 'support' / 'cautilus' / 'SKILL.md'}`." in cautilus["next_step"]
+    assert "installed Charness plugin support surface" in cautilus["next_step"]
     assert "Follow-up command: `cautilus install --repo-root" in cautilus["next_step"]
 
 
@@ -327,6 +331,7 @@ def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Pa
     fake_agent_browser = make_fake_agent_browser(tmp_path)
     release_fixture = make_release_fixture(tmp_path)
     support_fixture = make_support_sync_fixture(tmp_path)
+    plugin_root = home_root / ".codex" / "plugins" / "charness"
     env = os.environ.copy()
     env["HOME"] = str(home_root)
     env["PATH"] = f"{fake_agent_browser.parent}:{env.get('PATH', '')}"
@@ -344,7 +349,8 @@ def test_tool_update_executes_scripted_updates_and_refreshes_doctor(tmp_path: Pa
     lock_payload = json.loads((repo_root / "integrations" / "locks" / "agent-browser.json").read_text(encoding="utf-8"))
     assert lock_payload["release"]["latest_tag"] == "v0.25.3"
     assert lock_payload["update"]["update_status"] == "updated"
-    assert lock_payload["support"]["materialized_paths"] == ["skills/support/generated/agent-browser"]
+    assert lock_payload["support"]["materialized_paths"] == ["support/agent-browser"]
+    assert (plugin_root / "support" / "agent-browser" / "SKILL.md").is_file()
     assert lock_payload["doctor"]["doctor_status"] == "ok"
 
 
@@ -386,7 +392,7 @@ def test_tool_doctor_reports_specdown_binary_contract_without_support_sync(tmp_p
     doctor = specdown["doctor"]
 
     assert doctor["doctor_status"] == "ok"
-    assert doctor["support_state"] == "integration-only"
+    assert doctor["support_state"] == "upstream-consumed"
     assert doctor["support_sync"]["status"] == "not-tracked"
     assert doctor["detect"]["results"][0]["command"] == "specdown version"
     assert doctor["healthcheck"]["results"][0]["command"] == "specdown run -help"

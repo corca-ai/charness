@@ -99,9 +99,9 @@ When `support_skill_source` is present, `charness` should materialize a real
 local skill surface instead of leaving only a pointer:
 
 - upstream-owned skills should be fetched into the user cache and exposed
-  through a repo-local symlink
+  through the installed Charness plugin under `support/<tool-id>/`
 - charness-owned wrappers should be rendered into the user cache and exposed
-  through the same repo-local symlink pattern
+  through the same installed plugin support layout
 
 Fork only when:
 

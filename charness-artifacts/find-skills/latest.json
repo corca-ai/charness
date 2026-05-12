@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-11T04:43:09Z",
+  "generated_at": "2026-05-11T23:23:41Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -573,31 +573,6 @@
     ],
     "support_skills": [
       {
-        "id": "agent-browser",
-        "name": "agent-browser",
-        "description": "Use agent-browser CLI for browser automation, JS-rendered pages, and interactive browser debugging. Prefer this when a direct URL needs real browser execution or when you must inspect live DOM state.",
-        "summary": "Use agent-browser CLI for browser automation, JS-rendered pages, and interactive browser debugging. Prefer this when a direct URL needs real browser execution or when you must inspect live DOM state.",
-        "path": "skills/support/agent-browser/SKILL.md",
-        "skill_dir": "skills/support/agent-browser",
-        "canonical_path": "skills/support/agent-browser/SKILL.md",
-        "trigger_phrases": [
-          "agent-browser",
-          "agent-browser skill",
-          "agent-browser 스킬",
-          "charness:agent-browser",
-          "support/agent-browser",
-          "agent-browser support",
-          "agent-browser support skill",
-          "agent-browser helper"
-        ],
-        "referenced_paths": [
-          "skills/support/agent-browser/references/auth-bootstrap.md",
-          "skills/support/agent-browser/references/runtime.md"
-        ],
-        "source": "local-support",
-        "layer": "support skill"
-      },
-      {
         "id": "gather-notion",
         "name": "gather-notion",
         "description": "Internal support capability for gathering published Notion pages into durable local markdown without requiring consumer repos to supply their own export helper.",
@@ -672,37 +647,6 @@
         "layer": "support skill"
       },
       {
-        "id": "specdown",
-        "name": "specdown",
-        "description": "Write, run, and fix Specdown executable specifications. Use when task language mentions `*.spec.md`, `docs/specs`, `run:shell`, doctest output, check tables, `check:jq`, `report.json`, Specdown HTML reports, executable specs, adapter checks, or focused Specdown iteration.",
-        "summary": "Write, run, and fix Specdown executable specifications. Use when task language mentions `*.spec.md`, `docs/specs`, `run:shell`, doctest output, check tables, `check:jq`, `report.json`, Specdown HTML reports, executable specs, adapter checks, or focused Specdown iteration.",
-        "path": "skills/support/specdown/SKILL.md",
-        "skill_dir": "skills/support/specdown",
-        "canonical_path": "skills/support/specdown/SKILL.md",
-        "trigger_phrases": [
-          "specdown",
-          "specdown skill",
-          "specdown 스킬",
-          "charness:specdown",
-          "support/specdown",
-          "specdown support",
-          "specdown support skill",
-          "specdown helper"
-        ],
-        "referenced_paths": [
-          "skills/support/specdown/syntax.md",
-          "skills/support/specdown/best-practices.md",
-          "skills/support/specdown/cli.md",
-          "skills/support/specdown/report.md",
-          "skills/support/specdown/config.md",
-          "skills/support/specdown/adapter-protocol.md",
-          "skills/support/specdown/validation.md",
-          "skills/support/specdown/references/source-notes.md"
-        ],
-        "source": "local-support",
-        "layer": "support skill"
-      },
-      {
         "id": "web-fetch",
         "name": "web-fetch",
         "description": "Internal support capability for routing public-web fetch requests through the strongest honest access path and classifying blocked or partial fetch responses without turning those tactics into a public workflow concept.",
@@ -727,28 +671,6 @@
         ],
         "source": "local-support",
         "layer": "support skill"
-      },
-      {
-        "id": "cautilus",
-        "name": "cautilus",
-        "description": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
-        "summary": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
-        "path": "skills/support/generated/cautilus/SKILL.md",
-        "skill_dir": "skills/support/generated/cautilus",
-        "canonical_path": "skills/support/generated/cautilus/SKILL.md",
-        "trigger_phrases": [
-          "cautilus",
-          "cautilus skill",
-          "cautilus 스킬",
-          "charness:cautilus",
-          "support/cautilus",
-          "cautilus support",
-          "cautilus support skill",
-          "cautilus helper"
-        ],
-        "referenced_paths": [],
-        "source": "synced-support",
-        "layer": "synced support skill"
       }
     ],
     "support_capabilities": [
@@ -1048,7 +970,7 @@
           "degraded"
         ],
         "support_state": "upstream-consumed",
-        "support_skill_path": "skills/support/generated/cautilus/SKILL.md",
+        "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},
         "intent_triggers": [
@@ -1270,7 +1192,7 @@
           "human-only",
           "degraded"
         ],
-        "support_state": "integration-only",
+        "support_state": "upstream-consumed",
         "support_skill_path": null,
         "discovery_stub_path": null,
         "capability_requirements": {},

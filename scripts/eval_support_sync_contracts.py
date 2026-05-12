@@ -48,9 +48,9 @@ def main() -> int:
         raise EvalError(f"unexpected agent-browser payload {agent_browser!r}")
     if agent_browser["support_state"] != "upstream-consumed":
         raise EvalError(f"unexpected agent-browser payload {agent_browser!r}")
-    if specdown["tool_id"] != "specdown" or specdown["status"] != "skipped":
+    if specdown["tool_id"] != "specdown" or specdown["status"] != "dry-run":
         raise EvalError(f"unexpected specdown payload {specdown!r}")
-    if specdown["reason"] != "integration has no support_skill_source":
+    if specdown["support_state"] != "upstream-consumed":
         raise EvalError(f"unexpected specdown payload {specdown!r}")
 
     return 0

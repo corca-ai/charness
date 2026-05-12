@@ -13,15 +13,20 @@ else
   exit 1
 fi
 
-mapfile -t markdown_files < <(
+mapfile -t tracked_markdown_files < <(
   git ls-files -- '*.md' \
     ':(exclude)charness-artifacts/**' \
     ':(exclude).charness/**' \
     ':(exclude).cautilus/**' \
-    ':(exclude)skills/support/specdown/**' \
-    ':(exclude)plugins/charness/support/specdown/**' \
     ':(exclude).pytest_cache/**'
 )
+
+markdown_files=()
+for path in "${tracked_markdown_files[@]}"; do
+  if [[ -f "$path" ]]; then
+    markdown_files+=("$path")
+  fi
+done
 
 if [ "${#markdown_files[@]}" -eq 0 ]; then
   echo "No tracked markdown files to lint."

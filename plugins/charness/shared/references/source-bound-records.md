@@ -22,8 +22,9 @@ Do not apply it to read-only summaries or ordinary multi-document synthesis.
    may still validate into zero or more `ValidatedIntent`s.
 4. Deterministic commit code owns joins, idempotency, destination evidence or
    ledger lookup, partial success, and external side effects.
-5. Deterministic report code emits `report.json`; the final agent response uses
-   that artifact or commit artifacts instead of recomputing facts from context.
+5. Deterministic report code emits a JSON report artifact; the final agent
+   response uses that artifact or commit artifacts instead of recomputing facts
+   from context.
 
 The record is source-bound, not row-bound. One source can produce no validated
 intent, one validated intent, or several validated intents without losing the
@@ -40,7 +41,7 @@ Name these before implementation:
 - validation: how unknown, missing, and duplicate source item ids are rejected
 - idempotency: destination evidence, ledger, or lookup used to avoid duplicate
   side effects
-- report owner: the `report.json` or commit artifact fields that user-visible
+- report owner: the JSON report or commit artifact fields that user-visible
   facts must come from
 - retention: which source artifacts, OCR text, personal data, and destination
   evidence are retained, redacted, or kept transient

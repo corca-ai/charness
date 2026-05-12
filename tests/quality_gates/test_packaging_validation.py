@@ -335,8 +335,8 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     assert exported_gather_skill.is_file()
     assert exported_shared_ref.is_file()
     assert exported_support_skill.is_file()
-    assert exported_agent_browser.is_file()
-    assert exported_specdown.is_file()
+    assert not exported_agent_browser.exists()
+    assert not exported_specdown.exists()
     assert exported_helper_script.is_file()
     assert not (claude_root / "plugins" / "charness" / "skills" / "public").exists()
     assert not (claude_root / "plugins" / "charness" / "support" / "generated").exists()
@@ -349,8 +349,8 @@ def test_export_plugin_materializes_codex_and_claude_layouts(tmp_path: Path) -> 
     assert "./skills/support/" not in exported_readme_text
     assert "./plugins/charness/support/" not in exported_readme_text
     assert "(./skills/setup/SKILL.md)" in exported_readme_text
-    assert "(./support/agent-browser/SKILL.md)" in exported_readme_text
-    assert "(./support/specdown/SKILL.md)" in exported_readme_text
+    assert "(./support/agent-browser/SKILL.md)" not in exported_readme_text
+    assert "(./support/specdown/SKILL.md)" not in exported_readme_text
     assert "(https://github.com/corca-ai/charness/blob/main/docs/cli-reference.md)" in exported_readme_text
     assert "(https://github.com/corca-ai/charness/blob/main/packaging/charness.json)" in exported_readme_text
 

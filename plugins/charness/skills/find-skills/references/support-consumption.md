@@ -23,8 +23,8 @@ Use this label when:
 
 Use this label when:
 
-- an external integration has already materialized a private support skill under
-  `skills/support/generated/`
+- an external integration has already materialized a private support skill into
+  the installed Charness plugin support surface
 - the skill should stay off the public top-level surface
 - the right answer is "read this synced support skill on demand" rather than
   "pretend the integration entry is the whole story"
@@ -36,7 +36,7 @@ Use this label when:
 - the capability depends on an upstream binary or upstream support skill
 - the repo should consume it through manifest, install/update/doctor policy
 - or the host allows an external skill ecosystem rather than local ownership
-- if a synced support skill exists, cross-link to it instead of hiding it
+- if an installed support skill exists, cross-link to it instead of hiding it
 
 ## Missing Capability
 
