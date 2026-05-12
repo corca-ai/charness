@@ -22,7 +22,7 @@ from .support import (
 CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
 
 
-@pytest.mark.ci_only
+@pytest.mark.release_only
 def test_charness_init_installs_codex_via_official_app_server(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()

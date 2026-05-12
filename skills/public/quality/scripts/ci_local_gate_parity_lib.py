@@ -135,7 +135,7 @@ def find_canonical_gate_index(
 
 def _classify_subsequent(step: dict[str, Any], marker_re: re.Pattern[str]) -> str:
     if marker_re.search(step_text_for_marker(step)):
-        return "documented"
+        return "ci-only-violation"
     return classify_step(step)
 
 
@@ -194,7 +194,7 @@ def render_report(report: list[dict[str, Any]]) -> dict[str, Any]:
     for workflow in report:
         for job in workflow.get("jobs", []):
             for entry in job.get("subsequent", []):
-                if entry.get("classification") != "parity-issue":
+                if entry.get("classification") not in {"parity-issue", "ci-only-violation"}:
                     continue
                 parity_issues.append({
                     "workflow": workflow["workflow"],
@@ -202,6 +202,7 @@ def render_report(report: list[dict[str, Any]]) -> dict[str, Any]:
                     "name": entry.get("name"),
                     "run": entry.get("run"),
                     "uses": entry.get("uses"),
+                    "classification": entry.get("classification"),
                 })
         without_gate = workflow.get("jobs_without_canonical_gate") or []
         if without_gate:

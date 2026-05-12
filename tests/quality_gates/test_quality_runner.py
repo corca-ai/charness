@@ -186,6 +186,35 @@ def test_run_quality_can_select_cautilus_proof_gate(tmp_path: Path, seeded_quali
     assert "Quality summary: 1 passed, 0 failed" in result.stdout
 
 
+def test_run_quality_enforces_ci_local_gate_parity_inventory(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    inventory_script = repo / "skills" / "public" / "quality" / "scripts" / "inventory_ci_local_gate_parity.py"
+    inventory_script.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import sys",
+                "if '--require-empty-parity-issues' not in sys.argv:",
+                "    print('missing --require-empty-parity-issues')",
+                "    sys.exit(1)",
+                "print('quality success output from inventory-ci-local-gate-parity')",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    inventory_script.chmod(0o755)
+    env["CHARNESS_QUALITY_LABELS"] = "inventory-ci-local-gate-parity"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert "PASS inventory-ci-local-gate-parity" in result.stdout
+    assert "Quality summary: 1 passed, 0 failed" in result.stdout
+
+
 def test_run_quality_read_only_skips_check_coverage_without_control_plane_changes(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     (repo / "README.md").write_text("# demo\n", encoding="utf-8")

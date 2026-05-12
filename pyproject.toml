@@ -1,7 +1,7 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
-  "ci_only: covered in CI or on-demand runs, excluded from the standing pre-push gate",
+  "release_only: excluded from standing pre-push but included in full local release/update quality gates",
 ]
 
 [tool.ruff]

@@ -368,6 +368,7 @@ def seeded_managed_home(
     env = os.environ.copy()
     env["HOME"] = str(home_root)
     env["PATH"] = build_test_path(fake_claude.parent)
+    env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(make_support_sync_fixture(seed_root))
     init_result = run_cli("init", "--home-root", str(home_root), "--repo-url", str(source_repo), env=env)
     assert init_result.returncode == 0, init_result.stderr
     return {"home_root": home_root}

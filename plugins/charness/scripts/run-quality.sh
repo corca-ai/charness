@@ -353,10 +353,14 @@ if grep -q -- "--numprocesses" <<<"$PYTEST_HELP"; then
 else
   echo "run-quality: pytest-xdist not installed; pytest will run serially and may exceed runtime budgets. Install with: pip install pytest-xdist" >&2
 fi
+PYTEST_MARKER_FLAGS=()
+if [[ "$RUN_QUALITY_MODE" == "read-only" ]]; then
+  PYTEST_MARKER_FLAGS=(-m "not release_only")
+fi
 if ((${#PYTEST_PARALLEL_FLAGS[@]})); then
-  queue_selected "pytest" "${PYTEST_CMD[@]}" -q -m "not ci_only" "${PYTEST_PARALLEL_FLAGS[@]}" "${STANDING_PYTEST_TARGETS[@]}"
+  queue_selected "pytest" "${PYTEST_CMD[@]}" -q "${PYTEST_MARKER_FLAGS[@]}" "${PYTEST_PARALLEL_FLAGS[@]}" "${STANDING_PYTEST_TARGETS[@]}"
 else
-  queue_selected "pytest" "${PYTEST_CMD[@]}" -q -m "not ci_only" "${STANDING_PYTEST_TARGETS[@]}"
+  queue_selected "pytest" "${PYTEST_CMD[@]}" -q "${PYTEST_MARKER_FLAGS[@]}" "${STANDING_PYTEST_TARGETS[@]}"
 fi
 if [[ "$RUN_QUALITY_MODE" == "full" ]] || coverage_relevant_changes_present; then
   queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"
@@ -368,7 +372,7 @@ queue_selected "run-evals" python3 scripts/run_evals.py --repo-root "$REPO_ROOT"
 queue_selected "check-duplicates" python3 scripts/check_duplicates.py --repo-root "$REPO_ROOT" --fail-on-match
 flush_phase || OVERALL_RC=$?
 
-queue_selected "inventory-ci-local-gate-parity" python3 skills/public/quality/scripts/inventory_ci_local_gate_parity.py --repo-root "$REPO_ROOT"
+queue_selected "inventory-ci-local-gate-parity" python3 skills/public/quality/scripts/inventory_ci_local_gate_parity.py --repo-root "$REPO_ROOT" --require-empty-parity-issues
 queue_selected "measure-startup-probes" python3 skills/public/quality/scripts/measure_startup_probes.py --repo-root "$REPO_ROOT" --class standing --record-runtime-signals
 # inventory-sloc writes a git-tracked artifact, which the adapter declares via
 # quality_phases. Read-only mode (e.g. the pre-push hook) drops the --output

@@ -6,6 +6,7 @@ from pathlib import Path
 from .support import run_script
 
 SCRIPT = "skills/public/quality/scripts/inventory_ci_local_gate_parity.py"
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _write_workflow(tmp_path: Path, body: str) -> Path:
@@ -81,7 +82,7 @@ jobs:
     assert payload["parity_issues"] == []
 
 
-def test_documented_marker_via_step_name(tmp_path: Path) -> None:
+def test_ci_only_marker_via_step_name_is_violation(tmp_path: Path) -> None:
     repo = _write_workflow(
         tmp_path,
         """name: verify
@@ -98,10 +99,19 @@ jobs:
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["parity_issues"] == []
+    assert payload["parity_issues"] == [
+        {
+            "workflow": str(repo / ".github/workflows/verify.yml"),
+            "job": "verify",
+            "name": "Upload coverage (CI-only)",
+            "run": "bash <(curl -s https://codecov.io/bash)",
+            "uses": None,
+            "classification": "ci-only-violation",
+        }
+    ]
 
 
-def test_documented_marker_via_leading_comment(tmp_path: Path) -> None:
+def test_ci_only_marker_via_leading_comment_is_violation(tmp_path: Path) -> None:
     repo = _write_workflow(
         tmp_path,
         """name: verify
@@ -118,7 +128,7 @@ jobs:
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["parity_issues"] == []
+    assert payload["parity_issues"][0]["classification"] == "ci-only-violation"
 
 
 def test_require_empty_parity_issues_returns_nonzero_when_violation(tmp_path: Path) -> None:
@@ -282,8 +292,8 @@ jobs:
     )
     result = run_script(SCRIPT, "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
-    assert "canonical local gate" in result.stdout
-    assert "CI-only" in result.stdout
+    assert "canonical local/pre-push gate" in result.stdout
+    assert "CI-only quality gates are not an acceptable waiver" in result.stdout
     assert "maintainer-local-enforcement.md" in result.stdout
 
 
@@ -297,11 +307,21 @@ def test_real_repo_workflows_or_zero_parity_issues(tmp_path: Path) -> None:
     aligning the local gate, which is exactly the watchdog signal #137
     asks for.
     """
-    repo_root = Path(__file__).resolve().parents[2]
-    result = run_script(SCRIPT, "--repo-root", str(repo_root), "--json")
+    result = run_script(SCRIPT, "--repo-root", str(REPO_ROOT), "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["parity_issues"] == []
     if payload["workflows_scanned"] == 0:
         return
     assert payload["jobs_without_canonical_gate"] == []
+
+
+def test_repo_does_not_reintroduce_pytest_ci_only_marker() -> None:
+    mark_literal = "pytest.mark." + "ci_only"
+    pyproject_literal = '"ci' + '_only:'
+    offenders: list[str] = []
+    for path in [REPO_ROOT / "pyproject.toml", *sorted((REPO_ROOT / "tests").rglob("*.py"))]:
+        text = path.read_text(encoding="utf-8")
+        if mark_literal in text or pyproject_literal in text:
+            offenders.append(path.relative_to(REPO_ROOT).as_posix())
+    assert offenders == []

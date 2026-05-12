@@ -150,8 +150,8 @@ Use the sections that match the scope, without reducing quality to one score:
 - Do not treat a passing final local gate as sufficient when clones lack a
   repo-owned pre-push path and no documented no-hook waiver exists.
 - Do not treat a passing local gate as healthy when CI appends required
-  `run:` steps after it; see `references/maintainer-local-enforcement.md`
-  and `scripts/inventory_ci_local_gate_parity.py`.
+  `run:` steps after it or uses `CI-only` quality gates; required proof must
+  be reachable locally. See `references/maintainer-local-enforcement.md`.
 - Do not give generic "add tests" or "improve security" advice without the
   seam and next setup.
 - Do not dismiss fresh-eye misreads when scattered evidence or undeclared

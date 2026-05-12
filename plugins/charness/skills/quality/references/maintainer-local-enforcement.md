@@ -142,20 +142,25 @@ required CI step lives outside the canonical local gate, classify it as
 - the step is also represented inside the canonical local gate (e.g., the
   step's `run:` line is also one of the phases that the local gate
   invokes);
-- the step is explicitly documented as CI-only with a reason — the
-  `inventory_ci_local_gate_parity` helper accepts an inline `CI-only`
-  marker on the step's `name`, `run`, or the immediately preceding YAML
-  comment line;
+- the step belongs to an explicit local release, update, or refresh gate
+  that maintainers run before the corresponding operation; this is not a
+  CI-only waiver, and the local command must be named in the repo contract;
 - the step is setup or provisioning (e.g., `actions/checkout`,
   `actions/setup-*`, `npm ci`, `pip install`, package cache restore) rather
   than a required quality assertion.
 
+Treat `CI-only`, `ci only`, and equivalent phrasing on quality gates as a
+strong warning, not as documentation that makes the split acceptable. CI may
+repeat local proof, but CI must not be the first place a required quality
+failure can appear.
+
 Use `skills/public/quality/scripts/inventory_ci_local_gate_parity.py` to
 inventory parity. The helper takes `--workflow-glob`,
-`--canonical-gate-pattern` (repeatable), and `--ci-only-marker`. With
-`--require-empty-parity-issues` it returns exit 1 when any subsequent step
-is classified as `parity-issue`, which is the right shape for a standing
-gate or pre-push hook in repos where the parity contract is intentional.
+`--canonical-gate-pattern` (repeatable), and `--ci-only-marker` for detecting
+forbidden CI-only language. With `--require-empty-parity-issues` it returns
+exit 1 when any subsequent step is classified as `parity-issue` or
+`ci-only-violation`, which is the right shape for a standing gate or pre-push
+hook in repos where the parity contract is intentional.
 
 The default canonical-gate patterns cover `npm run verify`, `make verify`,
 `bash scripts/run-quality.sh`, `bash scripts/run-verify.{mjs,sh}`, and

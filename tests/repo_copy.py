@@ -24,6 +24,21 @@ REPO_COPY_EXCLUDE_NAMES = (
 REPO_COPY_IGNORE = shutil.ignore_patterns(*REPO_COPY_EXCLUDE_NAMES)
 
 
+def _clone_tree(source: Path, destination: Path) -> None:
+    try:
+        subprocess.run(
+            ["cp", "-a", "--reflink=auto", str(source), str(destination)],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        return
+    except (OSError, subprocess.SubprocessError):
+        pass
+    shutil.copytree(source, destination)
+
+
 def _git_init_and_commit(repo: Path) -> None:
     subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(
@@ -71,5 +86,5 @@ def seeded_charness_git_repo(
 
 def clone_seeded_charness_repo(target_root: Path, seeded_repo: Path) -> Path:
     repo = target_root / "repo"
-    shutil.copytree(seeded_repo, repo)
+    _clone_tree(seeded_repo, repo)
     return repo

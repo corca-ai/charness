@@ -14,7 +14,7 @@ CURRENT_RELEASE_TAG = f"v{CURRENT_VERSION}"
 NEWER_RELEASE_TAG = "v9.9.9"
 NEWER_PRERELEASE_TAG = "v9.9.9-rc.1"
 OLDER_RELEASE_TAG = "v0.0.0"
-pytestmark = pytest.mark.ci_only
+pytestmark = pytest.mark.release_only
 
 
 def test_charness_version_can_refresh_latest_release_and_record_provenance(

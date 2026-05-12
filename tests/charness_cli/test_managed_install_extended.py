@@ -26,7 +26,7 @@ from .test_managed_install import init_managed_home_from_repo
 from .tool_fakes import make_fake_cautilus
 
 
-@pytest.mark.ci_only
+@pytest.mark.release_only
 def test_installed_cli_update_all_refreshes_external_tools_and_support_state(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -158,7 +158,7 @@ def test_doctor_handles_missing_source_checkout_without_traceback(tmp_path: Path
     assert payload["next_steps"]["claude"] == payload["claude_host_guidance"]["message"]
 
 
-@pytest.mark.ci_only
+@pytest.mark.release_only
 def test_charness_reset_removes_host_state_but_keeps_cli(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     config_path = home_root / ".codex" / "config.toml"

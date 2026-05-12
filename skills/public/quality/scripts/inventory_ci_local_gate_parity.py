@@ -9,8 +9,9 @@ the failure mode in corca-ai/charness#137.
 
 Classification per subsequent step:
 
-- `documented`  — step run line, name, or its preceding YAML comment
-  contains the CI-only marker (default `CI-only`, case-insensitive).
+- `ci-only-violation` — step run line, name, or its preceding YAML
+  comment contains the forbidden CI-only marker (default `CI-only`,
+  case-insensitive).
 - `setup`       — step uses common provisioning shapes
   (actions/checkout, actions/setup-*, actions/cache,
   actions/upload-artifact, actions/download-artifact, npm ci,
@@ -85,8 +86,9 @@ def _print_text_summary(rendered: dict[str, Any]) -> None:
     if rendered["parity_issues"]:
         print(
             "  resolve each parity-issue by adding the step to the canonical "
-            "local gate, marking it `CI-only` (step name, run line, or "
-            "preceding YAML comment), or filing a documented waiver. See "
+            "local/pre-push gate, moving it to an explicit local release or "
+            "update gate, or removing the CI-only split. CI-only quality gates "
+            "are not an acceptable waiver. See "
             "skills/public/quality/references/maintainer-local-enforcement.md."
         )
 

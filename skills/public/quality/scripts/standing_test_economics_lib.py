@@ -49,6 +49,13 @@ PYTEST_WORKER_RE = re.compile(r"^popen-gw\d+$")
 PYTEST_SEED_PREFIXES = ("charness-repo-seed", "charness-git-repo-seed", "managed-home-seed")
 
 
+def _iter_child_dirs(path: Path) -> list[Path]:
+    try:
+        return [child for child in path.iterdir() if not child.is_symlink() and child.is_dir()]
+    except OSError:
+        return []
+
+
 def _is_ignored(path: Path) -> bool:
     return any(part in IGNORED_DIRS for part in path.parts)
 
@@ -88,10 +95,10 @@ def _runner_snippets(repo_root: Path) -> list[dict[str, str]]:
     return snippets
 
 
-def _dir_size_bytes(path: Path) -> int:
+def _du_bytes(path: Path, *args: str) -> int | None:
     try:
         result = subprocess.run(
-            ["du", "-sb", str(path)],
+            ["du", *args, str(path)],
             check=True,
             capture_output=True,
             text=True,
@@ -99,7 +106,13 @@ def _dir_size_bytes(path: Path) -> int:
         )
         return int(result.stdout.split()[0])
     except (OSError, subprocess.SubprocessError, ValueError, IndexError):
-        pass
+        return None
+
+
+def _dir_size_bytes(path: Path) -> int:
+    apparent = _du_bytes(path, "-sb")
+    if apparent is not None:
+        return apparent
 
     total = 0
     for child in path.rglob("*"):
@@ -109,6 +122,25 @@ def _dir_size_bytes(path: Path) -> int:
         except OSError:
             continue
     return total
+
+
+def _dir_disk_bytes(path: Path) -> int:
+    disk = _du_bytes(path, "-sB1")
+    if disk is not None:
+        return disk
+
+    total = 0
+    for child in path.rglob("*"):
+        try:
+            if not child.is_symlink() and child.is_file():
+                total += child.stat().st_blocks * 512
+        except OSError:
+            continue
+    return total
+
+
+def _dir_usage(path: Path) -> dict[str, int]:
+    return {"bytes": _dir_size_bytes(path), "disk_bytes": _dir_disk_bytes(path)}
 
 
 def _pytest_temp_root() -> Path:
@@ -121,23 +153,19 @@ def _pytest_temp_footprint() -> dict[str, Any]:
     root = _pytest_temp_root()
     if not root.exists():
         return {"status": "missing", "root": str(root)}
-    sessions = sorted(path for path in root.iterdir() if path.is_dir() and PYTEST_SESSION_RE.match(path.name))
+    sessions = sorted(path for path in _iter_child_dirs(root) if PYTEST_SESSION_RE.match(path.name))
     seed_totals: dict[str, dict[str, int]] = {
-        prefix: {"count": 0, "bytes": 0} for prefix in PYTEST_SEED_PREFIXES
+        prefix: {"count": 0, "bytes": 0, "disk_bytes": 0} for prefix in PYTEST_SEED_PREFIXES
     }
     top_tests: list[dict[str, Any]] = []
     worker_count = 0
     for session in sessions:
-        workers = [
-            path
-            for path in session.iterdir()
-            if not path.is_symlink() and path.is_dir() and PYTEST_WORKER_RE.match(path.name)
-        ]
+        workers = [path for path in _iter_child_dirs(session) if PYTEST_WORKER_RE.match(path.name)]
         worker_count += len(workers)
         matched_seed_roots: list[Path] = []
-        seed_candidates = list(session.iterdir())
+        seed_candidates = _iter_child_dirs(session)
         for worker in workers:
-            seed_candidates.extend(worker.iterdir())
+            seed_candidates.extend(_iter_child_dirs(worker))
         for path in sorted(seed_candidates, key=lambda candidate: len(candidate.parts)):
             if path.is_symlink() or not path.is_dir():
                 continue
@@ -145,20 +173,24 @@ def _pytest_temp_footprint() -> dict[str, Any]:
                 continue
             for prefix in PYTEST_SEED_PREFIXES:
                 if path.name.startswith(prefix):
+                    usage = _dir_usage(path)
                     seed_totals[prefix]["count"] += 1
-                    seed_totals[prefix]["bytes"] += _dir_size_bytes(path)
+                    seed_totals[prefix]["bytes"] += usage["bytes"]
+                    seed_totals[prefix]["disk_bytes"] += usage["disk_bytes"]
                     matched_seed_roots.append(path)
                     break
         for worker in workers:
-            for path in worker.iterdir():
-                if not path.is_symlink() and path.is_dir() and path.name.startswith("test_"):
+            for path in _iter_child_dirs(worker):
+                if path.name.startswith("test_"):
+                    usage = _dir_usage(path)
                     top_tests.append(
                         {
                             "path": path.relative_to(root).as_posix(),
-                            "bytes": _dir_size_bytes(path),
+                            "bytes": usage["bytes"],
+                            "disk_bytes": usage["disk_bytes"],
                         }
                     )
-    top_tests.sort(key=lambda item: int(item["bytes"]), reverse=True)
+    top_tests.sort(key=lambda item: int(item["disk_bytes"]), reverse=True)
     return {
         "status": "available",
         "root": str(root),
@@ -166,6 +198,7 @@ def _pytest_temp_footprint() -> dict[str, Any]:
         "session_names": [path.name for path in sessions],
         "worker_dir_count": worker_count,
         "total_bytes": _dir_size_bytes(root),
+        "total_disk_bytes": _dir_disk_bytes(root),
         "seed_totals": seed_totals,
         "top_test_dirs": top_tests[:10],
     }
@@ -224,14 +257,14 @@ def inventory(repo_root: Path) -> dict[str, Any]:
             }
         )
     if pytest_temp.get("status") == "available":
-        total_bytes = int(pytest_temp.get("total_bytes") or 0)
-        if total_bytes >= 1024 * 1024 * 1024:
+        disk_bytes = int(pytest_temp.get("total_disk_bytes") or pytest_temp.get("total_bytes") or 0)
+        if disk_bytes >= 1024 * 1024 * 1024:
             findings.append(
                 {
                     "type": "pytest_temp_footprint",
                     "severity": "advisory",
                     "message": "The current user's pytest temp retention is carrying a multi-GB footprint.",
-                    "evidence": f"{total_bytes} bytes across {pytest_temp.get('session_count')} retained session(s)",
+                    "evidence": f"{disk_bytes} allocated bytes across {pytest_temp.get('session_count')} retained session(s)",
                     "recommended_action": "Reduce duplicated repo/home fixture materialization before changing pytest retention or disabling xdist.",
                 }
             )

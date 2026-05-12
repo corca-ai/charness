@@ -69,9 +69,12 @@ def test_standing_test_economics_reports_pytest_temp_footprint(tmp_path: Path) -
     assert footprint["status"] == "available"
     assert footprint["session_count"] == 1
     assert footprint["worker_dir_count"] == 1
+    assert footprint["total_disk_bytes"] >= 24
     assert footprint["seed_totals"]["charness-repo-seed"]["count"] == 1
     assert footprint["seed_totals"]["charness-repo-seed"]["bytes"] >= 11
+    assert footprint["seed_totals"]["charness-repo-seed"]["disk_bytes"] >= 11
     assert footprint["top_test_dirs"][0]["bytes"] >= 13
+    assert footprint["top_test_dirs"][0]["disk_bytes"] >= 13
 
 
 def test_standing_test_economics_does_not_double_count_nested_seed_dirs(tmp_path: Path) -> None:
@@ -97,3 +100,4 @@ def test_standing_test_economics_does_not_double_count_nested_seed_dirs(tmp_path
 
     assert footprint["seed_totals"]["charness-repo-seed"]["count"] == 1
     assert footprint["seed_totals"]["charness-repo-seed"]["bytes"] >= 24
+    assert footprint["seed_totals"]["charness-repo-seed"]["disk_bytes"] >= 24

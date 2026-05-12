@@ -12,7 +12,7 @@ from tests.repo_copy import clone_seeded_charness_repo
 from .support import make_fake_claude
 
 PROBE_SKILL_ID = "update-probe-extra"
-pytestmark = pytest.mark.ci_only
+pytestmark = pytest.mark.release_only
 
 
 def test_installed_cli_update_propagates_new_skill_into_exported_plugin_root(tmp_path: Path, seeded_charness_git_repo: Path) -> None:

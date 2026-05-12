@@ -110,7 +110,7 @@ def test_charness_init_exports_managed_surface(tmp_path: Path, seeded_charness_g
     assert legacy_skills.is_symlink() is False
 
 
-@pytest.mark.ci_only
+@pytest.mark.release_only
 def test_standalone_cli_bootstraps_managed_checkout_without_explicit_clone(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -145,7 +145,7 @@ def test_standalone_cli_bootstraps_managed_checkout_without_explicit_clone(tmp_p
     assert install_state["managed_checkout"] is True
 
 
-@pytest.mark.ci_only
+@pytest.mark.release_only
 def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     embedded_root = tmp_path / "embedded"
     embedded_root.mkdir()
@@ -265,7 +265,7 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert_managed_checkout_has_no_tracked_runtime_dirt(home_root / ".agents" / "src" / "charness")
 
 
-@pytest.mark.ci_only
+@pytest.mark.release_only
 def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -309,7 +309,7 @@ def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(t
     assert installed_text == managed_checkout_text
 
 
-@pytest.mark.ci_only
+@pytest.mark.release_only
 def test_installed_cli_update_allows_untracked_files_in_managed_checkout(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -338,7 +338,7 @@ def test_installed_cli_update_allows_untracked_files_in_managed_checkout(tmp_pat
     assert_managed_checkout_has_no_tracked_runtime_dirt(managed_checkout)
 
 
-@pytest.mark.ci_only
+@pytest.mark.release_only
 def test_installed_cli_update_skips_cwd_onboarding_by_default(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -373,7 +373,7 @@ def test_installed_cli_update_skips_cwd_onboarding_by_default(tmp_path: Path, se
     assert payload["repo_onboarding"]["status"] == "skipped"
 
 
-@pytest.mark.ci_only
+@pytest.mark.release_only
 def test_installed_cli_update_blocks_tracked_changes_in_managed_checkout(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -397,7 +397,7 @@ def test_installed_cli_update_blocks_tracked_changes_in_managed_checkout(tmp_pat
     assert "has tracked local changes" in (update_result.stderr + update_result.stdout)
 
 
-@pytest.mark.ci_only
+@pytest.mark.release_only
 def test_installed_cli_update_reports_diverged_managed_checkout(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
