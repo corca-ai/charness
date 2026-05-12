@@ -17,17 +17,24 @@ Advanced `charness` toward release `0.5.25` through the repo-owned release helpe
 - `./scripts/run-quality.sh` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - one git push carried both the release branch update and the tag from the release helper.
+- `gh release view v0.5.25 --json tagName,name,url,isDraft,isPrerelease,publishedAt,targetCommitish`
+  verified the public GitHub release surface.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: not created by this helper run
-- public release surface verification: not checked by this helper
+- GitHub release record: created
+- public release surface verification: checked
 
 ## Public Release Verification
 
-- This slice still requires configured public/real-host verification before the release is fully closed.
+- URL: `https://github.com/corca-ai/charness/releases/tag/v0.5.25`
+- tag: `v0.5.25`
+- target: `main`
+- published: `2026-05-12T10:43:31Z`
+- draft: `false`
+- prerelease: `false`
 
 ## Real-Host Proof
 
