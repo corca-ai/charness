@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import getpass
 import importlib.util
 import json
+import os
 import re
+import subprocess
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -40,6 +44,9 @@ NESTED_CLI_RE = re.compile(
 )
 NODE_TEST_RE = re.compile(r"(?:^|\s)node\b[^\n]*(?:^|\s)--test(?:\s|$)")
 TS_LOADER_RE = re.compile(r"\b(tsx|ts-node|swc-node|esbuild-register)\b")
+PYTEST_SESSION_RE = re.compile(r"^pytest-\d+$")
+PYTEST_WORKER_RE = re.compile(r"^popen-gw\d+$")
+PYTEST_SEED_PREFIXES = ("charness-repo-seed", "charness-git-repo-seed", "managed-home-seed")
 
 
 def _is_ignored(path: Path) -> bool:
@@ -81,6 +88,89 @@ def _runner_snippets(repo_root: Path) -> list[dict[str, str]]:
     return snippets
 
 
+def _dir_size_bytes(path: Path) -> int:
+    try:
+        result = subprocess.run(
+            ["du", "-sb", str(path)],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        return int(result.stdout.split()[0])
+    except (OSError, subprocess.SubprocessError, ValueError, IndexError):
+        pass
+
+    total = 0
+    for child in path.rglob("*"):
+        try:
+            if not child.is_symlink() and child.is_file():
+                total += child.stat().st_size
+        except OSError:
+            continue
+    return total
+
+
+def _pytest_temp_root() -> Path:
+    base = Path(os.environ.get("PYTEST_DEBUG_TEMPROOT") or tempfile.gettempdir())
+    user = getpass.getuser() if hasattr(getpass, "getuser") else "unknown"
+    return base / f"pytest-of-{user}"
+
+
+def _pytest_temp_footprint() -> dict[str, Any]:
+    root = _pytest_temp_root()
+    if not root.exists():
+        return {"status": "missing", "root": str(root)}
+    sessions = sorted(path for path in root.iterdir() if path.is_dir() and PYTEST_SESSION_RE.match(path.name))
+    seed_totals: dict[str, dict[str, int]] = {
+        prefix: {"count": 0, "bytes": 0} for prefix in PYTEST_SEED_PREFIXES
+    }
+    top_tests: list[dict[str, Any]] = []
+    worker_count = 0
+    for session in sessions:
+        workers = [
+            path
+            for path in session.iterdir()
+            if not path.is_symlink() and path.is_dir() and PYTEST_WORKER_RE.match(path.name)
+        ]
+        worker_count += len(workers)
+        matched_seed_roots: list[Path] = []
+        seed_candidates = list(session.iterdir())
+        for worker in workers:
+            seed_candidates.extend(worker.iterdir())
+        for path in sorted(seed_candidates, key=lambda candidate: len(candidate.parts)):
+            if path.is_symlink() or not path.is_dir():
+                continue
+            if any(parent in path.parents for parent in matched_seed_roots):
+                continue
+            for prefix in PYTEST_SEED_PREFIXES:
+                if path.name.startswith(prefix):
+                    seed_totals[prefix]["count"] += 1
+                    seed_totals[prefix]["bytes"] += _dir_size_bytes(path)
+                    matched_seed_roots.append(path)
+                    break
+        for worker in workers:
+            for path in worker.iterdir():
+                if not path.is_symlink() and path.is_dir() and path.name.startswith("test_"):
+                    top_tests.append(
+                        {
+                            "path": path.relative_to(root).as_posix(),
+                            "bytes": _dir_size_bytes(path),
+                        }
+                    )
+    top_tests.sort(key=lambda item: int(item["bytes"]), reverse=True)
+    return {
+        "status": "available",
+        "root": str(root),
+        "session_count": len(sessions),
+        "session_names": [path.name for path in sessions],
+        "worker_dir_count": worker_count,
+        "total_bytes": _dir_size_bytes(root),
+        "seed_totals": seed_totals,
+        "top_test_dirs": top_tests[:10],
+    }
+
+
 def inventory(repo_root: Path) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     test_files = _test_files(repo_root)
@@ -91,6 +181,7 @@ def inventory(repo_root: Path) -> dict[str, Any]:
     node_test_snippets = [item for item in snippets if NODE_TEST_RE.search(item["snippet"])]
     ts_loader_snippets = [item for item in snippets if TS_LOADER_RE.search(item["snippet"])]
     nested_cli_files = _nested_cli_files(repo_root, test_files)
+    pytest_temp = _pytest_temp_footprint()
     findings: list[dict[str, Any]] = []
     if len(test_files) >= 50:
         findings.append(
@@ -132,6 +223,18 @@ def inventory(repo_root: Path) -> dict[str, Any]:
                 "recommended_action": "Keep a small real-binary smoke and move repeated contract proof in-process where honest.",
             }
         )
+    if pytest_temp.get("status") == "available":
+        total_bytes = int(pytest_temp.get("total_bytes") or 0)
+        if total_bytes >= 1024 * 1024 * 1024:
+            findings.append(
+                {
+                    "type": "pytest_temp_footprint",
+                    "severity": "advisory",
+                    "message": "The current user's pytest temp retention is carrying a multi-GB footprint.",
+                    "evidence": f"{total_bytes} bytes across {pytest_temp.get('session_count')} retained session(s)",
+                    "recommended_action": "Reduce duplicated repo/home fixture materialization before changing pytest retention or disabling xdist.",
+                }
+            )
     return {
         "repo_root": str(repo_root),
         "test_file_count": len(test_files),
@@ -139,5 +242,6 @@ def inventory(repo_root: Path) -> dict[str, Any]:
         "runner_snippets": snippets,
         "nested_cli_file_count": len(nested_cli_files),
         "nested_cli_files": nested_cli_files,
+        "pytest_temp_footprint": pytest_temp,
         "findings": findings,
     }

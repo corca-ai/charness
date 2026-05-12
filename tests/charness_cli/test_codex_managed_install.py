@@ -78,7 +78,9 @@ def test_charness_init_installs_codex_via_official_app_server(tmp_path: Path, se
 def test_charness_doctor_reports_codex_version_drift(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
-    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    home_root, env = clone_seeded_managed_home(
+        tmp_path, seeded_managed_home["home_root"], share_source_checkout=True
+    )
     fake_codex = make_fake_codex(tmp_path)
     env["PATH"] = build_test_path(fake_codex.parent)
     config_path = home_root / ".codex" / "config.toml"

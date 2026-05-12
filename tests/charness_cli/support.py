@@ -371,9 +371,33 @@ def seeded_managed_home(
     init_result = run_cli("init", "--home-root", str(home_root), "--repo-url", str(source_repo), env=env)
     assert init_result.returncode == 0, init_result.stderr
     return {"home_root": home_root}
-def clone_seeded_managed_home(tmp_path: Path, seeded_home_root: Path) -> tuple[Path, dict[str, str]]:
+def clone_seeded_managed_home(
+    tmp_path: Path, seeded_home_root: Path, *, share_source_checkout: bool = False
+) -> tuple[Path, dict[str, str]]:
     home_root = tmp_path / "home"
-    shutil.copytree(seeded_home_root, home_root)
+    source_rel = Path(".agents") / "src" / "charness"
+    ignore = None
+    if share_source_checkout:
+        source_parts = source_rel.parts
+
+        def ignore_source_checkout(src: str, names: list[str]) -> set[str]:
+            try:
+                rel_parts = Path(src).relative_to(seeded_home_root).parts
+            except ValueError:
+                return set()
+            if rel_parts == source_parts[:-1] and source_parts[-1] in names:
+                return {source_parts[-1]}
+            return set()
+
+        ignore = ignore_source_checkout
+    shutil.copytree(seeded_home_root, home_root, ignore=ignore)
+    if share_source_checkout:
+        source_link = home_root / source_rel
+        source_link.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            source_link.symlink_to((seeded_home_root / source_rel).resolve(), target_is_directory=True)
+        except OSError:
+            shutil.copytree(seeded_home_root / source_rel, source_link)
     rewrite_seeded_home_paths(home_root, old_home_root=seeded_home_root)
     fake_claude = make_fake_claude(tmp_path)
     env = os.environ.copy()

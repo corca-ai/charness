@@ -471,7 +471,9 @@ def test_installed_cli_remembers_managed_checkout(tmp_path: Path, seeded_managed
 
 
 def test_doctor_can_write_host_state_snapshot(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
-    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    home_root, env = clone_seeded_managed_home(
+        tmp_path, seeded_managed_home["home_root"], share_source_checkout=True
+    )
     doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", "--write-state", env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
     payload = json.loads(doctor_result.stdout)

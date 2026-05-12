@@ -26,18 +26,19 @@ requested, and be cleaned up after the runner exits.
   TB with large `pytest-7909`, `pytest-7911`, `pytest-7912`, and `pytest-7913`
   directories.
 - The reported path shape included `.cautilus/runs/.../codex-home/tmp/...`. <!-- reproduction-source -->
-- Checked-in `.cautilus/runs` entries are 93 small Cautilus evidence files.
-  They include prompts, schemas, stderr/stdout, summaries, and `run.json`; they
-  do not explain the terabyte-scale payload by themselves.
+- Checked-in `.cautilus/runs` entries are 93 small evidence files, not
+  terabyte-scale payloads by themselves.
 - `tests/repo_copy.py` copied the whole repo root into a session seed and did
   not exclude `.cautilus`.
 - `scripts/check_coverage.py` also copied the repo root for coverage probes
   and did not exclude `.cautilus`.
 - Many tests clone or copy the seeded Charness repo from the pytest temp root,
   so one oversized hidden artifact tree can be multiplied by later fixtures.
-- The 2026-05-12 Codex eval runner fix now creates isolated Codex homes under
-  system temp via `mkdtemp`, passes `--ignore-user-config`, copies only
-  `auth.json`, and cleans the temp home unless a custom home was supplied.
+- The 2026-05-12 Codex eval runner fix creates isolated Codex homes under
+  system temp, inherits only auth, and cleans temp homes.
+- After the terabyte-scale trees were deleted, pytest still held
+  `pytest-4`, `pytest-5`, and `pytest-6` at about 1.3-1.4 GB each; local
+  pytest 9.0.2 defaults to `count=3`, `policy=all`. <!-- reproduction-source -->
 
 ## Reproduction
 
@@ -63,13 +64,17 @@ fixtures then copied or git-seeded from that already oversized seed.
   `.cautilus` exclusion.
 - Repeated release/pre-push quality runs amplified the same oversized seed
   before pytest temp cleanup could reclaim it.
+- Pytest's default tmp-path policy preserves the last three successful session
+  temp roots for debugging, which is too expensive for this repo's
+  worker-parallel repo/home fixture shape.
 
 ## Hypothesis
 
 If Charness excludes `.cautilus` from all repo-root copy fixtures and keeps the
 Codex isolated home outside the artifact tree, then useful checked Cautilus
 evidence can remain in the repo while runtime homes and caches cannot be
-multiplied into pytest temp.
+multiplied into pytest temp. The remaining 3-run pytest retention footprint is
+a test-economics signal, not the original terabyte-scale root cause.
 
 ## Verification
 
@@ -84,10 +89,8 @@ python3 scripts/build_debug_seam_risk_index.py --repo-root . --check  # passed
 ```
 
 The earlier Codex isolation proof remains the Cautilus run recorded in
-`charness-artifacts/cautilus/latest.md`.
-
-`./scripts/run-quality.sh --read-only` also found unrelated release-probe
-timeout and runtime-budget closeout blockers; those were handled before
+`charness-artifacts/cautilus/latest.md`; unrelated release-probe and budget
+blockers found by `./scripts/run-quality.sh --read-only` were handled before
 release closeout.
 
 ## Root Cause
@@ -126,6 +129,10 @@ coverage-copy helpers must exclude `.cautilus`, and the Codex eval runner must
 continue using a temp `CODEX_HOME` outside repo artifacts with cleanup. Future
 copy helpers should expose their ignore names as constants so volatile artifact
 roots can be asserted directly instead of inferred from a closure.
+
+Keep pytest's default 3-session retention unless test economics data shows a
+better repo-owned policy. The expensive signal to inspect next is why one
+parallel successful session creates about 1.3-1.4 GB of repo/home fixture data.
 
 Fresh-eye critique satisfaction: parent-delegated. Reviewers agreed the fix
 should exclude `.cautilus` from synthetic copy surfaces without deleting or

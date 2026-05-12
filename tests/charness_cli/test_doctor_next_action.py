@@ -19,7 +19,9 @@ from .support import (
 def test_charness_doctor_selects_primary_next_action(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
-    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    home_root, env = clone_seeded_managed_home(
+        tmp_path, seeded_managed_home["home_root"], share_source_checkout=True
+    )
     doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
     payload = json.loads(doctor_result.stdout)
@@ -31,7 +33,9 @@ def test_charness_doctor_selects_primary_next_action(
 def test_charness_doctor_prints_primary_next_action(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
-    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    home_root, env = clone_seeded_managed_home(
+        tmp_path, seeded_managed_home["home_root"], share_source_checkout=True
+    )
     doctor_result = run_cli("doctor", "--home-root", str(home_root), env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
     assert (
@@ -43,7 +47,9 @@ def test_charness_doctor_prints_primary_next_action(
 def test_charness_doctor_next_action_flag_prints_only_message(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
-    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    home_root, env = clone_seeded_managed_home(
+        tmp_path, seeded_managed_home["home_root"], share_source_checkout=True
+    )
     doctor_result = run_cli("doctor", "--home-root", str(home_root), "--next-action", env=env)
     assert doctor_result.returncode == 0, doctor_result.stderr
     assert (
@@ -81,7 +87,9 @@ def test_charness_doctor_next_action_reports_missing_source(tmp_path: Path) -> N
 def test_charness_doctor_can_surface_repo_onboarding_as_primary_next_action(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
-    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
+    home_root, env = clone_seeded_managed_home(
+        tmp_path, seeded_managed_home["home_root"], share_source_checkout=True
+    )
     env["PATH"] = build_test_path()
     consumer_repo = tmp_path / "consumer-repo"
     consumer_repo.mkdir()
