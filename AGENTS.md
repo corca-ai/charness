@@ -28,6 +28,7 @@
 - Treat meaningful `charness-artifacts/` changes as repo state and commit them with the work they support.
 - Current-pointer helpers should no-op without canonical content change; unexpected rewrites are invocation drift or helper bugs.
 - Treat critique, closeout, and commit as part of task-completing repo work, not optional follow-up.
+- After verification passes for task-completing repo work, commit before answering follow-up usage/status questions or checking installed-machine state.
 
 ## Work Phase Map
 
