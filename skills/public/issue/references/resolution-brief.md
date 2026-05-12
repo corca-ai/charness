@@ -77,6 +77,8 @@ When the brief continues without pause (empty open decisions + `--auto` or
 `feature_brief_pause: never`), transcript emission is sufficient and no
 artifact is written. The commit message and the close comment's
 `Resolution brief: inline (no pause)` line carry the boundary forward.
+For PR-based resolution, carry the same boundary in the PR body beside the
+close keywords so GitHub auto-close has the full issue-resolution context.
 
 ## Trivial-Feature Short-Circuit
 
@@ -116,3 +118,7 @@ forward through:
 
 This lets a later reader recover the resolved boundary directly from GitHub
 state without rebuilding the transcript.
+
+When auto-close is available, the PR body or direct-to-default commit body is
+the preferred closeout carrier. Manual close comments use the same fields only
+when auto-close is unsupported or failed after verification.

@@ -137,17 +137,14 @@ repo by created date. It must not use the current session's last created issue.
    When invoked from `impl`, declare `Critique: full <issue-resolution-artifact>`.
    One per fix-unit, not per selector; bundle cheap prevention and record
    deferred. If step 4 was blocked, report blocked state instead of running.
-10. Commit, push, and close the GitHub issue only after the fix is on
-    the remote. Use explicit close keywords (`Close #1. Close #2.`) for
-    GitHub auto-close, or `issue_tool.py close-with-comment` for
-    multi-line backend-routed close comments
-    (`gh issue close --comment-file` does not exist). Close comment shape by
-    classification, restated per issue in a range:
-    - `bug`: JTBD, root cause, `Debug artifact: <path>` (or
-      `none (trivial fix)` / `cite-only`), siblings (bundled/deferred+
-      location), prevention
-    - `feature`/`deferred-work`: JTBD, boundary, `Resolution brief: <path>`
-      (or `inline (no pause)` / `trivial`), implementation, prevention
+10. Commit, push, and prefer GitHub auto-close via explicit close keywords
+    (`Close #1. Close #2.`) in the PR body or direct-to-default commit body;
+    preserve them in squash/merge bodies. Use `issue_tool.py close-with-comment`
+    only after auto-close is unsupported or fails after remote verification
+    (`gh issue close --comment-file` does not exist). The auto-close carrier or
+    manual close comment includes the closeout shape by classification:
+    - `bug`: JTBD, root cause, `Debug artifact: <path>` (or `none (trivial fix)` / `cite-only`), siblings (bundled/deferred+location), prevention
+    - `feature`/`deferred-work`: JTBD, boundary, `Resolution brief: <path>` (or `inline (no pause)` / `trivial`), implementation, prevention
     - `question`/`decision-needed`: JTBD, the answer or recorded decision
 
 ## Guardrails
@@ -156,6 +153,8 @@ repo by created date. It must not use the current session's last created issue.
   context and keep solution ideas tentative.
 - Do not resolve an omitted issue selector from session memory. Query GitHub.
 - Do not close an issue before the pushed branch contains the fix.
+- Do not skip close keywords when the backend can auto-close; manual close is
+  the fallback, not the default success path.
 - Do not hardcode `gh` when the adapter advertises a stronger backend, and
   do not hide missing backend auth behind a public fetch fallback for
   create, push, comment, or close.

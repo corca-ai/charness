@@ -67,3 +67,20 @@ def test_issue_skill_cites_closeout_discipline_at_each_anchor() -> None:
         f"expected closeout-discipline.md cited from step 3, Target Rules, "
         f"and step 6 anchors plus References list; found: {citations}"
     )
+
+
+def test_issue_resolve_prefers_autoclose_carriers_before_manual_close() -> None:
+    skill = _read(SKILL)
+    closeout = _read(CLOSEOUT)
+    resolve_flow = _read(RESOLVE_FLOW)
+    brief = _read(ROOT / "skills" / "public" / "issue" / "references" / "resolution-brief.md")
+
+    assert "prefer GitHub auto-close via explicit close keywords" in skill
+    assert "manual close is" in skill
+    assert "the fallback, not the default success path" in skill
+    assert "Resolve Auto-Close Linkage" in closeout
+    assert "PR body" in closeout
+    assert "commit body" in closeout
+    assert "auto-close the normal closeout path" in resolve_flow
+    assert "PR body or direct-to-default commit body" in brief
+    assert "preferred closeout carrier" in brief

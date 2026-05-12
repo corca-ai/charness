@@ -49,6 +49,30 @@ The fallback ladder in `issue_runtime.resolve_target` (argument → git remote
 → adapter `default_repo` → `default_org` + cwd) is for the *first* call only.
 A second call without `target` is "reuse intent", not "rediscover from cwd".
 
+## Resolve Auto-Close Linkage
+
+`issue resolve` should prefer GitHub's built-in auto-close path over a manual
+close command whenever the backend can carry close keywords into default-branch
+history.
+
+For PR-based work:
+
+- put explicit close keywords (`Close #1. Close #2.`) in the PR body
+- include the classification-specific closeout summary in that same PR body
+- before merge, preserve the keywords if the repository uses squash, rebase, or
+  edited merge commits
+
+For direct-to-default work:
+
+- put explicit close keywords in the commit body, not only the transcript
+- include enough closeout context in that commit body for later issue readers
+- push first, then verify the issue state from GitHub
+
+Manual `issue_tool.py close-with-comment` is the fallback when auto-close is
+unsupported by the backend or failed after the pushed or merged remote state was
+verified. When manual close is used, say why auto-close was unavailable or
+insufficient.
+
 ## External-Source Identity
 
 When the issue is filed from an external originating context — Slack thread,

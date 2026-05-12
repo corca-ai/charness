@@ -39,3 +39,12 @@ within the same session reuse it; if the prior target becomes unreachable,
 surface `target_unavailable: <full_name>` and stop. Closeout for `issue new`
 must render only from the verified `{repo, number, url}` ledger. See
 `closeout-discipline.md` for the full contract.
+
+For `issue resolve`, make GitHub auto-close the normal closeout path when the
+backend supports it. In PR-based work, put explicit close keywords and the
+classification-specific closeout summary in the PR body so merge closes the
+issue. In direct-to-default work, put the same keywords and summary in the
+commit body before push. If the repository squashes or rewrites merge commits,
+verify the final merge body still contains the close keywords before treating
+the issue as closable. Manual close-with-comment is reserved for cases where
+auto-close is unsupported or did not close after the remote state was verified.

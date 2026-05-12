@@ -3,95 +3,80 @@ Date: 2026-05-12
 
 ## Trigger
 
-- slice: grouped fixes for issues #146, #147, #148, #149, #150, #151,
-  #152, #153, and #154.
-- source: operator direction to finish all issue chunks first, then run
-  Cautilus once at the end.
+- slice: `issue resolve` closeout guidance now prefers GitHub auto-close
+  through commit, PR, or merge bodies before manual close commands.
+- source: operator observation that issue resolution tends not to use
+  auto-closing commit/PR linkage.
 
 ## Validation Goal
 
 - goal: preserve
-- reason: this slice changes routing, prompt, scenario, and adapter surfaces
-  while preserving the whole-repo instruction-surface contract.
+- reason: this slice tightens issue-skill closeout sequencing without changing
+  the existing evaluator scenario registry.
 
 ## Change Intent
 
 - `prompt_affecting_change`
 - `skill_core_change`
-- `adapter_contract_change`
 - `scenario_review_change`
-- changed public skills: `announcement`, `find-skills`, `setup`
-- scenario-registry decision: maintained issue coverage now includes
-  `issue-sibling-search-concept-fixtures`; no additional scenario IDs were
-  needed for announcement/setup because focused deterministic tests and
-  scenario review cover those prompt edits.
+- changed public skills: `issue`
+- scenario-registry decision: no new scenario ID is needed; the existing issue
+  evaluator scenarios cover routing and sibling-search behavior, while this
+  closeout-carrier rule is guarded by deterministic text-contract tests.
 
 ## Prompt Surfaces
 
-- `.agents/cautilus-adapter.yaml` now passes isolated Codex home mode into the
-  local eval runner template.
-- `skills/public/announcement/SKILL.md` requires release drafting to inspect
-  commit bodies, trailers, closing references, and merge descriptions before
-  adjacent docs.
-- `skills/public/announcement/references/draft-shape.md` adds the affordance
-  rewrite pass and canonical-before-alias examples.
-- `skills/public/setup/SKILL.md` seeds announcement-ready commit-body
-  expectations during initial repo setup.
-- `skills/public/setup/references/agent-docs-policy.md` records commit-body
-  guidance for generated agent docs.
-- `skills/public/setup/references/default-surfaces.md` adds release-friendly
-  commit-message expectations to default operating surfaces.
+- `skills/public/issue/SKILL.md` now makes auto-close linkage the preferred
+  issue-resolution closeout path.
+- `skills/public/issue/references/closeout-discipline.md` adds the
+  resolve auto-close linkage contract.
+- `skills/public/issue/references/resolve-flow.md` records PR-body and
+  direct-to-default commit-body close keyword expectations.
+- `skills/public/issue/references/resolution-brief.md` carries the same
+  boundary into PR or commit closeout carriers.
 
 ## Commands Run
 
 - `cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/whole-repo-routing.fixture.json`
-- `cautilus eval evaluate --input .cautilus/runs/20260512T040635596Z-run/eval-observed.json`
-- `python3 scripts/eval_cautilus_scenarios.py --repo-root . --mode held_out --baseline-ref origin/main --output-dir /tmp/charness-cautilus-held-out-check`
-- `python3 scripts/validate_cautilus_scenarios.py --repo-root .`
-- `pytest -q tests/test_cautilus_scenarios.py`
-- broad deterministic gate set: packaging, docs, skills, adapters, surfaces,
-  integrations, support sync, tool update, markdown, secrets, py_compile, and
-  repo pytest suites.
+- `cautilus eval evaluate --input .cautilus/runs/20260512T054024489Z-run/eval-observed.json`
+- `pytest -q tests/quality_gates/test_issue_closeout_discipline.py tests/quality_gates/test_issue_skill.py`
+- `python3 scripts/validate_skills.py --repo-root .`
+- `python3 scripts/validate_packaging.py --repo-root .`
+- `python3 scripts/check_doc_links.py --repo-root .`
 
 ## Regression Proof
 
-- eval test result: whole-repo routing fixture completed with 0 failed
-  observed cases at `.cautilus/runs/20260512T040635596Z-run/`; the summary
-  recommendation is `defer` because each live Codex runner case was blocked by
-  authentication before producing routing JSON.
-- eval evaluate result: 5 blocked / 0 failed / 0 passed. The blocker is
-  `runner_execution_failed`; stderr records `401 Unauthorized: Missing bearer
-  or basic authentication` from the Codex API.
-- deterministic scenario proof passed: 13 Cautilus scenario tests, scenario
-  validation, and held-out eval registry execution all passed.
-- deterministic repo proof passed: 852 pytest tests passed with 4 skipped, and
-  all packaging, docs, skill, adapter, surface, integration, support-sync,
-  tool-update, markdown, secret, and py_compile gates passed.
+- eval test result: whole-repo routing fixture command passed at runner-command
+  level; run artifact `.cautilus/runs/20260512T054024489Z-run/`; summary
+  recommendation is `defer`.
+- eval evaluate result: 5 blocked / 0 failed / 0 passed. Stderr still records
+  `401 Unauthorized: Missing bearer or basic authentication`; Cautilus binary
+  version was `0.15.3`.
+- deterministic issue proof passed: issue closeout-discipline and issue-tool
+  tests passed, including the auto-close carrier contract.
+- skill, packaging, and markdown link validators passed for this slice.
 
 ## Scenario Review
 
-- Issue #151 now has behavior-backed concept assertions in real #146/#148
-  sibling-search fixtures, a maintained registry scenario, and evaluator
-  profile inclusion for the issue skill.
-- Issue #146/#148 workflow routing is backed by deterministic CLI and
-  find-skills recommendation tests rather than a new live prompt scenario.
-- Announcement/setup prompt edits are bounded to release-readiness guidance and
-  commit-context collection; deterministic tests assert the collector behavior
-  that the prompt asks agents to rely on.
-- The Cautilus live runner result is blocked by external authentication, not by
-  a routing mismatch produced by the observed agent output.
+- Existing issue evaluator scenarios remain focused on routing and
+  mental-model sibling search; they are not the right carrier for this
+  commit/PR-body closeout rule.
+- The new deterministic assertion pins the behavior where it lives: the issue
+  skill and closeout references must prefer PR-body or direct-to-default
+  commit-body close keywords before manual close.
+- The live Cautilus runner remains blocked by the Codex isolated-home auth
+  issue tracked upstream as corca-ai/cautilus#35.
 
 ## Outcome
 
-- recommendation: defer full Cautilus acceptance until the Codex eval runner
-  has valid API authentication, but accept the deterministic issue fixes and
-  checked-in scenario coverage.
-- The operator-requested single end-of-slice Cautilus run was performed; its
-  blocker is captured in the run artifact and this proof record.
+- recommendation: accept the deterministic issue-skill closeout tightening,
+  but defer live evaluator acceptance until Cautilus runner auth is fixed.
+- The latest local Cautilus binary was checked and is `0.15.3`; the isolated
+  Codex auth blocker still reproduces.
 
 ## Follow-ups
 
-- Re-run `cautilus eval test` and `cautilus eval evaluate` after runner
-  authentication is available.
-- Use the new `issue-sibling-search-concept-fixtures` scenario as the standing
-  proof path for future #146/#148 sibling-search regressions.
+- Re-run the whole-repo Cautilus eval after corca-ai/cautilus#35 is fixed.
+- Consider a later Charness integration-manifest improvement if `charness
+  update all` should make manual external-binary update boundaries more
+  visible to operators.
