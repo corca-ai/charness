@@ -218,6 +218,7 @@ def test_doctor_missing_manual_tool_is_advisory_exit_zero_for_script_and_cli(tmp
 
     cli_env = os.environ.copy()
     cli_env["PATH"] = "/usr/bin:/bin"
+    cli_env["CHARNESS_RELEASE_PROBE_NO_GH"] = "1"
     cli_doctor = run_script(
         "charness",
         "tool",

@@ -8,8 +8,9 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 
-REPO_COPY_IGNORE = shutil.ignore_patterns(
+REPO_COPY_EXCLUDE_NAMES = (
     ".git",
+    ".cautilus",
     ".pytest_cache",
     ".ruff_cache",
     ".mypy_cache",
@@ -20,6 +21,7 @@ REPO_COPY_IGNORE = shutil.ignore_patterns(
     "node_modules",
     "history",
 )
+REPO_COPY_IGNORE = shutil.ignore_patterns(*REPO_COPY_EXCLUDE_NAMES)
 
 
 def _git_init_and_commit(repo: Path) -> None:

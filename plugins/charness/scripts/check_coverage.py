@@ -49,8 +49,9 @@ TARGET_FILES = (
 )
 MIN_COVERAGE = 0.60
 MIN_FILE_COVERAGE = PER_FILE_MIN_COVERAGE
-COPY_IGNORE = shutil.ignore_patterns(
+COPY_IGNORE_NAMES = (
     ".git",
+    ".cautilus",
     ".pytest_cache",
     ".ruff_cache",
     ".mypy_cache",
@@ -61,6 +62,7 @@ COPY_IGNORE = shutil.ignore_patterns(
     "node_modules",
     "history",
 )
+COPY_IGNORE = shutil.ignore_patterns(*COPY_IGNORE_NAMES)
 
 
 class CoverageError(Exception):

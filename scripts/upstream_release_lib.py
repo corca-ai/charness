@@ -105,13 +105,16 @@ def _probe_github_release_with_gh(repo: str) -> dict[str, Any] | None:
         return None
     if shutil.which("gh") is None:
         return None
-    completed = subprocess.run(
-        ["gh", "api", f"/repos/{repo}/releases/latest"],
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=10,
-    )
+    try:
+        completed = subprocess.run(
+            ["gh", "api", f"/repos/{repo}/releases/latest"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return error_release(repo, status="error", reason="github-gh-timeout", error=str(exc))
     if completed.returncode != 0:
         return None
     try:

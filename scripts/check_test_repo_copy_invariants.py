@@ -17,7 +17,15 @@ ALLOWED_FILES = frozenset(
         "tests/quality_gates/test_repo_copy_invariants.py",
     }
 )
-SKIP_DIR_NAMES = {".charness", ".git", ".venv", ".pytest_cache", "__pycache__", "node_modules"}
+SKIP_DIR_NAMES = {
+    ".cautilus",
+    ".charness",
+    ".git",
+    ".venv",
+    ".pytest_cache",
+    "__pycache__",
+    "node_modules",
+}
 
 IGNORE_PATTERNS_RE = re.compile(r"\bshutil\.ignore_patterns\s*\(")
 COPYTREE_ROOT_RE = re.compile(r"\bshutil\.copytree\s*\(\s*ROOT\b")

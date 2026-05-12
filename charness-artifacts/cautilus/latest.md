@@ -3,81 +3,75 @@ Date: 2026-05-12
 
 ## Trigger
 
-- slice: Charness eval runner now preserves Codex authentication while keeping
-  isolated user config/plugin state.
-- source: Cautilus 0.15.3 fixed its own runner auth inheritance, but Charness
-  still invoked the repo-local `run-local-eval-test.mjs` runner and reproduced
-  `401 Unauthorized: Missing bearer or basic authentication`.
+- slice: Charness runtime-budget and eval-adjacent closeout changed the
+  prompt-affecting quality adapter after the grouped issue fix and release
+  repair work.
+- source: `validate-cautilus-proof` required refreshing
+  `charness-artifacts/cautilus/latest.md` because
+  `.agents/quality-adapter.yaml` changed.
 
 ## Validation Goal
 
-- goal: improve
-- reason: restore live Cautilus whole-repo routing proof for Codex-backed evals
-  under isolated `CODEX_HOME`.
+- goal: preserve
+- reason: confirm the existing whole-repo routing surface still routes through
+  the intended startup `find-skills` bootstrap and durable work skills after
+  quality adapter budget updates.
 
 ## Change Intent
 
 - `prompt_affecting_change`
+- `adapter_contract_change`
 - `scenario_review_change`
-- `eval_runner_change`
 - changed surfaces:
-  - `.agents/cautilus-adapter.yaml`
-  - `scripts/agent-runtime/run-local-eval-test.mjs`
-  - `scripts/agent-runtime/codex-eval-runtime.mjs`
-  - `evals/cautilus/whole-repo-routing.fixture.json`
+  - `.agents/quality-adapter.yaml`
 
 ## Prompt Surfaces
 
-- The Codex eval runner adds `--codex-auth-mode inherit|env|none`; the default
-  inherited mode copies only `auth.json` into an isolated temporary
-  `CODEX_HOME`.
-- Isolated Codex runs pass `--ignore-user-config`, preserving plugin/config
-  isolation while retaining authentication.
-- Route-only evaluator prompts now explicitly separate mandatory startup
-  discovery from the durable work skill.
-- The compact Cautilus fixture includes the minimal Work Phase Map needed to
-  evaluate `impl`, `spec`, and `quality` routing from a compact instruction
-  surface.
+- `.agents/quality-adapter.yaml` increases the local
+  `local-linux-x86_64-36cpu` `check-coverage` runtime budget from 35000ms to
+  45000ms, matching observed expanded coverage-gate runtime without changing
+  skill routing semantics.
+- The Cautilus adapter and whole-repo routing fixture remain unchanged in this
+  slice; this proof checks that the quality-adapter change did not disturb the
+  maintained instruction-surface routing contract.
 
 ## Commands Run
 
-- `pytest -q tests/test_cautilus_scenarios.py tests/quality_gates/test_docs_and_misc.py::test_current_cautilus_guidance_uses_eval_surface`
-- `python3 scripts/validate_cautilus_scenarios.py --repo-root .`
-- `python3 scripts/validate_adapters.py --repo-root .`
 - `cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/whole-repo-routing.fixture.json`
-- `cautilus eval evaluate --input .cautilus/runs/20260512T060610029Z-run/eval-observed.json`
-- `pytest -q`
+- `cautilus eval evaluate --input .cautilus/runs/20260512T082131710Z-run/eval-observed.json`
 
 ## Regression Proof
 
-- live eval run: `.cautilus/runs/20260512T060610029Z-run/`
-- eval test result: runner command passed; recommendation `accept-now`.
+- live eval run: `.cautilus/runs/20260512T082131710Z-run/`
+- eval test result: runner command passed in 96423ms; recommendation
+  `accept-now`.
 - eval evaluate result: 5 passed / 0 failed / 0 blocked.
 - proof class: `declared-eval-runner`, runtime `codex`, target surface
   `dev/repo`, `productProofReady: true`.
-- deterministic proof passed for Codex auth inheritance, isolated config
-  suppression, auth-missing classification, adapter template wiring, and
-  scenario validation.
-- full test suite passed: 929 passed / 4 skipped.
+- routing summary: bootstrap helper `find-skills` matched in 5/5 cases;
+  durable work skills matched `impl` 2/2, `quality` 2/2, and `spec` 1/1.
 
 ## Scenario Review
 
-- The previous Cautilus 0.15.3 run proved the upstream binary was no longer
-  the remaining blocker; Charness had an independent repo-local runner auth
-  gap.
-- The fixed Charness runner preserves auth without importing host config or
-  installed plugin state.
-- The remaining route-only fixture instability was corrected by making
-  bootstrap versus durable work-skill expectations explicit in both the runner
-  prompt and compact fixture surface.
+- The active planner requested scenario review because the quality adapter is a
+  prompt-affecting adapter contract. No maintained scenario registry change is
+  needed: the changed field is a runtime budget, not a route discriminator.
+- The evaluator-required `gather` script change is a doctor/release-probe
+  reliability repair and does not alter gather selection, provider routing, or
+  prompt text consumed by the whole-repo routing fixture.
+- The whole-repo fixture remains the representative proof because the expected
+  behavior is preservation of existing route choices, not a new Cautilus
+  scenario.
 
 ## Outcome
 
 - recommendation: accept.
-- Charness can resolve this class internally; no additional Cautilus change is
-  required for the observed auth failure.
+- Charness can release the grouped issue fixes with the added pytest-temp
+  amplification guard and release-gate reliability repair once deterministic
+  quality gates pass.
 
 ## Follow-ups
 
-- Release this slice so plugin installs receive the fixed eval runner and
-  adapter template.
+- Consider a separate disk-usage preflight for heavy release/pre-push flows if
+  large temp incidents recur; it is not required for this slice because the
+  copy-boundary bug is now guarded directly.

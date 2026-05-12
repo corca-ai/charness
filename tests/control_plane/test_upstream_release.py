@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -244,3 +245,22 @@ def test_probe_github_release_reports_malformed_gh_payload(monkeypatch) -> None:
     assert release["status"] == "error"
     assert release["reason"] == "github-malformed-release"
     assert release["error"] == "gh response was not a JSON object"
+
+
+def test_probe_github_release_reports_gh_timeout_without_crashing(monkeypatch) -> None:
+    def timeout_run(*_args: object, **_kwargs: object) -> None:
+        raise subprocess.TimeoutExpired(["gh", "api"], timeout=10)
+
+    def fail_urlopen(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("timed-out gh release probes should not fall through to urllib")
+
+    monkeypatch.delenv("CHARNESS_RELEASE_PROBE_NO_GH", raising=False)
+    monkeypatch.delenv("CHARNESS_RELEASE_PROBE_FIXTURES", raising=False)
+    monkeypatch.setattr(upstream.shutil, "which", lambda _name: "/usr/bin/gh")
+    monkeypatch.setattr(upstream.subprocess, "run", timeout_run)
+    monkeypatch.setattr(upstream.urllib.request, "urlopen", fail_urlopen)
+
+    release = probe_github_release("example/timeout")
+
+    assert release["status"] == "error"
+    assert release["reason"] == "github-gh-timeout"

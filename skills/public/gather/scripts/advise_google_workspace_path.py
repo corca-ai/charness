@@ -48,6 +48,7 @@ def run_doctor(repo_root: Path) -> dict[str, object]:
             "--tool-id",
             TOOL_ID,
             "--json",
+            "--skip-release-probe",
         ],
         cwd=REPO_ROOT,
         check=False,

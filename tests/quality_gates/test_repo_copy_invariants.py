@@ -1,13 +1,67 @@
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
+from scripts import check_coverage
+from tests import repo_copy
+
 from .support import ROOT, run_script
+
+REQUIRED_VOLATILE_COPY_EXCLUDES = {
+    ".cautilus",
+    ".charness",
+    ".git",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".mypy_cache",
+    "__pycache__",
+    ".coverage",
+    ".venv",
+    "node_modules",
+}
 
 
 def test_test_repo_copy_ignore_lives_in_canonical_module() -> None:
     result = run_script("scripts/check_test_repo_copy_invariants.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
+
+
+def test_repo_copy_excludes_volatile_artifact_roots() -> None:
+    assert REQUIRED_VOLATILE_COPY_EXCLUDES <= set(repo_copy.REPO_COPY_EXCLUDE_NAMES)
+
+
+def test_coverage_copy_excludes_volatile_artifact_roots() -> None:
+    assert REQUIRED_VOLATILE_COPY_EXCLUDES <= set(check_coverage.COPY_IGNORE_NAMES)
+
+
+def test_repo_copy_ignore_drops_cautilus_runtime_payload(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    payload = source / ".cautilus" / "runs" / "demo-run" / "codex-home" / "tmp" / "wrapper"
+    payload.mkdir(parents=True)
+    (payload / "payload.txt").write_text("large runtime payload\n", encoding="utf-8")
+    (source / "README.md").write_text("# source\n", encoding="utf-8")
+
+    target = tmp_path / "target"
+    shutil.copytree(source, target, ignore=repo_copy.REPO_COPY_IGNORE)
+
+    assert (target / "README.md").is_file()
+    assert not (target / ".cautilus").exists()
+
+
+def test_coverage_copy_ignore_drops_cautilus_runtime_payload(tmp_path: Path) -> None:
+    source = tmp_path / "coverage-source"
+    payload = source / ".cautilus" / "runs" / "demo-run" / "codex-home" / "tmp" / "wrapper"
+    payload.mkdir(parents=True)
+    (payload / "payload.txt").write_text("large runtime payload\n", encoding="utf-8")
+    (source / "scripts").mkdir()
+    (source / "scripts" / "demo.py").write_text("print('ok')\n", encoding="utf-8")
+
+    target = tmp_path / "coverage-target"
+    shutil.copytree(source, target, ignore=check_coverage.COPY_IGNORE)
+
+    assert (target / "scripts" / "demo.py").is_file()
+    assert not (target / ".cautilus").exists()
 
 
 def test_check_test_repo_copy_invariants_flags_inline_ignore(tmp_path: Path) -> None:

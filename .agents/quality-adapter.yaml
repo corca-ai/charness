@@ -139,7 +139,7 @@ runtime_budget_profiles:
       inventory-sloc: 1000
       inventory-ubiquitous-language: 1000
       pytest: 140000
-      check-coverage: 35000
+      check-coverage: 45000
       check-duplicates: 11000
       check-markdown: 11000
       check-secrets: 6000
