@@ -3,7 +3,8 @@ Date: 2026-05-12
 
 ## Scope
 
-Advanced `charness` toward release `0.5.24` through the repo-owned release helper.
+Advanced `charness` to public release `0.5.24` through the repo-owned release
+helper, follow-up release-gate repair, tag push, and GitHub release creation.
 
 ## Current Version
 
@@ -14,20 +15,35 @@ Advanced `charness` toward release `0.5.24` through the repo-owned release helpe
 
 ## Verification
 
-- `./scripts/run-quality.sh` passed before publish.
+- `./scripts/run-quality.sh --read-only` passed in the pre-push hook before
+  publish: 55 passed / 0 failed.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
-- one git push carried both the release branch update and the tag from the release helper.
+- `cautilus eval test` produced accept-now proof in
+  `.cautilus/runs/20260512T082131710Z-run/`; `cautilus eval evaluate` reported
+  5 passed / 0 failed / 0 blocked.
+- one git push carried the release branch update and tag `v0.5.24`.
+- `gh release view v0.5.24 --json tagName,url,isDraft,isPrerelease,publishedAt,targetCommitish`
+  verified the public GitHub release record.
+- GitHub auto-closed issues #146-#154 after the release train reached `main`.
 
 ## Release State
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: not created by this helper run
-- public release surface verification: not checked by this helper
+- GitHub release record: created
+- public release surface verification: checked
+- tag commit: `be81b0e2b2e46ebcbd37aad1b9d0ae427b1bd2df`
+- release URL: `https://github.com/corca-ai/charness/releases/tag/v0.5.24`
 
 ## Public Release Verification
 
-- This slice still requires configured public/real-host verification before the release is fully closed.
+- `gh release view v0.5.24` reports `isDraft: false`,
+  `isPrerelease: false`, `publishedAt: 2026-05-12T08:28:44Z`, and
+  `targetCommitish: main`.
+- `git rev-list -n1 v0.5.24` resolves to
+  `be81b0e2b2e46ebcbd37aad1b9d0ae427b1bd2df`, matching `HEAD` at publish time.
+- `gh issue list --state open --limit 100` returned no open issues after
+  GitHub processed the auto-close references.
 
 ## Real-Host Proof
 
