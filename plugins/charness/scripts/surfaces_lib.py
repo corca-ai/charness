@@ -136,6 +136,20 @@ def path_matches_patterns(path: str, patterns: list[str]) -> bool:
     return any(fnmatch.fnmatch(normalized, pattern) for pattern in patterns)
 
 
+def resolve_trigger_surfaces(
+    manifest: dict[str, Any], configured_ids: list[str]
+) -> dict[str, list[str]]:
+    declared_ids = {surface["surface_id"] for surface in manifest["surfaces"]}
+    declared: list[str] = []
+    unresolved: list[str] = []
+    for surface_id in configured_ids:
+        if surface_id in declared_ids:
+            declared.append(surface_id)
+        else:
+            unresolved.append(surface_id)
+    return {"declared": declared, "unresolved": unresolved}
+
+
 def match_surfaces(manifest: dict[str, Any], changed_paths: list[str]) -> dict[str, Any]:
     normalized_paths = dedupe_preserve_order([normalize_repo_path(path) for path in changed_paths])
     matched_surfaces: list[dict[str, Any]] = []

@@ -39,6 +39,7 @@ _scripts_surfaces_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
 load_surfaces = _scripts_surfaces_lib_module.load_surfaces
 match_surfaces = _scripts_surfaces_lib_module.match_surfaces
+resolve_trigger_surfaces = _scripts_surfaces_lib_module.resolve_trigger_surfaces
 SurfaceError = _scripts_surfaces_lib_module.SurfaceError
 
 
@@ -93,6 +94,24 @@ def surface_error_payload(error: str) -> dict[str, object]:
     }
 
 
+def broken_trigger_config_payload(
+    unresolved: list[str], manifest_path: str
+) -> dict[str, object]:
+    return {
+        "triggered": False,
+        "configuration_status": "broken",
+        "unresolved_trigger_surfaces": unresolved,
+        "surfaces_manifest_path": manifest_path,
+        "reason": (
+            "auto_session_trigger_surfaces references surface ids that are not declared in the surfaces manifest."
+        ),
+        "remediation": (
+            "Fix the typo in auto_session_trigger_surfaces, declare the missing surface id in .agents/surfaces.json, "
+            "or remove the unresolved entry. Unresolved trigger ids must not silently fall through to a normal non-match."
+        ),
+    }
+
+
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
@@ -100,18 +119,34 @@ def main() -> int:
     trigger_surfaces = adapter["data"].get("auto_session_trigger_surfaces", [])
     trigger_globs = adapter["data"].get("auto_session_trigger_path_globs", [])
     if not trigger_surfaces and not trigger_globs:
-        print(json.dumps(no_config_payload(args.paths or [], adapter.get("field_state", {})), ensure_ascii=False, indent=2))
+        no_config_paths = args.paths if args.paths is not None else []
+        print(json.dumps(no_config_payload(no_config_paths, adapter.get("field_state", {})), ensure_ascii=False, indent=2))
         return 0
 
-    changed_paths = args.paths if args.paths else collect_changed_paths(repo_root)
     surfaces_manifest = load_surfaces(repo_root)
     assert surfaces_manifest is not None
+    resolved_trigger_surfaces = resolve_trigger_surfaces(surfaces_manifest, trigger_surfaces)
+    if resolved_trigger_surfaces["unresolved"]:
+        print(
+            json.dumps(
+                broken_trigger_config_payload(
+                    resolved_trigger_surfaces["unresolved"], surfaces_manifest["path"]
+                ),
+                ensure_ascii=False,
+                indent=2,
+            ),
+            file=sys.stderr,
+        )
+        return 1
+    declared_trigger_surfaces = set(resolved_trigger_surfaces["declared"])
+
+    changed_paths = args.paths if args.paths is not None else collect_changed_paths(repo_root)
     matched = match_surfaces(surfaces_manifest, changed_paths)
 
     surface_hits = [
         surface["surface_id"]
         for surface in matched["matched_surfaces"]
-        if surface["surface_id"] in trigger_surfaces
+        if surface["surface_id"] in declared_trigger_surfaces
     ]
     path_hits = [path for path in changed_paths if matches_any(path, trigger_globs)]
     triggered = bool(surface_hits or path_hits)

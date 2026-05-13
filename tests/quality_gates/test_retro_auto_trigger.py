@@ -97,6 +97,75 @@ def test_retro_auto_trigger_distinguishes_intentional_empty_trigger_config(tmp_p
     assert "remediation" not in payload
 
 
+def test_retro_auto_trigger_clean_changeset_does_not_trigger() -> None:
+    result = run_script(
+        "skills/public/retro/scripts/check_auto_trigger.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["triggered"] is False
+    assert payload["changed_paths"] == []
+    assert payload["surface_hits"] == []
+    assert payload["path_hits"] == []
+
+
+def test_retro_auto_trigger_fails_loud_on_unresolved_surface_id(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "retro-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: consumer",
+                "output_dir: charness-artifacts/retro",
+                "auto_session_trigger_surfaces:",
+                "  - release-packagng",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (repo / ".agents" / "surfaces.json").write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "surfaces": [
+                    {
+                        "surface_id": "release-packaging",
+                        "description": "release packaging surface",
+                        "source_paths": ["scripts/release/**"],
+                        "derived_paths": ["dist/**"],
+                        "sync_commands": [],
+                        "verify_commands": [],
+                        "notes": [],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/retro/scripts/check_auto_trigger.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "scripts/release/verify-public-release.mjs",
+    )
+
+    assert result.returncode == 1
+    assert "Traceback" not in result.stderr
+    payload = json.loads(result.stderr)
+    assert payload["triggered"] is False
+    assert payload["configuration_status"] == "broken"
+    assert payload["unresolved_trigger_surfaces"] == ["release-packagng"]
+    assert "auto_session_trigger_surfaces" in payload["reason"]
+    assert "Fix the typo" in payload["remediation"]
+
+
 def test_retro_auto_trigger_reports_missing_surfaces_remediation_when_configured(
     tmp_path: Path,
 ) -> None:

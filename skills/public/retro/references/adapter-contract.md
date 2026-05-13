@@ -76,9 +76,13 @@ auto_session_trigger_path_globs: []
 - `metrics_commands` are optional. If they are absent, weekly mode may still
   run narratively.
 - `auto_session_trigger_surfaces` are optional changed-surface ids that should
-  trigger a short `session` retro after closeout.
+  trigger a short `session` retro after closeout. Each id must resolve to a
+  declared `surface_id` in `.agents/surfaces.json`; an unresolved id is a
+  broken adapter contract, not a normal non-match. The charness-maintained
+  contract lives at `docs/conventions/surface-driven-adapter-triggers.md`.
 - `auto_session_trigger_path_globs` are optional repo-relative glob patterns for
-  the same purpose when surface ids alone are too coarse.
+  the same purpose when surface ids alone are too coarse. Prefer surface ids
+  for shared seams; reserve raw globs for narrow repo-specific exceptions.
 
 ## Design Rules
 

@@ -79,6 +79,14 @@ The adapter can declare that checklist through:
 Use `<repo-root>/scripts/check_real_host_proof.py` to decide whether the current slice hit
 those seams.
 
+Each `real_host_required_surfaces` id must resolve to a declared `surface_id`
+in `.agents/surfaces.json`; an unresolved id is a broken adapter contract and
+the proof check exits non-zero with a `configuration_status: "broken"`
+payload, not a silent `required: false`. Prefer surface ids for shared seams;
+reserve `real_host_required_path_globs` for narrow repo-specific exceptions.
+The charness-maintained contract and the 4-fixture shape every trigger
+consumer ships live at `docs/conventions/surface-driven-adapter-triggers.md`.
+
 ## Drift Rule
 
 If the generated surfaces disagree with the packaging manifest version, treat
