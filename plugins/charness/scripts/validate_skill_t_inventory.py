@@ -20,6 +20,11 @@ import json
 from pathlib import Path
 from typing import Any
 
+from runtime_bootstrap import import_repo_module
+
+_skill_iter_module = import_repo_module(__file__, "scripts.skill_iter")
+iter_skill_ids = _skill_iter_module.iter_skill_ids
+
 REQUIRED_TOP_KEYS = {"version", "kind", "tier_c_marker", "skills"}
 REQUIRED_ROW_KEYS = {
     "skill_id",
@@ -40,17 +45,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def _list_public_skill_ids(repo_root: Path) -> list[str]:
-    public = repo_root / "skills" / "public"
-    if not public.is_dir():
-        return []
-    ids: list[str] = []
-    for entry in sorted(public.iterdir()):
-        if not entry.is_dir():
-            continue
-        if not (entry / "SKILL.md").is_file():
-            continue
-        ids.append(entry.name)
-    return ids
+    return iter_skill_ids(repo_root / "skills" / "public")
 
 
 def _check_top_shape(payload: Any, errors: list[str]) -> bool:

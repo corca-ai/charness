@@ -36,6 +36,8 @@ import re
 from pathlib import Path
 from typing import Any, Iterable
 
+from scripts.skill_iter import iter_skill_ids
+
 ANCHORS: tuple[str, ...] = (
     "Jackson",
     "Raskin",
@@ -57,17 +59,7 @@ PUBLIC_SKILLS_RELATIVE = "skills/public"
 
 
 def list_public_skill_ids(repo_root: Path) -> list[str]:
-    public = repo_root / PUBLIC_SKILLS_RELATIVE
-    if not public.is_dir():
-        return []
-    ids: list[str] = []
-    for entry in sorted(public.iterdir()):
-        if not entry.is_dir():
-            continue
-        if not (entry / "SKILL.md").is_file():
-            continue
-        ids.append(entry.name)
-    return ids
+    return iter_skill_ids(repo_root / PUBLIC_SKILLS_RELATIVE)
 
 
 def _build_skill_id_patterns(skill_id: str) -> list[re.Pattern[str]]:

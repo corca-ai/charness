@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from scripts.skill_iter import iter_skill_ids
+
 VALID_TIERS = ("smoke-only", "hitl-recommended", "evaluator-required")
 VALID_ADAPTER_REQUIREMENTS = ("required", "adapter-free")
 VALID_FALLBACK_POLICIES = ("allow", "visible", "block")
@@ -16,14 +18,7 @@ class ValidationError(Exception):
 
 
 def public_skill_ids(repo_root: Path) -> list[str]:
-    skills_root = repo_root / "skills" / "public"
-    if not skills_root.exists():
-        return []
-    return sorted(
-        path.name
-        for path in skills_root.iterdir()
-        if path.is_dir() and path.name != "generated" and (path / "SKILL.md").is_file()
-    )
+    return iter_skill_ids(repo_root / "skills" / "public", exclude=("generated",))
 
 
 def load_policy(repo_root: Path) -> dict[str, object]:
