@@ -93,7 +93,7 @@ def test_validate_cautilus_proof_requires_ab_compare_for_improve_claim(tmp_path:
                 "",
                 "## Commands Run",
                 "",
-                "- `cautilus eval test --repo-root . --adapter-name self-dogfood-eval`",
+                "- `cautilus evaluate fixture --repo-root . --adapter-name self-dogfood-eval`",
                 "",
                 "## Regression Proof",
                 "",
@@ -227,7 +227,7 @@ def test_validate_cautilus_proof_requires_eval_result_not_generic_passed_line(tm
                 "",
                 "## Commands Run",
                 "",
-                "- `cautilus eval test --repo-root . --adapter-name self-dogfood-eval`",
+                "- `cautilus evaluate fixture --repo-root . --adapter-name self-dogfood-eval`",
                 "",
                 "## Regression Proof",
                 "",
@@ -258,7 +258,7 @@ def test_validate_cautilus_proof_requires_eval_result_not_generic_passed_line(tm
         "charness-artifacts/cautilus/latest.md",
     )
     assert result.returncode == 1
-    assert "must record the eval test result" in result.stderr
+    assert "must record an eval result" in result.stderr
 
 
 def test_validate_cautilus_proof_accepts_preserve_claim(tmp_path: Path) -> None:
@@ -296,7 +296,7 @@ def test_validate_cautilus_proof_accepts_preserve_claim(tmp_path: Path) -> None:
                 "",
                 "## Commands Run",
                 "",
-                "- `cautilus eval test --repo-root . --adapter-name self-dogfood-eval`",
+                "- `cautilus evaluate fixture --repo-root . --adapter-name self-dogfood-eval`",
                 "",
                 "## Regression Proof",
                 "",
@@ -364,7 +364,7 @@ def test_validate_cautilus_proof_rejects_legacy_route_only_fixture_as_behavior_p
                 "",
                 "## Commands Run",
                 "",
-                "- `cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/whole-repo-routing.fixture.json`",
+                "- `cautilus evaluate fixture --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/whole-repo-routing.fixture.json`",
                 "",
                 "## Regression Proof",
                 "",

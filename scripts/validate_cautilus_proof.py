@@ -29,11 +29,13 @@ GOAL_PREFIX = "- goal: "
 VALID_GOALS = {"preserve", "improve"}
 A_B_REQUIRED_SNIPPETS = (
     "baseline_ref:",
-    "cautilus workspace prepare-compare",
-    "cautilus eval evaluate",
+    "cautilus evaluate comparison prepare",
+    "cautilus evaluate observation",
 )
 REGRESSION_COMMAND_SNIPPETS = (
-    "cautilus eval test",
+    "cautilus evaluate fixture",
+    "cautilus evaluate observation",
+    "cautilus evaluate skill-experiment",
     "npm run dogfood:self",
     "scripts/run_cautilus_eval.py",
 )
@@ -114,7 +116,7 @@ def validate_commands_run(lines: list[str], goal: str) -> None:
         )
     if not any(any(snippet in line for snippet in REGRESSION_COMMAND_SNIPPETS) for line in command_lines):
         raise ValidationError(
-            "`## Commands Run` must include `cautilus eval test` or a repo-owned dogfood wrapper"
+            "`## Commands Run` must include `cautilus evaluate fixture/observation/skill-experiment` or a repo-owned dogfood wrapper"
         )
     if goal != "improve":
         return
@@ -167,8 +169,14 @@ def validate_behavior_source(lines: list[str]) -> None:
 
 def validate_regression_proof(lines: list[str]) -> None:
     regression_lines = section_lines(lines, "## Regression Proof")
-    if not any("eval test" in line and any(token in line for token in ("passed", "accept-now", "0 failed")) for line in regression_lines):
-        raise ValidationError("`## Regression Proof` must record the eval test result")
+    eval_verbs = ("evaluate fixture", "evaluate observation", "evaluate skill-experiment", "eval result", "eval test")
+    verdict_tokens = ("passed", "accept-now", "0 failed")
+    if not any(
+        any(verb in line for verb in eval_verbs)
+        and any(token in line for token in verdict_tokens)
+        for line in regression_lines
+    ):
+        raise ValidationError("`## Regression Proof` must record an eval result (`evaluate fixture/observation/skill-experiment`) with a `passed`/`accept-now`/`0 failed` verdict")
 
 
 def validate_scenario_review(lines: list[str], planner: dict[str, object]) -> None:

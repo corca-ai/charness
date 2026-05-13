@@ -606,14 +606,16 @@ def test_current_cautilus_guidance_uses_eval_surface() -> None:
     public_skill_validation = (ROOT / "docs" / "public-skill-validation.md").read_text(encoding="utf-8")
     adapter_text = (ROOT / ".agents" / "cautilus-adapter.yaml").read_text(encoding="utf-8")
 
-    assert "cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>" in impl_text
-    assert "cautilus eval evaluate --input <observed.json>" in impl_text
-    assert "cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>" in public_skill_validation
+    assert "cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>" in impl_text
+    assert "cautilus evaluate observation --input <observed.json>" in impl_text
+    assert "cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>" in public_skill_validation
     assert "eval_test_command_templates:" in adapter_text
     assert "evaluation_input_default: evals/cautilus/whole-repo-routing.fixture.json" in adapter_text
     assert "--codex-auth-mode inherit" in adapter_text
     assert "cautilus instruction-surface test --repo-root ." not in impl_text
     assert "cautilus instruction-surface test --repo-root ." not in public_skill_validation
+    assert "cautilus eval test --repo-root ." not in impl_text
+    assert "cautilus eval test --repo-root ." not in public_skill_validation
 
 
 def test_cautilus_guidance_does_not_use_generic_review_triggers() -> None:

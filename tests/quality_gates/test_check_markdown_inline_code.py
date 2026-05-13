@@ -17,7 +17,7 @@ def test_check_markdown_inline_code_passes_when_inline_code_is_single_line(tmp_p
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "doc.md").write_text(
-        "# Title\n\nUse `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` for proof.\n",
+        "# Title\n\nUse `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>` for proof.\n",
         encoding="utf-8",
     )
     code, stdout, _ = _run(repo, "doc.md")

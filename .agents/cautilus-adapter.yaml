@@ -3,9 +3,12 @@ repo: charness
 run_mode: ask
 # Eval-only re-enabled per corca-ai/cautilus#32. The checked-in default fixture
 # is a legacy route-only sentinel, not routine live closeout proof. Other Cautilus surfaces
-# (claim discovery, optimize, review-learning, eval live, broader Agent
+# (claim discovery, optimize, review-learning, evaluate live, broader Agent
 # orchestration) are still under active contract rewrite; this adapter
-# only opts into `cautilus eval test` / `cautilus eval evaluate`.
+# only opts into `cautilus evaluate fixture` / `cautilus evaluate observation` /
+# `cautilus evaluate skill-experiment` (cautilus 0.15.4 renamed the legacy
+# `eval test/evaluate` topic; `skill-experiment` is the subagent-spawning
+# skill-clone evaluator).
 evaluation_surfaces:
   - deterministic Cautilus adapter and fixture contract validation
   - on-demand log-backed behavior proof
@@ -17,7 +20,7 @@ preflight_commands:
   - python3 scripts/validate_adapters.py --repo-root .
   - python3 scripts/validate_public_skill_validation.py --repo-root .
   - python3 scripts/validate_cautilus_scenarios.py --repo-root .
-eval_test_command: log-backed fixture required; invoke via scripts/run_cautilus_eval.py with --justification-log <path-to-failing-log>
+eval_test_command: log-backed fixture required; invoke via scripts/run_cautilus_eval.py --mode fixture (or observation/skill-experiment) with --justification-log <path-to-failing-log>
 prompt_affecting_patterns:
   - AGENTS.md
   - .agents/*-adapter.yaml
@@ -45,8 +48,11 @@ truth_surface_patterns:
 cross_repo_issue_patterns:
   - skills/public/narrative/references/cross-repo-issue-shaping.md
 evaluation_input_default: evals/cautilus/whole-repo-routing.fixture.json
+# Field name is historical (kept for adapter schema stability). Values use the
+# cautilus 0.15.4 `cautilus evaluate fixture` surface, not the removed
+# `cautilus eval test` topic.
 eval_test_command_templates:
-  - python3 scripts/run_cautilus_eval.py --mode test --justification-log {justification_log} -- --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture {eval_cases_file}
+  - python3 scripts/run_cautilus_eval.py --mode fixture --justification-log <path-to-failing-log> -- --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture {eval_cases_file}
   - node ./scripts/agent-runtime/run-local-eval-test.mjs --repo-root . --workspace {candidate_repo} --cases-file {eval_cases_file} --output-file {eval_observed_file} --artifact-dir {output_dir}/eval-test --backend {backend} --sandbox read-only --timeout-ms 180000 --codex-model gpt-5.4-mini --codex-reasoning-effort low --codex-home-mode isolated --codex-auth-mode inherit --claude-permission-mode dontAsk
 held_out_command_templates:
   - python3 scripts/eval_cautilus_scenarios.py --repo-root . --mode held_out --profile {profile} --baseline-ref {baseline_ref} --samples {held_out_samples} --output-dir charness-artifacts/cautilus/held-out

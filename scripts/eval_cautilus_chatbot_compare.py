@@ -230,8 +230,9 @@ def resolve_repo_pair(
     result = subprocess.run(
         [
             "cautilus",
-            "workspace",
-            "prepare-compare",
+            "evaluate",
+            "comparison",
+            "prepare",
             "--repo-root",
             str(repo_root),
             "--baseline-ref",
@@ -246,21 +247,21 @@ def resolve_repo_pair(
     )
     if result.returncode != 0:
         raise EvalError(
-            "workspace prepare-compare failed: "
+            "evaluate comparison prepare failed: "
             f"{result.stderr.strip() or result.stdout.strip() or 'no output'}"
         )
     try:
         payload = json.loads(result.stdout)
     except json.JSONDecodeError as exc:
-        raise EvalError("workspace prepare-compare did not emit valid JSON") from exc
+        raise EvalError("evaluate comparison prepare did not emit valid JSON") from exc
     baseline_payload = payload.get("baseline")
     candidate_payload = payload.get("candidate")
     if not isinstance(baseline_payload, dict) or not isinstance(candidate_payload, dict):
-        raise EvalError("workspace prepare-compare output is missing baseline/candidate payloads")
+        raise EvalError("evaluate comparison prepare output is missing baseline/candidate payloads")
     baseline_path = baseline_payload.get("path")
     candidate_path = candidate_payload.get("path")
     if not isinstance(baseline_path, str) or not isinstance(candidate_path, str):
-        raise EvalError("workspace prepare-compare output is missing compare paths")
+        raise EvalError("evaluate comparison prepare output is missing compare paths")
     return Path(baseline_path).resolve(), Path(candidate_path).resolve()
 
 

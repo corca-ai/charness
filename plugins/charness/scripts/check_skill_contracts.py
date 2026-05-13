@@ -95,8 +95,8 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "when the automatable move is already clear and repo-owned, implement it in",
         "If you stop short of an obvious repo-owned deterministic gate",
         "Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior",
-        "Before invoking `cautilus eval test/evaluate`, consult the planner-consult contract",
-        "route the call through the repo-owned wrapper instead of bare `cautilus eval`",
+        "Before invoking any `cautilus evaluate ...` subcommand, consult the planner-consult contract",
+        "route the call through the repo-owned wrapper instead of bare `cautilus evaluate`",
     ),
     "skills/public/setup/SKILL.md": (
         "normalize",

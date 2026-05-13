@@ -17,7 +17,7 @@ from pathlib import Path
 text = Path("docs/readme-proof.md").read_text(encoding="utf-8")
 required = [
     "# README Proof Ledger",
-    "cautilus claim discover",
+    "cautilus discover claims",
     "cautilus.claim_proof_plan.v1",
     "Claim Ledger",
     "README-INIT-ROUTE",

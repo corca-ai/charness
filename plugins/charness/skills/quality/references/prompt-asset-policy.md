@@ -42,7 +42,7 @@ behavioral proof:
   trigger; deterministic gates and checked proof-artifact validation come first
 - for `preserve` claims backed by a real failing input, keep a regression-proof
   record anchored by
-  `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` or a
+  `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>` or a
   repo-owned dogfood wrapper when the adapter permits Cautilus execution
 - for high-leverage prompt changes, add a short scenario-review note and prefer
   a log-backed fixture over pretending route-only preservation answered the
@@ -51,5 +51,5 @@ behavioral proof:
   only if you are about to add, remove, or update maintained scenario-registry
   coverage
 - for `improve` claims, additionally record a baseline compare path with
-  `cautilus workspace prepare-compare` and
-  `cautilus eval evaluate --input <observed.json>`
+  `cautilus evaluate comparison prepare` and
+  `cautilus evaluate observation --input <observed.json>`

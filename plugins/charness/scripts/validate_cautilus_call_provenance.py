@@ -4,7 +4,7 @@
 in `charness-artifacts/cautilus/latest.md` or in the recent git log.
 
 Post-hoc layer of the script-silence layer-3 structural guard: even if the
-operator bypasses `scripts/run_cautilus_eval.py` and invokes `cautilus eval`
+operator bypasses `scripts/run_cautilus_eval.py` and invokes `cautilus evaluate`
 directly, the resulting run directory must leave a structured provenance
 trail. The validator accepts either:
 

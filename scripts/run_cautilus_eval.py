@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-"""Repo-owned wrapper for `cautilus eval test/evaluate`.
+"""Repo-owned wrapper for `cautilus evaluate fixture/observation/skill-experiment`.
 
 Enforces the planner-consult contract from
-`skills/public/quality/references/cautilus-on-demand.md`: every cautilus eval
+`skills/public/quality/references/cautilus-on-demand.md`: every cautilus evaluate
 invocation runs `scripts/plan_cautilus_proof.py` first and refuses with exit
 code 2 when the planner says the call is not warranted.
 
@@ -13,7 +13,7 @@ justification-log path is the operator-supplied override: it must exist as a
 file of at least 32 bytes containing a `- source-kind: <kind>` line whose
 kind is one of `failing-prompt`, `transcript`, `operator-log`, `issue-log`,
 or `regression-log` (mirroring the `## Behavior Source` shape in
-`charness-artifacts/cautilus/latest.md`). Otherwise forwards to `cautilus eval
+`charness-artifacts/cautilus/latest.md`). Otherwise forwards to `cautilus evaluate
 <mode>` with any extra args after `--`.
 """
 
@@ -34,7 +34,7 @@ _surfaces_lib = import_repo_module(__file__, "scripts.surfaces_lib")
 collect_changed_paths = _surfaces_lib.collect_changed_paths
 normalize_repo_path = _surfaces_lib.normalize_repo_path
 
-VALID_MODES = ("test", "evaluate")
+VALID_MODES = ("fixture", "observation", "skill-experiment")
 CANONICAL_REFERENCE_PATH = "skills/public/quality/references/cautilus-on-demand.md"
 PLUGIN_REFERENCE_PATH = "skills/quality/references/cautilus-on-demand.md"
 JUSTIFICATION_LOG_MIN_BYTES = 32
@@ -57,14 +57,14 @@ SOURCE_KIND_LINE_RE = re.compile(
 
 def parse_args(argv: list[str] | None = None) -> tuple[argparse.Namespace, list[str]]:
     parser = argparse.ArgumentParser(
-        description="Repo-owned wrapper for cautilus eval test/evaluate.",
+        description="Repo-owned wrapper for cautilus evaluate fixture/observation/skill-experiment.",
     )
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument(
         "--mode",
         required=True,
         choices=VALID_MODES,
-        help="cautilus eval subcommand to invoke",
+        help="cautilus evaluate subcommand to invoke",
     )
     parser.add_argument(
         "--justification-log",
@@ -173,7 +173,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if remaining and remaining[0] == "--":
         remaining = remaining[1:]
-    cmd = [args.cautilus_bin, "eval", args.mode, *remaining]
+    cmd = [args.cautilus_bin, "evaluate", args.mode, *remaining]
 
     if args.dry_run:
         print(f"would run: {' '.join(cmd)}")

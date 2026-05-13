@@ -1,7 +1,7 @@
 """Regression tests for scripts/run_cautilus_eval.py.
 
 The wrapper enforces the planner-consult contract from
-skills/public/quality/references/cautilus-on-demand.md: bare `cautilus eval`
+skills/public/quality/references/cautilus-on-demand.md: bare `cautilus evaluate`
 must not run without either (a) a non-`none` planner next_action or (b) an
 operator-supplied --justification-log pointing at a real failing-log file.
 """
@@ -17,7 +17,7 @@ SCRIPT = ROOT / "scripts" / "run_cautilus_eval.py"
 
 
 def _run(*extra: str, justification_log: Path | None = None) -> subprocess.CompletedProcess[str]:
-    cmd = [sys.executable, str(SCRIPT), "--mode", "test", "--dry-run"]
+    cmd = [sys.executable, str(SCRIPT), "--mode", "fixture", "--dry-run"]
     if justification_log is not None:
         cmd += ["--justification-log", str(justification_log)]
     cmd += list(extra)
@@ -99,7 +99,7 @@ def test_forwards_when_justification_log_has_marker_and_minimum_size(tmp_path: P
     result = _run("--paths", "--", "--fixture", "demo.json", justification_log=log)
     assert result.returncode == 0, result.stderr
     assert "would run:" in result.stdout
-    assert "cautilus eval test" in result.stdout
+    assert "cautilus evaluate fixture" in result.stdout
     assert "--fixture demo.json" in result.stdout
 
 
@@ -111,5 +111,5 @@ def test_strips_double_dash_separator(tmp_path: Path) -> None:
     )
     result = _run("--paths", "--", "--alpha", "beta", justification_log=log)
     assert result.returncode == 0, result.stderr
-    assert "cautilus eval test --alpha beta" in result.stdout
+    assert "cautilus evaluate fixture --alpha beta" in result.stdout
     assert " -- " not in result.stdout

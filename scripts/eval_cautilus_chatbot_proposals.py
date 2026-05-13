@@ -25,17 +25,17 @@ class EvalError(Exception):
 
 def _require_string_list(value: object, label: str) -> list[str]:
     if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-        raise EvalError(f"cautilus scenario propose output must include string-list `{label}`")
+        raise EvalError(f"cautilus discover scenarios propose output must include string-list `{label}`")
     return list(value)
 
 
 def _require_string_list_mapping(value: object, label: str) -> dict[str, list[str]]:
     if not isinstance(value, dict):
-        raise EvalError(f"cautilus scenario propose output must include object `{label}`")
+        raise EvalError(f"cautilus discover scenarios propose output must include object `{label}`")
     normalized: dict[str, list[str]] = {}
     for key, item in value.items():
         if not isinstance(key, str):
-            raise EvalError(f"cautilus scenario propose output must use string keys in `{label}`")
+            raise EvalError(f"cautilus discover scenarios propose output must use string keys in `{label}`")
         normalized[key] = _require_string_list(item, f"{label}.{key}")
     return normalized
 
@@ -59,7 +59,7 @@ def load_input_packet(path: Path) -> dict[str, object]:
 
 def run_scenario_propose(repo_root: Path, input_path: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        ["cautilus", "scenario", "propose", "--input", str(input_path)],
+        ["cautilus", "discover", "scenarios", "propose", "--input", str(input_path)],
         cwd=repo_root,
         check=False,
         capture_output=True,
@@ -70,23 +70,23 @@ def run_scenario_propose(repo_root: Path, input_path: Path) -> subprocess.Comple
 def load_proposals(result: subprocess.CompletedProcess[str], input_path: Path) -> dict[str, object]:
     if result.returncode != 0:
         raise EvalError(
-            "cautilus scenario propose failed for "
+            "cautilus discover scenarios propose failed for "
             f"`{input_path}`: {result.stderr.strip() or result.stdout.strip() or 'no output'}"
         )
     try:
         data = json.loads(result.stdout)
     except json.JSONDecodeError as exc:
-        raise EvalError("cautilus scenario propose did not emit valid JSON") from exc
+        raise EvalError("cautilus discover scenarios propose did not emit valid JSON") from exc
     if not isinstance(data, dict):
-        raise EvalError("cautilus scenario propose output must be a JSON object")
+        raise EvalError("cautilus discover scenarios propose output must be a JSON object")
     if data.get("schemaVersion") != "cautilus.scenario_proposals.v1":
-        raise EvalError("cautilus scenario propose output must use `cautilus.scenario_proposals.v1`")
+        raise EvalError("cautilus discover scenarios propose output must use `cautilus.scenario_proposals.v1`")
     proposals = data.get("proposals")
     if not isinstance(proposals, list):
-        raise EvalError("cautilus scenario propose output must include list `proposals`")
+        raise EvalError("cautilus discover scenarios propose output must include list `proposals`")
     attention_view = data.get("attentionView")
     if not isinstance(attention_view, dict):
-        raise EvalError("cautilus scenario propose output must include object `attentionView`")
+        raise EvalError("cautilus discover scenarios propose output must include object `attentionView`")
     _require_string_list(attention_view.get("proposalKeys"), "attentionView.proposalKeys")
     _require_string_list_mapping(
         attention_view.get("reasonCodesByProposalKey"),
@@ -94,7 +94,7 @@ def load_proposals(result: subprocess.CompletedProcess[str], input_path: Path) -
     )
     proposal_telemetry = data.get("proposalTelemetry")
     if not isinstance(proposal_telemetry, dict):
-        raise EvalError("cautilus scenario propose output must include object `proposalTelemetry`")
+        raise EvalError("cautilus discover scenarios propose output must include object `proposalTelemetry`")
     return data
 
 
@@ -159,7 +159,7 @@ def build_summary(
         "families": proposals_packet.get("families", []),
         "tag_counts": tag_counts,
         "command": {
-            "argv": ["cautilus", "scenario", "propose", "--input", str(input_path.relative_to(repo_root))],
+            "argv": ["cautilus", "discover", "scenarios", "propose", "--input", str(input_path.relative_to(repo_root))],
             "exit_code": command.returncode,
             "stderr": sanitize_diagnostic_text(command.stderr.strip(), repo_root=repo_root),
         },

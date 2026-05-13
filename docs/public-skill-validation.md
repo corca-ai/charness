@@ -71,15 +71,15 @@ Default proof split:
   archived sentinels, but they are not routine live Cautilus closeout proof
 - `log-backed regression proof`: when a slice records a real behavior failure
   or operator log, prove the same input now behaves correctly with
-  `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` or a
+  `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>` or a
   repo-owned dogfood wrapper when the adapter permits Cautilus execution
 - `scenario review`: inspect one or two representative scenarios when the
   change is high-leverage enough that "not broken" is weaker than "did the
   intended reader or reasoning behavior actually improve?"
 - `improve`: when the slice claims behavioral improvement rather than only
   preservation, also record a baseline compare path with
-  `cautilus workspace prepare-compare` plus
-  `cautilus eval evaluate --input <observed.json>`
+  `cautilus evaluate comparison prepare` plus
+  `cautilus evaluate observation --input <observed.json>`
 
 The checked-in artifact should say whether the slice claims `preserve` or
 `improve`, list the touched prompt surfaces, record the active intent tags,

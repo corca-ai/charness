@@ -116,10 +116,10 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
    - generic review or closeout wording must not silently launch Cautilus
    - prompt-affecting diffs alone do not require a live Cautilus run; keep
      deterministic proof-artifact and fixture validation local, and use
-     `cautilus eval test --repo-root . --adapter-name <repo-owned-adapter>` or a
+     `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>` or a
      repo-owned dogfood wrapper only for explicit log-backed behavior proof; for
      behavior-improving claims, also record the baseline compare path with
-     `cautilus workspace prepare-compare` and `cautilus eval evaluate --input <observed.json>`
+     `cautilus evaluate comparison prepare` and `cautilus evaluate observation --input <observed.json>`
    - if stronger proof needs setup or permission, ask instead of silently
      downgrading the claim
    - when the slice crosses a worker → host → provider seam, label the highest
