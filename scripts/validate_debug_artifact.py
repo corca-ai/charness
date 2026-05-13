@@ -35,7 +35,7 @@ validate_nonempty_sections = _scripts_artifact_validator_module.validate_nonempt
 validate_section_order = _scripts_artifact_validator_module.validate_section_order
 validate_title = _scripts_artifact_validator_module.validate_title
 
-MAX_ARTIFACT_LINES = 140
+MAX_ARTIFACT_LINES = 180
 REQUIRED_SECTIONS = (
     "## Problem",
     "## Correct Behavior",
@@ -46,6 +46,10 @@ REQUIRED_SECTIONS = (
     "## Verification",
     "## Root Cause",
     "## Prevention",
+)
+CURRENT_DIAGNOSIS_SECTIONS = (
+    "## Detection Gap",
+    "## Sibling Search",
 )
 CURRENT_INTERRUPT_SECTIONS = (
     "## Seam Risk",
@@ -180,7 +184,12 @@ def validate_debug_artifact(path: Path) -> None:
     validate_date_line(lines)
     validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="debug artifact")
     if path.name == "latest.md":
-        required_sections = REQUIRED_SECTIONS[:8] + CURRENT_INTERRUPT_SECTIONS + ("## Prevention",)
+        required_sections = (
+            REQUIRED_SECTIONS[:8]
+            + CURRENT_DIAGNOSIS_SECTIONS
+            + CURRENT_INTERRUPT_SECTIONS
+            + ("## Prevention",)
+        )
         validate_exact_h2_sections(lines, required_sections, optional_sections=OPTIONAL_SECTIONS)
         validate_nonempty_sections(lines, required_sections)
         validate_candidate_causes(lines)

@@ -42,6 +42,9 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     assert payload["validator_command"].endswith("scripts/validate_debug_artifact.py --repo-root .")
     assert "# Debug Review" in payload["template"]
     assert "## Reproduction" in payload["template"]
+    assert "## Detection Gap" in payload["template"]
+    assert "## Sibling Search" in payload["template"]
+    assert "- Mental model: TODO" in payload["template"]
     assert "## Seam Risk" in payload["template"]
     assert "- Interrupt ID: TODO" in payload["template"]
     assert "## Interrupt Decision" in payload["template"]

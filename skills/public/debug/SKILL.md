@@ -115,14 +115,25 @@ as codebase memory rather than as stale trivia.
    - state what should change if the hypothesis is true
    - make the smallest change or observation that can verify or falsify it
 6. Resolve and preserve the learning.
-   - record root cause
-   - record the confirming evidence
+   - record root cause and the confirming evidence
+   - walk the existing detection surface per `references/detection-gap.md` and
+     record which gate did not fire and the smallest change that would have
+     fired it; bug-class `issue resolve` invokes the same substrate through
+     `../issue/references/causal-review.md` Lens 2
+   - walk the four-axis sibling scan per `references/sibling-search.md`,
+     name the mental-model trap, and record concrete locations to inspect;
+     bug-class `issue resolve` invokes the same substrate through
+     `../issue/references/causal-review.md` Lens 3
+   - trivial single-file fixes may record `n/a — trivial fix` in the detection
+     gap and sibling search sections; the short-circuit is reviewer-visible,
+     not a default escape
    - classify seam risk explicitly when host behavior or repeated symptom fixes
      showed that local reasoning was not enough
    - if the incident hits an external seam, host-disproves-local behavior, or a
      repeated symptom on the same seam, set the next step to `spec` and name a
      spec handoff artifact instead of handing directly to ordinary `impl`
-   - record prevention or follow-up
+   - record prevention or follow-up; the prevention move should map to the
+     detection-gap and sibling-search outputs, not restate the root cause
    - before closing task-completing debug work or handing off a repair, record
      the required critique as short scoped diagnosis/repair risk or full
      standalone review when the fix affects design, workflow, compatibility,
@@ -142,6 +153,8 @@ The durable debug artifact should usually include:
 - `Hypothesis`
 - `Verification`
 - `Root Cause`
+- `Detection Gap`
+- `Sibling Search`
 - `Seam Risk`
 - `Interrupt Decision`
 - `Prevention`
@@ -175,6 +188,8 @@ sections. Prefer the scaffold helper over hand-typing the skeleton from memory.
 - `references/adapter-contract.md`
 - `references/five-steps.md`
 - `references/five-whys-causal-chain.md`
+- `references/detection-gap.md`
+- `references/sibling-search.md`
 - `references/debug-memory.md`
 - `references/anti-patterns.md`
 - `references/document-seams.md`

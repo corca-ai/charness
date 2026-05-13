@@ -105,6 +105,32 @@ The terabyte scale required both sides: a large runtime/cache payload under a
 repo-local Cautilus artifact root, and copy fixtures that did not treat that
 root as volatile.
 
+## Detection Gap
+
+- tests/repo_copy.py invariant suite | no assertion that volatile artifact
+  roots are excluded | add `.cautilus` to the asserted exclusion set so the
+  copy helper cannot quietly grow it back
+- scripts/check_coverage.py copy helper | independent ignore list with no
+  shared constant, so a sibling helper drifted | promote ignore names to
+  shared constants and assert them directly
+- runtime amplification monitoring | none — pytest temp growth was only
+  visible through manual `du`; gap is reviewer-visible, not detection-fixable
+
+## Sibling Search
+
+- Mental model: synthetic test fixtures treat runtime artifact roots as
+  ordinary repo input, so untracked volatile trees ride along with the seed
+- same layer: tests/repo_copy.py and scripts/check_coverage.py shared the
+  same missing exclusion (concrete duplication); both fixed
+- abstraction up: any copy helper that takes an implicit ignore list is a
+  candidate for the same trap — promote ignore names to constants so future
+  helpers must opt out explicitly (recorded in Prevention)
+- specialization down: Codex eval runner historically wrote `CODEX_HOME` into
+  the artifact tree; the 2026-05-12 isolated-home fix moved it outside
+- mental-model siblings: "implicit working directory as authority" trap from
+  recent-lessons — sweep recovered, no new locations beyond the two already
+  patched
+
 ## Seam Risk
 
 - Interrupt ID: pytest-temp-cautilus-artifact-amplification

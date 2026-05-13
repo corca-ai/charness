@@ -38,6 +38,8 @@ SECTIONS = (
     "## Hypothesis",
     "## Verification",
     "## Root Cause",
+    "## Detection Gap",
+    "## Sibling Search",
     "## Seam Risk",
     "## Interrupt Decision",
     "## Prevention",
@@ -53,6 +55,27 @@ def render_template(*, title: str, date_text: str) -> str:
     for heading in SECTIONS:
         if heading == "## Candidate Causes":
             lines.extend([heading, "", "- TODO", "- TODO", "- TODO", ""])
+            continue
+        if heading == "## Detection Gap":
+            lines.extend(
+                [
+                    heading,
+                    "",
+                    "- TODO surface | what did not fire | smallest change to fire it",
+                    "",
+                ]
+            )
+            continue
+        if heading == "## Sibling Search":
+            lines.extend(
+                [
+                    heading,
+                    "",
+                    "- Mental model: TODO",
+                    "- TODO axis: TODO location",
+                    "",
+                ]
+            )
             continue
         if heading == "## Seam Risk":
             lines.extend(

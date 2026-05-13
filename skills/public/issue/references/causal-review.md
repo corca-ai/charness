@@ -31,9 +31,11 @@ The subagent's prompt must:
 
 - restate the issue body and the reporter's JTBD verbatim
 - name the three lenses below and require evidence for each
-- include the substrate cite
-  (`../../debug/references/five-whys-causal-chain.md`) and the
-  "do not re-derive the RCA body" guard verbatim
+- include the three substrate cites
+  (`../../debug/references/five-whys-causal-chain.md`,
+  `../../debug/references/detection-gap.md`,
+  `../../debug/references/sibling-search.md`) and the
+  "do not re-derive the substrate body" guard verbatim for each lens
 - bound the time and scope ("under 600 words", "cite file:line")
 - forbid prescribing the fix; the implementer designs the fix in step 7
 - explicitly tell the subagent it is the bounded fresh-eye reviewer and must
@@ -62,49 +64,42 @@ contradicts the issue body, return that as a
 `Causal review: substrate incomplete` block instead of regrowing it inside
 this lens.
 
-### Lens 2 — Detection gap
+### Lens 2 — Detection gap (close-ledger triage)
 
-Why did the issue need a human reporter? List concrete failure modes against
-existing detection surfaces:
+Consume the `debug` skill substrate
+(`../../debug/references/detection-gap.md`) — which gates existed, which did
+not fire, smallest change to fire each one, monitoring vs human-only
+detection — and triage the resulting list through the close-ledger lens:
+does the named gap map to the issue body and the reporter's JTBD, and is the
+prevention surface (guard, test, doc, tool) in scope for the close comment?
+**Do not re-derive the detection-gap walk in causal review.** If the
+substrate's list is missing, weak, or contradicts the issue body, return
+that as a `Causal review: substrate incomplete` block instead of regrowing
+it inside this lens. Keyword and proximity matching for detection surfaces
+without a stated smallest-fix change is over-reach, not a gap.
 
-- which tests, gates, lints, type checks, or evals existed but did not fire
-- what would have had to change for them to fire (a different assertion, a
-  different fixture, a different sample) — the smaller the change, the more
-  the gap is a missing invariant rather than missing scope
-- whether monitoring or runtime observability would have surfaced this and
-  was absent or noisy
-- whether a human-only review path is the only realistic detection (some
-  product-judgment issues are fine to have here; flag them honestly)
+The triage output should make the next move legible: do we add a guard,
+broaden a fixture, fix an assertion, or accept that this class is
+human-detection?
 
-The output should make the next move legible: do we add a guard, broaden a
-fixture, fix an assertion, or accept that this class is human-detection?
+### Lens 3 — Sibling search (close-ledger triage)
 
-### Lens 3 — Sibling search
+Consume the `debug` skill substrate
+(`../../debug/references/sibling-search.md`) — the four-axis scan (same
+layer, abstraction up, specialization down, mental-model siblings), the
+mental model that allowed the bug, and the keyword/proximity-only over-reach
+guard — and triage the resulting locations through the close-ledger lens:
+which siblings are real instances of the abstracted pattern, which are
+surface-level keyword matches that should not be carried forward, and which
+sit on a prevention surface in scope for the close comment? **Do not
+re-derive the sibling-search walk in causal review.** If the substrate's
+scan is missing, names only keyword matches, or fails to state the mental
+model and structural sibling search beyond keyword or proximity matching,
+return that as a `Causal review: substrate incomplete` block instead of
+regrowing it inside this lens.
 
-Look for the same pattern elsewhere. Start from the mental model that allowed
-the issue, not from the issue title's nouns. Keyword and nearby-file search
-are useful, but they are only the first pass.
-
-The reviewer scans four axes:
-
-- **same layer**: the literal same code shape in other modules, scripts, or
-  configs (concrete duplications)
-- **abstraction up**: the issue is one instance of a more general pattern.
-  Name the general pattern in a sentence. Then check whether other instances
-  exist (often in different files, different layers, but sharing the
-  generalized shape).
-- **specialization down**: the issue is the surface of a more specific
-  problem. Name the narrower problem and check whether it shows up in finer
-  granularity within the same module.
-- **mental-model siblings**: name the operator or implementer assumption that
-  made the bug plausible, then scan structurally similar traps even when they
-  use different names. Common shapes include missing lifecycle endpoints,
-  local checks not composed into aggregate surfaces, mutation paths missing a
-  readiness probe, renderers hiding failing details, and safety checks that
-  trust current working directory or an implicit default as the authority.
-
-Return the exact patterns searched plus concrete locations the implementer
-should inspect. The implementer decides at step 5 whether to bundle or defer.
+Return the triaged patterns plus concrete locations the implementer should
+inspect. The implementer decides at step 5 whether to bundle or defer.
 
 ### Output shape (causal review)
 
@@ -119,12 +114,16 @@ The subagent returns:
   the lens did not invent a structural cause where there was a real symptom
 - `Debug artifact: <path>` when a debug session wrote one; otherwise
   `Debug artifact: none (trivial fix)` or `Debug artifact: cite-only`
-- `Detection gap` (which gates existed, which did not fire, smallest change to
-  fix that) + `Over-reach check`: simplest evidence the gap is real, not "no
-  test exists in this corner"
-- `Sibling search` (mental model, patterns scanned, concrete locations on
-  each axis) + `Over-reach check`: simplest evidence the listed locations are
-  actual instances of the same pattern, not surface-level keyword matches
+- `Detection gap` (substrate cite from
+  `../../debug/references/detection-gap.md`, plus close-ledger triage; do
+  not regrow the walk) + `Over-reach check`: simplest evidence the gap is
+  real, not "no test exists in this corner"
+- `Sibling search` (substrate cite from
+  `../../debug/references/sibling-search.md`, plus close-ledger triage; do
+  not regrow the four-axis scan; preserve the mental model and structural
+  sibling search beyond keyword or proximity matching) + `Over-reach check`:
+  simplest evidence the listed locations are actual instances of the same
+  pattern, not surface-level keyword matches
 - `Bundle vs Defer recommendation` (a list, with cheap-now flagged)
 - `Fresh-Eye Satisfaction`: `parent-delegated` / `nested-delegated` /
   `blocked <host-signal>`
