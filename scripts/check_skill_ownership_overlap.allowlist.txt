@@ -16,4 +16,5 @@ issue:artifact:gather:read-only cite -- issue resolve flow references gather art
 critique:artifact:retro:read-only cite -- code-critique reference cross-links charness-artifacts/retro/recent-lessons.md as the defect-class memory home
 critique:artifact:spec:read-only scan -- autonomous trigger scans spec artifacts only to identify the current pending critique target
 critique:artifact:skill-t-mechanism:read-only cite -- angle-selection lineup cites skill-t-mechanism/inventory as the Tier C anchor_invoked evidence sink
+critique:adapter:retro:boundary cite -- adapter-contract.md names .agents/retro-adapter.yaml as the seam where a future retro-prepare slot would live; ownership stays retro-side
 quality:artifact:cautilus:read-only cite -- cautilus-on-demand.md cites charness-artifacts/cautilus/latest.md as the behavior-proof artifact home so the planner-consult contract can name it

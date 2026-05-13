@@ -28,6 +28,7 @@
   "adapter_requirements": {
     "required": [
       "announcement",
+      "critique",
       "debug",
       "find-skills",
       "gather",
@@ -45,7 +46,6 @@
       "create-cli",
       "create-skill",
       "ideation",
-      "critique",
       "spec"
     ]
   },

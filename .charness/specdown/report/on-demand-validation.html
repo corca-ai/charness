@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>On-Demand Validation Viewer</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main>
+    <div class="layout">
+      <aside class="toc" aria-label="Table of contents">
+        <div class="toc-inner">
+          <p class="toc-title">Contents</p>
+          
+          
+          
+          <section class="toc-spec">
+            <div class="toc-spec-header"><a class="toc-spec-title " href="./index.html">Charness Executable Specs</a></div>
+            <p class="toc-snippet">These specs cover stable operator-facing behavior only.</p>
+            
+          </section>
+          
+          
+          
+          
+          
+          <section class="toc-spec">
+            <div class="toc-spec-header"><span class="toc-type-badge" style="--type-hue:187">spec</span><a class="toc-spec-title " href="./tool-doctor.html">CLI Operator Contracts</a></div>
+            
+            
+          </section>
+          
+          
+          
+          
+          
+          <section class="toc-spec current">
+            <div class="toc-spec-header"><span class="toc-type-badge" style="--type-hue:187">spec</span><span class="toc-spec-title failed">On-Demand Validation Viewer</span></div>
+            
+            
+            <ul class="toc-list">
+              
+              <li class="toc-item" data-anchor="section-specs-on-demand-validation-spec-md-on-demand-validation-viewer-latest-cautilus-behavioral-proof">
+                <a class="toc-link toc-level-2 " href="#section-specs-on-demand-validation-spec-md-on-demand-validation-viewer-latest-cautilus-behavioral-proof">Latest `cautilus` Behavioral Proof</a>
+                
+              </li>
+              
+              <li class="toc-item" data-anchor="section-specs-on-demand-validation-spec-md-on-demand-validation-viewer-critique-stays-on-demand">
+                <a class="toc-link toc-level-2 failed" href="#section-specs-on-demand-validation-spec-md-on-demand-validation-viewer-critique-stays-on-demand">`critique` Stays On-Demand</a>
+                
+              </li>
+              
+            </ul>
+            
+          </section>
+          
+          
+          
+          
+          
+          <section class="toc-spec">
+            <div class="toc-spec-header"><span class="toc-type-badge" style="--type-hue:187">spec</span><a class="toc-spec-title " href="./readme-proof.html">README Proof Ledger</a></div>
+            
+            
+          </section>
+          
+          
+          
+        </div>
+      </aside>
+
+      <div class="content">
+        <div class="content-header">
+          <p class="content-meta"><span class="doc-type" style="--type-hue:187">spec</span><span class="pill pass">1 passed</span><span class="pill fail">1 failed</span></p>
+        </div>
+        <div class="content-body">
+          <article class="spec">
+            <section class="spec-body"><section class="s1" id="section-specs-on-demand-validation-spec-md-on-demand-validation-viewer"><h1>On-Demand Validation Viewer</h1>
+<p>This page is a reader-facing viewer for the latest checked on-demand validation
+artifacts. The checked artifact remains the source of truth for the run; this
+specdown page makes that proof visible in the same report a product reader uses
+to understand the current contract.</p>
+<section class="s2" id="section-specs-on-demand-validation-spec-md-on-demand-validation-viewer-latest-cautilus-behavioral-proof"><h2>Latest <code>cautilus</code> Behavioral Proof</h2>
+<p>The current prompt-behavior proof is checked in at
+<a href="../charness-artifacts/cautilus/latest.html"><code>charness-artifacts/cautilus/latest.md</code></a>.
+This page should stay a viewer over that artifact, not a second evaluator
+implementation.</p>
+<section class="exec-block passed" id="case-specs-on-demand-validation-spec-md-on-demand-validation-viewer-latest-cautilus-behavioral-proof-1"><div class="exec-source"><code>python3 -c &#34;from pathlib import Path; text = Path(&#39;charness-artifacts/cautilus/latest.md&#39;).read_text(encoding=&#39;utf-8&#39;); assert &#39;## Commands Run&#39; in text; assert &#39;## Outcome&#39; in text; assert &#39;recommendation:&#39; in text&#34;</code></div><p class="exec-block-footer">run:shell</p></section></section><section class="s2" id="section-specs-on-demand-validation-spec-md-on-demand-validation-viewer-critique-stays-on-demand"><h2><code>critique</code> Stays On-Demand</h2>
+<p><code>critique</code> is a judgment-heavy, canonical-subagent workflow. The standing repo
+bar should keep seam checks for the contract itself, while the real behavioral
+question stays on-demand through <code>cautilus</code> or explicit reviewed HITL proof.</p>
+<section class="exec-block failed" id="case-specs-on-demand-validation-spec-md-on-demand-validation-viewer-critique-stays-on-demand-2"><div class="exec-source"><code>python3 -c &#34;import json; from pathlib import Path; policy = json.loads(Path(&#39;docs/public-skill-validation.json&#39;).read_text(encoding=&#39;utf-8&#39;)); assert &#39;critique&#39; in policy[&#39;tiers&#39;][&#39;hitl-recommended&#39;]; assert &#39;critique&#39; in policy[&#39;adapter_requirements&#39;][&#39;adapter-free&#39;]; skill = Path(&#39;skills/public/critique/SKILL.md&#39;).read_text(encoding=&#39;utf-8&#39;); assert &#39;use subagents as the canonical path&#39; in skill&#34;</code><div class="cell-actual">Traceback (most recent call last):
+  File &#34;&lt;string&gt;&#34;, line 1, in &lt;module&gt;
+AssertionError</div></div><p class="exec-block-footer">run:shell</p></section></section></section></section>
+          </article>
+        </div>
+      </div>
+      
+      <div class="mobile-title" aria-hidden="true">
+        <h1>On-Demand Validation Viewer</h1>
+      </div>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <hr>
+    <p><a href="https://github.com/corca-ai/specdown">github.com/corca-ai/specdown</a></p>
+  </footer>
+  <script src="./script.js"></script>
+</body>
+</html>

@@ -236,17 +236,17 @@
       "prompt": "Stress this pending decision before we lock it in and separate real blockers from over-worry.",
       "repo_shape": "repo with a non-trivial pending decision whose main risk is choosing the wrong plan too early",
       "expected_skill": "critique",
-      "expected_artifact": null,
+      "expected_artifact": "charness-artifacts/critique",
       "validation_tier": "hitl-recommended",
-      "adapter_requirement": "adapter-free",
+      "adapter_requirement": "required",
       "acceptance_evidence": [
         "routes the prompt to `critique` instead of an adjacent public skill",
-        "does not invent host-specific adapter state when repo inspection alone should be enough",
+        "names or refreshes `charness-artifacts/critique` when the skill persists durable state",
         "produces an output that a maintainer could review directly without re-deriving the whole request",
         "includes a customer-of-this-capability angle when first-use failure is the main risk"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-07",
+      "reviewed_on": "2026-05-14",
       "observed_evidence": [
         "The checked-in public core now says task-completing repo work always records critique before closeout, scaling the pass rather than leaving applicability optional.",
         "The standalone `critique` skill remains the full bounded-subagent path for non-trivial design, deletion, rename, release, workflow, compatibility, install/update, host-proof, prompt-surface, public-skill, validator, or export decisions.",
@@ -255,7 +255,8 @@
         "That keeps `critique-canonical-subagent-followup` live as a reviewed seam: the repo now locks the user push for true subagent critique in both checked-in wording and validator-backed contract pins.",
         "The capability check now rejects shell-only runners, routing-only proof, and model self-report as evidence that bounded subagents actually ran.",
         "The capability check now treats an `AGENTS.md` `Subagent Delegation` section as the explicit delegation request for named bounded review scopes, so downstream repos such as `ceal` should try the host spawn tool before recording a blocked critique.",
-        "`validate_critique_artifacts.py` now rejects new durable critique artifacts that preserve the old missing-explicit-subagent-request blocker instead of a concrete `host signal:` or `tool signal:`."
+        "`validate_critique_artifacts.py` now rejects new durable critique artifacts that preserve the old missing-explicit-subagent-request blocker instead of a concrete `host signal:` or `tool signal:`.",
+        "The `critique` skill now reads `.agents/critique-adapter.yaml` and consumes a `charness.critique_prepare_packet.v1` packet under `charness-artifacts/critique/` before fresh-eye review when the adapter declares `packet_sections`, with a `Packet Consumed` field in the output shape (#161)."
       ]
     },
     {

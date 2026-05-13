@@ -1,0 +1,744 @@
+{
+  "schemaVersion": 2,
+  "title": "Charness Executable Specs",
+  "generatedAt": "2026-05-14T08:10:59.865269204+09:00",
+  "results": [
+    {
+      "document": {
+        "relativeTo": "specs/index.spec.md",
+        "title": "Charness Executable Specs",
+        "markdown": "# Charness Executable Specs\n\nThese specs cover stable operator-facing behavior only. Detailed edge cases stay\nin pytest and repo validators.\n\n```run:shell\npython3 ./charness --help \u003e/dev/null\n```\n\n- [CLI Operator Contracts](tool-doctor.spec.md)\n- [On-Demand Validation Viewer](on-demand-validation.spec.md)\n- [README Proof Ledger](readme-proof.spec.md)\n",
+        "nodes": [
+          {
+            "level": 1,
+            "text": "Charness Executable Specs",
+            "raw": "# Charness Executable Specs\n",
+            "headingPath": [
+              "Charness Executable Specs"
+            ]
+          },
+          {
+            "raw": "\nThese specs cover stable operator-facing behavior only. Detailed edge cases stay\nin pytest and repo validators.\n\n",
+            "headingPath": [
+              "Charness Executable Specs"
+            ]
+          },
+          {
+            "block": {
+              "raw": "run:shell",
+              "kind": "run",
+              "target": "shell"
+            },
+            "source": "python3 ./charness --help \u003e/dev/null",
+            "raw": "```run:shell\npython3 ./charness --help \u003e/dev/null\n```\n",
+            "id": {
+              "file": "specs/index.spec.md",
+              "headingPath": [
+                "Charness Executable Specs"
+              ],
+              "ordinal": 1,
+              "line": 6
+            }
+          },
+          {
+            "raw": "\n- [CLI Operator Contracts](tool-doctor.spec.md)\n- [On-Demand Validation Viewer](on-demand-validation.spec.md)\n- [README Proof Ledger](readme-proof.spec.md)\n",
+            "headingPath": [
+              "Charness Executable Specs"
+            ]
+          }
+        ],
+        "frontmatter": {},
+        "warnings": [
+          "specs/on-demand-validation.spec.md: link \"../charness-artifacts/cautilus/latest.md\" points outside entry directory specs"
+        ]
+      },
+      "status": "passed",
+      "cases": [
+        {
+          "id": {
+            "file": "specs/index.spec.md",
+            "headingPath": [
+              "Charness Executable Specs"
+            ],
+            "ordinal": 1,
+            "line": 6
+          },
+          "kind": "code",
+          "status": "passed",
+          "label": "run:shell @ Charness Executable Specs",
+          "durationMs": 108,
+          "events": [
+            {
+              "type": "caseStarted",
+              "id": {
+                "file": "specs/index.spec.md",
+                "headingPath": [
+                  "Charness Executable Specs"
+                ],
+                "ordinal": 1,
+                "line": 6
+              },
+              "label": "run:shell @ Charness Executable Specs"
+            },
+            {
+              "type": "casePassed",
+              "id": {
+                "file": "specs/index.spec.md",
+                "headingPath": [
+                  "Charness Executable Specs"
+                ],
+                "ordinal": 1,
+                "line": 6
+              },
+              "label": "run:shell @ Charness Executable Specs"
+            }
+          ],
+          "code": {
+            "block": "run:shell",
+            "template": "python3 ./charness --help \u003e/dev/null",
+            "renderedSource": "python3 ./charness --help \u003e/dev/null"
+          }
+        }
+      ]
+    },
+    {
+      "document": {
+        "relativeTo": "specs/tool-doctor.spec.md",
+        "title": "CLI Operator Contracts",
+        "markdown": "---\ntype: spec\nworkdir: .\n---\n\n# CLI Operator Contracts\n\n`charness` operator-facing commands must leave structured continuation state\nwithout confusing health, readiness, ownership, or the next operator action.\n\nThis spec keeps proof at the operator-facing command boundary. Fixture-heavy\nbranch coverage still belongs in pytest, but the current shipped CLI contract\nshould remain readable and executable here.\n\n## `specdown` Binary Contract, Task Envelope, And Doctor Next Action\n\nThe `specdown` integration consumes an upstream support skill and remains an\nexternal binary managed through the tool control plane. Doctor checks the\ninstalled command and release metadata, and it should report the support source\nas upstream-consumed until sync materializes the installed plugin support\nsurface.\n\n```run:shell\npython3 ./charness tool doctor --repo-root . --json specdown | python3 -c \"import json,sys; payload=json.load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='upstream-consumed'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['results'][0]['command']=='specdown run -help'\"\n```\n\nThe repo-local task envelope should provide the sah-inspired claim, submit, and\nabort loop as structured state under `.charness/tasks/` without introducing a\nqueue or scheduler.\n\n```run:shell\npython3 ./charness task --repo-root . --json status missing-slice | python3 -c \"import json,sys; payload=json.load(sys.stdin); assert payload['event']=='rejected'; assert payload['status']=='missing'; assert payload['task_path']=='.charness/tasks/missing-slice.json'\"\n```\n\nThe root `doctor` command should emit a single primary `next_action` while\nretaining host-specific `next_steps`, so operator automation can act on the\nfirst meaningful host move without losing Codex/Claude detail.\n\n```run:shell\npython3 ./charness doctor --repo-root . --json | python3 -c \"import json,sys; payload=json.load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['next_steps'], dict) and payload['next_steps']\"\n```\n",
+        "nodes": [
+          {
+            "level": 1,
+            "text": "CLI Operator Contracts",
+            "raw": "# CLI Operator Contracts\n",
+            "headingPath": [
+              "CLI Operator Contracts"
+            ]
+          },
+          {
+            "raw": "\n`charness` operator-facing commands must leave structured continuation state\nwithout confusing health, readiness, ownership, or the next operator action.\n\nThis spec keeps proof at the operator-facing command boundary. Fixture-heavy\nbranch coverage still belongs in pytest, but the current shipped CLI contract\nshould remain readable and executable here.\n\n",
+            "headingPath": [
+              "CLI Operator Contracts"
+            ]
+          },
+          {
+            "level": 2,
+            "text": "`specdown` Binary Contract, Task Envelope, And Doctor Next Action",
+            "raw": "## `specdown` Binary Contract, Task Envelope, And Doctor Next Action\n",
+            "headingPath": [
+              "CLI Operator Contracts",
+              "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+            ]
+          },
+          {
+            "raw": "\nThe `specdown` integration consumes an upstream support skill and remains an\nexternal binary managed through the tool control plane. Doctor checks the\ninstalled command and release metadata, and it should report the support source\nas upstream-consumed until sync materializes the installed plugin support\nsurface.\n\n",
+            "headingPath": [
+              "CLI Operator Contracts",
+              "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+            ]
+          },
+          {
+            "block": {
+              "raw": "run:shell",
+              "kind": "run",
+              "target": "shell"
+            },
+            "source": "python3 ./charness tool doctor --repo-root . --json specdown | python3 -c \"import json,sys; payload=json.load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='upstream-consumed'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['results'][0]['command']=='specdown run -help'\"",
+            "raw": "```run:shell\npython3 ./charness tool doctor --repo-root . --json specdown | python3 -c \"import json,sys; payload=json.load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='upstream-consumed'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['results'][0]['command']=='specdown run -help'\"\n```\n",
+            "id": {
+              "file": "specs/tool-doctor.spec.md",
+              "headingPath": [
+                "CLI Operator Contracts",
+                "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              ],
+              "ordinal": 1,
+              "line": 23
+            }
+          },
+          {
+            "raw": "\nThe repo-local task envelope should provide the sah-inspired claim, submit, and\nabort loop as structured state under `.charness/tasks/` without introducing a\nqueue or scheduler.\n\n",
+            "headingPath": [
+              "CLI Operator Contracts",
+              "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+            ]
+          },
+          {
+            "block": {
+              "raw": "run:shell",
+              "kind": "run",
+              "target": "shell"
+            },
+            "source": "python3 ./charness task --repo-root . --json status missing-slice | python3 -c \"import json,sys; payload=json.load(sys.stdin); assert payload['event']=='rejected'; assert payload['status']=='missing'; assert payload['task_path']=='.charness/tasks/missing-slice.json'\"",
+            "raw": "```run:shell\npython3 ./charness task --repo-root . --json status missing-slice | python3 -c \"import json,sys; payload=json.load(sys.stdin); assert payload['event']=='rejected'; assert payload['status']=='missing'; assert payload['task_path']=='.charness/tasks/missing-slice.json'\"\n```\n",
+            "id": {
+              "file": "specs/tool-doctor.spec.md",
+              "headingPath": [
+                "CLI Operator Contracts",
+                "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              ],
+              "ordinal": 2,
+              "line": 31
+            }
+          },
+          {
+            "raw": "\nThe root `doctor` command should emit a single primary `next_action` while\nretaining host-specific `next_steps`, so operator automation can act on the\nfirst meaningful host move without losing Codex/Claude detail.\n\n",
+            "headingPath": [
+              "CLI Operator Contracts",
+              "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+            ]
+          },
+          {
+            "block": {
+              "raw": "run:shell",
+              "kind": "run",
+              "target": "shell"
+            },
+            "source": "python3 ./charness doctor --repo-root . --json | python3 -c \"import json,sys; payload=json.load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['next_steps'], dict) and payload['next_steps']\"",
+            "raw": "```run:shell\npython3 ./charness doctor --repo-root . --json | python3 -c \"import json,sys; payload=json.load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['next_steps'], dict) and payload['next_steps']\"\n```\n",
+            "id": {
+              "file": "specs/tool-doctor.spec.md",
+              "headingPath": [
+                "CLI Operator Contracts",
+                "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+              ],
+              "ordinal": 3,
+              "line": 39
+            }
+          }
+        ],
+        "frontmatter": {
+          "type": "spec",
+          "workdir": "."
+        }
+      },
+      "status": "passed",
+      "cases": [
+        {
+          "id": {
+            "file": "specs/tool-doctor.spec.md",
+            "headingPath": [
+              "CLI Operator Contracts",
+              "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+            ],
+            "ordinal": 1,
+            "line": 23
+          },
+          "kind": "code",
+          "status": "passed",
+          "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action",
+          "durationMs": 1460,
+          "events": [
+            {
+              "type": "caseStarted",
+              "id": {
+                "file": "specs/tool-doctor.spec.md",
+                "headingPath": [
+                  "CLI Operator Contracts",
+                  "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+                ],
+                "ordinal": 1,
+                "line": 23
+              },
+              "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+            },
+            {
+              "type": "casePassed",
+              "id": {
+                "file": "specs/tool-doctor.spec.md",
+                "headingPath": [
+                  "CLI Operator Contracts",
+                  "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+                ],
+                "ordinal": 1,
+                "line": 23
+              },
+              "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+            }
+          ],
+          "code": {
+            "block": "run:shell",
+            "template": "python3 ./charness tool doctor --repo-root . --json specdown | python3 -c \"import json,sys; payload=json.load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='upstream-consumed'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['results'][0]['command']=='specdown run -help'\"",
+            "renderedSource": "python3 ./charness tool doctor --repo-root . --json specdown | python3 -c \"import json,sys; payload=json.load(sys.stdin); doctor=payload['results']['specdown']['doctor']; assert doctor['support_state']=='upstream-consumed'; assert doctor['detect']['results'][0]['command']=='specdown version'; assert doctor['healthcheck']['results'][0]['command']=='specdown run -help'\""
+          }
+        },
+        {
+          "id": {
+            "file": "specs/tool-doctor.spec.md",
+            "headingPath": [
+              "CLI Operator Contracts",
+              "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+            ],
+            "ordinal": 2,
+            "line": 31
+          },
+          "kind": "code",
+          "status": "passed",
+          "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action",
+          "durationMs": 125,
+          "events": [
+            {
+              "type": "caseStarted",
+              "id": {
+                "file": "specs/tool-doctor.spec.md",
+                "headingPath": [
+                  "CLI Operator Contracts",
+                  "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+                ],
+                "ordinal": 2,
+                "line": 31
+              },
+              "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+            },
+            {
+              "type": "casePassed",
+              "id": {
+                "file": "specs/tool-doctor.spec.md",
+                "headingPath": [
+                  "CLI Operator Contracts",
+                  "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+                ],
+                "ordinal": 2,
+                "line": 31
+              },
+              "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+            }
+          ],
+          "code": {
+            "block": "run:shell",
+            "template": "python3 ./charness task --repo-root . --json status missing-slice | python3 -c \"import json,sys; payload=json.load(sys.stdin); assert payload['event']=='rejected'; assert payload['status']=='missing'; assert payload['task_path']=='.charness/tasks/missing-slice.json'\"",
+            "renderedSource": "python3 ./charness task --repo-root . --json status missing-slice | python3 -c \"import json,sys; payload=json.load(sys.stdin); assert payload['event']=='rejected'; assert payload['status']=='missing'; assert payload['task_path']=='.charness/tasks/missing-slice.json'\""
+          }
+        },
+        {
+          "id": {
+            "file": "specs/tool-doctor.spec.md",
+            "headingPath": [
+              "CLI Operator Contracts",
+              "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+            ],
+            "ordinal": 3,
+            "line": 39
+          },
+          "kind": "code",
+          "status": "passed",
+          "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action",
+          "durationMs": 1495,
+          "events": [
+            {
+              "type": "caseStarted",
+              "id": {
+                "file": "specs/tool-doctor.spec.md",
+                "headingPath": [
+                  "CLI Operator Contracts",
+                  "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+                ],
+                "ordinal": 3,
+                "line": 39
+              },
+              "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+            },
+            {
+              "type": "casePassed",
+              "id": {
+                "file": "specs/tool-doctor.spec.md",
+                "headingPath": [
+                  "CLI Operator Contracts",
+                  "`specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+                ],
+                "ordinal": 3,
+                "line": 39
+              },
+              "label": "run:shell @ `specdown` Binary Contract, Task Envelope, And Doctor Next Action"
+            }
+          ],
+          "code": {
+            "block": "run:shell",
+            "template": "python3 ./charness doctor --repo-root . --json | python3 -c \"import json,sys; payload=json.load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['next_steps'], dict) and payload['next_steps']\"",
+            "renderedSource": "python3 ./charness doctor --repo-root . --json | python3 -c \"import json,sys; payload=json.load(sys.stdin); action=payload['next_action']; assert isinstance(action, dict) and action['kind']; assert action['message']; assert isinstance(payload['next_steps'], dict) and payload['next_steps']\""
+          }
+        }
+      ]
+    },
+    {
+      "document": {
+        "relativeTo": "specs/on-demand-validation.spec.md",
+        "title": "On-Demand Validation Viewer",
+        "markdown": "---\ntype: spec\nworkdir: .\n---\n\n# On-Demand Validation Viewer\n\nThis page is a reader-facing viewer for the latest checked on-demand validation\nartifacts. The checked artifact remains the source of truth for the run; this\nspecdown page makes that proof visible in the same report a product reader uses\nto understand the current contract.\n\n## Latest `cautilus` Behavioral Proof\n\nThe current prompt-behavior proof is checked in at\n[`charness-artifacts/cautilus/latest.md`](../charness-artifacts/cautilus/latest.md).\nThis page should stay a viewer over that artifact, not a second evaluator\nimplementation.\n\n```run:shell\npython3 -c \"from pathlib import Path; text = Path('charness-artifacts/cautilus/latest.md').read_text(encoding='utf-8'); assert '## Commands Run' in text; assert '## Outcome' in text; assert 'recommendation:' in text\"\n```\n\n## `critique` Stays On-Demand\n\n`critique` is a judgment-heavy, canonical-subagent workflow. The standing repo\nbar should keep seam checks for the contract itself, while the real behavioral\nquestion stays on-demand through `cautilus` or explicit reviewed HITL proof.\n\n```run:shell\npython3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['adapter-free']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use subagents as the canonical path' in skill\"\n```\n",
+        "nodes": [
+          {
+            "level": 1,
+            "text": "On-Demand Validation Viewer",
+            "raw": "# On-Demand Validation Viewer\n",
+            "headingPath": [
+              "On-Demand Validation Viewer"
+            ]
+          },
+          {
+            "raw": "\nThis page is a reader-facing viewer for the latest checked on-demand validation\nartifacts. The checked artifact remains the source of truth for the run; this\nspecdown page makes that proof visible in the same report a product reader uses\nto understand the current contract.\n\n",
+            "headingPath": [
+              "On-Demand Validation Viewer"
+            ]
+          },
+          {
+            "level": 2,
+            "text": "Latest `cautilus` Behavioral Proof",
+            "raw": "## Latest `cautilus` Behavioral Proof\n",
+            "headingPath": [
+              "On-Demand Validation Viewer",
+              "Latest `cautilus` Behavioral Proof"
+            ]
+          },
+          {
+            "raw": "\nThe current prompt-behavior proof is checked in at\n[`charness-artifacts/cautilus/latest.md`](../charness-artifacts/cautilus/latest.md).\nThis page should stay a viewer over that artifact, not a second evaluator\nimplementation.\n\n",
+            "headingPath": [
+              "On-Demand Validation Viewer",
+              "Latest `cautilus` Behavioral Proof"
+            ]
+          },
+          {
+            "block": {
+              "raw": "run:shell",
+              "kind": "run",
+              "target": "shell"
+            },
+            "source": "python3 -c \"from pathlib import Path; text = Path('charness-artifacts/cautilus/latest.md').read_text(encoding='utf-8'); assert '## Commands Run' in text; assert '## Outcome' in text; assert 'recommendation:' in text\"",
+            "raw": "```run:shell\npython3 -c \"from pathlib import Path; text = Path('charness-artifacts/cautilus/latest.md').read_text(encoding='utf-8'); assert '## Commands Run' in text; assert '## Outcome' in text; assert 'recommendation:' in text\"\n```\n",
+            "id": {
+              "file": "specs/on-demand-validation.spec.md",
+              "headingPath": [
+                "On-Demand Validation Viewer",
+                "Latest `cautilus` Behavioral Proof"
+              ],
+              "ordinal": 1,
+              "line": 20
+            }
+          },
+          {
+            "level": 2,
+            "text": "`critique` Stays On-Demand",
+            "raw": "## `critique` Stays On-Demand\n",
+            "headingPath": [
+              "On-Demand Validation Viewer",
+              "`critique` Stays On-Demand"
+            ]
+          },
+          {
+            "raw": "\n`critique` is a judgment-heavy, canonical-subagent workflow. The standing repo\nbar should keep seam checks for the contract itself, while the real behavioral\nquestion stays on-demand through `cautilus` or explicit reviewed HITL proof.\n\n",
+            "headingPath": [
+              "On-Demand Validation Viewer",
+              "`critique` Stays On-Demand"
+            ]
+          },
+          {
+            "block": {
+              "raw": "run:shell",
+              "kind": "run",
+              "target": "shell"
+            },
+            "source": "python3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['adapter-free']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use subagents as the canonical path' in skill\"",
+            "raw": "```run:shell\npython3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['adapter-free']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use subagents as the canonical path' in skill\"\n```\n",
+            "id": {
+              "file": "specs/on-demand-validation.spec.md",
+              "headingPath": [
+                "On-Demand Validation Viewer",
+                "`critique` Stays On-Demand"
+              ],
+              "ordinal": 2,
+              "line": 30
+            }
+          }
+        ],
+        "frontmatter": {
+          "type": "spec",
+          "workdir": "."
+        }
+      },
+      "status": "failed",
+      "cases": [
+        {
+          "id": {
+            "file": "specs/on-demand-validation.spec.md",
+            "headingPath": [
+              "On-Demand Validation Viewer",
+              "Latest `cautilus` Behavioral Proof"
+            ],
+            "ordinal": 1,
+            "line": 20
+          },
+          "kind": "code",
+          "status": "passed",
+          "label": "run:shell @ Latest `cautilus` Behavioral Proof",
+          "durationMs": 35,
+          "events": [
+            {
+              "type": "caseStarted",
+              "id": {
+                "file": "specs/on-demand-validation.spec.md",
+                "headingPath": [
+                  "On-Demand Validation Viewer",
+                  "Latest `cautilus` Behavioral Proof"
+                ],
+                "ordinal": 1,
+                "line": 20
+              },
+              "label": "run:shell @ Latest `cautilus` Behavioral Proof"
+            },
+            {
+              "type": "casePassed",
+              "id": {
+                "file": "specs/on-demand-validation.spec.md",
+                "headingPath": [
+                  "On-Demand Validation Viewer",
+                  "Latest `cautilus` Behavioral Proof"
+                ],
+                "ordinal": 1,
+                "line": 20
+              },
+              "label": "run:shell @ Latest `cautilus` Behavioral Proof"
+            }
+          ],
+          "code": {
+            "block": "run:shell",
+            "template": "python3 -c \"from pathlib import Path; text = Path('charness-artifacts/cautilus/latest.md').read_text(encoding='utf-8'); assert '## Commands Run' in text; assert '## Outcome' in text; assert 'recommendation:' in text\"",
+            "renderedSource": "python3 -c \"from pathlib import Path; text = Path('charness-artifacts/cautilus/latest.md').read_text(encoding='utf-8'); assert '## Commands Run' in text; assert '## Outcome' in text; assert 'recommendation:' in text\""
+          }
+        },
+        {
+          "id": {
+            "file": "specs/on-demand-validation.spec.md",
+            "headingPath": [
+              "On-Demand Validation Viewer",
+              "`critique` Stays On-Demand"
+            ],
+            "ordinal": 2,
+            "line": 30
+          },
+          "kind": "code",
+          "status": "failed",
+          "label": "run:shell @ `critique` Stays On-Demand",
+          "durationMs": 21,
+          "message": "Traceback (most recent call last):\n  File \"\u003cstring\u003e\", line 1, in \u003cmodule\u003e\nAssertionError",
+          "events": [
+            {
+              "type": "caseStarted",
+              "id": {
+                "file": "specs/on-demand-validation.spec.md",
+                "headingPath": [
+                  "On-Demand Validation Viewer",
+                  "`critique` Stays On-Demand"
+                ],
+                "ordinal": 2,
+                "line": 30
+              },
+              "label": "run:shell @ `critique` Stays On-Demand"
+            },
+            {
+              "type": "caseFailed",
+              "id": {
+                "file": "specs/on-demand-validation.spec.md",
+                "headingPath": [
+                  "On-Demand Validation Viewer",
+                  "`critique` Stays On-Demand"
+                ],
+                "ordinal": 2,
+                "line": 30
+              },
+              "label": "run:shell @ `critique` Stays On-Demand",
+              "message": "Traceback (most recent call last):\n  File \"\u003cstring\u003e\", line 1, in \u003cmodule\u003e\nAssertionError"
+            }
+          ],
+          "code": {
+            "block": "run:shell",
+            "template": "python3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['adapter-free']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use subagents as the canonical path' in skill\"",
+            "renderedSource": "python3 -c \"import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['adapter-free']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use subagents as the canonical path' in skill\"",
+            "exitCode": 1,
+            "stderr": "Traceback (most recent call last):\n  File \"\u003cstring\u003e\", line 1, in \u003cmodule\u003e\nAssertionError"
+          }
+        }
+      ]
+    },
+    {
+      "document": {
+        "relativeTo": "specs/readme-proof.spec.md",
+        "title": "README Proof Ledger",
+        "markdown": "---\ntype: spec\nworkdir: .\n---\n\n# README Proof Ledger\n\nThe README proof ledger is the current claim-to-proof map for reader-facing\nREADME and operator promises. It should stay visible in the Specdown report so a\nreader can move from the product story to the evidence owner for each acceptance\ncriterion.\n\n```run:shell\npython3 - \u003c\u003c'PY'\nfrom pathlib import Path\n\ntext = Path(\"docs/readme-proof.md\").read_text(encoding=\"utf-8\")\nrequired = [\n    \"# README Proof Ledger\",\n    \"cautilus discover claims\",\n    \"cautilus.claim_proof_plan.v1\",\n    \"Claim Ledger\",\n    \"README-INIT-ROUTE\",\n    \"README-NORMAL-PROMPTS\",\n    \"README-QUALITY\",\n    \"charness-artifacts/cautilus/latest.md\",\n]\nmissing = [item for item in required if item not in text]\nassert not missing, missing\nPY\n```\n\n## Proof Owners\n\nLedger rows must name explicit proof owners instead of implying that generated\ndocs or Cautilus discovery alone prove every claim.\n\n```run:shell\npython3 - \u003c\u003c'PY'\nfrom pathlib import Path\n\ntext = Path(\"docs/readme-proof.md\").read_text(encoding=\"utf-8\")\nfor owner in (\"deterministic\", \"Cautilus\", \"HITL/operator\", \"deferred\"):\n    assert owner in text, owner\n\nrows = [line for line in text.splitlines() if line.startswith(\"| README-\")]\nassert rows, \"expected ledger rows\"\nfor row in rows:\n    cells = [cell.strip() for cell in row.strip().strip(\"|\").split(\"|\")]\n    assert len(cells) == 8, row\n    proof_owner = cells[3]\n    assert proof_owner, row\n    assert \"claim discover\" not in proof_owner.lower(), row\n    assert \"proof plan\" not in proof_owner.lower(), row\n    assert any(\n        marker in proof_owner\n        for marker in (\n            \"Deterministic\",\n            \"Cautilus\",\n            \"HITL/operator\",\n            \"Specdown\",\n            \"delegated review\",\n            \"human-auditable\",\n        )\n    ), row\nassert \"proof plan, not a verdict\" in text\nPY\n```\n",
+        "nodes": [
+          {
+            "level": 1,
+            "text": "README Proof Ledger",
+            "raw": "# README Proof Ledger\n",
+            "headingPath": [
+              "README Proof Ledger"
+            ]
+          },
+          {
+            "raw": "\nThe README proof ledger is the current claim-to-proof map for reader-facing\nREADME and operator promises. It should stay visible in the Specdown report so a\nreader can move from the product story to the evidence owner for each acceptance\ncriterion.\n\n",
+            "headingPath": [
+              "README Proof Ledger"
+            ]
+          },
+          {
+            "block": {
+              "raw": "run:shell",
+              "kind": "run",
+              "target": "shell"
+            },
+            "source": "python3 - \u003c\u003c'PY'\nfrom pathlib import Path\n\ntext = Path(\"docs/readme-proof.md\").read_text(encoding=\"utf-8\")\nrequired = [\n    \"# README Proof Ledger\",\n    \"cautilus discover claims\",\n    \"cautilus.claim_proof_plan.v1\",\n    \"Claim Ledger\",\n    \"README-INIT-ROUTE\",\n    \"README-NORMAL-PROMPTS\",\n    \"README-QUALITY\",\n    \"charness-artifacts/cautilus/latest.md\",\n]\nmissing = [item for item in required if item not in text]\nassert not missing, missing\nPY",
+            "raw": "```run:shell\npython3 - \u003c\u003c'PY'\nfrom pathlib import Path\n\ntext = Path(\"docs/readme-proof.md\").read_text(encoding=\"utf-8\")\nrequired = [\n    \"# README Proof Ledger\",\n    \"cautilus discover claims\",\n    \"cautilus.claim_proof_plan.v1\",\n    \"Claim Ledger\",\n    \"README-INIT-ROUTE\",\n    \"README-NORMAL-PROMPTS\",\n    \"README-QUALITY\",\n    \"charness-artifacts/cautilus/latest.md\",\n]\nmissing = [item for item in required if item not in text]\nassert not missing, missing\nPY\n```\n",
+            "id": {
+              "file": "specs/readme-proof.spec.md",
+              "headingPath": [
+                "README Proof Ledger"
+              ],
+              "ordinal": 1,
+              "line": 13
+            }
+          },
+          {
+            "level": 2,
+            "text": "Proof Owners",
+            "raw": "## Proof Owners\n",
+            "headingPath": [
+              "README Proof Ledger",
+              "Proof Owners"
+            ]
+          },
+          {
+            "raw": "\nLedger rows must name explicit proof owners instead of implying that generated\ndocs or Cautilus discovery alone prove every claim.\n\n",
+            "headingPath": [
+              "README Proof Ledger",
+              "Proof Owners"
+            ]
+          },
+          {
+            "block": {
+              "raw": "run:shell",
+              "kind": "run",
+              "target": "shell"
+            },
+            "source": "python3 - \u003c\u003c'PY'\nfrom pathlib import Path\n\ntext = Path(\"docs/readme-proof.md\").read_text(encoding=\"utf-8\")\nfor owner in (\"deterministic\", \"Cautilus\", \"HITL/operator\", \"deferred\"):\n    assert owner in text, owner\n\nrows = [line for line in text.splitlines() if line.startswith(\"| README-\")]\nassert rows, \"expected ledger rows\"\nfor row in rows:\n    cells = [cell.strip() for cell in row.strip().strip(\"|\").split(\"|\")]\n    assert len(cells) == 8, row\n    proof_owner = cells[3]\n    assert proof_owner, row\n    assert \"claim discover\" not in proof_owner.lower(), row\n    assert \"proof plan\" not in proof_owner.lower(), row\n    assert any(\n        marker in proof_owner\n        for marker in (\n            \"Deterministic\",\n            \"Cautilus\",\n            \"HITL/operator\",\n            \"Specdown\",\n            \"delegated review\",\n            \"human-auditable\",\n        )\n    ), row\nassert \"proof plan, not a verdict\" in text\nPY",
+            "raw": "```run:shell\npython3 - \u003c\u003c'PY'\nfrom pathlib import Path\n\ntext = Path(\"docs/readme-proof.md\").read_text(encoding=\"utf-8\")\nfor owner in (\"deterministic\", \"Cautilus\", \"HITL/operator\", \"deferred\"):\n    assert owner in text, owner\n\nrows = [line for line in text.splitlines() if line.startswith(\"| README-\")]\nassert rows, \"expected ledger rows\"\nfor row in rows:\n    cells = [cell.strip() for cell in row.strip().strip(\"|\").split(\"|\")]\n    assert len(cells) == 8, row\n    proof_owner = cells[3]\n    assert proof_owner, row\n    assert \"claim discover\" not in proof_owner.lower(), row\n    assert \"proof plan\" not in proof_owner.lower(), row\n    assert any(\n        marker in proof_owner\n        for marker in (\n            \"Deterministic\",\n            \"Cautilus\",\n            \"HITL/operator\",\n            \"Specdown\",\n            \"delegated review\",\n            \"human-auditable\",\n        )\n    ), row\nassert \"proof plan, not a verdict\" in text\nPY\n```\n",
+            "id": {
+              "file": "specs/readme-proof.spec.md",
+              "headingPath": [
+                "README Proof Ledger",
+                "Proof Owners"
+              ],
+              "ordinal": 2,
+              "line": 38
+            }
+          }
+        ],
+        "frontmatter": {
+          "type": "spec",
+          "workdir": "."
+        }
+      },
+      "status": "passed",
+      "cases": [
+        {
+          "id": {
+            "file": "specs/readme-proof.spec.md",
+            "headingPath": [
+              "README Proof Ledger"
+            ],
+            "ordinal": 1,
+            "line": 13
+          },
+          "kind": "code",
+          "status": "passed",
+          "label": "run:shell @ README Proof Ledger",
+          "durationMs": 48,
+          "events": [
+            {
+              "type": "caseStarted",
+              "id": {
+                "file": "specs/readme-proof.spec.md",
+                "headingPath": [
+                  "README Proof Ledger"
+                ],
+                "ordinal": 1,
+                "line": 13
+              },
+              "label": "run:shell @ README Proof Ledger"
+            },
+            {
+              "type": "casePassed",
+              "id": {
+                "file": "specs/readme-proof.spec.md",
+                "headingPath": [
+                  "README Proof Ledger"
+                ],
+                "ordinal": 1,
+                "line": 13
+              },
+              "label": "run:shell @ README Proof Ledger"
+            }
+          ],
+          "code": {
+            "block": "run:shell",
+            "template": "python3 - \u003c\u003c'PY'\nfrom pathlib import Path\n\ntext = Path(\"docs/readme-proof.md\").read_text(encoding=\"utf-8\")\nrequired = [\n    \"# README Proof Ledger\",\n    \"cautilus discover claims\",\n    \"cautilus.claim_proof_plan.v1\",\n    \"Claim Ledger\",\n    \"README-INIT-ROUTE\",\n    \"README-NORMAL-PROMPTS\",\n    \"README-QUALITY\",\n    \"charness-artifacts/cautilus/latest.md\",\n]\nmissing = [item for item in required if item not in text]\nassert not missing, missing\nPY",
+            "renderedSource": "python3 - \u003c\u003c'PY'\nfrom pathlib import Path\n\ntext = Path(\"docs/readme-proof.md\").read_text(encoding=\"utf-8\")\nrequired = [\n    \"# README Proof Ledger\",\n    \"cautilus discover claims\",\n    \"cautilus.claim_proof_plan.v1\",\n    \"Claim Ledger\",\n    \"README-INIT-ROUTE\",\n    \"README-NORMAL-PROMPTS\",\n    \"README-QUALITY\",\n    \"charness-artifacts/cautilus/latest.md\",\n]\nmissing = [item for item in required if item not in text]\nassert not missing, missing\nPY"
+          }
+        },
+        {
+          "id": {
+            "file": "specs/readme-proof.spec.md",
+            "headingPath": [
+              "README Proof Ledger",
+              "Proof Owners"
+            ],
+            "ordinal": 2,
+            "line": 38
+          },
+          "kind": "code",
+          "status": "passed",
+          "label": "run:shell @ Proof Owners",
+          "durationMs": 50,
+          "events": [
+            {
+              "type": "caseStarted",
+              "id": {
+                "file": "specs/readme-proof.spec.md",
+                "headingPath": [
+                  "README Proof Ledger",
+                  "Proof Owners"
+                ],
+                "ordinal": 2,
+                "line": 38
+              },
+              "label": "run:shell @ Proof Owners"
+            },
+            {
+              "type": "casePassed",
+              "id": {
+                "file": "specs/readme-proof.spec.md",
+                "headingPath": [
+                  "README Proof Ledger",
+                  "Proof Owners"
+                ],
+                "ordinal": 2,
+                "line": 38
+              },
+              "label": "run:shell @ Proof Owners"
+            }
+          ],
+          "code": {
+            "block": "run:shell",
+            "template": "python3 - \u003c\u003c'PY'\nfrom pathlib import Path\n\ntext = Path(\"docs/readme-proof.md\").read_text(encoding=\"utf-8\")\nfor owner in (\"deterministic\", \"Cautilus\", \"HITL/operator\", \"deferred\"):\n    assert owner in text, owner\n\nrows = [line for line in text.splitlines() if line.startswith(\"| README-\")]\nassert rows, \"expected ledger rows\"\nfor row in rows:\n    cells = [cell.strip() for cell in row.strip().strip(\"|\").split(\"|\")]\n    assert len(cells) == 8, row\n    proof_owner = cells[3]\n    assert proof_owner, row\n    assert \"claim discover\" not in proof_owner.lower(), row\n    assert \"proof plan\" not in proof_owner.lower(), row\n    assert any(\n        marker in proof_owner\n        for marker in (\n            \"Deterministic\",\n            \"Cautilus\",\n            \"HITL/operator\",\n            \"Specdown\",\n            \"delegated review\",\n            \"human-auditable\",\n        )\n    ), row\nassert \"proof plan, not a verdict\" in text\nPY",
+            "renderedSource": "python3 - \u003c\u003c'PY'\nfrom pathlib import Path\n\ntext = Path(\"docs/readme-proof.md\").read_text(encoding=\"utf-8\")\nfor owner in (\"deterministic\", \"Cautilus\", \"HITL/operator\", \"deferred\"):\n    assert owner in text, owner\n\nrows = [line for line in text.splitlines() if line.startswith(\"| README-\")]\nassert rows, \"expected ledger rows\"\nfor row in rows:\n    cells = [cell.strip() for cell in row.strip().strip(\"|\").split(\"|\")]\n    assert len(cells) == 8, row\n    proof_owner = cells[3]\n    assert proof_owner, row\n    assert \"claim discover\" not in proof_owner.lower(), row\n    assert \"proof plan\" not in proof_owner.lower(), row\n    assert any(\n        marker in proof_owner\n        for marker in (\n            \"Deterministic\",\n            \"Cautilus\",\n            \"HITL/operator\",\n            \"Specdown\",\n            \"delegated review\",\n            \"human-auditable\",\n        )\n    ), row\nassert \"proof plan, not a verdict\" in text\nPY"
+          }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "specsTotal": 4,
+    "specsPassed": 3,
+    "specsFailed": 1,
+    "casesTotal": 8,
+    "casesPassed": 7,
+    "casesFailed": 1,
+    "casesExpectedFail": 0
+  }
+}

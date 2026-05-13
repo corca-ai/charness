@@ -37,8 +37,7 @@ Caller contract:
 
 - pass the pending change artifact or a tight source summary
 - state success and out-of-scope lines up front
-- consume the returned four-bin triage directly:
-  `Act Before Ship`, `Bundle Anyway`, `Over-Worry`, `Valid but Defer`
+- consume the returned four-bin triage directly: `Act Before Ship`, `Bundle Anyway`, `Over-Worry`, `Valid but Defer`
 - write any change-affecting result back into the caller's durable contract
 - record `Fresh-Eye Satisfaction` as
   `parent-delegated`, `nested-delegated`, or `blocked <host-signal>`
@@ -74,12 +73,17 @@ loses the surface-lock inventory).
 Read only the smallest change surface that makes the next move legible.
 For no-argument slash-command use, run the autonomous trigger scan first.
 
+If `.agents/critique-adapter.yaml` declares ≥1 `packet_sections`, run the
+prepare runner once before spawning angle subagents (see `references/prepare-packet.md`).
+
 ```bash
 # Required Tools: rg
 # Missing-binary protocol: ../../shared/references/binary-preflight.md
 rg --files docs skills
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
 rg -n "spec|decision|follow-up|non-goal|out of scope|acceptance|risk|rename|delete|remove|migration" .
+python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root . 2>/dev/null || true
+python3 "$SKILL_DIR/scripts/prepare_packet.py" --repo-root . --prepared-for "<short label>" 2>/dev/null || true
 ```
 
 If a current spec, plan, PR proposal, issue, diff, or release artifact already
@@ -103,6 +107,9 @@ history.
      anchor-by-anchor weighting; see also `references/angle-selection.md`
 3. Run the angle pass.
    - use bounded fresh-eye subagents with one angle each
+   - when the repo's adapter declares ≥1 `packet_sections`, pass the
+     prepare-packet markdown render to each subagent and record the
+     consumed packet path in the closeout (`references/prepare-packet.md`)
    - do not collapse the counterweight into one of the angle subagents; keep
      it as a separate skeptical pass
    - before reporting the canonical path as blocked, use
@@ -139,6 +146,8 @@ The result should usually include:
 
 - `Execution`
 - `Fresh-Eye Satisfaction`
+- `Packet Consumed` — `<path>`, `n/a (no adapter sections)`, or
+  `blocked <reason>` per `references/prepare-packet.md`
 - `Target` — which reference shaped this run
 - `Change`
 - `Angles`
@@ -184,5 +193,7 @@ actually ran.
 - `references/autonomous-trigger.md`
 - `references/angle-selection.md`
 - `references/counterweight-triage.md`
+- `references/prepare-packet.md`
+- `references/adapter-contract.md`
 - `../../shared/references/agent-assessment-invariant.md`
 - `../../shared/references/fresh-eye-subagent-review.md`

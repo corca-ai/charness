@@ -26,7 +26,11 @@ python3 -c "from pathlib import Path; text = Path('charness-artifacts/cautilus/l
 `critique` is a judgment-heavy, canonical-subagent workflow. The standing repo
 bar should keep seam checks for the contract itself, while the real behavioral
 question stays on-demand through `cautilus` or explicit reviewed HITL proof.
+Per #161, `critique` now ships an opt-in `.agents/critique-adapter.yaml`
+contract for the prepare-packet runner, so it lives in the `required`
+adapter bucket alongside other adapter-shipping public skills; the gate
+still fires only when the adapter declares `packet_sections`.
 
 ```run:shell
-python3 -c "import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['adapter-free']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use subagents as the canonical path' in skill"
+python3 -c "import json; from pathlib import Path; policy = json.loads(Path('docs/public-skill-validation.json').read_text(encoding='utf-8')); assert 'critique' in policy['tiers']['hitl-recommended']; assert 'critique' in policy['adapter_requirements']['required']; skill = Path('skills/public/critique/SKILL.md').read_text(encoding='utf-8'); assert 'use subagents as the canonical path' in skill"
 ```

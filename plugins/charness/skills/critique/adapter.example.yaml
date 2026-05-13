@@ -1,0 +1,22 @@
+version: 1
+repo: CHANGE_ME
+language: en
+output_dir: charness-artifacts/critique
+packet_sections:
+  - id: changed-files-and-owning-surfaces
+    title: Changed Files And Owning Surfaces
+    content_kind: script
+    command: "python3 scripts/render_critique_section_changed_surfaces.py"
+  - id: known-deferred-concerns
+    title: Known Deferred Concerns
+    content_kind: static
+    content_path: docs/deferred-decisions.md
+  - id: non-goals
+    title: Non-Goals For This Critique
+    content_kind: static
+    # Inline `content` accepts a string or a list of strings (one per
+    # line). Block scalars (`|`) are not supported by the repo-local
+    # YAML loader.
+    content:
+      - "- example non-goal one"
+      - "- example non-goal two"

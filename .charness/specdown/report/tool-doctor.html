@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>CLI Operator Contracts</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main>
+    <div class="layout">
+      <aside class="toc" aria-label="Table of contents">
+        <div class="toc-inner">
+          <p class="toc-title">Contents</p>
+          
+          
+          
+          <section class="toc-spec">
+            <div class="toc-spec-header"><a class="toc-spec-title " href="./index.html">Charness Executable Specs</a></div>
+            <p class="toc-snippet">These specs cover stable operator-facing behavior only.</p>
+            
+          </section>
+          
+          
+          
+          
+          
+          <section class="toc-spec current">
+            <div class="toc-spec-header"><span class="toc-type-badge" style="--type-hue:187">spec</span><span class="toc-spec-title ">CLI Operator Contracts</span></div>
+            
+            
+            <ul class="toc-list">
+              
+              <li class="toc-item" data-anchor="section-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-envelope-and-doctor-next-action">
+                <a class="toc-link toc-level-2 " href="#section-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-envelope-and-doctor-next-action">`specdown` Binary Contract, Task Envelope, And Doctor Next Action</a>
+                
+              </li>
+              
+            </ul>
+            
+          </section>
+          
+          
+          
+          
+          
+          <section class="toc-spec">
+            <div class="toc-spec-header"><span class="toc-type-badge" style="--type-hue:187">spec</span><a class="toc-spec-title failed" href="./on-demand-validation.html">On-Demand Validation Viewer</a></div>
+            
+            
+          </section>
+          
+          
+          
+          
+          
+          <section class="toc-spec">
+            <div class="toc-spec-header"><span class="toc-type-badge" style="--type-hue:187">spec</span><a class="toc-spec-title " href="./readme-proof.html">README Proof Ledger</a></div>
+            
+            
+          </section>
+          
+          
+          
+        </div>
+      </aside>
+
+      <div class="content">
+        <div class="content-header">
+          <p class="content-meta"><span class="doc-type" style="--type-hue:187">spec</span><span class="pill pass">3 passed</span><span class="pill fail">0 failed</span></p>
+        </div>
+        <div class="content-body">
+          <article class="spec">
+            <section class="spec-body"><section class="s1" id="section-specs-tool-doctor-spec-md-cli-operator-contracts"><h1>CLI Operator Contracts</h1>
+<p><code>charness</code> operator-facing commands must leave structured continuation state
+without confusing health, readiness, ownership, or the next operator action.</p>
+<p>This spec keeps proof at the operator-facing command boundary. Fixture-heavy
+branch coverage still belongs in pytest, but the current shipped CLI contract
+should remain readable and executable here.</p>
+<section class="s2" id="section-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-envelope-and-doctor-next-action"><h2><code>specdown</code> Binary Contract, Task Envelope, And Doctor Next Action</h2>
+<p>The <code>specdown</code> integration consumes an upstream support skill and remains an
+external binary managed through the tool control plane. Doctor checks the
+installed command and release metadata, and it should report the support source
+as upstream-consumed until sync materializes the installed plugin support
+surface.</p>
+<section class="exec-block passed" id="case-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-envelope-and-doctor-next-action-1"><div class="exec-source"><code>python3 ./charness tool doctor --repo-root . --json specdown | python3 -c &#34;import json,sys; payload=json.load(sys.stdin); doctor=payload[&#39;results&#39;][&#39;specdown&#39;][&#39;doctor&#39;]; assert doctor[&#39;support_state&#39;]==&#39;upstream-consumed&#39;; assert doctor[&#39;detect&#39;][&#39;results&#39;][0][&#39;command&#39;]==&#39;specdown version&#39;; assert doctor[&#39;healthcheck&#39;][&#39;results&#39;][0][&#39;command&#39;]==&#39;specdown run -help&#39;&#34;</code></div><p class="exec-block-footer">run:shell</p></section><p>The repo-local task envelope should provide the sah-inspired claim, submit, and
+abort loop as structured state under <code>.charness/tasks/</code> without introducing a
+queue or scheduler.</p>
+<section class="exec-block passed" id="case-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-envelope-and-doctor-next-action-2"><div class="exec-source"><code>python3 ./charness task --repo-root . --json status missing-slice | python3 -c &#34;import json,sys; payload=json.load(sys.stdin); assert payload[&#39;event&#39;]==&#39;rejected&#39;; assert payload[&#39;status&#39;]==&#39;missing&#39;; assert payload[&#39;task_path&#39;]==&#39;.charness/tasks/missing-slice.json&#39;&#34;</code></div><p class="exec-block-footer">run:shell</p></section><p>The root <code>doctor</code> command should emit a single primary <code>next_action</code> while
+retaining host-specific <code>next_steps</code>, so operator automation can act on the
+first meaningful host move without losing Codex/Claude detail.</p>
+<section class="exec-block passed" id="case-specs-tool-doctor-spec-md-cli-operator-contracts-specdown-binary-contract-task-envelope-and-doctor-next-action-3"><div class="exec-source"><code>python3 ./charness doctor --repo-root . --json | python3 -c &#34;import json,sys; payload=json.load(sys.stdin); action=payload[&#39;next_action&#39;]; assert isinstance(action, dict) and action[&#39;kind&#39;]; assert action[&#39;message&#39;]; assert isinstance(payload[&#39;next_steps&#39;], dict) and payload[&#39;next_steps&#39;]&#34;</code></div><p class="exec-block-footer">run:shell</p></section></section></section></section>
+          </article>
+        </div>
+      </div>
+      
+      <div class="mobile-title" aria-hidden="true">
+        <h1>CLI Operator Contracts</h1>
+      </div>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <hr>
+    <p><a href="https://github.com/corca-ai/specdown">github.com/corca-ai/specdown</a></p>
+  </footer>
+  <script src="./script.js"></script>
+</body>
+</html>
