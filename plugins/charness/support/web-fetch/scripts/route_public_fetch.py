@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Sequence
 from urllib.parse import urlparse
 
@@ -71,6 +73,28 @@ ROUTES: dict[str, Route] = {
         notes=(
             "Keep private access on the grant or authenticated `gh` path.",
             "Public REST remains a fallback for world-readable metadata.",
+        ),
+    ),
+    "github-host-mediated": Route(
+        route_id="github-host-mediated",
+        route_family="host-mediated",
+        summary="Use the host's github capability command; do not invoke direct `gh` under adapter mode `host-mediated`.",
+        required_tools=(),
+        access_modes=("grant", "public", "degraded"),
+        notes=(
+            "Adapter declared gather_provider.github.mode=host-mediated.",
+            "Follow the host's documented github capability shape; never substitute direct `gh`.",
+        ),
+    ),
+    "github-missing-capability": Route(
+        route_id="github-missing-capability",
+        route_family="public-only",
+        summary="Adapter declared gather_provider.github.mode=none; stop with missing-capability or use public REST only.",
+        required_tools=(),
+        access_modes=("public", "degraded"),
+        notes=(
+            "Adapter declared gather_provider.github.mode=none.",
+            "Do not invoke `gh` or a host capability; only world-readable public REST is allowed.",
         ),
     ),
     "yt-dlp-metadata": Route(
@@ -161,8 +185,38 @@ def host_matches(host: str, patterns: Sequence[str]) -> bool:
     return any(host == pattern or host.endswith(f".{pattern}") for pattern in patterns)
 
 
-def route_for_url(url: str) -> dict[str, object]:
+GITHUB_ROUTE_FOR_MODE = {
+    "direct-cli": "github-grant-or-cli",
+    "host-mediated": "github-host-mediated",
+    "none": "github-missing-capability",
+}
+
+
+def _resolve_github_mode(repo_root: Path | None) -> str:
+    if repo_root is None:
+        return "direct-cli"
+    skill_dir = Path(__file__).resolve().parents[3]
+    adapter_script = skill_dir / "public" / "gather" / "scripts" / "resolve_adapter.py"
+    if not adapter_script.is_file():
+        return "direct-cli"
+    spec = importlib.util.spec_from_file_location("web_fetch_gather_adapter", adapter_script)
+    if spec is None or spec.loader is None:
+        return "direct-cli"
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+        payload = module.load_adapter(repo_root)
+    except Exception:
+        return "direct-cli"
+    provider = payload.get("data", {}).get("gather_provider") or {}
+    entry = provider.get("github") or {}
+    mode = entry.get("mode", "direct-cli")
+    return mode if mode in GITHUB_ROUTE_FOR_MODE else "direct-cli"
+
+
+def route_for_url(url: str, *, repo_root: Path | None = None, github_mode: str | None = None) -> dict[str, object]:
     host = normalized_host(url)
+    effective_github_mode = github_mode if github_mode in GITHUB_ROUTE_FOR_MODE else _resolve_github_mode(repo_root)
     if host_matches(host, ("x.com", "twitter.com")):
         route = ROUTES["twitter-syndication"]
     elif host_matches(host, ("reddit.com",)):
@@ -172,7 +226,7 @@ def route_for_url(url: str) -> dict[str, object]:
     elif host_matches(host, ("stackoverflow.com", "stackexchange.com")):
         route = ROUTES["stackexchange-api"]
     elif host_matches(host, ("github.com",)):
-        route = ROUTES["github-grant-or-cli"]
+        route = ROUTES[GITHUB_ROUTE_FOR_MODE[effective_github_mode]]
     elif host_matches(host, tuple(MEDIA_DOMAINS)):
         route = ROUTES["yt-dlp-metadata"]
     elif host_matches(host, ("blog.naver.com",)):
@@ -182,7 +236,7 @@ def route_for_url(url: str) -> dict[str, object]:
     else:
         route = ROUTES["direct-then-fallback"]
 
-    return {
+    payload: dict[str, object] = {
         "input_url": url,
         "normalized_host": host,
         "route_id": route.route_id,
@@ -193,13 +247,17 @@ def route_for_url(url: str) -> dict[str, object]:
         "fallback_order": list(FALLBACK_ORDER),
         "notes": list(route.notes),
     }
+    if host_matches(host, ("github.com",)):
+        payload["github_mode"] = effective_github_mode
+    return payload
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", required=True)
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     args = parser.parse_args()
-    print(json.dumps(route_for_url(args.url), ensure_ascii=False, indent=2))
+    print(json.dumps(route_for_url(args.url, repo_root=args.repo_root), ensure_ascii=False, indent=2))
     return 0
 
 

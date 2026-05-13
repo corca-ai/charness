@@ -14,14 +14,17 @@ instead of re-fetching or re-summarizing the same source from scratch.
 under the hood. Provider choice, credential mechanics, and onboarding details
 belong in support and integration layers, not in the public skill definition.
 
-Current `charness`-owned provider runtime lives under support skills such as
-`gather-slack` and `gather-notion`. Google Workspace remains an external
-runtime boundary and should flow through a real integration such as `gws-cli`.
-Browser-mediated private SaaS acquisition also stays below the public skill:
-`gather` owns the decision ladder, while `agent-browser` remains the external
-browser runtime when stronger official paths are unavailable.
-When the source is Google Workspace, prefer the repo-owned helper below rather
-than guessing the next operator step:
+Provider routing is adapter-driven. Each gather source (`github`,
+`google_workspace`, `slack`, `notion`) reads
+`gather_provider.<source>.mode` from `.agents/gather-adapter.yaml`:
+`direct-cli` (default, maintainer-local CLIs such as `gh`/`gws`),
+`host-mediated` (the host's `<provider>` capability command), or `none`
+(stop with a missing-capability explanation). Skill scripts and support
+skills only invoke the path the adapter selected.
+Charness-owned runtime lives under support skills (`gather-slack`,
+`gather-notion`); browser-mediated private SaaS still flows through
+`agent-browser`. When the source is Google Workspace, route through the
+repo-owned helper below rather than guessing the next operator step:
 
 ```bash
 python3 "$SKILL_DIR/scripts/advise_google_workspace_path.py" --repo-root .
@@ -77,16 +80,20 @@ Prefer the strongest honest access path first:
    auth/bootstrap is missing or the source still needs human-only approval
 7. degraded path only when it still produces honest partial value
 
-Examples:
+Examples — each example follows whichever `gather_provider.<source>.mode`
+the adapter selected; never substitute direct CLIs/tokens under
+`host-mediated` or `none`:
 
-- GitHub via runtime grant or authenticated `gh`
-- Google Workspace via runtime grant or an approved external tool contract
-- Slack via runtime grant or a bot-token-backed integration
-- Notion via runtime grant, token-backed integration, or published-page
-  fallback
-- private SaaS roster or directory via official export first, then
-  `agent-browser` only if the export path is absent or still gated behind the
-  same authenticated UI
+- GitHub: runtime grant or authenticated `gh` (direct-cli); host capability
+  command (host-mediated); stop with missing-capability (none)
+- Google Workspace: authenticated `gws` (direct-cli); host capability
+  command (host-mediated); stop with missing-capability (none)
+- Slack: bot-token-backed integration (direct-cli); host capability command
+  (host-mediated); stop with missing-capability (none)
+- Notion: token-backed integration or published-page fallback (direct-cli);
+  host capability command (host-mediated); stop with missing-capability (none)
+- private SaaS roster: official export first, then `agent-browser` only if
+  the export path is absent
 
 Do not ask the user to paste secrets into chat. If private access is missing,
 name the missing capability and stop cleanly or fall back to a public path.
@@ -162,6 +169,7 @@ The result should usually include:
 ## References
 
 - `references/adapter-contract.md`
+- `references/gather-provider.md`
 - `references/source-priority.md`
 - `references/asset-refresh.md`
 - `references/document-seams.md`

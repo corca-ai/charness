@@ -4,3 +4,12 @@ language: en
 output_dir: charness-artifacts/gather
 preset_id: portable-defaults
 customized_from: portable-defaults
+gather_provider:
+  github:
+    mode: direct-cli
+  google_workspace:
+    mode: direct-cli
+  slack:
+    mode: direct-cli
+  notion:
+    mode: direct-cli

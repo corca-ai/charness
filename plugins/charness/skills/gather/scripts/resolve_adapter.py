@@ -48,6 +48,10 @@ STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version"
 ARTIFACT_FILENAME = "latest.md"
 ARTIFACT_CLASS = "history"
 
+GATHER_PROVIDER_SOURCES = ("github", "google_workspace", "slack", "notion")
+GATHER_PROVIDER_MODES = ("direct-cli", "host-mediated", "none")
+DEFAULT_GATHER_PROVIDER_MODE = "direct-cli"
+
 
 def _string(value: Any, field: str, errors: list[str]) -> str | None:
     if value is None:
@@ -58,6 +62,38 @@ def _string(value: Any, field: str, errors: list[str]) -> str | None:
     return value
 
 
+def default_gather_provider() -> dict[str, dict[str, str]]:
+    return {source: {"mode": DEFAULT_GATHER_PROVIDER_MODE} for source in GATHER_PROVIDER_SOURCES}
+
+
+def _parse_gather_provider(raw: Any, errors: list[str]) -> dict[str, dict[str, str]]:
+    resolved = default_gather_provider()
+    if raw is None:
+        return resolved
+    if not isinstance(raw, dict):
+        errors.append("gather_provider must be a mapping")
+        return resolved
+    for source, entry in raw.items():
+        if source not in GATHER_PROVIDER_SOURCES:
+            errors.append(
+                f"gather_provider.{source} is not a known source; allowed: {sorted(GATHER_PROVIDER_SOURCES)}"
+            )
+            continue
+        if not isinstance(entry, dict):
+            errors.append(f"gather_provider.{source} must be a mapping")
+            continue
+        mode = entry.get("mode")
+        if mode is None:
+            continue
+        if not isinstance(mode, str) or mode not in GATHER_PROVIDER_MODES:
+            errors.append(
+                f"gather_provider.{source}.mode must be one of: {', '.join(GATHER_PROVIDER_MODES)}"
+            )
+            continue
+        resolved[source]["mode"] = mode
+    return resolved
+
+
 def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
     return {
         "version": 1,
@@ -65,6 +101,7 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "language": "en",
         "output_dir": "charness-artifacts/gather",
         "artifact_class": ARTIFACT_CLASS,
+        "gather_provider": default_gather_provider(),
     }
 
 
@@ -84,6 +121,8 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
         value = _string(data.get(field), field, errors)
         if value is not None:
             validated[field] = value
+
+    validated["gather_provider"] = _parse_gather_provider(data.get("gather_provider"), errors)
 
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")

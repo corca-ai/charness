@@ -48,7 +48,12 @@ def _run_probe(binary: str, args: list[str]) -> dict[str, Any]:
 
 
 def _probe_backend(backend: dict[str, Any]) -> dict[str, Any]:
-    binary = backend.get("binary") or backend.get("id") or "gh"
+    binary = backend.get("binary") or backend.get("id")
+    if not binary:
+        raise RuntimeError(
+            "issue_backend produced no binary; configure issue_backend.id and "
+            "issue_backend.binary in .agents/issue-adapter.yaml."
+        )
     binary_path = shutil.which(binary)
     selected: dict[str, Any] = {
         "id": backend.get("id", "gh"), "binary": binary, "binary_path": binary_path,
@@ -83,7 +88,8 @@ def command_preflight(args: argparse.Namespace) -> int:
     if not selected["found"]:
         payload["error"] = (
             f"issue_backend binary {selected['binary']!r} not found on PATH. "
-            f"Install it, configure issue_backend in .agents/issue-adapter.yaml, or fall back to gh."
+            f"Install the declared backend or update issue_backend in "
+            f".agents/issue-adapter.yaml so it matches a backend the host exposes."
         )
     if args.json:
         emit(payload)

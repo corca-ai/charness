@@ -18,10 +18,9 @@ issue, a local note, or a stale artifact over the target repository's current
 GitHub state.
 
 The skill resolves the issue backend through the adapter (default `gh`;
-host-mediated alternates like `ceal github` register `issue_backend`).
-`preflight` reports `selected_backend`; when its `id` is not `gh`, follow
-`selected_backend.commands` or the host's shape. See
-`references/issue-backend.md` and proof-level discipline in
+host-mediated alternates like `ceal github` register their own backend).
+`preflight` reports `selected_backend` so non-`gh` backends substitute via
+`commands` rather than direct `gh`. See `references/issue-backend.md` and
 `../../shared/references/external-capability-proof-ladder.md`.
 
 ## Bootstrap
@@ -66,21 +65,23 @@ repo by created date. It must not use the current session's last created issue.
      line); record `JTBD: not inferable` when the situation does not reveal it
    - what evidence or commands show it
    - why the current behavior is confusing, costly, or blocked
-   - target-repo labels (`gh label list --repo <org/repo>` if the vocabulary
-     is unclear)
+   - target-repo labels via the selected backend (gh:
+     `gh label list --repo <org/repo>`; non-gh: host's label-list shape;
+     never substitute direct `gh` when another backend is selected)
    - external source identity when filed from a Slack thread, Notion page,
      doc, or gathered artifact, per `references/closeout-discipline.md`
 4. Add only an optional weak solution direction (`This may be solved by...`,
    `A useful outcome might be...`); avoid prescribing.
-5. Create the issue immediately using `selected_backend` (default
-   `gh issue create --repo <org/repo>`; host-mediated backends use
-   `selected_backend.commands.create` or the host's shape). Apply chosen
-   labels via `--label <name>` or the backend's equivalent.
+5. Create the issue through `selected_backend` (gh:
+   `gh issue create --repo <org/repo>`; non-gh: follow `commands.create` or
+   the host's shape — never substitute direct `gh`). Apply chosen labels
+   through the backend's label flag.
    Do not ask for approval unless the user explicitly asks to review first.
-6. Verify each created issue with
-   `gh issue view --repo <full_name> <number> --json number,url,state` (or
-   the backend equivalent); render closeout only from the verified
-   `{repo, number, url}` ledger. See `references/closeout-discipline.md`.
+6. Verify each created issue through `selected_backend` (gh:
+   `gh issue view --repo <full_name> <number> --json number,url,state`;
+   non-gh: follow `commands.view` or the host's shape). Render closeout
+   only from the verified `{repo, number, url}` ledger. See
+   `references/closeout-discipline.md`.
 
 ## Resolve Issue
 

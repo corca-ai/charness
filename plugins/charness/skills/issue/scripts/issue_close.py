@@ -44,7 +44,12 @@ def _resolve_op(
             f"_resolve_op({op}): caller passed placeholders {extra_subs!r} "
             f"not in op's allowlist {sorted(allowed)!r}"
         )
-    binary = backend.get("binary") or backend.get("id") or "gh"
+    binary = backend.get("binary") or backend.get("id")
+    if not binary:
+        raise RuntimeError(
+            "issue_backend produced no binary; configure issue_backend.id and "
+            "issue_backend.binary in .agents/issue-adapter.yaml."
+        )
     commands = backend.get("commands") or {}
     template = commands.get(op)
     if template is None:

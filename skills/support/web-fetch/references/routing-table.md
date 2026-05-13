@@ -14,7 +14,11 @@ reduced to tactics `charness` is willing to carry locally.
 - `stackoverflow.com`, `stackexchange.com`
   - prefer Stack Exchange API over raw HTML
 - `github.com`
-  - prefer runtime grant or authenticated `gh`; public REST fallback remains possible
+  - route per `gather_provider.github.mode` in `.agents/gather-adapter.yaml`:
+    `direct-cli` → `github-grant-or-cli` (authenticated `gh`);
+    `host-mediated` → `github-host-mediated` (host's github capability
+    command, never direct `gh`); `none` → `github-missing-capability`
+    (stop with missing-capability or public REST only)
 - `youtube.com`, `youtu.be`, `vimeo.com`, `twitch.tv`, `tiktok.com`, `soundcloud.com`
   - prefer `yt-dlp` metadata or subtitle paths
 - `blog.naver.com`

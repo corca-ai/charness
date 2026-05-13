@@ -35,7 +35,23 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _scripts_control_plane_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.control_plane_lib")
 load_manifest = _scripts_control_plane_lib_module.load_manifest
 
+_resolve_adapter_module = importlib.util.spec_from_file_location(
+    "gather_resolve_adapter",
+    Path(__file__).resolve().parent / "resolve_adapter.py",
+)
+_gather_adapter = importlib.util.module_from_spec(_resolve_adapter_module)
+_resolve_adapter_module.loader.exec_module(_gather_adapter)
+load_gather_adapter = _gather_adapter.load_adapter
+
 TOOL_ID = "gws-cli"
+SOURCE_ID = "google_workspace"
+
+
+def resolve_provider_mode(repo_root: Path) -> str:
+    adapter = load_gather_adapter(repo_root)
+    provider = adapter["data"].get("gather_provider") or {}
+    entry = provider.get(SOURCE_ID) or {}
+    return entry.get("mode", "direct-cli")
 
 
 def run_doctor(repo_root: Path) -> dict[str, object]:
@@ -95,17 +111,50 @@ def main() -> None:
     parser.add_argument("--repo-root", type=Path, required=True)
     args = parser.parse_args()
 
-    args.repo_root.resolve()
+    repo_root = args.repo_root.resolve()
+    mode = resolve_provider_mode(repo_root)
     manifest = load_manifest(REPO_ROOT / "integrations" / "tools" / f"{TOOL_ID}.json")
-    doctor = run_doctor(REPO_ROOT)
-    next_steps = build_next_steps(doctor, manifest)
-    payload = {
-        "provider": TOOL_ID,
-        "doctor_status": doctor["doctor_status"],
-        "summary": manifest["summary"],
-        "operator_prompt": next_steps[0],
-        "next_steps": next_steps,
-    }
+    if mode == "none":
+        payload = {
+            "provider": TOOL_ID,
+            "provider_mode": mode,
+            "doctor_status": "skipped",
+            "summary": manifest["summary"],
+            "operator_prompt": (
+                "Adapter declares gather_provider.google_workspace.mode=none. "
+                "Stop with a missing-capability explanation instead of invoking gws."
+            ),
+            "next_steps": [
+                "Surface the missing google_workspace capability to the operator.",
+                "If the operator has a Google Workspace path, update gather_provider.google_workspace.mode in .agents/gather-adapter.yaml.",
+            ],
+        }
+    elif mode == "host-mediated":
+        payload = {
+            "provider": TOOL_ID,
+            "provider_mode": mode,
+            "doctor_status": "skipped",
+            "summary": manifest["summary"],
+            "operator_prompt": (
+                "Adapter declares gather_provider.google_workspace.mode=host-mediated. "
+                "Use the host's google_workspace capability command instead of invoking gws directly."
+            ),
+            "next_steps": [
+                "Follow the host's documented google_workspace capability command shape.",
+                "Do not substitute direct `gws` invocations under a host-mediated adapter mode.",
+            ],
+        }
+    else:
+        doctor = run_doctor(REPO_ROOT)
+        next_steps = build_next_steps(doctor, manifest)
+        payload = {
+            "provider": TOOL_ID,
+            "provider_mode": mode,
+            "doctor_status": doctor["doctor_status"],
+            "summary": manifest["summary"],
+            "operator_prompt": next_steps[0],
+            "next_steps": next_steps,
+        }
     print(json.dumps(payload, ensure_ascii=False, indent=2))
 
 

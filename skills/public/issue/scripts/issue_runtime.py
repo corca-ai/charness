@@ -113,10 +113,6 @@ def is_selector(value: str) -> bool:
         return False
 
 
-def gh_json(args: list[str]) -> Any:
-    return _backend_json(["gh", *args])
-
-
 def _backend_json(argv: list[str]) -> Any:
     result = subprocess.run(argv, check=False, capture_output=True, text=True)
     if result.returncode != 0:

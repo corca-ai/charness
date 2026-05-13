@@ -8,7 +8,10 @@ description: "Internal support capability for gathering published Notion pages i
 This is a support capability, not a public workflow concept.
 
 Users should still reach this through `gather` when a published Notion page
-needs to become a durable local asset.
+needs to become a durable local asset. The public `gather` skill only invokes
+this support wrapper when `gather_provider.notion.mode` in the gather adapter
+is `direct-cli`; under `host-mediated` or `none`, gather stops or routes
+through the host's Notion capability instead of running the wrapper.
 
 ## Runtime Contract
 

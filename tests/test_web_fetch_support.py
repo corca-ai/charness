@@ -42,6 +42,49 @@ def test_route_public_fetch_maps_github_to_grant_or_cli_strategy() -> None:
     payload = json.loads(result.stdout)
     assert payload["route_id"] == "github-grant-or-cli"
     assert payload["access_modes"][:2] == ["grant", "binary"]
+    assert payload["github_mode"] == "direct-cli"
+
+
+def test_route_public_fetch_honors_host_mediated_github_mode(tmp_path: Path) -> None:
+    adapter_dir = tmp_path / ".agents"
+    adapter_dir.mkdir()
+    (adapter_dir / "gather-adapter.yaml").write_text(
+        "version: 1\nrepo: demo\ngather_provider:\n  github:\n    mode: host-mediated\n",
+        encoding="utf-8",
+    )
+    result = run_helper(
+        "skills/support/web-fetch/scripts/route_public_fetch.py",
+        "--url",
+        "https://github.com/openai/openai-python",
+        "--repo-root",
+        str(tmp_path),
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["route_id"] == "github-host-mediated"
+    assert "gh" not in payload["required_tools"]
+    assert payload["github_mode"] == "host-mediated"
+
+
+def test_route_public_fetch_honors_none_github_mode(tmp_path: Path) -> None:
+    adapter_dir = tmp_path / ".agents"
+    adapter_dir.mkdir()
+    (adapter_dir / "gather-adapter.yaml").write_text(
+        "version: 1\nrepo: demo\ngather_provider:\n  github:\n    mode: 'none'\n",
+        encoding="utf-8",
+    )
+    result = run_helper(
+        "skills/support/web-fetch/scripts/route_public_fetch.py",
+        "--url",
+        "https://github.com/openai/openai-python",
+        "--repo-root",
+        str(tmp_path),
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["route_id"] == "github-missing-capability"
+    assert "gh" not in payload["required_tools"]
+    assert payload["github_mode"] == "none"
 
 
 def test_route_public_fetch_maps_naver_news_to_reader_fallback() -> None:
