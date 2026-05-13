@@ -79,7 +79,16 @@ def _backend_ok(selected: dict[str, Any]) -> bool:
 
 def command_preflight(args: argparse.Namespace) -> int:
     resolved = _resolve_backend(args.repo_root.resolve())
-    selected = _probe_backend(resolved["backend"])
+    try:
+        selected = _probe_backend(resolved["backend"])
+    except RuntimeError as exc:
+        payload = {"ok": False, "error": str(exc), "adapter": resolved["adapter"],
+                   "selected_backend": resolved["backend"]}
+        if args.json:
+            emit(payload)
+        else:
+            print(str(exc))
+        return 1
     ok = resolved["adapter_ok"] and _backend_ok(selected)
     payload: dict[str, Any] = {"ok": ok, "selected_backend": selected, "adapter": resolved["adapter"]}
     if selected["id"] == "gh":

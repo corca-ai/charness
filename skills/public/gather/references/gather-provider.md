@@ -70,3 +70,18 @@ gate provider access behind a host-mediated capability surface (such as
 agents to reach for a direct CLI or token. The same skill body works
 across both host modes without baking host-specific identifiers into
 charness.
+
+## Adapter Slot Boundary
+
+`gather_provider.<source>.mode` is a per-source read-mode enum
+(`direct-cli`/`host-mediated`/`none`). It is intentionally a different
+shape from the write-action backend slots used by other skills (`issue`'s
+`issue_backend` and `release`'s `release_backend`), which are
+`{id, binary, commands}` descriptors that name the executable and the
+commands the skill is allowed to invoke. The same host capability — for
+example `ceal github` — can be declared in both shapes without drifting
+because each slot answers a different question: gather asks "which read
+path is reachable for this source?", while issue/release ask "which
+binary and commands run the write action?". Do not collapse them into one
+slot; cross-skill consistency comes from each shape staying honest about
+what its consumer actually needs to know.
