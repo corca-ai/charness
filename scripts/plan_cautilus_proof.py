@@ -25,7 +25,7 @@ ValidationError = _scripts_public_skill_validation_lib_module.ValidationError
 load_policy = _scripts_public_skill_validation_lib_module.load_policy
 validate_policy = _scripts_public_skill_validation_lib_module.validate_policy
 
-EVAL_TEST_COMMAND = "cautilus eval test --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture evals/cautilus/whole-repo-routing.fixture.json"
+EVAL_TEST_COMMAND = "python3 scripts/run_cautilus_eval.py --mode test --justification-log <path-to-failing-log>"
 SKILL_CORE_PATTERNS = ("skills/public/*/SKILL.md", "skills/support/*/SKILL.md")
 ADAPTER_PATTERNS = (".agents/*-adapter.yaml", ".agents/cautilus-adapters/*.yaml")
 TRUTH_SURFACE_FALLBACKS = (

@@ -32,9 +32,9 @@ The wrapper refuses when:
 
 - the planner returns `next_action: "none"` and no `--justification-log` is provided,
 - the planner returns `must_ask_before_running: true` and no `--justification-log` is provided,
-- the `--justification-log` path does not exist, is empty, is smaller than 32 bytes, or does not contain any of the behavior-source markers (`failing-prompt`, `transcript`, `operator-log`, `issue-log`, `regression-log`).
+- the `--justification-log` path does not exist, is empty, is smaller than 32 bytes, has no `- source-kind: <kind>` line, or declares a `source-kind` outside `failing-prompt`, `transcript`, `operator-log`, `issue-log`, `regression-log`.
 
-The marker requirement aligns the wrapper with the `## Behavior Source` invariant in `charness-artifacts/cautilus/latest.md`: a trivial throwaway file does not satisfy the contract; the log must declare what kind of behavior proof it is.
+The line-shape requirement aligns the wrapper with the `## Behavior Source` invariant in `charness-artifacts/cautilus/latest.md`: a trivial throwaway file does not satisfy the contract, and a file that merely contains the marker word as a substring does not either; the log must declare what kind of behavior proof it is via a structured line such as `- source-kind: failing-prompt`.
 
 ## What This Page Owns
 

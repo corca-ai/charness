@@ -10,6 +10,12 @@ ever appearing in the declaration, and the headline-only summary trap would
 re-open silently. This validator forces a conscious choice for every inventory:
 either declare non_headline_fields (≥2 distinct) or opt out with a
 non-empty `opt_out_reason`.
+
+Scope: skills/public/quality/scripts/inventory_*.py only. Inventory scripts
+elsewhere in the repo (skills/public/<other-skill>/scripts/inventory_*.py,
+scripts/inventory_*.py) are out of scope by design — they have their own
+consumers. See the `_scope` field of the declaration JSON for the canonical
+contract.
 """
 
 from __future__ import annotations

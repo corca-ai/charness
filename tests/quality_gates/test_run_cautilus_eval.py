@@ -56,21 +56,44 @@ def test_refuses_when_justification_log_below_min_bytes(tmp_path: Path) -> None:
     assert "behavior proof" in result.stderr
 
 
-def test_refuses_when_justification_log_lacks_behavior_marker(tmp_path: Path) -> None:
+def test_refuses_when_justification_log_lacks_source_kind_line(tmp_path: Path) -> None:
     no_marker = tmp_path / "no-marker.txt"
     no_marker.write_text(
-        "This is a long-enough log file that says nothing about failing prompts.\n",
+        "This is a long-enough log file that says nothing structured.\n",
         encoding="utf-8",
     )
     result = _run("--paths", justification_log=no_marker)
     assert result.returncode == 2, result.stdout
-    assert "behavior-source markers" in result.stderr
+    assert "no `- source-kind:" in result.stderr
+
+
+def test_refuses_when_source_kind_is_unrecognized(tmp_path: Path) -> None:
+    weird = tmp_path / "weird-kind.txt"
+    weird.write_text(
+        "- source-kind: vibes\nA long-enough body to clear the 32-byte minimum.\n",
+        encoding="utf-8",
+    )
+    result = _run("--paths", justification_log=weird)
+    assert result.returncode == 2, result.stdout
+    assert "supported kinds are" in result.stderr
+
+
+def test_refuses_when_marker_only_appears_as_substring(tmp_path: Path) -> None:
+    # The pre-tighten wrapper would accept this; the line-shape check rejects it.
+    substring_only = tmp_path / "substring-only.txt"
+    substring_only.write_text(
+        "Conversational note about a failing-prompt encountered earlier today.\n",
+        encoding="utf-8",
+    )
+    result = _run("--paths", justification_log=substring_only)
+    assert result.returncode == 2, result.stdout
+    assert "no `- source-kind:" in result.stderr
 
 
 def test_forwards_when_justification_log_has_marker_and_minimum_size(tmp_path: Path) -> None:
     log = tmp_path / "failing-prompt.txt"
     log.write_text(
-        "source-kind: failing-prompt\nA real failing prompt body goes here.\n",
+        "- source-kind: failing-prompt\nA real failing prompt body goes here.\n",
         encoding="utf-8",
     )
     result = _run("--paths", "--", "--fixture", "demo.json", justification_log=log)
@@ -83,7 +106,7 @@ def test_forwards_when_justification_log_has_marker_and_minimum_size(tmp_path: P
 def test_strips_double_dash_separator(tmp_path: Path) -> None:
     log = tmp_path / "log.txt"
     log.write_text(
-        "source-kind: regression-log\nA long-enough log line satisfying the size minimum.\n",
+        "- source-kind: regression-log\nA long-enough log line satisfying the size minimum.\n",
         encoding="utf-8",
     )
     result = _run("--paths", "--", "--alpha", "beta", justification_log=log)

@@ -35,6 +35,7 @@ A_B_REQUIRED_SNIPPETS = (
 REGRESSION_COMMAND_SNIPPETS = (
     "cautilus eval test",
     "npm run dogfood:self",
+    "scripts/run_cautilus_eval.py",
 )
 REMOVED_COMMAND_SNIPPET = "cautilus instruction-surface test"
 LEGACY_ROUTE_ONLY_FIXTURE = "evals/cautilus/whole-repo-routing.fixture.json"
@@ -60,7 +61,6 @@ _scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_li
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
 normalize_repo_path = _scripts_surfaces_lib_module.normalize_repo_path
 _scripts_plan_cautilus_proof_module = import_repo_module(__file__, "scripts.plan_cautilus_proof")
-EVAL_TEST_COMMAND = _scripts_plan_cautilus_proof_module.EVAL_TEST_COMMAND
 plan_cautilus_proof = _scripts_plan_cautilus_proof_module.plan_cautilus_proof
 
 

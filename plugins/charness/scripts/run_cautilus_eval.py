@@ -10,16 +10,17 @@ code 2 when the planner says the call is not warranted.
 Refuses when no `--justification-log` is provided AND the planner returns
 either `next_action: "none"` or `must_ask_before_running: true`. The
 justification-log path is the operator-supplied override: it must exist as a
-file of at least 32 bytes containing one of the behavior-source markers
-(`failing-prompt`, `transcript`, `operator-log`, `issue-log`, `regression-log`)
-that match the `## Behavior Source` shape in
-`charness-artifacts/cautilus/latest.md`. Otherwise forwards to `cautilus eval
+file of at least 32 bytes containing a `- source-kind: <kind>` line whose
+kind is one of `failing-prompt`, `transcript`, `operator-log`, `issue-log`,
+or `regression-log` (mirroring the `## Behavior Source` shape in
+`charness-artifacts/cautilus/latest.md`). Otherwise forwards to `cautilus eval
 <mode>` with any extra args after `--`.
 """
 
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -37,12 +38,20 @@ VALID_MODES = ("test", "evaluate")
 CANONICAL_REFERENCE_PATH = "skills/public/quality/references/cautilus-on-demand.md"
 PLUGIN_REFERENCE_PATH = "skills/quality/references/cautilus-on-demand.md"
 JUSTIFICATION_LOG_MIN_BYTES = 32
-JUSTIFICATION_LOG_MARKERS = (
+# Mirrors VALID_BEHAVIOR_SOURCE_KINDS in scripts/validate_cautilus_proof.py so the
+# wrapper, the artifact validator, and the cautilus-on-demand reference all share
+# one grammar. A trivial file containing the marker token as a substring no
+# longer passes — the wrapper requires a `- source-kind: <kind>` line shape.
+JUSTIFICATION_LOG_KINDS = (
     "failing-prompt",
     "transcript",
     "operator-log",
     "issue-log",
     "regression-log",
+)
+SOURCE_KIND_LINE_RE = re.compile(
+    r"^\s*-\s*source-kind\s*:\s*`?([A-Za-z0-9_-]+)`?\s*$",
+    re.IGNORECASE | re.MULTILINE,
 )
 
 
@@ -144,14 +153,21 @@ def main(argv: list[str] | None = None) -> int:
                 f"behavior proof).",
                 repo_root,
             )
-        body = log_path.read_text(encoding="utf-8", errors="replace").lower()
-        if not any(marker in body for marker in JUSTIFICATION_LOG_MARKERS):
+        body = log_path.read_text(encoding="utf-8", errors="replace")
+        declared_kinds = [match.lower() for match in SOURCE_KIND_LINE_RE.findall(body)]
+        if not declared_kinds:
             return _refuse(
-                f"--justification-log path {log_path} does not contain any of "
-                f"the behavior-source markers ({', '.join(JUSTIFICATION_LOG_MARKERS)}); "
-                f"add one (e.g. `source-kind: failing-prompt`) so the log is "
-                f"identifiable as a behavior proof, matching the "
+                f"--justification-log path {log_path} has no `- source-kind: <kind>` line; "
+                f"add one so the log is identifiable as a behavior proof, matching the "
                 f"`## Behavior Source` shape in charness-artifacts/cautilus/latest.md.",
+                repo_root,
+            )
+        invalid = [kind for kind in declared_kinds if kind not in JUSTIFICATION_LOG_KINDS]
+        if invalid or not any(kind in JUSTIFICATION_LOG_KINDS for kind in declared_kinds):
+            return _refuse(
+                f"--justification-log path {log_path} declares `source-kind: "
+                f"{declared_kinds[0]}`; supported kinds are "
+                f"{', '.join(JUSTIFICATION_LOG_KINDS)}.",
                 repo_root,
             )
 

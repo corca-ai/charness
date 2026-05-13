@@ -125,6 +125,7 @@ runtime_budget_profiles:
     budgets:
       charness-version: 500
       check-cli-skill-surface: 11000
+      check-inventory-declaration-coverage: 500
       check-spec-evidence-durability: 2500
       inventory-ci-local-gate-parity: 500
       inventory-sloc: 1000
@@ -136,6 +137,8 @@ runtime_budget_profiles:
       check-secrets: 6000
       run-evals: 6500
       specdown: 10500
+      validate-cautilus-call-provenance: 500
+      validate-inventory-consumption-declaration: 15000
 startup_probes:
   - label: charness-version
     command:
