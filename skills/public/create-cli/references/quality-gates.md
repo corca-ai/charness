@@ -64,3 +64,34 @@ Command-docs drift gates should stay narrow. Check command existence, stable
 option anchors, and crisp invariants such as "doctor is read-only" or
 "delete-checkout requires an explicit flag." Leave broad documentation style,
 progressive disclosure, and naming judgment to human or agent review.
+
+## Release and Verification-Hook Safety
+
+Two operator-trust failure modes appear repeatedly in repo-owned CLIs that
+ship release pipelines, pre-push hooks, or broad verification commands. Both
+deserve standing gates separate from parser smoke:
+
+- **Stale generated-artifact failures must print the exact repair command.**
+  A check that says "release notes are stale" or "manifest does not match
+  source" without naming the script or command to run again is a trust hazard:
+  the operator (or agent) has to grep the repo to find the producer. The
+  failure message should always include the literal command to regenerate the
+  artifact, ideally copy-pasteable, alongside the stale-state explanation.
+  Test that the failure path emits the producer command, not only the
+  diagnostic.
+- **Broad verification hooks must not mutate the caller's worktree, index, or
+  `HEAD`.** Pre-push, pre-release, or aggregate `verify` commands that run
+  the full test/lint/generate fan-out can easily touch tracked files,
+  regenerate artifacts in place, or move `HEAD` while the operator is mid-push.
+  That looks like silent corruption from the operator's side. Guard the
+  surface: prefer a read-only mode for hooks (`run-quality.sh --read-only`,
+  `verify --no-write`, or a disposable checkout / git worktree for any
+  generating step). Ship a fixture that asserts the broad verification
+  command leaves `git status` clean and `HEAD` unchanged when it succeeds.
+
+For release-publishing commands that need to write, publish from a disposable
+checkout and target explicit refspecs such as `HEAD:main`; then verify the
+remote branch and tag SHA before reporting success. Update or version
+commands should not report an available update after they just installed
+that same version — record the resolved version in the runtime state the
+update check consults, not only in install logs.

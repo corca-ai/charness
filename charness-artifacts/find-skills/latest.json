@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-13T02:22:00Z",
+  "generated_at": "2026-05-13T06:35:23Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -154,6 +154,8 @@
           "skills/public/debug/SKILL.md",
           "skills/public/debug/references/named-target-verification.md",
           "skills/public/debug/references/five-whys-causal-chain.md",
+          "skills/public/debug/references/detection-gap.md",
+          "skills/public/debug/references/sibling-search.md",
           "skills/public/debug/references/adapter-contract.md",
           "skills/public/debug/references/five-steps.md",
           "skills/public/debug/references/debug-memory.md",
@@ -210,6 +212,7 @@
           "skills/public/gather/scripts/write_record.py",
           "skills/shared/references/closeout-discipline.md",
           "skills/public/gather/references/adapter-contract.md",
+          "skills/public/gather/references/gather-provider.md",
           "skills/public/gather/references/source-priority.md",
           "skills/public/gather/references/document-seams.md",
           "skills/public/gather/references/capability-contract.md",

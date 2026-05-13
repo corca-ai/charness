@@ -39,6 +39,11 @@ steps call tools outside the baseline shell surface.
    - what must be deterministic vs advisory
    - what state must survive for a later agent or operator
 2. Shape the command surface.
+   - start with the user's workflow journey, not the implementation modules;
+     follow `references/intent-first-grammar.md` to pick journey verbs first,
+     keep lifecycle verbs (`init`, `doctor`, `update`, `reset`, `uninstall`,
+     `version`) on their own axis, and decide which surface (binary vs agent
+     skill) owns each command before locking names
    - stable nouns and verbs
    - for multi-command CLIs, prefer a subcommand-first surface and follow
      `references/command-conventions.md` for canonical lifecycle verbs and
@@ -130,6 +135,13 @@ steps call tools outside the baseline shell surface.
    - a command-docs drift gate when install/update/doctor/reset/uninstall
      semantics are part of the operator contract
    - help text or JSON-shape checks when agents depend on them
+   - stale generated-artifact failures must include the exact regeneration
+     command in the failure message, not only a "stale" diagnostic
+   - broad verification commands (pre-push, pre-release, aggregate `verify`)
+     must not mutate the caller's worktree, index, or `HEAD`; ship a fixture
+     that asserts `git status` stays clean and `HEAD` stays unchanged on
+     success, and prefer a read-only mode or disposable checkout for any
+     generating step
 
 ## Guardrails
 
@@ -151,6 +163,7 @@ steps call tools outside the baseline shell surface.
 
 ## References
 
+- `references/intent-first-grammar.md`
 - `references/command-surface.md`
 - `references/command-conventions.md`
 - `references/install-update.md`
