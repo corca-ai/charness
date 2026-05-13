@@ -43,6 +43,25 @@ Design takeaway:
 - when the host package manager stays authoritative, agent-readable provenance
   should survive install and doctor flows so later updates can reuse that route
 
+`cautilus 0.15.4 cleanup`
+
+- public command grammar moved from implementation-shaped (`claim discover`,
+  `eval test`, `scenario list`) to intent-first (`discover claims`,
+  `evaluate fixture`, `discover scenarios`)
+- lifecycle scopes (`adapter init`, `healthcheck`, `commands`) routed under
+  `init`/`doctor` instead of leaking as their own top-level commands
+- the rename was a public-grammar rewrite, not an internal refactor: callers,
+  agents, and docs all moved together so the surface kept one obvious shape
+- see `intent-first-grammar.md` for the full rename table and the checklist
+  that catches implementation-shaped names before they ship
+
+Design takeaway:
+
+- when a CLI starts to read like its own module list, the next refactor is a
+  public-grammar rewrite, not another subcommand bolted on
+- name verbs from the user's journey and demote implementation nouns into the
+  object slot under those verbs
+
 `cautilus workbench`
 
 - workflow surface split into `cautilus workbench prepare-request-batch` and

@@ -13,7 +13,9 @@ Good defaults:
 
 Design rules:
 
-- use verbs that match operator intent, not implementation details
+- use verbs that match operator intent, not implementation details — see
+  `intent-first-grammar.md` for the full pre-naming checklist and rename
+  patterns that catch implementation-shaped commands before they ship
 - keep one obvious primary path and demote proof-only paths explicitly
 - when the CLI owns multiple domains, use a namespace such as
   `tool doctor` instead of flattening every concern into the top level
