@@ -113,8 +113,9 @@ routing anchors; references carry the detail.
 
 - The prior quality artifact is history; a fresh 5-minute reader can misclassify as absent an invariant that is merely scattered, so do not dismiss that as reader noise.
 - For evaluator-backed behavior closeout, prompt regression, baseline compare, or operator reading test, use `quality` before downgrading to HITL. Generic review, closeout, or "run quality" wording is not enough to run an evaluator.
+- Before invoking `cautilus eval test/evaluate`, consult the planner-consult contract at `references/cautilus-on-demand.md`: refuse when `next_action: "none"` or when `must_ask_before_running: true` without a named failing-log path, and route the call through the repo-owned wrapper instead of bare `cautilus eval`.
 - When the next quality move is repo-local, deterministic, and low-risk, prefer implementing that gate in the same turn; when the automatable move is already clear and repo-owned, implement it in the same turn unless review-only was requested. If you stop short of an obvious repo-owned deterministic gate, name the unresolved enforcement gap.
-- Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior; scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`. Inventories named in `## Commands Run` must engage with at least one declared non-headline field; the `validate-inventory-consumption` phase fails closeout when the artifact summarizes a cited inventory by headline only (declaration: `references/inventory-consumer-fields.json`).
+- Do not stop at producer-side validators alone when the risk is public-skill routing or durable artifact behavior; scaffold one consumer-side dogfood case with `python3 "$SKILL_DIR/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id>`. Inventories named in `## Commands Run` must engage with at least two distinct declared non-headline fields (one is enough when only one is declared); the `validate-inventory-consumption` phase fails closeout when the artifact summarizes a cited inventory by headline only, and `validate-inventory-consumption-declaration` plus `check-inventory-declaration-coverage` keep the declaration drift-free and complete (declaration: `references/inventory-consumer-fields.json`).
 - Skill review uses `$SKILL_DIR/scripts/inventory_skill_ergonomics.py`, skill ergonomics, mode/option pressure, trigger overlap, undertrigger risk, taste policing, and repeated prose ritual checks.
 - CLI/operator review uses `$SKILL_DIR/scripts/inventory_cli_ergonomics.py`, flat help-list, multiple archetype schema namespaces, `$SKILL_DIR/scripts/inventory_cli_side_effect_probes.py`, option-looking positional rejection, mutating command probes, and command-docs drift gate checks.
 - Docs/spec review uses `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py`, entrypoint-doc ergonomics, smart agent/operator can infer safely, doc-set dogma, ordinary Markdown uses the markdown preview seam, and executable specs use the rendered Specdown report.
@@ -163,6 +164,7 @@ Use the sections that match the scope, without reducing quality to one score:
 - `references/bootstrap-escalations.md`
 - `references/bootstrap-posture.md`
 - `references/brittle-source-guards.md`
+- `references/cautilus-on-demand.md`
 - `references/cli-ergonomics-smells.md`
 - `references/coverage-floor-exemptions.txt`
 - `references/coverage_floor_inventory.py`

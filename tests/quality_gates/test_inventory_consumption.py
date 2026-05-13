@@ -1,8 +1,9 @@
 """Regression tests for scripts/validate_inventory_consumption.py.
 
 Covers the consumer-side of issue #145: a quality artifact that cites an
-inventory in `## Commands Run` must engage with at least one declared
-non-headline field, not just the headline status.
+inventory in `## Commands Run` must engage with declared non-headline fields,
+not just the headline status. When the declaration lists ≥2 fields, the body
+must engage with at least two distinct ones (gameability tighten).
 """
 
 from __future__ import annotations
@@ -54,10 +55,10 @@ _DEFAULT_DECLARATION = {
 }
 
 
-def test_passes_when_declared_field_is_cited(tmp_path: Path) -> None:
+def test_passes_when_two_declared_fields_are_cited(tmp_path: Path) -> None:
     artifact = (
         "# Quality Review\n"
-        "## Healthy\n- skill ergonomics clean; critique has script_file_count 0.\n"
+        "## Healthy\n- skill ergonomics clean; script_file_count 0 and reference_file_count 3.\n"
         "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
         "## History\n"
     )
@@ -67,6 +68,23 @@ def test_passes_when_declared_field_is_cited(tmp_path: Path) -> None:
 
     assert result.returncode == 0, result.stderr
     assert "Validated inventory consumption for 1" in result.stdout
+
+
+def test_fails_when_only_one_of_two_declared_fields_is_cited(tmp_path: Path) -> None:
+    # Declaration lists two fields; engaging with only one is gameable.
+    artifact = (
+        "# Quality Review\n"
+        "## Healthy\n- skill ergonomics clean; script_file_count is 0.\n"
+        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
+        "## History\n"
+    )
+    repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
+
+    result = _run(repo)
+
+    assert result.returncode == 1, result.stdout
+    assert "engages with 1 of its declared non-headline fields" in result.stderr
+    assert "≥2 distinct field(s)" in result.stderr
 
 
 def test_fails_when_inventory_cited_without_any_declared_field(tmp_path: Path) -> None:
@@ -83,6 +101,25 @@ def test_fails_when_inventory_cited_without_any_declared_field(tmp_path: Path) -
     assert result.returncode == 1
     assert "inventory_skill_ergonomics.py" in result.stderr
     assert "non-headline fields" in result.stderr
+
+
+def test_single_field_declaration_still_requires_only_one(tmp_path: Path) -> None:
+    declaration = {
+        "inventories": {
+            "inventory_skill_ergonomics.py": {"non_headline_fields": ["script_file_count"]}
+        }
+    }
+    artifact = (
+        "# Quality Review\n"
+        "## Healthy\n- skill ergonomics clean; script_file_count is 0.\n"
+        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
+        "## History\n"
+    )
+    repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=declaration)
+
+    result = _run(repo)
+
+    assert result.returncode == 0, result.stderr
 
 
 def test_inventory_outside_declaration_is_exempt(tmp_path: Path) -> None:

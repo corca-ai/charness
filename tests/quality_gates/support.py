@@ -95,6 +95,8 @@ QUALITY_PYTHON_STUBS = (
     ("validate-retro-lesson-index", "build_retro_lesson_selection_index.py"),
     ("validate-quality-artifact", "validate_quality_artifact.py"),
     ("validate-inventory-consumption", "validate_inventory_consumption.py"),
+    ("validate-inventory-consumption-declaration", "validate_inventory_consumption_declaration.py"),
+    ("check-inventory-declaration-coverage", "check_inventory_declaration_coverage.py"),
     ("validate-quality-closeout-contract", "validate_quality_closeout_contract.py"),
     ("validate-critique-artifacts", "validate_critique_artifacts.py"),
     ("validate-current-pointer-freshness", "validate_current_pointer_freshness.py"),

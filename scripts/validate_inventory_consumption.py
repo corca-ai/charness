@@ -97,14 +97,21 @@ def main() -> int:
         fields: list[str] = entry.get("non_headline_fields") or []
         if not fields:
             continue
-        if not any(field in body_without_commands for field in fields):
+        engaged = [
+            field
+            for field in fields
+            if re.search(rf"\b{re.escape(field)}\b", body_without_commands)
+        ]
+        required = 2 if len(fields) >= 2 else 1
+        if len(engaged) < required:
             relative = consumer_fields_path.relative_to(repo_root)
             failures.append(
                 f"inventory `{inventory}` is cited in `{COMMANDS_RUN_HEADER}` but the artifact "
-                f"body does not engage with any of its declared non-headline fields "
-                f"({', '.join(fields)}). Cite at least one observation that uses one of those "
-                f"fields, or remove the citation if the inventory was not actually consumed. "
-                f"Declaration source: {relative}."
+                f"body engages with {len(engaged)} of its declared non-headline fields "
+                f"({', '.join(fields)}); contract requires ≥{required} distinct field(s). Cite "
+                f"observations that use at least {required} of those fields, or remove the "
+                f"citation if the inventory was not actually consumed. Declaration source: "
+                f"{relative}."
             )
         else:
             declared_consumed.append(inventory)

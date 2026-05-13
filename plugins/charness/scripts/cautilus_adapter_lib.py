@@ -82,9 +82,10 @@ def infer_cautilus_defaults(repo_root: Path, *, run_mode: str = "ask") -> dict[s
             "python3 scripts/validate_public_skill_validation.py --repo-root .",
             "python3 scripts/validate_cautilus_scenarios.py --repo-root .",
         ],
-        "eval_test_command": "log-backed fixture required; no default live proof command",
+        "eval_test_command": "log-backed fixture required; invoke via scripts/run_cautilus_eval.py with --justification-log <path-to-failing-log>",
         "evaluation_input_default": "evals/cautilus/whole-repo-routing.fixture.json",
         "eval_test_command_templates": [
+            "python3 scripts/run_cautilus_eval.py --mode test --justification-log {justification_log} -- --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture {eval_cases_file}",
             "node ./scripts/agent-runtime/run-local-eval-test.mjs --repo-root . --workspace {candidate_repo} --cases-file {eval_cases_file} --output-file {eval_observed_file} --artifact-dir {output_dir}/eval-test --backend {backend} --sandbox read-only --timeout-ms 180000 --codex-model gpt-5.4-mini --codex-reasoning-effort low --codex-home-mode isolated --codex-auth-mode inherit --claude-permission-mode dontAsk"
         ],
         "held_out_command_templates": [

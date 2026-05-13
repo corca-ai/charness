@@ -1,6 +1,6 @@
 {
-  "_purpose": "Map quality inventory scripts to non-headline fields a consuming quality artifact should engage with. Used by scripts/validate_inventory_consumption.py to close the consumer-side of issue #145: helpers expose review-state, but agents were collapsing them into headline-only summaries. Opt-in per inventory — only scripts listed here are enforced.",
-  "_contract": "For each inventory in ## Commands Run, the artifact body must literally contain at least one of `non_headline_fields`. Add new entries when a new inventory exposes review-state beyond status/heuristics. Remove entries only when the inventory is deleted.",
+  "_purpose": "Map quality inventory scripts to non-headline fields a consuming quality artifact should engage with. Used by scripts/validate_inventory_consumption.py to close the consumer-side of issue #145: helpers expose review-state, but agents were collapsing them into headline-only summaries. Coverage is enforced — every inventory_*.py under skills/public/quality/scripts/ must appear here.",
+  "_contract": "Every inventory_*.py in skills/public/quality/scripts/ must have an entry. Either declare `non_headline_fields` (≥2 distinct fields; consumer must engage with at least 2 when ≥2 are declared, otherwise at least 1) or declare an empty `non_headline_fields: []` with a non-empty `opt_out_reason` string. scripts/validate_inventory_consumption_declaration.py asserts that each declared field actually appears as a key in the inventory's --json output. scripts/check_inventory_declaration_coverage.py asserts every inventory_*.py is listed.",
   "inventories": {
     "inventory_skill_ergonomics.py": {
       "non_headline_fields": [
@@ -39,6 +39,46 @@
         "pointer_proof_marker_count",
         "executable_block_count"
       ]
+    },
+    "inventory_adapter_gate_design.py": {
+      "non_headline_fields": [],
+      "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
+    },
+    "inventory_brittle_source_guards.py": {
+      "non_headline_fields": [],
+      "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
+    },
+    "inventory_ci_local_gate_parity.py": {
+      "non_headline_fields": [],
+      "opt_out_reason": "consumed by the run-quality phase that fails on parity_issues; consumer-side engagement is the gate's pass/fail status, not artifact-body field citation."
+    },
+    "inventory_cli_ergonomics.py": {
+      "non_headline_fields": [],
+      "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
+    },
+    "inventory_cli_side_effect_probes.py": {
+      "non_headline_fields": [],
+      "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
+    },
+    "inventory_dual_implementation.py": {
+      "non_headline_fields": [],
+      "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
+    },
+    "inventory_gitignore_scan_hygiene.py": {
+      "non_headline_fields": [],
+      "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
+    },
+    "inventory_sloc.py": {
+      "non_headline_fields": [],
+      "opt_out_reason": "writes a separate sloc-inventory artifact; consumer engagement happens through that artifact, not via citation in the main quality artifact body."
+    },
+    "inventory_standing_gate_verbosity.py": {
+      "non_headline_fields": [],
+      "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
+    },
+    "inventory_ubiquitous_language.py": {
+      "non_headline_fields": [],
+      "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
     }
   }
 }
