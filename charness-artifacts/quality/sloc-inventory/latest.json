@@ -18,7 +18,7 @@
   "languages": {
     "JSON": {
       "blanks": 0,
-      "code": 21596,
+      "code": 21530,
       "comments": 0,
       "files": 89
     },
@@ -72,7 +72,7 @@
   "tokei_version": "tokei 14.0.0 compiled with serialization support: json",
   "totals": {
     "blanks": 27123,
-    "code": 128532,
+    "code": 128466,
     "comments": 37859,
     "files": 1451
   }
