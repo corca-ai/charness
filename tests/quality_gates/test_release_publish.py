@@ -268,6 +268,8 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     assert "## Public Release Verification" in artifact_text
     assert "Run `demo update`." in artifact_text
     assert "Restart the host if the previous version is still visible." in artifact_text
+    assert "(tag `v0.0.1`)" in artifact_text
+    assert "audit narrative: durable record written to" in artifact_text
 
 
 def test_publish_release_records_real_host_proof_for_unreleased_content(tmp_path: Path) -> None:

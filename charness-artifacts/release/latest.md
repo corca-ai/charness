@@ -3,7 +3,7 @@ Date: 2026-05-12
 
 ## Scope
 
-Advanced `charness` toward release `0.5.25` through the repo-owned release helper.
+Advanced `charness` toward release `0.5.25` (tag `v0.5.25`) through the repo-owned release helper.
 
 ## Current Version
 
@@ -26,6 +26,7 @@ Advanced `charness` toward release `0.5.25` through the repo-owned release helpe
 - branch/tag push: complete
 - GitHub release record: created
 - public release surface verification: checked
+- audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with the release slice
 
 ## Public Release Verification
 

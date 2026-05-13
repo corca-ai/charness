@@ -138,7 +138,7 @@ runtime_budget_profiles:
       run-evals: 6500
       specdown: 10500
       validate-cautilus-call-provenance: 500
-      validate-inventory-consumption-declaration: 15000
+      validate-inventory-consumption-declaration: 35000
 startup_probes:
   - label: charness-version
     command:

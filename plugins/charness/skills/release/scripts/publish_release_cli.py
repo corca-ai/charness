@@ -29,12 +29,14 @@ _check_real_host = SKILL_RUNTIME.load_local_skill_module(__file__, "check_real_h
 _check_review_gate = SKILL_RUNTIME.load_local_skill_module(__file__, "check_requested_review_gate")
 _fresh_checkout = SKILL_RUNTIME.load_local_skill_module(__file__, "check_fresh_checkout_probes")
 _helpers = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_helpers")
+_audit_narrative = SKILL_RUNTIME.load_local_skill_module(__file__, "audit_public_release_narrative")
 load_adapter = _resolve_adapter.load_adapter
 build_release_payload = _current_release.build_payload
 bump_part = _bump_version.bump_part
 build_real_host_payload = _check_real_host.build_payload
 build_review_gate_payload = _check_review_gate.build_payload
 build_fresh_checkout_payload = _fresh_checkout.build_payload
+build_narrative_audit_payload = _audit_narrative.build_payload
 run = _helpers.run
 run_shell = _helpers.run_shell
 git_status = _helpers.git_status
@@ -125,7 +127,37 @@ def write_current_artifact(
         branch=payload["branch"], quality_command=adapter_data["quality_command"], release_url=None,
         update_instructions=adapter_data["update_instructions"], real_host_payload=host_payload,
         fresh_checkout_payload=fresh_checkout_payload, quality_status=quality_status,
+        tag_name=payload["tag_name"],
     )
+
+
+def run_narrative_audit(
+    repo_root: Path,
+    *,
+    target_tag: str,
+    notes_file: Path | None = None,
+) -> None:
+    audit_payload = build_narrative_audit_payload(
+        repo_root,
+        target_tag=target_tag,
+        notes_file=notes_file,
+    )
+    if audit_payload["status"] == "blocked":
+        raise SystemExit(
+            "public release narrative audit blocked publish:\n"
+            + "\n".join(f"- {blocker}" for blocker in audit_payload["blockers"])
+        )
+
+
+def run_notes_file_preflight(repo_root: Path, *, target_tag: str, notes_file: Path | None) -> None:
+    if notes_file is None:
+        return
+    notes_blockers = _audit_narrative.audit_notes_file(notes_file, target_tag=target_tag)
+    if notes_blockers:
+        raise SystemExit(
+            "public release notes preflight blocked publish:\n"
+            + "\n".join(f"- {blocker}" for blocker in notes_blockers)
+        )
 
 
 def main() -> None:
@@ -175,6 +207,9 @@ def main() -> None:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return
 
+    notes_file = args.notes_file.resolve() if args.notes_file else None
+    run_notes_file_preflight(repo_root, target_tag=tag_name, notes_file=notes_file)
+
     run(backend_command(backend, "auth_check", ["gh", "auth", "status"]), cwd=repo_root)
     run_bump(args, repo_root)
     ensure_release_surface(repo_root, next_version)
@@ -189,12 +224,14 @@ def main() -> None:
     run_cli_skill_surface_gate(repo_root, adapter_data)
     run_shell(str(adapter_data["quality_command"]), cwd=repo_root)
     artifact_relpath = write_current_artifact(repo_root, adapter_data, payload, host_payload, fresh_checkout_payload=fresh_checkout_plan)
+    run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
     run(["git", "add", "-A"], cwd=repo_root)
     run(["git", "commit", "-m", payload["commit_message"]], cwd=repo_root)
     fresh_checkout_payload = run_fresh_checkout_probes(repo_root)
     payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
     if fresh_checkout_payload["status"] == "passed":
         write_current_artifact(repo_root, adapter_data, payload, host_payload, fresh_checkout_payload=fresh_checkout_payload)
+        run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
         run(["git", "add", artifact_relpath], cwd=repo_root)
         run(["git", "commit", "--amend", "--no-edit"], cwd=repo_root)
         fresh_checkout_payload = run_fresh_checkout_probes(repo_root)

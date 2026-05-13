@@ -95,6 +95,9 @@ verified.
    - if the helper only starts a later workflow publish step, record that
      boundary honestly instead of calling the release finished at tag push
    - sync generated install surfaces immediately after bumping
+   - refresh the durable release record so the committed `latest.md` documents
+     the target tag before push, or make the generated public release notes
+     self-contained enough that stale checked-in records cannot mislead readers
    - keep release work phase-ordered: mutate, then sync generated surfaces,
      then verify, then push/tag/publish
 6. Verify the local release surface.
@@ -112,6 +115,10 @@ verified.
      publish/tag
    - if CLI, bundled-skill, launcher, or install seams moved, run the declared
      surface checks and report startup proof when applicable
+   - run `audit_public_release_narrative.py` so the committed `latest.md`
+     mentions the target tag, carries the expected sections and ledger entries,
+     and any provided `--notes-file` is rejected when it points at a mutable
+     source-tree record at the target tag
 7. Close the public release boundary.
    - distinguish `local/tag state complete`, `workflow publication complete`,
      and `public release surface verified`
@@ -153,6 +160,9 @@ The result should usually include:
   push-only state; encode that boundary in one repo-owned publish helper.
 - Do not treat `tag pushed`, publish-helper success, workflow completion, and
   `public release surface verified` as interchangeable states.
+- Do not point public release notes at mutable source-tree records (such as
+  `charness-artifacts/release/latest.md` at the target tag URL); generate
+  self-contained notes or audit the file before passing `--notes-file`.
 - Do not mutate installed host caches from inside the skill; update instructions
   belong in the closeout.
 - Do not turn host-specific human proof into fake standing CI. If a support or

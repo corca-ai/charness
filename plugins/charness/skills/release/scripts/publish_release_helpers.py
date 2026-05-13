@@ -141,17 +141,20 @@ def write_release_artifact(
     real_host_payload: dict[str, Any],
     fresh_checkout_payload: dict[str, Any] | None = None,
     quality_status: str = "passed before publish",
+    tag_name: str | None = None,
 ) -> str:
     artifact_dir = repo_root / output_dir
     artifact_dir.mkdir(parents=True, exist_ok=True)
     artifact_path = artifact_dir / "latest.md"
+    resolved_tag = tag_name or f"v{target_version}"
+    artifact_relpath = str(artifact_path.relative_to(repo_root))
     lines = [
         "# Release Surface Check",
         f"Date: {datetime.now(timezone.utc).date().isoformat()}",
         "",
         "## Scope",
         "",
-        f"Advanced `{package_id}` toward release `{target_version}` through the repo-owned release helper.",
+        f"Advanced `{package_id}` toward release `{target_version}` (tag `{resolved_tag}`) through the repo-owned release helper.",
         "",
         "## Current Version",
         "",
@@ -175,7 +178,15 @@ def write_release_artifact(
         lines.append(f"- GitHub release record: created ({release_url})")
     else:
         lines.append("- GitHub release record: not created by this helper run")
-    lines.extend(["- public release surface verification: not checked by this helper", "", "## Public Release Verification", ""])
+    lines.extend(
+        [
+            "- public release surface verification: not checked by this helper",
+            f"- audit narrative: durable record written to `{artifact_relpath}` and committed with this slice",
+            "",
+            "## Public Release Verification",
+            "",
+        ]
+    )
     if real_host_payload.get("required"):
         lines.append(
             "- This slice still requires configured public/real-host verification before the release is fully closed."
