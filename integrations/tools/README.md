@@ -17,5 +17,9 @@
   is reused
 - integrations that declare `support_skill_source` should also declare
   `lifecycle.install.install_url` so agents get one exact install-doc entrypoint
+- before bumping a `support_skill_source.ref`, run
+  `python3 scripts/check_upstream_support_drift.py --repo-root .` to confirm the
+  declared `path` still exists at the new ref (corca-ai/cautilus#32 root-cause
+  prevention; standalone online probe, not part of the standing local gate)
 - wrapper skills should be generated or declared explicitly instead of silently
   copied into the public taxonomy
