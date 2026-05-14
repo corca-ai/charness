@@ -129,7 +129,7 @@ invocations this dogfood verified locally; `commands.full` chains
 `commands.summary` is now wired to `python3 scripts/check_mutation_score.py
 --repo-root .`, which parses `mutants/mutmut-cicd-stats.json`, reads
 `mutation_testing.{score_break, report_paths.summary_md}` from the adapter,
-writes `reports/mutation/summary.md` in GitHub-issue-renderable form, and
+writes `reports/mutation/summary.md` in GitHub-issue-renderable form, and <!-- reproduction-source -->
 exits non-zero when the reachable-mutant score (killed / (killed + survived))
 breaks `score_break`. First local invocation against the current dogfood
 stats: 67.6% > 60% threshold → PASS → exit 0.

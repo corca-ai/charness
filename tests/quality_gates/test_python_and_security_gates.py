@@ -136,10 +136,17 @@ def test_check_supply_chain_accepts_uv_lock_for_python_dependencies(tmp_path: Pa
     assert "uv:uv.lock" in result.stdout
 
 
-def test_check_github_actions_passes_without_workflows() -> None:
+def test_check_github_actions_passes_against_repo_workflows() -> None:
+    """Repo-real smoke test: every workflow that ships in .github/workflows/
+    keeps action majors at or above the Node 24 floor. With no workflows
+    present the helper says so; with workflows present it validates them.
+    """
     result = run_script("scripts/check_github_actions.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stderr
-    assert "No GitHub Actions workflows detected." in result.stdout
+    assert (
+        "No GitHub Actions workflows detected." in result.stdout
+        or "Validated GitHub Actions majors" in result.stdout
+    )
 
 
 def test_check_github_actions_flags_outdated_node24_baselines(tmp_path: Path) -> None:

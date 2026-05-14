@@ -17,6 +17,9 @@ DEFAULT_CANONICAL_GATE_PATTERNS = (
     r"\bcharness\s+verify\b",
 )
 DEFAULT_CI_ONLY_MARKER = "CI-only"
+GATE_POLICY_MARKER_PREFIX = "# charness:gate-policy "
+SCHEDULED_DEEPER_CHECK_POLICY = "scheduled-deeper-check"
+KNOWN_GATE_POLICIES = frozenset({SCHEDULED_DEEPER_CHECK_POLICY})
 SETUP_SHAPES = tuple(
     re.compile(p)
     for p in (
@@ -139,12 +142,56 @@ def _classify_subsequent(step: dict[str, Any], marker_re: re.Pattern[str]) -> st
     return classify_step(step)
 
 
+def read_gate_policy(raw_text: str, workflow_label: str | None = None) -> str | None:
+    """Return the declared gate-policy keyword from the top of a workflow file.
+
+    Recognized marker: a top-of-file YAML comment of the exact form
+    `# charness:gate-policy <policy>` placed before any non-comment content.
+    Returns the policy keyword (e.g. `scheduled-deeper-check`) or `None` if
+    no marker is present, an unknown keyword is declared, or the marker
+    appears after real YAML content begins. Emits a stderr warning when the
+    marker prefix is present but the keyword is unrecognized so a typo
+    fails loud instead of silently falling back to standard parity
+    enforcement. `workflow_label` (typically the path) is interpolated into
+    the warning when supplied.
+    """
+    import sys
+    for line in raw_text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith(GATE_POLICY_MARKER_PREFIX):
+            keyword = stripped[len(GATE_POLICY_MARKER_PREFIX):].strip()
+            if keyword in KNOWN_GATE_POLICIES:
+                return keyword
+            label = workflow_label or "<workflow>"
+            sys.stderr.write(
+                f"warning: {label} declares unknown gate-policy "
+                f"{keyword!r}; falling back to standard parity enforcement. "
+                f"Known policies: {sorted(KNOWN_GATE_POLICIES)}.\n"
+            )
+            return None
+        if not stripped.startswith("#"):
+            return None
+    return None
+
+
 def evaluate_workflow(
     path: Path,
     workflow: dict[str, Any],
     gate_patterns: tuple[re.Pattern[str], ...],
     ci_only_marker: str,
 ) -> dict[str, Any]:
+    raw_text = workflow["text"]
+    gate_policy = read_gate_policy(raw_text, workflow_label=str(path))
+    if gate_policy == SCHEDULED_DEEPER_CHECK_POLICY:
+        return {
+            "workflow": str(path),
+            "gate_policy": gate_policy,
+            "exempt": True,
+            "jobs": [],
+            "jobs_without_canonical_gate": [],
+        }
     findings: dict[str, Any] = {"workflow": str(path), "jobs": [], "jobs_without_canonical_gate": []}
     data = workflow["data"]
     if not isinstance(data, dict):
@@ -191,7 +238,14 @@ def evaluate_workflow(
 def render_report(report: list[dict[str, Any]]) -> dict[str, Any]:
     parity_issues: list[dict[str, Any]] = []
     misses: list[dict[str, Any]] = []
+    exempt_workflows: list[dict[str, Any]] = []
     for workflow in report:
+        if workflow.get("exempt"):
+            exempt_workflows.append({
+                "workflow": workflow["workflow"],
+                "gate_policy": workflow.get("gate_policy"),
+            })
+            continue
         for job in workflow.get("jobs", []):
             for entry in job.get("subsequent", []):
                 if entry.get("classification") not in {"parity-issue", "ci-only-violation"}:
@@ -212,4 +266,5 @@ def render_report(report: list[dict[str, Any]]) -> dict[str, Any]:
         "workflows": report,
         "parity_issues": parity_issues,
         "jobs_without_canonical_gate": misses,
+        "exempt_workflows": exempt_workflows,
     }

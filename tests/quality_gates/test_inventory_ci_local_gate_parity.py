@@ -29,6 +29,7 @@ def test_silent_when_no_workflows(tmp_path: Path) -> None:
         "workflows": [],
         "parity_issues": [],
         "jobs_without_canonical_gate": [],
+        "exempt_workflows": [],
     }
 
 
@@ -129,6 +130,161 @@ jobs:
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["parity_issues"][0]["classification"] == "ci-only-violation"
+
+
+def test_text_summary_lists_exempt_workflows(tmp_path: Path) -> None:
+    repo = _write_workflow(
+        tmp_path,
+        """# charness:gate-policy scheduled-deeper-check
+name: Mutation Tests
+on:
+  schedule:
+    - cron: "17 */3 * * *"
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    steps:
+      - run: mutmut run
+""",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    assert "exempt " in result.stdout
+    assert "gate-policy=scheduled-deeper-check" in result.stdout
+
+
+def test_scheduled_deeper_check_marker_exempts_workflow(tmp_path: Path) -> None:
+    repo = _write_workflow(
+        tmp_path,
+        """# charness:gate-policy scheduled-deeper-check
+name: Mutation Tests
+on:
+  schedule:
+    - cron: "17 */3 * * *"
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: mutmut run
+""",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["parity_issues"] == []
+    assert payload["jobs_without_canonical_gate"] == []
+    assert len(payload["exempt_workflows"]) == 1
+    assert payload["exempt_workflows"][0]["gate_policy"] == "scheduled-deeper-check"
+
+
+def test_gate_policy_marker_must_be_known_keyword(tmp_path: Path) -> None:
+    repo = _write_workflow(
+        tmp_path,
+        """# charness:gate-policy unknown-policy
+name: verify
+on: [push]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: mutmut run
+""",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    # Unknown keyword falls back to standard gate-parity enforcement,
+    # so the workflow is NOT exempt and surfaces jobs_without_canonical_gate.
+    assert payload["exempt_workflows"] == []
+    assert len(payload["jobs_without_canonical_gate"]) == 1
+
+
+def test_gate_policy_unknown_keyword_emits_stderr_warning(tmp_path: Path) -> None:
+    repo = _write_workflow(
+        tmp_path,
+        """# charness:gate-policy scheduledd-deeper-check
+name: verify
+on: [push]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: mutmut run
+""",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    assert result.returncode == 0
+    assert "unknown gate-policy" in result.stderr
+    assert "'scheduledd-deeper-check'" in result.stderr
+
+
+def test_gate_policy_earlier_unknown_marker_does_not_shadow_later_valid(tmp_path: Path) -> None:
+    repo = _write_workflow(
+        tmp_path,
+        """# charness:gate-policy unknown-policy
+# charness:gate-policy scheduled-deeper-check
+name: verify
+on: [push]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: mutmut run
+""",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    assert result.returncode == 0
+    payload = json.loads(result.stdout)
+    # First marker keyword wins. Earlier unknown keyword means the workflow
+    # is NOT exempt — operator must remove the dead marker for the real one
+    # to take effect. The stderr warning surfaces the typo.
+    assert payload["exempt_workflows"] == []
+    assert "unknown gate-policy" in result.stderr
+
+
+def test_gate_policy_marker_inside_step_run_is_ignored(tmp_path: Path) -> None:
+    repo = _write_workflow(
+        tmp_path,
+        """name: verify
+on: [push]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "# charness:gate-policy scheduled-deeper-check"
+          mutmut run
+""",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    # Marker buried inside a step body does not exempt: parser stops at the
+    # first non-comment line (`name:`).
+    assert payload["exempt_workflows"] == []
+
+
+def test_gate_policy_marker_after_yaml_content_is_ignored(tmp_path: Path) -> None:
+    repo = _write_workflow(
+        tmp_path,
+        """name: verify
+# charness:gate-policy scheduled-deeper-check
+on: [push]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: mutmut run
+""",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    # Marker must come BEFORE non-comment YAML; placement after `name:`
+    # does not exempt the workflow.
+    assert payload["exempt_workflows"] == []
+    assert len(payload["jobs_without_canonical_gate"]) == 1
 
 
 def test_require_empty_parity_issues_returns_nonzero_when_violation(tmp_path: Path) -> None:

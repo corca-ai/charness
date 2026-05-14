@@ -166,3 +166,53 @@ The default canonical-gate patterns cover `npm run verify`, `make verify`,
 `bash scripts/run-quality.sh`, `bash scripts/run-verify.{mjs,sh}`, and
 `charness verify`. Repos with custom local-gate names should pass
 `--canonical-gate-pattern` to surface their own shape.
+
+Workflows that are not per-commit quality gates can declare an explicit
+exemption from this parity contract; see §Scheduled deeper-check workflows
+below.
+
+## Scheduled deeper-check workflows
+
+Some CI workflows are not per-commit quality gates at all — they are
+periodic deeper analyses (mutation testing, scheduled dependency audits,
+heavy security scans) that run on a `schedule.cron` rather than every PR or
+push, and that are too expensive to put inside a local pre-push gate. The
+parity contract above ("CI must run a subset of local gates") does not
+apply to this category: the workflow is not enforcing per-commit quality,
+it is producing a recurring deeper signal that the maintainer can also run
+locally on demand.
+
+A workflow declares this status by placing the following top-of-file YAML
+comment before any non-comment content:
+
+```yaml
+# charness:gate-policy scheduled-deeper-check
+```
+
+The marker must appear before the first non-comment line (typically before
+`name:` and `on:`). Other comment lines may surround it. The
+`inventory_ci_local_gate_parity.py` helper recognizes the marker, surfaces
+the workflow under `exempt_workflows`, and skips canonical-gate-step and
+parity-issue enforcement for it.
+
+The exemption is narrow: it applies only to workflows where a maintainer
+can reasonably run the same analysis locally (`mutmut run`, `npm audit`,
+etc.) when needed, and where the CI cadence is "every few hours" rather
+than "every PR." Do not use it as a generic waiver for CI steps that
+should belong inside the standing pre-push gate; the canonical
+parity-issue path remains correct for those.
+
+The marker is operator-asserted: the helper does not verify the workflow
+has a `schedule.cron` trigger, does not check that the declared analysis
+is genuinely deeper-check, and does not block markers on PR-only or
+push-only workflows. The cadence and "deeper-check" guardrails above are
+enforced by code review, not by the helper. A future maintainer who
+abuses the marker to silence inconvenient parity issues is caught by
+review, not by tool fence.
+
+Today the known policy keyword is `scheduled-deeper-check`. The library
+emits a stderr warning when it sees the marker prefix followed by an
+unknown keyword so typos fail loud rather than silently dropping back to
+standard parity enforcement. Adding a new policy category requires both
+a library change (extending `KNOWN_GATE_POLICIES`) and a doc update in
+this section.

@@ -83,6 +83,10 @@ def _print_text_summary(rendered: dict[str, Any]) -> None:
             f"  no-canonical-gate {advisory['workflow']}: jobs [{jobs}] — "
             "pass --canonical-gate-pattern to anchor on this repo's gate."
         )
+    for entry in rendered.get("exempt_workflows") or []:
+        print(
+            f"  exempt {entry['workflow']}: gate-policy={entry['gate_policy']}"
+        )
     if rendered["parity_issues"]:
         print(
             "  resolve each parity-issue by adding the step to the canonical "
