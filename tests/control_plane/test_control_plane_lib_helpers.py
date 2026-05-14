@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 import scripts.control_plane_lib as control
+import scripts.repo_layout as repo_layout
 
 
 def _write_manifest_schema(repo: Path) -> None:
@@ -20,7 +21,15 @@ def _write_manifest_schema(repo: Path) -> None:
 
 
 def _write_support_schema(repo: Path) -> None:
-    support_dir = repo / "skills" / "support" / "demo"
+    support_root = repo / "skills" / "support"
+    support_root.mkdir(parents=True, exist_ok=True)
+    (support_root / "capability.schema.json").write_text(
+        (Path(__file__).resolve().parents[2] / "skills" / "support" / "capability.schema.json").read_text(
+            encoding="utf-8"
+        ),
+        encoding="utf-8",
+    )
+    support_dir = support_root / "demo"
     support_dir.mkdir(parents=True, exist_ok=True)
     (support_dir / "SKILL.md").write_text("# demo\n", encoding="utf-8")
     (support_dir / "capability.json").write_text(
@@ -122,7 +131,7 @@ def test_validate_manifest_and_support_capability_guard_invalid_shapes(tmp_path:
                 "access_modes": ["grant", "env", "degraded"],
                 "version_expectation": {"policy": "advisory", "constraint": "local"},
             },
-            control.load_support_capability_schema(),
+            control.load_support_capability_schema(repo),
             repo / "skills" / "support" / "demo" / "capability.json",
             repo,
         )
@@ -212,6 +221,26 @@ def test_evaluate_success_criteria_and_run_check_collect_failures(tmp_path: Path
     assert payload["ok"] is False
     assert payload["failure_hint"] == "inspect command output"
     assert payload["failure_details"] == ["stdout missing `hello`"]
+
+
+def test_support_dir_honors_charness_support_dir_env_override(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    sibling_support = tmp_path / "external" / "charness-support" / "support"
+    sibling_support.mkdir(parents=True)
+    monkeypatch.setenv("CHARNESS_SUPPORT_DIR", str(sibling_support))
+    public_root = tmp_path / "external" / "charness-public"
+    public_root.mkdir(parents=True)
+    assert repo_layout.support_dir(public_root) == sibling_support.resolve()
+
+
+def test_load_support_capability_schema_accepts_explicit_repo_root(tmp_path: Path) -> None:
+    support = tmp_path / "skills" / "support"
+    support.mkdir(parents=True)
+    (support / "capability.schema.json").write_text(
+        json.dumps({"type": "object"}) + "\n", encoding="utf-8"
+    )
+    assert control.load_support_capability_schema(tmp_path) == {"type": "object"}
 
 
 def test_evaluate_version_handles_unknown_and_matched_states() -> None:

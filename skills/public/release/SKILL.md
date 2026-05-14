@@ -19,7 +19,8 @@ visibility decisions use standalone `critique` before mutating versions.
 
 ## Bootstrap
 
-Resolve the adapter first.
+Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then
+resolve the adapter first.
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .

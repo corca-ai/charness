@@ -317,6 +317,10 @@ def test_doctor_reads_support_owned_capability_metadata(tmp_path: Path) -> None:
     locks_dir = repo / "integrations" / "locks"
     support_dir.mkdir(parents=True)
     locks_dir.mkdir(parents=True)
+    (repo / "skills" / "support" / "capability.schema.json").write_text(
+        (ROOT / "skills" / "support" / "capability.schema.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
     (support_dir / "SKILL.md").write_text(
         "\n".join(["---", "name: gather-slack", 'description: "Slack runtime."', "---", "", "# Gather Slack"]) + "\n",
         encoding="utf-8",

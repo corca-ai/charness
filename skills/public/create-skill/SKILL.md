@@ -10,7 +10,8 @@ Use this when the task is to create, migrate, split, or normalize a skill in
 
 ## Bootstrap
 
-Every invocation starts here. Read only the files that affect the current change.
+Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`. Every
+invocation starts here. Read only the files that affect the current change.
 
 ```bash
 # Required Tools: rg

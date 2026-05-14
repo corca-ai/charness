@@ -70,7 +70,8 @@ loses the surface-lock inventory).
 
 ## Bootstrap
 
-Read only the smallest change surface that makes the next move legible.
+Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`. Read only
+the smallest change surface that makes the next move legible.
 For no-argument slash-command use, run the autonomous trigger scan first.
 
 If `.agents/critique-adapter.yaml` declares ≥1 `packet_sections`, run the

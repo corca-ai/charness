@@ -29,9 +29,10 @@ step. See `references/decision-question-response.md`.
 
 ## Bootstrap
 
-Read only the context that reduces uncertainty for the current idea.
-Before asking clarification questions, inspect the current repo reality first
-so existing code, tests, and operator docs can retire fake ambiguity early.
+Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`. Read only
+the context that reduces uncertainty for the current idea. Before asking
+clarification questions, inspect the current repo reality first so existing
+code, tests, and operator docs can retire fake ambiguity early.
 
 ```bash
 # Required Tools: rg

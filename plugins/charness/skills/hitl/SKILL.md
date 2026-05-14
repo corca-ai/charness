@@ -22,7 +22,8 @@ misreads become harder.
 
 ## Bootstrap
 
-Resolve the adapter first.
+Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then
+resolve the adapter first.
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
@@ -182,8 +183,7 @@ Checked, Accepted Working Text, Accepted Rules, and Next State.
   durable artifact, or while durable target, cursor, queue, or accepted rules
   disagree with the runtime session.
 - Do not lose accepted review rules between chunks in the same session.
-- If manual edits changed the target out of band, resync intent before the next
-  chunk.
+- If manual edits changed the target out of band, resync intent before the next chunk.
 
 ## References
 

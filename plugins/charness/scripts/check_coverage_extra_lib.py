@@ -124,7 +124,7 @@ def _exercise_control_plane_validation_paths(control: object, repo: Path, tools_
                 "access_modes": ["grant", "env", "degraded"],
                 "version_expectation": {"policy": "advisory", "constraint": "local"},
             },
-            control.load_support_capability_schema(),
+            control.load_support_capability_schema(repo),
             capability_path,
             repo,
         )

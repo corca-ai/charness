@@ -49,6 +49,11 @@ now.
 
 ## Bootstrap
 
+Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`. If your
+host materializes the support tree in a sibling package (split monorepo
+layout), set `CHARNESS_SUPPORT_DIR` to the directory holding
+`capability.schema.json` so the support-capability lookup finds it.
+
 Start local-first:
 
 ```bash

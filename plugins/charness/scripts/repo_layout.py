@@ -14,6 +14,9 @@ def public_skills_dir(repo_root: Path) -> Path:
 
 
 def support_dir(repo_root: Path) -> Path:
+    override = os.environ.get("CHARNESS_SUPPORT_DIR")
+    if override:
+        return Path(override).expanduser().resolve()
     source_layout = repo_root / "skills" / "support"
     if source_layout.is_dir():
         return source_layout

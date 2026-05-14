@@ -20,7 +20,8 @@ public URL needs stronger retrieval tactics than a plain direct fetch.
 - preserve retrieval method and confidence in any durable artifact that uses
   this support capability
 
-Use the helpers:
+Use the helpers. Resolve `SKILL_DIR` to the directory that contains this
+`SKILL.md`, then run:
 
 ```bash
 python3 "$SKILL_DIR/scripts/route_public_fetch.py" --url "https://www.reddit.com/r/python/"

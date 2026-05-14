@@ -22,7 +22,8 @@ quality posture. Review posture and bootstrap posture remain one public concept.
 
 ## Bootstrap
 
-Resolve the adapter first, then re-derive the current source, spec, artifact,
+Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then
+resolve the adapter first and re-derive the current source, spec, artifact,
 and gate surface before trusting a prior review.
 
 Key references for the frequent path are `references/bootstrap-escalations.md`,

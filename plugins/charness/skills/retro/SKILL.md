@@ -15,7 +15,8 @@ revealed; do not turn every correction into a long postmortem.
 
 ## Bootstrap
 
-Every invocation starts here.
+Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`. Every
+invocation starts here.
 
 ```bash
 # 1. basic repo and workflow context

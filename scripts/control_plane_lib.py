@@ -39,8 +39,9 @@ def load_manifest_schema() -> dict[str, Any]:
     return json.loads(MANIFEST_SCHEMA_PATH.read_text(encoding="utf-8"))
 def load_lock_schema() -> dict[str, Any]:
     return json.loads((integrations_locks_dir(Path(__file__).resolve().parent.parent) / "lock.schema.json").read_text(encoding="utf-8"))
-def load_support_capability_schema() -> dict[str, Any]:
-    return json.loads(support_capability_schema_path(Path(__file__).resolve().parent.parent).read_text(encoding="utf-8"))
+def load_support_capability_schema(repo_root: Path | None = None) -> dict[str, Any]:
+    root = repo_root if repo_root is not None else Path(__file__).resolve().parent.parent
+    return json.loads(support_capability_schema_path(root).read_text(encoding="utf-8"))
 
 _NON_MANIFEST_TOOLS_FILES = {"manifest.schema.json", "dependencies.json", "dependencies.schema.json"}
 
@@ -197,10 +198,12 @@ def add_dependency(repo_root: Path, tool_id: str) -> bool:
 
 
 def load_support_capabilities(repo_root: Path) -> list[dict[str, Any]]:
-    schema = load_support_capability_schema()
     capabilities: list[dict[str, Any]] = []
     seen_ids: set[str] = set()
+    schema: dict[str, Any] | None = None
     for path in support_capability_paths(repo_root):
+        if schema is None:
+            schema = load_support_capability_schema(repo_root)
         data = load_manifest(path)
         validate_support_capability_data(data, schema, path, repo_root)
         capability_id = data["capability_id"]

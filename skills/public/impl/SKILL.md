@@ -20,8 +20,9 @@ loop. See `references/sequence-discipline.md`, `references/verification-ladder.m
 
 ## Bootstrap
 
-Read the current implementation contract before changing code. If no canonical
-contract exists, bootstrap a small current-slice contract first.
+Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`. Read the
+current implementation contract before changing code. If no canonical contract
+exists, bootstrap a small current-slice contract first.
 
 ```bash
 # Required Tools: rg
@@ -180,8 +181,7 @@ runtime/evaluator proof, `Truth Surface Sync`, `Critique`, `Contract Updates`,
 - Do not call a same-agent review a critique.
 - Do not skip critique for task-completing repo work just because the code
   looks locally clean.
-- Do not reinvent one-off critique angle selection when the standalone
-  `critique` skill fits the slice.
+- Do not reinvent one-off critique angle selection when the standalone `critique` skill fits the slice.
 - If the required critique is blocked, stop instead of downgrading to a local
   substitute and still calling the slice reviewed.
 
