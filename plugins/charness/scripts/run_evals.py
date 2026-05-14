@@ -396,7 +396,7 @@ def ensure_fixtures_present(root: Path) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run repo-owned smoke scenarios under evals/.")
-    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument("--repo-root", type=Path, default=repo_root_from_script(__file__))
     parser.add_argument("--scenario-id", action="append", default=[])
     args = parser.parse_args()
 

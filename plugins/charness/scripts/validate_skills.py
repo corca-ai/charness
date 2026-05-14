@@ -346,10 +346,17 @@ SKILL_ROOTS = (
 )
 
 
+def _resolved_skill_root(root: Path, kind: str, rel_root: Path) -> Path:
+    if kind == "support":
+        from scripts.repo_layout import support_dir
+        return support_dir(root)
+    return root / rel_root
+
+
 def iter_skill_dirs(root: Path) -> list[tuple[str, Path]]:
     skill_dirs: list[tuple[str, Path]] = []
     for kind, rel_root in SKILL_ROOTS:
-        skill_root = root / rel_root
+        skill_root = _resolved_skill_root(root, kind, rel_root)
         if not skill_root.exists():
             continue
         for path in skill_root.iterdir():
@@ -373,7 +380,7 @@ def iter_skill_dirs(root: Path) -> list[tuple[str, Path]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument("--repo-root", type=Path, default=repo_root_from_script(__file__))
     args = parser.parse_args()
 
     root = args.repo_root.resolve()

@@ -21,9 +21,9 @@ from scripts.repo_layout import (
     support_capability_paths,
     support_capability_schema_path,
 )
+from scripts.runtime_bootstrap import repo_root_from_script
 from scripts.subprocess_guard import run_process
 
-MANIFEST_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "integrations" / "tools" / "manifest.schema.json"
 LOCKS_DIR = Path("integrations/locks")
 SEMVER_RE = re.compile(r"(?<!\d)\d+(?:\.\d+){1,}(?!\d)")
 
@@ -35,12 +35,14 @@ class CommandResult:
     stderr: str
 def now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-def load_manifest_schema() -> dict[str, Any]:
-    return json.loads(MANIFEST_SCHEMA_PATH.read_text(encoding="utf-8"))
-def load_lock_schema() -> dict[str, Any]:
-    return json.loads((integrations_locks_dir(Path(__file__).resolve().parent.parent) / "lock.schema.json").read_text(encoding="utf-8"))
+def load_manifest_schema(repo_root: Path | None = None) -> dict[str, Any]:
+    root = repo_root if repo_root is not None else repo_root_from_script(__file__)
+    return json.loads((integrations_tools_dir(root) / "manifest.schema.json").read_text(encoding="utf-8"))
+def load_lock_schema(repo_root: Path | None = None) -> dict[str, Any]:
+    root = repo_root if repo_root is not None else repo_root_from_script(__file__)
+    return json.loads((integrations_locks_dir(root) / "lock.schema.json").read_text(encoding="utf-8"))
 def load_support_capability_schema(repo_root: Path | None = None) -> dict[str, Any]:
-    root = repo_root if repo_root is not None else Path(__file__).resolve().parent.parent
+    root = repo_root if repo_root is not None else repo_root_from_script(__file__)
     return json.loads(support_capability_schema_path(root).read_text(encoding="utf-8"))
 
 _NON_MANIFEST_TOOLS_FILES = {"manifest.schema.json", "dependencies.json", "dependencies.schema.json"}
@@ -51,7 +53,7 @@ def manifest_paths(repo_root: Path) -> list[Path]:
 
 
 def _plugin_fallback_root() -> Path:
-    return Path(__file__).resolve().parent.parent
+    return repo_root_from_script(__file__)
 
 
 def plugin_fallback_manifest_paths() -> list[Path]:
@@ -159,7 +161,7 @@ def load_dependencies_schema() -> dict[str, Any]:
     candidate = dependencies_schema_path(plugin_root)
     if candidate.is_file():
         return json.loads(candidate.read_text(encoding="utf-8"))
-    repo_candidate = dependencies_schema_path(Path(__file__).resolve().parent.parent)
+    repo_candidate = dependencies_schema_path(repo_root_from_script(__file__))
     return json.loads(repo_candidate.read_text(encoding="utf-8"))
 
 

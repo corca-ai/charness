@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import importlib
 import importlib.util
+import os
 import sys
 from pathlib import Path
 from types import ModuleType
 
 
 def repo_root_from_script(script_file: str | Path) -> Path:
+    override = os.environ.get("CHARNESS_REPO_ROOT")
+    if override:
+        return Path(override).expanduser().resolve()
     return Path(script_file).resolve().parent.parent
 
 

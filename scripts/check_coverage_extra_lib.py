@@ -10,6 +10,13 @@ from contextlib import suppress
 from pathlib import Path
 from unittest import mock
 
+from repo_layout import (
+    integrations_tools_dir,
+    support_capability_schema_path,
+)
+
+from runtime_bootstrap import repo_root_from_script
+
 
 def _manifest_base() -> dict[str, object]:
     return {
@@ -30,26 +37,23 @@ def _manifest_base() -> dict[str, object]:
 
 
 def _run_module_top_level(*relative_paths: str) -> None:
-    repo_root = Path(__file__).resolve().parent.parent
+    repo_root = repo_root_from_script(__file__)
     for relative_path in relative_paths:
         runpy.run_path(str(repo_root / relative_path), run_name="coverage_probe")
 
 
 def _seed_control_plane_repo(repo: Path) -> tuple[Path, Path]:
+    source_root = repo_root_from_script(__file__)
     tools_dir = repo / "integrations" / "tools"
     tools_dir.mkdir(parents=True)
     (tools_dir / "manifest.schema.json").write_text(
-        (Path(__file__).resolve().parent.parent / "integrations" / "tools" / "manifest.schema.json").read_text(
-            encoding="utf-8"
-        ),
+        (integrations_tools_dir(source_root) / "manifest.schema.json").read_text(encoding="utf-8"),
         encoding="utf-8",
     )
     support_root = repo / "skills" / "support"
     support_root.mkdir(parents=True)
     (support_root / "capability.schema.json").write_text(
-        (Path(__file__).resolve().parent.parent / "skills" / "support" / "capability.schema.json").read_text(
-            encoding="utf-8"
-        ),
+        support_capability_schema_path(source_root).read_text(encoding="utf-8"),
         encoding="utf-8",
     )
     support_dir = support_root / "demo"

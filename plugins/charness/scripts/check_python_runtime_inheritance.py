@@ -6,6 +6,11 @@ import ast
 import sys
 from pathlib import Path
 
+from runtime_bootstrap import import_repo_module
+
+_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
+iter_matching_repo_files = _repo_file_listing_module.iter_matching_repo_files
+
 DEFAULT_SCAN_GLOBS = ("scripts/*.py", "skills/public/*/scripts/*.py", "skills/support/*/scripts/*.py")
 SKIP_PATH_PARTS = {"__pycache__", "vendor", "generated"}
 
@@ -61,10 +66,19 @@ def _path_is_scannable(path: Path) -> bool:
 
 
 def _iter_scan_paths(repo_root: Path) -> list[Path]:
-    paths: set[Path] = set()
-    for pattern in DEFAULT_SCAN_GLOBS:
-        paths.update(repo_root.glob(pattern))
-    return sorted(path for path in paths if path.is_file() and _path_is_scannable(path.relative_to(repo_root)))
+    candidates = iter_matching_repo_files(repo_root, DEFAULT_SCAN_GLOBS)
+    return sorted(
+        path
+        for path in candidates
+        if path.is_file() and _path_is_scannable(_safe_relative(path, repo_root))
+    )
+
+
+def _safe_relative(path: Path, repo_root: Path) -> Path:
+    try:
+        return path.relative_to(repo_root)
+    except ValueError:
+        return Path(*path.parts[-3:])
 
 
 def check_file(repo_root: Path, path: Path) -> list[str]:

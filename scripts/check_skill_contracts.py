@@ -6,6 +6,8 @@ import argparse
 import sys
 from pathlib import Path
 
+from runtime_bootstrap import repo_root_from_script
+
 
 class ValidationError(Exception):
     pass
@@ -260,7 +262,7 @@ def validate_forbidden_snippets(path: Path, snippets: tuple[str, ...]) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument("--repo-root", type=Path, default=repo_root_from_script(__file__))
     args = parser.parse_args()
 
     root = args.repo_root.resolve()

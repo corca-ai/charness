@@ -418,7 +418,7 @@ def iter_packaging_files(root: Path) -> list[Path]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument("--repo-root", type=Path, default=repo_root_from_script(__file__))
     args = parser.parse_args()
 
     root = args.repo_root.resolve()

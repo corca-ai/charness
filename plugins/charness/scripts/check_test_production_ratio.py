@@ -8,6 +8,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from runtime_bootstrap import repo_root_from_script
+
 IGNORED_DIRS = {
     ".artifacts",
     ".git",
@@ -125,7 +127,7 @@ def summarize(repo_root: Path, *, engine: str = "splitlines") -> dict[str, objec
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument("--repo-root", type=Path, default=repo_root_from_script(__file__))
     parser.add_argument("--max-ratio", type=float, default=DEFAULT_MAX_RATIO)
     parser.add_argument("--engine", choices=SUPPORTED_ENGINES, default="splitlines")
     parser.add_argument("--json", action="store_true")
