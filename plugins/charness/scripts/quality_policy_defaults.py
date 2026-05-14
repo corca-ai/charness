@@ -46,6 +46,39 @@ VALID_SKILL_ERGONOMICS_GATE_RULES = frozenset({
     "progressive_disclosure_risk",
 })
 
+# DEFAULT_MUTATION_TESTING is stack-neutral. Policy values trace to
+# craken-agents/.github/workflows/mutation-tests.yml (2026-05-14). Stryker-
+# specific commands and tool wiring live in consumer adapters, not here.
+DEFAULT_MUTATION_TESTING: dict[str, Any] = {
+    "commands": {
+        "dry_run": "",
+        "full": "",
+        "sample": "",
+        "summary": "",
+    },
+    "score_break": 60,
+    "schedule_cron": "17 */3 * * *",
+    "changed_quota": 5,
+    "max_files": 10,
+    "auto_issue": {
+        "enabled": False,
+        "label": "mutation-test",
+        "title": "Mutation test regression on main",
+        "marker_token": "mutation-test-regression",
+    },
+    "workflow_path": ".github/workflows/mutation-tests.yml",
+    "report_paths": {
+        "summary_md": "reports/mutation/summary.md",
+        "sample_md": "reports/mutation/sample.md",
+        "log": "reports/mutation/run.log",
+    },
+    "declined": False,
+}
+MUTATION_TESTING_KNOWN_KEYS = frozenset(DEFAULT_MUTATION_TESTING.keys())
+MUTATION_TESTING_COMMAND_SLOTS = frozenset(DEFAULT_MUTATION_TESTING["commands"].keys())
+MUTATION_TESTING_AUTO_ISSUE_KEYS = frozenset(DEFAULT_MUTATION_TESTING["auto_issue"].keys())
+MUTATION_TESTING_REPORT_PATH_KEYS = frozenset(DEFAULT_MUTATION_TESTING["report_paths"].keys())
+
 
 def default_specdown_smoke_patterns(preset_lineage: list[str]) -> list[str]:
     return list(DEFAULT_SPECDOWN_SMOKE_PATTERNS) if "specdown-quality" in preset_lineage else []
@@ -125,6 +158,171 @@ def validate_prompt_asset_policy(value: Any, errors: list[str]) -> dict[str, Any
         errors.append("prompt_asset_policy.min_multiline_chars must be an integer")
     if validated["min_multiline_chars"] < 0:
         errors.append("prompt_asset_policy.min_multiline_chars must be greater than or equal to 0")
+    return validated
+
+
+def _validate_mutation_commands(
+    raw: Any, validated: dict[str, Any], errors: list[str], warnings: list[str]
+) -> None:
+    if raw is None:
+        return
+    if not isinstance(raw, dict):
+        errors.append("mutation_testing.commands must be a mapping")
+        return
+    merged = dict(DEFAULT_MUTATION_TESTING["commands"])
+    for key, value in raw.items():
+        if key not in MUTATION_TESTING_COMMAND_SLOTS:
+            warnings.append(f"unknown mutation_testing.commands sub-key: {key}")
+            continue
+        if not isinstance(value, str):
+            errors.append(f"mutation_testing.commands.{key} must be a string")
+            continue
+        merged[key] = value
+    validated["commands"] = merged
+
+
+def _validate_mutation_auto_issue(
+    raw: Any, validated: dict[str, Any], errors: list[str], warnings: list[str]
+) -> None:
+    if raw is None:
+        return
+    if not isinstance(raw, dict):
+        errors.append("mutation_testing.auto_issue must be a mapping")
+        return
+    merged = dict(DEFAULT_MUTATION_TESTING["auto_issue"])
+    for key, value in raw.items():
+        if key not in MUTATION_TESTING_AUTO_ISSUE_KEYS:
+            warnings.append(f"unknown mutation_testing.auto_issue sub-key: {key}")
+            continue
+        if key == "enabled":
+            if not isinstance(value, bool):
+                errors.append("mutation_testing.auto_issue.enabled must be a boolean")
+                continue
+            merged[key] = value
+        else:
+            if not isinstance(value, str):
+                errors.append(f"mutation_testing.auto_issue.{key} must be a string")
+                continue
+            merged[key] = value
+    validated["auto_issue"] = merged
+
+
+def _validate_mutation_report_paths(
+    raw: Any, validated: dict[str, Any], errors: list[str], warnings: list[str]
+) -> None:
+    if raw is None:
+        return
+    if not isinstance(raw, dict):
+        errors.append("mutation_testing.report_paths must be a mapping")
+        return
+    merged = dict(DEFAULT_MUTATION_TESTING["report_paths"])
+    for key, value in raw.items():
+        if key not in MUTATION_TESTING_REPORT_PATH_KEYS:
+            warnings.append(f"unknown mutation_testing.report_paths sub-key: {key}")
+            continue
+        if not isinstance(value, str):
+            errors.append(f"mutation_testing.report_paths.{key} must be a string")
+            continue
+        merged[key] = value
+    validated["report_paths"] = merged
+
+
+def _validate_mutation_score_break(raw: Any, validated: dict[str, Any], errors: list[str]) -> None:
+    if not isinstance(raw, int) or isinstance(raw, bool):
+        errors.append("mutation_testing.score_break must be an integer")
+        return
+    if raw < 0 or raw > 100:
+        errors.append("mutation_testing.score_break must be between 0 and 100")
+        return
+    validated["score_break"] = raw
+
+
+def _validate_mutation_int_field(
+    name: str, raw: Any, validated: dict[str, Any], errors: list[str]
+) -> None:
+    if not isinstance(raw, int) or isinstance(raw, bool):
+        errors.append(f"mutation_testing.{name} must be an integer")
+        return
+    if raw < 0:
+        errors.append(f"mutation_testing.{name} must be greater than or equal to 0")
+        return
+    validated[name] = raw
+
+
+def _validate_mutation_string_field(
+    name: str, raw: Any, validated: dict[str, Any], errors: list[str]
+) -> None:
+    if not isinstance(raw, str):
+        errors.append(f"mutation_testing.{name} must be a string")
+        return
+    validated[name] = raw
+
+
+def _validate_mutation_declined(raw: Any, validated: dict[str, Any], errors: list[str]) -> None:
+    if not isinstance(raw, bool):
+        errors.append("mutation_testing.declined must be a boolean")
+        return
+    validated["declined"] = raw
+
+
+def _mutation_validated_defaults() -> dict[str, Any]:
+    return {
+        "commands": dict(DEFAULT_MUTATION_TESTING["commands"]),
+        "score_break": DEFAULT_MUTATION_TESTING["score_break"],
+        "schedule_cron": DEFAULT_MUTATION_TESTING["schedule_cron"],
+        "changed_quota": DEFAULT_MUTATION_TESTING["changed_quota"],
+        "max_files": DEFAULT_MUTATION_TESTING["max_files"],
+        "auto_issue": dict(DEFAULT_MUTATION_TESTING["auto_issue"]),
+        "workflow_path": DEFAULT_MUTATION_TESTING["workflow_path"],
+        "report_paths": dict(DEFAULT_MUTATION_TESTING["report_paths"]),
+        "declined": DEFAULT_MUTATION_TESTING["declined"],
+    }
+
+
+def _apply_mutation_top_key(
+    key: str,
+    raw: Any,
+    validated: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+) -> None:
+    if key == "commands":
+        _validate_mutation_commands(raw, validated, errors, warnings)
+    elif key == "auto_issue":
+        _validate_mutation_auto_issue(raw, validated, errors, warnings)
+    elif key == "report_paths":
+        _validate_mutation_report_paths(raw, validated, errors, warnings)
+    elif key == "score_break":
+        _validate_mutation_score_break(raw, validated, errors)
+    elif key in {"changed_quota", "max_files"}:
+        _validate_mutation_int_field(key, raw, validated, errors)
+    elif key in {"schedule_cron", "workflow_path"}:
+        _validate_mutation_string_field(key, raw, validated, errors)
+    elif key == "declined":
+        _validate_mutation_declined(raw, validated, errors)
+
+
+def validate_mutation_testing(
+    value: Any, errors: list[str], warnings: list[str]
+) -> dict[str, Any] | None:
+    """Validate the mutation_testing adapter block.
+
+    Returns None when absent; defaults are supplied by infer_quality_defaults.
+    Unknown top-level or nested sub-keys land in warnings (precedent: silent-
+    ignore in coverage_floor_policy, etc., here surfaced as a warning so typo
+    drift is visible).
+    """
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        errors.append("mutation_testing must be a mapping")
+        return None
+    validated = _mutation_validated_defaults()
+    for key, raw in value.items():
+        if key not in MUTATION_TESTING_KNOWN_KEYS:
+            warnings.append(f"unknown mutation_testing sub-key: {key}")
+            continue
+        _apply_mutation_top_key(key, raw, validated, errors, warnings)
     return validated
 
 

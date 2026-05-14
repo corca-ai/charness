@@ -51,6 +51,19 @@ Examples:
   judgment quality rather than a deterministic lint rule, and record which
   observations would justify automation later
 
+## Adapter-Driven Probes
+
+When the resolved adapter has no errors, run any adapter-driven proposal
+probes that quality ships and surface their `status: missing` results as
+active recommendations:
+
+- `propose_mutation_testing.py` — installs the `mutation_testing` block and
+  workflow template when the consumer has not opted in. See
+  `mutation-testing.md` for the protocol and the `--execute` install flow.
+
+Skip adapter-driven probes entirely when validator errors are non-empty;
+their output is not meaningful against a broken adapter.
+
 ## HITL Handoff
 
 When a `NON_AUTOMATABLE` proposal needs deliberate human judgment, shape it so

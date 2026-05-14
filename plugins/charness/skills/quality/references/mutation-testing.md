@@ -1,0 +1,124 @@
+# Mutation Testing — Detect, Propose, Install
+
+`quality` adopts mutation testing through a single `mutation_testing` block
+in `<repo-root>/.agents/quality-adapter.yaml`. charness ships no tool-specific
+helpers and no Stryker/mutmut/cosmic-ray knowledge. The block declares four
+command slots and a GitHub Actions workflow template that calls those slots
+at runtime.
+
+## States
+
+- **installed**: `commands.full` is a non-empty string.
+- **missing**: top-level `mutation_testing` key is absent, or `commands.full`
+  is empty, and `declined` is not `true`.
+- **declined**: `declined: true`. The propose probe stops re-asking. Remove
+  the flag to reopen.
+
+The propose probe (`propose_mutation_testing.py`) emits JSON of shape
+`{status, recommendation, install_actions}` with `status` in
+`{installed, missing, declined, blocked}`. `blocked` is reserved for the case
+where adapter validator errors are non-empty; the propose stage runs only
+after `validate_quality_adapter_data` returns zero errors. The quality skill
+must not call the probe when validation failed.
+
+## commands.summary contract
+
+The consumer-owned summary command is the single integration seam:
+
+1. Write `report_paths.summary_md` as GitHub-issue-renderable markdown. The
+   auto-issue step embeds it verbatim into the issue body, so HTML tags or
+   tool-specific renderers should be normalized to plain markdown before the
+   write.
+2. Exit non-zero when the mutation score breaks `score_break`.
+
+charness does not enforce a score-extraction schema. Every reasonable mutation
+runner can wrap its own report behind a thin script that meets both clauses.
+
+## commands.sample contract
+
+The sample step exists so PR runs limit the mutation set to changed files
+plus deterministic fill. It is optional. When set:
+
+1. Write deterministic file selections to stdout, one per line.
+2. Also emit `sample_files=<space-separated list>` to `$GITHUB_OUTPUT`.
+
+The workflow template captures the output into `MUTATION_SAMPLE_FILES` env
+and exposes it to `commands.full`. The shape (CLI flag, env file, session
+DB) is up to the consumer — charness only mandates the env var name.
+
+When `commands.sample` is empty, the workflow runs the full mutation set.
+
+## Workflow template
+
+`scripts/templates/mutation-tests.yml` is installed at the adapter's
+`workflow_path`. Per checkout, the workflow:
+
+1. parses `.agents/quality-adapter.yaml` via `yq` and exports every slot
+   as an env var (`MUTATION_CMD_FULL`, `MUTATION_AUTO_ISSUE_LABEL`, etc.).
+2. branches on event:
+   - `pull_request`: runs `commands.dry_run` (no sample step).
+   - `workflow_dispatch` with `force=true` or scheduled: runs `commands.sample`
+     then `commands.full`.
+3. always runs `commands.summary` and uploads `report_paths.*` as the
+   `mutation-report` actions artifact.
+4. when `auto_issue.enabled` is true and the run failed, opens or comments on
+   an issue labeled `auto_issue.label`, marked
+   `<!-- ${{ github.repository }}-${marker_token} -->` so repos sharing a
+   tracker do not collide. When the run succeeds, the same marker closes the
+   issue.
+
+`yq` is pre-installed on `ubuntu-latest`. macOS/Windows/self-hosted host
+support is a deferred Probe Question; the initial install target is Ubuntu.
+
+### Slot quoting
+
+`commands.*` values are spliced into workflow `run:` lines via
+`${{ steps.adapter.outputs.cmd_* }}`. The string GitHub Actions substitutes
+into the bash `run` block is the raw adapter value. Keep slot values as
+plain commands (e.g., `"npm run test:mutation"`) and use `&&` or `;` to chain
+when needed. Avoid embedded single quotes, dollar-prefixed shell vars that
+would expand before bash sees them, or `|`/`>` redirects — wrap those in a
+helper script the slot calls instead.
+
+### Schedule cron is install-time, not runtime
+
+`mutation_testing.schedule_cron` is rendered into the workflow file's
+`schedule.cron` field when `propose_mutation_testing.py --execute` writes the
+template, because GitHub Actions parses `on.schedule` before any job step
+runs. Other slots are read at runtime each job. To change the cron, edit the
+adapter and re-run `propose_mutation_testing.py --execute` so the workflow is
+re-rendered.
+
+## Detect / Propose Stage
+
+`quality` calls `propose_mutation_testing.py` after the read-only review
+phase when the adapter is valid:
+
+- `installed` → no message.
+- `missing` → one-line propose with `install_actions`:
+  (a) scaffold `mutation_testing:` block into the adapter under a fenced
+      `# >>> mutation_testing (charness propose) >>>` marker, and
+  (b) write the workflow template to `workflow_path`.
+- `declined` → one-line note "declined; remove `mutation_testing.declined`
+  to reopen". No further action.
+- `blocked` → never called when validation fails; the quality stage just
+  surfaces the validator errors.
+
+Adapter mutation is fenced-marker append for the initial slice: it only fires
+on operator confirmation and only when no existing `mutation_testing` block is
+present. Re-running propose on an already-installed repo is a no-op. A round-
+trip mutation strategy (e.g., ruamel.yaml) is a deferred follow-up.
+
+## Defaults Source
+
+All non-empty defaults trace to
+`craken-agents/.github/workflows/mutation-tests.yml` (2026-05-14). Stryker-
+literal paths (`stryker.log`) are renamed to neutral equivalents (`run.log`)
+and stack-coupled values (`commands.*`) ship empty so the portable-defaults
+preset stays stack-neutral.
+
+## See Also
+
+- `adapter-contract.md` — full field list and types.
+- `../scripts/propose_mutation_testing.py` — the probe.
+- `../scripts/templates/mutation-tests.yml` — the workflow.

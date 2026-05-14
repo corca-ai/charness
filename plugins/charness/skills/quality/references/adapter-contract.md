@@ -63,6 +63,7 @@ Quality-specific fields:
 - `gate_commands`
 - `review_commands`
 - `security_commands`
+- `mutation_testing`
 
 Use explicit empty lists to record an intentional opt-out.
 Keep `coverage_fragile_margin_pp` numeric; `1.0` is the portable default.
@@ -310,6 +311,48 @@ Recommended sibling history path:
 - `<repo-root>/charness-artifacts/quality/history/*.md`
 
 To change the location, override `output_dir` in the adapter.
+
+`mutation_testing` declares mutation testing policy for the repo. The block is
+stack-neutral: charness ships no tool-specific helpers. Consumers fill the four
+`commands.*` slots with whatever runner their stack uses (Stryker for JS/TS,
+mutmut for Python, etc.). See `mutation-testing.md` for the detect/propose
+protocol, the workflow template, and the slot output contract.
+
+Fields:
+
+- `commands.dry_run` — dry-run command for PRs (default `""`)
+- `commands.full` — full mutation run command (default `""`)
+- `commands.sample` — sample-selection command; must emit `sample_files=...` to
+  `GITHUB_OUTPUT` for the workflow to pass into `commands.full` via
+  `MUTATION_SAMPLE_FILES` (default `""`)
+- `commands.summary` — summary command; must write `report_paths.summary_md`
+  (GitHub-issue-renderable markdown) and exit non-zero when score breaks the
+  threshold (default `""`)
+- `score_break` — integer mutation score threshold 0-100 (default `60`)
+- `schedule_cron` — workflow schedule cron (default `"17 */3 * * *"`)
+- `changed_quota` — sampler quota for changed files (default `5`)
+- `max_files` — sampler total file cap (default `10`)
+- `auto_issue.enabled` — auto open/update issue on failure (default `false`)
+- `auto_issue.label` — issue label (default `"mutation-test"`)
+- `auto_issue.title` — issue title (default `"Mutation test regression on main"`)
+- `auto_issue.marker_token` — token combined with `${{ github.repository }}`
+  into the HTML comment marker, e.g. `<!-- owner/repo-mutation-test-regression -->`
+  (default `"mutation-test-regression"`)
+- `workflow_path` — install path for the workflow template (default
+  `".github/workflows/mutation-tests.yml"`)
+- `report_paths.summary_md`, `report_paths.sample_md`, `report_paths.log` —
+  artifact paths. Defaults: `reports/mutation/summary.md`,
+  `reports/mutation/sample.md`, `reports/mutation/run.log`.
+- `declined` — operator opt-out marker (default `false`). When `true`, the
+  propose probe reports `declined` instead of `missing`. Remove the flag to
+  reopen the propose loop.
+
+`commands.*` defaults are intentionally empty strings so portable-defaults
+preset scaffolding does not bake Stryker assumptions into every repo. The
+absent block is treated identically to the empty-commands block — both surface
+as `missing` to the propose probe. Unknown top-level or nested sub-keys land in
+warnings (precedent: silent-ignore in `coverage_floor_policy`; here surfaced as
+a warning so typo drift is visible).
 
 ## Design Rules
 

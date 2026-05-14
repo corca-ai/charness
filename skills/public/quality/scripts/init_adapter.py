@@ -31,6 +31,7 @@ base_adapter_items = _scripts_adapter_init_lib_module.base_adapter_items
 run_init_adapter = _scripts_adapter_init_lib_module.run_init_adapter
 _scripts_quality_policy_defaults_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_policy_defaults")
 DEFAULT_COVERAGE_FLOOR_POLICY = _scripts_quality_policy_defaults_module.DEFAULT_COVERAGE_FLOOR_POLICY
+DEFAULT_MUTATION_TESTING = _scripts_quality_policy_defaults_module.DEFAULT_MUTATION_TESTING
 DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR = (
     _scripts_quality_policy_defaults_module.DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR
 )
@@ -66,6 +67,7 @@ def build_items(repo_name: str, args: argparse.Namespace) -> list[tuple[str, obj
         ("preflight_commands", []),
         ("gate_commands", []),
         ("security_commands", []),
+        ("mutation_testing", DEFAULT_MUTATION_TESTING),
     ]
     if args.preset_id in {"python-quality", "specdown-quality"}:
         insert_at = 8

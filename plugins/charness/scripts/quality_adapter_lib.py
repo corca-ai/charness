@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import sys
 from pathlib import Path
 from typing import Any
@@ -9,6 +10,7 @@ from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
 from scripts.quality_bootstrap_lib import ADAPTER_CANDIDATES
 from scripts.quality_policy_defaults import (
     DEFAULT_COVERAGE_FLOOR_POLICY,
+    DEFAULT_MUTATION_TESTING,
     DEFAULT_PROMPT_ASSET_POLICY,
     DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_GUARD_MIN_LINES,
     DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR,
@@ -17,6 +19,7 @@ from scripts.quality_policy_defaults import (
     DEFAULT_SKILL_ERGONOMICS_GATE_RULES,
     DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
     validate_coverage_floor_policy,
+    validate_mutation_testing,
     validate_prompt_asset_policy,
     validate_skill_ergonomics_gate_rules,
 )
@@ -172,6 +175,7 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "gate_commands": [],
         "review_commands": [],
         "security_commands": [],
+        "mutation_testing": copy.deepcopy(DEFAULT_MUTATION_TESTING),
     }
 
 
@@ -270,6 +274,14 @@ def _apply_list_fields(data: dict[str, Any], validated: dict[str, Any], errors: 
             validated[field] = items
 
 
+def _apply_mutation_testing(
+    data: dict[str, Any], validated: dict[str, Any], errors: list[str], warnings: list[str]
+) -> None:
+    block = validate_mutation_testing(data.get("mutation_testing"), errors, warnings)
+    if block is not None:
+        validated["mutation_testing"] = block
+
+
 def validate_quality_adapter_data(
     data: dict[str, Any], repo_root: Path
 ) -> tuple[dict[str, Any], list[str], list[str]]:
@@ -287,6 +299,7 @@ def validate_quality_adapter_data(
         errors.append("artifact_class must be one of: current, history, rolling")
     _apply_policy_fields(data, validated, errors)
     _apply_list_fields(data, validated, errors)
+    _apply_mutation_testing(data, validated, errors, warnings)
 
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")

@@ -1,0 +1,276 @@
+# Installed by charness:quality propose_mutation_testing.
+# This workflow parses .agents/quality-adapter.yaml at runtime; do not hand-
+# edit the mutation_testing values here — change them in the adapter instead.
+# Source generalization: craken-agents/.github/workflows/mutation-tests.yml.
+
+name: Mutation Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Run even when the latest successful mutation workflow already covered this SHA.
+        required: false
+        default: "false"
+        type: boolean
+  pull_request:
+    paths:
+      - .agents/quality-adapter.yaml
+      - .github/workflows/mutation-tests.yml
+  schedule:
+    - cron: "MUTATION_SCHEDULE_CRON_PLACEHOLDER"
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+concurrency:
+  group: mutation-tests-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  mutation:
+    name: Mutation tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve mutation_testing adapter slots
+        id: adapter
+        shell: bash
+        run: |
+          set -euo pipefail
+          ADAPTER=".agents/quality-adapter.yaml"
+          if [[ ! -f "$ADAPTER" ]]; then
+            echo "::error::adapter file not found at $ADAPTER"
+            exit 1
+          fi
+          read_slot() {
+            local path="$1"
+            local default="$2"
+            local value
+            value=$(yq -r "$path // \"\"" "$ADAPTER")
+            if [[ -z "$value" || "$value" == "null" ]]; then
+              value="$default"
+            fi
+            printf '%s' "$value"
+          }
+          declined=$(read_slot '.mutation_testing.declined' 'false')
+          if [[ "$declined" == "true" ]]; then
+            echo "mutation_testing.declined is true; skipping run."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          full=$(read_slot '.mutation_testing.commands.full' '')
+          if [[ -z "$full" ]]; then
+            echo "::error::mutation_testing.commands.full is empty; nothing to run."
+            exit 1
+          fi
+          {
+            echo "should_run=true"
+            echo "cmd_dry_run=$(read_slot '.mutation_testing.commands.dry_run' '')"
+            echo "cmd_full=$full"
+            echo "cmd_sample=$(read_slot '.mutation_testing.commands.sample' '')"
+            echo "cmd_summary=$(read_slot '.mutation_testing.commands.summary' '')"
+            echo "score_break=$(read_slot '.mutation_testing.score_break' '60')"
+            echo "changed_quota=$(read_slot '.mutation_testing.changed_quota' '5')"
+            echo "max_files=$(read_slot '.mutation_testing.max_files' '10')"
+            echo "auto_issue_enabled=$(read_slot '.mutation_testing.auto_issue.enabled' 'false')"
+            echo "auto_issue_label=$(read_slot '.mutation_testing.auto_issue.label' 'mutation-test')"
+            echo "auto_issue_title=$(read_slot '.mutation_testing.auto_issue.title' 'Mutation test regression on main')"
+            echo "auto_issue_marker_token=$(read_slot '.mutation_testing.auto_issue.marker_token' 'mutation-test-regression')"
+            echo "summary_md=$(read_slot '.mutation_testing.report_paths.summary_md' 'reports/mutation/summary.md')"
+            echo "sample_md=$(read_slot '.mutation_testing.report_paths.sample_md' 'reports/mutation/sample.md')"
+            echo "run_log=$(read_slot '.mutation_testing.report_paths.log' 'reports/mutation/run.log')"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Plan run
+        if: steps.adapter.outputs.should_run == 'true'
+        id: plan
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const mode = context.eventName === 'pull_request' ? 'dry-run' : 'full';
+            let shouldRun = true;
+            const force = context.payload.inputs?.force === true || context.payload.inputs?.force === 'true';
+
+            if (context.eventName === 'schedule' && !force) {
+              const { owner, repo } = context.repo;
+              const defaultBranch = context.payload.repository.default_branch;
+              const { data } = await github.rest.actions.listWorkflowRuns({
+                owner,
+                repo,
+                workflow_id: '.github/workflows/mutation-tests.yml',
+                branch: defaultBranch,
+                status: 'completed',
+                per_page: 10,
+              });
+              const previousCompleted = data.workflow_runs.find((run) => run.id !== context.runId && ['success', 'failure'].includes(run.conclusion));
+              shouldRun = previousCompleted?.head_sha !== context.sha;
+              core.setOutput('base_sha', previousCompleted?.head_sha ?? '');
+              core.info(previousCompleted
+                ? `Latest completed mutation workflow ran at ${previousCompleted.head_sha}. Current SHA is ${context.sha}.`
+                : 'No previous completed mutation workflow was found.');
+            }
+
+            core.setOutput('mode', mode);
+            core.setOutput('should_run', String(shouldRun));
+            core.setOutput('head_sha', context.sha);
+
+      - name: Select mutation sample
+        if: steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && steps.plan.outputs.mode == 'full' && steps.adapter.outputs.cmd_sample != ''
+        id: sample
+        env:
+          MUTATION_BASE_SHA: ${{ steps.plan.outputs.base_sha }}
+          MUTATION_HEAD_SHA: ${{ steps.plan.outputs.head_sha }}
+          MUTATION_SAMPLE_CHANGED_QUOTA: ${{ steps.adapter.outputs.changed_quota }}
+          MUTATION_SAMPLE_MAX_FILES: ${{ steps.adapter.outputs.max_files }}
+          MUTATION_SAMPLE_SEED: ${{ steps.plan.outputs.base_sha }}..${{ steps.plan.outputs.head_sha }}
+        shell: bash
+        run: ${{ steps.adapter.outputs.cmd_sample }}
+
+      - name: Run mutation
+        if: steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true'
+        id: run
+        continue-on-error: true
+        shell: bash
+        env:
+          MUTATION_SAMPLE_FILES: ${{ steps.sample.outputs.sample_files }}
+          MUTATION_SCORE_BREAK: ${{ steps.adapter.outputs.score_break }}
+        run: |
+          set -o pipefail
+          mkdir -p "$(dirname "${{ steps.adapter.outputs.run_log }}")"
+          if [[ "${{ steps.plan.outputs.mode }}" == "dry-run" ]]; then
+            ${{ steps.adapter.outputs.cmd_dry_run }} 2>&1 | tee "${{ steps.adapter.outputs.run_log }}"
+          else
+            ${{ steps.adapter.outputs.cmd_full }} 2>&1 | tee "${{ steps.adapter.outputs.run_log }}"
+          fi
+
+      - name: Summarize mutation report
+        if: always() && steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && steps.adapter.outputs.cmd_summary != ''
+        id: summary
+        env:
+          MUTATION_SCORE_BREAK: ${{ steps.plan.outputs.mode == 'full' && steps.adapter.outputs.score_break || '' }}
+        shell: bash
+        run: ${{ steps.adapter.outputs.cmd_summary }}
+
+      - name: Upload mutation report
+        if: always() && steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report
+          path: |
+            ${{ steps.adapter.outputs.summary_md }}
+            ${{ steps.adapter.outputs.sample_md }}
+            ${{ steps.adapter.outputs.run_log }}
+            reports/mutation
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Open or update mutation issue
+        if: always() && steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && steps.plan.outputs.mode == 'full' && steps.adapter.outputs.auto_issue_enabled == 'true' && (steps.run.outcome == 'failure' || steps.summary.outcome == 'failure')
+        uses: actions/github-script@v7
+        env:
+          SUMMARY_PATH: ${{ steps.adapter.outputs.summary_md }}
+          SAMPLE_PATH: ${{ steps.adapter.outputs.sample_md }}
+          ISSUE_TITLE: ${{ steps.adapter.outputs.auto_issue_title }}
+          ISSUE_LABEL: ${{ steps.adapter.outputs.auto_issue_label }}
+          MARKER_TOKEN: ${{ steps.adapter.outputs.auto_issue_marker_token }}
+        with:
+          script: |
+            const fs = require('node:fs');
+            const title = process.env.ISSUE_TITLE;
+            const label = process.env.ISSUE_LABEL;
+            const { owner, repo } = context.repo;
+            const marker = `<!-- ${owner}/${repo}-${process.env.MARKER_TOKEN} -->`;
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+            const summaryPath = process.env.SUMMARY_PATH;
+            const summary = summaryPath && fs.existsSync(summaryPath)
+              ? fs.readFileSync(summaryPath, 'utf8')
+              : 'No mutation summary was generated. Check the workflow logs.';
+            const samplePath = process.env.SAMPLE_PATH;
+            const sample = samplePath && fs.existsSync(samplePath)
+              ? fs.readFileSync(samplePath, 'utf8')
+              : 'No mutation sample manifest was generated.';
+            const body = [
+              marker,
+              `Mutation testing failed on \`${context.sha}\`.`,
+              '',
+              `Workflow run: ${runUrl}`,
+              '',
+              summary,
+              '',
+              sample,
+            ].join('\n');
+
+            try {
+              await github.rest.issues.createLabel({
+                owner,
+                repo,
+                name: label,
+                color: 'b60205',
+                description: 'Automated mutation testing findings',
+              });
+            } catch (error) {
+              if (error.status !== 422) {
+                throw error;
+              }
+            }
+
+            const { data } = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${owner}/${repo} is:issue is:open label:${label} in:title "${title}"`,
+              per_page: 1,
+            });
+            const existing = data.items[0];
+
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: existing.number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner,
+                repo,
+                title,
+                labels: [label],
+                body,
+              });
+            }
+
+      - name: Close recovered mutation issue
+        if: steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && steps.plan.outputs.mode == 'full' && steps.adapter.outputs.auto_issue_enabled == 'true' && steps.run.outcome == 'success' && (steps.summary.outcome == 'success' || steps.adapter.outputs.cmd_summary == '')
+        uses: actions/github-script@v7
+        env:
+          ISSUE_TITLE: ${{ steps.adapter.outputs.auto_issue_title }}
+          ISSUE_LABEL: ${{ steps.adapter.outputs.auto_issue_label }}
+        with:
+          script: |
+            const title = process.env.ISSUE_TITLE;
+            const label = process.env.ISSUE_LABEL;
+            const { owner, repo } = context.repo;
+            const { data } = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${owner}/${repo} is:issue is:open label:${label} in:title "${title}"`,
+              per_page: 10,
+            });
+
+            for (const issue of data.items) {
+              await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: issue.number,
+                state: 'closed',
+                state_reason: 'completed',
+              });
+            }
+
+      - name: Fail workflow on mutation failure
+        if: steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && (steps.run.outcome == 'failure' || steps.summary.outcome == 'failure')
+        run: exit 1

@@ -51,3 +51,26 @@ concept_paths: []
 preflight_commands: []
 gate_commands: []
 security_commands: []
+mutation_testing:
+  # Empty commands.* keep this stack-neutral; consumers fill the slots that
+  # match their tool. See references/mutation-testing.md.
+  commands:
+    dry_run: ""
+    full: ""
+    sample: ""
+    summary: ""
+  score_break: 60
+  schedule_cron: "17 */3 * * *"
+  changed_quota: 5
+  max_files: 10
+  auto_issue:
+    enabled: false
+    label: mutation-test
+    title: Mutation test regression on main
+    marker_token: mutation-test-regression
+  workflow_path: .github/workflows/mutation-tests.yml
+  report_paths:
+    summary_md: reports/mutation/summary.md
+    sample_md: reports/mutation/sample.md
+    log: reports/mutation/run.log
+  declined: false
