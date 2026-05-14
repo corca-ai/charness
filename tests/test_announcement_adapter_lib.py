@@ -106,6 +106,50 @@ def test_outputs_validation_rejects_duplicate_id_and_unknown_delivery_role(tmp_p
     ]
 
 
+def test_thread_reply_without_parent_handle_placeholder_emits_warning(tmp_path: Path) -> None:
+    data = {
+        "delivery_kind": "human-backend",
+        "post_command_template": "slack-post --file {message_file_q}",
+        "delivery_capability": "slack",
+        "outputs": [
+            {"id": "body", "audience_tags": ["user"], "delivery_role": "parent"},
+            {"id": "reply", "audience_tags": ["operator"], "delivery_role": "thread_reply"},
+        ],
+    }
+    _validated, errors, warnings = validate_announcement_adapter_data(data, tmp_path)
+    assert errors == []
+    assert any("{parent_delivery_handle}" in warning for warning in warnings)
+
+
+def test_thread_reply_with_parent_handle_placeholder_does_not_warn(tmp_path: Path) -> None:
+    data = {
+        "delivery_kind": "human-backend",
+        "post_command_template": "slack-post --file {message_file_q} --thread {parent_delivery_handle_q}",
+        "delivery_capability": "slack",
+        "outputs": [
+            {"id": "body", "audience_tags": ["user"], "delivery_role": "parent"},
+            {"id": "reply", "audience_tags": ["operator"], "delivery_role": "thread_reply"},
+        ],
+    }
+    _validated, errors, warnings = validate_announcement_adapter_data(data, tmp_path)
+    assert errors == []
+    assert not any("{parent_delivery_handle}" in warning for warning in warnings)
+
+
+def test_thread_reply_without_parent_output_emits_warning(tmp_path: Path) -> None:
+    data = {
+        "delivery_kind": "human-backend",
+        "post_command_template": "slack-post --file {message_file_q} --thread {parent_delivery_handle_q}",
+        "delivery_capability": "slack",
+        "outputs": [
+            {"id": "reply", "audience_tags": ["operator"], "delivery_role": "thread_reply"},
+        ],
+    }
+    _validated, errors, warnings = validate_announcement_adapter_data(data, tmp_path)
+    assert errors == []
+    assert any("without a preceding `parent`" in warning for warning in warnings)
+
+
 def test_in_progress_sources_validation_requires_path_for_kind_path(tmp_path: Path) -> None:
     data = {"in_progress_sources": [{"kind": "path"}]}
     _validated, errors, _warnings = validate_announcement_adapter_data(data, tmp_path)

@@ -119,7 +119,33 @@ def parse_commits(raw: str, body_limit: int) -> list[dict[str, object]]:
     return commits
 
 
-def collect_commits(repo_root: Path, limit: int, body_limit: int) -> dict[str, object]:
+FANOUT_LARGE_WINDOW_THRESHOLD = 30
+FANOUT_MEDIUM_WINDOW_THRESHOLD = 15
+
+
+def build_fanout_hint(commits: list[dict[str, object]]) -> dict[str, object]:
+    commit_count = len(commits)
+    signals: list[str] = []
+    if commit_count >= FANOUT_LARGE_WINDOW_THRESHOLD:
+        signals.append(f"large_window: {commit_count} commits >= {FANOUT_LARGE_WINDOW_THRESHOLD}")
+    elif commit_count >= FANOUT_MEDIUM_WINDOW_THRESHOLD:
+        signals.append(f"medium_window: {commit_count} commits >= {FANOUT_MEDIUM_WINDOW_THRESHOLD}")
+    recommended = commit_count >= FANOUT_LARGE_WINDOW_THRESHOLD
+    return {
+        "commit_count": commit_count,
+        "signals": signals,
+        "recommended": recommended,
+        "reference": "skills/public/announcement/references/large-window-fanout.md",
+    }
+
+
+def collect_commits(
+    repo_root: Path,
+    limit: int,
+    body_limit: int,
+    *,
+    include_fanout_hint: bool = False,
+) -> dict[str, object]:
     record_path = repo_root / ".charness" / "announcement" / "announcements.jsonl"
     last_head = load_last_head(record_path)
     revision_range = f"{last_head}..HEAD" if last_head else f"-n {limit}"
@@ -128,13 +154,17 @@ def collect_commits(repo_root: Path, limit: int, body_limit: int) -> dict[str, o
     else:
         args = ["log", "--reverse", f"-n{limit}", "--format=%H%x1f%P%x1f%s%x1f%b%x1e", "HEAD"]
     raw = git(*args, repo_root=repo_root)
-    return {
+    commits = parse_commits(raw, body_limit)
+    payload: dict[str, object] = {
         "last_recorded_head": last_head,
         "record_path": str(record_path.relative_to(repo_root)),
         "revision_range": revision_range,
         "body_limit": body_limit,
-        "commits": parse_commits(raw, body_limit),
+        "commits": commits,
     }
+    if include_fanout_hint:
+        payload["fanout_hint"] = build_fanout_hint(commits)
+    return payload
 
 
 def main() -> None:
@@ -142,8 +172,22 @@ def main() -> None:
     parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--limit", type=int, default=12)
     parser.add_argument("--body-limit", type=int, default=1200)
+    parser.add_argument(
+        "--fanout-hint",
+        action="store_true",
+        help=(
+            "emit a `fanout_hint` block with commit count, advisory signals, and a "
+            "recommended boolean per skills/public/announcement/references/"
+            "large-window-fanout.md heuristics"
+        ),
+    )
     args = parser.parse_args()
-    payload = collect_commits(args.repo_root.resolve(), args.limit, args.body_limit)
+    payload = collect_commits(
+        args.repo_root.resolve(),
+        args.limit,
+        args.body_limit,
+        include_fanout_hint=args.fanout_hint,
+    )
     sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
 
 

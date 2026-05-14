@@ -164,3 +164,39 @@ When a `parent` output is split into `(part N/total)` chunks by
 `message_size_limit`, the seam captures the **first part's**
 `delivery_handle` and uses that for downstream `thread_reply` outputs, so
 follow-up replies land under the same parent anchor.
+
+### Worked example
+
+The host owns the JSON emission shape. A representative pattern feeds the
+backend response through `jq` so the last non-empty stdout line is the
+required JSON object:
+
+```yaml
+post_command_template: >-
+  slack-cli chat postMessage --channel {delivery_target_q} --file {message_file_q}
+  | jq -c '{delivery_handle: .ts}'
+```
+
+For a `thread_reply` output the template adds the handle placeholder:
+
+```yaml
+post_command_template: >-
+  slack-cli chat postMessage --channel {delivery_target_q}
+  --thread-ts {parent_delivery_handle_q} --file {message_file_q}
+  | jq -c '{delivery_handle: .ts}'
+```
+
+The first invocation reads the parent post's response, projects only
+`ts` to `delivery_handle`, and prints it as the final stdout line. The
+seam stores that handle and substitutes it into the follow-up template.
+Operators can switch to a different backend without touching the public
+contract: `gh issue comment ...` piped through
+`jq -c '{delivery_handle: .url}'` works the same way for GitHub
+PR-comment delivery, and a release-notes seam can echo a section anchor
+literal.
+
+The placeholder validator in `scripts/announcement_adapter_lib.py`
+emits a warning when `outputs` declares a `thread_reply` role but
+`post_command_template` omits `{parent_delivery_handle}` /
+`{parent_delivery_handle_q}`, so adapter authors are told before a
+chained reply silently lands as a top-level message.

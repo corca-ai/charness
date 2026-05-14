@@ -248,6 +248,35 @@ def _delivery_warnings(
         warnings.append("human-backend delivery_kind is set but post_command_template is empty.")
     if validated["delivery_kind"] == "human-backend" and not validated["delivery_capability"]:
         warnings.append("human-backend delivery_kind is set but delivery_capability is empty.")
+    _validate_chaining_contract(validated, warnings)
+
+
+def _validate_chaining_contract(validated: dict[str, Any], warnings: list[str]) -> None:
+    outputs = validated.get("outputs") or []
+    has_thread_reply = any(
+        isinstance(output, dict) and output.get("delivery_role") == "thread_reply"
+        for output in outputs
+    )
+    has_parent = any(
+        isinstance(output, dict) and output.get("delivery_role") == "parent"
+        for output in outputs
+    )
+    template = validated.get("post_command_template") or ""
+    if has_thread_reply and not has_parent:
+        warnings.append(
+            "outputs declare `thread_reply` without a preceding `parent` output; "
+            "the chaining contract in `references/delivery-seams.md` (Chaining Outputs) "
+            "needs a parent output to emit the delivery handle."
+        )
+    has_handle_placeholder = (
+        "{parent_delivery_handle}" in template or "{parent_delivery_handle_q}" in template
+    )
+    if has_thread_reply and not has_handle_placeholder:
+        warnings.append(
+            "outputs declare `thread_reply` but `post_command_template` does not reference "
+            "`{parent_delivery_handle}` or `{parent_delivery_handle_q}`; follow-up replies will "
+            "not be wired to the parent post (see `references/delivery-seams.md` Chaining Outputs)."
+        )
 
 
 def _apply_public_body_shape(

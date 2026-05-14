@@ -89,7 +89,9 @@ repo had already declared them.
      content.
    - when the commit window is large or spans more than one source, consider
      fanning out triage per `references/large-window-fanout.md`; merge the
-     audience-tagged partial bullets per section before drafting wording
+     audience-tagged partial bullets per section before drafting wording.
+     Pass `--fanout-hint` to the collect-commits script to surface a
+     `fanout_hint` block (commit count, advisory signals, `recommended` flag).
 3. Recover audience value before wording.
    - who benefits
    - what surface changed

@@ -133,6 +133,50 @@ def test_collect_commits_preserves_subject_only_shape_and_closing_reference(tmp_
     assert commit["closing_references"] == ["Fixes #150"]
 
 
+def test_collect_commits_omits_fanout_hint_by_default(tmp_path: Path) -> None:
+    init_repo(tmp_path)
+    (tmp_path / "README.md").write_text("seed\n", encoding="utf-8")
+    git(tmp_path, "add", "README.md")
+    git(tmp_path, "commit", "-m", "first")
+
+    payload = run_collect(tmp_path)
+
+    assert "fanout_hint" not in payload
+
+
+def test_collect_commits_fanout_hint_small_window(tmp_path: Path) -> None:
+    init_repo(tmp_path)
+    (tmp_path / "README.md").write_text("seed\n", encoding="utf-8")
+    git(tmp_path, "add", "README.md")
+    git(tmp_path, "commit", "-m", "first")
+
+    payload = run_collect(tmp_path, "--fanout-hint")
+
+    hint = payload["fanout_hint"]
+    assert hint["commit_count"] == 1
+    assert hint["recommended"] is False
+    assert hint["signals"] == []
+    assert "large-window-fanout.md" in hint["reference"]
+
+
+def test_collect_commits_fanout_hint_large_window(tmp_path: Path) -> None:
+    init_repo(tmp_path)
+    (tmp_path / "seed").write_text("seed\n", encoding="utf-8")
+    git(tmp_path, "add", "seed")
+    git(tmp_path, "commit", "-m", "seed")
+    for index in range(32):
+        (tmp_path / f"file_{index}.txt").write_text(f"{index}\n", encoding="utf-8")
+        git(tmp_path, "add", f"file_{index}.txt")
+        git(tmp_path, "commit", "-m", f"commit {index}")
+
+    payload = run_collect(tmp_path, "--fanout-hint", "--limit", "50")
+
+    hint = payload["fanout_hint"]
+    assert hint["commit_count"] == 33
+    assert hint["recommended"] is True
+    assert any("large_window" in signal for signal in hint["signals"])
+
+
 def test_collect_commits_bounds_trailers_and_closing_references(tmp_path: Path) -> None:
     init_repo(tmp_path)
     (tmp_path / "README.md").write_text("seed\n", encoding="utf-8")

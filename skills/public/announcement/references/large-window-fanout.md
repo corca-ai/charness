@@ -75,6 +75,11 @@ across outputs:
   noisy duplicates
 - partitioning by file path or commit author instead of by audience or
   source — the partitions are not independent in audience value
+- letting subagents invent new audience tags or section labels that the
+  adapter never declared — merge becomes a relabeling exercise instead of a
+  deduplication pass. The caller must compare every returned bullet against
+  the adapter's `audience_tags` and `sections`; reject or remap before merging
+  rather than papering over divergence in the final draft.
 
 ## Cost calibration
 
