@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-14T00:20:48Z",
+  "generated_at": "2026-05-14T03:44:57Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -34,6 +34,8 @@
           "charness:announcement"
         ],
         "referenced_paths": [
+          "skills/public/announcement/SKILL.md",
+          "skills/public/announcement/references/large-window-fanout.md",
           "skills/public/announcement/references/draft-shape.md",
           "skills/public/announcement/references/delivery-seams.md",
           "skills/shared/references/closeout-discipline.md",
@@ -89,8 +91,8 @@
           "charness:create-skill"
         ],
         "referenced_paths": [
-          "skills/shared/references/external-capability-proof-ladder.md",
           "skills/public/create-skill/SKILL.md",
+          "skills/shared/references/external-capability-proof-ladder.md",
           "skills/public/create-skill/references/portable-authoring.md",
           "skills/public/create-skill/references/adapter-pattern.md",
           "skills/public/create-skill/references/preset-conventions.md",
@@ -129,6 +131,7 @@
           "skills/public/critique/references/release-critique.md",
           "skills/public/critique/references/rename-critique.md",
           "skills/public/critique/references/spec-critique.md",
+          "skills/public/critique/SKILL.md",
           "skills/public/critique/references/prepare-packet.md",
           "skills/public/critique/references/angle-selection.md",
           "skills/public/critique/references/counterweight-triage.md",
@@ -183,6 +186,7 @@
           "charness:find-skills"
         ],
         "referenced_paths": [
+          "skills/public/find-skills/SKILL.md",
           "skills/public/find-skills/adapter.example.yaml",
           "skills/public/find-skills/references/adapter-contract.md",
           "skills/public/find-skills/references/discovery-order.md",
@@ -267,6 +271,7 @@
           "charness:hitl"
         ],
         "referenced_paths": [
+          "skills/public/hitl/SKILL.md",
           "skills/public/hitl/references/chunk-contract.md",
           "skills/shared/references/agent-assessment-invariant.md",
           "skills/public/hitl/references/adapter-contract.md",
@@ -300,6 +305,7 @@
           "skills/public/ideation/references/sequence-discipline.md",
           "skills/public/ideation/references/effectuation.md",
           "skills/public/ideation/references/decision-question-response.md",
+          "skills/public/ideation/SKILL.md",
           "skills/public/ideation/references/concept-architecture.md",
           "skills/public/ideation/references/truth-and-edge.md",
           "skills/public/ideation/references/world-modeling.md",
@@ -330,9 +336,9 @@
           "skills/public/impl/references/verification-ladder.md",
           "skills/public/impl/references/design-lenses.md",
           "skills/public/impl/references/review-gate.md",
+          "skills/public/impl/SKILL.md",
           "skills/public/impl/references/adapter-contract.md",
           "skills/shared/references/source-bound-records.md",
-          "skills/public/impl/SKILL.md",
           "skills/shared/references/prescribed-path-self-test.md",
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/public/impl/references/contract-consumption.md",
@@ -390,6 +396,7 @@
           "charness:narrative"
         ],
         "referenced_paths": [
+          "skills/public/narrative/SKILL.md",
           "skills/public/narrative/references/landing-rewrite-loop.md",
           "skills/public/narrative/references/cross-repo-issue-shaping.md",
           "skills/public/narrative/references/scenario-blocks.md",
@@ -418,6 +425,7 @@
           "charness:quality"
         ],
         "referenced_paths": [
+          "skills/public/quality/SKILL.md",
           "skills/public/quality/references/bootstrap-escalations.md",
           "skills/public/quality/references/inventory-dispatch.md",
           "skills/public/quality/references/skill-ergonomics.md",
@@ -476,6 +484,7 @@
           "charness:release"
         ],
         "referenced_paths": [
+          "skills/public/release/SKILL.md",
           "skills/shared/references/closeout-discipline.md",
           "skills/public/release/references/adapter-contract.md",
           "skills/public/release/references/version-policy.md",
@@ -499,6 +508,7 @@
           "charness:retro"
         ],
         "referenced_paths": [
+          "skills/public/retro/SKILL.md",
           "skills/public/retro/references/adapter-contract.md",
           "skills/public/retro/references/mode-guide.md",
           "skills/public/retro/references/section-guide.md",
@@ -553,6 +563,7 @@
           "charness:spec"
         ],
         "referenced_paths": [
+          "skills/public/spec/SKILL.md",
           "skills/public/spec/references/public-executable-contracts.md",
           "skills/public/spec/references/sequence-discipline.md",
           "skills/public/spec/references/design-lenses.md",
@@ -648,6 +659,7 @@
           "markdown-preview helper"
         ],
         "referenced_paths": [
+          "skills/support/markdown-preview/SKILL.md",
           "skills/support/markdown-preview/references/runtime-contract.md"
         ],
         "source": "local-support",
@@ -672,6 +684,7 @@
           "web-fetch helper"
         ],
         "referenced_paths": [
+          "skills/support/web-fetch/SKILL.md",
           "skills/support/web-fetch/references/runtime-contract.md",
           "skills/support/web-fetch/references/routing-table.md",
           "skills/support/web-fetch/references/provenance.md"
