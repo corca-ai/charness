@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-13T06:35:23Z",
+  "generated_at": "2026-05-14T00:20:48Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -59,6 +59,7 @@
         ],
         "referenced_paths": [
           "skills/shared/references/binary-preflight.md",
+          "skills/public/create-cli/references/intent-first-grammar.md",
           "skills/public/create-cli/references/command-conventions.md",
           "skills/public/create-cli/references/command-surface.md",
           "skills/public/create-cli/references/external-capability-clis.md",
@@ -128,8 +129,10 @@
           "skills/public/critique/references/release-critique.md",
           "skills/public/critique/references/rename-critique.md",
           "skills/public/critique/references/spec-critique.md",
+          "skills/public/critique/references/prepare-packet.md",
           "skills/public/critique/references/angle-selection.md",
           "skills/public/critique/references/counterweight-triage.md",
+          "skills/public/critique/references/adapter-contract.md",
           "skills/shared/references/agent-assessment-invariant.md"
         ],
         "source": "local-public",
@@ -1291,6 +1294,7 @@
     "tool_recommendation_query": null,
     "support_skill_recommendations": [],
     "support_recommendation_query": null,
+    "workflow_recommendations": [],
     "support_recommendation_note": null
   }
 }

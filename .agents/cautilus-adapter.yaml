@@ -51,8 +51,9 @@ evaluation_input_default: evals/cautilus/whole-repo-routing.fixture.json
 # Field name is historical (kept for adapter schema stability). Values use the
 # cautilus 0.15.4 `cautilus evaluate fixture` surface, not the removed
 # `cautilus eval test` topic.
+# Wrapper invocation (`scripts/run_cautilus_eval.py`) is documented in
+# `skills/public/quality/references/cautilus-on-demand.md`, not templated here.
 eval_test_command_templates:
-  - python3 scripts/run_cautilus_eval.py --mode fixture --justification-log <path-to-failing-log> -- --repo-root . --adapter .agents/cautilus-adapter.yaml --fixture {eval_cases_file}
   - node ./scripts/agent-runtime/run-local-eval-test.mjs --repo-root . --workspace {candidate_repo} --cases-file {eval_cases_file} --output-file {eval_observed_file} --artifact-dir {output_dir}/eval-test --backend {backend} --sandbox read-only --timeout-ms 180000 --codex-model gpt-5.4-mini --codex-reasoning-effort low --codex-home-mode isolated --codex-auth-mode inherit --claude-permission-mode dontAsk
 held_out_command_templates:
   - python3 scripts/eval_cautilus_scenarios.py --repo-root . --mode held_out --profile {profile} --baseline-ref {baseline_ref} --samples {held_out_samples} --output-dir charness-artifacts/cautilus/held-out
