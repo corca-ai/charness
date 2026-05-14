@@ -57,7 +57,12 @@ jobs:
         # uses Python/mutmut). The shipped template at
         # skills/public/quality/scripts/templates/mutation-tests.yml stays
         # stack-neutral; consumers customize this step for their runner.
-        run: pip install mutmut==3.5.0
+        # jsonschema + packaging + pyyaml are charness's runtime deps used by
+        # scripts/control_plane_lib.py and adjacent helpers loaded during the
+        # mutmut sandbox pytest run. They are not yet declared in
+        # pyproject.toml [project.dependencies] (the repo currently relies on
+        # ambient system installs); track promoting them as a follow-up.
+        run: pip install mutmut==3.5.0 jsonschema packaging pyyaml
 
       - name: Resolve mutation_testing adapter slots
         id: adapter
