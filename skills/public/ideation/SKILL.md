@@ -29,7 +29,7 @@ step. See `references/decision-question-response.md`.
 
 ## Bootstrap
 
-Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`. Read only
+Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`. Read only
 the context that reduces uncertainty for the current idea. Before asking
 clarification questions, inspect the current repo reality first so existing
 code, tests, and operator docs can retire fake ambiguity early.

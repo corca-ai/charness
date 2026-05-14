@@ -31,8 +31,7 @@ preview as equivalent.
 - verify `glow` by rendering a tiny Markdown sample and confirming non-empty
   output, not only by checking that the binary exists
 
-Use the helper. Resolve `SKILL_DIR` to the directory that contains this
-`SKILL.md`, then run:
+Use the helper. Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then run:
 
 ```bash
 python3 "$SKILL_DIR/scripts/render_markdown_preview.py" --repo-root . --file README.md --width 80 --width 100

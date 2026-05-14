@@ -25,7 +25,7 @@ host-mediated alternates like `ceal github` register their own backend).
 
 ## Bootstrap
 
-Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`.
+Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`.
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .

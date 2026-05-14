@@ -28,7 +28,7 @@ Before any host-capability question, honor the repo's
 `<repo-root>/AGENTS.md` `Subagent Delegation` clause: required bounded review is already
 delegated.
 
-Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
+Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then run:
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .

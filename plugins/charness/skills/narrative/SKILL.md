@@ -32,7 +32,7 @@ or scaffold the adapter before rewriting; fallback inference is a repo-level
 
 ## Bootstrap
 
-Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then
+Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then
 resolve the adapter first.
 
 ```bash

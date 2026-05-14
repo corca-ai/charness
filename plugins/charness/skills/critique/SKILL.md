@@ -70,7 +70,7 @@ loses the surface-lock inventory).
 
 ## Bootstrap
 
-Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`. Read only
+Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`. Read only
 the smallest change surface that makes the next move legible.
 For no-argument slash-command use, run the autonomous trigger scan first.
 

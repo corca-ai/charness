@@ -15,7 +15,7 @@ revealed; do not turn every correction into a long postmortem.
 
 ## Bootstrap
 
-Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`. Every
+Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`. Every
 invocation starts here.
 
 ```bash

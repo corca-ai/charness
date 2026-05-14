@@ -10,7 +10,7 @@ Use this when the task is to create, migrate, split, or normalize a skill in
 
 ## Bootstrap
 
-Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`. Every
+Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`. Every
 invocation starts here. Read only the files that affect the current change.
 
 ```bash

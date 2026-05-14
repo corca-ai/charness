@@ -20,7 +20,7 @@ pickups exist.
 Resolve the adapter first, then start from the current handoff artifact and live
 repo state.
 
-Resolve `SKILL_DIR` to the directory that contains this `SKILL.md`, then run:
+Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then run:
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
