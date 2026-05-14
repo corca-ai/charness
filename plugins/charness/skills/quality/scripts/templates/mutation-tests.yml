@@ -1,7 +1,13 @@
+# charness:gate-policy scheduled-deeper-check
 # Installed by charness:quality propose_mutation_testing.
 # This workflow parses .agents/quality-adapter.yaml at runtime; do not hand-
 # edit the mutation_testing values here — change them in the adapter instead.
 # Source generalization: craken-agents/.github/workflows/mutation-tests.yml.
+# Gate policy: scheduled deeper-check workflows are exempt from canonical
+# CI/local gate parity because mutation testing is a periodic deeper
+# analysis, not a per-commit quality gate. See
+# skills/public/quality/references/maintainer-local-enforcement.md
+# §Scheduled deeper-check workflows.
 
 name: Mutation Tests
 
@@ -36,7 +42,7 @@ jobs:
     timeout-minutes: 180
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -92,7 +98,7 @@ jobs:
       - name: Plan run
         if: steps.adapter.outputs.should_run == 'true'
         id: plan
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const mode = context.eventName === 'pull_request' ? 'dry-run' : 'full';
@@ -174,7 +180,7 @@ jobs:
 
       - name: Open or update mutation issue
         if: always() && steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && steps.plan.outputs.mode == 'full' && steps.adapter.outputs.auto_issue_enabled == 'true' && (steps.run.outcome == 'failure' || steps.summary.outcome == 'failure')
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
           SUMMARY_PATH: ${{ steps.adapter.outputs.summary_md }}
           SAMPLE_PATH: ${{ steps.adapter.outputs.sample_md }}
@@ -247,7 +253,7 @@ jobs:
 
       - name: Close recovered mutation issue
         if: steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && steps.plan.outputs.mode == 'full' && steps.adapter.outputs.auto_issue_enabled == 'true' && steps.run.outcome == 'success' && (steps.summary.outcome == 'success' || steps.adapter.outputs.cmd_summary == '')
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
           ISSUE_TITLE: ${{ steps.adapter.outputs.auto_issue_title }}
           ISSUE_LABEL: ${{ steps.adapter.outputs.auto_issue_label }}

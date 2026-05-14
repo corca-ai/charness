@@ -169,3 +169,27 @@ review_commands:
 security_commands:
   - ./scripts/check-secrets.sh
   - python3 scripts/check_supply_chain.py --repo-root .
+
+# >>> mutation_testing (charness propose) >>>
+mutation_testing:
+  commands:
+    dry_run: "python3 -m mutmut run --max-children 2"
+    full: "python3 -m mutmut run --max-children 6"
+    sample: ""
+    summary: ""
+  score_break: 60
+  schedule_cron: "17 */3 * * *"
+  changed_quota: 5
+  max_files: 10
+  auto_issue:
+    enabled: false
+    label: mutation-test
+    title: Mutation test regression on main
+    marker_token: mutation-test-regression
+  workflow_path: .github/workflows/mutation-tests.yml
+  report_paths:
+    summary_md: reports/mutation/summary.md
+    sample_md: reports/mutation/sample.md
+    log: reports/mutation/run.log
+  declined: false
+# <<< mutation_testing (charness propose) <<<

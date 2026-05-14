@@ -3,6 +3,8 @@ __pycache__/
 node_modules/
 .pytest_cache/
 .lycheecache
+mutants/
+reports/mutation/
 .artifacts/
 .cautilus/
 .agents/charness-discovery/

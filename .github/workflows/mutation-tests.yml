@@ -23,8 +23,11 @@ on:
     paths:
       - .agents/quality-adapter.yaml
       - .github/workflows/mutation-tests.yml
-  schedule:
-    - cron: "MUTATION_SCHEDULE_CRON_PLACEHOLDER"
+  # Re-enable when commands.summary lands a score-extraction script. Without
+  # it the workflow runs and uploads reports but never fails on score break,
+  # so the scheduled cron would produce anti-signal green checkmarks.
+  # schedule:
+  #   - cron: "17 */3 * * *"
 
 permissions:
   actions: read

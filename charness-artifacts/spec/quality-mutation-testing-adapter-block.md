@@ -382,18 +382,33 @@ acted before commit:
 
 ## Deferred Follow-ups
 
-- craken-agents 어댑터 마이그레이션 (별도 PR). craken-agents의
-  `.agents/quality-adapter.yaml`에 `mutation_testing` 블록 채우고
-  `.github/workflows/mutation-tests.yml`를 새 charness 템플릿으로 교체.
-- presets에 stack별 commands 권장값 (typescript-quality.md에 Stryker 라인
-  — `commands.{dry_run,full,sample,summary}` craken 기본값 + Stryker 도구
-  의존성, python-quality.md에 mutmut/cosmic-ray 라인). 첫 non-TS dogfood 후.
-- standing gate 통합 (quality 본 실행이 summary.md의 score를 읽어 critical
-  gate로 fail) — 첫 dogfood 결과 후.
-- workflow 어댑터 파싱 fallback 결정 (`yq` 부재 host에서 `python -c`로 fallback).
-- 어댑터 write-back 안전성 강화 (ruamel.yaml round-trip). 첫 슬라이스의
-  fenced-marker append 방식이 사용자 편집과 충돌하거나 두 번째 writer가 등장
-  하면 도입.
-- 전체 charness adapter validator의 unknown-key strict 정책 일관화 — 현재는
-  모든 mapping validator가 silent ignore이며 `mutation_testing`은 warning까지
-  올린 첫 사례다. 후속 슬라이스에서 일관화 여부 결정.
+순서는 다음 슬라이스 우선순위 순.
+
+1. **charness 자체 dogfood (Python/mutmut)** — craken을 ref로 일반화한
+   추상화가 실제로 stack-agnostic인지 증명하는 첫 dogfood. charness 자체
+   어댑터의 `mutation_testing` 블록을 mutmut(또는 cosmic-ray)으로 채우고
+   `.github/workflows/mutation-tests.yml`을 install. 결정 포인트: (a) 어떤
+   Python mutation 도구를 채택할지, (b) mutate 대상 (scripts/ vs skills/
+   scripts/), (c) score_break 초기값, (d) `commands.sample`을 mutmut 모델
+   에 어떻게 매핑할지 (변경 파일 → mutmut `--paths-to-mutate` 또는
+   `--paths-to-exclude`). 이 슬라이스가 sample slot의 stdout+GITHUB_OUTPUT
+   컨트랙트가 non-Stryker tool에 실제로 들어맞는지 falsify한다.
+2. **presets에 stack별 commands 권장값** (typescript-quality.md에 Stryker
+   라인 — `commands.{dry_run,full,sample,summary}` craken 기본값 + Stryker
+   도구 의존성; python-quality.md에 mutmut/cosmic-ray 라인). 1번 dogfood
+   에서 작동하는 commands 라인이 확정된 다음 preset에 옮긴다.
+3. **craken-agents 어댑터 마이그레이션** — craken의 기존
+   `.github/workflows/mutation-tests.yml`을 charness 템플릿 + 어댑터
+   `mutation_testing` 블록으로 교체. 1번 dogfood로 추상화가 검증된 다음,
+   craken-agents 측 PR로 진행 (이번 슬라이스 외).
+4. **standing gate 통합** — quality 본 실행이 summary.md의 score를 읽어
+   critical gate로 fail. 1번 dogfood 결과 후.
+5. **workflow 어댑터 파싱 fallback** (`yq` 부재 host에서 `python -c`로
+   fallback). non-Ubuntu host 첫 등장 시.
+6. **어댑터 write-back 안전성 강화** (ruamel.yaml round-trip). fenced-marker
+   append 방식이 사용자 편집과 충돌하거나 두 번째 writer가 등장하면 도입.
+7. **SKILL.md anchor 승격** — propose probe routing이 현재 `proposal-flow.md`
+   에 있음. SKILL.md anchor 섹션 재정리 슬라이스에서 한 줄 anchor로 승격.
+8. **전체 charness adapter validator의 unknown-key strict 정책 일관화** —
+   현재는 모든 mapping validator가 silent ignore이며 `mutation_testing`은
+   warning까지 올린 첫 사례. 후속 슬라이스에서 일관화 여부 결정.

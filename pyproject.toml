@@ -20,3 +20,22 @@ max-complexity = 15
 paths = ["runtime_bootstrap.py", "skill_runtime_bootstrap.py", "scripts", "skills", "tests"]
 min_confidence = 80
 sort_by_size = true
+
+[tool.mutmut]
+paths_to_mutate = ["scripts/control_plane_lib.py"]
+tests_dir = ["tests/control_plane/test_control_plane_lib_helpers.py"]
+also_copy = [
+    "scripts",
+    "skills",
+    "packaging",
+    "integrations",
+    "plugins",
+    "runtime_bootstrap.py",
+    "skill_runtime_bootstrap.py",
+    "charness",
+    "AGENTS.md",
+    "CLAUDE.md",
+    ".agents",
+    ".charness-marketplace.json",
+    ".claude-plugin",
+]

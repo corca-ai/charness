@@ -29,10 +29,27 @@ The consumer-owned summary command is the single integration seam:
    auto-issue step embeds it verbatim into the issue body, so HTML tags or
    tool-specific renderers should be normalized to plain markdown before the
    write.
-2. Exit non-zero when the mutation score breaks `score_break`.
+2. Exit non-zero when the mutation score breaks `score_break`. Use the
+   reachable-mutant denominator by default: `killed / (killed + survived)`.
+   No-tests mutants indicate test-scope gaps rather than test weakness and
+   should surface in `summary.md` as a separate line item, not folded into
+   the score.
 
 charness does not enforce a score-extraction schema. Every reasonable mutation
 runner can wrap its own report behind a thin script that meets both clauses.
+
+## Sandbox prerequisites
+
+Some mutation runners (notably mutmut) copy `paths_to_mutate` files into a
+sandbox directory and run tests from there rather than from the repo root.
+Tool-specific knobs that enumerate which source/test files to copy into the
+sandbox (mutmut's `also_copy`, Stryker's `inPlace: false` + project files,
+etc.) belong in the tool's own config (`pyproject.toml`, `stryker.conf.json`)
+rather than the `mutation_testing` adapter block. The adapter block stays
+stack-neutral by design: `commands.*` describes how to invoke the tool and
+the tool decides how to source files. If the next consumer needs to copy
+test fixtures or generated assets into the sandbox, that enumeration lives
+beside the tool's config, not in the adapter.
 
 ## commands.sample contract
 
