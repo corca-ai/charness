@@ -44,7 +44,15 @@ def _seed_control_plane_repo(repo: Path) -> tuple[Path, Path]:
         ),
         encoding="utf-8",
     )
-    support_dir = repo / "skills" / "support" / "demo"
+    support_root = repo / "skills" / "support"
+    support_root.mkdir(parents=True)
+    (support_root / "capability.schema.json").write_text(
+        (Path(__file__).resolve().parent.parent / "skills" / "support" / "capability.schema.json").read_text(
+            encoding="utf-8"
+        ),
+        encoding="utf-8",
+    )
+    support_dir = support_root / "demo"
     support_dir.mkdir(parents=True)
     (support_dir / "SKILL.md").write_text("# demo\n", encoding="utf-8")
     capability_path = support_dir / "capability.json"

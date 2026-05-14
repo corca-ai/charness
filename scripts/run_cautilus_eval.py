@@ -69,8 +69,8 @@ def parse_args(argv: list[str] | None = None) -> tuple[argparse.Namespace, list[
     parser.add_argument(
         "--justification-log",
         type=Path,
-        default=None,
-        help="Path to the failing prompt/transcript/operator-log that motivates this run",
+        required=True,
+        help="Path to the failing prompt/transcript/operator-log that motivates this run (required to keep cautilus provenance non-empty).",
     )
     parser.add_argument(
         "--paths",
@@ -114,62 +114,52 @@ def main(argv: list[str] | None = None) -> int:
     else:
         changed_paths = collect_changed_paths(repo_root)
     plan = plan_cautilus_proof(repo_root, changed_paths)
+    if plan["next_action"] == "none" or plan["must_ask_before_running"]:
+        print(
+            f"note: planner reports next_action={plan['next_action']!r}, "
+            f"must_ask_before_running={plan['must_ask_before_running']!r}; "
+            "proceeding because an explicit --justification-log is supplied.",
+            file=sys.stderr,
+        )
 
-    if args.justification_log is None:
-        if plan["next_action"] == "none":
-            return _refuse(
-                f"planner returned next_action=\"none\" "
-                f"(status={plan['status']}, run_mode={plan['run_mode']}); "
-                "deterministic gates own this closeout. To override with an "
-                "explicit log-backed behavior proof request, pass "
-                "--justification-log <path-to-failing-log>.",
-                repo_root,
-            )
-        if plan["must_ask_before_running"]:
-            return _refuse(
-                "planner reports must_ask_before_running=true and no "
-                "--justification-log was provided; pass --justification-log "
-                "<path-to-failing-log>.",
-                repo_root,
-            )
-    else:
-        log_path = args.justification_log
-        if not log_path.is_file():
-            return _refuse(
-                f"--justification-log path {log_path} is missing.",
-                repo_root,
-            )
-        size = log_path.stat().st_size
-        if size == 0:
-            return _refuse(
-                f"--justification-log path {log_path} is empty.",
-                repo_root,
-            )
-        if size < JUSTIFICATION_LOG_MIN_BYTES:
-            return _refuse(
-                f"--justification-log path {log_path} is {size} bytes; "
-                f"behavior-proof logs must be at least "
-                f"{JUSTIFICATION_LOG_MIN_BYTES} bytes (trivial files are not "
-                f"behavior proof).",
-                repo_root,
-            )
-        body = log_path.read_text(encoding="utf-8", errors="replace")
-        declared_kinds = [match.lower() for match in SOURCE_KIND_LINE_RE.findall(body)]
-        if not declared_kinds:
-            return _refuse(
-                f"--justification-log path {log_path} has no `- source-kind: <kind>` line; "
-                f"add one so the log is identifiable as a behavior proof, matching the "
-                f"`## Behavior Source` shape in charness-artifacts/cautilus/latest.md.",
-                repo_root,
-            )
-        invalid = [kind for kind in declared_kinds if kind not in JUSTIFICATION_LOG_KINDS]
-        if invalid or not any(kind in JUSTIFICATION_LOG_KINDS for kind in declared_kinds):
-            return _refuse(
-                f"--justification-log path {log_path} declares `source-kind: "
-                f"{declared_kinds[0]}`; supported kinds are "
-                f"{', '.join(JUSTIFICATION_LOG_KINDS)}.",
-                repo_root,
-            )
+    log_path = args.justification_log
+    if not log_path.is_file():
+        return _refuse(
+            f"--justification-log path {log_path} is missing.",
+            repo_root,
+        )
+    size = log_path.stat().st_size
+    if size == 0:
+        return _refuse(
+            f"--justification-log path {log_path} is empty.",
+            repo_root,
+        )
+    if size < JUSTIFICATION_LOG_MIN_BYTES:
+        return _refuse(
+            f"--justification-log path {log_path} is {size} bytes; "
+            f"behavior-proof logs must be at least "
+            f"{JUSTIFICATION_LOG_MIN_BYTES} bytes (trivial files are not "
+            f"behavior proof).",
+            repo_root,
+        )
+    body = log_path.read_text(encoding="utf-8", errors="replace")
+    declared_kinds = [match.lower() for match in SOURCE_KIND_LINE_RE.findall(body)]
+    if not declared_kinds:
+        return _refuse(
+            f"--justification-log path {log_path} has no `- source-kind: <kind>` line; "
+            f"add one so the log is identifiable as a behavior proof, matching the "
+            f"`## Behavior Source` shape in charness-artifacts/cautilus/latest.md.",
+            repo_root,
+        )
+    invalid = [kind for kind in declared_kinds if kind not in JUSTIFICATION_LOG_KINDS]
+    if invalid or not any(kind in JUSTIFICATION_LOG_KINDS for kind in declared_kinds):
+        return _refuse(
+            f"--justification-log path {log_path} declares `source-kind: "
+            f"{declared_kinds[0]}`; supported kinds are "
+            f"{', '.join(JUSTIFICATION_LOG_KINDS)}.",
+            repo_root,
+        )
+    chosen_kind = next(kind for kind in declared_kinds if kind in JUSTIFICATION_LOG_KINDS)
 
     if remaining and remaining[0] == "--":
         remaining = remaining[1:]
@@ -178,6 +168,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.dry_run:
         print(f"would run: {' '.join(cmd)}")
         return 0
+
+    runs_dir = repo_root / ".cautilus" / "runs"
+    runs_before = {entry.name for entry in runs_dir.iterdir()} if runs_dir.is_dir() else set()
 
     print(f"running: {' '.join(cmd)}", file=sys.stderr)
     try:
@@ -188,6 +181,22 @@ def main(argv: list[str] | None = None) -> int:
             "or pass --cautilus-bin <path>.",
             repo_root,
         )
+
+    if completed.returncode == 0 and runs_dir.is_dir():
+        new_runs = sorted(
+            entry.name for entry in runs_dir.iterdir()
+            if entry.is_dir() and entry.name not in runs_before
+        )
+        if new_runs:
+            print(
+                "\nRecord cautilus provenance: add the following block under "
+                "`## Behavior Source` in charness-artifacts/cautilus/latest.md, "
+                "or include it in the commit body that lands this run.",
+                file=sys.stderr,
+            )
+            for run_name in new_runs:
+                print(f"- source-ref: .cautilus/runs/{run_name}", file=sys.stderr)
+                print(f"- source-kind: {chosen_kind}", file=sys.stderr)
     return completed.returncode
 
 

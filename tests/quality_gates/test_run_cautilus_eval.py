@@ -24,12 +24,11 @@ def _run(*extra: str, justification_log: Path | None = None) -> subprocess.Compl
     return subprocess.run(cmd, capture_output=True, text=True, check=False, cwd=ROOT)
 
 
-def test_refuses_when_planner_says_next_action_none(tmp_path: Path) -> None:
-    # No justification-log → planner default refusal must fire.
+def test_refuses_when_justification_log_argument_missing(tmp_path: Path) -> None:
+    # The wrapper now requires --justification-log unconditionally; argparse rejects without it.
     result = _run("--paths")
     assert result.returncode == 2, result.stdout
-    assert "next_action=\"none\"" in result.stderr
-    assert "cautilus-on-demand.md" in result.stderr
+    assert "--justification-log" in result.stderr
 
 
 def test_refuses_when_justification_log_missing(tmp_path: Path) -> None:

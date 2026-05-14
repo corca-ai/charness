@@ -30,13 +30,14 @@ python3 scripts/run_cautilus_eval.py --mode fixture --justification-log <path-to
 
 Valid `--mode` values: `fixture` (forwards to `cautilus evaluate fixture`), `observation` (forwards to `cautilus evaluate observation`), and `skill-experiment` (forwards to `cautilus evaluate skill-experiment`, the subagent-spawning skill-clone evaluator).
 
-The wrapper refuses when:
+`--justification-log` is mandatory. The wrapper refuses when:
 
-- the planner returns `next_action: "none"` and no `--justification-log` is provided,
-- the planner returns `must_ask_before_running: true` and no `--justification-log` is provided,
+- `--justification-log` is omitted (argparse rejects with exit code 2),
 - the `--justification-log` path does not exist, is empty, is smaller than 32 bytes, has no `- source-kind: <kind>` line, or declares a `source-kind` outside `failing-prompt`, `transcript`, `operator-log`, `issue-log`, `regression-log`.
 
 The line-shape requirement aligns the wrapper with the `## Behavior Source` invariant in `charness-artifacts/cautilus/latest.md`: a trivial throwaway file does not satisfy the contract, and a file that merely contains the marker word as a substring does not either; the log must declare what kind of behavior proof it is via a structured line such as `- source-kind: failing-prompt`.
+
+After a successful cautilus invocation, the wrapper prints a ready-made `- source-ref: .cautilus/runs/<id>` plus `- source-kind: <kind>` block on stderr for every newly created run directory. Paste that block into `## Behavior Source` of `charness-artifacts/cautilus/latest.md` or into the commit body that lands the run so the call-provenance gate stays green. This is the structural prevention against orphan unprovenanced runs.
 
 ## What This Page Owns
 
