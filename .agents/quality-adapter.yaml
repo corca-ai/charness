@@ -174,15 +174,15 @@ security_commands:
 mutation_testing:
   commands:
     dry_run: "python3 -m mutmut run --max-children 2"
-    full: "python3 -m mutmut run --max-children 6"
+    full: "python3 -m mutmut run --max-children 6 && python3 -m mutmut export-cicd-stats"
     sample: ""
-    summary: ""
+    summary: "python3 scripts/check_mutation_score.py --repo-root ."
   score_break: 60
   schedule_cron: "17 */3 * * *"
   changed_quota: 5
   max_files: 10
   auto_issue:
-    enabled: false
+    enabled: true
     label: mutation-test
     title: Mutation test regression on main
     marker_token: mutation-test-regression

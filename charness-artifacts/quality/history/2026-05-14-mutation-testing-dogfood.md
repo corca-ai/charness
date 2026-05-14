@@ -121,19 +121,24 @@ prevent each consumer from inventing a different score definition.
 
 ## Adapter Commands Status
 
-`commands.dry_run` and `commands.full` are now filled with the actual mutmut
-invocations this dogfood verified locally. `commands.sample` stays empty
-(workflow runs the full set). `commands.summary` stays empty pending a
-consumer-owned helper that parses `mutants/mutmut-cicd-stats.json` and writes
-`reports/mutation/summary.md` with a non-zero exit when the score breaks.
+`commands.dry_run` and `commands.full` are filled with the actual mutmut
+invocations this dogfood verified locally; `commands.full` chains
+`mutmut export-cicd-stats` so the summary step has structured input.
+`commands.sample` stays empty (workflow runs the full set).
 
-The score-break enforcement loop is not closed end-to-end in this slice
-because `commands.summary` is empty: the workflow runs and uploads reports
-but does not fail on score break. The denominator-naming doc gap (Open
-Follow-Up #2 below) is resolved in this same slice — `mutation-testing.md`
-§commands.summary contract now names reachable-mutant denominator as the
-default — so the next slice that lands a summary helper inherits a defined
-contract.
+`commands.summary` is now wired to `python3 scripts/check_mutation_score.py
+--repo-root .`, which parses `mutants/mutmut-cicd-stats.json`, reads
+`mutation_testing.{score_break, report_paths.summary_md}` from the adapter,
+writes `reports/mutation/summary.md` in GitHub-issue-renderable form, and
+exits non-zero when the reachable-mutant score (killed / (killed + survived))
+breaks `score_break`. First local invocation against the current dogfood
+stats: 67.6% > 60% threshold → PASS → exit 0.
+
+`auto_issue.enabled` is `true` and `schedule.cron` is `17 */3 * * *`. The
+workflow now runs every three hours and opens (or comments on) a labelled
+issue tagged `<!-- ${repo}-mutation-test-regression -->` when the run or
+summary step fails. Closing the issue is automatic on the next successful
+run via the same marker.
 
 ## Open Follow-Ups
 
@@ -148,10 +153,11 @@ contract.
    `_load_manifests_merged`, `evaluate_version`, `plugin_fallback_manifest_paths`)
    are real test-suite improvements but belong to a separate test-strengthening
    slice, not to `mutation_testing`-contract work.
-5. Re-enable the workflow's `schedule.cron` once `commands.summary` lands a
-   score-extraction helper. Until then `workflow_dispatch` and the PR-trigger
-   on adapter/workflow file edits keep the workflow exercisable without
-   producing anti-signal scheduled runs.
+5. **Resolved in a follow-up slice.** `scripts/check_mutation_score.py`
+   landed as the consumer-owned summary helper; `commands.summary` is
+   wired, `auto_issue.enabled` is `true`, and `schedule.cron` is back on.
+   The first scheduled run after push will produce a real PASS/FAIL signal
+   against the current 67.6% reachable score and 60% threshold.
 
 ## Commands Run (reproducibility)
 
