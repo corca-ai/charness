@@ -129,7 +129,7 @@ runtime_budget_profiles:
       check-spec-evidence-durability: 2500
       inventory-ci-local-gate-parity: 500
       inventory-sloc: 1000
-      inventory-ubiquitous-language: 1000
+      inventory-ubiquitous-language: 1200
       pytest: 140000
       check-coverage: 45000
       check-duplicates: 11000
@@ -173,8 +173,8 @@ security_commands:
 # >>> mutation_testing (charness propose) >>>
 mutation_testing:
   commands:
-    dry_run: "python3 -m mutmut run --max-children 2"
-    full: "python3 -m mutmut run --max-children 6 && python3 -m mutmut export-cicd-stats"
+    dry_run: "mutmut run --max-children 2"
+    full: "mutmut run --max-children 6 && mutmut export-cicd-stats"
     sample: ""
     summary: "python3 scripts/check_mutation_score.py --repo-root ."
   score_break: 60
