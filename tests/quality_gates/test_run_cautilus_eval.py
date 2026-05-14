@@ -89,6 +89,18 @@ def test_refuses_when_marker_only_appears_as_substring(tmp_path: Path) -> None:
     assert "no `- source-kind:" in result.stderr
 
 
+def test_refuses_when_source_kind_uses_non_canonical_case(tmp_path: Path) -> None:
+    # Wrapper case policy mirrors validate_cautilus_proof.py: canonical lowercase only.
+    upper = tmp_path / "upper-case.txt"
+    upper.write_text(
+        "- Source-Kind: failing-prompt\nA long-enough body to clear the size minimum.\n",
+        encoding="utf-8",
+    )
+    result = _run("--paths", justification_log=upper)
+    assert result.returncode == 2, result.stdout
+    assert "no `- source-kind:" in result.stderr
+
+
 def test_forwards_when_justification_log_has_marker_and_minimum_size(tmp_path: Path) -> None:
     log = tmp_path / "failing-prompt.txt"
     log.write_text(

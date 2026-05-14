@@ -50,8 +50,8 @@ JUSTIFICATION_LOG_KINDS = (
     "regression-log",
 )
 SOURCE_KIND_LINE_RE = re.compile(
-    r"^\s*-\s*source-kind\s*:\s*`?([A-Za-z0-9_-]+)`?\s*$",
-    re.IGNORECASE | re.MULTILINE,
+    r"^\s*-\s*source-kind\s*:\s*`?([a-z0-9_-]+)`?\s*$",
+    re.MULTILINE,
 )
 
 
@@ -143,7 +143,7 @@ def main(argv: list[str] | None = None) -> int:
             repo_root,
         )
     body = log_path.read_text(encoding="utf-8", errors="replace")
-    declared_kinds = [match.lower() for match in SOURCE_KIND_LINE_RE.findall(body)]
+    declared_kinds = SOURCE_KIND_LINE_RE.findall(body)
     if not declared_kinds:
         return _refuse(
             f"--justification-log path {log_path} has no `- source-kind: <kind>` line; "
