@@ -104,6 +104,7 @@ def test_list_capabilities_cross_links_materialized_support_and_discovery_stub(t
             "discovery_stub_path": ".agents/charness-discovery/demo-tool.md",
             "capability_requirements": {},
             "intent_triggers": ["verify", "evaluate"],
+            "strong_intent_triggers": [],
             "config_layers": [],
             "readiness_checks": [],
             "supports_public_skills": [],

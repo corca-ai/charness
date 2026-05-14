@@ -21,5 +21,10 @@
   `python3 scripts/check_upstream_support_drift.py --repo-root .` to confirm the
   declared `path` still exists at the new ref (corca-ai/cautilus#32 root-cause
   prevention; standalone online probe, not part of the standing local gate)
+- when broad `intent_triggers` could match generic task-text tokens (e.g.,
+  filename suffixes used outside the tool's domain), declare a curated
+  `strong_intent_triggers` subset; at least one matched trigger must come
+  from that subset before the support skill is surfaced. Missing or empty =
+  no precision gate, any matched trigger activates
 - wrapper skills should be generated or declared explicitly instead of silently
   copied into the public taxonomy

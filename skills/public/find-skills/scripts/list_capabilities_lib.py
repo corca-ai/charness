@@ -7,21 +7,6 @@ from pathlib import Path
 from typing import Any
 
 REFERENCE_TOKEN_RE = re.compile(r"`([^`]+)`")
-STRONG_TASK_TRIGGERS_BY_SUPPORT_ID = {
-    "specdown": {
-        "*.spec.md",
-        ".spec.md",
-        "docs/specs",
-        "run:shell",
-        "check:jq",
-        "specdown",
-        "specdown report",
-        "specdown html report",
-        "specdown -filter",
-        "executable spec",
-        "spec syntax",
-    },
-}
 WORKFLOW_RECOMMENDATIONS = [
     {
         "id": "worktree-create",
@@ -179,15 +164,32 @@ def _cleanup_worktree_intent(task_text: str) -> bool:
     )
 
 
-def _strong_trigger_matched(skill_id: str, matched: list[str]) -> bool:
-    strong = STRONG_TASK_TRIGGERS_BY_SUPPORT_ID.get(skill_id)
-    return not strong or any(item.casefold() in strong for item in matched)
+def _strong_triggers_for(skill_id: str, integrations: list[dict[str, Any]]) -> set[str] | None:
+    """Return the casefolded `strong_intent_triggers` declared for ``skill_id`` in an
+    integration manifest, or ``None`` when no manifest pins the strong subset.
+
+    A non-empty declared list means at least one matched trigger must come from
+    that subset before the support skill is surfaced — narrower than `intent_triggers`,
+    which is the broad task-text-match pool. Missing field = no gate (broad pool only).
+    """
+
+    for integration in integrations:
+        if integration.get("id") != skill_id and integration.get("tool_id") != skill_id:
+            continue
+        declared = integration.get("strong_intent_triggers")
+        if isinstance(declared, list) and declared:
+            return {item.casefold() for item in declared if isinstance(item, str)}
+        return None
+    return None
 
 
-def _enough_task_signal(skill_id: str, matched: list[str]) -> bool:
-    if skill_id in STRONG_TASK_TRIGGERS_BY_SUPPORT_ID:
-        return _strong_trigger_matched(skill_id, matched)
-    return bool(matched)
+def _enough_task_signal(
+    skill_id: str, matched: list[str], integrations: list[dict[str, Any]]
+) -> bool:
+    strong = _strong_triggers_for(skill_id, integrations)
+    if strong is None:
+        return bool(matched)
+    return any(item.casefold() in strong for item in matched)
 
 
 def _support_skill_triggers(
@@ -226,7 +228,7 @@ def support_recommendations_for_task(
             integrations=integrations,
         )
         matched = [trigger for trigger in triggers if _task_text_matches(task_text, trigger)]
-        if not matched or not _enough_task_signal(str(entry["id"]), matched):
+        if not matched or not _enough_task_signal(str(entry["id"]), matched, integrations):
             continue
         recommendations.append(
             {

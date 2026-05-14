@@ -55,12 +55,14 @@ task to a hidden support skill without the user naming `support/<id>` first.
 
 The canonical example is `support/specdown` (corca-ai/charness#108):
 
-- the strong-trigger set lives in
-  `STRONG_TASK_TRIGGERS_BY_SUPPORT_ID["specdown"]` inside
-  `scripts/list_capabilities_lib.py` and currently lists `*.spec.md`,
+- the strong-trigger set lives in the `strong_intent_triggers` field of
+  `integrations/tools/specdown.json` and currently lists `*.spec.md`,
   `.spec.md`, `docs/specs`, `run:shell`, `check:jq`, `specdown`,
-  `specdown report`, `specdown html report`, `specdown -filter`,
-  `executable spec`, and `spec syntax`
+  `specdown report`, `specdown HTML report`, `specdown -filter`,
+  `executable spec`, and `spec syntax`. `scripts/list_capabilities_lib.py`
+  reads the field via `_strong_triggers_for` and gates support-skill
+  surfacing on it (broad `intent_triggers` populates the match pool;
+  `strong_intent_triggers` precision-gates which matches activate the skill)
 - positive routing is exercised by
   `tests/test_find_skills_task_recommendations.py::test_list_capabilities_recommends_support_skill_from_task_text`,
   which asserts that a task mentioning `docs/specs`, `.spec.md`, `check:jq`,

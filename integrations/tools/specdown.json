@@ -72,6 +72,19 @@
     "specdown -filter",
     "reduce full specdown run cost"
   ],
+  "strong_intent_triggers": [
+    "*.spec.md",
+    ".spec.md",
+    "docs/specs",
+    "run:shell",
+    "check:jq",
+    "specdown",
+    "specdown report",
+    "specdown HTML report",
+    "specdown -filter",
+    "executable spec",
+    "spec syntax"
+  ],
   "version_expectation": {
     "policy": "advisory",
     "constraint": "Prefer a recent upstream-supported release.",

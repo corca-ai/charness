@@ -285,6 +285,7 @@ def test_list_capabilities_includes_integration_access_modes(tmp_path: Path) -> 
                 "permission_scopes": ["repo:read"],
             },
             "intent_triggers": ["verify", "review"],
+            "strong_intent_triggers": [],
             "config_layers": [
                 {
                     "layer_id": "github-grant",

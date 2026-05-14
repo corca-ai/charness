@@ -61,6 +61,7 @@ def integrations(root: Path) -> list[dict[str, object]]:
                 "discovery_stub_path": _materialized_discovery_stub_path(root, tool_id),
                 "capability_requirements": data.get("capability_requirements", {}),
                 "intent_triggers": data.get("intent_triggers", []),
+                "strong_intent_triggers": data.get("strong_intent_triggers", []),
                 "config_layers": _layers(data),
                 "readiness_checks": _checks(data),
                 "supports_public_skills": data.get("supports_public_skills", []),

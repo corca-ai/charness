@@ -91,6 +91,7 @@ def _write_specdown_surface(root: Path) -> None:
                 },
                 "access_modes": ["binary", "degraded"],
                 "intent_triggers": ["docs/specs", ".spec.md", "run:shell", "check:jq", "report.json"],
+                "strong_intent_triggers": ["docs/specs", ".spec.md", "run:shell", "check:jq", "specdown"],
                 "version_expectation": {"policy": "advisory", "constraint": "latest"},
             },
             ensure_ascii=False,
