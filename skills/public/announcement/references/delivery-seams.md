@@ -30,6 +30,9 @@ Supported placeholders:
 - `{message_file_q}`
 - `{delivery_target}`
 - `{delivery_target_q}`
+- `{parent_delivery_handle}` (only expanded for `outputs` entries whose
+  `delivery_role` is `thread_reply`; see Chaining Outputs below)
+- `{parent_delivery_handle_q}`
 
 If a host wants a chat or SaaS backend, keep the public skill generic and route
 through a repo-owned backend seam.
@@ -113,3 +116,51 @@ For non-chat backends (`release-notes`), `parent` and `thread_reply` may be
 expressed as primary file plus an adjacent comment, primary file plus a PR
 description, or whatever the repo's seam declares. The portable concept is
 "primary surface vs. follow-up surface", not "Slack thread."
+
+`message_size_limit` splitting applies to every output role, including
+`thread_reply`. A long follow-up output is split on paragraph boundaries the
+same way `parent`/`single` outputs are, before posting.
+
+## Chaining Outputs
+
+Chaining is opt-in: an adapter that declares only `single` or
+`outputs: []` never needs to emit a handle, and existing
+`post_command_template` shapes that ignore stdout remain valid.
+
+When `outputs` declares a `parent` followed by one or more `thread_reply`
+roles, the delivery seam must feed the parent's identifier into each
+follow-up post. The portable contract is opaque-handle forwarding:
+
+1. The seam runs `post_command_template` once per output in `outputs` order.
+2. Each `post_command_template` invocation that emits content the seam may
+   later need to chain into must print a single JSON object as its **last
+   non-empty stdout line**, containing at least `delivery_handle`:
+
+   ```json
+   {"delivery_handle": "<backend-defined string>"}
+   ```
+
+   Additional fields are allowed; the seam reads only `delivery_handle`.
+   Earlier stdout lines (logs, progress, warnings) are ignored. Anything on
+   stderr is ignored.
+3. The seam stores the most recent `parent` output's `delivery_handle` and
+   expands `{parent_delivery_handle}` / `{parent_delivery_handle_q}` for any
+   subsequent `thread_reply` output's command template.
+
+The handle's *format* is backend-defined and opaque to the public contract.
+Examples (each host owns its own shape; the public surface never names them):
+
+- Slack: a `chat.postMessage` `ts` value such as `1700000000.123456`
+- GitHub: an issue or PR comment id, e.g. `2148903456`
+- Discord/Teams: a message id or thread id
+- `release-notes`: a section anchor or the URL of the appended PR review
+  comment
+
+If a `thread_reply` output's template references `{parent_delivery_handle}`
+but no prior `parent` output produced a handle, the seam should fail fast
+rather than post the literal placeholder.
+
+When a `parent` output is split into `(part N/total)` chunks by
+`message_size_limit`, the seam captures the **first part's**
+`delivery_handle` and uses that for downstream `thread_reply` outputs, so
+follow-up replies land under the same parent anchor.

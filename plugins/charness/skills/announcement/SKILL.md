@@ -87,6 +87,9 @@ repo had already declared them.
      record it in the draft artifact's `## Source surfaces` section as
      `collected: <summary>` or `unavailable: <reason>` before drafting body
      content.
+   - when the commit window is large or spans more than one source, consider
+     fanning out triage per `references/large-window-fanout.md`; merge the
+     audience-tagged partial bullets per section before drafting wording
 3. Recover audience value before wording.
    - who benefits
    - what surface changed
@@ -134,7 +137,12 @@ repo had already declared them.
      described in `references/delivery-seams.md` (Slack mrkdwn baseline, or
      the path declared by `format_rules_path`) before posting raw CommonMark
    - if `message_size_limit` is positive and any output exceeds it, split on
-     paragraph boundaries into numbered parts before posting
+     paragraph boundaries into numbered parts before posting; the split
+     applies to every output role, including `thread_reply`
+   - when `outputs` chains a `parent` and one or more `thread_reply` posts,
+     follow the JSON-line `delivery_handle` contract in
+     `references/delivery-seams.md` (Chaining Outputs); the parent template
+     emits the handle, follow-up templates expand `{parent_delivery_handle}`
    - before posting, run
      `python3 "$SKILL_DIR/scripts/preflight_sources.py" --repo-root .`; if any
      declared `in_progress_sources` entry is reported as `unverified`, surface
@@ -179,6 +187,7 @@ The result should usually include:
 - `references/draft-shape.md`
 - `references/delivery-seams.md`
 - `references/audience-policy.md`
+- `references/large-window-fanout.md`
 - `../../shared/references/closeout-discipline.md`
 - `<repo-root>/scripts/collect_commits.py`
 - `<repo-root>/scripts/infer_audience_tags.py`

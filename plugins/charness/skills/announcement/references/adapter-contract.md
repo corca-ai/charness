@@ -35,7 +35,8 @@ Search order:
 - `delivery_kind`
 - `delivery_target`
 - `release_notes_path`
-- `post_command_template`
+- `post_command_template` (placeholders enumerated in `delivery-seams.md`
+  Supported placeholders and Chaining Outputs)
 - `delivery_capability`
 - `format_rules_path`
 - `message_size_limit`
