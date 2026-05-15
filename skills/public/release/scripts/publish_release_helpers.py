@@ -175,7 +175,9 @@ def write_release_artifact(
         "- branch/tag push: complete",
     ]
     if release_url:
-        lines.append(f"- GitHub release record: created ({release_url})")
+        lines.append(
+            f"- GitHub release record: target URL `{release_url}`; creation runs after the branch/tag push"
+        )
     else:
         lines.append("- GitHub release record: not created by this helper run")
     lines.extend(

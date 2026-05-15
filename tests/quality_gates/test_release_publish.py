@@ -173,6 +173,9 @@ def _write_fake_gh(bin_dir: Path) -> None:
             if args == ["auth", "status"]:
                 print("authenticated")
                 raise SystemExit(0)
+            if args == ["repo", "view", "--json", "url", "--jq", ".url"]:
+                print("https://github.com/example/demo")
+                raise SystemExit(0)
             if args[:2] == ["release", "view"]:
                 raise SystemExit(1)
             if args[:2] == ["release", "create"]:
@@ -264,6 +267,7 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     assert payload["public_release_verification"] == "not_checked"
     artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
     assert "## Release State" in artifact_text
+    assert "GitHub release record: target URL `https://github.com/example/demo/releases/tag/v0.0.1`" in artifact_text
     assert "public release surface verification: not checked by this helper" in artifact_text
     assert "## Public Release Verification" in artifact_text
     assert "Run `demo update`." in artifact_text

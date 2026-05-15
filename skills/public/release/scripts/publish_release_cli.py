@@ -120,15 +120,28 @@ def write_current_artifact(
     repo_root: Path, adapter_data: dict[str, Any], payload: dict[str, Any],
     host_payload: dict[str, Any], *, quality_status: str = "passed before publish",
     fresh_checkout_payload: dict[str, Any] | None = None,
+    release_url: str | None = None,
 ) -> str:
     return write_release_artifact(
         repo_root, output_dir=adapter_data["output_dir"], package_id=adapter_data["package_id"],
         previous_version=payload["previous_version"], target_version=payload["target_version"], remote=payload["remote"],
-        branch=payload["branch"], quality_command=adapter_data["quality_command"], release_url=None,
+        branch=payload["branch"], quality_command=adapter_data["quality_command"], release_url=release_url,
         update_instructions=adapter_data["update_instructions"], real_host_payload=host_payload,
         fresh_checkout_payload=fresh_checkout_payload, quality_status=quality_status,
         tag_name=payload["tag_name"],
     )
+
+
+def expected_github_release_url(repo_root: Path, backend: dict[str, Any], tag_name: str) -> str | None:
+    if backend.get("id", "gh") != "gh":
+        return None
+    result = run(["gh", "repo", "view", "--json", "url", "--jq", ".url"], cwd=repo_root, check=False)
+    if result.returncode != 0:
+        return None
+    repo_url = result.stdout.strip().rstrip("/")
+    if not repo_url:
+        return None
+    return f"{repo_url}/releases/tag/{tag_name}"
 
 
 def run_narrative_audit(
@@ -211,6 +224,8 @@ def main() -> None:
     run_notes_file_preflight(repo_root, target_tag=tag_name, notes_file=notes_file)
 
     run(backend_command(backend, "auth_check", ["gh", "auth", "status"]), cwd=repo_root)
+    expected_release_url = expected_github_release_url(repo_root, backend, tag_name)
+    payload["expected_release_url"] = expected_release_url
     run_bump(args, repo_root)
     ensure_release_surface(repo_root, next_version)
 
@@ -219,11 +234,15 @@ def main() -> None:
     write_current_artifact(
         repo_root, adapter_data, payload, host_payload=host_payload,
         quality_status="is queued for this publish attempt", fresh_checkout_payload=fresh_checkout_plan,
+        release_url=expected_release_url,
     )
     run_requested_review_gate(repo_root)
     run_cli_skill_surface_gate(repo_root, adapter_data)
     run_shell(str(adapter_data["quality_command"]), cwd=repo_root)
-    artifact_relpath = write_current_artifact(repo_root, adapter_data, payload, host_payload, fresh_checkout_payload=fresh_checkout_plan)
+    artifact_relpath = write_current_artifact(
+        repo_root, adapter_data, payload, host_payload,
+        fresh_checkout_payload=fresh_checkout_plan, release_url=expected_release_url,
+    )
     run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
     run(["git", "add", "-A"], cwd=repo_root)
     run(["git", "commit", "-m", payload["commit_message"]], cwd=repo_root)
@@ -254,4 +273,9 @@ def main() -> None:
     payload["real_host_checklist"] = host_payload["checklist"]
     payload["public_release_verification"] = "not_checked"
     payload["release_url"] = next((line.strip() for line in reversed(release_result.stdout.splitlines()) if line.strip()), None)
+    if payload["release_url"] and expected_release_url and payload["release_url"] != expected_release_url:
+        payload["release_url_warning"] = (
+            f"release create returned `{payload['release_url']}` but the committed artifact "
+            f"recorded expected URL `{expected_release_url}`"
+        )
     print(json.dumps(payload, ensure_ascii=False, indent=2))
