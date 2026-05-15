@@ -173,6 +173,56 @@ def run_notes_file_preflight(repo_root: Path, *, target_tag: str, notes_file: Pa
         )
 
 
+def build_publish_payload(
+    args: argparse.Namespace,
+    adapter_data: dict[str, Any],
+    *,
+    current_version: str,
+    next_version: str,
+    branch: str,
+    tag_name: str,
+    title: str,
+) -> dict[str, Any]:
+    return {
+        "package_id": adapter_data["package_id"],
+        "current_version": current_version,
+        "target_version": next_version,
+        "previous_version": current_version,
+        "remote": args.remote,
+        "branch": branch,
+        "tag_name": tag_name,
+        "title": title,
+        "mode": "publish-current" if args.publish_current else "bump-and-publish",
+        "quality_command": adapter_data["quality_command"],
+        "fresh_checkout_probes": adapter_data["fresh_checkout_probes"],
+        "commit_message": f"Release {adapter_data['package_id']} {next_version}",
+        "notes_mode": "notes-file" if args.notes_file else "generate-notes",
+        "execute": args.execute,
+    }
+
+
+def finalize_release_payload(
+    repo_root: Path,
+    payload: dict[str, Any],
+    *,
+    artifact_relpath: str,
+    host_payload: dict[str, Any],
+    release_stdout: str,
+    expected_release_url: str | None,
+) -> None:
+    payload["commit_sha"] = run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()
+    payload["artifact_path"] = artifact_relpath
+    payload["real_host_required"] = host_payload["required"]
+    payload["real_host_checklist"] = host_payload["checklist"]
+    payload["public_release_verification"] = "not_checked"
+    payload["release_url"] = next((line.strip() for line in reversed(release_stdout.splitlines()) if line.strip()), None)
+    if payload["release_url"] and expected_release_url and payload["release_url"] != expected_release_url:
+        payload["release_url_warning"] = (
+            f"release create returned `{payload['release_url']}` but the committed artifact "
+            f"recorded expected URL `{expected_release_url}`"
+        )
+
+
 def main() -> None:
     args = parse_args()
     repo_root = args.repo_root.resolve()
@@ -200,22 +250,10 @@ def main() -> None:
         raise SystemExit(f"GitHub release `{tag_name}` already exists")
     release_content_paths = unreleased_paths(repo_root, remote=args.remote, branch=branch)
 
-    payload: dict[str, Any] = {
-        "package_id": adapter_data["package_id"],
-        "current_version": current_version,
-        "target_version": next_version,
-        "previous_version": current_version,
-        "remote": args.remote,
-        "branch": branch,
-        "tag_name": tag_name,
-        "title": title,
-        "mode": "publish-current" if args.publish_current else "bump-and-publish",
-        "quality_command": adapter_data["quality_command"],
-        "fresh_checkout_probes": adapter_data["fresh_checkout_probes"],
-        "commit_message": f"Release {adapter_data['package_id']} {next_version}",
-        "notes_mode": "notes-file" if args.notes_file else "generate-notes",
-        "execute": args.execute,
-    }
+    payload = build_publish_payload(
+        args, adapter_data, current_version=current_version, next_version=next_version,
+        branch=branch, tag_name=tag_name, title=title,
+    )
     if not args.execute:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return
@@ -249,7 +287,10 @@ def main() -> None:
     fresh_checkout_payload = run_fresh_checkout_probes(repo_root)
     payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
     if fresh_checkout_payload["status"] == "passed":
-        write_current_artifact(repo_root, adapter_data, payload, host_payload, fresh_checkout_payload=fresh_checkout_payload)
+        write_current_artifact(
+            repo_root, adapter_data, payload, host_payload,
+            fresh_checkout_payload=fresh_checkout_payload, release_url=expected_release_url,
+        )
         run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
         run(["git", "add", artifact_relpath], cwd=repo_root)
         run(["git", "commit", "--amend", "--no-edit"], cwd=repo_root)
@@ -267,15 +308,8 @@ def main() -> None:
     )
     release_command.extend(["--notes-file", str(args.notes_file.resolve())] if args.notes_file else ["--generate-notes"])
     release_result = run(release_command, cwd=repo_root)
-    payload["commit_sha"] = run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()
-    payload["artifact_path"] = artifact_relpath
-    payload["real_host_required"] = host_payload["required"]
-    payload["real_host_checklist"] = host_payload["checklist"]
-    payload["public_release_verification"] = "not_checked"
-    payload["release_url"] = next((line.strip() for line in reversed(release_result.stdout.splitlines()) if line.strip()), None)
-    if payload["release_url"] and expected_release_url and payload["release_url"] != expected_release_url:
-        payload["release_url_warning"] = (
-            f"release create returned `{payload['release_url']}` but the committed artifact "
-            f"recorded expected URL `{expected_release_url}`"
-        )
+    finalize_release_payload(
+        repo_root, payload, artifact_relpath=artifact_relpath, host_payload=host_payload,
+        release_stdout=release_result.stdout, expected_release_url=expected_release_url,
+    )
     print(json.dumps(payload, ensure_ascii=False, indent=2))
