@@ -268,12 +268,14 @@
         "cosmic-ray.toml",
         ".agents/quality-adapter.yaml",
         "scripts/check_mutation_score.py",
+        "scripts/filter_cosmic_ray_mutants.py",
         "scripts/run_cosmic_ray_mutation.py",
         "scripts/sample_mutation_files.py",
         "skills/public/quality/scripts/templates/mutation-tests.yml"
       ],
       "derived_paths": [
         "plugins/charness/scripts/check_mutation_score.py",
+        "plugins/charness/scripts/filter_cosmic_ray_mutants.py",
         "plugins/charness/scripts/run_cosmic_ray_mutation.py",
         "plugins/charness/scripts/sample_mutation_files.py",
         "plugins/charness/skills/quality/scripts/templates/mutation-tests.yml"

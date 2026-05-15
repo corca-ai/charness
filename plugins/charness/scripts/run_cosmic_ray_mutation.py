@@ -16,6 +16,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG = Path("cosmic-ray.toml")
 DEFAULT_SESSION = Path("reports/mutation/cosmic-ray.sqlite")
 DEFAULT_DUMP = Path("reports/mutation/cosmic-ray-dump.jsonl")
+DEFAULT_FILTER = Path("scripts/filter_cosmic_ray_mutants.py")
 
 
 def resolve(repo_root: Path, path: Path) -> Path:
@@ -40,6 +41,7 @@ def main() -> int:
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--session", type=Path, default=DEFAULT_SESSION)
     parser.add_argument("--dump", type=Path, default=DEFAULT_DUMP)
+    parser.add_argument("--filter-script", type=Path, default=DEFAULT_FILTER)
     parser.add_argument(
         "--mode",
         choices=("dry-run", "full"),
@@ -52,6 +54,7 @@ def main() -> int:
     config = resolve(repo_root, args.config)
     session = resolve(repo_root, args.session)
     dump_path = resolve(repo_root, args.dump)
+    filter_script = resolve(repo_root, args.filter_script)
 
     if not config.is_file():
         sys.stderr.write(f"Cosmic Ray config not found at {config}\n")
@@ -67,6 +70,8 @@ def main() -> int:
     try:
         run(["cosmic-ray", "baseline", str(config)], repo_root)
         run(["cosmic-ray", "init", str(config), str(session)], repo_root)
+        if filter_script.is_file():
+            run(["python3", str(filter_script), "--repo-root", str(repo_root), "--session", str(session)], repo_root)
         if args.mode == "full":
             run(["cosmic-ray", "exec", str(config), str(session)], repo_root)
             with dump_path.open("w", encoding="utf-8") as output:

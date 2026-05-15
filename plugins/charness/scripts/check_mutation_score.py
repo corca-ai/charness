@@ -68,6 +68,7 @@ def summarize_cosmic_ray(records: list[tuple[dict, dict | None]]) -> dict[str, i
             counts["abnormal"] += 1
         elif worker_outcome == "skipped":
             counts["skipped"] += 1
+            continue
 
         if test_outcome == "killed":
             counts["killed"] += 1
@@ -149,7 +150,9 @@ def main() -> int:
         "Score denominator: `killed / (killed + survived)` (reachable mutants only;",
         "see `skills/public/quality/references/mutation-testing.md` §commands.summary).",
         "No-tests mutants represent test-scope gaps rather than test weakness, so they",
-        "are surfaced as a separate signal above and do not enter the score.",
+        "are surfaced as a separate signal above and do not enter the score. Skipped",
+        "mutants are explicitly filtered low-signal work items and also stay out of",
+        "the score denominator.",
         "",
     ]
     summary_path.parent.mkdir(parents=True, exist_ok=True)

@@ -131,9 +131,10 @@ repo's own mutation workflow, not a portable requirement for consumers:
 
 - `scripts/sample_mutation_files.py` rewrites `cosmic-ray.toml`'s
   `[cosmic-ray].module-path` list and writes the sample manifest.
-- `scripts/run_cosmic_ray_mutation.py --mode dry-run` runs baseline + init.
+- `scripts/run_cosmic_ray_mutation.py --mode dry-run` runs baseline + init,
+  then filters known low-signal annotation-only work items from the session.
 - `scripts/run_cosmic_ray_mutation.py --mode full` runs baseline + init +
-  exec + dump.
+  filter + exec + dump.
 - `scripts/check_mutation_score.py` consumes `cosmic-ray dump` JSONL and
   writes `report_paths.summary_md`.
 

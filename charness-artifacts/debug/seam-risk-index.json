@@ -3,14 +3,15 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 17,
-  "indexed_artifact_count": 9,
+  "source_artifact_count": 18,
+  "indexed_artifact_count": 10,
   "risk_class_counts": {
     "contract-freeze-risk": 2,
+    "host-disproves-local": 1,
     "operator-visible-recovery": 7
   },
   "generalization_pressure_counts": {
-    "monitor": 9
+    "monitor": 10
   },
   "entries": [
     {
@@ -124,6 +125,20 @@
       "next_step": "impl",
       "handoff_artifact": "none",
       "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-05-16-mutation-score-validity.md",
+      "is_current_pointer": false,
+      "interrupt_id": "cosmic-ray-score-validity",
+      "risk_classes": [
+        "host-disproves-local"
+      ],
+      "seam": "GitHub scheduled workflow plus local Cosmic Ray scoring",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/mutation-score-validity-github-proof.md",
+      "forced": true
     },
     {
       "artifact_path": "charness-artifacts/debug/latest.md",

@@ -9,6 +9,7 @@ exercised by repo-level CI and is asserted in the closeout flow instead.
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -21,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from scripts.check_mutation_score import iter_dump_records, summarize_cosmic_ray  # noqa: E402
+from scripts.filter_cosmic_ray_mutants import is_function_annotation_union  # noqa: E402
 from scripts.quality_adapter_lib import (  # noqa: E402
     infer_quality_defaults,
     load_quality_adapter,
@@ -444,6 +446,7 @@ def test_cosmic_ray_dump_summary_counts_reachable_denominator(tmp_path: Path) ->
                 json.dumps([{"job_id": "b"}, {"worker_outcome": "normal", "test_outcome": "survived"}]),
                 json.dumps([{"job_id": "c"}, {"worker_outcome": "exception", "test_outcome": "incompetent"}]),
                 json.dumps([{"job_id": "d"}, None]),
+                json.dumps([{"job_id": "e"}, {"worker_outcome": "skipped", "test_outcome": "killed"}]),
             ]
         )
         + "\n",
@@ -452,11 +455,91 @@ def test_cosmic_ray_dump_summary_counts_reachable_denominator(tmp_path: Path) ->
 
     counts = summarize_cosmic_ray(iter_dump_records(dump))
 
-    assert counts["total"] == 4
+    assert counts["total"] == 5
     assert counts["killed"] == 1
     assert counts["survived"] == 1
     assert counts["incompetent"] == 1
     assert counts["pending"] == 1
+    assert counts["skipped"] == 1
+
+
+def test_cosmic_ray_filter_identifies_function_annotation_unions() -> None:
+    assert is_function_annotation_union(
+        "def read_lock(repo_root: Path, tool_id: str) -> dict[str, Any] | None:",
+        61,
+    )
+    assert is_function_annotation_union(
+        "def upsert_lock(repo_root: Path, *, support: dict[str, Any] | None = None) -> Path:",
+        65,
+    )
+    assert not is_function_annotation_union("value = left | right", 13)
+    assert not is_function_annotation_union("def plain(repo_root: Path) -> Path:", 0)
+
+
+def test_run_cosmic_ray_mutation_invokes_filter_after_init(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "cosmic-ray.toml").write_text(
+        dedent(
+            """\
+            [cosmic-ray]
+            module-path = ["demo.py"]
+            test-command = "python3 -m pytest"
+            """
+        ),
+        encoding="utf-8",
+    )
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake_cosmic = bin_dir / "cosmic-ray"
+    fake_cosmic.write_text(
+        dedent(
+            """\
+            #!/usr/bin/env python3
+            import os
+            import sys
+            from pathlib import Path
+
+            log = Path(os.environ["FAKE_COSMIC_LOG"])
+            log.write_text(log.read_text() + " ".join(sys.argv[1:]) + "\\n" if log.exists() else " ".join(sys.argv[1:]) + "\\n")
+            if sys.argv[1] == "init":
+                Path(sys.argv[3]).touch()
+            if sys.argv[1] == "dump":
+                print("")
+            """
+        ),
+        encoding="utf-8",
+    )
+    fake_cosmic.chmod(0o755)
+    fake_filter = repo / "filter.py"
+    fake_filter.write_text(
+        "from pathlib import Path\n"
+        "Path('filter-called').write_text('yes\\n', encoding='utf-8')\n",
+        encoding="utf-8",
+    )
+    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_COSMIC_LOG": str(tmp_path / "cosmic.log")}
+
+    result = subprocess.run(
+        [
+            "python3",
+            "scripts/run_cosmic_ray_mutation.py",
+            "--repo-root",
+            str(repo),
+            "--mode",
+            "dry-run",
+            "--filter-script",
+            str(fake_filter),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert (repo / "filter-called").read_text(encoding="utf-8") == "yes\n"
+    assert result.stdout.index("+ cosmic-ray init") < result.stdout.index("+ python3")
 
 
 def test_sample_rewrites_cosmic_ray_module_path(tmp_path: Path) -> None:
