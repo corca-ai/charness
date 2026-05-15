@@ -315,7 +315,7 @@ To change the location, override `output_dir` in the adapter.
 `mutation_testing` declares mutation testing policy for the repo. The block is
 stack-neutral: charness ships no tool-specific helpers. Consumers fill the four
 `commands.*` slots with whatever runner their stack uses (Stryker for JS/TS,
-mutmut for Python, etc.). See `mutation-testing.md` for the detect/propose
+Cosmic Ray for Python, etc.). See `mutation-testing.md` for the detect/propose
 protocol, the workflow template, and the slot output contract.
 
 Fields:

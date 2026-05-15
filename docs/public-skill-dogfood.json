@@ -303,7 +303,9 @@
         "The skill-quality and skill-ergonomics references now make validator brittleness explicit: quality review should ask whether exact prose guards prove behavior or merely freeze wording, and should prefer reference-aware or scenario-backed checks when the invariant is not classifier input.",
         "The quality core now names hidden support-skill routing as part of skill review, so support-skill discoverability from workflow language is an explicit quality concern instead of relying on the user to name `support/<id>`.",
         "The quality slow-gate contract now treats pytest temp footprint as a first-class economics signal, including allocated disk bytes, retained pytest sessions, worker fanout, seed totals, and top test temp directories.",
-        "`inventory_ci_local_gate_parity.py` now treats `CI-only` quality-gate wording as `ci-only-violation`, and `run-quality` enforces that inventory locally with `--require-empty-parity-issues` instead of leaving the finding advisory-only."
+        "`inventory_ci_local_gate_parity.py` now treats `CI-only` quality-gate wording as `ci-only-violation`, and `run-quality` enforces that inventory locally with `--require-empty-parity-issues` instead of leaving the finding advisory-only.",
+        "The mutation-testing reference keeps the public `quality` contract runner-neutral while documenting Charness's own Cosmic Ray 8.4.6 dogfood runner as repo-specific support, so consumers can still fill `mutation_testing.commands.*` with their own stack runner.",
+        "The mutation-testing workflow now has a dedicated surface obligation covering `.github/workflows/mutation-tests.yml`, `cosmic-ray.toml`, adapter command slots, and exported helper scripts; the reviewed dry-run behavior is pinned so PR dry-runs do not require a full-run Cosmic Ray dump."
       ]
     },
     {

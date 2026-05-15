@@ -155,7 +155,7 @@ jobs:
           fi
 
       - name: Summarize mutation report
-        if: always() && steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && steps.adapter.outputs.cmd_summary != ''
+        if: always() && steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && steps.plan.outputs.mode == 'full' && steps.adapter.outputs.cmd_summary != ''
         id: summary
         env:
           MUTATION_SCORE_BREAK: ${{ steps.plan.outputs.mode == 'full' && steps.adapter.outputs.score_break || '' }}

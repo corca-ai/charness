@@ -173,8 +173,8 @@ security_commands:
 # >>> mutation_testing (charness propose) >>>
 mutation_testing:
   commands:
-    dry_run: "mutmut run --max-children 2"
-    full: "mutmut run --max-children 6 && mutmut export-cicd-stats"
+    dry_run: "python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode dry-run"
+    full: "python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode full"
     sample: ""
     summary: "python3 scripts/check_mutation_score.py --repo-root ."
   score_break: 60

@@ -7,6 +7,20 @@ Tool: mutmut 3.5.0
 Target: `scripts/control_plane_lib.py` (394 LOC, 26 functions).
 Test scope: `tests/control_plane/test_control_plane_lib_helpers.py` (7 cases).
 
+## 2026-05-15 Migration Note
+
+This mutmut dogfood is historical evidence, not the current runner contract.
+The follow-up slice replaced mutmut with Cosmic Ray 8.4.6 after confirming
+PyPI's latest release metadata on 2026-05-15. Current repo wiring:
+
+- `cosmic-ray.toml` owns mutation target and test-command configuration.
+- `.github/workflows/mutation-tests.yml` installs `cosmic-ray==8.4.6`.
+- `.agents/quality-adapter.yaml` calls `scripts/run_cosmic_ray_mutation.py`
+  and `scripts/check_mutation_score.py`; `scripts/sample_mutation_files.py`
+  is available but not enabled for the first Cosmic Ray run.
+- `scripts/check_mutation_score.py` now consumes
+  `reports/mutation/cosmic-ray-dump.jsonl`. <!-- reproduction-source -->
+
 ## Headline
 
 - 720 mutants generated in 1.87s.

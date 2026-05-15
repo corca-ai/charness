@@ -20,12 +20,14 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+from scripts.check_mutation_score import iter_dump_records, summarize_cosmic_ray  # noqa: E402
 from scripts.quality_adapter_lib import (  # noqa: E402
     infer_quality_defaults,
     load_quality_adapter,
     validate_quality_adapter_data,
 )
 from scripts.quality_policy_defaults import DEFAULT_MUTATION_TESTING  # noqa: E402
+from scripts.sample_mutation_files import rewrite_cosmic_ray_targets  # noqa: E402
 
 PROPOSE_SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "propose_mutation_testing.py"
 TEMPLATE_PATH = ROOT / "skills" / "public" / "quality" / "scripts" / "templates" / "mutation-tests.yml"
@@ -342,6 +344,14 @@ def test_a4_template_has_required_steps() -> None:
         assert required_step in body, f"missing step: {required_step}"
 
 
+def test_a4_template_does_not_summarize_dry_run_without_dump() -> None:
+    body = TEMPLATE_PATH.read_text(encoding="utf-8")
+    assert (
+        "steps.plan.outputs.mode == 'full' && steps.adapter.outputs.cmd_summary != ''"
+        in body
+    )
+
+
 def test_a4_template_has_no_stack_literal_run_lines() -> None:
     """SC 7: no hardcoded stack tool literal in run: lines."""
     body = TEMPLATE_PATH.read_text(encoding="utf-8")
@@ -423,3 +433,49 @@ def test_validate_data_with_empty_dict_includes_mutation_testing(tmp_path: Path)
     validated, errors, warnings = validate_quality_adapter_data({}, tmp_path)
     assert errors == []
     assert "mutation_testing" in validated
+
+
+def test_cosmic_ray_dump_summary_counts_reachable_denominator(tmp_path: Path) -> None:
+    dump = tmp_path / "dump.jsonl"
+    dump.write_text(
+        "\n".join(
+            [
+                json.dumps([{"job_id": "a"}, {"worker_outcome": "normal", "test_outcome": "killed"}]),
+                json.dumps([{"job_id": "b"}, {"worker_outcome": "normal", "test_outcome": "survived"}]),
+                json.dumps([{"job_id": "c"}, {"worker_outcome": "exception", "test_outcome": "incompetent"}]),
+                json.dumps([{"job_id": "d"}, None]),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    counts = summarize_cosmic_ray(iter_dump_records(dump))
+
+    assert counts["total"] == 4
+    assert counts["killed"] == 1
+    assert counts["survived"] == 1
+    assert counts["incompetent"] == 1
+    assert counts["pending"] == 1
+
+
+def test_sample_rewrites_cosmic_ray_module_path(tmp_path: Path) -> None:
+    config = tmp_path / "cosmic-ray.toml"
+    config.write_text(
+        dedent(
+            """\
+            [cosmic-ray]
+            module-path = ["scripts/control_plane_lib.py"]
+            timeout = 30.0
+            test-command = "python3 -m pytest -q tests"
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    rewrite_cosmic_ray_targets(config, ["scripts/a.py", "scripts/b.py"])
+
+    text = config.read_text(encoding="utf-8")
+    assert '    "scripts/a.py",' in text
+    assert '    "scripts/b.py",' in text
+    assert 'test-command = "python3 -m pytest -q tests"' in text

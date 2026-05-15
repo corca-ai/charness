@@ -196,7 +196,7 @@ the workflow under `exempt_workflows`, and skips canonical-gate-step and
 parity-issue enforcement for it.
 
 The exemption is narrow: it applies only to workflows where a maintainer
-can reasonably run the same analysis locally (`mutmut run`, `npm audit`,
+can reasonably run the same analysis locally (`cosmic-ray exec`, `npm audit`,
 etc.) when needed, and where the CI cadence is "every few hours" rather
 than "every PR." Do not use it as a generic waiver for CI steps that
 should belong inside the standing pre-push gate; the canonical
