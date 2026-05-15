@@ -74,8 +74,10 @@ When `commands.sample` is empty, the workflow runs the full mutation set.
    as an env var (`MUTATION_CMD_FULL`, `MUTATION_AUTO_ISSUE_LABEL`, etc.).
 2. branches on event:
    - `pull_request`: runs `commands.dry_run` (no sample step).
-   - `workflow_dispatch` with `force=true` or scheduled: runs `commands.sample`
-     then `commands.full`.
+   - `workflow_dispatch` or scheduled: runs `commands.sample` then
+     `commands.full`. Scheduled runs always execute — same-SHA dedup was
+     removed (see corca-ai/craken-agents#127) because it both masked real
+     regressions and defeated the stratified-sampling intent.
 3. always runs `commands.summary` and uploads `report_paths.*` as the
    `mutation-report` actions artifact.
 4. when `auto_issue.enabled` is true and the run failed, opens or comments on

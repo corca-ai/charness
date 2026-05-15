@@ -13,12 +13,6 @@ name: Mutation Tests
 
 on:
   workflow_dispatch:
-    inputs:
-      force:
-        description: Run even when the latest successful mutation workflow already covered this SHA.
-        required: false
-        default: "false"
-        type: boolean
   pull_request:
     paths:
       - .agents/quality-adapter.yaml
@@ -120,16 +114,19 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Plan run
+        # NOTE: same-SHA dedup was removed (see corca-ai/craken-agents#127).
+        # Scheduled runs always execute so that stratified sampling can rotate
+        # over time even when main is idle, and a real regression cannot be
+        # masked by a later same-SHA "skip-success" run.
         if: steps.adapter.outputs.should_run == 'true'
         id: plan
         uses: actions/github-script@v8
         with:
           script: |
             const mode = context.eventName === 'pull_request' ? 'dry-run' : 'full';
-            let shouldRun = true;
-            const force = context.payload.inputs?.force === true || context.payload.inputs?.force === 'true';
 
-            if (context.eventName === 'schedule' && !force) {
+            let basePreviousSha = '';
+            if (context.eventName === 'schedule') {
               const { owner, repo } = context.repo;
               const defaultBranch = context.payload.repository.default_branch;
               const { data } = await github.rest.actions.listWorkflowRuns({
@@ -141,16 +138,16 @@ jobs:
                 per_page: 10,
               });
               const previousCompleted = data.workflow_runs.find((run) => run.id !== context.runId && ['success', 'failure'].includes(run.conclusion));
-              shouldRun = previousCompleted?.head_sha !== context.sha;
-              core.setOutput('base_sha', previousCompleted?.head_sha ?? '');
+              basePreviousSha = previousCompleted?.head_sha ?? '';
               core.info(previousCompleted
-                ? `Latest completed mutation workflow ran at ${previousCompleted.head_sha}. Current SHA is ${context.sha}.`
+                ? `Previous completed mutation workflow ran at ${previousCompleted.head_sha}. Current SHA is ${context.sha}.`
                 : 'No previous completed mutation workflow was found.');
             }
 
             core.setOutput('mode', mode);
-            core.setOutput('should_run', String(shouldRun));
+            core.setOutput('should_run', 'true');
             core.setOutput('head_sha', context.sha);
+            core.setOutput('base_sha', basePreviousSha);
 
       - name: Select mutation sample
         if: steps.adapter.outputs.should_run == 'true' && steps.plan.outputs.should_run == 'true' && steps.plan.outputs.mode == 'full' && steps.adapter.outputs.cmd_sample != ''
