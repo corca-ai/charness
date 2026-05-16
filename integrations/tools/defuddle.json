@@ -1,0 +1,102 @@
+{
+  "schema_version": "1",
+  "tool_id": "defuddle",
+  "kind": "external_binary",
+  "display_name": "defuddle",
+  "summary": "Article and documentation page cleaner used by gather/web-fetch to turn cluttered public HTML into readable markdown before falling back to browser-mediated acquisition.",
+  "upstream_repo": "kepano/defuddle",
+  "homepage": "https://github.com/kepano/defuddle",
+  "platforms": [
+    "any"
+  ],
+  "status": "active",
+  "lifecycle": {
+    "install": {
+      "mode": "manual",
+      "commands": [
+        "npm install -g defuddle"
+      ],
+      "docs_url": "https://github.com/kepano/defuddle",
+      "install_url": "https://www.npmjs.com/package/defuddle",
+      "notes": [
+        "The historical `defuddle-cli` package is deprecated; install the current `defuddle` package.",
+        "The upstream skill at skills.sh remains useful as workflow guidance, but the active runtime package is `defuddle`.",
+        "Use this as a reader extraction fallback, not as a browser automation or authentication path."
+      ]
+    },
+    "update": {
+      "mode": "manual",
+      "commands": [
+        "npm install -g defuddle@latest"
+      ],
+      "docs_url": "https://www.npmjs.com/package/defuddle",
+      "notes": [
+        "Update through npm when the current binary was installed from `defuddle`."
+      ]
+    }
+  },
+  "checks": {
+    "detect": {
+      "commands": [
+        "defuddle --version"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "Install `defuddle` to let gather clean article-style pages before escalating to browser-mediated acquisition."
+    },
+    "healthcheck": {
+      "commands": [
+        "defuddle --help"
+      ],
+      "success_criteria": [
+        "exit_code:0"
+      ],
+      "failure_hint": "The `defuddle` binary exists but does not respond cleanly. Reinstall `defuddle` from npm."
+    }
+  },
+  "access_modes": [
+    "binary",
+    "degraded"
+  ],
+  "version_expectation": {
+    "policy": "advisory",
+    "constraint": "Prefer the current npm `defuddle` release.",
+    "detected_by": "stdout"
+  },
+  "package_managers": {
+    "npm": {
+      "package_name": "defuddle",
+      "notes": [
+        "The executable and active npm package are both `defuddle`."
+      ]
+    }
+  },
+  "supports_public_skills": [
+    "gather"
+  ],
+  "intent_triggers": [
+    "defuddle",
+    "reader extraction",
+    "clean web content",
+    "clean URL content",
+    "readable markdown from URL",
+    "strip clutter",
+    "remove boilerplate",
+    "article extraction"
+  ],
+  "recommendation_role": "runtime",
+  "degradation": {
+    "when_missing": [
+      "`web-fetch` should fall back to direct content classification and `agent-browser` when browser rendering is the stronger available path.",
+      "Do not claim reader-clean markdown extraction when `defuddle` is missing."
+    ],
+    "when_version_mismatch": [
+      "Treat extraction shape drift as a manual review point before updating durable gather artifacts in bulk."
+    ]
+  },
+  "host_notes": [
+    "`defuddle` is suitable for article-like pages and documentation pages, not dashboards, apps, private SaaS flows, or structured APIs.",
+    "Keep source URL, access mode, and extraction confidence in gather artifacts because cleaned markdown is derived content."
+  ]
+}

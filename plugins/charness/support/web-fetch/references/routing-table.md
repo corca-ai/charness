@@ -26,7 +26,21 @@ reduced to tactics `charness` is willing to carry locally.
 - `news.naver.com`, `n.news.naver.com`, `finance.naver.com`
   - prefer reader-style fallback rather than raw fetch
 - generic public URLs
-  - prefer direct fetch first, then reader, metadata-only, archive
+  - prefer direct fetch first, then `defuddle`, then read-only `agent-browser`
+    render/network reconnaissance, then metadata-only or archive fallback
+
+## Reader And Browser Fallbacks
+
+- `defuddle`
+  - use for article-like pages, blogs, news, and documentation when direct HTML
+    is weak, cluttered, or only partially useful
+  - skip for dashboards, app UIs, private SaaS, and structured APIs
+- `agent-browser`
+  - use after direct/reader extraction is insufficient for JS-rendered pages,
+    empty SPA shells, repeated challenge signals, or list/collection tasks
+    where runtime network requests may reveal public JSON/API endpoints
+  - keep it read-only by default: render, inspect text/HTML, and record network
+    candidates; do not click through auth or mutate source state
 
 ## Scope Rule
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-15T10:06:36Z",
+  "generated_at": "2026-05-16T01:36:52Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -690,7 +690,8 @@
           "skills/shared/references/bootstrap-resolution.md",
           "skills/support/web-fetch/references/runtime-contract.md",
           "skills/support/web-fetch/references/routing-table.md",
-          "skills/support/web-fetch/references/provenance.md"
+          "skills/support/web-fetch/references/provenance.md",
+          "skills/support/web-fetch/scripts/acquire_public_url.py"
         ],
         "source": "local-support",
         "layer": "support skill"
@@ -969,7 +970,7 @@
           {
             "layer_id": "web-fetch-authenticated-binaries",
             "layer_type": "authenticated-binary",
-            "summary": "Use authenticated or installed binaries such as `gh` or `yt-dlp` only when the selected route explicitly calls for them."
+            "summary": "Use authenticated or installed binaries such as `gh`, `yt-dlp`, `defuddle`, or `agent-browser` only when the selected route or fallback stage explicitly calls for them."
           },
           {
             "layer_id": "web-fetch-operator-step",
@@ -1084,6 +1085,37 @@
         ],
         "recommendation_role": "validation",
         "path": "integrations/tools/cautilus.json",
+        "source": "local-integration",
+        "layer": "external integration"
+      },
+      {
+        "id": "defuddle",
+        "kind": "external_binary",
+        "access_modes": [
+          "binary",
+          "degraded"
+        ],
+        "support_state": "integration-only",
+        "support_skill_path": null,
+        "discovery_stub_path": null,
+        "capability_requirements": {},
+        "intent_triggers": [
+          "defuddle",
+          "reader extraction",
+          "clean web content",
+          "clean URL content",
+          "readable markdown from URL",
+          "strip clutter",
+          "remove boilerplate",
+          "article extraction"
+        ],
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "gather"
+        ],
+        "recommendation_role": "runtime",
+        "path": "integrations/tools/defuddle.json",
         "source": "local-integration",
         "layer": "external integration"
       },

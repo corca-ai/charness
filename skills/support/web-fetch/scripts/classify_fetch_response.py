@@ -43,6 +43,21 @@ PARTIAL_PATTERNS = (
     'property="og:description"',
     'name="description"',
 )
+BOT_CHALLENGE_PATTERNS = (
+    "access denied",
+    "just a moment",
+    "checking your browser",
+    "sec-if-cpt-container",
+    "powered and protected by akamai",
+    "datadome",
+    "request unsuccessful. incapsula",
+    "the requested url was rejected",
+)
+EMPTY_SHELL_PATTERNS = (
+    'id="root"',
+    'id="__next"',
+    "app-root",
+)
 
 
 def extract_text(raw: str) -> str:
@@ -51,43 +66,159 @@ def extract_text(raw: str) -> str:
     return WHITESPACE_RE.sub(" ", without_tags).strip()
 
 
-def classify(raw: str) -> dict[str, object]:
+def _json_field(raw: str, field_path: str) -> bool:
+    try:
+        current: object = json.loads(raw)
+    except Exception:
+        return False
+    for part in field_path.split("."):
+        if isinstance(current, dict) and part in current:
+            current = current[part]
+        else:
+            return False
+    return current not in (None, "", [], {})
+
+
+def _proof_matches(
+    raw: str,
+    *,
+    expect_text: list[str],
+    expect_regex: list[str],
+    expect_json_field: list[str],
+) -> list[dict[str, str]]:
+    matches: list[dict[str, str]] = []
+    for expected in expect_text:
+        if expected and expected in raw:
+            matches.append({"type": "text", "value": expected})
+    for pattern in expect_regex:
+        try:
+            if re.search(pattern, raw, flags=re.IGNORECASE | re.MULTILINE):
+                matches.append({"type": "regex", "value": pattern})
+        except re.error:
+            matches.append({"type": "invalid-regex", "value": pattern})
+    for field_path in expect_json_field:
+        if _json_field(raw, field_path):
+            matches.append({"type": "json-field", "value": field_path})
+    return matches
+
+
+def _fallback_candidates(status: str, *, intent: str, proof_required: bool) -> list[str]:
+    if status == "success" and not proof_required:
+        return []
+    if status == "success":
+        return ["clean-stop"]
+    if status in {"partial-content", "unclear"}:
+        return ["defuddle", "agent-browser-render", "archive"]
+    if status == "empty-spa":
+        candidates = ["agent-browser-render"]
+        if intent == "collect":
+            candidates.append("agent-browser-network-recon")
+        candidates.extend(["defuddle", "archive"])
+        return candidates
+    if status in {"captcha", "error-page", "login-wall"}:
+        candidates = ["agent-browser-render"]
+        if intent == "collect":
+            candidates.append("agent-browser-network-recon")
+        candidates.append("clean-stop")
+        return candidates
+    return ["defuddle", "agent-browser-render", "archive", "clean-stop"]
+
+
+def classify(
+    raw: str,
+    *,
+    expect_text: list[str] | None = None,
+    expect_regex: list[str] | None = None,
+    expect_json_field: list[str] | None = None,
+    intent: str = "single",
+) -> dict[str, object]:
     lowered = raw.lower()
     text = extract_text(raw)
     text_length = len(text)
     matched: list[str] = []
+    signals: list[str] = []
+    expect_text = expect_text or []
+    expect_regex = expect_regex or []
+    expect_json_field = expect_json_field or []
+    proof = _proof_matches(
+        raw,
+        expect_text=expect_text,
+        expect_regex=expect_regex,
+        expect_json_field=expect_json_field,
+    )
+    proof_required = bool(expect_text or expect_regex or expect_json_field)
 
-    if any(pattern in lowered for pattern in CAPTCHA_PATTERNS):
+    if proof:
+        status = "success"
+        confidence = "strong"
+        matched.extend(f"{item['type']}:{item['value']}" for item in proof)
+        signals.append("positive-proof")
+        next_step = "Use the content as a source and preserve the matched proof."
+    elif any(pattern in lowered for pattern in CAPTCHA_PATTERNS):
         matched.extend(pattern for pattern in CAPTCHA_PATTERNS if pattern in lowered)
         status = "captcha"
+        confidence = "none"
+        signals.append("captcha")
         next_step = "Try the next fallback route or stop with the bot-block noted."
     elif any(pattern in lowered for pattern in LOGIN_PATTERNS):
         matched.extend(pattern for pattern in LOGIN_PATTERNS if pattern in lowered)
         status = "login-wall"
+        confidence = "none"
+        signals.append("login-wall")
         next_step = "Stop cleanly unless a stronger authenticated access path exists."
+    elif any(pattern in lowered for pattern in BOT_CHALLENGE_PATTERNS):
+        matched.extend(pattern for pattern in BOT_CHALLENGE_PATTERNS if pattern in lowered)
+        status = "captcha"
+        confidence = "none"
+        signals.append("bot-challenge")
+        next_step = "Try read-only browser rendering or stop with the challenge recorded."
     elif any(pattern in lowered for pattern in EMPTY_SPA_PATTERNS):
         matched.extend(pattern for pattern in EMPTY_SPA_PATTERNS if pattern in lowered)
         status = "empty-spa"
+        confidence = "none"
+        signals.append("empty-spa")
         next_step = "Prefer a reader, browser, or domain-specific API path."
     elif any(pattern in lowered for pattern in ERROR_PATTERNS):
         matched.extend(pattern for pattern in ERROR_PATTERNS if pattern in lowered)
         status = "error-page"
+        confidence = "none"
+        signals.append("error-page")
         next_step = "Treat this as a failed fetch and move to the next route."
+    elif proof_required:
+        status = "unclear"
+        confidence = "none"
+        signals.append("missing-positive-proof")
+        next_step = "Do not trust this alone; try a stronger route or inspect manually."
     elif text_length >= 1000:
         status = "success"
+        confidence = "weak"
+        signals.append("long-text")
         next_step = "Use the content as a source and preserve the retrieval method."
     elif any(pattern in lowered for pattern in PARTIAL_PATTERNS):
         matched.extend(pattern for pattern in PARTIAL_PATTERNS if pattern in lowered)
         status = "partial-content"
+        confidence = "weak"
+        signals.append("metadata-only")
         next_step = "Keep only as metadata or a partial source and try a stronger route."
+    elif any(pattern in lowered for pattern in EMPTY_SHELL_PATTERNS):
+        matched.extend(pattern for pattern in EMPTY_SHELL_PATTERNS if pattern in lowered)
+        status = "empty-spa"
+        confidence = "none"
+        signals.append("empty-shell-marker")
+        next_step = "Use browser rendering before trusting this page."
     else:
         status = "unclear"
+        confidence = "none"
         next_step = "Do not trust this alone; inspect manually or try the next route."
 
     return {
         "status": status,
+        "confidence": confidence,
         "text_length": text_length,
         "matched_signals": matched,
+        "signals": signals,
+        "proof": proof,
+        "fallback_candidates": _fallback_candidates(status, intent=intent, proof_required=proof_required),
         "recommended_next_step": next_step,
     }
 
@@ -101,9 +232,25 @@ def load_input(path: str | None) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--path")
+    parser.add_argument("--expect-text", action="append", default=[])
+    parser.add_argument("--expect-regex", action="append", default=[])
+    parser.add_argument("--expect-json-field", action="append", default=[])
+    parser.add_argument("--intent", choices=("single", "collect"), default="single")
     args = parser.parse_args()
     raw = load_input(args.path)
-    print(json.dumps(classify(raw), ensure_ascii=False, indent=2))
+    print(
+        json.dumps(
+            classify(
+                raw,
+                expect_text=args.expect_text,
+                expect_regex=args.expect_regex,
+                expect_json_field=args.expect_json_field,
+                intent=args.intent,
+            ),
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     return 0
 
 

@@ -40,7 +40,7 @@ Examples:
   - `specdown`
   - `gh`
   - future `gws-cli`
-  - future `defuddle`
+  - `defuddle`
 - `charness`-owned gather provider runtime:
   - Slack thread export logic used by `gather`
   - Notion published-page gather logic used by `gather`
@@ -102,6 +102,11 @@ When a consumer wants provider-backed gather:
   - let `gather` own the official-path-first and degradation policy
   - let `agent-browser` stay the external browser runtime boundary
   - do not push each consumer repo to reinvent profile/auth/bootstrap wording
+- public article/document pages:
+  - use `defuddle` as an external reader-extraction binary when direct fetch
+    returns cluttered or weak HTML
+  - preserve the source URL and extraction confidence because cleaned markdown
+    is derived content
 
 ## Modeling Rule Going Forward
 

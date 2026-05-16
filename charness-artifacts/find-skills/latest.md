@@ -1,13 +1,13 @@
 # Find Skills Inventory
-Date: 2026-05-15
-Updated: 2026-05-15T10:06:36Z
+Date: 2026-05-16
+Updated: 2026-05-16T01:36:52Z
 
 ## Summary
 - public skills: 18
 - support skills: 7
 - synced support skills: 0
 - support capabilities: 4
-- integrations: 10
+- integrations: 11
 - trusted skills: 0
 
 ## Public Skills
@@ -48,6 +48,7 @@ Updated: 2026-05-15T10:06:36Z
 ## Integrations
 - `agent-browser` (external_binary_with_skill, upstream-consumed): access modes `binary, human-only, degraded`
 - `cautilus` (external_binary_with_skill, upstream-consumed): access modes `binary, human-only, degraded`
+- `defuddle` (external_binary, integration-only): access modes `binary, degraded`
 - `github-gh` (external_binary, integration-only): access modes `binary, public, degraded`
 - `gitleaks` (external_binary, integration-only): access modes `binary, degraded`
 - `glow` (external_binary, integration-only): access modes `binary, degraded`

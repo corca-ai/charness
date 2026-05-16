@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -8,7 +9,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def run_helper(script: str, *args: str, input_text: str | None = None) -> subprocess.CompletedProcess[str]:
+def run_helper(
+    script: str,
+    *args: str,
+    input_text: str | None = None,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, script, *args],
         cwd=ROOT,
@@ -16,6 +22,7 @@ def run_helper(script: str, *args: str, input_text: str | None = None) -> subpro
         capture_output=True,
         text=True,
         input=input_text,
+        env=env,
     )
 
 
@@ -96,6 +103,10 @@ def test_route_public_fetch_maps_naver_news_to_reader_fallback() -> None:
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["route_id"] == "reader-fallback"
+    stage_ids = [stage["stage_id"] for stage in payload["acquisition_plan"]]
+    assert "defuddle-reader-extraction" in stage_ids
+    assert "agent-browser-render-recon" in stage_ids
+    assert "agent-browser-network-recon" in stage_ids
 
 
 def test_classify_fetch_response_reports_login_wall() -> None:
@@ -106,6 +117,7 @@ def test_classify_fetch_response_reports_login_wall() -> None:
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["status"] == "login-wall"
+    assert "clean-stop" in payload["fallback_candidates"]
 
 
 def test_classify_fetch_response_reports_partial_content_for_og_only_page() -> None:
@@ -136,3 +148,119 @@ def test_classify_fetch_response_reports_success_for_long_article_text() -> None
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["status"] == "success"
+    assert payload["confidence"] == "weak"
+
+
+def test_classify_fetch_response_reports_strong_success_for_expected_text() -> None:
+    result = run_helper(
+        "skills/support/web-fetch/scripts/classify_fetch_response.py",
+        "--expect-text",
+        "needle",
+        input_text="<html><body>short needle page</body></html>",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "success"
+    assert payload["confidence"] == "strong"
+    assert payload["proof"] == [{"type": "text", "value": "needle"}]
+
+
+def test_acquire_public_url_uses_defuddle_after_weak_direct_fetch(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    (bin_dir / "defuddle").write_text(
+        "#!/bin/sh\nif [ \"$1\" = parse ] && [ \"$3\" = --markdown ]; then printf 'clean markdown with target proof\\n'; else exit 64; fi\n",
+        encoding="utf-8",
+    )
+    (bin_dir / "defuddle").chmod(0o755)
+    direct = tmp_path / "direct.html"
+    direct.write_text("<html><head><meta property=\"og:title\" content=\"Example\"></head></html>", encoding="utf-8")
+    env = os.environ.copy()
+    env["PATH"] = f"{bin_dir}:{env['PATH']}"
+
+    result = run_helper(
+        "skills/support/web-fetch/scripts/acquire_public_url.py",
+        "--url",
+        "https://example.com/article",
+        "--direct-response-file",
+        str(direct),
+        "--expect-text",
+        "target proof",
+        "--browser-mode",
+        "off",
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["disposition"] == "success"
+    assert [attempt["stage_id"] for attempt in payload["attempts"]] == [
+        "direct-public-fetch",
+        "defuddle-reader-extraction",
+    ]
+    assert payload["attempts"][1]["confidence"] == "strong"
+
+
+def test_acquire_public_url_uses_agent_browser_network_recon_for_collect_intent(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    (bin_dir / "agent-browser").write_text(
+        """#!/bin/sh
+case "$*" in
+  *"get text body"*) printf 'rendered target proof from browser\\n' ;;
+  *"network requests"*) printf 'GET https://example.com/api/items\\n' ;;
+  *) exit 0 ;;
+esac
+""",
+        encoding="utf-8",
+    )
+    (bin_dir / "agent-browser").chmod(0o755)
+    direct = tmp_path / "direct.html"
+    direct.write_text("<html><body><div id=\"root\"></div></body></html>", encoding="utf-8")
+    env = os.environ.copy()
+    env["PATH"] = f"{bin_dir}:{env['PATH']}"
+
+    result = run_helper(
+        "skills/support/web-fetch/scripts/acquire_public_url.py",
+        "--url",
+        "https://example.com/app",
+        "--direct-response-file",
+        str(direct),
+        "--expect-text",
+        "target proof",
+        "--intent",
+        "collect",
+        "--browser-mode",
+        "auto",
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["disposition"] == "success"
+    assert payload["attempts"][-2]["stage_id"] == "agent-browser-render-recon"
+    assert payload["attempts"][-1]["stage_id"] == "agent-browser-network-recon"
+    assert payload["attempts"][-1]["details"]["network_candidates"] == [
+        "GET https://example.com/api/items"
+    ]
+
+
+def test_acquire_public_url_accepts_weak_direct_success_without_positive_proof(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.html"
+    direct.write_text("<html><body>" + ("useful content " * 120) + "</body></html>", encoding="utf-8")
+
+    result = run_helper(
+        "skills/support/web-fetch/scripts/acquire_public_url.py",
+        "--url",
+        "https://example.com/article",
+        "--direct-response-file",
+        str(direct),
+        "--browser-mode",
+        "off",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["disposition"] == "success"
+    assert len(payload["attempts"]) == 1
+    assert payload["attempts"][0]["stage_id"] == "direct-public-fetch"
+    assert payload["attempts"][0]["status"] == "success"
+    assert payload["attempts"][0]["confidence"] == "weak"
+    assert payload["attempts"][0]["output_chars"] == len(direct.read_text(encoding="utf-8"))

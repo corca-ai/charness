@@ -63,7 +63,7 @@
     {
       "layer_id": "web-fetch-authenticated-binaries",
       "layer_type": "authenticated-binary",
-      "summary": "Use authenticated or installed binaries such as `gh` or `yt-dlp` only when the selected route explicitly calls for them."
+      "summary": "Use authenticated or installed binaries such as `gh`, `yt-dlp`, `defuddle`, or `agent-browser` only when the selected route or fallback stage explicitly calls for them."
     },
     {
       "layer_id": "web-fetch-operator-step",
@@ -82,6 +82,6 @@
   },
   "host_notes": [
     "This support seam routes and classifies public-web access paths; it does not promise that a recommended route will always succeed live.",
-    "Optional binaries such as `gh` and `yt-dlp` remain external dependencies of specific routes, not hidden requirements of the support capability itself."
+    "Optional binaries such as `gh`, `yt-dlp`, `defuddle`, and `agent-browser` remain external dependencies of specific routes or fallback stages, not hidden requirements of the support capability itself."
   ]
 }

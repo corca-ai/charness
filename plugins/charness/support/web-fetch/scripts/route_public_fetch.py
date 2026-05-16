@@ -167,6 +167,9 @@ MEDIA_DOMAINS = {
 FALLBACK_ORDER = (
     "direct-public-fetch",
     "domain-specific-route",
+    "defuddle-reader-extraction",
+    "agent-browser-render-recon",
+    "agent-browser-network-recon",
     "reader-or-metadata-fallback",
     "archive-or-cache",
     "clean-stop",
@@ -245,11 +248,82 @@ def route_for_url(url: str, *, repo_root: Path | None = None, github_mode: str |
         "required_tools": list(route.required_tools),
         "access_modes": list(route.access_modes),
         "fallback_order": list(FALLBACK_ORDER),
+        "acquisition_plan": acquisition_plan_for_route(route.route_id),
         "notes": list(route.notes),
     }
     if host_matches(host, ("github.com",)):
         payload["github_mode"] = effective_github_mode
     return payload
+
+
+def acquisition_plan_for_route(route_id: str) -> list[dict[str, object]]:
+    plan: list[dict[str, object]] = [
+        {
+            "stage_id": "direct-public-fetch",
+            "tool_id": None,
+            "when": "Start here for public URLs unless a stronger domain route is known.",
+            "proof": "classify-fetch-response",
+        }
+    ]
+    if route_id in {
+        "twitter-syndication",
+        "reddit-json",
+        "hacker-news-firebase",
+        "stackexchange-api",
+        "github-grant-or-cli",
+        "github-host-mediated",
+        "github-missing-capability",
+        "yt-dlp-metadata",
+        "naver-blog-mobile",
+    }:
+        plan.append(
+            {
+                "stage_id": "domain-specific-route",
+                "tool_id": ROUTES[route_id].required_tools[0] if ROUTES[route_id].required_tools else None,
+                "when": "Use the declared route before generic browser or reader fallbacks.",
+                "proof": "route-specific structured output",
+            }
+        )
+    if route_id in {"reader-fallback", "direct-then-fallback", "naver-blog-mobile"}:
+        plan.extend(
+            [
+                {
+                    "stage_id": "defuddle-reader-extraction",
+                    "tool_id": "defuddle",
+                    "when": "Use for article-like public pages when direct HTML is weak, cluttered, or partial.",
+                    "proof": "clean markdown plus source URL and classifier confidence",
+                },
+                {
+                    "stage_id": "agent-browser-render-recon",
+                    "tool_id": "agent-browser",
+                    "when": "Use for JS-rendered pages, empty SPA shells, repeated challenge signals, or weak cleaner output.",
+                    "proof": "rendered body text/html and access mode",
+                },
+                {
+                    "stage_id": "agent-browser-network-recon",
+                    "tool_id": "agent-browser",
+                    "when": "Use for list/collection intent to record public-looking /api/, /graphql, or .json request candidates.",
+                    "proof": "network request candidates; no clicks, form submits, or login bypass",
+                },
+            ]
+        )
+    plan.extend(
+        [
+            {
+                "stage_id": "archive-or-cache",
+                "tool_id": None,
+                "when": "Use only when a stale or cached source still honestly answers the request.",
+                "proof": "archive/cache source identity and freshness caveat",
+            },
+            {
+                "stage_id": "clean-stop",
+                "tool_id": None,
+                "when": "Stop when access, auth, challenge, or confidence gaps remain.",
+                "proof": "recorded failure mode and missing capability",
+            },
+        ]
+    )
+    return plan
 
 
 def main() -> int:
