@@ -216,16 +216,19 @@ def test_quality_skill_carries_agent_production_runtime_lens() -> None:
     assert "agent production runtime risk" in skill_text
     assert "`references/agent-production-runtime.md`" in skill_text
     assert "production LLM or agent runtime" in runtime
-    assert "Do not trigger it from eval fixtures, skill docs, prompt examples" in runtime
+    assert "docs-only\nagent product descriptions" in runtime
+    assert "not\nproduction runtime evidence until paired with a concrete runtime seam" in runtime
     assert "Do not build an Anthropic-specific wrapper" in runtime
     assert "Cache And Cost Economics" in runtime
     assert "Overload And Fallback Policy" in runtime
     assert "Retry And Idempotency" in runtime
     assert "Streaming Stall Recovery" in runtime
     assert "Model Routing Economics" in runtime
+    assert "Use `skill-experiment` only when the\nruntime under review is itself a Charness skill" in runtime
     assert "provider roundtrip" in runtime
     assert "explicit non-applicability" in lenses
     assert "## Agent Production Runtime" in dispatch
+    assert "docs-only agent product descriptions" in dispatch
     assert "deterministic proof, behavior-proof recommendation" in dispatch
     assert "product-policy decision" in dispatch
     assert "agent-production-runtime.md" in behavior

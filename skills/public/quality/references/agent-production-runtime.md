@@ -32,13 +32,15 @@ as:
 - model routing, fallback, or provider configuration
 - streaming response endpoints or event processors
 - tool/action queues driven by model output
-- user-facing agent product docs or operator runbooks
+- user-facing agent product docs or operator runbooks that identify a concrete
+  serving path, runtime configuration, telemetry surface, or incident procedure
 - runtime telemetry for model calls, tokens, retries, costs, or fallbacks
 
-Do not trigger it from eval fixtures, skill docs, prompt examples, harness-only
-agent orchestration, or offline benchmark scaffolding by themselves. Those may
-need behavior-testing or prompt-asset review, but they are not production
-runtime evidence.
+Do not trigger it from eval fixtures, skill docs, prompt examples, docs-only
+agent product descriptions, harness-only agent orchestration, or offline
+benchmark scaffolding by themselves. Those may need behavior-testing,
+prompt-asset review, or concept/docs synchronization review, but they are not
+production runtime evidence until paired with a concrete runtime seam.
 
 ## Review Questions
 
@@ -108,8 +110,9 @@ wording changes the agent experience.
 - Are escalation reasons, final model choice, and quality/cost outcomes logged?
 
 Deterministic proof can pin routing thresholds and telemetry. Cautilus-backed
-`fixture`, `observation`, or `skill-experiment` proof may be needed when the
-claim is that a cheap-first route preserves task quality.
+`fixture` or `observation` proof may be needed when the claim is that a
+cheap-first route preserves task quality. Use `skill-experiment` only when the
+runtime under review is itself a Charness skill or prompt variant.
 
 ## Recommendation Shape
 
@@ -119,8 +122,8 @@ When this lens finds a gap, record:
 - trigger evidence that made the lens applicable
 - deterministic proof already present
 - missing proof or missing explicit non-applicability decision
-- behavior risk, if any, and likely Cautilus mode (`fixture`, `observation`, or
-  `skill-experiment`)
+- behavior risk, if any, and likely Cautilus mode (`fixture` or `observation`;
+  `skill-experiment` only for Charness skill or prompt variants)
 - external/provider proof level using the shared external capability proof
   ladder
 - current state: `healthy`, `weak`, `missing`, `deferred`, or
