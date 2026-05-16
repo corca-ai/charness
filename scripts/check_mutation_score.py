@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections import Counter
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -22,6 +23,8 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.quality_adapter_lib import load_quality_adapter  # noqa: E402
+
+SURVIVED_DETAIL_LIMIT = 10
 
 
 def iter_dump_records(stats_path: Path) -> list[tuple[dict, dict | None]]:
@@ -79,6 +82,53 @@ def summarize_cosmic_ray(records: list[tuple[dict, dict | None]]) -> dict[str, i
     return counts
 
 
+def _source_line(repo_root: Path, module_path: str, line_number: int) -> str:
+    try:
+        return (repo_root / module_path).read_text(encoding="utf-8").splitlines()[line_number - 1].strip()
+    except (OSError, IndexError):
+        return ""
+
+
+def summarize_survived_mutations(
+    records: list[tuple[dict, dict | None]],
+    repo_root: Path,
+    *,
+    limit: int = SURVIVED_DETAIL_LIMIT,
+) -> dict[str, list[tuple]]:
+    by_definition: Counter[str] = Counter()
+    by_operator: Counter[str] = Counter()
+    locations: list[tuple[str, int, str, str, str]] = []
+
+    for work_item, result in records:
+        if not result or result.get("worker_outcome") == "skipped":
+            continue
+        if result.get("test_outcome") != "survived":
+            continue
+        for mutation in work_item.get("mutations", []):
+            definition = mutation.get("definition_name") or "<module>"
+            operator = mutation.get("operator_name") or "<unknown>"
+            module_path = mutation.get("module_path") or "<unknown>"
+            start_pos = mutation.get("start_pos") or [0, 0]
+            line_number = int(start_pos[0]) if start_pos else 0
+            by_definition[definition] += 1
+            by_operator[operator] += 1
+            locations.append(
+                (
+                    str(module_path),
+                    line_number,
+                    definition,
+                    operator,
+                    _source_line(repo_root, str(module_path), line_number) if line_number else "",
+                )
+            )
+
+    return {
+        "definitions": by_definition.most_common(limit),
+        "operators": by_operator.most_common(limit),
+        "locations": locations[:limit],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path("."))
@@ -99,7 +149,8 @@ def main() -> int:
         return 2
 
     try:
-        stats = summarize_cosmic_ray(iter_dump_records(stats_path))
+        records = iter_dump_records(stats_path)
+        stats = summarize_cosmic_ray(records)
     except ValueError as exc:
         sys.stderr.write(f"could not parse mutation stats: {exc}\n")
         return 2
@@ -145,6 +196,31 @@ def main() -> int:
         lines.append(f"- Worker abnormal/exception: {abnormal}")
     if skipped:
         lines.append(f"- Skipped: {skipped}")
+    if survived:
+        survived_details = summarize_survived_mutations(records, repo_root)
+        lines += [
+            "",
+            "## Survived Mutants",
+            "",
+            "Top definitions:",
+            *[
+                f"- `{definition}`: {count}"
+                for definition, count in survived_details["definitions"]
+            ],
+            "",
+            "Top operators:",
+            *[
+                f"- `{operator}`: {count}"
+                for operator, count in survived_details["operators"]
+            ],
+            "",
+            "Sample locations:",
+            *[
+                f"- `{module_path}:{line_number}` `{definition}` `{operator}`"
+                + (f" - {source}" if source else "")
+                for module_path, line_number, definition, operator, source in survived_details["locations"]
+            ],
+        ]
     lines += [
         "",
         "Score denominator: `killed / (killed + survived)` (reachable mutants only;",

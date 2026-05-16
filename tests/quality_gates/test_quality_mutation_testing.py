@@ -21,7 +21,11 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from scripts.check_mutation_score import iter_dump_records, summarize_cosmic_ray  # noqa: E402
+from scripts.check_mutation_score import (  # noqa: E402
+    iter_dump_records,
+    summarize_cosmic_ray,
+    summarize_survived_mutations,
+)
 from scripts.filter_cosmic_ray_mutants import is_function_annotation_union  # noqa: E402
 from scripts.quality_adapter_lib import (  # noqa: E402
     infer_quality_defaults,
@@ -461,6 +465,120 @@ def test_cosmic_ray_dump_summary_counts_reachable_denominator(tmp_path: Path) ->
     assert counts["incompetent"] == 1
     assert counts["pending"] == 1
     assert counts["skipped"] == 1
+
+
+def test_cosmic_ray_summary_reports_actionable_survivors(tmp_path: Path) -> None:
+    source = tmp_path / "demo.py"
+    source.write_text("def demo():\n    return 1\n", encoding="utf-8")
+    dump = tmp_path / "dump.jsonl"
+    dump.write_text(
+        "\n".join(
+            [
+                json.dumps(
+                    [
+                        {
+                            "job_id": "a",
+                            "mutations": [
+                                {
+                                    "module_path": "demo.py",
+                                    "operator_name": "core/NumberReplacer",
+                                    "start_pos": [2, 11],
+                                    "definition_name": "demo",
+                                }
+                            ],
+                        },
+                        {"worker_outcome": "normal", "test_outcome": "survived"},
+                    ]
+                ),
+                json.dumps(
+                    [
+                        {
+                            "job_id": "b",
+                            "mutations": [
+                                {
+                                    "module_path": "demo.py",
+                                    "operator_name": "core/AddNot",
+                                    "start_pos": [2, 4],
+                                    "definition_name": "demo",
+                                }
+                            ],
+                        },
+                        {"worker_outcome": "normal", "test_outcome": "killed"},
+                    ]
+                ),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    details = summarize_survived_mutations(iter_dump_records(dump), tmp_path)
+
+    assert details["definitions"] == [("demo", 1)]
+    assert details["operators"] == [("core/NumberReplacer", 1)]
+    assert details["locations"] == [
+        ("demo.py", 2, "demo", "core/NumberReplacer", "return 1")
+    ]
+
+
+def test_check_mutation_score_writes_survivor_details(tmp_path: Path) -> None:
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
+        _ADAPTER_HEADER
+        + dedent(
+            """\
+            mutation_testing:
+              score_break: 50
+              report_paths:
+                summary_md: reports/mutation/summary.md
+            """
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "demo.py").write_text("def demo():\n    return 1\n", encoding="utf-8")
+    dump = tmp_path / "dump.jsonl"
+    dump.write_text(
+        json.dumps(
+            [
+                {
+                    "job_id": "a",
+                    "mutations": [
+                        {
+                            "module_path": "demo.py",
+                            "operator_name": "core/NumberReplacer",
+                            "start_pos": [2, 11],
+                            "definition_name": "demo",
+                        }
+                    ],
+                },
+                {"worker_outcome": "normal", "test_outcome": "survived"},
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "python3",
+            "scripts/check_mutation_score.py",
+            "--repo-root",
+            str(tmp_path),
+            "--stats",
+            str(dump),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+    assert "## Survived Mutants" in summary
+    assert "- `demo`: 1" in summary
+    assert "- `core/NumberReplacer`: 1" in summary
+    assert "- `demo.py:2` `demo` `core/NumberReplacer` - return 1" in summary
 
 
 def test_cosmic_ray_filter_identifies_function_annotation_unions() -> None:

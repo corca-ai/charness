@@ -178,7 +178,7 @@ mutation_testing:
     full: "python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode full"
     sample: ""
     summary: "python3 scripts/check_mutation_score.py --repo-root ."
-  score_break: 60
+  score_break: 80
   schedule_cron: "17 */3 * * *"
   changed_quota: 5
   max_files: 10
