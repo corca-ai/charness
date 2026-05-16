@@ -9,8 +9,8 @@
 
 ## Current State
 
-- Local branch `main` is ahead of `origin/main`; refresh the exact count with `git log --oneline origin/main..HEAD`. The unpublished series covers insane-search gather fallback review and acquisition fallback work for [#169](https://github.com/corca-ai/charness/issues/169), quality/setup normalization, critique-packet provenance fixes, this handoff refresh, and the gather acquisition repair implementation.
-- The gather repair implementation now rejects non-HTTP(S), treats invalid regex as invalid proof, records skipped route/fallback stages, keeps browser network reconnaissance diagnostic-only, derives final status from `selected_attempt`, removes unimplemented selector-proof wording, and adds `gather_public_url.py` so public `gather` can preserve `web-fetch` trace in a durable asset. The public helper no longer writes error acquisitions and generated slugs include URL path/hash to avoid same-host collisions.
+- The current gather/#169 work has been prepared for direct push to `main`; refresh `git status --short --branch` before assuming whether the push has already landed.
+- The gather repair implementation now rejects non-HTTP(S), treats invalid regex as invalid proof even when direct transport fails, records every planned route/fallback stage as executed or explicitly skipped/not-implemented/terminal, keeps browser network reconnaissance diagnostic-only, derives final status from `selected_attempt`, removes unimplemented selector-proof wording, and adds `gather_public_url.py` so public `gather` can preserve `web-fetch` trace in a durable asset. The public helper writes durable records only for successful acquisitions; `error`, `blocked`, and `degraded` acquisitions return non-zero JSON without refreshing `latest.md`, and generated slugs include URL path/hash to avoid same-host collisions.
 - Live open GitHub issues:
   - [#169](https://github.com/corca-ai/charness/issues/169) `Review latest insane-search ideas for charness gather fallbacks`: local work exists; do not claim remote closure until the unpublished commits are pushed/PR'd and accepted.
   - [#168](https://github.com/corca-ai/charness/issues/168) `Discuss user behavior robustness testing for Charness`: discussion starter, not an implementation spec.
@@ -20,7 +20,7 @@
 
 ## Next Session
 
-1. If the user or maintainer chooses to publish the current local work, push or open a PR for the unpublished commits. After CI/maintainer acceptance, close #169 with commit references and update this handoff.
+1. After the direct push is confirmed on `origin/main`, decide whether [#169](https://github.com/corca-ai/charness/issues/169) should be closed immediately with commit references or left open for maintainer/runtime acceptance.
 2. For gather/web-fetch, preserve the intended direction: support skills should acquire as much as safely possible, use reader fallbacks such as `defuddle` when installed, and record truthful attempts, selected proof, blockers, and skipped routes when acquisition is degraded.
 3. Optional local proof upgrade: install or expose `defuddle`, then run a real public article URL through `gather_public_url.py` to prove reader extraction beyond deterministic command-shape tests.
 4. Keep #168 in `Discuss` until the user chooses a first experiment and assertion model for user-behavior robustness testing.
@@ -41,6 +41,7 @@
 - [charness-artifacts/critique/2026-05-16-gather-acquisition-repair-plan-critique.md](../charness-artifacts/critique/2026-05-16-gather-acquisition-repair-plan-critique.md)
 - [charness-artifacts/critique/2026-05-16-gather-acquisition-subagent-critique.md](../charness-artifacts/critique/2026-05-16-gather-acquisition-subagent-critique.md)
 - [charness-artifacts/critique/2026-05-16-gather-public-url-blocker-fix-critique.md](../charness-artifacts/critique/2026-05-16-gather-public-url-blocker-fix-critique.md)
+- [charness-artifacts/critique/2026-05-16-gather-public-url-push-critique.md](../charness-artifacts/critique/2026-05-16-gather-public-url-push-critique.md)
 - [charness-artifacts/critique/2026-05-16-gather-repair-impl-critique.md](../charness-artifacts/critique/2026-05-16-gather-repair-impl-critique.md)
 - [charness-artifacts/critique/2026-05-16-setup-quality-posture-critique.md](../charness-artifacts/critique/2026-05-16-setup-quality-posture-critique.md)
 - [charness-artifacts/critique/2026-05-16-critique-packet-provenance-critique.md](../charness-artifacts/critique/2026-05-16-critique-packet-provenance-critique.md)

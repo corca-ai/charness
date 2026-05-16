@@ -60,6 +60,18 @@ def _attempt_lines(attempts: list[object]) -> list[str]:
     return lines
 
 
+def _is_open_gap(attempt: dict[str, object]) -> bool:
+    if attempt.get("stage_id") == "agent-browser-network-recon":
+        return True
+    if attempt.get("status") == "error":
+        return True
+    if attempt.get("status") != "skipped":
+        return False
+    details = attempt.get("details")
+    reason = details.get("reason") if isinstance(details, dict) else None
+    return reason not in {"prior-stage-sufficient", "not-needed", "intent-not-collect"}
+
+
 def _render_record(url: str, acquisition: dict[str, object]) -> str:
     route = acquisition.get("route") if isinstance(acquisition.get("route"), dict) else {}
     selected = acquisition.get("selected_attempt") if isinstance(acquisition.get("selected_attempt"), dict) else {}
@@ -69,7 +81,7 @@ def _render_record(url: str, acquisition: dict[str, object]) -> str:
         item
         for item in attempts
         if isinstance(item, dict)
-        and (item.get("status") in {"skipped", "error"} or item.get("stage_id") == "agent-browser-network-recon")
+        and _is_open_gap(item)
     ]
     gap_lines = _attempt_lines(open_gaps) or ["- None recorded."]
     attempt_lines = _attempt_lines(attempts) or ["- None recorded."]
@@ -151,11 +163,17 @@ def main() -> int:
         acquire_cmd.extend(["--expect-json-field", field_path])
 
     acquisition = _run_json(acquire_cmd)
-    if acquisition.get("disposition") == "error":
+    acquisition_disposition = str(acquisition.get("disposition", "unknown"))
+    final_status = str(acquisition.get("final_status", "unknown"))
+    final_confidence = str(acquisition.get("final_confidence", "none"))
+    if acquisition_disposition != "success":
         payload = {
-            "status": "blocked",
-            "reason": "acquisition-error",
+            "status": "degraded" if acquisition_disposition == "degraded" else "blocked",
+            "reason": f"acquisition-{acquisition_disposition}",
             "source_url": args.url,
+            "acquisition_disposition": acquisition_disposition,
+            "final_status": final_status,
+            "final_confidence": final_confidence,
             "acquisition": acquisition,
             "write_record": None,
         }
@@ -178,7 +196,11 @@ def main() -> int:
     write_payload = _run_json(write_cmd, input_text=record)
     payload = {
         "status": write_payload.get("status"),
+        "record_status": write_payload.get("status"),
         "source_url": args.url,
+        "acquisition_disposition": acquisition_disposition,
+        "final_status": final_status,
+        "final_confidence": final_confidence,
         "acquisition": acquisition,
         "write_record": write_payload,
     }

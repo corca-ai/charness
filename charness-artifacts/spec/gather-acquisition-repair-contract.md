@@ -163,6 +163,14 @@ Implemented locally in the current unpublished slice:
   `latest.md` when acquisition disposition is `error`
 - follow-up blocker fix: generated public URL slugs now include URL path
   identity plus a short URL hash, avoiding same-host same-day collisions
+- push-critique fix: invalid regex proof remains `invalid-proof` even when the
+  direct transport also errors
+- push-critique fix: every planned acquisition stage is represented in
+  `attempts` as executed, skipped, not-implemented, or terminally recorded
+- push-critique fix: `gather_public_url.py` writes durable records only for
+  `disposition: "success"`; `error`, `blocked`, and `degraded` acquisitions
+  return non-zero JSON with top-level acquisition state and do not refresh
+  `latest.md`
 
 Still deferred: raw acquired-content persistence, archive/cache fallback, and
 live `defuddle` proof on this machine.
@@ -189,10 +197,10 @@ of adding a live Cautilus scenario without a log-backed behavior failure.
 - What Disproving Observation Is Resolved: network recon alone no longer yields
   success; blocker pages with matching proof no longer become success; invalid
   regex no longer becomes strong proof; skipped fallback stages are visible.
-- Fresh-eye status: the prior repair-plan critique already reviewed the shape.
-  A new fresh-eye review was not spawned for this contract because the current
-  host tool contract only permits `spawn_agent` when the current task asks for
-  subagent delegation.
+- Fresh-eye status: parent-delegated subagent critique re-reviewed the
+  push-ready slice on 2026-05-16. The first angle pass found invalid-proof,
+  planned-stage trace, and blocked/degraded write hazards; the follow-up
+  counterweight pass found no remaining push blocker after the focused fixes.
 
 ## Canonical Artifact
 

@@ -125,6 +125,24 @@ def _fallback_candidates(status: str, *, intent: str, proof_required: bool) -> l
     return ["defuddle", "agent-browser-render", "archive", "clean-stop"]
 
 
+def _prepare_proof(
+    raw: str,
+    expect_text: list[str] | None,
+    expect_regex: list[str] | None,
+    expect_json_field: list[str] | None,
+) -> tuple[list[dict[str, str]], list[dict[str, str]], bool]:
+    expect_text = expect_text or []
+    expect_regex = expect_regex or []
+    expect_json_field = expect_json_field or []
+    proof, proof_errors = _proof_matches(
+        raw,
+        expect_text=expect_text,
+        expect_regex=expect_regex,
+        expect_json_field=expect_json_field,
+    )
+    return proof, proof_errors, bool(expect_text or expect_regex or expect_json_field)
+
+
 def classify(
     raw: str,
     *,
@@ -138,16 +156,7 @@ def classify(
     text_length = len(text)
     matched: list[str] = []
     signals: list[str] = []
-    expect_text = expect_text or []
-    expect_regex = expect_regex or []
-    expect_json_field = expect_json_field or []
-    proof, proof_errors = _proof_matches(
-        raw,
-        expect_text=expect_text,
-        expect_regex=expect_regex,
-        expect_json_field=expect_json_field,
-    )
-    proof_required = bool(expect_text or expect_regex or expect_json_field)
+    proof, proof_errors, proof_required = _prepare_proof(raw, expect_text, expect_regex, expect_json_field)
 
     if proof_errors:
         status = "invalid-proof"

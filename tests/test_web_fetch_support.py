@@ -228,6 +228,27 @@ def test_acquire_public_url_invalid_regex_never_succeeds(tmp_path: Path) -> None
     assert payload["selected_attempt"]["status"] == "invalid-proof"
 
 
+def test_acquire_public_url_invalid_regex_outranks_transport_error() -> None:
+    result = run_helper(
+        "skills/support/web-fetch/scripts/acquire_public_url.py",
+        "--url",
+        "http://127.0.0.1:9/nope",
+        "--expect-regex",
+        "[",
+        "--browser-mode",
+        "off",
+        "--timeout",
+        "1",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["disposition"] == "error"
+    assert payload["selected_attempt"]["status"] == "invalid-proof"
+    assert payload["selected_attempt"]["classification"]["proof_errors"] == [
+        {"type": "invalid-regex", "value": "["}
+    ]
+
+
 def test_acquire_public_url_uses_defuddle_after_weak_direct_fetch(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
@@ -256,11 +277,12 @@ def test_acquire_public_url_uses_defuddle_after_weak_direct_fetch(tmp_path: Path
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["disposition"] == "success"
-    assert [attempt["stage_id"] for attempt in payload["attempts"]] == [
-        "direct-public-fetch",
-        "defuddle-reader-extraction",
-    ]
-    assert payload["attempts"][1]["confidence"] == "strong"
+    stage_ids = [attempt["stage_id"] for attempt in payload["attempts"]]
+    assert stage_ids[:2] == ["direct-public-fetch", "defuddle-reader-extraction"]
+    defuddle_attempt = next(
+        attempt for attempt in payload["attempts"] if attempt["stage_id"] == "defuddle-reader-extraction"
+    )
+    assert defuddle_attempt["confidence"] == "strong"
     assert payload["selected_attempt"]["stage_id"] == "defuddle-reader-extraction"
     assert payload["final_status"] == "success"
 
@@ -301,10 +323,15 @@ esac
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["disposition"] == "success"
-    assert payload["attempts"][-2]["stage_id"] == "agent-browser-render-recon"
-    assert payload["attempts"][-1]["stage_id"] == "agent-browser-network-recon"
-    assert payload["attempts"][-1]["status"] == "diagnostic"
-    assert payload["attempts"][-1]["details"]["network_candidates"] == [
+    render_index = next(
+        index for index, attempt in enumerate(payload["attempts"]) if attempt["stage_id"] == "agent-browser-render-recon"
+    )
+    network_attempt = next(
+        attempt for attempt in payload["attempts"] if attempt["stage_id"] == "agent-browser-network-recon"
+    )
+    assert payload["attempts"][render_index + 1]["stage_id"] == "agent-browser-network-recon"
+    assert network_attempt["status"] == "diagnostic"
+    assert network_attempt["details"]["network_candidates"] == [
         "GET https://example.com/api/items"
     ]
     assert payload["selected_attempt"]["stage_id"] == "agent-browser-render-recon"
@@ -336,6 +363,28 @@ def test_acquire_public_url_records_missing_fallback_tools(tmp_path: Path) -> No
     }
     assert skipped["defuddle-reader-extraction"] == "missing-tool"
     assert skipped["agent-browser-render-recon"] == "missing-tool"
+
+
+def test_acquire_public_url_records_all_planned_stages_as_attempts(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.html"
+    direct.write_text("<html><body>" + ("useful content " * 120) + "</body></html>", encoding="utf-8")
+
+    result = run_helper(
+        "skills/support/web-fetch/scripts/acquire_public_url.py",
+        "--url",
+        "https://example.com/article",
+        "--direct-response-file",
+        str(direct),
+        "--browser-mode",
+        "off",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    planned = [stage["stage_id"] for stage in payload["route"]["acquisition_plan"]]
+    attempted = [attempt["stage_id"] for attempt in payload["attempts"]]
+    assert planned == attempted
+    assert payload["attempts"][-1]["stage_id"] == "clean-stop"
+    assert payload["attempts"][-1]["details"]["reason"] == "prior-stage-sufficient"
 
 
 def test_acquire_public_url_records_unimplemented_domain_route(tmp_path: Path) -> None:
@@ -394,8 +443,10 @@ esac
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["disposition"] == "degraded"
-    assert payload["attempts"][-1]["stage_id"] == "agent-browser-network-recon"
-    assert payload["attempts"][-1]["status"] == "diagnostic"
+    network_attempt = next(
+        attempt for attempt in payload["attempts"] if attempt["stage_id"] == "agent-browser-network-recon"
+    )
+    assert network_attempt["status"] == "diagnostic"
     assert payload["selected_attempt"]["stage_id"] == "agent-browser-render-recon"
 
 
@@ -444,6 +495,9 @@ def test_gather_public_url_writes_web_fetch_trace(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["status"] == "updated"
+    assert payload["record_status"] == "updated"
+    assert payload["acquisition_disposition"] == "success"
+    assert payload["final_status"] == "success"
     record_path = Path(payload["write_record"]["record_artifact_path"])
     record = record_path.read_text(encoding="utf-8")
     assert "# Gathered Public URL" in record
@@ -494,7 +548,66 @@ def test_gather_public_url_does_not_write_invalid_regex_acquisition(tmp_path: Pa
     assert result.returncode == 1
     payload = json.loads(result.stdout)
     assert payload["status"] == "blocked"
+    assert payload["reason"] == "acquisition-error"
+    assert payload["acquisition_disposition"] == "error"
     assert payload["acquisition"]["final_status"] == "invalid-proof"
+    assert not (tmp_path / "charness-artifacts" / "gather" / "latest.md").exists()
+
+
+def test_gather_public_url_does_not_write_blocked_acquisition(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.html"
+    direct.write_text("<html><body><h1>Sign in</h1><p>needle</p></body></html>", encoding="utf-8")
+
+    result = run_helper(
+        "skills/public/gather/scripts/gather_public_url.py",
+        "--repo-root",
+        str(tmp_path),
+        "--url",
+        "https://example.com/private",
+        "--direct-response-file",
+        str(direct),
+        "--expect-text",
+        "needle",
+        "--browser-mode",
+        "off",
+        "--date",
+        "2026-05-16",
+        "--execute",
+    )
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "blocked"
+    assert payload["reason"] == "acquisition-blocked"
+    assert payload["acquisition_disposition"] == "blocked"
+    assert payload["final_status"] == "login-wall"
+    assert payload["write_record"] is None
+    assert not (tmp_path / "charness-artifacts" / "gather" / "latest.md").exists()
+
+
+def test_gather_public_url_does_not_write_degraded_acquisition(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.html"
+    direct.write_text("<html><body>short shell</body></html>", encoding="utf-8")
+
+    result = run_helper(
+        "skills/public/gather/scripts/gather_public_url.py",
+        "--repo-root",
+        str(tmp_path),
+        "--url",
+        "https://example.com/app",
+        "--direct-response-file",
+        str(direct),
+        "--browser-mode",
+        "off",
+        "--date",
+        "2026-05-16",
+        "--execute",
+    )
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "degraded"
+    assert payload["reason"] == "acquisition-degraded"
+    assert payload["acquisition_disposition"] == "degraded"
+    assert payload["write_record"] is None
     assert not (tmp_path / "charness-artifacts" / "gather" / "latest.md").exists()
 
 
@@ -559,8 +672,9 @@ def test_acquire_public_url_accepts_weak_direct_success_without_positive_proof(t
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["disposition"] == "success"
-    assert len(payload["attempts"]) == 1
     assert payload["attempts"][0]["stage_id"] == "direct-public-fetch"
     assert payload["attempts"][0]["status"] == "success"
     assert payload["attempts"][0]["confidence"] == "weak"
     assert payload["attempts"][0]["output_chars"] == len(direct.read_text(encoding="utf-8"))
+    assert payload["selected_attempt"]["stage_id"] == "direct-public-fetch"
+    assert payload["attempts"][-1]["stage_id"] == "clean-stop"

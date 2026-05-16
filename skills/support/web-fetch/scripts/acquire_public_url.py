@@ -10,7 +10,6 @@ import subprocess
 import sys
 import time
 import urllib.request
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Sequence
 from urllib.parse import urlparse
@@ -19,41 +18,18 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+from acquisition_trace_lib import (  # noqa: E402
+    AcquisitionAttempt,
+    disposition_for_attempts,
+    has_stage,
+    has_success,
+    last_content_attempt,
+    payload,
+    should_stop,
+    skip_attempt,
+)
 from classify_fetch_response import classify  # noqa: E402
 from route_public_fetch import route_for_url  # noqa: E402
-
-SUCCESS_STATUSES = {"success"}
-BLOCKED_STATUSES = {"captcha", "login-wall", "error-page"}
-
-
-@dataclass
-class AcquisitionAttempt:
-    stage_id: str
-    tool_id: str | None
-    status: str
-    confidence: str = "none"
-    elapsed_s: float = 0.0
-    error: str | None = None
-    output_chars: int = 0
-    classification: dict[str, object] | None = None
-    details: dict[str, object] = field(default_factory=dict)
-
-    def to_dict(self) -> dict[str, object]:
-        payload: dict[str, object] = {
-            "stage_id": self.stage_id,
-            "tool_id": self.tool_id,
-            "status": self.status,
-            "confidence": self.confidence,
-            "elapsed_s": self.elapsed_s,
-            "output_chars": self.output_chars,
-        }
-        if self.error:
-            payload["error"] = self.error
-        if self.classification is not None:
-            payload["classification"] = self.classification
-        if self.details:
-            payload["details"] = self.details
-        return payload
 
 
 def _timer() -> float:
@@ -136,10 +112,14 @@ def _attempt_from_text(
         expect_regex=expect_regex,
         expect_json_field=expect_json_field,
     )
+    classification_status = str(classification["status"])
+    status = classification_status
+    if error is not None and classification_status != "invalid-proof":
+        status = "error"
     return AcquisitionAttempt(
         stage_id=stage_id,
         tool_id=tool_id,
-        status=str(classification["status"]) if error is None else "error",
+        status=status,
         confidence=str(classification.get("confidence", "none")),
         elapsed_s=elapsed_s,
         error=error,
@@ -149,47 +129,10 @@ def _attempt_from_text(
     )
 
 
-def _should_stop(attempt: AcquisitionAttempt, *, proof_required: bool) -> bool:
-    if attempt.details.get("diagnostic"):
-        return False
-    if attempt.status not in SUCCESS_STATUSES:
-        return False
-    if proof_required:
-        return attempt.confidence == "strong"
-    return attempt.confidence in {"strong", "weak"}
-
-
-def _has_success(attempts: list[AcquisitionAttempt], *, proof_required: bool) -> bool:
-    return any(_should_stop(attempt, proof_required=proof_required) for attempt in attempts)
-
-
-def _last_content_attempt(attempts: list[AcquisitionAttempt]) -> AcquisitionAttempt | None:
-    for attempt in reversed(attempts):
-        if attempt.status == "skipped" or attempt.details.get("diagnostic"):
-            continue
-        return attempt
-    return None
-
-
-def _skip_attempt(stage_id: str, tool_id: str | None, *, reason: str) -> AcquisitionAttempt:
-    return AcquisitionAttempt(
-        stage_id=stage_id,
-        tool_id=tool_id,
-        status="skipped",
-        confidence="none",
-        details={"reason": reason},
-    )
-
-
-def _has_stage(route: dict[str, object], stage_id: str) -> bool:
-    plan = route.get("acquisition_plan") or []
-    return any(isinstance(stage, dict) and stage.get("stage_id") == stage_id for stage in plan)
-
-
 def _should_try_defuddle(route_id: str, attempts: list[AcquisitionAttempt]) -> tuple[bool, str | None]:
     if route_id not in {"direct-then-fallback", "reader-fallback", "naver-blog-mobile"}:
         return False, "route-not-applicable"
-    last = _last_content_attempt(attempts)
+    last = last_content_attempt(attempts)
     if last is not None and last.status not in {"partial-content", "empty-spa", "unclear", "error", "captcha", "error-page"}:
         return False, "prior-stage-sufficient"
     if shutil.which("defuddle") is None:
@@ -205,7 +148,7 @@ def _should_try_browser(
 ) -> tuple[bool, str | None]:
     if browser_mode == "off":
         return False, "browser-mode-off"
-    last = _last_content_attempt(attempts)
+    last = last_content_attempt(attempts)
     if last is not None and last.status not in {"partial-content", "empty-spa", "captcha", "unclear", "error", "error-page"}:
         return False, "prior-stage-sufficient"
     if shutil.which("agent-browser") is None:
@@ -258,31 +201,35 @@ def _run_browser_network(url: str, *, timeout: int) -> tuple[str, str | None, di
     return requests_text, requests_error, details
 
 
+def _invalid_scheme_payload(args: argparse.Namespace, parsed) -> dict[str, object]:
+    route = {
+        "input_url": args.url,
+        "normalized_host": parsed.netloc or parsed.path,
+        "route_id": "invalid-url-scheme",
+        "route_family": "invalid-input",
+        "summary": "Only http and https public URLs are supported.",
+        "required_tools": [],
+        "access_modes": [],
+        "fallback_order": [],
+        "acquisition_plan": [],
+        "notes": ["Rejected before any acquisition tool was invoked."],
+    }
+    attempts = [
+        AcquisitionAttempt(
+            stage_id="input-validation",
+            tool_id=None,
+            status="error",
+            error=f"unsupported-url-scheme:{parsed.scheme or 'missing'}",
+            details={"allowed_schemes": ["http", "https"]},
+        )
+    ]
+    return payload(args.url, route, attempts, "error")
+
+
 def acquire(args: argparse.Namespace) -> dict[str, object]:
     parsed = urlparse(args.url)
     if parsed.scheme not in {"http", "https"}:
-        route = {
-            "input_url": args.url,
-            "normalized_host": parsed.netloc or parsed.path,
-            "route_id": "invalid-url-scheme",
-            "route_family": "invalid-input",
-            "summary": "Only http and https public URLs are supported.",
-            "required_tools": [],
-            "access_modes": [],
-            "fallback_order": [],
-            "acquisition_plan": [],
-            "notes": ["Rejected before any acquisition tool was invoked."],
-        }
-        attempts = [
-            AcquisitionAttempt(
-                stage_id="input-validation",
-                tool_id=None,
-                status="error",
-                error=f"unsupported-url-scheme:{parsed.scheme or 'missing'}",
-                details={"allowed_schemes": ["http", "https"]},
-            )
-        ]
-        return _payload(args.url, route, attempts, "error")
+        return _invalid_scheme_payload(args, parsed)
 
     route = route_for_url(args.url, repo_root=args.repo_root)
     attempts: list[AcquisitionAttempt] = []
@@ -304,12 +251,12 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
         )
     )
     direct_attempt = attempts[-1]
-    if _has_stage(route, "domain-specific-route"):
-        attempts.append(_skip_attempt("domain-specific-route", None, reason="not-implemented"))
+    if has_stage(route, "domain-specific-route"):
+        attempts.append(skip_attempt("domain-specific-route", None, reason="not-implemented"))
     if direct_attempt.status == "invalid-proof":
-        return _payload(args.url, route, attempts, "error")
-    if _should_stop(direct_attempt, proof_required=proof_required):
-        return _payload(args.url, route, attempts, "success")
+        return payload(args.url, route, attempts, "error", intent=args.intent)
+    if should_stop(direct_attempt, proof_required=proof_required):
+        return payload(args.url, route, attempts, "success", intent=args.intent)
 
     try_defuddle, defuddle_skip_reason = _should_try_defuddle(str(route["route_id"]), attempts)
     if try_defuddle:
@@ -328,10 +275,10 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
                 expect_json_field=args.expect_json_field,
             )
         )
-        if _has_success(attempts, proof_required=proof_required):
-            return _payload(args.url, route, attempts, "success")
-    elif defuddle_skip_reason == "missing-tool" and _has_stage(route, "defuddle-reader-extraction"):
-        attempts.append(_skip_attempt("defuddle-reader-extraction", "defuddle", reason=defuddle_skip_reason))
+        if has_success(attempts, proof_required=proof_required):
+            return payload(args.url, route, attempts, "success", intent=args.intent)
+    elif defuddle_skip_reason == "missing-tool" and has_stage(route, "defuddle-reader-extraction"):
+        attempts.append(skip_attempt("defuddle-reader-extraction", "defuddle", reason=defuddle_skip_reason))
 
     try_browser, browser_skip_reason = _should_try_browser(str(route["route_id"]), attempts, browser_mode=args.browser_mode)
     if try_browser:
@@ -366,54 +313,14 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
                     details={**network_details, "diagnostic": True},
                 )
             )
-        if _has_success(attempts, proof_required=proof_required):
-            return _payload(args.url, route, attempts, "success")
-    elif browser_skip_reason in {"missing-tool", "browser-mode-off"} and _has_stage(route, "agent-browser-render-recon"):
-        attempts.append(_skip_attempt("agent-browser-render-recon", "agent-browser", reason=browser_skip_reason))
-        if args.intent == "collect" and _has_stage(route, "agent-browser-network-recon"):
-            attempts.append(_skip_attempt("agent-browser-network-recon", "agent-browser", reason=browser_skip_reason))
+        if has_success(attempts, proof_required=proof_required):
+            return payload(args.url, route, attempts, "success", intent=args.intent)
+    elif browser_skip_reason in {"missing-tool", "browser-mode-off"} and has_stage(route, "agent-browser-render-recon"):
+        attempts.append(skip_attempt("agent-browser-render-recon", "agent-browser", reason=browser_skip_reason))
+        if args.intent == "collect" and has_stage(route, "agent-browser-network-recon"):
+            attempts.append(skip_attempt("agent-browser-network-recon", "agent-browser", reason=browser_skip_reason))
 
-    return _payload(args.url, route, attempts, _disposition_for_attempts(attempts))
-
-
-def _selected_attempt(attempts: list[AcquisitionAttempt]) -> AcquisitionAttempt | None:
-    successes = [attempt for attempt in attempts if _should_stop(attempt, proof_required=False)]
-    if successes:
-        strong = [attempt for attempt in successes if attempt.confidence == "strong"]
-        return (strong or successes)[-1]
-    return _last_content_attempt(attempts)
-
-
-def _disposition_for_attempts(attempts: list[AcquisitionAttempt]) -> str:
-    selected = _selected_attempt(attempts)
-    if selected is None:
-        return "degraded"
-    if selected.status == "invalid-proof":
-        return "error"
-    if selected.status == "success":
-        return "success"
-    if selected.status in BLOCKED_STATUSES:
-        return "blocked"
-    return "degraded"
-
-
-def _payload(
-    url: str,
-    route: dict[str, object],
-    attempts: list[AcquisitionAttempt],
-    disposition: str,
-) -> dict[str, object]:
-    selected = _selected_attempt(attempts)
-    selected_payload = selected.to_dict() if selected is not None else None
-    return {
-        "source_url": url,
-        "route": route,
-        "disposition": disposition,
-        "attempts": [attempt.to_dict() for attempt in attempts],
-        "selected_attempt": selected_payload,
-        "final_status": selected.status if selected is not None else "unknown",
-        "final_confidence": selected.confidence if selected is not None else "none",
-    }
+    return payload(args.url, route, attempts, disposition_for_attempts(attempts), intent=args.intent)
 
 
 def main() -> int:
