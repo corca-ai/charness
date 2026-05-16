@@ -33,9 +33,9 @@ as:
 - streaming response endpoints or event processors
 - tool/action queues driven by model output
 - runtime telemetry for model calls, tokens, retries, costs, or fallbacks
-- user-facing agent product docs or operator runbooks only when paired with
-  serving-path code, runtime configuration, telemetry, or concrete
-  incident/runtime evidence
+- user-facing agent product docs only when paired with serving-path code,
+  runtime configuration, telemetry, or concrete incident/runtime evidence
+- operator runbooks that describe an actual incident or runtime procedure
 
 Do not trigger it from eval fixtures, skill docs, prompt examples, docs-only
 agent product descriptions, harness-only agent orchestration, or offline

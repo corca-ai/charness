@@ -198,13 +198,10 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
     assert "duplicated-proof" in verbosity
 
 
-def test_quality_skill_carries_agent_production_runtime_lens() -> None:
+def test_quality_skill_carries_agent_production_runtime_lens_core_anchor() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
     lenses = (
         ROOT / "skills" / "public" / "quality" / "references" / "quality-lenses.md"
-    ).read_text(encoding="utf-8")
-    dispatch = (
-        ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
     ).read_text(encoding="utf-8")
     runtime = (
         ROOT / "skills" / "public" / "quality" / "references" / "agent-production-runtime.md"
@@ -212,44 +209,75 @@ def test_quality_skill_carries_agent_production_runtime_lens() -> None:
     behavior = (
         ROOT / "skills" / "public" / "quality" / "references" / "behavior-testing.md"
     ).read_text(encoding="utf-8")
-    runtime_words = " ".join(runtime.split())
-    dispatch_words = " ".join(dispatch.split())
 
     assert "agent production runtime risk" in skill_text
     assert "`references/agent-production-runtime.md`" in skill_text
     assert "production LLM or agent runtime" in runtime
-    assert "a model/API client in a serving path" in runtime
-    assert "model routing, fallback, or provider configuration" in runtime
-    assert "streaming response endpoints or event processors" in runtime
-    assert "tool/action queues driven by model output" in runtime
-    assert "runtime telemetry for model calls, tokens, retries, costs, or fallbacks" in runtime
-    assert (
-        "product docs or operator runbooks only when paired with serving-path code, "
-        "runtime configuration, telemetry, or concrete incident/runtime evidence"
-        in runtime_words
-    )
-    assert "without corroborating runtime evidence" in runtime
-    assert "docs-only\nagent product descriptions" in runtime
-    assert "not\nproduction runtime evidence until paired with a concrete runtime seam" in runtime
     assert "Do not build an Anthropic-specific wrapper" in runtime
     assert "Cache And Cost Economics" in runtime
     assert "Overload And Fallback Policy" in runtime
     assert "Retry And Idempotency" in runtime
     assert "Streaming Stall Recovery" in runtime
     assert "Model Routing Economics" in runtime
-    assert "Use `skill-experiment` only when the\nruntime under review is itself a Charness skill" in runtime
     assert "provider roundtrip" in runtime
     assert "explicit non-applicability" in lenses
-    assert "## Agent Production Runtime" in dispatch
-    assert "docs-only agent product descriptions" in dispatch
+    assert "agent-production-runtime.md" in behavior
+
+
+def test_quality_agent_runtime_lens_keeps_positive_runtime_triggers() -> None:
+    runtime = (
+        ROOT / "skills" / "public" / "quality" / "references" / "agent-production-runtime.md"
+    ).read_text(encoding="utf-8")
+
+    assert "a model/API client in a serving path" in runtime
+    assert "model routing, fallback, or provider configuration" in runtime
+    assert "streaming response endpoints or event processors" in runtime
+    assert "tool/action queues driven by model output" in runtime
+    assert "runtime telemetry for model calls, tokens, retries, costs, or fallbacks" in runtime
+
+
+def test_quality_agent_runtime_lens_requires_runtime_evidence_for_docs() -> None:
+    runtime = (
+        ROOT / "skills" / "public" / "quality" / "references" / "agent-production-runtime.md"
+    ).read_text(encoding="utf-8")
+    runtime_words = " ".join(runtime.split())
+
     assert (
-        "product docs/runbooks paired with serving-path code, runtime configuration, "
-        "telemetry, or concrete incident/runtime evidence"
+        "user-facing agent product docs only when paired with serving-path code, "
+        "runtime configuration, telemetry, or concrete incident/runtime evidence"
+        in runtime_words
+    )
+    assert "operator runbooks that describe an actual incident or runtime procedure" in runtime
+    assert "without corroborating runtime evidence" in runtime
+    assert "docs-only\nagent product descriptions" in runtime
+    assert "not\nproduction runtime evidence until paired with a concrete runtime seam" in runtime
+
+
+def test_quality_agent_runtime_lens_narrows_skill_experiment_mode() -> None:
+    runtime = (
+        ROOT / "skills" / "public" / "quality" / "references" / "agent-production-runtime.md"
+    ).read_text(encoding="utf-8")
+
+    assert "Use `skill-experiment` only when the\nruntime under review is itself a Charness skill" in runtime
+
+
+def test_quality_agent_runtime_dispatch_mirrors_canonical_boundary() -> None:
+    dispatch = (
+        ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
+    ).read_text(encoding="utf-8")
+    dispatch_words = " ".join(dispatch.split())
+
+    assert "## Agent Production Runtime" in dispatch
+    assert "mirrors the canonical boundary in `agent-production-runtime.md`" in dispatch
+    assert "docs-only agent product descriptions" in dispatch_words
+    assert (
+        "product docs paired with serving-path code, runtime configuration, telemetry, "
+        "or concrete incident/runtime evidence"
         in dispatch_words
     )
+    assert "operator runbooks that describe an actual incident or runtime procedure" in dispatch
     assert "deterministic proof, behavior-proof recommendation" in dispatch
     assert "product-policy decision" in dispatch
-    assert "agent-production-runtime.md" in behavior
 
 
 def test_quality_skill_routes_spec_markdown_to_specdown_report() -> None:

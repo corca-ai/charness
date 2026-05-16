@@ -90,11 +90,13 @@ recent-median drift and report latest-sample spikes separately.
 Use this dispatch path only when repo evidence shows production runtime signs:
 a model/API client in a serving path, model routing or fallback config,
 streaming endpoint, tool/action queue, runtime telemetry for model calls,
-tokens, retries, costs, and fallbacks, or product docs/runbooks paired with
-serving-path code, runtime configuration, telemetry, or concrete
-incident/runtime evidence. Do not trigger it from eval fixtures, skill docs,
-prompt examples, docs-only agent product descriptions, harness-only agent
-orchestration, or offline benchmark scaffolding alone.
+tokens, retries, costs, and fallbacks, product docs paired with serving-path
+code, runtime configuration, telemetry, or concrete incident/runtime evidence,
+or operator runbooks that describe an actual incident or runtime procedure. This
+summary mirrors the canonical boundary in `agent-production-runtime.md`. Do not
+trigger it from eval fixtures, skill docs, prompt examples, docs-only agent
+product descriptions, harness-only agent orchestration, or offline benchmark
+scaffolding alone.
 
 Review cache/cost economics, overload fallback, retry idempotency, streaming
 stall recovery, model routing economics, and telemetry as evidence questions.

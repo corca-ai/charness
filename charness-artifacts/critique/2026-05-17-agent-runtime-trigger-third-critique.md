@@ -78,6 +78,7 @@ telemetry remain trigger evidence.
 - `python3 scripts/validate_packaging.py --repo-root .`
 - `python3 scripts/validate_packaging_committed.py --repo-root .`
 
-## Next Move
+## Closeout Status
 
-Run full slice closeout and commit the corrective third-critique slice.
+Closed by commit `0efa557 Require runtime evidence for agent docs triggers`
+after full slice closeout passed.
