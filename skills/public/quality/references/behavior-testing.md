@@ -30,6 +30,9 @@ Common seams:
 - interruption, resumption, or handoff behavior
 - semi-invalid user actions where graceful recovery matters
 - baseline-vs-variant skill behavior after a proposed skill edit
+- production agent runtime behavior where deterministic tests can prove the
+  branch but not the quality of fallback, partial-output recovery, cheap-first
+  routing, or escalation decisions; see `agent-production-runtime.md`
 
 Do not recommend Cautilus for lint, unit tests, type checks, doc links, or other
 deterministic repo gates. Those stay in CI, hooks, or repo-owned validators.

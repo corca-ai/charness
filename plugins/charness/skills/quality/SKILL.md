@@ -4,10 +4,10 @@ description: "Use when the goal is to understand and improve the repo's current 
 ---
 # Quality
 
-Use this when the task is overall quality posture, not one narrow bug or one
+Use this when the task is overall quality posture, not one narrow bug or
 isolated test. `quality` covers concept integrity, behavior proof, security and
-supply-chain posture, documentation drift, skill maintenance drift, and
-operator sustainability.
+supply-chain posture, docs drift, skill drift, agent production runtime risk,
+and operator sustainability.
 
 Default to inspecting the system that produces quality, running existing gates,
 and making concrete next gates or cleanups. Prefer deterministic enforcement
@@ -23,8 +23,8 @@ quality posture. Review posture and bootstrap posture remain one public concept.
 ## Bootstrap
 
 Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then
-resolve the adapter first and re-derive the current source, spec, artifact,
-and gate surface before trusting a prior review.
+resolve the adapter and re-derive the source, spec, artifact, and gate surface
+before trusting a prior review.
 
 Key references for the frequent path are `references/bootstrap-escalations.md`,
 `references/inventory-dispatch.md`, `references/skill-ergonomics.md`, and
@@ -127,6 +127,7 @@ routing anchors; references carry the detail.
 - Language baselines stay explicit: For Python, default to `ruff check` as the standing lint path, include `C90`, and choose exactly one type checker (`mypy` or `pyright`). For JavaScript/TypeScript, default to `eslint`, use `tsc --noEmit` when TypeScript is present, and turn on a `complexity` rule. This is a routing default, not a veto against good deterministic enforcement; do not over-apply it to standing threshold gates such as coverage floors, runtime budgets, or other already-honest enforced limits.
 - prefer the smaller production surface first when the same confidence gap can be closed by shrinking production branches/interfaces or adding more tests.
 - Watch stale gate wiring and hidden network/external-repo work in maintainer-local enforcement.
+- When repo evidence shows a production LLM or agent runtime, use `references/agent-production-runtime.md`: review cache/cost economics, overload fallback, retry idempotency, streaming stalls, model routing economics, and telemetry as evidence questions, not provider-specific architecture mandates.
 - For external/runtime capability slices, treat readiness-only proof (`surface`, `worker_queued`, healthcheck-style `host_decision`) as `Weak` until at least one `provider_roundtrip` is observed; see `../../shared/references/external-capability-proof-ladder.md`.
 - when prompt-sensitive output matters or `prompt_asset_policy.source_globs` is configured, inspect prompt/content bulk. `prompt_asset_roots: []` only means no canonical asset root is declared, not that inline prompt/content bulk inventory should be skipped. The final user-facing answer must not silently omit `Weak`, `Missing`, `Advisory`, delegated-review status, or active `Recommended Next Gates` findings.
 - Do not treat a passing length, duplicate, or pressure heuristic as the goal; delete, merge, split ownership, extract a helper, or narrow the interface.
@@ -136,9 +137,7 @@ routing anchors; references carry the detail.
 
 Use the sections that match the scope, without reducing quality to one score:
 
-- `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`, `Standing Test Economics`,
-  `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `CI/Local Gate Parity`,
-  `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Advisory`, `Delegated Review`, `Commands Run`, `Recommended Next Gates`
+- `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`, `Standing Test Economics`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `CI/Local Gate Parity`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Advisory`, `Delegated Review`, `Commands Run`, `Recommended Next Gates`
 
 ## Guardrails
 
@@ -159,6 +158,7 @@ Use the sections that match the scope, without reducing quality to one score:
 
 - `references/adapter-contract.md`
 - `references/adapter-gate-review.md`
+- `references/agent-production-runtime.md`
 - `references/automation-promotion.md`
 - `references/bootstrap-escalations.md`
 - `references/bootstrap-posture.md`

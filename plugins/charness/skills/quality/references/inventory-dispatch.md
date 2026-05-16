@@ -78,6 +78,27 @@ When a hot spot becomes the standing single dominator, define adapter-owned
 `runtime_budgets` or `runtime_budget_profiles`; budgets should fail on
 recent-median drift and report latest-sample spikes separately.
 
+## Agent Production Runtime
+
+- production LLM or agent runtime review:
+  `references/agent-production-runtime.md`
+- behavior-proof recommendation:
+  `references/behavior-testing.md`
+- external provider proof level:
+  `../../../shared/references/external-capability-proof-ladder.md`
+
+Use this dispatch path only when repo evidence shows production runtime signs:
+a model/API client in a serving path, model routing or fallback config,
+streaming endpoint, tool/action queue, user-facing agent product docs, or
+runtime telemetry for model calls, tokens, retries, costs, and fallbacks. Do
+not trigger it from eval fixtures, skill docs, prompt examples, harness-only
+agent orchestration, or offline benchmark scaffolding alone.
+
+Review cache/cost economics, overload fallback, retry idempotency, streaming
+stall recovery, model routing economics, and telemetry as evidence questions.
+Classify each gap as deterministic proof, behavior-proof recommendation, or
+product-policy decision before proposing new gates.
+
 ## Source Hygiene
 
 - dual implementation smell:

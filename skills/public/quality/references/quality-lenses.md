@@ -59,6 +59,12 @@ Use a behavior-confidence lens:
   simplification or a new heuristic, prefer the simpler design first unless a
   standing invariant still needs enforcement afterward
 
+For production LLM or agent runtimes, apply
+[`agent-production-runtime.md`](./agent-production-runtime.md). Keep the lens
+provider-neutral: cache/cost economics, overload fallback, retry idempotency,
+streaming stalls, and model routing economics are evidence questions with
+explicit non-applicability allowed, not mandatory architecture.
+
 ## Security
 
 Borrow from `security-audit` and broader review practice:
@@ -84,6 +90,10 @@ Check whether the quality bar can actually be maintained:
 - adapter-driven local enforcement as a positive pattern: checked-in hook
   config, repo-owned installer/checker, and repo-owned binary install path when
   the gate depends on extra tools
+- LLM or agent production runtime review: provider roundtrip evidence,
+  model-call telemetry, retry/fallback diagnostics, and streaming recovery
+  state must be visible enough for an operator to debug cost, overload, stalls,
+  and duplicated side effects
 
 ## Named Expert Defaults
 

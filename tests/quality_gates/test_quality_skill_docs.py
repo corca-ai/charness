@@ -198,6 +198,39 @@ def test_quality_skill_carries_standing_gate_verbosity_lens() -> None:
     assert "duplicated-proof" in verbosity
 
 
+def test_quality_skill_carries_agent_production_runtime_lens() -> None:
+    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    lenses = (
+        ROOT / "skills" / "public" / "quality" / "references" / "quality-lenses.md"
+    ).read_text(encoding="utf-8")
+    dispatch = (
+        ROOT / "skills" / "public" / "quality" / "references" / "inventory-dispatch.md"
+    ).read_text(encoding="utf-8")
+    runtime = (
+        ROOT / "skills" / "public" / "quality" / "references" / "agent-production-runtime.md"
+    ).read_text(encoding="utf-8")
+    behavior = (
+        ROOT / "skills" / "public" / "quality" / "references" / "behavior-testing.md"
+    ).read_text(encoding="utf-8")
+
+    assert "agent production runtime risk" in skill_text
+    assert "`references/agent-production-runtime.md`" in skill_text
+    assert "production LLM or agent runtime" in runtime
+    assert "Do not trigger it from eval fixtures, skill docs, prompt examples" in runtime
+    assert "Do not build an Anthropic-specific wrapper" in runtime
+    assert "Cache And Cost Economics" in runtime
+    assert "Overload And Fallback Policy" in runtime
+    assert "Retry And Idempotency" in runtime
+    assert "Streaming Stall Recovery" in runtime
+    assert "Model Routing Economics" in runtime
+    assert "provider roundtrip" in runtime
+    assert "explicit non-applicability" in lenses
+    assert "## Agent Production Runtime" in dispatch
+    assert "deterministic proof, behavior-proof recommendation" in dispatch
+    assert "product-policy decision" in dispatch
+    assert "agent-production-runtime.md" in behavior
+
+
 def test_quality_skill_routes_spec_markdown_to_specdown_report() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
     markdown_preview = (ROOT / "skills" / "support" / "markdown-preview" / "SKILL.md").read_text(encoding="utf-8")

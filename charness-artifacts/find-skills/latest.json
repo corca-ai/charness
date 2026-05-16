@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-16T22:22:13Z",
+  "generated_at": "2026-05-16T22:49:59Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -436,6 +436,7 @@
           "skills/public/quality/references/cautilus-on-demand.md",
           "skills/public/quality/references/behavior-testing.md",
           "skills/public/quality/references/inventory-consumer-fields.json",
+          "skills/public/quality/references/agent-production-runtime.md",
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/public/quality/references/maintainer-local-enforcement.md",
           "skills/public/quality/references/adapter-contract.md",
