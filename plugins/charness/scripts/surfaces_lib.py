@@ -252,5 +252,5 @@ def collect_changed_paths_for_ref(repo_root: Path, ref: str) -> list[str]:
     if ".." in ref:
         return dedupe_preserve_order(_run_git(repo_root, "diff", "--name-only", ref))
     return dedupe_preserve_order(
-        _run_git(repo_root, "diff-tree", "--no-commit-id", "--name-only", "-r", ref)
+        _run_git(repo_root, "diff-tree", "--root", "-m", "--no-commit-id", "--name-only", "-r", ref)
     )

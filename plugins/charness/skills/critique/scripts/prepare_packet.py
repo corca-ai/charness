@@ -96,7 +96,8 @@ def main() -> int:
             "section_count": packet["section_count"],
             "json_path": str(json_path.relative_to(repo_root)),
             "md_path": str(md_path.relative_to(repo_root)),
-            "adapter_path": adapter["path"],
+            "changed_ref": packet["changed_ref"],
+            "adapter_path": packet["adapter_path"],
         },
         sys.stdout, indent=2, ensure_ascii=False, sort_keys=True,
     )

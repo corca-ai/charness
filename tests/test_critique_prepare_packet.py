@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -165,6 +166,8 @@ packet_sections:
     assert packet["version"] == PACKET_VERSION
     assert packet["section_count"] == 2
     assert packet["ok"] is True
+    assert packet["changed_ref"] is None
+    assert packet["adapter_path"] == ".agents/critique-adapter.yaml"
     assert [s["id"] for s in packet["sections"]] == ["a", "b"]
     assert validate_packet(packet) == []
 
@@ -193,7 +196,32 @@ packet_sections:
     )
 
     assert packet["ok"] is True
+    assert packet["changed_ref"] == "HEAD^..HEAD"
     assert packet["sections"][0]["content"].strip() == "HEAD^..HEAD"
+
+
+def test_build_packet_clears_ambient_changed_ref_for_default_mode(tmp_path: Path, monkeypatch) -> None:
+    helper = tmp_path / "emit_ref.py"
+    helper.write_text(
+        "import os\nprint(os.environ.get('CHARNESS_CRITIQUE_CHANGED_REF', 'missing'))\n",
+        encoding="utf-8",
+    )
+    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", f"""\
+version: 1
+repo: rt
+packet_sections:
+  - id: ref
+    title: Ref
+    content_kind: script
+    command: "python3 {helper.name}"
+""")
+    monkeypatch.setenv("CHARNESS_CRITIQUE_CHANGED_REF", "HEAD^..HEAD")
+    adapter = load_adapter(tmp_path)
+    packet = build_packet(adapter=adapter, repo_root=tmp_path, prepared_for="working tree")
+
+    assert packet["ok"] is True
+    assert packet["changed_ref"] is None
+    assert packet["sections"][0]["content"].strip() == "missing"
 
 
 def test_collect_changed_paths_for_ref_reads_committed_diff(tmp_path: Path) -> None:
@@ -239,6 +267,7 @@ def test_validate_packet_catches_kind_drift() -> None:
         "repo": "x",
         "generated_at": "2026-05-14T00:00:00Z",
         "prepared_for": "x",
+        "changed_ref": None,
         "adapter_path": None,
         "sections": [],
         "section_count": 0,
@@ -255,6 +284,7 @@ def test_validate_packet_catches_section_count_mismatch() -> None:
         "repo": "x",
         "generated_at": "now",
         "prepared_for": "x",
+        "changed_ref": None,
         "adapter_path": None,
         "sections": [{
             "id": "s", "title": "S", "content_kind": "static",
@@ -274,6 +304,7 @@ def test_validate_packet_catches_ok_lying_about_section_states() -> None:
         "repo": "x",
         "generated_at": "now",
         "prepared_for": "x",
+        "changed_ref": None,
         "adapter_path": None,
         "sections": [{
             "id": "s", "title": "S", "content_kind": "static",
@@ -297,11 +328,12 @@ packet_sections:
     content: alpha-body
 """)
     adapter = load_adapter(tmp_path)
-    packet = build_packet(adapter=adapter, repo_root=tmp_path, prepared_for="unit")
+    packet = build_packet(adapter=adapter, repo_root=tmp_path, prepared_for="unit", changed_ref="HEAD")
     md = render_markdown(packet)
     assert "Alpha Section" in md
     assert "alpha-body" in md
     assert "Critique Prepare Packet" in md
+    assert "**Changed ref**: `HEAD`" in md
 
 
 def test_write_packet_emits_both_artifacts(tmp_path: Path) -> None:
@@ -344,5 +376,76 @@ packet_sections:
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
     assert payload["section_count"] == 1
+    assert payload["changed_ref"] is None
+    assert payload["adapter_path"] == ".agents/critique-adapter.yaml"
     artifact = tmp_path / "charness-artifacts/critique/smoke-packet.json"
     assert artifact.is_file()
+
+
+def test_runner_cli_json_changed_ref_with_default_surface_producer(tmp_path: Path) -> None:
+    _run_git(tmp_path, "init")
+    _run_git(tmp_path, "config", "user.email", "test@example.com")
+    _run_git(tmp_path, "config", "user.name", "Test User")
+    agents_dir = tmp_path / ".agents"
+    agents_dir.mkdir()
+    (agents_dir / "surfaces.json").write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "surfaces": [
+                    {
+                        "surface_id": "repo-markdown",
+                        "description": "Markdown",
+                        "source_paths": ["README.md"],
+                        "derived_paths": [],
+                        "sync_commands": [],
+                        "verify_commands": ["check docs"],
+                        "notes": [],
+                        "generated_markdown": [],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    producer = REPO_ROOT / "scripts/render_critique_section_changed_surfaces.py"
+    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", f"""\
+version: 1
+repo: rt
+packet_sections:
+  - id: changed-files-and-owning-surfaces
+    title: Changed Files And Owning Surfaces
+    content_kind: script
+    command: "python3 {producer} --repo-root ."
+""")
+    (tmp_path / "README.md").write_text("one\n", encoding="utf-8")
+    _run_git(tmp_path, "add", ".")
+    _run_git(tmp_path, "commit", "-m", "initial")
+    (tmp_path / "README.md").write_text("two\n", encoding="utf-8")
+    _run_git(tmp_path, "commit", "-am", "update")
+
+    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
+    result = subprocess.run(
+        [
+            "python3",
+            str(runner),
+            "--repo-root",
+            str(tmp_path),
+            "--prepared-for",
+            "head",
+            "--changed-ref",
+            "HEAD",
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        env={**os.environ, "CHARNESS_CRITIQUE_CHANGED_REF": "SHOULD_NOT_WIN"},
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload["changed_ref"] == "HEAD"
+    assert payload["adapter_path"] == ".agents/critique-adapter.yaml"
+    assert "README.md" in payload["sections"][0]["content"]

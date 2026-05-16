@@ -2,9 +2,10 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-05-16T02:22:30Z",
+  "generated_at": "2026-05-16T02:36:19Z",
   "prepared_for": "50dd2b7 setup-quality critique",
-  "adapter_path": "/home/hwidong/codes/charness/.agents/critique-adapter.yaml",
+  "changed_ref": "50dd2b7^..50dd2b7",
+  "adapter_path": ".agents/critique-adapter.yaml",
   "sections": [
     {
       "id": "changed-files-and-owning-surfaces",

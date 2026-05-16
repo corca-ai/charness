@@ -25,6 +25,7 @@ TOP_KEYS = {
     "repo",
     "generated_at",
     "prepared_for",
+    "changed_ref",
     "adapter_path",
     "sections",
     "section_count",
@@ -48,6 +49,15 @@ def _validate_top_level(payload: dict, errors: list[str]) -> None:
     generated_at = payload.get("generated_at")
     if not isinstance(generated_at, str) or not generated_at:
         errors.append("generated_at must be a non-empty string")
+    changed_ref = payload.get("changed_ref")
+    if changed_ref is not None and not isinstance(changed_ref, str):
+        errors.append(f"changed_ref must be a string or null, got {changed_ref!r}")
+    adapter_path = payload.get("adapter_path")
+    if adapter_path is not None:
+        if not isinstance(adapter_path, str) or not adapter_path:
+            errors.append("adapter_path must be a non-empty string or null")
+        elif adapter_path.startswith("/") or adapter_path.startswith("../"):
+            errors.append("adapter_path must be repo-relative or null")
 
 
 def _validate_section_shape(

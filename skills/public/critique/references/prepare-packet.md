@@ -53,6 +53,10 @@ The runner passes that value to script sections as
 `CHARNESS_CRITIQUE_CHANGED_REF`. Producers that inspect changed files should
 prefer the explicit ref/range over the clean working tree.
 
+`A..B` ranges are endpoint diffs: the packet records files present in the net
+diff between the two endpoints, not every file touched and reverted by commits
+inside the range.
+
 JSON envelope shape (`charness.critique_prepare_packet.v1`):
 
 ```json
@@ -62,6 +66,7 @@ JSON envelope shape (`charness.critique_prepare_packet.v1`):
   "repo": "<repo-name>",
   "generated_at": "<ISO8601 UTC>",
   "prepared_for": "<short label: commit range, branch, or free text>",
+  "changed_ref": "<git commit or endpoint-diff range, or null>",
   "adapter_path": "<repo-relative path or null>",
   "sections": [
     {
@@ -130,7 +135,7 @@ serves as the contract reference example:
   when provided, list each changed path and the surfaces (from
   `.agents/surfaces.json`) that own or derive from it.
   Producer:
-  `python3 scripts/render_critique_section_changed_surfaces.py --json`.
+  `python3 scripts/render_critique_section_changed_surfaces.py`.
 
 Consumers add more sections in their own `.agents/critique-adapter.yaml`.
 

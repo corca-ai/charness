@@ -32,6 +32,8 @@ def _run_command(
     env = os.environ.copy()
     if changed_ref:
         env["CHARNESS_CRITIQUE_CHANGED_REF"] = changed_ref
+    else:
+        env.pop("CHARNESS_CRITIQUE_CHANGED_REF", None)
     try:
         result = subprocess.run(
             shlex.split(command),
@@ -118,11 +120,23 @@ def build_packet(
         "repo": data.get("repo") or repo_root.name,
         "generated_at": _now_iso(),
         "prepared_for": prepared_for,
-        "adapter_path": adapter.get("path"),
+        "changed_ref": changed_ref,
+        "adapter_path": _relative_adapter_path(adapter.get("path"), repo_root),
         "sections": sections,
         "section_count": len(sections),
         "ok": all_ok,
     }
+
+
+def _relative_adapter_path(adapter_path: object, repo_root: Path) -> str | None:
+    if not isinstance(adapter_path, str) or not adapter_path:
+        return None
+    path = Path(adapter_path)
+    resolved = path if path.is_absolute() else repo_root / path
+    try:
+        return resolved.resolve().relative_to(repo_root.resolve()).as_posix()
+    except ValueError:
+        return path.as_posix()
 
 
 def render_markdown(packet: dict[str, Any]) -> str:
@@ -132,6 +146,8 @@ def render_markdown(packet: dict[str, Any]) -> str:
     lines.append(f"- **Kind**: `{packet['kind']}` (v{packet['version']})")
     lines.append(f"- **Generated**: {packet['generated_at']}")
     lines.append(f"- **Prepared for**: {packet['prepared_for']}")
+    if packet.get("changed_ref"):
+        lines.append(f"- **Changed ref**: `{packet['changed_ref']}`")
     if packet.get("adapter_path"):
         lines.append(f"- **Adapter**: `{packet['adapter_path']}`")
     lines.append(f"- **Sections**: {packet['section_count']}")
