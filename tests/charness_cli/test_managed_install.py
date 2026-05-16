@@ -246,8 +246,8 @@ def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_
     assert payload["claude_plugin_ref"] == "charness@corca-charness"
     assert payload["repo_root"] == str(home_root / ".agents" / "src" / "charness")
     assert payload["target_repo_root"] == str(CLI.parents[0])
-    assert payload["repo_onboarding"]["status"] == "required"
-    assert "setup" in payload["repo_onboarding"]["message"]
+    assert payload["repo_onboarding"]["status"] == "ready"
+    assert payload["repo_onboarding"]["message"] is None
     assert payload["managed_checkout"] is True
     assert payload["claude_marketplace_entry"]["source"]["path"] == str(home_root / ".agents" / "src" / "charness")
     assert payload["claude_installed_entry"]["version"] == "local"

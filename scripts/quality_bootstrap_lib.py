@@ -6,6 +6,7 @@ from typing import Any
 
 from scripts.adapter_lib import load_yaml, load_yaml_file, render_yaml_mapping
 from scripts.path_portability_lib import repo_relative
+from scripts.quality_bootstrap_common import classify_command_deferral, merge_unique
 from scripts.quality_bootstrap_detect import (
     detect_concept_paths,
     detect_gate_commands,
@@ -16,6 +17,7 @@ from scripts.quality_bootstrap_detect import (
 from scripts.quality_policy_defaults import (
     DEFAULT_COVERAGE_FLOOR_POLICY,
     DEFAULT_COVERAGE_FRAGILE_MARGIN_PP,
+    DEFAULT_MUTATION_TESTING,
     DEFAULT_PROMPT_ASSET_POLICY,
     DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_GUARD_MIN_LINES,
     DEFAULT_PUBLIC_SPEC_IMPLEMENTATION_REF_DENSITY_FLOOR,
@@ -26,6 +28,7 @@ from scripts.quality_policy_defaults import (
     default_specdown_smoke_patterns,
     merge_coverage_floor_policy,
     merge_prompt_asset_policy,
+    validate_mutation_testing,
     validate_skill_ergonomics_gate_rules,
 )
 
@@ -34,38 +37,11 @@ ADAPTER_CANDIDATES = (Path(".agents/quality-adapter.yaml"), Path(".codex/quality
 
 class BootstrapValidationError(Exception):
     pass
-def _merge_unique(existing: list[str], inferred: list[str]) -> list[str]:
-    merged = list(existing)
-    for item in inferred:
-        if item not in merged:
-            merged.append(item)
-    return merged
-
-
-def _classify_command_deferral(field: str, preset_lineage: list[str]) -> dict[str, Any]:
-    if field == "gate_commands":
-        families = ["repo-native test runner", "repo-native lint or typecheck gate"]
-        if "python-quality" in preset_lineage:
-            families = ["pytest or repo-native test runner", "ruff, mypy, or pyright"]
-        elif "typescript-quality" in preset_lineage:
-            families = ["vitest or jest", "eslint or tsc --noEmit"]
-        elif "go-quality" in preset_lineage:
-            families = ["go test ./...", "go vet ./..."]
-        elif "specdown-quality" in preset_lineage:
-            families = ["specdown smoke", "overlap or adapter-depth guard"]
-        reason = "No repo-owned quality gate command was detected."
-    elif field == "preflight_commands":
-        families = ["maintainer setup validation", "repo doctor or setup sanity"]
-        reason = "No repo-owned maintainer setup or doctor command was detected."
-    else:
-        families = ["secret scan", "dependency or supply-chain audit"]
-        reason = "No repo-owned security helper was detected."
-    return {"field": field, "status": "deferred", "reason": reason, "suggested_families": families}
 
 
 def _merge_existing_paths(existing: list[str], detected: list[str]) -> tuple[list[str], str]:
     if existing:
-        merged = _merge_unique(existing, detected)
+        merged = merge_unique(existing, detected)
         return merged, "augmented" if merged != existing else "preserved"
     if detected:
         return detected, "inferred"
@@ -112,6 +88,7 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "gate_commands": [],
         "review_commands": [],
         "security_commands": [],
+        "mutation_testing": dict(DEFAULT_MUTATION_TESTING),
     }
 
 
@@ -126,6 +103,18 @@ def _load_explicit_skill_rules(raw: dict[str, Any], adapter_path: Path) -> list[
         rendered = "; ".join(skill_rule_errors)
         raise BootstrapValidationError(f"{adapter_path}: invalid `skill_ergonomics_gate_rules`; {rendered}. Repair the adapter before rerunning bootstrap.")
     return validated_skill_rules
+
+
+def _load_explicit_mutation_testing(raw: dict[str, Any], adapter_path: Path) -> dict[str, Any] | None:
+    if "mutation_testing" not in raw:
+        return None
+    errors: list[str] = []
+    warnings: list[str] = []
+    block = validate_mutation_testing(raw.get("mutation_testing"), errors, warnings)
+    if errors:
+        rendered = "; ".join(errors)
+        raise BootstrapValidationError(f"{adapter_path}: invalid `mutation_testing`; {rendered}. Repair the adapter before rerunning bootstrap.")
+    return block
 
 
 def _apply_existing_scalar_fields(data: dict[str, Any], raw: dict[str, Any]) -> None:
@@ -182,10 +171,13 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
         defaults["_explicit_fields"] = set()
         return defaults
     validated_skill_rules = _load_explicit_skill_rules(raw, adapter_path)
+    mutation_testing = _load_explicit_mutation_testing(raw, adapter_path)
     data = dict(defaults)
     data["_explicit_fields"] = set(raw.keys())
     _apply_existing_scalar_fields(data, raw)
     _apply_existing_policy_fields(data, raw, validated_skill_rules)
+    if mutation_testing is not None:
+        data["mutation_testing"] = mutation_testing
     for field in (
         "preset_lineage prompt_asset_roots adapter_review_sources acknowledged_recommendations "
         "gate_design_review_globs product_surfaces cli_skill_surface_probe_commands cli_skill_surface_command_docs "
@@ -205,7 +197,7 @@ def _merge_lineage(
 ) -> list[str]:
     existing_lineage = existing.get("preset_lineage", [])
     if existing_lineage:
-        merged = _merge_unique(existing_lineage, detected_lineage)
+        merged = merge_unique(existing_lineage, detected_lineage)
         field_statuses["preset_lineage"] = "augmented" if merged != existing_lineage else "preserved"
         return merged
     if detected_lineage:
@@ -326,6 +318,9 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
 
     _add_adapter_policy_fields(final, existing, explicit_fields, merged_lineage, field_statuses)
     _add_prompt_and_runtime_fields(final, existing, explicit_fields, field_statuses)
+    if "mutation_testing" in explicit_fields:
+        final["mutation_testing"] = dict(existing.get("mutation_testing", DEFAULT_MUTATION_TESTING))
+        field_statuses["mutation_testing"] = "preserved"
     if field_statuses.get("spec_pytest_reference_format") == "deferred":
         deferred_setup.append({"field": "spec_pytest_reference_format", "status": "deferred", "reason": "No Python quality preset was inferred.", "suggested_families": ["choose a language-specific quality preset or leave pytest references unset"]})
 
@@ -350,7 +345,7 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
             continue
         final[field] = []
         field_statuses[field] = "deferred"
-        deferred_setup.append(_classify_command_deferral(field, merged_lineage))
+        deferred_setup.append(classify_command_deferral(field, merged_lineage))
     if existing.get("review_commands"):
         final["review_commands"] = list(existing["review_commands"])
         field_statuses["review_commands"] = "preserved"
@@ -412,6 +407,8 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
         ("review_commands", data["review_commands"]),
         ("security_commands", data["security_commands"]),
     ]
+    if "mutation_testing" in data:
+        policy_items.append(("mutation_testing", data["mutation_testing"]))
     optional_empty_fields = set(
         "prompt_asset_roots adapter_review_sources acknowledged_recommendations gate_design_review_globs "
         "product_surfaces cli_skill_surface_probe_commands cli_skill_surface_command_docs "

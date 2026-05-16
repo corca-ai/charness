@@ -43,6 +43,28 @@ def test_standing_test_economics_surfaces_runner_startup_shape(tmp_path: Path) -
     }.issubset(finding_types)
 
 
+def test_standing_test_economics_ignores_generated_mutant_tree(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    tests = repo / "tests"
+    tests.mkdir()
+    (tests / "test_real.py").write_text("def test_real():\n    assert True\n", encoding="utf-8")
+    mutant_tests = repo / "mutants" / "tests"
+    mutant_tests.mkdir(parents=True)
+    (mutant_tests / "test_generated.py").write_text("def test_generated():\n    assert True\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--json"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    payload = json.loads(result.stdout)
+
+    assert payload["test_file_count"] == 1
+
+
 def test_standing_test_economics_reports_pytest_temp_footprint(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

@@ -7,14 +7,19 @@ import hashlib
 import json
 import shutil
 import subprocess
+import sys
 import time
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Sequence
 
-from classify_fetch_response import classify
-from route_public_fetch import route_for_url
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from classify_fetch_response import classify  # noqa: E402
+from route_public_fetch import route_for_url  # noqa: E402
 
 SUCCESS_STATUSES = {"success"}
 

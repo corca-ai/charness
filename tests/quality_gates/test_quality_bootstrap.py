@@ -109,6 +109,27 @@ def write_explicit_quality_adapter(repo: Path) -> None:
                 "preflight_commands: []",
                 "security_commands: []",
                 "concept_paths: []",
+                "mutation_testing:",
+                "  commands:",
+                "    dry_run: python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode dry-run",
+                "    full: python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode full",
+                "    sample: ''",
+                "    summary: python3 scripts/check_mutation_score.py --repo-root .",
+                "  score_break: 60",
+                "  schedule_cron: '17 */3 * * *'",
+                "  changed_quota: 5",
+                "  max_files: 10",
+                "  auto_issue:",
+                "    enabled: true",
+                "    label: mutation-test",
+                "    title: Mutation test regression on main",
+                "    marker_token: mutation-test-regression",
+                "  workflow_path: .github/workflows/mutation-tests.yml",
+                "  report_paths:",
+                "    summary_md: reports/mutation/summary.md",
+                "    sample_md: reports/mutation/sample.md",
+                "    log: reports/mutation/run.log",
+                "  declined: false",
             ]
         )
         + "\n",
@@ -250,6 +271,7 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
         "prompt_asset_policy", "skill_ergonomics_gate_rules", "skill_ergonomics_skill_paths",
         "skill_ergonomics_runtime_install_skill_paths", "vendored_paths", "public_spec_implementation_guard_min_lines",
         "runtime_profile_default", "runtime_budgets", "runtime_budget_profiles", "startup_probes",
+        "mutation_testing",
     )
     for key in preserved_keys:
         assert payload["field_statuses"][key] == "preserved"
@@ -300,6 +322,31 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     assert resolved["data"]["runtime_budget_profiles"] == {
         "local-fast": {"budgets": {"pytest": 45000, "pre-push:focused-quality-a": 12000}},
         "ci-slow": {"budgets": {"pytest": 540000}},
+    }
+    assert resolved["data"]["mutation_testing"] == {
+        "commands": {
+            "dry_run": "python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode dry-run",
+            "full": "python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode full",
+            "sample": "",
+            "summary": "python3 scripts/check_mutation_score.py --repo-root .",
+        },
+        "score_break": 60,
+        "schedule_cron": "17 */3 * * *",
+        "changed_quota": 5,
+        "max_files": 10,
+        "auto_issue": {
+            "enabled": True,
+            "label": "mutation-test",
+            "title": "Mutation test regression on main",
+            "marker_token": "mutation-test-regression",
+        },
+        "workflow_path": ".github/workflows/mutation-tests.yml",
+        "report_paths": {
+            "summary_md": "reports/mutation/summary.md",
+            "sample_md": "reports/mutation/sample.md",
+            "log": "reports/mutation/run.log",
+        },
+        "declined": False,
     }
     assert resolved["data"]["startup_probes"] == [
         {

@@ -25,7 +25,20 @@ _DISCOVERY = _load_discovery_lib()
 discover_surfaces = _DISCOVERY.discover_surfaces
 iter_snippets = _DISCOVERY.iter_snippets
 
-IGNORED_DIRS = {".git", ".hg", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".venv", "node_modules", "vendor"}
+IGNORED_DIRS = {
+    ".artifacts",
+    ".charness",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "charness-artifacts",
+    "mutants",
+    "node_modules",
+    "vendor",
+}
 TEST_FILE_PATTERNS = (
     "test_*.py",
     "*_test.py",

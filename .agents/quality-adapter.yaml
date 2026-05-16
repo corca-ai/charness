@@ -14,7 +14,7 @@ coverage_floor_policy:
   warn_ceiling_pct: 95.0
   floor_drift_lock_pp: 1.0
   exemption_list_path: scripts/coverage-floor-exemptions.txt
-  gate_script_pattern: "scripts/check_coverage.py"
+  gate_script_pattern: scripts/check_coverage.py
   lefthook_path: lefthook.yml
   ci_workflow_glob: .github/workflows/*.yml
 specdown_smoke_patterns:
@@ -23,6 +23,7 @@ specdown_smoke_patterns:
   - "\\b(?:uv\\s+run\\s+)?python\\s+-m\\s+pytest\\b"
   - "\\bpytest\\b.*\\s+-k\\s+"
 spec_pytest_reference_format: "Covered by pytest:\\s+`tests/[^`]+`(?:,\\s*`tests/[^`]+`)*"
+recommendation_defaults_version: issue-64
 public_spec_section_exemptions:
   - Fixed Decisions
   - HTTP API contract
@@ -30,44 +31,16 @@ public_spec_section_exemptions:
   - Deferred Decisions
   - Non-Goals
 public_spec_implementation_ref_density_floor: 0.02
+public_spec_implementation_guard_min_lines: 100
 public_spec_pointer_proof_markers:
   - "proof: pointer"
   - "proof: pointer-spec"
   - "executable_proof: pointer"
   - "public_spec_proof: pointer"
-recommendation_defaults_version: issue-64
 prompt_asset_roots: []
 adapter_review_sources:
   - .agents/quality-adapter.yaml
   - skills/public/quality/references/adapter-contract.md
-domain_language_contract:
-  surface_globs:
-    - README.md
-    - docs/**/*.md
-    - skills/public/**/*.md
-    - skills/shared/**/*.md
-    - charness
-    - scripts/**/*.py
-  exemption_globs:
-    - skills/public/quality/references/adapter-contract.md
-  terms:
-    - id: external-tool-cli
-      canonical: "charness tool"
-      deprecated_aliases:
-        - "charness install <tool>"
-        - "charness sync-support"
-        - "charness update-tools"
-    - id: support-capability-taxonomy
-      canonical: "support capability"
-      allowed_aliases:
-        - "support skill"
-        - "integration manifest"
-        - "integration"
-    - id: repo-initialization-skill
-      canonical: "setup"
-      allowed_aliases:
-        - "initialize this repo"
-        - "repo initialization"
 acknowledged_recommendations: []
 gate_design_review_globs:
   - .agents/*-adapter.yaml
@@ -108,6 +81,34 @@ prompt_asset_policy:
     - plugins/**
     - skills/shared/references/success-criteria-review.md
     - .artifacts/**
+domain_language_contract:
+  surface_globs:
+    - README.md
+    - docs/**/*.md
+    - skills/public/**/*.md
+    - skills/shared/**/*.md
+    - charness
+    - scripts/**/*.py
+  exemption_globs:
+    - skills/public/quality/references/adapter-contract.md
+  terms:
+    - id: external-tool-cli
+      canonical: charness tool
+      deprecated_aliases:
+        - charness install <tool>
+        - charness sync-support
+        - charness update-tools
+    - id: support-capability-taxonomy
+      canonical: support capability
+      allowed_aliases:
+        - support skill
+        - integration manifest
+        - integration
+    - id: repo-initialization-skill
+      canonical: setup
+      allowed_aliases:
+        - initialize this repo
+        - repo initialization
 skill_ergonomics_gate_rules: []
 runtime_profile_default: default
 runtime_budgets:
