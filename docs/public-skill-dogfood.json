@@ -280,7 +280,7 @@
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-06",
+      "reviewed_on": "2026-05-16",
       "observed_evidence": [
         "The current quality posture still treats checked-in proof artifacts, public executable readers, and lower deterministic gates as separate layers with different ownership, which keeps `quality` distinct from generic test-running or release work.",
         "Maintainer-local enforcement now asks whether local or pre-push gates hide network, external-repo fetch, latest-release, or supply-chain refresh work that should be an explicit refresh/update/release action instead of default local proof.",
@@ -309,7 +309,8 @@
         "`inventory_ci_local_gate_parity.py` now treats `CI-only` quality-gate wording as `ci-only-violation`, and `run-quality` enforces that inventory locally with `--require-empty-parity-issues` instead of leaving the finding advisory-only.",
         "The mutation-testing reference keeps the public `quality` contract runner-neutral while documenting Charness's own Cosmic Ray 8.4.6 dogfood runner as repo-specific support, so consumers can still fill `mutation_testing.commands.*` with their own stack runner.",
         "The quality skill now treats migration-time exact-prose guards as temporary bridges that need an owner and retirement path into structure-aware validators, scenario checks, package-level contracts, or capability artifacts. The current public-spec source-guard inventories report zero rows, while Python exact-phrase contract guards remain a separate migration pressure to review rather than expand.",
-        "The mutation-testing workflow now has a dedicated surface obligation covering `.github/workflows/mutation-tests.yml`, `cosmic-ray.toml`, adapter command slots, and exported helper scripts; the reviewed dry-run behavior is pinned so PR dry-runs do not require a full-run Cosmic Ray dump."
+        "The mutation-testing workflow now has a dedicated surface obligation covering `.github/workflows/mutation-tests.yml`, `cosmic-ray.toml`, adapter command slots, and exported helper scripts; the reviewed dry-run behavior is pinned so PR dry-runs do not require a full-run Cosmic Ray dump.",
+        "The behavior-testing reference keeps agent/user behavior robustness as a `quality` recommendation and artifact-honesty concern while delegating evaluator semantics, execution, and result shape to Cautilus #44; routine quality review can recommend proof without running live Cautilus."
       ]
     },
     {
