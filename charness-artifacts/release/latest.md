@@ -1,14 +1,23 @@
 # Release Surface Check
-Date: 2026-05-15
+Date: 2026-05-16
 
 ## Scope
 
-Advanced `charness` toward release `0.5.27` (tag `v0.5.27`) through the repo-owned release helper.
+Advanced `charness` toward release `0.5.28` (tag `v0.5.28`) through the repo-owned release helper.
+
+## Critique
+
+- Fresh-eye release critique: parent-delegated.
+- Result: no release blocker; patch bump is appropriate for the unreleased
+  gather, quality, runtime-lens, diagnostics, docs, and harness-hardening fixes.
+- Release-blocker repair: the first publish attempt exposed
+  `scripts/check_mutation_score.py` exceeding the Python length gate; this
+  release commit refactors that helper and its plugin export before publish.
 
 ## Current Version
 
-- previous version: `0.5.26`
-- target version: `0.5.27`
+- previous version: `0.5.27`
+- target version: `0.5.28`
 - git branch: `main`
 - git remote: `origin`
 
@@ -22,7 +31,7 @@ Advanced `charness` toward release `0.5.27` (tag `v0.5.27`) through the repo-own
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.5.27`; creation runs after the branch/tag push
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.5.28`; creation runs after the branch/tag push
 - public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 

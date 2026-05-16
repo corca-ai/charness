@@ -27,6 +27,18 @@ from scripts.quality_adapter_lib import load_quality_adapter  # noqa: E402
 SURVIVED_DETAIL_LIMIT = 10
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo-root", type=Path, default=Path("."))
+    parser.add_argument(
+        "--stats",
+        type=Path,
+        default=Path("reports/mutation/cosmic-ray-dump.jsonl"),
+        help="Path to cosmic-ray dump output (default: reports/mutation/cosmic-ray-dump.jsonl).",
+    )
+    return parser.parse_args()
+
+
 def iter_dump_records(stats_path: Path) -> list[tuple[dict, dict | None]]:
     records: list[tuple[dict, dict | None]] = []
     for line_no, line in enumerate(stats_path.read_text(encoding="utf-8").splitlines(), start=1):
@@ -129,74 +141,57 @@ def summarize_survived_mutations(
     }
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=Path("."))
-    parser.add_argument(
-        "--stats",
-        type=Path,
-        default=Path("reports/mutation/cosmic-ray-dump.jsonl"),
-        help="Path to cosmic-ray dump output (default: reports/mutation/cosmic-ray-dump.jsonl).",
-    )
-    args = parser.parse_args()
-
-    repo_root = args.repo_root.resolve()
-    stats_path = args.stats if args.stats.is_absolute() else (repo_root / args.stats)
-    if not stats_path.is_file():
-        sys.stderr.write(
-            f"mutation stats not found at {stats_path}. Run `cosmic-ray dump` first.\n"
-        )
-        return 2
-
-    try:
-        records = iter_dump_records(stats_path)
-        stats = summarize_cosmic_ray(records)
-    except ValueError as exc:
-        sys.stderr.write(f"could not parse mutation stats: {exc}\n")
-        return 2
-
+def load_mutation_config(repo_root: Path) -> tuple[float, Path] | None:
     payload = load_quality_adapter(repo_root)
     if payload.get("errors"):
         sys.stderr.write("quality adapter validation failed; resolve errors first.\n")
         for err in payload["errors"]:
             sys.stderr.write(f"  - {err}\n")
-        return 2
+        return None
 
     block = (payload.get("data") or {}).get("mutation_testing") or {}
     score_break = float(block.get("score_break", 60))
     summary_rel = (block.get("report_paths") or {}).get("summary_md") or "reports/mutation/summary.md"
-    summary_path = repo_root / summary_rel
+    return score_break, repo_root / summary_rel
 
+
+def mutation_metrics(stats: dict[str, int], score_break: float) -> dict[str, float | int | bool]:
     killed = stats["killed"]
     survived = stats["survived"]
-    no_tests = stats["no_tests"]
-    incompetent = stats["incompetent"]
-    pending = stats["pending"]
-    abnormal = stats["abnormal"]
-    skipped = stats["skipped"]
-    total = stats["total"]
     reachable = killed + survived
     score = (killed / reachable * 100.0) if reachable else 100.0
-    passed = score >= score_break
+    return {
+        **stats,
+        "reachable": reachable,
+        "score": score,
+        "score_break": score_break,
+        "passed": score >= score_break,
+    }
 
+
+def build_summary_lines(
+    records: list[tuple[dict, dict | None]],
+    repo_root: Path,
+    metrics: dict[str, float | int | bool],
+) -> list[str]:
     lines = [
         "# Mutation Testing Summary",
         "",
-        f"- Status: **{'PASS' if passed else 'FAIL'}** "
-        f"({score:.1f}% reachable score vs {score_break:.0f}% threshold)",
-        f"- Total mutants: {total}",
-        f"- Killed: {killed}",
-        f"- Survived: {survived}",
-        f"- No tests (scope gap): {no_tests}",
-        f"- Incompetent: {incompetent}",
+        f"- Status: **{'PASS' if metrics['passed'] else 'FAIL'}** "
+        f"({metrics['score']:.1f}% reachable score vs {metrics['score_break']:.0f}% threshold)",
+        f"- Total mutants: {metrics['total']}",
+        f"- Killed: {metrics['killed']}",
+        f"- Survived: {metrics['survived']}",
+        f"- No tests (scope gap): {metrics['no_tests']}",
+        f"- Incompetent: {metrics['incompetent']}",
     ]
-    if pending:
-        lines.append(f"- Pending: {pending}")
-    if abnormal:
-        lines.append(f"- Worker abnormal/exception: {abnormal}")
-    if skipped:
-        lines.append(f"- Skipped: {skipped}")
-    if survived:
+    if metrics["pending"]:
+        lines.append(f"- Pending: {metrics['pending']}")
+    if metrics["abnormal"]:
+        lines.append(f"- Worker abnormal/exception: {metrics['abnormal']}")
+    if metrics["skipped"]:
+        lines.append(f"- Skipped: {metrics['skipped']}")
+    if metrics["survived"]:
         survived_details = summarize_survived_mutations(records, repo_root)
         lines += [
             "",
@@ -221,7 +216,7 @@ def main() -> int:
                 for module_path, line_number, definition, operator, source in survived_details["locations"]
             ],
         ]
-    lines += [
+    return lines + [
         "",
         "Score denominator: `killed / (killed + survived)` (reachable mutants only;",
         "see `skills/public/quality/references/mutation-testing.md` §commands.summary).",
@@ -231,13 +226,40 @@ def main() -> int:
         "the score denominator.",
         "",
     ]
+
+
+def main() -> int:
+    args = parse_args()
+    repo_root = args.repo_root.resolve()
+    stats_path = args.stats if args.stats.is_absolute() else (repo_root / args.stats)
+    if not stats_path.is_file():
+        sys.stderr.write(
+            f"mutation stats not found at {stats_path}. Run `cosmic-ray dump` first.\n"
+        )
+        return 2
+
+    try:
+        records = iter_dump_records(stats_path)
+        stats = summarize_cosmic_ray(records)
+    except ValueError as exc:
+        sys.stderr.write(f"could not parse mutation stats: {exc}\n")
+        return 2
+
+    config = load_mutation_config(repo_root)
+    if config is None:
+        return 2
+    score_break, summary_path = config
+    metrics = mutation_metrics(stats, score_break)
+    lines = build_summary_lines(records, repo_root, metrics)
+
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text("\n".join(lines), encoding="utf-8")
     sys.stdout.write(f"summary written to {summary_path}\n")
     sys.stdout.write(
-        f"score: {score:.1f}% threshold: {score_break:.0f}% status: {'PASS' if passed else 'FAIL'}\n"
+        f"score: {metrics['score']:.1f}% threshold: {score_break:.0f}% "
+        f"status: {'PASS' if metrics['passed'] else 'FAIL'}\n"
     )
-    return 0 if passed else 1
+    return 0 if metrics["passed"] else 1
 
 
 if __name__ == "__main__":
