@@ -61,11 +61,11 @@ def _attempt_lines(attempts: list[object]) -> list[str]:
 
 
 def _is_open_gap(attempt: dict[str, object]) -> bool:
-    if attempt.get("stage_id") == "agent-browser-network-recon":
-        return True
-    if attempt.get("status") == "error":
-        return True
     if attempt.get("status") != "skipped":
+        if attempt.get("stage_id") == "agent-browser-network-recon":
+            return True
+        if attempt.get("status") == "error":
+            return True
         return False
     details = attempt.get("details")
     reason = details.get("reason") if isinstance(details, dict) else None

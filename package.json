@@ -3,6 +3,7 @@
   "type": "module",
   "devDependencies": {
     "@secretlint/secretlint-rule-preset-recommend": "11.6.0",
+    "defuddle": "0.18.1",
     "markdownlint-cli2": "0.22.0",
     "secretlint": "11.6.0"
   }

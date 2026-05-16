@@ -38,6 +38,11 @@ while running those gates.
 - Full quality closeout is green: validators, packaging, plugin import smoke,
   docs, markdown, secrets, supply-chain, ruff, py-compile, pytest, coverage,
   specdown, evals, and runtime budget all passed.
+- `defuddle@0.18.1` is now installed as a repo-local npm dev dependency, and
+  `gather_public_url.py` proved a live reader fallback against
+  `https://www.rfc-editor.org/rfc/rfc9110.html`; the selected attempt was
+  `defuddle-reader-extraction` with `success` / `strong` proof in
+  [charness-artifacts/gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md](../gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md).
 - Setup normalization is green after adding the compact `Skill Routing` block
   to `AGENTS.md`; `CLAUDE.md` remains a symlink to `AGENTS.md`.
 - The first-run doctor failure was machine state, not repo logic:
@@ -47,9 +52,8 @@ while running those gates.
   `check_plugin_import_smoke.py` imported every plugin Python file.
 
 ## Weak
-- `defuddle` and `gws-cli` are missing on this machine. Doctor classifies both
-  as non-blocking missing/advisory for the current repo, but public gather
-  fallback dogfood will remain weaker until `defuddle` is installed.
+- `gws-cli` is still missing on this machine. Doctor classifies it as
+  non-blocking missing/advisory for the current repo.
 - Lint ignore pressure rose to 34 narrow inline `noqa` entries, including the
   new `web-fetch` import-path shim in source and plugin export. Inventory still
   reports 0 blanket and 0 file-level ignores.
@@ -61,8 +65,6 @@ while running those gates.
 ## Missing
 - There is still no CI lane in this checkout; security-bearing checks are local
   hook / maintainer-machine enforced.
-- `defuddle` local runtime is not installed, so the new reader fallback is only
-  covered by deterministic command-shape tests here.
 - No aarch64 runtime sample was collected in this run.
 
 ## Deferred
@@ -85,6 +87,11 @@ while running those gates.
 - The `web-fetch` script uses a narrow `E402` shim so exported plugin modules
   can import sibling helper scripts when loaded by path; this is validated by
   `check_plugin_import_smoke.py`.
+- `npm audit --omit=optional --json` currently reports three JavaScript
+  advisories: `markdownlint-cli2@0.22.0` via `smol-toml`, and
+  `secretlint@11.6.0` -> `table` -> `ajv` -> `fast-uri`. The new
+  `defuddle@0.18.1` dependency is not the reported vulnerable path, but the
+  existing advisory set remains visible for a future dependency-refresh slice.
 - Public-skill scenario review used `suggest_public_skill_dogfood.py` for
   `quality`; the existing slow-gate consumer prompt still routes to `quality`
   and needs no new maintained Cautilus scenario for this setup/quality slice.
@@ -106,12 +113,12 @@ while running those gates.
 - `pytest -q tests/quality_gates/test_standing_test_economics.py tests/quality_gates/test_quality_bootstrap.py tests/quality_gates/test_quality_mutation_testing.py tests/charness_cli/test_managed_install.py::test_charness_doctor_reports_managed_surface tests/test_web_fetch_support.py`
 - `ruff check scripts/quality_bootstrap_lib.py scripts/quality_bootstrap_common.py tests/quality_gates/test_quality_bootstrap.py skills/support/web-fetch/scripts/acquire_public_url.py tests/charness_cli/test_managed_install.py skills/public/quality/scripts/standing_test_economics_lib.py tests/quality_gates/test_standing_test_economics.py`
 - `python3 scripts/check_plugin_import_smoke.py --repo-root .`
+- `npm install --save-dev --save-exact defuddle@0.18.1`
+- `PATH="$PWD/node_modules/.bin:$PATH" python3 skills/public/gather/scripts/gather_public_url.py --repo-root . --url https://www.rfc-editor.org/rfc/rfc9110.html --expect-regex '^###\\s*6\\.4\\.' --timeout 25 --execute`
+- `npm audit --omit=optional --json`
 - `./scripts/run-quality.sh`
 
 ## Recommended Next Gates
-- active `AUTO_CANDIDATE`: install or expose `defuddle` locally, then dogfood a
-  public article URL through the gather/web-fetch repair path once that repair
-  contract lands.
 - active `AUTO_CANDIDATE`: keep `mutation_testing` in the quality bootstrap
   preservation test whenever the adapter renderer grows new explicit blocks.
 - passive `AUTO_CANDIDATE` because current quality is green: add a minimal CI

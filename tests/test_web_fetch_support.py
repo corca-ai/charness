@@ -502,6 +502,7 @@ def test_gather_public_url_writes_web_fetch_trace(tmp_path: Path) -> None:
     record = record_path.read_text(encoding="utf-8")
     assert "# Gathered Public URL" in record
     assert "## Acquisition Trace" in record
+    assert "## Open Gaps\n\n- None recorded." in record
     assert "`direct-public-fetch`" in record
     assert '"selected_attempt"' in record
     assert (tmp_path / "charness-artifacts" / "gather" / "latest.md").is_file()

@@ -15,19 +15,18 @@
   - [#168](https://github.com/corca-ai/charness/issues/168) `Discuss user behavior robustness testing for Charness`: reframed as a Charness `quality` recommendation/routing contract, with evaluator semantics delegated to [corca-ai/cautilus#44](https://github.com/corca-ai/cautilus/issues/44).
 - [scripts/run-quality.sh](../scripts/run-quality.sh) passed on 2026-05-16 with 60 passed / 0 failed in 80.8s; the proof and remaining weaknesses live in [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md).
 - `setup` normalization is green; [AGENTS.md](../AGENTS.md) has the compact Skill Routing block and `CLAUDE.md` remains a symlink to `AGENTS.md`. See [charness-artifacts/setup/latest.md](../charness-artifacts/setup/latest.md).
-- `defuddle` and `gws-cli` are missing on this machine. Current gather/web-fetch proof is deterministic command-shape and fallback behavior, not live reader-runtime proof.
+- `defuddle` is now a repo-local npm dev dependency (`defuddle@0.18.1`) and the public gather/web-fetch reader fallback has live proof in [charness-artifacts/gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md](../charness-artifacts/gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md). `gws-cli` is still missing on this machine.
 
 ## Next Session
 
 1. Continue [#168](https://github.com/corca-ai/charness/issues/168) from [charness-artifacts/spec/quality-cautilus-behavior-testing-contract.md](../charness-artifacts/spec/quality-cautilus-behavior-testing-contract.md): Charness `quality` should recommend and record behavior-proof needs, while [corca-ai/cautilus#44](https://github.com/corca-ai/cautilus/issues/44) owns the evaluator/result contract.
-2. Optional local proof upgrade: install or expose `defuddle`, then run a real public article URL through `gather_public_url.py` to prove reader extraction beyond deterministic command-shape tests.
+2. Optional gather follow-up: decide whether raw acquired-content persistence belongs in a separate gather slice now that trace/proof correctness and live `defuddle` reader proof both exist.
 3. Gather/web-fetch acquisition invariants now live in [skills/support/web-fetch/references/runtime-contract.md](../skills/support/web-fetch/references/runtime-contract.md) and [skills/public/gather/references/capability-contract.md](../skills/public/gather/references/capability-contract.md); reload those owner contracts before touching that seam.
 4. Mutation-testing #167, older Cautilus rename details, and long historical issue batches are not active handoff work. Reload them from owning artifacts or GitHub only if a fresh live signal references them.
 
 ## Discuss
 
 - #168 follow-up: after Cautilus #44 settles, decide the first Charness dogfood seam for a recommend-only behavior-test finding.
-- Whether to install or expose `defuddle` locally now so gather dogfood can prove real reader fallback behavior instead of only deterministic command shape.
 - Whether raw acquired-content persistence belongs in a future gather slice, now that trace/proof correctness is locally implemented.
 
 ## References
@@ -36,6 +35,7 @@
 - [charness-artifacts/setup/latest.md](../charness-artifacts/setup/latest.md)
 - [charness-artifacts/spec/gather-acquisition-repair-contract.md](../charness-artifacts/spec/gather-acquisition-repair-contract.md)
 - [charness-artifacts/spec/quality-cautilus-behavior-testing-contract.md](../charness-artifacts/spec/quality-cautilus-behavior-testing-contract.md)
+- [charness-artifacts/gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md](../charness-artifacts/gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md)
 - [charness-artifacts/critique/2026-05-16-gather-acquisition-repair-plan-critique.md](../charness-artifacts/critique/2026-05-16-gather-acquisition-repair-plan-critique.md)
 - [charness-artifacts/critique/2026-05-16-gather-public-url-blocker-fix-critique.md](../charness-artifacts/critique/2026-05-16-gather-public-url-blocker-fix-critique.md)
 - [charness-artifacts/critique/2026-05-16-gather-public-url-push-critique.md](../charness-artifacts/critique/2026-05-16-gather-public-url-push-critique.md)
