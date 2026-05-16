@@ -57,6 +57,8 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--prepared-for", default="working tree",
                         help="Short label describing what this packet covers (e.g. commit range)")
+    parser.add_argument("--changed-ref", default=None,
+                        help="Git commit or range that script packet sections should inspect")
     parser.add_argument("--slug", default=None,
                         help="Slug for the output artifacts (default: ISO datetime)")
     parser.add_argument("--json", action="store_true",
@@ -73,7 +75,12 @@ def main() -> int:
         sys.stdout.write("\n")
         return 1
 
-    packet = build_packet(adapter=adapter, repo_root=repo_root, prepared_for=args.prepared_for)
+    packet = build_packet(
+        adapter=adapter,
+        repo_root=repo_root,
+        prepared_for=args.prepared_for,
+        changed_ref=args.changed_ref,
+    )
 
     if args.json:
         json.dump(packet, sys.stdout, indent=2, ensure_ascii=False)

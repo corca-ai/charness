@@ -22,12 +22,17 @@ from scripts.critique_packet_lib import (  # noqa: E402
     render_markdown,
     write_packet,
 )
+from scripts.surfaces_lib import collect_changed_paths_for_ref  # noqa: E402
 from scripts.validate_critique_packet import validate_packet  # noqa: E402
 
 
 def _write_yaml(path: Path, body: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(body, encoding="utf-8")
+
+
+def _run_git(repo: Path, *args: str) -> None:
+    subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
 
 
 def test_load_adapter_missing_returns_inferred_defaults(tmp_path: Path) -> None:
@@ -162,6 +167,47 @@ packet_sections:
     assert packet["ok"] is True
     assert [s["id"] for s in packet["sections"]] == ["a", "b"]
     assert validate_packet(packet) == []
+
+
+def test_build_packet_passes_changed_ref_to_script_sections(tmp_path: Path) -> None:
+    helper = tmp_path / "emit_ref.py"
+    helper.write_text(
+        "import os\nprint(os.environ.get('CHARNESS_CRITIQUE_CHANGED_REF', 'missing'))\n",
+        encoding="utf-8",
+    )
+    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", f"""\
+version: 1
+repo: rt
+packet_sections:
+  - id: ref
+    title: Ref
+    content_kind: script
+    command: "python3 {helper.name}"
+""")
+    adapter = load_adapter(tmp_path)
+    packet = build_packet(
+        adapter=adapter,
+        repo_root=tmp_path,
+        prepared_for="commit review",
+        changed_ref="HEAD^..HEAD",
+    )
+
+    assert packet["ok"] is True
+    assert packet["sections"][0]["content"].strip() == "HEAD^..HEAD"
+
+
+def test_collect_changed_paths_for_ref_reads_committed_diff(tmp_path: Path) -> None:
+    _run_git(tmp_path, "init")
+    _run_git(tmp_path, "config", "user.email", "test@example.com")
+    _run_git(tmp_path, "config", "user.name", "Test User")
+    (tmp_path / "README.md").write_text("one\n", encoding="utf-8")
+    _run_git(tmp_path, "add", "README.md")
+    _run_git(tmp_path, "commit", "-m", "initial")
+    (tmp_path / "README.md").write_text("two\n", encoding="utf-8")
+    _run_git(tmp_path, "commit", "-am", "update")
+
+    assert collect_changed_paths_for_ref(tmp_path, "HEAD^..HEAD") == ["README.md"]
+    assert collect_changed_paths_for_ref(tmp_path, "HEAD") == ["README.md"]
 
 
 def test_build_packet_one_failed_section_marks_envelope_not_ok(tmp_path: Path) -> None:

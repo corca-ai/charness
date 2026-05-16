@@ -243,3 +243,14 @@ def collect_changed_paths(repo_root: Path) -> list[str]:
     staged = _run_git(repo_root, "diff", "--name-only", "--cached")
     untracked = _run_git(repo_root, "ls-files", "--others", "--exclude-standard")
     return dedupe_preserve_order(tracked + staged + untracked)
+
+
+def collect_changed_paths_for_ref(repo_root: Path, ref: str) -> list[str]:
+    ref = ref.strip()
+    if not ref:
+        raise SurfaceError("changed ref must be non-empty")
+    if ".." in ref:
+        return dedupe_preserve_order(_run_git(repo_root, "diff", "--name-only", ref))
+    return dedupe_preserve_order(
+        _run_git(repo_root, "diff-tree", "--no-commit-id", "--name-only", "-r", ref)
+    )

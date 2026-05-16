@@ -246,7 +246,7 @@
         "includes a customer-of-this-capability angle when first-use failure is the main risk"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-14",
+      "reviewed_on": "2026-05-16",
       "observed_evidence": [
         "The checked-in public core now says task-completing repo work always records critique before closeout, scaling the pass rather than leaving applicability optional.",
         "The standalone `critique` skill remains the full bounded-subagent path for non-trivial design, deletion, rename, release, workflow, compatibility, install/update, host-proof, prompt-surface, public-skill, validator, or export decisions.",
@@ -256,7 +256,8 @@
         "The capability check now rejects shell-only runners, routing-only proof, and model self-report as evidence that bounded subagents actually ran.",
         "The capability check now treats an `AGENTS.md` `Subagent Delegation` section as the explicit delegation request for named bounded review scopes, so downstream repos such as `ceal` should try the host spawn tool before recording a blocked critique.",
         "`validate_critique_artifacts.py` now rejects new durable critique artifacts that preserve the old missing-explicit-subagent-request blocker instead of a concrete `host signal:` or `tool signal:`.",
-        "The `critique` skill now reads `.agents/critique-adapter.yaml` and consumes a `charness.critique_prepare_packet.v1` packet under `charness-artifacts/critique/` before fresh-eye review when the adapter declares `packet_sections`, with a `Packet Consumed` field in the output shape (#161)."
+        "The `critique` skill now reads `.agents/critique-adapter.yaml` and consumes a `charness.critique_prepare_packet.v1` packet under `charness-artifacts/critique/` before fresh-eye review when the adapter declares `packet_sections`, with a `Packet Consumed` field in the output shape (#161).",
+        "The committed-diff critique dogfood on `50dd2b7` found that a clean working tree can erase packet changed-surface context; `prepare_packet.py --changed-ref HEAD^..HEAD` now preserves the reviewed commit/range for script packet sections without requiring a maintained Cautilus scenario."
       ]
     },
     {

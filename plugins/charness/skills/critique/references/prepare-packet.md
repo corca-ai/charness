@@ -40,6 +40,19 @@ Where `<output_dir>` defaults to `charness-artifacts/critique` (override
 via adapter `output_dir`) and `<slug>` defaults to a date+sequence
 identifier (override via runner `--slug` flag).
 
+For committed-diff critique, invoke the runner with `--changed-ref`:
+
+```bash
+python3 skills/public/critique/scripts/prepare_packet.py \
+  --repo-root . \
+  --prepared-for "HEAD" \
+  --changed-ref HEAD^..HEAD
+```
+
+The runner passes that value to script sections as
+`CHARNESS_CRITIQUE_CHANGED_REF`. Producers that inspect changed files should
+prefer the explicit ref/range over the clean working tree.
+
 JSON envelope shape (`charness.critique_prepare_packet.v1`):
 
 ```json
@@ -113,8 +126,9 @@ Charness ships one default section that runs on the charness repo and
 serves as the contract reference example:
 
 - `changed-files-and-owning-surfaces` — for the current
-  `git status`/`git diff` working set, list each changed path and the
-  surfaces (from `.agents/surfaces.json`) that own or derive from it.
+  `git status`/`git diff` working set, or for the runner's `--changed-ref`
+  when provided, list each changed path and the surfaces (from
+  `.agents/surfaces.json`) that own or derive from it.
   Producer:
   `python3 scripts/render_critique_section_changed_surfaces.py --json`.
 

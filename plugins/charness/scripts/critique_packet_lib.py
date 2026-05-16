@@ -10,6 +10,7 @@ stays the producer's responsibility; this module owns shape only.
 from __future__ import annotations
 
 import json
+import os
 import shlex
 import subprocess
 from datetime import datetime, timezone
@@ -25,7 +26,12 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _run_command(command: str, *, repo_root: Path) -> tuple[str, list[str], bool]:
+def _run_command(
+    command: str, *, repo_root: Path, changed_ref: str | None = None
+) -> tuple[str, list[str], bool]:
+    env = os.environ.copy()
+    if changed_ref:
+        env["CHARNESS_CRITIQUE_CHANGED_REF"] = changed_ref
     try:
         result = subprocess.run(
             shlex.split(command),
@@ -34,6 +40,7 @@ def _run_command(command: str, *, repo_root: Path) -> tuple[str, list[str], bool
             capture_output=True,
             text=True,
             timeout=PRODUCER_TIMEOUT_SECONDS,
+            env=env,
         )
     except FileNotFoundError as exc:
         return "", [f"command not found: {exc}"], False
@@ -63,14 +70,16 @@ def _resolve_static(section: dict[str, Any], *, repo_root: Path) -> tuple[str, l
     return candidate.read_text(encoding="utf-8"), [], True
 
 
-def execute_section(section: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
+def execute_section(
+    section: dict[str, Any], *, repo_root: Path, changed_ref: str | None = None
+) -> dict[str, Any]:
     section_id = section.get("id", "")
     title = section.get("title", section_id)
     kind = section.get("content_kind", "")
     if kind == "script":
         command = section.get("command", "")
         producer = command
-        content, errors, ok = _run_command(command, repo_root=repo_root)
+        content, errors, ok = _run_command(command, repo_root=repo_root, changed_ref=changed_ref)
     else:
         if "content" in section:
             producer = "static-config (inline)"
@@ -94,10 +103,14 @@ def build_packet(
     adapter: dict[str, Any],
     repo_root: Path,
     prepared_for: str,
+    changed_ref: str | None = None,
 ) -> dict[str, Any]:
     data = adapter.get("data", {}) or {}
     sections_decl = data.get("packet_sections", []) or []
-    sections = [execute_section(section, repo_root=repo_root) for section in sections_decl]
+    sections = [
+        execute_section(section, repo_root=repo_root, changed_ref=changed_ref)
+        for section in sections_decl
+    ]
     all_ok = all(section["ok"] for section in sections)
     return {
         "kind": PACKET_KIND,

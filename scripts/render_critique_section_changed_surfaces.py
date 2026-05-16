@@ -12,6 +12,7 @@ See `skills/public/critique/references/prepare-packet.md`.
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 from runtime_bootstrap import import_repo_module, repo_root_from_script
@@ -21,6 +22,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 _scripts_surfaces_lib_module = import_repo_module(__file__, "scripts.surfaces_lib")
 SurfaceError = _scripts_surfaces_lib_module.SurfaceError
 collect_changed_paths = _scripts_surfaces_lib_module.collect_changed_paths
+collect_changed_paths_for_ref = _scripts_surfaces_lib_module.collect_changed_paths_for_ref
 load_surfaces = _scripts_surfaces_lib_module.load_surfaces
 match_surfaces = _scripts_surfaces_lib_module.match_surfaces
 
@@ -68,11 +70,20 @@ def _render(payload: dict[str, object]) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument(
+        "--changed-ref",
+        default=os.environ.get("CHARNESS_CRITIQUE_CHANGED_REF"),
+        help="Git commit or range to render instead of the current working tree.",
+    )
     args = parser.parse_args()
     repo_root = args.repo_root.resolve()
     try:
         surfaces = load_surfaces(repo_root)
-        changed_paths = collect_changed_paths(repo_root)
+        changed_paths = (
+            collect_changed_paths_for_ref(repo_root, args.changed_ref)
+            if args.changed_ref
+            else collect_changed_paths(repo_root)
+        )
         match = match_surfaces(surfaces, changed_paths)
     except SurfaceError as exc:
         print(f"surfaces lookup failed: {exc}")
