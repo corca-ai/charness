@@ -92,6 +92,14 @@ the adapter selected; never substitute direct CLIs/tokens under
   (host-mediated); stop with missing-capability (none)
 - Notion: token-backed integration or published-page fallback (direct-cli);
   host capability command (host-mediated); stop with missing-capability (none)
+- Arbitrary public URL: route through `support/web-fetch` with the repo-owned
+  helper so the durable gather asset preserves route, attempts, selected proof,
+  and open gaps:
+
+```bash
+python3 "$SKILL_DIR/scripts/gather_public_url.py" --repo-root . --url <public-url> --execute
+```
+
 - private SaaS roster: official export first, then `agent-browser` only if
   the export path is absent
 

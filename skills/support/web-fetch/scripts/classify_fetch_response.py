@@ -85,8 +85,9 @@ def _proof_matches(
     expect_text: list[str],
     expect_regex: list[str],
     expect_json_field: list[str],
-) -> list[dict[str, str]]:
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     matches: list[dict[str, str]] = []
+    errors: list[dict[str, str]] = []
     for expected in expect_text:
         if expected and expected in raw:
             matches.append({"type": "text", "value": expected})
@@ -95,11 +96,11 @@ def _proof_matches(
             if re.search(pattern, raw, flags=re.IGNORECASE | re.MULTILINE):
                 matches.append({"type": "regex", "value": pattern})
         except re.error:
-            matches.append({"type": "invalid-regex", "value": pattern})
+            errors.append({"type": "invalid-regex", "value": pattern})
     for field_path in expect_json_field:
         if _json_field(raw, field_path):
             matches.append({"type": "json-field", "value": field_path})
-    return matches
+    return matches, errors
 
 
 def _fallback_candidates(status: str, *, intent: str, proof_required: bool) -> list[str]:
@@ -140,7 +141,7 @@ def classify(
     expect_text = expect_text or []
     expect_regex = expect_regex or []
     expect_json_field = expect_json_field or []
-    proof = _proof_matches(
+    proof, proof_errors = _proof_matches(
         raw,
         expect_text=expect_text,
         expect_regex=expect_regex,
@@ -148,12 +149,12 @@ def classify(
     )
     proof_required = bool(expect_text or expect_regex or expect_json_field)
 
-    if proof:
-        status = "success"
-        confidence = "strong"
-        matched.extend(f"{item['type']}:{item['value']}" for item in proof)
-        signals.append("positive-proof")
-        next_step = "Use the content as a source and preserve the matched proof."
+    if proof_errors:
+        status = "invalid-proof"
+        confidence = "none"
+        matched.extend(f"{item['type']}:{item['value']}" for item in proof_errors)
+        signals.append("invalid-proof")
+        next_step = "Fix the proof input before trusting this acquisition."
     elif any(pattern in lowered for pattern in CAPTCHA_PATTERNS):
         matched.extend(pattern for pattern in CAPTCHA_PATTERNS if pattern in lowered)
         status = "captcha"
@@ -184,6 +185,12 @@ def classify(
         confidence = "none"
         signals.append("error-page")
         next_step = "Treat this as a failed fetch and move to the next route."
+    elif proof:
+        status = "success"
+        confidence = "strong"
+        matched.extend(f"{item['type']}:{item['value']}" for item in proof)
+        signals.append("positive-proof")
+        next_step = "Use the content as a source and preserve the matched proof."
     elif proof_required:
         status = "unclear"
         confidence = "none"
@@ -218,6 +225,7 @@ def classify(
         "matched_signals": matched,
         "signals": signals,
         "proof": proof,
+        "proof_errors": proof_errors,
         "fallback_candidates": _fallback_candidates(status, intent=intent, proof_required=proof_required),
         "recommended_next_step": next_step,
     }

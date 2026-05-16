@@ -53,7 +53,7 @@ The helper classifier should keep at least these distinctions visible:
 Classifiers should also expose:
 
 - `confidence`: `strong`, `weak`, or `none`
-- `proof`: caller-provided text, regex, JSON-field, or selector evidence that
+- `proof`: caller-provided text, regex, or JSON-field evidence that
   justified strong success
 - `signals`: WAF/product, login, CAPTCHA, empty-shell, metadata, and size
   signals used to choose the next fallback stage
