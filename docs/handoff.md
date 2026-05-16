@@ -10,7 +10,7 @@
 ## Current State
 
 - Local branch `main` is ahead of `origin/main`; refresh the exact count with `git log --oneline origin/main..HEAD`. The unpublished series covers insane-search gather fallback review and acquisition fallback work for [#169](https://github.com/corca-ai/charness/issues/169), quality/setup normalization, critique-packet provenance fixes, this handoff refresh, and the gather acquisition repair implementation.
-- The gather repair implementation now rejects non-HTTP(S), treats invalid regex as invalid proof, records skipped route/fallback stages, keeps browser network reconnaissance diagnostic-only, derives final status from `selected_attempt`, removes unimplemented selector-proof wording, and adds `gather_public_url.py` so public `gather` can preserve `web-fetch` trace in a durable asset.
+- The gather repair implementation now rejects non-HTTP(S), treats invalid regex as invalid proof, records skipped route/fallback stages, keeps browser network reconnaissance diagnostic-only, derives final status from `selected_attempt`, removes unimplemented selector-proof wording, and adds `gather_public_url.py` so public `gather` can preserve `web-fetch` trace in a durable asset. The public helper no longer writes error acquisitions and generated slugs include URL path/hash to avoid same-host collisions.
 - Live open GitHub issues:
   - [#169](https://github.com/corca-ai/charness/issues/169) `Review latest insane-search ideas for charness gather fallbacks`: local work exists; do not claim remote closure until the unpublished commits are pushed/PR'd and accepted.
   - [#168](https://github.com/corca-ai/charness/issues/168) `Discuss user behavior robustness testing for Charness`: discussion starter, not an implementation spec.
@@ -40,6 +40,7 @@
 - [charness-artifacts/spec/gather-acquisition-repair-contract.md](../charness-artifacts/spec/gather-acquisition-repair-contract.md)
 - [charness-artifacts/critique/2026-05-16-gather-acquisition-repair-plan-critique.md](../charness-artifacts/critique/2026-05-16-gather-acquisition-repair-plan-critique.md)
 - [charness-artifacts/critique/2026-05-16-gather-acquisition-subagent-critique.md](../charness-artifacts/critique/2026-05-16-gather-acquisition-subagent-critique.md)
+- [charness-artifacts/critique/2026-05-16-gather-public-url-blocker-fix-critique.md](../charness-artifacts/critique/2026-05-16-gather-public-url-blocker-fix-critique.md)
 - [charness-artifacts/critique/2026-05-16-gather-repair-impl-critique.md](../charness-artifacts/critique/2026-05-16-gather-repair-impl-critique.md)
 - [charness-artifacts/critique/2026-05-16-setup-quality-posture-critique.md](../charness-artifacts/critique/2026-05-16-setup-quality-posture-critique.md)
 - [charness-artifacts/critique/2026-05-16-critique-packet-provenance-critique.md](../charness-artifacts/critique/2026-05-16-critique-packet-provenance-critique.md)

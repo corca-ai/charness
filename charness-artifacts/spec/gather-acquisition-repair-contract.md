@@ -159,6 +159,10 @@ Implemented locally in the current unpublished slice:
 - selector-proof wording cleanup
 - public `gather_public_url.py` helper that writes durable gather records with
   embedded `web-fetch` trace JSON
+- follow-up blocker fix: `gather_public_url.py` no longer writes or refreshes
+  `latest.md` when acquisition disposition is `error`
+- follow-up blocker fix: generated public URL slugs now include URL path
+  identity plus a short URL hash, avoiding same-host same-day collisions
 
 Still deferred: raw acquired-content persistence, archive/cache fallback, and
 live `defuddle` proof on this machine.

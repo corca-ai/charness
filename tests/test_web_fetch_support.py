@@ -453,6 +453,96 @@ def test_gather_public_url_writes_web_fetch_trace(tmp_path: Path) -> None:
     assert (tmp_path / "charness-artifacts" / "gather" / "latest.md").is_file()
 
 
+def test_gather_public_url_does_not_write_error_acquisition(tmp_path: Path) -> None:
+    result = run_helper(
+        "skills/public/gather/scripts/gather_public_url.py",
+        "--repo-root",
+        str(tmp_path),
+        "--url",
+        "file:///tmp/secret",
+        "--date",
+        "2026-05-16",
+        "--execute",
+    )
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "blocked"
+    assert payload["reason"] == "acquisition-error"
+    assert payload["acquisition"]["disposition"] == "error"
+    assert payload["write_record"] is None
+    assert not (tmp_path / "charness-artifacts" / "gather" / "latest.md").exists()
+
+
+def test_gather_public_url_does_not_write_invalid_regex_acquisition(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.html"
+    direct.write_text("<html><body>" + ("useful content " * 120) + "</body></html>", encoding="utf-8")
+
+    result = run_helper(
+        "skills/public/gather/scripts/gather_public_url.py",
+        "--repo-root",
+        str(tmp_path),
+        "--url",
+        "https://example.com/article",
+        "--direct-response-file",
+        str(direct),
+        "--expect-regex",
+        "[",
+        "--date",
+        "2026-05-16",
+        "--execute",
+    )
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "blocked"
+    assert payload["acquisition"]["final_status"] == "invalid-proof"
+    assert not (tmp_path / "charness-artifacts" / "gather" / "latest.md").exists()
+
+
+def test_gather_public_url_default_slug_distinguishes_same_host_urls(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.html"
+    direct.write_text("<html><body>" + ("useful content " * 120) + "</body></html>", encoding="utf-8")
+
+    first = run_helper(
+        "skills/public/gather/scripts/gather_public_url.py",
+        "--repo-root",
+        str(tmp_path),
+        "--url",
+        "https://example.com/a",
+        "--direct-response-file",
+        str(direct),
+        "--browser-mode",
+        "off",
+        "--date",
+        "2026-05-16",
+        "--execute",
+    )
+    second = run_helper(
+        "skills/public/gather/scripts/gather_public_url.py",
+        "--repo-root",
+        str(tmp_path),
+        "--url",
+        "https://example.com/b",
+        "--direct-response-file",
+        str(direct),
+        "--browser-mode",
+        "off",
+        "--date",
+        "2026-05-16",
+        "--execute",
+    )
+    assert first.returncode == 0, first.stderr
+    assert second.returncode == 0, second.stderr
+    first_payload = json.loads(first.stdout)
+    second_payload = json.loads(second.stdout)
+    first_record = Path(first_payload["write_record"]["record_artifact_path"])
+    second_record = Path(second_payload["write_record"]["record_artifact_path"])
+    assert first_record.name.startswith("2026-05-16-example-com-a-")
+    assert second_record.name.startswith("2026-05-16-example-com-b-")
+    assert first_record != second_record
+    assert first_record.is_file()
+    assert second_record.is_file()
+
+
 def test_acquire_public_url_accepts_weak_direct_success_without_positive_proof(tmp_path: Path) -> None:
     direct = tmp_path / "direct.html"
     direct.write_text("<html><body>" + ("useful content " * 120) + "</body></html>", encoding="utf-8")

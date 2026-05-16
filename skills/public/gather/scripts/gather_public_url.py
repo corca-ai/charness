@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 import sys
@@ -33,8 +34,12 @@ def _run_json(command: list[str], *, input_text: str | None = None) -> dict[str,
 def _slug_from_url(url: str) -> str:
     parsed = urlparse(url)
     host = (parsed.netloc or "public-url").lower().replace("www.", "", 1)
-    safe = "".join(ch if ch.isalnum() else "-" for ch in host).strip("-")
-    return safe or "public-url"
+    path = "/".join(part for part in parsed.path.split("/") if part)
+    identity = "-".join(part for part in (host, path) if part)
+    safe = "".join(ch if ch.isalnum() else "-" for ch in identity).strip("-")
+    safe = "-".join(part for part in safe.split("-") if part)
+    digest = hashlib.sha256(url.encode("utf-8")).hexdigest()[:8]
+    return f"{safe or 'public-url'}-{digest}"
 
 
 def _attempt_lines(attempts: list[object]) -> list[str]:
@@ -146,6 +151,16 @@ def main() -> int:
         acquire_cmd.extend(["--expect-json-field", field_path])
 
     acquisition = _run_json(acquire_cmd)
+    if acquisition.get("disposition") == "error":
+        payload = {
+            "status": "blocked",
+            "reason": "acquisition-error",
+            "source_url": args.url,
+            "acquisition": acquisition,
+            "write_record": None,
+        }
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return 1
     record = _render_record(args.url, acquisition)
     slug = args.slug or _slug_from_url(args.url)
     write_cmd = [
