@@ -32,15 +32,18 @@ as:
 - model routing, fallback, or provider configuration
 - streaming response endpoints or event processors
 - tool/action queues driven by model output
-- user-facing agent product docs or operator runbooks that identify a concrete
-  serving path, runtime configuration, telemetry surface, or incident procedure
 - runtime telemetry for model calls, tokens, retries, costs, or fallbacks
+- user-facing agent product docs or operator runbooks only when paired with
+  serving-path code, runtime configuration, telemetry, or concrete
+  incident/runtime evidence
 
 Do not trigger it from eval fixtures, skill docs, prompt examples, docs-only
 agent product descriptions, harness-only agent orchestration, or offline
 benchmark scaffolding by themselves. Those may need behavior-testing,
 prompt-asset review, or concept/docs synchronization review, but they are not
 production runtime evidence until paired with a concrete runtime seam.
+Docs or runbooks that merely name a serving path, provider, or conceptual
+procedure do not trigger this lens without corroborating runtime evidence.
 
 ## Review Questions
 

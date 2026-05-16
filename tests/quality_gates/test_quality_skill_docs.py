@@ -212,10 +212,23 @@ def test_quality_skill_carries_agent_production_runtime_lens() -> None:
     behavior = (
         ROOT / "skills" / "public" / "quality" / "references" / "behavior-testing.md"
     ).read_text(encoding="utf-8")
+    runtime_words = " ".join(runtime.split())
+    dispatch_words = " ".join(dispatch.split())
 
     assert "agent production runtime risk" in skill_text
     assert "`references/agent-production-runtime.md`" in skill_text
     assert "production LLM or agent runtime" in runtime
+    assert "a model/API client in a serving path" in runtime
+    assert "model routing, fallback, or provider configuration" in runtime
+    assert "streaming response endpoints or event processors" in runtime
+    assert "tool/action queues driven by model output" in runtime
+    assert "runtime telemetry for model calls, tokens, retries, costs, or fallbacks" in runtime
+    assert (
+        "product docs or operator runbooks only when paired with serving-path code, "
+        "runtime configuration, telemetry, or concrete incident/runtime evidence"
+        in runtime_words
+    )
+    assert "without corroborating runtime evidence" in runtime
     assert "docs-only\nagent product descriptions" in runtime
     assert "not\nproduction runtime evidence until paired with a concrete runtime seam" in runtime
     assert "Do not build an Anthropic-specific wrapper" in runtime
@@ -229,6 +242,11 @@ def test_quality_skill_carries_agent_production_runtime_lens() -> None:
     assert "explicit non-applicability" in lenses
     assert "## Agent Production Runtime" in dispatch
     assert "docs-only agent product descriptions" in dispatch
+    assert (
+        "product docs/runbooks paired with serving-path code, runtime configuration, "
+        "telemetry, or concrete incident/runtime evidence"
+        in dispatch_words
+    )
     assert "deterministic proof, behavior-proof recommendation" in dispatch
     assert "product-policy decision" in dispatch
     assert "agent-production-runtime.md" in behavior
