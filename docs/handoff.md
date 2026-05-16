@@ -21,7 +21,7 @@
 
 1. Keep [#168](https://github.com/corca-ai/charness/issues/168) in `Discuss` until the user chooses a first experiment and assertion model for user-behavior robustness testing.
 2. Optional local proof upgrade: install or expose `defuddle`, then run a real public article URL through `gather_public_url.py` to prove reader extraction beyond deterministic command-shape tests.
-3. For future gather/web-fetch work, preserve the intended direction: support skills should acquire as much as safely possible, use reader fallbacks such as `defuddle` when installed, and record truthful attempts, selected proof, blockers, and skipped routes when acquisition is degraded.
+3. Gather/web-fetch acquisition invariants now live in [skills/support/web-fetch/references/runtime-contract.md](../skills/support/web-fetch/references/runtime-contract.md) and [skills/public/gather/references/capability-contract.md](../skills/public/gather/references/capability-contract.md); reload those owner contracts before touching that seam.
 4. Mutation-testing #167, older Cautilus rename details, and long historical issue batches are not active handoff work. Reload them from owning artifacts or GitHub only if a fresh live signal references them.
 
 ## Discuss

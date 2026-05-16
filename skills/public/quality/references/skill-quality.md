@@ -40,6 +40,9 @@ Check for:
 - validator assertions that overfit exact prose snippets instead of checking the
   behavior, routing, package-level reference, or machine-readable contract they
   are meant to protect
+- migration-time exact-prose guards that have no owner, expiry condition, or
+  plan to move into a structure-aware validator, scenario, package-level
+  contract, or capability artifact
 
 Preferred deterministic gates:
 
@@ -65,3 +68,6 @@ Preferred manual findings:
 - source-guard style tests over prose that should become package-level,
   structure-aware, or scenario-backed assertions before they block useful
   skill compression
+- exact prose guards may be acceptable during a migration, rename, or prompt
+  surface repair, but review whether they still protect a real classifier or
+  have become wording snapshots that should be deleted

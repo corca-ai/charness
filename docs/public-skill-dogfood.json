@@ -159,7 +159,8 @@
         "The checked-in public core now carries the private SaaS decision ladder explicitly: prefer existing local assets and official API/export paths first, fall back to `agent-browser` only when the stronger path is unavailable or equally gated, and stop cleanly when auth/bootstrap is still missing.",
         "The prompt-affecting preserve proof at `charness-artifacts/cautilus/latest.md` stayed green while that contract widened, which is the current repo-owned evidence that the maintained first-skill routing surface did not regress when browser-mediated acquisition language was added.",
         "The long-context proposal and benchmark surfaces still both carry `gather-official-path-before-browser-followup`, and the checked-in chatbot summaries now preserve the full `proposals` truth surface alongside the bounded `attentionView` shortlist instead of relying on a packet-level `limit` workaround. That keeps the `official API/export -> browser fallback -> clean auth/bootstrap stop` correction visible as a live consumer-facing gather seam instead of a stale side packet.",
-        "`gather_public_url.py` now proves the arbitrary-public-URL seam without live network dependence: the focused test writes a dated gather record containing the `support/web-fetch` route, acquisition trace, selected attempt, disposition, final status/confidence, open gaps, and embedded trace JSON."
+        "`gather_public_url.py` now proves the arbitrary-public-URL seam without live network dependence: the focused test writes a dated gather record containing the `support/web-fetch` route, acquisition trace, selected attempt, disposition, final status/confidence, open gaps, and embedded trace JSON.",
+        "The public capability contract now says arbitrary public URL gather must preserve the `support/web-fetch` acquisition trace, including attempted, skipped, unavailable, terminal, selected, and proof/confidence fields, so the standing gather/web-fetch invariant no longer lives only in `docs/handoff.md`."
       ]
     },
     {
@@ -307,6 +308,7 @@
         "The quality slow-gate contract now treats pytest temp footprint as a first-class economics signal, including allocated disk bytes, retained pytest sessions, worker fanout, seed totals, and top test temp directories.",
         "`inventory_ci_local_gate_parity.py` now treats `CI-only` quality-gate wording as `ci-only-violation`, and `run-quality` enforces that inventory locally with `--require-empty-parity-issues` instead of leaving the finding advisory-only.",
         "The mutation-testing reference keeps the public `quality` contract runner-neutral while documenting Charness's own Cosmic Ray 8.4.6 dogfood runner as repo-specific support, so consumers can still fill `mutation_testing.commands.*` with their own stack runner.",
+        "The quality skill now treats migration-time exact-prose guards as temporary bridges that need an owner and retirement path into structure-aware validators, scenario checks, package-level contracts, or capability artifacts. The current public-spec source-guard inventories report zero rows, while Python exact-phrase contract guards remain a separate migration pressure to review rather than expand.",
         "The mutation-testing workflow now has a dedicated surface obligation covering `.github/workflows/mutation-tests.yml`, `cosmic-ray.toml`, adapter command slots, and exported helper scripts; the reviewed dry-run behavior is pinned so PR dry-runs do not require a full-run Cosmic Ray dump."
       ]
     },
@@ -353,7 +355,8 @@
       "observed_evidence": [
         "The checked-in public core now makes the `Workflow Trigger` the handoff's primary contract: mention-only pickup should continue the named workflow instead of re-deriving state from summary prose, and the trigger should be explicit enough that the next operator does not have to infer the first move.",
         "That same seam is reinforced by the updated `handoff` references: `workflow-trigger.md` keeps the first move explicit, `state-selection.md` and `spill-targets.md` push stable metrics and proof detail back to their owning artifacts, and always-loaded host instruction surfaces are now non-default in `References`.",
-        "That keeps `handoff-workflow-trigger-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: pushing the handoff away from history-first writing and back toward continuation-first pickup still maps directly to checked-in `handoff` behavior."
+        "That keeps `handoff-workflow-trigger-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: pushing the handoff away from history-first writing and back toward continuation-first pickup still maps directly to checked-in `handoff` behavior.",
+        "The handoff skill now treats standing invariants and recurring workflow rules as spill/promote candidates: handoff may leave a short pickup pointer, but the durable rule belongs in the owning skill reference, support-runtime contract, spec, validator, or operator document."
       ]
     },
     {

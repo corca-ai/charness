@@ -12,6 +12,9 @@ that already owns that truth instead of keeping it in the handoff artifact.
   runtime signals, and quality recommendations.
 - Use `<repo-root>/charness-artifacts/retro/` for workflow lessons and repeat traps.
 - Use `<repo-root>/charness-artifacts/debug/` for root-cause detail and resolved failures.
+- Use public/support skill references, capability contracts, specs, validators,
+  or operator docs for standing invariants that should survive more than one
+  handoff refresh.
 - Use `<repo-root>/docs/implementation/`, `charness-artifacts/`, or other durable work logs for
   long investigations, experiments, or design discussion that still matters.
 - Keep the handoff artifact focused on next pickup, current state, and open decisions.
@@ -22,3 +25,5 @@ When spilling detail, leave a single action-oriented pointer such as:
 
 - "Quality posture and recent gate numbers live in
   `<repo-root>/charness-artifacts/quality/latest.md`; next cleanup target is `<path>`."
+- "Gather/web-fetch acquisition invariants live in
+  `<repo-root>/skills/support/web-fetch/references/runtime-contract.md`; reload them before touching that support seam."

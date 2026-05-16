@@ -107,6 +107,9 @@ When a consumer wants provider-backed gather:
     returns cluttered or weak HTML
   - preserve the source URL and extraction confidence because cleaned markdown
     is derived content
+  - preserve attempted, skipped, unavailable, terminal, and selected fallback
+    stages in the durable acquisition trace instead of relying on handoff notes
+    or chat context for proof of degraded acquisition
 
 ## Modeling Rule Going Forward
 

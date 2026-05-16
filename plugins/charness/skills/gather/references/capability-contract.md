@@ -128,3 +128,20 @@ visible:
 - auth/access mode actually used
 - what was captured
 - what still needs human confirmation
+
+## Public URL Acquisition Trace
+
+When `gather` consumes `support/web-fetch` for an arbitrary public URL, the
+public gather artifact should preserve the support runtime's acquisition trace
+instead of summarizing it away.
+
+The durable record should make visible:
+
+- the route and fallback stages that were attempted
+- stages that were skipped, unavailable, terminal, or not implemented
+- the selected attempt and selected proof
+- blockers and remaining confidence gaps
+- the access mode or missing tool that shaped the result
+
+This lets `gather` stay public and provider-agnostic while `web-fetch` owns the
+retrieval tactics and truthful degradation contract.

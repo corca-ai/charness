@@ -69,6 +69,7 @@ When writing the quality artifact, edit the resolved `write_artifact_path`, not
    - when validators pin prose or support-skill routing is implicit, inspect
      whether the gate proves a behavior contract or only freezes wording and
      whether `find-skills` can surface the support seam from task language
+   - classify migration-time exact-prose guards as temporary bridges with retirement paths
 3. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
    - run executable-spec overlap or cost guards before proposing more spec
@@ -135,11 +136,9 @@ routing anchors; references carry the detail.
 
 Use the sections that match the scope, without reducing quality to one score:
 
-- `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`,
-  `Standing Test Economics`, `Coverage and Eval Depth`,
-  `Maintainer-Local Enforcement`, `CI/Local Gate Parity`,
-  `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Advisory`,
-  `Delegated Review`, `Commands Run`, `Recommended Next Gates`
+- `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`, `Standing Test Economics`,
+  `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `CI/Local Gate Parity`,
+  `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Advisory`, `Delegated Review`, `Commands Run`, `Recommended Next Gates`
 
 ## Guardrails
 

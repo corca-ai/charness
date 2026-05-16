@@ -26,6 +26,21 @@ Prefer this order:
 6. archive/cache fallback
 7. clean stop with the failure mode recorded
 
+## Acquisition Invariant
+
+Acquire as much as the request and access boundary safely allow, but never hide
+how that result was reached.
+
+Every planned route or fallback stage that could affect the final answer should
+be either attempted or represented in the acquisition trace as skipped,
+not-implemented, terminal, or otherwise unavailable. The selected proof,
+blocker, confidence, and final status should be derived from the selected
+attempt rather than from a separate narrative summary.
+
+Reader fallbacks such as `defuddle` are part of this ladder when installed and
+appropriate for the page type. When they are missing, the trace should say so
+instead of silently collapsing the route.
+
 `agent-browser` reconnaissance is automatic only inside these read-only bounds:
 
 - open the target URL

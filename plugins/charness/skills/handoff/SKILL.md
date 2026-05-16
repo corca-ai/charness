@@ -79,6 +79,9 @@ the `Workflow Trigger` first and continue with that workflow.
    - tight reference list
    - one reference to the owning artifact for metrics, history, or proof detail
      instead of replaying that detail inline
+   - if the handoff carries a standing invariant, recurring workflow rule, or
+     future-regression guard, promote it to the owning contract, reference, or
+     validator surface and leave only a short pickup pointer
    - leave always-loaded host instruction surfaces out of `References` by
      default; include them only when omitting them would realistically change
      the first action
@@ -125,6 +128,10 @@ The handoff should usually contain:
   budget is a failure guard, not a target.
 - Do not restate stable repo defaults, release numbers, or gate metrics when a
   link to the owning artifact would leave the next action unchanged.
+- Do not let recurring capability invariants live only in handoff. Handoff may
+  point to an owner artifact, but the durable rule belongs in the skill,
+  support-runtime contract, spec, validator, or operator document that owns the
+  behavior.
 - Do not list always-loaded host instruction surfaces in `References` by
   default when the host already injects them automatically at session start.
 - Do not assume your own interpretation of the handoff is the only plausible
