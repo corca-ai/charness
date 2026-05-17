@@ -1,23 +1,14 @@
 # Release Surface Check
-Date: 2026-05-16
+Date: 2026-05-17
 
 ## Scope
 
-Advanced `charness` toward release `0.5.28` (tag `v0.5.28`) through the repo-owned release helper.
-
-## Critique
-
-- Fresh-eye release critique: parent-delegated.
-- Result: no release blocker; patch bump is appropriate for the unreleased
-  gather, quality, runtime-lens, diagnostics, docs, and harness-hardening fixes.
-- Release-blocker repair: the first publish attempt exposed
-  `scripts/check_mutation_score.py` exceeding the Python length gate; this
-  release commit refactors that helper and its plugin export before publish.
+Advanced `charness` toward release `0.5.29` (tag `v0.5.29`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.5.27`
-- target version: `0.5.28`
+- previous version: `0.5.28`
+- target version: `0.5.29`
 - git branch: `main`
 - git remote: `origin`
 
@@ -31,26 +22,25 @@ Advanced `charness` toward release `0.5.28` (tag `v0.5.28`) through the repo-own
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.5.28`; creation runs after the branch/tag push
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.5.29`; creation runs after the branch/tag push
 - public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- This slice still requires configured public/real-host verification before the release is fully closed.
+- No configured public/real-host verification trigger matched this slice, but async publication repos should still keep workflow/public checks explicit.
 
 ## Real-Host Proof
 
-- Release-time real-host proof is required for this slice.
-- On a second machine or a clean temp-home, refresh `charness` through the published operator path before claiming the release surface is ready.
-- Run `charness tool doctor cautilus --json` before installing `cautilus` and confirm the missing-binary state still surfaces an install document URL instead of a guessed package-manager command.
-- Follow the official Cautilus install script at `https://github.com/corca-ai/cautilus/blob/main/install.sh`, then verify `cautilus --version` and `cautilus version --verbose`.
-- Re-run `charness tool doctor cautilus --json` and confirm the binary is detected on PATH.
-- Run `charness tool sync-support cautilus --json`, then confirm the generated support surface exists and the doctor payload reports support as materialized.
+- No configured release-time real-host proof trigger matched this slice.
 
 ## Fresh Checkout Probes
 
 - No repo-declared fresh checkout probes were configured for this release.
+
+## Issue Closeout
+
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
