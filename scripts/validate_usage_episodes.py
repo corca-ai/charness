@@ -27,7 +27,7 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 def _schema_root(repo_root: Path) -> Path:
     candidate = repo_root / "integrations" / "usage-episodes"
-    if candidate.is_dir():
+    if (candidate / "manifest.schema.json").is_file() and (candidate / "episode.schema.json").is_file():
         return candidate
     return REPO_ROOT / "integrations" / "usage-episodes"
 

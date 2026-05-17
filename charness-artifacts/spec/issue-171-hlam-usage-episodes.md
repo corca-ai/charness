@@ -2,6 +2,12 @@
 
 Source: https://github.com/corca-ai/charness/issues/171
 
+Sibling issues:
+
+- `corca-ai/ceal#102`: https://github.com/corca-ai/ceal/issues/102
+- `corca-ai/crill#10`: https://github.com/corca-ai/crill/issues/10
+- `corca-ai/cautilus#45`: https://github.com/corca-ai/cautilus/issues/45
+
 ## Problem
 
 The c-families projects need a shared way to reason about habit and usage

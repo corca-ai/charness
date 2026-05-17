@@ -144,7 +144,7 @@ Then load only the references needed for the detected state:
      usage episodes, seed `<repo-root>/.agents/usage-episodes-adapter.yaml`
      with `$SKILL_DIR/scripts/seed_usage_episodes_adapter.py`; emitted JSONL
      remains generated local state under `.charness/usage-episodes`; validate
-     with the repo-owned usage episode validator
+     with the Charness/plugin-provided usage episode validator
 5. Keep the boundaries honest.
    - `<repo-root>/README.md`: current repo story and user-facing orientation
    - `<repo-root>/AGENTS.md`: agent operating contract for this repo
