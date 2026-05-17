@@ -133,6 +133,28 @@ def test_skill_ergonomics_gate_fails_when_opted_in_rule_matches(tmp_path: Path) 
     assert "skills/public/demo/SKILL.md" in plain.stdout
 
 
+def test_skill_ergonomics_gate_fails_on_invalid_rule_adapter_error(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path, rules=["typo_rule"])
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["adapter_errors"]
+    assert "unknown rule `typo_rule`" in payload["adapter_errors"][0]
+    assert payload["checked_skills"] == []
+    assert payload["violations"] == []
+
+    plain = run_script(SCRIPT, "--repo-root", str(repo))
+    assert plain.returncode == 1
+    assert "quality adapter: skill_ergonomics_gate_rules contains unknown rule `typo_rule`" in plain.stdout
+
+    wrapper = run_script("scripts/validate_skill_ergonomics.py", "--repo-root", str(repo), "--json")
+    assert wrapper.returncode == 1
+    wrapper_payload = json.loads(wrapper.stdout)
+    assert "unknown rule `typo_rule`" in wrapper_payload["adapter_errors"][0]
+
+
 def test_skill_ergonomics_gate_ignores_mode_option_terms_inside_fences(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)

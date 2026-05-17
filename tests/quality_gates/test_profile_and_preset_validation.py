@@ -174,6 +174,9 @@ def test_validate_adapters_rejects_charness_quality_coverage_floor_drift(tmp_pat
                 "  command:",
                 "  - python3",
                 "  - -V",
+                "  class: standing",
+                "  startup_mode: warm",
+                "  surface: direct",
                 "preflight_commands:",
                 "- python3 scripts/validate_maintainer_setup.py --repo-root .",
                 "gate_commands:",
@@ -454,6 +457,36 @@ def test_validate_adapters_accepts_charness_quality_adapter_mature_fields(tmp_pa
     assert result.returncode == 0, result.stderr
 
 
+def test_validate_adapters_rejects_invalid_quality_adapter_rule(tmp_path: Path) -> None:
+    repo = tmp_path / "quality-rule-drift"
+    agents_dir = repo / ".agents"
+    agents_dir.mkdir(parents=True)
+    skill_dir = repo / "skills" / "public" / "demo"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: demo\n---\n\n# Demo\n\nUse this when adapter validation needs a skill surface.\n",
+        encoding="utf-8",
+    )
+    (agents_dir / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_gate_rules:",
+                "  - typo_rule",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/validate_adapters.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "skill_ergonomics_gate_rules contains unknown rule `typo_rule`" in result.stderr
+
+
 def test_validate_adapters_accepts_checked_in_charness_quality_coverage_floor() -> None:
     result = run_script("scripts/validate_adapters.py", "--repo-root", str(Path(__file__).resolve().parents[2]))
 
@@ -503,6 +536,9 @@ def test_validate_adapters_rejects_charness_quality_command_drift(tmp_path: Path
                 "  command:",
                 "  - python3",
                 "  - -V",
+                "  class: standing",
+                "  startup_mode: warm",
+                "  surface: direct",
                 "preflight_commands:",
                 "- python3 scripts/validate_maintainer_setup.py --repo-root .",
                 "gate_commands:",
@@ -588,6 +624,9 @@ def test_validate_adapters_rejects_charness_quality_coverage_floor_threshold_dri
                     "  command:",
                     "  - python3",
                     "  - -V",
+                    "  class: standing",
+                    "  startup_mode: warm",
+                    "  surface: direct",
                     "preflight_commands:",
                     "- python3 scripts/validate_maintainer_setup.py --repo-root .",
                     "gate_commands:",

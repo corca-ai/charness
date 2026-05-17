@@ -87,7 +87,7 @@ Prefer the strongest honest access path first:
    auth/bootstrap is missing or the source still needs human-only approval
 7. degraded path only when it still produces honest partial value
 
-Examples — each example follows whichever `gather_provider.<source>` route
+Examples — each example follows whichever `gather_provider.<source>.mode`
 the adapter selected; never substitute direct CLIs/tokens under
 `host-mediated` or `none`:
 
@@ -147,7 +147,7 @@ For the browser-mediated private-source ladder, read
    - only widen into adjacent context if the user asked for it or the current
      question cannot be answered honestly otherwise
    - render closeout only from the verified gathered-asset ledger (canonical
-     source URL, asset path, access route, freshness); reuse the resolved
+     source URL, asset path, access mode, freshness); reuse the resolved
      source on retry instead of re-walking discovery, per
      `../../shared/references/closeout-discipline.md`
 

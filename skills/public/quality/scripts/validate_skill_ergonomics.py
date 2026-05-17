@@ -114,16 +114,28 @@ def _empty_rules_warnings(skill_count: int, requested_paths: list[str]) -> list[
 
 def evaluate(repo_root: Path) -> dict[str, Any]:
     adapter = load_adapter(repo_root)
+    adapter_errors = adapter.get("errors", []) if adapter.get("valid") is not True else []
     rules: list[str] = adapter["data"].get("skill_ergonomics_gate_rules", []) or []
     requested_paths = adapter["data"].get("skill_ergonomics_skill_paths") or adapter["data"].get(
         "cli_skill_surface_skill_paths"
     ) or []
     runtime_install_prefixes = _vendored_path_lib.vendored_prefixes(_string_list(adapter["data"], "skill_ergonomics_runtime_install_skill_paths"))
     vendored_prefixes_list = _vendored_path_lib.vendored_prefixes(_string_list(adapter["data"], "vendored_paths"))
+    if adapter_errors:
+        return {
+            "adapter_path": adapter.get("path"),
+            "adapter_errors": adapter_errors,
+            "rules": rules,
+            "checked_skills": [],
+            "discovery_errors": [],
+            "violations": [],
+            "warnings": [],
+        }
     if not rules:
         discovered_skills = _iter_checked_skill_paths(repo_root, requested_paths, vendored_prefixes_list)
         return {
             "adapter_path": adapter.get("path"),
+            "adapter_errors": [],
             "rules": [],
             "checked_skills": [],
             "discovery_errors": [],
@@ -179,6 +191,7 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
 
     return {
         "adapter_path": adapter.get("path"),
+        "adapter_errors": [],
         "rules": rules,
         "checked_skills": checked_skills,
         "discovery_errors": discovery_errors,
@@ -188,6 +201,8 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
 
 
 def _format_human(report: dict[str, Any]) -> str:
+    if report.get("adapter_errors"):
+        return "\n".join(f"quality adapter: {message}" for message in report["adapter_errors"])
     if not report["rules"]:
         warnings = report.get("warnings", [])
         if not warnings:
@@ -215,6 +230,10 @@ def _format_human(report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def has_failures(report: dict[str, Any]) -> bool:
+    return bool(report.get("adapter_errors") or report.get("violations") or report.get("discovery_errors"))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -226,7 +245,7 @@ def main() -> int:
         print(json.dumps(report, ensure_ascii=False, indent=2))
     else:
         print(_format_human(report))
-    return 1 if report["violations"] or report["discovery_errors"] else 0
+    return 1 if has_failures(report) else 0
 
 
 if __name__ == "__main__":
