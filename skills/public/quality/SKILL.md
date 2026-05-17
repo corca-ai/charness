@@ -53,8 +53,7 @@ When writing the quality artifact, edit the resolved `write_artifact_path`, not
 
 ## Workflow
 
-1. Restate the quality question: scope, likely wrong boundary or ownership
-   seam, and whether read-only constraints downgrade conclusions.
+1. Restate the quality question: scope, likely wrong boundary or ownership seam, and whether read-only constraints downgrade conclusions.
 2. Detect the current gate and source surface.
    - enumerate source, specs, docs, adapters, skill surfaces, and commands
      before letting the previous quality artifact define scope
@@ -72,6 +71,7 @@ When writing the quality artifact, edit the resolved `write_artifact_path`, not
    - classify migration-time exact-prose guards as temporary bridges with retirement paths
 3. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
+   - when `.agents/usage-episodes-adapter.yaml` exists, resolve and run the Charness package-root validator `validate_usage_episodes.py`; `no_adapter` and `disabled` are skipped states, not failures
    - run executable-spec overlap or cost guards before proposing more spec
      coverage
    - for standing-test economics, inspect duplicated proof, runner isolation,

@@ -59,3 +59,19 @@ def test_seed_usage_episodes_force_overwrites(tmp_path: Path) -> None:
 
     assert result.returncode == 0, result.stderr
     assert "enabled: true" in target.read_text(encoding="utf-8")
+
+
+def test_usage_episodes_are_skill_level_setup_and_quality_contracts() -> None:
+    setup_skill = (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    quality_skill = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "seed `<repo-root>/.agents/usage-episodes-adapter.yaml`;" in setup_skill
+    assert "setup implementation uses" in setup_skill
+    assert "not a user-facing API" in setup_skill
+    assert ".agents/usage-episodes-adapter.yaml" in quality_skill
+    assert "package-root validator `validate_usage_episodes.py`" in quality_skill
+    assert "`no_adapter` and `disabled` are skipped states" in quality_skill
