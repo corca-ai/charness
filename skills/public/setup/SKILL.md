@@ -140,6 +140,10 @@ Then load only the references needed for the detected state:
      mechanism inventory, seed `<repo-root>/.agents/t-events-adapter.yaml`
      with `$SKILL_DIR/scripts/seed_t_events_adapter.py`; consumers that
      prefer not to capture events flip `enabled: false` after seeding
+   - when a user-facing product repo wants to validate privacy-bounded H-LAM/T
+     usage episodes, seed `<repo-root>/.agents/usage-episodes-adapter.yaml`
+     with `$SKILL_DIR/scripts/seed_usage_episodes_adapter.py`; emitted JSONL
+     remains generated local state under `.charness/usage-episodes` by default
 5. Keep the boundaries honest.
    - `<repo-root>/README.md`: current repo story and user-facing orientation
    - `<repo-root>/AGENTS.md`: agent operating contract for this repo

@@ -1,0 +1,23 @@
+# charness usage-episodes adapter example.
+#
+# Drop this file at .agents/usage-episodes-adapter.yaml in a user-facing
+# product repo to opt into validating privacy-bounded H-LAM/T usage episodes.
+# Runtime records are generated local state under .charness/ by default and
+# should not be committed except as intentionally curated fixtures.
+#
+# Schema:  integrations/usage-episodes/manifest.schema.json
+# Records: integrations/usage-episodes/episode.schema.json
+version: 1
+repo: my-product
+enabled: true
+storage_path: .charness/usage-episodes
+events:
+  - usage_episode
+privacy:
+  raw_prompt: false
+  raw_transcript: false
+  user_identity: host-owned
+  policy_ref: docs/privacy.md
+rotation:
+  max_files: 10
+  max_size_mb: 10

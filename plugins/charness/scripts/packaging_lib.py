@@ -234,6 +234,10 @@ def export_plugin_tree(repo_root: Path, plugin_root: Path, manifest: dict) -> No
     if t_events_root.is_dir():
         replace_tree(t_events_root, plugin_root / "integrations" / "t-events")
 
+    usage_episodes_root = repo_root / "integrations" / "usage-episodes"
+    if usage_episodes_root.is_dir():
+        replace_tree(usage_episodes_root, plugin_root / "integrations" / "usage-episodes")
+
     scripts_root = repo_root / "scripts"
     exported_scripts_root = plugin_root / "scripts"
     replace_tree_if_present(scripts_root, exported_scripts_root)

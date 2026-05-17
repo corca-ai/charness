@@ -11,6 +11,7 @@ setup:artifact:retro:seed-only -- setup seeds initial recent-lessons.md via seed
 setup:adapter:retro:seed-only -- setup seeds .agents/retro-adapter.yaml via seed_retro_memory.py; runtime owns to retro
 setup:adapter:worktree:seed-only -- setup seeds .agents/worktree-adapter.yaml; runtime owns to worktree integration
 setup:adapter:t-events:seed-only -- setup seeds .agents/t-events-adapter.yaml via seed_t_events_adapter.py; runtime owns to t-events integration
+setup:adapter:usage-episodes:seed-only -- setup seeds .agents/usage-episodes-adapter.yaml via seed_usage_episodes_adapter.py; runtime owns to usage-episodes integration
 setup:artifact:spec:read-only cite -- seed_t_events_adapter.py template comment cites issue-135 umbrella spec for traceability; runtime owns to spec
 issue:artifact:gather:read-only cite -- issue resolve flow references gather artifacts as evidence sources
 critique:artifact:retro:read-only cite -- code-critique reference cross-links charness-artifacts/retro/recent-lessons.md as the defect-class memory home

@@ -183,13 +183,14 @@
       ],
       "review_status": "reviewed",
       "reviewed_on": "2026-04-24",
-      "observed_evidence": [
-        "The checked-in public core keeps repo-mode detection explicit while adding a task-completing delegated-review gate for normalization runs; inspect/help/routing calls stay cheap.",
-        "`inspect_repo.py` now emits `recommendations[]` separately from `normalization.findings`, so adapter-declared policy sources can raise `agents.delegated_review_policy` without pretending phrase matching is a hard fact.",
-        "`inspect_repo.py` now flags `fresh_eye_task_review_scope_drift` when `AGENTS.md` carries a critique or fresh-eye delegation rule but does not name task-completing `setup` and `quality` review runs as spawn-authorized scopes.",
-        "`inspect_repo.py` keeps explicit repo inspection resilient by bounding source-guard discovery to AGENTS.md, README.md, docs/, and specs/ by default; repos that keep guards elsewhere can set `source_guard_scan_roots`, and unreadable specs become structured warnings instead of aborting install/update recovery."
-      ]
-    },
+    "observed_evidence": [
+      "The checked-in public core keeps repo-mode detection explicit while adding a task-completing delegated-review gate for normalization runs; inspect/help/routing calls stay cheap.",
+      "`inspect_repo.py` now emits `recommendations[]` separately from `normalization.findings`, so adapter-declared policy sources can raise `agents.delegated_review_policy` without pretending phrase matching is a hard fact.",
+      "`inspect_repo.py` now flags `fresh_eye_task_review_scope_drift` when `AGENTS.md` carries a critique or fresh-eye delegation rule but does not name task-completing `setup` and `quality` review runs as spawn-authorized scopes.",
+      "`inspect_repo.py` keeps explicit repo inspection resilient by bounding source-guard discovery to AGENTS.md, README.md, docs/, and specs/ by default; repos that keep guards elsewhere can set `source_guard_scan_roots`, and unreadable specs become structured warnings instead of aborting install/update recovery.",
+      "The setup core now names `seed_usage_episodes_adapter.py` as a seed-only path for user-facing product repos that want privacy-bounded H-LAM/T usage episode validation; runtime capture remains owned by the `usage-episodes` integration."
+    ]
+  },
     {
       "skill_id": "issue",
       "prompt": "File or resolve this GitHub issue through `gh`, keeping issue identity and freshness grounded in GitHub state.",

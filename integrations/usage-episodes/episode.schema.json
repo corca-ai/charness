@@ -1,0 +1,182 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "charness usage episode record",
+  "description": "Single privacy-bounded product usage episode for H-LAM/T analysis. Records are JSON objects, normally one per line in <storage_path>/usage_episode.jsonl.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_type",
+    "timestamp",
+    "product_id",
+    "episode_id",
+    "actor_kind",
+    "context_bucket",
+    "entry_point",
+    "trigger_type",
+    "selected_job",
+    "core_action",
+    "agent_action",
+    "first_value_ref",
+    "outcome_status",
+    "t_status"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "event_type": {
+      "const": "usage_episode"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "product_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "episode_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque product-owned id. Must not embed user identity, raw prompt, transcript, or source body."
+    },
+    "actor_kind": {
+      "type": "string",
+      "enum": [
+        "human",
+        "operator",
+        "developer",
+        "agent",
+        "agent_on_behalf"
+      ]
+    },
+    "context_bucket": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Privacy-safe product-owned context bucket such as slack_thread or github_issue."
+    },
+    "entry_point": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Product-owned entry point bucket such as mention, command, ui, scheduled, delegated, or api."
+    },
+    "trigger_type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Product-owned trigger bucket such as explicit_request, correction, failure, review_request, or follow_up."
+    },
+    "selected_job": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Privacy-safe human/job intent bucket, not a raw user prompt."
+    },
+    "core_action": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Product-specific valuable behavior."
+    },
+    "agent_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "surface"
+      ],
+      "properties": {
+        "surface": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The LAM surface that acted, such as slack_reply, github_issue_create, tool_call, or product_workflow."
+        },
+        "capability_ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional product-owned capability or integration reference."
+        }
+      }
+    },
+    "first_value_ref": {
+      "$ref": "#/$defs/opaque_ref"
+    },
+    "outcome_status": {
+      "type": "string",
+      "enum": [
+        "delivered",
+        "abandoned",
+        "corrected",
+        "escalated",
+        "failed"
+      ]
+    },
+    "feedback_signal": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional product-owned feedback bucket such as accepted, edited, ignored, retried, follow_up_requested, or human_confirmed."
+    },
+    "t_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "candidate",
+        "promoted",
+        "rejected"
+      ]
+    },
+    "t_link": {
+      "$ref": "#/$defs/opaque_ref"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "t_status": {
+            "const": "none"
+          }
+        },
+        "required": [
+          "t_status"
+        ]
+      },
+      "then": {
+        "not": {
+          "required": [
+            "t_link"
+          ]
+        }
+      }
+    },
+    {}
+  ],
+  "$defs": {
+    "opaque_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "ref"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^[^\\u0000-\\u001f\\r\\n]+$",
+          "description": "Opaque product-owned identifier or locator. Must not embed source body, prompt text, transcript excerpts, author identity, or raw user identity."
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))(?!.*[\\r\\n]).+$",
+          "description": "Optional repo-root-relative path when the reference points into a repo artifact."
+        }
+      }
+    }
+  }
+}

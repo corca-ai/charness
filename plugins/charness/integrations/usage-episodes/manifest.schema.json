@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "charness usage-episodes adapter",
+  "description": "Repo-local manifest declaring how a user-facing product records privacy-bounded usage episodes for H-LAM/T analysis. Loaded from .agents/usage-episodes-adapter.yaml. Absence means no capture/validation target; enabled:false keeps the file but suppresses validation of runtime JSONL.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "enabled"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "repo": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional consumer repo identifier."
+    },
+    "enabled": {
+      "type": "boolean",
+      "description": "Whether usage episode validation/capture is active for this repo."
+    },
+    "storage_path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))(?!.*[\\r\\n]).+$",
+      "default": ".charness/usage-episodes",
+      "description": "Path relative to repo root containing usage_episode.jsonl."
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "usage_episode"
+        ]
+      },
+      "description": "Subset of v1 events captured by this repo. Omit to capture all v1 events."
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "raw_prompt": {
+          "const": false,
+          "description": "Must be false for the shared episode substrate."
+        },
+        "raw_transcript": {
+          "const": false,
+          "description": "Must be false for the shared episode substrate."
+        },
+        "user_identity": {
+          "type": "string",
+          "enum": [
+            "host-owned",
+            "product-owned",
+            "none"
+          ],
+          "description": "Where user identity, if any, is governed. The shared schema does not carry identity."
+        },
+        "policy_ref": {
+          "type": "string",
+          "description": "Optional product-owned privacy or retention policy reference when raw source material is retained outside this schema."
+        }
+      },
+      "description": "Privacy posture for shared usage episodes."
+    },
+    "rotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_files": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "max_size_mb": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        }
+      },
+      "description": "Optional local retention policy for runtime JSONL files."
+    }
+  }
+}
