@@ -42,7 +42,10 @@ DEFAULT_PROMPT_ASSET_POLICY = {
 }
 DEFAULT_SKILL_ERGONOMICS_GATE_RULES: list[str] = []
 VALID_SKILL_ERGONOMICS_GATE_RULES = frozenset({
+    "code_fence_without_helper_script",
+    "long_core",
     "mode_option_pressure_terms",
+    "portable_helper_path_ambiguity",
     "progressive_disclosure_risk",
 })
 

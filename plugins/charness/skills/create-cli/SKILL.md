@@ -9,7 +9,7 @@ Use this when the task is to add, refactor, or normalize a command-line tool in
 `charness` or another repo that `charness` is helping with.
 
 Borrow Jef Raskin-style discoverability and modelessness when shaping the
-surface: make the next command obvious, keep mode shifts explicit, and avoid
+surface: make the next command obvious, keep state shifts explicit, and avoid
 forcing operators or agents to memorize hidden lifecycle state.
 
 ## Bootstrap
@@ -56,7 +56,7 @@ steps call tools outside the baseline shell surface.
    - if the product needs one command that refreshes both itself and tracked
      external/runtime surfaces, keep that aggregate path product-owned, such as
      `update all`, instead of leaking harness-internal vocabulary
-   - `--json` or another structured mode when agents may consume the output
+   - `--json` or another structured output when agents may consume the result
    - if agents may call the CLI repeatedly, define at least one cheap read-only
      startup probe such as `version`, `--version`, or a lightweight inspect
      command; keep that probe stable enough for standing latency measurement
@@ -66,7 +66,7 @@ steps call tools outside the baseline shell surface.
      prep/execute split section
    - public subcommands should expose a no-side-effect `--help` contract unless
      there is a strong documented reason not to
-   - mutating subcommands with required positionals should reject option-looking
+   - mutating subcommands with required positionals should reject flag-looking
      positional values such as `--help` before any state change
    - if wrappers or agents may probe the surface, separate machine-readable
      command discovery such as `commands --json` or `capabilities --json` from
@@ -75,7 +75,7 @@ steps call tools outside the baseline shell surface.
      external capability boundary separately from parser shape; see
      `references/external-capability-clis.md`
    - default stdout should stay concise for human operators; reserve full
-     structured payloads for explicit `--json` or equivalent machine mode
+     structured payloads for explicit `--json` or equivalent machine-output switch
    - reserve `-v` for `verbose`, not `version`; prefer canonical `version`
      plus optional top-level `--version` alias when the parser surface is
      already stable
@@ -140,7 +140,7 @@ steps call tools outside the baseline shell surface.
    - broad verification commands (pre-push, pre-release, aggregate `verify`)
      must not mutate the caller's worktree, index, or `HEAD`; ship a fixture
      that asserts `git status` stays clean and `HEAD` stays unchanged on
-     success, and prefer a read-only mode or disposable checkout for any
+     success, and prefer a read-only path or disposable checkout for any
      generating step
 
 ## Guardrails

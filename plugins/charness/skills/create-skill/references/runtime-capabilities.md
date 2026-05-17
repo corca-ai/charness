@@ -24,6 +24,7 @@ When an external capability is needed, design for:
 - support skill: provider-specific usage guidance
 - integration manifest: install, detect, healthcheck, access modes, and
   discovery-time capability metadata
+- keep manifest metadata rich enough to reveal capability kind and supported access modes
 - adapter: repo-local artifact paths and explicit non-secret defaults
 
 ## Review Questions

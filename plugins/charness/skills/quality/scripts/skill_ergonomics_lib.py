@@ -22,7 +22,8 @@ MODE_TERMS_RE = re.compile(r"\bmode(?:s)?\b", re.IGNORECASE)
 OPTION_TERMS_RE = re.compile(r"\boption(?:s)?\b", re.IGNORECASE)
 BARE_HELPER_PATH_RE = re.compile(r"`scripts/[A-Za-z0-9._/-]+\.(?:py|sh|bash|zsh|js|ts|rb|pl|lua)`")
 SOURCE_TREE_FILE_PATH_RE = re.compile(r"`skills/(?:public|support)/[A-Za-z0-9._-]+/[A-Za-z0-9._/-]+\.(?:md|py|sh|bash|zsh|js|ts|rb|pl|lua|yaml|yml|json)`")
-PRESSURE_EXEMPT_H2_SECTIONS = {"Load-Bearing Anchors"}
+PRESSURE_EXEMPT_H2_SECTIONS = {"Load-Bearing Anchors", "References"}
+INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 
 
 def count_files(directory: Path) -> int:
@@ -58,6 +59,10 @@ def has_portable_path_ambiguity(lines: list[str]) -> bool:
     return False
 
 
+def strip_inline_code(text: str) -> str:
+    return INLINE_CODE_RE.sub("", text)
+
+
 def classify_skill_type(relative_skill: Path, is_runtime_install: Callable[[str], bool]) -> str:
     if is_runtime_install(relative_skill.as_posix()):
         return "runtime_install"
@@ -81,7 +86,7 @@ def inventory_skill(
     body_lines = remove_pressure_exempt_sections(body.splitlines())
     nonempty_lines = [line for line in body_lines if line.strip()]
     prose_lines = markdown_helpers["strip_fenced_lines"](body_lines)
-    prose = "\n".join(prose_lines)
+    prose = strip_inline_code("\n".join(prose_lines))
     bootstrap_lines = markdown_helpers["extract_h2_section_lines"](body, "Bootstrap")
     code_fence_count = sum(1 for line in body_lines if line.strip().startswith("```"))
     bootstrap_fence_count = markdown_helpers["count_fence_blocks"](bootstrap_lines)

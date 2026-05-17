@@ -66,7 +66,7 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "run success criteria review so future-success claims",
         "call `critique` for non-trivial contract decisions",
         "keep the contract",
-        "probe-friendly and visible instead of inventing a user-facing mode choice.",
+        "probe-friendly and visible instead of inventing a user-facing taxonomy choice.",
         "- `Fixed Decisions`",
         "- `Probe Questions`",
         "- `Deferred Decisions`",

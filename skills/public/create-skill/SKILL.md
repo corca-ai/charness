@@ -45,7 +45,7 @@ sed -n '1,220p' presets/README.md
 2. Write a short brief before changing files.
    - concept, audience, trigger, external dependencies, accumulated state
    - candidate anchors and adjacent-skill behavior rules
-   - cold start, warm start, error recovery, and concrete failure modes
+   - cold start, warm start, error recovery, and concrete failure cases
    - source/principal binding drift or prescribed-path self-test concerns when relevant
 3. Freeze the current consumer contract before editing an existing public skill.
    - read the current reviewed dogfood case or scaffold it first with `python3 "$SKILL_DIR/../quality/scripts/suggest_public_skill_dogfood.py" --repo-root . --skill-id <skill-id> --json`

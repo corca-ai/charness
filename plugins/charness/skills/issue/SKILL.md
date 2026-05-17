@@ -41,15 +41,12 @@ repo by created date. It must not use the current session's last created issue.
 
 - `org/repo`: use that exact repository
 - `repo`: use the adapter `default_org`, which defaults to `corca-ai`
-- omitted repo: infer the current repository from Git remote; if the remote
-  lacks an owner, use `default_org` and the current directory name
+- omitted repo: infer the current repository from Git remote; if the remote lacks an owner, use `default_org` and the current directory name
 - for `issue resolve`, one numeric token or `start-end` token is the issue
   selector, not a repository name
 - adapter defaults live in `.agents/issue-adapter.yaml`
-- once named or first-resolved, the target is durable workflow state for the
-  session; on retry, reuse it; if unreachable, surface
-  `target_unavailable: <full_name>` and stop instead of silently switching to
-  another accessible repo (see `references/closeout-discipline.md`)
+- once named or first-resolved, the target is durable workflow state for the session; on retry, reuse it; if unreachable, surface
+  `target_unavailable: <full_name>` and stop instead of silently switching to another accessible repo (see `references/closeout-discipline.md`)
 
 ## New Issue
 

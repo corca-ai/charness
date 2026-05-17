@@ -127,7 +127,7 @@ the repo has named where state, rules, and queue ownership live.
    - what still needs action or follow-up
    - sync live runtime state into `charness-artifacts/hitl/latest.md` and run
      the durable artifact freshness check
-10. Report Mode. For generated report packets, render first-class decision
+10. Generated Reports. For generated report packets, render first-class decision
     cards with concrete questions, plain-language evidence interpretation,
     optional evidence links, comment fields, and display-only suggested actions.
     Order cards by decision leverage when priority metadata is present, then

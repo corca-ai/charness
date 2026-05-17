@@ -90,7 +90,7 @@ incrementally instead of leaving the model only in chat.
    - check the current repo surfaces first and treat existing code, tests, and
      operator docs as evidence rather than reopening them as chat-only questions
    - when multiple decisions are open, start with the upstream one that most
-     changes the rest of the design while preserving later options
+     changes the rest of the design while preserving later paths
    - ask one question at a time when real tradeoffs remain
    - prefer precise questions over broad brainstorming prompts
    - skip questions the repo, docs, or prior answers already resolved

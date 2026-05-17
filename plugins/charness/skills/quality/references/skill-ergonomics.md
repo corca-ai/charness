@@ -53,8 +53,10 @@ Fail-closed now:
 
 Advisory only unless the repo explicitly opts in:
 
+- long core body
 - mode/option pressure terms
 - progressive-disclosure risk
+- repeated bootstrap fences without a helper script
 - installed-bundle helper-path ambiguity review
 - trigger overlap / undertrigger review
 - broader progressive-disclosure judgment

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-17T10:39:19Z",
+  "generated_at": "2026-05-17T12:05:15Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -217,14 +217,14 @@
           "skills/shared/references/bootstrap-resolution.md",
           "skills/public/gather/references/browser-mediated-private-sources.md",
           "skills/public/gather/references/asset-refresh.md",
-          "skills/public/gather/scripts/write_record.py",
           "skills/shared/references/closeout-discipline.md",
           "skills/public/gather/references/adapter-contract.md",
           "skills/public/gather/references/gather-provider.md",
           "skills/public/gather/references/source-priority.md",
           "skills/public/gather/references/document-seams.md",
           "skills/public/gather/references/capability-contract.md",
-          "skills/public/gather/references/google-workspace-via-gws.md"
+          "skills/public/gather/references/google-workspace-via-gws.md",
+          "skills/public/gather/scripts/write_record.py"
         ],
         "source": "local-public",
         "layer": "public skill"

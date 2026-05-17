@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-17",
-  "source_artifact_count": 58,
-  "candidate_count": 361,
+  "source_artifact_count": 59,
+  "candidate_count": 366,
   "top_candidates": [
     {
       "candidate_id": "current_focus:c9461a407e5e",
@@ -51,6 +51,26 @@
           "artifact_path": "charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md",
           "date": "2026-05-17",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:737ba0535260",
+      "kind": "next_improvement",
+      "lesson": "add a future low-noise rule that `## References` remains link inventory rather than hidden workflow prose if that drift appears.",
+      "normalized_key": "add a future low noise rule that references remains link inventory rather than hidden",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
+          "date": "2026-05-17",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -155,6 +175,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:69b1573a9da0",
+      "kind": "next_improvement",
+      "lesson": "preserve this lesson in recent retro lessons so future skill compression does not trade exact contracts for a cleaner heuristic score.",
+      "normalized_key": "preserve this lesson in recent retro lessons so future skill compression does not trade",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
+          "date": "2026-05-17",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:dd9e67a04b19",
       "kind": "next_improvement",
       "lesson": "when a validator has a valid empty-policy state, require a warning or weak finding if a relevant checked surface exists.",
@@ -175,70 +215,30 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:357eaa6f5334",
+      "kind": "next_improvement",
+      "lesson": "when reducing pressure terms, first classify each term as casual branch language, schema literal, or canonical taxonomy before editing.",
+      "normalized_key": "when reducing pressure terms first classify each term as casual branch language schema literal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
+          "date": "2026-05-17",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:da80f56d67ac",
       "kind": "repeat_trap",
       "lesson": "I almost stopped after closeout without refreshing `find-skills`; changing a public skill reference means the local capability inventory can also change.",
       "normalized_key": "i almost stopped after closeout without refreshing find skills changing a public skill reference",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md",
-      "latest_source_date": "2026-05-17",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md",
-          "date": "2026-05-17",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:d91b801cd235",
-      "kind": "repeat_trap",
-      "lesson": "Prior all-skill health review surfaced core pressure, but the empty-rule state meant the relevant quality gate did not explain why that pressure was advisory-only.",
-      "normalized_key": "prior all skill health review surfaced core pressure but the empty rule state meant",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
-      "latest_source_date": "2026-05-17",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
-          "date": "2026-05-17",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:0af9f1a6d865",
-      "kind": "repeat_trap",
-      "lesson": "The first interpretation was too local: \"fix skill ergonomics rules\" instead of \"empty policy disables enforcement invisibly.\"",
-      "normalized_key": "the first interpretation was too local fix skill ergonomics rules instead of empty policy",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
-      "latest_source_date": "2026-05-17",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
-          "date": "2026-05-17",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:e6509e34b8f6",
-      "kind": "repeat_trap",
-      "lesson": "The first patch failed because I matched a wrapped sentence too literally.",
-      "normalized_key": "the first patch failed because i matched a wrapped sentence too literally",
       "source_count": 1,
       "latest_source_path": "charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md",
       "latest_source_date": "2026-05-17",
@@ -297,6 +297,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:737ba0535260",
+      "kind": "next_improvement",
+      "lesson": "add a future low-noise rule that `## References` remains link inventory rather than hidden workflow prose if that drift appears.",
+      "normalized_key": "add a future low noise rule that references remains link inventory rather than hidden",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
+          "date": "2026-05-17",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:f767387bf3a1",
       "kind": "next_improvement",
       "lesson": "after adding a new public-skill reference, refresh `find-skills` before the first closeout run instead of after it.",
@@ -397,6 +417,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:69b1573a9da0",
+      "kind": "next_improvement",
+      "lesson": "preserve this lesson in recent retro lessons so future skill compression does not trade exact contracts for a cleaner heuristic score.",
+      "normalized_key": "preserve this lesson in recent retro lessons so future skill compression does not trade",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
+          "date": "2026-05-17",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:dd9e67a04b19",
       "kind": "next_improvement",
       "lesson": "when a validator has a valid empty-policy state, require a warning or weak finding if a relevant checked surface exists.",
@@ -417,6 +457,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:357eaa6f5334",
+      "kind": "next_improvement",
+      "lesson": "when reducing pressure terms, first classify each term as casual branch language, schema literal, or canonical taxonomy before editing.",
+      "normalized_key": "when reducing pressure terms first classify each term as casual branch language schema literal",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
+          "date": "2026-05-17",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:da80f56d67ac",
       "kind": "repeat_trap",
       "lesson": "I almost stopped after closeout without refreshing `find-skills`; changing a public skill reference means the local capability inventory can also change.",
@@ -431,6 +491,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md",
+          "date": "2026-05-17",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0f64ce977d7f",
+      "kind": "repeat_trap",
+      "lesson": "I initially over-optimized pressure terms by changing exact schema vocabulary (`gather_provider.<source>.mode`) into a softer route phrase. The fresh-eye critique caught that this was semantic drift, not harmless compression.",
+      "normalized_key": "i initially over optimized pressure terms by changing exact schema vocabulary gather provider source",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
           "date": "2026-05-17",
           "section": "Waste"
         }
@@ -511,6 +591,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md",
+          "date": "2026-05-17",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:26797ffe5a40",
+      "kind": "repeat_trap",
+      "lesson": "Updating the quality artifact after the full gate took extra loops because its validators require exact runtime-signal and inventory-consumption evidence fields.",
+      "normalized_key": "updating the quality artifact after the full gate took extra loops because its validators",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md",
           "date": "2026-05-17",
           "section": "Waste"
         }

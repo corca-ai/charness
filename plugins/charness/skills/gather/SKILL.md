@@ -87,7 +87,7 @@ Prefer the strongest honest access path first:
    auth/bootstrap is missing or the source still needs human-only approval
 7. degraded path only when it still produces honest partial value
 
-Examples — each example follows whichever `gather_provider.<source>.mode`
+Examples — each example follows whichever `gather_provider.<source>` route
 the adapter selected; never substitute direct CLIs/tokens under
 `host-mediated` or `none`:
 
@@ -129,7 +129,7 @@ For the browser-mediated private-source ladder, read
 3. Normalize the source into a durable asset.
    - keep it readable
    - preserve source identity and freshness context
-   - preserve the access path and auth/bootstrap mode that were actually used
+   - preserve the access path and auth/bootstrap route that were actually used
    - avoid mixing raw source excerpts with unsupported guesses
 4. Refresh in place when the source identity matches.
    - if an asset for the same source already exists, update that asset rather
@@ -141,13 +141,13 @@ For the browser-mediated private-source ladder, read
      will silently overwrite the prior canonical asset. Write a new dated
      record under the gather output directory first, then update the
      pointer atomically. See `references/asset-refresh.md` and the
-     scripted writer `scripts/write_record.py`.
+     scripted writer `$SKILL_DIR/scripts/write_record.py`.
 5. Answer the immediate request.
    - give the directly requested facts first
    - only widen into adjacent context if the user asked for it or the current
      question cannot be answered honestly otherwise
    - render closeout only from the verified gathered-asset ledger (canonical
-     source URL, asset path, access mode, freshness); reuse the resolved
+     source URL, asset path, access route, freshness); reuse the resolved
      source on retry instead of re-walking discovery, per
      `../../shared/references/closeout-discipline.md`
 

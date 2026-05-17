@@ -45,7 +45,7 @@ Adapter policy:
 
 ## Workflow
 
-1. Select the mode.
+1. Select the retro shape.
    - explicit user wording wins
    - `this session`, `this task`, `what just happened` => `session`
    - `this week`, `sprint`, `recent pattern` => `weekly`

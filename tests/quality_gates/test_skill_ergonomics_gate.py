@@ -380,3 +380,152 @@ def test_skill_ergonomics_gate_fails_when_opted_in_progressive_disclosure_risk_m
     payload = json.loads(result.stdout)
     assert payload["rules"] == ["progressive_disclosure_risk"]
     assert payload["violations"][0]["rule"] == "progressive_disclosure_risk"
+
+
+def test_skill_ergonomics_gate_fails_when_opted_in_long_core_matches(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    skill_dir = repo / "skills" / "public" / "demo" / "references"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "note.md").write_text("# Note\n", encoding="utf-8")
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_gate_rules:",
+                "  - long_core",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    filler = [f"filler line {index}" for index in range(170)]
+    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                *filler,
+                "",
+                "## References",
+                "",
+                "- `references/note.md`",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["violations"][0]["rule"] == "long_core"
+
+
+def test_skill_ergonomics_gate_fails_when_opted_in_code_fence_rule_matches(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    skill_dir = repo / "skills" / "public" / "demo"
+    skill_dir.mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_gate_rules:",
+                "  - code_fence_without_helper_script",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (skill_dir / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "## Bootstrap",
+                "",
+                "```bash",
+                "echo first",
+                "```",
+                "",
+                "```bash",
+                "echo second",
+                "```",
+                "",
+                "```bash",
+                "echo third",
+                "```",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["violations"][0]["rule"] == "code_fence_without_helper_script"
+
+
+def test_skill_ergonomics_gate_fails_when_opted_in_portable_helper_rule_matches(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    skill_dir = repo / "skills" / "public" / "demo" / "references"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "note.md").write_text("# Note\n", encoding="utf-8")
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_gate_rules:",
+                "  - portable_helper_path_ambiguity",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "Use `scripts/helper.py` before stopping.",
+                "",
+                "## References",
+                "",
+                "- `references/note.md`",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["violations"][0]["rule"] == "portable_helper_path_ambiguity"

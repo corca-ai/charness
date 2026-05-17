@@ -109,6 +109,44 @@ def test_inventory_skill_ergonomics_flags_portable_helper_path_ambiguity(tmp_pat
     assert any("installed-bundle portability" in item for item in skill["review_prompts"])
 
 
+def test_inventory_skill_ergonomics_ignores_inline_code_for_pressure_terms(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo" / "references"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "note.md").write_text("# Note\n", encoding="utf-8")
+    (repo / "skills" / "public" / "demo" / "SKILL.md").write_text(
+        "\n".join(
+            [
+                "---",
+                "name: demo",
+                'description: "Demo skill."',
+                "---",
+                "",
+                "# Demo",
+                "",
+                "Read `gather_provider.<source>.mode` and preserve `Access Mode`.",
+                "",
+                "## References",
+                "",
+                "- `references/note.md`",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    skill = payload["skills"][0]
+    assert "mode_pressure_terms_present" not in skill["heuristics"]
+
+
 def test_inventory_skill_ergonomics_uses_adapter_skill_paths(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     skill_root = repo / "packages" / "official-skills" / "ceal-native" / "skills"

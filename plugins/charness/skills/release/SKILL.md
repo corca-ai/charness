@@ -23,9 +23,7 @@ Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 ```
 
-Default durable artifact:
-
-- `<repo-root>/charness-artifacts/release/latest.md`
+Default durable artifact: `<repo-root>/charness-artifacts/release/latest.md`.
 
 If the repo has no checked-in release adapter yet, scaffold one:
 

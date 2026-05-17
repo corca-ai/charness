@@ -43,7 +43,7 @@ nearby public workflow. For example, executable-spec terms should surface
 - show the next usable path instead of only saying "not found"
 
 Borrow Jef Raskin-style discoverability discipline: do not turn capability
-search into a mode maze. Surface the smallest obvious next step, keep lifecycle
+search into a routing maze. Surface the smallest obvious next step, keep lifecycle
 boundaries visible, and make it easy for the next operator to tell what to do
 now.
 
@@ -68,7 +68,7 @@ sed -n '1,220p' docs/support-skill-policy.md 2>/dev/null || true
 Pass `--read-only` when the caller must not mutate the workspace (read-only
 sandbox, routing-only eval, or any context where the durable inventory artifact
 refresh is not part of the contract). The payload still contains the inventory
-on stdout, and `artifacts.mode` reports `read-only` so the consumer can tell
+on stdout, and `artifacts` reports `read-only` as write status so the consumer can tell
 that no durable artifact was written.
 
 If a host-provided installed skill path is missing, resolve the current

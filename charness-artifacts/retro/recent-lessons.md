@@ -8,16 +8,16 @@
 ## Repeat Traps
 
 - I almost stopped after closeout without refreshing `find-skills`; changing a public skill reference means the local capability inventory can also change. (source: `charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md`)
+- I initially over-optimized pressure terms by changing exact schema vocabulary (`gather_provider.<source>.mode`) into a softer route phrase. The fresh-eye critique caught that this was semantic drift, not harmless compression. (source: `charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md`)
 - Prior all-skill health review surfaced core pressure, but the empty-rule state meant the relevant quality gate did not explain why that pressure was advisory-only. (source: `charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md`)
 - The first interpretation was too local: "fix skill ergonomics rules" instead of "empty policy disables enforcement invisibly." (source: `charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md`)
-- The first patch failed because I matched a wrapped sentence too literally. (source: `charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md`)
 
 ## Next-Time Checklist
 
+- add a future low-noise rule that `## References` remains link inventory rather than hidden workflow prose if that drift appears. (source: `charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md`)
 - after adding a new public-skill reference, refresh `find-skills` before the first closeout run instead of after it. (source: `charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md`)
 - classify empty config as one of absent surface, intentional opt-out, advisory-only, or disabled enforcement before accepting a green gate. (source: `charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md`)
 - consider a future skill-ergonomics rule opt-in or refactor plan for the remaining long-core public skills instead of letting advisory inventory stay invisible. (source: `charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md`)
-- if untracked synced reference files recur, add a structural export-sync check that fails when a source reference exists without its plugin counterpart or vice versa. (source: `charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md`)
 
 ## Selection Policy
 
@@ -29,3 +29,4 @@
 
 - `charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md`
 - `charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md`
+- `charness-artifacts/retro/2026-05-17-skill-pressure-cleanup.md`

@@ -48,7 +48,7 @@ Before mutating spec/design docs in a worktree, run `command -v charness >/dev/n
 ## Contract Shaping
 
 Choose the lightest honest contract shape.
-When implementation churn would be expensive, reduce ambiguity earlier and make the slice more explicit before coding starts. If some answers will emerge only while building, keep the contract probe-friendly and visible instead of inventing a user-facing mode choice. Before adding public mode/kind/strategy/profile/target vocabulary, run `references/taxonomy-axis-checkpoint.md`.
+When implementation churn would be expensive, reduce ambiguity earlier and make the slice more explicit before coding starts. If some answers will emerge only while building, keep the contract probe-friendly and visible instead of inventing a user-facing taxonomy choice. Before adding public kind/strategy/profile/target vocabulary, run `references/taxonomy-axis-checkpoint.md`.
 
 If the repo already treats executable checks as contract artifacts, push acceptance into those checks instead of managing a separate prose-only branch. For public executable pages, keep current-state claims and bounded proof only; move future-state planning, source inventory, and low-level implementation guards down a layer. If the repo wants the latest on-demand validation visible to readers, project the checked artifact into a viewer-style executable page instead of rebuilding the evaluator logic inline or promoting source guards into the public spec.
 

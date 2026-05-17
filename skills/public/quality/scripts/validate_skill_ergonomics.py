@@ -34,6 +34,34 @@ _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resol
 load_adapter = _resolve_adapter_module.load_adapter
 _vendored_path_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.vendored_path_lib")
 
+RULE_HEURISTICS = {
+    "long_core": ("long_core",),
+    "mode_option_pressure_terms": ("mode_pressure_terms_present", "option_pressure_terms_present"),
+    "progressive_disclosure_risk": ("progressive_disclosure_risk",),
+    "code_fence_without_helper_script": ("code_fence_without_helper_script",),
+    "portable_helper_path_ambiguity": ("portable_helper_path_ambiguity",),
+}
+
+RULE_MESSAGES = {
+    "long_core": "Skill core exceeds the configured core line budget. Move nuance into references or scripts.",
+    "mode_option_pressure_terms": (
+        "Public skill shows repeated `mode`/`option` pressure terms. "
+        "Prefer stronger defaults and inference, or disable the opt-in rule."
+    ),
+    "progressive_disclosure_risk": (
+        "Skill core is large while references/scripts stay absent. "
+        "Move nuance into repo-owned references or scripts, or disable the opt-in rule."
+    ),
+    "code_fence_without_helper_script": (
+        "Skill carries several bootstrap fences without a helper script. "
+        "Extract repeated bootstrap or recovery behavior into a repo-owned helper."
+    ),
+    "portable_helper_path_ambiguity": (
+        "Skill mentions helper paths that look cwd-relative. "
+        "Use `$SKILL_DIR` or source-tree-qualified paths so installed bundles stay portable."
+    ),
+}
+
 
 def _string_list(data: dict[str, Any], key: str) -> list[str]:
     values = data.get(key, [])
@@ -128,35 +156,17 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
         )
         if item["skill_type"] != "public":
             continue
-        if "mode_option_pressure_terms" in rules and (
-            "mode_pressure_terms_present" in item["heuristics"]
-            or "option_pressure_terms_present" in item["heuristics"]
-        ):
+        for rule in rules:
+            rule_heuristics = RULE_HEURISTICS.get(rule, ())
+            if not any(heuristic in item["heuristics"] for heuristic in rule_heuristics):
+                continue
             violations.append(
                 {
-                    "rule": "mode_option_pressure_terms",
+                    "rule": rule,
                     "skill_id": item["skill_id"],
                     "skill_path": item["skill_path"],
                     "heuristics": item["heuristics"],
-                    "message": (
-                        "Public skill shows repeated `mode`/`option` pressure terms. "
-                        "Prefer stronger defaults and inference, or disable the opt-in rule."
-                    ),
-                }
-            )
-        if "progressive_disclosure_risk" in rules and (
-            "progressive_disclosure_risk" in item["heuristics"]
-        ):
-            violations.append(
-                {
-                    "rule": "progressive_disclosure_risk",
-                    "skill_id": item["skill_id"],
-                    "skill_path": item["skill_path"],
-                    "heuristics": item["heuristics"],
-                    "message": (
-                        "Skill core is large while references/scripts stay absent. "
-                        "Move nuance into repo-owned references or scripts, or disable the opt-in rule."
-                    ),
+                    "message": RULE_MESSAGES[rule],
                 }
             )
     if rules and not checked_skills:
