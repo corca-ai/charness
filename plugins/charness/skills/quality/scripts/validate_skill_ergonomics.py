@@ -31,7 +31,8 @@ _inventory_skill_ergonomics_module = SKILL_RUNTIME.load_local_skill_module(__fil
 inventory_skill = _inventory_skill_ergonomics_module.inventory_skill
 iter_skill_paths = _inventory_skill_ergonomics_module.iter_skill_paths
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
-load_adapter = _resolve_adapter_module.load_adapter
+_scripts_quality_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_adapter_lib")
+load_adapter = _scripts_quality_adapter_lib_module.load_quality_adapter_strict
 _vendored_path_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.vendored_path_lib")
 
 RULE_HEURISTICS = {
@@ -127,6 +128,7 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
             "adapter_errors": adapter_errors,
             "rules": rules,
             "checked_skills": [],
+            "discovery_skipped_reason": "adapter_invalid",
             "discovery_errors": [],
             "violations": [],
             "warnings": [],
@@ -138,6 +140,7 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
             "adapter_errors": [],
             "rules": [],
             "checked_skills": [],
+            "discovery_skipped_reason": None,
             "discovery_errors": [],
             "violations": [],
             "warnings": _empty_rules_warnings(len(discovered_skills), requested_paths),
@@ -194,6 +197,7 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
         "adapter_errors": [],
         "rules": rules,
         "checked_skills": checked_skills,
+        "discovery_skipped_reason": None,
         "discovery_errors": discovery_errors,
         "violations": violations,
         "warnings": [],

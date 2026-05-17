@@ -59,6 +59,10 @@ def main() -> int:
                         help="Short label describing what this packet covers (e.g. commit range)")
     parser.add_argument("--changed-ref", default=None,
                         help="Git commit or range that script packet sections should inspect")
+    parser.add_argument("--commit", default=None,
+                        help="Convenience alias for --changed-ref when reviewing one commit")
+    parser.add_argument("--range", dest="changed_range", default=None,
+                        help="Convenience alias for --changed-ref when reviewing an endpoint diff range")
     parser.add_argument("--slug", default=None,
                         help="Slug for the output artifacts (default: ISO datetime)")
     parser.add_argument("--json", action="store_true",
@@ -66,6 +70,13 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
+    changed_targets = [value for value in (args.changed_ref, args.commit, args.changed_range) if value]
+    if len(changed_targets) > 1:
+        parser.error("use only one of --changed-ref, --commit, or --range")
+    changed_ref = changed_targets[0] if changed_targets else None
+    prepared_for = args.prepared_for
+    if prepared_for == "working tree" and changed_ref:
+        prepared_for = changed_ref
     adapter = load_adapter(repo_root)
     if not adapter["valid"]:
         json.dump(
@@ -78,8 +89,8 @@ def main() -> int:
     packet = build_packet(
         adapter=adapter,
         repo_root=repo_root,
-        prepared_for=args.prepared_for,
-        changed_ref=args.changed_ref,
+        prepared_for=prepared_for,
+        changed_ref=changed_ref,
     )
 
     if args.json:

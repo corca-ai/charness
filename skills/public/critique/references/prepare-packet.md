@@ -49,6 +49,13 @@ python3 skills/public/critique/scripts/prepare_packet.py \
   --changed-ref HEAD^..HEAD
 ```
 
+For the common one-commit or endpoint-range cases, use the aliases:
+
+```bash
+python3 skills/public/critique/scripts/prepare_packet.py --repo-root . --commit HEAD
+python3 skills/public/critique/scripts/prepare_packet.py --repo-root . --range main..HEAD
+```
+
 The runner passes that value to script sections as
 `CHARNESS_CRITIQUE_CHANGED_REF`. Producers that inspect changed files should
 prefer the explicit ref/range over the clean working tree.

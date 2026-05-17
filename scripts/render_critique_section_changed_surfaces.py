@@ -30,10 +30,16 @@ match_surfaces = _scripts_surfaces_lib_module.match_surfaces
 def _render(payload: dict[str, object]) -> str:
     lines: list[str] = []
     changed_paths = payload["changed_paths"]
-    lines.append("Changed paths:")
+    changed_ref = payload.get("changed_ref")
+    if changed_ref:
+        lines.append(f"Changed paths for ref `{changed_ref}`:")
+    else:
+        lines.append("Changed paths for working tree:")
     if changed_paths:
         for path in changed_paths:
             lines.append(f"- {path}")
+    elif changed_ref:
+        lines.append("- (none — changed ref produced no changed paths)")
     else:
         lines.append("- (none — clean working tree)")
     lines.append("")
@@ -89,6 +95,7 @@ def main() -> int:
         print(f"surfaces lookup failed: {exc}")
         return 1
     payload = {
+        "changed_ref": args.changed_ref,
         "changed_paths": match["changed_paths"],
         "matched_surfaces": match["matched_surfaces"],
         "sync_commands": match["sync_commands"],

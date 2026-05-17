@@ -5,6 +5,11 @@
   "inventories": {
     "inventory_skill_ergonomics.py": {
       "non_headline_fields": [
+        "scope_status",
+        "finding_status",
+        "prose_review_status",
+        "checked_skill_count",
+        "heuristic_finding_count",
         "core_nonempty_lines",
         "reference_file_count",
         "script_file_count",

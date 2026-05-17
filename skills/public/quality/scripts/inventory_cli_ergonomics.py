@@ -32,8 +32,7 @@ _quality_adapter_lib = _SKILL_RUNTIME.load_repo_module_from_skill_script(__file_
 _vendored_path_lib = _SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.vendored_path_lib")
 
 
-def _adapter_vendored_prefixes(repo_root: Path) -> list[str]:
-    adapter = _quality_adapter_lib.load_quality_adapter(repo_root)
+def _adapter_vendored_prefixes(adapter: dict[str, object]) -> list[str]:
     data = adapter.get("data", {}) if isinstance(adapter, dict) else {}
     values = data.get("vendored_paths", []) if isinstance(data, dict) else []
     if not isinstance(values, list):
@@ -83,7 +82,8 @@ def _default_paths(repo_root: Path, patterns: list[str], vendored: list[str]) ->
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
-    vendored = _adapter_vendored_prefixes(repo_root)
+    adapter = _quality_adapter_lib.load_quality_adapter_permissive(repo_root)
+    vendored = _adapter_vendored_prefixes(adapter)
     registry_paths = (
         [(repo_root / path).resolve() for path in args.registry_file]
         if args.registry_file
@@ -101,6 +101,11 @@ def main() -> int:
     payload = {
         "repo_root": str(repo_root),
         "flat_help_threshold": args.flat_help_threshold,
+        "adapter_path": adapter.get("path"),
+        "adapter_valid": adapter.get("valid", True),
+        "adapter_errors": adapter.get("errors", []),
+        "adapter_warnings": adapter.get("warnings", []),
+        "adapter_load_mode": adapter.get("load_mode", "permissive"),
         **status,
         "registries": registries,
         "archetype_contracts": archetype_contracts,
@@ -111,6 +116,8 @@ def main() -> int:
     else:
         if payload["status"] == "unconfigured":
             print(f"status=unconfigured: {payload.get('reason', '')}")
+        if payload["adapter_valid"] is False:
+            print("adapter=invalid: advisory inventory is best-effort until adapter errors are repaired.")
         for finding in findings:
             print(f"{finding['type']}: {finding['path']}")
     return 0

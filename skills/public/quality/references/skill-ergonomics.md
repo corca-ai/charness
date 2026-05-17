@@ -46,6 +46,19 @@ quality pass:
 
 Treat these as prompts, not automatic failures.
 
+Inventory status must separate scope from quality judgment:
+
+- `scope_status=scanned` means at least one skill was inspected.
+- `scope_status=unconfigured_no_skill_surface`, `configured_scope_empty`, or
+  `empty_requested_scope` means the inventory did not inspect a meaningful
+  skill surface; do not summarize that as "no issues."
+- `finding_status=zero_heuristic_findings` means the current heuristics found
+  no structural pressure, not that the skills are healthy. Prose review remains
+  required for trigger boundaries, progressive-disclosure honesty, and
+  judgment-only risks.
+- `finding_status=heuristics_present` means the inventory has concrete prompts
+  for a human quality pass.
+
 Fail-closed now:
 
 - oversized `SKILL.md` core

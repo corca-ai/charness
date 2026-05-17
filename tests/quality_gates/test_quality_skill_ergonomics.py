@@ -209,6 +209,9 @@ def test_inventory_skill_ergonomics_reports_unconfigured_when_no_skills(tmp_path
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["status"] == "unconfigured"
+    assert payload["scope_status"] == "unconfigured_no_skill_surface"
+    assert payload["finding_status"] == "not_evaluated"
+    assert payload["checked_skill_count"] == 0
     assert "skill_ergonomics_skill_paths" in payload["reason"]
     assert payload["skills"] == []
 
@@ -230,7 +233,114 @@ def test_inventory_skill_ergonomics_reports_clean_when_skills_present(tmp_path: 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["status"] == "clean"
+    assert payload["scope_status"] == "scanned"
+    assert payload["finding_status"] == "zero_heuristic_findings"
+    assert payload["prose_review_status"] == "still_required"
+    assert payload["checked_skill_count"] == 1
+    assert payload["heuristic_finding_count"] == 0
     assert payload["skills"] and payload["skills"][0]["skill_id"] == "demo"
+
+
+def test_inventory_skill_ergonomics_reports_configured_scope_empty(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    fallback_skill = repo / "skills" / "public" / "fallback"
+    fallback_skill.mkdir(parents=True)
+    (fallback_skill / "SKILL.md").write_text(
+        "---\nname: fallback\ndescription: \"Fallback.\"\n---\n\n# Fallback\n",
+        encoding="utf-8",
+    )
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_skill_paths:",
+                "  - missing-skills",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "unconfigured"
+    assert payload["scope_status"] == "configured_scope_empty"
+    assert payload["finding_status"] == "not_evaluated"
+    assert payload["checked_skill_count"] == 0
+    assert payload["skills"] == []
+
+
+def test_inventory_skill_ergonomics_marks_heuristic_findings_and_prose_review(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    skill_dir = repo / "skills" / "public" / "demo"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n\nMode mode option option.\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["scope_status"] == "scanned"
+    assert payload["finding_status"] == "heuristics_present"
+    assert payload["prose_review_status"] == "required"
+    assert payload["heuristic_finding_count"] == 2
+
+
+def test_inventory_skill_ergonomics_surfaces_invalid_adapter_as_best_effort(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    skill_dir = repo / "skills" / "public" / "demo"
+    skill_dir.mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: repo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_gate_rules:",
+                "  - typo_rule",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: demo\ndescription: \"Demo.\"\n---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["adapter_load_mode"] == "permissive"
+    assert payload["adapter_valid"] is False
+    assert "unknown rule `typo_rule`" in payload["adapter_errors"][0]
+    assert any("best-effort" in warning for warning in payload["adapter_warnings"])
+    assert payload["finding_status"] == "zero_heuristic_findings"
 
 
 def test_inventory_skill_ergonomics_skips_vendored_paths(tmp_path: Path) -> None:

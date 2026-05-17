@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from scripts.quality_adapter_lib import load_quality_adapter_permissive, load_quality_adapter_strict
+
 from .support import run_script
 
 
@@ -404,6 +406,33 @@ def test_quality_bootstrap_rejects_invalid_explicit_skill_ergonomics_rules(tmp_p
     assert result.returncode == 1
     assert "invalid `skill_ergonomics_gate_rules`" in result.stderr
     assert "Repair the adapter before rerunning bootstrap" in result.stderr
+
+
+def test_quality_adapter_load_modes_name_strict_and_permissive_contracts(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "language: en",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_gate_rules:",
+                "  - typo_rule",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    strict = load_quality_adapter_strict(repo)
+    permissive = load_quality_adapter_permissive(repo)
+
+    assert strict["load_mode"] == "strict"
+    assert strict["valid"] is False
+    assert permissive["load_mode"] == "permissive"
+    assert permissive["valid"] is False
+    assert any("best-effort" in warning for warning in permissive["warnings"])
 
 
 def test_quality_resolve_rejects_invalid_review_fields(tmp_path: Path) -> None:

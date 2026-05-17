@@ -29,8 +29,7 @@ _quality_adapter_lib = _SKILL_RUNTIME.load_repo_module_from_skill_script(__file_
 _vendored_path_lib = _SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.vendored_path_lib")
 
 
-def _adapter_vendored_prefixes(repo_root: Path) -> list[str]:
-    adapter = _quality_adapter_lib.load_quality_adapter(repo_root)
+def _adapter_vendored_prefixes(adapter: dict[str, object]) -> list[str]:
     data = adapter.get("data", {}) if isinstance(adapter, dict) else {}
     values = data.get("vendored_paths", []) if isinstance(data, dict) else []
     if not isinstance(values, list):
@@ -52,7 +51,8 @@ def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
     contract_paths = [(repo_root / path).resolve() for path in args.contract_file]
-    vendored = _adapter_vendored_prefixes(repo_root)
+    adapter = _quality_adapter_lib.load_quality_adapter_permissive(repo_root)
+    vendored = _adapter_vendored_prefixes(adapter)
     vendored_filter = (lambda root, path: _vendored_path_lib.is_vendored(root, path, vendored)) if vendored else None
     payload = build_inventory(
         repo_root,
@@ -60,11 +60,18 @@ def main() -> int:
         execute_probes=args.execute_probes,
         vendored_filter=vendored_filter,
     )
+    payload["adapter_path"] = adapter.get("path")
+    payload["adapter_valid"] = adapter.get("valid", True)
+    payload["adapter_errors"] = adapter.get("errors", [])
+    payload["adapter_warnings"] = adapter.get("warnings", [])
+    payload["adapter_load_mode"] = adapter.get("load_mode", "permissive")
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         if payload["status"] == "unconfigured":
             print(f"status=unconfigured: {payload.get('reason', '')}")
+        if payload["adapter_valid"] is False:
+            print("adapter=invalid: advisory inventory is best-effort until adapter errors are repaired.")
         for finding in payload["findings"]:
             command = finding.get("command", "")
             path = finding.get("path", "<none>")

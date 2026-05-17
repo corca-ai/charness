@@ -33,7 +33,7 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _scripts_skill_markdown_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.skill_markdown_lib")
 _scripts_quality_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_adapter_lib")
 _scripts_vendored_path_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.vendored_path_lib")
-load_quality_adapter = _scripts_quality_adapter_lib_module.load_quality_adapter
+load_quality_adapter = _scripts_quality_adapter_lib_module.load_quality_adapter_permissive
 vendored_prefixes = _scripts_vendored_path_lib_module.vendored_prefixes
 is_vendored = _scripts_vendored_path_lib_module.is_vendored
 is_vendored_relative = _scripts_vendored_path_lib_module.is_vendored_relative
@@ -71,8 +71,12 @@ def _iter_skill_path_value(repo_root: Path, value: str) -> Iterable[Path]:
         yield from sorted(candidate for candidate in path.glob("*/SKILL.md") if "generated" not in candidate.parts)
 
 
-def _adapter_data(repo_root: Path) -> dict[str, object]:
+def _adapter_payload(repo_root: Path) -> dict[str, object]:
     adapter = load_quality_adapter(repo_root)
+    return adapter if isinstance(adapter, dict) else {}
+
+
+def _adapter_data(adapter: dict[str, object]) -> dict[str, object]:
     data = adapter.get("data", {})
     return data if isinstance(data, dict) else {}
 
@@ -82,13 +86,22 @@ def _string_list(data: dict[str, object], key: str) -> list[str]:
     return values if isinstance(values, list) and all(isinstance(item, str) for item in values) else []
 
 
-def _adapter_skill_paths(repo_root: Path) -> list[str]:
-    return _string_list(_adapter_data(repo_root), "skill_ergonomics_skill_paths")
+def _adapter_skill_paths(data: dict[str, object]) -> list[str]:
+    return _string_list(data, "skill_ergonomics_skill_paths")
 
 
-def iter_skill_paths(repo_root: Path, requested: list[str]) -> Iterable[Path]:
+def iter_skill_paths(
+    repo_root: Path,
+    requested: list[str],
+    adapter_skill_paths: list[str] | None = None,
+) -> Iterable[Path]:
     seen: set[Path] = set()
-    values = requested or _adapter_skill_paths(repo_root)
+    values = requested or (
+        adapter_skill_paths
+        if adapter_skill_paths is not None
+        else _adapter_skill_paths(_adapter_data(_adapter_payload(repo_root)))
+    )
+    used_configured_paths = bool(values)
     if values:
         for value in values:
             for skill_path in _iter_skill_path_value(repo_root, value):
@@ -96,7 +109,7 @@ def iter_skill_paths(repo_root: Path, requested: list[str]) -> Iterable[Path]:
                     continue
                 seen.add(skill_path)
                 yield skill_path
-        if requested:
+        if requested or used_configured_paths:
             return
     for parent in (repo_root / "skills", repo_root / "skills" / "public", repo_root / "skills" / "support"):
         if not parent.is_dir():
@@ -123,19 +136,32 @@ def inventory_skill(repo_root: Path, skill_path: Path, *, max_core_lines: int, r
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
-    data = _adapter_data(repo_root)
+    adapter = _adapter_payload(repo_root)
+    data = _adapter_data(adapter)
+    adapter_skill_paths = _adapter_skill_paths(data)
     runtime_prefixes = vendored_prefixes(_string_list(data, "skill_ergonomics_runtime_install_skill_paths"))
     vendored = vendored_prefixes(_string_list(data, "vendored_paths"))
-    skill_paths = [path for path in iter_skill_paths(repo_root, args.skill_path) if path.is_file() and not is_vendored(repo_root, path, vendored)]
+    skill_paths = [
+        path
+        for path in iter_skill_paths(repo_root, args.skill_path, adapter_skill_paths=adapter_skill_paths)
+        if path.is_file() and not is_vendored(repo_root, path, vendored)
+    ]
     skills = [
         inventory_skill(repo_root, skill_path, max_core_lines=args.max_core_lines, runtime_install_prefixes=runtime_prefixes)
         for skill_path in skill_paths
     ]
-    status = elib.scope_status(len(skills), args.skill_path, _adapter_skill_paths(repo_root))
+    status = elib.scope_status(len(skills), args.skill_path, adapter_skill_paths)
+    findings = elib.finding_status(skills)
     payload = {
         "repo_root": str(repo_root),
         "max_core_lines": args.max_core_lines,
+        "adapter_path": adapter.get("path"),
+        "adapter_valid": adapter.get("valid", True),
+        "adapter_errors": adapter.get("errors", []),
+        "adapter_warnings": adapter.get("warnings", []),
+        "adapter_load_mode": adapter.get("load_mode", "permissive"),
         **status,
+        **findings,
         "skills": skills,
     }
     if args.json:
@@ -143,6 +169,15 @@ def main() -> int:
     else:
         if payload["status"] == "unconfigured":
             print(f"status=unconfigured: {payload.get('reason', '')}")
+        elif payload["finding_status"] == "zero_heuristic_findings":
+            print(
+                f"status=zero_heuristic_findings: checked {payload['checked_skill_count']} skill(s); "
+                "prose review still required for trigger boundaries and judgment-only risks."
+            )
+        elif payload["finding_status"] == "not_evaluated":
+            print(f"status=not_evaluated: {payload.get('reason', '')}")
+        if payload["adapter_valid"] is False:
+            print("adapter=invalid: advisory inventory is best-effort until adapter errors are repaired.")
         for item in skills:
             heuristics = ", ".join(item["heuristics"]) or "none"
             print(

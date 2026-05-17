@@ -353,3 +353,35 @@ def load_quality_adapter(repo_root: Path) -> dict[str, Any]:
         "warnings": warnings,
         "searched_paths": searched_paths,
     }
+
+
+def load_quality_adapter_strict(repo_root: Path) -> dict[str, Any]:
+    """Load the quality adapter for validators and gates.
+
+    Strict callers should fail when the returned payload has `valid: false`.
+    Keeping the helper separate from advisory inventory call sites makes that
+    intent explicit without changing the base payload shape.
+    """
+    payload = load_quality_adapter(repo_root)
+    payload["load_mode"] = "strict"
+    return payload
+
+
+def load_quality_adapter_permissive(repo_root: Path) -> dict[str, Any]:
+    """Load the quality adapter for advisory inventories.
+
+    Advisory inventories may still produce useful partial evidence from
+    validated defaults and other readable fields when one adapter field is
+    invalid. They must surface this degraded state instead of silently treating
+    it as a clean inventory.
+    """
+    payload = load_quality_adapter(repo_root)
+    payload["load_mode"] = "permissive"
+    if payload.get("valid") is not True:
+        warnings = list(payload.get("warnings", []))
+        warnings.append(
+            "Quality adapter is invalid; advisory inventory is using validated defaults "
+            "and readable fields. Treat findings as best-effort until adapter errors are repaired."
+        )
+        payload["warnings"] = warnings
+    return payload

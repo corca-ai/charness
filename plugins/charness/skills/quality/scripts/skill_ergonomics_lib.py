@@ -122,9 +122,45 @@ def inventory_skill(
 
 def scope_status(scanned: int, requested: list[str], adapter_paths: list[str]) -> dict[str, str]:
     if scanned > 0:
-        return {"status": "clean"}
+        return {"status": "clean", "scope_status": "scanned"}
     if requested:
-        return {"status": "clean", "reason": "Explicit --skill-path arguments yielded no SKILL.md files."}
+        return {
+            "status": "clean",
+            "scope_status": "empty_requested_scope",
+            "reason": "Explicit --skill-path arguments yielded no SKILL.md files.",
+        }
     if not adapter_paths:
-        return {"status": "unconfigured", "reason": "skill_ergonomics_skill_paths is empty in quality-adapter.yaml; no SKILL.md files were found at default fallback paths skills/, skills/public/, or skills/support/."}
-    return {"status": "unconfigured", "reason": "skill_ergonomics_skill_paths in quality-adapter.yaml resolved to no SKILL.md files."}
+        return {
+            "status": "unconfigured",
+            "scope_status": "unconfigured_no_skill_surface",
+            "reason": "skill_ergonomics_skill_paths is empty in quality-adapter.yaml; no SKILL.md files were found at default fallback paths skills/, skills/public/, or skills/support/.",
+        }
+    return {
+        "status": "unconfigured",
+        "scope_status": "configured_scope_empty",
+        "reason": "skill_ergonomics_skill_paths in quality-adapter.yaml resolved to no SKILL.md files.",
+    }
+
+
+def finding_status(skills: list[dict[str, object]]) -> dict[str, object]:
+    heuristic_count = sum(len(skill.get("heuristics", [])) for skill in skills)
+    if not skills:
+        return {
+            "checked_skill_count": 0,
+            "heuristic_finding_count": 0,
+            "finding_status": "not_evaluated",
+            "prose_review_status": "not_started",
+        }
+    if heuristic_count:
+        return {
+            "checked_skill_count": len(skills),
+            "heuristic_finding_count": heuristic_count,
+            "finding_status": "heuristics_present",
+            "prose_review_status": "required",
+        }
+    return {
+        "checked_skill_count": len(skills),
+        "heuristic_finding_count": 0,
+        "finding_status": "zero_heuristic_findings",
+        "prose_review_status": "still_required",
+    }

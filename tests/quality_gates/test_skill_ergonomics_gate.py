@@ -142,6 +142,7 @@ def test_skill_ergonomics_gate_fails_on_invalid_rule_adapter_error(tmp_path: Pat
     payload = json.loads(result.stdout)
     assert payload["adapter_errors"]
     assert "unknown rule `typo_rule`" in payload["adapter_errors"][0]
+    assert payload["discovery_skipped_reason"] == "adapter_invalid"
     assert payload["checked_skills"] == []
     assert payload["violations"] == []
 

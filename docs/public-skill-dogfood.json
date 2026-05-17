@@ -103,7 +103,7 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-17",
+      "reviewed_on": "2026-05-18",
       "observed_evidence": [
         "The checked-in public core explicitly keeps `debug` in diagnosis-before-repair mode, preserving the exact symptom, a falsifiable hypothesis, and at least three candidate causes before implementation work starts.",
         "For async, scheduled, or user-visible workflows, the debug core now separates pre-worker acknowledgement, worker execution, and post-worker side effects before reasoning only about worker behavior.",
@@ -270,7 +270,8 @@
         "The capability check now treats an `AGENTS.md` `Subagent Delegation` section as the explicit delegation request for named bounded review scopes, so downstream repos such as `ceal` should try the host spawn tool before recording a blocked critique.",
         "`validate_critique_artifacts.py` now rejects new durable critique artifacts that preserve the old missing-explicit-subagent-request blocker instead of a concrete `host signal:` or `tool signal:`.",
         "The `critique` skill now reads `.agents/critique-adapter.yaml` and consumes a `charness.critique_prepare_packet.v1` packet under `charness-artifacts/critique/` before fresh-eye review when the adapter declares `packet_sections`, with a `Packet Consumed` field in the output shape (#161).",
-        "The committed-diff critique dogfood on `50dd2b7` found that a clean working tree can erase packet changed-surface context; `prepare_packet.py --changed-ref HEAD^..HEAD` now preserves the reviewed commit/range for script packet sections without requiring a maintained Cautilus scenario."
+        "The committed-diff critique dogfood on `50dd2b7` found that a clean working tree can erase packet changed-surface context; `prepare_packet.py --changed-ref HEAD^..HEAD` now preserves the reviewed commit/range for script packet sections without requiring a maintained Cautilus scenario.",
+        "`prepare_packet.py --commit <sha>` and `--range <base>..<head>` now alias the explicit changed-ref path, store `changed_ref`, and make changed-surface packet output name the reviewed ref/range instead of implying a working-tree critique."
       ]
     },
     {
@@ -291,7 +292,7 @@
         "uses one realistic consumer prompt when the risk is public-skill routing or artifact behavior"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-16",
+      "reviewed_on": "2026-05-18",
       "observed_evidence": [
         "The current quality posture still treats checked-in proof artifacts, public executable readers, and lower deterministic gates as separate layers with different ownership, which keeps `quality` distinct from generic test-running or release work.",
         "Maintainer-local enforcement now asks whether local or pre-push gates hide network, external-repo fetch, latest-release, or supply-chain refresh work that should be an explicit refresh/update/release action instead of default local proof.",
@@ -327,7 +328,8 @@
         "`validate_skill_ergonomics.py` now emits a structured warning when discoverable skills exist but `skill_ergonomics_gate_rules` is empty, and `run-quality` replays passing phase logs that contain `WARNING`, `WARN`, `WEAK`, or `ADVISORY` lines instead of hiding disabled-enforcement signals behind a green summary.",
         "`validate_skill_ergonomics.py`, its root wrapper, and `validate_adapters.py` now fail on invalid `skill_ergonomics_gate_rules`, so typoed or unknown rule names cannot collapse into an empty-rule advisory pass.",
         "`quality` remains HITL-recommended rather than scenario-owned for this slice; the reviewed consumer contract is explicit in this dogfood case, while deterministic tests prove the adapter-rule failure path.",
-        "The quality core now treats `.agents/usage-episodes-adapter.yaml` as a deterministic repo-owned gate: when present, quality resolves and runs the Charness package-root `validate_usage_episodes.py` validator while preserving `no_adapter` and `disabled` as skipped states rather than failures."
+        "The quality core now treats `.agents/usage-episodes-adapter.yaml` as a deterministic repo-owned gate: when present, quality resolves and runs the Charness package-root `validate_usage_episodes.py` validator while preserving `no_adapter` and `disabled` as skipped states rather than failures.",
+        "`inventory_skill_ergonomics.py` now separates `scope_status` from `finding_status` and preserves `prose_review_status`, so a quality artifact that cites skill ergonomics must distinguish empty scope, zero heuristic findings, and still-required prose review."
       ]
     },
     {

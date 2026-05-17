@@ -449,3 +449,62 @@ packet_sections:
     assert payload["changed_ref"] == "HEAD"
     assert payload["adapter_path"] == ".agents/critique-adapter.yaml"
     assert "README.md" in payload["sections"][0]["content"]
+    assert "Changed paths for ref `HEAD`:" in payload["sections"][0]["content"]
+
+
+def test_runner_cli_commit_alias_sets_changed_ref_and_prepared_for(tmp_path: Path) -> None:
+    _run_git(tmp_path, "init")
+    _run_git(tmp_path, "config", "user.email", "test@example.com")
+    _run_git(tmp_path, "config", "user.name", "Test User")
+    agents_dir = tmp_path / ".agents"
+    agents_dir.mkdir()
+    (agents_dir / "surfaces.json").write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "surfaces": [
+                    {
+                        "surface_id": "repo-markdown",
+                        "description": "Markdown",
+                        "source_paths": ["README.md"],
+                        "derived_paths": [],
+                        "sync_commands": [],
+                        "verify_commands": ["check docs"],
+                        "notes": [],
+                        "generated_markdown": [],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    producer = REPO_ROOT / "scripts/render_critique_section_changed_surfaces.py"
+    _write_yaml(tmp_path / ".agents/critique-adapter.yaml", f"""\
+version: 1
+repo: rt
+packet_sections:
+  - id: changed-files-and-owning-surfaces
+    title: Changed Files And Owning Surfaces
+    content_kind: script
+    command: "python3 {producer} --repo-root ."
+""")
+    (tmp_path / "README.md").write_text("one\n", encoding="utf-8")
+    _run_git(tmp_path, "add", ".")
+    _run_git(tmp_path, "commit", "-m", "initial")
+    (tmp_path / "README.md").write_text("two\n", encoding="utf-8")
+    _run_git(tmp_path, "commit", "-am", "update")
+
+    runner = REPO_ROOT / "skills/public/critique/scripts/prepare_packet.py"
+    result = subprocess.run(
+        ["python3", str(runner), "--repo-root", str(tmp_path), "--commit", "HEAD", "--json"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["changed_ref"] == "HEAD"
+    assert payload["prepared_for"] == "HEAD"
+    assert "Changed paths for ref `HEAD`:" in payload["sections"][0]["content"]
+    assert "README.md" in payload["sections"][0]["content"]
