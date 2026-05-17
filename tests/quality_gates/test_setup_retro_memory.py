@@ -41,6 +41,9 @@ def test_setup_seed_retro_memory_preserves_existing_gitignore(tmp_path: Path) ->
 
 def test_setup_skill_mentions_retro_memory_scaffold() -> None:
     skill_text = (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_text(encoding="utf-8")
+    bootstrap_seams_text = (
+        ROOT / "skills" / "public" / "setup" / "references" / "bootstrap-seams.md"
+    ).read_text(encoding="utf-8")
     default_surfaces_text = (
         ROOT / "skills" / "public" / "setup" / "references" / "default-surfaces.md"
     ).read_text(encoding="utf-8")
@@ -49,8 +52,9 @@ def test_setup_skill_mentions_retro_memory_scaffold() -> None:
     ).read_text(encoding="utf-8")
 
     assert "retro-memory-seam.md" in skill_text
-    assert "seed_retro_memory.py" in skill_text
-    assert "recent-lessons.md" in skill_text
+    assert "bootstrap-seams.md" in skill_text
+    assert "seed_retro_memory.py" in bootstrap_seams_text
+    assert "recent-lessons.md" in bootstrap_seams_text
     assert "recent-lessons.md" in default_surfaces_text
     assert ".agents/retro-adapter.yaml" in reference_text
     assert "recent-lessons.md" in reference_text

@@ -524,6 +524,63 @@ def test_requested_review_gate_allows_explicit_waiver(tmp_path: Path) -> None:
     assert payload["waiver_hits"]
 
 
+def test_requested_review_gate_warns_when_commands_are_empty(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "charness-artifacts" / "release").mkdir(parents=True)
+    (repo / ".agents" / "release-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: demo",
+                "output_dir: charness-artifacts/release",
+                "requested_review_commands: []",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (repo / "charness-artifacts" / "release" / "latest.md").write_text(
+        "# Release Surface Check\n\n- Release proof complete.\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/check_requested_review_gate.py",
+            "--repo-root",
+            str(repo),
+            "--json",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "ok"
+    assert payload["configuration_status"] == "not_configured"
+    assert "requested_review_commands is empty" in payload["warnings"][0]
+
+    plain = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/check_requested_review_gate.py",
+            "--repo-root",
+            str(repo),
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert plain.returncode == 0, plain.stderr
+    assert "WARNING: requested_review_commands is empty" in plain.stdout
+
+
 def test_publish_release_blocks_failed_requested_review_command(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     adapter_path = repo / ".agents" / "release-adapter.yaml"

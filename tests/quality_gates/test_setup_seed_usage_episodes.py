@@ -65,13 +65,18 @@ def test_usage_episodes_are_skill_level_setup_and_quality_contracts() -> None:
     setup_skill = (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_text(
         encoding="utf-8"
     )
+    setup_seams = (
+        ROOT / "skills" / "public" / "setup" / "references" / "bootstrap-seams.md"
+    ).read_text(encoding="utf-8")
     quality_skill = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(
         encoding="utf-8"
     )
 
-    assert "seed `<repo-root>/.agents/usage-episodes-adapter.yaml`;" in setup_skill
-    assert "setup implementation uses" in setup_skill
-    assert "not a user-facing API" in setup_skill
+    assert "bootstrap-seams.md" in setup_skill
+    assert "`<repo-root>/.agents/usage-episodes-adapter.yaml`" in setup_seams
+    assert "setup implementation uses" in setup_seams
+    assert "not a user-facing API" in setup_seams
+    assert "run `quality` for the validation gate" in setup_seams
     assert ".agents/usage-episodes-adapter.yaml" in quality_skill
     assert "package-root validator `validate_usage_episodes.py`" in quality_skill
     assert "`no_adapter` and `disabled` are skipped states" in quality_skill

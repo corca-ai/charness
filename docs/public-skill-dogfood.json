@@ -188,7 +188,7 @@
       "`inspect_repo.py` now emits `recommendations[]` separately from `normalization.findings`, so adapter-declared policy sources can raise `agents.delegated_review_policy` without pretending phrase matching is a hard fact.",
       "`inspect_repo.py` now flags `fresh_eye_task_review_scope_drift` when `AGENTS.md` carries a critique or fresh-eye delegation rule but does not name task-completing `setup` and `quality` review runs as spawn-authorized scopes.",
       "`inspect_repo.py` keeps explicit repo inspection resilient by bounding source-guard discovery to AGENTS.md, README.md, docs/, and specs/ by default; repos that keep guards elsewhere can set `source_guard_scan_roots`, and unreadable specs become structured warnings instead of aborting install/update recovery.",
-      "The setup core now frames privacy-bounded H-LAM/T usage episode adapter seeding as setup skill behavior, with `seed_usage_episodes_adapter.py` named only as the implementation detail; runtime capture remains owned by the `usage-episodes` integration."
+      "The setup core now keeps optional bootstrap seam details in `references/bootstrap-seams.md`; usage episodes remain setup-seeded, quality-validated, and runtime-owned by the product plus `usage-episodes` integration."
     ]
   },
     {
@@ -322,6 +322,7 @@
         "The behavior-testing reference keeps agent/user behavior robustness as a `quality` recommendation and artifact-honesty concern while delegating evaluator semantics, execution, and result shape to the Cautilus robustness contract; routine quality review can recommend proof without running live Cautilus.",
         "`recommend_behavior_test.py` emits a structured recommend-only finding with `cautilus.robustness_request.v1`, `cautilus.robustness_plan.v1`, and `cautilus.robustness_report.v1` vocabulary, including relation statuses and expected result fields, so the first #168 slice is executable without a Charness-owned runner.",
         "The agent-production-runtime reference keeps production LLM and agent runtime review inside `quality`: it triggers only from serving-path/runtime evidence, excludes eval fixtures and skill docs by themselves, treats cache economics, overload fallback, idempotency, streaming stalls, and model routing as evidence questions, and reuses existing behavior-proof and external provider proof vocabularies instead of inventing a provider-specific runner.",
+        "`validate_skill_ergonomics.py` now emits a structured warning when discoverable skills exist but `skill_ergonomics_gate_rules` is empty, and `run-quality` replays passing phase logs that contain `WARNING`, `WARN`, `WEAK`, or `ADVISORY` lines instead of hiding disabled-enforcement signals behind a green summary.",
         "The quality core now treats `.agents/usage-episodes-adapter.yaml` as a deterministic repo-owned gate: when present, quality resolves and runs the Charness package-root `validate_usage_episodes.py` validator while preserving `no_adapter` and `disabled` as skipped states rather than failures."
       ]
     },

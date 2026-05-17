@@ -294,6 +294,10 @@ are configured, an empty checked-skill set is a failure; use
 `skill_ergonomics_skill_paths` or `cli_skill_surface_skill_paths` for bundled
 skill layouts such as `skills/<product>/SKILL.md`.
 
+When rules are empty and discoverable skills exist, validation remains a pass
+but must emit a warning. This keeps the default low-noise posture while making
+the disabled enforcement state visible in `run-quality`.
+
 ## Artifact Rule
 
 The current quality pointer filename is fixed:

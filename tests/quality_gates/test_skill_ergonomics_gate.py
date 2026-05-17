@@ -81,6 +81,42 @@ def test_skill_ergonomics_gate_no_rules_passes(tmp_path: Path) -> None:
     assert payload["rules"] == []
     assert payload["violations"] == []
     assert payload["discovery_errors"] == []
+    assert payload["warnings"][0]["warning_id"] == "skill_ergonomics_gate_rules_empty"
+    assert payload["warnings"][0]["skill_count"] == 2
+
+    plain = run_script(SCRIPT, "--repo-root", str(repo))
+    assert plain.returncode == 0, plain.stderr
+    assert "WARNING: skill_ergonomics_gate_rules is empty" in plain.stdout
+
+
+def test_skill_ergonomics_gate_warns_when_empty_rules_have_broken_explicit_paths(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path, rules=[])
+    adapter = repo / ".agents" / "quality-adapter.yaml"
+    adapter.write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "repo: testrepo",
+                "output_dir: charness-artifacts/quality",
+                "skill_ergonomics_skill_paths:",
+                "  - missing-skills",
+                "skill_ergonomics_gate_rules: []",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["warnings"][0]["warning_id"] == "skill_ergonomics_requested_paths_empty"
+    assert payload["warnings"][0]["requested_paths"] == ["missing-skills"]
+
+    plain = run_script(SCRIPT, "--repo-root", str(repo))
+    assert plain.returncode == 0, plain.stderr
+    assert "WARNING: skill_ergonomics_skill_paths is configured but resolved no non-vendored skills" in plain.stdout
 
 
 def test_skill_ergonomics_gate_fails_when_opted_in_rule_matches(tmp_path: Path) -> None:
@@ -165,6 +201,9 @@ def test_skill_ergonomics_gate_fails_when_rules_check_no_skills(tmp_path: Path) 
     payload = json.loads(result.stdout)
     assert result.returncode == 1
     assert "no skills were checked" in payload["discovery_errors"][0]["message"]
+
+    wrapper = run_script("scripts/validate_skill_ergonomics.py", "--repo-root", str(repo), "--json")
+    assert wrapper.returncode == 1
 
 
 def test_skill_ergonomics_gate_discovers_direct_skill_layout(tmp_path: Path) -> None:

@@ -40,6 +40,50 @@ def _string_list(data: dict[str, Any], key: str) -> list[str]:
     return values if isinstance(values, list) and all(isinstance(item, str) for item in values) else []
 
 
+def _iter_checked_skill_paths(repo_root: Path, requested_paths: list[str], vendored_prefixes_list: list[str]) -> list[Path]:
+    return [
+        skill_path
+        for skill_path in iter_skill_paths(repo_root, requested_paths)
+        if skill_path.is_file()
+        and not _vendored_path_lib.is_vendored(repo_root, skill_path, vendored_prefixes_list)
+    ]
+
+
+def _empty_rules_warnings(skill_count: int, requested_paths: list[str]) -> list[dict[str, Any]]:
+    if skill_count:
+        return [
+            {
+                "warning_id": "skill_ergonomics_gate_rules_empty",
+                "message": (
+                    "skill_ergonomics_gate_rules is empty; skill ergonomics inventory "
+                    "is advisory-only and no skill structure heuristics are enforced."
+                ),
+                "skill_count": skill_count,
+                "next_action": (
+                    "Run inventory_skill_ergonomics.py for advisory findings or configure "
+                    "skill_ergonomics_gate_rules for standing enforcement."
+                ),
+            }
+        ]
+    if requested_paths:
+        return [
+            {
+                "warning_id": "skill_ergonomics_requested_paths_empty",
+                "message": (
+                    "skill_ergonomics_skill_paths is configured but resolved no non-vendored skills; "
+                    "skill ergonomics enforcement is disabled."
+                ),
+                "requested_paths": requested_paths,
+                "skill_count": 0,
+                "next_action": (
+                    "Repair skill_ergonomics_skill_paths or remove the explicit paths so default "
+                    "skill discovery can warn on the repo skill surface."
+                ),
+            }
+        ]
+    return []
+
+
 def evaluate(repo_root: Path) -> dict[str, Any]:
     adapter = load_adapter(repo_root)
     rules: list[str] = adapter["data"].get("skill_ergonomics_gate_rules", []) or []
@@ -49,12 +93,14 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
     runtime_install_prefixes = _vendored_path_lib.vendored_prefixes(_string_list(adapter["data"], "skill_ergonomics_runtime_install_skill_paths"))
     vendored_prefixes_list = _vendored_path_lib.vendored_prefixes(_string_list(adapter["data"], "vendored_paths"))
     if not rules:
+        discovered_skills = _iter_checked_skill_paths(repo_root, requested_paths, vendored_prefixes_list)
         return {
             "adapter_path": adapter.get("path"),
             "rules": [],
             "checked_skills": [],
             "discovery_errors": [],
             "violations": [],
+            "warnings": _empty_rules_warnings(len(discovered_skills), requested_paths),
         }
 
     checked_skills: list[dict[str, Any]] = []
@@ -127,12 +173,22 @@ def evaluate(repo_root: Path) -> dict[str, Any]:
         "checked_skills": checked_skills,
         "discovery_errors": discovery_errors,
         "violations": violations,
+        "warnings": [],
     }
 
 
 def _format_human(report: dict[str, Any]) -> str:
     if not report["rules"]:
-        return "No skill_ergonomics_gate_rules configured; nothing to check."
+        warnings = report.get("warnings", [])
+        if not warnings:
+            return "No skill_ergonomics_gate_rules configured; nothing to check."
+        lines = ["No skill_ergonomics_gate_rules configured; nothing to check."]
+        for warning in warnings:
+            suffix = f" ({warning['skill_count']} skill(s) present)" if "skill_count" in warning else ""
+            lines.append(f"WARNING: {warning['message']}{suffix}")
+            if warning.get("next_action"):
+                lines.append(f"next action: {warning['next_action']}")
+        return "\n".join(lines)
     if report["discovery_errors"]:
         return "\n".join(f"skill discovery: {item['message']} {item['skill_path']}".rstrip() for item in report["discovery_errors"])
     if not report["violations"]:

@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-17",
-  "source_artifact_count": 57,
-  "candidate_count": 355,
+  "source_artifact_count": 58,
+  "candidate_count": 361,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:c9461a407e5e",
+      "kind": "current_focus",
+      "lesson": "The setup skill cleanup exposed a repeated quality pattern: `gate_rules` or similar list fields can be empty, leaving a validator advisory-only while the standing gate still reports a clean pass.",
+      "normalized_key": "the setup skill cleanup exposed a repeated quality pattern gate rules or similar list",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+          "date": "2026-05-17",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:8252923d82d1",
       "kind": "current_focus",
@@ -49,6 +69,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md",
+          "date": "2026-05-17",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2367428bf1f4",
+      "kind": "next_improvement",
+      "lesson": "classify empty config as one of absent surface, intentional opt-out, advisory-only, or disabled enforcement before accepting a green gate.",
+      "normalized_key": "classify empty config as one of absent surface intentional opt out advisory only or",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+          "date": "2026-05-17",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2f42332e1fdb",
+      "kind": "next_improvement",
+      "lesson": "consider a future skill-ergonomics rule opt-in or refactor plan for the remaining long-core public skills instead of letting advisory inventory stay invisible.",
+      "normalized_key": "consider a future skill ergonomics rule opt in or refactor plan for the remaining",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
           "date": "2026-05-17",
           "section": "Next Improvements"
         }
@@ -95,6 +155,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:dd9e67a04b19",
+      "kind": "next_improvement",
+      "lesson": "when a validator has a valid empty-policy state, require a warning or weak finding if a relevant checked surface exists.",
+      "normalized_key": "when a validator has a valid empty policy state require a warning or weak",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+          "date": "2026-05-17",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:da80f56d67ac",
       "kind": "repeat_trap",
       "lesson": "I almost stopped after closeout without refreshing `find-skills`; changing a public skill reference means the local capability inventory can also change.",
@@ -109,6 +189,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md",
+          "date": "2026-05-17",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d91b801cd235",
+      "kind": "repeat_trap",
+      "lesson": "Prior all-skill health review surfaced core pressure, but the empty-rule state meant the relevant quality gate did not explain why that pressure was advisory-only.",
+      "normalized_key": "prior all skill health review surfaced core pressure but the empty rule state meant",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+          "date": "2026-05-17",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0af9f1a6d865",
+      "kind": "repeat_trap",
+      "lesson": "The first interpretation was too local: \"fix skill ergonomics rules\" instead of \"empty policy disables enforcement invisibly.\"",
+      "normalized_key": "the first interpretation was too local fix skill ergonomics rules instead of empty policy",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
           "date": "2026-05-17",
           "section": "Waste"
         }
@@ -133,14 +253,16 @@
           "section": "Waste"
         }
       ]
-    },
+    }
+  ],
+  "candidates": [
     {
-      "candidate_id": "repeat_trap:38030f34e374",
-      "kind": "repeat_trap",
-      "lesson": "The first `validate_skills.py` run caught bad relative links from the new reference to shared references.",
-      "normalized_key": "the first validate skills py run caught bad relative links from the new reference",
+      "candidate_id": "current_focus:c9461a407e5e",
+      "kind": "current_focus",
+      "lesson": "The setup skill cleanup exposed a repeated quality pattern: `gate_rules` or similar list fields can be empty, leaving a validator advisory-only while the standing gate still reports a clean pass.",
+      "normalized_key": "the setup skill cleanup exposed a repeated quality pattern gate rules or similar list",
       "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md",
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
       "latest_source_date": "2026-05-17",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -148,114 +270,12 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md",
+          "artifact_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
           "date": "2026-05-17",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:429e20906f26",
-      "kind": "current_focus",
-      "lesson": "This session picked up the handoff item to remove mutmut from the Charness mutation-testing workflow and migrate the repo dogfood path to Cosmic Ray.",
-      "normalized_key": "this session picked up the handoff item to remove mutmut from the charness mutation",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-15-mutation-cosmic-ray-migration.md",
-      "latest_source_date": "2026-05-15",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-15-mutation-cosmic-ray-migration.md",
-          "date": "2026-05-15",
           "section": "Context"
         }
       ]
     },
-    {
-      "candidate_id": "next_improvement:4a878c59f211",
-      "kind": "next_improvement",
-      "lesson": "For workflow migrations with mode branches, add one test that pins each mode's artifact assumptions before running closeout.",
-      "normalized_key": "for workflow migrations with mode branches add one test that pins each mode s",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-15-mutation-cosmic-ray-migration.md",
-      "latest_source_date": "2026-05-15",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-15-mutation-cosmic-ray-migration.md",
-          "date": "2026-05-15",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:1215f4ee1d5c",
-      "kind": "next_improvement",
-      "lesson": "Keep new workflow/config families in `.agents/surfaces.json` in the same slice that introduces them.",
-      "normalized_key": "keep new workflow config families in agents surfaces json in the same slice that",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-15-mutation-cosmic-ray-migration.md",
-      "latest_source_date": "2026-05-15",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-15-mutation-cosmic-ray-migration.md",
-          "date": "2026-05-15",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:0a3be8d81650",
-      "kind": "next_improvement",
-      "lesson": "Preserve the mutmut structural limit as historical dogfood evidence, but make new handoff state point to first-run Cosmic Ray observation rather than re-debating the pivot.",
-      "normalized_key": "preserve the mutmut structural limit as historical dogfood evidence but make new handoff state",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-15-mutation-cosmic-ray-migration.md",
-      "latest_source_date": "2026-05-15",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-15-mutation-cosmic-ray-migration.md",
-          "date": "2026-05-15",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:3b0de5a8dd87",
-      "kind": "repeat_trap",
-      "lesson": "A local `.artifacts/cosmic-ray-venv` created for proof leaked into repo-wide Python filename scans until it was removed. The verification environment was useful, but it should have been outside the repo or cleaned before broad gates.",
-      "normalized_key": "a local artifacts cosmic ray venv created for proof leaked into repo wide python",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-15-mutation-cosmic-ray-migration.md",
-      "latest_source_date": "2026-05-15",
-      "age_days": 2,
-      "recency_weight": 0.9057,
-      "alpha": 0.07,
-      "selection_weight": 0.9057,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-15-mutation-cosmic-ray-migration.md",
-          "date": "2026-05-15",
-          "section": "Waste"
-        }
-      ]
-    }
-  ],
-  "candidates": [
     {
       "candidate_id": "current_focus:8252923d82d1",
       "kind": "current_focus",
@@ -291,6 +311,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md",
+          "date": "2026-05-17",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2367428bf1f4",
+      "kind": "next_improvement",
+      "lesson": "classify empty config as one of absent surface, intentional opt-out, advisory-only, or disabled enforcement before accepting a green gate.",
+      "normalized_key": "classify empty config as one of absent surface intentional opt out advisory only or",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+          "date": "2026-05-17",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2f42332e1fdb",
+      "kind": "next_improvement",
+      "lesson": "consider a future skill-ergonomics rule opt-in or refactor plan for the remaining long-core public skills instead of letting advisory inventory stay invisible.",
+      "normalized_key": "consider a future skill ergonomics rule opt in or refactor plan for the remaining",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
           "date": "2026-05-17",
           "section": "Next Improvements"
         }
@@ -337,6 +397,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:dd9e67a04b19",
+      "kind": "next_improvement",
+      "lesson": "when a validator has a valid empty-policy state, require a warning or weak finding if a relevant checked surface exists.",
+      "normalized_key": "when a validator has a valid empty policy state require a warning or weak",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+          "date": "2026-05-17",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:da80f56d67ac",
       "kind": "repeat_trap",
       "lesson": "I almost stopped after closeout without refreshing `find-skills`; changing a public skill reference means the local capability inventory can also change.",
@@ -351,6 +431,46 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-17-agent-production-runtime-quality.md",
+          "date": "2026-05-17",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d91b801cd235",
+      "kind": "repeat_trap",
+      "lesson": "Prior all-skill health review surfaced core pressure, but the empty-rule state meant the relevant quality gate did not explain why that pressure was advisory-only.",
+      "normalized_key": "prior all skill health review surfaced core pressure but the empty rule state meant",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+          "date": "2026-05-17",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0af9f1a6d865",
+      "kind": "repeat_trap",
+      "lesson": "The first interpretation was too local: \"fix skill ergonomics rules\" instead of \"empty policy disables enforcement invisibly.\"",
+      "normalized_key": "the first interpretation was too local fix skill ergonomics rules instead of empty policy",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
+      "latest_source_date": "2026-05-17",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md",
           "date": "2026-05-17",
           "section": "Waste"
         }

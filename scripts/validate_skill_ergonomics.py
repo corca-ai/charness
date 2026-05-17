@@ -49,7 +49,7 @@ def main() -> int:
         print(json.dumps(report, ensure_ascii=False, indent=2))
     else:
         print(HELPER._format_human(report))
-    return 1 if report["violations"] else 0
+    return 1 if report["violations"] or report["discovery_errors"] else 0
 
 
 if __name__ == "__main__":

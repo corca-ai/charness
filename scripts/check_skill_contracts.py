@@ -105,10 +105,10 @@ CORE_CONTRACTS: dict[str, tuple[str, ...]] = {
         "AGENTS.md",
         "CLAUDE.md",
         "into one explicit host-facing policy",
-        "when the repo uses bounded fresh-eye or critique-style subagent review",
+        "optional Charness seams",
+        "bootstrap-seams.md",
+        "runtime ownership",
         "already delegated",
-        "should not wait for a second user message",
-        "same-agent pass",
     ),
     "skills/public/issue/SKILL.md": (
         "GitHub is the source of truth.",

@@ -50,6 +50,9 @@ Review these six axes and classify each as `healthy`, `weak`, `missing`, or
 4. **Phase-level signal**
    - success output should identify the phase and elapsed time
    - failure output should reveal the seam without forcing an immediate rerun
+   - passing phases may stay quiet only when they have no attention lines;
+     lines beginning `WARNING`, `WARN`, `WEAK`, or `ADVISORY` should be replayed
+     even when the command exits 0
    - runtime-budget output should also show top-N recent hot spots, including
      unbudgeted phases, so a green budget gate still answers what dominated
      the last run

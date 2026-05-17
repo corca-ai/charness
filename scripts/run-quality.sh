@@ -210,10 +210,15 @@ print_phase_output() {
   local status="$2"
   local elapsed_ms="$3"
   local log_path="$4"
+  local attention_output=0
 
   printf '%s %-24s %s\n' "$(uppercase_status "$status")" "$label" "$(format_elapsed "$elapsed_ms")"
 
-  if [[ "$status" == "fail" || "$RUN_QUALITY_VERBOSE" == "1" ]]; then
+  if [[ -s "$log_path" ]] && grep -Eq '^(WARNING|WARN|WEAK|ADVISORY)(:|[[:space:]])' "$log_path"; then
+    attention_output=1
+  fi
+
+  if [[ "$status" == "fail" || "$RUN_QUALITY_VERBOSE" == "1" || "$attention_output" == "1" ]]; then
     if [[ -s "$log_path" ]]; then
       printf -- '--- %s output ---\n' "$label"
       cat "$log_path"

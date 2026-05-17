@@ -70,6 +70,12 @@ def build_payload(repo_root: Path, *, artifact_path: Path | None = None, run_com
     command_results = _run_review_commands(repo_root, commands) if run_commands else []
     failed_commands = [item for item in command_results if item.get("ok") is not True]
     blockers: list[str] = []
+    warnings: list[str] = []
+    configuration_status = "configured" if commands else "not_configured"
+    if not commands:
+        warnings.append(
+            "requested_review_commands is empty; requested-review enforcement is advisory-only for this release."
+        )
     if unavailable_hits and not waiver_hits:
         blockers.append(
             "release artifact records requested review unavailability without an explicit review waiver: "
@@ -87,8 +93,10 @@ def build_payload(repo_root: Path, *, artifact_path: Path | None = None, run_com
         "unavailable_hits": unavailable_hits,
         "waiver_hits": waiver_hits,
         "requested_review_commands": commands,
+        "configuration_status": configuration_status,
         "command_results": command_results,
         "blockers": blockers,
+        "warnings": warnings,
     }
 
 
@@ -110,6 +118,8 @@ def main() -> int:
             print(f"BLOCKED: {blocker}")
     else:
         print(f"requested release review gate: {payload['status']}")
+        for warning in payload.get("warnings", []):
+            print(f"WARNING: {warning}")
     return 1 if payload["status"] == "blocked" else 0
 
 

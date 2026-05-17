@@ -70,6 +70,7 @@ Then load only the references needed for the detected state:
 - scaffolding or rewriting the basic docs: `references/default-surfaces.md`
 - installable CLI / plugin / agent-facing local surface: `references/probe-surface.md`
 - repo wants durable retrospective pickup: `references/retro-memory-seam.md`
+- optional adapter, policy, or runtime seams: `references/bootstrap-seams.md`
 
 ## Workflow
 
@@ -103,47 +104,13 @@ Then load only the references needed for the detected state:
    - `<repo-root>/docs/operator-acceptance.md`
    - optionally separate bootstrap and uninstall docs only when the repo
      actually ships an installable surface
-   - when the repo ships an installable CLI, plugin, package, or agent-facing
-     integration, make the README or bootstrap doc name a small probe surface
-   - when the repo wants durable retrospective memory, seed
-     `<repo-root>/.agents/retro-adapter.yaml` and `<repo-root>/charness-artifacts/retro/recent-lessons.md`
-     with `$SKILL_DIR/scripts/seed_retro_memory.py` instead of hand-writing the seam
-   - when Charness workflows write durable artifacts, make `<repo-root>/AGENTS.md`
-     say meaningful `charness-artifacts/` changes are repo state and
-     current-pointer helpers no-op without canonical content changes
-   - when the repo uses announcement or release-note workflows, make
-     `<repo-root>/AGENTS.md` say meaningful behavior commits should include a
-     short body with issue linkage, human-visible value, verification, and
-     operator/apply notes when relevant
-   - when the repo uses bounded fresh-eye or critique-style subagent review
-     as a stop gate, make `<repo-root>/AGENTS.md` say that the review is already delegated,
-     agents should not wait for a second user message asking for delegation,
-     and host spawn restrictions should be reported explicitly instead of
-     replaced with a same-agent pass
-   - add a short `Skill Routing` block to `<repo-root>/AGENTS.md` when
-     installed charness skills are present
-   - keep that block startup-bootstrap-heavy and discovery-first
-   - when the repo keeps repo-owned skills under `skills/public/` or
-     `skills/support/`, make `<repo-root>/AGENTS.md` say that semantic skill changes should
-     freeze the current consumer intent before broad edits by deciding whether
-     reviewed dogfood, maintained evaluator scenarios, or checked-in scenario
-     review proof will carry the change
-   - use `$SKILL_DIR/scripts/render_skill_routing.py` so mature repos get an
-     add-block suggestion instead of a silent rewrite
-   - when the repo uses git worktrees plus a Node hook manager (lefthook,
-     husky, simple-git-hooks), seed `<repo-root>/.agents/worktree-adapter.yaml`
-     with `$SKILL_DIR/scripts/seed_worktree_adapter.py` so
-     `charness worktree prepare` can install dependencies and re-register
-     hooks per worktree
-   - when the repo wants to capture T-loop events (skill_invoked,
-     lesson_cited, anchor_invoked) as Tier C evidence for the Skill-T
-     mechanism inventory, seed `<repo-root>/.agents/t-events-adapter.yaml`
-     with `$SKILL_DIR/scripts/seed_t_events_adapter.py`; consumers that
-     prefer not to capture events flip `enabled: false` after seeding
-   - when a user-facing product repo wants privacy-bounded H-LAM/T usage
-     episodes, seed `<repo-root>/.agents/usage-episodes-adapter.yaml`; the
-     setup implementation uses `$SKILL_DIR/scripts/seed_usage_episodes_adapter.py`,
-     but that helper is not a user-facing API
+   - when optional Charness seams are requested or detected, use
+     `references/bootstrap-seams.md` for probe surfaces, retro memory, artifact
+     policy, review delegation that is already delegated by repo contract,
+     skill routing, worktree, T-events, and usage episodes; keep runtime
+     ownership with the owning skill or integration
+   - preserve runtime ownership in the owning skill or integration when setup
+     only seeds an adapter or starter artifact
 5. Keep the boundaries honest.
    - `<repo-root>/README.md`: current repo story and user-facing orientation
    - `<repo-root>/AGENTS.md`: agent operating contract for this repo
@@ -194,6 +161,7 @@ Then load only the references needed for the detected state:
 - `references/default-surfaces.md`
 - `references/probe-surface.md`
 - `references/retro-memory-seam.md`
+- `references/bootstrap-seams.md`
 - `references/github-actions-defaults.md`
 - `references/operator-acceptance-synthesis.md`
 - `../../shared/references/agent-assessment-invariant.md`

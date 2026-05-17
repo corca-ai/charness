@@ -63,3 +63,9 @@ When a repo opts into `skill_ergonomics_gate_rules`, keep the rule values valid
 and machine-readable. `bootstrap_adapter.py` will refuse to rewrite an adapter
 that sets invalid ergonomics rules, because silently clearing them would hide
 operator intent.
+
+When a repo has discoverable skills but `skill_ergonomics_gate_rules: []`, the
+validator should still return success, but it must emit a structured warning.
+An empty rule list means the inventory is advisory-only and no skill structure
+heuristic is enforced. The standing quality runner should surface that warning
+even on a passing phase.

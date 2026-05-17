@@ -1,132 +1,139 @@
 # Quality Review
-Date: 2026-05-16
+Date: 2026-05-17
 
 ## Scope
-Repo-wide quality/setup run after the gather acquisition critique work and the
-operator request to run `quality` plus `setup` and reflect findings into the
-repo. Scope includes operating-surface normalization, adapter bootstrap
-posture, plugin export integrity, standing gates, and the quality defects found
-while running those gates.
+
+Repo-wide setup/quality slice for issue 171 follow-up: shrink the overloaded
+`setup` skill core, investigate the repeated `empty gate_rules -> silent pass`
+pattern with `debug`, and run an all-skill health sweep across public/support
+skills plus release/quality validator seams.
 
 ## Current Gates
-- `./scripts/run-quality.sh`: 60 passed / 0 failed in 80.8s on
-  `local-linux-x86_64-36cpu`.
-- First run failed on five real signals and all were repaired: agent-browser
-  orphan runtime state, `quality_bootstrap_lib.py` length, plugin import smoke
-  for `web-fetch`, managed-doctor onboarding expectation drift, and coverage
-  cascading from pytest failure.
-- `setup` inspection now reports `repo_mode: NORMALIZE`, no missing core
-  surfaces, `AGENTS.md` / `CLAUDE.md` normalized, and `Skill Routing` matching
-  the compact block.
-- `quality` bootstrap now reports `mutation_testing: preserved`; the helper no
-  longer drops the Cosmic Ray adapter block when refreshing defaults.
+
+- `./scripts/run-quality.sh`: 60 passed / 0 failed in 81.7s on the current
+  local runner.
+- The gate now replays passing phase logs that contain `WARNING`, `WARN`,
+  `WEAK`, or `ADVISORY` lines. The expected visible warning in this run is
+  `skill_ergonomics_gate_rules_empty` because the repo intentionally still has
+  `skill_ergonomics_gate_rules: []`.
+- `validate-skill-ergonomics` now reports 22 discoverable skills with disabled
+  skill-structure enforcement instead of returning a silent empty payload.
+- Explicit `skill_ergonomics_skill_paths` that resolve zero non-vendored skills
+  also produce a warning while preserving the advisory-only exit status.
 
 ## Runtime Signals
-- runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
-  rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`;
-  profile `local-linux-x86_64-36cpu`.
-- runtime hot spots: `pytest` 57.4s latest / 29.1s median, budget 140.0s;
-  `check-coverage` 41.2s latest / 36.8s median, budget 45.0s;
-  `validate-inventory-consumption-declaration` 16.0s latest / 10.4s median,
-  budget 35.0s; `check-duplicates` 6.7s latest / 6.1s median, budget 11.0s.
-- coverage gate: `check-coverage` passed in 41.2s; no coverage failure remains
-  after the managed-doctor expectation update.
-- evaluator depth: `run-evals` passed in 2.2s; no Cautilus run was triggered
-  because there was no log-backed prompt regression.
+
+- runtime source: structured metrics from `.charness/quality/runtime-signals.json`, recorded by `scripts/record_quality_runtime.py`, rendered by `render_runtime_summary.py`. <!-- reproduction-source -->
+- runtime hot spots: rendered by `render_runtime_summary.py`: `pytest` 58.1s,
+  `check-coverage` 40.8s, `validate-inventory-consumption-declaration` 16.2s,
+  `check-duplicates` 7.0s, `specdown` 3.5s.
+- coverage gate: `check-coverage` passed in 40.8s.
+- evaluator depth: `run-evals` passed in 2.0s; no Cautilus run was triggered
+  for this deterministic validator/refactor slice.
 
 ## Healthy
-- Full quality closeout is green: validators, packaging, plugin import smoke,
-  docs, markdown, secrets, supply-chain, ruff, py-compile, pytest, coverage,
-  specdown, evals, and runtime budget all passed.
-- `defuddle@0.18.1` is now installed as a repo-local npm dev dependency, and
-  `gather_public_url.py` proved a live reader fallback against
-  `https://www.rfc-editor.org/rfc/rfc9110.html`; the selected attempt was
-  `defuddle-reader-extraction` with `success` / `strong` proof in
-  [charness-artifacts/gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md](../gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md).
-- Setup normalization is green after adding the compact `Skill Routing` block
-  to `AGENTS.md`; `CLAUDE.md` remains a symlink to `AGENTS.md`.
-- The first-run doctor failure was machine state, not repo logic:
-  `agent_browser_runtime_guard.py --cleanup-orphans --execute` removed the
-  orphan daemon tree and doctor returned exit 0 afterward.
-- Plugin export integrity is restored: `sync_root_plugin_manifests.py` ran and
-  `check_plugin_import_smoke.py` imported every plugin Python file.
+
+- `setup` core pressure is repaired: the core now routes optional bootstrap
+  seams through [bootstrap-seams.md](../../skills/public/setup/references/bootstrap-seams.md)
+  and `inventory_skill_ergonomics.py` no longer flags `setup`.
+- Support skills remain small and structurally healthy: `gather-notion`,
+  `gather-slack`, `markdown-preview`, and `web-fetch` stay between 27 and 43
+  nonempty core lines.
+- The main deterministic surfaces are green after sync: skill validation,
+  skill contracts, public-skill dogfood, debug/retro artifacts, packaging,
+  plugin import smoke, markdown, ruff, pytest, coverage, specdown, evals, and
+  runtime budget.
+- `release` requested-review gate now distinguishes
+  `configuration_status: not_configured` and emits a `WARNING` when
+  `requested_review_commands: []`, instead of reporting a bare `ok`.
 
 ## Weak
-- `gws-cli` is still missing on this machine. Doctor classifies it as
-  non-blocking missing/advisory for the current repo.
-- Lint ignore pressure rose to 34 narrow inline `noqa` entries, including the
-  new `web-fetch` import-path shim in source and plugin export. Inventory still
-  reports 0 blanket and 0 file-level ignores.
-- Standing test economics remains a maintenance signal: after excluding ignored
-  `mutants/`, the inventory reports 153 real test files and 58 nested CLI
-  process-spawning files.
-- `check-coverage` is close to its local budget at 41.2s / 45.0s.
+
+- Skill ergonomics enforcement remains advisory-only because
+  `skill_ergonomics_gate_rules` is still empty. This is now visible in
+  `run-quality`, not hidden.
+- All-skill inventory still shows public core pressure by `core_nonempty_lines`
+  outside `setup`; `reference_file_count` confirms those skills generally have
+  references, so this is compression backlog rather than missing references.
+- `gather`, `find-skills`, `create-cli`, `create-skill`, `hitl`, `ideation`,
+  `retro`, and `spec` still show mode/option pressure terms. That is not a
+  hard failure under the current adapter, but it is the next ergonomics backlog.
 
 ## Missing
-- There is still no CI lane in this checkout; security-bearing checks are local
-  hook / maintainer-machine enforced.
-- No aarch64 runtime sample was collected in this run.
+
+- No hard skill-ergonomics rules are enabled yet. The repo now warns on that
+  empty-policy state, but does not fail on `long_core`, mode/option pressure,
+  or progressive-disclosure risk.
+- No CI lane is present in this checkout; security and quality proof remain
+  local runner / maintainer-machine enforced.
 
 ## Deferred
-- Full repair of the gather acquisition stack remains governed by
-  `charness-artifacts/critique/2026-05-16-gather-acquisition-repair-plan-critique.md`.
-  This quality/setup run did not implement that next slice.
-- Raw acquired-content persistence for gather remains deferred until the repair
-  contract chooses acquisition maximization versus trace/proof correctness.
-- No-site-name / generic-helper lint from the insane-search review remains a
-  follow-up, not part of this quality/setup normalization.
+
+- Refactors for `gather`, `release`, and other long-core public skills are
+  deferred. The urgent `setup` core split and silent-empty-policy repair landed
+  first.
+- A future release-policy decision can decide whether empty
+  `requested_review_commands` should stay warning-only or become blocking for
+  release branches.
 
 ## Advisory
-- `mutants/` is gitignored but can still distort ad hoc inventories; the
-  standing-test economics inventory now excludes it by command-backed change in
-  `standing_test_economics_lib.py`.
-- `quality` bootstrap previously dropped unknown explicit fields from its
-  rendered adapter output; the concrete observed casualty was
-  `.agents/quality-adapter.yaml` `mutation_testing`. The helper now preserves
-  that validated block.
-- The `web-fetch` script uses a narrow `E402` shim so exported plugin modules
-  can import sibling helper scripts when loaded by path; this is validated by
-  `check_plugin_import_smoke.py`.
-- `npm audit --omit=optional --json` currently reports three JavaScript
-  advisories: `markdownlint-cli2@0.22.0` via `smol-toml`, and
-  `secretlint@11.6.0` -> `table` -> `ajv` -> `fast-uri`. The new
-  `defuddle@0.18.1` dependency is not the reported vulnerable path, but the
-  existing advisory set remains visible for a future dependency-refresh slice.
-- Public-skill scenario review used `suggest_public_skill_dogfood.py` for
-  `quality`; the existing slow-gate consumer prompt still routes to `quality`
-  and needs no new maintained Cautilus scenario for this setup/quality slice.
+
+- Debug artifact `charness-artifacts/debug/latest.md`:
+  [empty-policy silent pass](../debug/latest.md) records the root cause,
+  detection gap, and sibling search.
+- Retro memory `charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md`:
+  [2026-05-17-empty-policy-silent-pass.md](../retro/2026-05-17-empty-policy-silent-pass.md)
+  and [recent-lessons.md](../retro/recent-lessons.md) now carry the repeat
+  trap: classify empty config as absent surface, intentional opt-out,
+  advisory-only, or disabled enforcement before accepting a green gate.
+- Fresh `find-skills` inventory was refreshed after public skill reference
+  changes because the capability map changed semantically.
 
 ## Delegated Review
-- status: blocked.
-- host signal: active Codex tool contract limits `spawn_agent` use to tasks
-  where the current user message asks for subagent work. This quality/setup run
-  therefore records deterministic gates and inventories only; fresh-eye review
-  remains unprobed for this slice.
+
+- status: executed.
+- reviewers: `Laplace` audited public skill health and empty-policy patterns;
+  `Rawls` audited support/validator/export surfaces and run-quality masking.
+- actionable reviewer findings that landed: warning on empty skill ergonomics
+  rules, pass-time attention replay in `run-quality`, wrapper discovery-error
+  exit parity, plugin export sync, and `release` requested-review empty-command
+  warning.
 
 ## Commands Run
-- `python3 skills/public/setup/scripts/inspect_repo.py --repo-root .`
-- `python3 skills/public/setup/scripts/render_skill_routing.py --repo-root . --json`
-- `python3 skills/public/quality/scripts/bootstrap_adapter.py --repo-root .`
-- `python3 skills/public/quality/scripts/resolve_adapter.py --repo-root .`
-- `python3 scripts/agent_browser_runtime_guard.py --repo-root . --cleanup-orphans --execute`
+
+- `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --json`
+- `CHARNESS_QUALITY_LABELS=validate-skill-ergonomics ./scripts/run-quality.sh`
+- `python3 /home/hwidong/.codex/plugins/cache/local/charness/0.5.34/skills/find-skills/scripts/list_capabilities.py --repo-root . --recommend-for-task "setup refactor and empty policy silent pass warning scan"`
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- `pytest -q tests/quality_gates/test_standing_test_economics.py tests/quality_gates/test_quality_bootstrap.py tests/quality_gates/test_quality_mutation_testing.py tests/charness_cli/test_managed_install.py::test_charness_doctor_reports_managed_surface tests/test_web_fetch_support.py`
-- `ruff check scripts/quality_bootstrap_lib.py scripts/quality_bootstrap_common.py tests/quality_gates/test_quality_bootstrap.py skills/support/web-fetch/scripts/acquire_public_url.py tests/charness_cli/test_managed_install.py skills/public/quality/scripts/standing_test_economics_lib.py tests/quality_gates/test_standing_test_economics.py`
-- `python3 scripts/check_plugin_import_smoke.py --repo-root .`
-- `npm install --save-dev --save-exact defuddle@0.18.1`
-- `PATH="$PWD/node_modules/.bin:$PATH" python3 skills/public/gather/scripts/gather_public_url.py --repo-root . --url https://www.rfc-editor.org/rfc/rfc9110.html --expect-regex '^###\\s*6\\.4\\.' --timeout 25 --execute`
-- `npm audit --omit=optional --json`
+- `pytest -q tests/quality_gates/test_skill_ergonomics_gate.py tests/quality_gates/test_quality_runner.py::test_run_quality_replays_passing_attention_logs tests/quality_gates/test_quality_runner.py::test_run_quality_keeps_passing_non_attention_logs_quiet tests/quality_gates/test_release_publish.py::test_requested_review_gate_warns_when_commands_are_empty tests/quality_gates/test_release_publish.py::test_requested_review_gate_blocks_unavailable_release_record tests/quality_gates/test_release_publish.py::test_requested_review_gate_allows_explicit_waiver`
+- `pytest -q tests/quality_gates/test_setup_seed_usage_episodes.py tests/quality_gates/test_setup_retro_memory.py tests/quality_gates/test_docs_and_misc.py`
+- `python3 scripts/validate_debug_artifact.py --repo-root .`
+- `python3 scripts/build_debug_seam_risk_index.py --repo-root . --check`
+- `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check`
+- `python3 scripts/validate_public_skill_dogfood.py --repo-root .`
+- `python3 scripts/validate_skills.py --repo-root .`
+- `python3 scripts/check_skill_contracts.py --repo-root .`
+- `python3 scripts/validate_packaging.py --repo-root .`
+- `python3 scripts/validate_packaging_committed.py --repo-root .`
+- `./scripts/check-markdown.sh`
 - `./scripts/run-quality.sh`
 
 ## Recommended Next Gates
-- active `AUTO_CANDIDATE`: keep `mutation_testing` in the quality bootstrap
-  preservation test whenever the adapter renderer grows new explicit blocks.
-- passive `AUTO_CANDIDATE` because current quality is green: add a minimal CI
-  lane mirroring security-bearing local hooks when maintainer policy allows CI.
-- passive `AUTO_CANDIDATE` because budget still passes: track `check-coverage`
-  budget pressure before raising the 45s budget.
+
+- active `AUTO_CANDIDATE`: decide whether Charness itself should opt into one
+  low-noise skill ergonomics rule after the remaining long-core backlog is
+  priced.
+- passive `AUTO_CANDIDATE` because current releases still surface the warning:
+  if empty requested-review commands recur during a
+  real release, add an adapter field that makes that warning blocking for
+  release branches.
+- passive `AUTO_CANDIDATE` because this slice already pins replay behavior:
+  keep pass-time attention replay in any future
+  quality runner refactor so `WARNING`/`WEAK` lines do not disappear behind a
+  green summary.
 
 ## History
+
 - [2026-05-12 archive](history/2026-05-12-quality-review.md)
 - [2026-05-10 archive](history/2026-05-10-quality-review.md)
 - [2026-04-30 archive](history/2026-04-30-quality-review.md)

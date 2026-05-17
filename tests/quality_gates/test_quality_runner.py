@@ -177,6 +177,62 @@ def test_run_quality_can_select_command_docs_gate(tmp_path: Path, seeded_quality
     assert "Quality summary: 1 passed, 0 failed" in result.stdout
 
 
+def test_run_quality_replays_passing_attention_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+    attention_tokens = ("WARNING", "WARN", "WEAK", "ADVISORY")
+    for attention_token in attention_tokens:
+        repo, env = clone_quality_runner_repo(tmp_path / attention_token.lower(), seeded_quality_runner_repo)
+        warning_script = repo / "scripts" / "validate_skill_ergonomics.py"
+        warning_script.write_text(
+            "\n".join(
+                [
+                    "#!/usr/bin/env python3",
+                    "print('quality success output from validate-skill-ergonomics')",
+                    f"print('{attention_token}: skill_ergonomics_gate_rules is empty; no skill structure heuristics are enforced.')",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        warning_script.chmod(0o755)
+        env["CHARNESS_QUALITY_LABELS"] = "validate-skill-ergonomics"
+
+        result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+        assert result.returncode == 0, result.stderr
+        assert "PASS validate-skill-ergonomics" in result.stdout
+        assert "--- validate-skill-ergonomics output ---" in result.stdout
+        assert f"{attention_token}: skill_ergonomics_gate_rules is empty" in result.stdout
+        assert "quality success output from validate-skill-ergonomics" in result.stdout
+        assert "Quality summary: 1 passed, 0 failed" in result.stdout
+
+
+def test_run_quality_keeps_passing_non_attention_logs_quiet(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    warning_script = repo / "scripts" / "validate_skill_ergonomics.py"
+    warning_script.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "print('quality success output from validate-skill-ergonomics')",
+                "print('NOTE: skill_ergonomics_gate_rules is empty; this is an ordinary note.')",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    warning_script.chmod(0o755)
+    env["CHARNESS_QUALITY_LABELS"] = "validate-skill-ergonomics"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert "PASS validate-skill-ergonomics" in result.stdout
+    assert "--- validate-skill-ergonomics output ---" not in result.stdout
+    assert "NOTE: skill_ergonomics_gate_rules is empty" not in result.stdout
+    assert "quality success output from validate-skill-ergonomics" not in result.stdout
+    assert "Quality summary: 1 passed, 0 failed" in result.stdout
+
+
 def test_run_quality_can_select_cautilus_proof_gate(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     env["CHARNESS_QUALITY_LABELS"] = "validate-cautilus-proof"

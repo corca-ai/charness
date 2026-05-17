@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-17T08:35:38Z",
+  "generated_at": "2026-05-17T10:39:19Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -546,6 +546,7 @@
           "skills/public/setup/references/default-surfaces.md",
           "skills/public/setup/references/probe-surface.md",
           "skills/public/setup/references/retro-memory-seam.md",
+          "skills/public/setup/references/bootstrap-seams.md",
           "skills/public/setup/references/github-actions-defaults.md",
           "skills/public/setup/references/operator-acceptance-synthesis.md",
           "skills/shared/references/agent-assessment-invariant.md"

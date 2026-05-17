@@ -1,145 +1,154 @@
-# Pytest Temp Artifact Amplification Debug
-Date: 2026-05-12
+# Empty Policy Silent Pass Debug
+Date: 2026-05-17
 
 ## Problem
 
-Full release validation filled `/home` because pytest temp directories under
-`/home/hwidong/.cache/tmp/pytest-of-hwidong` grew to roughly 1.5 TB and more
-than five million files. The largest reported directories were pytest
-session roots from 2026-05-12, and sampled paths included Cautilus/Charness
-eval artifacts containing `codex-home/tmp` payloads.
+`skill_ergonomics_gate_rules: []` appeared often enough to expose a broader
+pattern: an empty policy, rule list, or probe list can disable enforcement while
+the standing gate still exits 0 and hides the reason.
 
 ## Correct Behavior
 
-Given Cautilus run artifacts are useful evidence, when Charness tests seed a
-synthetic repo copy, then durable evidence should remain in the real checkout
-and artifact pointers while hidden runtime artifact roots are excluded from the
-copy. Those roots can contain tool homes, caches, or temp trees.
+Given a repo has a discoverable surface, when an empty config disables a quality
+or skill-structure gate, then the validator should report that state as an
+explicit warning or weak finding.
 
-Given Codex evals need an isolated home, when Charness runs an eval, then the
-isolated home should be outside the repo artifact tree, inherit only auth when
-requested, and be cleaned up after the runner exits.
+Given a standing quality phase exits 0, when its output contains `WARNING`,
+`WARN`, `WEAK`, or `ADVISORY` lines, then `run-quality` should replay the phase
+log even though the phase passed.
 
 ## Observed Facts
 
-- The user reported `/home/hwidong/.cache/tmp/pytest-of-hwidong` at about 1.5
-  TB with large `pytest-7909`, `pytest-7911`, `pytest-7912`, and `pytest-7913`
-  directories.
-- The reported path shape included `.cautilus/runs/.../codex-home/tmp/...`. <!-- reproduction-source -->
-- Checked-in `.cautilus/runs` entries are 93 small evidence files, not
-  terabyte-scale payloads by themselves.
-- `tests/repo_copy.py` copied the whole repo root into a session seed and did
-  not exclude `.cautilus`.
-- `scripts/check_coverage.py` also copied the repo root for coverage probes
-  and did not exclude `.cautilus`.
-- Many tests clone or copy the seeded Charness repo from the pytest temp root,
-  so one oversized hidden artifact tree can be multiplied by later fixtures.
-- The 2026-05-12 Codex eval runner fix creates isolated Codex homes under
-  system temp, inherits only auth, and cleans temp homes.
-- After the terabyte-scale trees were deleted, pytest still held
-  `pytest-4`, `pytest-5`, and `pytest-6` at about 1.3-1.4 GB each; local
-  pytest 9.0.2 defaults to `count=3`, `policy=all`. <!-- reproduction-source -->
+- `.agents/quality-adapter.yaml` sets `skill_ergonomics_gate_rules: []`.
+- Before this fix, `validate_skill_ergonomics.py --json` returned
+  `rules: []`, `checked_skills: []`, `violations: []`, and exited 0 without a
+  structured warning.
+- The repo-root wrapper `scripts/validate_skill_ergonomics.py` failed only on
+  `violations`, so configured-rule discovery errors could pass through the
+  wrapper.
+- `scripts/run-quality.sh` replayed phase logs only on failure or explicit
+  verbose mode, so even valid warning output from a passing phase would be
+  hidden in normal operation.
+- `inventory_skill_ergonomics.py --json` found 22 skills; after the setup
+  refactor, `setup` is no longer flagged, but eight public skills still show
+  `long_core` pressure and several others show mode/option pressure.
+- A sibling scan found existing warnings for empty adapter fields in
+  announcement, impl, find-skills, quality, and retro resolver paths. Those are
+  bootstrap visibility signals, not standing quality gates.
+- A delegated sibling scan found one additional live sibling:
+  `requested_review_commands: []` in `release` returned `status: ok` without
+  a configuration status or warning.
+- Fresh-eye critique found the same empty-policy class when
+  `skill_ergonomics_skill_paths` is explicitly configured but resolves no
+  non-vendored skills while rules are empty.
 
 ## Reproduction
 
-The exact terabyte payload was already being deleted during this investigation,
-so the reproduction is structural:
+Before the fix:
 
 ```bash
-pytest -q
+python3 scripts/validate_skill_ergonomics.py --repo-root . --json
+CHARNESS_QUALITY_LABELS=validate-skill-ergonomics ./scripts/run-quality.sh
 ```
 
-Before this fix, if the working checkout contained
-`.cautilus/runs/<run>/.../codex-home/tmp/...`, the session-scoped
-`seeded_charness_repo` fixture copied that tree into pytest temp. Downstream
-fixtures then copied or git-seeded from that already oversized seed.
+The validator passed with no warning payload, and the quality runner printed
+only a green phase line.
 
 ## Candidate Causes
 
-- A Cautilus or Codex eval runtime wrote `codex-home/tmp` payloads under a
-  repo-local `.cautilus/runs` artifact directory.
-- The pytest repo-copy fixture treated hidden runtime artifacts as normal repo
-  input and copied `.cautilus` into the session seed.
-- Coverage probes used a separate root-copy ignore list with the same missing
-  `.cautilus` exclusion.
-- Repeated release/pre-push quality runs amplified the same oversized seed
-  before pytest temp cleanup could reclaim it.
-- Pytest's default tmp-path policy preserves the last three successful session
-  temp roots for debugging, which is too expensive for this repo's
-  worker-parallel repo/home fixture shape.
+- Empty rule lists were treated as intentional opt-out without proving that a
+  user or adapter had made a conscious decision.
+- The validator considered only failure conditions and had no warning channel
+  for disabled enforcement over a discoverable surface.
+- The root wrapper's exit policy drifted from the helper by ignoring discovery
+  errors.
+- The quality runner optimized green output too aggressively and hid pass-time
+  attention signals.
+- Several skill resolver helpers already emit warnings, but those warnings are
+  bootstrap-local unless a caller chooses to inspect them.
 
 ## Hypothesis
 
-If Charness excludes `.cautilus` from all repo-root copy fixtures and keeps the
-Codex isolated home outside the artifact tree, then useful checked Cautilus
-evidence can remain in the repo while runtime homes and caches cannot be
-multiplied into pytest temp. The remaining 3-run pytest retention footprint is
-a test-economics signal, not the original terabyte-scale root cause.
+If empty skill ergonomics rules emit a structured warning when skills are
+discoverable, and if `run-quality` replays pass-time attention output, then the
+same disabled-gate pattern becomes visible without turning every advisory into
+a hard failure.
 
 ## Verification
 
-Executed verification:
+Focused proof executed:
 
-```bash
-pytest -q tests/quality_gates/test_repo_copy_invariants.py  # passed
-python3 scripts/check_test_repo_copy_invariants.py --repo-root .  # passed
-python3 scripts/check_coverage.py --repo-root .  # passed
-python3 scripts/validate_debug_artifact.py --repo-root .  # passed
-python3 scripts/build_debug_seam_risk_index.py --repo-root . --check  # passed
-```
+- `python3 scripts/validate_skill_ergonomics.py --repo-root .`
+- `python3 scripts/validate_skill_ergonomics.py --repo-root . --json`
+- `CHARNESS_QUALITY_LABELS=validate-skill-ergonomics ./scripts/run-quality.sh`
+- `pytest -q tests/quality_gates/test_skill_ergonomics_gate.py tests/quality_gates/test_quality_runner.py::test_run_quality_replays_passing_attention_logs tests/quality_gates/test_quality_runner.py::test_run_quality_keeps_passing_non_attention_logs_quiet`
+- `pytest -q tests/quality_gates/test_release_publish.py::test_requested_review_gate_warns_when_commands_are_empty tests/quality_gates/test_release_publish.py::test_requested_review_gate_blocks_unavailable_release_record tests/quality_gates/test_release_publish.py::test_requested_review_gate_allows_explicit_waiver`
 
-The earlier Codex isolation proof remains the Cautilus run recorded in
-`charness-artifacts/cautilus/latest.md`; unrelated release-probe and budget
-blockers found by `./scripts/run-quality.sh --read-only` were handled before
-release closeout.
+The local repo now reports a `skill_ergonomics_gate_rules_empty` warning with
+22 skills present, and `run-quality` replays that warning on a passing phase.
 
 ## Root Cause
 
-The root cause was not the existence of Cautilus run evidence itself. The
-failure was a boundary leak between runtime artifacts and test repo fixtures:
-pytest and coverage copied `.cautilus` wholesale from the working checkout, so
-any untracked eval runtime payload under `.cautilus/runs` became part of the
-session seed and was then copied repeatedly by downstream tests.
+The root cause was a missing intermediate severity between "hard violation" and
+"nothing to check." `skill_ergonomics_gate_rules: []` was a valid low-noise
+default, but the validator did not distinguish "no relevant surface exists"
+from "a relevant surface exists but enforcement is disabled."
 
-The terabyte scale required both sides: a large runtime/cache payload under a
-repo-local Cautilus artifact root, and copy fixtures that did not treat that
-root as volatile.
+That combined with the quality runner's quiet PASS policy. Even if a validator
+did emit a pass-time warning, the default runner would suppress it, so the
+operator-visible result still looked like an unqualified pass.
 
 ## Detection Gap
 
-- tests/repo_copy.py invariant suite | no assertion that volatile artifact
-  roots are excluded | add `.cautilus` to the asserted exclusion set so the
-  copy helper cannot quietly grow it back
-- scripts/check_coverage.py copy helper | independent ignore list with no
-  shared constant, so a sibling helper drifted | promote ignore names to
-  shared constants and assert them directly
-- runtime amplification monitoring | none — pytest temp growth was only
-  visible through manual `du`; gap is reviewer-visible, not detection-fixable
+- skill ergonomics validator | empty rules with discovered skills produced no
+  warning | emit `skill_ergonomics_gate_rules_empty` and preserve exit 0
+- skill ergonomics explicit paths | empty rules with configured paths that
+  resolve no non-vendored skills produced no warning | emit
+  `skill_ergonomics_requested_paths_empty`
+- root wrapper | discovery errors from configured rules were not fatal through
+  the repo-root entrypoint | mirror helper exit policy for `discovery_errors`
+- quality runner | pass-time attention output was hidden | replay logs with
+  `WARNING`, `WARN`, `WEAK`, or `ADVISORY` lines
+- release requested-review gate | empty requested-review commands produced a
+  bare `ok` status | emit `configuration_status: not_configured` and a warning
+- all-skill health gate | advisory inventory found core pressure but empty
+  rules kept it non-enforced | keep warning visible; defer rule opt-in or
+  broader refactors to a priced follow-up
 
 ## Sibling Search
 
-- Mental model: synthetic test fixtures treat runtime artifact roots as
-  ordinary repo input, so untracked volatile trees ride along with the seed
-- same layer: tests/repo_copy.py and scripts/check_coverage.py shared the
-  same missing exclusion (concrete duplication); both fixed
-- abstraction up: any copy helper that takes an implicit ignore list is a
-  candidate for the same trap — promote ignore names to constants so future
-  helpers must opt out explicitly (recorded in Prevention)
-- specialization down: Codex eval runner historically wrote `CODEX_HOME` into
-  the artifact tree; the 2026-05-12 isolated-home fix moved it outside
-- mental-model siblings: "implicit working directory as authority" trap from
-  recent-lessons — sweep recovered, no new locations beyond the two already
-  patched
+- Mental model: an empty list was treated as benign configuration instead of a
+  potentially disabled enforcement surface.
+- same layer: `runtime_budget_lib.py` already emits `WEAK`/`WARN` for missing
+  budgets or samples; the runner-level replay fix now prevents those from being
+  hidden when they occur.
+- same layer: `retro/scripts/check_auto_trigger.py` already distinguishes
+  missing from explicitly empty trigger config and includes remediation; no
+  patch needed.
+- same layer: adapter resolvers for announcement, impl, find-skills, quality,
+  and retro already emit warnings for empty-but-relevant setup fields; no
+  standing-gate patch needed unless those bootstrap warnings need promotion.
+- same layer: `release/scripts/check_requested_review_gate.py` now distinguishes
+  empty requested-review command config from a fully configured `ok` result.
+- adjacent layer: `validate_cautilus_call_provenance.py` prints "nothing to
+  check" when no `.cautilus/runs/` exists; that is not a disabled policy over a
+  present surface, so it is a false positive for this incident.
+- adjacent layer: HITL `rules: []` is an initial review-state artifact, not a
+  quality enforcement rule list; false positive.
+- adjacent layer: release fresh-checkout probes report `not_configured` into
+  release artifacts; this is visible but may deserve a future release-policy
+  warning if installable releases continue without probes.
 
 ## Seam Risk
 
-- Interrupt ID: pytest-temp-cautilus-artifact-amplification
-- Risk Class: operator-visible-recovery
-- Seam: checked evaluation evidence versus untracked runtime/cache payloads
-- Disproving Observation: a focused invariant test fails if `.cautilus` is
-  removed from either repo-copy ignore set
-- What Local Reasoning Cannot Prove: which exact Cautilus/Codex wrapper layer
-  produced every deleted `codex-home/tmp` path
+- Interrupt ID: empty-policy-silent-pass
+- Risk Class: contract-freeze-risk
+- Seam: adapter policy defaults versus standing gate enforcement visibility
+- Disproving Observation: focused tests fail if empty skill ergonomics rules
+  stop emitting a warning, if wrapper discovery errors pass, or if
+  `run-quality` hides a passing `WARNING` line.
+- What Local Reasoning Cannot Prove: whether every non-standing bootstrap
+  warning should be promoted into a standing quality phase.
 - Generalization Pressure: monitor
 
 ## Interrupt Decision
@@ -150,16 +159,10 @@ root as volatile.
 
 ## Prevention
 
-Keep checked Cautilus evidence separate from runtime payloads. Repo-copy and
-coverage-copy helpers must exclude `.cautilus`, and the Codex eval runner must
-continue using a temp `CODEX_HOME` outside repo artifacts with cleanup. Future
-copy helpers should expose their ignore names as constants so volatile artifact
-roots can be asserted directly instead of inferred from a closure.
+Keep empty-policy states distinguishable from absent-surface states. Validators
+that intentionally pass on missing config should still expose `WARNING`,
+`WARN`, `WEAK`, or `ADVISORY` when a relevant surface exists and enforcement is
+disabled. The runner owns replaying those pass-time attention lines so future
+warning channels do not become invisible by default.
 
-Keep pytest's default 3-session retention unless test economics data shows a
-better repo-owned policy. The expensive signal to inspect next is why one
-parallel successful session creates about 1.3-1.4 GB of repo/home fixture data.
-
-Fresh-eye critique satisfaction: parent-delegated. Reviewers agreed the fix
-should exclude `.cautilus` from synthetic copy surfaces without deleting or
-banning checked Cautilus evidence.
+Related prior incident: `charness-artifacts/debug/2026-05-11-issue-145-script-silence-closeout.md`.

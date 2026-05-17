@@ -30,12 +30,15 @@ def test_narrative_map_sources_reports_checked_in_docs() -> None:
 
 def test_setup_skill_bootstraps_probe_surface_guidance() -> None:
     skill_text = (ROOT / "skills" / "public" / "setup" / "SKILL.md").read_text(encoding="utf-8")
+    bootstrap_seams = (
+        ROOT / "skills" / "public" / "setup" / "references" / "bootstrap-seams.md"
+    ).read_text(encoding="utf-8")
     probe_reference = (
         ROOT / "skills" / "public" / "setup" / "references" / "probe-surface.md"
     ).read_text(encoding="utf-8")
 
-    assert "probe surface" in skill_text
-    assert "installable CLI" in skill_text
+    assert "probe surfaces" in skill_text
+    assert "installable CLI" in bootstrap_seams
     assert "binary healthcheck" in probe_reference
     assert "machine-readable command discovery" in probe_reference
     assert "local discoverability" in probe_reference
@@ -60,13 +63,16 @@ def test_setup_agent_docs_carry_bounded_subagent_delegation_rule() -> None:
     agent_docs = (
         ROOT / "skills" / "public" / "setup" / "references" / "agent-docs-policy.md"
     ).read_text(encoding="utf-8").lower()
+    bootstrap_seams = (
+        ROOT / "skills" / "public" / "setup" / "references" / "bootstrap-seams.md"
+    ).read_text(encoding="utf-8").lower()
     default_surfaces = (
         ROOT / "skills" / "public" / "setup" / "references" / "default-surfaces.md"
     ).read_text(encoding="utf-8").lower()
 
     assert "already delegated" in skill_text
-    assert "second user message" in skill_text
-    assert "same-agent pass" in skill_text
+    assert "second user message" in bootstrap_seams
+    assert "same-agent pass" in bootstrap_seams
     assert "## subagent delegation" in agent_docs
     assert "explicit user delegation request" in agent_docs
     assert "already delegated" in agent_docs
@@ -81,14 +87,17 @@ def test_setup_agent_docs_carry_bounded_subagent_delegation_rule() -> None:
 def test_setup_docs_carry_charness_artifact_commit_policy() -> None:
     skill_text = (ROOT / "skills/public/setup/SKILL.md").read_text(encoding="utf-8").lower()
     agent_docs = (ROOT / "skills/public/setup/references/agent-docs-policy.md").read_text(encoding="utf-8").lower()
+    bootstrap_seams = (ROOT / "skills/public/setup/references/bootstrap-seams.md").read_text(encoding="utf-8").lower()
     default_surfaces = (ROOT / "skills/public/setup/references/default-surfaces.md").read_text(encoding="utf-8").lower()
     normalization_flow = (ROOT / "skills/public/setup/references/normalization-flow.md").read_text(encoding="utf-8").lower()
 
-    for text in (skill_text, agent_docs, default_surfaces, normalization_flow):
+    assert "bootstrap-seams.md" in skill_text
+    for text in (agent_docs, bootstrap_seams, default_surfaces, normalization_flow):
         assert "charness-artifacts/" in text
         assert "repo state" in text
         assert "canonical content" in text
 
+    assert "commit targets" in bootstrap_seams
     assert "commit targets" in agent_docs
     assert "current-pointer helpers should no-op" in agent_docs
     assert "commit targets" in default_surfaces
@@ -97,9 +106,11 @@ def test_setup_docs_carry_charness_artifact_commit_policy() -> None:
 def test_setup_docs_seed_announcement_ready_commit_bodies() -> None:
     skill_text = (ROOT / "skills/public/setup/SKILL.md").read_text(encoding="utf-8").lower()
     agent_docs = (ROOT / "skills/public/setup/references/agent-docs-policy.md").read_text(encoding="utf-8").lower()
+    bootstrap_seams = (ROOT / "skills/public/setup/references/bootstrap-seams.md").read_text(encoding="utf-8").lower()
     default_surfaces = (ROOT / "skills/public/setup/references/default-surfaces.md").read_text(encoding="utf-8").lower()
 
-    for text in (skill_text, agent_docs, default_surfaces):
+    assert "bootstrap-seams.md" in skill_text
+    for text in (agent_docs, bootstrap_seams, default_surfaces):
         assert "announcement" in text
         assert "commit" in text
         assert "issue linkage" in text

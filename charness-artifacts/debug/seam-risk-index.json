@@ -6,9 +6,9 @@
   "source_artifact_count": 18,
   "indexed_artifact_count": 10,
   "risk_class_counts": {
-    "contract-freeze-risk": 2,
+    "contract-freeze-risk": 3,
     "host-disproves-local": 1,
-    "operator-visible-recovery": 7
+    "operator-visible-recovery": 6
   },
   "generalization_pressure_counts": {
     "monitor": 10
@@ -143,11 +143,11 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "pytest-temp-cautilus-artifact-amplification",
+      "interrupt_id": "empty-policy-silent-pass",
       "risk_classes": [
-        "operator-visible-recovery"
+        "contract-freeze-risk"
       ],
-      "seam": "checked evaluation evidence versus untracked runtime/cache payloads",
+      "seam": "adapter policy defaults versus standing gate enforcement visibility",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
