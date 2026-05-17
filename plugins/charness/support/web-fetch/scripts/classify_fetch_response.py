@@ -11,6 +11,8 @@ from pathlib import Path
 
 TAG_RE = re.compile(r"<[^>]+>")
 WHITESPACE_RE = re.compile(r"\s+")
+JSONP_OR_ASSIGNMENT_RE = re.compile(r"^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*\s*(?:=|\()\s*[\[{]")
+XSSI_PREFIXES = (")]}',", ")]}'", "while(1);", "for(;;);")
 
 LOGIN_PATTERNS = (
     "sign in",
@@ -67,7 +69,22 @@ def extract_text(raw: str) -> str:
 
 
 def _looks_like_json_response(raw: str) -> bool:
-    return raw.lstrip("\ufeff \t\r\n").startswith(("{", "["))
+    stripped = raw.lstrip("\ufeff \t\r\n")
+    for prefix in XSSI_PREFIXES:
+        if stripped.startswith(prefix):
+            stripped = stripped.removeprefix(prefix).lstrip()
+            break
+    if stripped.startswith("{"):
+        return True
+    if stripped.startswith("["):
+        if len(stripped) > 1 and stripped[1] in "{[\"-0123456789tfn]":
+            return True
+        try:
+            json.loads(stripped)
+        except Exception:
+            return False
+        return True
+    return bool(JSONP_OR_ASSIGNMENT_RE.match(stripped))
 
 
 def extract_persistable_text(raw: str, *, content_format: str = "text") -> str | None:

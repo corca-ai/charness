@@ -150,6 +150,105 @@ def test_acquire_public_url_does_not_include_bom_json_selected_content(tmp_path:
     assert "selected_content" not in payload
 
 
+def test_acquire_public_url_does_not_include_xssi_json_selected_content(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.txt"
+    direct.write_text(
+        ")]}'\n" + json.dumps({"title": "Readable Title", "body": "secret XSSI body should not persist"}),
+        encoding="utf-8",
+    )
+
+    result = run_helper(
+        "skills/support/web-fetch/scripts/acquire_public_url.py",
+        "--url",
+        "https://example.com/api/xssi",
+        "--direct-response-file",
+        str(direct),
+        "--expect-text",
+        "Readable Title",
+        "--browser-mode",
+        "off",
+        "--include-selected-content",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["disposition"] == "success"
+    assert "selected_content" not in payload
+
+
+def test_acquire_public_url_does_not_include_jsonp_selected_content(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.js"
+    direct.write_text(
+        'callback({"title":"Readable Title","body":"secret JSONP body should not persist"});',
+        encoding="utf-8",
+    )
+
+    result = run_helper(
+        "skills/support/web-fetch/scripts/acquire_public_url.py",
+        "--url",
+        "https://example.com/api/jsonp",
+        "--direct-response-file",
+        str(direct),
+        "--expect-text",
+        "Readable Title",
+        "--browser-mode",
+        "off",
+        "--include-selected-content",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["disposition"] == "success"
+    assert "selected_content" not in payload
+
+
+def test_acquire_public_url_does_not_include_js_assignment_selected_content(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.js"
+    direct.write_text(
+        'window.__DATA__={"title":"Readable Title","body":"secret JS body should not persist"};',
+        encoding="utf-8",
+    )
+
+    result = run_helper(
+        "skills/support/web-fetch/scripts/acquire_public_url.py",
+        "--url",
+        "https://example.com/api/data",
+        "--direct-response-file",
+        str(direct),
+        "--expect-text",
+        "Readable Title",
+        "--browser-mode",
+        "off",
+        "--include-selected-content",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["disposition"] == "success"
+    assert "selected_content" not in payload
+
+
+def test_acquire_public_url_can_persist_plain_text_starting_with_bracket(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.txt"
+    direct.write_text("[Update] " + ("readable article text " * 80), encoding="utf-8")
+
+    result = run_helper(
+        "skills/support/web-fetch/scripts/acquire_public_url.py",
+        "--url",
+        "https://example.com/plain-text",
+        "--direct-response-file",
+        str(direct),
+        "--browser-mode",
+        "off",
+        "--include-selected-content",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["disposition"] == "success"
+    assert payload["selected_content"]["text"].startswith("[Update]")
+
+
 def test_acquire_public_url_rejects_non_positive_content_limit(tmp_path: Path) -> None:
     direct = tmp_path / "direct.html"
     direct.write_text("<html><body>" + ("useful content " * 120) + "</body></html>", encoding="utf-8")
