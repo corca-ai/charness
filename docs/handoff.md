@@ -9,7 +9,7 @@
 
 ## Current State
 
-- Current public release after this pickup is expected to be `v0.5.31` on `origin/main`, containing opt-in public URL extracted-content persistence. Verify with `gh release view v0.5.31 --repo corca-ai/charness`.
+- Current public release after this pickup is expected to be `v0.5.32` on `origin/main`, containing the opt-in public URL extracted-content persistence fix. Verify with `gh release view v0.5.32 --repo corca-ai/charness`.
 - [#170](https://github.com/corca-ai/charness/issues/170) is fixed by making
   Slack URL task text surface `gather-slack` through `find-skills` support
   recommendations, adding [advise_slack_path.py](../skills/public/gather/scripts/advise_slack_path.py),
@@ -17,7 +17,7 @@
   It preserves `host-mediated` / `none` adapter boundaries and points
   `direct-cli` at [export-thread.sh](../skills/support/gather-slack/scripts/export-thread.sh).
 - [#174](https://github.com/corca-ai/charness/issues/174) is fixed by making `debug` sibling search classify every surfaced sibling and record proof level separately; `issue` causal review and bug close comments preserve those decisions.
-- Public URL gather now keeps `Content Persistence: none` by default; `gather_public_url.py --persist-extracted-content` stores the selected successful attempt's readable text/markdown in a separate `Extracted Content` section without putting bulk content into trace JSON or command result payloads.
+- Public URL gather now keeps `Content Persistence: none` by default; `gather_public_url.py --persist-extracted-content` stores the selected successful attempt's readable text/markdown in a separate `Extracted Content` section without putting bulk content into trace JSON or command result payloads. JSON/API responses with positive proof report `Content Persistence: unavailable` instead of writing raw API bodies.
 - Live open GitHub issues after this pickup should be only [#171](https://github.com/corca-ai/charness/issues/171); [#172](https://github.com/corca-ai/charness/issues/172) was closed as a duplicate because #171 has the sibling c-families cross-reference comment.
 - [scripts/run-quality.sh](../scripts/run-quality.sh) passed on 2026-05-17 with 60 passed / 0 failed in 63.1s; `run_slice_closeout.py --ack-cautilus-skill-review` also passed. Cautilus planner returned `next_action: none`.
 - `setup` normalization is green; [AGENTS.md](../AGENTS.md) has the compact Skill Routing block and `CLAUDE.md` remains a symlink to `AGENTS.md`. See [charness-artifacts/setup/latest.md](../charness-artifacts/setup/latest.md).

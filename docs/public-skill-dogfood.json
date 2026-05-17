@@ -165,7 +165,7 @@
         "The public capability contract now says arbitrary public URL gather must preserve the `support/web-fetch` acquisition trace, including attempted, skipped, unavailable, terminal, selected, and proof/confidence fields, so the standing gather/web-fetch invariant no longer lives only in `docs/handoff.md`.",
         "The live public-URL dogfood record `charness-artifacts/gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md` proves `defuddle-reader-extraction` can be selected with strong proof against a real public URL, and the artifact now avoids listing `prior-stage-sufficient` skipped stages as open gaps.",
         "`advise_slack_path.py` now resolves `gather_provider.slack.mode` and points direct-cli runs at `support/gather-slack/scripts/export-thread.sh` plus the runtime contract before browser-mediated private-source fallbacks.",
-        "`gather_public_url.py --persist-extracted-content` now stores opt-in readable extracted text/markdown for the selected successful attempt while keeping raw response bodies out of the default artifact and out of the trace JSON."
+        "`gather_public_url.py --persist-extracted-content` now stores opt-in readable extracted text/markdown for the selected successful attempt while keeping raw response bodies out of the default artifact and out of the trace JSON; JSON/API responses with positive proof report persistence as `unavailable` instead of writing raw API bodies."
       ]
     },
     {

@@ -66,6 +66,25 @@ def extract_text(raw: str) -> str:
     return WHITESPACE_RE.sub(" ", without_tags).strip()
 
 
+def _looks_like_json_response(raw: str) -> bool:
+    stripped = raw.lstrip()
+    if not stripped.startswith(("{", "[")):
+        return False
+    try:
+        json.loads(raw)
+    except Exception:
+        return False
+    return True
+
+
+def extract_persistable_text(raw: str, *, content_format: str = "text") -> str | None:
+    if content_format == "markdown":
+        return raw
+    if _looks_like_json_response(raw):
+        return None
+    return extract_text(raw)
+
+
 def _json_field(raw: str, field_path: str) -> bool:
     try:
         current: object = json.loads(raw)

@@ -28,7 +28,7 @@ from acquisition_trace_lib import (  # noqa: E402
     should_stop,
     skip_attempt,
 )
-from classify_fetch_response import classify, extract_text  # noqa: E402
+from classify_fetch_response import classify, extract_persistable_text  # noqa: E402
 from route_public_fetch import route_for_url  # noqa: E402
 
 
@@ -75,6 +75,13 @@ def _run_command(command: Sequence[str], *, timeout: int) -> tuple[str, str | No
     return completed.stdout, None
 
 
+def _positive_int(raw: str) -> int:
+    value = int(raw)
+    if value < 1:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return value
+
+
 def _attempt_from_text(
     *,
     stage_id: str,
@@ -100,7 +107,7 @@ def _attempt_from_text(
     status = classification_status
     if error is not None and classification_status != "invalid-proof":
         status = "error"
-    content_text = text if content_format == "markdown" else extract_text(text)
+    content_text = extract_persistable_text(text, content_format=content_format)
     return AcquisitionAttempt(
         stage_id=stage_id,
         tool_id=tool_id,
@@ -341,7 +348,7 @@ def main() -> int:
     parser.add_argument("--expect-regex", action="append", default=[])
     parser.add_argument("--expect-json-field", action="append", default=[])
     parser.add_argument("--include-selected-content", action="store_true")
-    parser.add_argument("--selected-content-max-chars", type=int, default=200_000)
+    parser.add_argument("--selected-content-max-chars", type=_positive_int, default=200_000)
     args = parser.parse_args()
     print(json.dumps(acquire(args), ensure_ascii=False, indent=2))
     return 0

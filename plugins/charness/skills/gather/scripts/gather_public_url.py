@@ -83,15 +83,39 @@ def _fence_for(text: str) -> str:
     return fence
 
 
-def _extracted_content_lines(acquisition: dict[str, object]) -> tuple[str, list[str]]:
+def _positive_int(raw: str) -> int:
+    value = int(raw)
+    if value < 1:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return value
+
+
+def _selected_content_text(acquisition: dict[str, object]) -> tuple[dict[str, object] | None, str | None]:
     selected_content = acquisition.get("selected_content")
     if not isinstance(selected_content, dict):
-        return "none", []
+        return None, None
     text = selected_content.get("text")
     if not isinstance(text, str) or not text.strip():
-        return "unavailable", []
+        return selected_content, None
+    return selected_content, text
+
+
+def _content_persistence(acquisition: dict[str, object], *, requested: bool) -> str:
+    _selected_content, text = _selected_content_text(acquisition)
+    if text is not None:
+        return "extracted"
+    if requested:
+        return "unavailable"
+    return "none"
+
+
+def _extracted_content_lines(acquisition: dict[str, object], *, requested: bool) -> tuple[str, list[str]]:
+    selected_content, text = _selected_content_text(acquisition)
+    content_persistence = _content_persistence(acquisition, requested=requested)
+    if content_persistence != "extracted" or selected_content is None or text is None:
+        return content_persistence, []
     fence = _fence_for(text)
-    return "extracted", [
+    return content_persistence, [
         "",
         "## Extracted Content",
         "",
@@ -107,7 +131,7 @@ def _extracted_content_lines(acquisition: dict[str, object]) -> tuple[str, list[
     ]
 
 
-def _render_record(url: str, acquisition: dict[str, object]) -> str:
+def _render_record(url: str, acquisition: dict[str, object], *, persist_requested: bool) -> str:
     route = acquisition.get("route") if isinstance(acquisition.get("route"), dict) else {}
     selected = acquisition.get("selected_attempt") if isinstance(acquisition.get("selected_attempt"), dict) else {}
     access_modes = route.get("access_modes") if isinstance(route.get("access_modes"), list) else []
@@ -120,7 +144,7 @@ def _render_record(url: str, acquisition: dict[str, object]) -> str:
     ]
     gap_lines = _attempt_lines(open_gaps) or ["- None recorded."]
     attempt_lines = _attempt_lines(attempts) or ["- None recorded."]
-    content_persistence, content_lines = _extracted_content_lines(acquisition)
+    content_persistence, content_lines = _extracted_content_lines(acquisition, requested=persist_requested)
     return "\n".join(
         [
             "# Gathered Public URL",
@@ -175,7 +199,7 @@ def main() -> int:
     parser.add_argument("--expect-regex", action="append", default=[])
     parser.add_argument("--expect-json-field", action="append", default=[])
     parser.add_argument("--persist-extracted-content", action="store_true")
-    parser.add_argument("--max-extracted-content-chars", type=int, default=200_000)
+    parser.add_argument("--max-extracted-content-chars", type=_positive_int, default=200_000)
     parser.add_argument("--execute", action="store_true")
     args = parser.parse_args()
 
@@ -209,7 +233,7 @@ def main() -> int:
     acquisition_disposition = str(acquisition.get("disposition", "unknown"))
     final_status = str(acquisition.get("final_status", "unknown"))
     final_confidence = str(acquisition.get("final_confidence", "none"))
-    content_persistence = "extracted" if isinstance(acquisition.get("selected_content"), dict) else "none"
+    content_persistence = _content_persistence(acquisition, requested=args.persist_extracted_content)
     if acquisition_disposition != "success":
         payload = {
             "status": "degraded" if acquisition_disposition == "degraded" else "blocked",
@@ -224,7 +248,7 @@ def main() -> int:
         }
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return 1
-    record = _render_record(args.url, acquisition)
+    record = _render_record(args.url, acquisition, persist_requested=args.persist_extracted_content)
     slug = args.slug or _slug_from_url(args.url)
     write_cmd = [
         sys.executable,
