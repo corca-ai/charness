@@ -123,7 +123,7 @@ def main() -> int:
     try:
         adapter = _load_adapter(adapter_path)
         jsonschema.validate(adapter, manifest_schema)
-    except (OSError, ValueError, jsonschema.ValidationError) as exc:
+    except (OSError, ValueError, yaml.YAMLError, jsonschema.ValidationError) as exc:
         payload = {
             "status": "invalid_adapter",
             "valid": False,
@@ -137,18 +137,6 @@ def main() -> int:
     if not adapter.get("enabled", False):
         payload = {
             "status": "disabled",
-            "valid": True,
-            "adapter_path": _portable_path(repo_root, adapter_path),
-            "valid_count": 0,
-            "errors": [],
-        }
-        _print_result(payload, as_json=args.json)
-        return 0
-
-    events = adapter.get("events")
-    if isinstance(events, list) and "usage_episode" not in events:
-        payload = {
-            "status": "event_filtered",
             "valid": True,
             "adapter_path": _portable_path(repo_root, adapter_path),
             "valid_count": 0,

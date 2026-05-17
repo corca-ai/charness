@@ -106,6 +106,23 @@ def test_candidate_usage_episode_may_omit_t_link() -> None:
     jsonschema.validate(record, _load_json(USAGE_DIR / "episode.schema.json"))
 
 
+def test_usage_episode_can_share_privacy_safe_context_ref() -> None:
+    context_ref = {
+        "kind": "slack_thread",
+        "ref": "ceal-context-opaque-001",
+    }
+    first = ceal_episode()
+    second = ceal_episode()
+    second["episode_id"] = "ceal-episode-002"
+    first["context_ref"] = dict(context_ref)
+    second["context_ref"] = dict(context_ref)
+
+    schema = _load_json(USAGE_DIR / "episode.schema.json")
+    jsonschema.validate(first, schema)
+    jsonschema.validate(second, schema)
+    assert first["context_ref"] == second["context_ref"]
+
+
 @pytest.mark.parametrize(
     "record",
     [
@@ -144,6 +161,30 @@ def test_candidate_usage_episode_may_omit_t_link() -> None:
                 "path": "/tmp/outside.md",
             },
         },
+        {
+            **ceal_episode(),
+            "first_value_ref": {
+                "kind": "github_issue",
+                "ref": "corca-ai/charness#171",
+                "path": "C:/tmp/outside.md",
+            },
+        },
+        {
+            **ceal_episode(),
+            "first_value_ref": {
+                "kind": "github_issue",
+                "ref": "corca-ai/charness#171",
+                "path": "C:\\tmp\\outside.md",
+            },
+        },
+        {
+            **ceal_episode(),
+            "first_value_ref": {
+                "kind": "github_issue",
+                "ref": "corca-ai/charness#171",
+                "path": "..\\outside.md",
+            },
+        },
     ],
 )
 def test_invalid_usage_episode_records_rejected(record: dict) -> None:
@@ -156,8 +197,12 @@ def test_invalid_usage_episode_records_rejected(record: dict) -> None:
     [
         {"version": 1, "enabled": True, "privacy": {"raw_prompt": True}},
         {"version": 1, "enabled": True, "privacy": {"raw_transcript": True}},
+        {"version": 1, "enabled": True, "privacy": {"raw_prompt": False}},
         {"version": 1, "enabled": True, "storage_path": "/tmp/usage"},
         {"version": 1, "enabled": True, "storage_path": "../usage"},
+        {"version": 1, "enabled": True, "storage_path": "C:/tmp/usage"},
+        {"version": 1, "enabled": True, "storage_path": "C:\\tmp\\usage"},
+        {"version": 1, "enabled": True, "storage_path": "..\\usage"},
     ],
 )
 def test_invalid_adapter_privacy_and_path_boundaries_rejected(adapter: dict) -> None:

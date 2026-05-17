@@ -143,7 +143,8 @@ Then load only the references needed for the detected state:
    - when a user-facing product repo wants to validate privacy-bounded H-LAM/T
      usage episodes, seed `<repo-root>/.agents/usage-episodes-adapter.yaml`
      with `$SKILL_DIR/scripts/seed_usage_episodes_adapter.py`; emitted JSONL
-     remains generated local state under `.charness/usage-episodes` by default
+     remains generated local state under `.charness/usage-episodes`; validate
+     with the repo-owned usage episode validator
 5. Keep the boundaries honest.
    - `<repo-root>/README.md`: current repo story and user-facing orientation
    - `<repo-root>/AGENTS.md`: agent operating contract for this repo

@@ -5,8 +5,8 @@
 # Runtime records are generated local state under .charness/ by default and
 # should not be committed except as intentionally curated fixtures.
 #
-# Schema:  integrations/usage-episodes/manifest.schema.json
-# Records: integrations/usage-episodes/episode.schema.json
+# Schemas ship with Charness/plugin usage-episodes integration.
+# Validate with: python3 scripts/validate_usage_episodes.py --repo-root <repo-root>
 version: 1
 repo: my-product
 enabled: true

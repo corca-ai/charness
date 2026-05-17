@@ -68,6 +68,8 @@ The v1 episode envelope should include:
   `developer`, `agent`, or `agent_on_behalf`; closed v1 enum
 - `context_bucket`: privacy-safe context class, for example `slack_thread`,
   `github_issue`, `repo_task`, `review`, or `incident`; product-owned string
+- `context_ref`: optional privacy-safe stable reference for recognizing repeated
+  use in the same product context without carrying raw source or user identity
 - `entry_point`: how the episode started, for example `mention`, `command`,
   `ui`, `scheduled`, `delegated`, or `api`; product-owned string
 - `trigger_type`: why the episode started, for example `explicit_request`,
@@ -213,6 +215,7 @@ Act-before-ship items now reflected in this contract:
 
 - add required `agent_action` for the LAM move
 - add required `t_status` for T lifecycle state
+- add optional `context_ref` for repeated same-context analysis
 - keep `first_value_ref` and `t_link` as opaque product-owned references
 - specify `.agents/usage-episodes-adapter.yaml` and absent/disabled semantics
 - keep emitted JSONL as generated local state by default

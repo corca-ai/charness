@@ -48,6 +48,18 @@ def test_validate_usage_episodes_reports_disabled(tmp_path: Path) -> None:
     assert payload["valid"] is True
 
 
+def test_validate_usage_episodes_reports_malformed_adapter(tmp_path: Path) -> None:
+    write_adapter(tmp_path, "version: [\n")
+
+    result = run_validator("--repo-root", str(tmp_path), "--json")
+
+    assert result.returncode == 1
+    assert "Traceback" not in result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "invalid_adapter"
+    assert payload["valid"] is False
+
+
 def test_validate_usage_episodes_accepts_valid_jsonl(tmp_path: Path) -> None:
     write_adapter(
         tmp_path,

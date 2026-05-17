@@ -24,7 +24,7 @@
     "storage_path": {
       "type": "string",
       "minLength": 1,
-      "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))(?!.*[\\r\\n]).+$",
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(^|/)\\.\\.(/|$))(?!.*[\\r\\n]).+$",
       "default": ".charness/usage-episodes",
       "description": "Path relative to repo root containing usage_episode.jsonl."
     },
@@ -43,6 +43,11 @@
     "privacy": {
       "type": "object",
       "additionalProperties": false,
+      "required": [
+        "raw_prompt",
+        "raw_transcript",
+        "user_identity"
+      ],
       "properties": {
         "raw_prompt": {
           "const": false,

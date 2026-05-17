@@ -14,8 +14,8 @@ TEMPLATE = """\
 # usage episodes emitted by this repo. Runtime JSONL is generated local state
 # under .charness/ and should not be committed except curated fixtures.
 #
-# Schema:  integrations/usage-episodes/manifest.schema.json
-# Records: integrations/usage-episodes/episode.schema.json
+# Schemas ship with Charness/plugin usage-episodes integration.
+# Validate: python3 scripts/validate_usage_episodes.py --repo-root <repo-root>
 version: 1
 repo: my-product
 enabled: true

@@ -57,6 +57,10 @@
       "minLength": 1,
       "description": "Privacy-safe product-owned context bucket such as slack_thread or github_issue."
     },
+    "context_ref": {
+      "$ref": "#/$defs/opaque_ref",
+      "description": "Optional privacy-safe stable reference for recognizing repeated use in the same product context without carrying raw source or user identity."
+    },
     "entry_point": {
       "type": "string",
       "minLength": 1,
@@ -173,7 +177,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
-          "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))(?!.*[\\r\\n]).+$",
+          "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(^|/)\\.\\.(/|$))(?!.*[\\r\\n]).+$",
           "description": "Optional repo-root-relative path when the reference points into a repo artifact."
         }
       }
