@@ -5,12 +5,13 @@ Date: 2026-05-18
 
 Repo-wide repair for the skill-health quality surface after the adapter rule
 hardening slice. The target is to distinguish empty inventory scope from real
-zero findings, keep prose review visible when scripts report no heuristics, and
-make committed-diff critique packets honest after a clean working tree.
+zero findings, keep prose review visible when scripts report no heuristics,
+make committed-diff critique packets honest after a clean working tree, and set
+generated quality adapters to enforce skill ergonomics by default.
 
 ## Current Gates
 
-- `./scripts/run-quality.sh`: 60 passed / 0 failed in 89.5s on the current
+- `./scripts/run-quality.sh`: 60 passed / 0 failed in 52.1s on the current
   local runner.
 - `validate-skill-ergonomics` still enforces five configured Charness rules:
   `long_core`, `mode_option_pressure_terms`, `progressive_disclosure_risk`,
@@ -21,16 +22,19 @@ make committed-diff critique packets honest after a clean working tree.
 - Advisory inventories now surface `adapter_valid`, `adapter_errors`,
   `adapter_warnings`, and `adapter_load_mode=permissive`; strict validators use
   `adapter_load_mode=strict` and fail on invalid adapters.
+- Generated quality adapters now default `skill_ergonomics_gate_rules` to all
+  five supported rules; existing explicit `[]` remains an opt-out that must
+  emit a visible warning.
 
 ## Runtime Signals
 
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json`, <!-- reproduction-source -->
   recorded by `scripts/record_quality_runtime.py`, rendered by
   `render_runtime_summary.py`.
-- runtime hot spots: latest full gate: `pytest` 66.0s,
-  `check-coverage` 40.4s, `validate-inventory-consumption-declaration` 16.0s,
-  `check-duplicates` 6.9s, and `specdown` 3.3s.
-- coverage gate: `check-coverage` passed in 40.4s.
+- runtime hot spots: latest full gate: `pytest` 40.1s,
+  `check-coverage` 40.1s, `check-duplicates` 7.1s,
+  `validate-inventory-consumption-declaration` 4.5s, and `specdown` 3.4s.
+- coverage gate: `check-coverage` passed in 40.1s.
 - evaluator depth: `run-evals` passed in 2.1s; no live Cautilus proof was run
   for this deterministic quality-contract repair.
 
@@ -50,6 +54,8 @@ make committed-diff critique packets honest after a clean working tree.
   `inventory_skill_ergonomics.py` is cited.
 - Invalid `skill_ergonomics_gate_rules` stay fail-closed for strict gates while
   advisory inventories continue as best-effort and mark `adapter_valid=false`.
+- New or bootstrapped quality adapters now inherit the standing skill
+  ergonomics rule set instead of silently disabling enforcement.
 - `critique` packet generation accepts `--commit` and `--range` aliases, stores
   `changed_ref`, and labels changed paths as ref/range-backed instead of
   implying a working-tree review after commit.
@@ -77,8 +83,8 @@ make committed-diff critique packets honest after a clean working tree.
 
 - Consider a future low-noise rule for hidden workflow prose inside
   `## References`; the current patch only keeps prose review required.
-- Consider whether downstream generated quality adapters should opt into a
-  small skill-ergonomics rule subset after Charness dogfood stays quiet.
+- Downstream repos should dogfood the stronger generated default and file
+  issues for noisy rules instead of Charness keeping the default disabled.
 
 ## Advisory
 
@@ -91,6 +97,8 @@ make committed-diff critique packets honest after a clean working tree.
 - `inventory_skill_ergonomics.py` evidence: `scope_status=scanned`,
   `finding_status=zero_heuristic_findings`, `prose_review_status=still_required`,
   `checked_skill_count=22`, and `heuristic_finding_count=0`.
+- Default-policy evidence: `DEFAULT_SKILL_ERGONOMICS_GATE_RULES` now lists all
+  supported rule ids, and `adapter.example.yaml` shows the same default list.
 
 ## Delegated Review
 
@@ -111,6 +119,7 @@ make committed-diff critique packets honest after a clean working tree.
 - `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --json`
 - `python3 scripts/validate_skills.py --repo-root .`
 - `ruff check tests/quality_gates/test_quality_bootstrap.py`
+- `pytest -q tests/quality_gates/test_quality_bootstrap.py tests/quality_gates/test_skill_ergonomics_gate.py tests/quality_gates/test_quality_skill_ergonomics.py tests/quality_gates/test_profile_and_preset_validation.py`
 - `./scripts/run-quality.sh`
 
 ## Recommended Next Gates
@@ -118,9 +127,9 @@ make committed-diff critique packets honest after a clean working tree.
 - passive `AUTO_CANDIDATE` because prose review is now required in artifacts:
   add a low-noise check that `## References` remains link inventory rather than
   hidden workflow prose.
-- passive `AUTO_CANDIDATE` because this slice only proves Charness' configured
-  surface: after downstream dogfood, decide whether generated quality adapters
-  should opt into a subset of skill ergonomics rules by default.
+- passive `AUTO_CANDIDATE` because generated adapters now enforce skill
+  ergonomics by default: collect downstream dogfood issues before changing the
+  rule set again.
 
 ## History
 

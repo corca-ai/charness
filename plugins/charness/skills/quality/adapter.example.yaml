@@ -41,7 +41,12 @@ canonical_markdown_surfaces:
 skill_ergonomics_skill_paths: []
 skill_ergonomics_runtime_install_skill_paths: []
 vendored_paths: []
-skill_ergonomics_gate_rules: []
+skill_ergonomics_gate_rules:
+  - code_fence_without_helper_script
+  - long_core
+  - mode_option_pressure_terms
+  - portable_helper_path_ambiguity
+  - progressive_disclosure_risk
 runtime_profile_default: default
 runtime_budgets: {}
 runtime_budget_profiles: {}

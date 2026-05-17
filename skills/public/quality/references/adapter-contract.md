@@ -276,9 +276,11 @@ Leave `source_globs` empty to opt out honestly. Prefer checked-in asset roots
 over inline multi-line strings when evaluator-backed review needs prompt bytes
 to drift independently from code bytes.
 
-`skill_ergonomics_gate_rules` is an opt-in list of higher-noise ergonomics
-rules that should fail standing validation only in repos that explicitly want
-them. Leave it empty by default. Current supported rules:
+`skill_ergonomics_gate_rules` is the standing skill-structure enforcement list.
+Generated adapters default to the current supported rule set so skill packages
+do not silently skip structure review. Repos may set it to `[]` as an explicit
+opt-out, but that disabled enforcement state must remain visible in quality
+output. Current supported rules:
 
 - `long_core`
   Fail when a public skill core exceeds the configured line budget.
@@ -300,9 +302,9 @@ are configured, an empty checked-skill set is a failure; use
 `skill_ergonomics_skill_paths` or `cli_skill_surface_skill_paths` for bundled
 skill layouts such as `skills/<product>/SKILL.md`.
 
-When rules are empty and discoverable skills exist, validation remains a pass
-but must emit a warning. This keeps the default low-noise posture while making
-the disabled enforcement state visible in `run-quality`.
+When rules are explicitly empty and discoverable skills exist, validation
+remains a pass but must emit a warning. This keeps deliberate downstream
+opt-outs visible in `run-quality`.
 
 ## Artifact Rule
 

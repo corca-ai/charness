@@ -40,14 +40,14 @@ DEFAULT_PROMPT_ASSET_POLICY = {
     "min_multiline_chars": 400,
     "exemption_globs": [],
 }
-DEFAULT_SKILL_ERGONOMICS_GATE_RULES: list[str] = []
-VALID_SKILL_ERGONOMICS_GATE_RULES = frozenset({
+DEFAULT_SKILL_ERGONOMICS_GATE_RULES: list[str] = [
     "code_fence_without_helper_script",
     "long_core",
     "mode_option_pressure_terms",
     "portable_helper_path_ambiguity",
     "progressive_disclosure_risk",
-})
+]
+VALID_SKILL_ERGONOMICS_GATE_RULES = frozenset(DEFAULT_SKILL_ERGONOMICS_GATE_RULES)
 
 # DEFAULT_MUTATION_TESTING is stack-neutral. Policy values trace to
 # craken-agents/.github/workflows/mutation-tests.yml (2026-05-14). Stryker-

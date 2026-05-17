@@ -329,7 +329,8 @@
         "`validate_skill_ergonomics.py`, its root wrapper, and `validate_adapters.py` now fail on invalid `skill_ergonomics_gate_rules`, so typoed or unknown rule names cannot collapse into an empty-rule advisory pass.",
         "`quality` remains HITL-recommended rather than scenario-owned for this slice; the reviewed consumer contract is explicit in this dogfood case, while deterministic tests prove the adapter-rule failure path.",
         "The quality core now treats `.agents/usage-episodes-adapter.yaml` as a deterministic repo-owned gate: when present, quality resolves and runs the Charness package-root `validate_usage_episodes.py` validator while preserving `no_adapter` and `disabled` as skipped states rather than failures.",
-        "`inventory_skill_ergonomics.py` now separates `scope_status` from `finding_status` and preserves `prose_review_status`, so a quality artifact that cites skill ergonomics must distinguish empty scope, zero heuristic findings, and still-required prose review."
+        "`inventory_skill_ergonomics.py` now separates `scope_status` from `finding_status` and preserves `prose_review_status`, so a quality artifact that cites skill ergonomics must distinguish empty scope, zero heuristic findings, and still-required prose review.",
+        "Generated quality adapters now default `skill_ergonomics_gate_rules` to the full supported rule set, while an explicit `[]` remains a visible downstream opt-out rather than an accidental disabled default."
       ]
     },
     {

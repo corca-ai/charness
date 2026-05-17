@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from scripts.quality_adapter_lib import load_quality_adapter_permissive, load_quality_adapter_strict
+from scripts.quality_policy_defaults import DEFAULT_SKILL_ERGONOMICS_GATE_RULES
 
 from .support import run_script
 
@@ -222,7 +223,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
         "min_multiline_chars": 400,
         "exemption_globs": [],
     }
-    assert resolved["data"]["skill_ergonomics_gate_rules"] == []
+    assert resolved["data"]["skill_ergonomics_gate_rules"] == DEFAULT_SKILL_ERGONOMICS_GATE_RULES
     assert resolved["data"]["skill_ergonomics_skill_paths"] == []
     assert resolved["data"]["runtime_profile_default"] == "default"
     assert resolved["data"]["runtime_budgets"] == {}
@@ -511,7 +512,7 @@ def test_quality_bootstrap_infers_specdown_defaults(tmp_path: Path) -> None:
     assert resolved["data"]["spec_pytest_reference_format"] == (
         r"Covered by pytest:\s+`tests/[^`]+`(?:,\s*`tests/[^`]+`)*"
     )
-    assert resolved["data"]["skill_ergonomics_gate_rules"] == []
+    assert resolved["data"]["skill_ergonomics_gate_rules"] == DEFAULT_SKILL_ERGONOMICS_GATE_RULES
 
 
 def test_quality_init_adapter_seeds_specdown_defaults(tmp_path: Path) -> None:
