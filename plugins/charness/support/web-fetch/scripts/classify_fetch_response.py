@@ -67,14 +67,7 @@ def extract_text(raw: str) -> str:
 
 
 def _looks_like_json_response(raw: str) -> bool:
-    stripped = raw.lstrip()
-    if not stripped.startswith(("{", "[")):
-        return False
-    try:
-        json.loads(raw)
-    except Exception:
-        return False
-    return True
+    return raw.lstrip("\ufeff \t\r\n").startswith(("{", "["))
 
 
 def extract_persistable_text(raw: str, *, content_format: str = "text") -> str | None:

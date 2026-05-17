@@ -98,6 +98,58 @@ def test_acquire_public_url_does_not_include_raw_json_selected_content(tmp_path:
     assert "selected_content" not in payload
 
 
+def test_acquire_public_url_does_not_include_raw_ndjson_selected_content(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.ndjson"
+    direct.write_text(
+        '{"title":"Readable Title"}\n{"body":"secret NDJSON body should not persist"}',
+        encoding="utf-8",
+    )
+
+    result = run_helper(
+        "skills/support/web-fetch/scripts/acquire_public_url.py",
+        "--url",
+        "https://example.com/api/stream",
+        "--direct-response-file",
+        str(direct),
+        "--expect-text",
+        "Readable Title",
+        "--browser-mode",
+        "off",
+        "--include-selected-content",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["disposition"] == "success"
+    assert "selected_content" not in payload
+
+
+def test_acquire_public_url_does_not_include_bom_json_selected_content(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.json"
+    direct.write_text(
+        '\ufeff{"title":"Readable Title","body":"secret BOM JSON body should not persist"}',
+        encoding="utf-8",
+    )
+
+    result = run_helper(
+        "skills/support/web-fetch/scripts/acquire_public_url.py",
+        "--url",
+        "https://example.com/api/article",
+        "--direct-response-file",
+        str(direct),
+        "--expect-text",
+        "Readable Title",
+        "--browser-mode",
+        "off",
+        "--include-selected-content",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["disposition"] == "success"
+    assert "selected_content" not in payload
+
+
 def test_acquire_public_url_rejects_non_positive_content_limit(tmp_path: Path) -> None:
     direct = tmp_path / "direct.html"
     direct.write_text("<html><body>" + ("useful content " * 120) + "</body></html>", encoding="utf-8")
