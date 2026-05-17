@@ -18,9 +18,9 @@
   "languages": {
     "JSON": {
       "blanks": 0,
-      "code": 23157,
+      "code": 23922,
       "comments": 0,
-      "files": 111
+      "files": 118
     },
     "JavaScript": {
       "blanks": 186,
@@ -29,22 +29,22 @@
       "files": 12
     },
     "Markdown": {
-      "blanks": 12024,
+      "blanks": 12222,
       "code": 0,
-      "comments": 43747,
-      "files": 653
+      "comments": 44461,
+      "files": 663
     },
     "Plain Text": {
       "blanks": 44,
       "code": 0,
-      "comments": 316,
+      "comments": 318,
       "files": 9
     },
     "Python": {
-      "blanks": 18241,
-      "code": 115592,
-      "comments": 602,
-      "files": 783
+      "blanks": 18415,
+      "code": 116385,
+      "comments": 606,
+      "files": 790
     },
     "Shell": {
       "blanks": 206,
@@ -60,9 +60,9 @@
     },
     "YAML": {
       "blanks": 52,
-      "code": 1134,
-      "comments": 200,
-      "files": 34
+      "code": 1162,
+      "comments": 218,
+      "files": 36
     }
   },
   "repo_root": "/home/hwidong/codes/charness",
@@ -71,9 +71,9 @@
   "status": "ok",
   "tokei_version": "tokei 14.0.0 compiled with serialization support: json",
   "totals": {
-    "blanks": 30758,
-    "code": 143852,
-    "comments": 44890,
-    "files": 1623
+    "blanks": 31130,
+    "code": 145438,
+    "comments": 45628,
+    "files": 1649
   }
 }
