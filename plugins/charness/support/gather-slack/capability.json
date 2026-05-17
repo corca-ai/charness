@@ -8,6 +8,13 @@
   "supports_public_skills": [
     "gather"
   ],
+  "intent_triggers": [
+    "Slack thread",
+    "Slack URL",
+    "Slack gather",
+    "slack.com/archives",
+    "gather Slack"
+  ],
   "checks": {
     "detect": {
       "commands": [

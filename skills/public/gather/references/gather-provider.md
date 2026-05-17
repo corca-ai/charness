@@ -48,6 +48,11 @@ for a direct CLI under a worker runtime.
 
 ## Runtime Consumption
 
+- `scripts/advise_slack_path.py` reads `gather_provider.slack.mode`. When the
+  mode is `direct-cli`, it points at the checked-in `gather-slack` support
+  wrapper and runtime contract before browser-mediated or unrelated
+  private-source fallbacks. When the mode is `host-mediated` or `none`, it
+  returns the corresponding operator prompt without invoking the wrapper.
 - `scripts/advise_google_workspace_path.py` reads
   `gather_provider.google_workspace.mode`. When the mode is `host-mediated`
   or `none`, the script returns the corresponding operator prompt without

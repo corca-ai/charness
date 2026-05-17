@@ -28,6 +28,25 @@ def run_helper(repo: Path, *, path_env: str) -> subprocess.CompletedProcess[str]
     )
 
 
+def run_slack_helper(repo: Path, *, path_env: str | None = None) -> subprocess.CompletedProcess[str]:
+    env = os.environ.copy()
+    if path_env is not None:
+        env["PATH"] = path_env
+    return subprocess.run(
+        [
+            sys.executable,
+            "skills/public/gather/scripts/advise_slack_path.py",
+            "--repo-root",
+            str(repo),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+
 def seed_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     (repo / "integrations" / "tools").mkdir(parents=True)
@@ -91,10 +110,53 @@ def test_gather_skill_description_names_concrete_source_triggers() -> None:
 def test_gather_skill_contract_names_browser_mediated_private_source_ladder() -> None:
     skill_text = (ROOT / "skills" / "public" / "gather" / "SKILL.md").read_text(encoding="utf-8")
 
+    assert "advise_slack_path.py" in skill_text
+    assert "support/gather-slack/scripts/export-thread.sh" in skill_text
     assert "browser-mediated fallback through `agent-browser`" in skill_text
     assert "official API/export docs before browser automation" in skill_text
     assert "- `Access Mode`" in skill_text
     assert "- `Captured vs Human Confirmation`" in skill_text
+
+
+def test_advise_slack_path_points_to_gather_slack_wrapper(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    result = run_slack_helper(repo)
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["provider"] == "gather-slack"
+    assert payload["provider_mode"] == "direct-cli"
+    assert payload["wrapper_path"].endswith("skills/support/gather-slack/scripts/export-thread.sh")
+    assert payload["runtime_contract_path"].endswith("skills/support/gather-slack/references/runtime-contract.md")
+    assert "before browser-mediated private-source fallbacks" in payload["operator_prompt"]
+    assert any("charness capability env slack.default" in step for step in payload["next_steps"])
+
+
+def test_advise_slack_path_honors_host_mediated_adapter(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "gather-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "gather_provider:",
+                "  slack:",
+                "    mode: host-mediated",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_slack_helper(repo)
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["provider_mode"] == "host-mediated"
+    assert payload["doctor_status"] == "skipped"
+    assert "host's Slack capability command" in payload["operator_prompt"]
 
 
 def test_gather_capability_needs_include_agent_browser_private_saas_path() -> None:

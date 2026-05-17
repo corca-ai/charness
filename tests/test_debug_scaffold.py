@@ -45,6 +45,7 @@ def test_debug_scaffold_reports_validator_and_template(tmp_path: Path) -> None:
     assert "## Detection Gap" in payload["template"]
     assert "## Sibling Search" in payload["template"]
     assert "- Mental model: TODO" in payload["template"]
+    assert "decision: TODO | proof: TODO" in payload["template"]
     assert "## Seam Risk" in payload["template"]
     assert "- Interrupt ID: TODO" in payload["template"]
     assert "## Interrupt Decision" in payload["template"]

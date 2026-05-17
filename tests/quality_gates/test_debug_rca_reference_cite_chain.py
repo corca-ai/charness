@@ -5,9 +5,23 @@ import re
 from .support import ROOT
 
 REFERENCE_PATH = ROOT / "skills" / "public" / "debug" / "references" / "five-whys-causal-chain.md"
+SIBLING_SEARCH = ROOT / "skills" / "public" / "debug" / "references" / "sibling-search.md"
 DEBUG_SKILL = ROOT / "skills" / "public" / "debug" / "SKILL.md"
 CAUSAL_REVIEW = ROOT / "skills" / "public" / "issue" / "references" / "causal-review.md"
 ISSUE_SKILL = ROOT / "skills" / "public" / "issue" / "SKILL.md"
+
+SIBLING_DECISIONS = (
+    "same bug, fix now",
+    "same class, diagnostic-only for this slice",
+    "intentional plain-text or non-rendering boundary",
+    "valid follow-up outside the slice",
+)
+PROOF_LEVELS = (
+    "static scan only",
+    "local payload proof",
+    "runtime/provider roundtrip",
+    "not inspected",
+)
 
 
 def test_debug_rca_reference_file_exists() -> None:
@@ -78,3 +92,33 @@ def test_causal_review_subagent_prompt_must_include_substrate_cite() -> None:
         "subagent prompt contract must require including the substrate cite "
         "so the spawned reviewer triages instead of regrowing the chain"
     )
+
+
+def test_debug_sibling_search_requires_decision_taxonomy_and_proof_levels() -> None:
+    text = SIBLING_SEARCH.read_text(encoding="utf-8")
+    for decision in SIBLING_DECISIONS:
+        assert decision in text, f"sibling-search.md must preserve decision label `{decision}`"
+    for proof_level in PROOF_LEVELS:
+        assert proof_level in text, f"sibling-search.md must preserve proof level `{proof_level}`"
+    assert "proof level separate from the decision" in text
+    assert "provider roundtrip" in text
+
+
+def test_debug_workflow_invokes_classified_sibling_scan() -> None:
+    text = DEBUG_SKILL.read_text(encoding="utf-8")
+    assert "classify each sibling decision" in text
+    assert "proof level separately from the decision" in text
+    assert "wrong mental model" in text
+
+
+def test_causal_review_preserves_sibling_decisions_and_proof_levels() -> None:
+    text = CAUSAL_REVIEW.read_text(encoding="utf-8")
+    lens_match = re.search(r"### Lens 3[^\n]*\n(.*?)\n### Output shape", text, re.DOTALL)
+    assert lens_match, "could not locate Lens 3 body"
+    lens_body = lens_match.group(1)
+    for decision in SIBLING_DECISIONS:
+        assert decision in lens_body, f"causal-review Lens 3 must preserve `{decision}`"
+    for proof_level in PROOF_LEVELS:
+        assert proof_level in lens_body, f"causal-review Lens 3 must preserve `{proof_level}`"
+    assert "omits sibling classification" in lens_body
+    assert "merges proof level into the decision" in lens_body

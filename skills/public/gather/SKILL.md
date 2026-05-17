@@ -23,8 +23,15 @@ Provider routing is adapter-driven. Each gather source (`github`,
 skills only invoke the path the adapter selected.
 Charness-owned runtime lives under support skills (`gather-slack`,
 `gather-notion`); browser-mediated private SaaS still flows through
-`agent-browser`. When the source is Google Workspace, route through the
-repo-owned helper below rather than guessing the next operator step:
+`agent-browser`. When the source is a Slack thread, route through the
+repo-owned helper below before checking unrelated private-source helpers:
+
+```bash
+python3 "$SKILL_DIR/scripts/advise_slack_path.py" --repo-root .
+```
+
+When the source is Google Workspace, route through the repo-owned helper below
+rather than guessing the next operator step:
 
 ```bash
 python3 "$SKILL_DIR/scripts/advise_google_workspace_path.py" --repo-root .
@@ -88,7 +95,8 @@ the adapter selected; never substitute direct CLIs/tokens under
   command (host-mediated); stop with missing-capability (none)
 - Google Workspace: authenticated `gws` (direct-cli); host capability
   command (host-mediated); stop with missing-capability (none)
-- Slack: bot-token-backed integration (direct-cli); host capability command
+- Slack: `support/gather-slack/scripts/export-thread.sh` via
+  `advise_slack_path.py` (direct-cli); host capability command
   (host-mediated); stop with missing-capability (none)
 - Notion: token-backed integration or published-page fallback (direct-cli);
   host capability command (host-mediated); stop with missing-capability (none)

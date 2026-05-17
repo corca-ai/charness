@@ -121,9 +121,10 @@ as codebase memory rather than as stale trivia.
      fired it; bug-class `issue resolve` invokes the same substrate through
      `../issue/references/causal-review.md` Lens 2
    - walk the four-axis sibling scan per `references/sibling-search.md`,
-     name the mental-model trap, and record concrete locations to inspect;
-     bug-class `issue resolve` invokes the same substrate through
-     `../issue/references/causal-review.md` Lens 3
+     name the wrong mental model, classify each sibling decision, and record
+     proof level separately from the decision; bug-class `issue resolve`
+     invokes the same substrate through `../issue/references/causal-review.md`
+     Lens 3
    - trivial single-file fixes may record `n/a — trivial fix` in the detection
      gap and sibling search sections; the short-circuit is reviewer-visible,
      not a default escape

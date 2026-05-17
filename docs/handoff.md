@@ -9,43 +9,49 @@
 
 ## Current State
 
-- The gather/#169 work has landed on `origin/main`; the live refresh before this handoff update found no unpublished gather/#169 implementation commits, and [#169](https://github.com/corca-ai/charness/issues/169) is closed as of 2026-05-16T03:53:43Z.
-- The gather repair implementation rejects non-HTTP(S), treats invalid regex as invalid proof even when direct transport fails, records every planned route/fallback stage as executed or explicitly skipped/not-implemented/terminal, keeps browser network reconnaissance diagnostic-only, derives final status from `selected_attempt`, removes unimplemented selector-proof wording, and adds `gather_public_url.py` so public `gather` can preserve `web-fetch` trace in a durable asset. The public helper writes durable records only for successful acquisitions; `error`, `blocked`, and `degraded` acquisitions return non-zero JSON without refreshing `latest.md`, and generated slugs include URL path/hash to avoid same-host collisions.
-- Live open GitHub issues at the last refresh were [#170](https://github.com/corca-ai/charness/issues/170),
-  [#171](https://github.com/corca-ai/charness/issues/171), [#172](https://github.com/corca-ai/charness/issues/172),
-  and [#173](https://github.com/corca-ai/charness/issues/173); #168 is no longer blocked on
-  Cautilus #44 after the robustness contract landed in Cautilus v0.16.0.
-- #168 follow-up is implemented locally: `quality` now has
-  `recommend_behavior_test.py`, which emits a recommend-only finding using the
-  Cautilus robustness request/plan/report packet vocabulary without adding a
-  Charness-owned runner. The source contract is gathered in
-  [charness-artifacts/gather/2026-05-17-raw-githubusercontent-com-corca-ai-cautilus-v0-16-0-docs-contracts-robustness-evaluation-md-45a51934.md](../charness-artifacts/gather/2026-05-17-raw-githubusercontent-com-corca-ai-cautilus-v0-16-0-docs-contracts-robustness-evaluation-md-45a51934.md).
-- #173 follow-up is implemented locally: release-linked issue resolution can pass
-  `--close-issue <number>` to the release helper, which puts close keywords in
-  the direct release commit body, verifies GitHub issue state after push/release,
-  and performs a manual close fallback only when auto-close did not take effect.
-- [scripts/run-quality.sh](../scripts/run-quality.sh) passed on 2026-05-16 with 60 passed / 0 failed in 80.8s; the proof and remaining weaknesses live in [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md).
+- Current public release after this pickup is expected to be `v0.5.30` on `origin/main`, containing the #170 and #174 repairs. Verify with `gh release view v0.5.30 --repo corca-ai/charness`.
+- [#170](https://github.com/corca-ai/charness/issues/170) is fixed by making
+  Slack URL task text surface `gather-slack` through `find-skills` support
+  recommendations, adding [advise_slack_path.py](../skills/public/gather/scripts/advise_slack_path.py),
+  and teaching `gather` to use that helper before browser/private-source fallbacks.
+  It preserves `host-mediated` / `none` adapter boundaries and points
+  `direct-cli` at [export-thread.sh](../skills/support/gather-slack/scripts/export-thread.sh).
+- [#174](https://github.com/corca-ai/charness/issues/174) is fixed by making `debug` sibling search classify every surfaced sibling and record proof level separately; `issue` causal review and bug close comments preserve those decisions.
+- Live open GitHub issues after this pickup should be only
+  [#171](https://github.com/corca-ai/charness/issues/171) and
+  [#172](https://github.com/corca-ai/charness/issues/172), which appear to be
+  duplicate c-families habit/context exploration issues needing product
+  discussion rather than an obvious autonomous bug fix.
+- [scripts/run-quality.sh](../scripts/run-quality.sh) passed on 2026-05-17 with 60 passed / 0 failed in 110.7s; `run_slice_closeout.py --ack-cautilus-skill-review` also passed. Cautilus planner returned `next_action: none`.
 - `setup` normalization is green; [AGENTS.md](../AGENTS.md) has the compact Skill Routing block and `CLAUDE.md` remains a symlink to `AGENTS.md`. See [charness-artifacts/setup/latest.md](../charness-artifacts/setup/latest.md).
 - `defuddle` is now a repo-local npm dev dependency (`defuddle@0.18.1`) and the public gather/web-fetch reader fallback has live proof in [charness-artifacts/gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md](../charness-artifacts/gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md). `gws-cli` is still missing on this machine.
 
 ## Next Session
 
-1. Optional gather follow-up: decide whether raw acquired-content persistence belongs in a separate gather slice now that trace/proof correctness and live `defuddle` reader proof both exist.
-2. Gather/web-fetch acquisition invariants now live in [skills/support/web-fetch/references/runtime-contract.md](../skills/support/web-fetch/references/runtime-contract.md) and [skills/public/gather/references/capability-contract.md](../skills/public/gather/references/capability-contract.md); reload those owner contracts before touching that seam.
-3. Mutation-testing #167, older Cautilus rename details, and long historical issue batches are not active handoff work. Reload them from owning artifacts or GitHub only if a fresh live signal references them.
+1. Discuss #171/#172 together: decide whether to close one as duplicate and
+   whether the surviving c-families issue is product framing, skill behavior,
+   or a lightweight docs exploration.
+2. Optional gather follow-up: decide whether raw acquired-content persistence
+   belongs in a separate gather slice now that trace/proof correctness, Slack
+   support routing, and live `defuddle` reader proof all exist.
+3. Maintained Cautilus scenario registry mutation remains ask-before-mutate.
+   The current #170/#174 repairs are covered by deterministic tests and
+   dogfood contract updates, not a scenario-registry edit.
+4. Mutation-testing #167, older Cautilus rename details, and long historical
+   issue batches are not active handoff work. Reload them from owning artifacts
+   or GitHub only if a fresh live signal references them.
 
 ## Discuss
 
-- Whether raw acquired-content persistence belongs in a future gather slice, now that trace/proof correctness is locally implemented.
+- First decision: #171/#172 consolidation. Tradeoff: closing one duplicate
+  keeps the queue honest and lets the surviving issue carry a clean product
+  question; keeping both open preserves parallel framings if they intentionally
+  differ, but today their titles and timing make that difference unclear.
+- Whether raw acquired-content persistence belongs in a future gather slice,
+  now that trace/proof correctness is locally implemented.
 
 ## References
 
 - [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
 - [charness-artifacts/setup/latest.md](../charness-artifacts/setup/latest.md)
-- [charness-artifacts/spec/gather-acquisition-repair-contract.md](../charness-artifacts/spec/gather-acquisition-repair-contract.md)
-- [charness-artifacts/spec/quality-cautilus-behavior-testing-contract.md](../charness-artifacts/spec/quality-cautilus-behavior-testing-contract.md)
 - [charness-artifacts/gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md](../charness-artifacts/gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md)
-- [charness-artifacts/critique/2026-05-16-gather-acquisition-repair-plan-critique.md](../charness-artifacts/critique/2026-05-16-gather-acquisition-repair-plan-critique.md)
-- [charness-artifacts/critique/2026-05-16-gather-public-url-blocker-fix-critique.md](../charness-artifacts/critique/2026-05-16-gather-public-url-blocker-fix-critique.md)
-- [charness-artifacts/critique/2026-05-16-gather-public-url-push-critique.md](../charness-artifacts/critique/2026-05-16-gather-public-url-push-critique.md)
-- [charness-artifacts/critique/2026-05-16-handoff-live-state-refresh-critique.md](../charness-artifacts/critique/2026-05-16-handoff-live-state-refresh-critique.md)

@@ -3,7 +3,8 @@
 `debug` step 6 (resolve and preserve the learning) walks beyond the immediate
 failing surface to find where the same pattern lives elsewhere. This reference
 owns the sibling-search substrate: the four scan axes, the mental-model
-abstraction rule, and the keyword/proximity-only over-reach guard.
+abstraction rule, the sibling decision taxonomy, proof-level separation, and
+the keyword/proximity-only over-reach guard.
 
 `debug` is callable directly when no GitHub issue exists; bug-class
 `issue resolve` invokes the same substrate through
@@ -44,13 +45,38 @@ Recurring shapes worth scanning for, regardless of vocabulary:
 - safety checks that trust current working directory or an implicit default
   as the authority
 
+## Classify each sibling decision
+
+For bug-class work, closeout must classify every concrete sibling surfaced by
+the scan. Use exactly one of these decisions per location:
+
+- `same bug, fix now`
+- `same class, diagnostic-only for this slice`
+- `intentional plain-text or non-rendering boundary`
+- `valid follow-up outside the slice`
+
+Keep proof level separate from the decision. A sibling may be a real structural
+match even when the current slice only has `static scan only` proof; do not
+promote that to runtime confidence. Common proof levels are:
+
+- `static scan only`
+- `local payload proof`
+- `runtime/provider roundtrip`
+- `not inspected`
+
+If provider behavior is the failure boundary, distinguish local serialization
+or payload proof from a real provider roundtrip. Local proof can justify a
+bounded fix, but it must not be described as end-to-end provider proof.
+
 ## Output
 
 Return the exact patterns searched plus concrete locations the implementer
 should inspect, organized by axis. Each location is `file:line` with a one-line
-note on why it matches the abstracted pattern, not the keyword. Decide at
-artifact close-out whether to bundle into the current fix or defer (record the
-deferral with location so the next reader inherits the list).
+note on why it matches the abstracted pattern, not the keyword, followed by
+`decision:` and `proof:` fields. Decide at artifact close-out whether to bundle
+into the current fix, keep diagnostic-only, mark an intentional boundary, or
+defer as a follow-up. Record the decision with location so the next reader
+inherits the list.
 
 ## Trivial-bug short-circuit
 

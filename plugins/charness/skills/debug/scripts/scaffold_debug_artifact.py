@@ -72,7 +72,7 @@ def render_template(*, title: str, date_text: str) -> str:
                     heading,
                     "",
                     "- Mental model: TODO",
-                    "- TODO axis: TODO location",
+                    "- TODO axis: TODO location | decision: TODO | proof: TODO",
                     "",
                 ]
             )

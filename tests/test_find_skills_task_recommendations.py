@@ -274,6 +274,26 @@ def test_recommend_for_task_surfaces_support_skill_via_intent_triggers(tmp_path:
     assert payload["support_recommendation_note"] is None
 
 
+def test_recommend_for_task_surfaces_gather_slack_for_slack_urls() -> None:
+    task = "Gather this Slack thread https://corcaai.slack.com/archives/C123/p1234567890123456"
+
+    payload = _run_list_capabilities(
+        REPO_ROOT,
+        "--read-only",
+        "--recommend-for-task",
+        task,
+        "--next-skill-id",
+        "gather",
+    )
+
+    matched_ids = [entry["id"] for entry in payload["support_skill_recommendations"]]
+    assert matched_ids == ["gather-slack"]
+    recommendation = payload["support_skill_recommendations"][0]
+    assert "slack.com/archives" in recommendation["matched_triggers"]
+    assert recommendation["path"] == "skills/support/gather-slack/SKILL.md"
+    assert payload["support_recommendation_note"] is None
+
+
 def test_recommend_for_task_surfaces_named_validation_integration(tmp_path: Path) -> None:
     _write_cautilus_integration(tmp_path)
 

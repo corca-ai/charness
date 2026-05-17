@@ -112,7 +112,8 @@
         "The committed `validate_debug_artifact.py` gate plus `tests/test_debug_artifact.py` now make the current debug artifact carry structured seam risk and interruption data, so a host-boundary miss cannot stay a chat-only handoff.",
         "`tests/test_debug_scaffold.py` now proves the scaffold-emitted validator command works from an exported plugin layout in a clean consumer repo.",
         "The scaffold payload now exposes `write_artifact_path` and resolves a symlinked `latest.md` to the real current-pointer target, so consumer agents do not need to discover the symlink by accidental hand edits.",
-        "`debug` now owns the full bug-class RCA substrate: step 6 invokes `references/detection-gap.md` and `references/sibling-search.md` alongside `references/five-whys-causal-chain.md`, and the validator requires `## Detection Gap` and `## Sibling Search` sections so standalone debug carries the same patterns `issue resolve` bug-class consumes cite-only."
+        "`debug` now owns the full bug-class RCA substrate: step 6 invokes `references/detection-gap.md` and `references/sibling-search.md` alongside `references/five-whys-causal-chain.md`, and the validator requires `## Detection Gap` and `## Sibling Search` sections so standalone debug carries the same patterns `issue resolve` bug-class consumes cite-only.",
+        "The sibling-search substrate now requires each structural sibling to keep the decision (`same bug, fix now`, diagnostic-only, intentional boundary, or deferred follow-up) separate from proof level (`static scan only`, local payload proof, provider roundtrip, or not inspected), so bug fixes cannot stop at the first symptom without a reviewer-visible classification ledger."
       ]
     },
     {
@@ -131,13 +132,14 @@
         "in `--read-only` mode skips the durable artifact write and reports `artifacts.mode = \"read-only\"` instead of refreshing `charness-artifacts/find-skills/latest.*`"
       ],
   "review_status": "reviewed",
-      "reviewed_on": "2026-05-07",
+      "reviewed_on": "2026-05-17",
       "observed_evidence": [
         "The checked-in public core now treats `charness-artifacts/find-skills/latest.*` as the canonical capability inventory artifact, while recommendation queries stay ad hoc and should not rewrite that durable surface just because the invocation shape changed.",
         "The current repo memory at `charness-artifacts/retro/recent-lessons.md` explicitly records the repeat trap here: canonical inventory and ad hoc recommendation output must stay separate so ordinary inspection does not create false dirty state or erode operator trust.",
         "That keeps `find-skills-canonical-artifact-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: the user's push to distinguish canonical evidence from query-shaped output still maps directly to checked-in `find-skills` behavior and artifact policy.",
         "`find-skills --recommend-for-task` now covers support-skill discoverability when workflow language implies a hidden support surface; the Specdown fixture routes `.spec.md`, `docs/specs`, and `check:jq` to `support/specdown` without polluting the canonical inventory artifact.",
-        "The task-text recommendation path is bounded by negative proof: weak singleton or generic `report.json` / doctest language without a strong Specdown anchor does not route unrelated work through `support/specdown`."
+        "The task-text recommendation path is bounded by negative proof: weak singleton or generic `report.json` / doctest language without a strong Specdown anchor does not route unrelated work through `support/specdown`.",
+        "Slack URL task text now surfaces `gather-slack` from support capability intent triggers in read-only recommendation mode, so `find-skills` no longer hides the checked-in Slack gather wrapper behind a broad no-match note."
       ]
     },
     {
@@ -154,14 +156,15 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-16",
+      "reviewed_on": "2026-05-17",
       "observed_evidence": [
         "The checked-in public core now carries the private SaaS decision ladder explicitly: prefer existing local assets and official API/export paths first, fall back to `agent-browser` only when the stronger path is unavailable or equally gated, and stop cleanly when auth/bootstrap is still missing.",
         "The prompt-affecting preserve proof at `charness-artifacts/cautilus/latest.md` stayed green while that contract widened, which is the current repo-owned evidence that the maintained first-skill routing surface did not regress when browser-mediated acquisition language was added.",
         "The long-context proposal and benchmark surfaces still both carry `gather-official-path-before-browser-followup`, and the checked-in chatbot summaries now preserve the full `proposals` truth surface alongside the bounded `attentionView` shortlist instead of relying on a packet-level `limit` workaround. That keeps the `official API/export -> browser fallback -> clean auth/bootstrap stop` correction visible as a live consumer-facing gather seam instead of a stale side packet.",
         "`gather_public_url.py` now proves the arbitrary-public-URL seam without live network dependence: the focused test writes a dated gather record containing the `support/web-fetch` route, acquisition trace, selected attempt, disposition, final status/confidence, open gaps, and embedded trace JSON.",
         "The public capability contract now says arbitrary public URL gather must preserve the `support/web-fetch` acquisition trace, including attempted, skipped, unavailable, terminal, selected, and proof/confidence fields, so the standing gather/web-fetch invariant no longer lives only in `docs/handoff.md`.",
-        "The live public-URL dogfood record `charness-artifacts/gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md` proves `defuddle-reader-extraction` can be selected with strong proof against a real public URL, and the artifact now avoids listing `prior-stage-sufficient` skipped stages as open gaps."
+        "The live public-URL dogfood record `charness-artifacts/gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md` proves `defuddle-reader-extraction` can be selected with strong proof against a real public URL, and the artifact now avoids listing `prior-stage-sufficient` skipped stages as open gaps.",
+        "`advise_slack_path.py` now resolves `gather_provider.slack.mode` and points direct-cli runs at `support/gather-slack/scripts/export-thread.sh` plus the runtime contract before browser-mediated private-source fallbacks."
       ]
     },
     {
@@ -212,7 +215,8 @@
         "Step 6 of the resolve flow now requires a pre-mutation resolution brief for `feature` and `deferred-work` issues. The adapter exposes `feature_brief_pause` (`on-open-decisions` default, `always`, `never`); invocation flags `--auto` and `--pause` override per call. Non-empty `open decisions` always force a pause. `issue_tool.py brief-path` resolves the persistent artifact under `charness-artifacts/issue/`, and `audit_brief.py` plus the bundled transcript fixtures verify that mutation events never precede brief events for feature-class fix-units.",
         "Bug-class causal review now triages the `debug` substrate cite-only across all three lenses: Lens 1 cites `debug/references/five-whys-causal-chain.md`, Lens 2 cites `debug/references/detection-gap.md`, and Lens 3 cites `debug/references/sibling-search.md`. The subagent contract requires the substrate cite plus the `do not re-derive` guard verbatim for each lens, so `issue` no longer holds a private detection-gap or sibling-search body that could drift from the `debug` substrate.",
         "Release-bundled issue resolution now has an explicit closeout bridge: `issue` tells operators to pass `--close-issue <number>` to the release helper and require `issue_closeout.status: verified`, while the closeout discipline reference preserves GitHub auto-close as the preferred carrier and manual close as the post-verification fallback.",
-        "`issue_tool.py close-with-comment` now re-reads GitHub issue state after comment plus close and fails if the issue is still open, so command success alone is not treated as source-of-truth closeout."
+        "`issue_tool.py close-with-comment` now re-reads GitHub issue state after comment plus close and fails if the issue is still open, so command success alone is not treated as source-of-truth closeout.",
+        "Bug-class close comments now preserve sibling decisions and proof levels from the debug sibling-search substrate, including diagnostic-only and intentional-boundary findings when they matter for recurrence risk."
       ]
     },
     {

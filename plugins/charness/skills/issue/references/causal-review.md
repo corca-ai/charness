@@ -87,19 +87,26 @@ human-detection?
 Consume the `debug` skill substrate
 (`../../debug/references/sibling-search.md`) — the four-axis scan (same
 layer, abstraction up, specialization down, mental-model siblings), the
-mental model that allowed the bug, and the keyword/proximity-only over-reach
-guard — and triage the resulting locations through the close-ledger lens:
-which siblings are real instances of the abstracted pattern, which are
-surface-level keyword matches that should not be carried forward, and which
-sit on a prevention surface in scope for the close comment? **Do not
-re-derive the sibling-search walk in causal review.** If the substrate's
-scan is missing, names only keyword matches, or fails to state the mental
-model and structural sibling search beyond keyword or proximity matching,
-return that as a `Causal review: substrate incomplete` block instead of
-regrowing it inside this lens.
+mental model that allowed the bug, the sibling decision taxonomy, proof-level
+separation, and the keyword/proximity-only over-reach guard — and triage the
+resulting locations through the close-ledger lens: which siblings are real
+instances of the abstracted pattern, which are surface-level keyword matches
+that should not be carried forward, and which sit on a prevention surface in
+scope for the close comment? Preserve the substrate's decision labels
+(`same bug, fix now`, `same class, diagnostic-only for this slice`,
+`intentional plain-text or non-rendering boundary`, `valid follow-up outside the slice`)
+and its separate proof labels (`static scan only`,
+`local payload proof`, `runtime/provider roundtrip`, `not inspected`). **Do
+not re-derive the sibling-search walk in causal review.** If the substrate's
+scan is missing, names only keyword matches, fails to state the mental model
+and structural sibling search beyond keyword or proximity matching, omits sibling classification,
+or merges proof level into the decision, return that as a
+`Causal review: substrate incomplete` block instead of regrowing it inside
+this lens.
 
 Return the triaged patterns plus concrete locations the implementer should
-inspect. The implementer decides at step 5 whether to bundle or defer.
+inspect. The implementer decides at step 5 whether to bundle, leave
+diagnostic-only, mark an intentional boundary, or defer.
 
 ### Output shape (causal review)
 
@@ -121,9 +128,10 @@ The subagent returns:
 - `Sibling search` (substrate cite from
   `../../debug/references/sibling-search.md`, plus close-ledger triage; do
   not regrow the four-axis scan; preserve the mental model and structural
-  sibling search beyond keyword or proximity matching) + `Over-reach check`:
-  simplest evidence the listed locations are actual instances of the same
-  pattern, not surface-level keyword matches
+  sibling search beyond keyword or proximity matching, sibling
+  classification, and proof level) + `Over-reach check`: simplest evidence
+  the listed locations are actual instances of the same pattern, not
+  surface-level keyword matches
 - `Bundle vs Defer recommendation` (a list, with cheap-now flagged)
 - `Fresh-Eye Satisfaction`: `parent-delegated` / `nested-delegated` /
   `blocked <host-signal>`
@@ -191,7 +199,9 @@ For `bug`:
 - the root cause in one sentence
 - `Debug artifact: <path>` (or `none (trivial fix)` / `cite-only`)
 - which siblings were bundled into this commit and which were deferred (and
-  where they live so future readers can find them)
+  where they live so future readers can find them), plus any diagnostic-only
+  or intentional-boundary siblings when those decisions matter for recurrence
+  risk; keep the proof level visible separately from the decision
 - the structural recurrence-prevention move (guard, test, doc, tool) and
   what is deliberately not addressed yet
 
