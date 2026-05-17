@@ -151,6 +151,23 @@
         }
       }
     },
+    {
+      "if": {
+        "properties": {
+          "t_status": {
+            "const": "promoted"
+          }
+        },
+        "required": [
+          "t_status"
+        ]
+      },
+      "then": {
+        "required": [
+          "t_link"
+        ]
+      }
+    },
     {}
   ],
   "$defs": {

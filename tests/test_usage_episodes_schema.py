@@ -106,6 +106,15 @@ def test_candidate_usage_episode_may_omit_t_link() -> None:
     jsonschema.validate(record, _load_json(USAGE_DIR / "episode.schema.json"))
 
 
+def test_promoted_usage_episode_requires_t_link() -> None:
+    record = ceal_episode()
+    record["t_status"] = "promoted"
+    record.pop("t_link")
+
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(record, _load_json(USAGE_DIR / "episode.schema.json"))
+
+
 def test_usage_episode_can_share_privacy_safe_context_ref() -> None:
     context_ref = {
         "kind": "slack_thread",

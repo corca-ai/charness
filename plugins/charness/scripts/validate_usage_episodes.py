@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -55,6 +56,7 @@ def _portable_path(repo_root: Path, path: Path) -> str:
 def _validate_jsonl(path: Path, episode_schema: dict[str, Any]) -> tuple[int, list[str]]:
     errors: list[str] = []
     valid_count = 0
+    validator = jsonschema.Draft7Validator(episode_schema, format_checker=jsonschema.FormatChecker())
     if not path.is_file():
         return 0, [f"missing records file: {path}"]
     for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
@@ -67,12 +69,19 @@ def _validate_jsonl(path: Path, episode_schema: dict[str, Any]) -> tuple[int, li
             errors.append(f"{path}:{line_number}: invalid JSON: {exc}")
             continue
         try:
-            jsonschema.validate(row, episode_schema)
+            validator.validate(row)
         except jsonschema.ValidationError as exc:
             path_text = ".".join(str(part) for part in exc.absolute_path)
             suffix = f" at {path_text}" if path_text else ""
             errors.append(f"{path}:{line_number}: schema error{suffix}: {exc.message}")
             continue
+        timestamp = row.get("timestamp")
+        if isinstance(timestamp, str):
+            try:
+                datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+            except ValueError:
+                errors.append(f"{path}:{line_number}: schema error at timestamp: {timestamp!r} is not date-time")
+                continue
         valid_count += 1
     return valid_count, errors
 
@@ -84,8 +93,10 @@ def _print_result(payload: dict[str, Any], *, as_json: bool) -> None:
     status = payload["status"]
     if status == "valid":
         print(f"Validated {payload['valid_count']} usage episode record(s).")
-    elif status in {"no_adapter", "disabled"}:
-        print(status)
+    elif status == "no_adapter":
+        print(f"no_adapter: no adapter at {payload['adapter_path']}; validation skipped")
+    elif status == "disabled":
+        print(f"disabled: adapter at {payload['adapter_path']} has enabled:false; validation skipped")
     else:
         print(f"{status}: {len(payload.get('errors', []))} error(s)")
         for error in payload.get("errors", []):
@@ -150,6 +161,20 @@ def main() -> int:
         records_path = _storage_dir(repo_root, adapter) / EVENT_FILENAME
     elif not records_path.is_absolute():
         records_path = repo_root / records_path
+    records_path = records_path.resolve()
+    try:
+        records_path.relative_to(repo_root)
+    except ValueError:
+        payload = {
+            "status": "invalid_records_path",
+            "valid": False,
+            "adapter_path": _portable_path(repo_root, adapter_path),
+            "records_path": _portable_path(repo_root, records_path),
+            "valid_count": 0,
+            "errors": ["records_path must stay under repo_root"],
+        }
+        _print_result(payload, as_json=args.json)
+        return 1
     valid_count, errors = _validate_jsonl(records_path, episode_schema)
     payload = {
         "status": "valid" if not errors else "invalid_records",

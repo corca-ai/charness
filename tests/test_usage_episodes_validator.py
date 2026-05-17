@@ -92,3 +92,32 @@ def test_validate_usage_episodes_rejects_malformed_jsonl(tmp_path: Path) -> None
     payload = json.loads(result.stdout)
     assert payload["status"] == "invalid_records"
     assert payload["errors"]
+
+
+def test_validate_usage_episodes_rejects_bad_timestamp(tmp_path: Path) -> None:
+    write_adapter(tmp_path, "version: 1\nenabled: true\n")
+    records = tmp_path / ".charness" / "usage-episodes"
+    records.mkdir(parents=True)
+    episode = ceal_episode()
+    episode["timestamp"] = "not-a-date"
+    (records / "usage_episode.jsonl").write_text(json.dumps(episode) + "\n", encoding="utf-8")
+
+    result = run_validator("--repo-root", str(tmp_path), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "invalid_records"
+    assert payload["errors"]
+
+
+def test_validate_usage_episodes_rejects_records_path_outside_repo(tmp_path: Path) -> None:
+    write_adapter(tmp_path, "version: 1\nenabled: true\n")
+    outside = tmp_path.parent / "outside-usage-episode.jsonl"
+    outside.write_text(json.dumps(ceal_episode()) + "\n", encoding="utf-8")
+
+    result = run_validator("--repo-root", str(tmp_path), "--records-path", str(outside), "--json")
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "invalid_records_path"
+    assert payload["valid"] is False
