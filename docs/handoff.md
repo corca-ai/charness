@@ -9,7 +9,7 @@
 
 ## Current State
 
-- Current public release after this pickup is expected to be `v0.5.30` on `origin/main`, containing the #170 and #174 repairs. Verify with `gh release view v0.5.30 --repo corca-ai/charness`.
+- Current public release after this pickup is expected to be `v0.5.31` on `origin/main`, containing opt-in public URL extracted-content persistence. Verify with `gh release view v0.5.31 --repo corca-ai/charness`.
 - [#170](https://github.com/corca-ai/charness/issues/170) is fixed by making
   Slack URL task text surface `gather-slack` through `find-skills` support
   recommendations, adding [advise_slack_path.py](../skills/public/gather/scripts/advise_slack_path.py),
@@ -17,23 +17,16 @@
   It preserves `host-mediated` / `none` adapter boundaries and points
   `direct-cli` at [export-thread.sh](../skills/support/gather-slack/scripts/export-thread.sh).
 - [#174](https://github.com/corca-ai/charness/issues/174) is fixed by making `debug` sibling search classify every surfaced sibling and record proof level separately; `issue` causal review and bug close comments preserve those decisions.
-- Live open GitHub issues after this pickup should be only
-  [#171](https://github.com/corca-ai/charness/issues/171) and
-  [#172](https://github.com/corca-ai/charness/issues/172), which appear to be
-  duplicate c-families habit/context exploration issues needing product
-  discussion rather than an obvious autonomous bug fix.
-- [scripts/run-quality.sh](../scripts/run-quality.sh) passed on 2026-05-17 with 60 passed / 0 failed in 110.7s; `run_slice_closeout.py --ack-cautilus-skill-review` also passed. Cautilus planner returned `next_action: none`.
+- Public URL gather now keeps `Content Persistence: none` by default; `gather_public_url.py --persist-extracted-content` stores the selected successful attempt's readable text/markdown in a separate `Extracted Content` section without putting bulk content into trace JSON or command result payloads.
+- Live open GitHub issues after this pickup should be only [#171](https://github.com/corca-ai/charness/issues/171); [#172](https://github.com/corca-ai/charness/issues/172) was closed as a duplicate because #171 has the sibling c-families cross-reference comment.
+- [scripts/run-quality.sh](../scripts/run-quality.sh) passed on 2026-05-17 with 60 passed / 0 failed in 63.1s; `run_slice_closeout.py --ack-cautilus-skill-review` also passed. Cautilus planner returned `next_action: none`.
 - `setup` normalization is green; [AGENTS.md](../AGENTS.md) has the compact Skill Routing block and `CLAUDE.md` remains a symlink to `AGENTS.md`. See [charness-artifacts/setup/latest.md](../charness-artifacts/setup/latest.md).
 - `defuddle` is now a repo-local npm dev dependency (`defuddle@0.18.1`) and the public gather/web-fetch reader fallback has live proof in [charness-artifacts/gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md](../charness-artifacts/gather/2026-05-16-rfc-editor-org-rfc-rfc9110-html-b1b13a12.md). `gws-cli` is still missing on this machine.
 
 ## Next Session
 
-1. Discuss #171/#172 together: decide whether to close one as duplicate and
-   whether the surviving c-families issue is product framing, skill behavior,
-   or a lightweight docs exploration.
-2. Optional gather follow-up: decide whether raw acquired-content persistence
-   belongs in a separate gather slice now that trace/proof correctness, Slack
-   support routing, and live `defuddle` reader proof all exist.
+1. Discuss [#171](https://github.com/corca-ai/charness/issues/171): decide whether the c-families habit/context frame is product framing, skill behavior, or a lightweight docs exploration.
+2. Raw response persistence is still intentionally out of scope; only extracted public URL content has an opt-in path. Revisit raw storage only with retention/redaction policy.
 3. Maintained Cautilus scenario registry mutation remains ask-before-mutate.
    The current #170/#174 repairs are covered by deterministic tests and
    dogfood contract updates, not a scenario-registry edit.
@@ -43,12 +36,8 @@
 
 ## Discuss
 
-- First decision: #171/#172 consolidation. Tradeoff: closing one duplicate
-  keeps the queue honest and lets the surviving issue carry a clean product
-  question; keeping both open preserves parallel framings if they intentionally
-  differ, but today their titles and timing make that difference unclear.
-- Whether raw acquired-content persistence belongs in a future gather slice,
-  now that trace/proof correctness is locally implemented.
+- First decision: #171 product frame. Tradeoff: keeping it as a discussion issue preserves product judgment; turning it into immediate instrumentation risks collecting context before Charness has a clear first-value definition.
+- Raw response persistence remains a separate policy decision; the implemented path stores extracted content only.
 
 ## References
 

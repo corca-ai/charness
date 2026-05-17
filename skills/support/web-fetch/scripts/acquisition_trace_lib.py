@@ -17,6 +17,8 @@ class AcquisitionAttempt:
     output_chars: int = 0
     classification: dict[str, object] | None = None
     details: dict[str, object] = field(default_factory=dict)
+    content_text: str | None = None
+    content_format: str | None = None
 
     def to_dict(self) -> dict[str, object]:
         payload: dict[str, object] = {
@@ -140,11 +142,13 @@ def payload(
     disposition: str,
     *,
     intent: str = "single",
+    include_selected_content: bool = False,
+    selected_content_max_chars: int | None = None,
 ) -> dict[str, object]:
     _append_unvisited_plan_stages(route, attempts, disposition=disposition, intent=intent)
     selected = selected_attempt(attempts)
     selected_payload = selected.to_dict() if selected is not None else None
-    return {
+    result = {
         "source_url": url,
         "route": route,
         "disposition": disposition,
@@ -153,3 +157,25 @@ def payload(
         "final_status": selected.status if selected is not None else "unknown",
         "final_confidence": selected.confidence if selected is not None else "none",
     }
+    if (
+        include_selected_content
+        and selected is not None
+        and selected.status == "success"
+        and selected.content_text is not None
+    ):
+        text = selected.content_text
+        truncated = False
+        original_chars = len(text)
+        if selected_content_max_chars is not None and original_chars > selected_content_max_chars:
+            text = text[:selected_content_max_chars]
+            truncated = True
+        result["selected_content"] = {
+            "stage_id": selected.stage_id,
+            "tool_id": selected.tool_id,
+            "format": selected.content_format or "text",
+            "text": text,
+            "chars": len(text),
+            "original_chars": original_chars,
+            "truncated": truncated,
+        }
+    return result

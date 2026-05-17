@@ -72,6 +72,41 @@ def _is_open_gap(attempt: dict[str, object]) -> bool:
     return reason not in {"prior-stage-sufficient", "not-needed", "intent-not-collect"}
 
 
+def _trace_payload(acquisition: dict[str, object]) -> dict[str, object]:
+    return {key: value for key, value in acquisition.items() if key != "selected_content"}
+
+
+def _fence_for(text: str) -> str:
+    fence = "```"
+    while fence in text:
+        fence += "`"
+    return fence
+
+
+def _extracted_content_lines(acquisition: dict[str, object]) -> tuple[str, list[str]]:
+    selected_content = acquisition.get("selected_content")
+    if not isinstance(selected_content, dict):
+        return "none", []
+    text = selected_content.get("text")
+    if not isinstance(text, str) or not text.strip():
+        return "unavailable", []
+    fence = _fence_for(text)
+    return "extracted", [
+        "",
+        "## Extracted Content",
+        "",
+        f"- Source Stage: `{selected_content.get('stage_id', 'unknown')}`",
+        f"- Format: `{selected_content.get('format', 'text')}`",
+        f"- Chars: `{selected_content.get('chars', len(text))}`",
+        f"- Original Chars: `{selected_content.get('original_chars', len(text))}`",
+        f"- Truncated: `{selected_content.get('truncated', False)}`",
+        "",
+        f"{fence}text",
+        text,
+        fence,
+    ]
+
+
 def _render_record(url: str, acquisition: dict[str, object]) -> str:
     route = acquisition.get("route") if isinstance(acquisition.get("route"), dict) else {}
     selected = acquisition.get("selected_attempt") if isinstance(acquisition.get("selected_attempt"), dict) else {}
@@ -85,12 +120,14 @@ def _render_record(url: str, acquisition: dict[str, object]) -> str:
     ]
     gap_lines = _attempt_lines(open_gaps) or ["- None recorded."]
     attempt_lines = _attempt_lines(attempts) or ["- None recorded."]
+    content_persistence, content_lines = _extracted_content_lines(acquisition)
     return "\n".join(
         [
             "# Gathered Public URL",
             "",
             f"- Source: {url}",
             "- Access Mode: support/web-fetch public route",
+            f"- Content Persistence: `{content_persistence}`",
             f"- Route: `{route.get('route_id', 'unknown')}`",
             f"- Route Family: `{route.get('route_family', 'unknown')}`",
             f"- Route Access Modes: {', '.join(str(mode) for mode in access_modes) or 'unknown'}",
@@ -112,11 +149,12 @@ def _render_record(url: str, acquisition: dict[str, object]) -> str:
             "## Open Gaps",
             "",
             *gap_lines,
+            *content_lines,
             "",
             "## Trace JSON",
             "",
             "```json",
-            json.dumps(acquisition, ensure_ascii=False, indent=2),
+            json.dumps(_trace_payload(acquisition), ensure_ascii=False, indent=2),
             "```",
             "",
         ]
@@ -136,6 +174,8 @@ def main() -> int:
     parser.add_argument("--expect-text", action="append", default=[])
     parser.add_argument("--expect-regex", action="append", default=[])
     parser.add_argument("--expect-json-field", action="append", default=[])
+    parser.add_argument("--persist-extracted-content", action="store_true")
+    parser.add_argument("--max-extracted-content-chars", type=int, default=200_000)
     parser.add_argument("--execute", action="store_true")
     args = parser.parse_args()
 
@@ -161,11 +201,15 @@ def main() -> int:
         acquire_cmd.extend(["--expect-regex", pattern])
     for field_path in args.expect_json_field:
         acquire_cmd.extend(["--expect-json-field", field_path])
+    if args.persist_extracted_content:
+        acquire_cmd.append("--include-selected-content")
+        acquire_cmd.extend(["--selected-content-max-chars", str(args.max_extracted_content_chars)])
 
     acquisition = _run_json(acquire_cmd)
     acquisition_disposition = str(acquisition.get("disposition", "unknown"))
     final_status = str(acquisition.get("final_status", "unknown"))
     final_confidence = str(acquisition.get("final_confidence", "none"))
+    content_persistence = "extracted" if isinstance(acquisition.get("selected_content"), dict) else "none"
     if acquisition_disposition != "success":
         payload = {
             "status": "degraded" if acquisition_disposition == "degraded" else "blocked",
@@ -174,6 +218,7 @@ def main() -> int:
             "acquisition_disposition": acquisition_disposition,
             "final_status": final_status,
             "final_confidence": final_confidence,
+            "content_persistence": "none",
             "acquisition": acquisition,
             "write_record": None,
         }
@@ -201,7 +246,8 @@ def main() -> int:
         "acquisition_disposition": acquisition_disposition,
         "final_status": final_status,
         "final_confidence": final_confidence,
-        "acquisition": acquisition,
+        "content_persistence": content_persistence,
+        "acquisition": _trace_payload(acquisition),
         "write_record": write_payload,
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2))

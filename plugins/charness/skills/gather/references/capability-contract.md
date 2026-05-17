@@ -145,3 +145,19 @@ The durable record should make visible:
 
 This lets `gather` stay public and provider-agnostic while `web-fetch` owns the
 retrieval tactics and truthful degradation contract.
+
+## Public URL Extracted Content Persistence
+
+Public URL gather does not store raw acquired bodies by default. The default
+artifact records provenance, route, confidence, and trace JSON with
+`Content Persistence: none`.
+
+When the caller explicitly opts in through `gather_public_url.py --persist-extracted-content`,
+the artifact may add an `Extracted Content` section for the selected successful
+attempt. This section stores readable extracted text or markdown, not raw
+HTML/API responses, and records the selected stage, format, character count,
+original character count, and truncation state.
+
+Blocked, degraded, or error acquisitions still do not refresh the durable
+gather pointer. Raw response persistence remains outside the default gather
+contract and needs a separate retention/redaction policy before being added.

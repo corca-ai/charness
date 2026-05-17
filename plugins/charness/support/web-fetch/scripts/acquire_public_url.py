@@ -28,7 +28,7 @@ from acquisition_trace_lib import (  # noqa: E402
     should_stop,
     skip_attempt,
 )
-from classify_fetch_response import classify  # noqa: E402
+from classify_fetch_response import classify, extract_text  # noqa: E402
 from route_public_fetch import route_for_url  # noqa: E402
 
 
@@ -75,23 +75,6 @@ def _run_command(command: Sequence[str], *, timeout: int) -> tuple[str, str | No
     return completed.stdout, None
 
 
-def _classify_text(
-    text: str,
-    *,
-    intent: str,
-    expect_text: list[str],
-    expect_regex: list[str],
-    expect_json_field: list[str],
-) -> dict[str, object]:
-    return classify(
-        text,
-        intent=intent,
-        expect_text=expect_text,
-        expect_regex=expect_regex,
-        expect_json_field=expect_json_field,
-    )
-
-
 def _attempt_from_text(
     *,
     stage_id: str,
@@ -104,8 +87,9 @@ def _attempt_from_text(
     expect_json_field: list[str],
     error: str | None = None,
     details: dict[str, object] | None = None,
+    content_format: str = "text",
 ) -> AcquisitionAttempt:
-    classification = _classify_text(
+    classification = classify(
         text,
         intent=intent,
         expect_text=expect_text,
@@ -116,6 +100,7 @@ def _attempt_from_text(
     status = classification_status
     if error is not None and classification_status != "invalid-proof":
         status = "error"
+    content_text = text if content_format == "markdown" else extract_text(text)
     return AcquisitionAttempt(
         stage_id=stage_id,
         tool_id=tool_id,
@@ -126,6 +111,8 @@ def _attempt_from_text(
         output_chars=len(text),
         classification=classification,
         details=details or {},
+        content_text=content_text,
+        content_format=content_format,
     )
 
 
@@ -223,7 +210,25 @@ def _invalid_scheme_payload(args: argparse.Namespace, parsed) -> dict[str, objec
             details={"allowed_schemes": ["http", "https"]},
         )
     ]
-    return payload(args.url, route, attempts, "error")
+
+    return _payload_for(args, route, attempts, "error")
+
+
+def _payload_for(
+    args: argparse.Namespace,
+    route: dict[str, object],
+    attempts: list[AcquisitionAttempt],
+    disposition: str,
+) -> dict[str, object]:
+    return payload(
+        args.url,
+        route,
+        attempts,
+        disposition,
+        intent=args.intent,
+        include_selected_content=args.include_selected_content,
+        selected_content_max_chars=args.selected_content_max_chars,
+    )
 
 
 def acquire(args: argparse.Namespace) -> dict[str, object]:
@@ -254,9 +259,9 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
     if has_stage(route, "domain-specific-route"):
         attempts.append(skip_attempt("domain-specific-route", None, reason="not-implemented"))
     if direct_attempt.status == "invalid-proof":
-        return payload(args.url, route, attempts, "error", intent=args.intent)
+        return _payload_for(args, route, attempts, "error")
     if should_stop(direct_attempt, proof_required=proof_required):
-        return payload(args.url, route, attempts, "success", intent=args.intent)
+        return _payload_for(args, route, attempts, "success")
 
     try_defuddle, defuddle_skip_reason = _should_try_defuddle(str(route["route_id"]), attempts)
     if try_defuddle:
@@ -273,10 +278,11 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
                 expect_text=args.expect_text,
                 expect_regex=args.expect_regex,
                 expect_json_field=args.expect_json_field,
+                content_format="markdown",
             )
         )
         if has_success(attempts, proof_required=proof_required):
-            return payload(args.url, route, attempts, "success", intent=args.intent)
+            return _payload_for(args, route, attempts, "success")
     elif defuddle_skip_reason == "missing-tool" and has_stage(route, "defuddle-reader-extraction"):
         attempts.append(skip_attempt("defuddle-reader-extraction", "defuddle", reason=defuddle_skip_reason))
 
@@ -314,13 +320,13 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
                 )
             )
         if has_success(attempts, proof_required=proof_required):
-            return payload(args.url, route, attempts, "success", intent=args.intent)
+            return _payload_for(args, route, attempts, "success")
     elif browser_skip_reason in {"missing-tool", "browser-mode-off"} and has_stage(route, "agent-browser-render-recon"):
         attempts.append(skip_attempt("agent-browser-render-recon", "agent-browser", reason=browser_skip_reason))
         if args.intent == "collect" and has_stage(route, "agent-browser-network-recon"):
             attempts.append(skip_attempt("agent-browser-network-recon", "agent-browser", reason=browser_skip_reason))
 
-    return payload(args.url, route, attempts, disposition_for_attempts(attempts), intent=args.intent)
+    return _payload_for(args, route, attempts, disposition_for_attempts(attempts))
 
 
 def main() -> int:
@@ -334,6 +340,8 @@ def main() -> int:
     parser.add_argument("--expect-text", action="append", default=[])
     parser.add_argument("--expect-regex", action="append", default=[])
     parser.add_argument("--expect-json-field", action="append", default=[])
+    parser.add_argument("--include-selected-content", action="store_true")
+    parser.add_argument("--selected-content-max-chars", type=int, default=200_000)
     args = parser.parse_args()
     print(json.dumps(acquire(args), ensure_ascii=False, indent=2))
     return 0

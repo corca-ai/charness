@@ -498,14 +498,56 @@ def test_gather_public_url_writes_web_fetch_trace(tmp_path: Path) -> None:
     assert payload["record_status"] == "updated"
     assert payload["acquisition_disposition"] == "success"
     assert payload["final_status"] == "success"
+    assert payload["content_persistence"] == "none"
     record_path = Path(payload["write_record"]["record_artifact_path"])
     record = record_path.read_text(encoding="utf-8")
     assert "# Gathered Public URL" in record
+    assert "- Content Persistence: `none`" in record
     assert "## Acquisition Trace" in record
     assert "## Open Gaps\n\n- None recorded." in record
     assert "`direct-public-fetch`" in record
     assert '"selected_attempt"' in record
     assert (tmp_path / "charness-artifacts" / "gather" / "latest.md").is_file()
+
+
+def test_gather_public_url_persists_extracted_content_when_requested(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.html"
+    direct.write_text(
+        "<html><body><h1>Readable Title</h1>" + ("useful content " * 120) + "</body></html>",
+        encoding="utf-8",
+    )
+
+    result = run_helper(
+        "skills/public/gather/scripts/gather_public_url.py",
+        "--repo-root",
+        str(tmp_path),
+        "--url",
+        "https://example.com/article",
+        "--direct-response-file",
+        str(direct),
+        "--browser-mode",
+        "off",
+        "--slug",
+        "example-public-url",
+        "--date",
+        "2026-05-16",
+        "--persist-extracted-content",
+        "--max-extracted-content-chars",
+        "120",
+        "--execute",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["content_persistence"] == "extracted"
+    assert "selected_content" not in payload["acquisition"]
+    record = Path(payload["write_record"]["record_artifact_path"]).read_text(encoding="utf-8")
+    assert "- Content Persistence: `extracted`" in record
+    assert "## Extracted Content" in record
+    assert "Readable Title" in record
+    assert "<html>" not in record
+    trace_json = record.split("## Trace JSON", 1)[1]
+    assert "selected_content" not in trace_json
 
 
 def test_gather_public_url_does_not_write_error_acquisition(tmp_path: Path) -> None:
@@ -679,3 +721,53 @@ def test_acquire_public_url_accepts_weak_direct_success_without_positive_proof(t
     assert payload["attempts"][0]["output_chars"] == len(direct.read_text(encoding="utf-8"))
     assert payload["selected_attempt"]["stage_id"] == "direct-public-fetch"
     assert payload["attempts"][-1]["stage_id"] == "clean-stop"
+
+
+def test_acquire_public_url_omits_selected_content_by_default(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.html"
+    direct.write_text("<html><body>" + ("useful content " * 120) + "</body></html>", encoding="utf-8")
+
+    result = run_helper(
+        "skills/support/web-fetch/scripts/acquire_public_url.py",
+        "--url",
+        "https://example.com/article",
+        "--direct-response-file",
+        str(direct),
+        "--browser-mode",
+        "off",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["disposition"] == "success"
+    assert "selected_content" not in payload
+
+
+def test_acquire_public_url_can_include_extracted_selected_content(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.html"
+    direct.write_text(
+        "<html><body><h1>Readable Title</h1>" + ("useful content " * 120) + "</body></html>",
+        encoding="utf-8",
+    )
+
+    result = run_helper(
+        "skills/support/web-fetch/scripts/acquire_public_url.py",
+        "--url",
+        "https://example.com/article",
+        "--direct-response-file",
+        str(direct),
+        "--browser-mode",
+        "off",
+        "--include-selected-content",
+        "--selected-content-max-chars",
+        "80",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    selected_content = payload["selected_content"]
+    assert selected_content["stage_id"] == "direct-public-fetch"
+    assert selected_content["format"] == "text"
+    assert selected_content["truncated"] is True
+    assert "Readable Title" in selected_content["text"]
+    assert "<html>" not in selected_content["text"]

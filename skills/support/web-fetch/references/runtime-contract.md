@@ -86,3 +86,8 @@ When a public skill uses this seam, the artifact should preserve:
 - acquisition trace with stage id, tool id, status, confidence, and error
 - response classification
 - any remaining access or confidence gaps
+
+The runtime may return selected successful content only when the caller asks for
+it. That selected content is extracted text or markdown derived from the
+winning attempt; it is not raw response persistence and should not be embedded
+inside the acquisition trace JSON by default.
