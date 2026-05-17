@@ -84,3 +84,18 @@ def test_issue_resolve_prefers_autoclose_carriers_before_manual_close() -> None:
     assert "auto-close the normal closeout path" in resolve_flow
     assert "PR body or direct-to-default commit body" in brief
     assert "preferred closeout carrier" in brief
+    assert "re-read GitHub state after comment plus close" in closeout
+    assert "command success alone is not closeout" in closeout
+
+
+def test_issue_closeout_covers_release_helper_issue_verification() -> None:
+    skill = _read(SKILL)
+    closeout = _read(CLOSEOUT)
+    resolve_flow = _read(RESOLVE_FLOW)
+    release_skill = _read(ROOT / "skills" / "public" / "release" / "SKILL.md")
+
+    assert "--close-issue <number>" in skill
+    assert "issue_closeout.status: verified" in skill
+    assert "Release-driven direct-to-default work follows the same linkage" in closeout
+    assert "post-push issue verification payload" in resolve_flow
+    assert "Do not report a release-linked issue as resolved" in release_skill

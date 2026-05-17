@@ -176,11 +176,31 @@ def _write_fake_gh(bin_dir: Path) -> None:
             if args == ["repo", "view", "--json", "url", "--jq", ".url"]:
                 print("https://github.com/example/demo")
                 raise SystemExit(0)
+            if args == ["repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"]:
+                print("example/demo")
+                raise SystemExit(0)
             if args[:2] == ["release", "view"]:
                 raise SystemExit(1)
             if args[:2] == ["release", "create"]:
                 tag = args[2]
                 print(f"https://github.com/example/demo/releases/tag/{tag}")
+                raise SystemExit(0)
+            if args[:2] == ["issue", "view"]:
+                state_path = Path(os.environ["FAKE_GH_ISSUE_STATE"])
+                state = json.loads(state_path.read_text(encoding="utf-8"))
+                number = args[2]
+                print(json.dumps({
+                    "number": int(number),
+                    "state": state.get(number, "OPEN"),
+                    "url": f"https://github.com/example/demo/issues/{number}",
+                }))
+                raise SystemExit(0)
+            if args[:2] == ["issue", "close"]:
+                state_path = Path(os.environ["FAKE_GH_ISSUE_STATE"])
+                state = json.loads(state_path.read_text(encoding="utf-8"))
+                state[args[2]] = "CLOSED"
+                state_path.write_text(json.dumps(state, indent=2) + "\\n", encoding="utf-8")
+                print(f"closed issue {args[2]}")
                 raise SystemExit(0)
             raise SystemExit(1)
             """
@@ -274,6 +294,56 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     assert "Restart the host if the previous version is still visible." in artifact_text
     assert "(tag `v0.0.1`)" in artifact_text
     assert "audit narrative: durable record written to" in artifact_text
+
+
+def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+
+    env = os.environ.copy()
+    env["PATH"] = f"{bin_dir}:{env['PATH']}"
+    env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
+    env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
+    env["FAKE_GH_ISSUE_STATE"] = str(tmp_path / "issue-state.json")
+    Path(env["FAKE_GH_ISSUE_STATE"]).write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/publish_release.py",
+            "--repo-root",
+            str(repo),
+            "--part",
+            "patch",
+            "--close-issue",
+            "44",
+            "--execute",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["issue_closeout"]["status"] == "verified"
+    assert payload["issue_closeout"]["issues"][0]["state"] == "CLOSED"
+    assert payload["issue_closeout_commit_sha"]
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    assert "## Issue Closeout" in artifact_text
+    assert "Issue closeout verification: `verified`." in artifact_text
+    assert "Issue #44: `CLOSED`" in artifact_text
+    commit_body = subprocess.run(
+        ["git", "log", "--format=%B", "-2"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    assert "Close #44." in commit_body
+    gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
+    assert ["issue", "view", "44", "--repo", "example/demo", "--json", "number,state,url"] in gh_log
+    assert any(entry[:5] == ["issue", "close", "44", "--repo", "example/demo"] for entry in gh_log)
 
 
 def test_publish_release_records_real_host_proof_for_unreleased_content(tmp_path: Path) -> None:

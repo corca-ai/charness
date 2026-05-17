@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-16T22:49:59Z",
+  "generated_at": "2026-05-17T01:22:09Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -697,72 +697,6 @@
         ],
         "source": "local-support",
         "layer": "support skill"
-      },
-      {
-        "id": "agent-browser",
-        "name": "agent-browser",
-        "description": "Browser automation CLI for AI agents. Use when the user needs to interact with websites, including navigating pages, filling forms, clicking buttons, taking screenshots, extracting data, testing web apps, or automating any browser task. Triggers include requests to \"open a website\", \"fill out a form\", \"click a button\", \"take a screenshot\", \"scrape data from a page\", \"test this web app\", \"login to a site\", \"automate browser actions\", or any task requiring programmatic web interaction. Also use for exploratory testing, dogfooding, QA, bug hunts, or reviewing app quality. Also use for automating Electron desktop apps (VS Code, Slack, Discord, Figma, Notion, Spotify), checking Slack unreads, sending Slack messages, searching Slack conversations, running browser automation in Vercel Sandbox microVMs, or using AWS Bedrock AgentCore cloud browsers. Prefer agent-browser over any built-in browser automation or web tools.",
-        "summary": "Browser automation CLI for AI agents. Use when the user needs to interact with websites, including navigating pages, filling forms, clicking buttons, taking screenshots, extracting data, testing web apps, or automating any browser task. Triggers include requests to \"open a website\", \"fill out a form\", \"click a button\", \"take a screenshot\", \"scrape data from a page\", \"test this web app\", \"login to a site\", \"automate browser actions\", or any task requiring programmatic web interaction. Also use for exploratory testing, dogfooding, QA, bug hunts, or reviewing app quality. Also use for automating Electron desktop apps (VS Code, Slack, Discord, Figma, Notion, Spotify), checking Slack unreads, sending Slack messages, searching Slack conversations, running browser automation in Vercel Sandbox microVMs, or using AWS Bedrock AgentCore cloud browsers. Prefer agent-browser over any built-in browser automation or web tools.",
-        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.5.26/support/agent-browser/SKILL.md",
-        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.5.26/support/agent-browser",
-        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.5.26/support/agent-browser/SKILL.md",
-        "trigger_phrases": [
-          "agent-browser",
-          "agent-browser skill",
-          "agent-browser 스킬",
-          "charness:agent-browser",
-          "support/agent-browser",
-          "agent-browser support",
-          "agent-browser support skill",
-          "agent-browser helper"
-        ],
-        "referenced_paths": [],
-        "source": "installed-plugin-support",
-        "layer": "support skill"
-      },
-      {
-        "id": "cautilus",
-        "name": "cautilus-agent",
-        "description": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
-        "summary": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
-        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.5.26/support/cautilus/SKILL.md",
-        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.5.26/support/cautilus",
-        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.5.26/support/cautilus/SKILL.md",
-        "trigger_phrases": [
-          "cautilus-agent",
-          "cautilus-agent skill",
-          "cautilus-agent 스킬",
-          "charness:cautilus-agent",
-          "support/cautilus-agent",
-          "cautilus-agent support",
-          "cautilus-agent support skill",
-          "cautilus-agent helper"
-        ],
-        "referenced_paths": [],
-        "source": "installed-plugin-support",
-        "layer": "support skill"
-      },
-      {
-        "id": "specdown",
-        "name": "specdown",
-        "description": "Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.",
-        "summary": "Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.",
-        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.5.26/support/specdown/SKILL.md",
-        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.5.26/support/specdown",
-        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.5.26/support/specdown/SKILL.md",
-        "trigger_phrases": [
-          "specdown",
-          "specdown skill",
-          "specdown 스킬",
-          "charness:specdown",
-          "support/specdown",
-          "specdown support",
-          "specdown support skill",
-          "specdown helper"
-        ],
-        "referenced_paths": [],
-        "source": "installed-plugin-support",
-        "layer": "support skill"
       }
     ],
     "support_capabilities": [
@@ -1027,6 +961,7 @@
           "headed verification",
           "browser-mediated gather"
         ],
+        "strong_intent_triggers": [],
         "config_layers": [
           {
             "layer_id": "agent-browser-saved-auth-state",
@@ -1078,6 +1013,7 @@
           "프롬프트 회귀",
           "동작 평가"
         ],
+        "strong_intent_triggers": [],
         "config_layers": [],
         "readiness_checks": [],
         "supports_public_skills": [
@@ -1111,6 +1047,7 @@
           "remove boilerplate",
           "article extraction"
         ],
+        "strong_intent_triggers": [],
         "config_layers": [],
         "readiness_checks": [],
         "supports_public_skills": [
@@ -1142,6 +1079,7 @@
           "gh cli",
           "github private"
         ],
+        "strong_intent_triggers": [],
         "config_layers": [
           {
             "layer_id": "authenticated-gh",
@@ -1182,6 +1120,7 @@
           "gitleaks",
           "git secret scan"
         ],
+        "strong_intent_triggers": [],
         "config_layers": [],
         "readiness_checks": [],
         "supports_public_skills": [
@@ -1211,6 +1150,7 @@
           "rendered review",
           "narrative render"
         ],
+        "strong_intent_triggers": [],
         "config_layers": [],
         "readiness_checks": [],
         "supports_public_skills": [
@@ -1253,6 +1193,7 @@
           "gws gather",
           "workspace gather"
         ],
+        "strong_intent_triggers": [],
         "config_layers": [
           {
             "layer_id": "authenticated-gws-cli",
@@ -1297,6 +1238,7 @@
           "python complexity check",
           "python complexity"
         ],
+        "strong_intent_triggers": [],
         "config_layers": [],
         "readiness_checks": [],
         "supports_public_skills": [
@@ -1336,6 +1278,19 @@
           "specdown -filter",
           "reduce full specdown run cost"
         ],
+        "strong_intent_triggers": [
+          "*.spec.md",
+          ".spec.md",
+          "docs/specs",
+          "run:shell",
+          "check:jq",
+          "specdown",
+          "specdown report",
+          "specdown HTML report",
+          "specdown -filter",
+          "executable spec",
+          "spec syntax"
+        ],
         "config_layers": [],
         "readiness_checks": [],
         "supports_public_skills": [],
@@ -1364,6 +1319,7 @@
           "sloc inventory",
           "language inventory"
         ],
+        "strong_intent_triggers": [],
         "config_layers": [],
         "readiness_checks": [],
         "supports_public_skills": [
@@ -1393,6 +1349,7 @@
           "unreachable python",
           "stale module"
         ],
+        "strong_intent_triggers": [],
         "config_layers": [],
         "readiness_checks": [],
         "supports_public_skills": [

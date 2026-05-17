@@ -18,9 +18,8 @@ issue, a local note, or a stale artifact over the target repository's current
 GitHub state.
 
 The skill resolves the issue backend through the adapter (default `gh`;
-host-mediated alternates like `ceal github` register their own backend).
-`preflight` reports `selected_backend` so non-`gh` backends substitute via
-`commands` rather than direct `gh`. See `references/issue-backend.md` and
+alternates like `ceal github` register backend commands). `preflight` reports
+`selected_backend`. See `references/issue-backend.md` and
 `../../shared/references/external-capability-proof-ladder.md`.
 
 ## Bootstrap
@@ -141,12 +140,13 @@ repo by created date. It must not use the current session's last created issue.
 10. Commit, push, and prefer GitHub auto-close via explicit close keywords
     (`Close #1. Close #2.`) in the PR body or direct-to-default commit body;
     preserve them in squash/merge bodies. Use `issue_tool.py close-with-comment`
-    only after auto-close is unsupported or fails after remote verification
-    (`gh issue close --comment-file` does not exist). The auto-close carrier or
-    manual close comment includes the closeout shape by classification:
+    only after auto-close is unsupported or fails after remote verification. The
+    carrier or manual comment includes the closeout shape by classification:
     - `bug`: JTBD, root cause, `Debug artifact: <path>` (or `none (trivial fix)` / `cite-only`), siblings (bundled/deferred+location), prevention
-    - `feature`/`deferred-work`: JTBD, boundary, `Resolution brief: <path>` (or `inline (no pause)` / `trivial`), implementation, prevention
+    - `feature`/`deferred-work`: JTBD, boundary, resolution brief, implementation, prevention
     - `question`/`decision-needed`: JTBD, the answer or recorded decision
+    Release-helper fixes pass `--close-issue <number>` and verify
+    `issue_closeout.status: verified`.
 
 ## Guardrails
 

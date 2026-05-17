@@ -93,6 +93,7 @@ def _scan_term(
     term: dict[str, Any],
     default_globs: list[str],
     default_exemption_globs: list[str],
+    default_files: list[Path],
 ) -> dict[str, Any]:
     term_id = term.get("id")
     canonical = term.get("canonical")
@@ -109,7 +110,11 @@ def _scan_term(
     exemption_globs = default_exemption_globs + _string_list(
         term.get("exemption_globs"), f"domain_language_contract.{term_id}.exemption_globs"
     )
-    files = _iter_files(repo_root, surface_globs or default_globs, exemption_globs)
+    files = (
+        default_files
+        if not surface_globs and exemption_globs == default_exemption_globs
+        else _iter_files(repo_root, surface_globs or default_globs, exemption_globs)
+    )
 
     file_rows: list[dict[str, Any]] = []
     deprecated_hits: list[dict[str, Any]] = []
@@ -164,8 +169,9 @@ def build_inventory(repo_root: Path, adapter_path: Path) -> dict[str, Any]:
     if not default_globs:
         default_globs = ["README.md", "docs/**/*.md", "skills/public/**/*.md"]
     default_exemption_globs = _string_list(contract.get("exemption_globs"), "domain_language_contract.exemption_globs")
+    default_files = _iter_files(repo_root, default_globs, default_exemption_globs)
     scanned_terms = [
-        _scan_term(repo_root, term, default_globs, default_exemption_globs)
+        _scan_term(repo_root, term, default_globs, default_exemption_globs, default_files)
         for term in terms
         if isinstance(term, dict)
     ]

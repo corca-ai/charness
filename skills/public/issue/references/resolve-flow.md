@@ -48,3 +48,6 @@ commit body before push. If the repository squashes or rewrites merge commits,
 verify the final merge body still contains the close keywords before treating
 the issue as closable. Manual close-with-comment is reserved for cases where
 auto-close is unsupported or did not close after the remote state was verified.
+If direct work is bundled into a release helper run, pass the resolved issue
+numbers to the helper and require its post-push issue verification payload
+before reporting the issue resolved.

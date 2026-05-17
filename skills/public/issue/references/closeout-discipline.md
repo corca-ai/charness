@@ -71,7 +71,15 @@ For direct-to-default work:
 Manual `issue_tool.py close-with-comment` is the fallback when auto-close is
 unsupported by the backend or failed after the pushed or merged remote state was
 verified. When manual close is used, say why auto-close was unavailable or
-insufficient.
+insufficient. The helper must re-read GitHub state after comment plus close and
+fail unless the final state is `CLOSED`; command success alone is not closeout.
+
+Release-driven direct-to-default work follows the same linkage. If the
+repo-owned release helper is used, pass resolved issue numbers with
+`--close-issue <number>` so the helper can place close keywords in the release
+commit body, verify GitHub issue state after the push and public release step,
+and manually close only when the issue remains open after remote verification.
+The closeout must name the carrier and the verified final issue state.
 
 ## External-Source Identity
 

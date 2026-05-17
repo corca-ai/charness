@@ -13,8 +13,9 @@ not as a new local runner inside Charness.
   task/log/source packet, and any repo-specific oracle.
 
 Do not build a second behavior-test runner in Charness. When a behavior seam
-needs evaluator-backed proof, name the Cautilus proof family and record whether
-the proof was executed, unavailable, blocked by policy, or recommend-only.
+needs evaluator-backed proof, name the Cautilus robustness contract and record
+whether the proof was executed, unavailable, blocked by policy, or
+recommend-only.
 
 ## When To Recommend
 
@@ -45,17 +46,36 @@ A quality recommendation should include:
 - why deterministic proof is insufficient
 - likely Cautilus mode: `fixture`, `observation`, or `skill-experiment`
 - source packet or missing source packet
-- expected result artifact fields the repo needs to preserve
+- Cautilus packet target: `cautilus.robustness_request.v1`,
+  `cautilus.robustness_plan.v1`, or `cautilus.robustness_report.v1`
+- expected relation such as `preserve_behavior`, `surface_failure`, `recover`,
+  `clarify`, or `refuse`
+- expected result artifact fields the repo needs to preserve, including
+  relation status (`satisfied`, `violated`, `blocked`, `invalid`, or
+  `inconclusive`), reason codes, limitations, recommendation, and next actions
 - current state: `executed`, `recommend_only`, `blocked`, or `unavailable`
+
+Use the helper when a quality run needs a structured recommend-only finding:
+
+```bash
+python3 "$SKILL_DIR/scripts/recommend_behavior_test.py" \
+  --behavior-seam handoff-resumption \
+  --subject-ref skills/public/handoff/SKILL.md \
+  --risk-focus "resumption after compacted or interrupted work" \
+  --deterministic-gap "static docs cannot prove multi-turn recovery behavior" \
+  --source-evidence-ref <gathered-or-local-source-ref> \
+  --mutation-kind stimulus \
+  --markdown
+```
 
 For this repo, live execution still follows
 [cautilus-on-demand.md](./cautilus-on-demand.md): consult the planner first and
 use `scripts/run_cautilus_eval.py` only with an explicit log-backed behavior
 source. Routine quality review can recommend a proof without running it.
 
-## Open Cautilus Contract
+## Cautilus Contract
 
-The stable consumer result shape is intentionally delegated to Cautilus. Track
-the upstream contract in
-[corca-ai/cautilus#44](https://github.com/corca-ai/cautilus/issues/44) before
-turning this recommendation into adapter fields or stricter local validators.
+The stable consumer result shape is owned by Cautilus and was settled in
+[corca-ai/cautilus#44](https://github.com/corca-ai/cautilus/issues/44). The
+contract is documented in Cautilus `docs/contracts/robustness-evaluation.md`
+and uses request, plan, and report packets instead of a Charness-owned runner.

@@ -54,16 +54,29 @@ This slice is a design and routing slice, not a live evaluator implementation.
      scenario-backed tests, or Cautilus behavior proof depending on what they
      actually protect.
 
+## Settled Upstream Contract
+
+Cautilus #44 closed on 2026-05-17 with the robustness evaluation contract in
+Cautilus `docs/contracts/robustness-evaluation.md`. Charness now targets the
+Cautilus-owned packet vocabulary:
+
+- `cautilus.robustness_request.v1`
+- `cautilus.robustness_plan.v1`
+- `cautilus.robustness_report.v1`
+
+Charness still does not own mutation-case generation, replay, evaluator
+execution, or report interpretation. The first local implementation is the
+recommend-only quality helper in
+`skills/public/quality/scripts/recommend_behavior_test.py`.
+
 ## Probe Questions
 
-1. What machine-readable result fields will Cautilus expose for consumer
-   quality artifacts?
-2. Should Charness add adapter fields such as `behavior_testing.declined`,
+1. Should Charness add adapter fields such as `behavior_testing.declined`,
    `behavior_testing.surfaces`, or `behavior_testing.preferred_mode`, or wait
-   until Cautilus #44 settles?
-3. Can `quality` ship a read-only inventory that flags likely behavior seams
+   for repeated installed-repo observations?
+2. Can `quality` ship a read-only inventory that flags likely behavior seams
    without producing noisy recommendations?
-4. Which Charness dogfood seam should be the first recommend-only fixture:
+3. Which Charness dogfood seam should be the first recommend-only fixture:
    routing robustness, handoff/resumption, skill-clone regression, or
    source-coverage behavior?
 
@@ -140,12 +153,11 @@ recommendation design.
 
 ## Canonical Artifact
 
-This file is the canonical Charness-side contract for #168 until Cautilus #44
-settles a consumer-facing behavior-test contract.
+This file is the canonical Charness-side contract for #168 now that Cautilus
+#44 has settled the consumer-facing robustness packet contract.
 
 ## First Implementation Slice
 
-After Cautilus #44 is resolved, add the smallest `quality` implementation that
-can emit a recommend-only behavior-test finding for one dogfooded seam, with
-artifact fields that distinguish executed proof from missing or policy-blocked
-proof.
+The first implementation slice adds the smallest `quality` helper that can emit
+a recommend-only behavior-test finding for one dogfooded seam, with artifact
+fields that distinguish executed proof from missing or policy-blocked proof.

@@ -126,6 +126,20 @@ def unreleased_paths(repo_root: Path, *, remote: str, branch: str) -> list[str]:
     return [line for line in result.stdout.splitlines() if line.strip()]
 
 
+def issue_closeout_lines(issue_closeout: dict[str, Any] | None) -> list[str]:
+    lines = ["", "## Issue Closeout", ""]
+    if issue_closeout is None:
+        return lines + ["- Issue closeout verification: pending or not requested."]
+    if issue_closeout.get("status") != "verified":
+        return lines + [f"- Issue closeout verification: `{issue_closeout.get('status')}`."]
+    lines.append(f"- Issue closeout verification: `{issue_closeout.get('status')}`.")
+    if repo := issue_closeout.get("repo"):
+        lines.append(f"- GitHub repo: `{repo}`")
+    for issue in issue_closeout.get("issues", []):
+        lines.append(f"- Issue #{issue.get('number')}: `{issue.get('state')}` ({issue.get('url')})")
+    return lines
+
+
 def write_release_artifact(
     repo_root: Path,
     *,
@@ -140,6 +154,7 @@ def write_release_artifact(
     update_instructions: list[str],
     real_host_payload: dict[str, Any],
     fresh_checkout_payload: dict[str, Any] | None = None,
+    issue_closeout: dict[str, Any] | None = None,
     quality_status: str = "passed before publish",
     tag_name: str | None = None,
 ) -> str:
@@ -211,9 +226,8 @@ def write_release_artifact(
         lines.append(f"- Fresh-checkout probe status: {fresh_checkout_payload.get('status')}.")
         for command in fresh_checkout_payload.get("fresh_checkout_probes", []):
             lines.append(f"- `{command}`")
-    user_update_steps = update_instructions or [
-        "Document the operator-facing refresh path before calling the release fully closed.",
-    ]
+    lines.extend(issue_closeout_lines(issue_closeout))
+    user_update_steps = update_instructions or ["Document the operator-facing refresh path before calling the release fully closed."]
     lines.extend(
         [
             "",

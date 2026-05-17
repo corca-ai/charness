@@ -30,6 +30,7 @@ _check_review_gate = SKILL_RUNTIME.load_local_skill_module(__file__, "check_requ
 _fresh_checkout = SKILL_RUNTIME.load_local_skill_module(__file__, "check_fresh_checkout_probes")
 _helpers = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_helpers")
 _audit_narrative = SKILL_RUNTIME.load_local_skill_module(__file__, "audit_public_release_narrative")
+_issue_closeout = SKILL_RUNTIME.load_local_skill_module(__file__, "release_issue_closeout")
 load_adapter = _resolve_adapter.load_adapter
 build_release_payload = _current_release.build_payload
 bump_part = _bump_version.bump_part
@@ -47,6 +48,10 @@ changed_paths = _helpers.changed_paths
 unreleased_paths = _helpers.unreleased_paths
 write_release_artifact = _helpers.write_release_artifact
 backend_command = _helpers.backend_command
+github_repo_slug = _issue_closeout.github_repo_slug
+release_commit_body = _issue_closeout.release_commit_body
+ensure_release_issues_closed = _issue_closeout.ensure_release_issues_closed
+commit_issue_closeout_artifact = _issue_closeout.commit_issue_closeout_artifact
 
 
 def parse_args() -> argparse.Namespace:
@@ -55,6 +60,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--remote", default="origin")
     parser.add_argument("--title")
     parser.add_argument("--notes-file", type=Path)
+    parser.add_argument("--close-issue", action="append", type=int, default=[])
+    parser.add_argument("--close-issue-repo")
     parser.add_argument("--execute", action="store_true")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--publish-current", action="store_true")
@@ -121,13 +128,14 @@ def write_current_artifact(
     host_payload: dict[str, Any], *, quality_status: str = "passed before publish",
     fresh_checkout_payload: dict[str, Any] | None = None,
     release_url: str | None = None,
+    issue_closeout: dict[str, Any] | None = None,
 ) -> str:
     return write_release_artifact(
         repo_root, output_dir=adapter_data["output_dir"], package_id=adapter_data["package_id"],
         previous_version=payload["previous_version"], target_version=payload["target_version"], remote=payload["remote"],
         branch=payload["branch"], quality_command=adapter_data["quality_command"], release_url=release_url,
         update_instructions=adapter_data["update_instructions"], real_host_payload=host_payload,
-        fresh_checkout_payload=fresh_checkout_payload, quality_status=quality_status,
+        fresh_checkout_payload=fresh_checkout_payload, issue_closeout=issue_closeout, quality_status=quality_status,
         tag_name=payload["tag_name"],
     )
 
@@ -223,6 +231,18 @@ def finalize_release_payload(
         )
 
 
+def create_release(repo_root: Path, backend: dict[str, Any], *, tag_name: str, title: str, notes_file: Path | None):
+    release_command = backend_command(
+        backend,
+        "release_create",
+        ["gh", "release", "create", "{tag}", "--verify-tag", "--title", "{title}"],
+        tag=tag_name,
+        title=title,
+    )
+    release_command.extend(["--notes-file", str(notes_file.resolve())] if notes_file else ["--generate-notes"])
+    return run(release_command, cwd=repo_root)
+
+
 def main() -> None:
     args = parse_args()
     repo_root = args.repo_root.resolve()
@@ -249,11 +269,14 @@ def main() -> None:
     if release_exists(repo_root, tag_name, backend):
         raise SystemExit(f"GitHub release `{tag_name}` already exists")
     release_content_paths = unreleased_paths(repo_root, remote=args.remote, branch=branch)
+    issue_repo = args.close_issue_repo or github_repo_slug(repo_root, backend, run=run)
 
     payload = build_publish_payload(
         args, adapter_data, current_version=current_version, next_version=next_version,
         branch=branch, tag_name=tag_name, title=title,
     )
+    payload["close_issue_numbers"] = args.close_issue
+    payload["close_issue_repo"] = issue_repo
     if not args.execute:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return
@@ -270,26 +293,28 @@ def main() -> None:
     host_payload = safe_real_host_payload(repo_root, sorted(set(release_content_paths + changed_paths(repo_root))))
     fresh_checkout_plan = build_fresh_checkout_payload(repo_root, run_probes=False)
     write_current_artifact(
-        repo_root, adapter_data, payload, host_payload=host_payload,
+        repo_root, adapter_data, payload, host_payload=host_payload, release_url=expected_release_url,
         quality_status="is queued for this publish attempt", fresh_checkout_payload=fresh_checkout_plan,
-        release_url=expected_release_url,
     )
     run_requested_review_gate(repo_root)
     run_cli_skill_surface_gate(repo_root, adapter_data)
     run_shell(str(adapter_data["quality_command"]), cwd=repo_root)
     artifact_relpath = write_current_artifact(
-        repo_root, adapter_data, payload, host_payload,
-        fresh_checkout_payload=fresh_checkout_plan, release_url=expected_release_url,
+        repo_root, adapter_data, payload, host_payload, fresh_checkout_payload=fresh_checkout_plan,
+        release_url=expected_release_url,
     )
     run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
     run(["git", "add", "-A"], cwd=repo_root)
-    run(["git", "commit", "-m", payload["commit_message"]], cwd=repo_root)
+    commit_command = ["git", "commit", "-m", payload["commit_message"]]
+    for body_line in release_commit_body(payload, args.close_issue):
+        commit_command.extend(["-m", body_line])
+    run(commit_command, cwd=repo_root)
     fresh_checkout_payload = run_fresh_checkout_probes(repo_root)
     payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
     if fresh_checkout_payload["status"] == "passed":
         write_current_artifact(
-            repo_root, adapter_data, payload, host_payload,
-            fresh_checkout_payload=fresh_checkout_payload, release_url=expected_release_url,
+            repo_root, adapter_data, payload, host_payload, fresh_checkout_payload=fresh_checkout_payload,
+            release_url=expected_release_url,
         )
         run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
         run(["git", "add", artifact_relpath], cwd=repo_root)
@@ -299,17 +324,19 @@ def main() -> None:
     run(["git", "tag", tag_name], cwd=repo_root)
     run(["git", "push", args.remote, branch, tag_name], cwd=repo_root)
 
-    release_command = backend_command(
-        backend,
-        "release_create",
-        ["gh", "release", "create", "{tag}", "--verify-tag", "--title", "{title}"],
-        tag=tag_name,
-        title=title,
-    )
-    release_command.extend(["--notes-file", str(args.notes_file.resolve())] if args.notes_file else ["--generate-notes"])
-    release_result = run(release_command, cwd=repo_root)
+    release_result = create_release(repo_root, backend, tag_name=tag_name, title=title, notes_file=notes_file)
     finalize_release_payload(
         repo_root, payload, artifact_relpath=artifact_relpath, host_payload=host_payload,
         release_stdout=release_result.stdout, expected_release_url=expected_release_url,
     )
+    ensure_release_issues_closed(repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=run)
+    if args.close_issue:
+        def writer(**kwargs):
+            return write_current_artifact(repo_root, adapter_data, payload, host_payload, **kwargs)
+
+        commit_issue_closeout_artifact(
+            repo_root, write_artifact=writer, payload=payload, fresh_checkout_payload=fresh_checkout_payload,
+            artifact_relpath=artifact_relpath, expected_release_url=expected_release_url,
+            remote=args.remote, branch=branch, run=run,
+        )
     print(json.dumps(payload, ensure_ascii=False, indent=2))

@@ -9,18 +9,15 @@ Use this when the task is to advance or verify a repo-owned release surface,
 not just to describe recent changes.
 
 `release` is the maintainer-facing workflow for versioned plugin or package
-surfaces that ship checked-in install metadata. It should keep one repo's
-release contract honest instead of improvising version bumps, CLI update
-advice, or generated-file edits by hand.
-Every task-completing release slice records critique before closeout. Scale
-the pass, not the obligation. Routine release hygiene may use a short scoped
-critique; compatibility, install/update, deletion, host-proof, or public
-visibility decisions use standalone `critique` before mutating versions.
+surfaces that ship checked-in install metadata. It keeps release contracts
+honest instead of improvising bumps, update advice, or generated-file edits.
+Every task-completing release slice records critique before closeout. Routine
+hygiene may use a short scoped critique; compatibility, install/update,
+deletion, host-proof, or public visibility decisions use standalone `critique`.
 
 ## Bootstrap
 
-Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then
-resolve the adapter first.
+Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then resolve the adapter first.
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
@@ -82,9 +79,8 @@ verified.
    - record `Critique: short <scope>` for routine release hygiene focused on version drift, generated surfaces, publish boundary, and operator risk
    - record `Critique: full <artifact-or-subagent-status>` after standalone `critique` when compatibility, install/update, deletion, host-proof, or public visibility could be misread
    - use `Critique: not-applicable <reason>` only for inspect/status/routing-only release requests that do not mutate or close repo work
-   - if the required critique is blocked because the host cannot provide
-     subagents after the capability check, stop and record
-     `Critique: blocked <host-signal>` instead of continuing the release slice
+   - if required critique is blocked because the host cannot provide subagents,
+     stop and record `Critique: blocked <host-signal>` instead of continuing
 4. Choose the lightest honest bump.
    - patch for bug fixes, copy fixes, and behavior repairs
    - minor for new maintained capability or additive operator surface
@@ -131,6 +127,9 @@ verified.
      URL when available) per `../../shared/references/closeout-discipline.md`;
      once the target package is named, treat it as durable workflow state
      and surface `target_unavailable` instead of silently retargeting
+   - when the release resolves GitHub issues, pass `--close-issue <number>` so
+     the helper writes close keywords, verifies GitHub state after push/release
+     publication, and manually closes only if auto-close did not take effect
 8. End with operator-facing update steps.
    - how operators refresh the managed `charness` install
    - what Claude and Codex still need after `charness update`
@@ -157,6 +156,8 @@ The result should usually include:
 - Do not hand-edit generated plugin manifests when the repo has a sync helper.
 - Do not bump a version without stating why that bump level is justified.
 - Do not push, tag, or announce a release without explicit user confirmation.
+- Do not report a release-linked issue as resolved until GitHub state verifies it
+  closed via close-keyword carrier or manual fallback after remote verification.
 - Do not leave a repo that treats version bumps as published releases stuck in a
   push-only state; encode that boundary in one repo-owned publish helper.
 - Do not treat `tag pushed`, publish-helper success, workflow completion, and

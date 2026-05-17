@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import subprocess
 from pathlib import Path
@@ -24,9 +25,19 @@ GH_CLOSE_DEFAULT = [
     "--reason",
     "{reason}",
 ]
+GH_VIEW_DEFAULT = [
+    "issue",
+    "view",
+    "--repo",
+    "{repo}",
+    "{number}",
+    "--json",
+    "number,state,url",
+]
 
 COMMENT_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "body_file", "reason"})
 CLOSE_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "reason"})
+VIEW_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number"})
 
 _PLACEHOLDER_RE = re.compile(r"\{([a-z_]+)\}")
 
@@ -100,6 +111,22 @@ def close_with_comment(
         number=str(number),
         reason=reason,
     )
+    commands = backend.get("commands") or {}
+    view_argv = None
+    if backend.get("id", "gh") != "gh" and commands.get("view") is None:
+        raise RuntimeError(
+            "close state verification requires backend commands.view; "
+            "comment plus close command success is not issue closeout"
+        )
+    if backend.get("id", "gh") == "gh" or commands.get("view") is not None:
+        view_argv = _resolve_op(
+            backend,
+            "view",
+            GH_VIEW_DEFAULT,
+            VIEW_PLACEHOLDERS,
+            repo=repo,
+            number=str(number),
+        )
     comment_result = subprocess.run(comment_argv, check=False, capture_output=True, text=True)
     if comment_result.returncode != 0:
         raise RuntimeError(
@@ -112,11 +139,29 @@ def close_with_comment(
             f"comment_succeeded=True comment_argv={comment_argv!r} "
             f"close_exit={close_result.returncode} close_stderr={close_result.stderr.strip()!r}"
         )
+    verified_state: dict[str, Any] | None = None
+    if view_argv is not None:
+        view_result = subprocess.run(view_argv, check=False, capture_output=True, text=True)
+        if view_result.returncode != 0:
+            raise RuntimeError(
+                "close state verification failed after close command succeeded; "
+                f"view_exit={view_result.returncode} view_stderr={view_result.stderr.strip()!r}"
+            )
+        try:
+            verified_state = json.loads(view_result.stdout)
+        except Exception as exc:
+            raise RuntimeError(f"close state verification returned invalid JSON: {exc}") from exc
+        if verified_state.get("state") != "CLOSED":
+            raise RuntimeError(
+                f"close state verification failed: {repo}#{number} is {verified_state.get('state')!r}"
+            )
     return {
         "ok": True,
         "repo": repo,
         "number": number,
         "comment_argv": comment_argv,
         "close_argv": close_argv,
+        "view_argv": view_argv,
+        "verified_state": verified_state,
         "reason": reason,
     }

@@ -84,6 +84,8 @@ recent-median drift and report latest-sample spikes separately.
   `references/agent-production-runtime.md`
 - behavior-proof recommendation:
   `references/behavior-testing.md`
+- structured recommend-only behavior finding:
+  `$SKILL_DIR/scripts/recommend_behavior_test.py`
 - external provider proof level:
   `../../../shared/references/external-capability-proof-ladder.md`
 

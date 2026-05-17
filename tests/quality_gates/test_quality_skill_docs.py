@@ -280,6 +280,25 @@ def test_quality_agent_runtime_dispatch_mirrors_canonical_boundary() -> None:
     assert "product-policy decision" in dispatch
 
 
+def test_quality_behavior_testing_uses_cautilus_robustness_contract() -> None:
+    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    behavior = (
+        ROOT / "skills" / "public" / "quality" / "references" / "behavior-testing.md"
+    ).read_text(encoding="utf-8")
+    proposal = (
+        ROOT / "skills" / "public" / "quality" / "references" / "proposal-flow.md"
+    ).read_text(encoding="utf-8")
+
+    assert "$SKILL_DIR/scripts/recommend_behavior_test.py" in skill_text
+    assert "cautilus.robustness_request.v1" in behavior
+    assert "cautilus.robustness_plan.v1" in behavior
+    assert "cautilus.robustness_report.v1" in behavior
+    assert "preserve_behavior" in behavior
+    assert "relation status (`satisfied`, `violated`, `blocked`, `invalid`, or" in behavior
+    assert "cautilus#44" in behavior.lower()
+    assert "They remain recommend-only unless the user supplies an" in proposal
+
+
 def test_quality_skill_routes_spec_markdown_to_specdown_report() -> None:
     skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
     markdown_preview = (ROOT / "skills" / "support" / "markdown-preview" / "SKILL.md").read_text(encoding="utf-8")

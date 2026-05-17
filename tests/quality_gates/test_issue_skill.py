@@ -270,6 +270,7 @@ def test_issue_close_with_comment_runs_adapter_comment_then_close(tmp_path: Path
                 "log.write_text(json.dumps(entries))",
                 "if 'comment' in sys.argv: print('commented')",
                 "if 'close' in sys.argv: print('closed')",
+                "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42'}))",
                 "",
             ]
         ),
@@ -301,6 +302,49 @@ def test_issue_close_with_comment_runs_adapter_comment_then_close(tmp_path: Path
     entries = json.loads(log.read_text(encoding="utf-8"))
     assert ["issue", "comment", "--repo", "corca-ai/charness", "42", "--body-file", str(body)] in entries
     assert ["issue", "close", "--repo", "corca-ai/charness", "42", "--reason", "completed"] in entries
+    assert ["issue", "view", "--repo", "corca-ai/charness", "42", "--json", "number,state,url"] in entries
+    assert payload["verified_state"]["state"] == "CLOSED"
+
+
+def test_issue_close_with_comment_fails_when_final_state_remains_open(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake = bin_dir / "gh"
+    fake.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import json, sys",
+                "if 'comment' in sys.argv: print('commented')",
+                "if 'close' in sys.argv: print('closed')",
+                "if 'view' in sys.argv: print(json.dumps({'number': 42, 'state': 'OPEN', 'url': 'https://example.test/42'}))",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    body = tmp_path / "body.md"
+    body.write_text("Body.\n", encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "close-with-comment",
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "42",
+        "--body-file",
+        str(body),
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+    )
+
+    assert result.returncode == 2, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "is 'OPEN'" in payload["error"]
 
 
 def test_issue_close_with_comment_surfaces_partial_state_when_close_fails(tmp_path: Path) -> None:
@@ -361,6 +405,7 @@ def test_issue_close_with_comment_uses_adapter_template(tmp_path: Path) -> None:
                 "entries = json.loads(log.read_text()) if log.exists() else []",
                 "entries.append(sys.argv[1:])",
                 "log.write_text(json.dumps(entries))",
+                "if 'view' in sys.argv: print(json.dumps({'number': 7, 'state': 'CLOSED', 'url': 'https://example.test/7'}))",
                 "",
             ]
         ),
@@ -391,6 +436,15 @@ def test_issue_close_with_comment_uses_adapter_template(tmp_path: Path) -> None:
                 "      - '{number}'",
                 "      - '--reason'",
                 "      - '{reason}'",
+                "    view:",
+                "      - github",
+                "      - issue",
+                "      - view",
+                "      - '-R'",
+                "      - '{repo}'",
+                "      - '{number}'",
+                "      - '--json'",
+                "      - number,state,url",
                 "",
             ]
         ),
@@ -417,6 +471,57 @@ def test_issue_close_with_comment_uses_adapter_template(tmp_path: Path) -> None:
     entries = json.loads(log.read_text(encoding="utf-8"))
     assert ["github", "issue", "comment", "-R", "corca-ai/charness", "7", "--body-file", str(body)] in entries
     assert ["github", "issue", "close", "-R", "corca-ai/charness", "7", "--reason", "completed"] in entries
+    assert ["github", "issue", "view", "-R", "corca-ai/charness", "7", "--json", "number,state,url"] in entries
+
+
+def test_issue_close_with_comment_requires_adapter_view_template(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake = bin_dir / "ceal"
+    fake.write_text("#!/usr/bin/env sh\nexit 0\n", encoding="utf-8")
+    fake.chmod(0o755)
+    _write_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "\n".join(
+            [
+                "    comment:",
+                "      - github",
+                "      - issue",
+                "      - comment",
+                "      - '{number}'",
+                "    close:",
+                "      - github",
+                "      - issue",
+                "      - close",
+                "      - '{number}'",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    body = tmp_path / "body.md"
+    body.write_text("Body.\n", encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "close-with-comment",
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "7",
+        "--body-file",
+        str(body),
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+    )
+
+    assert result.returncode == 2, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "requires backend commands.view" in payload["error"]
 
 
 def test_issue_close_with_comment_substitutes_reason_when_adapter_comment_uses_it(
@@ -436,6 +541,7 @@ def test_issue_close_with_comment_substitutes_reason_when_adapter_comment_uses_i
                 "entries = json.loads(log.read_text()) if log.exists() else []",
                 "entries.append(sys.argv[1:])",
                 "log.write_text(json.dumps(entries))",
+                "if 'view' in sys.argv: print(json.dumps({'number': 11, 'state': 'CLOSED', 'url': 'https://example.test/11'}))",
                 "",
             ]
         ),
@@ -468,6 +574,15 @@ def test_issue_close_with_comment_substitutes_reason_when_adapter_comment_uses_i
                 "      - '{number}'",
                 "      - '--reason'",
                 "      - '{reason}'",
+                "    view:",
+                "      - github",
+                "      - issue",
+                "      - view",
+                "      - '-R'",
+                "      - '{repo}'",
+                "      - '{number}'",
+                "      - '--json'",
+                "      - number,state,url",
                 "",
             ]
         ),

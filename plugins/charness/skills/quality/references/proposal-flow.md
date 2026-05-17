@@ -61,9 +61,10 @@ active recommendations:
   workflow template when the consumer has not opted in. See
   `mutation-testing.md` for the protocol and the `--execute` install flow.
 
-Behavior-test recommendations are recommend-only until the Cautilus consumer
-contract is stable. See `behavior-testing.md`; do not install a Charness-owned
-runner for this class of proof.
+Behavior-test recommendations use the Cautilus robustness contract in
+`behavior-testing.md`. They remain recommend-only unless the user supplies an
+explicit log-backed behavior source and the Cautilus planner allows execution;
+do not install a Charness-owned runner for this class of proof.
 
 Skip adapter-driven probes entirely when validator errors are non-empty;
 their output is not meaningful against a broken adapter.
