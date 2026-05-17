@@ -3,12 +3,12 @@ Date: 2026-05-17
 
 ## Scope
 
-Advanced `charness` toward release `0.6.0` (tag `v0.6.0`) through the repo-owned release helper.
+Advanced `charness` toward release `0.7.0` (tag `v0.7.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.5.34`
-- target version: `0.6.0`
+- previous version: `0.6.0`
+- target version: `0.7.0`
 - git branch: `main`
 - git remote: `origin`
 
@@ -22,7 +22,7 @@ Advanced `charness` toward release `0.6.0` (tag `v0.6.0`) through the repo-owned
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.6.0`; creation runs after the branch/tag push
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.7.0`; creation runs after the branch/tag push
 - public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
@@ -45,11 +45,7 @@ Advanced `charness` toward release `0.6.0` (tag `v0.6.0`) through the repo-owned
 
 ## Issue Closeout
 
-- Issue closeout verification: `verified`.
-- GitHub repo: `corca-ai/charness`
-- Issue #171: `CLOSED` (https://github.com/corca-ai/charness/issues/171)
-  - carrier: `direct_release_commit_body`
-  - manual fallback used: `False`
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
