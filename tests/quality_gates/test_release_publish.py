@@ -186,6 +186,9 @@ def _write_fake_gh(bin_dir: Path) -> None:
                 print(f"https://github.com/example/demo/releases/tag/{tag}")
                 raise SystemExit(0)
             if args[:2] == ["issue", "view"]:
+                if os.environ.get("FAKE_GH_ISSUE_VIEW_FAIL") == "1":
+                    print("issue view failed", file=sys.stderr)
+                    raise SystemExit(1)
                 state_path = Path(os.environ["FAKE_GH_ISSUE_STATE"])
                 state = json.loads(state_path.read_text(encoding="utf-8"))
                 number = args[2]
@@ -326,13 +329,20 @@ def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path:
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
+    assert payload["issue_closeout_preflight"]["status"] == "verified"
+    assert payload["issue_closeout_preflight"]["issues"][0]["state"] == "OPEN"
     assert payload["issue_closeout"]["status"] == "verified"
     assert payload["issue_closeout"]["issues"][0]["state"] == "CLOSED"
+    assert payload["issue_closeout"]["issues"][0]["preflight_state"] == "OPEN"
+    assert payload["issue_closeout"]["issues"][0]["carrier"] == "direct_release_commit_body"
+    assert payload["issue_closeout"]["issues"][0]["manual_fallback_used"] is True
     assert payload["issue_closeout_commit_sha"]
     artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
     assert "## Issue Closeout" in artifact_text
     assert "Issue closeout verification: `verified`." in artifact_text
     assert "Issue #44: `CLOSED`" in artifact_text
+    assert "carrier: `direct_release_commit_body`" in artifact_text
+    assert "manual fallback used: `True`" in artifact_text
     commit_body = subprocess.run(
         ["git", "log", "--format=%B", "-2"],
         cwd=repo,
@@ -344,6 +354,13 @@ def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path:
     gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
     assert ["issue", "view", "44", "--repo", "example/demo", "--json", "number,state,url"] in gh_log
     assert any(entry[:5] == ["issue", "close", "44", "--repo", "example/demo"] for entry in gh_log)
+    release_create_index = next(index for index, entry in enumerate(gh_log) if entry[:2] == ["release", "create"])
+    issue_view_indexes = [
+        index for index, entry in enumerate(gh_log)
+        if entry == ["issue", "view", "44", "--repo", "example/demo", "--json", "number,state,url"]
+    ]
+    assert issue_view_indexes[0] < release_create_index
+    assert issue_view_indexes[-1] > release_create_index
 
 
 def test_publish_release_records_real_host_proof_for_unreleased_content(tmp_path: Path) -> None:

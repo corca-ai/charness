@@ -128,8 +128,8 @@ verified.
      once the target package is named, treat it as durable workflow state
      and surface `target_unavailable` instead of silently retargeting
    - when the release resolves GitHub issues, pass `--close-issue <number>` so
-     the helper writes close keywords, verifies GitHub state after push/release
-     publication, and manually closes only if auto-close did not take effect
+     the helper preflights `gh issue view`, writes close keywords, verifies
+     GitHub state after publication, and manually closes only if needed
 8. End with operator-facing update steps.
    - how operators refresh the managed `charness` install
    - what Claude and Codex still need after `charness update`
@@ -156,8 +156,8 @@ The result should usually include:
 - Do not hand-edit generated plugin manifests when the repo has a sync helper.
 - Do not bump a version without stating why that bump level is justified.
 - Do not push, tag, or announce a release without explicit user confirmation.
-- Do not report a release-linked issue as resolved until GitHub state verifies it
-  closed via close-keyword carrier or manual fallback after remote verification.
+- Do not report a release-linked issue as resolved until GitHub verifies it closed via close-keyword carrier or manual fallback.
+- Do not use `--close-issue` unless target issues are reachable through authenticated `gh`; fail before release mutation when they are not.
 - Do not leave a repo that treats version bumps as published releases stuck in a
   push-only state; encode that boundary in one repo-owned publish helper.
 - Do not treat `tag pushed`, publish-helper success, workflow completion, and

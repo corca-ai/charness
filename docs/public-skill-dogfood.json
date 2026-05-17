@@ -340,7 +340,7 @@
         "`check_requested_review_gate.py` blocks publish when a configured requested-review command fails or when the release record says review was unavailable without an explicit review waiver.",
         "`publish_release_helpers.backend_command` now enforces a per-op placeholder allowlist at runtime: `release_view` accepts `{tag}`, `release_create` accepts `{tag}` and `{title}`, and `auth_check` accepts none. Adapter templates with unknown placeholders fail fast with the offending placeholder named, mirroring the issue-backend `_resolve_op` hardening so both backend surfaces share the same shape.",
         "`fresh_checkout_probes` is now part of the release adapter contract: `current_release.py` reports whether probes are configured, and `publish_release.py --execute` runs declared probes in a temporary fresh clone after the release commit and before tag push or release creation.",
-        "`publish_release.py --execute --close-issue <number>` now puts close keywords in the direct release commit body, verifies GitHub issue state after push and release creation, and performs a manual close with release/commit evidence only if auto-close did not close the issue."
+        "`publish_release.py --execute --close-issue <number>` now preflights `gh issue view` before release mutation, puts close keywords in the direct release commit body, verifies GitHub issue state after push and release creation, records the carrier/manual-fallback evidence, and performs a manual close only if auto-close did not close the issue."
       ]
     },
     {

@@ -51,6 +51,7 @@ backend_command = _helpers.backend_command
 github_repo_slug = _issue_closeout.github_repo_slug
 release_commit_body = _issue_closeout.release_commit_body
 ensure_release_issues_closed = _issue_closeout.ensure_release_issues_closed
+preflight_release_issues = _issue_closeout.preflight_release_issues
 commit_issue_closeout_artifact = _issue_closeout.commit_issue_closeout_artifact
 
 
@@ -287,6 +288,7 @@ def main() -> None:
     run(backend_command(backend, "auth_check", ["gh", "auth", "status"]), cwd=repo_root)
     expected_release_url = expected_github_release_url(repo_root, backend, tag_name)
     payload["expected_release_url"] = expected_release_url
+    preflight_release_issues(repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=run)
     run_bump(args, repo_root)
     ensure_release_surface(repo_root, next_version)
 

@@ -137,6 +137,8 @@ def issue_closeout_lines(issue_closeout: dict[str, Any] | None) -> list[str]:
         lines.append(f"- GitHub repo: `{repo}`")
     for issue in issue_closeout.get("issues", []):
         lines.append(f"- Issue #{issue.get('number')}: `{issue.get('state')}` ({issue.get('url')})")
+        lines.append(f"  - carrier: `{issue.get('carrier')}`")
+        lines.append(f"  - manual fallback used: `{issue.get('manual_fallback_used')}`")
     return lines
 
 

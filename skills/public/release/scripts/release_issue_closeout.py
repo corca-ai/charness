@@ -5,6 +5,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+ISSUE_CLOSEOUT_CARRIER = "direct_release_commit_body"
+
 
 def github_repo_slug(repo_root: Path, backend: dict[str, Any], *, run) -> str | None:
     if backend.get("id", "gh") != "gh":
@@ -41,6 +43,47 @@ def issue_state(repo_root: Path, repo: str, number: int, *, run) -> dict[str, An
     return json.loads(result.stdout)
 
 
+def preflight_release_issues(
+    repo_root: Path,
+    *,
+    repo: str | None,
+    issue_numbers: list[int],
+    payload: dict[str, Any],
+    run,
+) -> None:
+    if not issue_numbers:
+        payload["issue_closeout_preflight"] = {"status": "not_requested", "issues": []}
+        return
+    if repo is None:
+        raise SystemExit(
+            "release --close-issue requires a GitHub repo before mutation; "
+            "pass --close-issue-repo or use a gh-backed release repository"
+        )
+    verified: list[dict[str, Any]] = []
+    for number in issue_numbers:
+        try:
+            state_payload = issue_state(repo_root, repo, number, run=run)
+        except (SystemExit, OSError, json.JSONDecodeError) as exc:
+            raise SystemExit(
+                "release --close-issue preflight failed before mutation; "
+                f"`gh issue view {number} --repo {repo}` must succeed.\n{exc}"
+            ) from exc
+        verified.append(
+            {
+                "number": state_payload.get("number", number),
+                "state": state_payload.get("state"),
+                "url": state_payload.get("url"),
+                "carrier": ISSUE_CLOSEOUT_CARRIER,
+            }
+        )
+    payload["issue_closeout_preflight"] = {
+        "status": "verified",
+        "repo": repo,
+        "required_backend": "gh",
+        "issues": verified,
+    }
+
+
 def ensure_release_issues_closed(
     repo_root: Path,
     *,
@@ -54,10 +97,17 @@ def ensure_release_issues_closed(
         return
     if repo is None:
         raise SystemExit("release close issue verification needs a GitHub repo; pass --close-issue-repo")
+    preflight_by_number = {
+        item.get("number"): item
+        for item in payload.get("issue_closeout_preflight", {}).get("issues", [])
+        if isinstance(item, dict)
+    }
     verified: list[dict[str, Any]] = []
     for number in issue_numbers:
+        manual_fallback_used = False
         state_payload = issue_state(repo_root, repo, number, run=run)
         if state_payload.get("state") != "CLOSED":
+            manual_fallback_used = True
             comment = "\n".join(
                 [
                     f"Resolved by release `{payload['tag_name']}`.",
@@ -72,7 +122,12 @@ def ensure_release_issues_closed(
             state_payload = issue_state(repo_root, repo, number, run=run)
         if state_payload.get("state") != "CLOSED":
             raise SystemExit(f"release issue closeout failed: {repo}#{number} is still {state_payload.get('state')}")
-        verified.append(state_payload)
+        issue_payload = dict(state_payload)
+        issue_payload["carrier"] = ISSUE_CLOSEOUT_CARRIER
+        issue_payload["manual_fallback_used"] = manual_fallback_used
+        if number in preflight_by_number:
+            issue_payload["preflight_state"] = preflight_by_number[number].get("state")
+        verified.append(issue_payload)
     payload["issue_closeout"] = {"status": "verified", "repo": repo, "issues": verified}
 
 
