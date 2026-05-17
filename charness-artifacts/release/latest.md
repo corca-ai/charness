@@ -40,7 +40,14 @@ Advanced `charness` toward release `0.5.30` (tag `v0.5.30`) through the repo-own
 
 ## Issue Closeout
 
-- Issue closeout verification: pending or not requested.
+- Issue closeout verification: `verified`.
+- GitHub repo: `corca-ai/charness`
+- Issue #170: `CLOSED` (https://github.com/corca-ai/charness/issues/170)
+  - carrier: `direct_release_commit_body`
+  - manual fallback used: `False`
+- Issue #174: `CLOSED` (https://github.com/corca-ai/charness/issues/174)
+  - carrier: `direct_release_commit_body`
+  - manual fallback used: `False`
 
 ## User Update Steps
 
