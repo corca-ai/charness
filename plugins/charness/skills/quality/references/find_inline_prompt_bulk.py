@@ -82,16 +82,26 @@ def main() -> int:
                 for finding in multiline_string_findings(path, min_chars=args.min_multiline_chars)
             )
 
+    scope_classification = "scanned" if args.source_glob else "advisory_only_no_canonical_prompt_asset_roots"
+    scope_reason = (
+        "explicit --source-glob argument(s) supplied"
+        if args.source_glob
+        else "default `**/*.py` scan; no canonical prompt_asset_roots were supplied via --source-glob, so findings are advisory-only"
+    )
     payload = {
         "repo_root": str(repo_root),
         "source_globs": source_globs,
         "exemption_globs": exemptions,
         "min_multiline_chars": args.min_multiline_chars,
+        "scope_classification": scope_classification,
+        "scope_reason": scope_reason,
         "findings": findings,
     }
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
+        if scope_classification.startswith("advisory_only"):
+            print(f"scope_classification={scope_classification}: {scope_reason}")
         for finding in findings:
             print(f"{finding['path']}:{finding['line']} chars={finding['char_count']} {finding['preview']}")
     return 0

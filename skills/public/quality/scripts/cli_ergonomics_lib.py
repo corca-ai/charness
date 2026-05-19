@@ -83,7 +83,15 @@ def inventory_archetype_contract(repo_root: Path, path: Path) -> dict[str, objec
 
 def scope_status(scanned: int, requested: bool) -> dict[str, str]:
     if scanned > 0:
-        return {"status": "clean"}
+        return {"status": "clean", "scope_classification": "scanned"}
     if requested:
-        return {"status": "clean", "reason": "Explicit --registry-file or --archetype-contract-file arguments yielded no readable files."}
-    return {"status": "unconfigured", "reason": "No CLI command-registry.json or command-archetypes.json files were discovered. Provide --registry-file/--archetype-contract-file or commit a registry under repo-visible paths."}
+        return {
+            "status": "clean",
+            "scope_classification": "advisory_only_requested_scope_empty",
+            "reason": "Explicit --registry-file or --archetype-contract-file arguments yielded no readable files.",
+        }
+    return {
+        "status": "unconfigured",
+        "scope_classification": "advisory_only_no_cli_surface",
+        "reason": "No CLI command-registry.json or command-archetypes.json files were discovered. Provide --registry-file/--archetype-contract-file or commit a registry under repo-visible paths.",
+    }

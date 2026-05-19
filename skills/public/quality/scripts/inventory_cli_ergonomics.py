@@ -116,6 +116,8 @@ def main() -> int:
     else:
         if payload["status"] == "unconfigured":
             print(f"status=unconfigured: {payload.get('reason', '')}")
+        if payload.get("scope_classification", "scanned").startswith("advisory_only"):
+            print(f"scope_classification={payload['scope_classification']}: enforcement is advisory-only.")
         if payload["adapter_valid"] is False:
             print("adapter=invalid: advisory inventory is best-effort until adapter errors are repaired.")
         for finding in findings:

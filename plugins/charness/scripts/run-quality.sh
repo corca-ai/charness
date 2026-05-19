@@ -329,6 +329,8 @@ queue_selected "check-plugin-import-smoke" python3 scripts/check_plugin_import_s
 queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo-root "$REPO_ROOT"
 queue_selected "check-doc-links" python3 scripts/check_doc_links.py --repo-root "$REPO_ROOT"
 queue_selected "check-spec-evidence-durability" python3 scripts/check_spec_evidence_durability.py --repo-root "$REPO_ROOT"
+queue_selected "check-references-link-inventory" python3 scripts/check_references_link_inventory.py --repo-root "$REPO_ROOT"
+queue_selected "check-seed-fixture-budget" python3 scripts/check_seed_fixture_budget.py --repo-root "$REPO_ROOT"
 queue_selected "check-title-slug-drift" python3 scripts/check_title_slug_drift.py --strict
 queue_selected "check-markdown" ./scripts/check-markdown.sh
 flush_phase || OVERALL_RC=$?

@@ -50,6 +50,12 @@
       "evidence_terms": ["disabled_check_payload"],
       "rationale": "Coverage library preserves disabled tool state through the shared lifecycle payload."
     },
+    "scripts/check_seed_fixture_budget.py": {
+      "states": ["advisory-only"],
+      "visibility": ["stdout_attention", "structured_warning"],
+      "evidence_terms": ["advisory_only_no_pytest_temp_yet", "scope_classification"],
+      "rationale": "Seed fixture budget gate reports advisory-only when no pytest tmp directory has been materialized yet; payload exposes the classification."
+    },
     "scripts/check_mutation_score.py": {
       "states": ["skipped"],
       "visibility": ["operator_summary", "metric_or_trace"],
@@ -217,6 +223,18 @@
       "visibility": ["support_trace"],
       "evidence_terms": ["attempt", "skipped"],
       "rationale": "Skipped acquisition stages are represented in the public URL gather attempt trace."
+    },
+    "skills/public/quality/references/find_inline_prompt_bulk.py": {
+      "states": ["advisory-only"],
+      "visibility": ["stdout_attention", "structured_warning"],
+      "evidence_terms": ["advisory_only_no_canonical_prompt_asset_roots", "scope_classification"],
+      "rationale": "Inline-prompt bulk helper marks default-glob scans as advisory-only when no canonical prompt_asset_roots are supplied; classification is in stdout and JSON payload."
+    },
+    "skills/public/quality/scripts/inventory_cli_ergonomics.py": {
+      "states": ["advisory-only"],
+      "visibility": ["stdout_attention", "structured_warning"],
+      "evidence_terms": ["advisory-only", "scope_classification"],
+      "rationale": "CLI ergonomics inventory prints an advisory-only scope_classification (carried from cli_ergonomics_lib) so green output cannot be read as enforcement."
     },
     "skills/public/quality/scripts/skill_ergonomics_lib.py": {
       "states": ["prose_review_status"],
