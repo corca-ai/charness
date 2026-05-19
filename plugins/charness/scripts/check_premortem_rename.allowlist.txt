@@ -40,12 +40,10 @@ charness-artifacts/skill-t-mechanism/inventory.json	generated inventory cites hi
 # table, lineage cite, and trigger phrases as the root surface.
 plugins/charness/skills/critique/	plugin mirror of skills/public/critique/
 
-# Validator that audits durable artifacts under `charness-artifacts/premortem/`
-# (historical directory name preserved). The script reads the prefix as a
-# string constant; the directory name itself is not renamed in this slice.
-scripts/validate_critique_artifacts.py	historical artifact dir prefix `charness-artifacts/premortem/`
+# Validator that audits durable critique artifacts after the public skill rename.
+scripts/validate_critique_artifacts.py	critique artifact validator name preserves migration history
 plugins/charness/scripts/validate_critique_artifacts.py	mirror of validate_critique_artifacts.py
-tests/quality_gates/test_critique_skill.py	historical fixture path `charness-artifacts/premortem/demo.md`
+tests/quality_gates/test_critique_skill.py	validator regression coverage for critique artifacts
 
 # Documentation that cites historical retro filenames as illustrative
 # examples. Closed-history filenames are not renamed even when prose

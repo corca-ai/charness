@@ -246,6 +246,8 @@ def verify_closeout(
         )
     if carrier != "manual-fallback" and manual_fallback_reason is not None:
         raise RuntimeError("--manual-fallback-reason is only valid with --carrier manual-fallback")
+    if expect_state is not None and expect_state.upper() != "CLOSED":
+        raise RuntimeError("final closeout verification requires --expect-state CLOSED")
 
     body = _read_carrier_body(repo_root, carrier=carrier, commit_ref=commit_ref, body_file=body_file)
     missing_close_keywords = [] if carrier == "manual-fallback" else _missing_close_keywords(body, numbers, repo)

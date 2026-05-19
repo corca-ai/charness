@@ -106,7 +106,7 @@ def test_critique_artifact_validator_rejects_missing_explicit_allowance_blocker(
         ),
         encoding="utf-8",
     )
-    artifact = repo / "charness-artifacts" / "premortem" / "demo.md"
+    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
     artifact.parent.mkdir(parents=True)
     artifact.write_text(
         "\n".join(
@@ -127,7 +127,7 @@ def test_critique_artifact_validator_rejects_missing_explicit_allowance_blocker(
         "--repo-root",
         str(repo),
         "--paths",
-        "charness-artifacts/premortem/demo.md",
+        "charness-artifacts/critique/demo.md",
     )
 
     assert result.returncode == 1
@@ -150,7 +150,7 @@ def test_critique_artifact_validator_allows_parent_delegated_artifact_with_block
         ),
         encoding="utf-8",
     )
-    artifact = repo / "charness-artifacts" / "premortem" / "demo.md"
+    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
     artifact.parent.mkdir(parents=True)
     artifact.write_text(
         "\n".join(
@@ -179,7 +179,7 @@ def test_critique_artifact_validator_allows_parent_delegated_artifact_with_block
 
 def test_critique_artifact_validator_accepts_concrete_blocked_signal(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    artifact = repo / "charness-artifacts" / "premortem" / "demo.md"
+    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
     artifact.parent.mkdir(parents=True)
     artifact.write_text(
         "\n".join(
@@ -202,8 +202,108 @@ def test_critique_artifact_validator_accepts_concrete_blocked_signal(tmp_path: P
         "--repo-root",
         str(repo),
         "--paths",
-        "charness-artifacts/premortem/demo.md",
+        "charness-artifacts/critique/demo.md",
     )
 
     assert result.returncode == 0, result.stderr
     assert "Validated 1 critique artifact" in result.stdout
+
+
+def test_critique_artifact_validator_accepts_signal_section_with_body(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Demo Critique",
+                "",
+                "## Fresh-Eye Satisfaction",
+                "",
+                "blocked.",
+                "",
+                "## Host Signal",
+                "",
+                "agent-count budget exhausted before the bounded reviewer could be spawned.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "scripts/validate_critique_artifacts.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/critique/demo.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "Validated 1 critique artifact" in result.stdout
+
+
+def test_critique_artifact_validator_rejects_empty_signal_section(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Demo Critique",
+                "",
+                "## Fresh-Eye Satisfaction",
+                "",
+                "blocked.",
+                "",
+                "## Host Signal",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "scripts/validate_critique_artifacts.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/critique/demo.md",
+    )
+
+    assert result.returncode == 1
+    assert "must cite `host signal:` or `tool signal:`" in result.stderr
+
+
+def test_critique_artifact_validator_rejects_marker_only_signal_section(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Demo Critique",
+                "",
+                "## Fresh-Eye Satisfaction",
+                "",
+                "blocked.",
+                "",
+                "## Tool Signal",
+                "",
+                "-",
+                ".",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "scripts/validate_critique_artifacts.py",
+        "--repo-root",
+        str(repo),
+        "--paths",
+        "charness-artifacts/critique/demo.md",
+    )
+
+    assert result.returncode == 1
+    assert "must cite `host signal:` or `tool signal:`" in result.stderr

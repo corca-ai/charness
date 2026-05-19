@@ -29,6 +29,7 @@ _check_real_host = SKILL_RUNTIME.load_local_skill_module(__file__, "check_real_h
 _check_review_gate = SKILL_RUNTIME.load_local_skill_module(__file__, "check_requested_review_gate")
 _fresh_checkout = SKILL_RUNTIME.load_local_skill_module(__file__, "check_fresh_checkout_probes")
 _helpers = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_helpers")
+_preflight = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_preflight")
 _audit_narrative = SKILL_RUNTIME.load_local_skill_module(__file__, "audit_public_release_narrative")
 _issue_closeout = SKILL_RUNTIME.load_local_skill_module(__file__, "release_issue_closeout")
 load_adapter = _resolve_adapter.load_adapter
@@ -56,12 +57,17 @@ release_commit_body = _issue_closeout.release_commit_body
 ensure_release_issues_closed = _issue_closeout.ensure_release_issues_closed
 preflight_release_issues = _issue_closeout.preflight_release_issues
 commit_issue_closeout_artifact = _issue_closeout.commit_issue_closeout_artifact
+validate_critique_artifact_arg = _preflight.validate_critique_artifact_arg
+safe_real_host_payload = _preflight.safe_real_host_payload
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--remote", default="origin")
     parser.add_argument("--title")
     parser.add_argument("--notes-file", type=Path)
+    parser.add_argument("--critique-artifact")
     parser.add_argument("--close-issue", action="append", type=int, default=[])
     parser.add_argument("--close-issue-repo")
     parser.add_argument("--execute", action="store_true")
@@ -77,11 +83,6 @@ def target_version(args: argparse.Namespace, current_version: str) -> str:
         return args.set_version
     assert args.part is not None
     return bump_part(current_version, args.part)
-def safe_real_host_payload(repo_root: Path, repo_paths: list[str]) -> dict[str, Any]:
-    try:
-        return build_real_host_payload(repo_root, repo_paths)
-    except Exception as exc:  # pragma: no cover - fallback only
-        return {"required": False, "changed_paths": repo_paths, "surface_hits": [], "path_hits": [], "checklist": [], "reason": f"Real-host/public verification probe could not run: {exc}"}
 def run_requested_review_gate(repo_root: Path) -> None:
     review_gate_payload = build_review_gate_payload(repo_root, run_commands=True)
     if review_gate_payload["status"] == "blocked":
@@ -134,6 +135,7 @@ def write_current_artifact(
         fresh_checkout_payload=fresh_checkout_payload, issue_closeout=issue_closeout, quality_status=quality_status,
         tag_name=payload["tag_name"],
         public_release_verification=payload.get("public_release_verification", "not checked by this helper"),
+        review_proof=payload.get("critique_artifact"),
     )
 
 
@@ -187,6 +189,7 @@ def build_publish_payload(
     branch: str,
     tag_name: str,
     title: str,
+    critique_artifact: str | None,
 ) -> dict[str, Any]:
     return {
         "package_id": adapter_data["package_id"],
@@ -202,6 +205,7 @@ def build_publish_payload(
         "fresh_checkout_probes": adapter_data["fresh_checkout_probes"],
         "commit_message": f"Release {adapter_data['package_id']} {next_version}",
         "notes_mode": "notes-file" if args.notes_file else "generate-notes",
+        "critique_artifact": critique_artifact,
         "execute": args.execute,
     }
 
@@ -263,6 +267,7 @@ def main() -> None:
     if not adapter["valid"]:
         raise SystemExit(f"release adapter is invalid: {adapter['errors']}")
     adapter_data = adapter["data"]
+    critique_artifact = validate_critique_artifact_arg(repo_root, args.critique_artifact, run_command=run)
     status = git_status(repo_root)
     if status:
         raise SystemExit("publish_release requires a clean worktree before it starts.\n" + "\n".join(status))
@@ -286,7 +291,7 @@ def main() -> None:
 
     payload = build_publish_payload(
         args, adapter_data, current_version=current_version, next_version=next_version,
-        branch=branch, tag_name=tag_name, title=title,
+        branch=branch, tag_name=tag_name, title=title, critique_artifact=critique_artifact,
     )
     payload["close_issue_numbers"] = args.close_issue
     payload["close_issue_repo"] = issue_repo
@@ -304,7 +309,7 @@ def main() -> None:
     run_bump(args, repo_root)
     ensure_release_surface(repo_root, next_version)
 
-    host_payload = safe_real_host_payload(repo_root, sorted(set(release_content_paths + changed_paths(repo_root))))
+    host_payload = safe_real_host_payload(repo_root, sorted(set(release_content_paths + changed_paths(repo_root))), build_payload=build_real_host_payload)
     fresh_checkout_plan = build_fresh_checkout_payload(repo_root, run_probes=False)
     write_current_artifact(
         repo_root, adapter_data, payload, host_payload=host_payload, release_url=expected_release_url,

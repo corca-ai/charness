@@ -243,6 +243,11 @@ def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
 
 def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -> None:
     repo, remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    critique_artifact = repo / "charness-artifacts" / "critique" / "demo.md"
+    critique_artifact.parent.mkdir(parents=True)
+    critique_artifact.write_text("# Demo critique\n", encoding="utf-8")
+    subprocess.run(["git", "add", str(critique_artifact)], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "Add critique proof"], cwd=repo, check=True, capture_output=True, text=True)
 
     env = os.environ.copy()
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
@@ -257,6 +262,8 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
             str(repo),
             "--part",
             "patch",
+            "--critique-artifact",
+            "charness-artifacts/critique/demo.md",
             "--execute",
         ],
         cwd=Path(__file__).resolve().parents[2],
@@ -302,10 +309,55 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     assert "GitHub release record: verified URL `https://github.com/example/demo/releases/tag/v0.0.1`" in artifact_text
     assert "public release surface verification: verified" in artifact_text
     assert "## Public Release Verification" in artifact_text
+    assert "GitHub release publication: verified by the release backend." in artifact_text
+    assert "initial release push carried the release branch update and tag" in artifact_text
+    assert "post-publish artifact push recorded the verified public release state" in artifact_text
+    assert "No configured public/real-host verification trigger matched" not in artifact_text
+    assert "## Review Proof" in artifact_text
+    assert "Review proof: `charness-artifacts/critique/demo.md`." in artifact_text
+    assert "## Post-Publish Proof" in artifact_text
+    assert "Public release check: `gh release view v0.0.1`" in artifact_text
     assert "Run `demo update`." in artifact_text
     assert "Restart the host if the previous version is still visible." in artifact_text
     assert "(tag `v0.0.1`)" in artifact_text
     assert "audit narrative: durable record written to" in artifact_text
+
+
+def test_release_artifact_does_not_claim_post_publish_proof_before_verification(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+
+    env = os.environ.copy()
+    env["PATH"] = f"{bin_dir}:{env['PATH']}"
+    env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
+    env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
+    env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/publish_release.py",
+            "--repo-root",
+            str(repo),
+            "--part",
+            "patch",
+            "--execute",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={**env, "FAKE_GH_RELEASE_STATE": str(tmp_path / "release-state.json")},
+    )
+
+    assert result.returncode == 0, result.stderr
+    tag_artifact = subprocess.run(
+        ["git", "show", "v0.0.1:charness-artifacts/release/latest.md"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    assert "## Post-Publish Proof" not in tag_artifact
+    assert "Review proof: not recorded in this helper invocation." in tag_artifact
 
 
 def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path: Path) -> None:

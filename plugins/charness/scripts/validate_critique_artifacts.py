@@ -11,7 +11,7 @@ from runtime_bootstrap import repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
-CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/premortem/"
+CRITIQUE_ARTIFACT_PREFIX = "charness-artifacts/critique/"
 FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "did not explicitly allow subagents",
     "explicit subagent allowance",
@@ -24,6 +24,8 @@ DELEGATION_CONTRACT_MARKERS = (
     "subagent delegation",
     "repo-mandated bounded fresh-eye subagent reviews are already delegated",
 )
+SIGNAL_HEADINGS = ("host signal", "tool signal")
+PLACEHOLDER_VALUES = {"", "todo", "tbd", "missing", "n/a", "na", "blocked"}
 
 
 class ValidationError(Exception):
@@ -90,6 +92,40 @@ def fresh_eye_satisfaction_status(text: str) -> str | None:
     return None
 
 
+def _substantive_signal(value: str) -> bool:
+    signal_text = value.strip().strip("-*`._:;,#[](){}<>!/?\\|\"' ")
+    normalized = " ".join(value.strip().lower().split())
+    return (
+        bool(signal_text)
+        and any(character.isalnum() for character in signal_text)
+        and normalized not in PLACEHOLDER_VALUES
+        and not normalized.startswith("missing ")
+    )
+
+
+def has_blocked_signal_detail(text: str) -> bool:
+    lines = text.splitlines()
+    for raw in lines:
+        lowered = raw.strip().lower().lstrip("-*").strip()
+        for heading in SIGNAL_HEADINGS:
+            marker = f"{heading}:"
+            if lowered.startswith(marker) and _substantive_signal(lowered.removeprefix(marker)):
+                return True
+    for index, raw in enumerate(lines):
+        lowered = raw.strip().lower().rstrip(":")
+        if lowered.startswith("#"):
+            lowered = lowered.lstrip("#").strip()
+        if lowered not in SIGNAL_HEADINGS:
+            continue
+        for following in lines[index + 1 :]:
+            stripped = following.strip()
+            if stripped.startswith("## "):
+                break
+            if _substantive_signal(stripped):
+                return True
+    return False
+
+
 def validate_critique_artifact(path: Path, *, repo_has_delegation_contract: bool) -> None:
     text = path.read_text(encoding="utf-8")
     status = fresh_eye_satisfaction_status(text)
@@ -104,8 +140,7 @@ def validate_critique_artifact(path: Path, *, repo_has_delegation_contract: bool
                     "delegation is still blocked"
                 )
     if status_lowered and "blocked" in status_lowered and "parent-delegated" not in status_lowered:
-        text_lowered = text.lower()
-        if "host signal:" not in text_lowered and "tool signal:" not in text_lowered:
+        if not has_blocked_signal_detail(text):
             raise ValidationError(
                 f"{path}: blocked critique fresh-eye satisfaction must cite `host signal:` or `tool signal:`"
             )

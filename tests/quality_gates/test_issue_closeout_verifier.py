@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import subprocess
@@ -8,6 +9,15 @@ from pathlib import Path
 from tests.quality_gates.support import run_script
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
+VERIFY_MODULE_PATH = Path(__file__).resolve().parents[2] / "skills" / "public" / "issue" / "scripts" / "issue_verify_closeout.py"
+
+
+def _load_verify_module():
+    spec = importlib.util.spec_from_file_location("issue_verify_closeout_test", VERIFY_MODULE_PATH)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _write_adapter_with_backend(tmp_path: Path, *, backend_id: str, binary: str) -> None:
@@ -314,6 +324,26 @@ def test_issue_verify_closeout_rejects_open_expected_state(tmp_path: Path) -> No
 
     assert result.returncode == 2
     assert "invalid choice: 'OPEN'" in result.stderr
+
+
+def test_issue_verify_closeout_function_rejects_open_expected_state(tmp_path: Path) -> None:
+    verify_module = _load_verify_module()
+
+    try:
+        verify_module.verify_closeout(
+            repo_root=tmp_path,
+            repo="corca-ai/charness",
+            numbers=[42],
+            classification="bug",
+            carrier="direct-commit",
+            backend={"id": "gh", "binary": "gh", "commands": None},
+            commit_ref="HEAD",
+            expect_state="OPEN",
+        )
+    except RuntimeError as exc:
+        assert "requires --expect-state CLOSED" in str(exc)
+    else:
+        raise AssertionError("expected function-level OPEN verification guard")
 
 
 def test_issue_verify_closeout_uses_adapter_view_for_final_state(tmp_path: Path) -> None:

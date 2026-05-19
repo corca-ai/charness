@@ -162,6 +162,36 @@ def release_record_lines(release_url: str | None, public_release_verification: s
     return ["- GitHub release record: not created by this helper run"]
 
 
+def release_push_lines(public_release_verification: str) -> list[str]:
+    lines = ["- initial release push carried the release branch update and tag from the release helper."]
+    if public_release_verification == "verified":
+        lines.append("- post-publish artifact push recorded the verified public release state on the release branch.")
+    return lines
+
+
+def review_proof_lines(review_proof: str | None) -> list[str]:
+    if review_proof:
+        return ["", "## Review Proof", "", f"- Review proof: `{review_proof}`."]
+    return ["", "## Review Status", "", "- Review proof: not recorded in this helper invocation."]
+
+
+def post_publish_proof_lines(resolved_tag: str, public_release_verification: str) -> list[str]:
+    if public_release_verification != "verified":
+        return []
+    return ["", "## Post-Publish Proof", "", f"- Public release check: `gh release view {resolved_tag}`."]
+
+
+def public_release_verification_lines(public_release_verification: str, release_url: str | None) -> list[str]:
+    lines = ["", "## Public Release Verification", ""]
+    if public_release_verification == "verified":
+        lines.append("- GitHub release publication: verified by the release backend.")
+    elif release_url:
+        lines.append("- GitHub release publication: expected after branch/tag push; not verified yet.")
+    else:
+        lines.append("- GitHub release publication: not created by this helper run.")
+    return lines
+
+
 def amend_fresh_checkout_artifact(
     repo_root: Path,
     *,
@@ -224,6 +254,7 @@ def write_release_artifact(
     quality_status: str = "passed before publish",
     tag_name: str | None = None,
     public_release_verification: str = "not checked by this helper",
+    review_proof: str | None = None,
 ) -> str:
     artifact_dir = repo_root / output_dir
     artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -249,7 +280,7 @@ def write_release_artifact(
         "",
         f"- `{quality_command}` {quality_status}.",
         "- `current_release.py` reported no version drift across packaging and generated install surfaces.",
-        "- one git push carried both the release branch update and the tag from the release helper.",
+        *release_push_lines(public_release_verification),
         "",
         "## Release State",
         "",
@@ -261,24 +292,23 @@ def write_release_artifact(
         [
             f"- public release surface verification: {public_release_verification}",
             f"- audit narrative: durable record written to `{artifact_relpath}` and committed with this slice",
-            "",
-            "## Public Release Verification",
-            "",
         ]
     )
+    lines.extend(public_release_verification_lines(public_release_verification, release_url))
+    lines.extend(["", "## Real-Host Verification", ""])
     if real_host_payload.get("required"):
         lines.append(
-            "- This slice still requires configured public/real-host verification before the release is fully closed."
+            "- This slice still requires configured real-host verification before the release is fully closed."
         )
         lines.extend(["", "## Real-Host Proof", "", "- Release-time real-host proof is required for this slice."])
         lines.extend(f"- {item}" for item in real_host_payload.get("checklist", []))
     else:
-        lines.append(
-            "- No configured public/real-host verification trigger matched this slice, but async publication repos should still keep workflow/public checks explicit."
-        )
+        lines.append("- No configured release-time real-host verification trigger matched this slice.")
         lines.extend(
             ["", "## Real-Host Proof", "", "- No configured release-time real-host proof trigger matched this slice."]
         )
+    lines.extend(review_proof_lines(review_proof))
+    lines.extend(post_publish_proof_lines(resolved_tag, public_release_verification))
     lines.extend(["", "## Fresh Checkout Probes", ""])
     if fresh_checkout_payload is None:
         lines.append("- Fresh-checkout probe status: pending release-helper execution.")

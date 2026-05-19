@@ -14,6 +14,7 @@ setup:adapter:t-events:seed-only -- setup seeds .agents/t-events-adapter.yaml vi
 setup:adapter:usage-episodes:seed-only -- setup seeds .agents/usage-episodes-adapter.yaml via seed_usage_episodes_adapter.py; runtime owns to usage-episodes integration
 setup:artifact:spec:read-only cite -- seed_t_events_adapter.py template comment cites issue-135 umbrella spec for traceability; runtime owns to spec
 issue:artifact:gather:read-only cite -- issue resolve flow references gather artifacts as evidence sources
+release:artifact:critique:read-only proof -- release helper validates a tracked critique artifact path before rendering review proof in release/latest.md
 critique:artifact:retro:read-only cite -- code-critique reference cross-links charness-artifacts/retro/recent-lessons.md as the defect-class memory home
 critique:artifact:spec:read-only scan -- autonomous trigger scans spec artifacts only to identify the current pending critique target
 critique:artifact:skill-t-mechanism:read-only cite -- angle-selection lineup cites skill-t-mechanism/inventory as the Tier C anchor_invoked evidence sink

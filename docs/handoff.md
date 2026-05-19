@@ -9,7 +9,7 @@
 
 ## Current State
 
-- Current public release after this pickup is expected to be `v0.5.32` on `origin/main`, containing the opt-in public URL extracted-content persistence fix. Verify with `gh release view v0.5.32 --repo corca-ai/charness`.
+- Current public release after this pickup is `v0.7.4` on `origin/main`, containing the issue closeout verifier and post-publish release verification hotfixes. Verify with `gh release view v0.7.4 --repo corca-ai/charness` and [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md).
 - [#170](https://github.com/corca-ai/charness/issues/170) is fixed by making
   Slack URL task text surface `gather-slack` through `find-skills` support
   recommendations, adding [advise_slack_path.py](../skills/public/gather/scripts/advise_slack_path.py),

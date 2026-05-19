@@ -16,7 +16,8 @@ Advanced `charness` toward release `0.7.4` (tag `v0.7.4`) through the repo-owned
 
 - `./scripts/run-quality.sh` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
-- one git push carried both the release branch update and the tag from the release helper.
+- initial release push carried the release branch update and tag from the release helper.
+- post-publish artifact push recorded the verified public release state on the release branch.
 
 ## Release State
 
@@ -28,7 +29,16 @@ Advanced `charness` toward release `0.7.4` (tag `v0.7.4`) through the repo-owned
 
 ## Public Release Verification
 
-- No configured public/real-host verification trigger matched this slice, but async publication repos should still keep workflow/public checks explicit.
+- GitHub release publication: verified by `gh release view v0.7.4 --repo corca-ai/charness --json tagName,url,name,publishedAt,isDraft,isPrerelease,targetCommitish`.
+
+## Critique
+
+- Critique proof: `charness-artifacts/critique/2026-05-19-v0.7.4-hotfix-critique.md`.
+
+## Post-Publish Proof
+
+- Public release check: `gh release view v0.7.4 --repo corca-ai/charness --json tagName,url,name,publishedAt,isDraft,isPrerelease,targetCommitish`.
+- Post-publish artifact commit: `aefb1745ff5b2a2ff5f85e5b6ca3d674fef98c5b`.
 
 ## Real-Host Proof
 
