@@ -5,35 +5,36 @@ Date: 2026-05-19
 
 Repo-wide repair for quality advisory visibility: skipped usage-episode
 validation and required skill prose review must not disappear behind green gates.
+Follow-up gate: new exit-zero attention states must be declared as visible or
+intentionally local before quality can pass.
 
 ## Current Gates
 
 - `./scripts/run-quality.sh`: 61 passed / 0 failed in 77.8s; `validate-usage-episodes`
   now replays the exit-zero `no_adapter` warning in green quality runs.
-- `validate-skill-ergonomics` still enforces five configured Charness rules:
-  `long_core`, `mode_option_pressure_terms`, `progressive_disclosure_risk`,
-  `code_fence_without_helper_script`, and `portable_helper_path_ambiguity`.
+- `validate-skill-ergonomics` still enforces the five configured Charness
+  skill-ergonomics rules.
 - `inventory_skill_ergonomics.py` now reports `scope_status=scanned`,
   `finding_status=zero_heuristic_findings`, `prose_review_status=still_required`,
   `checked_skill_count=22`, and `heuristic_finding_count=0` for this repo.
-- Advisory inventories now surface `adapter_valid`, `adapter_errors`,
-  `adapter_warnings`, and `adapter_load_mode=permissive`; strict validators use
-  `adapter_load_mode=strict` and fail on invalid adapters.
+- Advisory inventories now surface adapter validity; strict validators fail on
+  invalid adapters.
 - Generated quality adapters now default `skill_ergonomics_gate_rules` to all
   five supported rules; existing explicit `[]` remains an opt-out that must
   emit a visible warning.
+- `validate_attention_state_visibility.py` scans Python command/helper surfaces
+  for `no_adapter`, `disabled`, `not_configured`, `skipped`,
+  `advisory-only`, and `prose_review_status`; 45 detected files now have
+  explicit visibility declarations.
 
 ## Runtime Signals
 
-- runtime source: structured metrics from `.charness/quality/runtime-signals.json`, <!-- reproduction-source -->
-  recorded by `scripts/record_quality_runtime.py`, rendered by
-  `render_runtime_summary.py`.
-- runtime hot spots: latest full gate: `pytest` 55.8s,
-  `check-coverage` 40.6s, `validate-inventory-consumption-declaration` 14.4s,
-  `check-duplicates` 6.9s, and `specdown` 3.6s.
+- runtime source: `.charness/quality/runtime-signals.json`, <!-- reproduction-source -->
+  recorded by `scripts/record_quality_runtime.py`, rendered by `render_runtime_summary.py`.
+- runtime hot spots: `pytest` 55.8s, `check-coverage` 40.6s,
+  `validate-inventory-consumption-declaration` 14.4s.
 - coverage gate: `check-coverage` passed in 40.6s.
-- evaluator depth: `run-evals` passed in 2.2s; no live Cautilus proof was run
-  for this deterministic quality-contract repair.
+- evaluator depth: `run-evals` passed; Cautilus planner returned `next_action: none`.
 
 ## Healthy
 
@@ -55,6 +56,9 @@ validation and required skill prose review must not disappear behind green gates
   ergonomics rule set instead of silently disabling enforcement.
 - Plugin export and find-skills inventory were refreshed after public skill and
   script changes.
+- New attention-state helpers cannot rely on exit 0 alone: the quality gate now
+  fails until the file declares structured warning output, stdout attention,
+  artifact-visible status, support trace, or a local-noop rationale.
 
 ## Weak
 
@@ -70,32 +74,27 @@ validation and required skill prose review must not disappear behind green gates
 
 ## Missing
 
-- No maintained Cautilus scenario-registry edit was added. This slice changes
-  validation output and packet preparation semantics, not a model behavior
-  scenario.
+- No maintained Cautilus scenario-registry edit was added.
 - No CI lane is present in this checkout; security and quality proof remain
   local runner / maintainer-machine enforced.
 
 ## Deferred
 
-- Consider a future low-noise rule for hidden workflow prose inside
-  `## References`; the current patch only keeps prose review required.
+- Consider a future low-noise rule for hidden workflow prose inside `## References`.
 - Downstream repos should dogfood the stronger generated default and file
   issues for noisy rules instead of Charness keeping the default disabled.
 
 ## Advisory
 
-- Fresh-eye critique evidence: found no blockers and one actionable advisory in
-  `inventory_skill_ergonomics.py`: configured empty adapter paths could still
-  fallback to default scanning. That was fixed and covered by a regression test
-  for `scope_status=configured_scope_empty`.
-- Fresh-eye critique evidence: found the `critique` bootstrap snippet visually indented;
-  the snippet is now flush and `validate-skills` passes.
+- Fresh-eye critique evidence: no blockers.
 - `inventory_skill_ergonomics.py` evidence: `scope_status=scanned`,
   `finding_status=zero_heuristic_findings`, `prose_review_status=still_required`,
   `checked_skill_count=22`, and `heuristic_finding_count=0`.
 - `validate_usage_episodes.py` evidence: skipped `no_adapter` and `disabled`
   states now remain exit-zero but carry structured warning payloads.
+- `validate_attention_state_visibility.py` evidence: 45 files with skipped,
+  disabled, not-configured, no-adapter, advisory-only, or prose-review-required
+  terms are declared in `attention-state-visibility.json`.
 - Default-policy evidence: `DEFAULT_SKILL_ERGONOMICS_GATE_RULES` now lists all
   supported rule ids, and `adapter.example.yaml` shows the same default list.
 
@@ -112,12 +111,13 @@ validation and required skill prose review must not disappear behind green gates
 
 - `python3 skills/public/find-skills/scripts/list_capabilities.py --repo-root .`
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- `pytest -q tests/quality_gates/test_quality_skill_ergonomics.py tests/quality_gates/test_inventory_consumption.py tests/quality_gates/test_quality_bootstrap.py tests/quality_gates/test_skill_ergonomics_gate.py tests/test_critique_prepare_packet.py`
 - `python3 scripts/validate_inventory_consumption_declaration.py --repo-root .`
 - `python3 scripts/validate_inventory_consumption.py --repo-root .`
+- `python3 scripts/validate_attention_state_visibility.py --repo-root . --json`
+- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id quality --json`
 - `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --json`
 - `python3 scripts/validate_skills.py --repo-root .`
-- `ruff check tests/quality_gates/test_quality_bootstrap.py`
+- `cd plugins/charness && CHARNESS_QUALITY_LABELS=validate-attention-state-visibility ./scripts/run-quality.sh --read-only`
 - `pytest -q tests/quality_gates/test_quality_bootstrap.py tests/quality_gates/test_skill_ergonomics_gate.py tests/quality_gates/test_quality_skill_ergonomics.py tests/quality_gates/test_profile_and_preset_validation.py`
 - `./scripts/run-quality.sh`
 

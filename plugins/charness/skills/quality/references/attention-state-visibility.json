@@ -1,0 +1,288 @@
+{
+  "_purpose": "Declare every repo-owned Python command/helper surface that contains exit-zero attention-state terms. The gate prevents new no_adapter/disabled/not_configured/skipped/prose-review-required states from silently reading as clean pass states.",
+  "_contract": "Every detected file must declare its exact states, at least one visibility class, evidence_terms that appear in the source, and a rationale. Use local_noop_not_closeout only for runtime/internal no-op payloads that are not standing quality or release closeout proof.",
+  "_visibility_values": [
+    "artifact_visible",
+    "explicit_skip_summary",
+    "hard_failure_or_blocker",
+    "local_noop_not_closeout",
+    "metric_or_trace",
+    "operator_summary",
+    "stdout_attention",
+    "structured_warning",
+    "support_trace",
+    "terminal_payload"
+  ],
+  "files": {
+    "scripts/build_debug_seam_risk_index.py": {
+      "states": ["skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["skipped_artifacts"],
+      "rationale": "Skipped debug artifacts are listed in the index payload with reasons and are not treated as clean seam-risk proof."
+    },
+    "scripts/cautilus_adapter_lib.py": {
+      "states": ["disabled"],
+      "visibility": ["structured_warning", "terminal_payload"],
+      "evidence_terms": ["disabled_reason", "Create .agents/cautilus-adapter.yaml"],
+      "rationale": "Disabled Cautilus policy is exposed through adapter payloads and operator-facing next-action text."
+    },
+    "scripts/check_cli_skill_surface.py": {
+      "states": ["skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["status", "skipped"],
+      "rationale": "The release/quality CLI surface check returns an explicit skipped status and reason when no relevant surface changed."
+    },
+    "scripts/check_command_docs.py": {
+      "states": ["skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["missing-contract"],
+      "rationale": "Repos without command-doc contracts get an explicit skipped status and reason."
+    },
+    "scripts/check_coverage.py": {
+      "states": ["disabled"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["doctor_status", "disabled"],
+      "rationale": "Coverage helper tests and payloads keep disabled Cautilus policy explicit rather than silent."
+    },
+    "scripts/check_coverage_lib.py": {
+      "states": ["disabled"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["disabled_check_payload"],
+      "rationale": "Coverage library preserves disabled tool state through the shared lifecycle payload."
+    },
+    "scripts/check_mutation_score.py": {
+      "states": ["skipped"],
+      "visibility": ["operator_summary", "metric_or_trace"],
+      "evidence_terms": ["Skipped:"],
+      "rationale": "Mutation skipped workers are counted in the printed score summary."
+    },
+    "scripts/check_upstream_support_drift.py": {
+      "states": ["skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["skipped ("],
+      "rationale": "Skipped upstream checks are surfaced as per-record errors in the drift report."
+    },
+    "scripts/control_plane_lifecycle_lib.py": {
+      "states": ["disabled"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["disabled by repo adapter"],
+      "rationale": "Tool lifecycle disabled states share one explicit payload for detect and healthcheck output."
+    },
+    "scripts/doctor.py": {
+      "states": ["disabled", "skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["install_method", "disabled"],
+      "rationale": "Doctor output reports disabled tool installs and skipped release probes as structured JSON."
+    },
+    "scripts/doctor_lib.py": {
+      "states": ["disabled", "skipped"],
+      "visibility": ["operator_summary", "terminal_payload"],
+      "evidence_terms": ["doctor_status", "disabled"],
+      "rationale": "Doctor library exposes disabled and skipped healthcheck states with next steps."
+    },
+    "scripts/filter_cosmic_ray_mutants.py": {
+      "states": ["skipped"],
+      "visibility": ["operator_summary", "metric_or_trace"],
+      "evidence_terms": ["filtered", "skipped"],
+      "rationale": "Filtered mutation work is summarized by inspected and skipped counts."
+    },
+    "scripts/github_actions_lib.py": {
+      "states": ["skipped"],
+      "visibility": ["metric_or_trace"],
+      "evidence_terms": ["skipped"],
+      "rationale": "Skipped workflow steps are parsed as source facts for downstream gates, not closeout proof."
+    },
+    "scripts/install_machine_local.py": {
+      "states": ["skipped"],
+      "visibility": ["operator_summary"],
+      "evidence_terms": ["Codex marketplace update skipped."],
+      "rationale": "Machine-local install output names skipped marketplace updates directly."
+    },
+    "scripts/install_tools.py": {
+      "states": ["disabled", "skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["mode", "disabled"],
+      "rationale": "Tool installation reports disabled adapter state as structured skipped output."
+    },
+    "scripts/plan_cautilus_proof.py": {
+      "states": ["disabled"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["Repo policy is disabled"],
+      "rationale": "Cautilus proof planning explicitly tells operators not to run disabled evaluator proof."
+    },
+    "scripts/plugin_preamble.py": {
+      "states": ["disabled"],
+      "visibility": ["stdout_attention"],
+      "evidence_terms": ["RUNTIME_SELF_UPDATE: disabled"],
+      "rationale": "Plugin preamble prints disabled runtime self-update status."
+    },
+    "scripts/retro_persistence_lib.py": {
+      "states": ["skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["summary_skipped_reason"],
+      "rationale": "Retro persistence records skipped summary refresh reasons in payload state."
+    },
+    "scripts/run_slice_closeout.py": {
+      "states": ["disabled"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["cautilus_plan"],
+      "rationale": "Slice closeout carries the Cautilus planner disabled state into closeout decisions."
+    },
+    "scripts/sync_support.py": {
+      "states": ["skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["status", "skipped"],
+      "rationale": "Support sync returns explicit skipped status for non-materialized or irrelevant sync work."
+    },
+    "scripts/t_events_emit_lib.py": {
+      "states": ["disabled", "no_adapter", "skipped"],
+      "visibility": ["local_noop_not_closeout", "terminal_payload"],
+      "evidence_terms": ["emitted", "reason"],
+      "rationale": "T-event emission is runtime telemetry; no-op reasons are returned to callers and are not quality closeout proof."
+    },
+    "scripts/update_tools.py": {
+      "states": ["disabled", "skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["mode", "disabled"],
+      "rationale": "Tool update reports disabled adapter state as structured skipped output."
+    },
+    "scripts/validate_cautilus_proof.py": {
+      "states": ["disabled"],
+      "visibility": ["stdout_attention"],
+      "evidence_terms": ["cautilus proof disabled by repo adapter"],
+      "rationale": "Disabled Cautilus proof is printed as the validator outcome."
+    },
+    "scripts/validate_inventory_consumption.py": {
+      "states": ["prose_review_status", "skipped"],
+      "visibility": ["hard_failure_or_blocker", "explicit_skip_summary"],
+      "evidence_terms": ["prose_review_status", "predates contract start"],
+      "rationale": "The validator fails current artifacts missing prose-review engagement and explicitly reports grandfathered artifacts."
+    },
+    "scripts/validate_inventory_consumption_declaration.py": {
+      "states": ["skipped"],
+      "visibility": ["explicit_skip_summary"],
+      "evidence_terms": ["opted-out", "skipped here"],
+      "rationale": "Opted-out inventory declarations are handled by the companion coverage validator."
+    },
+    "scripts/validate_maintainer_setup.py": {
+      "states": ["skipped"],
+      "visibility": ["stdout_attention"],
+      "evidence_terms": ["maintainer hook validation skipped"],
+      "rationale": "Non-git worktrees get an explicit skipped maintainer-hook message."
+    },
+    "scripts/validate_usage_episodes.py": {
+      "states": ["disabled", "no_adapter", "skipped"],
+      "visibility": ["structured_warning", "stdout_attention"],
+      "evidence_terms": ["WARNING:", "usage_episodes_adapter_missing"],
+      "rationale": "Usage episode opt-in absence and disabled state remain non-failing but visible in JSON and normal output."
+    },
+    "scripts/worktree_audit_lib.py": {
+      "states": ["skipped"],
+      "visibility": ["operator_summary", "terminal_payload"],
+      "evidence_terms": ["skipped"],
+      "rationale": "Worktree audit includes skipped counts in summaries."
+    },
+    "scripts/worktree_cleanup_lib.py": {
+      "states": ["skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["delete-branch", "skipped"],
+      "rationale": "Cleanup actions report skipped action state and reason in the action payload."
+    },
+    "scripts/worktree_doctor_lib.py": {
+      "states": ["skipped"],
+      "visibility": ["operator_summary", "terminal_payload"],
+      "evidence_terms": ["skipped:"],
+      "rationale": "Worktree doctor renders skipped checks in operator output."
+    },
+    "scripts/worktree_doctor_state.py": {
+      "states": ["skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["SKIPPED"],
+      "rationale": "The state module defines the canonical skipped value consumed by worktree doctor renderers."
+    },
+    "skills/public/gather/scripts/advise_google_workspace_path.py": {
+      "states": ["skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["doctor_status", "skipped"],
+      "rationale": "Google Workspace advice reports skipped doctor status when the host capability is unavailable."
+    },
+    "skills/public/gather/scripts/advise_slack_path.py": {
+      "states": ["skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["doctor_status", "skipped"],
+      "rationale": "Slack advice reports skipped doctor status when the host capability is unavailable."
+    },
+    "skills/public/gather/scripts/gather_public_url.py": {
+      "states": ["skipped"],
+      "visibility": ["support_trace"],
+      "evidence_terms": ["attempt", "skipped"],
+      "rationale": "Skipped acquisition stages are represented in the public URL gather attempt trace."
+    },
+    "skills/public/quality/scripts/skill_ergonomics_lib.py": {
+      "states": ["prose_review_status"],
+      "visibility": ["structured_warning"],
+      "evidence_terms": ["prose_review_status", "advisories"],
+      "rationale": "Skill ergonomics prose-review-required states produce advisory payloads consumed by quality artifacts."
+    },
+    "skills/public/quality/scripts/validate_skill_ergonomics.py": {
+      "states": ["advisory-only", "disabled", "skipped"],
+      "visibility": ["structured_warning", "stdout_attention"],
+      "evidence_terms": ["WARNING:", "skill_ergonomics_gate_rules_empty"],
+      "rationale": "Empty or disabled skill ergonomics enforcement remains exit-zero but emits warnings."
+    },
+    "skills/public/release/scripts/check_fresh_checkout_probes.py": {
+      "states": ["not_configured"],
+      "visibility": ["artifact_visible", "stdout_attention"],
+      "evidence_terms": ["release adapter declares no fresh_checkout_probes"],
+      "rationale": "Release fresh-checkout absence is written into the release artifact and plain output."
+    },
+    "skills/public/release/scripts/check_requested_review_gate.py": {
+      "states": ["advisory-only", "not_configured"],
+      "visibility": ["structured_warning", "stdout_attention"],
+      "evidence_terms": ["WARNING:", "requested_review_commands is empty"],
+      "rationale": "Release requested-review absence remains non-blocking only with an explicit warning."
+    },
+    "skills/public/release/scripts/init_adapter.py": {
+      "states": ["skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["review skipped because"],
+      "rationale": "Generated release adapter patterns include explicit skipped-review phrases for gate parsing."
+    },
+    "skills/public/release/scripts/publish_release_helpers.py": {
+      "states": ["not_configured"],
+      "visibility": ["artifact_visible"],
+      "evidence_terms": ["No repo-declared fresh checkout probes were configured"],
+      "rationale": "Release helper writes not-configured fresh-checkout status into the release artifact."
+    },
+    "skills/public/release/scripts/resolve_adapter.py": {
+      "states": ["skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["review skipped because"],
+      "rationale": "Release adapter parsing preserves skipped-review patterns for requested-review gate decisions."
+    },
+    "skills/public/setup/scripts/seed_dependencies.py": {
+      "states": ["skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["status", "skipped"],
+      "rationale": "Dependency seeding reports skipped dependency setup as structured payload status."
+    },
+    "skills/public/setup/scripts/seed_t_events_adapter.py": {
+      "states": ["disabled"],
+      "visibility": ["artifact_visible"],
+      "evidence_terms": ["enabled: false"],
+      "rationale": "Seeded T-events adapter starts disabled in checked-in config text so the opt-in state is visible."
+    },
+    "skills/support/markdown-preview/scripts/render_markdown_preview.py": {
+      "states": ["disabled"],
+      "visibility": ["structured_warning", "terminal_payload"],
+      "evidence_terms": ["Markdown preview is disabled by config."],
+      "rationale": "Markdown preview disabled state includes a warning in the render payload."
+    },
+    "skills/support/web-fetch/scripts/acquisition_trace_lib.py": {
+      "states": ["skipped"],
+      "visibility": ["support_trace"],
+      "evidence_terms": ["status=\"skipped\""],
+      "rationale": "Web-fetch skipped acquisition attempts are explicit trace entries."
+    }
+  }
+}

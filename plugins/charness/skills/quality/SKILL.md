@@ -17,9 +17,6 @@ architecture is the real issue. Length, duplicate, and pressure heuristics are
 structural smell sensors; the win is delete, merge, split ownership, extract a
 helper, or narrow an interface.
 
-`quality` may also install or refresh deterministic, low-risk repo-local
-quality posture. Review posture and bootstrap posture remain one public concept.
-
 ## Bootstrap
 
 Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then
@@ -72,6 +69,7 @@ When writing the quality artifact, edit the resolved `write_artifact_path`, not
 3. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
    - resolve and run the Charness package-root validator `validate_usage_episodes.py`; `no_adapter` and `disabled` are skipped warnings, not failures
+   - keep exit-zero attention states visible with `validate_attention_state_visibility.py`; new skipped/advisory states need warning output, artifact-visible status, or an explicit local-noop declaration
    - run executable-spec overlap or cost guards before proposing more spec
      coverage
    - for standing-test economics, inspect duplicated proof, runner isolation,
@@ -135,8 +133,6 @@ Validators and consumer prompts use these core routing anchors; references carry
 
 ## Output Shape
 
-Use the sections that match the scope, without reducing quality to one score:
-
 - `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`, `Standing Test Economics`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `CI/Local Gate Parity`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Advisory`, `Delegated Review`, `Commands Run`, `Recommended Next Gates`
 
 ## Guardrails
@@ -159,6 +155,7 @@ Use the sections that match the scope, without reducing quality to one score:
 - `references/adapter-contract.md`
 - `references/adapter-gate-review.md`
 - `references/agent-production-runtime.md`
+- `references/attention-state-visibility.json`
 - `references/automation-promotion.md`
 - `references/bootstrap-escalations.md`
 - `references/bootstrap-posture.md`
