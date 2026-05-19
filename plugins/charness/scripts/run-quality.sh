@@ -13,6 +13,7 @@ STANDING_PYTEST_TARGETS=(
 
 RUN_QUALITY_REVIEW=0
 RUN_QUALITY_MODE="${CHARNESS_QUALITY_MODE:-full}"
+RUN_QUALITY_INCLUDE_RELEASE_ONLY="${CHARNESS_QUALITY_INCLUDE_RELEASE_ONLY:-0}"
 for arg in "$@"; do
   case "$arg" in
     --review)
@@ -24,11 +25,15 @@ for arg in "$@"; do
     --full)
       RUN_QUALITY_MODE="full"
       ;;
+    --release)
+      RUN_QUALITY_INCLUDE_RELEASE_ONLY=1
+      ;;
     --help|-h)
-      echo "Usage: ./scripts/run-quality.sh [--review] [--read-only|--full]"
+      echo "Usage: ./scripts/run-quality.sh [--review] [--read-only|--full] [--release]"
       echo "  --review     replay passing phase logs and validate external links online"
       echo "  --read-only  skip phases that would mutate git-tracked quality artifacts"
       echo "  --full       refresh git-tracked quality artifacts (default)"
+      echo "  --release    include release_only pytest cases (charness update/install lifecycle regression tests)"
       exit 0
       ;;
     *)
@@ -368,7 +373,7 @@ else
   echo "run-quality: pytest-xdist not installed; pytest will run serially and may exceed runtime budgets. Install with: pip install pytest-xdist" >&2
 fi
 PYTEST_MARKER_FLAGS=()
-if [[ "$RUN_QUALITY_MODE" == "read-only" ]]; then
+if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" != "1" ]]; then
   PYTEST_MARKER_FLAGS=(-m "not release_only")
 fi
 if ((${#PYTEST_PARALLEL_FLAGS[@]})); then
