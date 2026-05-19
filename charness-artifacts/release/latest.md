@@ -3,12 +3,12 @@ Date: 2026-05-19
 
 ## Scope
 
-Advanced `charness` toward release `0.7.3` (tag `v0.7.3`) through the repo-owned release helper.
+Advanced `charness` toward release `0.7.4` (tag `v0.7.4`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `0.7.2`
-- target version: `0.7.3`
+- previous version: `0.7.3`
+- target version: `0.7.4`
 - git branch: `main`
 - git remote: `origin`
 
@@ -22,7 +22,7 @@ Advanced `charness` toward release `0.7.3` (tag `v0.7.3`) through the repo-owned
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.7.3`; creation runs after the branch/tag push
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.7.4`; creation runs after the branch/tag push
 - public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
