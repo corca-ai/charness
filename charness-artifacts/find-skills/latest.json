@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-19T05:30:15Z",
+  "generated_at": "2026-05-19T10:43:24Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -377,8 +377,7 @@
           "skills/public/issue/scripts/issue_tool.py",
           "skills/public/issue/scripts/issue_runtime.py",
           "skills/public/issue/scripts/resolve_adapter.py",
-          "skills/public/issue/scripts/init_adapter.py",
-          "skills/public/issue/scripts/audit_brief.py"
+          "skills/public/issue/scripts/init_adapter.py"
         ],
         "source": "local-public",
         "layer": "public skill"
