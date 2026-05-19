@@ -144,6 +144,21 @@ Post-implementation critique completed with three bounded reviewers:
   installed support skill visibility preserved, then its checked-in repo id was
   restored to `charness` instead of the worktree basename.
 
+Additional post-commit critique completed on 2026-05-19 with three bounded
+reviewers plus a counterweight pass. Packet:
+`charness-artifacts/critique/2026-05-19-115234-packet.md`.
+
+Actioned before merge:
+
+- malformed present adapters now fail closed instead of collapsing to generic
+  fallback
+- unsupported adapter schema versions are rejected; version `1` is the only
+  supported version in this slice
+- Charness now has a canonical `.agents/create-skill-adapter.yaml`, so the
+  final resolver proof exercises `found: true`, `valid: true`
+- `SKILL.md` now tells agents to stop on `valid:false`, name visible fallback
+  on `found:false`, and use `init_adapter.py` to scaffold the canonical adapter
+
 Final proof:
 
 - `python3 skills/public/create-skill/scripts/resolve_adapter.py --repo-root .`

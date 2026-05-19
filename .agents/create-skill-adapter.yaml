@@ -1,0 +1,20 @@
+version: 1
+repo: charness
+language: en
+output_dir: charness-artifacts/create-skill
+preset_id: portable-defaults
+customized_from: portable-defaults
+implementation_identity_terms:
+  - canonical implementation
+  - shared implementation
+placement_terms:
+  - host-facing registration
+  - trigger surface
+  - alias
+intentional_fork_signals:
+  - behavior difference
+  - data isolation
+  - independent lifecycle
+topology_verification_hints:
+  - State whether the skill implementation is shared or intentionally forked before completion.
+  - State which repo-local placements point at the canonical implementation when the repo exposes that topology.

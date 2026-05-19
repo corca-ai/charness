@@ -83,6 +83,72 @@ def test_create_skill_adapter_resolver_rejects_invalid_list_field(tmp_path: Path
     assert "implementation_identity_terms must be a list of strings" in payload["errors"]
 
 
+def test_create_skill_adapter_resolver_rejects_unsupported_version(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    adapter_dir = repo / ".agents"
+    adapter_dir.mkdir(parents=True)
+    (adapter_dir / "create-skill-adapter.yaml").write_text(
+        "version: 2\nimplementation_identity_terms:\n  - shared implementation\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(RESOLVE, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["found"] is True
+    assert payload["valid"] is False
+    assert "version must be 1" in payload["errors"]
+
+
+def test_create_skill_adapter_resolver_rejects_top_level_list(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    adapter_dir = repo / ".agents"
+    adapter_dir.mkdir(parents=True)
+    (adapter_dir / "create-skill-adapter.yaml").write_text("- just a list\n", encoding="utf-8")
+
+    result = run_script(RESOLVE, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["found"] is True
+    assert payload["valid"] is False
+    assert "top-level mapping" in "\n".join(payload["errors"])
+
+
+def test_create_skill_adapter_resolver_rejects_unparseable_mapping(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    adapter_dir = repo / ".agents"
+    adapter_dir.mkdir(parents=True)
+    (adapter_dir / "create-skill-adapter.yaml").write_text("not yaml\n", encoding="utf-8")
+
+    result = run_script(RESOLVE, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["found"] is True
+    assert payload["valid"] is False
+    assert "supported create-skill adapter mapping entries" in "\n".join(payload["errors"])
+
+
+def test_create_skill_adapter_resolver_reports_explicit_empty_lists(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    adapter_dir = repo / ".agents"
+    adapter_dir.mkdir(parents=True)
+    (adapter_dir / "create-skill-adapter.yaml").write_text(
+        "version: 1\nimplementation_identity_terms: []\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(RESOLVE, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["found"] is True
+    assert payload["valid"] is True
+    assert payload["field_state"]["implementation_identity_terms"] == "explicit-empty"
+
+
 def test_create_skill_adapter_resolver_warns_on_compatibility_path(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

@@ -46,6 +46,8 @@ STRING_LIST_FIELDS = (
     "intentional_fork_signals",
     "topology_verification_hints",
 )
+SUPPORTED_VERSION = 1
+KNOWN_FIELDS = ("version", *STRING_FIELDS, *STRING_LIST_FIELDS)
 
 
 def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
@@ -78,7 +80,10 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
     version = data.get("version")
     if version is not None:
         if isinstance(version, int):
-            validated["version"] = version
+            if version == SUPPORTED_VERSION:
+                validated["version"] = version
+            else:
+                errors.append(f"version must be {SUPPORTED_VERSION}")
         else:
             errors.append("version must be an integer")
 
@@ -111,6 +116,23 @@ def _field_state(data: dict[str, Any]) -> dict[str, str]:
     return {field: _list_field_state(data, field) for field in STRING_LIST_FIELDS}
 
 
+def _mapping_shape_error(adapter_path: Path, data: dict[str, Any]) -> str | None:
+    meaningful_lines = [
+        line.strip()
+        for line in adapter_path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+    if not meaningful_lines:
+        return "adapter file is empty; expected a create-skill adapter mapping"
+    if meaningful_lines[0].startswith("- "):
+        return "adapter file must contain a top-level mapping, not a list"
+    if not data:
+        return "adapter file did not contain supported create-skill adapter mapping entries"
+    if not any(field in data for field in KNOWN_FIELDS):
+        return "adapter file did not contain recognized create-skill adapter fields"
+    return None
+
+
 def load_adapter(repo_root: Path) -> dict[str, Any]:
     searched_paths = [str((repo_root / candidate).resolve()) for candidate in ADAPTER_CANDIDATES]
     adapter_path = find_adapter(repo_root)
@@ -126,6 +148,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "warnings": [
                 "No create-skill adapter found. Using generic topology vocabulary.",
                 "Create .agents/create-skill-adapter.yaml to record repo-owned skill topology terms.",
+                'Run python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root . to scaffold one.',
             ],
             "searched_paths": searched_paths,
         }
@@ -133,12 +156,15 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
     raw = load_yaml_file(adapter_path)
     raw_data = raw if isinstance(raw, dict) else {}
     warnings: list[str] = []
+    errors: list[str] = []
     canonical_path = repo_root / ".agents" / "create-skill-adapter.yaml"
-    if not isinstance(raw, dict):
-        warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
+    shape_error = _mapping_shape_error(adapter_path, raw_data)
+    if shape_error is not None:
+        errors.append(shape_error)
     if adapter_path.resolve() != canonical_path.resolve():
         warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical_path}.")
-    data, errors, extra_warnings = validate_adapter_data(raw_data, repo_root)
+    data, validation_errors, extra_warnings = validate_adapter_data(raw_data, repo_root)
+    errors.extend(validation_errors)
     warnings.extend(extra_warnings)
     return {
         "found": True,

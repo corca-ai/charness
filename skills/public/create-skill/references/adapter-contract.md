@@ -66,6 +66,13 @@ When no adapter is present, `create-skill` may continue with generic inferred
 terms, but the fallback must stay visible. The agent should say it is using
 generic topology vocabulary instead of a repo-owned create-skill adapter.
 
+Run `python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .` to scaffold
+the canonical `.agents/create-skill-adapter.yaml` file.
+
+When an adapter file is present but invalid, stop and repair it before relying
+on inferred topology terms. A broken repo-owned adapter is not the same as a
+missing adapter.
+
 ## Non-Goals
 
 - Do not store secrets or provider credentials.

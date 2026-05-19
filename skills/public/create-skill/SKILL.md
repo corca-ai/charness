@@ -35,6 +35,12 @@ sed -n '1,240p' profiles/profile.schema.json
 sed -n '1,220p' presets/README.md
 ```
 
+Read the resolver JSON before continuing. Stop and repair the adapter when
+`valid` is `false`; when `found` is `false`, name the visible generic topology
+fallback in the brief before using inferred vocabulary. Run
+`python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .` to scaffold the
+canonical adapter when the repo should own topology terms.
+
 ## Workflow
 
 1. Classify the artifact before editing.
