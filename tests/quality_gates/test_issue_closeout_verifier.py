@@ -292,6 +292,30 @@ def test_issue_verify_closeout_requires_manual_fallback_reason(tmp_path: Path) -
     assert "manual-fallback carrier requires --manual-fallback-reason" in payload["error"]
 
 
+def test_issue_verify_closeout_rejects_open_expected_state(tmp_path: Path) -> None:
+    result = run_script(
+        SCRIPT,
+        "verify-closeout",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "42",
+        "--classification",
+        "bug",
+        "--carrier",
+        "direct-commit",
+        "--commit-ref",
+        "HEAD",
+        "--expect-state",
+        "OPEN",
+    )
+
+    assert result.returncode == 2
+    assert "invalid choice: 'OPEN'" in result.stderr
+
+
 def test_issue_verify_closeout_uses_adapter_view_for_final_state(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
@@ -375,6 +399,115 @@ def test_issue_verify_closeout_uses_adapter_view_for_final_state(tmp_path: Path)
     assert payload["verified_state"][0]["state"] == "CLOSED"
     entries = json.loads(log.read_text(encoding="utf-8"))
     assert ["github", "issue", "view", "-R", "corca-ai/charness", "42", "--json", "number,state,url,comments"] in entries
+
+
+def test_issue_verify_closeout_rejects_adapter_view_without_target_placeholders(tmp_path: Path) -> None:
+    _write_adapter_with_backend(tmp_path, backend_id="ceal-github", binary="ceal")
+    adapter_path = tmp_path / ".agents" / "issue-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "\n".join(
+            [
+                "    view:",
+                "      - github",
+                "      - issue",
+                "      - view",
+                "      - '--json'",
+                "      - '{json_fields}'",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    _seed_commit(tmp_path, _bug_closeout_body(close_line="Close #42."))
+
+    result = run_script(
+        SCRIPT,
+        "verify-closeout",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "42",
+        "--classification",
+        "bug",
+        "--carrier",
+        "direct-commit",
+        "--commit-ref",
+        "HEAD",
+        "--expect-state",
+        "CLOSED",
+        env={**os.environ, "PATH": "/usr/bin:/bin"},
+    )
+
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    assert "missing required placeholders" in payload["error"]
+    assert "repo" in payload["error"]
+    assert "number" in payload["error"]
+
+
+def test_issue_verify_closeout_uses_default_gh_comments_for_manual_fallback(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    log = tmp_path / "gh-log.json"
+    fake = bin_dir / "gh"
+    fake.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import json, os, sys",
+                "from pathlib import Path",
+                "log = Path(os.environ['GH_LOG'])",
+                "entries = json.loads(log.read_text()) if log.exists() else []",
+                "entries.append(sys.argv[1:])",
+                "log.write_text(json.dumps(entries))",
+                "if 'view' in sys.argv:",
+                "    print(json.dumps({'number': 42, 'state': 'CLOSED', 'url': 'https://example.test/42', 'comments': [{'body': os.environ['COMMENT_BODY']}]}))",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    body = tmp_path / "closeout.md"
+    body_text = (
+        _bug_closeout_body(close_line="Manual close comment.")
+        + "\nManual close reason: auto-close failed after remote verification.\n"
+    )
+    body.write_text(body_text, encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "verify-closeout",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "42",
+        "--classification",
+        "bug",
+        "--carrier",
+        "manual-fallback",
+        "--body-file",
+        str(body),
+        "--manual-fallback-reason",
+        "auto-close-failed-after-remote-verification",
+        "--expect-state",
+        "CLOSED",
+        env={
+            **os.environ,
+            "PATH": f"{bin_dir}:/usr/bin:/bin",
+            "GH_LOG": str(log),
+            "COMMENT_BODY": body_text,
+        },
+    )
+
+    assert result.returncode == 0, result.stderr
+    entries = json.loads(log.read_text(encoding="utf-8"))
+    assert ["issue", "view", "--repo", "corca-ai/charness", "42", "--json", "number,state,url,comments"] in entries
 
 
 def test_issue_verify_closeout_rejects_wrong_issue_number_from_backend(tmp_path: Path) -> None:

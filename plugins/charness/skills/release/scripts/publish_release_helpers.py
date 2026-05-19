@@ -111,6 +111,18 @@ def release_exists(repo_root: Path, tag_name: str, backend: dict[str, Any] | Non
     return run(command, cwd=repo_root, check=False).returncode == 0
 
 
+def create_release(repo_root: Path, backend: dict[str, Any], *, tag_name: str, title: str, notes_file: Path | None):
+    release_command = backend_command(
+        backend,
+        "release_create",
+        ["gh", "release", "create", "{tag}", "--verify-tag", "--title", "{title}"],
+        tag=tag_name,
+        title=title,
+    )
+    release_command.extend(["--notes-file", str(notes_file.resolve())] if notes_file else ["--generate-notes"])
+    return run(release_command, cwd=repo_root)
+
+
 def changed_paths(repo_root: Path) -> list[str]:
     return [line[3:] for line in git_status(repo_root) if len(line) >= 4]
 
@@ -142,6 +154,58 @@ def issue_closeout_lines(issue_closeout: dict[str, Any] | None) -> list[str]:
     return lines
 
 
+def release_record_lines(release_url: str | None, public_release_verification: str) -> list[str]:
+    if release_url and public_release_verification == "verified":
+        return [f"- GitHub release record: verified URL `{release_url}`"]
+    if release_url:
+        return [f"- GitHub release record: target URL `{release_url}`; creation runs after the branch/tag push"]
+    return ["- GitHub release record: not created by this helper run"]
+
+
+def amend_fresh_checkout_artifact(
+    repo_root: Path,
+    *,
+    write_artifact,
+    fresh_checkout_payload: dict[str, Any],
+    release_url: str | None,
+    artifact_relpath: str,
+    tag_name: str,
+    notes_file: Path | None,
+    run_narrative_audit,
+    run_command=run,
+) -> None:
+    write_artifact(fresh_checkout_payload=fresh_checkout_payload, release_url=release_url)
+    run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
+    run_command(["git", "add", artifact_relpath], cwd=repo_root)
+    run_command(["git", "commit", "--amend", "--no-edit"], cwd=repo_root)
+
+
+def commit_post_publish_artifact(
+    repo_root: Path,
+    *,
+    write_artifact,
+    payload: dict[str, Any],
+    fresh_checkout_payload: dict[str, Any],
+    artifact_relpath: str,
+    expected_release_url: str | None,
+    remote: str,
+    branch: str,
+    run_command=run,
+) -> None:
+    write_artifact(
+        fresh_checkout_payload=fresh_checkout_payload,
+        release_url=payload.get("release_url") or expected_release_url,
+        issue_closeout=payload.get("issue_closeout"),
+    )
+    diff_result = run_command(["git", "diff", "--quiet", "--", artifact_relpath], cwd=repo_root, check=False)
+    if diff_result.returncode == 0:
+        return
+    run_command(["git", "add", artifact_relpath], cwd=repo_root)
+    run_command(["git", "commit", "-m", f"Record release verification for {payload['tag_name']}"], cwd=repo_root)
+    run_command(["git", "push", remote, branch], cwd=repo_root)
+    payload["post_publish_artifact_commit_sha"] = run_command(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()
+
+
 def write_release_artifact(
     repo_root: Path,
     *,
@@ -159,6 +223,7 @@ def write_release_artifact(
     issue_closeout: dict[str, Any] | None = None,
     quality_status: str = "passed before publish",
     tag_name: str | None = None,
+    public_release_verification: str = "not checked by this helper",
 ) -> str:
     artifact_dir = repo_root / output_dir
     artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -191,15 +256,10 @@ def write_release_artifact(
         "- local release mutation: complete",
         "- branch/tag push: complete",
     ]
-    if release_url:
-        lines.append(
-            f"- GitHub release record: target URL `{release_url}`; creation runs after the branch/tag push"
-        )
-    else:
-        lines.append("- GitHub release record: not created by this helper run")
+    lines.extend(release_record_lines(release_url, public_release_verification))
     lines.extend(
         [
-            "- public release surface verification: not checked by this helper",
+            f"- public release surface verification: {public_release_verification}",
             f"- audit narrative: durable record written to `{artifact_relpath}` and committed with this slice",
             "",
             "## Public Release Verification",

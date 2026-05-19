@@ -32,7 +32,7 @@ GH_VIEW_DEFAULT = [
     "{repo}",
     "{number}",
     "--json",
-    "number,state,url",
+    "{json_fields}",
 ]
 
 COMMENT_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "body_file", "reason"})
@@ -47,6 +47,7 @@ def _resolve_op(
     op: str,
     default: list[str],
     allowed: frozenset[str],
+    required: frozenset[str] = frozenset(),
     **subs: str,
 ) -> list[str]:
     extra_subs = sorted(set(subs) - allowed)
@@ -76,6 +77,12 @@ def _resolve_op(
         raise RuntimeError(
             f"_resolve_op({op}): adapter template uses unknown placeholders {unknown!r}; "
             f"allowed for {op}: {sorted(allowed)!r}"
+        )
+    missing_required = sorted(required - used)
+    if missing_required:
+        raise RuntimeError(
+            f"_resolve_op({op}): adapter template is missing required placeholders "
+            f"{missing_required!r}"
         )
     rendered = [part.format(**subs) if "{" in part else part for part in template]
     return [binary, *rendered]

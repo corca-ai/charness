@@ -185,6 +185,7 @@ def _view_issue_state(
         "view",
         ISSUE_CLOSE.GH_VIEW_DEFAULT,
         ISSUE_CLOSE.VIEW_PLACEHOLDERS,
+        required=frozenset({"repo", "number"}),
         repo=repo,
         number=str(number),
         json_fields=json_fields,

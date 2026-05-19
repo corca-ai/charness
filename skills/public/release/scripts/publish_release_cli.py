@@ -48,13 +48,14 @@ changed_paths = _helpers.changed_paths
 unreleased_paths = _helpers.unreleased_paths
 write_release_artifact = _helpers.write_release_artifact
 backend_command = _helpers.backend_command
+create_release = _helpers.create_release
+amend_fresh_checkout_artifact = _helpers.amend_fresh_checkout_artifact
+commit_post_publish_artifact = _helpers.commit_post_publish_artifact
 github_repo_slug = _issue_closeout.github_repo_slug
 release_commit_body = _issue_closeout.release_commit_body
 ensure_release_issues_closed = _issue_closeout.ensure_release_issues_closed
 preflight_release_issues = _issue_closeout.preflight_release_issues
 commit_issue_closeout_artifact = _issue_closeout.commit_issue_closeout_artifact
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
@@ -69,8 +70,6 @@ def parse_args() -> argparse.Namespace:
     group.add_argument("--part", choices=("patch", "minor", "major"))
     group.add_argument("--set-version")
     return parser.parse_args()
-
-
 def target_version(args: argparse.Namespace, current_version: str) -> str:
     if args.publish_current:
         return current_version
@@ -78,15 +77,11 @@ def target_version(args: argparse.Namespace, current_version: str) -> str:
         return args.set_version
     assert args.part is not None
     return bump_part(current_version, args.part)
-
-
 def safe_real_host_payload(repo_root: Path, repo_paths: list[str]) -> dict[str, Any]:
     try:
         return build_real_host_payload(repo_root, repo_paths)
     except Exception as exc:  # pragma: no cover - fallback only
         return {"required": False, "changed_paths": repo_paths, "surface_hits": [], "path_hits": [], "checklist": [], "reason": f"Real-host/public verification probe could not run: {exc}"}
-
-
 def run_requested_review_gate(repo_root: Path) -> None:
     review_gate_payload = build_review_gate_payload(repo_root, run_commands=True)
     if review_gate_payload["status"] == "blocked":
@@ -138,6 +133,7 @@ def write_current_artifact(
         update_instructions=adapter_data["update_instructions"], real_host_payload=host_payload,
         fresh_checkout_payload=fresh_checkout_payload, issue_closeout=issue_closeout, quality_status=quality_status,
         tag_name=payload["tag_name"],
+        public_release_verification=payload.get("public_release_verification", "not checked by this helper"),
     )
 
 
@@ -218,12 +214,13 @@ def finalize_release_payload(
     host_payload: dict[str, Any],
     release_stdout: str,
     expected_release_url: str | None,
+    release_verified: bool,
 ) -> None:
     payload["commit_sha"] = run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()
     payload["artifact_path"] = artifact_relpath
     payload["real_host_required"] = host_payload["required"]
     payload["real_host_checklist"] = host_payload["checklist"]
-    payload["public_release_verification"] = "not_checked"
+    payload["public_release_verification"] = "verified" if release_verified else "not_checked"
     payload["release_url"] = next((line.strip() for line in reversed(release_stdout.splitlines()) if line.strip()), None)
     if payload["release_url"] and expected_release_url and payload["release_url"] != expected_release_url:
         payload["release_url_warning"] = (
@@ -232,16 +229,31 @@ def finalize_release_payload(
         )
 
 
-def create_release(repo_root: Path, backend: dict[str, Any], *, tag_name: str, title: str, notes_file: Path | None):
-    release_command = backend_command(
-        backend,
-        "release_create",
-        ["gh", "release", "create", "{tag}", "--verify-tag", "--title", "{title}"],
-        tag=tag_name,
-        title=title,
-    )
-    release_command.extend(["--notes-file", str(notes_file.resolve())] if notes_file else ["--generate-notes"])
-    return run(release_command, cwd=repo_root)
+def commit_final_release_artifact(
+    repo_root: Path,
+    *,
+    adapter_data: dict[str, Any],
+    payload: dict[str, Any],
+    host_payload: dict[str, Any],
+    fresh_checkout_payload: dict[str, Any],
+    artifact_relpath: str,
+    expected_release_url: str | None,
+    remote: str,
+    branch: str,
+    has_issue_closeout: bool,
+) -> None:
+    def writer(**kwargs):
+        return write_current_artifact(repo_root, adapter_data, payload, host_payload, **kwargs)
+
+    kwargs = {
+        "repo_root": repo_root, "write_artifact": writer, "payload": payload,
+        "fresh_checkout_payload": fresh_checkout_payload, "artifact_relpath": artifact_relpath,
+        "expected_release_url": expected_release_url, "remote": remote, "branch": branch,
+    }
+    if has_issue_closeout:
+        commit_issue_closeout_artifact(**kwargs, run=run)
+    else:
+        commit_post_publish_artifact(**kwargs, run_command=run)
 
 
 def main() -> None:
@@ -314,31 +326,30 @@ def main() -> None:
     fresh_checkout_payload = run_fresh_checkout_probes(repo_root)
     payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
     if fresh_checkout_payload["status"] == "passed":
-        write_current_artifact(
-            repo_root, adapter_data, payload, host_payload, fresh_checkout_payload=fresh_checkout_payload,
-            release_url=expected_release_url,
+        amend_fresh_checkout_artifact(
+            repo_root, write_artifact=lambda **kwargs: write_current_artifact(
+                repo_root, adapter_data, payload, host_payload, **kwargs
+            ), fresh_checkout_payload=fresh_checkout_payload, release_url=expected_release_url,
+            artifact_relpath=artifact_relpath, tag_name=tag_name, notes_file=notes_file,
+            run_narrative_audit=run_narrative_audit, run_command=run,
         )
-        run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
-        run(["git", "add", artifact_relpath], cwd=repo_root)
-        run(["git", "commit", "--amend", "--no-edit"], cwd=repo_root)
         fresh_checkout_payload = run_fresh_checkout_probes(repo_root)
         payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
     run(["git", "tag", tag_name], cwd=repo_root)
     run(["git", "push", args.remote, branch, tag_name], cwd=repo_root)
 
     release_result = create_release(repo_root, backend, tag_name=tag_name, title=title, notes_file=notes_file)
+    release_verified = release_exists(repo_root, tag_name, backend)
     finalize_release_payload(
         repo_root, payload, artifact_relpath=artifact_relpath, host_payload=host_payload,
         release_stdout=release_result.stdout, expected_release_url=expected_release_url,
+        release_verified=release_verified,
     )
     ensure_release_issues_closed(repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=run)
-    if args.close_issue:
-        def writer(**kwargs):
-            return write_current_artifact(repo_root, adapter_data, payload, host_payload, **kwargs)
-
-        commit_issue_closeout_artifact(
-            repo_root, write_artifact=writer, payload=payload, fresh_checkout_payload=fresh_checkout_payload,
-            artifact_relpath=artifact_relpath, expected_release_url=expected_release_url,
-            remote=args.remote, branch=branch, run=run,
-        )
+    commit_final_release_artifact(
+        repo_root, adapter_data=adapter_data, payload=payload, host_payload=host_payload,
+        fresh_checkout_payload=fresh_checkout_payload, artifact_relpath=artifact_relpath,
+        expected_release_url=expected_release_url, remote=args.remote, branch=branch,
+        has_issue_closeout=bool(args.close_issue),
+    )
     print(json.dumps(payload, ensure_ascii=False, indent=2))

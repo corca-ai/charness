@@ -253,7 +253,7 @@ def build_parser() -> argparse.ArgumentParser:
     verify.add_argument("--commit-ref")
     verify.add_argument("--body-file", type=Path)
     verify.add_argument("--manual-fallback-reason", choices=VERIFY.MANUAL_FALLBACK_REASONS)
-    verify.add_argument("--expect-state", choices=("OPEN", "CLOSED"))
+    verify.add_argument("--expect-state", choices=("CLOSED",))
     verify.add_argument("--repo-root", type=Path, default=cwd_default)
     verify.set_defaults(func=command_verify_closeout)
 

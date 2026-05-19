@@ -81,7 +81,7 @@ state when `--expect-state CLOSED` is supplied.
   GitHub lifecycle redesign.
 - Implementation critique: parent-delegated; counterweight found no remaining
   blocker after wrong-repo, wrong-number, and unposted-comment fixes.
-- `python3 -m pytest -q tests/quality_gates/test_issue_skill.py`: 31 passed.
+- `python3 -m pytest -q tests/quality_gates/test_issue_skill.py tests/quality_gates/test_issue_closeout_verifier.py`: focused issue tests passed.
 - `python3 scripts/run_slice_closeout.py --repo-root . --ack-cautilus-skill-review`: passed.
 
 ## Next Move

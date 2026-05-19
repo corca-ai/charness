@@ -180,9 +180,16 @@ def _write_fake_gh(bin_dir: Path) -> None:
                 print("example/demo")
                 raise SystemExit(0)
             if args[:2] == ["release", "view"]:
-                raise SystemExit(1)
+                state_path = Path(os.environ["FAKE_GH_RELEASE_STATE"])
+                state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else []
+                raise SystemExit(0 if args[2] in state else 1)
             if args[:2] == ["release", "create"]:
                 tag = args[2]
+                state_path = Path(os.environ["FAKE_GH_RELEASE_STATE"])
+                state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else []
+                if tag not in state:
+                    state.append(tag)
+                state_path.write_text(json.dumps(state, indent=2) + "\\n", encoding="utf-8")
                 print(f"https://github.com/example/demo/releases/tag/{tag}")
                 raise SystemExit(0)
             if args[:2] == ["issue", "view"]:
@@ -241,6 +248,7 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
     env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
     env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
+    env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
     result = subprocess.run(
         [
             "python3",
@@ -284,14 +292,15 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     )
     git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
     assert ["push", "origin", "main", "v0.0.1"] in git_log
-    assert ["push", "origin", "main"] not in git_log
+    assert ["push", "origin", "main"] in git_log
     assert ["push", "origin", "v0.0.1"] not in git_log
     assert payload["release_url"] == "https://github.com/example/demo/releases/tag/v0.0.1"
-    assert payload["public_release_verification"] == "not_checked"
+    assert payload["public_release_verification"] == "verified"
+    assert "post_publish_artifact_commit_sha" in payload
     artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
     assert "## Release State" in artifact_text
-    assert "GitHub release record: target URL `https://github.com/example/demo/releases/tag/v0.0.1`" in artifact_text
-    assert "public release surface verification: not checked by this helper" in artifact_text
+    assert "GitHub release record: verified URL `https://github.com/example/demo/releases/tag/v0.0.1`" in artifact_text
+    assert "public release surface verification: verified" in artifact_text
     assert "## Public Release Verification" in artifact_text
     assert "Run `demo update`." in artifact_text
     assert "Restart the host if the previous version is still visible." in artifact_text
@@ -306,6 +315,7 @@ def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path:
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
     env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
     env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
+    env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
     env["FAKE_GH_ISSUE_STATE"] = str(tmp_path / "issue-state.json")
     Path(env["FAKE_GH_ISSUE_STATE"]).write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
     result = subprocess.run(
@@ -413,6 +423,7 @@ def test_publish_release_records_real_host_proof_for_unreleased_content(tmp_path
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
     env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
     env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
+    env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
     result = subprocess.run(
         [
             "python3",
@@ -602,6 +613,7 @@ def test_publish_release_blocks_failed_requested_review_command(tmp_path: Path) 
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
     env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
     env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
+    env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
     result = subprocess.run(
         [
             "python3",
@@ -648,6 +660,7 @@ def test_publish_release_blocks_failed_fresh_checkout_probe_before_tag_push(tmp_
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
     env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
     env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
+    env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
     result = subprocess.run(
         [
             "python3",
@@ -700,6 +713,7 @@ def test_publish_release_records_passed_fresh_checkout_probes_before_push(tmp_pa
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
     env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
     env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
+    env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
     result = subprocess.run(
         [
             "python3",
