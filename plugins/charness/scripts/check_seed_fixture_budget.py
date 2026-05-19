@@ -62,7 +62,7 @@ def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
     lib = _load_inventory()
-    footprint = lib._pytest_temp_footprint()
+    footprint = lib._pytest_temp_footprint_quick()
     breaches: list[dict[str, object]] = []
     classification: str
     total_disk_bytes: int | None

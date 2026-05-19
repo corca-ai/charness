@@ -133,7 +133,7 @@ runtime_budget_profiles:
       check-cli-skill-surface: 11000
       check-inventory-declaration-coverage: 500
       check-references-link-inventory: 1500
-      check-seed-fixture-budget: 60000
+      check-seed-fixture-budget: 5000
       check-spec-evidence-durability: 2500
       inventory-ci-local-gate-parity: 500
       inventory-sloc: 1000

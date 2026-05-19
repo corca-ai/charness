@@ -55,7 +55,11 @@ Search order:
 - `packaging_manifest_path`: `<repo-root>/packaging/<repo>.json`
 - `checked_in_plugin_root`: `<repo-root>/plugins/<package_id>`
 - `sync_command`: `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- `quality_command`: `<repo-root>/scripts/run-quality.sh`
+- `quality_command`: `<repo-root>/scripts/run-quality.sh`. Repos that gate
+  release-time regression tests behind a pytest marker (e.g., `release_only`)
+  should override this to include the marker — e.g.,
+  `./scripts/run-quality.sh --release` — so publish covers update/install
+  flow checks that standing pre-push intentionally skips.
 - `update_instructions`: empty list
 - `real_host_required_surfaces`: empty list
 - `real_host_required_path_globs`: empty list

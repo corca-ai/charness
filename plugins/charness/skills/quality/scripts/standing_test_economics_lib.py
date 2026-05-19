@@ -162,6 +162,66 @@ def _pytest_temp_root() -> Path:
     return base / f"pytest-of-{user}"
 
 
+def _pytest_temp_footprint_quick() -> dict[str, Any]:
+    """Single `du -d 4` walk that returns just what budget gates need.
+
+    Returns total_disk_bytes plus per-seed-prefix sums. Skips the per-test
+    `top_test_dirs` ranking that the full inventory needs but the budget
+    gate does not. ~10x faster than `_pytest_temp_footprint` because it
+    avoids one `du` subprocess per seed/test directory.
+    """
+    root = _pytest_temp_root()
+    if not root.exists():
+        return {"status": "missing", "root": str(root)}
+    try:
+        result = subprocess.run(
+            ["du", "-d", "4", "-B1", str(root)],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return {"status": "unavailable", "root": str(root)}
+    seed_totals: dict[str, dict[str, int]] = {
+        prefix: {"count": 0, "disk_bytes": 0} for prefix in PYTEST_SEED_PREFIXES
+    }
+    total_disk_bytes = 0
+    session_names: set[str] = set()
+    matched_paths: list[Path] = []
+    for line in result.stdout.splitlines():
+        try:
+            size_str, raw_path = line.split("\t", 1)
+            size = int(size_str)
+        except ValueError:
+            continue
+        path = Path(raw_path)
+        if path == root:
+            total_disk_bytes = size
+            continue
+        try:
+            rel_parts = path.relative_to(root).parts
+        except ValueError:
+            continue
+        if rel_parts and PYTEST_SESSION_RE.match(rel_parts[0]):
+            session_names.add(rel_parts[0])
+        if any(parent in matched_paths for parent in path.parents):
+            continue
+        for prefix in PYTEST_SEED_PREFIXES:
+            if path.name.startswith(prefix):
+                seed_totals[prefix]["count"] += 1
+                seed_totals[prefix]["disk_bytes"] += size
+                matched_paths.append(path)
+                break
+    return {
+        "status": "available",
+        "root": str(root),
+        "session_count": len(session_names),
+        "total_disk_bytes": total_disk_bytes,
+        "seed_totals": seed_totals,
+    }
+
+
 def _pytest_temp_footprint() -> dict[str, Any]:
     root = _pytest_temp_root()
     if not root.exists():
