@@ -18,6 +18,7 @@ invocation starts here. Read only the files that affect the current change.
 # 1. charness boundary and current product context
 sed -n '1,220p' README.md
 sed -n '1,220p' docs/handoff.md 2>/dev/null || true
+python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 
 # 2. existing target or source skill
 rg --files skills/public skills/support
@@ -34,6 +35,12 @@ sed -n '1,240p' profiles/profile.schema.json
 sed -n '1,220p' presets/README.md
 ```
 
+Read the resolver JSON before continuing. Stop and repair the adapter when
+`valid` is `false`; when `found` is `false`, name the visible generic topology
+fallback in the brief before using inferred vocabulary. Run
+`python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .` to scaffold the
+canonical adapter when the repo should own topology terms.
+
 ## Workflow
 
 1. Classify the artifact before editing.
@@ -45,6 +52,8 @@ sed -n '1,220p' presets/README.md
 2. Write a short brief before changing files.
    - concept, audience, trigger, external dependencies, accumulated state
    - candidate anchors and adjacent-skill behavior rules
+   - implementation topology: shared implementation, repo-local placements,
+     aliases, or intentional fork signals from the create-skill adapter
    - cold start, warm start, error recovery, and concrete failure cases
    - source/principal binding drift or prescribed-path self-test concerns when relevant
 3. Freeze the current consumer contract before editing an existing public skill.
@@ -63,6 +72,9 @@ sed -n '1,220p' presets/README.md
 4. Decide the portability seams.
    - skill body stays generic
    - repo or host specifics move to adapter files or presets
+   - when one skill spans multiple repo-local placements, use the adapter's
+     topology vocabulary to decide shared implementation versus intentional fork
+     before writing files
    - optional fields must distinguish `unset` from `explicitly empty`
    - prefer strong defaults and inference over user-facing branches or flags
 5. Decide dependency ownership honestly.
@@ -115,6 +127,9 @@ sed -n '1,220p' presets/README.md
   improve retrieval.
 - Keep selection logic in `SKILL.md` core. References should deepen a chosen
   move, not become a second workflow that re-decides when to act.
+- Do not let repo-local skill placement topology leak into the public skill
+  body. Use `create-skill` adapter terms for implementation identity, exposed
+  placements, aliases, and intentional fork signals.
 - Keep expert references source-faithful and minimal. Verify fuzzy or
   non-obvious claims before compressing them into a public skill or reference.
 - Host-specific behavior belongs in adapters and presets, not in `SKILL.md`.
@@ -153,6 +168,7 @@ sed -n '1,220p' presets/README.md
 
 ## References
 
+- `references/adapter-contract.md`
 - `references/portable-authoring.md`
 - `references/adapter-pattern.md`
 - `references/preset-conventions.md`

@@ -96,6 +96,25 @@ Add an explicit mode or option only when:
 
 `mode/option` is not the default answer to ambiguity.
 
+## Implementation Topology Rule
+
+Before writing skill files, decide whether the requested work creates one
+implementation or an intentional fork.
+
+Default to one canonical implementation when the same skill is exposed through
+multiple repo-local placements, trigger surfaces, aliases, or host-facing
+registrations. A separate copy is an intentional fork, not a placement default.
+
+Fork only when the user or repo contract names a real reason:
+
+- behavior differs by placement
+- data ownership or retention must be isolated
+- lifecycle, release, or permission boundaries are independent
+
+Use the `create-skill` adapter for repo-local topology vocabulary and
+verification hints. Keep consumer-specific placement models out of portable
+Charness guidance.
+
 ## Reasoned Proposal Rule
 
 When proposing a non-blocking default, also state why.

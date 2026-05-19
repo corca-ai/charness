@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-19T11:32:28Z",
+  "generated_at": "2026-05-19T12:08:08Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
