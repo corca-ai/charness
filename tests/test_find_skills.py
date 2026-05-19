@@ -483,7 +483,14 @@ def test_list_capabilities_default_mode_emits_write_artifacts(tmp_path: Path) ->
     payload = _run_list_capabilities(tmp_path)
 
     assert payload["artifacts"]["mode"] == "write"
-    assert (tmp_path / payload["artifacts"]["json_path"]).is_file()
+    artifact_path = tmp_path / payload["artifacts"]["json_path"]
+    assert artifact_path.is_file()
+    artifact_json = json.loads(artifact_path.read_text(encoding="utf-8"))
+    assert artifact_json["inventory"]["workflow_recommendations"] == []
+    workflow_integrations = artifact_json["inventory"]["workflow_integrations"]
+    assert [entry["id"] for entry in workflow_integrations] == ["worktree-create", "worktree-cleanup"]
+    assert workflow_integrations[0]["path"] == "integrations/worktree/adapter.example.yaml"
+    assert "charness worktree create --prepare" in workflow_integrations[0]["next_step"]
 
 
 def test_list_capabilities_can_emit_tool_recommendations_for_public_skill(tmp_path: Path) -> None:

@@ -36,9 +36,9 @@ def _write_skill(root: Path, skill_id: str, description: str, *, support_generat
     )
 
 
-def _run_plugin_list_capabilities(tmp_path: Path) -> dict[str, object]:
+def _run_plugin_list_capabilities(tmp_path: Path, *args: str) -> dict[str, object]:
     result = subprocess.run(
-        [*PLUGIN_LIST_CAPABILITIES_CMD, "--repo-root", str(tmp_path)],
+        [*PLUGIN_LIST_CAPABILITIES_CMD, "--repo-root", str(tmp_path), *args],
         cwd=REPO_ROOT,
         check=True,
         capture_output=True,
@@ -78,6 +78,11 @@ def test_plugin_export_prefers_repo_owned_skill_surface_for_source_repo(tmp_path
         }
     ]
     generated_support = [entry for entry in payload["support_skills"] if entry["source"] == "synced-support"]
+    workflow_integrations = payload["workflow_integrations"]
+    assert workflow_integrations[0]["id"] == "worktree-create"
+    assert workflow_integrations[0]["path"] == "integrations/worktree/adapter.example.yaml"
+    assert "charness worktree create --prepare" in workflow_integrations[0]["next_step"]
+    assert (REPO_ROOT / "plugins" / "charness" / workflow_integrations[0]["path"]).is_file()
     assert generated_support == [
         {
             "id": "cautilus",

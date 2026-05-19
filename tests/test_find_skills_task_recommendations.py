@@ -38,6 +38,11 @@ def _write_find_skills_adapter(root: Path) -> None:
     )
 
 
+def _write_worktree_adapter(root: Path) -> None:
+    (root / ".agents").mkdir(parents=True, exist_ok=True)
+    (root / ".agents" / "worktree-adapter.yaml").write_text("version: 1\n", encoding="utf-8")
+
+
 def _write_specdown_surface(root: Path) -> None:
     support = root / "skills" / "support" / "specdown"
     support.mkdir(parents=True)
@@ -361,14 +366,43 @@ def test_recommend_for_task_surfaces_worktree_workflow(tmp_path: Path) -> None:
         {
             "id": "worktree-create",
             "layer": "workflow integration",
-            "path": "docs/worktree-prepare.md",
+            "path": "integrations/worktree/adapter.example.yaml",
             "summary": "Create and prepare git worktrees through the Charness worktree CLI.",
             "matched_triggers": ["worktree", "git worktree"],
-            "next_step": "Use `charness worktree create --path <path> --branch <branch> --base <ref>` instead of raw `git worktree add`; add `--prepare` when the operator wants adapter-declared setup to run immediately.",
+            "next_step": "Use `charness worktree create --prepare --path <path> --branch <branch> --base <ref>` instead of raw `git worktree add` when the operator wants adapter-declared setup to run immediately.",
         }
     ]
     artifact_json = json.loads((tmp_path / "charness-artifacts" / "find-skills" / "latest.json").read_text(encoding="utf-8"))
     assert artifact_json["inventory"]["workflow_recommendations"] == []
+    workflow_integrations = artifact_json["inventory"]["workflow_integrations"]
+    assert [entry["id"] for entry in workflow_integrations] == ["worktree-create", "worktree-cleanup"]
+    assert workflow_integrations[0]["path"] == "integrations/worktree/adapter.example.yaml"
+    artifact_md = (tmp_path / "charness-artifacts" / "find-skills" / "latest.md").read_text(encoding="utf-8")
+    assert "## Workflow Integrations" in artifact_md
+    assert "charness worktree create --prepare" in artifact_md
+
+
+def test_recommend_for_task_steers_new_worktree_requests_to_charness_cli(tmp_path: Path) -> None:
+    _write_find_skills_adapter(tmp_path)
+    _write_worktree_adapter(tmp_path)
+
+    payload = _run_list_capabilities(
+        tmp_path,
+        "--read-only",
+        "--recommend-for-task",
+        "create a new worktree for a feature branch while another agent is working",
+    )
+
+    assert payload["workflow_recommendations"] == [
+        {
+            "id": "worktree-create",
+            "layer": "workflow integration",
+            "path": "integrations/worktree/adapter.example.yaml",
+            "summary": "Create and prepare git worktrees through the Charness worktree CLI.",
+            "matched_triggers": ["worktree", "new worktree"],
+            "next_step": "Use `charness worktree create --prepare --path <path> --branch <branch> --base <ref>` instead of raw `git worktree add` when the operator wants adapter-declared setup to run immediately.",
+        }
+    ]
 
 
 def test_recommend_for_task_surfaces_worktree_cleanup_workflow(tmp_path: Path) -> None:
@@ -387,7 +421,7 @@ def test_recommend_for_task_surfaces_worktree_cleanup_workflow(tmp_path: Path) -
         {
             "id": "worktree-cleanup",
             "layer": "workflow integration",
-            "path": "docs/worktree-prepare.md",
+            "path": "integrations/worktree/adapter.example.yaml",
             "summary": "Safely remove finished git worktrees through the Charness worktree CLI.",
             "matched_triggers": ["cleanup worktree"],
             "next_step": "Use `charness worktree cleanup --path <worktree>` for a dry-run plan; add `--delete-merged-branch --yes` only after local branch containment is the intended cleanup policy.",

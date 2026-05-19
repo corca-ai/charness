@@ -27,10 +27,11 @@ When the user names a capability directly, including phrases like `X skill`,
 skills are intentionally hidden from the default public skill list; this is the
 canonical discovery path for them.
 
-When workflow language implies a support skill even though the user did not
-name it directly, query task-text recommendations before proceeding through a
-nearby public workflow. For example, executable-spec terms should surface
-`support/specdown` before ordinary Markdown, HITL, spec, or impl work.
+When workflow or capability language implies a support skill, workflow
+integration, or external tool, query task-text recommendations before nearby
+public workflows or ad hoc shell. For example, executable-spec terms should
+surface `support/specdown`, and new-worktree requests should surface
+`charness worktree create --prepare` before raw `git worktree add`.
 
 `find-skills` is one public concept:
 

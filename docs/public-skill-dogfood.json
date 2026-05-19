@@ -138,6 +138,8 @@
         "The current repo memory at `charness-artifacts/retro/recent-lessons.md` explicitly records the repeat trap here: canonical inventory and ad hoc recommendation output must stay separate so ordinary inspection does not create false dirty state or erode operator trust.",
         "That keeps `find-skills-canonical-artifact-followup` as a reviewed consumer seam worth re-promoting after the latest chatbot packet churn: the user's push to distinguish canonical evidence from query-shaped output still maps directly to checked-in `find-skills` behavior and artifact policy.",
         "`find-skills --recommend-for-task` now covers support-skill discoverability when workflow language implies a hidden support surface; the Specdown fixture routes `.spec.md`, `docs/specs`, and `check:jq` to `support/specdown` without polluting the canonical inventory artifact.",
+        "The canonical inventory artifact now has a durable `workflow_integrations` section for worktree create/cleanup while keeping ad hoc `workflow_recommendations` query output out of the persisted startup artifact.",
+        "Worktree workflow recommendations now point at packaged `integrations/worktree/adapter.example.yaml` instead of source-only docs, so installed plugin users can read the emitted path.",
         "The task-text recommendation path is bounded by negative proof: weak singleton or generic `report.json` / doctest language without a strong Specdown anchor does not route unrelated work through `support/specdown`.",
         "Slack URL task text now surfaces `gather-slack` from support capability intent triggers in read-only recommendation mode, so `find-skills` no longer hides the checked-in Slack gather wrapper behind a broad no-match note."
       ]
@@ -190,6 +192,7 @@
       "`inspect_repo.py` now emits `recommendations[]` separately from `normalization.findings`, so adapter-declared policy sources can raise `agents.delegated_review_policy` without pretending phrase matching is a hard fact.",
       "`inspect_repo.py` now flags `fresh_eye_task_review_scope_drift` when `AGENTS.md` carries a critique or fresh-eye delegation rule but does not name task-completing `setup` and `quality` review runs as spawn-authorized scopes.",
       "`inspect_repo.py` keeps explicit repo inspection resilient by bounding source-guard discovery to AGENTS.md, README.md, docs/, and specs/ by default; repos that keep guards elsewhere can set `source_guard_scan_roots`, and unreadable specs become structured warnings instead of aborting install/update recovery.",
+      "The generated compact Skill Routing block now tells agents to run `find-skills --recommend-for-task \"<task>\"` when a request names workflow or capability nouns such as worktree, browser automation, specdown, or validation before ad hoc shell/tool use.",
       "The setup core now keeps optional bootstrap seam details in `references/bootstrap-seams.md`; usage episodes remain setup-seeded, quality-validated, and runtime-owned by the product plus `usage-episodes` integration."
     ]
   },

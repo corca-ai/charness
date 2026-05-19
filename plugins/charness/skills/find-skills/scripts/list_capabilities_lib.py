@@ -7,12 +7,14 @@ from pathlib import Path
 from typing import Any
 
 REFERENCE_TOKEN_RE = re.compile(r"`([^`]+)`")
+# Temporary canonical source for workflow integrations until a manifest-backed
+# workflow registry exists.
 WORKFLOW_RECOMMENDATIONS = [
     {
         "id": "worktree-create",
         "intent": "create",
         "layer": "workflow integration",
-        "path": "docs/worktree-prepare.md",
+        "path": "integrations/worktree/adapter.example.yaml",
         "summary": "Create and prepare git worktrees through the Charness worktree CLI.",
         "triggers": [
             "worktree",
@@ -25,13 +27,13 @@ WORKFLOW_RECOMMENDATIONS = [
             "new worktree",
             "prepare worktree",
         ],
-        "next_step": "Use `charness worktree create --path <path> --branch <branch> --base <ref>` instead of raw `git worktree add`; add `--prepare` when the operator wants adapter-declared setup to run immediately.",
+        "next_step": "Use `charness worktree create --prepare --path <path> --branch <branch> --base <ref>` instead of raw `git worktree add` when the operator wants adapter-declared setup to run immediately.",
     },
     {
         "id": "worktree-cleanup",
         "intent": "cleanup",
         "layer": "workflow integration",
-        "path": "docs/worktree-prepare.md",
+        "path": "integrations/worktree/adapter.example.yaml",
         "summary": "Safely remove finished git worktrees through the Charness worktree CLI.",
         "triggers": [
             "cleanup worktree",
@@ -45,6 +47,20 @@ WORKFLOW_RECOMMENDATIONS = [
         "next_step": "Use `charness worktree cleanup --path <worktree>` for a dry-run plan; add `--delete-merged-branch --yes` only after local branch containment is the intended cleanup policy.",
     },
 ]
+
+
+def workflow_integrations() -> list[dict[str, Any]]:
+    return [
+        {
+            "id": workflow["id"],
+            "layer": workflow["layer"],
+            "path": workflow["path"],
+            "summary": workflow["summary"],
+            "trigger_phrases": workflow["triggers"],
+            "next_step": workflow["next_step"],
+        }
+        for workflow in WORKFLOW_RECOMMENDATIONS
+    ]
 
 
 def resolve_tool_recommendations(
@@ -292,6 +308,7 @@ def build_inventory_payload(
     support_skill_recommendations: list[dict[str, Any]] | None = None,
     support_recommendation_query: dict[str, Any] | None = None,
     workflow_recommendations: list[dict[str, Any]] | None = None,
+    workflow_integrations: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     show_note = (
         support_recommendation_query is not None
@@ -321,6 +338,7 @@ def build_inventory_payload(
         "support_skills": support_entries,
         "support_capabilities": support_capabilities,
         "integrations": integrations,
+        "workflow_integrations": workflow_integrations or [],
         "trusted_skills": trusted_entries,
         "tool_recommendations": tool_recommendations,
         "tool_recommendation_query": recommendation_query,

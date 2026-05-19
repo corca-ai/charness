@@ -34,6 +34,7 @@ recommendations_for_task = _tool_rec.recommendations_for_task
 _list_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "list_capabilities_lib")
 build_inventory_payload, referenced_skill_paths = _list_lib.build_inventory_payload, _list_lib.referenced_skill_paths
 resolve_tool_recommendations, support_recommendations_for_task = _list_lib.resolve_tool_recommendations, _list_lib.support_recommendations_for_task
+workflow_integrations = _list_lib.workflow_integrations
 workflow_recommendations_for_task = _list_lib.workflow_recommendations_for_task
 _artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "inventory_artifact")
 persist_inventory, read_only_inventory_artifacts = _artifact.persist_inventory, _artifact.read_only_inventory_artifacts
@@ -213,6 +214,7 @@ def main() -> None:
         support_skill_recommendations=support_skill_recommendations,
         support_recommendation_query=support_recommendation_query,
         workflow_recommendations=workflow_recommendations,
+        workflow_integrations=workflow_integrations(),
     )
     if args.read_only:
         payload["artifacts"] = read_only_inventory_artifacts()

@@ -27,6 +27,7 @@ def render_markdown(snapshot: dict[str, Any]) -> str:
     date_value = generated_at[:10]
     inventory = snapshot["inventory"]
     support_skills = inventory["support_skills"]
+    workflow_integrations = inventory.get("workflow_integrations", [])
     lines = [
         "# Find Skills Inventory",
         f"Date: {date_value}",
@@ -38,6 +39,7 @@ def render_markdown(snapshot: dict[str, Any]) -> str:
         f"- synced support skills: {_count_by_layer(support_skills, 'synced support skill')}",
         f"- support capabilities: {len(inventory['support_capabilities'])}",
         f"- integrations: {len(inventory['integrations'])}",
+        f"- workflow integrations: {len(workflow_integrations)}",
         f"- trusted skills: {len(inventory['trusted_skills'])}",
         "",
         "## Public Skills",
@@ -71,6 +73,15 @@ def render_markdown(snapshot: dict[str, Any]) -> str:
             formatter=lambda entry: (
                 f"- `{entry['id']}` ({entry['kind']}, {entry['support_state']}): access modes "
                 f"`{', '.join(entry['access_modes'])}`"
+            ),
+        ),
+        "",
+        "## Workflow Integrations",
+        * _section_lines(
+            workflow_integrations,
+            formatter=lambda entry: (
+                f"- `{entry['id']}`: {entry['summary']} "
+                f"Path `{entry['path']}`. Next: {entry['next_step']}"
             ),
         ),
         "",

@@ -19,6 +19,8 @@ At session startup in this repo, call the shared/public charness skill `find-ski
 
 Use its capability inventory as the default map of installed public skills, support skills, synced support surfaces, and integrations.
 
+When a request names a workflow or capability noun such as worktree, browser automation, specdown, or validation, run `find-skills --recommend-for-task "<task>"` before ad hoc shell or tool use.
+
 After that bootstrap pass, choose the durable work skill that best matches the request from the installed charness surface.
 
 External URLs or source links that should become working context for this repo route through `gather` before summarizing, implementing, or deciding from them.
