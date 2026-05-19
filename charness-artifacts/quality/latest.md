@@ -55,26 +55,29 @@ these changes.
 ## Healthy
 
 - Depth-bounded `du -d 4` reduces `check-seed-fixture-budget` from ~20s to ~0.1s.
-- `release_only` marker matches `pyproject.toml`'s documented intent;
-  `--release` flag is the discoverable opt-in; release skill contract doc
-  declares the convention.
+- `release_only` marker matches `pyproject.toml`'s intent; `--release` flag is the discoverable opt-in; release adapter contract documents the convention.
 - `## References` link inventory enforced; seed-fixture footprint bounded.
 
 ## Weak
 
 - Audit of non-release_only seed consumers (`test_validate_packaging_committed_*`,
-  `test_charness_init_exports_managed_surface`, `test_doctor_cache_selection`,
-  `test_doctor_next_action` (4), `test_charness_doctor_reports_managed_surface`,
+  `test_charness_init_exports_managed_surface`, `test_doctor_*`,
+  `test_charness_doctor_reports_managed_surface`,
   `test_installed_cli_remembers_managed_checkout`, `test_doctor_can_write_host_state_snapshot`,
-  `test_clone_seeded_managed_home_can_share_source_checkout`,
   `test_tool_doctor_cli_returns_nonzero_for_blocking_disposition`) concluded
   these test foundational `charness init/doctor/reset` and packaging-committed
-  surfaces — replacing with `subprocess.run` mocks would erase the integration
-  safety net, not just the cost. No migrations applied this turn.
+  surfaces — `subprocess.run` mocks would erase the integration safety net.
+  No migrations applied.
+- **Seed cost diagnostic** (real measurement, not estimate): each pytest-xdist
+  worker materializes its own `charness-repo-seed` (~26 MB), `charness-git-repo-seed`
+  (~33 MB), and `managed-home-seed` (~54 MB) because `@pytest.fixture(scope="session")`
+  is worker-local under xdist. With 18 workers × 3 seeds = **54 materializations**
+  per pytest session (~2.7 GB/session, ~150 MB/worker). The cost is fan-out,
+  not seed size; a single seed is small. Earlier "~1.9 GiB" framing was loose.
 - Agent-browser orphan accumulation during pytest causes intermittent
-  `check-cli-skill-surface` and `check-coverage` failures in the quality
-  gate; the runtime guard's healthcheck itself spawns daemons that survive
-  pytest teardown. Pre-existing flakiness, separate from this turn's changes.
+  `check-cli-skill-surface`/`check-coverage` failures; the runtime guard's
+  healthcheck itself spawns daemons that survive pytest teardown.
+  Pre-existing flakiness.
 - prose review result: trigger-boundary and progressive-disclosure judgment
   still requires subagent/human critique, not `heuristic_finding_count=0`.
 
@@ -87,9 +90,10 @@ these changes.
 
 ## Deferred
 
-- Content-addressed seed cache (shared materialization across pytest
-  sessions) — would shrink the remaining per-session ~1.9 GiB seed
-  materialization for non-release_only consumers.
+- Content-addressed seed cache to break the xdist × session-scope fan-out:
+  move seeds out of `tmp_path_factory` into `~/.cache/charness/test-seeds/<HEAD-hash>/`
+  so all 18 workers read one materialization and same-HEAD reruns pay zero
+  copy cost (see Weak diagnostic).
 - Downstream-repo dogfood on the stronger generated skill-ergonomics default
   before changing the rule set again (carried).
 
@@ -124,7 +128,7 @@ these changes.
 ## Recommended Next Gates
 
 - active `AUTO_CANDIDATE` because pre-existing agent-browser orphan race causes intermittent `check-cli-skill-surface`/`check-coverage` failures: add a session-scoped autouse teardown in `tests/conftest.py` that calls `scripts/agent_browser_runtime_guard.py --cleanup-orphans --execute` after pytest finishes, so the next run-quality phase sees a clean state.
-- passive `AUTO_CANDIDATE` because per-session seed materialization still pays ~1.9 GiB for non-release_only consumers: introduce a content-addressed shared seed cache (`~/.cache/charness/test-seeds/<repo-hash>/`) so the second pytest run with the same HEAD pays zero copy cost.
+- passive `AUTO_CANDIDATE` because pytest-xdist multiplies session-scoped seed fixtures by worker count (18 workers × 3 seeds ≈ 54 materializations, ~2.7 GB/session): move seeds out of `tmp_path_factory` into `~/.cache/charness/test-seeds/<HEAD-hash>/` with `filelock` for xdist concurrency. Per-test clones (already in `clone_seeded_charness_repo`) keep test isolation; only the seed fan-out collapses to one materialization per HEAD.
 - passive `AUTO_CANDIDATE` because downstream skill-ergonomics dogfood has not yet been collected: queue downstream issues before changing the default rule set again.
 
 ## History
