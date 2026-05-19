@@ -68,10 +68,10 @@ When writing the quality artifact, edit the resolved `write_artifact_path`, not
    - when validators pin prose or support-skill routing is implicit, inspect
      whether the gate proves a behavior contract or only freezes wording and
      whether `find-skills` can surface the support seam from task language
-   - classify migration-time exact-prose guards as temporary bridges with retirement paths
+   - treat migration-time exact-prose guards as temporary bridges; when `inventory_skill_ergonomics.py` is cited, closeout uses `prose review result:` to record judgment separately from script fields
 3. Run the meaningful gates that already exist.
    - prefer repo-native commands over hypothetical recommendations
-   - when `.agents/usage-episodes-adapter.yaml` exists, resolve and run the Charness package-root validator `validate_usage_episodes.py`; `no_adapter` and `disabled` are skipped states, not failures
+   - resolve and run the Charness package-root validator `validate_usage_episodes.py`; `no_adapter` and `disabled` are skipped warnings, not failures
    - run executable-spec overlap or cost guards before proposing more spec
      coverage
    - for standing-test economics, inspect duplicated proof, runner isolation,

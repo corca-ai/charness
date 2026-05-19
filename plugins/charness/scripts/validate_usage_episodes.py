@@ -21,6 +21,14 @@ DEFAULT_STORAGE = Path(".charness/usage-episodes")
 EVENT_FILENAME = "usage_episode.jsonl"
 
 
+def _warning(warning_id: str, message: str, next_action: str) -> dict[str, str]:
+    return {
+        "warning_id": warning_id,
+        "message": message,
+        "next_action": next_action,
+    }
+
+
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -90,6 +98,8 @@ def _print_result(payload: dict[str, Any], *, as_json: bool) -> None:
     if as_json:
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
         return
+    for warning in payload.get("warnings", []):
+        print(f"WARNING: {warning['message']} Next action: {warning['next_action']}")
     status = payload["status"]
     if status == "valid":
         print(f"Validated {payload['valid_count']} usage episode record(s).")
@@ -126,6 +136,13 @@ def main() -> int:
             "adapter_path": _portable_path(repo_root, adapter_path),
             "valid_count": 0,
             "errors": [],
+            "warnings": [
+                _warning(
+                    "usage_episodes_adapter_missing",
+                    f"no usage-episodes adapter found at {_portable_path(repo_root, adapter_path)}; validation skipped",
+                    "Run setup seeding if this repo should opt into usage episode validation, or record the opt-out in quality closeout.",
+                )
+            ],
         }
         _print_result(payload, as_json=args.json)
         return 0
@@ -141,6 +158,7 @@ def main() -> int:
             "adapter_path": _portable_path(repo_root, adapter_path),
             "valid_count": 0,
             "errors": [str(exc)],
+            "warnings": [],
         }
         _print_result(payload, as_json=args.json)
         return 1
@@ -152,6 +170,13 @@ def main() -> int:
             "adapter_path": _portable_path(repo_root, adapter_path),
             "valid_count": 0,
             "errors": [],
+            "warnings": [
+                _warning(
+                    "usage_episodes_adapter_disabled",
+                    f"usage-episodes adapter at {_portable_path(repo_root, adapter_path)} is disabled; validation skipped",
+                    "Keep the disabled state visible in quality closeout, or enable the adapter before relying on usage episode validation.",
+                )
+            ],
         }
         _print_result(payload, as_json=args.json)
         return 0
@@ -172,6 +197,7 @@ def main() -> int:
             "records_path": _portable_path(repo_root, records_path),
             "valid_count": 0,
             "errors": ["records_path must stay under repo_root"],
+            "warnings": [],
         }
         _print_result(payload, as_json=args.json)
         return 1
@@ -183,6 +209,7 @@ def main() -> int:
         "records_path": _portable_path(repo_root, records_path),
         "valid_count": valid_count,
         "errors": errors,
+        "warnings": [],
     }
     _print_result(payload, as_json=args.json)
     return 0 if not errors else 1

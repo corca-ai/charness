@@ -30,6 +30,10 @@ INVENTORY_FILE_RE = re.compile(r"inventory_[A-Za-z0-9_]+\.py")
 COMMANDS_RUN_HEADER = "## Commands Run"
 ARTIFACT_DATE_RE = re.compile(r"^Date:\s*(\d{4}-\d{2}-\d{2})", re.MULTILINE)
 ENFORCED_FROM_DATE = date(2026, 5, 13)
+SKILL_ERGONOMICS_INVENTORY = "inventory_skill_ergonomics.py"
+PROSE_REVIEW_RESULT_RE = re.compile(
+    r"(?im)^\s*(?:[-*]\s*)?(?:prose[\s-]+review\s+result)\s*:",
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -115,6 +119,18 @@ def main() -> int:
             )
         else:
             declared_consumed.append(inventory)
+        if inventory == SKILL_ERGONOMICS_INVENTORY:
+            if not re.search(r"\bprose_review_status\b", body_without_commands):
+                failures.append(
+                    f"inventory `{inventory}` is cited in `{COMMANDS_RUN_HEADER}` but the artifact "
+                    "body does not engage with `prose_review_status`; skill ergonomics inventory "
+                    "output is not a prose-review result."
+                )
+            if not PROSE_REVIEW_RESULT_RE.search(body_without_commands):
+                failures.append(
+                    f"inventory `{inventory}` is cited in `{COMMANDS_RUN_HEADER}` but the artifact "
+                    "body lacks an explicit `prose review result:` line outside the command log."
+                )
 
     if failures:
         for failure in failures:

@@ -178,6 +178,8 @@ def main() -> int:
             print(f"status=not_evaluated: {payload.get('reason', '')}")
         if payload["adapter_valid"] is False:
             print("adapter=invalid: advisory inventory is best-effort until adapter errors are repaired.")
+        for advisory in payload.get("advisories", []):
+            print(f"ADVISORY: {advisory['message']} Next action: {advisory['next_action']}")
         for item in skills:
             heuristics = ", ".join(item["heuristics"]) or "none"
             print(

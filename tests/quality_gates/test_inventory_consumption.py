@@ -58,7 +58,10 @@ _DEFAULT_DECLARATION = {
 def test_passes_when_two_declared_fields_are_cited(tmp_path: Path) -> None:
     artifact = (
         "# Quality Review\n"
-        "## Healthy\n- skill ergonomics clean; script_file_count 0 and reference_file_count 3.\n"
+        "## Healthy\n"
+        "- skill ergonomics clean; script_file_count 0 and reference_file_count 3; "
+        "prose_review_status=still_required.\n"
+        "- prose review result: trigger boundaries and progressive disclosure were reviewed; no blockers found.\n"
         "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
         "## History\n"
     )
@@ -74,7 +77,9 @@ def test_fails_when_only_one_of_two_declared_fields_is_cited(tmp_path: Path) -> 
     # Declaration lists two fields; engaging with only one is gameable.
     artifact = (
         "# Quality Review\n"
-        "## Healthy\n- skill ergonomics clean; script_file_count is 0.\n"
+        "## Healthy\n"
+        "- skill ergonomics clean; script_file_count is 0; prose_review_status=still_required.\n"
+        "- prose review result: trigger boundaries were reviewed; no blockers found.\n"
         "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
         "## History\n"
     )
@@ -90,7 +95,9 @@ def test_fails_when_only_one_of_two_declared_fields_is_cited(tmp_path: Path) -> 
 def test_fails_when_inventory_cited_without_any_declared_field(tmp_path: Path) -> None:
     artifact = (
         "# Quality Review\n"
-        "## Healthy\n- skill ergonomics overall clean.\n"
+        "## Healthy\n"
+        "- skill ergonomics overall clean; prose_review_status=still_required.\n"
+        "- prose review result: trigger boundaries were reviewed; no blockers found.\n"
         "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
         "## History\n"
     )
@@ -111,7 +118,9 @@ def test_single_field_declaration_still_requires_only_one(tmp_path: Path) -> Non
     }
     artifact = (
         "# Quality Review\n"
-        "## Healthy\n- skill ergonomics clean; script_file_count is 0.\n"
+        "## Healthy\n"
+        "- skill ergonomics clean; script_file_count is 0; prose_review_status=still_required.\n"
+        "- prose review result: trigger boundaries were reviewed; no blockers found.\n"
         "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
         "## History\n"
     )
@@ -143,6 +152,8 @@ def test_field_citation_inside_commands_run_does_not_count(tmp_path: Path) -> No
     artifact = (
         "# Quality Review\n"
         "## Healthy\n- nothing to report.\n"
+        "## Weak\n- prose_review_status=still_required.\n"
+        "## Advisory\n- prose review result: trigger boundaries were reviewed; no blockers found.\n"
         "## Commands Run\n"
         "- `python3 inventory_skill_ergonomics.py --repo-root . --json` (script_file_count visible)\n"
         "## History\n"
@@ -153,6 +164,39 @@ def test_field_citation_inside_commands_run_does_not_count(tmp_path: Path) -> No
 
     assert result.returncode == 1, result.stdout
     assert "script_file_count" in result.stderr
+
+
+def test_skill_ergonomics_inventory_requires_prose_review_status(tmp_path: Path) -> None:
+    artifact = (
+        "# Quality Review\n"
+        "## Healthy\n- skill ergonomics clean; script_file_count 0 and reference_file_count 3.\n"
+        "## Advisory\n- prose review result: trigger boundaries were reviewed; no blockers found.\n"
+        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
+        "## History\n"
+    )
+    repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
+
+    result = _run(repo)
+
+    assert result.returncode == 1
+    assert "prose_review_status" in result.stderr
+
+
+def test_skill_ergonomics_inventory_requires_prose_review_result(tmp_path: Path) -> None:
+    artifact = (
+        "# Quality Review\n"
+        "## Healthy\n"
+        "- skill ergonomics clean; script_file_count 0 and reference_file_count 3; "
+        "prose_review_status=still_required.\n"
+        "## Commands Run\n- `python3 inventory_skill_ergonomics.py --repo-root . --json`\n"
+        "## History\n"
+    )
+    repo = _seed_repo(tmp_path, artifact_body=artifact, consumer_fields=_DEFAULT_DECLARATION)
+
+    result = _run(repo)
+
+    assert result.returncode == 1
+    assert "prose review result" in result.stderr
 
 
 def test_artifact_predating_contract_start_is_skipped(tmp_path: Path) -> None:

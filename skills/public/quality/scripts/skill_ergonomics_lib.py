@@ -142,6 +142,26 @@ def scope_status(scanned: int, requested: list[str], adapter_paths: list[str]) -
     }
 
 
+def prose_review_advisory(status: str) -> list[dict[str, str]]:
+    if status == "required":
+        return [
+            {
+                "advisory_id": "skill_ergonomics_prose_review_required",
+                "message": "Heuristic findings are present; a human/model prose review result is still required before quality closeout.",
+                "next_action": "Record an explicit prose review result that covers trigger boundaries, progressive disclosure, and judgment-only skill risks.",
+            }
+        ]
+    if status == "still_required":
+        return [
+            {
+                "advisory_id": "skill_ergonomics_prose_review_still_required",
+                "message": "No heuristic findings were found, but the inventory is not a substitute for prose review.",
+                "next_action": "Record an explicit prose review result or state why the prose review is out of scope for this quality pass.",
+            }
+        ]
+    return []
+
+
 def finding_status(skills: list[dict[str, object]]) -> dict[str, object]:
     heuristic_count = sum(len(skill.get("heuristics", [])) for skill in skills)
     if not skills:
@@ -150,17 +170,22 @@ def finding_status(skills: list[dict[str, object]]) -> dict[str, object]:
             "heuristic_finding_count": 0,
             "finding_status": "not_evaluated",
             "prose_review_status": "not_started",
+            "advisories": [],
         }
     if heuristic_count:
+        prose_status = "required"
         return {
             "checked_skill_count": len(skills),
             "heuristic_finding_count": heuristic_count,
             "finding_status": "heuristics_present",
-            "prose_review_status": "required",
+            "prose_review_status": prose_status,
+            "advisories": prose_review_advisory(prose_status),
         }
+    prose_status = "still_required"
     return {
         "checked_skill_count": len(skills),
         "heuristic_finding_count": 0,
         "finding_status": "zero_heuristic_findings",
-        "prose_review_status": "still_required",
+        "prose_review_status": prose_status,
+        "advisories": prose_review_advisory(prose_status),
     }

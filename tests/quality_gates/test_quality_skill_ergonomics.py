@@ -238,7 +238,18 @@ def test_inventory_skill_ergonomics_reports_clean_when_skills_present(tmp_path: 
     assert payload["prose_review_status"] == "still_required"
     assert payload["checked_skill_count"] == 1
     assert payload["heuristic_finding_count"] == 0
+    assert [item["advisory_id"] for item in payload["advisories"]] == [
+        "skill_ergonomics_prose_review_still_required"
+    ]
     assert payload["skills"] and payload["skills"][0]["skill_id"] == "demo"
+
+    plain = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+    )
+    assert plain.returncode == 0, plain.stderr
+    assert "ADVISORY: No heuristic findings were found" in plain.stdout
 
 
 def test_inventory_skill_ergonomics_reports_configured_scope_empty(tmp_path: Path) -> None:
@@ -302,6 +313,17 @@ def test_inventory_skill_ergonomics_marks_heuristic_findings_and_prose_review(tm
     assert payload["finding_status"] == "heuristics_present"
     assert payload["prose_review_status"] == "required"
     assert payload["heuristic_finding_count"] == 2
+    assert [item["advisory_id"] for item in payload["advisories"]] == [
+        "skill_ergonomics_prose_review_required"
+    ]
+
+    plain = run_script(
+        "skills/public/quality/scripts/inventory_skill_ergonomics.py",
+        "--repo-root",
+        str(repo),
+    )
+    assert plain.returncode == 0, plain.stderr
+    assert "ADVISORY: Heuristic findings are present" in plain.stdout
 
 
 def test_inventory_skill_ergonomics_surfaces_invalid_adapter_as_best_effort(tmp_path: Path) -> None:

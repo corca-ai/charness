@@ -1,18 +1,15 @@
 # Quality Review
-Date: 2026-05-18
+Date: 2026-05-19
 
 ## Scope
 
-Repo-wide repair for the skill-health quality surface after the adapter rule
-hardening slice. The target is to distinguish empty inventory scope from real
-zero findings, keep prose review visible when scripts report no heuristics,
-make committed-diff critique packets honest after a clean working tree, and set
-generated quality adapters to enforce skill ergonomics by default.
+Repo-wide repair for quality advisory visibility: skipped usage-episode
+validation and required skill prose review must not disappear behind green gates.
 
 ## Current Gates
 
-- `./scripts/run-quality.sh`: 60 passed / 0 failed in 52.1s on the current
-  local runner.
+- `./scripts/run-quality.sh`: 61 passed / 0 failed in 77.8s; `validate-usage-episodes`
+  now replays the exit-zero `no_adapter` warning in green quality runs.
 - `validate-skill-ergonomics` still enforces five configured Charness rules:
   `long_core`, `mode_option_pressure_terms`, `progressive_disclosure_risk`,
   `code_fence_without_helper_script`, and `portable_helper_path_ambiguity`.
@@ -31,11 +28,11 @@ generated quality adapters to enforce skill ergonomics by default.
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json`, <!-- reproduction-source -->
   recorded by `scripts/record_quality_runtime.py`, rendered by
   `render_runtime_summary.py`.
-- runtime hot spots: latest full gate: `pytest` 40.1s,
-  `check-coverage` 40.1s, `check-duplicates` 7.1s,
-  `validate-inventory-consumption-declaration` 4.5s, and `specdown` 3.4s.
-- coverage gate: `check-coverage` passed in 40.1s.
-- evaluator depth: `run-evals` passed in 2.1s; no live Cautilus proof was run
+- runtime hot spots: latest full gate: `pytest` 55.8s,
+  `check-coverage` 40.6s, `validate-inventory-consumption-declaration` 14.4s,
+  `check-duplicates` 6.9s, and `specdown` 3.6s.
+- coverage gate: `check-coverage` passed in 40.6s.
+- evaluator depth: `run-evals` passed in 2.2s; no live Cautilus proof was run
   for this deterministic quality-contract repair.
 
 ## Healthy
@@ -56,9 +53,6 @@ generated quality adapters to enforce skill ergonomics by default.
   advisory inventories continue as best-effort and mark `adapter_valid=false`.
 - New or bootstrapped quality adapters now inherit the standing skill
   ergonomics rule set instead of silently disabling enforcement.
-- `critique` packet generation accepts `--commit` and `--range` aliases, stores
-  `changed_ref`, and labels changed paths as ref/range-backed instead of
-  implying a working-tree review after commit.
 - Plugin export and find-skills inventory were refreshed after public skill and
   script changes.
 
@@ -67,6 +61,9 @@ generated quality adapters to enforce skill ergonomics by default.
 - `prose_review_status=still_required` is a forcing function in artifacts, not
   an automatic semantic reviewer. Human or subagent critique still owns trigger
   overlap, progressive-disclosure honesty, and judgment-only skill risks.
+- prose review result: issue #175 review confirmed the skill ergonomics inventory
+  result is advisory input only; trigger-boundary and progressive-disclosure
+  judgment must be recorded separately from script fields.
 - The skill ergonomics inventory remains heuristic-based. It now tells the
   consumer where the heuristic boundary is, but it does not replace a focused
   review of public skill prose.
@@ -97,6 +94,8 @@ generated quality adapters to enforce skill ergonomics by default.
 - `inventory_skill_ergonomics.py` evidence: `scope_status=scanned`,
   `finding_status=zero_heuristic_findings`, `prose_review_status=still_required`,
   `checked_skill_count=22`, and `heuristic_finding_count=0`.
+- `validate_usage_episodes.py` evidence: skipped `no_adapter` and `disabled`
+  states now remain exit-zero but carry structured warning payloads.
 - Default-policy evidence: `DEFAULT_SKILL_ERGONOMICS_GATE_RULES` now lists all
   supported rule ids, and `adapter.example.yaml` shows the same default list.
 
