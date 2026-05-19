@@ -67,21 +67,26 @@ def _git_init_and_commit(repo: Path) -> None:
 
 @pytest.fixture(scope="session")
 def seeded_charness_repo(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    seed_root = tmp_path_factory.mktemp("charness-repo-seed")
-    seed = seed_root / "repo"
-    shutil.copytree(ROOT, seed, ignore=REPO_COPY_IGNORE)
-    return seed
+    from tests.seed_cache import get_or_build
+
+    def build(staging: Path) -> None:
+        shutil.copytree(ROOT, staging / "repo", ignore=REPO_COPY_IGNORE)
+
+    return get_or_build("charness-repo-seed", build) / "repo"
 
 
 @pytest.fixture(scope="session")
 def seeded_charness_git_repo(
     seeded_charness_repo: Path, tmp_path_factory: pytest.TempPathFactory
 ) -> Path:
-    seed_root = tmp_path_factory.mktemp("charness-git-repo-seed")
-    seed = seed_root / "repo"
-    shutil.copytree(seeded_charness_repo, seed)
-    _git_init_and_commit(seed)
-    return seed
+    from tests.seed_cache import get_or_build
+
+    def build(staging: Path) -> None:
+        seed = staging / "repo"
+        shutil.copytree(seeded_charness_repo, seed)
+        _git_init_and_commit(seed)
+
+    return get_or_build("charness-git-repo-seed", build) / "repo"
 
 
 def clone_seeded_charness_repo(target_root: Path, seeded_repo: Path) -> Path:

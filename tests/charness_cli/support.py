@@ -358,20 +358,25 @@ def seeded_managed_home(
     tmp_path_factory: pytest.TempPathFactory, seeded_charness_git_repo: Path
 ) -> dict[str, Path]:
     from tests.repo_copy import clone_seeded_charness_repo
+    from tests.seed_cache import get_or_build
 
-    seed_root = tmp_path_factory.mktemp("managed-home-seed")
-    source_root = seed_root / "source"
-    source_root.mkdir()
-    source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
-    home_root = seed_root / "home"
-    fake_claude = make_fake_claude(seed_root)
-    env = os.environ.copy()
-    env["HOME"] = str(home_root)
-    env["PATH"] = build_test_path(fake_claude.parent)
-    env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(make_support_sync_fixture(seed_root))
-    init_result = run_cli("init", "--home-root", str(home_root), "--repo-url", str(source_repo), env=env)
-    assert init_result.returncode == 0, init_result.stderr
-    return {"home_root": home_root}
+    def build(staging: Path) -> None:
+        source_root = staging / "source"
+        source_root.mkdir()
+        source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
+        home_root = staging / "home"
+        fake_claude = make_fake_claude(staging)
+        env = os.environ.copy()
+        env["HOME"] = str(home_root)
+        env["PATH"] = build_test_path(fake_claude.parent)
+        env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(make_support_sync_fixture(staging))
+        init_result = run_cli(
+            "init", "--home-root", str(home_root), "--repo-url", str(source_repo), env=env
+        )
+        assert init_result.returncode == 0, init_result.stderr
+
+    seed_root = get_or_build("managed-home-seed", build)
+    return {"home_root": seed_root / "home"}
 def clone_seeded_managed_home(
     tmp_path: Path, seeded_home_root: Path, *, share_source_checkout: bool = False
 ) -> tuple[Path, dict[str, str]]:

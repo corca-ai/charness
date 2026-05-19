@@ -3,21 +3,25 @@ Date: 2026-05-20
 
 ## Scope
 
-Landed all three previous `Recommended Next Gates`: depth-bounded pytest tmp
-walk (`_pytest_temp_footprint_quick`) collapses `check-seed-fixture-budget`
-from ~20s to <1s; release adapter contract now documents the
-`./scripts/run-quality.sh --release` convention; audit of non-release_only
-seed consumers concluded no fixture migration is honest (the remaining
-consumers test `charness init`/`doctor`/`reset`/packaging committed-state,
-all genuine CLI integration surface). Pre-existing agent-browser orphan
-flakiness on `check-cli-skill-surface`/`check-coverage` is unrelated to
-these changes.
+Landed two previous `Recommended Next Gates`: content-addressed seed cache
+(`tests/seed_cache.py`) moves `charness-repo-seed`, `charness-git-repo-seed`,
+and `managed-home-seed` out of `tmp_path_factory` and into
+`~/.cache/charness/test-seeds/<source-hash>/` keyed on
+`git rev-parse HEAD` plus tracked diff plus untracked-not-ignored digest;
+xdist workers share one materialization via `filelock`. Agent-browser orphan
+race fixed by replacing `agent-browser --help` with `agent-browser --version`
+in `run_help_check` (the `--help` flag warmed a background daemon as a side
+effect, leaving a PPID=1 orphan that broke the next run's `--doctor-check`).
+`tests/conftest.py` adds a `pytest_sessionfinish` hook that runs
+`agent_browser_runtime_guard.py --cleanup-orphans --execute` on the xdist
+controller as a defensive backstop. `./scripts/run-quality.sh` now finishes
+64/0 twice in succession with no manual cleanup between runs.
 
 ## Current Gates
 
-- `./scripts/run-quality.sh`: 62-64 passed / 0-2 failed depending on
-  agent-browser orphan state; pytest 22.1-42.8s, `check-seed-fixture-budget`
-  now 0.1-3.1s (was 20-40s median).
+- `./scripts/run-quality.sh`: 64 passed / 0 failed across two consecutive
+  runs without manual orphan cleanup; pytest 22-32s on a warm seed cache,
+  `check-seed-fixture-budget` 0.1-3.1s (was 20-40s median).
 - `release_only` pytest cases now excluded by default; `--release` flag re-includes them.
   `.agents/release-adapter.yaml` `quality_command` is `./scripts/run-quality.sh --release`
   so release publish still covers them.
@@ -57,6 +61,14 @@ these changes.
 - Depth-bounded `du -d 4` reduces `check-seed-fixture-budget` from ~20s to ~0.1s.
 - `release_only` marker matches `pyproject.toml`'s intent; `--release` flag is the discoverable opt-in; release adapter contract documents the convention.
 - `## References` link inventory enforced; seed-fixture footprint bounded.
+- Seed fan-out collapsed from 18 workers × 3 seeds = 54 materializations to
+  one materialization per `(HEAD, dirty-digest)` shared across workers via
+  `filelock`; `~/.cache/charness/test-seeds/<hash>/` persists across sessions
+  for zero-copy same-HEAD reruns.
+- Agent-browser `--doctor-check` no longer leaks PPID=1 orphans because the
+  helpcheck switched from `--help` (daemon-warming side effect) to
+  `--version`; `pytest_sessionfinish` is the controller-side defensive
+  backstop.
 
 ## Weak
 
@@ -68,16 +80,9 @@ these changes.
   these test foundational `charness init/doctor/reset` and packaging-committed
   surfaces — `subprocess.run` mocks would erase the integration safety net.
   No migrations applied.
-- **Seed cost diagnostic** (real measurement, not estimate): each pytest-xdist
-  worker materializes its own `charness-repo-seed` (~26 MB), `charness-git-repo-seed`
-  (~33 MB), and `managed-home-seed` (~54 MB) because `@pytest.fixture(scope="session")`
-  is worker-local under xdist. With 18 workers × 3 seeds = **54 materializations**
-  per pytest session (~2.7 GB/session, ~150 MB/worker). The cost is fan-out,
-  not seed size; a single seed is small. Earlier "~1.9 GiB" framing was loose.
-- Agent-browser orphan accumulation during pytest causes intermittent
-  `check-cli-skill-surface`/`check-coverage` failures; the runtime guard's
-  healthcheck itself spawns daemons that survive pytest teardown.
-  Pre-existing flakiness.
+- The seed cache grows unbounded across HEAD changes (one directory per
+  `(HEAD, dirty-digest)`); no eviction policy yet. Pragmatic answer: clean
+  `~/.cache/charness/test-seeds/` manually or via a future LRU helper.
 - prose review result: trigger-boundary and progressive-disclosure judgment
   still requires subagent/human critique, not `heuristic_finding_count=0`.
 
@@ -85,17 +90,15 @@ these changes.
 
 - No maintained Cautilus scenario-registry edit (carried).
 - No CI lane; quality/security proof stays local-runner enforced.
-- No session-scoped autouse teardown that cleans up agent-browser orphan
-  daemons before run-quality phases that doctor agent-browser.
 
 ## Deferred
 
-- Content-addressed seed cache to break the xdist × session-scope fan-out:
-  move seeds out of `tmp_path_factory` into `~/.cache/charness/test-seeds/<HEAD-hash>/`
-  so all 18 workers read one materialization and same-HEAD reruns pay zero
-  copy cost (see Weak diagnostic).
 - Downstream-repo dogfood on the stronger generated skill-ergonomics default
   before changing the rule set again (carried).
+- LRU eviction for `~/.cache/charness/test-seeds/<hash>/` (keep N most-recent
+  hashes by mtime) once accumulated cache size becomes operationally
+  noticeable; out of scope for the cache landing because the cache is easy
+  to clean manually and same-HEAD reuse already pays back the seed cost.
 
 ## Advisory
 
@@ -105,31 +108,28 @@ these changes.
 
 ## Delegated Review
 
-- status: executed; reviewer: bounded general-purpose subagent on the prior
-  pass; this turn extends with three landed gates and an honest audit
-  conclusion that no further test migrations make sense without a
-  content-addressed seed cache.
-- slow-gate lenses reviewed: fixture-economics (depth-bounded `du` removes
-  budget gate as a hotspot), parallel-critical-path (xdist workers still
-  spawn seed fixtures for non-release tests; deferred), duplicated-proof
-  (release-time per-test commits already removed).
-- this turn's mutation: depth-bounded `_pytest_temp_footprint_quick`;
-  release adapter contract doc; non-migration audit recorded in `Weak`.
+- status: executed; reviewer: bounded general-purpose subagent on this turn
+  reviewed the seed-cache helper, refactored fixtures, `pytest_sessionfinish`
+  hook, and the `run_help_check` `--help`→`--version` swap. Verdict: no
+  blockers; deferred follow-ups recorded in `Weak`/`Deferred`. Critique
+  artifact: `2026-05-20-seed-cache-orphan-teardown-critique.md`.
+- slow-gate lenses reviewed: fixture-economics (seed fan-out collapsed),
+  parallel-critical-path (xdist workers now share one materialization),
+  duplicated-proof (release-time per-test commits already removed; no new
+  duplicated coverage introduced this turn).
+- this turn's mutation: `tests/seed_cache.py`, fixture refactor,
+  `pytest_sessionfinish` cleanup hook, `run_help_check` daemon-leak fix.
 
 ## Commands Run
 
-- `./scripts/run-quality.sh`
-- `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- `python3 scripts/check_seed_fixture_budget.py --repo-root .`
-- `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --json`
-- `python3 skills/public/quality/scripts/inventory_lint_ignores.py --repo-root . --json`
-- `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root . --json`
+- `./scripts/run-quality.sh` (twice consecutively)
+- `python3 scripts/run_slice_closeout.py --repo-root .`
+- `python3 scripts/check_changed_surfaces.py --repo-root .`
 
 ## Recommended Next Gates
 
-- active `AUTO_CANDIDATE` because pre-existing agent-browser orphan race causes intermittent `check-cli-skill-surface`/`check-coverage` failures: add a session-scoped autouse teardown in `tests/conftest.py` that calls `scripts/agent_browser_runtime_guard.py --cleanup-orphans --execute` after pytest finishes, so the next run-quality phase sees a clean state.
-- passive `AUTO_CANDIDATE` because pytest-xdist multiplies session-scoped seed fixtures by worker count (18 workers × 3 seeds ≈ 54 materializations, ~2.7 GB/session): move seeds out of `tmp_path_factory` into `~/.cache/charness/test-seeds/<HEAD-hash>/` with `filelock` for xdist concurrency. Per-test clones (already in `clone_seeded_charness_repo`) keep test isolation; only the seed fan-out collapses to one materialization per HEAD.
 - passive `AUTO_CANDIDATE` because downstream skill-ergonomics dogfood has not yet been collected: queue downstream issues before changing the default rule set again.
+- passive `AUTO_CANDIDATE` because `~/.cache/charness/test-seeds/<hash>/` grows unboundedly across HEAD changes: add an LRU eviction helper (keep N most-recent hashes by mtime) when accumulated cache size becomes operationally noticeable.
 
 ## History
 

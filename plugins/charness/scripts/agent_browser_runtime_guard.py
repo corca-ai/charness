@@ -110,7 +110,10 @@ def inspect_runtime(processes: list[ProcessInfo]) -> dict[str, object]:
 
 
 def run_help_check(repo_root: Path) -> dict[str, object]:
-    completed = run_process(["agent-browser", "--help"], cwd=repo_root, timeout_seconds=HELP_TIMEOUT_SECONDS)
+    # `agent-browser --help` warms a background daemon as a side effect, which
+    # leaks PPID=1 orphans across runs. `--version` verifies the binary works
+    # without spawning a daemon, which is what the doctor healthcheck needs.
+    completed = run_process(["agent-browser", "--version"], cwd=repo_root, timeout_seconds=HELP_TIMEOUT_SECONDS)
     ok = completed.returncode == 0 and "agent-browser" in completed.stdout
     return {
         "ok": ok,
