@@ -79,6 +79,7 @@ def summarize_cosmic_ray(records: list[tuple[dict, dict | None]]) -> dict[str, i
         test_outcome = result.get("test_outcome")
         if worker_outcome == "no-test":
             counts["no_tests"] += 1
+            continue
         elif worker_outcome in {"abnormal", "exception"}:
             counts["abnormal"] += 1
         elif worker_outcome == "skipped":
@@ -159,13 +160,13 @@ def mutation_metrics(stats: dict[str, int], score_break: float) -> dict[str, flo
     killed = stats["killed"]
     survived = stats["survived"]
     reachable = killed + survived
-    score = (killed / reachable * 100.0) if reachable else 100.0
+    score = (killed / reachable * 100.0) if reachable else 0.0
     return {
         **stats,
         "reachable": reachable,
         "score": score,
         "score_break": score_break,
-        "passed": score >= score_break,
+        "passed": reachable > 0 and stats["no_tests"] == 0 and score >= score_break,
     }
 
 
@@ -191,6 +192,10 @@ def build_summary_lines(
         lines.append(f"- Worker abnormal/exception: {metrics['abnormal']}")
     if metrics["skipped"]:
         lines.append(f"- Skipped: {metrics['skipped']}")
+    if not metrics["reachable"]:
+        lines.append("- Blocking signal: no reachable mutants were executed.")
+    if metrics["no_tests"]:
+        lines.append("- Blocking signal: no-tests mutants indicate a mutation scope gap.")
     if metrics["survived"]:
         survived_details = summarize_survived_mutations(records, repo_root)
         lines += [

@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT))
 
 from scripts.check_mutation_score import (  # noqa: E402
     iter_dump_records,
+    mutation_metrics,
     summarize_cosmic_ray,
     summarize_survived_mutations,
 )
@@ -358,6 +359,32 @@ def test_a4_template_does_not_summarize_dry_run_without_dump() -> None:
     )
 
 
+def test_a4_template_rotates_scheduled_sample_seed() -> None:
+    body = TEMPLATE_PATH.read_text(encoding="utf-8")
+    assert "MUTATION_SAMPLE_SEED: ${{ github.run_id }}:" in body
+
+
+def test_a4_template_samples_only_full_runs_with_sample_command() -> None:
+    body = TEMPLATE_PATH.read_text(encoding="utf-8")
+    assert (
+        "steps.plan.outputs.mode == 'full' && steps.adapter.outputs.cmd_sample != ''"
+        in body
+    )
+
+
+def test_checked_in_mutation_workflow_rotates_scheduled_sample_seed() -> None:
+    body = (ROOT / ".github" / "workflows" / "mutation-tests.yml").read_text(encoding="utf-8")
+    assert "MUTATION_SAMPLE_SEED: ${{ github.run_id }}:" in body
+
+
+def test_checked_in_mutation_workflow_samples_only_full_runs_with_sample_command() -> None:
+    body = (ROOT / ".github" / "workflows" / "mutation-tests.yml").read_text(encoding="utf-8")
+    assert (
+        "steps.plan.outputs.mode == 'full' && steps.adapter.outputs.cmd_sample != ''"
+        in body
+    )
+
+
 def test_a4_template_has_no_stack_literal_run_lines() -> None:
     """SC 7: no hardcoded stack tool literal in run: lines."""
     body = TEMPLATE_PATH.read_text(encoding="utf-8")
@@ -441,6 +468,13 @@ def test_validate_data_with_empty_dict_includes_mutation_testing(tmp_path: Path)
     assert "mutation_testing" in validated
 
 
+def test_repo_quality_adapter_enables_mutation_sample_command() -> None:
+    payload = load_quality_adapter(ROOT)
+    assert payload["data"]["mutation_testing"]["commands"]["sample"] == (
+        "python3 scripts/sample_mutation_files.py --repo-root ."
+    )
+
+
 def test_cosmic_ray_dump_summary_counts_reachable_denominator(tmp_path: Path) -> None:
     dump = tmp_path / "dump.jsonl"
     dump.write_text(
@@ -465,6 +499,135 @@ def test_cosmic_ray_dump_summary_counts_reachable_denominator(tmp_path: Path) ->
     assert counts["incompetent"] == 1
     assert counts["pending"] == 1
     assert counts["skipped"] == 1
+
+
+def test_mutation_metrics_fail_when_no_reachable_mutants() -> None:
+    metrics = mutation_metrics(
+        {
+            "total": 10,
+            "killed": 0,
+            "survived": 0,
+            "incompetent": 0,
+            "no_tests": 0,
+            "pending": 10,
+            "abnormal": 0,
+            "skipped": 0,
+        },
+        80,
+    )
+
+    assert metrics["reachable"] == 0
+    assert metrics["score"] == 0.0
+    assert metrics["passed"] is False
+
+
+def test_mutation_metrics_fail_when_no_tests_mutants_exist() -> None:
+    metrics = mutation_metrics(
+        {
+            "total": 11,
+            "killed": 10,
+            "survived": 0,
+            "incompetent": 0,
+            "no_tests": 1,
+            "pending": 0,
+            "abnormal": 0,
+            "skipped": 0,
+        },
+        80,
+    )
+
+    assert metrics["reachable"] == 10
+    assert metrics["score"] == 100.0
+    assert metrics["passed"] is False
+
+
+def test_check_mutation_score_fails_zero_reachable_dump(tmp_path: Path) -> None:
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
+        _ADAPTER_HEADER
+        + dedent(
+            """\
+            mutation_testing:
+              score_break: 50
+              report_paths:
+                summary_md: reports/mutation/summary.md
+            """
+        ),
+        encoding="utf-8",
+    )
+    dump = tmp_path / "dump.jsonl"
+    dump.write_text(json.dumps([{"job_id": "a"}, None]) + "\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            "python3",
+            "scripts/check_mutation_score.py",
+            "--repo-root",
+            str(tmp_path),
+            "--stats",
+            str(dump),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+    assert "Blocking signal: no reachable mutants were executed." in summary
+
+
+def test_check_mutation_score_fails_no_tests_dump(tmp_path: Path) -> None:
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
+        _ADAPTER_HEADER
+        + dedent(
+            """\
+            mutation_testing:
+              score_break: 50
+              report_paths:
+                summary_md: reports/mutation/summary.md
+            """
+        ),
+        encoding="utf-8",
+    )
+    dump = tmp_path / "dump.jsonl"
+    dump.write_text(
+        "\n".join(
+            [
+                json.dumps([{"job_id": "a"}, {"worker_outcome": "normal", "test_outcome": "killed"}]),
+                json.dumps([{"job_id": "b"}, {"worker_outcome": "no-test", "test_outcome": "survived"}]),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "python3",
+            "scripts/check_mutation_score.py",
+            "--repo-root",
+            str(tmp_path),
+            "--stats",
+            str(dump),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+    counts = summarize_cosmic_ray(iter_dump_records(dump))
+    metrics = mutation_metrics(counts, 50)
+    assert counts["no_tests"] == 1
+    assert counts["survived"] == 0
+    assert metrics["reachable"] == 1
+    assert "Blocking signal: no-tests mutants indicate a mutation scope gap." in summary
+    assert "## Survived Mutants" not in summary
 
 
 def test_cosmic_ray_summary_reports_actionable_survivors(tmp_path: Path) -> None:
@@ -680,3 +843,46 @@ def test_sample_rewrites_cosmic_ray_module_path(tmp_path: Path) -> None:
     assert '    "scripts/a.py",' in text
     assert '    "scripts/b.py",' in text
     assert 'test-command = "python3 -m pytest -q tests"' in text
+
+
+def test_sample_script_rewrites_config_and_manifest(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True)
+    for name in ("a.py", "b.py", "c.py"):
+        (scripts_dir / name).write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / "cosmic-ray.toml").write_text(
+        dedent(
+            """\
+            [cosmic-ray]
+            module-path = ["scripts/control_plane_lib.py"]
+            timeout = 30.0
+            test-command = "python3 -m pytest -q tests"
+            """
+        ),
+        encoding="utf-8",
+    )
+    env = {
+        **os.environ,
+        "MUTATION_SAMPLE_MAX_FILES": "2",
+        "MUTATION_SAMPLE_CHANGED_QUOTA": "0",
+        "MUTATION_SAMPLE_SEED": "fixed-seed",
+    }
+
+    result = subprocess.run(
+        ["python3", "scripts/sample_mutation_files.py", "--repo-root", str(repo)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 0, result.stderr
+    manifest = json.loads((repo / "reports" / "mutation" / "sample.json").read_text(encoding="utf-8"))
+    assert len(manifest["sample"]) == 2
+    text = (repo / "cosmic-ray.toml").read_text(encoding="utf-8")
+    assert 'module-path = [\n' in text
+    for path in manifest["sample"]:
+        assert f'    "{path}",' in text
+    assert "scripts/control_plane_lib.py" not in manifest["sample"]

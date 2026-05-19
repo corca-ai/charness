@@ -32,8 +32,8 @@ The consumer-owned summary command is the single integration seam:
 2. Exit non-zero when the mutation score breaks `score_break`. Use the
    reachable-mutant denominator by default: `killed / (killed + survived)`.
    No-tests mutants indicate test-scope gaps rather than test weakness and
-   should surface in `summary.md` as a separate line item, not folded into
-   the score.
+   should surface in `summary.md` as a separate blocking line item, not folded
+   into the score.
 
 charness does not enforce a score-extraction schema. Every reasonable mutation
 runner can wrap its own report behind a thin script that meets both clauses.

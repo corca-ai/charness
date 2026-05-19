@@ -151,7 +151,7 @@ jobs:
           MUTATION_HEAD_SHA: ${{ steps.plan.outputs.head_sha }}
           MUTATION_SAMPLE_CHANGED_QUOTA: ${{ steps.adapter.outputs.changed_quota }}
           MUTATION_SAMPLE_MAX_FILES: ${{ steps.adapter.outputs.max_files }}
-          MUTATION_SAMPLE_SEED: ${{ steps.plan.outputs.base_sha }}..${{ steps.plan.outputs.head_sha }}
+          MUTATION_SAMPLE_SEED: ${{ github.run_id }}:${{ steps.plan.outputs.base_sha }}..${{ steps.plan.outputs.head_sha }}
         shell: bash
         run: ${{ steps.adapter.outputs.cmd_sample }}
 

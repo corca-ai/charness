@@ -3,15 +3,15 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 20,
-  "indexed_artifact_count": 12,
+  "source_artifact_count": 21,
+  "indexed_artifact_count": 13,
   "risk_class_counts": {
-    "contract-freeze-risk": 5,
+    "contract-freeze-risk": 6,
     "host-disproves-local": 1,
-    "operator-visible-recovery": 7
+    "operator-visible-recovery": 6
   },
   "generalization_pressure_counts": {
-    "monitor": 12
+    "monitor": 13
   },
   "entries": [
     {
@@ -169,14 +169,27 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "issue-176-closeout-verifier",
+      "artifact_path": "charness-artifacts/debug/2026-05-19-mutation-score-suspicion.md",
+      "is_current_pointer": false,
+      "interrupt_id": "mutation-score-suspicion",
       "risk_classes": [
-        "operator-visible-recovery",
         "contract-freeze-risk"
       ],
-      "seam": "GitHub issue lifecycle after local commit/push/PR work",
+      "seam": "scheduled GitHub mutation workflow versus local score interpretation",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "mutation-score-suspicion",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "scheduled GitHub mutation workflow versus local score interpretation",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",

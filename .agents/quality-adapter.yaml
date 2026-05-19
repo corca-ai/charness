@@ -181,7 +181,7 @@ mutation_testing:
   commands:
     dry_run: "python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode dry-run"
     full: "python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode full"
-    sample: ""
+    sample: "python3 scripts/sample_mutation_files.py --repo-root ."
     summary: "python3 scripts/check_mutation_score.py --repo-root ."
   score_break: 80
   schedule_cron: "17 */3 * * *"
