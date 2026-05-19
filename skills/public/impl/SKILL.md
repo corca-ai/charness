@@ -7,8 +7,7 @@ description: "Use when work should move into code, config, tests, or operator-fa
 Use this when the work should move from contract into code, config, tests, or operator-facing artifacts.
 
 `impl` is downstream of `spec`, but direct implementation prompts still get a small honest contract instead of pretending the task is already well-defined.
-Keep sequence discipline, strong verification, and honest critique use in the
-loop. See `references/sequence-discipline.md`, `references/verification-ladder.md`, `references/design-lenses.md`, and `references/review-gate.md`.
+Keep sequence discipline, strong verification, and honest critique use in the loop. See `references/sequence-discipline.md`, `references/verification-ladder.md`, `references/design-lenses.md`, and `references/review-gate.md`.
 
 ## Continuation Default
 
@@ -85,6 +84,7 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
      current-slice contract before changing code
    - restate the current slice in implementation terms
    - list the acceptance checks that must pass before stopping
+   - when user-corrected behavior starts or redirects the work, classify stable contract vs better case reading before adding repo rules, tests, or gates
    - if the risk interrupt planner reports a forced interrupt, do not continue
      plain implementation until the named spec handoff says this slice may
      proceed honestly
@@ -98,6 +98,7 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
    - prefer a slice that proves one user-visible behavior or one structural seam
    - prefer the slice that opens the next good move most cleanly
    - when a probe exists, design the slice so it answers the probe cleanly
+   - for judgment-quality corrections, preserve the boundary: direct answer, smaller guidance, or no repo change yet may be correct
    - apply `../../shared/references/source-bound-records.md` for multi-source external writes
    - for skill packages, scheduled workflows, or external lookup contracts, use
      the prescribed path from `SKILL.md`, not an author-composed smoke probe
@@ -115,12 +116,8 @@ command -v charness >/dev/null 2>&1 && charness worktree doctor --json || true
    - if the slice changes repo-owned instruction or prompt surfaces such as `<repo-root>/AGENTS.md`, public/support `SKILL.md`, behavior-steering references, or adapter prompt wording, let the repo's cautilus adapter decide prompt/evaluator proof policy before closeout
    - if the adapter run mode is `disabled`, do not run Cautilus; record the disabled validator result and use deterministic gates until the adapter is re-enabled
    - generic review or closeout wording must not silently launch Cautilus
-   - prompt-affecting diffs alone do not require a live Cautilus run; keep
-     deterministic proof-artifact and fixture validation local, and use
-     `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>` or a
-     repo-owned dogfood wrapper only for explicit log-backed behavior proof; for
-     behavior-improving claims, also record the baseline compare path with
-     `cautilus evaluate comparison prepare` and `cautilus evaluate observation --input <observed.json>`
+   - prompt-affecting diffs alone do not require live Cautilus; keep deterministic validation local, use `cautilus evaluate fixture --repo-root . --adapter-name <repo-owned-adapter>` only for explicit log-backed behavior proof, and pair behavior-improving claims with `cautilus evaluate observation --input <observed.json>` baseline compare paths
+   - source, wiring, and guidance checks prove mechanism only; do not claim future semantic quality without targeted replay or evaluator comparison
    - if stronger proof needs setup or permission, ask instead of silently
      downgrading the claim
    - when the slice crosses a worker → host → provider seam, label the highest

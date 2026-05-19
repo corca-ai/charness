@@ -1,0 +1,31 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-05-19T10:58:44Z",
+  "prepared_for": "charness-177-impl-judgment-boundary",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/gather/latest.md\n- docs/public-skill-dogfood.json\n- plugins/charness/skills/impl/SKILL.md\n- skills/public/impl/SKILL.md\n- charness-artifacts/gather/2026-05-19-ceal-113-judgment-boundary.md\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: skills/public/impl/SKILL.md\n  derived matches: plugins/charness/skills/impl/SKILL.md\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/gather/latest.md, skills/public/impl/SKILL.md, charness-artifacts/gather/2026-05-19-ceal-113-judgment-boundary.md\n  derived matches: plugins/charness/skills/impl/SKILL.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/public/impl/SKILL.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/impl/SKILL.md\n  derived matches: plugins/charness/skills/impl/SKILL.md\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/impl/SKILL.md\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: docs/public-skill-dogfood.json, skills/public/impl/SKILL.md\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- The retro skill does not consume this packet today. A retro-side prepare slot (retro-adapter.yaml packet_sections) is a separate follow-up.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true
+}
