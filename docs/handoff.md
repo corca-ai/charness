@@ -9,25 +9,22 @@
 
 ## Current State
 
-- `main` is even with `origin/main` at `78d0023` (`Record release verification for v0.7.5`).
-- Current public release is `v0.7.5`, published 2026-05-19. `gh release list --repo corca-ai/charness --limit 5` marks it Latest, and [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md) records the release proof.
-- `v0.7.5` automated/public release verification is done. Installed-machine real-host proof remains open and unowned in this session; the required operator proof is listed in [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md).
-- Observed live GitHub issue list is empty. [#171](https://github.com/corca-ai/charness/issues/171) is closed as completed, so it is no longer handoff pickup work.
-- Latest quality state is [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md): [scripts/run-quality.sh](../scripts/run-quality.sh) passed on 2026-05-19 with 61 passed / 0 failed; Cautilus planner returned `next_action: none`.
-- Current debug context is mutation-score validity, captured in [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md). Do not treat older mutation, Cautilus rename, or issue closeout details as active handoff work unless a fresh live signal points back to them.
+- `main` is at `3e5e77c` (`Land remaining next gates: depth-bounded du + release contract doc + audit`); ahead of `origin/main` by recent quality-track commits.
+- Public release is `v0.7.6` with no open real-host gap; [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md) marks Real-Host Verification as "no configured trigger matched."
+- Latest quality posture: [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md) — standing pytest dropped from ~80s to ~22s after routing `release_only` correctly; `check-seed-fixture-budget` runtime collapsed to ~0.1s after depth-bounded `du`; agent-browser orphan flakiness is the next gate to install.
 
 ## Next Session
 
-1. For any release-status or release-closeout pickup, start with the open `v0.7.5` real-host verification sequence in [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md) on a second machine or clean temp home, then record the proof before claiming `v0.7.5` fully closed.
-2. For issue-resolution work, the observed live GitHub issue queue is empty; ask the user for the next target instead of reviving closed #171/#172/#170/#174 threads from history.
-3. Treat raw response persistence and maintained Cautilus scenario-registry mutation as prior deferred topics, out of scope unless the user explicitly asks to reopen them.
+1. **Active gate** (smallest meaningful move): add a session-scoped autouse teardown in [tests/conftest.py](../tests/conftest.py) that calls [scripts/agent_browser_runtime_guard.py](../scripts/agent_browser_runtime_guard.py) with `--cleanup-orphans --execute` at pytest session end. Verify by running [scripts/run-quality.sh](../scripts/run-quality.sh) twice in succession — both must finish 64+/0 without manual orphan cleanup between runs. This unblocks the intermittent `check-cli-skill-surface`/`check-coverage` failures recorded in `Weak` of [latest.md](../charness-artifacts/quality/latest.md).
+2. **Passive** (only if user asks for cost reduction): introduce content-addressed seed cache at `~/.cache/charness/test-seeds/<repo-hash>/` for `seeded_charness_repo`, `seeded_charness_git_repo`, and `seeded_managed_home`. Same-HEAD reruns should pay zero copy cost. Key: `git rev-parse HEAD` + dirty file digest; locking via `filelock` for xdist worker concurrency.
+3. **Passive** (background queue): downstream-repo dogfood on the stronger generated skill-ergonomics default before changing the rule set again. No code action this turn; collect issues from consuming repos first.
 
 ## Discuss
 
-- Whether to spend the next session on `v0.7.5` real-host verification or leave it as release-follow-up while starting a new user-selected target.
+- The agent-browser orphan race appears to be caused partly by `agent_browser_runtime_guard.py --doctor-check` itself spawning daemons during healthcheck. Confirm whether the autouse teardown is sufficient or whether the guard should be split into a "passive observe" path that does not start a daemon.
 
 ## References
 
-- [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md)
 - [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
+- [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md)
 - [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md)
