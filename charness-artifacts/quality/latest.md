@@ -1,134 +1,125 @@
 # Quality Review
-Date: 2026-05-19
+Date: 2026-05-20
 
 ## Scope
 
-Repo-wide repair for quality advisory visibility: skipped usage-episode
-validation and required skill prose review must not disappear behind green gates.
-Follow-up gate: new exit-zero attention states must be declared as visible or
-intentionally local before quality can pass.
+Repo-wide posture refresh on a clean tree. Inventory dispatch across skills,
+CLI, standing-gate verbosity, standing-test economics, lint ignores, prompt
+bulk, runtime, and attention-state visibility. No mutations; focus is on
+what the green gate hides — standing-test fixture footprint and two empty-
+scope inventories that should not read as enforcement.
 
 ## Current Gates
 
-- `./scripts/run-quality.sh`: 61 passed / 0 failed in 77.8s; `validate-usage-episodes`
-  now replays the exit-zero `no_adapter` warning in green quality runs.
-- `validate-skill-ergonomics` still enforces the five configured Charness
-  skill-ergonomics rules.
-- `inventory_skill_ergonomics.py` now reports `scope_status=scanned`,
+- `./scripts/run-quality.sh`: 62 passed / 0 failed in 96.0s on
+  `local-linux-x86_64-36cpu` (one more gate than the prior review).
+- `validate-usage-episodes` replays exit-zero `no_adapter`;
+  `validate-attention-state-visibility` declares 45 files;
+  `validate-skill-ergonomics` enforces all five configured rules;
+  `validate-maintainer-setup` passes (`.githooks` wired).
+- `inventory_skill_ergonomics.py`: `scope_status=scanned`,
   `finding_status=zero_heuristic_findings`, `prose_review_status=still_required`,
-  `checked_skill_count=22`, and `heuristic_finding_count=0` for this repo.
-- Advisory inventories now surface adapter validity; strict validators fail on
-  invalid adapters.
-- Generated quality adapters now default `skill_ergonomics_gate_rules` to all
-  five supported rules; existing explicit `[]` remains an opt-out that must
-  emit a visible warning.
-- `validate_attention_state_visibility.py` scans Python command/helper surfaces
-  for `no_adapter`, `disabled`, `not_configured`, `skipped`,
-  `advisory-only`, and `prose_review_status`; 45 detected files now have
-  explicit visibility declarations.
+  `checked_skill_count=22`, `heuristic_finding_count=0`.
+- `inventory_standing_gate_verbosity.py`: verbose escape hatch present;
+  pytest/specdown failure-detail markers actionable.
+- `inventory_cli_side_effect_probes.py`: 0 findings; mutating `uninstall`,
+  `tool install`, `tool update`, `tool sync-support` all probed.
+- `inventory_dual_implementation.py`: 0 cross-language duplicate candidates.
+- `inventory_lint_ignores.py`: 38 entries with `scope=inline`, 0 `blanket=true`,
+  representative `codes=[E402]`, across 26 files.
+- `check-coverage` passes at floor 85% (`coverage_fragile_margin_pp=1.0`);
+  `run-evals` passes; Cautilus planner `next_action=none`,
+  `must_ask_before_running=true`.
+- `inventory-ci-local-gate-parity` reports no drift; no CI lane present, so
+  quality/security proof is local-runner enforced.
 
 ## Runtime Signals
 
-- runtime source: `.charness/quality/runtime-signals.json`, <!-- reproduction-source -->
-  recorded by `scripts/record_quality_runtime.py`, rendered by `render_runtime_summary.py`.
-- runtime hot spots: `pytest` 55.8s, `check-coverage` 40.6s,
-  `validate-inventory-consumption-declaration` 14.4s.
-- coverage gate: `check-coverage` passed in 40.6s.
-- evaluator depth: `run-evals` passed; Cautilus planner returned `next_action: none`.
+- runtime source: `.charness/quality/runtime-signals.json` <!-- reproduction-source --> rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`; profile `local-linux-x86_64-36cpu`.
+- runtime hot spots: `pytest` 54.2s latest / 72.7s median / 140.0s budget;
+  `check-coverage` 41.3s / 40.4s / 45.0s leaves ~4.6s headroom;
+  `validate-inventory-consumption-declaration` 34.1s / 24.9s / 35.0s.
+- coverage gate: `check-coverage` passed in 41.3s.
+- evaluator depth: `run-evals` passed; Cautilus planner declined on-demand
+  eval as expected.
 
 ## Healthy
 
-- Empty skill inventory scope is now explicit: `scope_status` separates
-  `scanned`, `empty_requested_scope`, `configured_scope_empty`, and
-  `unconfigured_no_skill_surface`. A configured path that resolves empty no
-  longer falls through to default fallback scanning.
-- Zero heuristic findings are now separate from health judgment:
-  `finding_status=zero_heuristic_findings` and
-  `prose_review_status=still_required` prevent the quality artifact from
-  treating script silence as sufficient proof of skill structure.
-- The quality artifact consumer contract now declares and must engage with
-  `scope_status`, `finding_status`, `prose_review_status`,
-  `checked_skill_count`, and `heuristic_finding_count` when
-  `inventory_skill_ergonomics.py` is cited.
-- Invalid `skill_ergonomics_gate_rules` stay fail-closed for strict gates while
-  advisory inventories continue as best-effort and mark `adapter_valid=false`.
-- New or bootstrapped quality adapters now inherit the standing skill
-  ergonomics rule set instead of silently disabling enforcement.
-- Plugin export and find-skills inventory were refreshed after public skill and
-  script changes.
-- New attention-state helpers cannot rely on exit 0 alone: the quality gate now
-  fails until the file declares structured warning output, stdout attention,
-  artifact-visible status, support trace, or a local-noop rationale.
+- Attention-state visibility declared for 45 files; skipped/advisory states
+  cannot regress silently behind exit zero.
+- Skill ergonomics scope semantics are explicit; default rule list covers
+  all five supported rules.
+- Mutating CLI commands all carry side-effect probes; no parity drift.
 
 ## Weak
 
-- `prose_review_status=still_required` is a forcing function in artifacts, not
-  an automatic semantic reviewer. Human or subagent critique still owns trigger
-  overlap, progressive-disclosure honesty, and judgment-only skill risks.
-- prose review result: issue #175 review confirmed the skill ergonomics inventory
-  result is advisory input only; trigger-boundary and progressive-disclosure
-  judgment must be recorded separately from script fields.
-- The skill ergonomics inventory remains heuristic-based. It now tells the
-  consumer where the heuristic boundary is, but it does not replace a focused
-  review of public skill prose.
+- Standing-test economics from `inventory_standing_test_economics.py`:
+  `test_file_count=167`, `nested_cli_file_count=67` (the 10 in
+  `nested_cli_files` was the truncated head, not the count), and
+  `pytest_temp_footprint = 7,772,123,136` bytes (~7.24 GiB) across 3 retained
+  sessions; three duplicated seed roots (`charness-repo-seed`,
+  `charness-git-repo-seed`, `managed-home-seed`) contribute ~4.3 GiB. The
+  inventory's `recommended_action` is to reduce duplicated repo/home fixture
+  materialization before changing retention or disabling xdist.
+- `inventory_cli_ergonomics.py` returns `status=unconfigured` (no
+  command-registry.json / command-archetypes.json discovered);
+  `find_inline_prompt_bulk.py` runs against `prompt_asset_roots=[]` with
+  current hits inside `tests/` previews. Per the empty-policy lesson both
+  need explicit advisory-only classification rather than reading as enforced.
+- prose review result: trigger-boundary and progressive-disclosure judgment
+  for public skills still requires subagent/human critique, not the
+  ergonomics script's `heuristic_finding_count=0`.
 
 ## Missing
 
-- No maintained Cautilus scenario-registry edit was added.
-- No CI lane is present in this checkout; security and quality proof remain
-  local runner / maintainer-machine enforced.
+- No maintained Cautilus scenario-registry edit (carried).
+- No CI lane; security/quality proof stays local-runner enforced.
+- No deterministic gate yet for the seed-fixture footprint budget.
 
 ## Deferred
 
-- Consider a future low-noise rule for hidden workflow prose inside `## References`.
-- Downstream repos should dogfood the stronger generated default and file
-  issues for noisy rules instead of Charness keeping the default disabled.
+- Future low-noise `## References` link-inventory check (carried).
+- Downstream-repo dogfood on the stronger generated skill-ergonomics default
+  before changing the rule set again (carried).
 
 ## Advisory
 
-- Fresh-eye critique evidence: no blockers.
-- `inventory_skill_ergonomics.py` evidence: `scope_status=scanned`,
-  `finding_status=zero_heuristic_findings`, `prose_review_status=still_required`,
-  `checked_skill_count=22`, and `heuristic_finding_count=0`.
-- `validate_usage_episodes.py` evidence: skipped `no_adapter` and `disabled`
-  states now remain exit-zero but carry structured warning payloads.
-- `validate_attention_state_visibility.py` evidence: 45 files with skipped,
-  disabled, not-configured, no-adapter, advisory-only, or prose-review-required
-  terms are declared in `attention-state-visibility.json`.
-- Default-policy evidence: `DEFAULT_SKILL_ERGONOMICS_GATE_RULES` now lists all
-  supported rule ids, and `adapter.example.yaml` shows the same default list.
+- Bounded fresh-eye general-purpose subagent reviewed `inventory_standing_test_economics.py` and the empty-scope inventories; three actionable items landed in the artifact.
+- `validate_usage_episodes.py` evidence: `no_adapter`/`disabled` remain exit-zero with structured warning payloads.
 
 ## Delegated Review
 
-- status: executed.
-- reviewer: `Harvey` audited the uncommitted diff for empty-vs-zero inventory
-  semantics, prose-review preservation, quality skill checkability, critique
-  changed-ref behavior, and strict/permissive adapter load split.
-- actionable reviewer finding that landed: configured empty adapter skill paths
-  no longer silently fall back to default skill discovery.
+- status: executed; reviewer: bounded general-purpose subagent, read-only.
+- slow-gate lenses reviewed: fixture-economics (seed-root duplication and
+  ~7.24 GiB pytest tmp), parallel-critical-path (xdist worker startup with
+  nested-CLI fanout), duplicated-proof (overlapping repo/home/managed-home
+  seed materialization across sessions).
+- actionable findings landed: corrected `nested_cli_file_count` reading
+  10 → 67; named the seed-fixture dedup Recommended Next Gate with the
+  7.24 GiB number; classified the two empty-scope inventories per the
+  empty-policy lesson.
 
 ## Commands Run
 
-- `python3 skills/public/find-skills/scripts/list_capabilities.py --repo-root .`
-- `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- `python3 scripts/validate_inventory_consumption_declaration.py --repo-root .`
-- `python3 scripts/validate_inventory_consumption.py --repo-root .`
-- `python3 scripts/validate_attention_state_visibility.py --repo-root . --json`
-- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id quality --json`
-- `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --json`
-- `python3 scripts/validate_skills.py --repo-root .`
-- `cd plugins/charness && CHARNESS_QUALITY_LABELS=validate-attention-state-visibility ./scripts/run-quality.sh --read-only`
-- `pytest -q tests/quality_gates/test_quality_bootstrap.py tests/quality_gates/test_skill_ergonomics_gate.py tests/quality_gates/test_quality_skill_ergonomics.py tests/quality_gates/test_profile_and_preset_validation.py`
+- `python3 scripts/validate_maintainer_setup.py --repo-root .`
+- `python3 scripts/doctor.py --json`
+- `python3 scripts/plan_cautilus_proof.py --repo-root . --json`
 - `./scripts/run-quality.sh`
+- `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --json`
+- `python3 skills/public/quality/scripts/inventory_standing_test_economics.py --repo-root . --json`
+- `python3 skills/public/quality/scripts/inventory_lint_ignores.py --repo-root . --json`
+- `python3 skills/public/quality/scripts/render_runtime_summary.py --repo-root .`
+- `python3 skills/public/quality/references/find_inline_prompt_bulk.py --repo-root . --json`
+- `python3 scripts/suggest_public_skill_dogfood.py --repo-root . --skill-id quality --json`
 
 ## Recommended Next Gates
 
-- passive `AUTO_CANDIDATE` because prose review is now required in artifacts:
-  add a low-noise check that `## References` remains link inventory rather than
-  hidden workflow prose.
-- passive `AUTO_CANDIDATE` because generated adapters now enforce skill
-  ergonomics by default: collect downstream dogfood issues before changing the
-  rule set again.
+- active `AUTO_CANDIDATE`: introduce a session-scoped shared fixture for the
+  three seed roots with a per-seed materialization budget, bounding the
+  ~7.24 GiB retained pytest tmp before raising xdist workers or changing
+  retention.
+- passive `AUTO_CANDIDATE` because empty-scope is not yet declared advisory-only: classify `inventory_cli_ergonomics.py` and `find_inline_prompt_bulk.py` explicitly as advisory-only in their JSON envelopes when scope is empty/unconfigured.
+- passive `AUTO_CANDIDATE` because no `## References` drift has surfaced yet: keep the low-noise link-inventory check on the queue.
 
 ## History
 
