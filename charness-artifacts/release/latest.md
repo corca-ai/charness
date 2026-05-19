@@ -22,8 +22,8 @@ Advanced `charness` toward release `0.7.4` (tag `v0.7.4`) through the repo-owned
 
 - local release mutation: complete
 - branch/tag push: complete
-- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.7.4`; creation runs after the branch/tag push
-- public release surface verification: not checked by this helper
+- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v0.7.4`
+- public release surface verification: verified
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
@@ -40,7 +40,7 @@ Advanced `charness` toward release `0.7.4` (tag `v0.7.4`) through the repo-owned
 
 ## Issue Closeout
 
-- Issue closeout verification: pending or not requested.
+- Issue closeout verification: `not_requested`.
 
 ## User Update Steps
 
