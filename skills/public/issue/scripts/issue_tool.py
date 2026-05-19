@@ -24,10 +24,12 @@ ADAPTER = _load_local("resolve_adapter", "issue_resolve_adapter")
 RUNTIME = _load_local("issue_runtime")
 BRIEF = _load_local("issue_brief")
 CLOSE = _load_local("issue_close")
+VERIFY = _load_local("issue_verify_closeout")
 newest_open_issue = RUNTIME.newest_open_issue
 parse_selector = RUNTIME.parse_selector
 resolve_target = RUNTIME.resolve_target
 close_with_comment = CLOSE.close_with_comment
+verify_closeout = VERIFY.verify_closeout
 
 
 def emit(payload: dict[str, Any]) -> None:
@@ -163,6 +165,32 @@ def command_close_with_comment(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_verify_closeout(args: argparse.Namespace) -> int:
+    resolved = _resolve_backend(args.repo_root.resolve())
+    if not resolved["adapter_ok"]:
+        emit({"ok": False, "adapter": resolved["adapter"]})
+        return 1
+    try:
+        result = verify_closeout(
+            repo_root=args.repo_root.resolve(),
+            repo=args.repo,
+            numbers=args.number,
+            classification=args.classification,
+            carrier=args.carrier,
+            backend=resolved["backend"],
+            commit_ref=args.commit_ref,
+            body_file=args.body_file.resolve() if args.body_file else None,
+            manual_fallback_reason=args.manual_fallback_reason,
+            expect_state=args.expect_state,
+        )
+    except RuntimeError as exc:
+        emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
+        return 2
+    result["selected_backend"] = resolved["backend"]
+    emit(result)
+    return 0 if result["ok"] else 2
+
+
 def command_resolve_invocation(args: argparse.Namespace) -> int:
     adapter = ADAPTER.load_adapter(args.repo_root.resolve())
     if not adapter["valid"]:
@@ -216,6 +244,18 @@ def build_parser() -> argparse.ArgumentParser:
     close.add_argument("--reason", default="completed")
     close.add_argument("--repo-root", type=Path, default=cwd_default)
     close.set_defaults(func=command_close_with_comment)
+
+    verify = subparsers.add_parser("verify-closeout")
+    verify.add_argument("--repo", required=True)
+    verify.add_argument("--number", action="append", type=int, required=True)
+    verify.add_argument("--classification", choices=VERIFY.CLASSIFICATIONS, required=True)
+    verify.add_argument("--carrier", choices=VERIFY.CARRIERS, required=True)
+    verify.add_argument("--commit-ref")
+    verify.add_argument("--body-file", type=Path)
+    verify.add_argument("--manual-fallback-reason", choices=VERIFY.MANUAL_FALLBACK_REASONS)
+    verify.add_argument("--expect-state", choices=("OPEN", "CLOSED"))
+    verify.add_argument("--repo-root", type=Path, default=cwd_default)
+    verify.set_defaults(func=command_verify_closeout)
 
     brief = subparsers.add_parser("brief-path")
     brief.add_argument("--number", type=int, required=True)

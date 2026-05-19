@@ -51,3 +51,9 @@ auto-close is unsupported or did not close after the remote state was verified.
 If direct work is bundled into a release helper run, pass the resolved issue
 numbers to the helper and require its post-push issue verification payload
 before reporting the issue resolved.
+
+Use `issue_tool.py verify-closeout` as the ordinary issue-resolution final gate.
+Without `--expect-state`, the verifier can only report `carrier_verified` for a
+pre-push or pre-merge carrier audit. Final handoff requires
+`--expect-state CLOSED` and `status: verified`; otherwise the issue lifecycle is
+not closed.

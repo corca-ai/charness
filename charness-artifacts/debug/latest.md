@@ -1,151 +1,126 @@
-# Issue 175 Advisory Recurrence Debug
+# Issue 176 Debug Review
 Date: 2026-05-19
 
 ## Problem
 
-Issue #175 looked like a recurrence of earlier script-silence and empty-policy
-fixes: a green or exit-zero helper state still let required quality attention
-disappear from normal closeout.
+`issue resolve` can finish repo work without a machine-checkable verifier that
+the auto-close carrier or fallback ledger exists for every selected issue.
 
 ## Correct Behavior
 
-Given a validator intentionally exits 0 for an opt-in integration that is absent
-or disabled, when quality runs it, then the operator-visible output and JSON
-payload should still expose a warning with the next action.
-
-Given a quality inventory reports that prose review is still required, when a
-quality artifact cites that inventory, then the artifact body should record the
-prose-review result separately from copied script fields.
+Given an operator asks Charness to resolve GitHub issues end-to-end, when the
+workflow reaches commit, push, or PR closeout, then a repo-owned verifier should
+prove that every selected issue has either a GitHub auto-close carrier with a
+classification-specific closeout ledger or an explicit manual-fallback reason
+after remote verification.
 
 ## Observed Facts
 
-- Related prior incident `charness-artifacts/debug/2026-05-11-issue-145-script-silence-closeout.md`
-  found that helper silence was being treated as prose-level closeout.
-- Related current-pointer incident `charness-artifacts/debug/latest.md`
-  documented the 2026-05-17 empty-policy silent-pass pattern before this
-  artifact replaced the current pointer.
-- Commit `5bef8bc` fixed pass-time attention replay for `WARNING`, `WARN`,
-  `WEAK`, and `ADVISORY` lines and added warnings for empty skill ergonomics
-  rule policy.
-- Commit `8e3001f` routed usage episodes through setup and quality only when
-  `.agents/usage-episodes-adapter.yaml` exists; it explicitly left `no_adapter`
-  and `disabled` as skipped states but did not make absent opt-in visible.
-- Commit `662fe81` split `scope_status`, `finding_status`, and
-  `prose_review_status`, but did not emit an `ADVISORY` line for required prose
-  review and did not require an artifact-level `prose review result:`.
-- Commit `c324fed` enabled default skill ergonomics gate rules, reducing one
-  empty-policy path, but not the advisory inventory closeout path.
-- Issue #175 evidence came from a consumer repo: `validate_usage_episodes.py`
-  returned `status: no_adapter`, `valid: true`, and no warning payload; the
-  skill ergonomics inventory returned `prose_review_status: required` while a
-  quality workflow could still summarize the script as complete review.
+- GitHub issue #176 reports that `corca-ai/ceal` issue resolution on
+  2026-05-19 produced direct-to-main commits `7fe6d423` and `2fda41ca`
+  without close keywords or closeout ledgers; issues #110-#112 stayed open
+  until manual recovery.
+- The issue skill already says to prefer explicit close keywords in a PR body
+  or direct-to-default commit body and use `issue_tool.py close-with-comment`
+  only after auto-close is unsupported or fails after remote verification.
+- `skills/public/issue/scripts/issue_tool.py` exposes `close-with-comment`,
+  `preflight`, `select`, `resolve-target`, `resolve-invocation`, and
+  `brief-path`, but no command audits a PR body, commit body, or manual
+  fallback ledger before final closeout.
+- `skills/public/release/scripts/release_issue_closeout.py` already implements
+  a narrower sibling for release helper flows: it adds `Close #...` lines,
+  verifies issue state after publication, and records carrier/manual fallback.
+- Closed issue #173 is a same-class prior incident for release/direct work
+  leaving an issue open; #176 narrows the miss to the remaining prose-only
+  issue-resolve closeout path.
 
 ## Reproduction
 
-Before `0c35cb4`, these paths could pass quietly:
+Static reproduction:
 
-```bash
-python3 scripts/validate_usage_episodes.py --repo-root . --json
-CHARNESS_QUALITY_LABELS=validate-usage-episodes ./scripts/run-quality.sh
-python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --json
-python3 scripts/validate_inventory_consumption.py --repo-root .
-```
-
-The first command reported `no_adapter` without `warnings`, the quality runner
-did not queue `validate-usage-episodes`, the ergonomics inventory did not print
-an `ADVISORY` line for `prose_review_status`, and the consumption validator did
-not require a separate prose-review result.
+1. Read `skills/public/issue/SKILL.md` step 10 and
+   `skills/public/issue/references/closeout-discipline.md`.
+2. Read `skills/public/issue/scripts/issue_tool.py`.
+3. Observe that the prose requires auto-close carrier verification, but the
+   `issue_tool.py` command surface has no verifier for commit/PR/manual
+   closeout carriers.
 
 ## Candidate Causes
 
-- The previous fix was scoped to empty configured rule lists, not every new
-  exit-zero skipped state.
-- Usage episodes were introduced after the earlier script-silence RCA and
-  treated opt-in absence as a benign skip rather than an attention state.
-- The quality inventory consumption contract required non-headline field
-  engagement, but had no special rule for fields that explicitly say human or
-  model judgment remains required.
-- The quality runner could only replay attention text that a queued phase
-  actually emitted.
+- Prose-only enforcement: the issue skill describes the required carrier, but
+  no command makes it a finalization gate.
+- Partial sibling coverage: the release helper fixed release-linked issue
+  closeout, but ordinary issue-resolve direct/PR work kept relying on agent
+  memory.
+- Too-narrow close helper: `close-with-comment` verifies manual close state but
+  does not verify whether manual close was justified by a failed or unsupported
+  auto-close carrier.
 
 ## Hypothesis
 
-If skipped opt-in validators emit structured warnings and normal `WARNING`
-output, if `run-quality` queues the validator unconditionally, and if cited
-skill ergonomics inventories require both `prose_review_status` and an explicit
-`prose review result:`, then the #175 recurrence is blocked without turning
-opt-in absence into a hard failure.
+If the missing prevention surface is a repo-owned issue closeout verifier, then
+adding an `issue_tool.py verify-closeout` command with tests for direct commit
+carriers and manual-fallback ledger requirements should turn the repeated
+omission into a deterministic pre-closeout failure.
 
 ## Verification
 
-- `gh issue view 175` plus `git show` on `5bef8bc`, `8e3001f`, `662fe81`,
-  `c324fed`, and `0c35cb4` confirmed the reported symptoms and fix boundary.
-- `rg` over `scripts`, `skills/public`, and `skills/support` for skipped-state
-  and attention-output terms found the live #175 siblings plus already-visible
-  release, markdown-preview, and control-plane states.
-- `./scripts/run-quality.sh` passed after the fix with `61 passed, 0 failed`.
+Pending implementation:
+
+- Add focused tests for `verify-closeout` failing when selected issues lack
+  `Close #...` lines in the direct commit body.
+- Add focused tests for manual fallback requiring an explicit fallback reason
+  and closeout summary.
+- Run the focused issue tests and the repo slice closeout gate.
 
 ## Root Cause
 
-The recurrence happened because earlier fixes addressed symptoms inside
-specific helpers rather than establishing a generalized promotion rule for new
-exit-zero attention states. `validate_usage_episodes.py` had no warnings and
-was not always queued, while `inventory_skill_ergonomics.py` exposed
-`prose_review_status` only as data. Tests proved those local outputs but did
-not include sibling fixtures for "new optional validator absent" or "inventory
-says prose still required, artifact omits prose review result."
+The structural cause is that Charness encoded the desired GitHub auto-close
+behavior as public-skill prose but did not provide an executable issue-resolve
+finalization verifier outside the release helper path.
 
 ## Detection Gap
 
-- usage episodes validator | `no_adapter` and `disabled` returned exit 0 with
-  no warning payload | add `warnings` and normal `WARNING:` output for both
-  states.
-- quality runner queue | usage episodes validation ran only when an adapter was
-  present | queue `validate-usage-episodes` unconditionally; keep missing and
-  disabled states non-failing.
-- skill ergonomics inventory | `prose_review_status` existed only as JSON data
-  | add `advisories` and plain `ADVISORY:` output for `required` and
-  `still_required`.
-- quality artifact consumer | inventory field engagement could still be
-  satisfied without the separate prose judgment | require
-  `prose_review_status` plus `prose review result:` outside `## Commands Run`
-  when `inventory_skill_ergonomics.py` is cited.
-- sibling scan discipline | previous RCA memory did not automatically trigger
-  on a newly introduced validator | carry "exit-zero attention state" as a
-  reusable scan lens in issue/debug closeout.
+- `tests/quality_gates/test_issue_closeout_discipline.py` | asserted wording
+  in the skill and references, but did not exercise a command that rejects a
+  missing carrier | add command-level tests for selected issues and carrier
+  sources.
+- `skills/public/issue/scripts/issue_tool.py` | can close manually and verify
+  final state, but cannot audit whether auto-close was attempted first | add
+  a verifier command that classifies `direct_commit`, `pr_body`, and
+  `manual_fallback` carriers.
+- Release helper tests | prove the release-specific sibling only | keep as
+  sibling evidence, but do not treat it as ordinary issue-resolve coverage.
 
 ## Sibling Search
 
-- Mental model: exit-zero skipped states were treated as harmless unless the
-  exact helper had already been patched.
-- same state axis: `validate_usage_episodes.py` was the live unpatched
-  `no_adapter`/`disabled` validator; fixed by `0c35cb4`.
-- same consumer axis: `inventory_skill_ergonomics.py` was the live unpatched
-  prose-review-required inventory; fixed by `0c35cb4`.
-- same runner axis: `run-quality.sh` already replayed attention output after
-  `5bef8bc`, but could not replay an unqueued phase; fixed by unconditional
-  queueing.
-- adjacent release axis: `check_requested_review_gate.py` reports
-  `configuration_status: not_configured` and prints `WARNING`; no code patch
-  needed for this incident.
-- adjacent axes: release fresh-checkout probes, markdown-preview disabled
-  state, and Cautilus disabled state are already visible in artifacts,
-  warnings, or planner payloads; no patch needed here.
-- out-of-scope runtime axis: `t_events_emit_lib.py` returns local no-op reasons
-  for runtime emission, not a standing quality closeout signal; no patch needed
-  unless a consumer begins treating it as quality proof.
+- Mental model: once the public skill says "use close keywords", a diligent
+  agent will remember to carry the rule into commit/PR closeout.
+- Same layer: `skills/public/issue/scripts/issue_tool.py` direct issue-resolve
+  finalization | decision: same bug, fix now | proof: static scan plus issue
+  body evidence.
+- Abstraction up: public-skill closeout rules backed only by wording tests |
+  decision: same class, diagnostic-only for this slice | proof: static scan
+  of `test_issue_closeout_discipline.py`.
+- Specialization down: `skills/public/release/scripts/release_issue_closeout.py`
+  release-linked closeout | decision: intentional implemented sibling, do not
+  rewrite now | proof: local tests and code inspection.
+- Adjacent operation: manual `issue_tool.py close-with-comment` | decision:
+  same class, diagnostic-only for this slice because it verifies final state
+  but not fallback legitimacy | proof: static scan.
+- Keyword-only non-instance: broad `closeout` mentions in quality, critique,
+  and retro artifacts | decision: intentional plain-text or non-rendering
+  boundary | proof: static scan only.
 
 ## Seam Risk
 
-- Interrupt ID: issue-175-advisory-recurrence
-- Risk Class: contract-freeze-risk
-- Seam: helper exit-zero states versus quality closeout meaning
-- Disproving Observation: focused tests now fail if usage episode warnings
-  disappear, if the phase is not queued, or if a quality artifact cites skill
-  ergonomics inventory without a prose-review result.
-- What Local Reasoning Cannot Prove: whether every future opt-in integration
-  helper will be written under the same attention-state rule without a template
-  or generator enforcing it.
+- Interrupt ID: issue-176-closeout-verifier
+- Risk Class: operator-visible-recovery, contract-freeze-risk
+- Seam: GitHub issue lifecycle after local commit/push/PR work
+- Disproving Observation: a pushed commit or PR body without close keywords can
+  still leave GitHub issues open even when local tests pass.
+- What Local Reasoning Cannot Prove: whether GitHub auto-close actually fired
+  until remote issue state is queried.
 - Generalization Pressure: monitor
 
 ## Interrupt Decision
@@ -156,16 +131,6 @@ says prose still required, artifact omits prose review result."
 
 ## Prevention
 
-Treat any new exit-zero skipped, disabled, missing-adapter, or not-configured
-state as an attention-state design question before closeout. If it is part of a
-standing quality or release path, it needs one of: structured warnings plus
-pass-time attention output, artifact-visible status, or an explicit waiver.
-Inventories that say prose or judgment remains required must force the consuming
-artifact to record that judgment separately from script output.
-
-Related prior incidents:
-
-- `charness-artifacts/debug/2026-05-11-issue-145-script-silence-closeout.md`:
-  helper silence treated as prose closeout.
-- `charness-artifacts/debug/2026-05-17-empty-policy-silent-pass.md`:
-  empty enforcement policy hidden behind green gates.
+Add a small executable verifier to `issue_tool.py` and document it in the
+issue-resolve closeout path so missing close keywords or manual-fallback
+justification fail before the workflow reports success.

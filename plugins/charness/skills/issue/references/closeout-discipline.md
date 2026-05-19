@@ -66,13 +66,22 @@ For direct-to-default work:
 
 - put explicit close keywords in the commit body, not only the transcript
 - include enough closeout context in that commit body for later issue readers
-- push first, then verify the issue state from GitHub
+- push first, then run `issue_tool.py verify-closeout` with
+  `--carrier direct-commit`, `--commit-ref <ref>`, and
+  `--expect-state CLOSED` so the carrier and GitHub state are both checked
 
 Manual `issue_tool.py close-with-comment` is the fallback when auto-close is
 unsupported by the backend or failed after the pushed or merged remote state was
 verified. When manual close is used, say why auto-close was unavailable or
-insufficient. The helper must re-read GitHub state after comment plus close and
-fail unless the final state is `CLOSED`; command success alone is not closeout.
+insufficient, then run `issue_tool.py verify-closeout` with
+`--carrier manual-fallback`, `--manual-fallback-reason <reason>`, and
+`--expect-state CLOSED`. The helper and verifier must re-read GitHub state after comment plus close; they fail unless the final state is `CLOSED`. command success alone is not closeout, and carrier text alone is not closeout.
+
+`verify-closeout` returns `carrier_verified` when close keywords and the
+classification ledger are present but no `--expect-state` was provided. That
+status is useful before push or merge, but it is not final closeout. Final
+issue-resolution handoff requires `status: verified`, which means every selected
+issue matched the expected GitHub state.
 
 Release-driven direct-to-default work follows the same linkage. If the
 repo-owned release helper is used, pass resolved issue numbers with
@@ -81,6 +90,9 @@ commit body, preflight `gh issue view` before release mutation, verify GitHub
 issue state after the push and public release step, and manually close only when
 the issue remains open after remote verification. The closeout must name the
 carrier, manual-fallback status, and the verified final issue state.
+This release helper path is already its own verifier surface; ordinary
+`issue resolve` work uses `issue_tool.py verify-closeout` instead of reworking
+the release helper.
 
 ## External-Source Identity
 

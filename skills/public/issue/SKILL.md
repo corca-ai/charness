@@ -41,10 +41,9 @@ repo by created date. It must not use the current session's last created issue.
 
 - `org/repo`: use that exact repository
 - `repo`: use the adapter `default_org`, which defaults to `corca-ai`
-- omitted repo: infer the current repository from Git remote; if the remote lacks an owner, use `default_org` and the current directory name
+- omitted repo: infer the current repository from Git remote; otherwise use adapter defaults from `.agents/issue-adapter.yaml`
 - for `issue resolve`, one numeric token or `start-end` token is the issue
   selector, not a repository name
-- adapter defaults live in `.agents/issue-adapter.yaml`
 - once named or first-resolved, the target is durable workflow state for the session; on retry, reuse it; if unreachable, surface
   `target_unavailable: <full_name>` and stop instead of silently switching to another accessible repo (see `references/closeout-discipline.md`)
 
@@ -54,29 +53,17 @@ repo by created date. It must not use the current session's last created issue.
 2. Gather enough local context to make the observed problem transparent.
    Prefer current conversation, relevant local files, failing commands, logs,
    existing issue duplicates, and repository state over broad research.
-3. Write the issue as problem context first:
-   - what situation occurred
-   - what the user, operator, or agent experienced
-   - what outcome the reporter was trying to reach (job-to-be-done in one
-     line); record `JTBD: not inferable` when the situation does not reveal it
-   - what evidence or commands show it
-   - why the current behavior is confusing, costly, or blocked
-   - target-repo labels via the selected backend (gh:
-     `gh label list --repo <org/repo>`; non-gh: host's label-list shape;
-     never substitute direct `gh` when another backend is selected)
-   - external source identity when filed from a Slack thread, Notion page,
-     doc, or gathered artifact, per `references/closeout-discipline.md`
+3. Write the issue as problem context first: situation, user/operator
+   experience, JTBD, evidence, cost/confusion/blocker, target-repo labels via
+   selected backend, and external source identity when filed from a Slack thread
+   or other external source.
 4. Add only an optional weak solution direction (`This may be solved by...`,
    `A useful outcome might be...`); avoid prescribing.
-5. Create the issue through `selected_backend` (gh:
-   `gh issue create --repo <org/repo>`; non-gh: follow `commands.create` or
-   the host's shape — never substitute direct `gh`). Apply chosen labels
-   through the backend's label flag.
+5. Create the issue through `selected_backend`; apply labels through that
+   backend, and never substitute direct `gh` when another backend is selected.
    Do not ask for approval unless the user explicitly asks to review first.
-6. Verify each created issue through `selected_backend` (gh:
-   `gh issue view --repo <full_name> <number> --json number,url,state`;
-   non-gh: follow `commands.view` or the host's shape). Render closeout
-   only from the verified `{repo, number, url}` ledger. See
+6. Verify each created issue through `selected_backend`; render closeout only
+   from the verified `{repo, number, url}` ledger. See
    `references/closeout-discipline.md`.
 
 ## Resolve Issue
@@ -89,10 +76,8 @@ repo by created date. It must not use the current session's last created issue.
      selector
 2. Read each selected issue from GitHub with body, comments, labels, state,
    linked PRs when available, and current branch/repo context. Capture the
-   reporter's job-to-be-done in one line: what were they doing when they hit
-   this, and what outcome were they trying to reach. If the body does not
-   reveal JTBD, record `JTBD: not stated by reporter; inferred from <evidence>`
-   or `JTBD: not inferable — proceed from observed problem`. Do not invent.
+   reporter's job-to-be-done in one line; mark inferred or not inferable
+   explicitly instead of inventing missing intent.
 3. Classify as `bug`, `feature`, `question`, `decision-needed`, or
    `deferred-work` (default `bug` when real-world behavior diverges from a
    documented or implied contract). Routing: `bug` → step 4 causal review;
@@ -114,11 +99,7 @@ repo by created date. It must not use the current session's last created issue.
    resolution brief** to the transcript before invoking any mutation tool.
    Non-empty `open decisions` always forces a pause; the adapter
    `feature_brief_pause` and the invocation flags `--auto`/`--pause` only
-   control the empty-decisions case. See `references/resolution-brief.md`
-   for the brief template, persistence rule (`issue_tool.py brief-path`
-   resolves the dated artifact under `charness-artifacts/issue/` when the
-   brief pauses), trivial-feature short-circuit, range-resolve handling,
-   and close-comment coupling.
+   control the empty-decisions case. See `references/resolution-brief.md`.
 7. Discuss with the user before designing when the issue exposes a product,
    policy, scope, permission, or external-side-effect decision the agent
    should not own.
@@ -136,14 +117,14 @@ repo by created date. It must not use the current session's last created issue.
    deferred. If step 4 was blocked, report blocked state instead of running.
 10. Commit, push, and prefer GitHub auto-close via explicit close keywords
     (`Close #1. Close #2.`) in the PR body or direct-to-default commit body;
-    preserve them in squash/merge bodies. Use `issue_tool.py close-with-comment`
-    only after auto-close is unsupported or fails after remote verification. The
-    carrier or manual comment includes the closeout shape by classification:
-    - `bug`: JTBD, root cause, `Debug artifact: <path>` (or `none (trivial fix)` / `cite-only`), siblings (bundled/deferred+location), prevention
-    - `feature`/`deferred-work`: JTBD, boundary, resolution brief, implementation, prevention
-    - `question`/`decision-needed`: JTBD, the answer or recorded decision
-    Release-helper fixes pass `--close-issue <number>` and verify
-    `issue_closeout.status: verified`.
+    preserve them in squash/merge bodies. Include the classification closeout
+    ledger described in `references/closeout-discipline.md`; bug ledgers carry
+    `Debug artifact: <path>` plus RCA, sibling, and prevention notes.
+    Run `issue_tool.py verify-closeout` after push/merge; final handoff
+    requires `--expect-state CLOSED`. Use `issue_tool.py close-with-comment`
+    only after auto-close is unsupported or fails after remote verification,
+    then verify the manual-fallback comment. Release-helper fixes pass
+    `--close-issue <number>` and verify `issue_closeout.status: verified`.
 
 ## Guardrails
 
@@ -153,9 +134,10 @@ repo by created date. It must not use the current session's last created issue.
 - Do not close an issue before the pushed branch contains the fix.
 - Do not skip close keywords when the backend can auto-close; manual close is
   the fallback, not the default success path.
-- Do not hardcode `gh` when the adapter advertises a stronger backend, and
-  do not hide missing backend auth behind a public fetch fallback for
-  create, push, comment, or close.
+- Do not report `carrier_verified` as final issue closeout; final closeout is
+  `status: verified` with GitHub state checked as `CLOSED`.
+- Do not hardcode `gh` when the adapter advertises a stronger backend, or hide
+  missing backend auth behind public-fetch fallback for mutating operations.
 - Do not silently retarget on retry: surface `target_unavailable` instead of
   falling through to another accessible repo.
 - Render `issue new` closeout only from the verified `{repo, number, url}`
@@ -169,9 +151,8 @@ repo by created date. It must not use the current session's last created issue.
   Default to `bug` when unsure about real-world divergence; default to
   `feature` when unsure between `feature` and `question`/`decision-needed`.
 - Do not skip the step 6 brief or its pause for non-empty `open decisions`
-  regardless of adapter setting or `--auto`/`--pause` flags, and do not
-  declare a brief "trivial" outside the strict single-file / no-contract /
-  no-alternative-surface short-circuit.
+  regardless of adapter setting or flags, and do not declare a brief "trivial"
+  outside the strict short-circuit in `references/resolution-brief.md`.
 - Do not collapse the causal-review or resolution-critique subagent into a
   same-agent local pass; if the host blocks subagent spawning, stop and
   report the blocked state with the concrete host signal.
@@ -194,4 +175,3 @@ repo by created date. It must not use the current session's last created issue.
 - `scripts/issue_runtime.py`
 - `scripts/resolve_adapter.py`
 - `scripts/init_adapter.py`
-- `scripts/audit_brief.py`

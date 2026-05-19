@@ -113,9 +113,39 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" close-with-comment \
 
 Adapter templates for `comment` accept `{repo}`, `{number}`, `{body_file}`,
 and `{reason}` placeholders. Templates for `close` accept `{repo}`, `{number}`,
-and `{reason}`. The runtime enforces the allowlist per op: a template using
-an unknown placeholder fails fast with the offending placeholder named, so
-adapter command templates do not silently grow undocumented variables.
+and `{reason}`. Templates for `view` accept `{repo}`, `{number}`, and
+`{json_fields}`. The runtime enforces the allowlist per op: a template using an
+unknown placeholder fails fast with the offending placeholder named, so adapter
+command templates do not silently grow undocumented variables.
+
+## Verify Closeout
+
+`issue_tool.py verify-closeout` audits an issue-resolution carrier before final
+handoff:
+
+```bash
+python3 "$SKILL_DIR/scripts/issue_tool.py" verify-closeout \
+  --repo <full_name> --number <n> --classification bug \
+  --carrier direct-commit --commit-ref HEAD --expect-state CLOSED
+```
+
+Carrier modes:
+
+- `direct-commit`: reads `git show -s --format=%B <commit-ref>` and requires
+  GitHub closing keywords for every `--number`.
+- `pr-body`: reads `--body-file` and requires closing keywords for every
+  `--number`; use this as a pre-merge carrier audit unless paired with final
+  `--expect-state CLOSED`.
+- `manual-fallback`: reads `--body-file`, requires
+  `--manual-fallback-reason` (`auto-close-unsupported`,
+  `auto-close-failed-after-remote-verification`, or
+  `operator-directed-manual-close`), and checks the manual close comment ledger.
+
+All carriers require an explicit `--classification` so the verifier can check
+the classification-specific closeout ledger. Without `--expect-state`, success
+means `status: carrier_verified`, not final issue closeout. Final handoff
+requires `--expect-state CLOSED`, which uses the selected backend's `view`
+operation and reports `status: verified` only when every issue is closed.
 
 ## Placeholders
 

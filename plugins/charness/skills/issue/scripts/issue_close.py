@@ -37,7 +37,7 @@ GH_VIEW_DEFAULT = [
 
 COMMENT_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "body_file", "reason"})
 CLOSE_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "reason"})
-VIEW_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number"})
+VIEW_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "json_fields"})
 
 _PLACEHOLDER_RE = re.compile(r"\{([a-z_]+)\}")
 
@@ -126,6 +126,7 @@ def close_with_comment(
             VIEW_PLACEHOLDERS,
             repo=repo,
             number=str(number),
+            json_fields="number,state,url",
         )
     comment_result = subprocess.run(comment_argv, check=False, capture_output=True, text=True)
     if comment_result.returncode != 0:
