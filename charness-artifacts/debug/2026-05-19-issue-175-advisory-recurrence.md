@@ -22,8 +22,8 @@ prose-review result separately from copied script fields.
 - Related prior incident `charness-artifacts/debug/2026-05-11-issue-145-script-silence-closeout.md`
   found that helper silence was being treated as prose-level closeout.
 - Related current-pointer incident `charness-artifacts/debug/latest.md`
-  documented the 2026-05-17 empty-policy silent-pass pattern before this
-  artifact replaced the current pointer.
+  documented the 2026-05-17 empty-policy silent-pass pattern: empty enforcement
+  policy plus quiet pass-time output hid disabled gates.
 - Commit `5bef8bc` fixed pass-time attention replay for `WARNING`, `WARN`,
   `WEAK`, and `ADVISORY` lines and added warnings for empty skill ergonomics
   rule policy.
@@ -167,5 +167,4 @@ Related prior incidents:
 
 - `charness-artifacts/debug/2026-05-11-issue-145-script-silence-closeout.md`:
   helper silence treated as prose closeout.
-- `charness-artifacts/debug/2026-05-17-empty-policy-silent-pass.md`:
-  empty enforcement policy hidden behind green gates.
+- `charness-artifacts/debug/latest.md`: 2026-05-17 empty-policy silent pass.
