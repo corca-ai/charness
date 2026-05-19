@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-19T10:43:24Z",
+  "generated_at": "2026-05-19T11:42:46Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -94,6 +94,7 @@
           "skills/shared/references/bootstrap-resolution.md",
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/public/create-skill/SKILL.md",
+          "skills/public/create-skill/references/adapter-contract.md",
           "skills/public/create-skill/references/portable-authoring.md",
           "skills/public/create-skill/references/adapter-pattern.md",
           "skills/public/create-skill/references/preset-conventions.md",

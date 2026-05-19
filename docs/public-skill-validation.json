@@ -28,6 +28,7 @@
   "adapter_requirements": {
     "required": [
       "announcement",
+      "create-skill",
       "critique",
       "debug",
       "find-skills",
@@ -44,7 +45,6 @@
     ],
     "adapter-free": [
       "create-cli",
-      "create-skill",
       "ideation",
       "spec"
     ]
@@ -52,7 +52,6 @@
   "fallback_policy": {
     "allow": [
       "create-cli",
-      "create-skill",
       "debug",
       "gather",
       "ideation",
@@ -63,6 +62,7 @@
     ],
     "visible": [
       "announcement",
+      "create-skill",
       "find-skills",
       "handoff",
       "setup",

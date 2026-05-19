@@ -68,12 +68,12 @@
       "prompt": "Improve this skill package first so the trigger, references, and helper surface stay portable.",
       "repo_shape": "skills repo with adjacent public/support surfaces, references, and packaging constraints already present",
       "expected_skill": "create-skill",
-      "expected_artifact": null,
+      "expected_artifact": "charness-artifacts/create-skill",
       "validation_tier": "evaluator-required",
-      "adapter_requirement": "adapter-free",
+      "adapter_requirement": "required",
       "acceptance_evidence": [
         "routes the prompt to `create-skill` instead of an adjacent public skill",
-        "does not invent host-specific adapter state when repo inspection alone should be enough",
+        "names or refreshes `charness-artifacts/create-skill` when the skill persists durable state",
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context",
         "treats the public skill frontmatter and core trigger as classifier input, not only documentation",
         "keeps `SKILL.md` as selection/sequence core and pushes bulky nuance into references or scripts",
@@ -83,6 +83,7 @@
       "reviewed_on": "2026-05-09",
       "observed_evidence": [
         "The prompt still routes directly to `create-skill`, and the checked-in core keeps public-skill editing anchored on contract freezing, customer-of-this-skill critique, portable helper extraction, and classifier-aware `SKILL.md` edits rather than generic implementation drift.",
+        "The checked-in core now resolves the create-skill adapter so repo-local implementation topology terms stay outside portable skill prose while missing adapters remain visible.",
         "The checked-in core now requires scheduled, async, and external-lookup skill self-tests to replay the commands, inputs, selectors, and adapter state prescribed by `SKILL.md`, with raw provider response evidence before choosing a stable identification signal.",
         "The adapter-pattern reference now says visible artifacts are history-default and `latest.md` is only an optional current pointer, which is the intended portable authoring rule for future skill packages instead of a one-off repo exception.",
         "The current `cautilus` proof policy around `create-skill` no longer treats every scenario-review-worthy prompt change as ask-before-run: adaptive mode now auto-runs proof and reserves confirmation for maintained scenario-registry mutation.",

@@ -224,6 +224,8 @@ host assumptions.
 Current assignment:
 
 - `announcement`
+- `create-skill`
+- `critique`
 - `debug`
 - `find-skills`
 - `gather`
@@ -245,9 +247,7 @@ not need a checked-in artifact path or repo-specific bootstrap contract.
 Current assignment:
 
 - `create-cli`
-- `create-skill`
 - `ideation`
-- `critique`
 - `spec`
 
 ## Fallback Policy
@@ -260,7 +260,6 @@ repo-truth, review-state, or release-policy decision.
 Current assignment:
 
 - `create-cli`
-- `create-skill`
 - `debug`
 - `gather`
 - `ideation`
@@ -278,6 +277,7 @@ repo-owned contract.
 Current assignment:
 
 - `announcement`
+- `create-skill`
 - `find-skills`
 - `handoff`
 - `setup`
@@ -301,7 +301,7 @@ Current assignment:
 - `hitl`, `narrative`, and `release` mutate high-leverage review, truth, or
   publication surfaces. Silent fallback here creates convincing but
   ungrounded repo behavior, so the safe default is to stop.
-- `announcement`, `find-skills`, `handoff`, `setup`, `quality`, and
+- `announcement`, `create-skill`, `find-skills`, `handoff`, `setup`, `quality`, and
   `spec` still benefit from adapters, but they can continue honestly when the
   skill names the inferred-default boundary instead of pretending the repo
   already declared it.
