@@ -359,6 +359,7 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
             "startup_mode": "warm",
             "surface": "direct",
             "samples": 2,
+            "timeout_seconds": 20,
         }
     ]
     assert resolved["data"]["preset_lineage"] == ["python-quality", "typescript-quality", "monorepo-quality"]

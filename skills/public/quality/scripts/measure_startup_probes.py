@@ -30,6 +30,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
+DEFAULT_PROBE_TIMEOUT_SECONDS = 20
 
 
 def _record_runtime_script_path(repo_root: Path) -> Path:
@@ -90,29 +91,36 @@ def _record_runtime_signal(repo_root: Path, label: str, elapsed_ms: int, status:
 def _measure_probe(repo_root: Path, probe: dict[str, Any], *, record_runtime_signals: bool) -> dict[str, Any]:
     elapsed_samples: list[int] = []
     last_result: subprocess.CompletedProcess[str] | None = None
+    timeout_error: subprocess.TimeoutExpired[str] | None = None
+    timeout_seconds = int(probe.get("timeout_seconds", DEFAULT_PROBE_TIMEOUT_SECONDS))
     for _ in range(int(probe["samples"])):
         start_ns = time.perf_counter_ns()
-        result = subprocess.run(
-            list(probe["command"]),
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
+        try:
+            result = subprocess.run(
+                list(probe["command"]),
+                cwd=repo_root,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+            )
+        except subprocess.TimeoutExpired as exc:
+            timeout_error = exc
+            elapsed_samples.append(int((time.perf_counter_ns() - start_ns) / 1_000_000))
+            break
         elapsed_ms = int((time.perf_counter_ns() - start_ns) / 1_000_000)
         elapsed_samples.append(elapsed_ms)
         last_result = result
         if result.returncode != 0:
             break
-    assert last_result is not None
     latest_elapsed_ms = elapsed_samples[-1]
-    status = "ok" if last_result.returncode == 0 else "command-failed"
+    status = "command-timeout" if timeout_error else "ok" if last_result and last_result.returncode == 0 else "command-failed"
     if record_runtime_signals:
         _record_runtime_signal(
             repo_root,
             str(probe["label"]),
             latest_elapsed_ms,
-            "pass" if last_result.returncode == 0 else "fail",
+            "pass" if status == "ok" else "fail",
         )
     payload = {
         "label": probe["label"],
@@ -122,12 +130,16 @@ def _measure_probe(repo_root: Path, probe: dict[str, Any], *, record_runtime_sig
         "surface": probe["surface"],
         "samples_requested": probe["samples"],
         "samples_ran": len(elapsed_samples),
+        "timeout_seconds": timeout_seconds,
         "elapsed_samples_ms": elapsed_samples,
         "latest_elapsed_ms": latest_elapsed_ms,
         "median_elapsed_ms": int(statistics.median(elapsed_samples)),
         "status": status,
     }
-    if last_result.returncode != 0:
+    if timeout_error:
+        payload["stdout"] = timeout_error.stdout or ""
+        payload["stderr"] = timeout_error.stderr or ""
+    elif last_result and last_result.returncode != 0:
         payload["returncode"] = last_result.returncode
         payload["stdout"] = last_result.stdout
         payload["stderr"] = last_result.stderr

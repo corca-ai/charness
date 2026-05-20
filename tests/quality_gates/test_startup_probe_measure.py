@@ -8,7 +8,13 @@ from .support import run_script, write_executable
 SCRIPT = "skills/public/quality/scripts/measure_startup_probes.py"
 
 
-def _seed_repo(tmp_path: Path, *, probe_sleep_seconds: float = 0.0, failing: bool = False) -> Path:
+def _seed_repo(
+    tmp_path: Path,
+    *,
+    probe_sleep_seconds: float = 0.0,
+    failing: bool = False,
+    timeout_seconds: int | None = None,
+) -> Path:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / "scripts").mkdir(parents=True)
@@ -24,37 +30,34 @@ def _seed_repo(tmp_path: Path, *, probe_sleep_seconds: float = 0.0, failing: boo
             ]
         ),
     )
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: charness-artifacts/quality",
-                "runtime_budgets:",
-                "  demo-version: 500",
-                "startup_probes:",
-                "  - label: demo-version",
-                "    command:",
-                "      - python3",
-                "      - scripts/probe.py",
-                "    class: standing",
-                "    startup_mode: warm",
-                "    surface: direct",
-                "    samples: 2",
-                "  - label: demo-release",
-                "    command:",
-                "      - python3",
-                "      - scripts/probe.py",
-                "    class: release",
-                "    startup_mode: first-launch",
-                "    surface: install-like",
-                "    samples: 1",
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    timeout_lines = [] if timeout_seconds is None else [f"    timeout_seconds: {timeout_seconds}"]
+    lines = [
+        "version: 1",
+        "repo: demo",
+        "language: en",
+        "output_dir: charness-artifacts/quality",
+        "runtime_budgets:",
+        "  demo-version: 500",
+        "startup_probes:",
+        "  - label: demo-version",
+        "    command:",
+        "      - python3",
+        "      - scripts/probe.py",
+        "    class: standing",
+        "    startup_mode: warm",
+        "    surface: direct",
+        "    samples: 2",
+        *timeout_lines,
+        "  - label: demo-release",
+        "    command:",
+        "      - python3",
+        "      - scripts/probe.py",
+        "    class: release",
+        "    startup_mode: first-launch",
+        "    surface: install-like",
+        "    samples: 1",
+    ]
+    (repo / ".agents" / "quality-adapter.yaml").write_text("\n".join(lines) + "\n", encoding="utf-8")
     return repo
 
 
@@ -100,3 +103,13 @@ def test_measure_startup_probes_fails_when_command_fails(tmp_path: Path) -> None
     assert len(payload["failures"]) == 1
     assert payload["failures"][0]["label"] == "demo-version"
     assert payload["failures"][0]["status"] == "command-failed"
+
+
+def test_measure_startup_probes_times_out_hanging_command(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path, probe_sleep_seconds=2.0, timeout_seconds=1)
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing", "--json")
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert len(payload["failures"]) == 1
+    assert payload["failures"][0]["status"] == "command-timeout"
+    assert payload["failures"][0]["timeout_seconds"] == 1

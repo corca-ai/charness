@@ -294,8 +294,15 @@ print_final_summary() {
     "$(format_elapsed "$elapsed_ms")"
 }
 
-queue_selected "agent-browser-runtime-baseline" python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans --execute
-flush_phase || OVERALL_RC=$?
+queue_selected "agent-browser-runtime-baseline" env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans
+if flush_phase; then
+  :
+else
+  OVERALL_RC=$?
+  echo "run-quality: agent-browser runtime baseline failed; stopping before other gates." >&2
+  print_final_summary
+  exit "$OVERALL_RC"
+fi
 
 queue_selected "validate-skills" python3 scripts/validate_skills.py --repo-root "$REPO_ROOT"
 queue_selected "validate-skill-ergonomics" python3 scripts/validate_skill_ergonomics.py --repo-root "$REPO_ROOT"
@@ -418,10 +425,10 @@ else
 fi
 flush_phase || OVERALL_RC=$?
 
-queue_selected "agent-browser-runtime-hygiene" python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --assert-no-orphans
+queue_selected "agent-browser-runtime-hygiene" env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --assert-no-orphans
 flush_phase || {
   OVERALL_RC=$?
-  python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans --execute >/dev/null 2>&1 || true
+  env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans --execute >/dev/null 2>&1 || true
 }
 print_final_summary
 exit "$OVERALL_RC"

@@ -193,7 +193,7 @@
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "none",
+      "handoff_artifact": "docs/handoff.md",
       "forced": false
     },
     {
@@ -235,7 +235,7 @@
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "none",
+      "handoff_artifact": "docs/handoff.md",
       "forced": false
     }
   ],

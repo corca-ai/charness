@@ -307,6 +307,44 @@ def test_run_slice_closeout_executes_sync_then_verify(tmp_path: Path) -> None:
     assert (repo / "verify.log").read_text(encoding="utf-8").strip() == "verify"
 
 
+def test_run_slice_closeout_appends_agent_browser_hygiene_when_guard_exists(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (repo / ".agents" / "surfaces.json").write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "surfaces": [
+                    {
+                        "surface_id": "demo-surface",
+                        "description": "demo",
+                        "source_paths": ["README.md"],
+                        "derived_paths": [],
+                        "sync_commands": [],
+                        "verify_commands": ["python3 scripts/verify.py"],
+                        "notes": [],
+                    }
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo / "scripts" / "verify.py").write_text("from pathlib import Path\nPath('verify.log').write_text('verify\\n')\n", encoding="utf-8")
+    (repo / "scripts" / "agent_browser_runtime_guard.py").write_text(
+        "from pathlib import Path\nPath('hygiene.log').write_text('hygiene\\n')\n",
+        encoding="utf-8",
+    )
+    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--paths", "README.md", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert [step["phase"] for step in payload["executed_commands"]] == ["verify", "verify"]
+    assert (repo / "hygiene.log").read_text(encoding="utf-8").strip() == "hygiene"
+
+
 def test_run_slice_closeout_preserves_parent_python_before_login_shell_path(tmp_path: Path, monkeypatch) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

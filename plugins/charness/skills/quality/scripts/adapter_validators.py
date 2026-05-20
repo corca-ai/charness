@@ -12,6 +12,7 @@ from typing import Any
 from scripts.quality_policy_defaults import validate_skill_ergonomics_gate_rules
 
 RUNTIME_PROFILE_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
+DEFAULT_STARTUP_PROBE_TIMEOUT_SECONDS = 20
 
 
 def runtime_budgets(value: Any, errors: list[str]) -> dict[str, int] | None:
@@ -93,6 +94,9 @@ def startup_probes(value: Any, errors: list[str]) -> list[dict[str, Any]] | None
         samples = raw.get("samples", 1)
         if isinstance(samples, bool) or not isinstance(samples, int) or samples <= 0:
             errors.append(f"{prefix}.samples must be a positive integer")
+        timeout_seconds = raw.get("timeout_seconds", DEFAULT_STARTUP_PROBE_TIMEOUT_SECONDS)
+        if isinstance(timeout_seconds, bool) or not isinstance(timeout_seconds, int) or timeout_seconds <= 0:
+            errors.append(f"{prefix}.timeout_seconds must be a positive integer")
         if errors and any(message.startswith(prefix) for message in errors):
             continue
         validated.append(
@@ -103,6 +107,7 @@ def startup_probes(value: Any, errors: list[str]) -> list[dict[str, Any]] | None
                 "startup_mode": startup_mode,
                 "surface": surface,
                 "samples": samples,
+                "timeout_seconds": timeout_seconds,
             }
         )
     return validated

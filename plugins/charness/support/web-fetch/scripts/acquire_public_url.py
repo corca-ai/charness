@@ -265,7 +265,6 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
         return _payload_for(args, route, attempts, "error")
     if should_stop(direct_attempt, proof_required=proof_required):
         return _payload_for(args, route, attempts, "success")
-
     try_defuddle, defuddle_skip_reason = _should_try_defuddle(str(route["route_id"]), attempts)
     if try_defuddle:
         started = _timer()
@@ -324,7 +323,9 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
             )
         _stdout, cleanup_error = _run_command(["agent-browser", "--session", _browser_session_name(args.url), "close"], timeout=args.timeout)
         if cleanup_error:
-            attempts[-1].details["cleanup_error"] = cleanup_error
+            attempts[-1].status, attempts[-1].confidence, attempts[-1].error = "error", "none", cleanup_error
+            attempts[-1].details["cleanup"] = "failed"
+            return _payload_for(args, route, attempts, "degraded")
         if has_success(attempts, proof_required=proof_required):
             return _payload_for(args, route, attempts, "success")
     elif browser_skip_reason in {"missing-tool", "browser-mode-off"} and has_stage(route, "agent-browser-render-recon"):

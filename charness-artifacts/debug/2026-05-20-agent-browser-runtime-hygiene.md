@@ -35,6 +35,11 @@ should leave an actionable cleanup command.
 - A stale external shell loop from prior screenshot work was still invoking
   `agent-browser open/eval/screenshot`; it could recreate a daemon after a
   cleanup snapshot that initially had no orphan target.
+- Follow-up fresh-eye critique found additional recurrence paths:
+  `CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS=1` could waive standing hygiene,
+  wrapper-mediated probes could bypass the direct `agent-browser` blocker,
+  web-fetch cleanup failure could still return success, and executable probes
+  had no wall-clock timeout.
 
 ## Reproduction
 
@@ -59,17 +64,19 @@ should leave an actionable cleanup command.
 - A non-pytest quality phase or operator-side browser command created a daemon
   after pytest's session cleanup.
 - A stale daemon from earlier browser work survived into a green quality run
-  because the gate did not baseline-clean at start.
+  because the gate did not assert a clean runtime baseline at start.
 - Direct future `agent-browser` probes in adapter-configured command lists
   could reintroduce browser runtime side effects without lifecycle cleanup.
 - The web-fetch support path could leave a session open after render/network
   acquisition.
 - Cleanup could report success from an initially clean snapshot even when a
   still-running browser command recreated a daemon moments later.
+- Operator-configured startup, side-effect, or evaluator commands could hang a
+  standing gate without a timeout.
 
 ## Hypothesis
 
-If `run-quality.sh` owns an initial cleanup baseline and a final orphan
+If `run-quality.sh` owns an initial assert-only baseline and a final orphan
 assertion, then a green local/pre-push gate cannot silently leave new
 agent-browser orphan daemon trees behind. If a direct adapter probe tries to
 use browser-runtime commands, `check_cli_skill_surface.py` should block the
@@ -79,16 +86,20 @@ probe before it becomes a standing quality command.
 
 - Added `--assert-no-orphans` to `scripts/agent_browser_runtime_guard.py`; it
   inspects process state without running `agent-browser`.
-- Added barriered `agent-browser-runtime-baseline` and final
-  `agent-browser-runtime-hygiene` phases to `scripts/run-quality.sh`; final
-  failure runs best-effort cleanup before exiting nonzero.
-- Hardened `--cleanup-orphans --execute` so it waits and fails when a new
-  orphan daemon appears after the cleanup snapshot.
-- Added `check_cli_skill_surface.py` blocking for direct `agent-browser`
+- Added fail-fast `agent-browser-runtime-baseline` and final
+  `agent-browser-runtime-hygiene` phases to `scripts/run-quality.sh`; the
+  baseline is assert-only, and final failure runs best-effort cleanup before
+  exiting nonzero.
+- The quality runner unsets `CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS` for both
+  standing runtime gates.
+- Added shared blocking for bare and wrapper-mediated `agent-browser`
   browser-runtime probes such as `open`, `wait`, `get`, `network`, `snapshot`,
-  `screenshot`, and direct `--help`.
+  `screenshot`, and direct `--help` in CLI-surface and integration validation.
 - Added `agent-browser --session <session> close` cleanup to the web-fetch
-  browser fallback after render/network recon.
+  browser fallback after render/network recon; close failure now degrades the
+  acquisition result.
+- Added timeouts to startup probes, CLI side-effect probes, and
+  `run_cautilus_eval.py` forwarding.
 - Added lock-safe truncation for doctor command stdout/stderr and failure
   details so stale lock payloads do not preserve large volatile process dumps.
 - Focused tests passed for runtime guard, CLI skill surface, quality runner,
@@ -97,9 +108,9 @@ probe before it becomes a standing quality command.
 ## Root Cause
 
 The repo treated agent-browser orphan cleanup as a pytest fixture concern
-instead of a standing-gate lifecycle concern. It also treated a cleanup
-snapshot as sufficient proof of a clean baseline, so a still-running external
-browser command could recreate a daemon immediately after cleanup.
+instead of a standing-gate lifecycle concern. It also treated cleanup as the
+same thing as proof, so dirty local runtime state could be hidden or recreated
+instead of stopping the gate before later probes.
 
 ## Detection Gap
 
@@ -108,6 +119,9 @@ browser command could recreate a daemon immediately after cleanup.
 - `run-quality.sh` had no final external-runtime assertion.
 - `cli_skill_surface_probe_commands` treated direct binary probes as generic
   read-only commands without classifying long-lived browser runtime risk.
+- Integration healthchecks and wrapper-mediated commands were not covered by
+  the same unsafe-probe policy.
+- Operator-configured executable probes had no timeout boundary.
 - Doctor locks stored raw command output, making stale runtime observations
   look like current evidence during later investigation.
 - Cleanup did not wait and re-inspect for respawned orphan daemon trees.
@@ -130,7 +144,7 @@ browser command could recreate a daemon immediately after cleanup.
 - Seam: external browser daemon lifecycle across support scripts, quality
   probes, pytest, pre-push, and doctor lock persistence.
 - Disproving Observation: a full local/pre-push gate that starts from baseline
-  cleanup, ends with `--assert-no-orphans`, and leaves
+  assertion, ends with `--assert-no-orphans`, and leaves
   `orphan_daemon_count=0`.
 - What Local Reasoning Cannot Prove: every future upstream `agent-browser`
   command remains side-effect-free.
@@ -140,19 +154,22 @@ browser command could recreate a daemon immediately after cleanup.
 
 - Critique Required: yes
 - Next Step: impl
-- Handoff Artifact: none
+- Handoff Artifact: docs/handoff.md
 
 ## Prevention
 
-- `run-quality.sh` now owns baseline cleanup and final runtime hygiene.
+- `run-quality.sh` now owns baseline assertion and final runtime hygiene.
 - `agent_browser_runtime_guard.py --assert-no-orphans` provides an
   inspection-only final gate.
 - `agent_browser_runtime_guard.py --cleanup-orphans --execute` now fails if
   cleanup cannot establish a clean baseline after a grace period.
-- Direct risky `agent-browser` probes are blocked in CLI plus skill surface
-  validation.
+- Direct and wrapper-mediated risky `agent-browser` probes are blocked in CLI
+  plus skill surface and integration validation.
 - Web-fetch browser fallback closes its named session after render/network
-  recon.
+  recon and degrades on close failure.
+- Startup probes, CLI side-effect probes, and Cautilus forwarding have
+  wall-clock timeouts.
+- Pytest session cleanup retries runtime cleanup until clean or timeout.
 - Doctor lock persistence truncates volatile command output.
 
 ## Related Prior Incidents

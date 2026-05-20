@@ -113,6 +113,34 @@ def test_cli_skill_surface_blocks_direct_agent_browser_runtime_probes(tmp_path: 
     assert "Unsafe CLI plus skill probe `agent-browser open https://example.com`" in "\n".join(payload["blockers"])
 
 
+def test_cli_skill_surface_blocks_wrapped_agent_browser_runtime_probes(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        adapter_body="\n".join(
+            [
+                "version: 1",
+                "product_surfaces:",
+                "- installable_cli",
+                "- bundled_skill",
+                "cli_skill_surface_probe_commands:",
+                "- env FOO=1 agent-browser open https://example.com",
+                "- bash -c 'agent-browser screenshot /tmp/page.png'",
+                "cli_skill_surface_command_docs:",
+                "- .agents/command-docs.yaml",
+                "",
+            ]
+        ),
+    )
+    (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
+
+    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--json")
+    payload = json.loads(result.stdout)
+    assert result.returncode == 1
+    blockers = "\n".join(payload["blockers"])
+    assert "env FOO=1 agent-browser open https://example.com" in blockers
+    assert "bash -c 'agent-browser screenshot /tmp/page.png'" in blockers
+
+
 def test_cli_skill_surface_reports_missing_skill_path_adapter_weakness(tmp_path: Path) -> None:
     repo = seed_repo(
         tmp_path,

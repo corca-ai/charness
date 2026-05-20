@@ -20,6 +20,7 @@ or `regression-log` (mirroring the `## Behavior Source` shape in
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import subprocess
 import sys
@@ -38,6 +39,7 @@ VALID_MODES = ("fixture", "observation", "skill-experiment")
 CANONICAL_REFERENCE_PATH = "skills/public/quality/references/cautilus-on-demand.md"
 PLUGIN_REFERENCE_PATH = "skills/quality/references/cautilus-on-demand.md"
 JUSTIFICATION_LOG_MIN_BYTES = 32
+DEFAULT_CAUTILUS_TIMEOUT_SECONDS = 1800
 # Mirrors VALID_BEHAVIOR_SOURCE_KINDS in scripts/validate_cautilus_proof.py so the
 # wrapper, the artifact validator, and the cautilus-on-demand reference all share
 # one grammar. A trivial file containing the marker token as a substring no
@@ -53,6 +55,17 @@ SOURCE_KIND_LINE_RE = re.compile(
     r"^\s*-\s*source-kind\s*:\s*`?([a-z0-9_-]+)`?\s*$",
     re.MULTILINE,
 )
+
+
+def _default_timeout_seconds() -> int:
+    raw = os.environ.get("CHARNESS_CAUTILUS_TIMEOUT_SECONDS")
+    if raw is None:
+        return DEFAULT_CAUTILUS_TIMEOUT_SECONDS
+    try:
+        value = int(raw)
+    except ValueError:
+        return DEFAULT_CAUTILUS_TIMEOUT_SECONDS
+    return value if value > 0 else DEFAULT_CAUTILUS_TIMEOUT_SECONDS
 
 
 def parse_args(argv: list[str] | None = None) -> tuple[argparse.Namespace, list[str]]:
@@ -87,6 +100,12 @@ def parse_args(argv: list[str] | None = None) -> tuple[argparse.Namespace, list[
         action="store_true",
         help="Run the planner gate and print the forwarded command without invoking it.",
     )
+    parser.add_argument(
+        "--timeout-seconds",
+        type=int,
+        default=_default_timeout_seconds(),
+        help="Maximum wall-clock seconds for the forwarded cautilus process.",
+    )
     return parser.parse_known_args(argv)
 
 
@@ -105,9 +124,28 @@ def _refuse(message: str, repo_root: Path) -> int:
     return 2
 
 
+def _run_forwarded_cautilus(args: argparse.Namespace, cmd: list[str], repo_root: Path) -> subprocess.CompletedProcess[bytes] | int:
+    try:
+        return subprocess.run(cmd, check=False, timeout=args.timeout_seconds)
+    except FileNotFoundError:
+        return _refuse(
+            f"cautilus binary `{args.cautilus_bin}` not on PATH; install cautilus "
+            "or pass --cautilus-bin <path>.",
+            repo_root,
+        )
+    except subprocess.TimeoutExpired:
+        print(
+            f"cautilus evaluate timed out after {args.timeout_seconds}s: {' '.join(cmd)}",
+            file=sys.stderr,
+        )
+        return 124
+
+
 def main(argv: list[str] | None = None) -> int:
     args, remaining = parse_args(argv)
     repo_root = args.repo_root.resolve()
+    if args.timeout_seconds <= 0:
+        return _refuse("--timeout-seconds must be a positive integer.", repo_root)
 
     if args.paths is not None:
         changed_paths = [normalize_repo_path(path) for path in args.paths]
@@ -173,14 +211,9 @@ def main(argv: list[str] | None = None) -> int:
     runs_before = {entry.name for entry in runs_dir.iterdir()} if runs_dir.is_dir() else set()
 
     print(f"running: {' '.join(cmd)}", file=sys.stderr)
-    try:
-        completed = subprocess.run(cmd, check=False)
-    except FileNotFoundError:
-        return _refuse(
-            f"cautilus binary `{args.cautilus_bin}` not on PATH; install cautilus "
-            "or pass --cautilus-bin <path>.",
-            repo_root,
-        )
+    completed = _run_forwarded_cautilus(args, cmd, repo_root)
+    if isinstance(completed, int):
+        return completed
 
     if completed.returncode == 0 and runs_dir.is_dir():
         new_runs = sorted(

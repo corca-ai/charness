@@ -20,6 +20,8 @@ load_dependencies = _scripts_control_plane_lib_module.load_dependencies
 load_support_capabilities = _scripts_control_plane_lib_module.load_support_capabilities
 lock_paths = _scripts_control_plane_lib_module.lock_paths
 validate_lock_data = _scripts_control_plane_lib_module.validate_lock_data
+_agent_browser_probe_policy = import_repo_module(__file__, "scripts.agent_browser_probe_policy")
+unsafe_agent_browser_probe_reason = _agent_browser_probe_policy.unsafe_agent_browser_probe_reason
 
 
 class ValidationError(Exception):
@@ -156,6 +158,28 @@ def validate_cautilus_trigger_specificity(manifest: dict[str, object], path: Pat
         )
 
 
+def validate_agent_browser_check_commands(manifest: dict[str, object], path: Path) -> None:
+    checks = manifest.get("checks")
+    if not isinstance(checks, dict):
+        return
+    for check_name, check in checks.items():
+        if not isinstance(check, dict):
+            continue
+        commands = check.get("commands")
+        if not isinstance(commands, list):
+            continue
+        for index, command in enumerate(commands):
+            if not isinstance(command, str):
+                continue
+            reason = unsafe_agent_browser_probe_reason(command)
+            if reason is None:
+                continue
+            raise ValidationError(
+                f"{path}: checks.{check_name}.commands[{index}] uses unsafe agent-browser probe "
+                f"`{command}`: {reason}"
+            )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
@@ -174,6 +198,7 @@ def main() -> int:
             validate_config_layers(manifest, manifest_path)
             validate_support_install_entrypoint(manifest, manifest_path)
             validate_cautilus_trigger_specificity(manifest, manifest_path)
+            validate_agent_browser_check_commands(manifest, manifest_path)
             advisory = detect_missing_intent_triggers_for_external_binary_with_skill(manifest, manifest_path)
             if advisory is not None:
                 advisories.append(advisory)

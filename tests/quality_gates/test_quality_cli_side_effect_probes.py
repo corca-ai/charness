@@ -240,3 +240,42 @@ def test_inventory_cli_side_effect_probes_executes_safe_fixture_and_flags_mutati
     payload = json.loads(result.stdout)
     assert payload["findings"][0]["type"] == "probe_changed_side_effect_watch"
     assert payload["findings"][0]["probe_type"] == "help_probe"
+
+
+def test_inventory_cli_side_effect_probes_times_out_safe_fixture(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    contract_path = repo / "cli-side-effect-probes.json"
+    contract_path.write_text(
+        json.dumps(
+            {
+                "commands": [
+                    {
+                        "command": "python3 -c 'import time; time.sleep(2)'",
+                        "mutating": True,
+                        "safe_to_execute": True,
+                        "help_probe": "python3 -c 'import time; time.sleep(2)'",
+                        "dry_run_probe": "python3 -c 'import time; time.sleep(2)'",
+                        "side_effect_watch_paths": ["state"],
+                        "probe_timeout_seconds": 1,
+                    }
+                ]
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_cli_side_effect_probes.py",
+        "--repo-root",
+        str(repo),
+        "--execute-probes",
+        "--fail-on-findings",
+        "--json",
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["findings"][0]["type"] == "probe_timed_out"
+    assert payload["findings"][0]["timeout_seconds"] == 1

@@ -222,7 +222,10 @@ def main() -> int:
     if args.doctor_check:
         payload = doctor_payload(repo_root)
         if payload["healthy"]:
-            print("agent-browser runtime healthy")
+            if payload.get("ignored_orphans") and payload["runtime"]["orphan_daemon_count"]:
+                print("agent-browser runtime healthy; orphan check waived by CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS=1")
+            else:
+                print("agent-browser runtime healthy")
             return 0
         print_payload(payload, as_json=args.json)
         next_step = payload.get("next_step")
@@ -233,7 +236,10 @@ def main() -> int:
     if args.assert_no_orphans:
         payload = assert_no_orphans_payload(repo_root)
         if payload["healthy"]:
-            print("agent-browser runtime has no orphan daemon trees")
+            if payload.get("ignored_orphans") and payload["runtime"]["orphan_daemon_count"]:
+                print("agent-browser runtime orphan check waived by CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS=1")
+            else:
+                print("agent-browser runtime has no orphan daemon trees")
             return 0
         print_payload(payload, as_json=args.json)
         next_step = payload.get("next_step")

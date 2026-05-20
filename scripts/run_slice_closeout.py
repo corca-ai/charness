@@ -58,6 +58,21 @@ def run_command(repo_root: Path, command: str, phase: str) -> dict[str, object]:
     }
 
 
+def _agent_browser_hygiene_command(repo_root: Path) -> str | None:
+    guard = repo_root / "scripts" / "agent_browser_runtime_guard.py"
+    if not guard.is_file():
+        return None
+    assert_cmd = (
+        "env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS "
+        "python3 scripts/agent_browser_runtime_guard.py --repo-root . --assert-no-orphans"
+    )
+    cleanup_cmd = (
+        "env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS "
+        "python3 scripts/agent_browser_runtime_guard.py --repo-root . --cleanup-orphans --execute"
+    )
+    return f"{assert_cmd} || {{ rc=$?; {cleanup_cmd} >/dev/null 2>&1 || true; exit \"$rc\"; }}"
+
+
 def _emit_payload(payload: dict[str, object], *, as_json: bool, stderr_message: str | None = None) -> int:
     if as_json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
@@ -273,6 +288,9 @@ def main() -> int:
         command_plan.extend(("sync", command) for command in payload["sync_commands"])
     if not args.skip_verify:
         command_plan.extend(("verify", command) for command in payload["verify_commands"])
+        hygiene_command = _agent_browser_hygiene_command(repo_root)
+        if hygiene_command is not None:
+            command_plan.append(("verify", hygiene_command))
 
     if args.plan_only:
         payload["status"] = "planned"

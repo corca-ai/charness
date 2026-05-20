@@ -124,3 +124,33 @@ def test_strips_double_dash_separator(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     assert "cautilus evaluate fixture --alpha beta" in result.stdout
     assert " -- " not in result.stdout
+
+
+def test_forwarded_cautilus_process_has_timeout(tmp_path: Path) -> None:
+    log = tmp_path / "log.txt"
+    log.write_text(
+        "- source-kind: regression-log\nA long-enough log line satisfying the size minimum.\n",
+        encoding="utf-8",
+    )
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    cautilus = bin_dir / "cautilus"
+    cautilus.write_text("#!/bin/sh\nsleep 2\n", encoding="utf-8")
+    cautilus.chmod(0o755)
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--mode", "fixture",
+            "--justification-log", str(log),
+            "--paths",
+            "--cautilus-bin", str(cautilus),
+            "--timeout-seconds", "1",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=ROOT,
+    )
+    assert result.returncode == 124
+    assert "timed out after 1s" in result.stderr

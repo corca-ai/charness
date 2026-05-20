@@ -685,3 +685,25 @@ def test_validate_integrations_rejects_generic_cautilus_triggers() -> None:
         assert "검토" in str(exc)
     else:  # pragma: no cover - assertion clarity
         raise AssertionError("expected generic cautilus trigger rejection")
+
+
+def test_validate_integrations_rejects_unsafe_agent_browser_check_commands() -> None:
+    from scripts.validate_integrations import (
+        ValidationError,
+        validate_agent_browser_check_commands,
+    )
+
+    manifest = {
+        "tool_id": "agent-browser",
+        "checks": {
+            "detect": {"commands": ["agent-browser --version"]},
+            "healthcheck": {"commands": ["timeout 5 agent-browser open https://example.com"]},
+        },
+    }
+    try:
+        validate_agent_browser_check_commands(manifest, ROOT / "integrations" / "tools" / "agent-browser.json")
+    except ValidationError as exc:
+        assert "unsafe agent-browser probe" in str(exc)
+        assert "timeout 5 agent-browser open https://example.com" in str(exc)
+    else:  # pragma: no cover - assertion clarity
+        raise AssertionError("expected unsafe agent-browser check command rejection")

@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -23,19 +24,15 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     guard = _REPO_ROOT / "scripts" / "agent_browser_runtime_guard.py"
     if not guard.is_file():
         return
-    try:
-        subprocess.run(
-            [
-                sys.executable,
-                str(guard),
-                "--repo-root",
-                str(_REPO_ROOT),
-                "--cleanup-orphans",
-                "--execute",
-            ],
-            check=False,
-            capture_output=True,
-            timeout=30,
-        )
-    except (OSError, subprocess.SubprocessError):
-        pass
+    cleanup = [sys.executable, str(guard), "--repo-root", str(_REPO_ROOT), "--cleanup-orphans", "--execute"]
+    inspect = [sys.executable, str(guard), "--repo-root", str(_REPO_ROOT), "--assert-no-orphans"]
+    deadline = time.monotonic() + 10
+    while True:
+        try:
+            subprocess.run(cleanup, check=False, capture_output=True, timeout=30)
+            result = subprocess.run(inspect, check=False, capture_output=True, timeout=30)
+        except (OSError, subprocess.SubprocessError):
+            return
+        if result.returncode == 0 or time.monotonic() >= deadline:
+            return
+        time.sleep(1)

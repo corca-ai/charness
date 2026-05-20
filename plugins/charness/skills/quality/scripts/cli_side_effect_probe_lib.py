@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_PATTERNS = [".agents/cli-side-effect-probes.json", "**/cli-side-effect-probes.json", "**/*side-effect-probes*.json"]
+DEFAULT_PROBE_TIMEOUT_SECONDS = 20
 
 
 def _load_json(path: Path) -> Any:
@@ -58,6 +59,11 @@ def _string_list(entry: dict[str, Any], key: str) -> list[str]:
 def _non_empty_string(entry: dict[str, Any], key: str) -> str:
     value = entry.get(key)
     return value.strip() if isinstance(value, str) else ""
+
+
+def _positive_int(entry: dict[str, Any], key: str, default: int) -> int:
+    value = entry.get(key)
+    return value if isinstance(value, int) and not isinstance(value, bool) and value > 0 else default
 
 
 def _finding(
@@ -129,17 +135,23 @@ def _run_probes(repo_root: Path, path: Path, index: int, entry: dict[str, Any]) 
     command = _non_empty_string(entry, "command")
     watch_paths = _string_list(entry, "side_effect_watch_paths")
     findings: list[dict[str, object]] = []
+    timeout_seconds = _positive_int(entry, "probe_timeout_seconds", DEFAULT_PROBE_TIMEOUT_SECONDS)
     if not entry.get("safe_to_execute"):
         return [_finding(repo_root, path, index, command, "mutating_command_execution_not_enabled", "Set safe_to_execute only for sandboxed probe fixtures whose side effects are watched.")]
     for probe_type, probe_command, expect_failure in _probe_commands(entry):
         before = _snapshot(repo_root, watch_paths)
-        result = subprocess.run(
-            shlex.split(probe_command),
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
+        try:
+            result = subprocess.run(
+                shlex.split(probe_command),
+                cwd=repo_root,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+            )
+        except subprocess.TimeoutExpired:
+            findings.append(_finding(repo_root, path, index, command, "probe_timed_out", "Give executable CLI side-effect probes a bounded fixture command that returns quickly.", probe_type=probe_type, probe_command=probe_command, timeout_seconds=timeout_seconds))
+            continue
         after = _snapshot(repo_root, watch_paths)
         if before != after:
             findings.append(_finding(repo_root, path, index, command, "probe_changed_side_effect_watch", "Fix the probe so it rejects or previews before mutating watched state.", probe_type=probe_type, probe_command=probe_command))

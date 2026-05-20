@@ -254,6 +254,33 @@ def test_run_quality_can_select_agent_browser_runtime_hygiene(
     assert "Quality summary: 2 passed, 0 failed" in result.stdout
 
 
+def test_run_quality_stops_when_agent_browser_runtime_baseline_fails(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = "agent-browser-runtime-baseline,validate-skills"
+    env["QUALITY_FAIL_LABEL"] = "agent-browser-runtime-baseline"
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+    assert result.returncode == 1
+    assert "FAIL agent-browser-runtime-baseline" in result.stdout
+    assert "validate-skills" not in result.stdout
+    assert "Quality summary: 0 passed, 1 failed" in result.stdout
+    assert "agent-browser runtime baseline failed" in result.stderr
+
+
+def test_run_quality_runtime_barriers_ignore_orphan_waiver_env(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = "agent-browser-runtime-baseline,agent-browser-runtime-hygiene"
+    env["CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS"] = "1"
+    env["QUALITY_REQUIRE_STRICT_ORPHANS_LABEL"] = "agent-browser-runtime-hygiene"
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+    assert result.returncode == 0, result.stderr
+    assert "PASS agent-browser-runtime-baseline" in result.stdout
+    assert "PASS agent-browser-runtime-hygiene" in result.stdout
+
+
 def test_run_quality_cleans_agent_browser_runtime_after_hygiene_failure(
     tmp_path: Path, seeded_quality_runner_repo: Path
 ) -> None:

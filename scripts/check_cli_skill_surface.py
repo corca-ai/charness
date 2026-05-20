@@ -29,6 +29,8 @@ DEFAULT_CHANGE_GLOBS = (
 )
 _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _adapter_lib.load_yaml_file
+_agent_browser_probe_policy = import_repo_module(__file__, "scripts.agent_browser_probe_policy")
+unsafe_agent_browser_probe_reason = _agent_browser_probe_policy.unsafe_agent_browser_probe_reason
 
 
 def _string_list(data: dict[str, Any], field: str) -> list[str]:
@@ -130,35 +132,7 @@ def _run_probe(repo_root: Path, command: str) -> dict[str, object]:
 
 
 def _unsafe_agent_browser_probe(command: str) -> str | None:
-    try:
-        parts = shlex.split(command)
-    except ValueError:
-        return None
-    if not parts or Path(parts[0]).name != "agent-browser":
-        return None
-
-    tokens = [part for part in parts[1:] if not part.startswith("--session")]
-    if any(token in {"--help", "-h"} for token in tokens):
-        return "direct `agent-browser --help` probe can warm browser runtime state; use the repo runtime guard or `agent-browser --version`"
-
-    risky_commands = {
-        "open",
-        "wait",
-        "get",
-        "network",
-        "snapshot",
-        "screenshot",
-        "pdf",
-        "click",
-        "type",
-        "fill",
-        "eval",
-        "connect",
-    }
-    for token in tokens:
-        if token in risky_commands:
-            return f"direct `agent-browser {token}` probe can leave browser runtime state; route it through a lifecycle-owned support script"
-    return None
+    return unsafe_agent_browser_probe_reason(command)
 
 
 def _adapter_weaknesses(data: dict[str, Any], *, source: str, skills: list[Path]) -> list[str]:
