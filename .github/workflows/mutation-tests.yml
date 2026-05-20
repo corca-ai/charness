@@ -51,12 +51,13 @@ jobs:
         # uses Python/Cosmic Ray). The shipped template at
         # skills/public/quality/scripts/templates/mutation-tests.yml stays
         # stack-neutral; consumers customize this step for their runner.
-        # jsonschema + packaging + pyyaml are charness's runtime deps used by
-        # scripts/control_plane_lib.py and adjacent helpers loaded during the
-        # mutation run. They are not yet declared in pyproject.toml
+        # jsonschema + packaging + pyyaml + filelock are charness's runtime
+        # deps used by scripts/control_plane_lib.py, tests/seed_cache.py
+        # (xdist seed sharing), and adjacent helpers loaded during the
+        # mutation baseline. They are not yet declared in pyproject.toml
         # [project.dependencies] (the repo currently relies on ambient system
         # installs); track promoting them as a follow-up.
-        run: pip install cosmic-ray==8.4.6 pytest jsonschema packaging pyyaml
+        run: pip install cosmic-ray==8.4.6 pytest pytest-xdist jsonschema packaging pyyaml filelock
 
       - name: Resolve mutation_testing adapter slots
         id: adapter
