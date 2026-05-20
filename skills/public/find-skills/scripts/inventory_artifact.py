@@ -128,6 +128,23 @@ def _canonical_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
     return canonical
 
 
+def _surface_counts(inventory: dict[str, Any]) -> tuple[int, int, int]:
+    return (
+        len(inventory.get("support_skills", [])),
+        len(inventory.get("support_capabilities", [])),
+        len(inventory.get("integrations", [])),
+    )
+
+
+def _would_drop_nonempty_surfaces(existing: dict[str, Any], new_inventory: dict[str, Any]) -> bool:
+    existing_inventory = existing.get("inventory", {})
+    if not isinstance(existing_inventory, dict):
+        return False
+    existing_counts = _surface_counts(existing_inventory)
+    new_counts = _surface_counts(new_inventory)
+    return any(existing > 0 and new == 0 for existing, new in zip(existing_counts, new_counts, strict=True))
+
+
 def read_only_inventory_artifacts() -> dict[str, Any]:
     return {
         "mode": "read-only",
@@ -160,6 +177,10 @@ def persist_inventory(
         updated = False
         snapshot = existing
     else:
+        if existing is not None and _would_drop_nonempty_surfaces(existing, canonical_inventory):
+            raise ValueError(
+                "refusing to overwrite find-skills inventory with empty support/integration surfaces"
+            )
         generated_at = _utc_now()
         snapshot = {
             "schema_version": 1,

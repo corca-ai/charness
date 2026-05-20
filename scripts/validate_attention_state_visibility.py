@@ -14,6 +14,7 @@ import argparse
 import ast
 import json
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -45,11 +46,24 @@ ALLOWED_VISIBILITY = {
 }
 
 
+@dataclass(frozen=True)
+class ScanRoot:
+    source: Path
+    display_prefix: Path
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--declaration-path", type=Path)
     parser.add_argument("--scan-root", action="append", type=Path, default=[])
+    parser.add_argument(
+        "--scan-root-map",
+        action="append",
+        default=[],
+        metavar="SOURCE=DISPLAY_PREFIX",
+        help="Scan SOURCE while rendering detected files under DISPLAY_PREFIX in declarations.",
+    )
     parser.add_argument("--json", action="store_true")
     return parser.parse_args()
 
@@ -70,14 +84,49 @@ def _string_constants(path: Path) -> list[str]:
     return values
 
 
-def default_scan_roots(repo_root: Path) -> list[Path]:
-    roots = [Path("scripts")]
+def _scan_root(repo_root: Path, source: Path, display_prefix: Path | None = None) -> ScanRoot:
+    return ScanRoot(
+        source=source if source.is_absolute() else repo_root / source,
+        display_prefix=display_prefix or source,
+    )
+
+
+def _sibling_support_root(repo_root: Path) -> Path:
+    return repo_root.parent / "charness-support"
+
+
+def default_scan_roots(repo_root: Path) -> list[ScanRoot]:
+    roots = [_scan_root(repo_root, Path("scripts"))]
     if (repo_root / "skills" / "public").is_dir() or (repo_root / "skills" / "support").is_dir():
-        roots.extend([Path("skills/public"), Path("skills/support")])
+        roots.extend([
+            _scan_root(repo_root, Path("skills/public")),
+            _scan_root(repo_root, Path("skills/support")),
+        ])
     elif (repo_root / "skills").is_dir():
-        roots.append(Path("skills"))
+        roots.append(_scan_root(repo_root, Path("skills")))
+        sibling_support = _sibling_support_root(repo_root)
+        if sibling_support.is_dir():
+            roots.append(ScanRoot(source=sibling_support, display_prefix=Path("skills/support")))
     if (repo_root / "support").is_dir():
-        roots.append(Path("support"))
+        roots.append(_scan_root(repo_root, Path("support")))
+    return roots
+
+
+def parse_scan_root_maps(repo_root: Path, values: list[str]) -> list[ScanRoot]:
+    roots: list[ScanRoot] = []
+    for value in values:
+        if "=" not in value:
+            raise ValueError(f"--scan-root-map must be SOURCE=DISPLAY_PREFIX, got {value!r}")
+        source_raw, display_raw = value.split("=", 1)
+        if not source_raw or not display_raw:
+            raise ValueError(f"--scan-root-map must be SOURCE=DISPLAY_PREFIX, got {value!r}")
+        source = Path(source_raw)
+        roots.append(
+            ScanRoot(
+                source=source if source.is_absolute() else repo_root / source,
+                display_prefix=Path(display_raw),
+            )
+        )
     return roots
 
 
@@ -101,15 +150,20 @@ def declaration_key(relative_path: str) -> str:
     return relative_path
 
 
-def detect_attention_states(repo_root: Path, scan_roots: list[Path]) -> tuple[dict[str, list[str]], dict[str, str]]:
+def detect_attention_states(
+    repo_root: Path,
+    scan_roots: list[ScanRoot],
+) -> tuple[dict[str, list[str]], dict[str, str], dict[str, Path]]:
     detected: dict[str, list[str]] = {}
     source_paths: dict[str, str] = {}
+    source_files: dict[str, Path] = {}
     for root in scan_roots:
-        absolute_root = root if root.is_absolute() else repo_root / root
+        absolute_root = root.source.resolve()
         if not absolute_root.exists():
             continue
         for path in sorted(absolute_root.rglob("*.py")):
-            relative = _portable_path(repo_root, path)
+            relative_to_scan = path.resolve().relative_to(absolute_root).as_posix()
+            relative = (root.display_prefix / relative_to_scan).as_posix()
             if relative in EXCLUDED_PATHS or "__pycache__" in path.parts:
                 continue
             constants = _string_constants(path)
@@ -122,7 +176,8 @@ def detect_attention_states(repo_root: Path, scan_roots: list[Path]) -> tuple[di
                     )
                 detected[key] = hits
                 source_paths[key] = relative
-    return detected, source_paths
+                source_files[key] = path
+    return detected, source_paths, source_files
 
 
 def _string_list(value: Any) -> list[str]:
@@ -134,6 +189,7 @@ def validate_declaration(
     declaration_path: Path,
     detected: dict[str, list[str]],
     source_paths: dict[str, str],
+    source_files: dict[str, Path],
 ) -> tuple[list[str], dict[str, Any]]:
     if not declaration_path.is_file():
         return [f"{declaration_path.relative_to(repo_root)}: not found"], {}
@@ -182,7 +238,7 @@ def validate_declaration(
         if not evidence_terms:
             failures.append(f"{path}: evidence_terms must be a non-empty string list.")
             continue
-        source = (repo_root / source_paths[path]).read_text(encoding="utf-8")
+        source = source_files[path].read_text(encoding="utf-8")
         missing_terms = [term for term in evidence_terms if term not in source]
         if missing_terms:
             failures.append(
@@ -196,17 +252,26 @@ def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
     declaration_path = (args.declaration_path or default_declaration_path(repo_root)).resolve()
-    scan_roots = args.scan_root or default_scan_roots(repo_root)
 
     try:
-        detected, source_paths = detect_attention_states(repo_root, scan_roots)
+        scan_roots = [
+            *[_scan_root(repo_root, root) for root in args.scan_root],
+            *parse_scan_root_maps(repo_root, args.scan_root_map),
+        ] or default_scan_roots(repo_root)
+        detected, source_paths, source_files = detect_attention_states(repo_root, scan_roots)
     except ValueError as exc:
         print(str(exc), file=sys.stderr)
         return 1
-    failures, raw = validate_declaration(repo_root, declaration_path, detected, source_paths)
+    failures, raw = validate_declaration(repo_root, declaration_path, detected, source_paths, source_files)
     payload = {
         "declaration_path": _portable_path(repo_root, declaration_path),
-        "scan_roots": [root.as_posix() for root in scan_roots],
+        "scan_roots": [
+            {
+                "source": str(root.source),
+                "display_prefix": root.display_prefix.as_posix(),
+            }
+            for root in scan_roots
+        ],
         "attention_terms": list(ATTENTION_TERMS),
         "detected_file_count": len(detected),
         "declared_file_count": len(raw.get("files", {})) if isinstance(raw.get("files"), dict) else 0,
