@@ -14,7 +14,7 @@ Advanced `charness` toward release `0.7.7` (tag `v0.7.7`) through the repo-owned
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` is queued for this publish attempt.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
 - initial release push carried the release branch update and tag from the release helper.
 
