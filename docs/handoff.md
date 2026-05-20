@@ -9,23 +9,25 @@
 
 ## Current State
 
-- `main` pushed to `origin/main` at `9e0ac1c` closing #180/#181/#182 via commit body; #183 fix landed and will auto-close on the next successful or PASS-partial mutation workflow run (`gh run view 26134097162` to track the dispatched run).
-- Public release is `v0.7.6` with no open real-host gap; [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md) marks Real-Host Verification as "no configured trigger matched."
-- Latest worktree-adapter seed now auto-detects pnpm/yarn/bun/npm and lefthook/husky/simple-git-hooks/repo-owned hook systems; `setup` inspector also surfaces the seam when `git worktree list` reports >1 worktree even without a Node hook manager.
-- Mutation workflow now captures partial dumps via internal `--exec-timeout-seconds` (default 9000) and reports `PASS-partial` / `FAIL-incomplete` against a 75% executed floor; previous 3-hour cancel was the structural cause of #183.
+- `main` at `594221a` (2026-05-20). Prior session closed #180/#181/#182 across six commits (`9e0ac1c`, `0c7cb1a`, `232a998`, `4f629b7`, `e385254`, `594221a`); #183 **still OPEN** because the mutation workflow now runs end-to-end but reports `score=0%` due to a separate systemic bug — see [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md).
+- Public release `v0.7.6`. No version bump pending (release-adapter does not require bump per fix bundle).
+- Latest mutation run `26137796207` (head_sha `594221a`, 2h 30m): `Run mutation` step success, `executed=1093/1821`, `killed=0`, `survived=872`, `status=FAIL-incomplete`. All four #183 fix layers (filelock install, exec timeout `check=False`, dump atomic rename, partial-run scoring) verified by this run; the remaining blocker is the test-command vs sample-module mismatch described in the debug artifact.
 
 ## Next Session
 
-1. **Verify** the dispatched mutation workflow (`gh run view 26134097162` or the latest scheduled run) actually finishes within 150min and writes `reports/mutation/cosmic-ray-dump.jsonl`; if the partial-run ratio is consistently under 75%, lower `mutation_testing.max_files` in [.agents/quality-adapter.yaml](../.agents/quality-adapter.yaml) from 10 to a measured value or enable cosmic-ray local-distributor concurrency.
-2. **Passive** doc refresh — [docs/worktree-prepare.md](./worktree-prepare.md) and [skills/public/setup/references/bootstrap-seams.md](../skills/public/setup/references/bootstrap-seams.md) still describe the worktree adapter seed as a lefthook-centric template; update to mention auto-detection plus the active-worktrees trigger. Non-blocking; can ride the next release.
-3. **Passive — seed-cache LRU eviction**. `~/.cache/charness/test-seeds/<hash>/` grows unboundedly across HEAD changes. When the cache becomes operationally noticeable, add an LRU helper that keeps N most-recent hashes by mtime; until then the cache is easy to clean manually.
+1. Read [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md) (mutation test-command mismatch, two remediation paths).
+2. Pick Option A (recommended): edit [cosmic-ray.toml](../cosmic-ray.toml) test-command to full pytest suite, lower `mutation_testing.max_files` in [.agents/quality-adapter.yaml](../.agents/quality-adapter.yaml) from 10 to 5. Premortem critique via subagent before push (changes mutation-testing semantics).
+3. Push, dispatch with `gh workflow run mutation-tests.yml --ref main`, watch for a non-zero score on the next run; #183 auto-closes when status is PASS or PASS-partial.
+4. If `executed_ratio < 0.75` on the full-suite path, tune `PARTIAL_RUN_COMPLETION_FLOOR` in [scripts/check_mutation_score.py](../scripts/check_mutation_score.py) to the measured value and update the partial-run boundary tests.
 
 ## Discuss
 
-- The plugin import-smoke gate (`check-plugin-import-smoke`) caught a real export defect introduced by the seed refactor: a bare `from seed_worktree_adapter_lib import ...` works when the script is executed but not when the gate loads modules via `spec_from_file_location` against the exported plugin tree. Resolved by explicitly inserting the script's directory onto `sys.path` at the top of `seed_worktree_adapter.py`. Worth confirming `check_export_safe_imports.py` covers this static shape too — currently only the runtime smoke catches it.
+- Six prior critique passes (premortem, code, release, broad, fifth deep, sixth claim-vs-behavior) all signed off without measuring the workflow end-to-end. The systemic test-command bug only surfaced on first real run. Lesson: infrastructure-shaped critique needs at least one measurement, not just reading.
+- Watch list (deferred): Yarn Berry hook command idiom; pnpm+lefthook stale snippets in [docs/worktree-prepare.md](./worktree-prepare.md) and [skills/public/setup/references/bootstrap-seams.md](../skills/public/setup/references/bootstrap-seams.md); promote `filelock` + `pytest-xdist` into [pyproject.toml](../pyproject.toml); `sys.path.insert` sibling-import pattern routing through `runtime_bootstrap.import_repo_module`; seed-cache LRU eviction.
 
 ## References
 
-- [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
-- [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md)
-- [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md)
+- [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md): full mutation test-command mismatch context, observed facts, two-path remediation, verification plan.
+- [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md): current quality posture.
+- [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md): current release surface.
+- [.github/workflows/mutation-tests.yml](../.github/workflows/mutation-tests.yml): the workflow whose `26137796207` run measured the mismatch.
