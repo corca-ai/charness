@@ -152,9 +152,53 @@ def changed_paths(repo_root: Path) -> list[str]:
     return [line[3:] for line in git_status(repo_root) if len(line) >= 4]
 
 
-def unreleased_paths(repo_root: Path, *, remote: str, branch: str) -> list[str]:
+def _release_base_ref(
+    repo_root: Path,
+    *,
+    previous_version: str | None,
+    remote: str,
+    branch: str,
+) -> str:
+    if previous_version:
+        tag_ref = f"refs/tags/v{previous_version}"
+        tag_result = run(
+            ["git", "rev-parse", "--verify", "--quiet", tag_ref],
+            cwd=repo_root,
+            check=False,
+        )
+        if tag_result.returncode == 0:
+            return tag_ref
+        remote_tag_result = run(
+            ["git", "ls-remote", "--tags", remote, tag_ref],
+            cwd=repo_root,
+            check=False,
+        )
+        if remote_tag_result.returncode == 0 and remote_tag_result.stdout.strip():
+            fetch_result = run(
+                ["git", "fetch", "--quiet", remote, f"{tag_ref}:{tag_ref}"],
+                cwd=repo_root,
+                check=False,
+            )
+            if fetch_result.returncode == 0:
+                return tag_ref
+    return f"{remote}/{branch}"
+
+
+def unreleased_paths(
+    repo_root: Path,
+    *,
+    remote: str,
+    branch: str,
+    previous_version: str | None = None,
+) -> list[str]:
+    base_ref = _release_base_ref(
+        repo_root,
+        previous_version=previous_version,
+        remote=remote,
+        branch=branch,
+    )
     result = run(
-        ["git", "diff", "--name-only", f"{remote}/{branch}..HEAD"],
+        ["git", "diff", "--name-only", f"{base_ref}..HEAD"],
         cwd=repo_root,
         check=False,
     )

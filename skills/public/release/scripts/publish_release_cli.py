@@ -286,7 +286,12 @@ def main() -> None:
     backend = adapter_data["release_backend"]
     if release_exists(repo_root, tag_name, backend):
         raise SystemExit(f"GitHub release `{tag_name}` already exists")
-    release_content_paths = unreleased_paths(repo_root, remote=args.remote, branch=branch)
+    release_content_paths = unreleased_paths(
+        repo_root,
+        remote=args.remote,
+        branch=branch,
+        previous_version=current_version,
+    )
     issue_repo = args.close_issue_repo or github_repo_slug(repo_root, backend, run=run)
 
     payload = build_publish_payload(
