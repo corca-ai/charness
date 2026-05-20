@@ -104,6 +104,11 @@ success depend on luck in the sampled lines and kept #183 open.
   a file whose covered lines had no pytest nodeid contribution | fixed by
   requiring each coverage-selected file to contribute at least one focused
   pytest nodeid.
+- sanitizer test weakness: hosted run `26195933679` proved the bounded sampler
+  now finishes with zero scope gaps, then failed on real survivors in
+  `portable_artifact_lib` | fixed by testing keyword-call contracts, path-key
+  boundaries, and repo/home diagnostic sanitization; local replay now passes
+  `88.9%` with `81/81` executed.
 - fake external-tool tests: local broad coverage failed when fake
   `agent-browser` tests still used the real repo root and therefore hit the
   real runtime orphan guard | fixed by passing a temp `--repo-root` for the
@@ -133,6 +138,6 @@ expensive mutation run. Recovery closeout must require a full non-partial
 summary success and GitHub workflow proof before #183 is closed. Mutation
 sampling budgets must be expressed in actual workload units, not only file
 counts: executable mutants, per-file mutants, and selected pytest nodeids are
-the closeout-relevant cost surface. Coverage-selected files must also map to at
-least one selected pytest nodeid, so import/setup-only coverage cannot smuggle a
-file into the focused mutation command.
+the closeout-relevant cost surface. Coverage-selected files must map to at least
+one selected pytest nodeid. When the bounded run finds real survivors, improve
+the sampled code's tests rather than lowering the threshold.

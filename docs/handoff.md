@@ -32,8 +32,8 @@
   instead of ambient inline installs.
 - Fresh-eye reviewers judged the repo's testability posture sufficient for this
   slice after the probe config leakage, workload-budget bug, and import-only
-  coverage risk were fixed. #183 remains open until the hosted mutation workflow
-  succeeds on the pushed fix.
+  coverage risk were fixed. Hosted run `26195933679` then found real sanitizer
+  survivors; local replay passes after focused test strengthening.
 - Public release `v0.7.7`; release is still needed after hosted proof.
 
 ## Next Session

@@ -14,8 +14,6 @@ were hostile to line-level mutation proof.
 - `scripts/sample_mutation_files.py` now runs coverage with test-function
   contexts, filters files by statement coverage, probes Cosmic Ray work items,
   and keeps only files whose non-skipped mutable lines are covered.
-- The sampler rewrites the mutation `test-command` to the observed pytest
-  nodeids that covered the selected mutation surface.
 - `scripts/check_mutation_score.py` keeps `PASS-partial` diagnostic-only:
   partial mutation runs exit non-zero and cannot close a recovery issue.
 - Changed files excluded before mutation by coverage, mutation-line, or
@@ -37,10 +35,9 @@ were hostile to line-level mutation proof.
   coverage probe took 214.17s; cancelled hosted run `26193059859` proved that a
   5-file cap could still expand to 538 executable mutants and spend more than
   20 minutes in `Run mutation`.
-- coverage gate: local Cosmic Ray dry-run reported
-  `filtered 0 mutants from 48 pending mutants (0 annotation unions, 0 uncovered lines)`
-  after workload-aware sampling selected 2 files, 48 executable mutants, and 22
-  pytest nodeids; focused mutation/testability pytest passed.
+- coverage gate: local hosted-seed replay selected 2 files, 81 executable
+  mutants, and 6 pytest nodeids; full mutation passed at `88.9%`, `81/81`
+  executed, and zero scope gaps after sanitizer tests were strengthened.
 - evaluator depth: no live Cautilus run; deterministic validators, checked-in
   dogfood scenario review, and fresh-eye review own this repo-local
   mutation/testability slice.
@@ -54,6 +51,9 @@ were hostile to line-level mutation proof.
   file must contribute to that focused command.
 - High reachable score no longer masks uncovered mutation lines, changed-file
   exclusions, or incomplete timeout execution.
+- The bounded mutation run now exposes useful test gaps: hosted proof found
+  sanitizer survivors, and focused tests were strengthened until local replay
+  crossed the threshold honestly.
 - The mutation workload budget is now visible in the sample manifest, so a
   future slow sample fails selection honestly instead of pretending "5 files"
   is a runtime budget.
@@ -81,7 +81,7 @@ were hostile to line-level mutation proof.
 - Make missing or malformed sample manifests an explicit full-run invariant if
   the mutation summary starts running outside the current workflow shape.
 - Consider a pytest-selection helper file only if command length becomes a
-  practical CI problem.
+  CI problem.
 
 ## Advisory
 
