@@ -253,6 +253,27 @@ def seed_quality_runtime_recorder(target_dir: Path) -> None:
     )
 
 
+def seed_agent_browser_runtime_guard_stub(target_dir: Path) -> None:
+    write_executable(
+        target_dir / "agent_browser_runtime_guard.py",
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import os",
+                "import sys",
+                "",
+                "args = sys.argv[1:]",
+                "label = 'agent-browser-runtime-hygiene' if '--assert-no-orphans' in args else 'agent-browser-runtime-baseline'",
+                "if os.environ.get('QUALITY_FAIL_LABEL') == label:",
+                "    print(f'quality failure output from {label}')",
+                "    sys.exit(1)",
+                "print(f'quality success output from {label}')",
+                "",
+            ]
+        ),
+    )
+
+
 def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     repo = tmp_path / "repo"
     scripts_dir = repo / "scripts"
@@ -267,6 +288,7 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     seed_quality_python_stubs(scripts_dir, QUALITY_PYTHON_STUBS)
     seed_quality_python_stubs(quality_scripts_dir, QUALITY_RUNTIME_STUBS)
     seed_quality_runtime_recorder(scripts_dir)
+    seed_agent_browser_runtime_guard_stub(scripts_dir)
     seed_quality_shell_stubs(scripts_dir)
     seed_quality_bin_stubs(bin_dir)
     seed_quality_python_binary_stub(bin_dir)

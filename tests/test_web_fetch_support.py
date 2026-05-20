@@ -290,8 +290,10 @@ def test_acquire_public_url_uses_defuddle_after_weak_direct_fetch(tmp_path: Path
 def test_acquire_public_url_uses_agent_browser_network_recon_for_collect_intent(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
+    call_log = tmp_path / "agent-browser.log"
     (bin_dir / "agent-browser").write_text(
-        """#!/bin/sh
+        f"""#!/bin/sh
+printf '%s\\n' "$*" >> {str(call_log)!r}
 case "$*" in
   *"get text body"*) printf 'rendered target proof from browser\\n' ;;
   *"network requests"*) printf 'GET https://example.com/api/items\\n' ;;
@@ -334,6 +336,7 @@ esac
     assert network_attempt["details"]["network_candidates"] == [
         "GET https://example.com/api/items"
     ]
+    assert "close" in call_log.read_text(encoding="utf-8")
     assert payload["selected_attempt"]["stage_id"] == "agent-browser-render-recon"
     assert payload["final_status"] == "success"
 

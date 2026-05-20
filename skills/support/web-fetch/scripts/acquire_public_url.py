@@ -186,11 +186,7 @@ def _run_browser_network(url: str, *, timeout: int) -> tuple[str, str | None, di
         ["agent-browser", "--session", session, "network", "requests", "--filter", "api|graphql|json"],
         timeout=timeout,
     )
-    candidates = [
-        line.strip()
-        for line in requests_text.splitlines()
-        if line.strip()
-    ][:20]
+    candidates = [line.strip() for line in requests_text.splitlines() if line.strip()][:20]
     details: dict[str, object] = {"session": session, "network_candidates": candidates}
     return requests_text, requests_error, details
 
@@ -326,6 +322,9 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
                     details={**network_details, "diagnostic": True},
                 )
             )
+        _stdout, cleanup_error = _run_command(["agent-browser", "--session", _browser_session_name(args.url), "close"], timeout=args.timeout)
+        if cleanup_error:
+            attempts[-1].details["cleanup_error"] = cleanup_error
         if has_success(attempts, proof_required=proof_required):
             return _payload_for(args, route, attempts, "success")
     elif browser_skip_reason in {"missing-tool", "browser-mode-off"} and has_stage(route, "agent-browser-render-recon"):

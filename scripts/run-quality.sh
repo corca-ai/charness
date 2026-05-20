@@ -294,6 +294,9 @@ print_final_summary() {
     "$(format_elapsed "$elapsed_ms")"
 }
 
+queue_selected "agent-browser-runtime-baseline" python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans --execute
+flush_phase || OVERALL_RC=$?
+
 queue_selected "validate-skills" python3 scripts/validate_skills.py --repo-root "$REPO_ROOT"
 queue_selected "validate-skill-ergonomics" python3 scripts/validate_skill_ergonomics.py --repo-root "$REPO_ROOT"
 queue_selected "validate-usage-episodes" python3 scripts/validate_usage_episodes.py --repo-root "$REPO_ROOT"
@@ -414,5 +417,11 @@ else
   queue_selected "check-runtime-budget" python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root "$REPO_ROOT"
 fi
 flush_phase || OVERALL_RC=$?
+
+queue_selected "agent-browser-runtime-hygiene" python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --assert-no-orphans
+flush_phase || {
+  OVERALL_RC=$?
+  python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans --execute >/dev/null 2>&1 || true
+}
 print_final_summary
 exit "$OVERALL_RC"

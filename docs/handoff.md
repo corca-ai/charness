@@ -2,48 +2,61 @@
 
 ## Workflow Trigger
 
-- Start every task-oriented pickup with `charness:find-skills`, then read this file, [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md), and [charness-artifacts/retro/recent-lessons.md](../charness-artifacts/retro/recent-lessons.md).
-- Refresh live state before acting: `git status --short --branch`, `git log --oneline origin/main..HEAD`, and `gh issue list --state open --limit 50 --json number,title,labels,createdAt,url`.
-- Before mutating code, scripts, docs, skills, generated exports, or validation behavior, read [docs/conventions/implementation-discipline.md](./conventions/implementation-discipline.md). Before closeout, read [docs/conventions/operating-contract.md](./conventions/operating-contract.md).
-- Route external URLs or source links that should become repo working context through `gather` before using them as durable input.
+- Start every task-oriented pickup with `charness:find-skills`, then read this file,
+  [quality latest](../charness-artifacts/quality/latest.md), and
+  [recent lessons](../charness-artifacts/retro/recent-lessons.md).
+- Refresh live state before acting: `git status --short --branch`,
+  `git log --oneline origin/main..HEAD`, and
+  `gh issue list --state open --limit 50 --json number,title,labels,createdAt,url`.
+- Before mutating code, scripts, docs, skills, generated exports, or validation behavior, read
+  [implementation discipline](./conventions/implementation-discipline.md). Before closeout, read
+  [operating contract](./conventions/operating-contract.md).
+- Route external URLs or source links that should become repo working context through `gather`.
 
 ## Current State
 
-- Current local slice adds language-neutral testability and affected-test
-  selection guidance to the public `quality` skill. The detailed guidance lives
-  in [skills/public/quality/references/testability-and-selection.md](../skills/public/quality/references/testability-and-selection.md)
-  and its plugin mirror; `SKILL.md` only carries the portable anchor. Dogfood
-  acceptance now requires structure-first affected-test selection before
-  caches, observation tools, or broader runtime budgets.
-- Local `main` includes `9175faa` plus the mutation semantics fix slice (not yet pushed at the time this handoff was edited). Prior session closed #180/#181/#182; #183 remains open until the pushed workflow run proves the new semantics.
-- Public release `v0.7.6`. No version bump pending (release-adapter does not require bump per fix bundle).
-- Latest inspected mutation runs:
-  - `26137796207` (head_sha `594221a`, 2h 30m): `Run mutation` step success, summary `executed=1093/1821`, `killed=0`, `survived=872`, `status=FAIL-incomplete`; non-skipped completion is 54.6%, not the reported 60.0%, because skipped mutants are counted as executed.
-  - `26141783678` (head_sha `594221a`, schedule, 2h 30m): `Run mutation` step success, summary `executed=938/1499`, `killed=91`, `survived=803`, `score=10.2%`, `status=FAIL-incomplete`; all killed mutants were in [scripts/repo_layout.py](../scripts/repo_layout.py), the only sampled module covered by `tests/control_plane` in the local coverage probe.
-  These runs predate the fix. The current local fix makes [scripts/sample_mutation_files.py](../scripts/sample_mutation_files.py) collect coverage for the declared Cosmic Ray test command, samples only covered files, records changed files excluded by the coverage filter, filters uncovered mutation lines after `cosmic-ray init`, separates coverage scope gaps from native Cosmic Ray no-mutation-possible results, excludes skipped mutants from completion, requires per-file completion for `PASS-partial`, treats any non-timeout pending mutants as `FAIL-incomplete`, and lowers `mutation_testing.max_files` to 5.
+- Current local slice hardens agent-browser runtime hygiene after a green quality/push cycle
+  still left a PPID=1 browser daemon tree. RCA: [debug latest](../charness-artifacts/debug/latest.md).
+- `run-quality.sh` now starts with barriered `agent-browser-runtime-baseline`
+  cleanup and ends with `agent-browser-runtime-hygiene` using
+  `agent_browser_runtime_guard.py --assert-no-orphans`; cleanup fails if a
+  stale launcher recreates a daemon after the cleanup snapshot.
+- `check_cli_skill_surface.py` blocks direct risky `agent-browser` probes in
+  `cli_skill_surface_probe_commands`; web-fetch closes its named browser
+  session after render/network recon; doctor lock payloads truncate volatile
+  command output.
+- Public release `v0.7.6`. No version bump pending unless the next release
+  slice decides to publish this hardening immediately.
+- Prior pushed slice `f14a1df` taught public `quality` structure-first testability.
+  Mutation follow-up #183 remains open until GitHub proves corrected semantics.
 
 ## Next Session
 
-1. Finish closeout for the testability guidance slice if not already committed:
-   sync plugin exports, run changed-surface validators, and commit.
-2. Continue the mutation workflow watch from #183 if needed. The next summary
-   should show:
-   covered `tests/control_plane` sample pool; changed files excluded in
-   `sample.md`; `Scope gaps (uncovered sampled mutants)` separated from score;
-   `executed` over executable mutants only; no `PASS-partial` unless each
-   sampled file meets the per-file completion floor.
-3. If the run still times out before the per-file floor with `max_files=5`,
-   lower `mutation_testing.max_files` again or randomize/stratify Cosmic Ray
-   work order before allowing `PASS-partial`.
+1. If picked up mid-run, finish generated-surface sync, changed-surface tests, full closeout, and pre-push.
+2. Confirm the new `agent-browser-runtime-hygiene` phase leaves
+   `orphan_daemon_count=0` after the full standing gate.
+3. Continue #183 watch if needed: next summary should show covered sample pool,
+   excluded changed files, separated scope gaps, executable-mutant completion,
+   and no under-proven `PASS-partial`.
 
 ## Discuss
 
-- Six prior critique passes (premortem, code, release, broad, fifth deep, sixth claim-vs-behavior) all signed off without measuring the workflow end-to-end. The systemic test-command bug only surfaced on first real run. Lesson: infrastructure-shaped critique needs at least one measurement, not just reading.
-- Watch list (deferred): Yarn Berry hook command idiom; pnpm+lefthook stale snippets in [docs/worktree-prepare.md](./worktree-prepare.md) and [skills/public/setup/references/bootstrap-seams.md](../skills/public/setup/references/bootstrap-seams.md); promote `filelock` + `pytest-xdist` into [pyproject.toml](../pyproject.toml); `sys.path.insert` sibling-import pattern routing through `runtime_bootstrap.import_repo_module`; seed-cache LRU eviction.
+- Lesson: pytest cleanup is not a quality-gate lifecycle contract; external runtimes need gate ownership.
+- Similar-pattern scan found arbitrary adapter probe commands and raw doctor
+  lock output as adjacent risks. This slice adds agent-browser-specific
+  enforcement first; broader runtime-family metadata is deferred until another
+  external runtime shows the same pressure.
+- Watch list (deferred): Yarn Berry hook idiom; pnpm+lefthook stale snippets;
+  `filelock` + `pytest-xdist`; sibling imports via runtime bootstrap; seed-cache LRU eviction.
 
 ## References
 
-- [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md): mutation execution and score semantics context, observed facts, implemented local remediation, verification plan.
-- [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md): current quality posture.
-- [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md): current release surface.
-- [.github/workflows/mutation-tests.yml](../.github/workflows/mutation-tests.yml): the workflow whose `26137796207` run measured the mismatch.
+- [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md):
+  agent-browser runtime hygiene RCA, detection gap, sibling search, and
+  prevention.
+- [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md):
+  current quality posture and commands for this slice.
+- [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md):
+  current release surface.
+- [.github/workflows/mutation-tests.yml](../.github/workflows/mutation-tests.yml):
+  mutation workflow for the separate #183 validation thread.

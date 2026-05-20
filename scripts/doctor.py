@@ -12,6 +12,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 BLOCKING_DOCTOR_DISPOSITIONS = {"blocking-support-sync-needed", "blocking-install-needed", "blocking-failure"}
+LOCK_OUTPUT_LIMIT = 800
 
 _scripts_control_plane_lib_module = import_repo_module(__file__, "scripts.control_plane_lib")
 load_capabilities = _scripts_control_plane_lib_module.load_capabilities
@@ -23,6 +24,35 @@ _scripts_install_provenance_lib_module = import_repo_module(__file__, "scripts.i
 detect_install_provenance = _scripts_install_provenance_lib_module.detect_install_provenance
 _scripts_upstream_release_lib_module = import_repo_module(__file__, "scripts.upstream_release_lib")
 probe_release = _scripts_upstream_release_lib_module.probe_release
+
+
+def _truncate_lock_text(value: object, *, limit: int = LOCK_OUTPUT_LIMIT) -> object:
+    if not isinstance(value, str) or len(value) <= limit:
+        return value
+    omitted = len(value) - limit
+    return f"{value[:limit]}\n...<truncated {omitted} chars for lock payload>"
+
+
+def _lock_safe_check_result(value: object) -> object:
+    if not isinstance(value, dict):
+        return value
+    safe = dict(value)
+    results = safe.get("results")
+    if isinstance(results, list):
+        safe_results: list[object] = []
+        for result in results:
+            if not isinstance(result, dict):
+                safe_results.append(result)
+                continue
+            safe_result = dict(result)
+            safe_result["stdout"] = _truncate_lock_text(safe_result.get("stdout", ""))
+            safe_result["stderr"] = _truncate_lock_text(safe_result.get("stderr", ""))
+            safe_results.append(safe_result)
+        safe["results"] = safe_results
+    failure_details = safe.get("failure_details")
+    if isinstance(failure_details, list):
+        safe["failure_details"] = [_truncate_lock_text(detail) for detail in failure_details]
+    return safe
 
 
 def lock_safe_doctor_payload(payload: dict[str, object]) -> dict[str, object]:
@@ -40,6 +70,8 @@ def lock_safe_doctor_payload(payload: dict[str, object]) -> dict[str, object]:
             "expected_paths": support_sync["expected_paths"],
             "missing_paths": support_sync["missing_paths"],
         }
+    lock_payload["detect"] = _lock_safe_check_result(lock_payload.get("detect"))
+    lock_payload["healthcheck"] = _lock_safe_check_result(lock_payload.get("healthcheck"))
     return lock_payload
 
 

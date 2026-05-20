@@ -129,6 +129,38 @@ def _run_probe(repo_root: Path, command: str) -> dict[str, object]:
     }
 
 
+def _unsafe_agent_browser_probe(command: str) -> str | None:
+    try:
+        parts = shlex.split(command)
+    except ValueError:
+        return None
+    if not parts or Path(parts[0]).name != "agent-browser":
+        return None
+
+    tokens = [part for part in parts[1:] if not part.startswith("--session")]
+    if any(token in {"--help", "-h"} for token in tokens):
+        return "direct `agent-browser --help` probe can warm browser runtime state; use the repo runtime guard or `agent-browser --version`"
+
+    risky_commands = {
+        "open",
+        "wait",
+        "get",
+        "network",
+        "snapshot",
+        "screenshot",
+        "pdf",
+        "click",
+        "type",
+        "fill",
+        "eval",
+        "connect",
+    }
+    for token in tokens:
+        if token in risky_commands:
+            return f"direct `agent-browser {token}` probe can leave browser runtime state; route it through a lifecycle-owned support script"
+    return None
+
+
 def _adapter_weaknesses(data: dict[str, Any], *, source: str, skills: list[Path]) -> list[str]:
     declared = set(_string_list(data, "product_surfaces"))
     weaknesses: list[str] = []
@@ -182,6 +214,10 @@ def build_payload(
         blockers.append("No doctor/readiness or version probe demonstrates installable CLI readiness.")
     if not (docs or any(token in " ".join(probes).lower() for token in ("example", "catalog", "registry", "--json"))):
         blockers.append("No command-owned example, registry, catalog, or JSON probe is declared for packet/example shapes.")
+    for command in probes:
+        unsafe_reason = _unsafe_agent_browser_probe(command)
+        if unsafe_reason:
+            blockers.append(f"Unsafe CLI plus skill probe `{command}`: {unsafe_reason}.")
 
     probe_results = [_run_probe(repo_root, command) for command in probes] if run_probes else []
     for result in probe_results:

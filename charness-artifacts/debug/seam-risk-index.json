@@ -3,15 +3,15 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 23,
-  "indexed_artifact_count": 15,
+  "source_artifact_count": 24,
+  "indexed_artifact_count": 16,
   "risk_class_counts": {
     "contract-freeze-risk": 5,
     "host-disproves-local": 1,
-    "operator-visible-recovery": 9
+    "operator-visible-recovery": 10
   },
   "generalization_pressure_counts": {
-    "monitor": 15
+    "monitor": 16
   },
   "entries": [
     {
@@ -183,6 +183,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-05-20-agent-browser-runtime-hygiene.md",
+      "is_current_pointer": false,
+      "interrupt_id": "agent-browser-runtime-hygiene",
+      "risk_classes": [
+        "operator-visible-recovery"
+      ],
+      "seam": "external browser daemon lifecycle across support scripts, quality",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-05-20-mutation-execution-score-semantics.md",
       "is_current_pointer": false,
       "interrupt_id": "mutation-execution-score-semantics",
@@ -213,11 +227,11 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "mutation-execution-score-semantics",
+      "interrupt_id": "agent-browser-runtime-hygiene",
       "risk_classes": [
         "operator-visible-recovery"
       ],
-      "seam": "Cosmic Ray config, sampler rewrite, pytest coverage scope, and Charness",
+      "seam": "external browser daemon lifecycle across support scripts, quality",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",

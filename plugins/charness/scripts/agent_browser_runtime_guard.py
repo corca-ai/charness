@@ -153,19 +153,32 @@ def cleanup_orphans(repo_root: Path, *, execute: bool) -> dict[str, object]:
     remaining = sorted(process.pid for process in remaining_processes if process.pid in set(target_pids))
     forced = kill_pids(remaining, signal.SIGKILL)
     final_processes = list_processes(repo_root)
-    final_remaining = sorted(process.pid for process in final_processes if process.pid in set(target_pids))
+    final_runtime = inspect_runtime(final_processes)
     return {
         "preview_only": False,
         "target_pids": target_pids,
         "terminated_pids": terminated,
         "forced_pids": forced,
-        "remaining_pids": final_remaining,
+        "remaining_pids": list(final_runtime["orphan_tree_pids"]),
+        "runtime": final_runtime,
     }
 
 
 def inspect_payload(repo_root: Path) -> dict[str, object]:
     processes = list_processes(repo_root)
     return {"runtime": inspect_runtime(processes)}
+
+
+def assert_no_orphans_payload(repo_root: Path) -> dict[str, object]:
+    runtime = inspect_runtime(list_processes(repo_root))
+    ignore_orphans = os.environ.get("CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS") == "1"
+    healthy = ignore_orphans or runtime["orphan_daemon_count"] == 0
+    return {
+        "healthy": healthy,
+        "runtime": runtime,
+        "ignored_orphans": ignore_orphans,
+        "next_step": None if healthy else CLEANUP_COMMAND,
+    }
 
 
 def doctor_payload(repo_root: Path) -> dict[str, object]:
@@ -195,6 +208,7 @@ def main() -> int:
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--doctor-check", action="store_true")
     parser.add_argument("--cleanup-orphans", action="store_true")
+    parser.add_argument("--assert-no-orphans", action="store_true")
     parser.add_argument("--execute", action="store_true")
     args = parser.parse_args()
 
@@ -209,6 +223,17 @@ def main() -> int:
         payload = doctor_payload(repo_root)
         if payload["healthy"]:
             print("agent-browser runtime healthy")
+            return 0
+        print_payload(payload, as_json=args.json)
+        next_step = payload.get("next_step")
+        if isinstance(next_step, str):
+            print(f"Run `{next_step}` to remove orphan agent-browser daemon trees.", file=sys.stderr)
+        return 1
+
+    if args.assert_no_orphans:
+        payload = assert_no_orphans_payload(repo_root)
+        if payload["healthy"]:
+            print("agent-browser runtime has no orphan daemon trees")
             return 0
         print_payload(payload, as_json=args.json)
         next_step = payload.get("next_step")
