@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 from .support import run_script
@@ -171,6 +172,67 @@ def test_setup_inspect_recommends_seed_worktree_adapter_for_active_worktrees_wit
     assert rec["priority"] == "advisory"
     assert rec["target"] == ".agents/worktree-adapter.yaml"
     assert "seed_worktree_adapter.py" in rec["suggested_action"]
+
+
+def _run_inspect_with_env(repo: Path, env: dict[str, str]) -> dict[str, object]:
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/setup/scripts/inspect_repo.py",
+            "--repo-root",
+            str(repo),
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    return json.loads(result.stdout)
+
+
+def test_setup_inspect_emits_probe_unavailable_finding_when_git_is_missing(tmp_path: Path) -> None:
+    """A1: probe_status not equal to ok must reach the operator surface."""
+    repo = tmp_path / "repo"
+    _seed_minimal_repo_with_adapter(repo)
+    # Hide the real git by making PATH point at a bin dir without a `git` entry.
+    # Combined with python_dir, python3 still resolves but `git` raises
+    # FileNotFoundError → probe_status == "git_missing".
+    fake_bin = tmp_path / "no-git-bin"
+    fake_bin.mkdir()
+    env = {"PATH": f"{fake_bin}"}
+    # Provide python3 via an explicit symlink so the test subprocess starts.
+    (fake_bin / "python3").symlink_to(sys.executable)
+
+    payload = _run_inspect_with_env(repo, env)
+
+    worktree_state = payload["agent_docs"]["normalization"]["worktree_adapter"]
+    assert worktree_state["worktree_probe_status"] == "git_missing"
+    assert worktree_state["worktree_count"] == 0
+
+    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+    assert "worktree_probe_unavailable" in finding_types
+
+
+def test_setup_inspect_degrades_confidence_when_probe_fails_alongside_hook_manager(tmp_path: Path) -> None:
+    """A1: hook-manager-detected case still fires, but with confidence=medium."""
+    repo = tmp_path / "repo"
+    _seed_minimal_repo_with_adapter(repo)
+    (repo / "lefthook.yml").write_text("pre-commit:\n  commands: {}\n", encoding="utf-8")
+    fake_bin = tmp_path / "no-git-bin"
+    fake_bin.mkdir()
+    (fake_bin / "python3").symlink_to(sys.executable)
+    env = {"PATH": f"{fake_bin}"}
+
+    payload = _run_inspect_with_env(repo, env)
+
+    worktree_state = payload["agent_docs"]["normalization"]["worktree_adapter"]
+    assert worktree_state["worktree_probe_status"] == "git_missing"
+    rec_index = {item["id"]: item for item in payload["recommendations"]}
+    rec = rec_index["worktree_adapter_missing_for_hook_manager"]
+    assert rec["confidence"] == "medium"
+    assert any("worktree probe degraded" in line for line in rec["evidence"])
 
 
 def test_setup_inspect_prefers_hook_manager_recommendation_when_both_signals_fire(tmp_path: Path) -> None:

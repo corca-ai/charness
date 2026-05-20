@@ -43,31 +43,39 @@ def _run_exec_with_timeout(
     session: Path,
     repo_root: Path,
     timeout_seconds: int,
-) -> bool:
+) -> tuple[bool, int]:
     """Run `cosmic-ray exec` with an internal timeout.
 
-    Returns True when exec finished cleanly within `timeout_seconds`. Returns
-    False when the timeout fired so callers can flip the partial-run flag.
-    Other failures still propagate via CalledProcessError.
+    Returns `(timed_out, returncode)`. `returncode` is 0 on clean completion,
+    the process exit code on non-zero exit, or `-1` when the internal timeout
+    fired. The caller always proceeds to `cosmic-ray dump` afterward so partial
+    results survive both timeout AND crash failure modes (the original #183
+    fix only covered timeouts).
     """
     command = ["cosmic-ray", "exec", str(config), str(session)]
     sys.stdout.write(f"+ {' '.join(command)} (internal timeout: {timeout_seconds}s)\n")
     sys.stdout.flush()
     try:
-        subprocess.run(command, cwd=repo_root, check=True, timeout=timeout_seconds)
+        result = subprocess.run(command, cwd=repo_root, check=False, timeout=timeout_seconds)
     except subprocess.TimeoutExpired:
         sys.stdout.write(
             f"cosmic-ray exec exceeded {timeout_seconds}s; "
             "continuing to dump so partial results survive\n"
         )
         sys.stdout.flush()
-        return False
+        return True, -1
     except FileNotFoundError as exc:
         raise SystemExit(
             "cosmic-ray executable not found; install Cosmic Ray 8.4.6 "
             "or run the GitHub Actions workflow install step first"
         ) from exc
-    return True
+    if result.returncode != 0:
+        sys.stdout.write(
+            f"cosmic-ray exec exited {result.returncode}; "
+            "continuing to dump so any completed mutants are still scored\n"
+        )
+        sys.stdout.flush()
+    return False, result.returncode
 
 
 def _write_timeout_marker(marker_path: Path, exec_timeout_seconds: int) -> None:
@@ -137,10 +145,10 @@ def main() -> int:
         if filter_script.is_file():
             run(["python3", str(filter_script), "--repo-root", str(repo_root), "--session", str(session)], repo_root)
         if args.mode == "full":
-            exec_completed = _run_exec_with_timeout(
+            exec_timed_out, exec_returncode = _run_exec_with_timeout(
                 config, session, repo_root, args.exec_timeout_seconds
             )
-            if not exec_completed:
+            if exec_timed_out:
                 _write_timeout_marker(timeout_marker, args.exec_timeout_seconds)
             with dump_path.open("w", encoding="utf-8") as output:
                 subprocess.run(
@@ -151,11 +159,15 @@ def main() -> int:
                     text=True,
                 )
             sys.stdout.write(f"dump written to {dump_path}\n")
-            if not exec_completed:
+            if exec_timed_out:
                 sys.stdout.write(
                     f"exec-timeout marker written to {timeout_marker}; "
                     "downstream summary will report partial-run status\n"
                 )
+            if exec_returncode not in (0, -1):
+                # Surface the crash to the caller AFTER the dump has been
+                # written so the downstream summary still has data to score.
+                return exec_returncode
         else:
             sys.stdout.write("dry-run complete after baseline and session init\n")
     except subprocess.CalledProcessError as exc:
