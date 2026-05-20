@@ -29,6 +29,7 @@ _check_real_host = SKILL_RUNTIME.load_local_skill_module(__file__, "check_real_h
 _check_review_gate = SKILL_RUNTIME.load_local_skill_module(__file__, "check_requested_review_gate")
 _fresh_checkout = SKILL_RUNTIME.load_local_skill_module(__file__, "check_fresh_checkout_probes")
 _helpers = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_helpers")
+_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_artifact")
 _preflight = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_preflight")
 _audit_narrative = SKILL_RUNTIME.load_local_skill_module(__file__, "audit_public_release_narrative")
 _issue_closeout = SKILL_RUNTIME.load_local_skill_module(__file__, "release_issue_closeout")
@@ -43,15 +44,16 @@ run = _helpers.run
 run_shell = _helpers.run_shell
 git_status = _helpers.git_status
 current_branch = _helpers.current_branch
-tag_exists = _helpers.tag_exists
-release_exists = _helpers.release_exists
 changed_paths = _helpers.changed_paths
 unreleased_paths = _helpers.unreleased_paths
-write_release_artifact = _helpers.write_release_artifact
+write_release_artifact = _artifact.write_release_artifact
 backend_command = _helpers.backend_command
 create_release = _helpers.create_release
+expected_github_release_url = _helpers.expected_github_release_url
 amend_fresh_checkout_artifact = _helpers.amend_fresh_checkout_artifact
 commit_post_publish_artifact = _helpers.commit_post_publish_artifact
+release_previous_version = _helpers.release_previous_version
+ensure_release_target_available = _helpers.ensure_release_target_available
 github_repo_slug = _issue_closeout.github_repo_slug
 release_commit_body = _issue_closeout.release_commit_body
 ensure_release_issues_closed = _issue_closeout.ensure_release_issues_closed
@@ -59,7 +61,6 @@ preflight_release_issues = _issue_closeout.preflight_release_issues
 commit_issue_closeout_artifact = _issue_closeout.commit_issue_closeout_artifact
 validate_critique_artifact_arg = _preflight.validate_critique_artifact_arg
 safe_real_host_payload = _preflight.safe_real_host_payload
-
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -139,18 +140,6 @@ def write_current_artifact(
     )
 
 
-def expected_github_release_url(repo_root: Path, backend: dict[str, Any], tag_name: str) -> str | None:
-    if backend.get("id", "gh") != "gh":
-        return None
-    result = run(["gh", "repo", "view", "--json", "url", "--jq", ".url"], cwd=repo_root, check=False)
-    if result.returncode != 0:
-        return None
-    repo_url = result.stdout.strip().rstrip("/")
-    if not repo_url:
-        return None
-    return f"{repo_url}/releases/tag/{tag_name}"
-
-
 def run_narrative_audit(
     repo_root: Path,
     *,
@@ -185,6 +174,7 @@ def build_publish_payload(
     adapter_data: dict[str, Any],
     *,
     current_version: str,
+    previous_version: str,
     next_version: str,
     branch: str,
     tag_name: str,
@@ -195,7 +185,7 @@ def build_publish_payload(
         "package_id": adapter_data["package_id"],
         "current_version": current_version,
         "target_version": next_version,
-        "previous_version": current_version,
+        "previous_version": previous_version,
         "remote": args.remote,
         "branch": branch,
         "tag_name": tag_name,
@@ -277,25 +267,22 @@ def main() -> None:
     if not isinstance(current_version, str):
         raise SystemExit("current_release did not report a packaging manifest version")
     next_version = target_version(args, current_version)
+    previous_version = release_previous_version(repo_root, args.publish_current, current_version, next_version, args.remote)
     branch = current_branch(repo_root)
     tag_name = f"v{next_version}"
     title = args.title or tag_name
-    tag_state = tag_exists(repo_root, tag_name, remote=args.remote)
-    if tag_state["local"] or tag_state["remote"]:
-        raise SystemExit(f"tag `{tag_name}` already exists locally or on `{args.remote}`")
     backend = adapter_data["release_backend"]
-    if release_exists(repo_root, tag_name, backend):
-        raise SystemExit(f"GitHub release `{tag_name}` already exists")
+    ensure_release_target_available(repo_root, tag_name=tag_name, remote=args.remote, backend=backend)
     release_content_paths = unreleased_paths(
         repo_root,
         remote=args.remote,
         branch=branch,
-        previous_version=current_version,
+        previous_version=previous_version,
     )
     issue_repo = args.close_issue_repo or github_repo_slug(repo_root, backend, run=run)
 
     payload = build_publish_payload(
-        args, adapter_data, current_version=current_version, next_version=next_version,
+        args, adapter_data, current_version=current_version, previous_version=previous_version, next_version=next_version,
         branch=branch, tag_name=tag_name, title=title, critique_artifact=critique_artifact,
     )
     payload["close_issue_numbers"] = args.close_issue
@@ -349,7 +336,7 @@ def main() -> None:
     run(["git", "push", args.remote, branch, tag_name], cwd=repo_root)
 
     release_result = create_release(repo_root, backend, tag_name=tag_name, title=title, notes_file=notes_file)
-    release_verified = release_exists(repo_root, tag_name, backend)
+    release_verified = _helpers.release_exists(repo_root, tag_name, backend)
     finalize_release_payload(
         repo_root, payload, artifact_relpath=artifact_relpath, host_payload=host_payload,
         release_stdout=release_result.stdout, expected_release_url=expected_release_url,

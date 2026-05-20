@@ -266,7 +266,7 @@
       "evidence_terms": ["review skipped because"],
       "rationale": "Generated release adapter patterns include explicit skipped-review phrases for gate parsing."
     },
-    "skills/public/release/scripts/publish_release_helpers.py": {
+    "skills/public/release/scripts/publish_release_artifact.py": {
       "states": ["not_configured"],
       "visibility": ["artifact_visible"],
       "evidence_terms": ["No repo-declared fresh checkout probes were configured"],
