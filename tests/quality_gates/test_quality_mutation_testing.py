@@ -386,6 +386,15 @@ def test_checked_in_mutation_workflow_samples_only_full_runs_with_sample_command
     )
 
 
+def test_checked_in_mutation_workflow_uses_repo_owned_requirements() -> None:
+    body = (ROOT / ".github" / "workflows" / "mutation-tests.yml").read_text(encoding="utf-8")
+    requirements = (ROOT / "packaging" / "mutation-requirements.txt").read_text(encoding="utf-8")
+
+    assert "pip install -r packaging/mutation-requirements.txt" in body
+    for package in ("cosmic-ray==8.4.6", "coverage", "filelock", "pytest-xdist", "PyYAML"):
+        assert package in requirements
+
+
 def test_a4_template_has_no_stack_literal_run_lines() -> None:
     """SC 7: no hardcoded stack tool literal in run: lines."""
     body = TEMPLATE_PATH.read_text(encoding="utf-8")

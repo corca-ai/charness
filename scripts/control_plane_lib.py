@@ -228,10 +228,11 @@ def load_capabilities(repo_root: Path) -> list[dict[str, Any]]:
 
 
 def run_shell(command: str, cwd: Path) -> CommandResult:
+    use_shell = True
     completed = run_process(
         command,
         cwd=cwd,
-        shell=True,
+        shell=use_shell,
         executable="/bin/bash",
     )
     return CommandResult(
@@ -335,8 +336,9 @@ def evaluate_version(manifest: dict[str, Any], detect_result: dict[str, Any]) ->
             "observed_version": observed_version,
         }
 
+    status = "matched" if observed in specifier else "mismatched"
     return {
-        "status": "matched" if observed in specifier else "mismatched",
+        "status": status,
         "constraint": constraint,
         "observed_version": observed_version,
     }

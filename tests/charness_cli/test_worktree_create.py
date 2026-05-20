@@ -17,6 +17,16 @@ def _git(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True, text=True)
 
 
+def _git_commit_no_hooks(message: str, *, cwd: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", "-c", "core.hooksPath=/dev/null", "commit", "-m", message],
+        cwd=cwd,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
 def _make_primary(tmp_path: Path) -> Path:
     repo = tmp_path / "primary"
     repo.mkdir()
@@ -92,7 +102,7 @@ def test_create_prepare_runs_adapter_and_returns_pass(tmp_path: Path, monkeypatc
         encoding="utf-8",
     )
     _git("add", ".agents/worktree-adapter.yaml", cwd=repo)
-    _git("commit", "-m", "add worktree adapter", cwd=repo)
+    _git_commit_no_hooks("add worktree adapter", cwd=repo)
     target = tmp_path / "feature"
     monkeypatch.setenv(
         "PATH",

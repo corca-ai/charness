@@ -64,11 +64,10 @@ def _surface_record(entry: dict[str, Any], status: str, evidence: str | None) ->
 
 def preflight_sources(adapter_data: dict[str, Any], draft_path: Path) -> dict[str, Any]:
     sources = adapter_data.get("in_progress_sources") or []
-    base = {
-        "draft_path": str(draft_path),
-        "draft_exists": draft_path.exists(),
-        "section_present": False,
-    }
+    base: dict[str, Any] = {}
+    base["draft_path"] = str(draft_path)
+    base["draft_exists"] = draft_path.exists()
+    base["section_present"] = False
     if not sources:
         return {**base, "ok": True, "delivery_blocked": False, "surfaces": []}
     if not base["draft_exists"]:

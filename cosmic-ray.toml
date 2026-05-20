@@ -2,7 +2,7 @@
 module-path = ["scripts/control_plane_lib.py"]
 timeout = 300.0
 excluded-modules = []
-test-command = "python3 -m pytest -q tests/control_plane"
+test-command = "python3 -m pytest -q -m 'not release_only' tests"
 
 [cosmic-ray.distributor]
 name = "local"

@@ -43,10 +43,13 @@ def _sanitize_mapping_value(key: str, value: Any, *, repo_root: Path) -> Any:
     if isinstance(value, str) and _looks_path_key(key_lower):
         return portable_path_value(repo_root, value)
     if isinstance(value, list) and _looks_path_key(key_lower):
-        return [
-            portable_path_value(repo_root, item) if isinstance(item, str) else sanitize_artifact_json(item, repo_root=repo_root)
-            for item in value
-        ]
+        sanitized: list[Any] = []
+        for item in value:
+            if isinstance(item, str):
+                sanitized.append(portable_path_value(repo_root, item))
+            else:
+                sanitized.append(sanitize_artifact_json(item, repo_root=repo_root))
+        return sanitized
     return sanitize_artifact_json(value, repo_root=repo_root)
 
 

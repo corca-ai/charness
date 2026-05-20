@@ -11,7 +11,6 @@ import argparse
 import hashlib
 import json
 import os
-import re
 import shlex
 import subprocess
 import sys
@@ -19,12 +18,30 @@ import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.mutation_sampling_lib import (  # noqa: E402
+    build_mutation_line_coverage,
+    filter_eligible_by_coverage,
+    filter_eligible_by_mutation_line_coverage,
+    load_covered_lines,
+    load_file_statement_lines,
+    load_line_contexts,
+    read_test_command,
+    rewrite_cosmic_ray_targets,
+    rewrite_cosmic_ray_test_command,
+    run_test_coverage,
+    select_test_nodeids,
+)
+
 POOL_DIR = "scripts"
 POOL_PATTERN = "*.py"
 EXCLUDED_NAMES = {"__init__.py"}
 DEFAULT_MAX_FILES = 10
 DEFAULT_CHANGED_QUOTA = 5
 DEFAULT_COVERAGE_JSON = Path("reports/mutation/test-coverage.json")
+DEFAULT_MIN_FILE_COVERAGE = 0.85
 
 
 def stable_hash(value: str) -> str:
@@ -43,91 +60,6 @@ def list_eligible(repo_root: Path) -> list[str]:
         for path in (repo_root / POOL_DIR).glob(POOL_PATTERN)
         if path.name not in EXCLUDED_NAMES
     )
-
-
-def read_test_command(config_path: Path) -> str:
-    text = config_path.read_text(encoding="utf-8")
-    match = re.search(r"^test-command\s*=\s*([\"'])(.*?)\1\s*$", text, re.MULTILINE)
-    if not match:
-        raise SystemExit(f"could not find cosmic-ray test-command in {config_path}")
-    return match.group(2)
-
-
-def coverage_run_command(test_command: str, data_file: Path) -> list[str]:
-    parts = shlex.split(test_command)
-    if len(parts) >= 3 and parts[0] in {"python", "python3"} and parts[1:3] == ["-m", "pytest"]:
-        return [
-            parts[0],
-            "-m",
-            "coverage",
-            "run",
-            "--data-file",
-            str(data_file),
-            "-m",
-            "pytest",
-            *parts[3:],
-        ]
-    if parts and parts[0] == "pytest":
-        return [
-            sys.executable,
-            "-m",
-            "coverage",
-            "run",
-            "--data-file",
-            str(data_file),
-            "-m",
-            "pytest",
-            *parts[1:],
-        ]
-    raise SystemExit(
-        "mutation coverage sampling supports pytest commands shaped as "
-        "`python3 -m pytest ...` or `pytest ...`; use a helper script for other runners"
-    )
-
-
-def run_test_coverage(repo_root: Path, test_command: str, coverage_json: Path) -> None:
-    coverage_json.parent.mkdir(parents=True, exist_ok=True)
-    data_file = coverage_json.with_name(".mutation-coverage")
-    if data_file.exists():
-        data_file.unlink()
-    command = coverage_run_command(test_command, data_file)
-    subprocess.run(command, cwd=repo_root, check=True)
-    subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "coverage",
-            "json",
-            "--data-file",
-            str(data_file),
-            "-o",
-            str(coverage_json),
-        ],
-        cwd=repo_root,
-        check=True,
-    )
-
-
-def load_covered_lines(repo_root: Path, coverage_json: Path) -> dict[str, set[int]]:
-    data = json.loads(coverage_json.read_text(encoding="utf-8"))
-    files = data.get("files") or {}
-    covered: dict[str, set[int]] = {}
-    for raw_path, payload in files.items():
-        path = Path(raw_path)
-        if path.is_absolute():
-            try:
-                rel = path.resolve().relative_to(repo_root).as_posix()
-            except ValueError:
-                continue
-        else:
-            rel = path.as_posix()
-        lines = payload.get("executed_lines") or []
-        covered[rel] = {int(line) for line in lines}
-    return covered
-
-
-def filter_eligible_by_coverage(eligible: list[str], covered_lines: dict[str, set[int]]) -> list[str]:
-    return [path for path in eligible if covered_lines.get(path)]
 
 
 def display_path(repo_root: Path, path: Path) -> str:
@@ -167,15 +99,6 @@ def positive_int(value: str | None, default: int) -> int:
     return parsed
 
 
-def rewrite_cosmic_ray_targets(config_path: Path, paths: list[str]) -> None:
-    text = config_path.read_text(encoding="utf-8")
-    block = "module-path = [\n" + "".join(f'    "{path}",\n' for path in paths) + "]"
-    pattern = re.compile(r"^module-path\s*=\s*\[.*?\]", re.MULTILINE | re.DOTALL)
-    if not pattern.search(text):
-        raise SystemExit(f"could not find cosmic-ray module-path list in {config_path}")
-    config_path.write_text(pattern.sub(block, text, count=1), encoding="utf-8")
-
-
 def write_manifest(manifest: dict, manifest_json: Path, manifest_md: Path) -> None:
     manifest_json.parent.mkdir(parents=True, exist_ok=True)
     manifest_json.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
@@ -186,11 +109,13 @@ def write_manifest(manifest: dict, manifest_json: Path, manifest_md: Path) -> No
         f"- Head SHA: `{manifest['head_sha'] or '(unknown)'}`",
         f"- Seed: `{manifest['seed']}`",
         f"- Mutation pool files: {manifest.get('all_eligible_count', manifest['eligible_count'])}",
-        f"- Eligible files after coverage filter: {manifest['eligible_count']}",
+        f"- Eligible files after coverage/mutation-line filters: {manifest['eligible_count']}",
         f"- Covered eligible files: {manifest.get('covered_eligible_count', 'n/a')}",
+        f"- File coverage floor: {manifest.get('min_file_coverage', 'n/a')}",
+        f"- Eligible files after mutation-line filter: {manifest.get('mutation_line_eligible_count', 'n/a')}",
         f"- Changed pool files: {len(manifest.get('changed_files_before_coverage', manifest['changed_files']))}",
-        f"- Changed eligible files after coverage filter: {len(manifest['changed_files'])}",
-        f"- Changed files excluded by coverage filter: {len(manifest.get('uncovered_changed_files', []))}",
+        f"- Changed eligible files after coverage/mutation-line filters: {len(manifest['changed_files'])}",
+        f"- Changed files excluded by coverage/mutation-line filters: {len(manifest.get('uncovered_changed_files', []))}",
         f"- Selected: {len(manifest['sample'])}/{manifest['max_files']}",
         f"- Test command: `{manifest.get('test_command') or '(not recorded)'}`",
         "",
@@ -228,6 +153,9 @@ def build_manifest(
     coverage_json: Path,
     repo_root: Path,
     test_command: str,
+    mutation_test_command: str,
+    min_file_coverage: float,
+    mutation_line_coverage: dict[str, dict[str, int]],
     changed_before_coverage: list[str],
     uncovered_changed_files: list[str],
     changed: list[str],
@@ -245,7 +173,15 @@ def build_manifest(
         "all_eligible_count": len(all_eligible),
         "coverage_enabled": coverage_enabled,
         "coverage_json": display_path(repo_root, coverage_json),
-        "test_command": test_command,
+        "coverage_command": test_command,
+        "test_command": mutation_test_command,
+        "min_file_coverage": min_file_coverage,
+        "mutation_line_coverage": mutation_line_coverage,
+        "mutation_line_eligible_count": sum(
+            1
+            for stats in mutation_line_coverage.values()
+            if int(stats.get("mutable", 0)) > 0 and int(stats.get("uncovered", 0)) == 0
+        ),
         "covered_eligible_count": len(eligible) if coverage_enabled else None,
         "uncovered_eligible_count": len(all_eligible) - len(eligible) if coverage_enabled else None,
         "changed_files_before_coverage": changed_before_coverage,
@@ -272,6 +208,93 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def parse_min_file_coverage() -> float:
+    try:
+        min_file_coverage = float(
+            (os.environ.get("MUTATION_SAMPLE_MIN_FILE_COVERAGE") or "").strip()
+            or DEFAULT_MIN_FILE_COVERAGE
+        )
+    except ValueError as exc:
+        raise SystemExit("MUTATION_SAMPLE_MIN_FILE_COVERAGE must be a number") from exc
+    if min_file_coverage < 0 or min_file_coverage > 1:
+        raise SystemExit("MUTATION_SAMPLE_MIN_FILE_COVERAGE must be between 0 and 1")
+    return min_file_coverage
+
+
+def select_eligible_for_mutation(
+    *,
+    repo_root: Path,
+    config_path: Path,
+    all_eligible: list[str],
+    coverage_enabled: bool,
+    coverage_json: Path,
+    test_command: str,
+    min_file_coverage: float,
+) -> tuple[list[str], dict[str, dict[int, set[str]]], dict[str, dict[str, int]]]:
+    if not coverage_enabled:
+        return all_eligible, {}, {}
+    try:
+        run_test_coverage(repo_root, test_command, coverage_json)
+    except subprocess.CalledProcessError as exc:
+        raise SystemExit(
+            f"test-command coverage probe failed with exit {exc.returncode}: {test_command}"
+        ) from exc
+
+    covered_lines = load_covered_lines(repo_root, coverage_json)
+    statement_lines = load_file_statement_lines(repo_root, coverage_json)
+    line_contexts = load_line_contexts(repo_root, coverage_json)
+    coverage_eligible = filter_eligible_by_coverage(
+        all_eligible,
+        covered_lines,
+        statement_lines,
+        min_file_coverage=min_file_coverage,
+    )
+    mutation_line_coverage = build_mutation_line_coverage(
+        repo_root,
+        config_path,
+        coverage_eligible,
+        covered_lines,
+    )
+    return (
+        filter_eligible_by_mutation_line_coverage(coverage_eligible, mutation_line_coverage),
+        line_contexts,
+        mutation_line_coverage,
+    )
+
+
+def mutation_test_command_for_sample(
+    repo_root: Path,
+    sample: list[str],
+    line_contexts: dict[str, dict[int, set[str]]],
+    fallback_command: str,
+    *,
+    coverage_enabled: bool,
+) -> str | None:
+    if not coverage_enabled:
+        return fallback_command
+    test_nodeids = select_test_nodeids(repo_root, sample, line_contexts)
+    if not test_nodeids:
+        return None
+    return shlex.join(["python3", "-m", "pytest", "-q", *test_nodeids])
+
+
+def output_paths(args: argparse.Namespace, repo_root: Path) -> tuple[Path, Path]:
+    manifest_json = (
+        args.manifest_json if args.manifest_json.is_absolute() else repo_root / args.manifest_json
+    )
+    manifest_md = args.manifest_md if args.manifest_md.is_absolute() else repo_root / args.manifest_md
+    return manifest_json, manifest_md
+
+
+def report_no_eligible(coverage_enabled: bool, test_command: str) -> None:
+    if coverage_enabled:
+        sys.stderr.write(
+            f"no eligible files matched {POOL_DIR}/{POOL_PATTERN} with coverage from {test_command!r}\n"
+        )
+    else:
+        sys.stderr.write(f"no eligible files matched {POOL_DIR}/{POOL_PATTERN}\n")
+
+
 def main() -> int:
     args = parse_args()
 
@@ -285,6 +308,7 @@ def main() -> int:
     base_sha = (os.environ.get("MUTATION_BASE_SHA") or "").strip()
     head_sha = (os.environ.get("MUTATION_HEAD_SHA") or "").strip()
     seed = (os.environ.get("MUTATION_SAMPLE_SEED") or "").strip() or str(int(time.time()))
+    min_file_coverage = parse_min_file_coverage()
 
     coverage_json = args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
     test_command = read_test_command(config_path)
@@ -293,26 +317,18 @@ def main() -> int:
     )
 
     all_eligible = list_eligible(repo_root)
-    covered_lines: dict[str, set[int]] = {}
-    if coverage_enabled:
-        try:
-            run_test_coverage(repo_root, test_command, coverage_json)
-        except subprocess.CalledProcessError as exc:
-            raise SystemExit(
-                f"test-command coverage probe failed with exit {exc.returncode}: {test_command}"
-            ) from exc
-        covered_lines = load_covered_lines(repo_root, coverage_json)
-        eligible = filter_eligible_by_coverage(all_eligible, covered_lines)
-    else:
-        eligible = all_eligible
+    eligible, line_contexts, mutation_line_coverage = select_eligible_for_mutation(
+        repo_root=repo_root,
+        config_path=config_path,
+        all_eligible=all_eligible,
+        coverage_enabled=coverage_enabled,
+        coverage_json=coverage_json,
+        test_command=test_command,
+        min_file_coverage=min_file_coverage,
+    )
 
     if not eligible:
-        if coverage_enabled:
-            sys.stderr.write(
-                f"no eligible files matched {POOL_DIR}/{POOL_PATTERN} with coverage from {test_command!r}\n"
-            )
-        else:
-            sys.stderr.write(f"no eligible files matched {POOL_DIR}/{POOL_PATTERN}\n")
+        report_no_eligible(coverage_enabled, test_command)
         return 1
     all_eligible_set = set(all_eligible)
     eligible_set = set(eligible)
@@ -333,10 +349,18 @@ def main() -> int:
         sys.stderr.write("no mutation sample files were selected\n")
         return 1
 
-    manifest_json = (
-        args.manifest_json if args.manifest_json.is_absolute() else repo_root / args.manifest_json
+    mutation_test_command = mutation_test_command_for_sample(
+        repo_root,
+        sample,
+        line_contexts,
+        test_command,
+        coverage_enabled=coverage_enabled,
     )
-    manifest_md = args.manifest_md if args.manifest_md.is_absolute() else repo_root / args.manifest_md
+    if mutation_test_command is None:
+        sys.stderr.write("no pytest test nodeids were observed for the selected mutation sample\n")
+        return 1
+
+    manifest_json, manifest_md = output_paths(args, repo_root)
     manifest = build_manifest(
         seed=seed,
         base_sha=base_sha,
@@ -349,6 +373,9 @@ def main() -> int:
         coverage_json=coverage_json,
         repo_root=repo_root,
         test_command=test_command,
+        mutation_test_command=mutation_test_command,
+        min_file_coverage=min_file_coverage if coverage_enabled else 0.0,
+        mutation_line_coverage=mutation_line_coverage,
         changed_before_coverage=changed_before_coverage,
         uncovered_changed_files=uncovered_changed_files,
         changed=changed,
@@ -358,6 +385,7 @@ def main() -> int:
     )
     write_manifest(manifest, manifest_json, manifest_md)
     rewrite_cosmic_ray_targets(config_path, sample)
+    rewrite_cosmic_ray_test_command(config_path, mutation_test_command)
 
     sample_arg = " ".join(sample)
     append_github_output("sample_files", sample_arg)

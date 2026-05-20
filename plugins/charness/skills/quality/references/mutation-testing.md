@@ -70,6 +70,13 @@ DB) is up to the consumer — charness only mandates the env var name.
 
 When `commands.sample` is empty, the workflow runs the full mutation set.
 
+Consumers that make scope gaps fatal should make the sampling contract at
+least as strict as the summary contract. If the summary fails on uncovered
+mutants, the sample step should prefer targets whose mutable lines are covered
+by the selected test command, and should surface changed files filtered out by
+coverage as a blocking signal rather than silently replacing them with fill
+samples.
+
 ## Workflow template
 
 `scripts/templates/mutation-tests.yml` is installed at the adapter's
@@ -138,7 +145,9 @@ release metadata on 2026-05-15. These helpers are dogfood support for this
 repo's own mutation workflow, not a portable requirement for consumers:
 
 - `scripts/sample_mutation_files.py` rewrites `cosmic-ray.toml`'s
-  `[cosmic-ray].module-path` list and writes the sample manifest.
+  `[cosmic-ray].module-path` list, derives the pytest node ids that actually
+  covered the selected mutation surface, rewrites `[cosmic-ray].test-command`
+  for that sampled surface, and writes the sample manifest.
 - `scripts/run_cosmic_ray_mutation.py --mode dry-run` runs baseline + init,
   then filters known low-signal annotation-only work items from the session.
 - `scripts/run_cosmic_ray_mutation.py --mode full` runs baseline + init +

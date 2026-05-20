@@ -45,6 +45,12 @@ def parse_args() -> argparse.Namespace:
         default=Path("reports/mutation/exec-timeout.json"),
         help="Path to the exec-timeout marker emitted by run_cosmic_ray_mutation.py.",
     )
+    parser.add_argument(
+        "--sample-manifest",
+        type=Path,
+        default=Path("reports/mutation/sample.json"),
+        help="Path to the sample manifest emitted by sample_mutation_files.py.",
+    )
     return parser.parse_args()
 
 
@@ -174,6 +180,7 @@ def mutation_metrics(
     *,
     exec_timed_out: bool = False,
     per_file_completion_ok: bool = True,
+    changed_scope_gap_count: int = 0,
 ) -> dict[str, float | int | bool]:
     killed = stats["killed"]
     survived = stats["survived"]
@@ -188,15 +195,16 @@ def mutation_metrics(
         reachable > 0
         and stats["no_tests"] == 0
         and stats.get("scope_gap", 0) == 0
+        and changed_scope_gap_count == 0
         and score >= score_break
     )
     incomplete_exec = stats["pending"] > 0
     if exec_timed_out:
         completion_ok = executed_ratio >= PARTIAL_RUN_COMPLETION_FLOOR and per_file_completion_ok
-        passed = score_passes and completion_ok
+        passed = False
         if not completion_ok:
             status = "FAIL-incomplete"
-        elif passed:
+        elif score_passes:
             status = "PASS-partial"
         else:
             status = "FAIL"
@@ -217,9 +225,26 @@ def mutation_metrics(
         "exec_timed_out": exec_timed_out,
         "incomplete_exec": incomplete_exec,
         "per_file_completion_ok": per_file_completion_ok,
+        "changed_scope_gap_count": changed_scope_gap_count,
         "passed": passed,
         "status": status,
     }
+
+
+def sample_manifest_scope_gaps(manifest_path: Path) -> tuple[int, list[str]]:
+    if not manifest_path.is_file():
+        return 0, []
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return 0, []
+    if not isinstance(payload, dict):
+        return 0, []
+    uncovered = payload.get("uncovered_changed_files") or []
+    if not isinstance(uncovered, list):
+        return 0, []
+    paths = [str(path) for path in uncovered if isinstance(path, str)]
+    return len(paths), paths
 
 
 def mutation_file_completion(
@@ -305,12 +330,18 @@ def build_summary_lines(
     if metrics["exec_timed_out"] or metrics.get("incomplete_exec"):
         if not metrics.get("per_file_completion_ok", True):
             lines.append("- Blocking signal: partial run did not meet per-sampled-file completion.")
+    if metrics["status"] == "PASS-partial":
+        lines.append("- Blocking signal: partial mutation runs cannot close a recovery issue.")
     if not metrics["reachable"]:
         lines.append("- Blocking signal: no reachable mutants were executed.")
     if metrics["no_tests"]:
         lines.append("- Blocking signal: Cosmic Ray reported mutants with no mutation possible.")
     if metrics.get("scope_gap", 0):
         lines.append("- Blocking signal: sampled mutants were not covered by the selected test command.")
+    if metrics.get("changed_scope_gap_count", 0):
+        lines.append(
+            "- Blocking signal: changed files were excluded before mutation by coverage/mutation-line filters."
+        )
     if metrics["survived"]:
         survived_details = summarize_survived_mutations(records, repo_root)
         lines += [
@@ -372,15 +403,32 @@ def main() -> int:
     timeout_marker_path = (
         args.timeout_marker if args.timeout_marker.is_absolute() else repo_root / args.timeout_marker
     )
+    sample_manifest_path = (
+        args.sample_manifest if args.sample_manifest.is_absolute() else repo_root / args.sample_manifest
+    )
     exec_timed_out, _ = _read_timeout_marker(timeout_marker_path)
     per_file_completion_ok, incomplete_files = mutation_file_completion(records)
+    changed_scope_gap_count, changed_scope_gap_files = sample_manifest_scope_gaps(sample_manifest_path)
     metrics = mutation_metrics(
         stats,
         score_break,
         exec_timed_out=exec_timed_out,
         per_file_completion_ok=per_file_completion_ok,
+        changed_scope_gap_count=changed_scope_gap_count,
     )
     lines = build_summary_lines(records, repo_root, metrics)
+    if changed_scope_gap_files:
+        try:
+            insert_at = lines.index("Score denominator: `killed / (killed + survived)` (reachable mutants only;")
+        except ValueError:
+            insert_at = len(lines)
+        lines[insert_at:insert_at] = [
+            "",
+            "## Changed Files Excluded Before Mutation",
+            "",
+            *[f"- `{path}`" for path in changed_scope_gap_files[:10]],
+            "",
+        ]
     if incomplete_files:
         try:
             insert_at = lines.index("Score denominator: `killed / (killed + survived)` (reachable mutants only;")

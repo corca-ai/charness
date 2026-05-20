@@ -1,0 +1,8 @@
+cosmic-ray==8.4.6
+coverage>=7,<8
+filelock>=3,<4
+jsonschema>=4.18,<6
+packaging>=24,<26
+pytest>=8,<9
+pytest-xdist>=3,<4
+PyYAML>=6,<7

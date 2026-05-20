@@ -1,131 +1,124 @@
 # Quality Review
-Date: 2026-05-20
+Date: 2026-05-21
 
 ## Scope
 
-Current slice: critique and harden the agent-browser runtime hygiene surface
-after a green quality/push cycle still left a PPID=1 browser daemon tree. The
-slice covers standing-gate lifecycle assertions, adapter/integration probe
-safety, support script browser cleanup, bounded lock persistence, and probe
-timeouts. A second critique pass extended the scan to release, issue,
-markdown-preview, supply-chain, SLOC, dead-code, and slice-closeout command
-surfaces that execute external tools.
+Current slice: resolve #183's mutation-testability regression without hiding the
+repo-quality problem behind looser mutation scoring. The slice covers mutation
+sampling, pytest selection, summary closeout semantics, repo-owned mutation
+dependencies, and representative source/testability repairs for scripts that
+were hostile to line-level mutation proof.
 
 ## Current Gates
 
-- `run-quality.sh` now includes an assert-only fail-fast
-  `agent-browser-runtime-baseline` at the start and
-  `agent-browser-runtime-hygiene` at the end; both unset
-  `CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS`.
-- `agent_browser_runtime_guard.py --assert-no-orphans` provides an
-  inspection-only final assertion for orphan daemon trees.
-- `check_cli_skill_surface.py` and `validate_integrations.py` block risky
-  bare or wrapper-mediated `agent-browser` probes.
-- Web-fetch browser fallback now closes the named `agent-browser` session after
-  render/network recon and degrades the result if close fails or a repo-local
-  runtime guard reports dirty state after close.
-- Doctor lock persistence truncates command stdout/stderr and failure details.
-- Startup probes, CLI side-effect probes, and the Cautilus wrapper now enforce
-  wall-clock timeouts.
-- Release requested-review/fresh-checkout/sync/publish helpers, issue backend
-  calls, markdown-preview `glow`, online supply-chain audit, SLOC inventory,
-  dead-code advisory, and slice closeout commands now have bounded subprocess
-  execution.
+- `scripts/sample_mutation_files.py` now runs coverage with test-function
+  contexts, filters files by statement coverage, probes Cosmic Ray work items,
+  and keeps only files whose non-skipped mutable lines are covered.
+- The sampler rewrites the mutation `test-command` to the observed pytest
+  nodeids that covered the selected mutation surface.
+- `scripts/check_mutation_score.py` keeps `PASS-partial` diagnostic-only:
+  partial mutation runs exit non-zero and cannot close a recovery issue.
+- Changed files excluded before mutation by coverage or mutation-line filters
+  are now blocking summary signals.
+- `.github/workflows/mutation-tests.yml` installs
+  `packaging/mutation-requirements.txt` instead of relying on inline ambient
+  dependency drift.
+- The public `quality` mutation-testing reference now says scope-gap-fatal
+  consumers must make sampling at least as strict as scoring, while keeping the
+  Python/Cosmic Ray details in the repo dogfood reference, not the portable
+  skill body.
 
 ## Runtime Signals
 
-- runtime source: `.charness/quality/runtime-signals.json` <!-- reproduction-source --> rendered by
-  `render_runtime_summary.py` plus focused
-  command output from the hygiene label run.
-- runtime hot spots: `render_runtime_summary.py` remains the standing summary
-  helper; full `run-quality --read-only` took `34.1s`, with pytest and
-  check-coverage still the dominant phases.
-- coverage gate: focused pytest for runtime guard, CLI-surface, web-fetch
-  cleanup, probe timeout, release/issue/advisory, and closeout surfaces passed.
-- evaluator depth: no Cautilus run; deterministic repo-local hygiene and
-  fresh-eye review were the appropriate proof for this external-runtime gate.
-- Final runtime hygiene previously caught a stale shell loop invoking
-  `agent-browser open/eval/screenshot`; focused hygiene labels passed after cleanup.
+- runtime source: structured runner output from `scripts/run_slice_closeout.py`
+  summarized by this artifact, plus local mutation probe artifacts under
+  ignored `reports/mutation/` <!-- reproduction-source -->.
+- runtime hot spots: broad changed-surface pytest took 183.35s; local sampler
+  coverage probe took 207.47s before Cosmic Ray dry-run.
+- coverage gate: local Cosmic Ray dry-run reported
+  `filtered 198 mutants from 736 pending mutants (198 annotation unions, 0 uncovered lines)`;
+  focused mutation/testability pytest passed with 89 tests.
+- evaluator depth: no live Cautilus run; deterministic validators, checked-in
+  dogfood scenario review, and fresh-eye review own this repo-local
+  mutation/testability slice.
 
 ## Healthy
 
-- A green full quality run can no longer silently leave a new agent-browser
-  orphan daemon tree behind when the runtime baseline starts clean.
-- A dirty runtime baseline now fails fast before other gates instead of
-  mutating unrelated local browser state.
-- The fix is lifecycle-based rather than pytest-only; non-pytest phases are
-  now covered by the final gate.
-- Future direct or wrapper-mediated `agent-browser open/get/network/screenshot/snapshot`
-  probes are blocked as unsafe standing CLI-plus-skill, integration, support
-  readiness, or slice-closeout surface commands.
-- The actual support script that uses browser runtime now owns session close
-  and does not return unqualified success on cleanup failure or post-close
-  dirty runtime proof.
-- Pytest session cleanup now retries until the runtime is clean or the retry
-  budget expires, covering asynchronous daemon shutdown races.
-- Large volatile healthcheck output no longer becomes durable lock noise.
-- Executable startup, side-effect, and Cautilus evaluator probes cannot hang
-  indefinitely.
+- The previous file-level sampling vs mutation-line scoring mismatch is closed
+  locally: the sampler now proves the same kind of scope the summary enforces.
+- The test command is no longer a static broad-or-narrow guess; it is derived
+  from coverage contexts for the selected mutation sample.
+- High reachable score no longer masks uncovered mutation lines, changed-file
+  exclusions, or incomplete timeout execution.
+- Source reshapes were bounded and paired with tests rather than broad style
+  churn.
+- Fresh-eye reviewers judged the testability posture sufficient for this slice,
+  subject to hosted workflow proof before #183 closeout.
 
 ## Weak
 
-- The exact command that created the previously observed post-push orphan was
-  not reproduced from the current local probes.
-- The direct-probe denylist is intentionally scoped to `agent-browser`; other
-  long-lived external runtimes would need their own classifier.
-- The similar-pattern scan found many ordinary `subprocess.run` call sites; the
-  fixed ones are operator/adaptor-configured executable surfaces and external
-  advisory tools, not every bounded git/doc helper.
+- Local reasoning still cannot prove the hosted scheduled workflow after push;
+  #183 must stay open until GitHub reports a successful full mutation run.
+- The Cosmic Ray work-db integration is exercised by local dry-run proof more
+  than by pure unit tests. This is acceptable because hosted workflow success is
+  the real closeout signal.
+- The focused pytest nodeid command can become long as sampled files expand;
+  monitor workflow ergonomics before adding indirection.
 
 ## Missing
 
-- No live browser roundtrip was run as part of closeout; focused tests use fake
-  binaries and the local hygiene probe validates process state.
-- No release/version bump yet, so installed users receive the hardened plugin
-  surface after the next update/release path consumes this repo state.
+- No remote mutation workflow success for the current fix has been observed yet.
+- No issue closeout verification has run yet with #183 in `CLOSED` state.
 
 ## Deferred
 
-- Generalize probe side-effect classification beyond agent-browser when another
-  external runtime shows the same lifecycle risk.
-- Add richer runtime-family metadata to integration manifests only if repeated
-  command-specific denylist edits start accumulating.
+- Make missing or malformed sample manifests an explicit full-run invariant if
+  the mutation summary starts running outside the current workflow shape.
+- Consider a pytest-selection helper file only if command length becomes a
+  practical CI or log problem.
 
 ## Advisory
 
-- artifact: fresh-eye review executed via subagents twice. They identified
-  baseline fail-fast, waiver bypass, wrapper-mediated probes, web-fetch cleanup
-  false positives, executable probe hangs, support readiness/slice-closeout
-  command gaps, and unbounded release/issue/advisory subprocesses.
-- inventory: similar-pattern scan found adapter probe commands, integration
-  healthchecks, support scripts, startup/side-effect probes, Cautilus
-  forwarding, release/issue helpers, advisory tools, and doctor lock payloads
-  as adjacent surfaces; bounded fixes shipped for the recurrence paths.
+- Debug artifact: [mutation scope-gap testability](../debug/2026-05-21-mutation-scope-gap-testability.md).
+- RCA from debug artifact: sampling accepted “some covered line in the file”
+  while scoring failed on each uncovered mutation line. The producer predicate
+  was weaker than the consumer gate.
+- Similar-pattern scan from `scripts/check_changed_surfaces.py` and fresh-eye
+  review fixed sibling closeout gaps: changed-file exclusions, `PASS-partial`,
+  dependency setup drift, and root-level probe config leakage.
+- Hosted workflow RCA fixed CI-portability siblings found by run `26192428031`:
+  live Cautilus tests now skip when `cautilus` is absent, and worktree-create
+  setup commits no longer execute ambient git hooks.
 
 ## Delegated Review
 
-- status: executed. Fresh-eye reviewers returned Act Before Ship items for
-  final `run-quality` hygiene, agent-browser probe blocking, web-fetch cleanup,
-  lock output bounding, waiver bypass, wrapper probes, executable probe
-  timeouts, support readiness scanning, slice-closeout safety, and external
-  helper timeouts.
+- status: executed. Fresh-eye causal/design/code/testability reviewers found
+  the file-level-vs-line-level sampling mismatch, changed-file exclusion gap,
+  dependency setup drift, `PASS-partial` closeout risk, and local probe config
+  leakage. The probe leakage was fixed by moving generated probe config under
+  `reports/mutation/`.
 
 ## Commands Run
 
-- focused pytest: runtime guard, web-fetch cleanup, markdown-preview,
-  CLI-surface, startup probe, release, issue, SLOC, dead-code, and closeout tests
-- `ruff check ...` on changed scripts/tests
+- `ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts`
+- focused pytest suite for mutation sampling, mutation scoring, workflow
+  dependency setup, portable artifacts, worktree doctor state, announcement
+  preflight, and control-plane helpers
+- `pytest -q tests/quality_gates tests/control_plane tests/test_*.py tests/charness_cli/test_doctor_cache_selection.py tests/charness_cli/test_tool_lifecycle.py`
+- `MUTATION_SAMPLE_SEED=local-183-probe MUTATION_SAMPLE_MAX_FILES=5 MUTATION_SAMPLE_CHANGED_QUOTA=0 python3 scripts/sample_mutation_files.py --repo-root .`
+- `python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode dry-run`
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- `./scripts/run-quality.sh --read-only`
-- `python3 scripts/run_slice_closeout.py --repo-root . --ack-cautilus-skill-review`
+- changed-surface validators: packaging, adapters, docs, markdown, secrets,
+  Cautilus proof policy, skill validation, public skill policy/dogfood,
+  integrations, support sync dry-run, tool update dry-run, and debug artifact
+  validation.
 
 ## Recommended Next Gates
 
-- active `AUTO_EXISTING`: run slice closeout after this artifact update.
-- passive `AUTO_CANDIDATE` because only agent-browser currently shows this
-  daemon/process pressure: if another external runtime gains similar behavior,
-  promote the agent-browser-specific probe classifier into a manifest-driven
-  runtime-family side-effect gate.
+- active `AUTO_EXISTING`: commit and push this slice, then require the hosted
+  mutation workflow to pass before closing #183.
+- active `AUTO_EXISTING`: after hosted proof, run release closeout so Charness
+  plugin users receive the testability and mutation workflow hardening.
 
 ## History
 

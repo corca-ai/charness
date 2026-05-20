@@ -420,6 +420,21 @@ def test_evaluate_version_covers_advisory_exact_and_range_edges() -> None:
     }
 
 
+def test_now_iso_returns_utc_z_timestamp() -> None:
+    value = control.now_iso()
+
+    assert value.endswith("Z")
+    assert "+" not in value
+
+
+def test_run_shell_uses_bash_and_captures_output(tmp_path: Path) -> None:
+    result = control.run_shell("echo ok", tmp_path)
+
+    assert result.command == "echo ok"
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "ok"
+
+
 def test_dependency_helpers_create_sorted_staged_ids(tmp_path: Path) -> None:
     assert control.staged_tool_ids(tmp_path) is None
     assert control.add_dependency(tmp_path, "z-tool") is True

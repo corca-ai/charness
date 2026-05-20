@@ -70,14 +70,16 @@ def test_non_timeout_pending_mutants_fail_incomplete() -> None:
 
 
 def test_partial_run_above_floor_with_passing_score() -> None:
-    # 80/100 executed (80% ≥ 75% floor); 70 killed / (70+10) = 87.5% ≥ 80%.
+    # 80/100 executed (80% >= 75% floor); 70 killed / (70+10) = 87.5% >= 80%.
+    # A partial run may be diagnostically strong, but it must not auto-close a
+    # mutation recovery issue.
     metrics = CMS.mutation_metrics(
         _stats(total=100, killed=70, survived=10, pending=20),
         score_break=80,
         exec_timed_out=True,
     )
     assert metrics["status"] == "PASS-partial"
-    assert metrics["passed"] is True
+    assert metrics["passed"] is False
     assert metrics["executed"] == 80
     assert metrics["executed_ratio"] == 0.8
 
@@ -115,7 +117,7 @@ def test_partial_run_at_exact_completion_floor() -> None:
     )
     assert metrics["executed_ratio"] == 0.75
     assert metrics["status"] == "PASS-partial"
-    assert metrics["passed"] is True
+    assert metrics["passed"] is False
 
 
 def test_completion_ratio_excludes_skipped_mutants() -> None:

@@ -15,53 +15,49 @@
 
 ## Current State
 
-- Current local slice hardens agent-browser runtime hygiene after a green quality/push cycle
-  still left a PPID=1 browser daemon tree. RCA: [debug latest](../charness-artifacts/debug/latest.md).
-- `run-quality.sh` now starts with assert-only fail-fast
-  `agent-browser-runtime-baseline` and ends with
-  `agent-browser-runtime-hygiene`; both unset the orphan-ignore waiver so the
-  standing gate cannot silently bless dirty runtime state.
-- `check_cli_skill_surface.py` and `validate_integrations.py` block risky
-  bare or wrapper-mediated `agent-browser` probes across CLI-skill,
-  integration, support-readiness, and slice-closeout surfaces; web-fetch
-  degrades rather than reports success when browser session close fails or
-  post-close runtime hygiene fails.
-- Startup probes, CLI side-effect probes, `run_cautilus_eval.py`, release and
-  issue helpers, markdown-preview, supply-chain online audit, SLOC inventory,
-  dead-code advisory, and slice closeout now have explicit wall-clock timeouts.
-- Pytest sessionfinish cleanup retries agent-browser cleanup until clean or
-  timeout; final `run-quality` hygiene remains the whole-gate proof.
-- Public release `v0.7.6`. No version bump pending unless the next release
-  slice decides to publish this hardening immediately.
-- Prior pushed slice `f14a1df` taught public `quality` structure-first testability.
-  Mutation follow-up #183 remains open until GitHub proves corrected semantics.
+- Current local slice resolves #183's mutation-testability regression. RCA:
+  [debug latest](../charness-artifacts/debug/latest.md).
+- Mutation sampling now runs coverage with test-function contexts, probes Cosmic
+  Ray work items, keeps only files whose non-skipped mutable lines are covered,
+  and rewrites the mutation `test-command` to the pytest nodeids that covered
+  the selected sample.
+- Mutation scoring now treats `PASS-partial` as diagnostic only, exits non-zero
+  for partial timeout success, and blocks recovery when changed files were
+  excluded before mutation by coverage or mutation-line filters.
+- Workflow dependency setup now uses
+  [packaging/mutation-requirements.txt](../packaging/mutation-requirements.txt)
+  instead of ambient inline installs.
+- Fresh-eye reviewers judged the repo's testability posture sufficient for this
+  slice after the root-level probe config leakage was fixed. #183 remains open
+  until the hosted mutation workflow succeeds on the pushed fix.
+- Public release `v0.7.6`; release is still needed after hosted proof so plugin
+  users receive the mutation/testability hardening.
 
 ## Next Session
 
-1. If picked up mid-run, finish generated-surface sync, changed-surface tests, full closeout, and pre-push.
-2. Confirm the new baseline/final runtime hygiene phases leave
-   `orphan_daemon_count=0` after the full standing gate.
-3. Continue #183 watch if needed: next summary should show covered sample pool,
-   excluded changed files, separated scope gaps, executable-mutant completion,
-   and no under-proven `PASS-partial`.
+1. If picked up mid-run, confirm [cosmic-ray.toml](../cosmic-ray.toml) is
+   restored to its default non-release test command, rerun changed-surface
+   closeout if needed, then commit and push.
+2. After push, watch the hosted mutation workflow. #183 is closable only when
+   the full hosted run succeeds and the issue state verifies as `CLOSED`.
+3. Cut/publish the next Charness release after hosted proof so plugin users get
+   the updated quality/testability contract.
 
 ## Discuss
 
-- Lesson: pytest cleanup is not a quality-gate lifecycle contract; external runtimes need gate ownership.
-- Similar-pattern scan found arbitrary adapter probe commands, startup probes,
-  Cautilus forwarding, release/issue helper commands, markdown-preview,
-  supply-chain/SLOC/dead-code advisory tools, slice closeout, and raw doctor
-  lock output as adjacent risks. This slice adds bounded execution and
-  agent-browser-specific lifecycle enforcement first; broader runtime-family
-  metadata is deferred until another external runtime shows the same pressure.
+- Lesson: a sampler predicate must be at least as strict as the downstream
+  score/closeout predicate when the downstream signal is fatal.
+- Fresh-eye valid-but-defer: make missing/malformed sample manifests a full-run
+  invariant if the summary is reused outside the current workflow shape; monitor
+  long focused pytest commands before adding another abstraction.
 - Watch list (deferred): Yarn Berry hook idiom; pnpm+lefthook stale snippets;
-  `filelock` + `pytest-xdist`; sibling imports via runtime bootstrap; seed-cache LRU eviction.
+  `filelock` + `pytest-xdist`; sibling imports via runtime bootstrap; seed-cache
+  LRU eviction.
 
 ## References
 
 - [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md):
-  agent-browser runtime hygiene RCA, detection gap, sibling search, and
-  prevention.
+  mutation scope-gap RCA, detection gap, sibling search, and prevention.
 - [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md):
   current quality posture and commands for this slice.
 - [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md):
