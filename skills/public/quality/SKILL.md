@@ -149,6 +149,8 @@ Validators and consumer prompts use these core routing anchors; references carry
   enforcement is the real gap.
 - Do not stop at producer-side validators when public-skill routing or durable
   artifact behavior is the risk; run or name a consumer prompt and artifact.
+- Do not write size, runtime, or cost numbers that did not come from a command run this turn; label estimates explicitly. See `references/proposal-flow.md`.
+- Do not propose a new enforcement gate for an advisory cost before checking `git log -S`, `grep -rn`, and `pyproject.toml` markers for an existing convention; if one is ignored, the recommendation is the routing fix. See `references/proposal-flow.md`.
 
 ## References
 

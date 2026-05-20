@@ -18,6 +18,10 @@ Good proposals name:
 - where it should run
 - why it is the next best improvement
 - whether the proposal is `AUTO_CANDIDATE` or `NON_AUTOMATABLE`
+- the result of an existing-convention check (`git log -S <subject>`,
+  `grep -rn <subject>`, marker scan in `pyproject.toml`/SKILL files); if a
+  convention already governs the cost, the proposal must be the routing fix
+  that honors it, not an additive new gate
 - what local install or permission is required when the gate depends on an
   external binary or service
 - the exact verification command when a repo-owned doctor or recommendation
@@ -25,6 +29,29 @@ Good proposals name:
 - for `NON_AUTOMATABLE` recommendations, the smallest experiment or review loop
   that would produce better evidence, including the observation point and
   revisit cadence
+
+## Measurement Evidence
+
+Numbers in proposals (sizes, runtimes, footprints, counts) must come from a
+command run this turn — `du`, `wc`, `time`, an inventory helper, a runtime
+budget snapshot, etc. The artifact body should cite the command in
+`## Commands Run`.
+
+Estimates are allowed only when measurement is genuinely blocked (e.g.,
+external surface, future state). Label them explicitly as "estimate" and
+name what would have been measured. Loose mental-model numbers ("~1 GiB
+each") tend to compound across artifacts and bias toward the wrong fix; the
+discipline exists to make a wrong number visible early.
+
+## Anti-Need Before Need
+
+Before drafting `Recommended Next Gates`, run the existing-convention check
+above for each candidate. If the cost or risk is already declared
+(`@pytest.mark.<marker>`, marker docs in `pyproject.toml`, repo-owned policy
+files, comments at the origin commit), the recommendation must be the
+routing fix or deletion that honors the prior declaration — not an additive
+new gate. A new gate is correct only after confirming no existing convention
+is being violated.
 
 Examples:
 
