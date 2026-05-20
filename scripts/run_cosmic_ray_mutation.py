@@ -93,6 +93,41 @@ def _write_timeout_marker(marker_path: Path, exec_timeout_seconds: int) -> None:
     )
 
 
+def _dump_session(session: Path, dump_path: Path, repo_root: Path) -> int:
+    """Write `cosmic-ray dump` output atomically.
+
+    Streams the dump into `<dump_path>.partial` and renames on success so a
+    crashed dump never leaves a truncated `dump_path` masquerading as a valid
+    JSONL file. Returns the dump subprocess's returncode; 0 means the rename
+    happened.
+    """
+    partial = dump_path.with_suffix(dump_path.suffix + ".partial")
+    if partial.exists():
+        partial.unlink()
+    try:
+        with partial.open("w", encoding="utf-8") as output:
+            result = subprocess.run(
+                ["cosmic-ray", "dump", str(session)],
+                cwd=repo_root,
+                check=False,
+                stdout=output,
+                text=True,
+            )
+    except FileNotFoundError as exc:
+        raise SystemExit(
+            "cosmic-ray executable not found; install Cosmic Ray 8.4.6 "
+            "or run the GitHub Actions workflow install step first"
+        ) from exc
+    if result.returncode == 0:
+        partial.replace(dump_path)
+    else:
+        sys.stdout.write(
+            f"cosmic-ray dump exited {result.returncode}; leaving partial output at {partial}\n"
+        )
+        sys.stdout.flush()
+    return result.returncode
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path("."))
@@ -150,24 +185,22 @@ def main() -> int:
             )
             if exec_timed_out:
                 _write_timeout_marker(timeout_marker, args.exec_timeout_seconds)
-            with dump_path.open("w", encoding="utf-8") as output:
-                subprocess.run(
-                    ["cosmic-ray", "dump", str(session)],
-                    cwd=repo_root,
-                    check=True,
-                    stdout=output,
-                    text=True,
-                )
-            sys.stdout.write(f"dump written to {dump_path}\n")
+            dump_returncode = _dump_session(session, dump_path, repo_root)
+            if dump_returncode == 0:
+                sys.stdout.write(f"dump written to {dump_path}\n")
             if exec_timed_out:
                 sys.stdout.write(
                     f"exec-timeout marker written to {timeout_marker}; "
                     "downstream summary will report partial-run status\n"
                 )
+            # Surface the exec crash to the caller AFTER the dump attempt so
+            # the downstream summary still has data to score. Dump failure is
+            # secondary signal; preserve the original exec failure if both
+            # fired.
             if exec_returncode not in (0, -1):
-                # Surface the crash to the caller AFTER the dump has been
-                # written so the downstream summary still has data to score.
                 return exec_returncode
+            if dump_returncode != 0:
+                return dump_returncode
         else:
             sys.stdout.write("dry-run complete after baseline and session init\n")
     except subprocess.CalledProcessError as exc:

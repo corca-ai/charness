@@ -170,7 +170,7 @@ def detect_worktree_adapter_normalization(
         findings.append(_hook_manager_finding(hook_manager_detected, hook_manager_evidence))
     if not adapter_exists and has_active_worktrees:
         findings.append(_active_worktrees_finding(worktree_count))
-    if probe_degraded and not adapter_exists and not hook_manager_detected:
+    if probe_degraded and not adapter_exists:
         findings.append(_probe_unavailable_finding(worktree_probe_status))
     if not adapter_exists and hook_manager_detected:
         recommendations.append(

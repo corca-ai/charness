@@ -233,6 +233,11 @@ def test_setup_inspect_degrades_confidence_when_probe_fails_alongside_hook_manag
     rec = rec_index["worktree_adapter_missing_for_hook_manager"]
     assert rec["confidence"] == "medium"
     assert any("worktree probe degraded" in line for line in rec["evidence"])
+    # The diagnostic finding must ALSO fire under degraded probe + hook
+    # manager, not just when no hook manager is present. The commit message
+    # promised an unconditional `worktree_probe_unavailable` finding.
+    finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}
+    assert "worktree_probe_unavailable" in finding_types
 
 
 def test_setup_inspect_prefers_hook_manager_recommendation_when_both_signals_fire(tmp_path: Path) -> None:
