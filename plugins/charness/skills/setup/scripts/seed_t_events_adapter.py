@@ -62,13 +62,14 @@ def main() -> int:
     if args.dry_run:
         sys.stdout.write(TEMPLATE)
         return 0
-    target = (args.repo_root / DEFAULT_TARGET).resolve()
+    repo_root = args.repo_root.resolve()
+    target = (repo_root / DEFAULT_TARGET).resolve()
     if target.is_file() and not args.force:
         print(f"{target} already exists; pass --force to overwrite.", file=sys.stderr)
         return 1
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(TEMPLATE, encoding="utf-8")
-    print(f"wrote {target.relative_to(args.repo_root)}")
+    print(f"wrote {target.relative_to(repo_root)}")
     return 0
 
 

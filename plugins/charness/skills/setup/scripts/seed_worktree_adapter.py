@@ -6,8 +6,9 @@ The worktree adapter declares how `charness worktree prepare` should make a
 freshly-created git worktree usable, and which extra `charness worktree doctor`
 checks should decide whether the worktree is ready before mutate-phase work.
 
-This helper writes a portable starter template; the consumer repo edits the
-prepare commands to match its actual package manager and hook tooling.
+This helper detects the consumer repo's package manager and hook system, then
+writes a starter template matched to that stack. Detection lives in
+`seed_worktree_adapter_lib.py`.
 """
 
 from __future__ import annotations
@@ -16,55 +17,11 @@ import argparse
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from seed_worktree_adapter_lib import detect, render_template  # noqa: E402
+
 DEFAULT_TARGET = Path(".agents/worktree-adapter.yaml")
-TEMPLATE = """\
-# charness worktree adapter — declares how `charness worktree prepare` makes a
-# freshly-created git worktree usable, and which extra `charness worktree doctor`
-# checks decide whether the worktree is ready.
-#
-# Replace the example commands below with your repo's actual package manager
-# and hook installer. argv lists must use block-style YAML (charness's repo-local
-# loader does not parse inline `[a, b]` arrays).
-version: 1
-
-prepare:
-  commands:
-    # Install dependencies for this worktree. Pick one matching your repo:
-    - id: install-deps
-      description: "Install workspace dependencies for this worktree."
-      timeout_seconds: 600
-      argv:
-        - pnpm
-        - install
-        - --frozen-lockfile
-    # Re-run hook installation so any per-worktree absolute paths point at this
-    # checkout's installed tools (lefthook bakes install-time absolute paths
-    # into its hook shim; husky generates a worktree-relative `_/` directory).
-    - id: install-hooks
-      description: "Re-run hook manager install for this worktree."
-      timeout_seconds: 60
-      argv:
-        - pnpm
-        - exec
-        - lefthook
-        - install
-  skip_if_doctor_passes: true
-
-# Optional manifest-defined doctor checks layered on top of the canonical suite
-# (git_common_dir, hooks_path, lefthook_shim, husky_dir). Remove this whole
-# block if the canonical suite is enough.
-# doctor:
-#   checks:
-#     - id: lefthook_self_check
-#       description: "Confirm lefthook resolves from this worktree."
-#       next_action_hint: "Run `charness worktree prepare` to install hooks."
-#       timeout_seconds: 10
-#       argv:
-#         - pnpm
-#         - exec
-#         - lefthook
-#         - version
-"""
 
 
 def main() -> int:
@@ -75,14 +32,25 @@ def main() -> int:
         action="store_true",
         help="Overwrite an existing .agents/worktree-adapter.yaml.",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the would-be manifest to stdout instead of writing.",
+    )
     args = parser.parse_args()
-    target = (args.repo_root / DEFAULT_TARGET).resolve()
+    repo_root = args.repo_root.resolve()
+    detection = detect(repo_root)
+    rendered = render_template(detection)
+    if args.dry_run:
+        sys.stdout.write(rendered)
+        return 0
+    target = (repo_root / DEFAULT_TARGET).resolve()
     if target.is_file() and not args.force:
         print(f"{target} already exists; pass --force to overwrite.", file=sys.stderr)
         return 1
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(TEMPLATE, encoding="utf-8")
-    print(f"wrote {target.relative_to(args.repo_root)}")
+    target.write_text(rendered, encoding="utf-8")
+    print(f"wrote {target.relative_to(repo_root)}")
     return 0
 
 

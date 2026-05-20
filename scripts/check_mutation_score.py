@@ -25,6 +25,7 @@ if str(REPO_ROOT) not in sys.path:
 from scripts.quality_adapter_lib import load_quality_adapter  # noqa: E402
 
 SURVIVED_DETAIL_LIMIT = 10
+PARTIAL_RUN_COMPLETION_FLOOR = 0.75
 
 
 def parse_args() -> argparse.Namespace:
@@ -35,6 +36,12 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=Path("reports/mutation/cosmic-ray-dump.jsonl"),
         help="Path to cosmic-ray dump output (default: reports/mutation/cosmic-ray-dump.jsonl).",
+    )
+    parser.add_argument(
+        "--timeout-marker",
+        type=Path,
+        default=Path("reports/mutation/exec-timeout.json"),
+        help="Path to the exec-timeout marker emitted by run_cosmic_ray_mutation.py.",
     )
     return parser.parse_args()
 
@@ -156,18 +163,55 @@ def load_mutation_config(repo_root: Path) -> tuple[float, Path] | None:
     return score_break, repo_root / summary_rel
 
 
-def mutation_metrics(stats: dict[str, int], score_break: float) -> dict[str, float | int | bool]:
+def mutation_metrics(
+    stats: dict[str, int], score_break: float, *, exec_timed_out: bool = False
+) -> dict[str, float | int | bool]:
     killed = stats["killed"]
     survived = stats["survived"]
     reachable = killed + survived
     score = (killed / reachable * 100.0) if reachable else 0.0
+    total = stats["total"]
+    executed = total - stats["pending"]
+    executed_ratio = (executed / total) if total else 0.0
+    score_passes = reachable > 0 and stats["no_tests"] == 0 and score >= score_break
+    if exec_timed_out:
+        completion_ok = executed_ratio >= PARTIAL_RUN_COMPLETION_FLOOR
+        passed = score_passes and completion_ok
+        if not completion_ok:
+            status = "FAIL-incomplete"
+        elif passed:
+            status = "PASS-partial"
+        else:
+            status = "FAIL"
+    else:
+        passed = score_passes
+        status = "PASS" if passed else "FAIL"
     return {
         **stats,
         "reachable": reachable,
         "score": score,
         "score_break": score_break,
-        "passed": reachable > 0 and stats["no_tests"] == 0 and score >= score_break,
+        "executed": executed,
+        "executed_ratio": executed_ratio,
+        "exec_timed_out": exec_timed_out,
+        "passed": passed,
+        "status": status,
     }
+
+
+def _read_timeout_marker(marker_path: Path) -> tuple[bool, int | None]:
+    if not marker_path.is_file():
+        return False, None
+    try:
+        data = json.loads(marker_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False, None
+    if not isinstance(data, dict):
+        return False, None
+    timed_out = bool(data.get("exec_timed_out"))
+    raw_seconds = data.get("exec_timeout_seconds")
+    seconds = int(raw_seconds) if isinstance(raw_seconds, (int, float)) else None
+    return timed_out, seconds
 
 
 def build_summary_lines(
@@ -178,20 +222,26 @@ def build_summary_lines(
     lines = [
         "# Mutation Testing Summary",
         "",
-        f"- Status: **{'PASS' if metrics['passed'] else 'FAIL'}** "
+        f"- Status: **{metrics['status']}** "
         f"({metrics['score']:.1f}% reachable score vs {metrics['score_break']:.0f}% threshold)",
         f"- Total mutants: {metrics['total']}",
+        f"- Executed: {metrics['executed']} ({metrics['executed_ratio']*100:.1f}% of total)",
         f"- Killed: {metrics['killed']}",
         f"- Survived: {metrics['survived']}",
         f"- No tests (scope gap): {metrics['no_tests']}",
         f"- Incompetent: {metrics['incompetent']}",
     ]
     if metrics["pending"]:
-        lines.append(f"- Pending: {metrics['pending']}")
+        lines.append(f"- Pending (not executed): {metrics['pending']}")
     if metrics["abnormal"]:
         lines.append(f"- Worker abnormal/exception: {metrics['abnormal']}")
     if metrics["skipped"]:
         lines.append(f"- Skipped: {metrics['skipped']}")
+    if metrics["exec_timed_out"]:
+        lines.append(
+            f"- Exec timeout fired; status reflects partial completion "
+            f"(floor {PARTIAL_RUN_COMPLETION_FLOOR*100:.0f}% of total)."
+        )
     if not metrics["reachable"]:
         lines.append("- Blocking signal: no reachable mutants were executed.")
     if metrics["no_tests"]:
@@ -254,7 +304,11 @@ def main() -> int:
     if config is None:
         return 2
     score_break, summary_path = config
-    metrics = mutation_metrics(stats, score_break)
+    timeout_marker_path = (
+        args.timeout_marker if args.timeout_marker.is_absolute() else repo_root / args.timeout_marker
+    )
+    exec_timed_out, _ = _read_timeout_marker(timeout_marker_path)
+    metrics = mutation_metrics(stats, score_break, exec_timed_out=exec_timed_out)
     lines = build_summary_lines(records, repo_root, metrics)
 
     summary_path.parent.mkdir(parents=True, exist_ok=True)
@@ -262,7 +316,8 @@ def main() -> int:
     sys.stdout.write(f"summary written to {summary_path}\n")
     sys.stdout.write(
         f"score: {metrics['score']:.1f}% threshold: {score_break:.0f}% "
-        f"status: {'PASS' if metrics['passed'] else 'FAIL'}\n"
+        f"executed: {metrics['executed']}/{metrics['total']} "
+        f"status: {metrics['status']}\n"
     )
     return 0 if metrics["passed"] else 1
 

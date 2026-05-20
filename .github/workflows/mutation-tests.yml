@@ -199,6 +199,7 @@ jobs:
         env:
           SUMMARY_PATH: ${{ steps.adapter.outputs.summary_md }}
           SAMPLE_PATH: ${{ steps.adapter.outputs.sample_md }}
+          RUN_LOG_PATH: ${{ steps.adapter.outputs.run_log }}
           ISSUE_TITLE: ${{ steps.adapter.outputs.auto_issue_title }}
           ISSUE_LABEL: ${{ steps.adapter.outputs.auto_issue_label }}
           MARKER_TOKEN: ${{ steps.adapter.outputs.auto_issue_marker_token }}
@@ -218,6 +219,15 @@ jobs:
             const sample = samplePath && fs.existsSync(samplePath)
               ? fs.readFileSync(samplePath, 'utf8')
               : 'No mutation sample manifest was generated.';
+            const runLogPath = process.env.RUN_LOG_PATH;
+            let runLogTail = '';
+            if (!summaryPath || !fs.existsSync(summaryPath)) {
+              if (runLogPath && fs.existsSync(runLogPath)) {
+                const logText = fs.readFileSync(runLogPath, 'utf8');
+                const tail = logText.split('\n').slice(-80).join('\n');
+                runLogTail = ['', '## Run log tail (last 80 lines)', '', '```', tail, '```'].join('\n');
+              }
+            }
             const body = [
               marker,
               `Mutation testing failed on \`${context.sha}\`.`,
@@ -227,6 +237,7 @@ jobs:
               summary,
               '',
               sample,
+              runLogTail,
             ].join('\n');
 
             try {

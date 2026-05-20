@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 from scripts.setup_agent_docs_lib import _recommendation
@@ -9,6 +10,7 @@ WORKTREE_ADAPTER_RELATIVE_PATH = Path(".agents/worktree-adapter.yaml")
 WORKTREE_ADAPTER_SEED_COMMAND = (
     "python3 $SKILL_DIR/scripts/seed_worktree_adapter.py --repo-root ."
 )
+ACTIVE_WORKTREE_THRESHOLD = 1
 SETUP_ADAPTER_CANDIDATES: tuple[Path, ...] = (
     Path(".agents/setup-adapter.yaml"),
     Path(".codex/setup-adapter.yaml"),
@@ -36,15 +38,47 @@ def _detect_hook_manager(repo_root: Path) -> tuple[str | None, list[str]]:
     return None, []
 
 
+def _count_active_worktrees(repo_root: Path) -> int:
+    """Return the number of git worktrees reported for `repo_root`, or 0 on any failure."""
+    try:
+        result = subprocess.run(
+            ["git", "worktree", "list", "--porcelain"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=10,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return 0
+    if result.returncode != 0:
+        return 0
+    return sum(1 for line in result.stdout.splitlines() if line.startswith("worktree "))
+
+
 def detect_worktree_adapter_normalization(
     repo_root: Path,
 ) -> tuple[dict[str, object], list[dict[str, str]], list[dict[str, object]]]:
-    """Detect a hook manager without `.agents/worktree-adapter.yaml` and emit a typed recommendation."""
+    """Detect a missing worktree adapter and emit a typed recommendation.
+
+    Fires when `.agents/worktree-adapter.yaml` is absent AND any of:
+      * a Node hook manager (lefthook / husky / simple-git-hooks) is detected, or
+      * `git worktree list` reports more than one entry (the repo actively uses
+        worktrees and benefits from a portable `charness worktree prepare` recipe).
+
+    Both findings can be emitted diagnostically when both conditions hold, but at
+    most one recommendation is emitted under the existing
+    `worktree_adapter_missing_for_hook_manager` id when a hook manager is
+    detected (`priority="medium"`); otherwise the new
+    `worktree_adapter_missing_for_active_worktrees` id is used (`priority="advisory"`).
+    """
     adapter_exists = (repo_root / WORKTREE_ADAPTER_RELATIVE_PATH).is_file()
     hook_manager_detected, hook_manager_evidence = _detect_hook_manager(repo_root)
+    worktree_count = _count_active_worktrees(repo_root)
+    has_active_worktrees = worktree_count > ACTIVE_WORKTREE_THRESHOLD
     findings: list[dict[str, str]] = []
     recommendations: list[dict[str, object]] = []
-    if hook_manager_detected and not adapter_exists:
+    if not adapter_exists and hook_manager_detected:
         findings.append(
             {
                 "type": "worktree_adapter_missing_for_hook_manager",
@@ -56,6 +90,19 @@ def detect_worktree_adapter_normalization(
                 "recommended_action": "seed_worktree_adapter",
             }
         )
+    if not adapter_exists and has_active_worktrees:
+        findings.append(
+            {
+                "type": "worktree_adapter_missing_for_active_worktrees",
+                "message": (
+                    f"`git worktree list` reports {worktree_count} worktrees but "
+                    f"{WORKTREE_ADAPTER_RELATIVE_PATH.as_posix()} is missing. "
+                    "Seeding the adapter lets `charness worktree prepare` reproduce per-worktree readiness."
+                ),
+                "recommended_action": "seed_worktree_adapter",
+            }
+        )
+    if not adapter_exists and hook_manager_detected:
         recommendations.append(
             _recommendation(
                 rec_id="worktree_adapter_missing_for_hook_manager",
@@ -72,10 +119,28 @@ def detect_worktree_adapter_normalization(
                 suggested_action=WORKTREE_ADAPTER_SEED_COMMAND,
             )
         )
+    elif not adapter_exists and has_active_worktrees:
+        recommendations.append(
+            _recommendation(
+                rec_id="worktree_adapter_missing_for_active_worktrees",
+                target=WORKTREE_ADAPTER_RELATIVE_PATH.as_posix(),
+                kind="seed_artifact",
+                priority="advisory",
+                confidence="medium",
+                enforcement_tier="AUTOMATABLE",
+                evidence=[
+                    f"git worktrees: {worktree_count}",
+                    "no Node hook manager detected",
+                    f"adapter missing: {WORKTREE_ADAPTER_RELATIVE_PATH.as_posix()}",
+                ],
+                suggested_action=WORKTREE_ADAPTER_SEED_COMMAND,
+            )
+        )
     return (
         {
             "hook_manager_detected": hook_manager_detected,
             "hook_manager_evidence": hook_manager_evidence,
+            "worktree_count": worktree_count,
             "adapter_exists": adapter_exists,
             "adapter_path": WORKTREE_ADAPTER_RELATIVE_PATH.as_posix(),
             "seed_command": WORKTREE_ADAPTER_SEED_COMMAND,

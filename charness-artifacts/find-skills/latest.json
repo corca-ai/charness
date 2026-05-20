@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-19T12:08:08Z",
+  "generated_at": "2026-05-20T00:09:06Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -439,6 +439,7 @@
           "skills/public/quality/references/agent-production-runtime.md",
           "skills/shared/references/external-capability-proof-ladder.md",
           "skills/public/quality/references/maintainer-local-enforcement.md",
+          "skills/public/quality/references/proposal-flow.md",
           "skills/public/quality/references/adapter-contract.md",
           "skills/public/quality/references/adapter-gate-review.md",
           "skills/public/quality/references/attention-state-visibility.json",
@@ -459,7 +460,6 @@
           "skills/public/quality/references/mutation-testing.md",
           "skills/public/quality/references/operability-signals.md",
           "skills/public/quality/references/prompt-asset-policy.md",
-          "skills/public/quality/references/proposal-flow.md",
           "skills/public/quality/references/public-spec-layering.md",
           "skills/public/quality/references/quality-lenses.md",
           "skills/public/quality/references/sample-presets.md",
