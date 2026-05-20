@@ -39,6 +39,13 @@ The consumer-owned summary command is the single integration seam:
 charness does not enforce a score-extraction schema. Every reasonable mutation
 runner can wrap its own report behind a thin script that meets both clauses.
 
+Mutation testing is also a testability review trigger. Before tuning sampling,
+timeouts, or runner parallelism, inspect whether the repo has a fast structural
+test layer that can exercise the mutated behavior without repeatedly paying a
+delivery boundary. See `testability-and-selection.md`: observation-based test
+selection can accelerate mutation work, but it should surface hidden broad-test
+dependencies instead of making them look like a healthy design.
+
 ## Runner prerequisites
 
 Tool-specific knobs that enumerate mutation targets, copy files, or choose

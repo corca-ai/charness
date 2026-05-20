@@ -9,6 +9,12 @@
 
 ## Current State
 
+- Current local slice adds language-neutral testability and affected-test
+  selection guidance to the public `quality` skill. The detailed guidance lives
+  in [skills/public/quality/references/testability-and-selection.md](../skills/public/quality/references/testability-and-selection.md)
+  and its plugin mirror; `SKILL.md` only carries the portable anchor. Dogfood
+  acceptance now requires structure-first affected-test selection before
+  caches, observation tools, or broader runtime budgets.
 - Local `main` includes `9175faa` plus the mutation semantics fix slice (not yet pushed at the time this handoff was edited). Prior session closed #180/#181/#182; #183 remains open until the pushed workflow run proves the new semantics.
 - Public release `v0.7.6`. No version bump pending (release-adapter does not require bump per fix bundle).
 - Latest inspected mutation runs:
@@ -18,9 +24,17 @@
 
 ## Next Session
 
-1. Push the local fix commit, then dispatch with `gh workflow run mutation-tests.yml --ref main`.
-2. Watch the next summary. It should show a sample drawn from the covered `tests/control_plane` mutation pool, changed files excluded by the coverage filter in `sample.md`, `Scope gaps (uncovered sampled mutants)` separated from score, `executed` over executable mutants only, and no `PASS-partial` unless each sampled file meets the per-file completion floor.
-3. If the run still times out before the per-file floor with `max_files=5`, lower `mutation_testing.max_files` again or randomize/stratify Cosmic Ray work order before allowing `PASS-partial`.
+1. Finish closeout for the testability guidance slice if not already committed:
+   sync plugin exports, run changed-surface validators, and commit.
+2. Continue the mutation workflow watch from #183 if needed. The next summary
+   should show:
+   covered `tests/control_plane` sample pool; changed files excluded in
+   `sample.md`; `Scope gaps (uncovered sampled mutants)` separated from score;
+   `executed` over executable mutants only; no `PASS-partial` unless each
+   sampled file meets the per-file completion floor.
+3. If the run still times out before the per-file floor with `max_files=5`,
+   lower `mutation_testing.max_files` again or randomize/stratify Cosmic Ray
+   work order before allowing `PASS-partial`.
 
 ## Discuss
 

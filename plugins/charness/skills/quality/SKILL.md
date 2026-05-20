@@ -72,8 +72,7 @@ When writing the quality artifact, edit the resolved `write_artifact_path`, not
    - keep exit-zero attention states visible with `validate_attention_state_visibility.py`; new skipped/advisory states need warning output, artifact-visible status, or an explicit local-noop declaration
    - run executable-spec overlap or cost guards before proposing more spec
      coverage
-   - for standing-test economics, inspect duplicated proof, runner isolation,
-     startup cost, and hot spots before pruning tests or widening budgets
+   - for standing-test economics, testability, or affected-test-selection questions, inspect duplicated proof, runner isolation, startup cost, hot spots, and structural seams before pruning tests, widening budgets, or adding observation tools; use `references/testability-and-selection.md`
    - before reporting runtime trends, prefer
      `$SKILL_DIR/scripts/render_runtime_summary.py`; if structured samples are
      missing, report that as the next gate instead of inventing numbers
@@ -121,6 +120,7 @@ Validators and consumer prompts use these core routing anchors; references carry
 - Docs/spec review uses `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py`, entrypoint-doc ergonomics, smart agent/operator can infer safely, doc-set dogma, ordinary Markdown uses the markdown preview seam, and executable specs use the rendered Specdown report.
 - Public-spec review uses `$SKILL_DIR/scripts/inventory_public_spec_quality.py`; ask what proof is duplicated at the wrong layer before adding more specs, and surface total source-guard rows, top specs, brittle count, and next action category together.
 - Runtime review uses `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py`, `$SKILL_DIR/scripts/inventory_standing_test_economics.py`, standing-gate-verbosity.md, file/process/startup cost, runner isolation/process mode, verbose-on-demand escape hatch, quiet failure output must still name the failing unit, top-N runtime hot spots, serial fallback, runtime_budget_profiles, Pytest Economics, and bounded test-ratio posture.
+- Testability review uses `references/testability-and-selection.md`: prefer structure that makes fast subsets predictable before relying on observation tools, keep real-boundary smokes thin, and classify hidden broad-test compensation as a design smell rather than only a runtime smell.
 - Source hygiene review uses `$SKILL_DIR/scripts/inventory_dual_implementation.py`, free safety oracle checks, `$SKILL_DIR/scripts/inventory_lint_ignores.py`, lint suppressions start to accumulate, lint suppression pressure, growing lint suppressions, retained policy-level ignores, and concrete revisit conditions.
 - Language baselines stay explicit: For Python, default to `ruff check` as the standing lint path, include `C90`, and choose exactly one type checker (`mypy` or `pyright`). For JavaScript/TypeScript, default to `eslint`, use `tsc --noEmit` when TypeScript is present, and turn on a `complexity` rule. This is a routing default, not a veto against good deterministic enforcement; do not over-apply it to standing threshold gates such as coverage floors, runtime budgets, or other already-honest enforced limits.
 - prefer the smaller production surface first when the same confidence gap can be closed by shrinking production branches/interfaces or adding more tests.
@@ -133,7 +133,7 @@ Validators and consumer prompts use these core routing anchors; references carry
 
 ## Output Shape
 
-- `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`, `Standing Test Economics`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `CI/Local Gate Parity`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Advisory`, `Delegated Review`, `Commands Run`, `Recommended Next Gates`
+- `Scope`, `Concept Risks`, `Current Gates`, `Runtime Signals`, `Standing Test Economics`, `Testability and Selection`, `Coverage and Eval Depth`, `Maintainer-Local Enforcement`, `CI/Local Gate Parity`, `Enforcement Triage`, `Healthy`, `Weak`, `Missing`, `Deferred`, `Advisory`, `Delegated Review`, `Commands Run`, `Recommended Next Gates`
 
 ## Guardrails
 
@@ -193,6 +193,7 @@ Validators and consumer prompts use these core routing anchors; references carry
 - `references/skill-ergonomics.md`
 - `references/standing-gate-verbosity.md`
 - `references/startup-probes.md`
+- `references/testability-and-selection.md`
 - `references/validate_spec_pytest_references.py`
 - `../../shared/references/agent-assessment-invariant.md`
 - `../../shared/references/fresh-eye-subagent-review.md`

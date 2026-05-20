@@ -3,133 +3,109 @@ Date: 2026-05-20
 
 ## Scope
 
-Landed two previous `Recommended Next Gates`: content-addressed seed cache
-(`tests/seed_cache.py`) moves `charness-repo-seed`, `charness-git-repo-seed`,
-and `managed-home-seed` out of `tmp_path_factory` and into
-`~/.cache/charness/test-seeds/<source-hash>/` keyed on
-`git rev-parse HEAD` plus tracked diff plus untracked-not-ignored digest;
-xdist workers share one materialization via `filelock`. Agent-browser orphan
-race fixed by replacing `agent-browser --help` with `agent-browser --version`
-in `run_help_check` (the `--help` flag warmed a background daemon as a side
-effect, leaving a PPID=1 orphan that broke the next run's `--doctor-check`).
-`tests/conftest.py` adds a `pytest_sessionfinish` hook that runs
-`agent_browser_runtime_guard.py --cleanup-orphans --execute` on the xdist
-controller as a defensive backstop. `./scripts/run-quality.sh` now finishes
-64/0 twice in succession with no manual cleanup between runs.
+Current slice: extend the public `quality` skill so testability and
+affected-test selection are reviewed as structure-first code quality, not only
+as runner configuration. The portable core in `SKILL.md` now links to
+`references/testability-and-selection.md`; Python/pytest, Jest/Vitest,
+pytest-testmon, and Pants/Bazel examples stay in the reference and plugin
+mirror.
 
 ## Current Gates
 
-- `./scripts/run-quality.sh`: 64 passed / 0 failed across two consecutive
-  runs without manual orphan cleanup; pytest 22-32s on a warm seed cache,
-  `check-seed-fixture-budget` 0.1-3.1s (was 20-40s median).
-- `release_only` pytest cases now excluded by default; `--release` flag re-includes them.
-  `.agents/release-adapter.yaml` `quality_command` is `./scripts/run-quality.sh --release`
-  so release publish still covers them.
-- `skills/public/release/references/adapter-contract.md` documents the
-  `--release` convention so downstream repos with marker-gated regression
-  tests know to override the portable `quality_command` default.
-- `check-references-link-inventory` (24 files, 0 drift);
-  `check-seed-fixture-budget` (now reads via `_pytest_temp_footprint_quick`
-  with single `du -d 4 -B1` call; runtime budget tightened 60s → 5s).
-- `validate-attention-state-visibility` declares 48 files;
-  `validate-skill-ergonomics` enforces all five configured rules;
-  `validate-maintainer-setup` passes.
-- `inventory_skill_ergonomics.py`: `scope_status=scanned`,
-  `finding_status=zero_heuristic_findings`, `prose_review_status=still_required`,
-  `checked_skill_count=22`, `heuristic_finding_count=0`.
-- `inventory_lint_ignores.py`: 38 entries with `scope=inline`,
-  0 `blanket=true`, representative `codes=[E402]`, across 26 files.
-- `inventory_cli_ergonomics.py` emits `scope_classification=advisory_only_no_cli_surface`
-  when no registry/archetype contract is discovered;
-  `find_inline_prompt_bulk.py` emits
-  `scope_classification=advisory_only_no_canonical_prompt_asset_roots`
-  when no explicit `--source-glob` is supplied.
+- Plugin export synced with `python3 scripts/sync_root_plugin_manifests.py --repo-root .`.
+- Dogfood acceptance now requires affected-test selection to be treated as
+  structural testability before caches, observation tools, or broader runtime
+  budgets.
+- Focused doc test guards that detailed tool names stay out of `SKILL.md` and
+  the reference carries the negative deterministic-selection claim.
 
 ## Runtime Signals
 
-- runtime source: `.charness/quality/runtime-signals.json` <!-- reproduction-source --> rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`; profile `local-linux-x86_64-36cpu`.
-- runtime hot spots: `pytest` 22.1s-42.8s latest / 24.4s median / 140.0s budget;
-  `check-coverage` 41.3s / 40.3s / 45.0s leaves ~3.7s headroom;
-  `check-seed-fixture-budget` median dropped 19.9s → 0.1s after depth-bounded `du`;
-  smoothing window trimmed of pre-change stale samples.
-- coverage gate: `check-coverage` passes in standalone runs; intermittent
-  failure under quality gate appears tied to agent-browser orphan race.
-- evaluator depth: `run-evals` passed; Cautilus planner declined on-demand eval.
+- runtime source: `.charness/quality/runtime-signals.json` <!-- reproduction-source --> rendered by `render_runtime_summary.py`.
+- runtime hot spots: prior rendered samples still show pytest and check-coverage as the dominant timed phases; this slice did not change runtime budgets.
+- coverage gate: changed-surface closeout and pre-commit coverage-related validators passed.
+- evaluator depth: `validate_cautilus_proof.py` passed; planner reported `next_action: none` and required dogfood/scenario review rather than live Cautilus execution.
 
 ## Healthy
 
-- Depth-bounded `du -d 4` reduces `check-seed-fixture-budget` from ~20s to ~0.1s.
-- `release_only` marker matches `pyproject.toml`'s intent; `--release` flag is the discoverable opt-in; release adapter contract documents the convention.
-- `## References` link inventory enforced; seed-fixture footprint bounded.
-- Seed fan-out collapsed from 18 workers × 3 seeds = 54 materializations to
-  one materialization per `(HEAD, dirty-digest)` shared across workers via
-  `filelock`; `~/.cache/charness/test-seeds/<hash>/` persists across sessions
-  for zero-copy same-HEAD reruns.
-- Agent-browser `--doctor-check` no longer leaks PPID=1 orphans because the
-  helpcheck switched from `--help` (daemon-warming side effect) to
-  `--version`; `pytest_sessionfinish` is the controller-side defensive
-  backstop.
+- `quality` now asks whether core behavior is reachable through a narrow,
+  predictable candidate subset before recommending affected-test tools.
+- The new reference explicitly rejects claiming deterministic affected-test
+  selection is always possible; it requires broader gates or observation data
+  until a focused subset earns trust.
+- Mutation-testing and standing-gate references now cross-link testability so
+  sampling, timeout, or cache work does not hide broad boundary-heavy tests.
+- Checked-in plugin copies include the same skill core, references, and helper
+  script changes.
+- Agent-browser orphan daemon state that blocked the first pre-push attempt was
+  cleaned with the repo-owned runtime guard.
 
 ## Weak
 
-- Audit of non-release_only seed consumers (`test_validate_packaging_committed_*`,
-  `test_charness_init_exports_managed_surface`, `test_doctor_*`,
-  `test_charness_doctor_reports_managed_surface`,
-  `test_installed_cli_remembers_managed_checkout`, `test_doctor_can_write_host_state_snapshot`,
-  `test_tool_doctor_cli_returns_nonzero_for_blocking_disposition`) concluded
-  these test foundational `charness init/doctor/reset` and packaging-committed
-  surfaces — `subprocess.run` mocks would erase the integration safety net.
-  No migrations applied.
-- The seed cache grows unbounded across HEAD changes (one directory per
-  `(HEAD, dirty-digest)`); no eviction policy yet. Pragmatic answer: clean
-  `~/.cache/charness/test-seeds/` manually or via a future LRU helper.
-- prose review result: trigger-boundary and progressive-disclosure judgment
-  still requires subagent/human critique, not `heuristic_finding_count=0`.
+- This is a public-skill guidance and dogfood slice, not yet a structural
+  refactor of this repo's own mutation runner. Cosmic Ray still uses the
+  declared test command rather than per-mutant affected-test selection.
+- The quality artifact is intentionally concise; detailed prior seed-cache and
+  orphan-cleanup history remains in git history and earlier quality artifacts.
 
 ## Missing
 
-- No maintained Cautilus scenario-registry edit (carried).
-- No CI lane; quality/security proof stays local-runner enforced.
+- No maintained Cautilus scenario-registry edit; `quality` is
+  HITL-recommended and this slice records deterministic dogfood plus delegated
+  critique instead.
+- No release/version bump yet, so installed users receive this after the next
+  plugin update/release path consumes the pushed repo state.
 
 ## Deferred
 
-- Downstream-repo dogfood on the stronger generated skill-ergonomics default
-  before changing the rule set again (carried).
-- LRU eviction for `~/.cache/charness/test-seeds/<hash>/` (keep N most-recent
-  hashes by mtime) once accumulated cache size becomes operationally
-  noticeable; out of scope for the cache landing because the cache is easy
-  to clean manually and same-HEAD reuse already pays back the seed cost.
+- Repo-local structural testability refactor for mutation targets: split or
+  expose faster lower-layer behavior tests before adding another selector.
+- Evaluate observation-based selectors such as pytest-testmon only after the
+  deterministic candidate subset structure is visible enough to compare misses
+  against the broader gate.
 
 ## Advisory
 
-- Fresh-eye review evidence: bounded general-purpose subagent reviewed `inventory_standing_test_economics.py` on prior pass.
-- `validate_usage_episodes.py` evidence: `no_adapter`/`disabled` remain exit-zero with structured warning payloads.
-- `check_seed_fixture_budget.py` evidence: `advisory_only_no_pytest_temp_yet` when no pytest tmp root exists.
+- command: `inventory_skill_ergonomics.py --skill-path skills/public/quality`
+  reported `zero_heuristic_findings` and `prose_review_status=still_required`.
+- artifact: `docs/public-skill-dogfood.json` now records the consumer-facing
+  acceptance requirement for structure-first affected-test selection.
+- evidence: two delegated reviewers inspected design and implementation; the
+  second reviewer found dogfood and fragile-test gaps that were fixed.
 
 ## Delegated Review
 
-- status: executed; reviewer: bounded general-purpose subagent on this turn
-  reviewed the seed-cache helper, refactored fixtures, `pytest_sessionfinish`
-  hook, and the `run_help_check` `--help`→`--version` swap. Verdict: no
-  blockers; deferred follow-ups recorded in `Weak`/`Deferred`. Critique
-  artifact: `2026-05-20-seed-cache-orphan-teardown-critique.md`.
-- slow-gate lenses reviewed: fixture-economics (seed fan-out collapsed),
-  parallel-critical-path (xdist workers now share one materialization),
-  duplicated-proof (release-time per-test commits already removed; no new
-  duplicated coverage introduced this turn).
-- this turn's mutation: `tests/seed_cache.py`, fixture refactor,
-  `pytest_sessionfinish` cleanup hook, `run_help_check` daemon-leak fix.
+- status: executed. `Dirac` critiqued the design and required language-neutral
+  core wording, cost/boundary markers instead of manual source maps, and
+  observation tools with broad-suite backstops.
+- status: executed. `Archimedes` reviewed the implementation, found that
+  dogfood did not yet require the new consumer behavior and that a doc test
+  pinned a fragile substring; both were fixed.
+- slow-gate lenses reviewed: fixture-economics, parallel-critical-path, and
+  duplicated-proof remain covered by the standing-test economics path; this
+  slice adds testability selection as an adjacent structural lens.
 
 ## Commands Run
 
-- `./scripts/run-quality.sh` (twice consecutively)
-- `python3 scripts/run_slice_closeout.py --repo-root .`
-- `python3 scripts/check_changed_surfaces.py --repo-root .`
+- `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
+- focused pytest for the quality doc contract and public-skill dogfood case
+- `python3 scripts/validate_public_skill_dogfood.py --repo-root .`
+- `python3 scripts/validate_skills.py --repo-root .`
+- `python3 scripts/check_skill_contracts.py --repo-root .`
+- `python3 scripts/validate_current_pointer_freshness.py --repo-root .`
+- `python3 scripts/run_slice_closeout.py --repo-root . --ack-cautilus-skill-review`
+- `python3 scripts/agent_browser_runtime_guard.py --repo-root . --cleanup-orphans --execute`
+- `git push origin main` pre-push quality gate initially found artifact length
+  and agent-browser orphan issues; both were repaired before retry.
 
 ## Recommended Next Gates
 
-- passive `AUTO_CANDIDATE` because downstream skill-ergonomics dogfood has not yet been collected: queue downstream issues before changing the default rule set again.
-- passive `AUTO_CANDIDATE` because `~/.cache/charness/test-seeds/<hash>/` grows unboundedly across HEAD changes: add an LRU eviction helper (keep N most-recent hashes by mtime) when accumulated cache size becomes operationally noticeable.
+- active `AUTO_EXISTING` because pre-push previously caught local machine-state
+  drift: retry `git push origin main` after the artifact-length and
+  agent-browser-orphan repairs.
+- passive `AUTO_CANDIDATE` until the repo-local mutation design resumes:
+  refactor mutation targets toward predictable lower-layer behavior tests before
+  adding observation-based affected-test selection.
 
 ## History
 

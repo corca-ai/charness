@@ -471,6 +471,26 @@ def test_quality_skill_carries_code_reduction_and_ratio_patterns() -> None:
     assert "strong positive pattern" in enforcement
 
 
+def test_quality_skill_keeps_testability_tool_detail_in_reference() -> None:
+    skill_text = (ROOT / "skills" / "public" / "quality" / "SKILL.md").read_text(encoding="utf-8")
+    reference_text = (
+        ROOT / "skills" / "public" / "quality" / "references" / "testability-and-selection.md"
+    ).read_text(encoding="utf-8")
+    dogfood = (ROOT / "docs" / "public-skill-dogfood.json").read_text(encoding="utf-8")
+
+    assert "references/testability-and-selection.md" in skill_text
+    assert "Testability and Selection" in skill_text
+    assert "Do not claim that deterministic affected-test selection is always possible" in reference_text
+    assert "cheap deterministic\ncandidate subset" in reference_text
+    assert "pytest-testmon" in reference_text
+    assert "Jest or Vitest" in reference_text
+    assert "Pants/Bazel-style" in reference_text
+    assert "manually maintained source-to-test dependency map" in reference_text
+    assert "The quality core now treats testability and affected-test selection" in dogfood
+    for tool_name in ("pytest-testmon", "Jest", "Vitest", "Pants", "Bazel"):
+        assert tool_name not in skill_text
+
+
 def test_check_duplicates_rejects_near_duplicate_docs(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     docs_dir = repo / "docs"

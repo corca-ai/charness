@@ -58,6 +58,13 @@ Use a behavior-confidence lens:
 - gate-last posture: when a confidence gap can be closed either by structural
   simplification or a new heuristic, prefer the simpler design first unless a
   standing invariant still needs enforcement afterward
+- testability as structure: a healthy repo lets maintainers reach core behavior
+  through small, deterministic, in-process or target-local tests while keeping
+  real delivery-boundary smokes thin; see
+  [`testability-and-selection.md`](./testability-and-selection.md)
+- affected-test selection honesty: observation-based selectors are useful
+  accelerators, but a repo is still weak when they are the only way to discover
+  which tests protect a routine behavior change
 
 For production LLM or agent runtimes, apply
 [`agent-production-runtime.md`](./agent-production-runtime.md). Keep the lens

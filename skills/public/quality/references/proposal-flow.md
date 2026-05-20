@@ -67,6 +67,9 @@ Examples:
   seam and the old path only adds runtime cost
 - split one oversized test module into seam-specific files because maintainers
   and agents can no longer navigate or refactor it cheaply as one surface
+- split behavior proof below a CLI, subprocess, browser, or other delivery
+  boundary before adding an affected-test selector that would only hide the
+  broad seam; see `testability-and-selection.md`
 - add dependency review in CI because supply-chain changes are currently
   invisible in pull requests
 - replace repeated documentation guidance with `markdownlint` or a repo-owned

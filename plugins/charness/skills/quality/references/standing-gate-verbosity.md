@@ -87,6 +87,13 @@ but whether `test files * runner isolation * loader startup` dominates the
 standing path. Preserve a small real-binary/protocol smoke after moving repeated
 contract proof in-process.
 
+When the apparent fix is an affected-test selector, first inspect
+[`testability-and-selection.md`](./testability-and-selection.md). A selector is
+healthier when the repo already has narrow behavior seams, cost/boundary
+markers, and predictable target or naming conventions; it is weaker when it is
+masking a broad CLI, subprocess, browser, or end-to-end surface that owns most
+ordinary behavior proof.
+
 For pytest-shaped repos, that usually means checking `pytest-xdist` readiness,
 serial fallback output, and `pytest --durations` on the standing target set.
 Full integration or coverage traces should move to on-demand or a separate

@@ -67,12 +67,20 @@ the quality adapter so the default inventory does not return an empty scan.
   `$SKILL_DIR/scripts/check_runtime_budget.py`
 - source lines:
   `$SKILL_DIR/scripts/inventory_sloc.py`
+- testability and affected-test selection:
+  `references/testability-and-selection.md`
 
 Quiet failure output must still name the failing unit/spec/case and show a
 short actual/error snippet. Slow-gate review should separate duplicated proof,
 fixture economics, parallel critical path, runner isolation, transpiler or
 loader startup cost, nested CLI fanout, and the small real-binary/protocol
 smokes that should remain.
+
+When slow tests or mutation tests expose poor affected-test selection, ask
+whether the code shape makes a fast subset predictable before recommending a
+coverage-observing selector or another cache. Observation tools can accelerate
+feedback, but they should not become the only map from a small behavior change
+to the tests that prove it.
 
 When a hot spot becomes the standing single dominator, define adapter-owned
 `runtime_budgets` or `runtime_budget_profiles`; budgets should fail on
