@@ -84,6 +84,31 @@ def test_partial_run_above_floor_but_below_score_threshold() -> None:
     assert metrics["passed"] is False
 
 
+def test_partial_run_at_exact_completion_floor() -> None:
+    """Boundary: executed_ratio == 0.75 must satisfy the floor (`>=`)."""
+    # 75 executed of 100; reachable 60 killed + 15 survived = 75; score 80%.
+    metrics = CMS.mutation_metrics(
+        _stats(total=100, killed=60, survived=15, pending=25),
+        score_break=80,
+        exec_timed_out=True,
+    )
+    assert metrics["executed_ratio"] == 0.75
+    assert metrics["status"] == "PASS-partial"
+    assert metrics["passed"] is True
+
+
+def test_partial_run_one_mutant_below_floor() -> None:
+    """74/100 executed must FAIL-incomplete even with a perfect reachable score."""
+    metrics = CMS.mutation_metrics(
+        _stats(total=100, killed=74, survived=0, pending=26),
+        score_break=80,
+        exec_timed_out=True,
+    )
+    assert metrics["executed_ratio"] < CMS.PARTIAL_RUN_COMPLETION_FLOOR
+    assert metrics["status"] == "FAIL-incomplete"
+    assert metrics["passed"] is False
+
+
 def test_timeout_marker_round_trip(tmp_path: Path) -> None:
     marker = tmp_path / "exec-timeout.json"
     marker.write_text('{"exec_timed_out": true, "exec_timeout_seconds": 9000}\n', encoding="utf-8")

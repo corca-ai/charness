@@ -139,6 +139,8 @@ def test_setup_inspect_skips_worktree_adapter_recommendation_when_no_hook_manage
     assert worktree_state["hook_manager_detected"] is None
     assert worktree_state["hook_manager_evidence"] == []
     assert worktree_state["worktree_count"] == 0
+    # Non-git tmp dir: probe must report `not_a_git_repo`, not silently 0.
+    assert worktree_state["worktree_probe_status"] == "not_a_git_repo"
 
     rec_ids = [item["id"] for item in payload["recommendations"]]
     assert "worktree_adapter_missing_for_hook_manager" not in rec_ids
@@ -156,6 +158,7 @@ def test_setup_inspect_recommends_seed_worktree_adapter_for_active_worktrees_wit
     worktree_state = payload["agent_docs"]["normalization"]["worktree_adapter"]
     assert worktree_state["hook_manager_detected"] is None
     assert worktree_state["worktree_count"] >= 2
+    assert worktree_state["worktree_probe_status"] == "ok"
     assert worktree_state["adapter_exists"] is False
 
     finding_types = {finding["type"] for finding in payload["agent_docs"]["normalization"]["findings"]}

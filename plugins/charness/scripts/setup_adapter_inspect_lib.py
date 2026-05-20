@@ -38,8 +38,14 @@ def _detect_hook_manager(repo_root: Path) -> tuple[str | None, list[str]]:
     return None, []
 
 
-def _count_active_worktrees(repo_root: Path) -> int:
-    """Return the number of git worktrees reported for `repo_root`, or 0 on any failure."""
+def _probe_active_worktrees(repo_root: Path) -> tuple[int, str]:
+    """Return `(worktree_count, probe_status)`.
+
+    `probe_status` is one of `ok`, `not_a_git_repo`, `git_missing`, or
+    `timeout`. Exposing the status separately keeps the count honest: a
+    timeout or missing git binary previously coerced to `0` and silently
+    suppressed the missing-adapter recommendation on slow or non-git layouts.
+    """
     try:
         result = subprocess.run(
             ["git", "worktree", "list", "--porcelain"],
@@ -49,11 +55,16 @@ def _count_active_worktrees(repo_root: Path) -> int:
             check=False,
             timeout=10,
         )
-    except (OSError, subprocess.TimeoutExpired):
-        return 0
+    except FileNotFoundError:
+        return 0, "git_missing"
+    except subprocess.TimeoutExpired:
+        return 0, "timeout"
+    except OSError:
+        return 0, "git_missing"
     if result.returncode != 0:
-        return 0
-    return sum(1 for line in result.stdout.splitlines() if line.startswith("worktree "))
+        return 0, "not_a_git_repo"
+    count = sum(1 for line in result.stdout.splitlines() if line.startswith("worktree "))
+    return count, "ok"
 
 
 def detect_worktree_adapter_normalization(
@@ -74,7 +85,7 @@ def detect_worktree_adapter_normalization(
     """
     adapter_exists = (repo_root / WORKTREE_ADAPTER_RELATIVE_PATH).is_file()
     hook_manager_detected, hook_manager_evidence = _detect_hook_manager(repo_root)
-    worktree_count = _count_active_worktrees(repo_root)
+    worktree_count, worktree_probe_status = _probe_active_worktrees(repo_root)
     has_active_worktrees = worktree_count > ACTIVE_WORKTREE_THRESHOLD
     findings: list[dict[str, str]] = []
     recommendations: list[dict[str, object]] = []
@@ -141,6 +152,7 @@ def detect_worktree_adapter_normalization(
             "hook_manager_detected": hook_manager_detected,
             "hook_manager_evidence": hook_manager_evidence,
             "worktree_count": worktree_count,
+            "worktree_probe_status": worktree_probe_status,
             "adapter_exists": adapter_exists,
             "adapter_path": WORKTREE_ADAPTER_RELATIVE_PATH.as_posix(),
             "seed_command": WORKTREE_ADAPTER_SEED_COMMAND,

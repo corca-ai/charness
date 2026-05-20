@@ -45,6 +45,9 @@ def test_repo_root_dot_invocation_writes_file_and_exits_zero(tmp_path: Path) -> 
     result = _run(repo, "--repo-root", ".")
     assert result.returncode == 0, result.stderr
     assert "wrote .agents/worktree-adapter.yaml" in result.stdout
+    # The printed path must remain relative — a regression to printing the
+    # resolved absolute path would still trip operators who eyeball it.
+    assert str(repo) not in result.stdout
     assert (repo / ".agents" / "worktree-adapter.yaml").is_file()
 
 
@@ -119,7 +122,7 @@ def test_detection_npm_repo_owned_hooks(tmp_path: Path) -> None:
     assert "- npm\n        - run\n        - hooks:install" in rendered
 
 
-def test_detection_yarn_husky(tmp_path: Path) -> None:
+def test_detection_yarn_classic_husky(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "yarn.lock").touch()
@@ -129,9 +132,58 @@ def test_detection_yarn_husky(tmp_path: Path) -> None:
     rendered = LIB.render_template(detection)
 
     assert detection.package_manager == "yarn"
+    assert detection.package_manager_variant == "classic"
     assert detection.hook_system == "husky"
     assert detection.hook_install_argv == ("yarn", "exec", "husky", "install")
     assert "- yarn\n        - install\n        - --frozen-lockfile" in rendered
+
+
+def test_detection_yarn_berry_uses_immutable_flag(tmp_path: Path) -> None:
+    """Yarn 2+ rejects --frozen-lockfile and expects --immutable."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "yarn.lock").touch()
+    (repo / ".yarnrc.yml").write_text("nodeLinker: node-modules\n", encoding="utf-8")
+
+    detection = LIB.detect(repo)
+    rendered = LIB.render_template(detection)
+
+    assert detection.package_manager == "yarn"
+    assert detection.package_manager_variant == "berry"
+    assert "- yarn\n        - install\n        - --immutable" in rendered
+    assert "--frozen-lockfile" not in rendered
+
+
+def test_detection_yarn_berry_via_package_manager_field(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "yarn.lock").touch()
+    (repo / "package.json").write_text(
+        json.dumps({"name": "demo", "packageManager": "yarn@4.1.0"}),
+        encoding="utf-8",
+    )
+
+    detection = LIB.detect(repo)
+    rendered = LIB.render_template(detection)
+
+    assert detection.package_manager_variant == "berry"
+    assert "--immutable" in rendered
+
+
+def test_detection_yarn_classic_via_package_manager_field(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "yarn.lock").touch()
+    (repo / "package.json").write_text(
+        json.dumps({"name": "demo", "packageManager": "yarn@1.22.19"}),
+        encoding="utf-8",
+    )
+
+    detection = LIB.detect(repo)
+    rendered = LIB.render_template(detection)
+
+    assert detection.package_manager_variant == "classic"
+    assert "--frozen-lockfile" in rendered
 
 
 def test_detection_simple_git_hooks(tmp_path: Path) -> None:

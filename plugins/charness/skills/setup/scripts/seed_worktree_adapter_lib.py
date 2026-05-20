@@ -23,10 +23,32 @@ PACKAGE_MANAGER_PRIORITY: tuple[tuple[str, str], ...] = (
 class WorktreeAdapterDetection:
     package_manager: str | None
     package_manager_evidence: str | None
+    package_manager_variant: str | None
     hook_system: str | None
     hook_system_evidence: str | None
     hook_install_argv: tuple[str, ...] | None
     has_package_json: bool
+
+
+def _detect_yarn_variant(repo_root: Path, package: dict | None) -> str:
+    """Return "berry" for Yarn 2.x-4.x setups, else "classic".
+
+    Berry-shaped signals (any one is enough):
+      * `.yarnrc.yml` exists (Berry's config; classic Yarn 1 uses `.yarnrc`).
+      * `package.json` declares `packageManager: "yarn@2..."` or higher.
+      * `.yarn/` directory exists (Berry caches releases here).
+    """
+    if (repo_root / ".yarnrc.yml").is_file():
+        return "berry"
+    if (repo_root / ".yarn").is_dir():
+        return "berry"
+    if package is not None:
+        pm_field = package.get("packageManager")
+        if isinstance(pm_field, str) and pm_field.startswith("yarn@"):
+            version = pm_field.removeprefix("yarn@")
+            if version and version[0].isdigit() and not version.startswith("1."):
+                return "berry"
+    return "classic"
 
 
 def detect_package_manager(repo_root: Path) -> tuple[str | None, str | None]:
@@ -127,6 +149,10 @@ def detect_hook_system(
 
 def detect(repo_root: Path) -> WorktreeAdapterDetection:
     package_manager, pm_evidence = detect_package_manager(repo_root)
+    package = _read_package_json(repo_root)
+    variant: str | None = None
+    if package_manager == "yarn":
+        variant = _detect_yarn_variant(repo_root, package)
     hook_system, hook_evidence, install_argv = detect_hook_system(repo_root, package_manager)
     resolved_argv: tuple[str, ...] | None = None
     if install_argv is not None:
@@ -135,6 +161,7 @@ def detect(repo_root: Path) -> WorktreeAdapterDetection:
     return WorktreeAdapterDetection(
         package_manager=package_manager,
         package_manager_evidence=pm_evidence,
+        package_manager_variant=variant,
         hook_system=hook_system,
         hook_system_evidence=hook_evidence,
         hook_install_argv=resolved_argv,
@@ -147,7 +174,10 @@ def _install_deps_argv(detection: WorktreeAdapterDetection) -> tuple[str, ...] |
     if pm == "pnpm":
         return ("pnpm", "install", "--frozen-lockfile")
     if pm == "yarn":
-        return ("yarn", "install", "--frozen-lockfile")
+        # Yarn 2+ (Berry) renamed --frozen-lockfile to --immutable and rejects
+        # the legacy flag outright; Yarn 1 (classic) still uses the old flag.
+        flag = "--immutable" if detection.package_manager_variant == "berry" else "--frozen-lockfile"
+        return ("yarn", "install", flag)
     if pm == "bun":
         return ("bun", "install", "--frozen-lockfile")
     if pm == "npm":
