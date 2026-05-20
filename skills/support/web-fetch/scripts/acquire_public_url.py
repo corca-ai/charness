@@ -32,14 +32,6 @@ from classify_fetch_response import classify, extract_persistable_text  # noqa: 
 from route_public_fetch import route_for_url  # noqa: E402
 
 
-def _timer() -> float:
-    return time.monotonic()
-
-
-def _elapsed(start: float) -> float:
-    return round(time.monotonic() - start, 3)
-
-
 def _read_direct(url: str, *, timeout: int, direct_response_file: Path | None) -> tuple[str, str | None]:
     if direct_response_file is not None:
         return direct_response_file.read_text(encoding="utf-8"), None
@@ -73,6 +65,14 @@ def _run_command(command: Sequence[str], *, timeout: int) -> tuple[str, str | No
         stderr = completed.stderr.strip() or completed.stdout.strip()
         return completed.stdout, f"exit={completed.returncode}:{stderr[:200]}"
     return completed.stdout, None
+
+
+def _assert_browser_runtime_clean(repo_root: Path, *, timeout: int) -> str | None:
+    guard = repo_root / "scripts" / "agent_browser_runtime_guard.py"
+    if not guard.is_file():
+        return None
+    command = [sys.executable, str(guard), "--repo-root", str(repo_root), "--assert-no-orphans"]
+    return _run_command(command, timeout=timeout)[1]
 
 
 def _positive_int(raw: str) -> int:
@@ -238,19 +238,17 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
     parsed = urlparse(args.url)
     if parsed.scheme not in {"http", "https"}:
         return _invalid_scheme_payload(args, parsed)
-
     route = route_for_url(args.url, repo_root=args.repo_root)
     attempts: list[AcquisitionAttempt] = []
     proof_required = bool(args.expect_text or args.expect_regex or args.expect_json_field)
-
-    started = _timer()
+    started = time.monotonic()
     text, error = _read_direct(args.url, timeout=args.timeout, direct_response_file=args.direct_response_file)
     attempts.append(
         _attempt_from_text(
             stage_id="direct-public-fetch",
             tool_id=None,
             text=text,
-            elapsed_s=_elapsed(started),
+            elapsed_s=round(time.monotonic() - started, 3),
             error=error,
             intent=args.intent,
             expect_text=args.expect_text,
@@ -267,14 +265,14 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
         return _payload_for(args, route, attempts, "success")
     try_defuddle, defuddle_skip_reason = _should_try_defuddle(str(route["route_id"]), attempts)
     if try_defuddle:
-        started = _timer()
+        started = time.monotonic()
         text, error = _run_command(["defuddle", "parse", args.url, "--markdown"], timeout=args.timeout)
         attempts.append(
             _attempt_from_text(
                 stage_id="defuddle-reader-extraction",
                 tool_id="defuddle",
                 text=text,
-                elapsed_s=_elapsed(started),
+                elapsed_s=round(time.monotonic() - started, 3),
                 error=error,
                 intent=args.intent,
                 expect_text=args.expect_text,
@@ -287,17 +285,16 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
             return _payload_for(args, route, attempts, "success")
     elif defuddle_skip_reason == "missing-tool" and has_stage(route, "defuddle-reader-extraction"):
         attempts.append(skip_attempt("defuddle-reader-extraction", "defuddle", reason=defuddle_skip_reason))
-
     try_browser, browser_skip_reason = _should_try_browser(str(route["route_id"]), attempts, browser_mode=args.browser_mode)
     if try_browser:
-        started = _timer()
+        started = time.monotonic()
         text, error, details = _run_browser_text(args.url, timeout=args.timeout)
         attempts.append(
             _attempt_from_text(
                 stage_id="agent-browser-render-recon",
                 tool_id="agent-browser",
                 text=text,
-                elapsed_s=_elapsed(started),
+                elapsed_s=round(time.monotonic() - started, 3),
                 error=error,
                 intent=args.intent,
                 expect_text=args.expect_text,
@@ -307,7 +304,7 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
             )
         )
         if args.intent == "collect":
-            started = _timer()
+            started = time.monotonic()
             network_text, network_error, network_details = _run_browser_network(args.url, timeout=args.timeout)
             attempts.append(
                 AcquisitionAttempt(
@@ -315,13 +312,15 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
                     tool_id="agent-browser",
                     status="diagnostic" if network_error is None else "error",
                     confidence="weak" if network_text.strip() else "none",
-                    elapsed_s=_elapsed(started),
+                    elapsed_s=round(time.monotonic() - started, 3),
                     error=network_error,
                     output_chars=len(network_text),
                     details={**network_details, "diagnostic": True},
                 )
             )
         _stdout, cleanup_error = _run_command(["agent-browser", "--session", _browser_session_name(args.url), "close"], timeout=args.timeout)
+        if cleanup_error is None:
+            cleanup_error = _assert_browser_runtime_clean(args.repo_root, timeout=args.timeout)
         if cleanup_error:
             attempts[-1].status, attempts[-1].confidence, attempts[-1].error = "error", "none", cleanup_error
             attempts[-1].details["cleanup"] = "failed"
@@ -332,7 +331,6 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
         attempts.append(skip_attempt("agent-browser-render-recon", "agent-browser", reason=browser_skip_reason))
         if args.intent == "collect" and has_stage(route, "agent-browser-network-recon"):
             attempts.append(skip_attempt("agent-browser-network-recon", "agent-browser", reason=browser_skip_reason))
-
     return _payload_for(args, route, attempts, disposition_for_attempts(attempts))
 
 

@@ -25,6 +25,8 @@ rendered report; a raw Markdown terminal preview is only a secondary fallback.
 - backend-error posture: an installed backend failed or produced blank output
   for non-empty Markdown; persist an explicit backend-error artifact, but do
   not treat it as rendered readability proof
+- backend timeout: `CHARNESS_MARKDOWN_PREVIEW_TIMEOUT_SECONDS` may override the
+  default 20s wall-clock bound for `glow` probes and renders
 - supported backend values are explicit, not open-ended; unsupported backend
   config should fail fast instead of pretending the problem is just missing PATH
 

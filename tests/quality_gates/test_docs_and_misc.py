@@ -707,3 +707,28 @@ def test_validate_integrations_rejects_unsafe_agent_browser_check_commands() -> 
         assert "timeout 5 agent-browser open https://example.com" in str(exc)
     else:  # pragma: no cover - assertion clarity
         raise AssertionError("expected unsafe agent-browser check command rejection")
+
+
+def test_validate_integrations_rejects_unsafe_support_readiness_commands() -> None:
+    from scripts.validate_integrations import (
+        ValidationError,
+        validate_agent_browser_readiness_commands,
+    )
+
+    capability = {
+        "capability_id": "demo",
+        "readiness_checks": [
+            {
+                "check_id": "demo-browser-ready",
+                "summary": "Demo browser runtime is ready.",
+                "commands": ["bash -lc 'agent-browser open https://example.com'"],
+            }
+        ],
+    }
+    try:
+        validate_agent_browser_readiness_commands(capability, ROOT / "skills" / "support" / "demo" / "capability.json")
+    except ValidationError as exc:
+        assert "unsafe agent-browser probe" in str(exc)
+        assert "readiness_checks[0].commands[0]" in str(exc)
+    else:  # pragma: no cover - assertion clarity
+        raise AssertionError("expected unsafe support readiness command rejection")

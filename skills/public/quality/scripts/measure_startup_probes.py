@@ -137,6 +137,7 @@ def _measure_probe(repo_root: Path, probe: dict[str, Any], *, record_runtime_sig
         "status": status,
     }
     if timeout_error:
+        payload["returncode"] = 124
         payload["stdout"] = timeout_error.stdout or ""
         payload["stderr"] = timeout_error.stderr or ""
     elif last_result and last_result.returncode != 0:

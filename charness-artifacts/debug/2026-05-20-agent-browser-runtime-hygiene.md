@@ -40,24 +40,16 @@ should leave an actionable cleanup command.
   wrapper-mediated probes could bypass the direct `agent-browser` blocker,
   web-fetch cleanup failure could still return success, and executable probes
   had no wall-clock timeout.
+- A second fresh-eye pass found that web-fetch needed post-close runtime proof,
+  support readiness and slice-closeout commands needed the same unsafe
+  `agent-browser` scanner, and several release/issue/advisory helpers executed
+  external tools without subprocess timeouts.
 
 ## Reproduction
 
-- Cleanup baseline:
-  `python3 scripts/agent_browser_runtime_guard.py --repo-root .
-  --cleanup-orphans --execute`.
-- Probe current binary and health checks, then inspect runtime one second later:
-  `agent-browser --version`, `agent_browser_runtime_guard.py --doctor-check`,
-  `scripts/doctor.py --skip-release-probe`, and
-  `check_cli_skill_surface.py --run-probes` all left
-  `orphan_daemon_count=0`.
-- The original post-push orphan tree could not be reproduced from a single
-  current probe, so the durable fix targets the missing end-of-gate detection
-  gap rather than a single blamed command.
-- Full `run-quality --read-only` then proved the added final gate was useful:
-  it failed while that stale launcher recreated a daemon. After stopping the
-  launcher and cleaning the orphan tree, `check_cli_skill_surface.py` and
-  `check_coverage.py` passed standalone again.
+- Original orphan: post-push `agent_browser_runtime_guard.py --doctor-check`
+  found a PPID=1 daemon; later full `run-quality --read-only` caught a stale
+  shell loop recreating one before final hygiene.
 
 ## Candidate Causes
 
@@ -122,6 +114,8 @@ instead of stopping the gate before later probes.
 - Integration healthchecks and wrapper-mediated commands were not covered by
   the same unsafe-probe policy.
 - Operator-configured executable probes had no timeout boundary.
+- Release/issue helper commands and advisory tools had the same unbounded
+  external subprocess shape as the original probe timeout gap.
 - Doctor locks stored raw command output, making stale runtime observations
   look like current evidence during later investigation.
 - Cleanup did not wait and re-inspect for respawned orphan daemon trees.
@@ -164,11 +158,15 @@ instead of stopping the gate before later probes.
 - `agent_browser_runtime_guard.py --cleanup-orphans --execute` now fails if
   cleanup cannot establish a clean baseline after a grace period.
 - Direct and wrapper-mediated risky `agent-browser` probes are blocked in CLI
-  plus skill surface and integration validation.
+  plus skill surface, integration validation, support readiness, and slice
+  closeout surface commands.
 - Web-fetch browser fallback closes its named session after render/network
-  recon and degrades on close failure.
+  recon and degrades on close failure or post-close dirty runtime proof.
 - Startup probes, CLI side-effect probes, and Cautilus forwarding have
   wall-clock timeouts.
+- Release helpers, issue backend helpers, markdown-preview `glow`, online
+  supply-chain audit, SLOC inventory, dead-code advisory, and slice closeout
+  commands have wall-clock timeouts.
 - Pytest session cleanup retries runtime cleanup until clean or timeout.
 - Doctor lock persistence truncates volatile command output.
 

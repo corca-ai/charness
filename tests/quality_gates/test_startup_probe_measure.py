@@ -113,3 +113,13 @@ def test_measure_startup_probes_times_out_hanging_command(tmp_path: Path) -> Non
     assert len(payload["failures"]) == 1
     assert payload["failures"][0]["status"] == "command-timeout"
     assert payload["failures"][0]["timeout_seconds"] == 1
+    assert payload["failures"][0]["returncode"] == 124
+
+
+def test_measure_startup_probes_human_output_reports_timeout(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path, probe_sleep_seconds=2.0, timeout_seconds=1)
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--class", "standing")
+
+    assert result.returncode == 1
+    assert "COMMAND-TIMEOUT" in result.stdout
+    assert "rc 124" in result.stdout

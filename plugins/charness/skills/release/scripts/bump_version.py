@@ -32,6 +32,7 @@ _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resol
 load_adapter = _resolve_adapter_module.load_adapter
 
 VERSION_RE = re.compile(r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(?:-[0-9A-Za-z.-]+)?$")
+SYNC_TIMEOUT_SECONDS = 300
 
 
 def parse_version(version: str) -> tuple[int, int, int]:
@@ -63,7 +64,23 @@ def write_packaging_version(manifest_path: Path, new_version: str) -> str:
 
 
 def run_sync(repo_root: Path, command: str) -> None:
-    result = subprocess.run(command, cwd=repo_root, shell=True, check=False, capture_output=True, text=True)
+    try:
+        result = subprocess.run(
+            command,
+            cwd=repo_root,
+            shell=True,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=SYNC_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        result = subprocess.CompletedProcess(
+            command,
+            124,
+            str(exc.stdout or ""),
+            f"timed out after {SYNC_TIMEOUT_SECONDS}s",
+        )
     if result.returncode != 0:
         raise SystemExit(
             f"sync_command failed with {result.returncode}\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"

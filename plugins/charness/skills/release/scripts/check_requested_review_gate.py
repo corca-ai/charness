@@ -26,6 +26,7 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
+REQUESTED_REVIEW_TIMEOUT_SECONDS = 300
 
 
 def _contains_any(text: str, patterns: list[str]) -> list[str]:
@@ -36,15 +37,24 @@ def _contains_any(text: str, patterns: list[str]) -> list[str]:
 def _run_review_commands(repo_root: Path, commands: list[str]) -> list[dict[str, object]]:
     results: list[dict[str, object]] = []
     for command in commands:
-        result = subprocess.run(
-            command,
-            cwd=repo_root,
-            shell=True,
-            executable="/bin/bash",
-            check=False,
-            capture_output=True,
-            text=True,
-        )
+        try:
+            result = subprocess.run(
+                command,
+                cwd=repo_root,
+                shell=True,
+                executable="/bin/bash",
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=REQUESTED_REVIEW_TIMEOUT_SECONDS,
+            )
+        except subprocess.TimeoutExpired as exc:
+            result = subprocess.CompletedProcess(
+                command,
+                124,
+                str(exc.stdout or ""),
+                f"timed out after {REQUESTED_REVIEW_TIMEOUT_SECONDS}s",
+            )
         results.append(
             {
                 "command": command,

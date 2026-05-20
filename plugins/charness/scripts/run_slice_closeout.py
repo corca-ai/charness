@@ -25,6 +25,9 @@ _scripts_plan_cautilus_proof_module = import_repo_module(__file__, "scripts.plan
 plan_cautilus_proof = _scripts_plan_cautilus_proof_module.plan_cautilus_proof
 _scripts_risk_interrupt_lib_module = import_repo_module(__file__, "scripts.risk_interrupt_lib")
 plan_risk_interrupt = _scripts_risk_interrupt_lib_module.plan_risk_interrupt
+_agent_browser_probe_policy = import_repo_module(__file__, "scripts.agent_browser_probe_policy")
+unsafe_agent_browser_probe_reason = _agent_browser_probe_policy.unsafe_agent_browser_probe_reason
+COMMAND_TIMEOUT_SECONDS = 1800
 
 
 def run_command(repo_root: Path, command: str, phase: str) -> dict[str, object]:
@@ -42,13 +45,22 @@ def run_command(repo_root: Path, command: str, phase: str) -> dict[str, object]:
         inherited_path = os.environ.get("PATH", "")
         path = f"{wrapper_path}:{inherited_path}" if inherited_path else str(wrapper_path)
         wrapped_command = f"export PATH={shlex.quote(path)}; {command}"
-        result = subprocess.run(
-            ["/bin/bash", "-lc", wrapped_command],
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
+        try:
+            result = subprocess.run(
+                ["/bin/bash", "-lc", wrapped_command],
+                cwd=repo_root,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=COMMAND_TIMEOUT_SECONDS,
+            )
+        except subprocess.TimeoutExpired as exc:
+            result = subprocess.CompletedProcess(
+                ["/bin/bash", "-lc", wrapped_command],
+                124,
+                str(exc.stdout or ""),
+                f"timed out after {COMMAND_TIMEOUT_SECONDS}s",
+            )
     return {
         "phase": phase,
         "command": command,
@@ -81,6 +93,15 @@ def _emit_payload(payload: dict[str, object], *, as_json: bool, stderr_message: 
         if stderr_message is not None:
             print(stderr_message, file=sys.stderr)
     return 0 if payload["status"] not in {"blocked", "failed"} else 1
+
+
+def _unsafe_command_blockers(command_plan: list[tuple[str, str]]) -> list[str]:
+    blockers: list[str] = []
+    for phase, command in command_plan:
+        reason = unsafe_agent_browser_probe_reason(command)
+        if reason is not None:
+            blockers.append(f"{phase} command uses unsafe agent-browser probe `{command}`: {reason}")
+    return blockers
 
 
 def _print_list(label: str, values: list[str]) -> None:
@@ -297,6 +318,12 @@ def main() -> int:
         payload["planned_commands"] = [
             {"phase": phase, "command": command} for phase, command in command_plan
         ]
+        return _emit_payload(payload, as_json=args.json)
+
+    unsafe_blockers = _unsafe_command_blockers(command_plan)
+    if unsafe_blockers:
+        payload["status"] = "blocked"
+        payload["blockers"] = list(payload.get("blockers", [])) + unsafe_blockers
         return _emit_payload(payload, as_json=args.json)
 
     for phase, command in command_plan:

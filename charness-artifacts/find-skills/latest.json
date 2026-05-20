@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-20T07:38:30Z",
+  "generated_at": "2026-05-20T13:33:15Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -432,6 +432,7 @@
           "skills/public/quality/references/inventory-dispatch.md",
           "skills/public/quality/references/skill-ergonomics.md",
           "skills/public/quality/references/skill-quality.md",
+          "skills/public/quality/references/testability-and-selection.md",
           "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/public/quality/references/cautilus-on-demand.md",
           "skills/public/quality/references/behavior-testing.md",

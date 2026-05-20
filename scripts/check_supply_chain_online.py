@@ -18,6 +18,7 @@ ValidationError = _scripts_supply_chain_lib_module.ValidationError
 detect_online_audit_surfaces = _scripts_supply_chain_lib_module.detect_online_audit_surfaces
 
 DEFAULT_TRIAGE_OWNER = "repo-maintainers"
+ONLINE_AUDIT_TIMEOUT_SECONDS = 300
 
 
 def online_command(tool: str, audit_level: str) -> list[str]:
@@ -39,7 +40,22 @@ def run_surface(repo_root: Path, surface: dict[str, str], *, audit_level: str, t
             f"install `{tool}` or skip the online audit. Triage owner: `{triage_owner}`."
         )
     command = online_command(tool, audit_level)
-    completed = subprocess.run(command, cwd=repo_root, check=False, capture_output=True, text=True)
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=ONLINE_AUDIT_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        completed = subprocess.CompletedProcess(
+            command,
+            124,
+            str(exc.stdout or ""),
+            f"timed out after {ONLINE_AUDIT_TIMEOUT_SECONDS}s",
+        )
     return {
         "tool": tool,
         "surface": surface["surface"],

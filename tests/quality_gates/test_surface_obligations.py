@@ -345,6 +345,40 @@ def test_run_slice_closeout_appends_agent_browser_hygiene_when_guard_exists(tmp_
     assert (repo / "hygiene.log").read_text(encoding="utf-8").strip() == "hygiene"
 
 
+def test_run_slice_closeout_blocks_unsafe_agent_browser_surface_commands(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (repo / ".agents" / "surfaces.json").write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "surfaces": [
+                    {
+                        "surface_id": "demo-surface",
+                        "description": "demo",
+                        "source_paths": ["README.md"],
+                        "derived_paths": [],
+                        "sync_commands": [],
+                        "verify_commands": ["bash -lc 'agent-browser open https://example.com'"],
+                        "notes": [],
+                    }
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/run_slice_closeout.py", "--repo-root", str(repo), "--paths", "README.md", "--json")
+    payload = json.loads(result.stdout)
+
+    assert result.returncode == 1
+    assert payload["status"] == "blocked"
+    assert "unsafe agent-browser probe" in "\n".join(payload["blockers"])
+
+
 def test_run_slice_closeout_preserves_parent_python_before_login_shell_path(tmp_path: Path, monkeypatch) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

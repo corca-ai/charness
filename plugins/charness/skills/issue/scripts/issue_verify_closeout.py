@@ -19,6 +19,7 @@ def _load_local(module_name: str, alias: str | None = None):
 
 
 ISSUE_CLOSE = _load_local("issue_close", "issue_verify_issue_close")
+GIT_TIMEOUT_SECONDS = 10
 
 CARRIERS = ("direct-commit", "pr-body", "manual-fallback")
 CLASSIFICATIONS = ("bug", "feature", "deferred-work", "question", "decision-needed")
@@ -147,13 +148,22 @@ def _read_carrier_body(repo_root: Path, *, carrier: str, commit_ref: str | None,
     if carrier == "direct-commit":
         if not commit_ref:
             raise RuntimeError("direct-commit carrier requires --commit-ref")
-        result = subprocess.run(
-            ["git", "show", "-s", "--format=%B", commit_ref],
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
+        try:
+            result = subprocess.run(
+                ["git", "show", "-s", "--format=%B", commit_ref],
+                cwd=repo_root,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=GIT_TIMEOUT_SECONDS,
+            )
+        except subprocess.TimeoutExpired as exc:
+            result = subprocess.CompletedProcess(
+                ["git", "show", "-s", "--format=%B", commit_ref],
+                124,
+                str(exc.stdout or ""),
+                f"timed out after {GIT_TIMEOUT_SECONDS}s",
+            )
         if result.returncode != 0:
             raise RuntimeError(
                 f"unable to read commit body for {commit_ref!r}: {result.stderr.strip()!r}"
@@ -191,9 +201,23 @@ def _view_issue_state(
         json_fields=json_fields,
     )
     try:
-        result = subprocess.run(argv, cwd=repo_root, check=False, capture_output=True, text=True)
+        result = subprocess.run(
+            argv,
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=ISSUE_CLOSE.BACKEND_TIMEOUT_SECONDS,
+        )
     except OSError as exc:
         raise RuntimeError(f"issue state verification command failed to start: {exc}") from exc
+    except subprocess.TimeoutExpired as exc:
+        result = subprocess.CompletedProcess(
+            argv,
+            124,
+            str(exc.stdout or ""),
+            f"timed out after {ISSUE_CLOSE.BACKEND_TIMEOUT_SECONDS}s",
+        )
     if result.returncode != 0:
         raise RuntimeError(
             f"issue state verification failed for {repo}#{number}: "

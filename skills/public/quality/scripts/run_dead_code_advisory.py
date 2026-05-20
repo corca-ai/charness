@@ -20,15 +20,21 @@ LIKELY_CONVENTION_NAMES = ("pytest_plugins", "pytestmark")
 MOCK_PROTOCOL_NAMES = ("side_effect", "return_value", "call_args", "mock_calls")
 TEST_PROTOCOL_TERMS = ("fake", "mock", "stub", "driver", "protocol")
 STRUCTURED_OUTPUT_NAMES = ("rss_kib",)
+GIT_LIST_TIMEOUT_SECONDS = 30
+VULTURE_TIMEOUT_SECONDS = 120
 
 
 def git_visible_python_paths(repo_root: Path, roots: tuple[str, ...]) -> list[str]:
-    result = subprocess.run(
-        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", "*.py"],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-    )
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", "*.py"],
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+            timeout=GIT_LIST_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired:
+        return [root for root in roots if (repo_root / root).exists()]
     if result.returncode != 0:
         return [root for root in roots if (repo_root / root).exists()]
     selected: list[str] = []
@@ -108,7 +114,22 @@ def run_vulture(repo_root: Path, paths: list[str], *, confidence: int) -> dict[s
             "stderr": "vulture is not installed",
         }
     command = ["vulture", *paths, "--min-confidence", str(confidence), "--sort-by-size"]
-    completed = subprocess.run(command, cwd=repo_root, check=False, capture_output=True, text=True)
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=VULTURE_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        completed = subprocess.CompletedProcess(
+            command,
+            124,
+            str(exc.stdout or ""),
+            f"timed out after {VULTURE_TIMEOUT_SECONDS}s",
+        )
     findings = parse_findings(completed.stdout)
     return {
         "confidence": confidence,

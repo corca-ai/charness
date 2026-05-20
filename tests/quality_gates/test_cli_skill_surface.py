@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from .support import run_script, write_executable
@@ -85,6 +86,36 @@ def test_cli_skill_surface_accepts_declared_combo_with_probes_and_docs(tmp_path:
     assert result.returncode == 0, result.stderr
     assert payload["status"] == "ok"
     assert payload["probe_commands"] == ["./demo --help", "./demo doctor --json"]
+
+
+def test_cli_skill_surface_reports_probe_timeout(tmp_path: Path) -> None:
+    repo = seed_repo(
+        tmp_path,
+        adapter_body="\n".join(
+            [
+                "version: 1",
+                "product_surfaces:",
+                "- installable_cli",
+                "- bundled_skill",
+                "cli_skill_surface_probe_commands:",
+                "- python3 scripts/hang.py",
+                "cli_skill_surface_command_docs:",
+                "- .agents/command-docs.yaml",
+                "",
+            ]
+        ),
+    )
+    (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
+    write_executable(repo / "scripts" / "hang.py", "#!/usr/bin/env python3\nimport time\ntime.sleep(2)\n")
+    env = os.environ.copy()
+    env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.1"
+
+    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", "--json", env=env)
+    payload = json.loads(result.stdout)
+
+    assert result.returncode == 1
+    assert payload["probe_results"][0]["returncode"] == 124
+    assert "timed out after 0.1s" in payload["probe_results"][0]["stderr_preview"]
 
 
 def test_cli_skill_surface_blocks_direct_agent_browser_runtime_probes(tmp_path: Path) -> None:

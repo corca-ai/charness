@@ -11,6 +11,8 @@ REMOTE_PATTERNS = (
     re.compile(r"^ssh://git@[^/]+/(?P<owner>[^/]+)/(?P<repo>.+?)(?:\.git)?$"),
     re.compile(r"^https?://[^/]+/(?P<owner>[^/]+)/(?P<repo>.+?)(?:\.git)?$"),
 )
+GIT_TIMEOUT_SECONDS = 10
+BACKEND_TIMEOUT_SECONDS = 60
 
 
 def parse_remote_url(value: str) -> tuple[str, str] | None:
@@ -32,6 +34,7 @@ def git_remote_url(repo_root: Path, remote_name: str) -> str | None:
         check=False,
         capture_output=True,
         text=True,
+        timeout=GIT_TIMEOUT_SECONDS,
     )
     if result.returncode != 0:
         return None
@@ -114,7 +117,16 @@ def is_selector(value: str) -> bool:
 
 
 def _backend_json(argv: list[str]) -> Any:
-    result = subprocess.run(argv, check=False, capture_output=True, text=True)
+    try:
+        result = subprocess.run(
+            argv,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=BACKEND_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(f"{argv[0]} command timed out after {BACKEND_TIMEOUT_SECONDS}s") from exc
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip() or result.stdout.strip() or f"{argv[0]} command failed")
     return json.loads(result.stdout or "null")

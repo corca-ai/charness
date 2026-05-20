@@ -22,10 +22,13 @@
   `agent-browser-runtime-hygiene`; both unset the orphan-ignore waiver so the
   standing gate cannot silently bless dirty runtime state.
 - `check_cli_skill_surface.py` and `validate_integrations.py` block risky
-  bare or wrapper-mediated `agent-browser` probes; web-fetch degrades rather
-  than reports success when browser session close fails.
-- Startup probes, CLI side-effect probes, and `run_cautilus_eval.py` now have
-  explicit wall-clock timeouts so executable probes cannot hang a standing gate.
+  bare or wrapper-mediated `agent-browser` probes across CLI-skill,
+  integration, support-readiness, and slice-closeout surfaces; web-fetch
+  degrades rather than reports success when browser session close fails or
+  post-close runtime hygiene fails.
+- Startup probes, CLI side-effect probes, `run_cautilus_eval.py`, release and
+  issue helpers, markdown-preview, supply-chain online audit, SLOC inventory,
+  dead-code advisory, and slice closeout now have explicit wall-clock timeouts.
 - Pytest sessionfinish cleanup retries agent-browser cleanup until clean or
   timeout; final `run-quality` hygiene remains the whole-gate proof.
 - Public release `v0.7.6`. No version bump pending unless the next release
@@ -46,10 +49,11 @@
 
 - Lesson: pytest cleanup is not a quality-gate lifecycle contract; external runtimes need gate ownership.
 - Similar-pattern scan found arbitrary adapter probe commands, startup probes,
-  Cautilus forwarding, and raw doctor lock output as adjacent risks. This
-  slice adds timeouts and agent-browser-specific lifecycle enforcement first;
-  broader runtime-family metadata is deferred until another external runtime
-  shows the same pressure.
+  Cautilus forwarding, release/issue helper commands, markdown-preview,
+  supply-chain/SLOC/dead-code advisory tools, slice closeout, and raw doctor
+  lock output as adjacent risks. This slice adds bounded execution and
+  agent-browser-specific lifecycle enforcement first; broader runtime-family
+  metadata is deferred until another external runtime shows the same pressure.
 - Watch list (deferred): Yarn Berry hook idiom; pnpm+lefthook stale snippets;
   `filelock` + `pytest-xdist`; sibling imports via runtime bootstrap; seed-cache LRU eviction.
 

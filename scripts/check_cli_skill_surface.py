@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import fnmatch
 import json
+import os
 import shlex
 import subprocess
 import sys
@@ -27,6 +28,8 @@ DEFAULT_CHANGE_GLOBS = (
     "packaging/**",
     ".agents/command-docs.yaml",
 )
+DEFAULT_PROBE_TIMEOUT_SECONDS = 20.0
+TIMEOUT_EXIT_CODE = 124
 _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _adapter_lib.load_yaml_file
 _agent_browser_probe_policy = import_repo_module(__file__, "scripts.agent_browser_probe_policy")
@@ -114,15 +117,35 @@ def _probe_commands(data: dict[str, Any]) -> list[str]:
     return _string_list(data, "cli_skill_surface_probe_commands")
 
 
+def _probe_timeout_seconds() -> float:
+    raw = os.environ.get("CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS")
+    if raw is None:
+        return DEFAULT_PROBE_TIMEOUT_SECONDS
+    try:
+        value = float(raw)
+    except ValueError:
+        return DEFAULT_PROBE_TIMEOUT_SECONDS
+    return value if value > 0 else DEFAULT_PROBE_TIMEOUT_SECONDS
+
+
 def _run_probe(repo_root: Path, command: str) -> dict[str, object]:
-    result = subprocess.run(
-        shlex.split(command),
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=20,
-    )
+    timeout_seconds = _probe_timeout_seconds()
+    try:
+        result = subprocess.run(
+            shlex.split(command),
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "command": command,
+            "returncode": TIMEOUT_EXIT_CODE,
+            "stdout_preview": str(exc.stdout or "")[:400],
+            "stderr_preview": f"timed out after {timeout_seconds:g}s",
+        }
     return {
         "command": command,
         "returncode": result.returncode,

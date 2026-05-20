@@ -17,10 +17,26 @@ OP_PLACEHOLDERS: dict[str, frozenset[str]] = {
     "release_create": RELEASE_CREATE_PLACEHOLDERS,
     "auth_check": AUTH_CHECK_PLACEHOLDERS,
 }
+COMMAND_TIMEOUT_SECONDS = 1800
 
 
 def run(command: list[str], *, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(command, cwd=cwd, check=False, capture_output=True, text=True)
+    try:
+        result = subprocess.run(
+            command,
+            cwd=cwd,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=COMMAND_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        result = subprocess.CompletedProcess(
+            command,
+            124,
+            str(exc.stdout or ""),
+            f"timed out after {COMMAND_TIMEOUT_SECONDS}s",
+        )
     if check and result.returncode != 0:
         rendered = " ".join(command)
         raise SystemExit(
@@ -33,15 +49,24 @@ def run(command: list[str], *, cwd: Path, check: bool = True) -> subprocess.Comp
 
 
 def run_shell(command: str, *, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(
-        command,
-        cwd=cwd,
-        shell=True,
-        executable="/bin/bash",
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        result = subprocess.run(
+            command,
+            cwd=cwd,
+            shell=True,
+            executable="/bin/bash",
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=COMMAND_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        result = subprocess.CompletedProcess(
+            command,
+            124,
+            str(exc.stdout or ""),
+            f"timed out after {COMMAND_TIMEOUT_SECONDS}s",
+        )
     if check and result.returncode != 0:
         raise SystemExit(
             f"command failed: {command}\n"

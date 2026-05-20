@@ -38,8 +38,27 @@ GH_VIEW_DEFAULT = [
 COMMENT_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "body_file", "reason"})
 CLOSE_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "reason"})
 VIEW_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "json_fields"})
+BACKEND_TIMEOUT_SECONDS = 60
 
 _PLACEHOLDER_RE = re.compile(r"\{([a-z_]+)\}")
+
+
+def _run_backend(argv: list[str]) -> subprocess.CompletedProcess[str]:
+    try:
+        return subprocess.run(
+            argv,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=BACKEND_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return subprocess.CompletedProcess(
+            argv,
+            124,
+            str(exc.stdout or ""),
+            f"timed out after {BACKEND_TIMEOUT_SECONDS}s",
+        )
 
 
 def _resolve_op(
@@ -135,12 +154,12 @@ def close_with_comment(
             number=str(number),
             json_fields="number,state,url",
         )
-    comment_result = subprocess.run(comment_argv, check=False, capture_output=True, text=True)
+    comment_result = _run_backend(comment_argv)
     if comment_result.returncode != 0:
         raise RuntimeError(
             f"comment failed: exit={comment_result.returncode} stderr={comment_result.stderr.strip()!r}"
         )
-    close_result = subprocess.run(close_argv, check=False, capture_output=True, text=True)
+    close_result = _run_backend(close_argv)
     if close_result.returncode != 0:
         raise RuntimeError(
             "close failed after comment landed; do not re-comment on retry. "
@@ -149,7 +168,7 @@ def close_with_comment(
         )
     verified_state: dict[str, Any] | None = None
     if view_argv is not None:
-        view_result = subprocess.run(view_argv, check=False, capture_output=True, text=True)
+        view_result = _run_backend(view_argv)
         if view_result.returncode != 0:
             raise RuntimeError(
                 "close state verification failed after close command succeeded; "

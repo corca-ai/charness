@@ -27,10 +27,27 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter.load_adapter
+GIT_TIMEOUT_SECONDS = 120
+FRESH_CHECKOUT_PROBE_TIMEOUT_SECONDS = 300
 
 
 def _run(command: list[str], *, cwd: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(command, cwd=cwd, check=False, capture_output=True, text=True)
+    try:
+        return subprocess.run(
+            command,
+            cwd=cwd,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=GIT_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return subprocess.CompletedProcess(
+            command,
+            124,
+            str(exc.stdout or ""),
+            f"timed out after {GIT_TIMEOUT_SECONDS}s",
+        )
 
 
 def _current_branch(repo_root: Path) -> str | None:
@@ -40,15 +57,24 @@ def _current_branch(repo_root: Path) -> str | None:
 
 
 def _run_shell(command: str, *, cwd: Path) -> dict[str, object]:
-    result = subprocess.run(
-        command,
-        cwd=cwd,
-        shell=True,
-        executable="/bin/bash",
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        result = subprocess.run(
+            command,
+            cwd=cwd,
+            shell=True,
+            executable="/bin/bash",
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=FRESH_CHECKOUT_PROBE_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        result = subprocess.CompletedProcess(
+            command,
+            124,
+            str(exc.stdout or ""),
+            f"timed out after {FRESH_CHECKOUT_PROBE_TIMEOUT_SECONDS}s",
+        )
     return {
         "command": command,
         "returncode": result.returncode,

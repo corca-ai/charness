@@ -180,6 +180,28 @@ def validate_agent_browser_check_commands(manifest: dict[str, object], path: Pat
             )
 
 
+def validate_agent_browser_readiness_commands(capability: dict[str, object], path: Path) -> None:
+    checks = capability.get("readiness_checks")
+    if not isinstance(checks, list):
+        return
+    for check_index, check in enumerate(checks):
+        if not isinstance(check, dict):
+            continue
+        commands = check.get("commands")
+        if not isinstance(commands, list):
+            continue
+        for command_index, command in enumerate(commands):
+            if not isinstance(command, str):
+                continue
+            reason = unsafe_agent_browser_probe_reason(command)
+            if reason is None:
+                continue
+            raise ValidationError(
+                f"{path}: readiness_checks[{check_index}].commands[{command_index}] "
+                f"uses unsafe agent-browser probe `{command}`: {reason}"
+            )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
@@ -207,6 +229,7 @@ def main() -> int:
             validate_access_mode_order(capability, capability_path)
             validate_capability_requirements(capability, capability_path)
             validate_config_layers(capability, capability_path)
+            validate_agent_browser_readiness_commands(capability, capability_path)
         lock_schema = load_lock_schema()
         lock_files = lock_paths(repo_root)
         for path in lock_files:

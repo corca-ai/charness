@@ -30,6 +30,7 @@ parse_selector = RUNTIME.parse_selector
 resolve_target = RUNTIME.resolve_target
 close_with_comment = CLOSE.close_with_comment
 verify_closeout = VERIFY.verify_closeout
+BACKEND_PROBE_TIMEOUT_SECONDS = 60
 
 
 def emit(payload: dict[str, Any]) -> None:
@@ -45,7 +46,20 @@ def _resolve_backend(repo_root: Path) -> dict[str, Any]:
 
 
 def _run_probe(binary: str, args: list[str]) -> dict[str, Any]:
-    result = subprocess.run([binary, *args], check=False, capture_output=True, text=True)
+    try:
+        result = subprocess.run(
+            [binary, *args],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=BACKEND_PROBE_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "exit_code": 124,
+            "stdout": str(exc.stdout or "").strip(),
+            "stderr": f"timed out after {BACKEND_PROBE_TIMEOUT_SECONDS}s",
+        }
     return {"exit_code": result.returncode, "stdout": result.stdout.strip(), "stderr": result.stderr.strip()}
 
 

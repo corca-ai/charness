@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -26,12 +27,37 @@ def _load_markdown_preview_lib() -> Any:
 _LIB = _load_markdown_preview_lib()
 PreviewConfig = _LIB.PreviewConfig
 artifact_stem = _LIB.artifact_stem
+DEFAULT_BACKEND_TIMEOUT_SECONDS = 20.0
+TIMEOUT_EXIT_CODE = 124
+
+
+def _backend_timeout_seconds() -> float:
+    raw = os.environ.get("CHARNESS_MARKDOWN_PREVIEW_TIMEOUT_SECONDS")
+    if raw is None:
+        return DEFAULT_BACKEND_TIMEOUT_SECONDS
+    try:
+        value = float(raw)
+    except ValueError:
+        return DEFAULT_BACKEND_TIMEOUT_SECONDS
+    return value if value > 0 else DEFAULT_BACKEND_TIMEOUT_SECONDS
+
+
+def _timeout_error(command: list[str], timeout_seconds: float) -> str:
+    rendered = " ".join(command)
+    return f"timed out after {timeout_seconds:g}s while running `{rendered}`"
 
 
 def _backend_version(backend: str) -> str | None:
+    timeout_seconds = _backend_timeout_seconds()
     try:
-        completed = subprocess.run([backend, "--version"], check=False, capture_output=True, text=True)
-    except FileNotFoundError:
+        completed = subprocess.run(
+            [backend, "--version"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
         return None
     if completed.returncode != 0:
         return None
@@ -57,20 +83,45 @@ def _git_head(repo_root: Path) -> str | None:
 def _run_glow(path: Path, width: int, *, stdout_path: Path | None = None) -> subprocess.CompletedProcess[str]:
     stdout = subprocess.PIPE
     stdout_handle = None
+    command = ["glow", "-w", str(width), str(path)]
+    timeout_seconds = _backend_timeout_seconds()
     if stdout_path is not None:
         stdout_handle = stdout_path.open("w", encoding="utf-8")
         stdout = stdout_handle
     try:
-        return subprocess.run(["glow", "-w", str(width), str(path)], check=False, stdout=stdout, stderr=subprocess.PIPE, text=True)
+        return subprocess.run(
+            command,
+            check=False,
+            stdout=stdout,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=timeout_seconds,
+        )
+    except subprocess.TimeoutExpired:
+        return subprocess.CompletedProcess(
+            command,
+            TIMEOUT_EXIT_CODE,
+            "",
+            _timeout_error(command, timeout_seconds),
+        )
     finally:
         if stdout_handle is not None:
             stdout_handle.close()
 
 
 def _render_with_glow(path: Path, width: int) -> tuple[str | None, str | None]:
-    completed = subprocess.run(
-        ["glow", "-w", str(width), str(path)], check=False, capture_output=True, text=True
-    )
+    command = ["glow", "-w", str(width), str(path)]
+    timeout_seconds = _backend_timeout_seconds()
+    try:
+        completed = subprocess.run(
+            command,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+        )
+    except subprocess.TimeoutExpired:
+        return None, _timeout_error(command, timeout_seconds)
     source_non_empty = bool(path.read_text(encoding="utf-8").strip())
     if completed.returncode == 0 and (completed.stdout.strip() or not source_non_empty):
         return completed.stdout, None

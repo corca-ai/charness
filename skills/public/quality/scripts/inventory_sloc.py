@@ -20,14 +20,23 @@ DEFAULT_EXCLUDES = (
     "target",
     "vendor",
 )
+TOKEI_VERSION_TIMEOUT_SECONDS = 10
+TOKEI_SCAN_TIMEOUT_SECONDS = 120
 
 
 def _tokei_version() -> str | None:
     if shutil.which("tokei") is None:
         return None
-    completed = subprocess.run(
-        ["tokei", "--version"], capture_output=True, text=True, check=False
-    )
+    try:
+        completed = subprocess.run(
+            ["tokei", "--version"],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=TOKEI_VERSION_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired:
+        return None
     if completed.returncode != 0:
         return None
     return completed.stdout.strip() or None
@@ -38,7 +47,21 @@ def _run_tokei(repo_root: Path, excludes: list[str]) -> dict:
     for name in excludes:
         cmd.extend(["--exclude", name])
     cmd.append(str(repo_root))
-    completed = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    try:
+        completed = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=TOKEI_SCAN_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        completed = subprocess.CompletedProcess(
+            cmd,
+            124,
+            str(exc.stdout or ""),
+            f"timed out after {TOKEI_SCAN_TIMEOUT_SECONDS}s",
+        )
     if completed.returncode != 0:
         raise RuntimeError(
             f"tokei exited with status {completed.returncode}: {completed.stderr.strip()}"
