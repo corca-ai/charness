@@ -9,18 +9,20 @@
 
 ## Current State
 
-- `main` is ahead of `origin/main` by recent quality-track commits; this turn landed the two previous active+passive next gates (orphan teardown + content-addressed seed cache) plus the underlying `--help`→`--version` runtime-guard fix.
+- `main` pushed to `origin/main` at `9e0ac1c` closing #180/#181/#182 via commit body; #183 fix landed and will auto-close on the next successful or PASS-partial mutation workflow run (`gh run view 26134097162` to track the dispatched run).
 - Public release is `v0.7.6` with no open real-host gap; [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md) marks Real-Host Verification as "no configured trigger matched."
-- Latest quality posture: [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md) — [scripts/run-quality.sh](../scripts/run-quality.sh) now reliably finishes 64/0 twice in succession without manual orphan cleanup; seed fan-out collapsed from 54 materializations to one per `(HEAD, dirty-digest)` via [tests/seed_cache.py](../tests/seed_cache.py); xdist workers share one seed through `filelock`.
+- Latest worktree-adapter seed now auto-detects pnpm/yarn/bun/npm and lefthook/husky/simple-git-hooks/repo-owned hook systems; `setup` inspector also surfaces the seam when `git worktree list` reports >1 worktree even without a Node hook manager.
+- Mutation workflow now captures partial dumps via internal `--exec-timeout-seconds` (default 9000) and reports `PASS-partial` / `FAIL-incomplete` against a 75% executed floor; previous 3-hour cancel was the structural cause of #183.
 
 ## Next Session
 
-1. **Passive** (background queue): downstream-repo dogfood on the stronger generated skill-ergonomics default before changing the rule set again. No code action this turn; collect issues from consuming repos first.
-2. **Passive — seed-cache LRU eviction**. `~/.cache/charness/test-seeds/<hash>/` grows unboundedly across HEAD changes (one directory per `(HEAD, dirty-digest)`). When the cache becomes operationally noticeable, add an LRU helper that keeps N most-recent hashes by mtime; until then the cache is easy to clean manually. See `Weak` in [latest.md](../charness-artifacts/quality/latest.md).
+1. **Verify** the dispatched mutation workflow (`gh run view 26134097162` or the latest scheduled run) actually finishes within 150min and writes `reports/mutation/cosmic-ray-dump.jsonl`; if the partial-run ratio is consistently under 75%, lower `mutation_testing.max_files` in [.agents/quality-adapter.yaml](../.agents/quality-adapter.yaml) from 10 to a measured value or enable cosmic-ray local-distributor concurrency.
+2. **Passive** doc refresh — [docs/worktree-prepare.md](./worktree-prepare.md) and [skills/public/setup/references/bootstrap-seams.md](../skills/public/setup/references/bootstrap-seams.md) still describe the worktree adapter seed as a lefthook-centric template; update to mention auto-detection plus the active-worktrees trigger. Non-blocking; can ride the next release.
+3. **Passive — seed-cache LRU eviction**. `~/.cache/charness/test-seeds/<hash>/` grows unboundedly across HEAD changes. When the cache becomes operationally noticeable, add an LRU helper that keeps N most-recent hashes by mtime; until then the cache is easy to clean manually.
 
 ## Discuss
 
-- Confirmed empirically: the agent-browser orphan race was caused by `agent_browser_runtime_guard.py --doctor-check` running `agent-browser --help`, which warms a background daemon as a side effect. `--version` is a sufficient binary-functionality check that does not spawn a daemon, so we switched and removed the orphan source at its root. The `pytest_sessionfinish` cleanup hook in [tests/conftest.py](../tests/conftest.py) stays as a controller-side backstop.
+- The plugin import-smoke gate (`check-plugin-import-smoke`) caught a real export defect introduced by the seed refactor: a bare `from seed_worktree_adapter_lib import ...` works when the script is executed but not when the gate loads modules via `spec_from_file_location` against the exported plugin tree. Resolved by explicitly inserting the script's directory onto `sys.path` at the top of `seed_worktree_adapter.py`. Worth confirming `check_export_safe_imports.py` covers this static shape too — currently only the runtime smoke catches it.
 
 ## References
 
