@@ -86,6 +86,18 @@ Cosmic Ray will still run pytest, see exit code 0, and record those mutants as
   failure, not pytest coverage absence.
 - Confirmed with local timing: full pytest is roughly 24x slower than the
   current command before multiplying by hundreds of mutants.
+- Implementation smoke: coverage-aware sample dry-run with 10 covered files
+  reduced `2236` pending mutants to `804` executable mutants after filtering
+  `330` annotation unions and `1102` uncovered-line mutants.
+- Implementation smoke: a 30s full-run probe wrote a dump and summary with
+  `executed: 3/309`, `Scope gaps (uncovered sampled mutants): 4`, and
+  `FAIL-incomplete` despite `100.0%` reachable score, proving the new blocking
+  signals override misleading partial scores.
+- Fresh-eye closeout review found that non-timeout `cosmic-ray exec` failures
+  could still leave pending mutants behind while the workflow continued to the
+  summary step. The scorer now treats any pending executable mutants as
+  `FAIL-incomplete` unless the timeout path explicitly satisfies the partial-run
+  floor.
 
 ## Root Cause
 
@@ -136,16 +148,19 @@ skipped work items as executed.
 
 ## Prevention
 
-- Do not land previous Option A as written; full pytest is too slow per mutant.
-- Make one component own both mutation targets and test scope: either use
-  per-line/per-mutant coverage as a conservative filter, or rewrite
-  `test-command` from a measured file-to-test mapping.
-- Change summary semantics so `No tests (scope gap)` means sampled-module
-  coverage absence, not Cosmic Ray `WorkerOutcome.NO_TEST`.
-- Compute partial completion over non-skipped work. Do not allow
-  `PASS-partial` unless every sampled file has attempted non-skipped mutants
-  and the run meets a per-sampled-file completion floor or uses a randomized /
-  stratified work order with a declared floor.
+- Implemented local remediation: `commands.sample` now records coverage for
+  the declared Cosmic Ray test command and samples covered files only.
+- Implemented local remediation: the post-init filter skips uncovered mutation
+  lines and labels them as Charness scope gaps instead of Cosmic Ray native
+  no-mutation-possible results.
+- Implemented local remediation: summary completion excludes skipped mutants,
+  scope gaps are blocking, and `PASS-partial` requires per-sampled-file
+  completion. `mutation_testing.max_files` is lowered to 5 for runtime headroom.
+- Implemented local remediation: a non-timeout exec failure with pending
+  mutants cannot pass on reachable score alone; the sample manifest also shows
+  changed files excluded by the coverage filter.
+- Remaining proof: push and dispatch the workflow; #183 should stay open until
+  the GitHub run shows the same semantics in the scheduled environment.
 
 ## Related Prior Incidents
 

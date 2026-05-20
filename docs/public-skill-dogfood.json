@@ -104,7 +104,7 @@
         "handles the skill's load-bearing contract without needing the user to restate obvious repo context"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-18",
+      "reviewed_on": "2026-05-20",
       "observed_evidence": [
         "The checked-in public core explicitly keeps `debug` in diagnosis-before-repair mode, preserving the exact symptom, a falsifiable hypothesis, and at least three candidate causes before implementation work starts.",
         "For async, scheduled, or user-visible workflows, the debug core now separates pre-worker acknowledgement, worker execution, and post-worker side effects before reasoning only about worker behavior.",
@@ -337,7 +337,8 @@
         "The quality core now treats `.agents/usage-episodes-adapter.yaml` as a deterministic repo-owned gate: when present, quality resolves and runs the Charness package-root `validate_usage_episodes.py` validator while preserving `no_adapter` and `disabled` as skipped states rather than failures.",
         "`inventory_skill_ergonomics.py` now separates `scope_status` from `finding_status` and preserves `prose_review_status`, so a quality artifact that cites skill ergonomics must distinguish empty scope, zero heuristic findings, and still-required prose review.",
         "Generated quality adapters now default `skill_ergonomics_gate_rules` to the full supported rule set, while an explicit `[]` remains a visible downstream opt-out rather than an accidental disabled default.",
-        "`validate_attention_state_visibility.py` now makes exit-zero attention states part of the quality consumer contract: new `no_adapter`, `disabled`, `not_configured`, `skipped`, advisory-only, or prose-review-required helper states must declare warning output, artifact-visible status, support trace, or a local-noop rationale before the standing gate passes."
+        "`validate_attention_state_visibility.py` now makes exit-zero attention states part of the quality consumer contract: new `no_adapter`, `disabled`, `not_configured`, `skipped`, advisory-only, or prose-review-required helper states must declare warning output, artifact-visible status, support trace, or a local-noop rationale before the standing gate passes.",
+        "Scenario review for the Charness mutation-testing workflow kept the public `quality` contract runner-neutral while tightening the dogfood runner around slow-gate economics: sampling now starts from files covered by the declared Cosmic Ray test command, uncovered mutation lines are reported as scope gaps outside the score denominator, partial timeout completion is measured over executable mutants, and per-sampled-file completion blocks misleading `PASS-partial` summaries."
       ]
     },
     {

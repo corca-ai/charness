@@ -25,7 +25,11 @@ from scripts.check_mutation_score import (  # noqa: E402
     iter_dump_records,
     summarize_survived_mutations,
 )
-from scripts.filter_cosmic_ray_mutants import is_function_annotation_union  # noqa: E402
+from scripts.filter_cosmic_ray_mutants import (  # noqa: E402
+    UNCOVERED_MUTATION_SKIP_OUTPUT,
+    coverage_skip_reason,
+    is_function_annotation_union,
+)
 from scripts.quality_adapter_lib import (  # noqa: E402
     infer_quality_defaults,
     load_quality_adapter,
@@ -597,6 +601,15 @@ def test_cosmic_ray_filter_identifies_function_annotation_unions() -> None:
     )
     assert not is_function_annotation_union("value = left | right", 13)
     assert not is_function_annotation_union("def plain(repo_root: Path) -> Path:", 0)
+
+
+def test_cosmic_ray_filter_identifies_uncovered_mutation_lines() -> None:
+    class Mutation:
+        module_path = Path("scripts/demo.py")
+        start_pos = (12, 0)
+
+    assert coverage_skip_reason(Mutation(), {"scripts/demo.py": {10, 11}}) == UNCOVERED_MUTATION_SKIP_OUTPUT
+    assert coverage_skip_reason(Mutation(), {"scripts/demo.py": {12}}) is None
 
 
 def test_run_cosmic_ray_mutation_invokes_filter_after_init(tmp_path: Path) -> None:

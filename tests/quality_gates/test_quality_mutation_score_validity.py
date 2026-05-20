@@ -51,6 +51,7 @@ def test_cosmic_ray_dump_summary_counts_reachable_denominator(tmp_path: Path) ->
     assert counts["incompetent"] == 1
     assert counts["pending"] == 1
     assert counts["skipped"] == 1
+    assert counts["scope_gap"] == 0
 
 
 def test_mutation_metrics_fail_when_no_reachable_mutants() -> None:
@@ -61,6 +62,7 @@ def test_mutation_metrics_fail_when_no_reachable_mutants() -> None:
             "survived": 0,
             "incompetent": 0,
             "no_tests": 0,
+            "scope_gap": 0,
             "pending": 10,
             "abnormal": 0,
             "skipped": 0,
@@ -81,6 +83,7 @@ def test_mutation_metrics_fail_when_no_tests_mutants_exist() -> None:
             "survived": 0,
             "incompetent": 0,
             "no_tests": 1,
+            "scope_gap": 0,
             "pending": 0,
             "abnormal": 0,
             "skipped": 0,
@@ -178,5 +181,61 @@ def test_check_mutation_score_fails_no_tests_dump(tmp_path: Path) -> None:
     assert counts["no_tests"] == 1
     assert counts["survived"] == 0
     assert metrics["reachable"] == 1
-    assert "Blocking signal: no-tests mutants indicate a mutation scope gap." in summary
+    assert "Blocking signal: Cosmic Ray reported mutants with no mutation possible." in summary
     assert "## Survived Mutants" not in summary
+
+
+def test_check_mutation_score_fails_scope_gap_skips(tmp_path: Path) -> None:
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
+        _ADAPTER_HEADER
+        + dedent(
+            """\
+            mutation_testing:
+              score_break: 50
+              report_paths:
+                summary_md: reports/mutation/summary.md
+            """
+        ),
+        encoding="utf-8",
+    )
+    dump = tmp_path / "dump.jsonl"
+    dump.write_text(
+        "\n".join(
+            [
+                json.dumps([{"job_id": "a"}, {"worker_outcome": "normal", "test_outcome": "killed"}]),
+                json.dumps(
+                    [
+                        {"job_id": "b"},
+                        {
+                            "worker_outcome": "skipped",
+                            "test_outcome": "killed",
+                            "output": "Filtered uncovered mutation line",
+                        },
+                    ]
+                ),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "python3",
+            "scripts/check_mutation_score.py",
+            "--repo-root",
+            str(tmp_path),
+            "--stats",
+            str(dump),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+    assert "Scope gaps (uncovered sampled mutants): 1" in summary
+    assert "Blocking signal: sampled mutants were not covered by the selected test command." in summary

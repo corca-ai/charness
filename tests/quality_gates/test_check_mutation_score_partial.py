@@ -17,16 +17,26 @@ CMS = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(CMS)
 
 
-def _stats(*, total: int, killed: int, survived: int, pending: int = 0, no_tests: int = 0) -> dict[str, int]:
+def _stats(
+    *,
+    total: int,
+    killed: int,
+    survived: int,
+    pending: int = 0,
+    no_tests: int = 0,
+    skipped: int = 0,
+    scope_gap: int = 0,
+) -> dict[str, int]:
     return {
         "total": total,
         "killed": killed,
         "survived": survived,
         "incompetent": 0,
         "no_tests": no_tests,
+        "scope_gap": scope_gap,
         "pending": pending,
         "abnormal": 0,
-        "skipped": 0,
+        "skipped": skipped,
     }
 
 
@@ -46,6 +56,17 @@ def test_full_run_fail_below_threshold() -> None:
     )
     assert metrics["status"] == "FAIL"
     assert metrics["passed"] is False
+
+
+def test_non_timeout_pending_mutants_fail_incomplete() -> None:
+    metrics = CMS.mutation_metrics(
+        _stats(total=100, killed=80, survived=0, pending=20),
+        score_break=80,
+        exec_timed_out=False,
+    )
+    assert metrics["status"] == "FAIL-incomplete"
+    assert metrics["passed"] is False
+    assert metrics["incomplete_exec"] is True
 
 
 def test_partial_run_above_floor_with_passing_score() -> None:
@@ -95,6 +116,30 @@ def test_partial_run_at_exact_completion_floor() -> None:
     assert metrics["executed_ratio"] == 0.75
     assert metrics["status"] == "PASS-partial"
     assert metrics["passed"] is True
+
+
+def test_completion_ratio_excludes_skipped_mutants() -> None:
+    metrics = CMS.mutation_metrics(
+        _stats(total=100, killed=60, survived=15, pending=25, skipped=20),
+        score_break=80,
+        exec_timed_out=True,
+    )
+    assert metrics["executable_total"] == 80
+    assert metrics["executed"] == 55
+    assert metrics["executed_ratio"] == 55 / 80
+    assert metrics["status"] == "FAIL-incomplete"
+
+
+def test_partial_run_requires_per_file_completion() -> None:
+    metrics = CMS.mutation_metrics(
+        _stats(total=100, killed=80, survived=0, pending=20),
+        score_break=80,
+        exec_timed_out=True,
+        per_file_completion_ok=False,
+    )
+    assert metrics["executed_ratio"] == 0.8
+    assert metrics["status"] == "FAIL-incomplete"
+    assert metrics["passed"] is False
 
 
 def test_partial_run_one_mutant_below_floor() -> None:

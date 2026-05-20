@@ -171,11 +171,13 @@ def inspect_payload(repo_root: Path) -> dict[str, object]:
 def doctor_payload(repo_root: Path) -> dict[str, object]:
     helpcheck = run_help_check(repo_root)
     runtime = inspect_runtime(list_processes(repo_root))
-    healthy = helpcheck["ok"] and runtime["orphan_daemon_count"] == 0
+    ignore_orphans = os.environ.get("CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS") == "1"
+    healthy = helpcheck["ok"] and (ignore_orphans or runtime["orphan_daemon_count"] == 0)
     return {
         "healthy": healthy,
         "helpcheck": helpcheck,
         "runtime": runtime,
+        "ignored_orphans": ignore_orphans,
         "next_step": None if healthy else CLEANUP_COMMAND,
     }
 

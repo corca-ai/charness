@@ -7,8 +7,9 @@ reads `mutation_testing.score_break` and `report_paths.summary_md` from
 exits non-zero when the reachable-mutant score breaks the threshold.
 
 Contract: skills/public/quality/references/mutation-testing.md §commands.summary.
-Denominator: killed / (killed + survived). No-tests mutants are reported
-separately as a scope-gap signal and do not enter the score.
+Denominator: killed / (killed + survived). Native no-mutation-possible outcomes
+and Charness coverage scope gaps are reported separately and do not enter the
+score.
 """
 from __future__ import annotations
 
@@ -26,6 +27,7 @@ from scripts.quality_adapter_lib import load_quality_adapter  # noqa: E402
 
 SURVIVED_DETAIL_LIMIT = 10
 PARTIAL_RUN_COMPLETION_FLOOR = 0.75
+UNCOVERED_MUTATION_SKIP_OUTPUT = "Filtered uncovered mutation line"
 
 
 def parse_args() -> argparse.Namespace:
@@ -74,6 +76,7 @@ def summarize_cosmic_ray(records: list[tuple[dict, dict | None]]) -> dict[str, i
         "survived": 0,
         "incompetent": 0,
         "no_tests": 0,
+        "scope_gap": 0,
         "pending": 0,
         "abnormal": 0,
         "skipped": 0,
@@ -91,6 +94,8 @@ def summarize_cosmic_ray(records: list[tuple[dict, dict | None]]) -> dict[str, i
             counts["abnormal"] += 1
         elif worker_outcome == "skipped":
             counts["skipped"] += 1
+            if str(result.get("output") or "").startswith(UNCOVERED_MUTATION_SKIP_OUTPUT):
+                counts["scope_gap"] += 1
             continue
 
         if test_outcome == "killed":
@@ -164,18 +169,30 @@ def load_mutation_config(repo_root: Path) -> tuple[float, Path] | None:
 
 
 def mutation_metrics(
-    stats: dict[str, int], score_break: float, *, exec_timed_out: bool = False
+    stats: dict[str, int],
+    score_break: float,
+    *,
+    exec_timed_out: bool = False,
+    per_file_completion_ok: bool = True,
 ) -> dict[str, float | int | bool]:
     killed = stats["killed"]
     survived = stats["survived"]
     reachable = killed + survived
     score = (killed / reachable * 100.0) if reachable else 0.0
     total = stats["total"]
-    executed = total - stats["pending"]
-    executed_ratio = (executed / total) if total else 0.0
-    score_passes = reachable > 0 and stats["no_tests"] == 0 and score >= score_break
+    skipped = stats.get("skipped", 0)
+    executable_total = total - skipped
+    executed = executable_total - stats["pending"]
+    executed_ratio = (executed / executable_total) if executable_total else 0.0
+    score_passes = (
+        reachable > 0
+        and stats["no_tests"] == 0
+        and stats.get("scope_gap", 0) == 0
+        and score >= score_break
+    )
+    incomplete_exec = stats["pending"] > 0
     if exec_timed_out:
-        completion_ok = executed_ratio >= PARTIAL_RUN_COMPLETION_FLOOR
+        completion_ok = executed_ratio >= PARTIAL_RUN_COMPLETION_FLOOR and per_file_completion_ok
         passed = score_passes and completion_ok
         if not completion_ok:
             status = "FAIL-incomplete"
@@ -183,6 +200,9 @@ def mutation_metrics(
             status = "PASS-partial"
         else:
             status = "FAIL"
+    elif incomplete_exec:
+        passed = False
+        status = "FAIL-incomplete"
     else:
         passed = score_passes
         status = "PASS" if passed else "FAIL"
@@ -191,12 +211,44 @@ def mutation_metrics(
         "reachable": reachable,
         "score": score,
         "score_break": score_break,
+        "executable_total": executable_total,
         "executed": executed,
         "executed_ratio": executed_ratio,
         "exec_timed_out": exec_timed_out,
+        "incomplete_exec": incomplete_exec,
+        "per_file_completion_ok": per_file_completion_ok,
         "passed": passed,
         "status": status,
     }
+
+
+def mutation_file_completion(
+    records: list[tuple[dict, dict | None]],
+    *,
+    floor: float = PARTIAL_RUN_COMPLETION_FLOOR,
+) -> tuple[bool, list[str]]:
+    stats: dict[str, dict[str, int]] = {}
+    for work_item, result in records:
+        mutations = work_item.get("mutations") or []
+        module_path = str((mutations[0] or {}).get("module_path") or "<unknown>") if mutations else "<unknown>"
+        bucket = stats.setdefault(module_path, {"total": 0, "skipped": 0, "pending": 0})
+        bucket["total"] += 1
+        if result is None:
+            bucket["pending"] += 1
+            continue
+        if result.get("worker_outcome") == "skipped":
+            bucket["skipped"] += 1
+
+    incomplete: list[str] = []
+    for module_path, bucket in sorted(stats.items()):
+        executable_total = bucket["total"] - bucket["skipped"]
+        if executable_total <= 0:
+            continue
+        executed = executable_total - bucket["pending"]
+        ratio = executed / executable_total
+        if executed <= 0 or ratio < floor:
+            incomplete.append(f"{module_path} {executed}/{executable_total} ({ratio*100:.1f}%)")
+    return not incomplete, incomplete
 
 
 def _read_timeout_marker(marker_path: Path) -> tuple[bool, int | None]:
@@ -225,14 +277,17 @@ def build_summary_lines(
         f"- Status: **{metrics['status']}** "
         f"({metrics['score']:.1f}% reachable score vs {metrics['score_break']:.0f}% threshold)",
         f"- Total mutants: {metrics['total']}",
-        f"- Executed: {metrics['executed']} ({metrics['executed_ratio']*100:.1f}% of total)",
+        f"- Executable mutants: {metrics['executable_total']} (total minus skipped)",
+        f"- Executed: {metrics['executed']} ({metrics['executed_ratio']*100:.1f}% of executable total)",
         f"- Killed: {metrics['killed']}",
         f"- Survived: {metrics['survived']}",
-        f"- No tests (scope gap): {metrics['no_tests']}",
+        f"- Scope gaps (uncovered sampled mutants): {metrics.get('scope_gap', 0)}",
+        f"- No mutation possible: {metrics['no_tests']}",
         f"- Incompetent: {metrics['incompetent']}",
     ]
     if metrics["pending"]:
         lines.append(f"- Pending (not executed): {metrics['pending']}")
+        lines.append("- Blocking signal: mutation execution left pending mutants.")
     if metrics["abnormal"]:
         lines.append(f"- Worker abnormal/exception: {metrics['abnormal']}")
     if metrics["skipped"]:
@@ -240,12 +295,22 @@ def build_summary_lines(
     if metrics["exec_timed_out"]:
         lines.append(
             f"- Exec timeout fired; status reflects partial completion "
-            f"(floor {PARTIAL_RUN_COMPLETION_FLOOR*100:.0f}% of total)."
+            f"(floor {PARTIAL_RUN_COMPLETION_FLOOR*100:.0f}% of executable mutants)."
         )
+    elif metrics.get("incomplete_exec"):
+        lines.append(
+            f"- Exec did not complete all executable mutants; status reflects partial completion "
+            f"(floor {PARTIAL_RUN_COMPLETION_FLOOR*100:.0f}% of executable mutants)."
+        )
+    if metrics["exec_timed_out"] or metrics.get("incomplete_exec"):
+        if not metrics.get("per_file_completion_ok", True):
+            lines.append("- Blocking signal: partial run did not meet per-sampled-file completion.")
     if not metrics["reachable"]:
         lines.append("- Blocking signal: no reachable mutants were executed.")
     if metrics["no_tests"]:
-        lines.append("- Blocking signal: no-tests mutants indicate a mutation scope gap.")
+        lines.append("- Blocking signal: Cosmic Ray reported mutants with no mutation possible.")
+    if metrics.get("scope_gap", 0):
+        lines.append("- Blocking signal: sampled mutants were not covered by the selected test command.")
     if metrics["survived"]:
         survived_details = summarize_survived_mutations(records, repo_root)
         lines += [
@@ -275,10 +340,10 @@ def build_summary_lines(
         "",
         "Score denominator: `killed / (killed + survived)` (reachable mutants only;",
         "see `skills/public/quality/references/mutation-testing.md` §commands.summary).",
-        "No-tests mutants represent test-scope gaps rather than test weakness, so they",
-        "are surfaced as a separate signal above and do not enter the score. Skipped",
-        "mutants are explicitly filtered low-signal work items and also stay out of",
-        "the score denominator.",
+        "Native Cosmic Ray no-mutation-possible results and Charness filtered",
+        "scope gaps are surfaced as separate blocking signals above and do not",
+        "enter the score. Skipped mutants are explicitly filtered work items and",
+        "also stay out of the score and completion denominators.",
         "",
     ]
 
@@ -308,15 +373,34 @@ def main() -> int:
         args.timeout_marker if args.timeout_marker.is_absolute() else repo_root / args.timeout_marker
     )
     exec_timed_out, _ = _read_timeout_marker(timeout_marker_path)
-    metrics = mutation_metrics(stats, score_break, exec_timed_out=exec_timed_out)
+    per_file_completion_ok, incomplete_files = mutation_file_completion(records)
+    metrics = mutation_metrics(
+        stats,
+        score_break,
+        exec_timed_out=exec_timed_out,
+        per_file_completion_ok=per_file_completion_ok,
+    )
     lines = build_summary_lines(records, repo_root, metrics)
+    if incomplete_files:
+        try:
+            insert_at = lines.index("Score denominator: `killed / (killed + survived)` (reachable mutants only;")
+        except ValueError:
+            insert_at = len(lines)
+        lines[insert_at:insert_at] = [
+            "",
+            "## Incomplete Sampled Files",
+            "",
+            "- Incomplete sampled files:",
+            *[f"  - `{item}`" for item in incomplete_files[:10]],
+            "",
+        ]
 
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text("\n".join(lines), encoding="utf-8")
     sys.stdout.write(f"summary written to {summary_path}\n")
     sys.stdout.write(
         f"score: {metrics['score']:.1f}% threshold: {score_break:.0f}% "
-        f"executed: {metrics['executed']}/{metrics['total']} "
+        f"executed: {metrics['executed']}/{metrics['executable_total']} "
         f"status: {metrics['status']}\n"
     )
     return 0 if metrics["passed"] else 1

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import textwrap
 from pathlib import Path
 
@@ -20,6 +21,8 @@ from .support import (
     run_cli_in_repo,
 )
 from .tool_fakes import make_fake_cautilus
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def enable_cautilus_adapter(repo_root: Path) -> None:
@@ -41,6 +44,23 @@ def set_gws_lifecycle_mode(repo_root: Path, action: str, mode: str) -> None:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["lifecycle"][action] = {"mode": mode}
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def cleanup_agent_browser_orphans() -> None:
+    subprocess.run(
+        [
+            "python3",
+            "scripts/agent_browser_runtime_guard.py",
+            "--repo-root",
+            ".",
+            "--cleanup-orphans",
+            "--execute",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
 
 
 def make_fake_go_glow(tmp_path: Path) -> tuple[Path, Path]:
@@ -334,6 +354,7 @@ def test_installed_cli_tool_sync_support_reports_materialized_support_and_binary
 
 
 def test_tool_update_does_not_run_agent_browser_upgrade_for_path_install(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    cleanup_agent_browser_orphans()
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     home_root = tmp_path / "home"
     fake_agent_browser = make_fake_agent_browser(tmp_path)
@@ -345,6 +366,7 @@ def test_tool_update_does_not_run_agent_browser_upgrade_for_path_install(tmp_pat
     env["PATH"] = f"{fake_agent_browser.parent}:{env.get('PATH', '')}"
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
+    env["CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS"] = "1"
 
     result = run_cli_in_repo(repo_root, "tool", "update", "--repo-root", str(repo_root), "--json", "agent-browser", env=env)
     assert result.returncode == 0, result.stderr
@@ -366,6 +388,7 @@ def test_tool_update_does_not_run_agent_browser_upgrade_for_path_install(tmp_pat
 
 
 def test_tool_update_routes_npm_provenance_for_agent_browser(tmp_path: Path, seeded_charness_repo: Path) -> None:
+    cleanup_agent_browser_orphans()
     repo_root = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     home_root = tmp_path / "home"
     npm_script, browser_link = make_fake_npm_agent_browser(tmp_path)
@@ -377,6 +400,7 @@ def test_tool_update_routes_npm_provenance_for_agent_browser(tmp_path: Path, see
     env["PATH"] = f"{npm_script.parent}:{browser_link.parent}:{env.get('PATH', '')}"
     env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
     env["CHARNESS_SUPPORT_SYNC_FIXTURES"] = str(support_fixture)
+    env["CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS"] = "1"
 
     result = run_cli_in_repo(repo_root, "tool", "update", "--repo-root", str(repo_root), "--json", "agent-browser", env=env)
     assert result.returncode == 0, result.stderr

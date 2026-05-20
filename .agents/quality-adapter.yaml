@@ -188,7 +188,7 @@ mutation_testing:
   score_break: 80
   schedule_cron: "17 */3 * * *"
   changed_quota: 5
-  max_files: 10
+  max_files: 5
   auto_issue:
     enabled: true
     label: mutation-test

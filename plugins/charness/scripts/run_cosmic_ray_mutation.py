@@ -18,6 +18,7 @@ DEFAULT_CONFIG = Path("cosmic-ray.toml")
 DEFAULT_SESSION = Path("reports/mutation/cosmic-ray.sqlite")
 DEFAULT_DUMP = Path("reports/mutation/cosmic-ray-dump.jsonl")
 DEFAULT_FILTER = Path("scripts/filter_cosmic_ray_mutants.py")
+DEFAULT_COVERAGE_JSON = Path("reports/mutation/test-coverage.json")
 DEFAULT_TIMEOUT_MARKER = Path("reports/mutation/exec-timeout.json")
 DEFAULT_EXEC_TIMEOUT_SECONDS = 9000
 
@@ -135,6 +136,7 @@ def main() -> int:
     parser.add_argument("--session", type=Path, default=DEFAULT_SESSION)
     parser.add_argument("--dump", type=Path, default=DEFAULT_DUMP)
     parser.add_argument("--filter-script", type=Path, default=DEFAULT_FILTER)
+    parser.add_argument("--coverage-json", type=Path, default=DEFAULT_COVERAGE_JSON)
     parser.add_argument("--timeout-marker", type=Path, default=DEFAULT_TIMEOUT_MARKER)
     parser.add_argument(
         "--exec-timeout-seconds",
@@ -159,6 +161,7 @@ def main() -> int:
     session = resolve(repo_root, args.session)
     dump_path = resolve(repo_root, args.dump)
     filter_script = resolve(repo_root, args.filter_script)
+    coverage_json = resolve(repo_root, args.coverage_json)
     timeout_marker = resolve(repo_root, args.timeout_marker)
 
     if not config.is_file():
@@ -178,7 +181,17 @@ def main() -> int:
         run(["cosmic-ray", "baseline", str(config)], repo_root)
         run(["cosmic-ray", "init", str(config), str(session)], repo_root)
         if filter_script.is_file():
-            run(["python3", str(filter_script), "--repo-root", str(repo_root), "--session", str(session)], repo_root)
+            filter_command = [
+                "python3",
+                str(filter_script),
+                "--repo-root",
+                str(repo_root),
+                "--session",
+                str(session),
+            ]
+            if coverage_json.is_file():
+                filter_command.extend(["--coverage-json", str(coverage_json)])
+            run(filter_command, repo_root)
         if args.mode == "full":
             exec_timed_out, exec_returncode = _run_exec_with_timeout(
                 config, session, repo_root, args.exec_timeout_seconds
