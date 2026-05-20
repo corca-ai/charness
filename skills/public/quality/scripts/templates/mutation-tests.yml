@@ -80,6 +80,9 @@ jobs:
             echo "score_break=$(read_slot '.mutation_testing.score_break' '60')"
             echo "changed_quota=$(read_slot '.mutation_testing.changed_quota' '5')"
             echo "max_files=$(read_slot '.mutation_testing.max_files' '10')"
+            echo "max_executable_mutants=$(read_slot '.mutation_testing.max_executable_mutants' '120')"
+            echo "max_executable_mutants_per_file=$(read_slot '.mutation_testing.max_executable_mutants_per_file' '80')"
+            echo "max_test_nodeids=$(read_slot '.mutation_testing.max_test_nodeids' '40')"
             echo "auto_issue_enabled=$(read_slot '.mutation_testing.auto_issue.enabled' 'false')"
             echo "auto_issue_label=$(read_slot '.mutation_testing.auto_issue.label' 'mutation-test')"
             echo "auto_issue_title=$(read_slot '.mutation_testing.auto_issue.title' 'Mutation test regression on main')"
@@ -133,6 +136,9 @@ jobs:
           MUTATION_HEAD_SHA: ${{ steps.plan.outputs.head_sha }}
           MUTATION_SAMPLE_CHANGED_QUOTA: ${{ steps.adapter.outputs.changed_quota }}
           MUTATION_SAMPLE_MAX_FILES: ${{ steps.adapter.outputs.max_files }}
+          MUTATION_SAMPLE_MAX_EXECUTABLE_MUTANTS: ${{ steps.adapter.outputs.max_executable_mutants }}
+          MUTATION_SAMPLE_MAX_EXECUTABLE_MUTANTS_PER_FILE: ${{ steps.adapter.outputs.max_executable_mutants_per_file }}
+          MUTATION_SAMPLE_MAX_TEST_NODEIDS: ${{ steps.adapter.outputs.max_test_nodeids }}
           MUTATION_SAMPLE_SEED: ${{ github.run_id }}:${{ steps.plan.outputs.base_sha }}..${{ steps.plan.outputs.head_sha }}
         shell: bash
         run: ${{ steps.adapter.outputs.cmd_sample }}

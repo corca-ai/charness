@@ -286,8 +286,56 @@ def test_check_mutation_score_fails_changed_files_excluded_by_sampling(tmp_path:
     assert result.returncode == 1
     summary = (reports / "summary.md").read_text(encoding="utf-8")
     assert (
-        "Blocking signal: changed files were excluded before mutation by coverage/mutation-line filters."
+        "Blocking signal: changed files were excluded before mutation by coverage, mutation-line, or selection-budget filters."
         in summary
     )
     assert "## Changed Files Excluded Before Mutation" in summary
     assert "`scripts/changed.py`" in summary
+
+
+def test_check_mutation_score_fails_changed_files_excluded_by_selection_budget(tmp_path: Path) -> None:
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
+        _ADAPTER_HEADER
+        + dedent(
+            """\
+            mutation_testing:
+              score_break: 50
+              report_paths:
+                summary_md: reports/mutation/summary.md
+            """
+        ),
+        encoding="utf-8",
+    )
+    reports = tmp_path / "reports" / "mutation"
+    reports.mkdir(parents=True)
+    (reports / "sample.json").write_text(
+        json.dumps({"selection_excluded_changed_files": ["scripts/expensive.py"]}) + "\n",
+        encoding="utf-8",
+    )
+    dump = tmp_path / "dump.jsonl"
+    dump.write_text(
+        json.dumps([{"job_id": "a"}, {"worker_outcome": "normal", "test_outcome": "killed"}])
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "python3",
+            "scripts/check_mutation_score.py",
+            "--repo-root",
+            str(tmp_path),
+            "--stats",
+            str(dump),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    summary = (reports / "summary.md").read_text(encoding="utf-8")
+    assert "## Changed Files Excluded Before Mutation" in summary
+    assert "`scripts/expensive.py`" in summary

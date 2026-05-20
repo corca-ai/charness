@@ -8,8 +8,6 @@ Cosmic Ray init/exec run mutates only the selected files.
 from __future__ import annotations
 
 import argparse
-import hashlib
-import json
 import os
 import shlex
 import subprocess
@@ -21,6 +19,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.mutation_manifest_lib import build_manifest_from_state, write_manifest  # noqa: E402
 from scripts.mutation_sampling_lib import (  # noqa: E402
     build_mutation_line_coverage,
     filter_eligible_by_coverage,
@@ -32,6 +31,7 @@ from scripts.mutation_sampling_lib import (  # noqa: E402
     rewrite_cosmic_ray_targets,
     rewrite_cosmic_ray_test_command,
     run_test_coverage,
+    select_budgeted_sample,
     select_test_nodeids,
 )
 
@@ -42,16 +42,9 @@ DEFAULT_MAX_FILES = 10
 DEFAULT_CHANGED_QUOTA = 5
 DEFAULT_COVERAGE_JSON = Path("reports/mutation/test-coverage.json")
 DEFAULT_MIN_FILE_COVERAGE = 0.85
-
-
-def stable_hash(value: str) -> str:
-    return hashlib.sha256(value.encode("utf-8")).hexdigest()
-
-
-def deterministic_sample(files: list[str], count: int, seed: str) -> list[str]:
-    if count <= 0 or not files:
-        return []
-    return sorted(files, key=lambda path: stable_hash(f"{seed}:{path}"))[:count]
+DEFAULT_MAX_EXECUTABLE_MUTANTS = 120
+DEFAULT_MAX_EXECUTABLE_MUTANTS_PER_FILE = 80
+DEFAULT_MAX_TEST_NODEIDS = 40
 
 
 def list_eligible(repo_root: Path) -> list[str]:
@@ -60,13 +53,6 @@ def list_eligible(repo_root: Path) -> list[str]:
         for path in (repo_root / POOL_DIR).glob(POOL_PATTERN)
         if path.name not in EXCLUDED_NAMES
     )
-
-
-def display_path(repo_root: Path, path: Path) -> str:
-    try:
-        return path.relative_to(repo_root).as_posix()
-    except ValueError:
-        return path.as_posix()
 
 
 def list_changed(repo_root: Path, base_sha: str, head_sha: str) -> list[str]:
@@ -99,98 +85,12 @@ def positive_int(value: str | None, default: int) -> int:
     return parsed
 
 
-def write_manifest(manifest: dict, manifest_json: Path, manifest_md: Path) -> None:
-    manifest_json.parent.mkdir(parents=True, exist_ok=True)
-    manifest_json.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-    md_lines = [
-        "# Mutation Sample",
-        "",
-        f"- Base SHA: `{manifest['base_sha'] or '(none)'}`",
-        f"- Head SHA: `{manifest['head_sha'] or '(unknown)'}`",
-        f"- Seed: `{manifest['seed']}`",
-        f"- Mutation pool files: {manifest.get('all_eligible_count', manifest['eligible_count'])}",
-        f"- Eligible files after coverage/mutation-line filters: {manifest['eligible_count']}",
-        f"- Covered eligible files: {manifest.get('covered_eligible_count', 'n/a')}",
-        f"- File coverage floor: {manifest.get('min_file_coverage', 'n/a')}",
-        f"- Eligible files after mutation-line filter: {manifest.get('mutation_line_eligible_count', 'n/a')}",
-        f"- Changed pool files: {len(manifest.get('changed_files_before_coverage', manifest['changed_files']))}",
-        f"- Changed eligible files after coverage/mutation-line filters: {len(manifest['changed_files'])}",
-        f"- Changed files excluded by coverage/mutation-line filters: {len(manifest.get('uncovered_changed_files', []))}",
-        f"- Selected: {len(manifest['sample'])}/{manifest['max_files']}",
-        f"- Test command: `{manifest.get('test_command') or '(not recorded)'}`",
-        "",
-        "## Changed sample",
-        "",
-        *([f"- `{path}`" for path in manifest["changed_sample"]] or ["(none)"]),
-        "",
-        "## Fill sample",
-        "",
-        *([f"- `{path}`" for path in manifest["fill_sample"]] or ["(none)"]),
-        "",
-    ]
-    manifest_md.parent.mkdir(parents=True, exist_ok=True)
-    manifest_md.write_text("\n".join(md_lines), encoding="utf-8")
-
-
 def append_github_output(name: str, value: str) -> None:
     output_path = os.environ.get("GITHUB_OUTPUT")
     if not output_path:
         return
     with open(output_path, "a", encoding="utf-8") as output:
         output.write(f"{name}={value}\n")
-
-
-def build_manifest(
-    *,
-    seed: str,
-    base_sha: str,
-    head_sha: str,
-    max_files: int,
-    changed_quota: int,
-    eligible: list[str],
-    all_eligible: list[str],
-    coverage_enabled: bool,
-    coverage_json: Path,
-    repo_root: Path,
-    test_command: str,
-    mutation_test_command: str,
-    min_file_coverage: float,
-    mutation_line_coverage: dict[str, dict[str, int]],
-    changed_before_coverage: list[str],
-    uncovered_changed_files: list[str],
-    changed: list[str],
-    changed_sample: list[str],
-    fill_sample: list[str],
-    sample: list[str],
-) -> dict:
-    return {
-        "seed": seed,
-        "base_sha": base_sha,
-        "head_sha": head_sha,
-        "max_files": max_files,
-        "changed_quota": changed_quota,
-        "eligible_count": len(eligible),
-        "all_eligible_count": len(all_eligible),
-        "coverage_enabled": coverage_enabled,
-        "coverage_json": display_path(repo_root, coverage_json),
-        "coverage_command": test_command,
-        "test_command": mutation_test_command,
-        "min_file_coverage": min_file_coverage,
-        "mutation_line_coverage": mutation_line_coverage,
-        "mutation_line_eligible_count": sum(
-            1
-            for stats in mutation_line_coverage.values()
-            if int(stats.get("mutable", 0)) > 0 and int(stats.get("uncovered", 0)) == 0
-        ),
-        "covered_eligible_count": len(eligible) if coverage_enabled else None,
-        "uncovered_eligible_count": len(all_eligible) - len(eligible) if coverage_enabled else None,
-        "changed_files_before_coverage": changed_before_coverage,
-        "uncovered_changed_files": uncovered_changed_files,
-        "changed_files": changed,
-        "changed_sample": changed_sample,
-        "fill_sample": fill_sample,
-        "sample": sample,
-    }
 
 
 def parse_args() -> argparse.Namespace:
@@ -278,6 +178,16 @@ def mutation_test_command_for_sample(
     return shlex.join(["python3", "-m", "pytest", "-q", *test_nodeids])
 
 
+def parse_workload_limits() -> tuple[int, int, int]:
+    total = positive_int(os.environ.get("MUTATION_SAMPLE_MAX_EXECUTABLE_MUTANTS"), DEFAULT_MAX_EXECUTABLE_MUTANTS)
+    per_file = positive_int(
+        os.environ.get("MUTATION_SAMPLE_MAX_EXECUTABLE_MUTANTS_PER_FILE"),
+        DEFAULT_MAX_EXECUTABLE_MUTANTS_PER_FILE,
+    )
+    nodeids = positive_int(os.environ.get("MUTATION_SAMPLE_MAX_TEST_NODEIDS"), DEFAULT_MAX_TEST_NODEIDS)
+    return total, per_file, nodeids
+
+
 def output_paths(args: argparse.Namespace, repo_root: Path) -> tuple[Path, Path]:
     manifest_json = (
         args.manifest_json if args.manifest_json.is_absolute() else repo_root / args.manifest_json
@@ -295,6 +205,84 @@ def report_no_eligible(coverage_enabled: bool, test_command: str) -> None:
         sys.stderr.write(f"no eligible files matched {POOL_DIR}/{POOL_PATTERN}\n")
 
 
+def select_sample_files(
+    *,
+    repo_root: Path,
+    seed: str,
+    max_files: int,
+    changed_quota: int,
+    changed: list[str],
+    eligible: list[str],
+    mutation_line_coverage: dict[str, dict[str, int]],
+    line_contexts: dict[str, dict[int, set[str]]],
+    coverage_enabled: bool,
+    max_executable_mutants: int,
+    max_executable_mutants_per_file: int,
+    max_test_nodeids: int,
+) -> tuple[list[str], list[str], list[str], list[str], list[str], int]:
+    changed_sample, selection_excluded_changed_files, selected_executable_mutants = (
+        select_budgeted_sample(
+            repo_root=repo_root,
+            candidates=changed,
+            limit=changed_quota,
+            seed=f"{seed}:changed",
+            selected=[],
+            selected_workload=0,
+            mutation_line_coverage=mutation_line_coverage,
+            line_contexts=line_contexts,
+            coverage_enabled=coverage_enabled,
+            max_executable_mutants=max_executable_mutants,
+            max_executable_mutants_per_file=max_executable_mutants_per_file,
+            max_test_nodeids=max_test_nodeids,
+        )
+    )
+    fill_pool = [path for path in eligible if path not in set(changed)]
+    fill_sample, selection_excluded_fill_files, selected_executable_mutants = (
+        select_budgeted_sample(
+            repo_root=repo_root,
+            candidates=fill_pool,
+            limit=max_files - len(changed_sample),
+            seed=f"{seed}:fill",
+            selected=changed_sample,
+            selected_workload=selected_executable_mutants,
+            mutation_line_coverage=mutation_line_coverage,
+            line_contexts=line_contexts,
+            coverage_enabled=coverage_enabled,
+            max_executable_mutants=max_executable_mutants,
+            max_executable_mutants_per_file=max_executable_mutants_per_file,
+            max_test_nodeids=max_test_nodeids,
+        )
+    )
+    sample = changed_sample + fill_sample
+    return (
+        changed_sample,
+        fill_sample,
+        sample,
+        selection_excluded_changed_files,
+        selection_excluded_fill_files,
+        selected_executable_mutants,
+    )
+
+
+def publish_sample(
+    *,
+    args: argparse.Namespace,
+    repo_root: Path,
+    config_path: Path,
+    manifest: dict,
+    sample: list[str],
+    mutation_test_command: str,
+) -> None:
+    manifest_json, manifest_md = output_paths(args, repo_root)
+    write_manifest(manifest, manifest_json, manifest_md)
+    rewrite_cosmic_ray_targets(config_path, sample)
+    rewrite_cosmic_ray_test_command(config_path, mutation_test_command)
+
+    sample_arg = " ".join(sample)
+    append_github_output("sample_files", sample_arg)
+    sys.stdout.write(f"sample ({len(sample)}/{manifest['max_files']}): {sample_arg}\n")
+
+
 def main() -> int:
     args = parse_args()
 
@@ -309,6 +297,8 @@ def main() -> int:
     head_sha = (os.environ.get("MUTATION_HEAD_SHA") or "").strip()
     seed = (os.environ.get("MUTATION_SAMPLE_SEED") or "").strip() or str(int(time.time()))
     min_file_coverage = parse_min_file_coverage()
+    workload_limits = parse_workload_limits()
+    max_executable_mutants, max_executable_mutants_per_file, max_test_nodeids = workload_limits
 
     coverage_json = args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
     test_command = read_test_command(config_path)
@@ -340,11 +330,27 @@ def main() -> int:
         path for path in changed_before_coverage if coverage_enabled and path not in eligible_set
     ]
 
-    changed_sample = deterministic_sample(changed, changed_quota, f"{seed}:changed")
-    selected = set(changed_sample)
-    fill_pool = [path for path in eligible if path not in selected]
-    fill_sample = deterministic_sample(fill_pool, max_files - len(changed_sample), f"{seed}:fill")
-    sample = changed_sample + fill_sample
+    (
+        changed_sample,
+        fill_sample,
+        sample,
+        selection_excluded_changed_files,
+        selection_excluded_fill_files,
+        selected_executable_mutants,
+    ) = select_sample_files(
+        repo_root=repo_root,
+        seed=seed,
+        max_files=max_files,
+        changed_quota=changed_quota,
+        changed=changed,
+        eligible=eligible,
+        mutation_line_coverage=mutation_line_coverage,
+        line_contexts=line_contexts,
+        coverage_enabled=coverage_enabled,
+        max_executable_mutants=max_executable_mutants,
+        max_executable_mutants_per_file=max_executable_mutants_per_file,
+        max_test_nodeids=max_test_nodeids,
+    )
     if not sample:
         sys.stderr.write("no mutation sample files were selected\n")
         return 1
@@ -360,36 +366,14 @@ def main() -> int:
         sys.stderr.write("no pytest test nodeids were observed for the selected mutation sample\n")
         return 1
 
-    manifest_json, manifest_md = output_paths(args, repo_root)
-    manifest = build_manifest(
-        seed=seed,
-        base_sha=base_sha,
-        head_sha=head_sha,
-        max_files=max_files,
-        changed_quota=changed_quota,
-        eligible=eligible,
-        all_eligible=all_eligible,
-        coverage_enabled=coverage_enabled,
-        coverage_json=coverage_json,
+    publish_sample(
+        args=args,
         repo_root=repo_root,
-        test_command=test_command,
-        mutation_test_command=mutation_test_command,
-        min_file_coverage=min_file_coverage if coverage_enabled else 0.0,
-        mutation_line_coverage=mutation_line_coverage,
-        changed_before_coverage=changed_before_coverage,
-        uncovered_changed_files=uncovered_changed_files,
-        changed=changed,
-        changed_sample=changed_sample,
-        fill_sample=fill_sample,
+        config_path=config_path,
+        manifest=build_manifest_from_state(locals()),
         sample=sample,
+        mutation_test_command=mutation_test_command,
     )
-    write_manifest(manifest, manifest_json, manifest_md)
-    rewrite_cosmic_ray_targets(config_path, sample)
-    rewrite_cosmic_ray_test_command(config_path, mutation_test_command)
-
-    sample_arg = " ".join(sample)
-    append_github_output("sample_files", sample_arg)
-    sys.stdout.write(f"sample ({len(sample)}/{max_files}): {sample_arg}\n")
     return 0
 
 

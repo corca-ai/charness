@@ -240,10 +240,16 @@ def sample_manifest_scope_gaps(manifest_path: Path) -> tuple[int, list[str]]:
         return 0, []
     if not isinstance(payload, dict):
         return 0, []
-    uncovered = payload.get("uncovered_changed_files") or []
-    if not isinstance(uncovered, list):
-        return 0, []
-    paths = [str(path) for path in uncovered if isinstance(path, str)]
+    excluded: list[object] = []
+    for key in (
+        "uncovered_changed_files",
+        "selection_excluded_changed_files",
+        "workload_excluded_changed_files",
+    ):
+        value = payload.get(key) or []
+        if isinstance(value, list):
+            excluded.extend(value)
+    paths = sorted({str(path) for path in excluded if isinstance(path, str)})
     return len(paths), paths
 
 
@@ -340,7 +346,7 @@ def build_summary_lines(
         lines.append("- Blocking signal: sampled mutants were not covered by the selected test command.")
     if metrics.get("changed_scope_gap_count", 0):
         lines.append(
-            "- Blocking signal: changed files were excluded before mutation by coverage/mutation-line filters."
+            "- Blocking signal: changed files were excluded before mutation by coverage, mutation-line, or selection-budget filters."
         )
     if metrics["survived"]:
         survived_details = summarize_survived_mutations(records, repo_root)

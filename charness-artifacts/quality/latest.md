@@ -18,15 +18,15 @@ were hostile to line-level mutation proof.
   nodeids that covered the selected mutation surface.
 - `scripts/check_mutation_score.py` keeps `PASS-partial` diagnostic-only:
   partial mutation runs exit non-zero and cannot close a recovery issue.
-- Changed files excluded before mutation by coverage or mutation-line filters
-  are now blocking summary signals.
+- Changed files excluded before mutation by coverage, mutation-line, or
+  selection-budget filters are now blocking summary signals.
+- The sampler now treats workload as executable mutants and selected pytest
+  nodeids, not file count alone. Defaults are 120 executable mutants total, 80
+  per file, and 40 pytest nodeids; each selected file must contribute at least
+  one focused pytest nodeid.
 - `.github/workflows/mutation-tests.yml` installs
   `packaging/mutation-requirements.txt` instead of relying on inline ambient
   dependency drift.
-- The public `quality` mutation-testing reference now says scope-gap-fatal
-  consumers must make sampling at least as strict as scoring, while keeping the
-  Python/Cosmic Ray details in the repo dogfood reference, not the portable
-  skill body.
 
 ## Runtime Signals
 
@@ -34,10 +34,13 @@ were hostile to line-level mutation proof.
   summarized by this artifact, plus local mutation probe artifacts under
   ignored `reports/mutation/` <!-- reproduction-source -->.
 - runtime hot spots: broad changed-surface pytest took 183.35s; local sampler
-  coverage probe took 207.47s before Cosmic Ray dry-run.
+  coverage probe took 214.17s; cancelled hosted run `26193059859` proved that a
+  5-file cap could still expand to 538 executable mutants and spend more than
+  20 minutes in `Run mutation`.
 - coverage gate: local Cosmic Ray dry-run reported
-  `filtered 198 mutants from 736 pending mutants (198 annotation unions, 0 uncovered lines)`;
-  focused mutation/testability pytest passed with 89 tests.
+  `filtered 0 mutants from 48 pending mutants (0 annotation unions, 0 uncovered lines)`
+  after workload-aware sampling selected 2 files, 48 executable mutants, and 22
+  pytest nodeids; focused mutation/testability pytest passed.
 - evaluator depth: no live Cautilus run; deterministic validators, checked-in
   dogfood scenario review, and fresh-eye review own this repo-local
   mutation/testability slice.
@@ -47,11 +50,13 @@ were hostile to line-level mutation proof.
 - The previous file-level sampling vs mutation-line scoring mismatch is closed
   locally: the sampler now proves the same kind of scope the summary enforces.
 - The test command is no longer a static broad-or-narrow guess; it is derived
-  from coverage contexts for the selected mutation sample.
+  from coverage contexts for the selected mutation sample, and every selected
+  file must contribute to that focused command.
 - High reachable score no longer masks uncovered mutation lines, changed-file
   exclusions, or incomplete timeout execution.
-- Source reshapes were bounded and paired with tests rather than broad style
-  churn.
+- The mutation workload budget is now visible in the sample manifest, so a
+  future slow sample fails selection honestly instead of pretending "5 files"
+  is a runtime budget.
 - Fresh-eye reviewers judged the testability posture sufficient for this slice,
   subject to hosted workflow proof before #183 closeout.
 
@@ -62,8 +67,9 @@ were hostile to line-level mutation proof.
 - The Cosmic Ray work-db integration is exercised by local dry-run proof more
   than by pure unit tests. This is acceptable because hosted workflow success is
   the real closeout signal.
-- The focused pytest nodeid command can become long as sampled files expand;
-  monitor workflow ergonomics before adding indirection.
+- The focused pytest nodeid command can still become long if a future sample
+  approaches the 40-nodeid cap; monitor workflow ergonomics before adding
+  helper-file indirection.
 
 ## Missing
 
@@ -75,7 +81,7 @@ were hostile to line-level mutation proof.
 - Make missing or malformed sample manifests an explicit full-run invariant if
   the mutation summary starts running outside the current workflow shape.
 - Consider a pytest-selection helper file only if command length becomes a
-  practical CI or log problem.
+  practical CI problem.
 
 ## Advisory
 
@@ -89,14 +95,19 @@ were hostile to line-level mutation proof.
 - Hosted workflow RCA fixed CI-portability siblings found by run `26192428031`:
   live Cautilus tests now skip when `cautilus` is absent, and worktree-create
   setup commits no longer execute ambient git hooks.
+- Hosted workload RCA cancelled run `26193059859`: a file-count cap was not a
+  workload cap. Similar local broad-coverage failure found fake
+  `agent-browser` tests using the real repo root; those tests now isolate their
+  fake runtime with a temp `--repo-root`.
 
 ## Delegated Review
 
 - status: executed. Fresh-eye causal/design/code/testability reviewers found
   the file-level-vs-line-level sampling mismatch, changed-file exclusion gap,
   dependency setup drift, `PASS-partial` closeout risk, and local probe config
-  leakage. The probe leakage was fixed by moving generated probe config under
-  `reports/mutation/`.
+  leakage. A later fresh-eye performance reviewer found the file-count budget
+  bug through slow-gate lenses: fixture-economics, parallel-critical-path, and
+  duplicated-proof. It was fixed by executable-mutant/nodeid budget sampling.
 
 ## Commands Run
 
@@ -105,7 +116,7 @@ were hostile to line-level mutation proof.
   dependency setup, portable artifacts, worktree doctor state, announcement
   preflight, and control-plane helpers
 - `pytest -q tests/quality_gates tests/control_plane tests/test_*.py tests/charness_cli/test_doctor_cache_selection.py tests/charness_cli/test_tool_lifecycle.py`
-- `MUTATION_SAMPLE_SEED=local-183-probe MUTATION_SAMPLE_MAX_FILES=5 MUTATION_SAMPLE_CHANGED_QUOTA=0 python3 scripts/sample_mutation_files.py --repo-root .`
+- `MUTATION_SAMPLE_SEED=26193059859:..f0b560ad79ce0794b3d2e7fdd5f7bc3dadd657ec MUTATION_SAMPLE_MAX_FILES=5 MUTATION_SAMPLE_CHANGED_QUOTA=0 MUTATION_SAMPLE_MAX_EXECUTABLE_MUTANTS=120 MUTATION_SAMPLE_MAX_EXECUTABLE_MUTANTS_PER_FILE=80 MUTATION_SAMPLE_MAX_TEST_NODEIDS=40 python3 scripts/sample_mutation_files.py --repo-root .`
 - `python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode dry-run`
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
 - changed-surface validators: packaging, adapters, docs, markdown, secrets,

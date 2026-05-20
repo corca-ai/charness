@@ -63,6 +63,9 @@ DEFAULT_MUTATION_TESTING: dict[str, Any] = {
     "schedule_cron": "17 */3 * * *",
     "changed_quota": 5,
     "max_files": 10,
+    "max_executable_mutants": 120,
+    "max_executable_mutants_per_file": 80,
+    "max_test_nodeids": 40,
     "auto_issue": {
         "enabled": False,
         "label": "mutation-test",
@@ -275,6 +278,11 @@ def _mutation_validated_defaults() -> dict[str, Any]:
         "schedule_cron": DEFAULT_MUTATION_TESTING["schedule_cron"],
         "changed_quota": DEFAULT_MUTATION_TESTING["changed_quota"],
         "max_files": DEFAULT_MUTATION_TESTING["max_files"],
+        "max_executable_mutants": DEFAULT_MUTATION_TESTING["max_executable_mutants"],
+        "max_executable_mutants_per_file": DEFAULT_MUTATION_TESTING[
+            "max_executable_mutants_per_file"
+        ],
+        "max_test_nodeids": DEFAULT_MUTATION_TESTING["max_test_nodeids"],
         "auto_issue": dict(DEFAULT_MUTATION_TESTING["auto_issue"]),
         "workflow_path": DEFAULT_MUTATION_TESTING["workflow_path"],
         "report_paths": dict(DEFAULT_MUTATION_TESTING["report_paths"]),
@@ -297,7 +305,13 @@ def _apply_mutation_top_key(
         _validate_mutation_report_paths(raw, validated, errors, warnings)
     elif key == "score_break":
         _validate_mutation_score_break(raw, validated, errors)
-    elif key in {"changed_quota", "max_files"}:
+    elif key in {
+        "changed_quota",
+        "max_files",
+        "max_executable_mutants",
+        "max_executable_mutants_per_file",
+        "max_test_nodeids",
+    }:
         _validate_mutation_int_field(key, raw, validated, errors)
     elif key in {"schedule_cron", "workflow_path"}:
         _validate_mutation_string_field(key, raw, validated, errors)

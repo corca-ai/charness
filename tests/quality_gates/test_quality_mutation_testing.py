@@ -73,6 +73,9 @@ _FULL_BLOCK = dedent(
       schedule_cron: "17 */3 * * *"
       changed_quota: 5
       max_files: 10
+      max_executable_mutants: 120
+      max_executable_mutants_per_file: 80
+      max_test_nodeids: 40
       auto_issue:
         enabled: true
         label: mutation-test
@@ -393,6 +396,32 @@ def test_checked_in_mutation_workflow_uses_repo_owned_requirements() -> None:
     assert "pip install -r packaging/mutation-requirements.txt" in body
     for package in ("cosmic-ray==8.4.6", "coverage", "filelock", "pytest-xdist", "PyYAML"):
         assert package in requirements
+
+
+def test_mutation_workflows_pass_workload_budget_envs() -> None:
+    paths = [
+        ROOT / ".github" / "workflows" / "mutation-tests.yml",
+        TEMPLATE_PATH,
+        ROOT
+        / "plugins"
+        / "charness"
+        / "skills"
+        / "quality"
+        / "scripts"
+        / "templates"
+        / "mutation-tests.yml",
+    ]
+    for path in paths:
+        body = path.read_text(encoding="utf-8")
+        for required in (
+            "max_executable_mutants=$(read_slot '.mutation_testing.max_executable_mutants' '120')",
+            "max_executable_mutants_per_file=$(read_slot '.mutation_testing.max_executable_mutants_per_file' '80')",
+            "max_test_nodeids=$(read_slot '.mutation_testing.max_test_nodeids' '40')",
+            "MUTATION_SAMPLE_MAX_EXECUTABLE_MUTANTS: ${{ steps.adapter.outputs.max_executable_mutants }}",
+            "MUTATION_SAMPLE_MAX_EXECUTABLE_MUTANTS_PER_FILE: ${{ steps.adapter.outputs.max_executable_mutants_per_file }}",
+            "MUTATION_SAMPLE_MAX_TEST_NODEIDS: ${{ steps.adapter.outputs.max_test_nodeids }}",
+        ):
+            assert required in body, f"{path} missing {required}"
 
 
 def test_a4_template_has_no_stack_literal_run_lines() -> None:

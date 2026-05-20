@@ -74,8 +74,8 @@ Consumers that make scope gaps fatal should make the sampling contract at
 least as strict as the summary contract. If the summary fails on uncovered
 mutants, the sample step should prefer targets whose mutable lines are covered
 by the selected test command, and should surface changed files filtered out by
-coverage as a blocking signal rather than silently replacing them with fill
-samples.
+coverage, mutation-line, or selection-budget filters as a blocking signal rather
+than silently replacing them with fill samples.
 
 ## Workflow template
 
@@ -147,7 +147,8 @@ repo's own mutation workflow, not a portable requirement for consumers:
 - `scripts/sample_mutation_files.py` rewrites `cosmic-ray.toml`'s
   `[cosmic-ray].module-path` list, derives the pytest node ids that actually
   covered the selected mutation surface, rewrites `[cosmic-ray].test-command`
-  for that sampled surface, and writes the sample manifest.
+  for that sampled surface, applies executable-mutant and pytest-nodeid
+  workload budgets, and writes the sample manifest.
 - `scripts/run_cosmic_ray_mutation.py --mode dry-run` runs baseline + init,
   then filters known low-signal annotation-only work items from the session.
 - `scripts/run_cosmic_ray_mutation.py --mode full` runs baseline + init +

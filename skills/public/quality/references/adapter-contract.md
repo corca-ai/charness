@@ -344,6 +344,12 @@ Fields:
 - `schedule_cron` — workflow schedule cron (default `"17 */3 * * *"`)
 - `changed_quota` — sampler quota for changed files (default `5`)
 - `max_files` — sampler total file cap (default `10`)
+- `max_executable_mutants` — sampler total executable-mutant workload cap
+  (default `120`)
+- `max_executable_mutants_per_file` — sampler per-file executable-mutant cap
+  (default `80`)
+- `max_test_nodeids` — sampler cap for pytest node ids selected by coverage
+  contexts (default `40`)
 - `auto_issue.enabled` — auto open/update issue on failure (default `false`)
 - `auto_issue.label` — issue label (default `"mutation-test"`)
 - `auto_issue.title` — issue title (default `"Mutation test regression on main"`)

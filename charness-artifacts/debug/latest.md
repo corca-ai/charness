@@ -95,6 +95,19 @@ success depend on luck in the sampled lines and kept #183 open.
   locally but not on the GitHub runner | fixed by making live Cautilus tests
   skip when the binary is absent and preventing temp git setup commits from
   executing host hooks.
+- workload budget: hosted run `26193059859` passed sampling but spent more than
+  20 minutes in `Run mutation` because a 5-file sample expanded to 538
+  executable mutants and 50 pytest nodeids | fixed by sampling against
+  executable-mutant, per-file mutant, and pytest-nodeid budgets, with changed
+  files excluded by budget treated as closeout blockers.
+- import/setup-only coverage: fresh-eye review found a mixed sample could admit
+  a file whose covered lines had no pytest nodeid contribution | fixed by
+  requiring each coverage-selected file to contribute at least one focused
+  pytest nodeid.
+- fake external-tool tests: local broad coverage failed when fake
+  `agent-browser` tests still used the real repo root and therefore hit the
+  real runtime orphan guard | fixed by passing a temp `--repo-root` for the
+  fake-browser tests.
 
 ## Seam Risk
 
@@ -117,4 +130,9 @@ success depend on luck in the sampled lines and kept #183 open.
 Make the producer and consumer contracts match: if scope gaps are fatal in the
 summary, the sampler must select by mutable-line coverage or fail before the
 expensive mutation run. Recovery closeout must require a full non-partial
-summary success and GitHub workflow proof before #183 is closed.
+summary success and GitHub workflow proof before #183 is closed. Mutation
+sampling budgets must be expressed in actual workload units, not only file
+counts: executable mutants, per-file mutants, and selected pytest nodeids are
+the closeout-relevant cost surface. Coverage-selected files must also map to at
+least one selected pytest nodeid, so import/setup-only coverage cannot smuggle a
+file into the focused mutation command.

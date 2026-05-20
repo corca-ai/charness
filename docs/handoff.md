@@ -20,18 +20,21 @@
 - Mutation sampling now runs coverage with test-function contexts, probes Cosmic
   Ray work items, keeps only files whose non-skipped mutable lines are covered,
   and rewrites the mutation `test-command` to the pytest nodeids that covered
-  the selected sample.
+  the selected sample. It also enforces executable-mutant, per-file mutant, and
+  pytest-nodeid workload budgets; file count alone is not treated as a runtime
+  budget.
 - Mutation scoring now treats `PASS-partial` as diagnostic only, exits non-zero
   for partial timeout success, and blocks recovery when changed files were
-  excluded before mutation by coverage or mutation-line filters.
+  excluded before mutation by coverage, mutation-line, or selection-budget
+  filters.
 - Workflow dependency setup now uses
   [packaging/mutation-requirements.txt](../packaging/mutation-requirements.txt)
   instead of ambient inline installs.
 - Fresh-eye reviewers judged the repo's testability posture sufficient for this
-  slice after the root-level probe config leakage was fixed. #183 remains open
-  until the hosted mutation workflow succeeds on the pushed fix.
-- Public release `v0.7.6`; release is still needed after hosted proof so plugin
-  users receive the mutation/testability hardening.
+  slice after the probe config leakage, workload-budget bug, and import-only
+  coverage risk were fixed. #183 remains open until the hosted mutation workflow
+  succeeds on the pushed fix.
+- Public release `v0.7.7`; release is still needed after hosted proof.
 
 ## Next Session
 
@@ -50,6 +53,8 @@
 - Fresh-eye valid-but-defer: make missing/malformed sample manifests a full-run
   invariant if the summary is reused outside the current workflow shape; monitor
   long focused pytest commands before adding another abstraction.
+- Lesson: mutation runtime is executable mutants times selected test command
+  cost. File caps are not workload caps.
 - Watch list (deferred): Yarn Berry hook idiom; pnpm+lefthook stale snippets;
   `filelock` + `pytest-xdist`; sibling imports via runtime bootstrap; seed-cache
   LRU eviction.
@@ -62,5 +67,4 @@
   current quality posture and commands for this slice.
 - [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md):
   current release surface.
-- [.github/workflows/mutation-tests.yml](../.github/workflows/mutation-tests.yml):
-  mutation workflow for the separate #183 validation thread.
+- [.github/workflows/mutation-tests.yml](../.github/workflows/mutation-tests.yml): #183 validation workflow.

@@ -20,6 +20,7 @@ from scripts.mutation_sampling_lib import (  # noqa: E402
     pytest_nodeid_from_coverage_context,
     rewrite_cosmic_ray_targets,
     rewrite_cosmic_ray_test_command,
+    select_budgeted_sample,
     select_test_nodeids,
 )
 from scripts.sample_mutation_files import (  # noqa: E402
@@ -143,6 +144,96 @@ def test_sample_requires_mutation_line_coverage_after_file_coverage() -> None:
     ) == ["scripts/a.py"]
 
 
+def test_sample_budget_limits_executable_mutants_and_test_nodeids(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    test_path = repo / "tests" / "test_demo.py"
+    test_path.parent.mkdir(parents=True)
+    test_path.write_text(
+        "def test_fast():\n    pass\n\ndef test_slow():\n    pass\n",
+        encoding="utf-8",
+    )
+    chosen, excluded, workload = select_budgeted_sample(
+        repo_root=repo,
+        candidates=["scripts/huge.py", "scripts/fast.py", "scripts/slow.py"],
+        limit=3,
+        seed="fixed",
+        selected=[],
+        selected_workload=0,
+        mutation_line_coverage={
+            "scripts/huge.py": {"covered": 100, "mutable": 100, "uncovered": 0},
+            "scripts/fast.py": {"covered": 5, "mutable": 5, "uncovered": 0},
+            "scripts/slow.py": {"covered": 6, "mutable": 6, "uncovered": 0},
+        },
+        line_contexts={
+            "scripts/fast.py": {1: {"tests.test_demo.test_fast"}},
+            "scripts/slow.py": {1: {"tests.test_demo.test_fast", "tests.test_demo.test_slow"}},
+        },
+        coverage_enabled=True,
+        max_executable_mutants=10,
+        max_executable_mutants_per_file=50,
+        max_test_nodeids=1,
+    )
+
+    assert chosen == ["scripts/fast.py"]
+    assert "scripts/huge.py" in excluded
+    assert "scripts/slow.py" in excluded
+    assert workload == 5
+
+
+def test_budgeted_sample_records_candidates_excluded_by_quota(tmp_path: Path) -> None:
+    chosen, excluded, workload = select_budgeted_sample(
+        repo_root=tmp_path,
+        candidates=["scripts/a.py", "scripts/b.py", "scripts/c.py"],
+        limit=1,
+        seed="fixed",
+        selected=[],
+        selected_workload=0,
+        mutation_line_coverage={
+            "scripts/a.py": {"covered": 1},
+            "scripts/b.py": {"covered": 1},
+            "scripts/c.py": {"covered": 1},
+        },
+        line_contexts={},
+        coverage_enabled=False,
+        max_executable_mutants=10,
+        max_executable_mutants_per_file=10,
+        max_test_nodeids=10,
+    )
+
+    assert len(chosen) == 1
+    assert sorted(chosen + excluded) == ["scripts/a.py", "scripts/b.py", "scripts/c.py"]
+    assert workload == 1
+
+
+def test_budgeted_sample_requires_each_file_to_have_pytest_nodeids(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    test_path = repo / "tests" / "test_demo.py"
+    test_path.parent.mkdir(parents=True)
+    test_path.write_text("def test_demo():\n    pass\n", encoding="utf-8")
+
+    chosen, excluded, workload = select_budgeted_sample(
+        repo_root=repo,
+        candidates=["scripts/import_only.py", "scripts/tested.py"],
+        limit=2,
+        seed="fixed",
+        selected=[],
+        selected_workload=0,
+        mutation_line_coverage={
+            "scripts/import_only.py": {"covered": 1, "mutable": 1, "uncovered": 0},
+            "scripts/tested.py": {"covered": 2, "mutable": 2, "uncovered": 0},
+        },
+        line_contexts={"scripts/tested.py": {1: {"tests.test_demo.test_demo"}}},
+        coverage_enabled=True,
+        max_executable_mutants=10,
+        max_executable_mutants_per_file=10,
+        max_test_nodeids=10,
+    )
+
+    assert chosen == ["scripts/tested.py"]
+    assert excluded == ["scripts/import_only.py"]
+    assert workload == 2
+
+
 def test_mutation_line_probe_paths_stay_under_reports(tmp_path: Path) -> None:
     probe_config, probe_session = mutation_probe_paths(tmp_path)
 
@@ -209,6 +300,7 @@ def test_manifest_surfaces_changed_files_excluded_by_coverage(tmp_path: Path) ->
         "changed_files_before_coverage": ["scripts/a.py", "scripts/b.py"],
         "changed_files": ["scripts/a.py"],
         "uncovered_changed_files": ["scripts/b.py"],
+        "selection_excluded_changed_files": ["scripts/c.py"],
         "changed_sample": ["scripts/a.py"],
         "fill_sample": [],
         "sample": ["scripts/a.py"],
@@ -221,8 +313,10 @@ def test_manifest_surfaces_changed_files_excluded_by_coverage(tmp_path: Path) ->
     payload = json.loads(manifest_json.read_text(encoding="utf-8"))
     text = manifest_md.read_text(encoding="utf-8")
     assert payload["uncovered_changed_files"] == ["scripts/b.py"]
+    assert payload["selection_excluded_changed_files"] == ["scripts/c.py"]
     assert "- Changed pool files: 2" in text
     assert "- Changed files excluded by coverage/mutation-line filters: 1" in text
+    assert "- Changed files excluded by selection budgets: 1" in text
     assert "- File coverage floor: 1.0" in text
     assert "- Eligible files after mutation-line filter: 1" in text
 
