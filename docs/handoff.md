@@ -24,18 +24,16 @@
 - Product success and AI/ML engineering baselines are now proposed in
   [product success metrics](./product-success-metrics.md) and
   [AI/ML engineering patterns](./ai-ml-engineering-patterns.md); runtime
-  emission is split into follow-up
+  `slice_closeout` emission landed through follow-up
   [#188](https://github.com/corca-ai/charness/issues/188).
 
 ## Next Session
 
-1. Usage-episode vocabulary baseline is now proposed in
-   [product success metrics](./product-success-metrics.md). Keep
+1. Usage-episode vocabulary baseline and the `slice_closeout` emitter are now
+   documented in [product success metrics](./product-success-metrics.md). Keep
    [.agents/usage-episodes-adapter.yaml](../.agents/usage-episodes-adapter.yaml)
-   at `enabled: false` until a runtime
-   emitter or explicit follow-up contract such as
-   [#188](https://github.com/corca-ai/charness/issues/188) writes
-   .charness/usage-episodes/usage_episode.jsonl.
+   at `enabled: false` until maintainers intentionally opt into local runtime
+   capture.
 2. For docs ergonomics, do not add a broad gate yet: first separate generated
    reference noise ([docs/cli-reference.md](./cli-reference.md)) from
    first-touch prose, then reduce [README.md](../README.md) by moving

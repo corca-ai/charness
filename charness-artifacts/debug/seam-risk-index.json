@@ -3,15 +3,15 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 25,
-  "indexed_artifact_count": 17,
+  "source_artifact_count": 27,
+  "indexed_artifact_count": 19,
   "risk_class_counts": {
-    "contract-freeze-risk": 7,
+    "contract-freeze-risk": 8,
     "host-disproves-local": 1,
-    "operator-visible-recovery": 9
+    "operator-visible-recovery": 10
   },
   "generalization_pressure_counts": {
-    "monitor": 17
+    "monitor": 19
   },
   "entries": [
     {
@@ -225,6 +225,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-05-21-agent-browser-orphan-closeout-recurrence.md",
+      "is_current_pointer": false,
+      "interrupt_id": "agent-browser-runtime-hygiene",
+      "risk_classes": [
+        "operator-visible-recovery"
+      ],
+      "seam": "external browser daemon lifecycle across closeout and support scripts.",
+      "generalization_pressure": "monitor",
+      "critique_required": false,
+      "next_step": "impl",
+      "handoff_artifact": "docs/handoff.md",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-05-21-mutation-scope-gap-testability.md",
       "is_current_pointer": false,
       "interrupt_id": "mutation-scope-gap-testability",
@@ -236,6 +250,20 @@
       "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "this file",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-05-21-usage-episode-prepush-quality-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "usage-episode-prepush-quality",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "slice closeout proof versus full pre-push proof.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "docs/handoff.md",
       "forced": false
     },
     {

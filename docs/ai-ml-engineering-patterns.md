@@ -16,12 +16,13 @@ is not another evaluation framework. It is product usage telemetry that connects
 workflow outputs to repeated user value without storing raw prompts or private
 source text.
 
-The highest-leverage proposed next improvement is to implement privacy-bounded
-`usage_episode` emission for one narrow Charness-owned workflow, using the
-vocabulary in [product-success-metrics.md](./product-success-metrics.md) while
-keeping the
-[usage-episodes adapter](../.agents/usage-episodes-adapter.yaml) disabled until
-the emitter exists.
+The highest-leverage proposed next improvement was to implement
+privacy-bounded `usage_episode` emission for one narrow Charness-owned
+workflow, using the vocabulary in
+[product-success-metrics.md](./product-success-metrics.md) while keeping the
+[usage-episodes adapter](../.agents/usage-episodes-adapter.yaml) disabled by
+default. That path now exists for `slice_closeout`; aggregation and default
+enablement remain separate decisions.
 
 ## Current-State Review
 
@@ -52,10 +53,10 @@ the emitter exists.
 
 ## Missing Or Weak Patterns
 
-1. Product outcome telemetry is disabled.
+1. Product outcome telemetry is opt-in and disabled in this repo.
    The [usage-episodes adapter](../.agents/usage-episodes-adapter.yaml) exists
-   with `enabled: false`, so the current quality posture can report readiness
-   but not product usage.
+   with `enabled: false`, so the current quality posture can report readiness.
+   `slice_closeout` emission is implemented for enabled fixtures or consumers.
 2. First value is not measured across sessions.
    Commits, artifacts, and issue closeouts exist, but no runtime record says
    which one was the first useful output for a user job.
@@ -68,11 +69,11 @@ the emitter exists.
 
 ## Improvement Candidates
 
-1. Implement one usage-episode emitter path.
-   Start with a narrow workflow such as issue resolution or handoff closeout,
-   write privacy-safe JSONL under .charness/usage-episodes/, validate it with
-   the [usage episode validator](../scripts/validate_usage_episodes.py), and
-   only then enable the adapter.
+1. Keep the `slice_closeout` usage-episode emitter narrow.
+   It writes privacy-safe JSONL under .charness/usage-episodes/ only when the
+   adapter is enabled. Validate it with the
+   [usage episode validator](../scripts/validate_usage_episodes.py) before any
+   maintainer opts this repo into capture.
 2. Add a usage-episode summary to quality review.
    Once records exist, report counts by `selected_job`, `core_action`,
    `outcome_status`, `feedback_signal`, and `t_status`; do not include raw
@@ -81,12 +82,11 @@ the emitter exists.
    This addresses the quality artifact's docs ergonomics finding without adding
    a noisy gate before ownership is clear.
 
-The first candidate is the highest effect-to-effort move under current repo
-evidence because it directly connects product success metrics to observable
-usage and narrows the handoff item that currently blocks `usage-episodes`
-activation. Maintainers still own the final product-priority decision.
+The first candidate was implemented through #188. The next highest
+effect-to-effort move is a usage-episode summary once real records exist.
+Maintainers still own the final product-priority and default-capture decisions.
 
-## Follow-Up Issue
+## Implementation Issue
 
 Concrete follow-up issue for candidate 1:
 
@@ -95,16 +95,16 @@ Concrete follow-up issue for candidate 1:
 ```text
 Title: Emit one privacy-bounded Charness usage episode workflow
 Problem: Charness has a validated usage_episode schema and a product vocabulary,
-but the adapter remains disabled because no runtime emitter writes
-.charness/usage-episodes/usage_episode.jsonl.
+but the adapter remains disabled by default until maintainers intentionally
+enable local runtime capture.
 Outcome: one narrow workflow emits a privacy-safe usage_episode record, local
 validation passes, and the adapter can be enabled only for that proven path.
 Acceptance: emitter chooses one workflow; record uses the vocabulary in
 docs/product-success-metrics.md; no raw prompt/transcript/user identity is
-written; tests cover valid and malformed emitted records; quality closeout
-reports enabled or explicitly still disabled.
+written; tests cover valid and malformed records; quality closeout reports
+enabled or explicitly still disabled.
 ```
 
-The issue should stay separate from #184/#185 because it changes runtime
-behavior, tests, and possibly quality summaries, while this slice defines the
+The issue stayed separate from #184/#185 because it changed runtime behavior,
+tests, and quality closeout behavior, while the earlier slice defined the
 product contract and investigation result.

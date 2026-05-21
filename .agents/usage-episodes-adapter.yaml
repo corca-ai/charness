@@ -1,7 +1,7 @@
 # charness usage-episodes adapter: opt in explicitly before runtime capture.
 # Runtime JSONL under .charness/usage-episodes is generated local state and is
-# ignored by git. Flip enabled to true only after this repo defines the
-# product-owned episode vocabulary it wants to emit.
+# ignored by git. Keep disabled until maintainers intentionally opt into local
+# runtime capture for the implemented emitter path.
 version: 1
 repo: charness
 enabled: false

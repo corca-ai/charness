@@ -27,6 +27,8 @@ _scripts_risk_interrupt_lib_module = import_repo_module(__file__, "scripts.risk_
 plan_risk_interrupt = _scripts_risk_interrupt_lib_module.plan_risk_interrupt
 _agent_browser_probe_policy = import_repo_module(__file__, "scripts.agent_browser_probe_policy")
 unsafe_agent_browser_probe_reason = _agent_browser_probe_policy.unsafe_agent_browser_probe_reason
+_slice_closeout_usage_episode = import_repo_module(__file__, "scripts.slice_closeout_usage_episode")
+emit_usage_episode_for_slice_closeout = _slice_closeout_usage_episode.emit_usage_episode_for_slice_closeout
 COMMAND_TIMEOUT_SECONDS = 1800
 
 
@@ -177,6 +179,20 @@ def _print_executed_commands(payload: dict[str, object]) -> None:
                 print(step["stderr"], end="" if step["stderr"].endswith("\n") else "\n")
 
 
+def _print_usage_episode(payload: dict[str, object]) -> None:
+    usage_episode = payload.get("usage_episode")
+    if not isinstance(usage_episode, dict):
+        return
+    print("Usage episode:")
+    print(f"- status: {usage_episode['status']}")
+    if usage_episode.get("records_path"):
+        print(f"- records_path: {usage_episode['records_path']}")
+    if usage_episode.get("episode_id"):
+        print(f"- episode_id: {usage_episode['episode_id']}")
+    if usage_episode.get("error"):
+        print(f"- error: {usage_episode['error']}")
+
+
 def print_text(payload: dict[str, object]) -> None:
     print(f"Closeout status: {payload['status']}")
     _print_list("Changed paths", payload["changed_paths"])
@@ -196,6 +212,7 @@ def print_text(payload: dict[str, object]) -> None:
         _print_risk_interrupt_plan(risk_interrupt_plan)
 
     _print_executed_commands(payload)
+    _print_usage_episode(payload)
 
 
 def _maybe_block_on_unmatched(payload: dict[str, object], *, allow_unmatched: bool, as_json: bool) -> int | None:
@@ -334,6 +351,10 @@ def main() -> int:
             return _emit_payload(payload, as_json=args.json)
 
     payload["status"] = "completed"
+    usage_episode = emit_usage_episode_for_slice_closeout(repo_root, str(payload["status"]))
+    payload["usage_episode"] = usage_episode
+    if usage_episode["status"] in {"invalid_adapter", "invalid_records_path", "emit_failed"}:
+        payload["status"] = "failed"
     return _emit_payload(payload, as_json=args.json)
 
 

@@ -65,7 +65,7 @@ avoid turning missing context into false confidence.
 | Metric | Definition | Why it matters | Current measurability |
 | --- | --- | --- | --- |
 | Skill routing success | Task-oriented sessions start with the expected skill or explicit capability discovery when required. | Proves Charness is reducing workflow ambiguity. | Partly measurable through Cautilus fixtures, public-skill dogfood artifacts, issue closeout notes, and manual review. |
-| First valuable artifact | First durable output that changes repo state or operator understanding, such as a spec, issue, commit, gathered record, quality artifact, or handoff update. | Connects agent activity to user-visible value instead of raw tool count. | Not yet captured automatically; vocabulary defined below for future `usage_episode` records. |
+| First valuable artifact | First durable output that changes repo state or operator understanding, such as a spec, issue, commit, gathered record, quality artifact, or handoff update. | Connects agent activity to user-visible value instead of raw tool count. | Capturable for `slice_closeout` when usage episodes are enabled; not aggregated automatically. |
 | Closeout proof strength | Highest proof level reached before commit or handoff: deterministic local gate, release gate, provider roundtrip, bounded fresh-eye review, or explicit weak proof. | Prevents green-looking but under-proven work. | Measurable from artifacts and command logs; not summarized automatically. |
 | Resume clarity | Whether [handoff](./handoff.md) points to the correct next move and stale completed work is removed. | Measures long-running agent continuity. | Manually reviewable; handoff validators cover structure but not semantic sufficiency. |
 | Quality gate health | [run-quality](../scripts/run-quality.sh) phase count, pass/fail state, runtime hot spots, and warnings. | Keeps the product maintainable as skills and validators grow. | Measured in [quality latest](../charness-artifacts/quality/latest.md) and .charness/quality/runtime-signals.json. |
@@ -116,9 +116,11 @@ The proposed Charness-owned vocabulary for the fields called out in
 | `t_status` | `none`, `candidate`, `promoted`, `rejected` | Closed enum owned by the schema; use it to connect episodes to durable learning. |
 
 This is a product vocabulary baseline only. It does not enable capture. The
-adapter stays disabled until a runtime emitter exists and a follow-up contract
-explicitly chooses .charness/usage-episodes/usage_episode.jsonl as the write
-surface. Maintainers may revise this vocabulary before enabling capture.
+adapter stays disabled until maintainers intentionally opt into capture. The
+first implemented workflow is `slice_closeout`: when the adapter is enabled,
+[run_slice_closeout](../scripts/run_slice_closeout.py) appends a privacy-safe
+record to .charness/usage-episodes/usage_episode.jsonl after successful
+closeout. Maintainers may revise this vocabulary before enabling capture.
 
 ## Measurement State And Next Actions
 
@@ -127,20 +129,21 @@ Currently measurable:
 - local gate health through [run-quality](../scripts/run-quality.sh)
 - usage-episode adapter state through the
   [usage episode validator](../scripts/validate_usage_episodes.py)
+- `slice_closeout` emission path when the usage-episodes adapter is enabled in
+  a fixture or consumer repo
 - release and quality proof through current artifacts
 - public-skill validation tiers and dogfood records
 - issue and commit closeout evidence through GitHub and git history
 
 Needs implementation before measurement:
 
-- runtime emission of `usage_episode` records
 - aggregation of first-value and feedback signals
 - a review summary that connects usage episodes to quality, retro, issue, and
   release artifacts
 
 Do not flip the
 [usage-episodes adapter](../.agents/usage-episodes-adapter.yaml) to
-`enabled: true` until the emitter and privacy-safe write contract exist.
+`enabled: true` until maintainers intentionally opt into local runtime capture.
 
 ## Review Loops
 
@@ -150,7 +153,7 @@ Weekly:
   debug/retro artifacts.
 - Check whether repeated corrections became a deterministic gate, spec, issue,
   or deliberate non-goal.
-- Report `usage-episodes` as `disabled` until emitter work lands.
+- Report `usage-episodes` as `disabled` until maintainers opt into capture.
 
 Monthly:
 
