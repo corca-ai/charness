@@ -157,12 +157,12 @@ repo's own mutation workflow, not a portable requirement for consumers:
   writes `report_paths.summary_md`.
 - `scripts/run_js_mutation.py` runs the repo's StrykerJS command-runner slice
   for `scripts/agent-runtime/*.mjs`. It is intentionally separate from the
-  Python coverage-derived sampler: command-runner mode reruns a coarse pytest
-  command per mutant, so Charness budgets it by deterministic target sampling,
-  mutant-count weights, concurrency, and a hard timeout instead of claiming
-  affected-test precision. The runner deletes stale StrykerJS JSON before each
-  launch, and the summary checker fails full mode when the fresh JSON report is
-  missing.
+  Python coverage-derived sampler: command-runner mode reruns the JS-native
+  `npm run test:agent-runtime` command per mutant, so Charness budgets it by
+  deterministic target sampling, mutant-count weights, concurrency, and a hard
+  timeout instead of claiming affected-test precision. The runner deletes stale
+  StrykerJS JSON before each launch, and the summary checker fails full mode
+  when the fresh JSON report is missing.
 
 ## Defaults Source
 

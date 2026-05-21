@@ -2,6 +2,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:agent-runtime": "node --test --test-concurrency=1 tests/agent-runtime/*.test.mjs",
     "test:mutation:js:dry-run": "python3 scripts/run_js_mutation.py --repo-root . --mode dry-run",
     "test:mutation:js": "python3 scripts/run_js_mutation.py --repo-root . --mode full"
   },

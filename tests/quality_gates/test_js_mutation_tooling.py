@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -39,7 +40,8 @@ def test_stryker_config_mutates_only_agent_runtime_sources() -> None:
     assert "plugins/**" in config["ignorePatterns"]
     assert "node_modules/**" in config["ignorePatterns"]
     assert config["testRunner"] == "command"
-    assert config["commandRunner"]["command"] == "python3 -m pytest -q tests/test_cautilus_scenarios.py"
+    assert config["commandRunner"]["command"] == "npm run test:agent-runtime"
+    assert "pytest" not in config["commandRunner"]["command"]
     assert config["concurrency"] == 2
     assert config["thresholds"]["break"] == 80
 
@@ -57,6 +59,18 @@ def test_js_mutation_pool_is_agent_runtime_only() -> None:
     ]
     assert "skills/support/gather-slack/vendor/slack-api.mjs" not in targets
     assert "plugins/charness/scripts/agent-runtime/run-local-eval-test.mjs" not in targets
+
+
+def test_js_native_tests_import_every_mutated_agent_runtime_module() -> None:
+    test_source = (ROOT / "tests" / "agent-runtime" / "native.test.mjs").read_text(encoding="utf-8")
+    imported_runtime_modules = sorted(
+        {
+            str((ROOT / "tests" / "agent-runtime" / match).resolve().relative_to(ROOT).as_posix())
+            for match in re.findall(r'from "(\.\./\.\./scripts/agent-runtime/[^"]+\.mjs)"', test_source)
+        }
+    )
+
+    assert imported_runtime_modules == list_js_targets(ROOT)
 
 
 def test_js_mutation_full_mode_samples_targets(monkeypatch) -> None:

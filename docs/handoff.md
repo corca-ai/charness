@@ -22,10 +22,10 @@
   as diagnostic only. Details: [debug latest](../charness-artifacts/debug/latest.md).
 - Follow-up hardening expands Python sampling to root CLI/bootstrap, immediate
   `scripts/*.py`, and skill helper scripts, with pool counts in the sample manifest.
-- JS mutation is a separate StrykerJS command-runner slice for
-  [agent runtime modules](../scripts/agent-runtime) with deterministic target
-  sampling, mutant-count weights, stale-report cleanup, and blocking
-  `NoCoverage`, timeout, and missing-report summary signals.
+- JS mutation is a separate StrykerJS command-runner slice using
+  `npm run test:agent-runtime` for [agent runtime modules](../scripts/agent-runtime),
+  deterministic target sampling, mutant-count weights, and blocking
+  `NoCoverage`, timeout, stale-report, and missing-report signals.
 - Default deterministic quality/coverage no longer depends on or cleans up
   ambient `agent-browser` orphan daemons. Real runtime hygiene remains an
   explicit opt-in gate (`CHARNESS_AGENT_BROWSER_RUNTIME_HYGIENE=1` or selected
@@ -40,10 +40,9 @@
    integrations/control-plane seam recorded in
    [release latest](../charness-artifacts/release/latest.md); it is not a #183
    mutation-testability blocker.
-3. Watch the first hosted mutation run after the JS slice lands. A focused local
-   Stryker full run on [contract-versions.mjs](../scripts/agent-runtime/contract-versions.mjs)
-   exposed a real 60% JS mutation score at the 80% threshold; this is now a
-   real failure signal, not hidden in the Python Cosmic Ray score.
+3. Watch the first hosted mutation run after the JS-native agent-runtime slice
+   lands. A focused local Stryker full run on [contract-versions.mjs](../scripts/agent-runtime/contract-versions.mjs)
+   now reports 100% (5 killed) from Stryker's temp sandbox.
 
 ## Discuss
 

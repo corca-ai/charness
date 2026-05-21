@@ -61,6 +61,24 @@ def test_check_changed_surfaces_verifies_mutation_workflow_actions() -> None:
     assert "python3 scripts/check_github_actions.py --repo-root ." in payload["verify_commands"]
 
 
+def test_check_changed_surfaces_routes_agent_runtime_js_to_native_tests() -> None:
+    result = run_script(
+        "scripts/check_changed_surfaces.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        "scripts/agent-runtime/run-local-eval-test.mjs",
+        "tests/agent-runtime/native.test.mjs",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    surface_ids = {surface["surface_id"] for surface in payload["matched_surfaces"]}
+    assert "agent-runtime-js" in surface_ids
+    assert "npm run test:agent-runtime" in payload["verify_commands"]
+    assert "npm run test:mutation:js:dry-run" in payload["verify_commands"]
+
+
 def test_check_changed_surfaces_reports_unmatched_paths() -> None:
     result = run_script(
         "scripts/check_changed_surfaces.py",

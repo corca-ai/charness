@@ -279,6 +279,25 @@
       ]
     },
     {
+      "surface_id": "agent-runtime-js",
+      "description": "Repo-owned JavaScript agent-runtime modules and their native test command.",
+      "source_paths": [
+        "scripts/agent-runtime/*.mjs",
+        "tests/agent-runtime/*.mjs",
+        "package.json",
+        "stryker.config.mjs"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "npm run test:agent-runtime",
+        "npm run test:mutation:js:dry-run"
+      ],
+      "notes": [
+        "StrykerJS should exercise this JS-native surface directly; Python pytest tests remain cross-language integration smokes."
+      ]
+    },
+    {
       "surface_id": "mutation-testing-workflow",
       "description": "Repo-owned scheduled mutation testing workflow, runner config, and adapter slot behavior.",
       "source_paths": [

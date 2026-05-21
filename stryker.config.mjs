@@ -8,7 +8,7 @@ export default {
 	mutate,
 	testRunner: "command",
 	commandRunner: {
-		command: "python3 -m pytest -q tests/test_cautilus_scenarios.py",
+		command: "npm run test:agent-runtime",
 	},
 	reporters: ["clear-text", "progress", "json"],
 	jsonReporter: {
