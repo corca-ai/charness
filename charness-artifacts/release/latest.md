@@ -7,7 +7,7 @@ Advanced `charness` toward release `0.7.8` (tag `v0.7.8`) through the repo-owned
 
 ## Current Version
 
-- previous version: `0.7.8`
+- previous version: `0.7.7`
 - target version: `0.7.8`
 - git branch: `main`
 - git remote: `origin`
@@ -33,11 +33,25 @@ Advanced `charness` toward release `0.7.8` (tag `v0.7.8`) through the repo-owned
 
 ## Real-Host Verification
 
-- No configured release-time real-host verification trigger matched this slice.
+- This release still requires configured real-host verification before the
+  release is fully closed. The published delta is `v0.7.7..v0.7.8`, which hits
+  the configured integrations/control-plane real-host proof seam.
 
 ## Real-Host Proof
 
-- No configured release-time real-host proof trigger matched this slice.
+- Release-time real-host proof is required for this slice.
+- On a second machine or a clean temp-home, refresh `charness` through the
+  published operator path before claiming the release surface is ready.
+- Run `charness tool doctor cautilus --json` before installing `cautilus` and
+  confirm the missing-binary state still surfaces an install document URL
+  instead of a guessed package-manager command.
+- Follow the official Cautilus install script at
+  `https://github.com/corca-ai/cautilus/blob/main/install.sh`, then verify
+  `cautilus --version` and `cautilus version --verbose`.
+- Re-run `charness tool doctor cautilus --json` and confirm the binary is
+  detected on PATH.
+- Run `charness tool sync-support cautilus --json`, then confirm the generated
+  support surface exists and the doctor payload reports support as materialized.
 
 ## Review Proof
 
