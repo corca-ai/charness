@@ -7,6 +7,10 @@ import subprocess
 import textwrap
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+PUBLISH_SCRIPT = "skills/public/release/scripts/publish_release.py"
+REVIEW_GATE_SCRIPT = "skills/public/release/scripts/check_requested_review_gate.py"
+
 
 def _write_exec(path: Path, body: str) -> None:
     path.write_text(body, encoding="utf-8")
@@ -188,7 +192,7 @@ def _write_fake_gh(bin_dir: Path) -> None:
                 tag = args[2]
                 state_path = Path(os.environ["FAKE_GH_RELEASE_STATE"])
                 state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else []
-                if tag not in state:
+                if tag not in state and os.environ.get("FAKE_GH_RELEASE_CREATE_WITHOUT_VIEW") != "1":
                     state.append(tag)
                 state_path.write_text(json.dumps(state, indent=2) + "\\n", encoding="utf-8")
                 print(f"https://github.com/example/demo/releases/tag/{tag}")
@@ -242,6 +246,40 @@ def _seed_publish_release_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
     return repo, remote, bin_dir
 
 
+def _release_env(tmp_path: Path, bin_dir: Path) -> dict[str, str]:
+    env = os.environ.copy()
+    env["PATH"] = f"{bin_dir}:{env['PATH']}"
+    env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
+    env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
+    env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
+    return env
+
+
+def _run_publish(repo: Path, env: dict[str, str], *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["python3", PUBLISH_SCRIPT, "--repo-root", str(repo), *args],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+
+def _run_publish_patch(repo: Path, env: dict[str, str], *extra: str) -> subprocess.CompletedProcess[str]:
+    return _run_publish(repo, env, "--part", "patch", *extra, "--execute")
+
+
+def _run_review_gate(repo: Path, *extra: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["python3", REVIEW_GATE_SCRIPT, "--repo-root", str(repo), *extra],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+
 def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -> None:
     repo, remote, bin_dir = _seed_publish_release_repo(tmp_path)
     critique_artifact = repo / "charness-artifacts" / "critique" / "demo.md"
@@ -250,29 +288,8 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     subprocess.run(["git", "add", str(critique_artifact)], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "commit", "-m", "Add critique proof"], cwd=repo, check=True, capture_output=True, text=True)
 
-    env = os.environ.copy()
-    env["PATH"] = f"{bin_dir}:{env['PATH']}"
-    env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
-    env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
-    env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/publish_release.py",
-            "--repo-root",
-            str(repo),
-            "--part",
-            "patch",
-            "--critique-artifact",
-            "charness-artifacts/critique/demo.md",
-            "--execute",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    env = _release_env(tmp_path, bin_dir)
+    result = _run_publish_patch(repo, env, "--critique-artifact", "charness-artifacts/critique/demo.md")
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -327,27 +344,8 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
 def test_release_artifact_does_not_claim_post_publish_proof_before_verification(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
 
-    env = os.environ.copy()
-    env["PATH"] = f"{bin_dir}:{env['PATH']}"
-    env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
-    env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
-    env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/publish_release.py",
-            "--repo-root",
-            str(repo),
-            "--part",
-            "patch",
-            "--execute",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=False,
-        capture_output=True,
-        text=True,
-        env={**env, "FAKE_GH_RELEASE_STATE": str(tmp_path / "release-state.json")},
-    )
+    env = _release_env(tmp_path, bin_dir)
+    result = _run_publish_patch(repo, env)
 
     assert result.returncode == 0, result.stderr
     tag_artifact = subprocess.run(
@@ -361,34 +359,60 @@ def test_release_artifact_does_not_claim_post_publish_proof_before_verification(
     assert "Review proof: not recorded in this helper invocation." in tag_artifact
 
 
+def test_publish_release_fails_after_post_create_verification_failure(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+
+    env = _release_env(tmp_path, bin_dir)
+    env["FAKE_GH_RELEASE_CREATE_WITHOUT_VIEW"] = "1"
+    result = _run_publish_patch(repo, env)
+
+    assert result.returncode == 1
+    assert "release post-create verification failed after external mutation" in result.stderr
+    assert "command: gh release view v0.0.1" in result.stderr
+    assert "post_publish_artifact_commit_sha:" in result.stderr
+    assert "not_committed" not in result.stderr
+    gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
+    release_create_index = next(index for index, entry in enumerate(gh_log) if entry[:2] == ["release", "create"])
+    post_create_views = [entry for entry in gh_log[release_create_index + 1 :] if entry == ["release", "view", "v0.0.1"]]
+    assert len(post_create_views) >= 3
+    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
+    assert ["push", "origin", "main", "v0.0.1"] in git_log
+    assert ["push", "origin", "main"] in git_log
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    assert "public release surface verification: failed" in artifact_text
+    assert "create returned `https://github.com/example/demo/releases/tag/v0.0.1`" in artifact_text
+    assert "post-create verification failed" in artifact_text
+    assert "## Post-Publish Proof" not in artifact_text
+
+
+def test_publish_release_does_not_close_issues_when_post_create_verification_fails(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+
+    env = _release_env(tmp_path, bin_dir)
+    env["FAKE_GH_ISSUE_STATE"] = str(tmp_path / "issue-state.json")
+    env["FAKE_GH_RELEASE_CREATE_WITHOUT_VIEW"] = "1"
+    Path(env["FAKE_GH_ISSUE_STATE"]).write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
+    result = _run_publish_patch(repo, env, "--close-issue", "44")
+
+    assert result.returncode == 1
+    state = json.loads(Path(env["FAKE_GH_ISSUE_STATE"]).read_text(encoding="utf-8"))
+    assert state["44"] == "OPEN"
+    gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
+    release_create_index = next(index for index, entry in enumerate(gh_log) if entry[:2] == ["release", "create"])
+    post_create_views = [entry for entry in gh_log[release_create_index + 1 :] if entry == ["release", "view", "v0.0.1"]]
+    assert len(post_create_views) >= 3
+    assert not any(entry[:2] == ["issue", "close"] for entry in gh_log)
+    artifact_text = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    assert "Issue closeout verification: pending or not requested." in artifact_text
+
+
 def test_publish_release_verifies_and_falls_back_to_manual_issue_close(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
 
-    env = os.environ.copy()
-    env["PATH"] = f"{bin_dir}:{env['PATH']}"
-    env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
-    env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
-    env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
+    env = _release_env(tmp_path, bin_dir)
     env["FAKE_GH_ISSUE_STATE"] = str(tmp_path / "issue-state.json")
     Path(env["FAKE_GH_ISSUE_STATE"]).write_text(json.dumps({"44": "OPEN"}) + "\n", encoding="utf-8")
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/publish_release.py",
-            "--repo-root",
-            str(repo),
-            "--part",
-            "patch",
-            "--close-issue",
-            "44",
-            "--execute",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    result = _run_publish_patch(repo, env, "--close-issue", "44")
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -472,27 +496,8 @@ def test_publish_release_records_real_host_proof_for_unreleased_content(tmp_path
         text=True,
     )
 
-    env = os.environ.copy()
-    env["PATH"] = f"{bin_dir}:{env['PATH']}"
-    env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
-    env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
-    env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/publish_release.py",
-            "--repo-root",
-            str(repo),
-            "--part",
-            "patch",
-            "--execute",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    env = _release_env(tmp_path, bin_dir)
+    result = _run_publish_patch(repo, env)
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -522,18 +527,7 @@ def test_requested_review_gate_blocks_unavailable_release_record(tmp_path: Path)
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/check_requested_review_gate.py",
-            "--repo-root",
-            str(repo),
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = _run_review_gate(repo)
 
     assert result.returncode == 1
     assert "requested review unavailable" in result.stdout
@@ -567,19 +561,7 @@ def test_requested_review_gate_allows_explicit_waiver(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/check_requested_review_gate.py",
-            "--repo-root",
-            str(repo),
-            "--json",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = _run_review_gate(repo, "--json")
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -609,19 +591,7 @@ def test_requested_review_gate_warns_when_commands_are_empty(tmp_path: Path) -> 
         encoding="utf-8",
     )
 
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/check_requested_review_gate.py",
-            "--repo-root",
-            str(repo),
-            "--json",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    result = _run_review_gate(repo, "--json")
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
@@ -629,18 +599,7 @@ def test_requested_review_gate_warns_when_commands_are_empty(tmp_path: Path) -> 
     assert payload["configuration_status"] == "not_configured"
     assert "requested_review_commands is empty" in payload["warnings"][0]
 
-    plain = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/check_requested_review_gate.py",
-            "--repo-root",
-            str(repo),
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    plain = _run_review_gate(repo)
     assert plain.returncode == 0, plain.stderr
     assert "WARNING: requested_review_commands is empty" in plain.stdout
 
@@ -662,27 +621,8 @@ def test_publish_release_blocks_failed_requested_review_command(tmp_path: Path) 
         text=True,
     )
 
-    env = os.environ.copy()
-    env["PATH"] = f"{bin_dir}:{env['PATH']}"
-    env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
-    env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
-    env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/publish_release.py",
-            "--repo-root",
-            str(repo),
-            "--part",
-            "patch",
-            "--execute",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    env = _release_env(tmp_path, bin_dir)
+    result = _run_publish_patch(repo, env)
 
     assert result.returncode == 1
     assert "requested release review gate blocked publish" in result.stderr
@@ -709,27 +649,8 @@ def test_publish_release_blocks_failed_fresh_checkout_probe_before_tag_push(tmp_
         text=True,
     )
 
-    env = os.environ.copy()
-    env["PATH"] = f"{bin_dir}:{env['PATH']}"
-    env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
-    env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
-    env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/publish_release.py",
-            "--repo-root",
-            str(repo),
-            "--part",
-            "patch",
-            "--execute",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    env = _release_env(tmp_path, bin_dir)
+    result = _run_publish_patch(repo, env)
 
     assert result.returncode == 1
     assert "fresh checkout release probes blocked publish" in result.stderr
@@ -762,27 +683,8 @@ def test_publish_release_records_passed_fresh_checkout_probes_before_push(tmp_pa
         text=True,
     )
 
-    env = os.environ.copy()
-    env["PATH"] = f"{bin_dir}:{env['PATH']}"
-    env["FAKE_GH_LOG"] = str(tmp_path / "gh-log.json")
-    env["FAKE_GIT_LOG"] = str(tmp_path / "git-log.json")
-    env["FAKE_GH_RELEASE_STATE"] = str(tmp_path / "release-state.json")
-    result = subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/publish_release.py",
-            "--repo-root",
-            str(repo),
-            "--part",
-            "patch",
-            "--execute",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
+    env = _release_env(tmp_path, bin_dir)
+    result = _run_publish_patch(repo, env)
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)

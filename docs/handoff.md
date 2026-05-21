@@ -21,8 +21,7 @@
 - Mutation #189 is closed; mutation sampling, read-only quality, and shell
   markdown/link/secret/shell gates fail closed on required discovery failures.
 - Release publishing now fails closed when unreleased-path diff, real-host proof
-  config, or previous-tag base-ref lookup/fetch fails; remaining proof caveat is
-  post-create verification recovery after external mutation.
+  config, previous-tag base-ref lookup/fetch, or post-create verification fails.
 - Usage episodes are configured but disabled; validation should report
   `disabled`, not `no_adapter`.
 - README first-touch routing moved to [workflow routes](./workflow-routes.md);
@@ -36,11 +35,10 @@
    first separate retained release/full-test sessions from current pre-push work.
 3. Keep PR CI mirroring paused unless the maintainer changes policy; local
    pre-push plus scheduled mutation deeper-check remain the current stance.
-4. The next named suppression sibling is release post-create verification
-   recovery after tag push and release creation.
-5. The remaining release-side caveat is post-create verification recovery after
-   tag push and release creation; `_release_base_ref()` lookup/fetch failures now
-   fail closed.
+4. The named release suppression queue is clear through post-create verification;
+   next work is a completion audit for remaining bug-pattern surfaces.
+5. `_release_base_ref()` lookup/fetch and post-create release visibility failures
+   now fail closed with recovery artifacts or no-mutation boundaries.
 
 ## Discuss
 
@@ -64,7 +62,8 @@
   shell gate fail-closed RCAs and proof.
 - [charness-artifacts/debug/2026-05-22-release-diff-failure-suppression.md](../charness-artifacts/debug/2026-05-22-release-diff-failure-suppression.md),
   [real-host config suppression](../charness-artifacts/debug/2026-05-22-release-real-host-config-suppression.md),
-  and [base-ref fallback suppression](../charness-artifacts/debug/2026-05-22-release-base-ref-fallback-suppression.md):
+  [base-ref fallback suppression](../charness-artifacts/debug/2026-05-22-release-base-ref-fallback-suppression.md),
+  and [post-create verification suppression](../charness-artifacts/debug/2026-05-22-release-post-create-verification-suppression.md):
   release proof suppression RCAs and fail-closed proof.
 - [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md): current quality posture.
 - [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md): current release surface.

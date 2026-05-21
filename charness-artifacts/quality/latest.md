@@ -99,10 +99,9 @@ runtime/test economics, security/supply-chain gates, and artifacts.
   proof is maintainer-local pre-push plus scheduled mutation deeper-check.
 
 ## Deferred
-- Release diff, broken real-host config, and previous-tag base-ref lookup/fetch
-  suppression are now fail-closed; post-create verification recovery remains
-  deferred.
-- Next sibling: release post-create verification recovery remains deferred.
+- Release diff, broken real-host config, previous-tag base-ref lookup/fetch, and
+  post-create verification suppression are now fail-closed with explicit proof.
+- Next sibling: run a completion audit over remaining bug-pattern surfaces.
 - Do not add docs/runtime gates from the noisy inventories until a concrete
   ownership rule or duplicated-proof deletion candidate is selected.
 

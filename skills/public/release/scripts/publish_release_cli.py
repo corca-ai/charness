@@ -33,6 +33,7 @@ _artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_art
 _preflight = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_preflight")
 _audit_narrative = SKILL_RUNTIME.load_local_skill_module(__file__, "audit_public_release_narrative")
 _issue_closeout = SKILL_RUNTIME.load_local_skill_module(__file__, "release_issue_closeout")
+_post_create = SKILL_RUNTIME.load_local_skill_module(__file__, "publish_release_post_create")
 load_adapter = _resolve_adapter.load_adapter
 build_release_payload = _current_release.build_payload
 bump_part = _bump_version.bump_part
@@ -61,6 +62,9 @@ preflight_release_issues = _issue_closeout.preflight_release_issues
 commit_issue_closeout_artifact = _issue_closeout.commit_issue_closeout_artifact
 validate_critique_artifact_arg = _preflight.validate_critique_artifact_arg
 safe_real_host_payload = _preflight.safe_real_host_payload
+fail_after_post_create_verification = _post_create.fail_after_post_create_verification
+verify_release_visible = _post_create.verify_release_visible
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -214,14 +218,13 @@ def finalize_release_payload(
     payload["artifact_path"] = artifact_relpath
     payload["real_host_required"] = host_payload["required"]
     payload["real_host_checklist"] = host_payload["checklist"]
-    payload["public_release_verification"] = "verified" if release_verified else "not_checked"
+    payload["public_release_verification"] = "verified" if release_verified else "failed"
     payload["release_url"] = next((line.strip() for line in reversed(release_stdout.splitlines()) if line.strip()), None)
     if payload["release_url"] and expected_release_url and payload["release_url"] != expected_release_url:
         payload["release_url_warning"] = (
             f"release create returned `{payload['release_url']}` but the committed artifact "
             f"recorded expected URL `{expected_release_url}`"
         )
-
 
 def commit_final_release_artifact(
     repo_root: Path,
@@ -277,10 +280,7 @@ def main() -> None:
     safe_real_host_payload(repo_root, release_content_paths, build_payload=build_real_host_payload)
     issue_repo = args.close_issue_repo or github_repo_slug(repo_root, backend, run=run)
 
-    payload = build_publish_payload(
-        args, adapter_data, current_version=current_version, previous_version=previous_version, next_version=next_version,
-        branch=branch, tag_name=tag_name, title=title, critique_artifact=critique_artifact,
-    )
+    payload = build_publish_payload(args, adapter_data, current_version=current_version, previous_version=previous_version, next_version=next_version, branch=branch, tag_name=tag_name, title=title, critique_artifact=critique_artifact)
     payload["close_issue_numbers"] = args.close_issue
     payload["close_issue_repo"] = issue_repo
     if not args.execute:
@@ -299,17 +299,11 @@ def main() -> None:
 
     host_payload = safe_real_host_payload(repo_root, sorted(set(release_content_paths + changed_paths(repo_root))), build_payload=build_real_host_payload)
     fresh_checkout_plan = build_fresh_checkout_payload(repo_root, run_probes=False)
-    write_current_artifact(
-        repo_root, adapter_data, payload, host_payload=host_payload, release_url=expected_release_url,
-        quality_status="is queued for this publish attempt", fresh_checkout_payload=fresh_checkout_plan,
-    )
+    write_current_artifact(repo_root, adapter_data, payload, host_payload=host_payload, release_url=expected_release_url, quality_status="is queued for this publish attempt", fresh_checkout_payload=fresh_checkout_plan)
     run_requested_review_gate(repo_root)
     run_cli_skill_surface_gate(repo_root, adapter_data)
     run_shell(str(adapter_data["quality_command"]), cwd=repo_root)
-    artifact_relpath = write_current_artifact(
-        repo_root, adapter_data, payload, host_payload, fresh_checkout_payload=fresh_checkout_plan,
-        release_url=expected_release_url,
-    )
+    artifact_relpath = write_current_artifact(repo_root, adapter_data, payload, host_payload, fresh_checkout_payload=fresh_checkout_plan, release_url=expected_release_url)
     run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
     run(["git", "add", "-A"], cwd=repo_root)
     commit_command = ["git", "commit", "-m", payload["commit_message"]]
@@ -332,12 +326,23 @@ def main() -> None:
     run(["git", "push", args.remote, branch, tag_name], cwd=repo_root)
 
     release_result = create_release(repo_root, backend, tag_name=tag_name, title=title, notes_file=notes_file)
-    release_verified = _helpers.release_exists(repo_root, tag_name, backend)
+    release_verify_result = verify_release_visible(
+        repo_root, tag_name, backend, backend_command=backend_command, run=run
+    )
+    release_verified = release_verify_result.returncode == 0
     finalize_release_payload(
         repo_root, payload, artifact_relpath=artifact_relpath, host_payload=host_payload,
         release_stdout=release_result.stdout, expected_release_url=expected_release_url,
         release_verified=release_verified,
     )
+    if not release_verified:
+        commit_final_release_artifact(
+            repo_root, adapter_data=adapter_data, payload=payload, host_payload=host_payload,
+            fresh_checkout_payload=fresh_checkout_payload, artifact_relpath=artifact_relpath,
+            expected_release_url=expected_release_url, remote=args.remote, branch=branch,
+            has_issue_closeout=False,
+        )
+        fail_after_post_create_verification(payload, verification_result=release_verify_result)
     ensure_release_issues_closed(repo_root, repo=issue_repo, issue_numbers=args.close_issue, payload=payload, run=run)
     commit_final_release_artifact(
         repo_root, adapter_data=adapter_data, payload=payload, host_payload=host_payload,

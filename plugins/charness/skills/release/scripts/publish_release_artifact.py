@@ -26,6 +26,8 @@ def issue_closeout_lines(issue_closeout: dict[str, Any] | None) -> list[str]:
 def release_record_lines(release_url: str | None, public_release_verification: str) -> list[str]:
     if release_url and public_release_verification == "verified":
         return [f"- GitHub release record: verified URL `{release_url}`"]
+    if release_url and public_release_verification == "failed":
+        return [f"- GitHub release record: create returned `{release_url}`, but post-create verification failed"]
     if release_url:
         return [f"- GitHub release record: target URL `{release_url}`; creation runs after the branch/tag push"]
     return ["- GitHub release record: not created by this helper run"]
@@ -54,6 +56,8 @@ def public_release_verification_lines(public_release_verification: str, release_
     lines = ["", "## Public Release Verification", ""]
     if public_release_verification == "verified":
         lines.append("- GitHub release publication: verified by the release backend.")
+    elif public_release_verification == "failed":
+        lines.append("- GitHub release publication: create returned a result, but post-create verification failed.")
     elif release_url:
         lines.append("- GitHub release publication: expected after branch/tag push; not verified yet.")
     else:
