@@ -18,9 +18,8 @@
 - Current bug-pattern sibling scan added `check-current-pointer-writes`,
   migrated direct `latest.*` writers to a symlink-safe helper, and moved two
   standing Python scans onto git-visible file listing.
-- Mutation #189 is closed on GitHub after the worktree/eval-registry survivor
-  fixes and subprocess coverage collection; mutation sampling now fails closed
-  when changed-file `git diff` cannot compute the sample delta.
+- Mutation #189 is closed; mutation sampling fails closed on changed diff
+  failure, and read-only quality queues coverage when git listing fails.
 - Release publishing now fails closed when unreleased-path diff, real-host proof
   config, or previous-tag base-ref lookup/fetch fails; remaining proof caveat is
   post-create verification recovery after external mutation.
@@ -37,10 +36,8 @@
    first separate retained release/full-test sessions from current pre-push work.
 3. Keep PR CI mirroring paused unless the maintainer changes policy; local
    pre-push plus scheduled mutation deeper-check remain the current stance.
-4. The next suppression sibling is read-only quality changed-path discovery:
-   [scripts/run-quality.sh](../scripts/run-quality.sh) still uses shell
-   `|| true` around git diff/listing and can skip coverage selection if those
-   commands fail.
+4. The next suppression sibling is shell file-listing gates: markdown, internal
+   links, and secrets can pass empty if git listing fails.
 5. The remaining release-side caveat is post-create verification recovery after
    tag push and release creation; `_release_base_ref()` lookup/fetch failures now
    fail closed.
@@ -51,8 +48,8 @@
   fatal downstream closeout predicates, and runtime is executable mutants times
   selected test command cost, not just file count.
 - Watch list: Yarn Berry hook idiom; pnpm+lefthook stale snippets; `filelock`
-  plus `pytest-xdist`; seed-cache LRU eviction; read-only quality changed-path
-  discovery; usage episodes; CLI docs ownership; release proof suppression.
+  plus `pytest-xdist`; seed-cache LRU eviction; shell file-listing gates; usage
+  episodes; CLI docs ownership; release proof suppression.
 
 ## References
 

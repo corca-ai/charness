@@ -21,6 +21,10 @@ The healthier contract is that the repo should expose a cheap deterministic
 candidate subset, then use broader gates or observation data until the subset
 has earned trust.
 
+When the selector cannot discover changed files, affected tests, or observed
+dependencies, do not treat that as an empty set. Either run the broader safety
+gate or fail with a diagnostic that names the failed discovery command.
+
 ## Review Questions
 
 Ask these before recommending a new test runner, mutation runner, cache, or

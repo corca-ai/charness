@@ -96,6 +96,32 @@ uppercase_status() {
   esac
 }
 
+run_changed_path_git() {
+  local context="$1"
+  shift
+  local stdout_path stderr_path rc
+
+  stdout_path="$RUN_QUALITY_TMPDIR/changed-path-${context//[^A-Za-z0-9_.-]/_}.stdout"
+  stderr_path="$RUN_QUALITY_TMPDIR/changed-path-${context//[^A-Za-z0-9_.-]/_}.stderr"
+
+  if "$@" >"$stdout_path" 2>"$stderr_path"; then
+    cat "$stdout_path"
+    return 0
+  else
+    rc=$?
+  fi
+
+  echo "run-quality: changed-path discovery command failed ($context)" >&2
+  printf 'command:' >&2
+  printf ' %q' "$@" >&2
+  printf '\nexit_code: %s\n' "$rc" >&2
+  echo "STDOUT:" >&2
+  cat "$stdout_path" >&2
+  echo "STDERR:" >&2
+  cat "$stderr_path" >&2
+  return 1
+}
+
 collect_quality_changed_paths() {
   local upstream_ref merge_base
 
@@ -104,18 +130,19 @@ collect_quality_changed_paths() {
   fi
 
   if upstream_ref="$(git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null)"; then
-    if merge_base="$(git merge-base HEAD "$upstream_ref" 2>/dev/null)"; then
-      git diff --name-only "$merge_base"...HEAD || true
+    if ! merge_base="$(run_changed_path_git upstream-merge-base git merge-base HEAD "$upstream_ref")"; then
+      return 1
     fi
+    run_changed_path_git upstream-diff git diff --name-only "$merge_base"...HEAD || return 1
   fi
 
-  git diff --name-only || true
-  git diff --name-only --cached || true
-  git ls-files --others --exclude-standard || true
+  run_changed_path_git unstaged-diff git diff --name-only || return 1
+  run_changed_path_git staged-diff git diff --name-only --cached || return 1
+  run_changed_path_git untracked-list git ls-files --others --exclude-standard || return 1
 }
 
 coverage_relevant_changes_present() {
-  local path
+  local path changed_paths_path
 
   if [[ -n "$RUN_QUALITY_LABELS" ]]; then
     return 0
@@ -125,13 +152,19 @@ coverage_relevant_changes_present() {
     return 0
   fi
 
+  changed_paths_path="$RUN_QUALITY_TMPDIR/quality-changed-paths.txt"
+  if ! collect_quality_changed_paths >"$changed_paths_path"; then
+    echo "run-quality: changed-path discovery failed; running check-coverage fail-closed." >&2
+    return 0
+  fi
+
   while IFS= read -r path; do
     case "$path" in
       scripts/control_plane_lib.py|scripts/control_plane_lifecycle_lib.py|scripts/doctor.py|scripts/install_provenance_lib.py|scripts/install_tools.py|scripts/support_sync_lib.py|scripts/sync_support.py|scripts/update_tools.py|scripts/upstream_release_lib.py|scripts/check_coverage.py|scripts/check_coverage_lib.py|scripts/check_coverage_extra_lib.py|tests/control_plane/*|tests/quality_gates/test_check_coverage_inventory.py)
         return 0
         ;;
     esac
-  done < <(collect_quality_changed_paths)
+  done <"$changed_paths_path"
 
   return 1
 }

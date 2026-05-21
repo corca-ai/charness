@@ -3,16 +3,16 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 33,
-  "indexed_artifact_count": 25,
+  "source_artifact_count": 34,
+  "indexed_artifact_count": 26,
   "risk_class_counts": {
-    "contract-freeze-risk": 12,
+    "contract-freeze-risk": 13,
     "host-disproves-local": 1,
     "none": 1,
     "operator-visible-recovery": 11
   },
   "generalization_pressure_counts": {
-    "monitor": 25
+    "monitor": 26
   },
   "entries": [
     {
@@ -352,13 +352,27 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "mutation-changed-diff-suppression",
+      "artifact_path": "charness-artifacts/debug/2026-05-22-run-quality-changed-path-suppression.md",
+      "is_current_pointer": false,
+      "interrupt_id": "run-quality-changed-path-suppression",
       "risk_classes": [
         "contract-freeze-risk"
       ],
-      "seam": "GitHub/scheduled mutation base SHA -> local changed-file discovery -> mutation sample manifest",
+      "seam": "git changed-path discovery -> read-only quality coverage selection",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "docs/handoff.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "run-quality-changed-path-suppression",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "git changed-path discovery -> read-only quality coverage selection",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",

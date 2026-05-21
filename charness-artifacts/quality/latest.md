@@ -39,13 +39,14 @@ runtime/test economics, security/supply-chain gates, and artifacts.
   retained sessions.
 
 ## Testability and Selection
-- Mutation sampling now starts subprocess coverage with inherited pytest context,
-  so CLI/script tests can contribute selectable nodeids. The latest sample
-  selected one changed file and now splits remaining changed-file exclusions
-  into file-coverage-floor and mutation-line buckets.
+- Mutation sampling starts subprocess coverage with inherited pytest context,
+  selects CLI/script nodeids, and splits changed-file exclusions into
+  file-coverage-floor and mutation-line buckets.
 - Mutation changed-file diff discovery now fails closed when a base SHA is set
   and `git diff --name-only` fails, before sample manifests or Cosmic Ray
   config rewrites.
+- Read-only changed-path discovery runs `check-coverage` when git diff/listing
+  fails, so unknown changed state is not empty.
 
 ## Coverage and Eval Depth
 - `inventory_public_spec_quality.py` reported `public_spec_count=4`,
@@ -101,8 +102,7 @@ runtime/test economics, security/supply-chain gates, and artifacts.
 - Release diff, broken real-host config, and previous-tag base-ref lookup/fetch
   suppression are now fail-closed; post-create verification recovery remains
   deferred.
-- Read-only quality changed-path discovery still has shell `|| true` fallbacks
-  around git diff/listing and remains the next suppression-sibling target.
+- Shell markdown/link/secret file-listing gates remain the next sibling target.
 - Do not add docs/runtime gates from the noisy inventories until a concrete
   ownership rule or duplicated-proof deletion candidate is selected.
 

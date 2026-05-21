@@ -17,7 +17,7 @@
 - keep release proof suppression split into fixed diff failure and deferred real-host payload/post-create/base-ref risks is stale after this session; current split is fixed diff, fixed real-host payload/config, fixed base-ref lookup/fetch, and deferred post-create recovery semantics. (source: `charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md`; sources: 2)
 - after editing long checked-in JSON registries, review the diff before running broad gates so neighbor metadata churn is caught locally. (source: `charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md`)
 - after handoff compaction, run `validate_handoff_artifact.py` plus the small invariant test touching the changed token before the full gate. (source: `charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md`)
-- for every fail-closed helper branch, test both the command that discovers state and the command that materializes it. (source: `charness-artifacts/retro/2026-05-22-release-base-ref-fallback-session.md`)
+- consider a reusable shell helper for git listing diagnostics if the markdown/link/secret siblings are fixed in shell rather than ported. (source: `charness-artifacts/retro/2026-05-22-run-quality-changed-path-session.md`)
 
 ## Selection Policy
 
@@ -31,3 +31,4 @@
 - `charness-artifacts/retro/2026-05-22-release-base-ref-fallback-session.md`
 - `charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md`
 - `charness-artifacts/retro/2026-05-22-release-real-host-config-session.md`
+- `charness-artifacts/retro/2026-05-22-run-quality-changed-path-session.md`
