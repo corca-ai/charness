@@ -14,9 +14,7 @@
 
 ## Current State
 
-- Current shipped release is `v0.7.8`; local `main` is ahead with quality,
-  usage-episode-adapter, and copy-heavy release-only commits that still need
-  normal push/release handling.
+- Current shipped release is `v0.7.9`; local `main` is clean with `origin/main`.
 - Latest quality slices promoted `inventory-gitignore-scan-hygiene` into
   `run-quality`, kept copy-heavy tests out of ordinary pre-push, and refreshed
   [quality latest](../charness-artifacts/quality/latest.md).
@@ -26,25 +24,23 @@
 
 ## Next Session
 
-1. Push and cut the release for the current local commits before changing the
-   usage-episode adapter state.
-2. In the first post-release pickup, decide the Charness-owned vocabulary for
+1. Decide the Charness-owned usage-episode vocabulary for
    `selected_job`, `core_action`, `agent_action.surface`, `first_value_ref`,
    and `feedback_signal`; then flip `enabled: true` only with the runtime
    emitter or an explicit follow-up contract for
    `.charness/usage-episodes/usage_episode.jsonl`.
-3. For docs ergonomics, do not add a broad gate yet: first separate generated
+2. For docs ergonomics, do not add a broad gate yet: first separate generated
    reference noise ([docs/cli-reference.md](./cli-reference.md)) from
    first-touch prose, then reduce [README.md](../README.md) by moving
    route/procedure detail to the owning docs while
    preserving Quick Start and Skill Map discoverability.
-4. Copy-heavy repo/home/plugin tests are now guarded as `release_only` by
+3. Copy-heavy repo/home/plugin tests are now guarded as `release_only` by
    [check_test_repo_copy_invariants.py](../scripts/check_test_repo_copy_invariants.py);
    if pytest temp looks large,
    first separate retained release/full-test sessions from current pre-push work.
-5. Keep PR CI mirroring paused unless the maintainer changes policy; local
+4. Keep PR CI mirroring paused unless the maintainer changes policy; local
    pre-push plus scheduled mutation deeper-check remain the current stance.
-6. The remaining release-side caveat is real-host verification for the
+5. The remaining release-side caveat is real-host verification for the
    integrations/control-plane seam recorded in
    [release latest](../charness-artifacts/release/latest.md).
 
