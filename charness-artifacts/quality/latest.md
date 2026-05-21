@@ -137,5 +137,4 @@ runtime/test economics, security/supply-chain gates, and artifacts.
   keep docs ergonomics separate; README is below the threshold and generated
   [docs/cli-reference.md](../../docs/cli-reference.md) remains separate.
 ## History
-- [2026-05-21 mutation-testability closeout](history/2026-05-21-mutation-testability-closeout.md)
-- [2026-05-14 mutation testing dogfood](history/2026-05-14-mutation-testing-dogfood.md)
+- [2026-05-21 mutation-testability closeout](history/2026-05-21-mutation-testability-closeout.md); [2026-05-14 mutation testing dogfood](history/2026-05-14-mutation-testing-dogfood.md)
