@@ -76,6 +76,144 @@ def test_check_links_internal_fails_when_git_listing_fails(tmp_path: Path) -> No
     assert "No markdown files to check." not in result.stdout
 
 
+def test_check_shell_fails_when_file_discovery_is_partial(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    script_path = _copy_script(repo, "check-shell.sh")
+    (repo / "root.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    bin_dir = repo / "bin"
+    bin_dir.mkdir()
+    shellcheck_called = repo / "shellcheck-called"
+    write_executable(
+        bin_dir / "find",
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'if [[ "$1" == "." ]]; then',
+                '  echo "./root.sh"',
+                "  exit 0",
+                "fi",
+                'if [[ "$1" == "scripts" ]]; then',
+                '  echo "forced find failure" >&2',
+                "  exit 42",
+                "fi",
+                'exec /usr/bin/find "$@"',
+                "",
+            ]
+        ),
+    )
+    write_executable(
+        bin_dir / "shellcheck",
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                f"touch {str(shellcheck_called)!r}",
+                "exit 99",
+                "",
+            ]
+        ),
+    )
+
+    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin")
+    result = run_shell_script(script_path, cwd=repo, env=env)
+
+    assert result.returncode == 1
+    assert "check-shell: shell file discovery failed." in result.stderr
+    assert "command: { find . -maxdepth 1 -type f -name '*.sh'" in result.stderr
+    assert "exit_code: 42" in result.stderr
+    assert "./root.sh" in result.stderr
+    assert "forced find failure" in result.stderr
+    assert not shellcheck_called.exists()
+
+
+def test_check_shell_fails_when_root_file_discovery_fails(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    script_path = _copy_script(repo, "check-shell.sh")
+    bin_dir = repo / "bin"
+    bin_dir.mkdir()
+    shellcheck_called = repo / "shellcheck-called"
+    write_executable(
+        bin_dir / "find",
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'if [[ "$1" == "." ]]; then',
+                '  echo "forced root find failure" >&2',
+                "  exit 42",
+                "fi",
+                'exec /usr/bin/find "$@"',
+                "",
+            ]
+        ),
+    )
+    write_executable(
+        bin_dir / "shellcheck",
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                f"touch {str(shellcheck_called)!r}",
+                "exit 99",
+                "",
+            ]
+        ),
+    )
+
+    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin")
+    result = run_shell_script(script_path, cwd=repo, env=env)
+
+    assert result.returncode == 1
+    assert "check-shell: shell file discovery failed." in result.stderr
+    assert "exit_code: 42" in result.stderr
+    assert "forced root find failure" in result.stderr
+    assert not shellcheck_called.exists()
+
+
+def test_check_shell_skips_shellcheck_when_successful_discovery_is_empty(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    script_path = _copy_script(repo, "check-shell.sh")
+    bin_dir = repo / "bin"
+    bin_dir.mkdir()
+    shellcheck_called = repo / "shellcheck-called"
+    write_executable(bin_dir / "find", "#!/usr/bin/env bash\nexit 0\n")
+    write_executable(
+        bin_dir / "shellcheck",
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                f"touch {str(shellcheck_called)!r}",
+                "exit 99",
+                "",
+            ]
+        ),
+    )
+
+    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin")
+    result = run_shell_script(script_path, cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert not shellcheck_called.exists()
+
+
+def test_check_shell_treats_missing_githooks_as_optional(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    script_path = _copy_script(repo, "check-shell.sh")
+    bin_dir = repo / "bin"
+    bin_dir.mkdir()
+    output_path = repo / "shellcheck-args.txt"
+    write_executable(
+        bin_dir / "shellcheck",
+        "#!/usr/bin/env bash\nprintf '%s\\n' \"$@\" > \"$TEST_OUTPUT\"\n",
+    )
+
+    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin", TEST_OUTPUT=str(output_path))
+    result = run_shell_script(script_path, cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    args = output_path.read_text(encoding="utf-8").splitlines()
+    assert args == ["-x", "scripts/check-shell.sh"]
+
+
 def test_check_secrets_prefers_gitleaks_when_available(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     scripts_dir = repo / "scripts"

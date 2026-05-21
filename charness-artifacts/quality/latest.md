@@ -45,8 +45,8 @@ runtime/test economics, security/supply-chain gates, and artifacts.
 - Mutation changed-file diff discovery now fails closed when a base SHA is set
   and `git diff --name-only` fails, before sample manifests or Cosmic Ray
   config rewrites.
-- Read-only changed-path discovery and shell markdown/link/secret file-list
-  discovery now fail closed when git diff/listing fails.
+- Read-only changed-path discovery and shell markdown/link/secret/shell file
+  discovery now fail closed when required collectors fail.
 
 ## Coverage and Eval Depth
 - `inventory_public_spec_quality.py` reported `public_spec_count=4`,
@@ -102,7 +102,7 @@ runtime/test economics, security/supply-chain gates, and artifacts.
 - Release diff, broken real-host config, and previous-tag base-ref lookup/fetch
   suppression are now fail-closed; post-create verification recovery remains
   deferred.
-- Next sibling: `check-shell.sh` find collector process-substitution failure shape.
+- Next sibling: release post-create verification recovery remains deferred.
 - Do not add docs/runtime gates from the noisy inventories until a concrete
   ownership rule or duplicated-proof deletion candidate is selected.
 
