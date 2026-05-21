@@ -14,35 +14,28 @@
 
 ## Current State
 
-- Current shipped slice resolves #183's mutation-testability regression; #183 is
-  verified closed and release `v0.7.8` is published.
-- Python mutation sampling now uses coverage contexts and Cosmic Ray work-item
-  probes, rewrites the selected sample's pytest nodeids, enforces workload
-  budgets by executable mutants and nodeids, and treats partial timeout success
-  as diagnostic only. Details: [debug latest](../charness-artifacts/debug/latest.md).
-- Follow-up hardening expands Python sampling to root CLI/bootstrap, immediate
-  `scripts/*.py`, and skill helper scripts, with pool counts in the sample manifest.
-- JS mutation is a separate StrykerJS command-runner slice using
-  `npm run test:agent-runtime` for [agent runtime modules](../scripts/agent-runtime),
-  deterministic target sampling, mutant-count weights, and blocking
-  `NoCoverage`, timeout, stale-report, and missing-report signals.
-- Default deterministic quality/coverage no longer depends on or cleans up
-  ambient `agent-browser` orphan daemons. Real runtime hygiene remains an
-  explicit opt-in gate (`CHARNESS_AGENT_BROWSER_RUNTIME_HYGIENE=1` or selected
-  labels); when explicitly run, hygiene failure still triggers cleanup.
+- Current shipped release is `v0.7.8`; #183's mutation-testability regression is
+  closed unless a new hosted run regresses.
+- Latest quality slice promoted `inventory-gitignore-scan-hygiene` into
+  `run-quality` and refreshed [quality latest](../charness-artifacts/quality/latest.md).
+- Usage episodes are now intentionally configured but disabled in
+  [.agents/usage-episodes-adapter.yaml](../.agents/usage-episodes-adapter.yaml).
+  Validation should report `disabled`, not `no_adapter`.
 
 ## Next Session
 
-1. If picked up for this slice, treat #183 as closed and released unless a new
-   GitHub run regresses. Re-check `gh issue view 183`,
-   `gh run view 26196843109`, and `gh release view v0.7.8` before reopening.
-2. The remaining release-side caveat is real-host verification for the
+1. Keep PR CI mirroring paused unless the maintainer changes policy; local
+   pre-push plus scheduled mutation deeper-check remain the current stance.
+2. Before enabling usage episodes, define the Charness-owned vocabulary for
+   `selected_job`, `core_action`, `agent_action.surface`, `first_value_ref`,
+   and `feedback_signal`; then flip `enabled: true` and add or wire a runtime
+   emitter for `.charness/usage-episodes/usage_episode.jsonl`.
+3. For standing-test economics, investigate whether packaging/tool tests still
+   materialize full repo/home/plugin copies or merely leave retained pytest temp
+   sessions; reduce repeated nested CLI proof before changing budgets.
+4. The remaining release-side caveat is real-host verification for the
    integrations/control-plane seam recorded in
-   [release latest](../charness-artifacts/release/latest.md); it is not a #183
-   mutation-testability blocker.
-3. Watch the first hosted mutation run after the JS-native agent-runtime slice
-   lands. A focused local Stryker full run on [contract-versions.mjs](../scripts/agent-runtime/contract-versions.mjs)
-   now reports 100% (5 killed) from Stryker's temp sandbox.
+   [release latest](../charness-artifacts/release/latest.md).
 
 ## Discuss
 
@@ -57,8 +50,8 @@
   coverage-derived sampler; budget it separately and treat `NoCoverage` as a
   scope gap.
 - Watch list (deferred): Yarn Berry hook idiom; pnpm+lefthook stale snippets;
-  `filelock` + `pytest-xdist`; sibling imports via runtime bootstrap; seed-cache
-  LRU eviction; subprocess coverage for CLI-only mutation targets.
+  `filelock` + `pytest-xdist`; seed-cache LRU eviction; subprocess coverage
+  for CLI-only mutation targets; usage-episode vocabulary and emitter design.
 
 ## References
 
