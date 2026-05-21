@@ -77,6 +77,12 @@ by the selected test command, and should surface changed files filtered out by
 coverage, mutation-line, or selection-budget filters as a blocking signal rather
 than silently replacing them with fill samples.
 
+When a sampler is configured with a base/head range for changed-file priority,
+failure to compute that changed-file list is a blocking signal, not an empty
+changed set. Fail before publishing sample manifests, workflow outputs, or
+tool config rewrites so downstream summary gates cannot mistake missing
+discovery for zero changed files.
+
 ## Workflow template
 
 `scripts/templates/mutation-tests.yml` is installed at the adapter's

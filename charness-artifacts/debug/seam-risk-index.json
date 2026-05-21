@@ -3,16 +3,16 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 32,
-  "indexed_artifact_count": 24,
+  "source_artifact_count": 33,
+  "indexed_artifact_count": 25,
   "risk_class_counts": {
-    "contract-freeze-risk": 11,
+    "contract-freeze-risk": 12,
     "host-disproves-local": 1,
     "none": 1,
     "operator-visible-recovery": 11
   },
   "generalization_pressure_counts": {
-    "monitor": 24
+    "monitor": 25
   },
   "entries": [
     {
@@ -296,6 +296,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-05-22-mutation-changed-diff-suppression.md",
+      "is_current_pointer": false,
+      "interrupt_id": "mutation-changed-diff-suppression",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "GitHub/scheduled mutation base SHA -> local changed-file discovery -> mutation sample manifest",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "docs/handoff.md",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-05-22-release-base-ref-fallback-suppression.md",
       "is_current_pointer": false,
       "interrupt_id": "release-base-ref-fallback-suppression",
@@ -340,11 +354,11 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "release-base-ref-fallback-suppression",
+      "interrupt_id": "mutation-changed-diff-suppression",
       "risk_classes": [
         "contract-freeze-risk"
       ],
-      "seam": "previous release tag discovery -> unreleased-path delta -> real-host proof trigger",
+      "seam": "GitHub/scheduled mutation base SHA -> local changed-file discovery -> mutation sample manifest",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",

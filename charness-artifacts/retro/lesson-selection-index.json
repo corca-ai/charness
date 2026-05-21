@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-22",
-  "source_artifact_count": 66,
-  "candidate_count": 409,
+  "source_artifact_count": 67,
+  "candidate_count": 415,
   "top_candidates": [
     {
       "candidate_id": "next_improvement:5de08e36a11f",
@@ -100,6 +100,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:1283611e0a6e",
+      "kind": "current_focus",
+      "lesson": "This session hardened mutation sampling so a configured base/head changed-file diff failure exits before publishing sample manifests, workflow outputs, or Cosmic Ray config rewrites.",
+      "normalized_key": "this session hardened mutation sampling so a configured base head changed file diff failure",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
+          "date": "2026-05-22",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6cfcbfbc0c95",
       "kind": "next_improvement",
       "lesson": "after editing long checked-in JSON registries, review the diff before running broad gates so neighbor metadata churn is caught locally.",
@@ -114,6 +134,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md",
+          "date": "2026-05-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:32a48ccf2491",
+      "kind": "next_improvement",
+      "lesson": "after handoff compaction, run `validate_handoff_artifact.py` plus the small invariant test touching the changed token before the full gate.",
+      "normalized_key": "after handoff compaction run validate handoff artifact py plus the small invariant test touching",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
           "date": "2026-05-22",
           "section": "Next Improvements"
         }
@@ -180,6 +220,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:e959ba991a38",
+      "kind": "next_improvement",
+      "lesson": "keep the next suppression sibling explicit as read-only quality changed-path discovery swallowing git failures.",
+      "normalized_key": "keep the next suppression sibling explicit as read only quality changed path discovery swallowing",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
+          "date": "2026-05-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:7b7f35a43a77",
       "kind": "next_improvement",
       "lesson": "next non-release suppression slice should fix mutation `list_changed()` so `git diff` failure cannot become no changed files.",
@@ -194,66 +254,6 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-22-release-base-ref-fallback-session.md",
-          "date": "2026-05-22",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:2c615bbbf6e1",
-      "kind": "next_improvement",
-      "lesson": "when a generated index consumes Markdown key-value lines, keep source values single-line unless the parser explicitly supports continuation.",
-      "normalized_key": "when a generated index consumes markdown key value lines keep source values single line",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-base-ref-fallback-session.md",
-      "latest_source_date": "2026-05-22",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-22-release-base-ref-fallback-session.md",
-          "date": "2026-05-22",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:11919a9c74d5",
-      "kind": "next_improvement",
-      "lesson": "when moving a gate before dry-run output, add a dry-run compatibility assertion for the non-trigger case.",
-      "normalized_key": "when moving a gate before dry run output add a dry run compatibility assertion",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
-      "latest_source_date": "2026-05-22",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
-          "date": "2026-05-22",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:bcaf6dcef7c2",
-      "kind": "next_improvement",
-      "lesson": "when replacing an advisory fallback with fail-closed behavior, add one test for returned error payloads and one for thrown exceptions.",
-      "normalized_key": "when replacing an advisory fallback with fail closed behavior add one test for returned",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
-      "latest_source_date": "2026-05-22",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
           "date": "2026-05-22",
           "section": "Next Improvements"
         }
@@ -347,6 +347,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:1283611e0a6e",
+      "kind": "current_focus",
+      "lesson": "This session hardened mutation sampling so a configured base/head changed-file diff failure exits before publishing sample manifests, workflow outputs, or Cosmic Ray config rewrites.",
+      "normalized_key": "this session hardened mutation sampling so a configured base head changed file diff failure",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
+          "date": "2026-05-22",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6cfcbfbc0c95",
       "kind": "next_improvement",
       "lesson": "after editing long checked-in JSON registries, review the diff before running broad gates so neighbor metadata churn is caught locally.",
@@ -361,6 +381,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md",
+          "date": "2026-05-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:32a48ccf2491",
+      "kind": "next_improvement",
+      "lesson": "after handoff compaction, run `validate_handoff_artifact.py` plus the small invariant test touching the changed token before the full gate.",
+      "normalized_key": "after handoff compaction run validate handoff artifact py plus the small invariant test touching",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
           "date": "2026-05-22",
           "section": "Next Improvements"
         }
@@ -427,6 +467,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:e959ba991a38",
+      "kind": "next_improvement",
+      "lesson": "keep the next suppression sibling explicit as read-only quality changed-path discovery swallowing git failures.",
+      "normalized_key": "keep the next suppression sibling explicit as read only quality changed path discovery swallowing",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
+          "date": "2026-05-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:7b7f35a43a77",
       "kind": "next_improvement",
       "lesson": "next non-release suppression slice should fix mutation `list_changed()` so `git diff` failure cannot become no changed files.",
@@ -441,6 +501,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-22-release-base-ref-fallback-session.md",
+          "date": "2026-05-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:86d42172bc4f",
+      "kind": "next_improvement",
+      "lesson": "when a debug artifact cites ignored generated outputs, mark those lines `<!-- reproduction-source -->` while writing the artifact.",
+      "normalized_key": "when a debug artifact cites ignored generated outputs mark those lines reproduction source while",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
           "date": "2026-05-22",
           "section": "Next Improvements"
         }
@@ -567,6 +647,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:4ecdff9df4c4",
+      "kind": "repeat_trap",
+      "lesson": "Handoff trimming removed `recent-lessons.md`, causing a later standing-gate failure that a targeted memory invariant check exposed.",
+      "normalized_key": "handoff trimming removed recent lessons md causing a later standing gate failure that a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
+          "date": "2026-05-22",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:6598352f0c55",
       "kind": "repeat_trap",
       "lesson": "The debug seam line wrapped across two Markdown lines, so the generated seam-risk index captured only the first half until the counterweight review caught it.",
@@ -581,6 +681,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-22-release-base-ref-fallback-session.md",
+          "date": "2026-05-22",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2731d1733bb5",
+      "kind": "repeat_trap",
+      "lesson": "The first closeout run caught gitignored reproduction paths in the new debug artifact because the reproduction-source marker was added after the artifact, not during writing.",
+      "normalized_key": "the first closeout run caught gitignored reproduction paths in the new debug artifact because",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md",
           "date": "2026-05-22",
           "section": "Waste"
         }

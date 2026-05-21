@@ -3,8 +3,7 @@
 ## Workflow Trigger
 
 - Start every task-oriented pickup with `charness:find-skills`, then read this file,
-  [quality latest](../charness-artifacts/quality/latest.md), and
-  [recent lessons](../charness-artifacts/retro/recent-lessons.md).
+  [quality latest](../charness-artifacts/quality/latest.md), and recent-lessons.md.
 - Refresh live state before acting: `git status --short --branch`,
   `git log --oneline origin/main..HEAD`, and `gh issue list --state open --limit 50`.
 - Before mutating code, generated exports, or validation behavior, read
@@ -20,9 +19,8 @@
   migrated direct `latest.*` writers to a symlink-safe helper, and moved two
   standing Python scans onto git-visible file listing.
 - Mutation #189 is closed on GitHub after the worktree/eval-registry survivor
-  fixes and subprocess coverage collection; the remaining mutation watch item is
-  fail-closed changed-file discovery when `git diff` cannot compute the sample
-  delta.
+  fixes and subprocess coverage collection; mutation sampling now fails closed
+  when changed-file `git diff` cannot compute the sample delta.
 - Release publishing now fails closed when unreleased-path diff, real-host proof
   config, or previous-tag base-ref lookup/fetch fails; remaining proof caveat is
   post-create verification recovery after external mutation.
@@ -39,9 +37,10 @@
    first separate retained release/full-test sessions from current pre-push work.
 3. Keep PR CI mirroring paused unless the maintainer changes policy; local
    pre-push plus scheduled mutation deeper-check remain the current stance.
-4. Mutation changed-file eligibility is still the active watch item: add direct
-   tests for the current-pointer slice until a `b882398..HEAD` sample reports
-   no file-coverage-floor or mutation-line changed-file exclusions.
+4. The next suppression sibling is read-only quality changed-path discovery:
+   [scripts/run-quality.sh](../scripts/run-quality.sh) still uses shell
+   `|| true` around git diff/listing and can skip coverage selection if those
+   commands fail.
 5. The remaining release-side caveat is post-create verification recovery after
    tag push and release creation; `_release_base_ref()` lookup/fetch failures now
    fail closed.
@@ -52,8 +51,8 @@
   fatal downstream closeout predicates, and runtime is executable mutants times
   selected test command cost, not just file count.
 - Watch list: Yarn Berry hook idiom; pnpm+lefthook stale snippets; `filelock`
-  plus `pytest-xdist`; seed-cache LRU eviction; changed-file mutation
-  eligibility; usage episodes; CLI docs ownership; release proof suppression.
+  plus `pytest-xdist`; seed-cache LRU eviction; read-only quality changed-path
+  discovery; usage episodes; CLI docs ownership; release proof suppression.
 
 ## References
 
@@ -61,10 +60,11 @@
   current-pointer and gitignore sibling scan RCA and prevention.
 - [charness-artifacts/debug/2026-05-21-mutation-subprocess-coverage.md](../charness-artifacts/debug/2026-05-21-mutation-subprocess-coverage.md):
   mutation #189 survivor and subprocess coverage RCA.
+- [charness-artifacts/debug/2026-05-22-mutation-changed-diff-suppression.md](../charness-artifacts/debug/2026-05-22-mutation-changed-diff-suppression.md):
+  mutation sampler changed-file diff fail-closed RCA and proof.
 - [charness-artifacts/debug/2026-05-22-release-diff-failure-suppression.md](../charness-artifacts/debug/2026-05-22-release-diff-failure-suppression.md),
   [real-host config suppression](../charness-artifacts/debug/2026-05-22-release-real-host-config-suppression.md),
   and [base-ref fallback suppression](../charness-artifacts/debug/2026-05-22-release-base-ref-fallback-suppression.md):
   release proof suppression RCAs and fail-closed proof.
-- [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md):
-  current quality posture and commands for this slice.
+- [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md): current quality posture.
 - [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md): current release surface.

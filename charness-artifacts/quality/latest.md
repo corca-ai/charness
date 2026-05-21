@@ -2,9 +2,9 @@
 Date: 2026-05-22
 
 ## Scope
-Current slice: broad self-repo quality posture after the #183 release, covering
-standing gates, local enforcement, skill ergonomics, docs drift, CI/local parity,
-runtime/test economics, security/supply-chain gates, and durable artifacts.
+Current slice: broad self-repo quality posture after the #183 release: standing
+gates, local enforcement, skill ergonomics, docs drift, CI/local parity,
+runtime/test economics, security/supply-chain gates, and artifacts.
 
 ## Concept Risks
 - The previous `latest.md` was a mutation-closeout artifact; this review
@@ -25,12 +25,12 @@ runtime/test economics, security/supply-chain gates, and durable artifacts.
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
   rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`.
 - runtime hot spots: `check-coverage` 38.3s latest / 39.2s median, `pytest`
-  21.3s latest / 32.4s median, `check-duplicates` 7.5s latest / 7.6s median,
-  all within configured local-profile budgets.
+  21.3s latest / 32.4s median, and `check-duplicates` 7.5s latest / 7.6s
+  median, all within configured local-profile budgets.
 - coverage gate: `check-coverage` passed in the read-only gate; the reference
   `coverage_floor_inventory.py` sample is not this repo's coverage carrier.
-- evaluator depth: no live Cautilus run; this request was a generic quality
-  review, so deterministic gates plus bounded fresh-eye review were the proof.
+- evaluator depth: no live Cautilus run; deterministic gates plus bounded
+  fresh-eye review were the proof.
 
 ## Standing Test Economics
 - `inventory_standing_test_economics.py` reported `test_file_count=177`,
@@ -43,6 +43,9 @@ runtime/test economics, security/supply-chain gates, and durable artifacts.
   so CLI/script tests can contribute selectable nodeids. The latest sample
   selected one changed file and now splits remaining changed-file exclusions
   into file-coverage-floor and mutation-line buckets.
+- Mutation changed-file diff discovery now fails closed when a base SHA is set
+  and `git diff --name-only` fails, before sample manifests or Cosmic Ray
+  config rewrites.
 
 ## Coverage and Eval Depth
 - `inventory_public_spec_quality.py` reported `public_spec_count=4`,
@@ -81,15 +84,14 @@ runtime/test economics, security/supply-chain gates, and durable artifacts.
 
 ## Weak
 - Docs ergonomics still has generated-reference noise, but README first-touch
-  prose has been reduced: `README.md` now reports
-  `core_nonempty_lines=135`, `internal_doc_link_count=37`, and no
-  entrypoint-doc heuristics; `docs/cli-reference.md` remains a generated leaf
-  with `core_nonempty_lines=670`.
+  prose is reduced: `README.md` reports `core_nonempty_lines=135`,
+  `internal_doc_link_count=37`, and no entrypoint-doc heuristics; generated
+  [docs/cli-reference.md](../../docs/cli-reference.md) remains `670` lines.
 - Standing test economics still shows nested CLI fanout across `75` files and
   a multi-GB retained pytest temp footprint from real packaging/tool tests.
-- Usage-episodes validation is visible but intentionally disabled by
+- Usage-episodes validation is visible but disabled by
   [.agents/usage-episodes-adapter.yaml](../../.agents/usage-episodes-adapter.yaml);
-  the next product decision is vocabulary, not adapter discovery.
+  the next decision is vocabulary, not adapter discovery.
 
 ## Missing
 - No non-exempt standing PR CI workflow runs the local quality gate. Current
@@ -99,14 +101,15 @@ runtime/test economics, security/supply-chain gates, and durable artifacts.
 - Release diff, broken real-host config, and previous-tag base-ref lookup/fetch
   suppression are now fail-closed; post-create verification recovery remains
   deferred.
+- Read-only quality changed-path discovery still has shell `|| true` fallbacks
+  around git diff/listing and remains the next suppression-sibling target.
 - Do not add docs/runtime gates from the noisy inventories until a concrete
   ownership rule or duplicated-proof deletion candidate is selected.
 
 ## Advisory
-- `inventory_entrypoint_docs_ergonomics.py` advisory: generated reference
-  length remains visible in [docs/cli-reference.md](../../docs/cli-reference.md),
-  but first-touch README route/procedure duplication has been moved to
-  [docs/workflow-routes.md](../../docs/workflow-routes.md).
+- `inventory_entrypoint_docs_ergonomics.py`: generated reference length remains
+  visible in [docs/cli-reference.md](../../docs/cli-reference.md), but
+  first-touch duplication moved to [docs/workflow-routes.md](../../docs/workflow-routes.md).
 - `inventory_standing_test_economics.py` advisory: `nested_cli_files` are the
   review queue; reduce process-boundary proof before changing budgets.
 - `inventory_adapter_gate_design.py` advisory: phrase detectors stay advisory
@@ -119,10 +122,9 @@ runtime/test economics, security/supply-chain gates, and durable artifacts.
   fixture-economics, parallel-critical-path, duplicated-proof.
 
 ## Commands Run
-- Capability/bootstrap helpers; skill/docs/test-economics/spec/lint/CI/gitignore
-  inventories; current-pointer scan; runtime summary; dogfood suggestion.
-- `./scripts/run-quality.sh --read-only`, targeted quality labels, ruff,
-  focused pytest, and narrow Cosmic Ray mutation proof for #189 survivor fixes.
+- Capability/bootstrap helpers; inventories; current-pointer scan; runtime
+  summary; dogfood suggestion; `./scripts/run-quality.sh --read-only`;
+  targeted quality labels, ruff, focused pytest, and narrow mutation proof.
 
 ## Recommended Next Gates
 - active `AUTO_EXISTING`: keep `inventory-gitignore-scan-hygiene` and
@@ -130,11 +132,9 @@ runtime/test economics, security/supply-chain gates, and durable artifacts.
 - passive `NON_AUTOMATABLE`: because CI policy is unresolved, decide whether PR
   CI should mirror `./scripts/run-quality.sh --read-only`; current CI has only
   `scheduled-deeper-check`.
-- passive `AUTO_CANDIDATE`: because generated-reference length needs ownership
-  review, keep docs ergonomics separate before adding a gate.
-  [README.md](../../README.md) is now below the entrypoint heuristic threshold,
-  while [docs/cli-reference.md](../../docs/cli-reference.md) remains generated
-  reference material rather than first-touch prose.
+- passive `AUTO_CANDIDATE`: because generated-reference ownership is unresolved,
+  keep docs ergonomics separate; README is below the threshold and generated
+  [docs/cli-reference.md](../../docs/cli-reference.md) remains separate.
 ## History
 - [2026-05-21 mutation-testability closeout](history/2026-05-21-mutation-testability-closeout.md)
 - [2026-05-14 mutation testing dogfood](history/2026-05-14-mutation-testing-dogfood.md)

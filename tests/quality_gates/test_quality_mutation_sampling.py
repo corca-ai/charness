@@ -15,6 +15,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+import scripts.sample_mutation_files as sample_mutation_files  # noqa: E402
 from scripts.mutation_sampling_lib import (  # noqa: E402
     coverage_run_command,
     filter_eligible_by_coverage,
@@ -30,11 +31,135 @@ from scripts.mutation_sampling_lib import (  # noqa: E402
 )
 from scripts.sample_mutation_files import (  # noqa: E402
     classify_changed_file_exclusions,
+    list_changed,
     list_eligible,
     mutation_pathspecs,
     pool_for_path,
     write_manifest,
 )
+
+
+def test_list_changed_returns_stripped_paths_from_git_diff(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def succeed_diff(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        assert command == [
+            "git",
+            "diff",
+            "--name-only",
+            "base-sha..HEAD",
+            "--",
+            *mutation_pathspecs(),
+        ]
+        return subprocess.CompletedProcess(command, 0, " scripts/a.py \n\nscripts/b.py\n", "")
+
+    monkeypatch.setattr(sample_mutation_files.subprocess, "run", succeed_diff)
+
+    assert list_changed(ROOT, "base-sha", "") == ["scripts/a.py", "scripts/b.py"]
+
+
+def test_list_changed_skips_git_when_base_sha_is_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fail_if_called(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        raise AssertionError("git diff should not run without a base sha")
+
+    monkeypatch.setattr(sample_mutation_files.subprocess, "run", fail_if_called)
+
+    assert list_changed(ROOT, "", "head-sha") == []
+
+
+def test_list_changed_returns_empty_for_empty_successful_diff(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def empty_diff(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, 0, "\n", "")
+
+    monkeypatch.setattr(sample_mutation_files.subprocess, "run", empty_diff)
+
+    assert list_changed(ROOT, "base-sha", "head-sha") == []
+
+
+def test_list_changed_fails_closed_when_git_diff_fails(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fail_diff(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        raise subprocess.CalledProcessError(
+            42,
+            command,
+            output="partial stdout",
+            stderr="forced diff failure",
+        )
+
+    monkeypatch.setattr(sample_mutation_files.subprocess, "run", fail_diff)
+
+    with pytest.raises(SystemExit) as exc_info:
+        list_changed(ROOT, "base-sha", "head-sha")
+
+    message = str(exc_info.value)
+    assert "mutation changed-file diff failed while computing sample candidates" in message
+    assert "base_sha: base-sha" in message
+    assert "head_sha: head-sha" in message
+    assert "command: git diff --name-only base-sha..head-sha --" in message
+    assert "exit_code: 42" in message
+    assert "partial stdout" in message
+    assert "forced diff failure" in message
+
+
+def test_sample_script_fails_closed_before_writes_when_changed_diff_fails(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    bin_dir = tmp_path / "bin"
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True)
+    bin_dir.mkdir()
+    (scripts_dir / "a.py").write_text("VALUE = 1\n", encoding="utf-8")
+    config = repo / "cosmic-ray.toml"
+    original_config = dedent(
+        """\
+        [cosmic-ray]
+        module-path = ["scripts/original.py"]
+        timeout = 30.0
+        test-command = "python3 -m pytest -q tests"
+        """
+    )
+    config.write_text(original_config, encoding="utf-8")
+    git = bin_dir / "git"
+    git.write_text(
+        dedent(
+            """\
+            #!/usr/bin/env bash
+            if [[ "$1" == "diff" && "$2" == "--name-only" ]]; then
+              echo "forced changed diff failure" >&2
+              exit 42
+            fi
+            exit 1
+            """
+        ),
+        encoding="utf-8",
+    )
+    git.chmod(0o755)
+    env = {
+        **os.environ,
+        "PATH": f"{bin_dir}:{os.environ['PATH']}",
+        "MUTATION_BASE_SHA": "base-sha",
+        "MUTATION_HEAD_SHA": "head-sha",
+        "MUTATION_SAMPLE_SEED": "fixed-seed",
+    }
+
+    result = subprocess.run(
+        ["python3", "scripts/sample_mutation_files.py", "--repo-root", str(repo), "--skip-coverage"],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 1
+    assert "mutation changed-file diff failed while computing sample candidates" in result.stderr
+    assert "base_sha: base-sha" in result.stderr
+    assert "head_sha: head-sha" in result.stderr
+    assert "exit_code: 42" in result.stderr
+    assert "forced changed diff failure" in result.stderr
+    assert config.read_text(encoding="utf-8") == original_config
+    assert not (repo / "reports" / "mutation" / "sample.json").exists()
+    assert not (repo / "reports" / "mutation" / "sample.md").exists()
 
 
 def test_sample_rewrites_cosmic_ray_module_path(tmp_path: Path) -> None:

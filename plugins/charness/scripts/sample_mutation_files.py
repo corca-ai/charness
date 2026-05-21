@@ -105,17 +105,25 @@ def list_changed(repo_root: Path, base_sha: str, head_sha: str) -> list[str]:
     if not base_sha:
         return []
     head = head_sha or "HEAD"
+    command = ["git", "diff", "--name-only", f"{base_sha}..{head}", "--", *mutation_pathspecs()]
     try:
         result = subprocess.run(
-            ["git", "diff", "--name-only", f"{base_sha}..{head}", "--", *mutation_pathspecs()],
+            command,
             cwd=repo_root,
             check=True,
             text=True,
             capture_output=True,
         )
     except subprocess.CalledProcessError as exc:
-        sys.stderr.write(f"git diff {base_sha}..{head} failed: {exc.stderr}\n")
-        return []
+        raise SystemExit(
+            "mutation changed-file diff failed while computing sample candidates\n"
+            f"base_sha: {base_sha}\n"
+            f"head_sha: {head}\n"
+            f"command: {shlex.join(command)}\n"
+            f"exit_code: {exc.returncode}\n"
+            f"STDOUT:\n{exc.stdout or ''}\n"
+            f"STDERR:\n{exc.stderr or ''}"
+        ) from exc
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]
 
 

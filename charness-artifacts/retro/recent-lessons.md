@@ -9,15 +9,15 @@
 
 - Compatibility for no-trigger dry-run repos without `.agents/surfaces.json` was implied by execute tests but not directly pinned. (source: `charness-artifacts/retro/2026-05-22-release-real-host-config-session.md`)
 - Dogfood JSON patching briefly touched adjacent review metadata, so the reviewer had to catch unrelated public-skill evidence churn. (source: `charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md`)
+- Handoff trimming removed `recent-lessons.md`, causing a later standing-gate failure that a targeted memory invariant check exposed. (source: `charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md`)
 - The debug seam line wrapped across two Markdown lines, so the generated seam-risk index captured only the first half until the counterweight review caught it. (source: `charness-artifacts/retro/2026-05-22-release-base-ref-fallback-session.md`)
-- The first implementation claimed the proof builder cannot run path before a test exercised an actual builder exception. (source: `charness-artifacts/retro/2026-05-22-release-real-host-config-session.md`)
 
 ## Next-Time Checklist
 
 - keep release proof suppression split into fixed diff failure and deferred real-host payload/post-create/base-ref risks is stale after this session; current split is fixed diff, fixed real-host payload/config, fixed base-ref lookup/fetch, and deferred post-create recovery semantics. (source: `charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md`; sources: 2)
 - after editing long checked-in JSON registries, review the diff before running broad gates so neighbor metadata churn is caught locally. (source: `charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md`)
+- after handoff compaction, run `validate_handoff_artifact.py` plus the small invariant test touching the changed token before the full gate. (source: `charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md`)
 - for every fail-closed helper branch, test both the command that discovers state and the command that materializes it. (source: `charness-artifacts/retro/2026-05-22-release-base-ref-fallback-session.md`)
-- keep the next release suppression slice focused on post-create recovery semantics after base-ref lookup/fetch has been fixed. (source: `charness-artifacts/retro/2026-05-22-release-base-ref-fallback-session.md`)
 
 ## Selection Policy
 
@@ -27,6 +27,7 @@
 
 ## Sources
 
+- `charness-artifacts/retro/2026-05-22-mutation-changed-diff-session.md`
 - `charness-artifacts/retro/2026-05-22-release-base-ref-fallback-session.md`
 - `charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md`
 - `charness-artifacts/retro/2026-05-22-release-real-host-config-session.md`
