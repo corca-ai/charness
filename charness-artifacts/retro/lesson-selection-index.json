@@ -11,9 +11,29 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-21",
-  "source_artifact_count": 61,
-  "candidate_count": 379,
+  "source_artifact_count": 62,
+  "candidate_count": 385,
   "top_candidates": [
+    {
+      "candidate_id": "current_focus:717726f1363a",
+      "kind": "current_focus",
+      "lesson": "This session reviewed recent bug fixes and issue history, then repaired the mutation sampling blind spot where Python subprocess coverage did not carry selectable pytest contexts.",
+      "normalized_key": "this session reviewed recent bug fixes and issue history then repaired the mutation sampling",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:e4cf3faf9cf8",
       "kind": "current_focus",
@@ -31,6 +51,26 @@
           "artifact_path": "charness-artifacts/retro/2026-05-21-current-pointer-hardening.md",
           "date": "2026-05-21",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:729d5040cfe0",
+      "kind": "next_improvement",
+      "lesson": "add a diagnostic split in the mutation manifest so changed files excluded for low file coverage and uncovered mutable lines are not both labeled as `uncovered_changed_files`.",
+      "normalized_key": "add a diagnostic split in the mutation manifest so changed files excluded for low",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -91,6 +131,86 @@
           "artifact_path": "charness-artifacts/retro/2026-05-21-current-pointer-hardening.md",
           "date": "2026-05-21",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f623a534c65f",
+      "kind": "next_improvement",
+      "lesson": "keep the debug artifact's #189 caveat visible until a later slice adds direct tests for the current-pointer changed-file set.",
+      "normalized_key": "keep the debug artifact s 189 caveat visible until a later slice adds direct",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1ae5524092e5",
+      "kind": "next_improvement",
+      "lesson": "when changing mutation coverage collection, always prove both executed lines and non-empty selectable contexts before running the expensive issue-base sample.",
+      "normalized_key": "when changing mutation coverage collection always prove both executed lines and non empty selectable",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:1cdb30ef44fd",
+      "kind": "repeat_trap",
+      "lesson": "The first full `b882398..HEAD` sample exposed Coverage.py warning text leaking into helper subprocess output; a smaller probe would have found that sooner.",
+      "normalized_key": "the first full b882398 head sample exposed coverage py warning text leaking into helper",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:feb94196e2bb",
+      "kind": "repeat_trap",
+      "lesson": "The first subprocess coverage version captured executed lines but not selectable nodeids, so a fresh-eye review had to catch the missing inherited pytest context.",
+      "normalized_key": "the first subprocess coverage version captured executed lines but not selectable nodeids so a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Waste"
         }
       ]
     },
@@ -133,129 +253,29 @@
           "section": "Next Improvements"
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:89476b0d14de",
-      "kind": "next_improvement",
-      "lesson": "**Measurement-before-claim rule.** When the quality skill (or any skill) writes a number for a size, runtime, or cost, the number must come from a command run this turn. Estimates must be labeled \"estimate\" with the reason measurement was skipped.",
-      "normalized_key": "measurement before claim rule when the quality skill or any skill writes a number",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-      "latest_source_date": "2026-05-20",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-          "date": "2026-05-20",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:6c87868bd84e",
-      "kind": "next_improvement",
-      "lesson": "Promote into `recent-lessons.md` (via summary refresh): - \"Measure before quoting a size/runtime number; estimates must be labeled and justified.\" - \"Before adding an enforcement gate for an advisory cost, grep for existing markers, policies, and `git log -S` for prior owner intent. A routing fix is often higher ROI than a new gate.\" - \"Quality `Recommended Next Gates` has a treadmill bias toward additive enforcement; explicitly ask whether an existing convention is being violated before adding.\"",
-      "normalized_key": "promote into recent lessons md via summary refresh measure before quoting a size runtime",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-      "latest_source_date": "2026-05-20",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-          "date": "2026-05-20",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:b42c5b0e21dd",
-      "kind": "next_improvement",
-      "lesson": "**Quality skill `Recommended Next Gates` proposal flow.** Extend `skills/public/quality/references/proposal-flow.md` to require a one-line \"existing convention check\" beside each recommendation, with the format \"no existing marker/comment/policy already governs this cost; gate is additive, not duplicative.\" If a marker exists, the recommendation must be the routing fix instead. ### memory",
-      "normalized_key": "quality skill recommended next gates proposal flow extend skills public quality references proposal flow",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-      "latest_source_date": "2026-05-20",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-          "date": "2026-05-20",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:3e66a1be2818",
-      "kind": "repeat_trap",
-      "lesson": "**Added `check-seed-fixture-budget` before asking root-cause questions.** First instinct was to bound the 9.78 GiB advisory finding. The structural fix (`release_only` routing) was already declared in `pyproject.toml:3-4` and saved 70% pytest time once routed; it was waiting to be honored, not invented.",
-      "normalized_key": "added check seed fixture budget before asking root cause questions first instinct was to",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-      "latest_source_date": "2026-05-20",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-          "date": "2026-05-20",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:5e0e25377d30",
-      "kind": "repeat_trap",
-      "lesson": "**Audit only happened on user push.** \"그 테스트들이 뭘 하는 거죠? 예전에는 가치있었지만 이제 필요없을 것 같은.\" This was the right first question for any expensive test fixture; I should have asked it myself before recommending a fixture refactor.",
-      "normalized_key": "audit only happened on user push 그 테스트들이 뭘 하는 거죠 예전에는 가치있었지만 이제",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-      "latest_source_date": "2026-05-20",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-          "date": "2026-05-20",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:89e5ee413df8",
-      "kind": "repeat_trap",
-      "lesson": "**Quoted \"~1.4 GiB per seed\" from a mental model, not measurement.** Real per-seed is 26-54 MB; the cost is fan-out, not seed size. Multiple commits carried imprecise numbers before the user pushed (`왜 아직도 seed materialization이 필요한가?`) and I ran `du`. The diagnostic landed in commit `2c6f873` only after that push.",
-      "normalized_key": "quoted 1 4 gib per seed from a mental model not measurement real per",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-      "latest_source_date": "2026-05-20",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-          "date": "2026-05-20",
-          "section": "Waste"
-        }
-      ]
     }
   ],
   "candidates": [
+    {
+      "candidate_id": "current_focus:717726f1363a",
+      "kind": "current_focus",
+      "lesson": "This session reviewed recent bug fixes and issue history, then repaired the mutation sampling blind spot where Python subprocess coverage did not carry selectable pytest contexts.",
+      "normalized_key": "this session reviewed recent bug fixes and issue history then repaired the mutation sampling",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Context"
+        }
+      ]
+    },
     {
       "candidate_id": "current_focus:e4cf3faf9cf8",
       "kind": "current_focus",
@@ -273,6 +293,26 @@
           "artifact_path": "charness-artifacts/retro/2026-05-21-current-pointer-hardening.md",
           "date": "2026-05-21",
           "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:729d5040cfe0",
+      "kind": "next_improvement",
+      "lesson": "add a diagnostic split in the mutation manifest so changed files excluded for low file coverage and uncovered mutable lines are not both labeled as `uncovered_changed_files`.",
+      "normalized_key": "add a diagnostic split in the mutation manifest so changed files excluded for low",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Next Improvements"
         }
       ]
     },
@@ -333,6 +373,86 @@
           "artifact_path": "charness-artifacts/retro/2026-05-21-current-pointer-hardening.md",
           "date": "2026-05-21",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f623a534c65f",
+      "kind": "next_improvement",
+      "lesson": "keep the debug artifact's #189 caveat visible until a later slice adds direct tests for the current-pointer changed-file set.",
+      "normalized_key": "keep the debug artifact s 189 caveat visible until a later slice adds direct",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1ae5524092e5",
+      "kind": "next_improvement",
+      "lesson": "when changing mutation coverage collection, always prove both executed lines and non-empty selectable contexts before running the expensive issue-base sample.",
+      "normalized_key": "when changing mutation coverage collection always prove both executed lines and non empty selectable",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:1cdb30ef44fd",
+      "kind": "repeat_trap",
+      "lesson": "The first full `b882398..HEAD` sample exposed Coverage.py warning text leaking into helper subprocess output; a smaller probe would have found that sooner.",
+      "normalized_key": "the first full b882398 head sample exposed coverage py warning text leaking into helper",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:feb94196e2bb",
+      "kind": "repeat_trap",
+      "lesson": "The first subprocess coverage version captured executed lines but not selectable nodeids, so a fresh-eye review had to catch the missing inherited pytest context.",
+      "normalized_key": "the first subprocess coverage version captured executed lines but not selectable nodeids so a",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Waste"
         }
       ]
     },

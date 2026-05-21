@@ -70,11 +70,7 @@ def tail(text: str, *, max_chars: int = 2000) -> str:
 
 
 def aggregate_status(results: Iterable[CheckResult]) -> str:
-    saw_check = False
     for result in results:
-        saw_check = True
         if result.status == FAIL:
             return FAIL
-    if not saw_check:
-        return PASS
     return PASS

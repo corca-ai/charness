@@ -66,18 +66,85 @@ def run_test_coverage(repo_root: Path, test_command: str, coverage_json: Path) -
     coverage_json.parent.mkdir(parents=True, exist_ok=True)
     data_file = coverage_json.with_name(".mutation-coverage")
     rcfile = coverage_json.with_name(".mutation-coveragerc")
-    rcfile.write_text("[run]\ndynamic_context = test_function\n", encoding="utf-8")
+    sitecustomize_dir = coverage_json.with_name(".mutation-sitecustomize")
+    sitecustomize_dir.mkdir(parents=True, exist_ok=True)
+    sitecustomize_dir.joinpath("sitecustomize.py").write_text(
+        "\n".join(
+            [
+                "import os",
+                "import coverage",
+                "",
+                "coverage.process_startup()",
+                "current = coverage.Coverage.current()",
+                "raw_context = os.environ.get('PYTEST_CURRENT_TEST', '').split(' (', 1)[0]",
+                "if current is not None and raw_context:",
+                "    path_part, *rest = raw_context.split('::')",
+                "    if path_part.endswith('.py'):",
+                "        context = path_part[:-3].replace('/', '.')",
+                "        if rest:",
+                "            context += '.' + '.'.join(rest)",
+                "    else:",
+                "        context = raw_context",
+                "    current.switch_context(context)",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    rcfile.write_text(
+        "\n".join(
+            [
+                "[run]",
+                f"data_file = {data_file}",
+                "dynamic_context = test_function",
+                "disable_warnings = dynamic-conflict",
+                "parallel = True",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
     if data_file.exists():
         data_file.unlink()
+    for stale_shard in data_file.parent.glob(data_file.name + ".*"):
+        stale_shard.unlink()
     command = coverage_run_command(test_command, data_file)
-    env = {**os.environ, "COVERAGE_RCFILE": str(rcfile)}
+    existing_pythonpath = os.environ.get("PYTHONPATH")
+    env = {
+        **os.environ,
+        "COVERAGE_PROCESS_START": str(rcfile),
+        "COVERAGE_RCFILE": str(rcfile),
+        "PYTHONPATH": (
+            str(sitecustomize_dir)
+            if not existing_pythonpath
+            else os.pathsep.join([str(sitecustomize_dir), existing_pythonpath])
+        ),
+    }
     subprocess.run(command, cwd=repo_root, check=True, env=env)
     subprocess.run(
         [
             sys.executable,
             "-m",
             "coverage",
+            "combine",
+            "--rcfile",
+            str(rcfile),
+            "--data-file",
+            str(data_file),
+            str(coverage_json.parent),
+        ],
+        cwd=repo_root,
+        check=True,
+        env=env,
+    )
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "coverage",
             "json",
+            "--rcfile",
+            str(rcfile),
             "--show-contexts",
             "--data-file",
             str(data_file),

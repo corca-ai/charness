@@ -40,9 +40,10 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
   retained sessions.
 
 ## Testability and Selection
-- The #183 mutation sampler owns mutation-line/selected-nodeid proof, but
-  standing tests still contain many real CLI/subprocess smokes. Move repeated
-  assertions below that boundary before adding another selector or budget.
+- Mutation sampling now starts subprocess coverage with inherited pytest context,
+  so CLI/script tests can contribute selectable nodeids. The latest
+  `b882398..HEAD` sample ran cleanly but still selected `0` changed files
+  because their mutable-line coverage is incomplete.
 
 ## Coverage and Eval Depth
 - `inventory_public_spec_quality.py` reported `public_spec_count=4`,
@@ -119,8 +120,8 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
 ## Commands Run
 - Capability/bootstrap helpers; skill/docs/test-economics/spec/lint/CI/gitignore
   inventories; current-pointer scan; runtime summary; dogfood suggestion.
-- `./scripts/run-quality.sh --read-only`, targeted quality labels, ruff, and
-  focused pytest inventory/doc-link/current-pointer/gitignore tests.
+- `./scripts/run-quality.sh --read-only`, targeted quality labels, ruff,
+  focused pytest, and narrow Cosmic Ray mutation proof for #189 survivor fixes.
 
 ## Recommended Next Gates
 - active `AUTO_EXISTING`: keep `inventory-gitignore-scan-hygiene` and

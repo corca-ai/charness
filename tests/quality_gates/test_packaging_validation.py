@@ -4,6 +4,7 @@ import json
 import re
 import shutil
 import subprocess
+from dataclasses import FrozenInstanceError
 from pathlib import Path
 
 import pytest
@@ -262,6 +263,13 @@ def test_validate_packaging_committed_rejects_partial_commit_with_uncommitted_ex
 def test_eval_registry_omits_redundant_current_repo_smokes() -> None:
     scenario_ids = EVAL_REGISTRY.scenario_ids()
     assert {"managed-cli-install", "packaging-valid", "packaging-export"}.isdisjoint(scenario_ids)
+
+
+def test_eval_registry_scenarios_are_immutable_contract_records() -> None:
+    scenario = EVAL_REGISTRY.SCENARIOS[0]
+
+    with pytest.raises(FrozenInstanceError):
+        scenario.description = "mutated"
 
 
 def test_validate_packaging_rejects_wrong_codex_manifest_path(tmp_path: Path) -> None:
