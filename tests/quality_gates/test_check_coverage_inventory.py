@@ -68,3 +68,18 @@ def test_check_coverage_json_includes_per_file_floor(monkeypatch, capsys) -> Non
     payload = json.loads(capsys.readouterr().out)
     assert payload["per_file_floor"]["relationship"] == "per-file-floor"
     assert payload["per_file_floor"]["floor"] == 0.85
+
+
+def test_check_coverage_agent_browser_probe_ignores_ambient_orphans(monkeypatch, tmp_path) -> None:
+    captured: list[dict[str, str]] = []
+
+    def fake_run_traced_entry(_tracer, _script_path, *, argv, cwd, env_overrides):
+        captured.append(env_overrides)
+
+    monkeypatch.setattr(CHECK_COVERAGE, "run_traced_entry", fake_run_traced_entry)
+    monkeypatch.setattr(CHECK_COVERAGE, "run_traced_function", lambda *_args, **_kwargs: None)
+
+    CHECK_COVERAGE.collect_counts(ROOT)
+
+    assert captured
+    assert all(item["CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS"] == "1" for item in captured)

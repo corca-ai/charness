@@ -45,6 +45,22 @@ def test_check_changed_surfaces_treats_charness_artifacts_as_repo_markdown() -> 
     assert payload["unmatched_paths"] == []
 
 
+def test_check_changed_surfaces_verifies_mutation_workflow_actions() -> None:
+    result = run_script(
+        "scripts/check_changed_surfaces.py",
+        "--repo-root",
+        str(ROOT),
+        "--paths",
+        ".github/workflows/mutation-tests.yml",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    surface_ids = {surface["surface_id"] for surface in payload["matched_surfaces"]}
+    assert "mutation-testing-workflow" in surface_ids
+    assert "python3 scripts/check_github_actions.py --repo-root ." in payload["verify_commands"]
+
+
 def test_check_changed_surfaces_reports_unmatched_paths() -> None:
     result = run_script(
         "scripts/check_changed_surfaces.py",

@@ -235,6 +235,7 @@ def collect_counts(repo_root: Path) -> dict[Path, set[int]]:
             "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}",
             "CHARNESS_RELEASE_PROBE_FIXTURES": str(release_fixture),
             "CHARNESS_SUPPORT_SYNC_FIXTURES": str(support_fixture),
+            "CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS": "1",
         }
         tracer = trace.Trace(count=True, trace=False, ignoremods=("importlib", "encodings"))
         entries = (

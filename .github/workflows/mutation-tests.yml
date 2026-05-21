@@ -46,12 +46,21 @@ jobs:
           python-version: "3.10"
           cache: pip
 
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
       - name: Install mutation runner
         # Stack-specific install lives in this workflow instance (charness
-        # uses Python/Cosmic Ray). The shipped template at
+        # uses Python/Cosmic Ray and JS/StrykerJS). The shipped template at
         # skills/public/quality/scripts/templates/mutation-tests.yml stays
         # stack-neutral; consumers customize this step for their runner.
         run: pip install -r packaging/mutation-requirements.txt
+
+      - name: Install JS mutation runner
+        run: npm ci
 
       - name: Resolve mutation_testing adapter slots
         id: adapter

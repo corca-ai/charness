@@ -199,11 +199,52 @@ label_is_selected() {
   return 1
 }
 
+label_is_explicitly_selected() {
+  local label="$1"
+  local raw selected_label
+
+  if [[ -z "$RUN_QUALITY_LABELS" ]]; then
+    return 1
+  fi
+
+  IFS=',' read -r -a raw <<< "$RUN_QUALITY_LABELS"
+  for selected_label in "${raw[@]}"; do
+    selected_label="${selected_label#"${selected_label%%[![:space:]]*}"}"
+    selected_label="${selected_label%"${selected_label##*[![:space:]]}"}"
+    if [[ "$selected_label" == "$label" ]]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+agent_browser_runtime_gate_enabled() {
+  local label="$1"
+
+  if [[ "${CHARNESS_AGENT_BROWSER_RUNTIME_HYGIENE:-0}" == "1" ]]; then
+    return 0
+  fi
+
+  label_is_explicitly_selected "$label"
+}
+
 queue_selected() {
   local label="$1"
   shift
 
   if ! label_is_selected "$label"; then
+    return 0
+  fi
+
+  queue_timed "$label" "$@"
+}
+
+queue_agent_browser_runtime_gate() {
+  local label="$1"
+  shift
+
+  if ! agent_browser_runtime_gate_enabled "$label"; then
     return 0
   fi
 
@@ -294,14 +335,16 @@ print_final_summary() {
     "$(format_elapsed "$elapsed_ms")"
 }
 
-queue_selected "agent-browser-runtime-baseline" env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans
-if flush_phase; then
-  :
-else
-  OVERALL_RC=$?
-  echo "run-quality: agent-browser runtime baseline failed; stopping before other gates." >&2
-  print_final_summary
-  exit "$OVERALL_RC"
+if agent_browser_runtime_gate_enabled "agent-browser-runtime-baseline"; then
+  queue_agent_browser_runtime_gate "agent-browser-runtime-baseline" env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans
+  if flush_phase; then
+    :
+  else
+    OVERALL_RC=$?
+    echo "run-quality: agent-browser runtime baseline failed; stopping before other gates." >&2
+    print_final_summary
+    exit "$OVERALL_RC"
+  fi
 fi
 
 queue_selected "validate-skills" python3 scripts/validate_skills.py --repo-root "$REPO_ROOT"
@@ -425,10 +468,12 @@ else
 fi
 flush_phase || OVERALL_RC=$?
 
-queue_selected "agent-browser-runtime-hygiene" env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --assert-no-orphans
-flush_phase || {
-  OVERALL_RC=$?
-  env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans --execute >/dev/null 2>&1 || true
-}
+if agent_browser_runtime_gate_enabled "agent-browser-runtime-hygiene"; then
+  queue_agent_browser_runtime_gate "agent-browser-runtime-hygiene" env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --assert-no-orphans
+  flush_phase || {
+    OVERALL_RC=$?
+    env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans --execute >/dev/null 2>&1 || true
+  }
+fi
 print_final_summary
 exit "$OVERALL_RC"

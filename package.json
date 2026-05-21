@@ -1,10 +1,15 @@
 {
   "private": true,
   "type": "module",
+  "scripts": {
+    "test:mutation:js:dry-run": "python3 scripts/run_js_mutation.py --repo-root . --mode dry-run",
+    "test:mutation:js": "python3 scripts/run_js_mutation.py --repo-root . --mode full"
+  },
   "devDependencies": {
     "@secretlint/secretlint-rule-preset-recommend": "11.6.0",
+    "@stryker-mutator/core": "9.6.1",
     "defuddle": "0.18.1",
-    "markdownlint-cli2": "0.22.0",
+    "markdownlint-cli2": "0.22.1",
     "secretlint": "11.6.0"
   }
 }

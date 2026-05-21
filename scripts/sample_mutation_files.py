@@ -35,8 +35,16 @@ from scripts.mutation_sampling_lib import (  # noqa: E402
     select_test_nodeids,
 )
 
-POOL_DIR = "scripts"
-POOL_PATTERN = "*.py"
+MUTATION_POOLS = {
+    "core-python": (
+        "charness",
+        "runtime_bootstrap.py",
+        "skill_runtime_bootstrap.py",
+        "scripts/*.py",
+    ),
+    "public-skill-python": ("skills/public/*/scripts/*.py",),
+    "support-skill-python": ("skills/support/*/scripts/*.py",),
+}
 EXCLUDED_NAMES = {"__init__.py"}
 DEFAULT_MAX_FILES = 10
 DEFAULT_CHANGED_QUOTA = 5
@@ -48,11 +56,49 @@ DEFAULT_MAX_TEST_NODEIDS = 40
 
 
 def list_eligible(repo_root: Path) -> list[str]:
-    return sorted(
-        path.relative_to(repo_root).as_posix()
-        for path in (repo_root / POOL_DIR).glob(POOL_PATTERN)
-        if path.name not in EXCLUDED_NAMES
-    )
+    paths: set[str] = set()
+    for patterns in MUTATION_POOLS.values():
+        for pattern in patterns:
+            for path in repo_root.glob(pattern):
+                if not path.is_file() or path.name in EXCLUDED_NAMES:
+                    continue
+                paths.add(path.relative_to(repo_root).as_posix())
+    return sorted(paths)
+
+
+def pool_for_path(path: str) -> str:
+    candidate = Path(path)
+    parts = candidate.parts
+    if path in {"charness", "runtime_bootstrap.py", "skill_runtime_bootstrap.py"}:
+        return "core-python"
+    if len(parts) == 2 and parts[0] == "scripts" and candidate.suffix == ".py":
+        return "core-python"
+    if (
+        len(parts) == 5
+        and parts[0] == "skills"
+        and parts[1] == "public"
+        and parts[3] == "scripts"
+        and candidate.suffix == ".py"
+    ):
+        return "public-skill-python"
+    if (
+        len(parts) == 5
+        and parts[0] == "skills"
+        and parts[1] == "support"
+        and parts[3] == "scripts"
+        and candidate.suffix == ".py"
+    ):
+        return "support-skill-python"
+    return "unknown"
+
+
+def mutation_pathspecs() -> list[str]:
+    pathspecs: list[str] = []
+    for patterns in MUTATION_POOLS.values():
+        for pattern in patterns:
+            root = pattern.split("*", 1)[0].rstrip("/")
+            pathspecs.append(root or pattern)
+    return sorted(set(pathspecs))
 
 
 def list_changed(repo_root: Path, base_sha: str, head_sha: str) -> list[str]:
@@ -61,7 +107,7 @@ def list_changed(repo_root: Path, base_sha: str, head_sha: str) -> list[str]:
     head = head_sha or "HEAD"
     try:
         result = subprocess.run(
-            ["git", "diff", "--name-only", f"{base_sha}..{head}", "--", POOL_DIR],
+            ["git", "diff", "--name-only", f"{base_sha}..{head}", "--", *mutation_pathspecs()],
             cwd=repo_root,
             check=True,
             text=True,
@@ -199,10 +245,10 @@ def output_paths(args: argparse.Namespace, repo_root: Path) -> tuple[Path, Path]
 def report_no_eligible(coverage_enabled: bool, test_command: str) -> None:
     if coverage_enabled:
         sys.stderr.write(
-            f"no eligible files matched {POOL_DIR}/{POOL_PATTERN} with coverage from {test_command!r}\n"
+            f"no eligible mutation pool files had coverage from {test_command!r}\n"
         )
     else:
-        sys.stderr.write(f"no eligible files matched {POOL_DIR}/{POOL_PATTERN}\n")
+        sys.stderr.write("no eligible files matched the configured mutation pools\n")
 
 
 def select_sample_files(
@@ -370,7 +416,7 @@ def main() -> int:
         args=args,
         repo_root=repo_root,
         config_path=config_path,
-        manifest=build_manifest_from_state(locals()),
+        manifest=build_manifest_from_state({**locals(), "pool_for_path": pool_for_path}),
         sample=sample,
         mutation_test_command=mutation_test_command,
     )

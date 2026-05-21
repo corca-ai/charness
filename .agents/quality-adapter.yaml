@@ -53,7 +53,7 @@ cli_skill_surface_probe_commands:
   - ./charness --help
   - ./charness doctor --help
   - ./charness --version
-  - python3 scripts/doctor.py --repo-root . --json --skip-release-probe
+  - env CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS=1 python3 scripts/doctor.py --repo-root . --json --skip-release-probe
 cli_skill_surface_command_docs:
   - .agents/command-docs.yaml
 cli_skill_surface_change_globs:
@@ -181,10 +181,10 @@ security_commands:
 # >>> mutation_testing (charness propose) >>>
 mutation_testing:
   commands:
-    dry_run: "python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode dry-run"
-    full: "python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode full"
+    dry_run: "python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode dry-run && npm run test:mutation:js:dry-run"
+    full: "python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode full && npm run test:mutation:js"
     sample: "python3 scripts/sample_mutation_files.py --repo-root ."
-    summary: "python3 scripts/check_mutation_score.py --repo-root ."
+    summary: "python3 scripts/check_mutation_suite_score.py --repo-root ."
   score_break: 80
   schedule_cron: "17 */3 * * *"
   changed_quota: 5

@@ -25,6 +25,7 @@ def write_manifest(manifest: dict, manifest_json: Path, manifest_md: Path) -> No
         f"- Head SHA: `{manifest['head_sha'] or '(unknown)'}`",
         f"- Seed: `{manifest['seed']}`",
         f"- Mutation pool files: {manifest.get('all_eligible_count', manifest['eligible_count'])}",
+        f"- Mutation pools: {', '.join(_pool_summary(manifest).splitlines()) or 'n/a'}",
         f"- Eligible files after coverage/mutation-line filters: {manifest['eligible_count']}",
         f"- Covered eligible files: {manifest.get('covered_eligible_count', 'n/a')}",
         f"- File coverage floor: {manifest.get('min_file_coverage', 'n/a')}",
@@ -99,6 +100,7 @@ def build_manifest_from_state(state: dict) -> dict:
         "changed_sample": state["changed_sample"],
         "fill_sample": state["fill_sample"],
         "sample": state["sample"],
+        "pools": _build_pool_manifest(state),
     }
 
 
@@ -108,3 +110,35 @@ def _mutation_line_eligible_count(mutation_line_coverage: dict[str, dict[str, in
         for stats in mutation_line_coverage.values()
         if int(stats.get("mutable", 0)) > 0 and int(stats.get("uncovered", 0)) == 0
     )
+
+
+def _build_pool_manifest(state: dict) -> dict[str, dict[str, int]]:
+    pool_for_path = state.get("pool_for_path")
+    if not callable(pool_for_path):
+        return {}
+    buckets: dict[str, dict[str, int]] = {}
+    for key, paths in (
+        ("all_eligible", state["all_eligible"]),
+        ("eligible", state["eligible"]),
+        ("sample", state["sample"]),
+    ):
+        for path in paths:
+            pool = pool_for_path(path)
+            bucket = buckets.setdefault(pool, {"all_eligible": 0, "eligible": 0, "sample": 0})
+            bucket[key] += 1
+    return dict(sorted(buckets.items()))
+
+
+def _pool_summary(manifest: dict) -> str:
+    pools = manifest.get("pools") or {}
+    if not isinstance(pools, dict):
+        return ""
+    lines = []
+    for pool, counts in sorted(pools.items()):
+        if not isinstance(counts, dict):
+            continue
+        lines.append(
+            f"{pool} {counts.get('sample', 0)}/{counts.get('eligible', 0)} "
+            f"selected ({counts.get('all_eligible', 0)} pool)"
+        )
+    return "\n".join(lines)

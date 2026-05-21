@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 from textwrap import dedent
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -24,6 +27,9 @@ from scripts.mutation_sampling_lib import (  # noqa: E402
     select_test_nodeids,
 )
 from scripts.sample_mutation_files import (  # noqa: E402
+    list_eligible,
+    mutation_pathspecs,
+    pool_for_path,
     write_manifest,
 )
 
@@ -92,6 +98,48 @@ def test_sample_script_rewrites_config_and_manifest(tmp_path: Path) -> None:
     for path in manifest["sample"]:
         assert f'    "{path}",' in text
     assert "scripts/control_plane_lib.py" not in manifest["sample"]
+
+
+def test_sample_pool_includes_core_and_skill_helper_python(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    for rel_path in (
+        "charness",
+        "runtime_bootstrap.py",
+        "skill_runtime_bootstrap.py",
+        "scripts/a.py",
+        "skills/public/quality/scripts/helper.py",
+        "skills/support/web-fetch/scripts/helper.py",
+        "plugins/charness/scripts/generated.py",
+        "tests/test_demo.py",
+    ):
+        path = repo / rel_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("VALUE = 1\n", encoding="utf-8")
+
+    eligible = list_eligible(repo)
+
+    assert "charness" in eligible
+    assert "runtime_bootstrap.py" in eligible
+    assert "skill_runtime_bootstrap.py" in eligible
+    assert "scripts/a.py" in eligible
+    assert "skills/public/quality/scripts/helper.py" in eligible
+    assert "skills/support/web-fetch/scripts/helper.py" in eligible
+    assert "plugins/charness/scripts/generated.py" not in eligible
+    assert "tests/test_demo.py" not in eligible
+    assert pool_for_path("charness") == "core-python"
+    assert pool_for_path("skills/public/quality/scripts/helper.py") == "public-skill-python"
+    assert pool_for_path("skills/support/web-fetch/scripts/helper.py") == "support-skill-python"
+
+
+def test_changed_sample_pathspecs_cover_all_mutation_pools() -> None:
+    pathspecs = mutation_pathspecs()
+
+    assert "charness" in pathspecs
+    assert "runtime_bootstrap.py" in pathspecs
+    assert "skill_runtime_bootstrap.py" in pathspecs
+    assert "scripts" in pathspecs
+    assert "skills/public" in pathspecs
+    assert "skills/support" in pathspecs
 
 
 def test_sample_filters_eligible_files_by_statement_coverage() -> None:
@@ -241,6 +289,39 @@ def test_mutation_line_probe_paths_stay_under_reports(tmp_path: Path) -> None:
     assert probe_session == tmp_path / "reports" / "mutation" / "cosmic-ray-sample-probe.sqlite"
 
 
+def test_cosmic_ray_accepts_extensionless_charness_target(tmp_path: Path) -> None:
+    if shutil.which("cosmic-ray") is None:
+        pytest.skip("cosmic-ray unavailable")
+    config = tmp_path / "cosmic-ray.toml"
+    session = tmp_path / "cosmic-ray.sqlite"
+    config.write_text(
+        dedent(
+            """\
+            [cosmic-ray]
+            module-path = ["charness"]
+            timeout = 30.0
+            excluded-modules = []
+            test-command = "python3 -m pytest -q tests/quality_gates/test_quality_mutation_sampling.py"
+
+            [cosmic-ray.distributor]
+            name = "local"
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        ["cosmic-ray", "init", str(config), str(session)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert session.is_file()
+
+
 def test_sample_derives_pytest_nodeids_from_coverage_contexts(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     test_path = repo / "tests" / "control_plane" / "test_demo.py"
@@ -304,6 +385,9 @@ def test_manifest_surfaces_changed_files_excluded_by_coverage(tmp_path: Path) ->
         "changed_sample": ["scripts/a.py"],
         "fill_sample": [],
         "sample": ["scripts/a.py"],
+        "pools": {
+            "core-python": {"all_eligible": 2, "eligible": 1, "sample": 1},
+        },
         "min_file_coverage": 1.0,
         "test_command": "python3 -m pytest -q tests/control_plane",
     }
@@ -319,6 +403,52 @@ def test_manifest_surfaces_changed_files_excluded_by_coverage(tmp_path: Path) ->
     assert "- Changed files excluded by selection budgets: 1" in text
     assert "- File coverage floor: 1.0" in text
     assert "- Eligible files after mutation-line filter: 1" in text
+    assert "- Mutation pools: core-python 1/1 selected (2 pool)" in text
+
+
+def test_manifest_pool_counts_include_root_and_skill_helpers(tmp_path: Path) -> None:
+    manifest_json = tmp_path / "sample.json"
+    manifest_md = tmp_path / "sample.md"
+    manifest = {
+        "seed": "fixed-seed",
+        "base_sha": "base",
+        "head_sha": "head",
+        "max_files": 3,
+        "eligible_count": 3,
+        "all_eligible_count": 6,
+        "covered_eligible_count": 3,
+        "mutation_line_eligible_count": 3,
+        "mutation_line_coverage": {},
+        "changed_files_before_coverage": [],
+        "changed_files": [],
+        "uncovered_changed_files": [],
+        "selection_excluded_changed_files": [],
+        "changed_sample": [],
+        "fill_sample": [
+            "charness",
+            "skills/public/quality/scripts/helper.py",
+            "skills/support/web-fetch/scripts/helper.py",
+        ],
+        "sample": [
+            "charness",
+            "skills/public/quality/scripts/helper.py",
+            "skills/support/web-fetch/scripts/helper.py",
+        ],
+        "pools": {
+            "core-python": {"all_eligible": 3, "eligible": 1, "sample": 1},
+            "public-skill-python": {"all_eligible": 2, "eligible": 1, "sample": 1},
+            "support-skill-python": {"all_eligible": 1, "eligible": 1, "sample": 1},
+        },
+        "min_file_coverage": 1.0,
+        "test_command": "python3 -m pytest -q tests",
+    }
+
+    write_manifest(manifest, manifest_json, manifest_md)
+
+    text = manifest_md.read_text(encoding="utf-8")
+    assert "core-python 1/1 selected (3 pool)" in text
+    assert "public-skill-python 1/1 selected (2 pool)" in text
+    assert "support-skill-python 1/1 selected (1 pool)" in text
 
 
 def test_coverage_run_command_wraps_pytest_module_command(tmp_path: Path) -> None:

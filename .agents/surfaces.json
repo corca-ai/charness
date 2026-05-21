@@ -284,21 +284,28 @@
       "source_paths": [
         ".github/workflows/mutation-tests.yml",
         "cosmic-ray.toml",
+        "stryker.config.mjs",
         ".agents/quality-adapter.yaml",
+        "scripts/check_js_mutation_score.py",
         "scripts/check_mutation_score.py",
+        "scripts/check_mutation_suite_score.py",
         "scripts/filter_cosmic_ray_mutants.py",
         "scripts/mutation_manifest_lib.py",
         "scripts/mutation_sampling_lib.py",
         "scripts/run_cosmic_ray_mutation.py",
+        "scripts/run_js_mutation.py",
         "scripts/sample_mutation_files.py",
         "skills/public/quality/scripts/templates/mutation-tests.yml"
       ],
       "derived_paths": [
+        "plugins/charness/scripts/check_js_mutation_score.py",
         "plugins/charness/scripts/check_mutation_score.py",
+        "plugins/charness/scripts/check_mutation_suite_score.py",
         "plugins/charness/scripts/filter_cosmic_ray_mutants.py",
         "plugins/charness/scripts/mutation_manifest_lib.py",
         "plugins/charness/scripts/mutation_sampling_lib.py",
         "plugins/charness/scripts/run_cosmic_ray_mutation.py",
+        "plugins/charness/scripts/run_js_mutation.py",
         "plugins/charness/scripts/sample_mutation_files.py",
         "plugins/charness/skills/quality/scripts/templates/mutation-tests.yml"
       ],
@@ -307,6 +314,7 @@
       ],
       "verify_commands": [
         "python3 -m pytest -q tests/quality_gates/test_quality_mutation_testing.py",
+        "python3 scripts/check_github_actions.py --repo-root .",
         "python3 scripts/validate_adapters.py --repo-root .",
         "python3 scripts/validate_packaging.py --repo-root .",
         "python3 scripts/validate_packaging_committed.py --repo-root ."
