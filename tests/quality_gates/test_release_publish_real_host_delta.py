@@ -111,6 +111,16 @@ def _write_base_ref_failing_git(bin_dir: Path) -> None:
             ]:
                 print("forced previous tag lookup failure", file=sys.stderr)
                 raise SystemExit(44)
+            if os.environ.get("FAKE_GIT_TAG_LIST_FAIL") == "1" and args == [
+                "tag", "--list", "v[0-9]*.[0-9]*.[0-9]*"
+            ]:
+                print("forced local tag list failure", file=sys.stderr)
+                raise SystemExit(45)
+            if os.environ.get("FAKE_GIT_LS_REMOTE_TAG_HISTORY_FAIL") == "1" and args == [
+                "ls-remote", "--tags", "origin", "refs/tags/v[0-9]*"
+            ]:
+                print("forced remote tag history failure", file=sys.stderr)
+                raise SystemExit(46)
             if os.environ.get("FAKE_GIT_FETCH_TAG_FAIL") == "1" and args == [
                 "fetch", "--quiet", "origin", "refs/tags/v0.0.0:refs/tags/v0.0.0"
             ]:
@@ -268,7 +278,8 @@ def test_publish_release_fails_closed_when_previous_tag_fetch_fails(tmp_path: Pa
         text=True,
     ).stdout.strip() == ""
     git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
-    gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
+    gh_log_path = tmp_path / "gh-log.json"
+    gh_log = json.loads(gh_log_path.read_text(encoding="utf-8")) if gh_log_path.exists() else []
     fetch_command = ["fetch", "--quiet", "origin", "refs/tags/v0.0.0:refs/tags/v0.0.0"]
     fetch_index = git_log.index(fetch_command)
     assert ["ls-remote", "--tags", "origin", "refs/tags/v0.0.0"] in git_log
@@ -363,7 +374,8 @@ def test_publish_release_fails_closed_when_previous_tag_lookup_fails(tmp_path: P
         text=True,
     ).stdout.strip() == ""
     git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
-    gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
+    gh_log_path = tmp_path / "gh-log.json"
+    gh_log = json.loads(gh_log_path.read_text(encoding="utf-8")) if gh_log_path.exists() else []
     lookup_command = ["ls-remote", "--tags", "origin", "refs/tags/v0.0.0"]
     lookup_index = git_log.index(lookup_command)
     assert lookup_command in git_log
@@ -404,6 +416,167 @@ def test_publish_release_dry_run_fails_closed_when_previous_tag_lookup_fails(tmp
     assert json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))["version"] == "0.0.0"
     assert not (repo / ".quality-ran").exists()
     assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
+
+
+def _seed_publish_current_previous_tag_delta(tmp_path: Path) -> tuple[Path, Path]:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    subprocess.run(["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "push", "origin", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
+    _write_real_host_release_config(repo)
+    (repo / "README.md").write_text("# Demo\n\nChanged before publish-current.\n", encoding="utf-8")
+    subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/bump_version.py",
+            "--repo-root",
+            str(repo),
+            "--part",
+            "patch",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "Prepare current release"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(["git", "push", "origin", "main"], cwd=repo, check=True, capture_output=True, text=True)
+    return repo, bin_dir
+
+
+def _assert_publish_current_tag_discovery_failure(
+    repo: Path,
+    tmp_path: Path,
+    bin_dir: Path,
+    env_name: str,
+    *,
+    source: str,
+    command: str,
+    exit_code: int,
+    stderr_marker: str,
+) -> None:
+    _write_base_ref_failing_git(bin_dir)
+    before_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    env = _publish_env(tmp_path, bin_dir)
+    env[env_name] = "1"
+
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/publish_release.py",
+            "--repo-root",
+            str(repo),
+            "--publish-current",
+            "--execute",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert "release tag discovery failed while resolving previous release version" in result.stderr
+    assert f"source: {source}" in result.stderr
+    assert f"command: {command}" in result.stderr
+    assert f"exit_code: {exit_code}" in result.stderr
+    assert stderr_marker in result.stderr
+    assert json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))["version"] == "0.0.1"
+    assert not (repo / ".quality-ran").exists()
+    assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
+    assert (
+        subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True)
+        .stdout.strip()
+        == before_head
+    )
+    assert subprocess.run(
+        ["git", "tag", "--list", "v0.0.1"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip() == ""
+    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
+    gh_log_path = tmp_path / "gh-log.json"
+    gh_log = json.loads(gh_log_path.read_text(encoding="utf-8")) if gh_log_path.exists() else []
+    assert ["commit", "-m", "Release v0.0.1"] not in git_log
+    assert ["tag", "v0.0.1"] not in git_log
+    assert not any(entry and entry[0] == "push" for entry in git_log)
+    assert not any(entry[:2] == ["release", "create"] for entry in gh_log)
+
+
+def test_publish_current_fails_closed_when_local_release_tag_discovery_fails(tmp_path: Path) -> None:
+    repo, bin_dir = _seed_publish_current_previous_tag_delta(tmp_path)
+
+    _assert_publish_current_tag_discovery_failure(
+        repo,
+        tmp_path,
+        bin_dir,
+        "FAKE_GIT_TAG_LIST_FAIL",
+        source="local tags",
+        command="git tag --list v[0-9]*.[0-9]*.[0-9]*",
+        exit_code=45,
+        stderr_marker="forced local tag list failure",
+    )
+
+
+def test_publish_current_fails_closed_when_remote_release_tag_discovery_fails(tmp_path: Path) -> None:
+    repo, bin_dir = _seed_publish_current_previous_tag_delta(tmp_path)
+
+    _assert_publish_current_tag_discovery_failure(
+        repo,
+        tmp_path,
+        bin_dir,
+        "FAKE_GIT_LS_REMOTE_TAG_HISTORY_FAIL",
+        source="remote tags",
+        command="git ls-remote --tags origin refs/tags/v[0-9]*",
+        exit_code=46,
+        stderr_marker="forced remote tag history failure",
+    )
+
+
+def test_publish_current_allows_no_previous_release_tags_after_successful_discovery(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _publish_env(tmp_path, bin_dir)
+
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/publish_release.py",
+            "--repo-root",
+            str(repo),
+            "--publish-current",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["execute"] is False
+    assert payload["previous_version"] == "0.0.0"
+    assert payload["target_version"] == "0.0.0"
+    assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
+    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
+    assert ["tag", "--list", "v[0-9]*.[0-9]*.[0-9]*"] in git_log
+    assert ["ls-remote", "--tags", "origin", "refs/tags/v[0-9]*"] in git_log
 
 
 def test_publish_release_fails_closed_when_release_diff_fails(tmp_path: Path) -> None:
@@ -697,34 +870,7 @@ def test_publish_release_dry_run_allows_no_trigger_repo_without_surfaces(tmp_pat
 
 
 def test_publish_current_uses_previous_release_tag_for_real_host_proof(tmp_path: Path) -> None:
-    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
-    subprocess.run(["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "push", "origin", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)
-    _write_real_host_release_config(repo)
-    (repo / "README.md").write_text("# Demo\n\nChanged before publish-current.\n", encoding="utf-8")
-    subprocess.run(
-        [
-            "python3",
-            "skills/public/release/scripts/bump_version.py",
-            "--repo-root",
-            str(repo),
-            "--part",
-            "patch",
-        ],
-        cwd=Path(__file__).resolve().parents[2],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(
-        ["git", "commit", "-m", "Prepare current release"],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    subprocess.run(["git", "push", "origin", "main"], cwd=repo, check=True, capture_output=True, text=True)
+    repo, bin_dir = _seed_publish_current_previous_tag_delta(tmp_path)
 
     result = subprocess.run(
         [

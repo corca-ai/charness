@@ -174,16 +174,32 @@ def _tag_version(tag_ref: str) -> str | None:
 def _release_tag_versions(repo_root: Path, *, remote: str) -> set[str]:
     versions: set[str] = set()
     local = run(["git", "tag", "--list", "v[0-9]*.[0-9]*.[0-9]*"], cwd=repo_root, check=False)
-    if local.returncode == 0:
-        versions.update(filter(None, (_tag_version(line.strip()) for line in local.stdout.splitlines())))
+    if local.returncode != 0:
+        raise SystemExit(
+            "release tag discovery failed while resolving previous release version\n"
+            "source: local tags\n"
+            "command: git tag --list v[0-9]*.[0-9]*.[0-9]*\n"
+            f"exit_code: {local.returncode}\n"
+            f"STDOUT:\n{local.stdout}\n"
+            f"STDERR:\n{local.stderr}"
+        )
+    versions.update(filter(None, (_tag_version(line.strip()) for line in local.stdout.splitlines())))
     remote_result = run(["git", "ls-remote", "--tags", remote, "refs/tags/v[0-9]*"], cwd=repo_root, check=False)
-    if remote_result.returncode == 0:
-        for line in remote_result.stdout.splitlines():
-            parts = line.split()
-            if len(parts) >= 2 and not parts[1].endswith("^{}"):
-                version = _tag_version(parts[1])
-                if version:
-                    versions.add(version)
+    if remote_result.returncode != 0:
+        raise SystemExit(
+            "release tag discovery failed while resolving previous release version\n"
+            "source: remote tags\n"
+            f"command: git ls-remote --tags {remote} refs/tags/v[0-9]*\n"
+            f"exit_code: {remote_result.returncode}\n"
+            f"STDOUT:\n{remote_result.stdout}\n"
+            f"STDERR:\n{remote_result.stderr}"
+        )
+    for line in remote_result.stdout.splitlines():
+        parts = line.split()
+        if len(parts) >= 2 and not parts[1].endswith("^{}"):
+            version = _tag_version(parts[1])
+            if version:
+                versions.add(version)
     return versions
 
 
