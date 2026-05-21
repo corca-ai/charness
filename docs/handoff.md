@@ -21,14 +21,21 @@
 - Usage episodes are now intentionally configured but disabled in
   [.agents/usage-episodes-adapter.yaml](../.agents/usage-episodes-adapter.yaml).
   Validation should report `disabled`, not `no_adapter`.
+- Product success and AI/ML engineering baselines are now proposed in
+  [product success metrics](./product-success-metrics.md) and
+  [AI/ML engineering patterns](./ai-ml-engineering-patterns.md); runtime
+  emission is split into follow-up
+  [#188](https://github.com/corca-ai/charness/issues/188).
 
 ## Next Session
 
-1. Decide the Charness-owned usage-episode vocabulary for
-   `selected_job`, `core_action`, `agent_action.surface`, `first_value_ref`,
-   and `feedback_signal`; then flip `enabled: true` only with the runtime
-   emitter or an explicit follow-up contract for
-   `.charness/usage-episodes/usage_episode.jsonl`.
+1. Usage-episode vocabulary baseline is now proposed in
+   [product success metrics](./product-success-metrics.md). Keep
+   [.agents/usage-episodes-adapter.yaml](../.agents/usage-episodes-adapter.yaml)
+   at `enabled: false` until a runtime
+   emitter or explicit follow-up contract such as
+   [#188](https://github.com/corca-ai/charness/issues/188) writes
+   .charness/usage-episodes/usage_episode.jsonl.
 2. For docs ergonomics, do not add a broad gate yet: first separate generated
    reference noise ([docs/cli-reference.md](./cli-reference.md)) from
    first-touch prose, then reduce [README.md](../README.md) by moving

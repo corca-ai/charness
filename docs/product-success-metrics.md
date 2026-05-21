@@ -1,0 +1,162 @@
+# Product Success Criteria And Metrics
+
+This document defines the current Charness success baseline for issues
+[#184](https://github.com/corca-ai/charness/issues/184) and
+[#185](https://github.com/corca-ai/charness/issues/185).
+
+Source note: both issues came from the 2026-05-20 Daily Scrum Slack thread
+`slack://C05J5LTFSCU/1778805288.184149`. This session could not re-fetch that
+private source because the local `ceal` binary was unavailable and the issue
+record did not include a Slack web URL usable by the checked-in gather-slack
+wrapper. The GitHub issue bodies and current repo docs are the available
+working evidence for this baseline. Human agreement is still required before
+treating numeric targets, product prioritization, or runtime capture activation
+as final.
+
+## One-Page Summary
+
+Charness succeeds when a Claude Code or Codex operator can start from a normal
+repo task and get a repeatable product-development workflow: the right skill is
+selected, relevant durable context is loaded, code or docs are changed in the
+right phase order, validation is honest, review state is preserved, and the next
+session can continue without rediscovering the same facts.
+
+The primary users are:
+
+- maintainers evolving Charness itself
+- agents operating inside repos that have installed Charness
+- humans reviewing agent-produced plans, diffs, issues, releases, and handoffs
+- consumer product teams that reuse Charness skills, support capabilities, and
+  adapters in their own repos
+
+The most important usage contexts are:
+
+- repo setup and normalization
+- implementation, debug, and issue-resolution work
+- durable context gathering from GitHub, Slack, Notion, Google Workspace, or
+  public web sources
+- quality, release, retro, handoff, and human-review loops
+- external capability discovery and tool readiness checks
+
+Qualitative success means an operator can trust the harness to make the next
+right workflow move, name what it cannot prove, leave durable evidence, and
+avoid turning missing context into false confidence.
+
+## Core Success Criteria
+
+1. Routing correctness: task language maps to the intended public skill,
+   support skill, or integration without requiring the user to name internals.
+2. Contract fidelity: work follows the current handoff, issue body, spec,
+   quality artifact, and repo operating contract instead of stale session
+   memory.
+3. Evidence honesty: claims are tied to executed commands, gathered sources,
+   durable artifacts, or explicit weak/missing proof labels.
+4. Operator continuity: the next session can resume from
+   [handoff](./handoff.md) and current `charness-artifacts/**` without
+   re-solving the previous slice.
+5. Quality sustainability: local deterministic gates remain runnable and
+   explainable without turning every advisory signal into another broad gate.
+6. External capability honesty: private-source and tool-dependent workflows name
+   missing access, readiness level, and next action instead of pretending a
+   weaker path proved the same thing.
+
+## Metric Definitions
+
+| Metric | Definition | Why it matters | Current measurability |
+| --- | --- | --- | --- |
+| Skill routing success | Task-oriented sessions start with the expected skill or explicit capability discovery when required. | Proves Charness is reducing workflow ambiguity. | Partly measurable through Cautilus fixtures, public-skill dogfood artifacts, issue closeout notes, and manual review. |
+| First valuable artifact | First durable output that changes repo state or operator understanding, such as a spec, issue, commit, gathered record, quality artifact, or handoff update. | Connects agent activity to user-visible value instead of raw tool count. | Not yet captured automatically; vocabulary defined below for future `usage_episode` records. |
+| Closeout proof strength | Highest proof level reached before commit or handoff: deterministic local gate, release gate, provider roundtrip, bounded fresh-eye review, or explicit weak proof. | Prevents green-looking but under-proven work. | Measurable from artifacts and command logs; not summarized automatically. |
+| Resume clarity | Whether [handoff](./handoff.md) points to the correct next move and stale completed work is removed. | Measures long-running agent continuity. | Manually reviewable; handoff validators cover structure but not semantic sufficiency. |
+| Quality gate health | [run-quality](../scripts/run-quality.sh) phase count, pass/fail state, runtime hot spots, and warnings. | Keeps the product maintainable as skills and validators grow. | Measured in [quality latest](../charness-artifacts/quality/latest.md) and .charness/quality/runtime-signals.json. |
+| Usage-episode readiness | Adapter state for privacy-bounded product usage capture: absent, disabled, invalid, or valid. | Connects product success metrics to actual use without raw transcript capture. | Measured by `python3 scripts/validate_usage_episodes.py --repo-root .`; currently `disabled`. |
+| Follow-up conversion | Repeated corrections, bug RCAs, or weak proof findings become specs, issues, tests, gates, or retro lessons. | Proves the system gets smarter with use. | Partly measurable through issue links, debug artifacts, retro artifacts, and commits. |
+
+## AI Quality To User Value
+
+AI-specific quality metrics are useful only when they explain user or operator
+value. Charness should map them this way:
+
+| AI quality signal | User-value metric it supports | Notes |
+| --- | --- | --- |
+| Routing eval pass rate | Skill routing success and resume clarity | Maintained evaluator fixtures should test high-value routing boundaries, not broad prompt trivia. |
+| Regression or behavior eval result | Closeout proof strength | Run only through the repo-owned Cautilus planner/wrapper when the adapter allows it. |
+| Human review outcome | Evidence honesty and operator continuity | Bounded fresh-eye review catches overclaim and stale-surface risk that deterministic gates cannot. |
+| Failure/RCA artifact count and recurrence | Follow-up conversion | A bug is not fully learned from until the detection gap and sibling pattern are named. |
+| Runtime/cost hot spots | Quality gate health | Runtime signals should drive deletion, routing, or ownership fixes before additive budget gates. |
+
+External references that informed the mapping:
+
+- Google Cloud MLOps guidance ties production ML to automated validation,
+  metadata, model comparison, rollback, and triggers:
+  <https://docs.cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning>
+- Google Rules of ML separates many monitored metrics from the single objective
+  being optimized and warns not to confuse the objective with system health:
+  <https://developers.google.com/machine-learning/guides/rules-of-ml/>
+- OpenAI eval guidance frames evals as task criteria plus test data, run
+  results, and iteration:
+  <https://developers.openai.com/api/docs/guides/evals>
+- NIST AI RMF emphasizes measurement, monitoring, risk response, user input,
+  incidents, and continual improvement:
+  <https://airc.nist.gov/airmf-resources/airmf/5-sec-core/>
+
+## Usage-Episode Vocabulary
+
+The proposed Charness-owned vocabulary for the fields called out in
+[handoff](./handoff.md) is:
+
+| Field | Charness baseline values | Rule |
+| --- | --- | --- |
+| `selected_job` | `initialize_repo`, `resolve_issue`, `implement_slice`, `debug_failure`, `gather_context`, `review_quality`, `prepare_release`, `prepare_handoff`, `update_workflow_memory`, `answer_operator_question` | Use the human job, not the raw prompt. |
+| `core_action` | `normalized_repo_surface`, `landed_verified_change`, `preserved_debug_learning`, `captured_source_context`, `produced_quality_posture`, `published_release_surface`, `refreshed_handoff`, `persisted_retro_lesson`, `explained_current_state` | Use the valuable product behavior, not the tool call. |
+| `agent_action.surface` | `public_skill_workflow`, `support_capability`, `github_issue`, `git_commit`, `quality_gate`, `release_helper`, `gather_record`, `handoff_artifact`, `critique_review`, `operator_reply` | Use the surface that delivered value. |
+| `first_value_ref.kind` | `commit`, `issue`, `artifact`, `doc`, `test_result`, `release`, `comment`, `answer` | Keep `ref` opaque and non-PII; use `path` for repo-root-relative artifacts. |
+| `feedback_signal` | `accepted`, `edited`, `corrected`, `ignored`, `retried`, `follow_up_requested`, `human_confirmed`, `closed_issue`, `released` | Use observable feedback when available; omit when unknown. |
+| `outcome_status` | `delivered`, `abandoned`, `corrected`, `escalated`, `failed` | Closed enum owned by the schema; summarize it, do not extend it in docs. |
+| `t_status` | `none`, `candidate`, `promoted`, `rejected` | Closed enum owned by the schema; use it to connect episodes to durable learning. |
+
+This is a product vocabulary baseline only. It does not enable capture. The
+adapter stays disabled until a runtime emitter exists and a follow-up contract
+explicitly chooses .charness/usage-episodes/usage_episode.jsonl as the write
+surface. Maintainers may revise this vocabulary before enabling capture.
+
+## Measurement State And Next Actions
+
+Currently measurable:
+
+- local gate health through [run-quality](../scripts/run-quality.sh)
+- usage-episode adapter state through the
+  [usage episode validator](../scripts/validate_usage_episodes.py)
+- release and quality proof through current artifacts
+- public-skill validation tiers and dogfood records
+- issue and commit closeout evidence through GitHub and git history
+
+Needs implementation before measurement:
+
+- runtime emission of `usage_episode` records
+- aggregation of first-value and feedback signals
+- a review summary that connects usage episodes to quality, retro, issue, and
+  release artifacts
+
+Do not flip the
+[usage-episodes adapter](../.agents/usage-episodes-adapter.yaml) to
+`enabled: true` until the emitter and privacy-safe write contract exist.
+
+## Review Loops
+
+Weekly:
+
+- Review open issues, recent handoff, latest quality artifact, and any new
+  debug/retro artifacts.
+- Check whether repeated corrections became a deterministic gate, spec, issue,
+  or deliberate non-goal.
+- Report `usage-episodes` as `disabled` until emitter work lands.
+
+Monthly:
+
+- Review top Charness workflows against the success criteria above.
+- Compare AI-quality proof depth with product outcomes: fewer repeated
+  corrections, stronger closeout proof, faster resume, and clearer user-facing
+  docs.
+- Decide whether any passive quality recommendation should become an active
+  gate, using the existing-convention check required by recent retros.
