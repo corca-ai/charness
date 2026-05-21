@@ -370,7 +370,8 @@
         "`publish_release.py --execute --close-issue <number>` now preflights `gh issue view` before release mutation, puts close keywords in the direct release commit body, verifies GitHub issue state after push and release creation, records the carrier/manual-fallback evidence, and performs a manual close only if auto-close did not close the issue.",
         "`publish_release.py --execute` now re-reads the public release after `gh release create` and records a post-publish artifact commit when the committed release record needs the verified release URL/status.",
         "Release publish now fails closed when `git diff --name-only <base>..HEAD` cannot compute unreleased paths, before dry-run output or execute-mode version bumps, quality proof, artifacts, commits, tags, pushes, or release creation.",
-        "Release publish now also fails closed when configured real-host proof triggers are broken or the proof builder cannot run, while no-trigger repos can still publish without a surfaces manifest."
+        "Release publish now also fails closed when configured real-host proof triggers are broken or the proof builder cannot run, while no-trigger repos can still publish without a surfaces manifest.",
+        "Release publish now fails closed when previous-tag base-ref lookup or fetch fails, preventing already-pushed release-surface changes from being hidden by an `origin/<branch>` fallback before dry-run output or execute mutation."
       ]
     },
     {

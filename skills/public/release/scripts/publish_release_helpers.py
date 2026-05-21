@@ -244,6 +244,15 @@ def _release_base_ref(
             cwd=repo_root,
             check=False,
         )
+        if remote_tag_result.returncode != 0:
+            raise SystemExit(
+                "release base ref lookup failed while computing unreleased paths\n"
+                f"tag_ref: {tag_ref}\n"
+                f"command: git ls-remote --tags {remote} {tag_ref}\n"
+                f"exit_code: {remote_tag_result.returncode}\n"
+                f"STDOUT:\n{remote_tag_result.stdout}\n"
+                f"STDERR:\n{remote_tag_result.stderr}"
+            )
         if remote_tag_result.returncode == 0 and remote_tag_result.stdout.strip():
             fetch_result = run(
                 ["git", "fetch", "--quiet", remote, f"{tag_ref}:{tag_ref}"],
@@ -252,6 +261,14 @@ def _release_base_ref(
             )
             if fetch_result.returncode == 0:
                 return tag_ref
+            raise SystemExit(
+                "release base ref fetch failed while computing unreleased paths\n"
+                f"tag_ref: {tag_ref}\n"
+                f"command: git fetch --quiet {remote} {tag_ref}:{tag_ref}\n"
+                f"exit_code: {fetch_result.returncode}\n"
+                f"STDOUT:\n{fetch_result.stdout}\n"
+                f"STDERR:\n{fetch_result.stderr}"
+            )
     return f"{remote}/{branch}"
 
 

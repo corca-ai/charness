@@ -96,8 +96,9 @@ runtime/test economics, security/supply-chain gates, and durable artifacts.
   proof is maintainer-local pre-push plus scheduled mutation deeper-check.
 
 ## Deferred
-- Release diff and broken real-host config suppression are now fail-closed;
-  base-ref fallback and post-create verification remain deferred.
+- Release diff, broken real-host config, and previous-tag base-ref lookup/fetch
+  suppression are now fail-closed; post-create verification recovery remains
+  deferred.
 - Do not add docs/runtime gates from the noisy inventories until a concrete
   ownership rule or duplicated-proof deletion candidate is selected.
 
@@ -134,7 +135,6 @@ runtime/test economics, security/supply-chain gates, and durable artifacts.
   [README.md](../../README.md) is now below the entrypoint heuristic threshold,
   while [docs/cli-reference.md](../../docs/cli-reference.md) remains generated
   reference material rather than first-touch prose.
-
 ## History
 - [2026-05-21 mutation-testability closeout](history/2026-05-21-mutation-testability-closeout.md)
 - [2026-05-14 mutation testing dogfood](history/2026-05-14-mutation-testing-dogfood.md)
