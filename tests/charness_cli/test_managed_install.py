@@ -71,6 +71,7 @@ def assert_managed_checkout_has_no_tracked_runtime_dirt(managed_checkout: Path) 
     assert ".charness/retro/weekly-latest.json" in ignored.stdout
 
 
+@pytest.mark.release_only
 def test_charness_init_exports_managed_surface(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     source_root = tmp_path / "source"
     source_root.mkdir()
@@ -217,6 +218,7 @@ def test_embedded_cli_bootstraps_managed_checkout_from_configured_repo_url(tmp_p
     assert install_state["managed_checkout"] is True
 
 
+@pytest.mark.release_only
 def test_charness_doctor_reports_managed_surface(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     doctor_result = run_cli("doctor", "--home-root", str(home_root), "--json", env=env)
@@ -451,6 +453,7 @@ def test_installed_cli_update_reports_diverged_managed_checkout(tmp_path: Path, 
     assert "charness update --repo-root . --no-pull --skip-cli-install" in output
 
 
+@pytest.mark.release_only
 def test_installed_cli_remembers_managed_checkout(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home["home_root"])
     installed_cli = home_root / ".local" / "bin" / "charness"
@@ -470,6 +473,7 @@ def test_installed_cli_remembers_managed_checkout(tmp_path: Path, seeded_managed
     assert payload["claude_host_guidance"]["status"] == "installed"
 
 
+@pytest.mark.release_only
 def test_doctor_can_write_host_state_snapshot(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
     home_root, env = clone_seeded_managed_home(
         tmp_path, seeded_managed_home["home_root"], share_source_checkout=True

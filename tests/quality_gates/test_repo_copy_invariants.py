@@ -99,3 +99,39 @@ def test_check_test_repo_copy_invariants_flags_inline_copytree_root(tmp_path: Pa
     assert result.returncode == 1
     assert "tests/test_drift.py" in result.stderr
     assert "clone_seeded_charness_repo" in result.stderr or "shutil.copytree" in result.stderr
+
+
+def test_check_test_repo_copy_invariants_flags_unmarked_copy_heavy_test(tmp_path: Path) -> None:
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "__init__.py").write_text("", encoding="utf-8")
+    (repo / "tests" / "repo_copy.py").write_text("", encoding="utf-8")
+    (repo / "tests" / "test_copy_heavy.py").write_text(
+        "def test_copy(tmp_path, seeded_charness_repo):\n"
+        "    clone_seeded_charness_repo(tmp_path, seeded_charness_repo)\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/check_test_repo_copy_invariants.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "tests/test_copy_heavy.py::test_copy" in result.stderr
+    assert "pytest.mark.release_only" in result.stderr
+
+
+def test_check_test_repo_copy_invariants_accepts_release_only_copy_heavy_test(tmp_path: Path) -> None:
+    repo = tmp_path / "fake-charness"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "tests" / "__init__.py").write_text("", encoding="utf-8")
+    (repo / "tests" / "repo_copy.py").write_text("", encoding="utf-8")
+    (repo / "tests" / "test_copy_heavy.py").write_text(
+        "import pytest\n\n"
+        "@pytest.mark.release_only\n"
+        "def test_copy(tmp_path, seeded_charness_repo):\n"
+        "    clone_seeded_charness_repo(tmp_path, seeded_charness_repo)\n",
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/check_test_repo_copy_invariants.py", "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr

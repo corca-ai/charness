@@ -6,6 +6,8 @@ import subprocess
 import textwrap
 from pathlib import Path
 
+import pytest
+
 from tests.repo_copy import clone_seeded_charness_repo
 
 from .support import (
@@ -23,6 +25,7 @@ from .support import (
 from .tool_fakes import make_fake_cautilus
 
 ROOT = Path(__file__).resolve().parents[2]
+pytestmark = pytest.mark.release_only
 
 
 def enable_cautilus_adapter(repo_root: Path) -> None:

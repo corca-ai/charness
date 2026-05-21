@@ -6,6 +6,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import pytest
+
 from tests.repo_copy import clone_seeded_charness_repo
 
 from .support import EVAL_REGISTRY, ROOT, run_script
@@ -115,6 +117,7 @@ def init_committed_repo(repo: Path) -> None:
     subprocess.run(["git", "commit", "-m", "seed repo"], cwd=repo, check=True, capture_output=True, text=True)
 
 
+@pytest.mark.release_only
 def test_validate_packaging_rejects_checked_in_plugin_tree_drift(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     readme_path = repo / "README.md"
@@ -220,6 +223,7 @@ def test_sync_root_plugin_manifests_writes_install_surface(tmp_path: Path) -> No
     assert validate.returncode == 0, validate.stderr
 
 
+@pytest.mark.release_only
 def test_validate_packaging_committed_accepts_clean_head(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
 
@@ -227,6 +231,7 @@ def test_validate_packaging_committed_accepts_clean_head(tmp_path: Path, seeded_
     assert result.returncode == 0, result.stderr
 
 
+@pytest.mark.release_only
 def test_validate_packaging_committed_rejects_partial_commit_with_uncommitted_export(tmp_path: Path, seeded_charness_git_repo: Path) -> None:
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
 
@@ -273,6 +278,7 @@ def test_validate_packaging_rejects_unknown_top_level_field(tmp_path: Path) -> N
     assert "Additional properties are not allowed" in result.stderr
 
 
+@pytest.mark.release_only
 def test_validate_packaging_rejects_invalid_public_skill_policy_when_present(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     policy_path = repo / "docs" / "public-skill-validation.json"

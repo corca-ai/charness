@@ -30,9 +30,10 @@
    `selected_job`, `core_action`, `agent_action.surface`, `first_value_ref`,
    and `feedback_signal`; then flip `enabled: true` and add or wire a runtime
    emitter for `.charness/usage-episodes/usage_episode.jsonl`.
-3. For standing-test economics, investigate whether packaging/tool tests still
-   materialize full repo/home/plugin copies or merely leave retained pytest temp
-   sessions; reduce repeated nested CLI proof before changing budgets.
+3. Copy-heavy repo/home/plugin tests are now guarded as `release_only` by
+   [check_test_repo_copy_invariants.py](../scripts/check_test_repo_copy_invariants.py);
+   if pytest temp looks large,
+   first separate retained release/full-test sessions from current pre-push work.
 4. The remaining release-side caveat is real-host verification for the
    integrations/control-plane seam recorded in
    [release latest](../charness-artifacts/release/latest.md).

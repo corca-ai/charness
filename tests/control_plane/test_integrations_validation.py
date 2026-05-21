@@ -5,6 +5,8 @@ import os
 import shutil
 from pathlib import Path
 
+import pytest
+
 from tests.repo_copy import clone_seeded_charness_repo
 
 from .support import ROOT, run_script, seed_control_plane_repo
@@ -250,6 +252,7 @@ def test_doctor_reports_not_ready_when_readiness_check_fails(tmp_path: Path) -> 
     assert payload["failed_checks"] == ["demo-ready-file"]
 
 
+@pytest.mark.release_only
 def test_tool_doctor_cli_returns_nonzero_for_blocking_disposition(tmp_path: Path, seeded_charness_repo: Path) -> None:
     repo = clone_seeded_charness_repo(tmp_path, seeded_charness_repo)
     tools_dir = repo / "integrations" / "tools"

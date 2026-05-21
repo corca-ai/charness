@@ -3,7 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from .support import clone_seeded_managed_home
+
+pytestmark = pytest.mark.release_only
 
 
 def test_clone_seeded_managed_home_can_share_source_checkout(tmp_path: Path) -> None:

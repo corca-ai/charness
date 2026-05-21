@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import re
 import sys
 from pathlib import Path
@@ -29,6 +30,96 @@ SKIP_DIR_NAMES = {
 
 IGNORE_PATTERNS_RE = re.compile(r"\bshutil\.ignore_patterns\s*\(")
 COPYTREE_ROOT_RE = re.compile(r"\bshutil\.copytree\s*\(\s*ROOT\b")
+COPY_HEAVY_FIXTURES = frozenset(
+    {
+        "seeded_charness_repo",
+        "seeded_charness_git_repo",
+        "seeded_managed_home",
+    }
+)
+COPY_HEAVY_HELPERS = frozenset(
+    {
+        "clone_seeded_charness_repo",
+        "clone_seeded_managed_home",
+    }
+)
+
+
+def _name_parts(node: ast.AST) -> list[str]:
+    if isinstance(node, ast.Name):
+        return [node.id]
+    if isinstance(node, ast.Attribute):
+        return [*_name_parts(node.value), node.attr]
+    if isinstance(node, ast.Call):
+        return _name_parts(node.func)
+    return []
+
+
+def _is_release_only_marker(node: ast.AST) -> bool:
+    parts = _name_parts(node)
+    return len(parts) >= 3 and parts[-3:] == ["pytest", "mark", "release_only"]
+
+
+def _module_is_release_only(tree: ast.Module) -> bool:
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if not any(isinstance(target, ast.Name) and target.id == "pytestmark" for target in node.targets):
+            continue
+        if _is_release_only_marker(node.value):
+            return True
+        if isinstance(node.value, (ast.List, ast.Tuple)):
+            if any(_is_release_only_marker(item) for item in node.value.elts):
+                return True
+    return False
+
+
+def _function_is_release_only(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    return any(_is_release_only_marker(decorator) for decorator in node.decorator_list)
+
+
+def _copy_heavy_reason(node: ast.FunctionDef | ast.AsyncFunctionDef) -> str | None:
+    fixture_hits = sorted(
+        arg.arg for arg in node.args.args if arg.arg in COPY_HEAVY_FIXTURES
+    )
+    helper_hits: set[str] = set()
+    for child in ast.walk(node):
+        if not isinstance(child, ast.Call):
+            continue
+        parts = _name_parts(child.func)
+        if parts and parts[-1] in COPY_HEAVY_HELPERS:
+            helper_hits.add(parts[-1])
+    reasons: list[str] = []
+    if fixture_hits:
+        reasons.append(f"copy-heavy fixture(s): {', '.join(fixture_hits)}")
+    if helper_hits:
+        reasons.append(f"copy-heavy helper(s): {', '.join(sorted(helper_hits))}")
+    return "; ".join(reasons) if reasons else None
+
+
+def _copy_heavy_marker_violations(repo_root: Path, rel_path: Path) -> list[str]:
+    source = (repo_root / rel_path).read_text(encoding="utf-8")
+    try:
+        tree = ast.parse(source, filename=rel_path.as_posix())
+    except SyntaxError:
+        return []
+    if _module_is_release_only(tree):
+        return []
+    violations: list[str] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        if not node.name.startswith("test_"):
+            continue
+        reason = _copy_heavy_reason(node)
+        if reason is None or _function_is_release_only(node):
+            continue
+        violations.append(
+            f"{rel_path.as_posix()}::{node.name}: uses {reason}. "
+            "Copy-heavy repo/home/plugin tests must be marked `pytest.mark.release_only` "
+            "so standing pre-push excludes full-copy lifecycle proof."
+        )
+    return violations
 
 
 def _iter_python_files(tests_root: Path) -> list[Path]:
@@ -61,6 +152,7 @@ def find_violations(repo_root: Path) -> list[str]:
                 f"Use clone_seeded_charness_repo(...) with seeded_charness_repo or seeded_charness_git_repo "
                 f"from {CANONICAL_MODULE} so fixtures share a session-scoped seed."
             )
+        violations.extend(_copy_heavy_marker_violations(repo_root, rel_path))
     return violations
 
 
@@ -81,8 +173,7 @@ def main() -> int:
         return 0
 
     print(
-        "Test fixture drift: shutil.ignore_patterns / shutil.copytree(ROOT, ...) must only appear in "
-        f"{CANONICAL_MODULE}.",
+        "Test fixture drift: repo-copy helpers must stay centralized, and copy-heavy tests must be release-only.",
         file=sys.stderr,
     )
     for violation in violations:

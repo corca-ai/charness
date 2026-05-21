@@ -75,6 +75,7 @@ def test_charness_init_installs_codex_via_official_app_server(tmp_path: Path, se
     assert cache_manifest.is_file()
 
 
+@pytest.mark.release_only
 def test_charness_doctor_reports_codex_version_drift(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:

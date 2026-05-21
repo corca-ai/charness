@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from .support import (
     CLI,
     ROOT,
@@ -16,6 +18,7 @@ from .support import (
 )
 
 
+@pytest.mark.release_only
 def test_charness_doctor_selects_primary_next_action(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
@@ -30,6 +33,7 @@ def test_charness_doctor_selects_primary_next_action(
     assert payload["next_action"]["message"] == payload["claude_host_guidance"]["message"]
 
 
+@pytest.mark.release_only
 def test_charness_doctor_prints_primary_next_action(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
@@ -44,6 +48,7 @@ def test_charness_doctor_prints_primary_next_action(
     )
 
 
+@pytest.mark.release_only
 def test_charness_doctor_next_action_flag_prints_only_message(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:
@@ -84,6 +89,7 @@ def test_charness_doctor_next_action_reports_missing_source(tmp_path: Path) -> N
     assert payload["next_action"]["message"] == payload["claude_host_guidance"]["message"]
 
 
+@pytest.mark.release_only
 def test_charness_doctor_can_surface_repo_onboarding_as_primary_next_action(
     tmp_path: Path, seeded_managed_home: dict[str, Path]
 ) -> None:

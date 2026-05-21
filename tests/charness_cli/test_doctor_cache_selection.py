@@ -3,8 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from .support import build_test_path, clone_seeded_managed_home, make_fake_codex, run_cli
 from .test_managed_install import CURRENT_VERSION
+
+pytestmark = pytest.mark.release_only
 
 
 def test_doctor_prefers_enabled_cache_matching_source_version(tmp_path: Path, seeded_managed_home: dict[str, Path]) -> None:
