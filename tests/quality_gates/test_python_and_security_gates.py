@@ -501,6 +501,42 @@ def test_check_python_lengths_rejects_too_long_function(tmp_path: Path) -> None:
     assert "function `too_long` length" in result.stderr
 
 
+def test_check_python_lengths_strict_listing_fails_closed_outside_git(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True)
+    (scripts_dir / "short.py").write_text("def short():\n    return 1\n", encoding="utf-8")
+
+    result = run_script(
+        "scripts/check_python_lengths.py",
+        "--repo-root",
+        str(repo),
+        "--require-git-file-listing",
+    )
+
+    assert result.returncode == 1
+    assert "repo file listing failed" in result.stderr
+    assert "command: git ls-files -z --cached --others --exclude-standard" in result.stderr
+
+
+def test_check_python_runtime_inheritance_strict_listing_fails_closed_outside_git(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True)
+    (scripts_dir / "short.py").write_text("def short():\n    return 1\n", encoding="utf-8")
+
+    result = run_script(
+        "scripts/check_python_runtime_inheritance.py",
+        "--repo-root",
+        str(repo),
+        "--require-git-file-listing",
+    )
+
+    assert result.returncode == 1
+    assert "repo file listing failed" in result.stderr
+    assert "command: git ls-files -z --cached --others --exclude-standard" in result.stderr
+
+
 def test_check_python_lengths_rejects_too_long_skill_helper_file(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     helper_dir = repo / "skills" / "public" / "demo" / "scripts"

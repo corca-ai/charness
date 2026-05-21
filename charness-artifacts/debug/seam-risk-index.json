@@ -3,17 +3,17 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 41,
-  "indexed_artifact_count": 33,
+  "source_artifact_count": 42,
+  "indexed_artifact_count": 34,
   "risk_class_counts": {
-    "contract-freeze-risk": 19,
+    "contract-freeze-risk": 18,
     "external-seam": 1,
     "host-disproves-local": 1,
-    "none": 1,
+    "none": 3,
     "operator-visible-recovery": 11
   },
   "generalization_pressure_counts": {
-    "monitor": 33
+    "monitor": 34
   },
   "entries": [
     {
@@ -409,6 +409,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-05-22-repo-file-listing-strict-mode.md",
+      "is_current_pointer": false,
+      "interrupt_id": "repo-file-listing-strict-mode",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "git file visibility -> standing gate proof scope",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "docs/handoff.md",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-05-22-run-quality-changed-path-suppression.md",
       "is_current_pointer": false,
       "interrupt_id": "run-quality-changed-path-suppression",
@@ -467,11 +481,11 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "release-tag-history-discovery-suppression",
+      "interrupt_id": "repo-file-listing-strict-mode",
       "risk_classes": [
-        "contract-freeze-risk"
+        "none"
       ],
-      "seam": "release tag history discovery -> previous version selection -> release",
+      "seam": "git file visibility -> standing gate proof scope",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",

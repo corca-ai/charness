@@ -30,14 +30,31 @@ DEFAULT_PATH_GLOBS = (
 REPO_ROOT_NAMES = {"repo_root", "root", "REPO_ROOT"}
 
 
-def git_visible_repo_files(repo_root: Path) -> set[Path] | None:
+class InventoryError(SystemExit):
+    pass
+
+
+def _decode_output(value: bytes) -> str:
+    return value.decode("utf-8", errors="replace")
+
+
+def git_visible_repo_files(repo_root: Path, *, require_git: bool = False) -> set[Path] | None:
+    command = ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"]
     result = subprocess.run(
-        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        command,
         cwd=repo_root,
         check=False,
         capture_output=True,
     )
     if result.returncode != 0:
+        if require_git:
+            raise InventoryError(
+                "gitignore scan hygiene file listing failed\n"
+                f"command: {' '.join(command)}\n"
+                f"exit_code: {result.returncode}\n"
+                f"STDOUT:\n{_decode_output(result.stdout)}\n"
+                f"STDERR:\n{_decode_output(result.stderr)}"
+            )
         return None
     return {repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel}
 
@@ -46,8 +63,13 @@ def matches_any(path: str, patterns: tuple[str, ...]) -> bool:
     return any(fnmatch.fnmatch(path, pattern) for pattern in patterns)
 
 
-def candidate_files(repo_root: Path, path_globs: tuple[str, ...]) -> list[Path]:
-    visible_files = git_visible_repo_files(repo_root)
+def candidate_files(
+    repo_root: Path,
+    path_globs: tuple[str, ...],
+    *,
+    require_git: bool = False,
+) -> list[Path]:
+    visible_files = git_visible_repo_files(repo_root, require_git=require_git)
     candidates: list[Path] = []
     seen: set[Path] = set()
     for pattern in path_globs:
@@ -148,13 +170,14 @@ def main() -> int:
     parser.add_argument("--exclude-glob", action="append", default=[])
     parser.add_argument("--require-empty", action="store_true")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     path_globs = tuple(args.path_glob or DEFAULT_PATH_GLOBS)
     exclude_globs = tuple(args.exclude_glob or ())
     findings: list[dict[str, object]] = []
-    for path in candidate_files(repo_root, path_globs):
+    for path in candidate_files(repo_root, path_globs, require_git=args.require_git_file_listing):
         rendered = str(path.relative_to(repo_root))
         if matches_any(rendered, exclude_globs):
             continue

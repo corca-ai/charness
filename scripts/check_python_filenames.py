@@ -17,9 +17,9 @@ SKIP_DIR_NAMES = {".cautilus", ".charness", ".git", ".venv", ".pytest_cache", "_
 SKIP_PATH_PARTS = {"vendor"}
 
 
-def iter_python_files(repo_root: Path) -> list[Path]:
+def iter_python_files(repo_root: Path, *, require_git: bool = False) -> list[Path]:
     files: list[Path] = []
-    for path in iter_matching_repo_files(repo_root, ("**/*.py",)):
+    for path in iter_matching_repo_files(repo_root, ("**/*.py",), require_git=require_git):
         rel_path = path.relative_to(repo_root)
         if any(part in SKIP_DIR_NAMES for part in rel_path.parts):
             continue
@@ -32,10 +32,15 @@ def iter_python_files(repo_root: Path) -> list[Path]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    invalid = [path for path in iter_python_files(repo_root) if not VALID_NAME_RE.fullmatch(path.name)]
+    invalid = [
+        path
+        for path in iter_python_files(repo_root, require_git=args.require_git_file_listing)
+        if not VALID_NAME_RE.fullmatch(path.name)
+    ]
     if not invalid:
         return 0
 

@@ -126,6 +126,7 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="exit 1 when a workflow has run-steps but no canonical-gate match",
     )
+    parser.add_argument("--require-git-file-listing", action="store_true")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     return parser
 
@@ -133,7 +134,11 @@ def _build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = _build_parser().parse_args()
     root = args.repo_root.resolve()
-    workflow_files = plib.iter_workflow_files(root, args.workflow_glob)
+    workflow_files = plib.iter_workflow_files(
+        root,
+        args.workflow_glob,
+        require_git=args.require_git_file_listing,
+    )
     raw_patterns = tuple(args.canonical_gate_pattern or plib.DEFAULT_CANONICAL_GATE_PATTERNS)
     gate_patterns: tuple[re.Pattern[str], ...] = tuple(re.compile(p) for p in raw_patterns)
     report: list[dict[str, Any]] = []

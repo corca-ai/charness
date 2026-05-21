@@ -33,6 +33,25 @@ def test_silent_when_no_workflows(tmp_path: Path) -> None:
     }
 
 
+def test_strict_workflow_listing_fails_closed_outside_git(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    workflows = repo / ".github" / "workflows"
+    workflows.mkdir(parents=True)
+    (workflows / "verify.yml").write_text("name: verify\n", encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--require-git-file-listing",
+        "--json",
+    )
+
+    assert result.returncode == 1
+    assert "CI/local gate parity workflow listing failed" in result.stderr
+    assert "command: git ls-files -z --cached --others --exclude-standard" in result.stderr
+
+
 def test_flags_required_steps_after_npm_run_verify(tmp_path: Path) -> None:
     repo = _write_workflow(
         tmp_path,

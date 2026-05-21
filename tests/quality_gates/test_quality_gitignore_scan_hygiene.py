@@ -96,6 +96,30 @@ def test_gitignore_scan_hygiene_require_empty_fails_on_findings(tmp_path: Path) 
     assert "repo_root.rglob('*')" in result.stdout
 
 
+def test_gitignore_scan_hygiene_strict_listing_fails_closed_outside_git(tmp_path: Path) -> None:
+    (tmp_path / "scan.py").write_text("def scan(repo_root):\n    return []\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--repo-root",
+            str(tmp_path),
+            "--path-glob",
+            "*.py",
+            "--require-git-file-listing",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert "gitignore scan hygiene file listing failed" in result.stderr
+    assert "command: git ls-files -z --cached --others --exclude-standard" in result.stderr
+
+
 def test_gitignore_scan_hygiene_respects_gitignore_for_inventory_inputs(tmp_path: Path) -> None:
     subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True, text=True)
     (tmp_path / ".gitignore").write_text("ignored/\n", encoding="utf-8")

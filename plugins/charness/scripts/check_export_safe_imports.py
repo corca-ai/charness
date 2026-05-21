@@ -38,7 +38,7 @@ class ValidationError(Exception):
     pass
 
 
-def iter_python_targets(root: Path) -> list[Path]:
+def iter_python_targets(root: Path, *, require_git: bool = False) -> list[Path]:
     return iter_matching_repo_files(
         root,
         (
@@ -46,6 +46,7 @@ def iter_python_targets(root: Path) -> list[Path]:
             "skills/public/*/scripts/*.py",
             "skills/support/*/scripts/*.py",
         ),
+        require_git=require_git,
     )
 
 
@@ -76,10 +77,11 @@ def validate_imports(path: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
-    targets = iter_python_targets(root)
+    targets = iter_python_targets(root, require_git=args.require_git_file_listing)
     for path in targets:
         try:
             validate_imports(path)

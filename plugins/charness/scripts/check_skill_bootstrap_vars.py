@@ -95,6 +95,7 @@ def check_file(skill_md: Path) -> list[str]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args(argv)
     root = args.repo_root.resolve()
 
@@ -102,7 +103,12 @@ def main(argv: list[str] | None = None) -> int:
         "skills/public/*/SKILL.md",
         "skills/support/*/SKILL.md",
     )
-    targets = iter_matching_repo_files(root, patterns, include_untracked=True)
+    targets = iter_matching_repo_files(
+        root,
+        patterns,
+        include_untracked=True,
+        require_git=args.require_git_file_listing,
+    )
 
     failures: dict[Path, list[str]] = {}
     for path in targets:

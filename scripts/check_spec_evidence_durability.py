@@ -191,6 +191,7 @@ def violations_for_doc(root: Path, doc: Path) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
     root = args.repo_root.resolve()
     if not (root / ".git").exists():
@@ -199,7 +200,7 @@ def main() -> int:
             f"{root}.",
         )
         return 0
-    docs = iter_matching_repo_files(root, DOC_GLOBS)
+    docs = iter_matching_repo_files(root, DOC_GLOBS, require_git=args.require_git_file_listing)
     all_messages: list[str] = []
     for doc in docs:
         all_messages.extend(violations_for_doc(root, doc))

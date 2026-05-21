@@ -53,14 +53,31 @@ _STEP_KEY_PREFIXES = (
 )
 
 
-def iter_workflow_files(repo_root: Path, glob_pattern: str) -> list[Path]:
+class WorkflowListingError(SystemExit):
+    pass
+
+
+def _decode_output(value: bytes) -> str:
+    return value.decode("utf-8", errors="replace")
+
+
+def iter_workflow_files(repo_root: Path, glob_pattern: str, *, require_git: bool = False) -> list[Path]:
+    command = ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"]
     result = subprocess.run(
-        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        command,
         cwd=repo_root,
         check=False,
         capture_output=True,
     )
     if result.returncode != 0:
+        if require_git:
+            raise WorkflowListingError(
+                "CI/local gate parity workflow listing failed\n"
+                f"command: {' '.join(command)}\n"
+                f"exit_code: {result.returncode}\n"
+                f"STDOUT:\n{_decode_output(result.stdout)}\n"
+                f"STDERR:\n{_decode_output(result.stderr)}"
+            )
         return sorted(p for p in repo_root.glob(glob_pattern) if p.is_file())
     visible = {repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel}
     return sorted(p for p in repo_root.glob(glob_pattern) if p.is_file() and p in visible)

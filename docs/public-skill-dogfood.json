@@ -344,7 +344,8 @@
         "Scenario review for #183 kept the public mutation-testing reference language-neutral while making Charness's dogfood runner stricter: coverage contexts derive sampled pytest nodeids, Cosmic Ray work-db probing filters uncovered mutable lines before selection, changed files excluded by sampling block recovery, and `PASS-partial` stays non-closing.",
         "The mutation sampler dogfood now treats configured base/head changed-file diff failure as a fail-closed quality signal: it exits before sample manifests, workflow outputs, or Cosmic Ray config rewrites instead of publishing a fill-only sample from unknown changed-file state.",
         "The affected-test selection contract now says failed selector input discovery is not an empty set: cost-saving selectors should run the broader deterministic gate, while publish/proof selectors should fail with command diagnostics.",
-        "The #188 slice_closeout usage-episode repair dogfooded attention-state visibility: the new emitter helper declares `disabled` and `no_adapter` as terminal payload states, and pre-push kept the declaration and file-length contracts blocking instead of letting telemetry no-op behavior read as successful capture."
+        "The #188 slice_closeout usage-episode repair dogfooded attention-state visibility: the new emitter helper declares `disabled` and `no_adapter` as terminal payload states, and pre-push kept the declaration and file-length contracts blocking instead of letting telemetry no-op behavior read as successful capture.",
+        "Standing quality gates that derive proof scope from repo file listing now request strict git-aware listing, so failed `git ls-files` exits with diagnostics instead of falling back to a broad filesystem scan; fixture-friendly helper defaults remain available outside gate-grade proof."
       ]
     },
     {

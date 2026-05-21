@@ -11,7 +11,20 @@ except ModuleNotFoundError:
     from repo_layout import support_dir
 
 
-def git_list_repo_files(repo_root: Path, *, include_untracked: bool = True) -> list[Path] | None:
+class RepoFileListingError(SystemExit):
+    pass
+
+
+def _decode_output(value: bytes) -> str:
+    return value.decode("utf-8", errors="replace")
+
+
+def git_list_repo_files(
+    repo_root: Path,
+    *,
+    include_untracked: bool = True,
+    require_git: bool = False,
+) -> list[Path] | None:
     args = ["git", "ls-files", "-z", "--cached"]
     if include_untracked:
         args.extend(["--others", "--exclude-standard"])
@@ -22,12 +35,29 @@ def git_list_repo_files(repo_root: Path, *, include_untracked: bool = True) -> l
         capture_output=True,
     )
     if result.returncode != 0:
+        if require_git:
+            raise RepoFileListingError(
+                "repo file listing failed\n"
+                f"command: {' '.join(args)}\n"
+                f"exit_code: {result.returncode}\n"
+                f"STDOUT:\n{_decode_output(result.stdout)}\n"
+                f"STDERR:\n{_decode_output(result.stderr)}"
+            )
         return None
     return sorted(repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel)
 
 
-def iter_repo_files(repo_root: Path, *, include_untracked: bool = True) -> list[Path]:
-    paths = git_list_repo_files(repo_root, include_untracked=include_untracked)
+def iter_repo_files(
+    repo_root: Path,
+    *,
+    include_untracked: bool = True,
+    require_git: bool = False,
+) -> list[Path]:
+    paths = git_list_repo_files(
+        repo_root,
+        include_untracked=include_untracked,
+        require_git=require_git,
+    )
     if paths is not None:
         return [path for path in paths if path.is_file()]
 
@@ -57,6 +87,7 @@ def iter_matching_repo_files(
     patterns: tuple[str, ...],
     *,
     include_untracked: bool = True,
+    require_git: bool = False,
 ) -> list[Path]:
     standard_patterns, support_subpatterns = _split_support_patterns(patterns)
     support_root = support_dir(repo_root)
@@ -68,7 +99,11 @@ def iter_matching_repo_files(
     matches: list[Path] = []
     seen: set[Path] = set()
 
-    git_paths = git_list_repo_files(repo_root, include_untracked=include_untracked)
+    git_paths = git_list_repo_files(
+        repo_root,
+        include_untracked=include_untracked,
+        require_git=require_git,
+    )
     if git_paths is not None:
         allowed = {path for path in git_paths if path.is_file()}
         for pattern in standard_patterns:

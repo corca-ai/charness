@@ -88,12 +88,20 @@ def validate_resolver(path: Path, root: Path) -> None:
         )
 
 
-def iter_resolvers(root: Path) -> list[Path]:
-    return iter_matching_repo_files(root, ("skills/public/*/scripts/resolve_adapter.py",))
+def iter_resolvers(root: Path, *, require_git: bool = False) -> list[Path]:
+    return iter_matching_repo_files(
+        root,
+        ("skills/public/*/scripts/resolve_adapter.py",),
+        require_git=require_git,
+    )
 
 
-def iter_adapter_yaml(root: Path) -> list[Path]:
-    return iter_matching_repo_files(root, (".agents/*-adapter.yaml", ".agents/cautilus-adapters/*.yaml"))
+def iter_adapter_yaml(root: Path, *, require_git: bool = False) -> list[Path]:
+    return iter_matching_repo_files(
+        root,
+        (".agents/*-adapter.yaml", ".agents/cautilus-adapters/*.yaml"),
+        require_git=require_git,
+    )
 
 
 def validate_charness_quality_commands(path: Path, data: dict) -> None:
@@ -209,11 +217,12 @@ def validate_adapter_yaml(path: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
-    resolvers = iter_resolvers(root)
-    adapter_yaml = iter_adapter_yaml(root)
+    resolvers = iter_resolvers(root, require_git=args.require_git_file_listing)
+    adapter_yaml = iter_adapter_yaml(root, require_git=args.require_git_file_listing)
     if not resolvers and not adapter_yaml:
         print("No adapter surfaces found.")
         return 0

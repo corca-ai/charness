@@ -40,6 +40,7 @@ def parse_args() -> argparse.Namespace:
         help="Override the default markdown file globs to inspect.",
     )
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--require-git-file-listing", action="store_true")
     return parser.parse_args()
 
 
@@ -113,7 +114,11 @@ def main() -> int:
     globs = args.target_glob or list(DEFAULT_TARGET_GLOBS)
     inspected: list[dict[str, object]] = []
     seen: set[Path] = set()
-    for path in iter_matching_repo_files(repo_root, tuple(globs)):
+    for path in iter_matching_repo_files(
+        repo_root,
+        tuple(globs),
+        require_git=args.require_git_file_listing,
+    ):
         if path in seen:
             continue
         seen.add(path)

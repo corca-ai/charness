@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from scripts import repo_layout
-from scripts.repo_file_listing import iter_matching_repo_files
+from scripts.repo_file_listing import RepoFileListingError, iter_matching_repo_files
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -78,6 +80,19 @@ def test_iter_matching_repo_files_default_layout_unchanged(tmp_path):
     )
     names = sorted(p.name for p in paths)
     assert names == ["helper.py", "support_helper.py"]
+
+
+def test_iter_matching_repo_files_can_require_git_listing(tmp_path):
+    repo = tmp_path / "not-a-git-repo"
+    repo.mkdir()
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+
+    with pytest.raises(RepoFileListingError) as exc_info:
+        iter_matching_repo_files(repo, ("README.md",), require_git=True)
+
+    message = str(exc_info.value)
+    assert "repo file listing failed" in message
+    assert "command: git ls-files -z --cached --others --exclude-standard" in message
 
 
 def test_load_support_capability_schema_uses_override(tmp_path, monkeypatch):

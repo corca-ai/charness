@@ -36,14 +36,29 @@ def is_substantive(path: Path, min_nonempty_lines: int) -> bool:
     return nonempty_lines >= min_nonempty_lines
 
 
-def iter_files(root: Path, patterns: tuple[str, ...], min_nonempty_lines: int) -> list[Path]:
-    return [path for path in iter_matching_repo_files(root, patterns) if is_substantive(path, min_nonempty_lines)]
+def iter_files(
+    root: Path,
+    patterns: tuple[str, ...],
+    min_nonempty_lines: int,
+    *,
+    require_git: bool = False,
+) -> list[Path]:
+    return [
+        path
+        for path in iter_matching_repo_files(root, patterns, require_git=require_git)
+        if is_substantive(path, min_nonempty_lines)
+    ]
 
 
 def find_duplicates(
-    root: Path, threshold: float, patterns: tuple[str, ...], min_nonempty_lines: int
+    root: Path,
+    threshold: float,
+    patterns: tuple[str, ...],
+    min_nonempty_lines: int,
+    *,
+    require_git: bool = False,
 ) -> list[dict[str, object]]:
-    files = iter_files(root, patterns, min_nonempty_lines)
+    files = iter_files(root, patterns, min_nonempty_lines, require_git=require_git)
     texts = {path: path.read_text(encoding="utf-8") for path in files}
     duplicates: list[dict[str, object]] = []
     for index, left in enumerate(files):
@@ -79,10 +94,17 @@ def main() -> int:
     parser.add_argument("--min-nonempty-lines", type=int, default=DEFAULT_MIN_NONEMPTY_LINES)
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--fail-on-match", action="store_true")
+    parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
-    duplicates = find_duplicates(root, args.threshold, DEFAULT_PATTERNS, args.min_nonempty_lines)
+    duplicates = find_duplicates(
+        root,
+        args.threshold,
+        DEFAULT_PATTERNS,
+        args.min_nonempty_lines,
+        require_git=args.require_git_file_listing,
+    )
     if args.json:
         print(json.dumps(duplicates, indent=2))
     elif duplicates:

@@ -65,8 +65,8 @@ def _path_is_scannable(path: Path) -> bool:
     return path.suffix == ".py" and not any(part in SKIP_PATH_PARTS for part in path.parts)
 
 
-def _iter_scan_paths(repo_root: Path) -> list[Path]:
-    candidates = iter_matching_repo_files(repo_root, DEFAULT_SCAN_GLOBS)
+def _iter_scan_paths(repo_root: Path, *, require_git: bool = False) -> list[Path]:
+    candidates = iter_matching_repo_files(repo_root, DEFAULT_SCAN_GLOBS, require_git=require_git)
     return sorted(
         path
         for path in candidates
@@ -111,11 +111,12 @@ def check_file(repo_root: Path, path: Path) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
     failures: list[str] = []
-    for path in _iter_scan_paths(repo_root):
+    for path in _iter_scan_paths(repo_root, require_git=args.require_git_file_listing):
         failures.extend(check_file(repo_root, path))
 
     if failures:

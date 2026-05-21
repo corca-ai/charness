@@ -59,13 +59,13 @@ class ValidationError(Exception):
     pass
 
 
-def iter_docs(root: Path) -> list[Path]:
-    return iter_matching_repo_files(root, DOC_GLOBS)
+def iter_docs(root: Path, *, require_git: bool = False) -> list[Path]:
+    return iter_matching_repo_files(root, DOC_GLOBS, require_git=require_git)
 
 
-def iter_known_markdown_paths(root: Path) -> set[str]:
+def iter_known_markdown_paths(root: Path, *, require_git: bool = False) -> set[str]:
     known: set[str] = set()
-    for path in iter_repo_files(root):
+    for path in iter_repo_files(root, require_git=require_git):
         if path.suffix != ".md":
             continue
         if any(part in SKIP_DIR_NAMES for part in path.parts):
@@ -74,9 +74,9 @@ def iter_known_markdown_paths(root: Path) -> set[str]:
     return known
 
 
-def iter_known_repo_paths(root: Path) -> set[str]:
+def iter_known_repo_paths(root: Path, *, require_git: bool = False) -> set[str]:
     known: set[str] = set()
-    for path in iter_repo_files(root):
+    for path in iter_repo_files(root, require_git=require_git):
         if any(part in SKIP_DIR_NAMES for part in path.parts):
             continue
         known.add(path.relative_to(root).as_posix())
@@ -348,15 +348,16 @@ def validate_link(root: Path, doc: Path, raw_target: str) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
-    known_markdown_paths = iter_known_markdown_paths(root)
-    known_repo_paths = iter_known_repo_paths(root)
+    known_markdown_paths = iter_known_markdown_paths(root, require_git=args.require_git_file_listing)
+    known_repo_paths = iter_known_repo_paths(root, require_git=args.require_git_file_listing)
     unique_basename_index = build_unique_basename_index(known_repo_paths)
     known_directories = build_known_directories(known_repo_paths)
     canonical_markdown_surfaces = load_canonical_markdown_surfaces(root)
-    for doc in iter_docs(root):
+    for doc in iter_docs(root, require_git=args.require_git_file_listing):
         contents = doc.read_text(encoding="utf-8")
         for target in LINK_RE.findall(contents):
             validate_link(root, doc, target)

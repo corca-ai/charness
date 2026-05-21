@@ -99,19 +99,22 @@ def validate_preset(path: Path) -> None:
         raise ValidationError("product-slice presets must include an `## Exposure Contract` section")
 
 
-def iter_presets(root: Path) -> list[Path]:
+def iter_presets(root: Path, *, require_git: bool = False) -> list[Path]:
     return sorted(
-        path for path in iter_matching_repo_files(root, ("presets/*.md",)) if path.name != "README.md"
+        path
+        for path in iter_matching_repo_files(root, ("presets/*.md",), require_git=require_git)
+        if path.name != "README.md"
     )
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
+    parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
-    preset_paths = iter_presets(root)
+    preset_paths = iter_presets(root, require_git=args.require_git_file_listing)
     if not preset_paths:
         print("No presets found.")
         return 0

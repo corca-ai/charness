@@ -40,11 +40,11 @@ class TokeiUnavailableError(RuntimeError):
     pass
 
 
-def python_files(root: Path, *, exclude_dirs: set[str]) -> list[Path]:
+def python_files(root: Path, *, exclude_dirs: set[str], require_git: bool = False) -> list[Path]:
     files: list[Path] = []
     repo_root = root
     patterns = ("**/*.py",)
-    for path in iter_matching_repo_files(repo_root, patterns):
+    for path in iter_matching_repo_files(repo_root, patterns, require_git=require_git):
         relative_parts = path.relative_to(root).parts
         if any(part in exclude_dirs for part in relative_parts[:-1]):
             continue
@@ -56,10 +56,14 @@ def count_lines(paths: list[Path]) -> int:
     return sum(len(path.read_text(encoding="utf-8").splitlines()) for path in paths)
 
 
-def _splitlines_summary(repo_root: Path) -> dict[str, object]:
+def _splitlines_summary(repo_root: Path, *, require_git: bool = False) -> dict[str, object]:
     tests_root = repo_root / "tests"
-    source_files = python_files(repo_root, exclude_dirs=IGNORED_DIRS)
-    test_files = python_files(tests_root, exclude_dirs=set()) if tests_root.is_dir() else []
+    source_files = python_files(repo_root, exclude_dirs=IGNORED_DIRS, require_git=require_git)
+    test_files = (
+        python_files(tests_root, exclude_dirs=set(), require_git=require_git)
+        if tests_root.is_dir()
+        else []
+    )
     source_lines = count_lines(source_files)
     test_lines = count_lines(test_files)
     return {
@@ -109,13 +113,13 @@ def _tokei_summary(repo_root: Path) -> dict[str, object]:
     }
 
 
-def summarize(repo_root: Path, *, engine: str = "splitlines") -> dict[str, object]:
+def summarize(repo_root: Path, *, engine: str = "splitlines", require_git: bool = False) -> dict[str, object]:
     if engine not in SUPPORTED_ENGINES:
         raise ValueError(f"unsupported engine {engine!r}; expected one of {SUPPORTED_ENGINES}")
     if engine == "tokei":
         counts = _tokei_summary(repo_root)
     else:
-        counts = _splitlines_summary(repo_root)
+        counts = _splitlines_summary(repo_root, require_git=require_git)
     source_lines = int(counts["source_lines"])
     test_lines = int(counts["test_lines"])
     ratio = test_lines / source_lines if source_lines else 0.0
@@ -138,10 +142,15 @@ def main() -> int:
     parser.add_argument("--max-ratio", type=float, default=DEFAULT_MAX_RATIO)
     parser.add_argument("--engine", choices=SUPPORTED_ENGINES, default="splitlines")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
 
     try:
-        summary = summarize(args.repo_root.resolve(), engine=args.engine)
+        summary = summarize(
+            args.repo_root.resolve(),
+            engine=args.engine,
+            require_git=args.require_git_file_listing,
+        )
     except TokeiUnavailableError as exc:
         print(str(exc))
         return 2

@@ -217,10 +217,10 @@ def validate_profile(path: Path, root: Path) -> None:
         validate_string_list(notes, "notes")
 
 
-def iter_profile_files(root: Path) -> list[Path]:
+def iter_profile_files(root: Path, *, require_git: bool = False) -> list[Path]:
     return sorted(
         path
-        for path in iter_matching_repo_files(root, ("profiles/*.json",))
+        for path in iter_matching_repo_files(root, ("profiles/*.json",), require_git=require_git)
         if path.name != "profile.schema.json"
     )
 
@@ -228,10 +228,11 @@ def iter_profile_files(root: Path) -> list[Path]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=repo_root_from_script(__file__))
+    parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
 
     root = args.repo_root.resolve()
-    files = iter_profile_files(root)
+    files = iter_profile_files(root, require_git=args.require_git_file_listing)
     if not files:
         print("No profile instances found.")
         return 0
