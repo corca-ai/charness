@@ -4,7 +4,76 @@ import json
 import shutil
 from pathlib import Path
 
-from .support import ROOT, init_git_repo, run_script, run_shell_script
+from .support import ROOT, init_git_repo, run_script, run_shell_script, write_executable
+
+
+def _copy_script(repo: Path, script_name: str) -> Path:
+    scripts_dir = repo / "scripts"
+    scripts_dir.mkdir(parents=True, exist_ok=True)
+    script_path = scripts_dir / script_name
+    shutil.copy2(ROOT / "scripts" / script_name, script_path)
+    return script_path
+
+
+def _write_failing_ls_files_git(bin_dir: Path) -> None:
+    write_executable(
+        bin_dir / "git",
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'if [[ "$1" == "rev-parse" && "${2:-}" == "--is-inside-work-tree" ]]; then',
+                "  echo true",
+                "  exit 0",
+                "fi",
+                'if [[ "$1" == "ls-files" ]]; then',
+                '  echo "forced git listing failure" >&2',
+                "  exit 42",
+                "fi",
+                'echo "unexpected git invocation: $*" >&2',
+                "exit 99",
+                "",
+            ]
+        ),
+    )
+
+
+def test_check_markdown_fails_when_git_listing_fails(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    script_path = _copy_script(repo, "check-markdown.sh")
+    bin_dir = repo / "bin"
+    bin_dir.mkdir()
+    _write_failing_ls_files_git(bin_dir)
+    write_executable(bin_dir / "markdownlint-cli2", "#!/usr/bin/env bash\nexit 0\n")
+
+    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin")
+    result = run_shell_script(script_path, cwd=repo, env=env)
+
+    assert result.returncode == 1
+    assert "check-markdown: git file listing failed (tracked-markdown)" in result.stderr
+    assert "command: git ls-files" in result.stderr
+    assert "exit_code: 42" in result.stderr
+    assert "forced git listing failure" in result.stderr
+    assert "No tracked markdown files to lint." not in result.stdout
+
+
+def test_check_links_internal_fails_when_git_listing_fails(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    script_path = _copy_script(repo, "check-links-internal.sh")
+    bin_dir = repo / "bin"
+    bin_dir.mkdir()
+    _write_failing_ls_files_git(bin_dir)
+    write_executable(bin_dir / "lychee", "#!/usr/bin/env bash\nexit 0\n")
+
+    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin")
+    result = run_shell_script(script_path, cwd=repo, env=env)
+
+    assert result.returncode == 1
+    assert "check-links-internal: git file listing failed (tracked-markdown)" in result.stderr
+    assert "command: git ls-files" in result.stderr
+    assert "exit_code: 42" in result.stderr
+    assert "forced git listing failure" in result.stderr
+    assert "No markdown files to check." not in result.stdout
 
 
 def test_check_secrets_prefers_gitleaks_when_available(tmp_path: Path) -> None:
@@ -74,14 +143,78 @@ def test_check_secrets_falls_back_to_secretlint_via_npm(tmp_path: Path) -> None:
 
 def test_check_secrets_requires_gitleaks_or_secretlint_runtime(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
-    scripts_dir = repo / "scripts"
-    scripts_dir.mkdir(parents=True)
-    shutil.copy2(ROOT / "scripts" / "check-secrets.sh", scripts_dir / "check-secrets.sh")
+    _copy_script(repo, "check-secrets.sh")
 
     env = dict(PATH="")
     result = run_shell_script(repo / "scripts" / "check-secrets.sh", cwd=repo, env=env)
     assert result.returncode == 1
     assert "requires either gitleaks or repo-local secretlint via npm" in result.stderr
+
+
+def test_check_secrets_secretlint_fails_when_git_listing_fails(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    script_path = _copy_script(repo, "check-secrets.sh")
+    shutil.copy2(ROOT / ".secretlintrc.json", repo / ".secretlintrc.json")
+    shutil.copy2(ROOT / ".secretlintignore", repo / ".secretlintignore")
+    bin_dir = repo / "bin"
+    bin_dir.mkdir()
+    npm_called = repo / "npm-called"
+    _write_failing_ls_files_git(bin_dir)
+    write_executable(
+        bin_dir / "npm",
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                f"touch {str(npm_called)!r}",
+                "exit 99",
+                "",
+            ]
+        ),
+    )
+
+    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin")
+    result = run_shell_script(script_path, cwd=repo, env=env)
+
+    assert result.returncode == 1
+    assert "check-secrets: git file listing failed (secretlint-files)" in result.stderr
+    assert "command: git ls-files -z --cached --others --exclude-standard" in result.stderr
+    assert "exit_code: 42" in result.stderr
+    assert "forced git listing failure" in result.stderr
+    assert "No tracked or unignored files to scan." not in result.stdout
+    assert not npm_called.exists()
+
+
+def test_check_secrets_gitleaks_fails_when_git_listing_fails(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    script_path = _copy_script(repo, "check-secrets.sh")
+    shutil.copy2(ROOT / ".gitleaks.toml", repo / ".gitleaks.toml")
+    bin_dir = repo / "bin"
+    bin_dir.mkdir()
+    gitleaks_called = repo / "gitleaks-called"
+    _write_failing_ls_files_git(bin_dir)
+    write_executable(
+        bin_dir / "gitleaks",
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                f"touch {str(gitleaks_called)!r}",
+                "exit 99",
+                "",
+            ]
+        ),
+    )
+
+    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin")
+    result = run_shell_script(script_path, cwd=repo, env=env)
+
+    assert result.returncode == 1
+    assert "check-secrets: git file listing failed (secret-scan-files)" in result.stderr
+    assert "command: git ls-files -z --cached --others --exclude-standard" in result.stderr
+    assert "exit_code: 42" in result.stderr
+    assert "forced git listing failure" in result.stderr
+    assert not gitleaks_called.exists()
+
+
 def test_check_supply_chain_requires_javascript_lockfile(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

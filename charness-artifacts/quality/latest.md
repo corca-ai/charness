@@ -45,15 +45,15 @@ runtime/test economics, security/supply-chain gates, and artifacts.
 - Mutation changed-file diff discovery now fails closed when a base SHA is set
   and `git diff --name-only` fails, before sample manifests or Cosmic Ray
   config rewrites.
-- Read-only changed-path discovery runs `check-coverage` when git diff/listing
-  fails, so unknown changed state is not empty.
+- Read-only changed-path discovery and shell markdown/link/secret file-list
+  discovery now fail closed when git diff/listing fails.
 
 ## Coverage and Eval Depth
 - `inventory_public_spec_quality.py` reported `public_spec_count=4`,
   `source_guard_row_count=0`, `implementation_path_ref_density=0.0`,
   `executable_block_count=8`; public specs are not the brittle proof layer.
-- The `quality` dogfood case resolves to `charness-artifacts/quality/latest.md`
-  and tier `hitl-recommended`.
+- `quality` dogfood resolves to `charness-artifacts/quality/latest.md` and tier
+  `hitl-recommended`.
 - Public-skill closeout review kept scenario coverage unchanged: `find-skills`
   already has `find-skills-local-first` plus read-only current-pointer dogfood,
   and `release` remains HITL-recommended with reviewed dogfood evidence.
@@ -102,7 +102,7 @@ runtime/test economics, security/supply-chain gates, and artifacts.
 - Release diff, broken real-host config, and previous-tag base-ref lookup/fetch
   suppression are now fail-closed; post-create verification recovery remains
   deferred.
-- Shell markdown/link/secret file-listing gates remain the next sibling target.
+- Next sibling: `check-shell.sh` find collector process-substitution failure shape.
 - Do not add docs/runtime gates from the noisy inventories until a concrete
   ownership rule or duplicated-proof deletion candidate is selected.
 

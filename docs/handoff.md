@@ -18,8 +18,8 @@
 - Current bug-pattern sibling scan added `check-current-pointer-writes`,
   migrated direct `latest.*` writers to a symlink-safe helper, and moved two
   standing Python scans onto git-visible file listing.
-- Mutation #189 is closed; mutation sampling fails closed on changed diff
-  failure, and read-only quality queues coverage when git listing fails.
+- Mutation #189 is closed; mutation sampling, read-only quality, and shell
+  markdown/link/secret gates fail closed on required git discovery failures.
 - Release publishing now fails closed when unreleased-path diff, real-host proof
   config, or previous-tag base-ref lookup/fetch fails; remaining proof caveat is
   post-create verification recovery after external mutation.
@@ -36,8 +36,9 @@
    first separate retained release/full-test sessions from current pre-push work.
 3. Keep PR CI mirroring paused unless the maintainer changes policy; local
    pre-push plus scheduled mutation deeper-check remain the current stance.
-4. The next suppression sibling is shell file-listing gates: markdown, internal
-   links, and secrets can pass empty if git listing fails.
+4. The next suppression sibling is
+   [scripts/check-shell.sh](../scripts/check-shell.sh): it uses `find` process
+   substitution, so check whether collector failure can become empty input.
 5. The remaining release-side caveat is post-create verification recovery after
    tag push and release creation; `_release_base_ref()` lookup/fetch failures now
    fail closed.
@@ -48,7 +49,7 @@
   fatal downstream closeout predicates, and runtime is executable mutants times
   selected test command cost, not just file count.
 - Watch list: Yarn Berry hook idiom; pnpm+lefthook stale snippets; `filelock`
-  plus `pytest-xdist`; seed-cache LRU eviction; shell file-listing gates; usage
+  plus `pytest-xdist`; seed-cache LRU eviction; shell find collector; usage
   episodes; CLI docs ownership; release proof suppression.
 
 ## References
@@ -59,6 +60,8 @@
   mutation #189 survivor and subprocess coverage RCA.
 - [charness-artifacts/debug/2026-05-22-mutation-changed-diff-suppression.md](../charness-artifacts/debug/2026-05-22-mutation-changed-diff-suppression.md):
   mutation sampler changed-file diff fail-closed RCA and proof.
+- [charness-artifacts/debug/2026-05-22-shell-file-listing-suppression.md](../charness-artifacts/debug/2026-05-22-shell-file-listing-suppression.md):
+  shell file-listing gate fail-closed RCA and proof.
 - [charness-artifacts/debug/2026-05-22-release-diff-failure-suppression.md](../charness-artifacts/debug/2026-05-22-release-diff-failure-suppression.md),
   [real-host config suppression](../charness-artifacts/debug/2026-05-22-release-real-host-config-suppression.md),
   and [base-ref fallback suppression](../charness-artifacts/debug/2026-05-22-release-base-ref-fallback-suppression.md):
