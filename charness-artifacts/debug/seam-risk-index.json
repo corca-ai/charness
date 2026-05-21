@@ -3,17 +3,17 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 39,
-  "indexed_artifact_count": 31,
+  "source_artifact_count": 40,
+  "indexed_artifact_count": 32,
   "risk_class_counts": {
-    "contract-freeze-risk": 17,
+    "contract-freeze-risk": 18,
     "external-seam": 1,
     "host-disproves-local": 1,
     "none": 1,
     "operator-visible-recovery": 11
   },
   "generalization_pressure_counts": {
-    "monitor": 31
+    "monitor": 32
   },
   "entries": [
     {
@@ -297,6 +297,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-05-22-critique-changed-path-discovery-suppression.md",
+      "is_current_pointer": false,
+      "interrupt_id": "critique-changed-path-discovery-suppression",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "git changed-path discovery -> critique artifact validator -> quality",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "docs/handoff.md",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-05-22-mutation-changed-diff-suppression.md",
       "is_current_pointer": false,
       "interrupt_id": "mutation-changed-diff-suppression",
@@ -439,11 +453,11 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "mutation-sample-manifest-suppression",
+      "interrupt_id": "critique-changed-path-discovery-suppression",
       "risk_classes": [
         "contract-freeze-risk"
       ],
-      "seam": "mutation sampler manifest -> score summary -> quality closeout status",
+      "seam": "git changed-path discovery -> critique artifact validator -> quality",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",

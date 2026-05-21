@@ -18,8 +18,9 @@
 - Current bug-pattern sibling scan added `check-current-pointer-writes`,
   migrated direct `latest.*` writers to a symlink-safe helper, and moved two
   standing Python scans onto git-visible file listing.
-- Mutation #189 is closed; mutation sampling/score, read-only quality, and shell
-  markdown/link/secret/shell gates fail closed on discovery, manifest, or scan-staging failures.
+- Mutation #189 is closed; mutation sampling/score, critique artifact,
+  read-only quality, and shell markdown/link/secret/shell gates fail closed on
+  discovery, manifest, or scan-staging failures.
 - Release publishing now fails closed when unreleased-path diff, real-host proof
   config, previous-tag base-ref lookup/fetch, or post-create verification fails.
 - Usage episodes are configured but disabled; validation should report

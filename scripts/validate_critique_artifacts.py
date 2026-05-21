@@ -33,15 +33,23 @@ class ValidationError(Exception):
 
 
 def _git_paths(repo_root: Path, args: list[str]) -> list[str]:
+    command = ["git", *args]
     result = subprocess.run(
-        ["git", *args],
+        command,
         cwd=repo_root,
         check=False,
         capture_output=True,
         text=True,
     )
     if result.returncode != 0:
-        return []
+        detail = (result.stderr or result.stdout).strip()
+        message = (
+            "critique artifact changed-path discovery failed; "
+            f"command: {' '.join(command)}; exit_code: {result.returncode}"
+        )
+        if detail:
+            message = f"{message}; output: {detail}"
+        raise ValidationError(message)
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]
 
 
@@ -154,7 +162,7 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    paths = args.paths if args.paths is not None else changed_paths(repo_root)
+    paths = [] if args.all else args.paths if args.paths is not None else changed_paths(repo_root)
     artifacts = candidate_paths(repo_root, paths, all_artifacts=args.all)
     repo_has_delegation_contract = has_repo_delegation_contract(repo_root)
     for artifact in artifacts:

@@ -307,3 +307,27 @@ def test_critique_artifact_validator_rejects_marker_only_signal_section(tmp_path
 
     assert result.returncode == 1
     assert "must cite `host signal:` or `tool signal:`" in result.stderr
+
+
+def test_critique_artifact_validator_fails_closed_when_changed_path_discovery_fails(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    artifact = repo / "charness-artifacts" / "critique" / "demo.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text(
+        "\n".join(
+            [
+                "# Demo Critique",
+                "",
+                "Fresh-Eye Satisfaction: parent-delegated.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script("scripts/validate_critique_artifacts.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "critique artifact changed-path discovery failed" in result.stderr
