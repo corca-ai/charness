@@ -26,6 +26,10 @@
   [AI/ML engineering patterns](./ai-ml-engineering-patterns.md); runtime
   `slice_closeout` emission landed through follow-up
   [#188](https://github.com/corca-ai/charness/issues/188).
+- README first-touch docs ergonomics were trimmed: detailed project/existing
+  repo routing moved to [workflow routes](./workflow-routes.md), while
+  [docs/cli-reference.md](./cli-reference.md) remains generated reference
+  material.
 
 ## Next Session
 
@@ -34,18 +38,13 @@
    [.agents/usage-episodes-adapter.yaml](../.agents/usage-episodes-adapter.yaml)
    at `enabled: false` until maintainers intentionally opt into local runtime
    capture.
-2. For docs ergonomics, do not add a broad gate yet: first separate generated
-   reference noise ([docs/cli-reference.md](./cli-reference.md)) from
-   first-touch prose, then reduce [README.md](../README.md) by moving
-   route/procedure detail to the owning docs while
-   preserving Quick Start and Skill Map discoverability.
-3. Copy-heavy repo/home/plugin tests are now guarded as `release_only` by
+2. Copy-heavy repo/home/plugin tests are now guarded as `release_only` by
    [check_test_repo_copy_invariants.py](../scripts/check_test_repo_copy_invariants.py);
    if pytest temp looks large,
    first separate retained release/full-test sessions from current pre-push work.
-4. Keep PR CI mirroring paused unless the maintainer changes policy; local
+3. Keep PR CI mirroring paused unless the maintainer changes policy; local
    pre-push plus scheduled mutation deeper-check remain the current stance.
-5. The remaining release-side caveat is real-host verification for the
+4. The remaining release-side caveat is real-host verification for the
    integrations/control-plane seam recorded in
    [release latest](../charness-artifacts/release/latest.md).
 
@@ -57,7 +56,7 @@
 - Watch list: Yarn Berry hook idiom; pnpm+lefthook stale snippets;
   `filelock` plus `pytest-xdist`; seed-cache LRU eviction; subprocess
   coverage for CLI-only mutation targets; usage-episode vocabulary/emitter;
-  README vs generated CLI reference docs ownership.
+  generated CLI reference docs ownership.
 
 ## References
 

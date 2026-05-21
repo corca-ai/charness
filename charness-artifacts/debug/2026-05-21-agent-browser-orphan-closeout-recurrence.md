@@ -23,6 +23,9 @@ operator to clean and re-run closeout.
   --cleanup-orphans --execute` as the next step.
 - Running that cleanup command returned `orphan_daemon_count=0`,
   `remaining_pids=[]`, and no forced pids.
+- A later README docs-ergonomics closeout hit the same guard again with one
+  orphan `agent-browser` daemon tree. The closeout command's cleanup fallback
+  removed it; a follow-up `--assert-no-orphans` returned clean.
 - The directly related prior RCA is
   [2026-05-20 agent-browser runtime hygiene](./2026-05-20-agent-browser-runtime-hygiene.md).
 
@@ -52,6 +55,8 @@ would recur from the same closeout path after cleanup.
 - Cleanup command succeeded and reported no remaining orphan pids.
 - The new emitter code does not import or execute `agent-browser`; it only reads
   the usage-episodes adapter and appends JSONL when enabled.
+- The README docs-ergonomics slice changed markdown and plugin README export
+  only; it also did not add an `agent-browser` execution path.
 - Similar-pattern scan reused the prior RCA's sibling set: browser-mediated
   support scripts, adapter-configured probes, integration healthchecks,
   quality closeout, and stale lock payloads. No new `agent-browser` call was

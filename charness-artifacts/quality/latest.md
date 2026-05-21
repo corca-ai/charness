@@ -77,9 +77,11 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
   `codes` limited to narrow inline records, and `scope=inline`.
 
 ## Weak
-- Docs ergonomics is noisy: `README.md` has `core_nonempty_lines=289`,
-  `internal_doc_link_count=68`, `numbered_procedure_count=12`; `docs/cli-reference.md`
-  has `core_nonempty_lines=670`.
+- Docs ergonomics still has generated-reference noise, but README first-touch
+  prose has been reduced: `README.md` now reports
+  `core_nonempty_lines=135`, `internal_doc_link_count=37`, and no
+  entrypoint-doc heuristics; `docs/cli-reference.md` remains a generated leaf
+  with `core_nonempty_lines=670`.
 - Standing test economics still shows nested CLI fanout across `75` files and
   a multi-GB retained pytest temp footprint from real packaging/tool tests.
 - Usage-episodes validation is visible but intentionally disabled by
@@ -96,13 +98,10 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
   ownership rule or duplicated-proof deletion candidate is selected.
 
 ## Advisory
-- `inventory_entrypoint_docs_ergonomics.py` advisory: high core-line counts
-  and low `internal_doc_link_count` suggest review work, not a blocking gate.
-- `inventory_entrypoint_docs_ergonomics.py` follow-up: separate generated reference noise from
-  first-touch prose before adding any gate. Treat
-  [docs/cli-reference.md](../../docs/cli-reference.md) as a generated leaf,
-  then target [README.md](../../README.md) route/procedure duplication for
-  progressive-disclosure cleanup.
+- `inventory_entrypoint_docs_ergonomics.py` advisory: generated reference
+  length remains visible in [docs/cli-reference.md](../../docs/cli-reference.md),
+  but first-touch README route/procedure duplication has been moved to
+  [docs/workflow-routes.md](../../docs/workflow-routes.md).
 - `inventory_standing_test_economics.py` advisory: `nested_cli_files` are the
   review queue; reduce process-boundary proof before changing budgets.
 - `inventory_adapter_gate_design.py` advisory: phrase detectors stay advisory
@@ -128,10 +127,12 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
   `./scripts/run-quality.sh --read-only`; existing-convention check found
   `scheduled-deeper-check` as the only CI policy, so this is a policy choice,
   not an accidental local gate omission.
-- passive `AUTO_CANDIDATE`: because current docs signals mix generated
-  reference length with first-touch prose, audit docs ergonomics ownership
-  before adding a gate; first likely move is a README route/procedure trim, not
-  a [docs/cli-reference.md](../../docs/cli-reference.md) rewrite.
+- passive `AUTO_CANDIDATE`: because the first clear cleanup is complete, keep
+  docs ergonomics ownership separate before adding a gate; the remaining
+  generated-reference length needs ownership review, not automatic failure.
+  [README.md](../../README.md) is now below the entrypoint heuristic threshold,
+  while [docs/cli-reference.md](../../docs/cli-reference.md) remains generated
+  reference material rather than first-touch prose.
 
 ## History
 - [2026-05-21 mutation-testability closeout](history/2026-05-21-mutation-testability-closeout.md)

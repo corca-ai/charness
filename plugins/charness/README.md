@@ -56,211 +56,44 @@ and bundled support skills.
 
 For the full command surface, see [CLI Reference](https://github.com/corca-ai/charness/blob/main/docs/cli-reference.md).
 
-## How You Use It
+## Workflow Routes
 
-If you have just installed `charness` and the repo has not been initialized
-yet, it is safer to call the workflow skill directly. Once `setup` has
-updated [AGENTS.md](https://github.com/corca-ai/charness/blob/main/AGENTS.md) and related settings, use normal
-product-development prompts; `charness` gives the agent routing context
-underneath.
+After setup, ask for the work in normal product language. `charness` uses repo
+instructions and skill metadata to route the agent underneath, so most prompts
+do not need to name a skill.
 
-### Starting A New Project
+- New project: shape the idea with `ideation`, initialize with `setup`, turn
+  the direction into a `spec`, then build through `impl`.
+- Existing repo: run `setup` if the repo is not initialized, then ask directly
+  for implementation, debugging, quality review, story work, handoff, or
+  release help.
+- Known workflow: call a skill directly when that is clearer. Claude uses
+  `/charness:<skill>`; Codex uses `$charness:<skill>`.
 
-1. Start with `ideation`: describe the rough idea, then let the agent help
-   you brainstorm, challenge, and clarify it. It can also route to `gather`
-   when you provide URLs, threads, or other outside context that would sharpen
-   the concept.
-2. Once the concept is concrete enough, ask the agent to create a directory
-   and use `setup`. It should propose the first repo surface, including
-   [AGENTS.md](https://github.com/corca-ai/charness/blob/main/AGENTS.md), so future sessions can use `charness` more
-   naturally.
-3. Start a fresh session in the new directory. Ask the agent to turn the
-   direction into a buildable contract. Routes: `spec`, with critique-style
-   review when the decision is risky enough.
-4. Ask for the first real implementation slice. Routes: `impl`, with
-   verification, debugging, and critique review pulled in as needed.
-5. If the agent moved in a frustrating direction, or if it found a pattern you
-   want future sessions to repeat, ask for a retro. Routes: `retro`.
-6. Once enough code or docs exist, ask for a quality check. Routes: `quality`,
-   covering repo posture such as missing gates, brittle tests, duplicate code,
-   security risks, documentation drift, and skill or script ergonomics.
-
-Retros can trigger automatically when a correction exposes a real workflow miss
-or when repo adapter rules require one, but asking for one explicitly gives the
-agent a stronger improvement loop. For prompt- or behavior-affecting changes,
-[`cautilus`](https://github.com/corca-ai/cautilus) can provide evaluator-backed
-scenario review when installed and configured.
-
-### Working In An Existing Repo
-
-1. If the repo has not been initialized with `charness`, ask the agent to use
-   `setup` first. It should normalize [AGENTS.md](https://github.com/corca-ai/charness/blob/main/AGENTS.md) and related
-   operating surfaces without turning the repo into a generic template.
-2. Ask for the concrete work directly: `Implement this`,
-   `Fix this failing test`, or `Debug this behavior`. Routes: `impl` or `debug`.
-3. If the task is under-specified, ask the agent to shape the contract before
-   coding. Routes: `spec`, with critique review when the change is risky.
-4. When you want to explain progress, rewrite the repo story, or prepare a
-   human-facing update, ask for that communication. Routes: `narrative` or
-   `announcement`.
-5. When the agent has done enough that the next session needs context, or when
-   you want to review what it did and why, ask for a handoff or review loop.
-   Routes: `handoff` or `hitl`.
-6. When the repo needs a stronger quality bar, ask for quality review or
-   follow-up gates. Routes: `quality`, with `retro` when the lesson should
-   persist.
-
-Of course, you can call a skill directly when you already know the workflow you
-want. For example, `/charness:quality` should start a broad quality pass, and
-`/charness:narrative` should focus the agent on README or repo-story work. In
-Codex, use `$` instead of `/` for direct skill invocation.
+For the longer route guide, including retros, Cautilus-backed review, and
+existing-repo examples, see [Workflow Routes](https://github.com/corca-ai/charness/blob/main/docs/workflow-routes.md).
 
 ## Core Concepts
 
-These are the core concepts behind `charness`: the philosophy Corca uses to
-tackle common problems that harness and agent-app developers run into. For what
-each plugin skill does, see [Skill Map](#skill-map).
+These are the core concepts behind `charness`; for the concrete workflow
+surface, see [Skill Map](#skill-map).
 
-### 1. Less Is More
-
-Agents are already capable enough to follow intent when the repo tells them
-what exists, why it exists, and where to look next. `charness` leans on
-progressive disclosure instead of packing every workflow with step-by-step
-prompt instructions.
-
-It also treats modes and options as design debt unless they carry a real
-distinction the user should control. Strong defaults are better than making
-every operator choose from a menu before work can begin.
-
-Connected areas:
-[`find-skills`](./skills/find-skills/SKILL.md),
-[`setup`](./skills/setup/SKILL.md),
-[`quality`](./skills/quality/SKILL.md),
-[`create-skill`](./skills/create-skill/SKILL.md).
-
-### 2. Agents Are First-Class Users
-
-Docs and tools should assume agents will use them often, sometimes more often
-than humans. `charness` treats CLIs, scripts, generated artifacts, and repo
-instructions as agent-facing interfaces, not just maintainer conveniences.
-
-Commands should emit useful state, name the next action, and compose with other
-commands. Docs should point to the next surface, and artifacts should preserve
-decisions another agent can resume. Skills teach agents when and why to use
-those surfaces, so repo docs do not have to repeat the same operational
-playbook.
-
-Connected areas:
-[`find-skills`](./skills/find-skills/SKILL.md),
-[`create-cli`](./skills/create-cli/SKILL.md),
-[`handoff`](./skills/handoff/SKILL.md),
-[`release`](./skills/release/SKILL.md), CLI commands, helper scripts,
-repo docs.
-
-### 3. Reveal Intent, Hide Detail
-
-The public surface should name the intent a human or agent actually has.
-Tool-specific detail should stay underneath that surface unless the user is
-debugging or extending the harness.
-
-That is why `gather` is public while `web-fetch` is not: the user wants
-context, not a fetch strategy. `spec` is public while `specdown` is not: the
-user wants a buildable contract, not an executable-spec tool. The workflow
-stays stable even when the tool path changes.
-
-Connected areas:
-[`gather`](./skills/gather/SKILL.md),
-[`spec`](./skills/spec/SKILL.md), support skills, integrations.
-
-### 4. Human-Code-AI Symbiosis
-
-Humans, code, and AI are good at different things. `charness` avoids
-pretending that better prompts can replace human judgment, deterministic gates,
-or real tool feedback.
-
-Humans keep judgment, authority, physical action, and external-machine
-control. Code keeps repeatable checks such as linters and tests. AI handles
-exploration, drafting, implementation, and synthesis, then hands decisions or
-verification back to the right owner when needed.
-
-Connected areas:
-[`impl`](./skills/impl/SKILL.md),
-[`quality`](./skills/quality/SKILL.md),
-[`hitl`](./skills/hitl/SKILL.md).
-
-### 5. Long-Running Agents Need Quality Software
-
-Agents do not magically make messy repositories safe; they are signal
-amplifiers. The longer they run, the more the repo's existing structure, tests,
-docs, and scripts shape what they notice, trust, and repeat.
-
-`charness` treats quality as a first-class trust surface, not a code-style
-pass. It looks for missing gates, brittle tests, duplicate logic, security
-risk, documentation drift, skill ergonomics, tool health, runtime cost, and
-places where repeated judgment should become a validator or script.
-
-Connected areas:
-[`setup`](./skills/setup/SKILL.md),
-[`quality`](./skills/quality/SKILL.md),
-[`debug`](./skills/debug/SKILL.md),
-[`critique`](./skills/critique/SKILL.md).
-
-### 6. Tacit Knowledge Becomes Workflow
-
-Good debugging, review, product judgment, and communication often live as
-tacit knowledge inside a few expert heads. `charness` turns that knowledge into
-reusable workflow moves instead of making every agent rediscover it by trial
-and error.
-
-Sometimes a sparse expert anchor guides the agent into a better reasoning space
-by retrieving the right pattern from the model's pretrained knowledge: Daniel
-Jackson for concept discipline, Jef Raskin for discoverability, Gerald
-Weinberg for systems thinking, Atul Gawande for checklists, Barbara Minto for
-structured communication, and more.
-
-Connected areas:
-[`debug`](./skills/debug/SKILL.md),
-[`quality`](./skills/quality/SKILL.md),
-[`narrative`](./skills/narrative/SKILL.md),
-[`find-skills`](./skills/find-skills/SKILL.md),
-[`create-skill`](./skills/create-skill/SKILL.md).
-
-### 7. The System Should Get Smarter With Use
-
-A harness should not be a frozen snapshot of one team's habits. `charness`
-keeps shared workflow concepts public, then uses repo-local adapters to
-connect those concepts to each repo's own docs, rules, checks, and durable
-artifacts.
-
-When an agent repeats a mistake, finds a useful pattern, or receives a
-correction, that lesson should not disappear with the session. `retro` turns
-retrospective review into a workflow: session retros capture what should change
-after a meaningful work unit, while weekly retros can summarize broader
-patterns. Those lessons can then become better repo instructions, validators,
-quality gates, handoffs, adapters, or skill behavior.
-
-Connected areas:
-[`retro`](./skills/retro/SKILL.md),
-[`quality`](./skills/quality/SKILL.md),
-[`handoff`](./skills/handoff/SKILL.md),
-[`create-skill`](./skills/create-skill/SKILL.md), adapters.
-
-### 8. Context Must Keep Flowing
-
-Thousands of lines of code are worthless if the work stays trapped where no one
-can understand, evaluate, or use it. Information becomes valuable only when it
-is properly shaped for the customer, maintainer, or next agent who needs to
-act on it.
-
-`charness` treats communication as part of the core workflow, not cleanup. A
-repo story, release update, next-session handoff, and human review loop all
-need different shapes because they move context across different boundaries.
-
-Connected areas:
-[`announcement`](./skills/announcement/SKILL.md),
-[`narrative`](./skills/narrative/SKILL.md),
-[`handoff`](./skills/handoff/SKILL.md),
-[`hitl`](./skills/hitl/SKILL.md).
+1. Less Is More: strong defaults and progressive disclosure beat long prompt
+   menus.
+2. Agents Are First-Class Users: CLIs, scripts, artifacts, and docs should be
+   usable by agents as well as humans.
+3. Reveal Intent, Hide Detail: public skills name user intent; support skills
+   and integrations carry tool-specific detail underneath.
+4. Human-Code-AI Symbiosis: humans keep judgment, code keeps repeatable proof,
+   and AI handles exploration, synthesis, and implementation.
+5. Long-Running Agents Need Quality Software: quality is a trust surface, not
+   just a style pass.
+6. Tacit Knowledge Becomes Workflow: debugging, review, product judgment, and
+   communication patterns become reusable skills.
+7. The System Should Get Smarter With Use: retros, adapters, validators, and
+   artifacts preserve lessons across sessions.
+8. Context Must Keep Flowing: narrative, release notes, handoff, and review
+   loops move work across human and agent boundaries.
 
 ## Skill Map
 
@@ -316,37 +149,12 @@ every workflow.
 ### Support Skills And Integrations
 
 Support skills are tool-use knowledge that helps public skills work. They are
-not meant to be invoked as public workflow names; they are closer to tool-call
-playbooks that public skills can use.
+not public workflow names. Integrations are external-tool manifests that carry
+install, update, detection, healthcheck, readiness, and support-skill sync
+behavior.
 
-Representative support skills:
-
-- [`markdown-preview`](./support/markdown-preview/SKILL.md): rendered
-  Markdown review support
-- [`web-fetch`](./support/web-fetch/SKILL.md): public-web fetch routing
-  support
-
-Integrations are manifests for external tools, usually CLI binaries, that
-`charness` does not own directly. They declare install, update, detection,
-healthcheck, readiness, and sync behavior; some integrations also point at
-upstream support skills that are materialized into the installed Charness plugin.
-
-Current integrations:
-
-- [`agent-browser`](./integrations/tools/agent-browser.json)
-- [`cautilus`](./integrations/tools/cautilus.json)
-- [`github-gh`](./integrations/tools/github-gh.json)
-- [`gitleaks`](./integrations/tools/gitleaks.json)
-- [`glow`](./integrations/tools/glow.json)
-- [`gws-cli`](./integrations/tools/gws-cli.json)
-- [`ruff`](./integrations/tools/ruff.json)
-- [`specdown`](./integrations/tools/specdown.json)
-- [`tokei`](./integrations/tools/tokei.json)
-- [`vulture`](./integrations/tools/vulture.json)
-
-`charness update all` is the operator path for refreshing the installed
-`charness` surface together with tracked external tools and materialized
-support skills.
+See [Support Skill Policy](https://github.com/corca-ai/charness/blob/main/docs/support-skill-policy.md) for the boundary and
+[Control Plane](https://github.com/corca-ai/charness/blob/main/docs/control-plane.md) for integration lifecycle detail.
 
 ## Learn More
 
@@ -354,10 +162,12 @@ README is the first-touch orientation surface. Deeper contracts live in the
 docs and artifacts that own them:
 
 - CLI command reference: [docs/cli-reference.md](https://github.com/corca-ai/charness/blob/main/docs/cli-reference.md)
+- workflow route examples: [docs/workflow-routes.md](https://github.com/corca-ai/charness/blob/main/docs/workflow-routes.md)
 - repo-local development and dogfood paths:
   [docs/development.md](https://github.com/corca-ai/charness/blob/main/docs/development.md)
 - packaging and generated host layout:
-  [docs/host-packaging.md](https://github.com/corca-ai/charness/blob/main/docs/host-packaging.md)
+  [docs/host-packaging.md](https://github.com/corca-ai/charness/blob/main/docs/host-packaging.md),
+  [packaging/charness.json](https://github.com/corca-ai/charness/blob/main/packaging/charness.json)
 - external tools, support materialization, and update/doctor state:
   [docs/control-plane.md](https://github.com/corca-ai/charness/blob/main/docs/control-plane.md)
 - public/support/integration boundaries:
@@ -366,8 +176,3 @@ docs and artifacts that own them:
   [docs/public-skill-validation.md](https://github.com/corca-ai/charness/blob/main/docs/public-skill-validation.md)
 - current dogfood quality posture:
   [charness-artifacts/quality/latest.md](https://github.com/corca-ai/charness/blob/main/charness-artifacts/quality/latest.md)
-
-`charness` installs as one managed bundle, not a menu of partially installed
-public skills. The checked-in host plugin surface lives under
-[`plugins/charness/`](https://github.com/corca-ai/charness/tree/main/plugins/charness/) and is generated from
-[`packaging/charness.json`](https://github.com/corca-ai/charness/blob/main/packaging/charness.json).
