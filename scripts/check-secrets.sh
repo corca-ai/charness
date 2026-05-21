@@ -35,7 +35,7 @@ if command -v gitleaks >/dev/null 2>&1; then
     trap 'rm -rf "$scan_dir"' EXIT
     run_git_listing_to_file secret-scan-files "$tracked_files_path" \
       git ls-files -z --cached --others --exclude-standard
-    if tar --null --ignore-failed-read -T "$tracked_files_path" -cf - | tar -xf - -C "$scan_dir"; then
+    if tar --null -T "$tracked_files_path" -cf - | tar -xf - -C "$scan_dir"; then
       exec gitleaks dir \
         --config "$REPO_ROOT/.gitleaks.toml" \
         --no-banner \

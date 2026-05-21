@@ -19,7 +19,7 @@
   migrated direct `latest.*` writers to a symlink-safe helper, and moved two
   standing Python scans onto git-visible file listing.
 - Mutation #189 is closed; mutation sampling, read-only quality, and shell
-  markdown/link/secret/shell gates fail closed on required discovery failures.
+  markdown/link/secret/shell gates fail closed on discovery or scan-staging failures.
 - Release publishing now fails closed when unreleased-path diff, real-host proof
   config, previous-tag base-ref lookup/fetch, or post-create verification fails.
 - Usage episodes are configured but disabled; validation should report

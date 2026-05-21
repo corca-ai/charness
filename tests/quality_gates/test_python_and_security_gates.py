@@ -353,6 +353,38 @@ def test_check_secrets_gitleaks_fails_when_git_listing_fails(tmp_path: Path) -> 
     assert not gitleaks_called.exists()
 
 
+def test_check_secrets_gitleaks_fails_when_staging_git_listed_file_fails(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _copy_script(repo, "check-secrets.sh")
+    shutil.copy2(ROOT / ".gitleaks.toml", repo / ".gitleaks.toml")
+    (repo / "secret.txt").write_text("token=missing-from-staged-scan\n", encoding="utf-8")
+    init_git_repo(repo, "secret.txt", ".gitleaks.toml", "scripts/check-secrets.sh")
+    (repo / "secret.txt").unlink()
+
+    bin_dir = repo / "bin"
+    bin_dir.mkdir()
+    gitleaks_called = repo / "gitleaks-called"
+    write_executable(
+        bin_dir / "gitleaks",
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                f"touch {str(gitleaks_called)!r}",
+                "exit 99",
+                "",
+            ]
+        ),
+    )
+
+    env = dict(PATH=f"{bin_dir}:/usr/bin:/bin")
+    result = run_shell_script(repo / "scripts" / "check-secrets.sh", cwd=repo, env=env)
+
+    assert result.returncode == 1
+    assert "check-secrets: failed to stage git file listing for gitleaks scan." in result.stderr
+    assert "secret.txt" in result.stderr
+    assert not gitleaks_called.exists()
+
+
 def test_check_supply_chain_requires_javascript_lockfile(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
