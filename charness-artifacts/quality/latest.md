@@ -1,11 +1,10 @@
 # Quality Review
-Date: 2026-05-21
+Date: 2026-05-22
 
 ## Scope
-Current slice: broad `charness:quality` posture review for the self-repo after
-the #183 release. Scope covers standing gates, local enforcement, public/support
-skill ergonomics, docs drift, CI/local parity, runtime/test economics, source
-scan hygiene, security and supply-chain gates, and durable quality artifacts.
+Current slice: broad self-repo quality posture after the #183 release, covering
+standing gates, local enforcement, skill ergonomics, docs drift, CI/local parity,
+runtime/test economics, security/supply-chain gates, and durable artifacts.
 
 ## Concept Risks
 - The previous `latest.md` was a mutation-closeout artifact; this review
@@ -97,7 +96,8 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
   proof is maintainer-local pre-push plus scheduled mutation deeper-check.
 
 ## Deferred
-- Release-side real-host verification remains in `charness-artifacts/release/latest.md`.
+- Release diff-failure suppression is now fail-closed; broader real-host proof
+  caveats remain deferred in `charness-artifacts/release/latest.md`.
 - Do not add docs/runtime gates from the noisy inventories until a concrete
   ownership rule or duplicated-proof deletion candidate is selected.
 

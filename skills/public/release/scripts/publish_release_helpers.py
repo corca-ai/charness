@@ -274,7 +274,14 @@ def unreleased_paths(
         check=False,
     )
     if result.returncode != 0:
-        return []
+        raise SystemExit(
+            "release diff failed while computing unreleased paths\n"
+            f"base_ref: {base_ref}\n"
+            f"command: git diff --name-only {base_ref}..HEAD\n"
+            f"exit_code: {result.returncode}\n"
+            f"STDOUT:\n{result.stdout}\n"
+            f"STDERR:\n{result.stderr}"
+        )
     return [line for line in result.stdout.splitlines() if line.strip()]
 
 

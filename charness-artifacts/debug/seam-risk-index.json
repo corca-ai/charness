@@ -3,16 +3,16 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 29,
-  "indexed_artifact_count": 21,
+  "source_artifact_count": 30,
+  "indexed_artifact_count": 22,
   "risk_class_counts": {
-    "contract-freeze-risk": 8,
+    "contract-freeze-risk": 9,
     "host-disproves-local": 1,
     "none": 1,
     "operator-visible-recovery": 11
   },
   "generalization_pressure_counts": {
-    "monitor": 21
+    "monitor": 22
   },
   "entries": [
     {
@@ -296,17 +296,31 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "mutation-scope-gap-testability",
+      "artifact_path": "charness-artifacts/debug/2026-05-22-release-diff-failure-suppression.md",
+      "is_current_pointer": false,
+      "interrupt_id": "release-diff-failure-suppression",
       "risk_classes": [
         "contract-freeze-risk"
       ],
-      "seam": "coverage observation -> Cosmic Ray work DB -> pytest command selection",
+      "seam": "release git delta -> real-host proof selection -> publish mutation",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "this file",
+      "handoff_artifact": "docs/handoff.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "release-diff-failure-suppression",
+      "risk_classes": [
+        "contract-freeze-risk"
+      ],
+      "seam": "release git delta -> real-host proof selection -> publish mutation",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "docs/handoff.md",
       "forced": false
     }
   ],

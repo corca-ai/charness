@@ -25,6 +25,9 @@
   [scripts/worktree_doctor_state.py](../scripts/worktree_doctor_state.py) and now splits remaining exclusions into
   file-coverage-floor and mutation-line buckets, so the open issue is not
   closable yet.
+- Release publishing now fails closed when unreleased-path diff fails; remaining
+  proof caveats are real-host payload exceptions, post-create verification, and
+  base-ref fallback policy.
 - Usage episodes are configured but disabled; validation should report
   `disabled`, not `no_adapter`.
 - README first-touch routing moved to [workflow routes](./workflow-routes.md);
@@ -41,20 +44,17 @@
 4. Mutation changed-file eligibility is still the active watch item: add direct
    tests for the current-pointer slice until a `b882398..HEAD` sample reports
    no file-coverage-floor or mutation-line changed-file exclusions.
-5. The remaining release-side caveat is real-host verification for the
-   integrations/control-plane seam recorded in
-   [release latest](../charness-artifacts/release/latest.md).
+5. The remaining release-side caveats are real-host payload exception policy,
+   post-create verification, and `_release_base_ref()` fallback behavior.
 
 ## Discuss
 
 - Mutation selection lessons: sampler predicates must be at least as strict as
   fatal downstream closeout predicates, and runtime is executable mutants times
   selected test command cost, not just file count.
-- Watch list: Yarn Berry hook idiom; pnpm+lefthook stale snippets;
-  `filelock` plus `pytest-xdist`; seed-cache LRU eviction; changed-file
-  mutation eligibility; usage-episode vocabulary/emitter; generated CLI
-  reference docs ownership; release diff-failure suppression surfaced by
-  sibling scan.
+- Watch list: Yarn Berry hook idiom; pnpm+lefthook stale snippets; `filelock`
+  plus `pytest-xdist`; seed-cache LRU eviction; changed-file mutation
+  eligibility; usage episodes; CLI docs ownership; release proof suppression.
 
 ## References
 
@@ -62,6 +62,8 @@
   current-pointer and gitignore sibling scan RCA and prevention.
 - [charness-artifacts/debug/2026-05-21-mutation-subprocess-coverage.md](../charness-artifacts/debug/2026-05-21-mutation-subprocess-coverage.md):
   mutation #189 survivor and subprocess coverage RCA.
+- [charness-artifacts/debug/2026-05-22-release-diff-failure-suppression.md](../charness-artifacts/debug/2026-05-22-release-diff-failure-suppression.md):
+  release diff-failure suppression RCA and fail-closed proof.
 - [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md):
   current quality posture and commands for this slice.
 - [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md): current release surface.

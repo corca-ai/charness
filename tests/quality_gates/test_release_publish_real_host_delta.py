@@ -135,6 +135,111 @@ def test_publish_release_fetches_missing_previous_tag_for_real_host_proof(tmp_pa
     assert ["fetch", "--quiet", "origin", "refs/tags/v0.0.0:refs/tags/v0.0.0"] in git_log
 
 
+def test_publish_release_fails_closed_when_release_diff_fails(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    _write_real_host_release_config(repo)
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "Configure release host proof"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    before_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    env = _publish_env(tmp_path, bin_dir)
+    env["FAKE_GIT_DIFF_NAME_ONLY_FAIL"] = "1"
+
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/publish_release.py",
+            "--repo-root",
+            str(repo),
+            "--part",
+            "patch",
+            "--execute",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 1
+    assert "release diff failed while computing unreleased paths" in result.stderr
+    assert "command: git diff --name-only origin/main..HEAD" in result.stderr
+    assert "exit_code: 42" in result.stderr
+    assert "forced diff failure" in result.stderr
+    assert json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))["version"] == "0.0.0"
+    assert not (repo / ".quality-ran").exists()
+    assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
+    assert (
+        subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True)
+        .stdout.strip()
+        == before_head
+    )
+    assert subprocess.run(
+        ["git", "tag", "--list", "v0.0.1"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip() == ""
+    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
+    gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
+    assert any(entry[:2] == ["diff", "--name-only"] for entry in git_log)
+    assert ["commit", "-m", "Release v0.0.1"] not in git_log
+    assert ["tag", "v0.0.1"] not in git_log
+    assert not any(entry and entry[0] == "push" for entry in git_log)
+    assert not any(entry[:2] == ["release", "create"] for entry in gh_log)
+
+
+def test_publish_release_dry_run_fails_closed_when_release_diff_fails(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    _write_real_host_release_config(repo)
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "Configure release host proof"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    env = _publish_env(tmp_path, bin_dir)
+    env["FAKE_GIT_DIFF_NAME_ONLY_FAIL"] = "1"
+
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/publish_release.py",
+            "--repo-root",
+            str(repo),
+            "--part",
+            "patch",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert "release diff failed while computing unreleased paths" in result.stderr
+    assert "command: git diff --name-only origin/main..HEAD" in result.stderr
+    assert "forced diff failure" in result.stderr
+    assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
+
+
 def test_publish_current_uses_previous_release_tag_for_real_host_proof(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     subprocess.run(["git", "tag", "v0.0.0"], cwd=repo, check=True, capture_output=True, text=True)

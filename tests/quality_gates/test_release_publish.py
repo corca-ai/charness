@@ -98,12 +98,13 @@ def _write_fake_git(repo: Path, bin_dir: Path) -> None:
             entries = json.loads(log_path.read_text(encoding="utf-8")) if log_path.exists() else []
             entries.append(args)
             log_path.write_text(json.dumps(entries, indent=2) + "\\n", encoding="utf-8")
+            if os.environ.get("FAKE_GIT_DIFF_NAME_ONLY_FAIL") == "1" and args[:2] == ["diff", "--name-only"]:
+                print("forced diff failure", file=sys.stderr)
+                raise SystemExit(42)
             raise SystemExit(subprocess.run([{json.dumps(shutil.which("git") or "/usr/bin/git")}, *args]).returncode)
             """
         ),
     )
-
-
 def _write_sync_script(repo: Path) -> None:
     _write_exec(
         repo / "scripts" / "sync_root_plugin_manifests.py",

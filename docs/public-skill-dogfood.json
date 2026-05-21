@@ -359,7 +359,7 @@
         "produces an output that a maintainer could review directly without re-deriving the whole request"
       ],
       "review_status": "reviewed",
-      "reviewed_on": "2026-05-17",
+      "reviewed_on": "2026-05-22",
       "observed_evidence": [
         "The public core tells release work to inspect `current_release.py`, `check_real_host_proof.py`, `check_requested_review_gate.py`, git state, and the current release artifact before mutating anything.",
         "The checked-in release core no longer reopens a local-critique loophole: every task-completing release slice records critique, with routine hygiene using a short scoped pass and higher-risk release decisions using the standalone `critique` skill.",
@@ -368,7 +368,8 @@
         "`publish_release_helpers.backend_command` now enforces a per-op placeholder allowlist at runtime: `release_view` accepts `{tag}`, `release_create` accepts `{tag}` and `{title}`, and `auth_check` accepts none. Adapter templates with unknown placeholders fail fast with the offending placeholder named, mirroring the issue-backend `_resolve_op` hardening so both backend surfaces share the same shape.",
         "`fresh_checkout_probes` is now part of the release adapter contract: `current_release.py` reports whether probes are configured, and `publish_release.py --execute` runs declared probes in a temporary fresh clone after the release commit and before tag push or release creation.",
         "`publish_release.py --execute --close-issue <number>` now preflights `gh issue view` before release mutation, puts close keywords in the direct release commit body, verifies GitHub issue state after push and release creation, records the carrier/manual-fallback evidence, and performs a manual close only if auto-close did not close the issue.",
-        "`publish_release.py --execute` now re-reads the public release after `gh release create` and records a post-publish artifact commit when the committed release record needs the verified release URL/status."
+        "`publish_release.py --execute` now re-reads the public release after `gh release create` and records a post-publish artifact commit when the committed release record needs the verified release URL/status.",
+        "Release publish now fails closed when `git diff --name-only <base>..HEAD` cannot compute unreleased paths, before dry-run output or execute-mode version bumps, quality proof, artifacts, commits, tags, pushes, or release creation."
       ]
     },
     {
