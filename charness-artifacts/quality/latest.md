@@ -82,8 +82,9 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
   has `core_nonempty_lines=670`.
 - Standing test economics still shows nested CLI fanout across `75` files and
   a multi-GB retained pytest temp footprint from real packaging/tool tests.
-- Usage-episodes validation is visible but skipped: `validate_usage_episodes.py`
-  reported `no_adapter`, so this product-signal surface remains opt-in.
+- Usage-episodes validation is visible but intentionally disabled by
+  [.agents/usage-episodes-adapter.yaml](../../.agents/usage-episodes-adapter.yaml);
+  the next product decision is vocabulary, not adapter discovery.
 
 ## Missing
 - No non-exempt standing PR CI workflow runs the local quality gate. Current
@@ -97,6 +98,11 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
 ## Advisory
 - `inventory_entrypoint_docs_ergonomics.py` advisory: high core-line counts
   and low `internal_doc_link_count` suggest review work, not a blocking gate.
+- Docs ergonomics follow-up: separate generated reference noise from
+  first-touch prose before adding any gate. Treat
+  [docs/cli-reference.md](../../docs/cli-reference.md) as a generated leaf,
+  then target [README.md](../../README.md) route/procedure duplication for
+  progressive-disclosure cleanup.
 - `inventory_standing_test_economics.py` advisory: `nested_cli_files` are the
   review queue; reduce process-boundary proof before changing budgets.
 - `inventory_adapter_gate_design.py` advisory: phrase detectors stay advisory
@@ -128,8 +134,10 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
   `./scripts/run-quality.sh --read-only`; existing-convention check found
   `scheduled-deeper-check` as the only CI policy, so this is a policy choice,
   not an accidental local gate omission.
-- passive `AUTO_CANDIDATE`: because current docs signals need owner judgment,
-  audit docs ergonomics ownership before adding a gate.
+- passive `AUTO_CANDIDATE`: because current docs signals mix generated
+  reference length with first-touch prose, audit docs ergonomics ownership
+  before adding a gate; first likely move is a README route/procedure trim, not
+  a [docs/cli-reference.md](../../docs/cli-reference.md) rewrite.
 
 ## History
 - [2026-05-21 mutation-testability closeout](history/2026-05-21-mutation-testability-closeout.md)
