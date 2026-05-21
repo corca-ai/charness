@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-22",
-  "source_artifact_count": 64,
-  "candidate_count": 396,
+  "source_artifact_count": 65,
+  "candidate_count": 402,
   "top_candidates": [
     {
       "candidate_id": "current_focus:bdee3fcb6a12",
@@ -29,6 +29,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md",
+          "date": "2026-05-22",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:f50ecbffd194",
+      "kind": "current_focus",
+      "lesson": "This session continued the release proof suppression scan by fixing publish behavior for broken real-host proof configuration and proof-builder failures.",
+      "normalized_key": "this session continued the release proof suppression scan by fixing publish behavior for broken",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
           "date": "2026-05-22",
           "section": "Context"
         }
@@ -75,6 +95,66 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:c69e9b8aa6b3",
+      "kind": "next_improvement",
+      "lesson": "keep the next release suppression slice focused on `_release_base_ref()` known-tag fetch fallback before post-create recovery semantics.",
+      "normalized_key": "keep the next release suppression slice focused on release base ref known tag fetch",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+          "date": "2026-05-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:11919a9c74d5",
+      "kind": "next_improvement",
+      "lesson": "when moving a gate before dry-run output, add a dry-run compatibility assertion for the non-trigger case.",
+      "normalized_key": "when moving a gate before dry run output add a dry run compatibility assertion",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+          "date": "2026-05-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:bcaf6dcef7c2",
+      "kind": "next_improvement",
+      "lesson": "when replacing an advisory fallback with fail-closed behavior, add one test for returned error payloads and one for thrown exceptions.",
+      "normalized_key": "when replacing an advisory fallback with fail closed behavior add one test for returned",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+          "date": "2026-05-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:9a1dcb318e21",
       "kind": "next_improvement",
       "lesson": "whenever an artifact says a shared path affects dry-run and execute, include one assertion for each visible mode before closeout.",
@@ -91,6 +171,26 @@
           "artifact_path": "charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md",
           "date": "2026-05-22",
           "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:42ea36c62b68",
+      "kind": "repeat_trap",
+      "lesson": "Compatibility for no-trigger dry-run repos without `.agents/surfaces.json` was implied by execute tests but not directly pinned.",
+      "normalized_key": "compatibility for no trigger dry run repos without agents surfaces json was implied by",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+          "date": "2026-05-22",
+          "section": "Waste"
         }
       ]
     },
@@ -115,6 +215,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:3ea3ba5581e5",
+      "kind": "repeat_trap",
+      "lesson": "The first implementation claimed the proof builder cannot run path before a test exercised an actual builder exception.",
+      "normalized_key": "the first implementation claimed the proof builder cannot run path before a test exercised",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+          "date": "2026-05-22",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:b631786c69ab",
       "kind": "repeat_trap",
       "lesson": "The first regression proved execute-mode fail-closed behavior but made a dry-run claim in artifacts before pinning dry-run stdout.",
@@ -131,126 +251,6 @@
           "artifact_path": "charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md",
           "date": "2026-05-22",
           "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:717726f1363a",
-      "kind": "current_focus",
-      "lesson": "This session reviewed recent bug fixes and issue history, then repaired the mutation sampling blind spot where Python subprocess coverage did not carry selectable pytest contexts.",
-      "normalized_key": "this session reviewed recent bug fixes and issue history then repaired the mutation sampling",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
-      "latest_source_date": "2026-05-21",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
-          "date": "2026-05-21",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:82fae4e4128b",
-      "kind": "current_focus",
-      "lesson": "This slice continued the mutation regression sibling scan by splitting changed file exclusions into file-coverage-floor and mutation-line buckets.",
-      "normalized_key": "this slice continued the mutation regression sibling scan by splitting changed file exclusions into",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
-      "latest_source_date": "2026-05-21",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
-          "date": "2026-05-21",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:e4cf3faf9cf8",
-      "kind": "current_focus",
-      "lesson": "This slice reviewed recent bug-fix patterns and closed issues, then hardened two sibling seams: direct current-pointer writes to `latest.*` artifacts and gitignore-blind standing scans.",
-      "normalized_key": "this slice reviewed recent bug fix patterns and closed issues then hardened two sibling",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-21-current-pointer-hardening.md",
-      "latest_source_date": "2026-05-21",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-21-current-pointer-hardening.md",
-          "date": "2026-05-21",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:729d5040cfe0",
-      "kind": "next_improvement",
-      "lesson": "add a diagnostic split in the mutation manifest so changed files excluded for low file coverage and uncovered mutable lines are not both labeled as `uncovered_changed_files`.",
-      "normalized_key": "add a diagnostic split in the mutation manifest so changed files excluded for low",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
-      "latest_source_date": "2026-05-21",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
-          "date": "2026-05-21",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:2007e8e34197",
-      "kind": "next_improvement",
-      "lesson": "after adding diagnostic rendering to a near-limit script, run the file-length gate before full quality.",
-      "normalized_key": "after adding diagnostic rendering to a near limit script run the file length gate",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
-      "latest_source_date": "2026-05-21",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
-          "date": "2026-05-21",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:83c76090f7ef",
-      "kind": "next_improvement",
-      "lesson": "before promoting a new source scanner, add one mixed safe/unsafe fixture so helper-use exemptions cannot mask direct violations.",
-      "normalized_key": "before promoting a new source scanner add one mixed safe unsafe fixture so helper",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-21-current-pointer-hardening.md",
-      "latest_source_date": "2026-05-21",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-21-current-pointer-hardening.md",
-          "date": "2026-05-21",
-          "section": "Next Improvements"
         }
       ]
     }
@@ -277,6 +277,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:f50ecbffd194",
+      "kind": "current_focus",
+      "lesson": "This session continued the release proof suppression scan by fixing publish behavior for broken real-host proof configuration and proof-builder failures.",
+      "normalized_key": "this session continued the release proof suppression scan by fixing publish behavior for broken",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+          "date": "2026-05-22",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6cfcbfbc0c95",
       "kind": "next_improvement",
       "lesson": "after editing long checked-in JSON registries, review the diff before running broad gates so neighbor metadata churn is caught locally.",
@@ -317,6 +337,66 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:c69e9b8aa6b3",
+      "kind": "next_improvement",
+      "lesson": "keep the next release suppression slice focused on `_release_base_ref()` known-tag fetch fallback before post-create recovery semantics.",
+      "normalized_key": "keep the next release suppression slice focused on release base ref known tag fetch",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+          "date": "2026-05-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:11919a9c74d5",
+      "kind": "next_improvement",
+      "lesson": "when moving a gate before dry-run output, add a dry-run compatibility assertion for the non-trigger case.",
+      "normalized_key": "when moving a gate before dry run output add a dry run compatibility assertion",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+          "date": "2026-05-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:bcaf6dcef7c2",
+      "kind": "next_improvement",
+      "lesson": "when replacing an advisory fallback with fail-closed behavior, add one test for returned error payloads and one for thrown exceptions.",
+      "normalized_key": "when replacing an advisory fallback with fail closed behavior add one test for returned",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+          "date": "2026-05-22",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:9a1dcb318e21",
       "kind": "next_improvement",
       "lesson": "whenever an artifact says a shared path affects dry-run and execute, include one assertion for each visible mode before closeout.",
@@ -337,6 +417,26 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:42ea36c62b68",
+      "kind": "repeat_trap",
+      "lesson": "Compatibility for no-trigger dry-run repos without `.agents/surfaces.json` was implied by execute tests but not directly pinned.",
+      "normalized_key": "compatibility for no trigger dry run repos without agents surfaces json was implied by",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+          "date": "2026-05-22",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:bbeb86e98ba5",
       "kind": "repeat_trap",
       "lesson": "Dogfood JSON patching briefly touched adjacent review metadata, so the reviewer had to catch unrelated public-skill evidence churn.",
@@ -351,6 +451,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-22-release-diff-fail-closed-session.md",
+          "date": "2026-05-22",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:3ea3ba5581e5",
+      "kind": "repeat_trap",
+      "lesson": "The first implementation claimed the proof builder cannot run path before a test exercised an actual builder exception.",
+      "normalized_key": "the first implementation claimed the proof builder cannot run path before a test exercised",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
+      "latest_source_date": "2026-05-22",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-22-release-real-host-config-session.md",
           "date": "2026-05-22",
           "section": "Waste"
         }

@@ -25,8 +25,8 @@
   [scripts/worktree_doctor_state.py](../scripts/worktree_doctor_state.py) and now splits remaining exclusions into
   file-coverage-floor and mutation-line buckets, so the open issue is not
   closable yet.
-- Release publishing now fails closed when unreleased-path diff fails; remaining
-  proof caveats are real-host payload exceptions, post-create verification, and
+- Release publishing now fails closed when unreleased-path diff or real-host
+  proof config fails; remaining proof caveats are post-create verification and
   base-ref fallback policy.
 - Usage episodes are configured but disabled; validation should report
   `disabled`, not `no_adapter`.
@@ -44,8 +44,8 @@
 4. Mutation changed-file eligibility is still the active watch item: add direct
    tests for the current-pointer slice until a `b882398..HEAD` sample reports
    no file-coverage-floor or mutation-line changed-file exclusions.
-5. The remaining release-side caveats are real-host payload exception policy,
-   post-create verification, and `_release_base_ref()` fallback behavior.
+5. The remaining release-side caveats are post-create verification and
+   `_release_base_ref()` fallback behavior.
 
 ## Discuss
 
@@ -62,8 +62,9 @@
   current-pointer and gitignore sibling scan RCA and prevention.
 - [charness-artifacts/debug/2026-05-21-mutation-subprocess-coverage.md](../charness-artifacts/debug/2026-05-21-mutation-subprocess-coverage.md):
   mutation #189 survivor and subprocess coverage RCA.
-- [charness-artifacts/debug/2026-05-22-release-diff-failure-suppression.md](../charness-artifacts/debug/2026-05-22-release-diff-failure-suppression.md):
-  release diff-failure suppression RCA and fail-closed proof.
+- [charness-artifacts/debug/2026-05-22-release-diff-failure-suppression.md](../charness-artifacts/debug/2026-05-22-release-diff-failure-suppression.md)
+  and [real-host config suppression](../charness-artifacts/debug/2026-05-22-release-real-host-config-suppression.md):
+  release proof suppression RCAs and fail-closed proof.
 - [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md):
   current quality posture and commands for this slice.
 - [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md): current release surface.

@@ -96,8 +96,8 @@ runtime/test economics, security/supply-chain gates, and durable artifacts.
   proof is maintainer-local pre-push plus scheduled mutation deeper-check.
 
 ## Deferred
-- Release diff-failure suppression is now fail-closed; broader real-host proof
-  caveats remain deferred in `charness-artifacts/release/latest.md`.
+- Release diff and broken real-host config suppression are now fail-closed;
+  base-ref fallback and post-create verification remain deferred.
 - Do not add docs/runtime gates from the noisy inventories until a concrete
   ownership rule or duplicated-proof deletion candidate is selected.
 

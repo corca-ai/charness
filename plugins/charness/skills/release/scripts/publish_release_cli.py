@@ -273,12 +273,8 @@ def main() -> None:
     title = args.title or tag_name
     backend = adapter_data["release_backend"]
     ensure_release_target_available(repo_root, tag_name=tag_name, remote=args.remote, backend=backend)
-    release_content_paths = unreleased_paths(
-        repo_root,
-        remote=args.remote,
-        branch=branch,
-        previous_version=previous_version,
-    )
+    release_content_paths = unreleased_paths(repo_root, remote=args.remote, branch=branch, previous_version=previous_version)
+    safe_real_host_payload(repo_root, release_content_paths, build_payload=build_real_host_payload)
     issue_repo = args.close_issue_repo or github_repo_slug(repo_root, backend, run=run)
 
     payload = build_publish_payload(

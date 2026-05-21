@@ -38,6 +38,45 @@ def _write_real_host_release_config(repo: Path) -> None:
     )
 
 
+def _write_broken_real_host_release_config(repo: Path) -> None:
+    adapter_path = repo / ".agents" / "release-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "\nreal_host_required_surfaces:\n- missing-release-surface\nreal_host_checklist:\n- Verify on a clean host.\n",
+        encoding="utf-8",
+    )
+    (repo / ".agents" / "surfaces.json").write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "surfaces": [
+                    {
+                        "surface_id": "operator-docs",
+                        "description": "Operator docs.",
+                        "source_paths": ["README.md"],
+                        "derived_paths": [],
+                        "sync_commands": [],
+                        "verify_commands": [],
+                        "notes": [],
+                    }
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def _write_missing_surfaces_real_host_release_config(repo: Path) -> None:
+    adapter_path = repo / ".agents" / "release-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "\nreal_host_required_surfaces:\n- operator-docs\nreal_host_checklist:\n- Verify on a clean host.\n",
+        encoding="utf-8",
+    )
+
+
 def _publish_env(tmp_path: Path, bin_dir: Path) -> dict[str, str]:
     env = os.environ.copy()
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
@@ -237,6 +276,191 @@ def test_publish_release_dry_run_fails_closed_when_release_diff_fails(tmp_path: 
     assert "release diff failed while computing unreleased paths" in result.stderr
     assert "command: git diff --name-only origin/main..HEAD" in result.stderr
     assert "forced diff failure" in result.stderr
+    assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
+
+
+def test_publish_release_fails_closed_when_real_host_config_is_broken(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    _write_broken_real_host_release_config(repo)
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "Configure broken release host proof"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    before_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/publish_release.py",
+            "--repo-root",
+            str(repo),
+            "--part",
+            "patch",
+            "--execute",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=_publish_env(tmp_path, bin_dir),
+    )
+
+    assert result.returncode == 1
+    assert "release real-host proof probe failed" in result.stderr
+    assert '"configuration_status": "broken"' in result.stderr
+    assert "missing-release-surface" in result.stderr
+    assert json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))["version"] == "0.0.0"
+    assert not (repo / ".quality-ran").exists()
+    assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
+    assert (
+        subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True)
+        .stdout.strip()
+        == before_head
+    )
+    assert subprocess.run(
+        ["git", "tag", "--list", "v0.0.1"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip() == ""
+    git_log = json.loads((tmp_path / "git-log.json").read_text(encoding="utf-8"))
+    gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
+    assert ["commit", "-m", "Release v0.0.1"] not in git_log
+    assert ["tag", "v0.0.1"] not in git_log
+    assert not any(entry and entry[0] == "push" for entry in git_log)
+    assert not any(entry[:2] == ["release", "create"] for entry in gh_log)
+
+
+def test_publish_release_dry_run_fails_closed_when_real_host_config_is_broken(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    _write_broken_real_host_release_config(repo)
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "Configure broken release host proof"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/publish_release.py",
+            "--repo-root",
+            str(repo),
+            "--part",
+            "patch",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=_publish_env(tmp_path, bin_dir),
+    )
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert "release real-host proof probe failed" in result.stderr
+    assert '"configuration_status": "broken"' in result.stderr
+    assert "missing-release-surface" in result.stderr
+    assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
+
+
+def test_publish_release_fails_closed_when_real_host_builder_cannot_run(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    _write_missing_surfaces_real_host_release_config(repo)
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "commit", "-m", "Configure release host proof without surfaces"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    before_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/publish_release.py",
+            "--repo-root",
+            str(repo),
+            "--part",
+            "patch",
+            "--execute",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=_publish_env(tmp_path, bin_dir),
+    )
+
+    assert result.returncode == 1
+    assert "release real-host proof probe failed" in result.stderr
+    assert "SurfaceError" in result.stderr
+    assert "missing surfaces manifest" in result.stderr
+    assert json.loads((repo / "packaging" / "demo.json").read_text(encoding="utf-8"))["version"] == "0.0.0"
+    assert not (repo / ".quality-ran").exists()
+    assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
+    assert (
+        subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True)
+        .stdout.strip()
+        == before_head
+    )
+    assert subprocess.run(
+        ["git", "tag", "--list", "v0.0.1"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip() == ""
+    gh_log = json.loads((tmp_path / "gh-log.json").read_text(encoding="utf-8"))
+    assert not any(entry[:2] == ["release", "create"] for entry in gh_log)
+
+
+def test_publish_release_dry_run_allows_no_trigger_repo_without_surfaces(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    assert not (repo / ".agents" / "surfaces.json").exists()
+
+    result = subprocess.run(
+        [
+            "python3",
+            "skills/public/release/scripts/publish_release.py",
+            "--repo-root",
+            str(repo),
+            "--part",
+            "patch",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=_publish_env(tmp_path, bin_dir),
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["execute"] is False
+    assert payload["target_version"] == "0.0.1"
     assert not (repo / "charness-artifacts" / "release" / "latest.md").exists()
 
 

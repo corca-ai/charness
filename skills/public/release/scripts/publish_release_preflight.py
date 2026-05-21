@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Callable
 
@@ -35,13 +36,15 @@ def validate_critique_artifact_arg(
 
 def safe_real_host_payload(repo_root: Path, repo_paths: list[str], *, build_payload: Callable) -> dict:
     try:
-        return build_payload(repo_root, repo_paths)
-    except Exception as exc:  # pragma: no cover - fallback only
-        return {
-            "required": False,
-            "changed_paths": repo_paths,
-            "surface_hits": [],
-            "path_hits": [],
-            "checklist": [],
-            "reason": f"Real-host/public verification probe could not run: {exc}",
-        }
+        payload = build_payload(repo_root, repo_paths)
+    except Exception as exc:  # pragma: no cover - defensive fail-closed path
+        raise SystemExit(
+            "release real-host proof probe failed\n"
+            f"{type(exc).__name__}: {exc}"
+        ) from exc
+    if payload.get("configuration_status") == "broken" or payload.get("error"):
+        raise SystemExit(
+            "release real-host proof probe failed\n"
+            + json.dumps(payload, ensure_ascii=False, indent=2)
+        )
+    return payload

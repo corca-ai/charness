@@ -88,26 +88,26 @@ def surface_error_payload(error: str) -> dict[str, object]:
 
 def build_payload(repo_root: Path, changed_paths: list[str]) -> dict[str, object]:
     adapter = load_adapter(repo_root)
-    surfaces_manifest = load_surfaces(repo_root)
-    assert surfaces_manifest is not None
-
     trigger_surfaces = adapter["data"].get("real_host_required_surfaces", [])
     trigger_globs = adapter["data"].get("real_host_required_path_globs", [])
     checklist = adapter["data"].get("real_host_checklist", [])
 
-    resolved_trigger_surfaces = resolve_trigger_surfaces(surfaces_manifest, trigger_surfaces)
-    if resolved_trigger_surfaces["unresolved"]:
-        return broken_trigger_config_payload(
-            resolved_trigger_surfaces["unresolved"], surfaces_manifest["path"]
-        )
-    declared_trigger_surfaces = set(resolved_trigger_surfaces["declared"])
-
-    matched = match_surfaces(surfaces_manifest, changed_paths)
-    surface_hits = [
-        surface["surface_id"]
-        for surface in matched["matched_surfaces"]
-        if surface["surface_id"] in declared_trigger_surfaces
-    ]
+    surface_hits: list[str] = []
+    if trigger_surfaces:
+        surfaces_manifest = load_surfaces(repo_root)
+        assert surfaces_manifest is not None
+        resolved_trigger_surfaces = resolve_trigger_surfaces(surfaces_manifest, trigger_surfaces)
+        if resolved_trigger_surfaces["unresolved"]:
+            return broken_trigger_config_payload(
+                resolved_trigger_surfaces["unresolved"], surfaces_manifest["path"]
+            )
+        declared_trigger_surfaces = set(resolved_trigger_surfaces["declared"])
+        matched = match_surfaces(surfaces_manifest, changed_paths)
+        surface_hits = [
+            surface["surface_id"]
+            for surface in matched["matched_surfaces"]
+            if surface["surface_id"] in declared_trigger_surfaces
+        ]
     path_hits = [path for path in changed_paths if matches_any(path, trigger_globs)]
     required = bool(surface_hits or path_hits)
     return {
