@@ -41,8 +41,9 @@ def test_charness_version_can_refresh_latest_release_and_record_provenance(
     assert payload["latest_release_check"]["latest_tag"] == NEWER_RELEASE_TAG
     assert payload["latest_release_check"]["update_available"] is True
     assert payload["update_notice"] == (
-        f"charness update available: `{CURRENT_VERSION}` -> `{NEWER_RELEASE_TAG}`. "
-        f"Run `charness update`. https://github.com/corca-ai/charness/releases/tag/{NEWER_RELEASE_TAG}"
+        f"charness release available: `{CURRENT_VERSION}` -> `{NEWER_RELEASE_TAG}`. "
+        f"Upgrade with `charness update` from the installed CLI. "
+        f"https://github.com/corca-ai/charness/releases/tag/{NEWER_RELEASE_TAG}"
     )
     version_state = json.loads(
         (home_root / ".local" / "state" / "charness" / "version-state.json").read_text(encoding="utf-8")
@@ -116,7 +117,7 @@ def test_installed_cli_can_emit_auto_update_notice_for_newer_release(
         env=env,
     )
     assert doctor_result.returncode == 0, doctor_result.stderr
-    assert f"charness update available: `{CURRENT_VERSION}` -> `{NEWER_RELEASE_TAG}`." in doctor_result.stderr
+    assert f"charness release available: `{CURRENT_VERSION}` -> `{NEWER_RELEASE_TAG}`." in doctor_result.stderr
 
 
 def test_charness_version_preserves_prerelease_tag_in_update_notice(
@@ -141,8 +142,9 @@ def test_charness_version_preserves_prerelease_tag_in_update_notice(
     assert payload["latest_release_check"]["latest_version"] == "9.9.9-rc.1"
     assert payload["latest_release_check"]["update_available"] is True
     assert payload["update_notice"] == (
-        f"charness update available: `{CURRENT_VERSION}` -> `{NEWER_PRERELEASE_TAG}`. "
-        f"Run `charness update`. https://github.com/corca-ai/charness/releases/tag/{NEWER_PRERELEASE_TAG}"
+        f"charness release available: `{CURRENT_VERSION}` -> `{NEWER_PRERELEASE_TAG}`. "
+        f"Upgrade with `charness update` from the installed CLI. "
+        f"https://github.com/corca-ai/charness/releases/tag/{NEWER_PRERELEASE_TAG}"
     )
 
 

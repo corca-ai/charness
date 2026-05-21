@@ -15,6 +15,7 @@ from .support import (
     build_test_path,
     clone_seeded_managed_home,
     make_fake_claude,
+    make_release_fixture,
     run_cli,
 )
 
@@ -309,6 +310,33 @@ def test_installed_cli_update_refreshes_installed_binary_from_managed_checkout(t
     assert "NEXT_ACTION:" in update_result.stdout
     assert marker.strip() in installed_text
     assert installed_text == managed_checkout_text
+
+
+@pytest.mark.release_only
+def test_installed_cli_update_suppresses_pre_update_notice(
+    tmp_path: Path, seeded_charness_git_repo: Path
+) -> None:
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    source_repo = clone_seeded_charness_repo(source_root, seeded_charness_git_repo)
+    home_root, env = init_managed_home_from_repo(tmp_path, source_repo)
+    release_fixture = make_release_fixture(tmp_path, charness_tag="v9.9.9")
+    env["CHARNESS_RELEASE_PROBE_FIXTURES"] = str(release_fixture)
+    env["CHARNESS_FORCE_UPDATE_CHECK"] = "1"
+
+    installed_cli = home_root / ".local" / "bin" / "charness"
+    update_result = subprocess.run(
+        [sys.executable, str(installed_cli), "update", "--home-root", str(home_root), "--skip-codex-cache-refresh"],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert update_result.returncode == 0, update_result.stderr
+    assert "charness release available" not in update_result.stderr
+    assert "Upgrade with `charness update`" not in update_result.stderr
 
 
 @pytest.mark.release_only

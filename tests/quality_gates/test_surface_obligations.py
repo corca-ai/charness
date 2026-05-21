@@ -5,6 +5,8 @@ import os
 import sys
 from pathlib import Path
 
+import pytest
+
 from .support import ROOT, run_script
 
 
@@ -466,6 +468,34 @@ def test_run_slice_closeout_preserves_parent_python_before_login_shell_path(tmp_
     assert output_lines[1] == sys.executable
     assert output_lines[2].startswith("pytest ")
     assert output_lines[3] == "fake-node"
+
+
+def test_run_slice_closeout_emits_heartbeat_for_long_running_commands(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    monkeypatch.setenv("CHARNESS_CLOSEOUT_PROGRESS_INTERVAL_SECONDS", "0.1")
+
+    sys.path.insert(0, str(ROOT / "scripts"))
+    try:
+        import run_slice_closeout
+
+        result = run_slice_closeout.run_command(
+            repo,
+            "python3 -c 'import time; time.sleep(0.25); print(\"done\")'",
+            "verify",
+        )
+    finally:
+        sys.path.remove(str(ROOT / "scripts"))
+        sys.modules.pop("run_slice_closeout", None)
+
+    captured = capsys.readouterr()
+    assert result["returncode"] == 0, result["stderr"]
+    assert result["stdout"].strip() == "done"
+    assert "RUN [verify]" in captured.err
+    assert "." in captured.err
+    assert "PASS [verify]" in captured.err
 
 
 def test_check_python_runtime_inheritance_rejects_unpinned_bash_login_shell(tmp_path: Path) -> None:

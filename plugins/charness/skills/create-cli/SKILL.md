@@ -90,7 +90,10 @@ steps call tools outside the baseline shell surface.
      product reason makes preview meaningless
    - install and update commands must say what they changed
    - long-running mutations should show phase progress so operators can tell
-     what is happening before the command finishes
+     what is happening before the command finishes; if the command captures
+     child output for a final report or JSON payload, print phase start,
+     bounded heartbeat dots, and phase completion to stderr so stdout stays
+     machine-readable when needed
    - if the product manages multiple install targets, make the registry or
      manifest decision explicit and say who cleans up stale entries
    - if `update` has a wider aggregate variant, distinguish self-update from

@@ -50,6 +50,9 @@ Review these six axes and classify each as `healthy`, `weak`, `missing`, or
 4. **Phase-level signal**
    - success output should identify the phase and elapsed time
    - failure output should reveal the seam without forcing an immediate rerun
+   - long-running phases that capture child output for later failure replay
+     should emit bounded heartbeat dots or an equivalent progress marker while
+     preserving machine-readable stdout contracts
    - passing phases may stay quiet only when they have no attention lines;
      lines beginning `WARNING`, `WARN`, `WEAK`, or `ADVISORY` should be replayed
      even when the command exits 0

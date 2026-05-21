@@ -961,6 +961,17 @@ def refresh_self_release_state(
     return write_version_state(home_root, latest_release=latest_release)
 
 
+def latest_release_for_current_version(
+    latest_release: object, current_version: str | None
+) -> dict[str, object] | None:
+    if not isinstance(latest_release, dict):
+        return None
+    payload = dict(latest_release)
+    payload["current_version"] = current_version
+    payload["update_available"] = compute_update_available(current_version, payload.get("latest_version"))
+    return payload
+
+
 def build_self_update_notice(latest_release: object) -> str | None:
     if not isinstance(latest_release, dict):
         return None
@@ -972,7 +983,10 @@ def build_self_update_notice(latest_release: object) -> str | None:
         return None
     url = latest_release.get("html_url")
     suffix = f" {url}" if isinstance(url, str) and url else ""
-    return f"charness update available: `{current_version}` -> `{latest}`. Run `charness update`.{suffix}"
+    return (
+        f"charness release available: `{current_version}` -> `{latest}`. "
+        f"Upgrade with `charness update` from the installed CLI.{suffix}"
+    )
 
 
 def should_auto_refresh_self_release(args: argparse.Namespace, provenance: dict[str, object]) -> bool:
@@ -1007,6 +1021,8 @@ def maybe_record_self_version_state(args: argparse.Namespace) -> None:
     state = write_version_state(home_root, provenance=provenance)
     latest_release = state.get("latest_release")
     current_version = provenance.get("current_version")
+    if getattr(args, "command", None) == "update":
+        return
     if should_auto_refresh_self_release(args, provenance):
         if not isinstance(latest_release, dict) or not latest_release_cache_is_fresh(latest_release, current_version):
             state = refresh_self_release_state(home_root=home_root, current_version=current_version if isinstance(current_version, str) else None)
@@ -3360,7 +3376,7 @@ def cmd_update(args: argparse.Namespace) -> int:
     payload["target_repo_root"] = str(target_repo_root)
     if managed_checkout:
         write_install_state(home_root, repo_root=Path(checkout["repo_root"]), managed_checkout=True)
-    write_version_state(
+    version_state = write_version_state(
         home_root,
         provenance=build_version_provenance(
             home_root=home_root,
@@ -3369,6 +3385,13 @@ def cmd_update(args: argparse.Namespace) -> int:
             cli_path=cli_path,
         ),
     )
+    latest_release = latest_release_for_current_version(
+        version_state.get("latest_release"),
+        payload["checkout_version"] if isinstance(payload.get("checkout_version"), str) else None,
+    )
+    if latest_release is not None:
+        payload["latest_release_check"] = latest_release
+        write_version_state(home_root, latest_release=latest_release)
     write_host_state(home_root, key="last_update", payload=doctor_payload)
     payload["checkout"] = checkout
     payload["scope"] = args.scope or "self"
