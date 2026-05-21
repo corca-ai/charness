@@ -14,8 +14,8 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
   non-exempt PR CI quality workflow mirrors it.
 
 ## Current Gates
-- `./scripts/run-quality.sh` passed with `65` phases and now includes
-  `inventory-gitignore-scan-hygiene`.
+- `./scripts/run-quality.sh --read-only` passed; the standing queue now includes
+  `inventory-gitignore-scan-hygiene` and `check-current-pointer-writes`.
 - `.githooks/pre-push` syncs plugin exports, validates current pointers, runs
   read-only quality, and fails if `charness-artifacts/` mutates.
 - `scripts/validate_maintainer_setup.py` proved this clone uses `.githooks`.
@@ -50,6 +50,9 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
   `executable_block_count=8`; public specs are not the brittle proof layer.
 - The `quality` dogfood case resolves to `charness-artifacts/quality/latest.md`
   and tier `hitl-recommended`.
+- Public-skill closeout review kept scenario coverage unchanged: `find-skills`
+  already has `find-skills-local-first` plus read-only current-pointer dogfood,
+  and `release` remains HITL-recommended with reviewed dogfood evidence.
 
 ## Maintainer-Local Enforcement
 - Healthy: checked-in `.githooks/pre-push`, `scripts/install-git-hooks.sh`, and
@@ -70,9 +73,9 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
   `checked_skill_count=22`, `heuristic_finding_count=0`, and
   `prose_review_status=still_required`.
 - prose review result: no skill trigger boundary blocker found for this pass.
-- `inventory_gitignore_scan_hygiene.py` is now clean after replacing five
-  repo-wide scans with git-visible file discovery and promoting it into
-  `scripts/run-quality.sh`.
+- `inventory_gitignore_scan_hygiene.py` and `check_current_pointer_writes.py`
+  are clean; release/find-skills/Cautilus current snapshot writers now use the
+  shared symlink-safe current-pointer writer.
 - `inventory_lint_ignores.py` found `blanket_count=0`, `file_level_count=0`,
   `codes` limited to narrow inline records, and `scope=inline`.
 
@@ -115,21 +118,18 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
 
 ## Commands Run
 - Capability/bootstrap helpers; skill/docs/test-economics/spec/lint/CI/gitignore
-  inventories; runtime summary and dogfood suggestion.
-- `./scripts/run-quality.sh --read-only`, targeted gitignore hygiene quality
-  run, ruff, and focused pytest inventory/doc-link tests (`65 passed`).
+  inventories; current-pointer scan; runtime summary; dogfood suggestion.
+- `./scripts/run-quality.sh --read-only`, targeted quality labels, ruff, and
+  focused pytest inventory/doc-link/current-pointer/gitignore tests.
 
 ## Recommended Next Gates
-- active `AUTO_EXISTING`: keep `inventory-gitignore-scan-hygiene` in
-  `scripts/run-quality.sh`; existing-convention check found helper/inventory
-  lineage via `git log -S inventory_gitignore_scan_hygiene` and `rg repo_file_listing`.
-- passive `NON_AUTOMATABLE`: because CI policy is unresolved, decide whether PR CI should mirror
-  `./scripts/run-quality.sh --read-only`; existing-convention check found
-  `scheduled-deeper-check` as the only CI policy, so this is a policy choice,
-  not an accidental local gate omission.
-- passive `AUTO_CANDIDATE`: because the first clear cleanup is complete, keep
-  docs ergonomics ownership separate before adding a gate; the remaining
-  generated-reference length needs ownership review, not automatic failure.
+- active `AUTO_EXISTING`: keep `inventory-gitignore-scan-hygiene` and
+  `check-current-pointer-writes` in `scripts/run-quality.sh`.
+- passive `NON_AUTOMATABLE`: because CI policy is unresolved, decide whether PR
+  CI should mirror `./scripts/run-quality.sh --read-only`; current CI has only
+  `scheduled-deeper-check`.
+- passive `AUTO_CANDIDATE`: because generated-reference length needs ownership
+  review, keep docs ergonomics separate before adding a gate.
   [README.md](../../README.md) is now below the entrypoint heuristic threshold,
   while [docs/cli-reference.md](../../docs/cli-reference.md) remains generated
   reference material rather than first-touch prose.
@@ -137,4 +137,3 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
 ## History
 - [2026-05-21 mutation-testability closeout](history/2026-05-21-mutation-testability-closeout.md)
 - [2026-05-14 mutation testing dogfood](history/2026-05-14-mutation-testing-dogfood.md)
-- [2026-05-12 archive](history/2026-05-12-quality-review.md)

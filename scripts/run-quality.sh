@@ -450,6 +450,7 @@ if [[ -f "$REPO_ROOT/skills/public/quality/scripts/inventory_gitignore_scan_hygi
 else
   queue_selected "inventory-gitignore-scan-hygiene" bash -c 'echo "inventory_gitignore_scan_hygiene.py unavailable; skipping optional advisory inventory."'
 fi
+queue_selected "check-current-pointer-writes" python3 scripts/check_current_pointer_writes.py --repo-root "$REPO_ROOT" --require-empty
 queue_selected "measure-startup-probes" python3 skills/public/quality/scripts/measure_startup_probes.py --repo-root "$REPO_ROOT" --class standing --record-runtime-signals
 # inventory-sloc writes a git-tracked artifact, which the adapter declares via
 # quality_phases. Read-only mode (e.g. the pre-push hook) drops the --output

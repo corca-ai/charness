@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- This slice reviewed recent bug-fix patterns and closed issues, then hardened two sibling seams: direct current-pointer writes to `latest.*` artifacts and gitignore-blind standing scans. (source: `charness-artifacts/retro/2026-05-21-current-pointer-hardening.md`)
 - Reviewing the 2026-05-20 quality session that landed depth-bounded `_pytest_temp_footprint`, `release_only` routing, `## References` link inventory, and the seed-fixture budget gate. (source: `charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md`)
-- The setup skill cleanup exposed a repeated quality pattern: `gate_rules` or similar list fields can be empty, leaving a validator advisory-only while the standing gate still reports a clean pass. (source: `charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md`)
 
 ## Repeat Traps
 
@@ -14,10 +14,10 @@
 
 ## Next-Time Checklist
 
+- before promoting a new source scanner, add one mixed safe/unsafe fixture so helper-use exemptions cannot mask direct violations. (source: `charness-artifacts/retro/2026-05-21-current-pointer-hardening.md`)
+- carry the current-pointer helper boundary in the debug seam-risk index so future artifact-writing changes start from the same distinction. (source: `charness-artifacts/retro/2026-05-21-current-pointer-hardening.md`)
+- keep `check_current_pointer_writes.py` narrow until another concrete `latest.*` write shape is observed; expand by fixture, not by broad text search. (source: `charness-artifacts/retro/2026-05-21-current-pointer-hardening.md`)
 - **Anti-need before need in `Recommended Next Gates`.** Before proposing a new enforcement gate for an advisory cost, the workflow must check (a) `git log -S <subject>` for origin context, (b) `grep -rn <subject>` for existing markers and conventions, (c) `rg -tpython "<subject>" pyproject.toml` for existing routing. Add a new gate only after confirming no existing convention is being violated; otherwise the recommendation is a routing fix. ### capability (source: `charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md`)
-- **Measurement-before-claim rule.** When the quality skill (or any skill) writes a number for a size, runtime, or cost, the number must come from a command run this turn. Estimates must be labeled "estimate" with the reason measurement was skipped. (source: `charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md`)
-- Promote into `recent-lessons.md` (via summary refresh): - "Measure before quoting a size/runtime number; estimates must be labeled and justified." - "Before adding an enforcement gate for an advisory cost, grep for existing markers, policies, and `git log -S` for prior owner intent. A routing fix is often higher ROI than a new gate." - "Quality `Recommended Next Gates` has a treadmill bias toward additive enforcement; explicitly ask whether an existing convention is being violated before adding." (source: `charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md`)
-- **Quality skill `Recommended Next Gates` proposal flow.** Extend `skills/public/quality/references/proposal-flow.md` to require a one-line "existing convention check" beside each recommendation, with the format "no existing marker/comment/policy already governs this cost; gate is additive, not duplicative." If a marker exists, the recommendation must be the routing fix instead. ### memory (source: `charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md`)
 
 ## Selection Policy
 
@@ -27,5 +27,5 @@
 
 ## Sources
 
-- `charness-artifacts/retro/2026-05-17-empty-policy-silent-pass.md`
 - `charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md`
+- `charness-artifacts/retro/2026-05-21-current-pointer-hardening.md`

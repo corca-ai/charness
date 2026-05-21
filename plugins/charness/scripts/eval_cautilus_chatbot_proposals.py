@@ -17,6 +17,9 @@ DEFAULT_OUTPUT_DIR = Path("charness-artifacts/cautilus/chatbot-proposals")
 _scripts_portable_artifact_lib_module = import_repo_module(__file__, "scripts.portable_artifact_lib")
 sanitize_artifact_json = _scripts_portable_artifact_lib_module.sanitize_artifact_json
 sanitize_diagnostic_text = _scripts_portable_artifact_lib_module.sanitize_diagnostic_text
+_current_pointer_writer_module = import_repo_module(__file__, "scripts.current_pointer_writer_lib")
+write_current_pointer_json = _current_pointer_writer_module.write_current_pointer_json
+write_current_pointer_text = _current_pointer_writer_module.write_current_pointer_text
 
 
 class EvalError(Exception):
@@ -169,7 +172,7 @@ def build_summary(
 
 def write_summary(output_dir: Path, summary: dict[str, object]) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "latest.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    write_current_pointer_json(output_dir / "latest.json", summary)
     tag_counts = summary["tag_counts"]
     assert isinstance(tag_counts, dict)
     lines = [
@@ -243,7 +246,7 @@ def write_summary(output_dir: Path, summary: dict[str, object]) -> None:
     if command_stderr:
         lines.extend(["", command_stderr])
     lines.extend(["```", ""])
-    (output_dir / "latest.md").write_text("\n".join(lines), encoding="utf-8")
+    write_current_pointer_text(output_dir / "latest.md", "\n".join(lines))
 
 
 def main() -> int:

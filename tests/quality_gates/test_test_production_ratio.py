@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import importlib.util
 import shutil
+from pathlib import Path
 
 import pytest
 
-from .support import ROOT, run_script
+from .support import ROOT, init_git_repo, run_script
 
 SPEC = importlib.util.spec_from_file_location(
     "check_test_production_ratio", ROOT / "scripts" / "check_test_production_ratio.py"
@@ -63,3 +64,19 @@ def test_cli_tokei_engine_returns_two_when_binary_missing() -> None:
 
     assert result.returncode == 2
     assert "tokei" in result.stdout
+
+
+def test_splitlines_ratio_ignores_gitignored_python_files(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "tests").mkdir()
+    (repo / ".gitignore").write_text("scripts/generated.py\n", encoding="utf-8")
+    (repo / "scripts" / "kept.py").write_text("print('kept')\n", encoding="utf-8")
+    (repo / "scripts" / "generated.py").write_text("print('ignored')\n" * 100, encoding="utf-8")
+    (repo / "tests" / "test_kept.py").write_text("def test_kept():\n    assert True\n", encoding="utf-8")
+    init_git_repo(repo, ".gitignore", "scripts/kept.py", "tests/test_kept.py")
+
+    summary = RATIO.summarize(repo)
+
+    assert summary["source_file_count"] == 1
+    assert summary["source_lines"] == 1

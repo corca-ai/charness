@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from scripts.current_pointer_writer_lib import write_current_pointer_text
+
 
 def issue_closeout_lines(issue_closeout: dict[str, Any] | None) -> list[str]:
     lines = ["", "## Issue Closeout", ""]
@@ -146,5 +148,5 @@ def write_release_artifact(
     lines.extend(["", "## User Update Steps", ""])
     lines.extend(f"- {item}" for item in user_update_steps)
     lines.append("")
-    artifact_path.write_text("\n".join(lines), encoding="utf-8")
+    write_current_pointer_text(artifact_path, "\n".join(lines))
     return str(artifact_path.relative_to(repo_root))

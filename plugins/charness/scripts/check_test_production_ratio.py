@@ -10,6 +10,11 @@ from pathlib import Path
 
 from runtime_bootstrap import repo_root_from_script
 
+try:
+    from scripts.repo_file_listing import iter_matching_repo_files
+except ModuleNotFoundError:
+    from repo_file_listing import iter_matching_repo_files
+
 IGNORED_DIRS = {
     ".artifacts",
     ".git",
@@ -37,7 +42,9 @@ class TokeiUnavailableError(RuntimeError):
 
 def python_files(root: Path, *, exclude_dirs: set[str]) -> list[Path]:
     files: list[Path] = []
-    for path in root.rglob("*.py"):
+    repo_root = root
+    patterns = ("**/*.py",)
+    for path in iter_matching_repo_files(repo_root, patterns):
         relative_parts = path.relative_to(root).parts
         if any(part in exclude_dirs for part in relative_parts[:-1]):
             continue

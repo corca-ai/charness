@@ -15,9 +15,9 @@
 ## Current State
 
 - Current shipped release is `v0.7.9`; local `main` is clean with `origin/main`.
-- Latest quality slices promoted `inventory-gitignore-scan-hygiene` into
-  `run-quality`, kept copy-heavy tests out of ordinary pre-push, and refreshed
-  [quality latest](../charness-artifacts/quality/latest.md).
+- Current bug-pattern sibling scan added `check-current-pointer-writes`,
+  migrated direct `latest.*` writers to a symlink-safe helper, and moved two
+  standing Python scans onto git-visible file listing.
 - Usage episodes are now intentionally configured but disabled in
   [.agents/usage-episodes-adapter.yaml](../.agents/usage-episodes-adapter.yaml).
   Validation should report `disabled`, not `no_adapter`.
@@ -38,9 +38,7 @@
    [.agents/usage-episodes-adapter.yaml](../.agents/usage-episodes-adapter.yaml)
    at `enabled: false` until maintainers intentionally opt into local runtime
    capture.
-2. Copy-heavy repo/home/plugin tests are now guarded as `release_only` by
-   [check_test_repo_copy_invariants.py](../scripts/check_test_repo_copy_invariants.py);
-   if pytest temp looks large,
+2. Copy-heavy repo/home/plugin tests are now guarded as `release_only`; if pytest temp looks large,
    first separate retained release/full-test sessions from current pre-push work.
 3. Keep PR CI mirroring paused unless the maintainer changes policy; local
    pre-push plus scheduled mutation deeper-check remain the current stance.
@@ -56,12 +54,13 @@
 - Watch list: Yarn Berry hook idiom; pnpm+lefthook stale snippets;
   `filelock` plus `pytest-xdist`; seed-cache LRU eviction; subprocess
   coverage for CLI-only mutation targets; usage-episode vocabulary/emitter;
-  generated CLI reference docs ownership.
+  generated CLI reference docs ownership; mutation sample/test-command coupling
+  and release diff-failure suppression surfaced by sibling scan.
 
 ## References
 
-- [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md):
-  mutation scope-gap RCA, detection gap, sibling search, and prevention.
+- [charness-artifacts/debug/2026-05-21-bug-pattern-sibling-scan.md](../charness-artifacts/debug/2026-05-21-bug-pattern-sibling-scan.md):
+  current-pointer and gitignore sibling scan RCA and prevention.
 - [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md):
   current quality posture and commands for this slice.
 - [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md): current release surface.

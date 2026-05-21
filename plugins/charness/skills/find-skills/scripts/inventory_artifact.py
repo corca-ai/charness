@@ -6,6 +6,10 @@ from pathlib import Path
 from typing import Any
 
 from scripts.artifact_closeout_lib import artifact_closeout_status
+from scripts.current_pointer_writer_lib import (
+    write_current_pointer_json,
+    write_current_pointer_text,
+)
 
 
 def _utc_now() -> str:
@@ -163,8 +167,8 @@ def persist_inventory(
             "inventory": canonical_inventory,
         }
         output_dir.mkdir(parents=True, exist_ok=True)
-        markdown_path.write_text(render_markdown(snapshot).rstrip() + "\n", encoding="utf-8")
-        json_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        write_current_pointer_text(markdown_path, render_markdown(snapshot).rstrip() + "\n")
+        write_current_pointer_json(json_path, snapshot)
         updated = True
 
     markdown_relative = str(markdown_path.relative_to(repo_root))

@@ -7,6 +7,11 @@ import re
 import sys
 from pathlib import Path
 
+try:
+    from scripts.repo_file_listing import iter_matching_repo_files
+except ModuleNotFoundError:
+    from repo_file_listing import iter_matching_repo_files
+
 VALID_NAME_RE = re.compile(r"^(?:__init__|[a-z][a-z0-9_]*)\.py$")
 SKIP_DIR_NAMES = {".cautilus", ".charness", ".git", ".venv", ".pytest_cache", "__pycache__", "node_modules"}
 SKIP_PATH_PARTS = {"vendor"}
@@ -14,7 +19,7 @@ SKIP_PATH_PARTS = {"vendor"}
 
 def iter_python_files(repo_root: Path) -> list[Path]:
     files: list[Path] = []
-    for path in repo_root.rglob("*.py"):
+    for path in iter_matching_repo_files(repo_root, ("**/*.py",)):
         rel_path = path.relative_to(repo_root)
         if any(part in SKIP_DIR_NAMES for part in rel_path.parts):
             continue

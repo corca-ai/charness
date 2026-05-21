@@ -413,6 +413,19 @@ def test_run_quality_enforces_gitignore_scan_hygiene_inventory(
     assert "Quality summary: 1 passed, 0 failed" in result.stdout
 
 
+def test_run_quality_enforces_current_pointer_write_scan(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = "check-current-pointer-writes"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert "PASS check-current-pointer-writes" in result.stdout
+    assert "Quality summary: 1 passed, 0 failed" in result.stdout
+
+
 def test_run_quality_read_only_skips_check_coverage_without_control_plane_changes(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     (repo / "README.md").write_text("# demo\n", encoding="utf-8")

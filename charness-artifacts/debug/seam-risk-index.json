@@ -3,15 +3,16 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 27,
-  "indexed_artifact_count": 19,
+  "source_artifact_count": 28,
+  "indexed_artifact_count": 20,
   "risk_class_counts": {
     "contract-freeze-risk": 8,
     "host-disproves-local": 1,
+    "none": 1,
     "operator-visible-recovery": 10
   },
   "generalization_pressure_counts": {
-    "monitor": 19
+    "monitor": 20
   },
   "entries": [
     {
@@ -236,6 +237,20 @@
       "critique_required": false,
       "next_step": "impl",
       "handoff_artifact": "docs/handoff.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-05-21-bug-pattern-sibling-scan.md",
+      "is_current_pointer": false,
+      "interrupt_id": "bug-pattern-sibling-scan",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "repo-local quality and artifact writer behavior",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
       "forced": false
     },
     {
