@@ -302,3 +302,107 @@ test("extracts compact Claude telemetry", () => {
 	);
 	assert.equal(extractClaudeTelemetry("not json"), null);
 });
+
+test("extracts Claude telemetry from JSON envelopes and model fallback", () => {
+	assert.deepEqual(
+		extractClaudeTelemetry(
+			JSON.stringify({
+				usage: {
+					input_tokens: 1,
+					cache_creation_input_tokens: 2,
+					cache_read_input_tokens: 3,
+					output_tokens: 4,
+				},
+				total_cost_usd: 0.5,
+			}),
+			{ model: "fallback-model" },
+		),
+		{
+			provider: "anthropic",
+			model: "fallback-model",
+			prompt_tokens: 6,
+			completion_tokens: 4,
+			total_tokens: 10,
+			cost_usd: 0.5,
+		},
+	);
+
+	assert.equal(extractClaudeTelemetry("[]"), null);
+	assert.equal(extractClaudeTelemetry("42"), null);
+});
+
+test("omits invalid Claude telemetry counters without fabricating totals", () => {
+	const arrayUsage = [];
+	arrayUsage.input_tokens = 9;
+	arrayUsage.output_tokens = 9;
+
+	assert.deepEqual(
+		extractClaudeTelemetry({
+			usage: {
+				input_tokens: -1,
+				cache_creation_input_tokens: 1.5,
+				cache_read_input_tokens: "3",
+				output_tokens: -2,
+			},
+			total_cost_usd: -0.1,
+		}),
+		{
+			provider: "anthropic",
+		},
+	);
+	assert.deepEqual(extractClaudeTelemetry({ usage: arrayUsage }), {
+		provider: "anthropic",
+	});
+	assert.deepEqual(extractClaudeTelemetry({ usage: null }), {
+		provider: "anthropic",
+	});
+	assert.deepEqual(extractClaudeTelemetry({ total_cost_usd: "0" }), {
+		provider: "anthropic",
+	});
+	assert.deepEqual(extractClaudeTelemetry({ total_cost_usd: Number.POSITIVE_INFINITY }), {
+		provider: "anthropic",
+	});
+
+	assert.deepEqual(
+		extractClaudeTelemetry({
+			usage: {
+				input_tokens: 2,
+				output_tokens: null,
+			},
+		}),
+		{
+			provider: "anthropic",
+			prompt_tokens: 2,
+			total_tokens: 2,
+		},
+	);
+
+	assert.deepEqual(
+		extractClaudeTelemetry({
+			usage: {
+				input_tokens: null,
+				output_tokens: 5,
+			},
+		}),
+		{
+			provider: "anthropic",
+			completion_tokens: 5,
+			total_tokens: 5,
+		},
+	);
+
+	assert.deepEqual(
+		extractClaudeTelemetry({
+			usage: {
+				output_tokens: 0,
+			},
+			total_cost_usd: 0,
+		}),
+		{
+			provider: "anthropic",
+			completion_tokens: 0,
+			total_tokens: 0,
+			cost_usd: 0,
+		},
+	);
+});
