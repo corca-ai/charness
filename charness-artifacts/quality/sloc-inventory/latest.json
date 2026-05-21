@@ -31,7 +31,7 @@
     "Markdown": {
       "blanks": 13224,
       "code": 0,
-      "comments": 48052,
+      "comments": 48046,
       "files": 717
     },
     "Plain Text": {
@@ -73,7 +73,7 @@
   "totals": {
     "blanks": 33842,
     "code": 162042,
-    "comments": 49285,
+    "comments": 49279,
     "files": 1765
   }
 }

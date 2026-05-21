@@ -14,17 +14,14 @@ Advanced `charness` toward release `0.7.9` (tag `v0.7.9`) through the repo-owned
 
 ## Verification
 
-- `./scripts/run-quality.sh --release` was attempted and failed only because
-  [quality latest](../quality/latest.md) exceeded the 140-line current-pointer
-  limit; the artifact was compressed before resuming publish.
+- `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
-- branch/tag push has not started yet for `v0.7.9`; resume with the release
-  helper's `--publish-current` path after this prepared surface is committed.
+- initial release push carried the release branch update and tag from the release helper.
 
 ## Release State
 
 - local release mutation: complete
-- branch/tag push: pending
+- branch/tag push: complete
 - GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v0.7.9`; creation runs after the branch/tag push
 - public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
