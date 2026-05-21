@@ -7,7 +7,7 @@ Advanced `charness` toward release `0.7.8` (tag `v0.7.8`) through the repo-owned
 
 ## Current Version
 
-- previous version: `0.7.7`
+- previous version: `0.7.8`
 - target version: `0.7.8`
 - git branch: `main`
 - git remote: `origin`
