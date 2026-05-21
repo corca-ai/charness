@@ -57,6 +57,9 @@ filter should report zero uncovered mutation lines.
 - Local dry-run proof: `filtered 198 mutants from 736 pending mutants (198 annotation unions, 0 uncovered lines)`.
 - Similar-pattern fix proof: generated Cosmic Ray sample-probe config now lives
   under ignored `reports/mutation/`, not the repo root.
+- Hosted proof: GitHub Actions run `26196843109` completed successfully on
+  `5666571bce0f9544b0128e41a78380b007d29598`; GitHub issue #183 is verified
+  `CLOSED` at `2026-05-21T00:01:10Z`.
 
 ## Root Cause
 
@@ -121,7 +124,8 @@ success depend on luck in the sampled lines and kept #183 open.
 - Seam: coverage observation -> Cosmic Ray work DB -> pytest command selection
 - Disproving Observation: local dry-run after sampler repair reports zero
   uncovered mutation lines.
-- What Local Reasoning Cannot Prove: hosted scheduled run after push.
+- What Local Reasoning Cannot Prove: the next future hosted scheduled run after
+  new changes. The current fix has hosted proof in run `26196843109`.
 - Generalization Pressure: monitor
 
 ## Interrupt Decision

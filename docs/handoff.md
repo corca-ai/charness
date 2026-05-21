@@ -15,7 +15,7 @@
 
 ## Current State
 
-- Current local slice resolves #183's mutation-testability regression. RCA:
+- Current shipped slice resolves #183's mutation-testability regression. RCA:
   [debug latest](../charness-artifacts/debug/latest.md).
 - Mutation sampling now runs coverage with test-function contexts, probes Cosmic
   Ray work items, keeps only files whose non-skipped mutable lines are covered,
@@ -33,18 +33,20 @@
 - Fresh-eye reviewers judged the repo's testability posture sufficient for this
   slice after the probe config leakage, workload-budget bug, and import-only
   coverage risk were fixed. Hosted run `26195933679` then found real sanitizer
-  survivors; local replay passes after focused test strengthening.
-- Public release `v0.7.7`; release is still needed after hosted proof.
+  survivors; local replay and hosted run `26196843109` pass after focused test
+  strengthening.
+- GitHub issue #183 is verified `CLOSED` as of `2026-05-21T00:01:10Z`; public
+  release `v0.7.8` is published.
 
 ## Next Session
 
-1. If picked up mid-run, confirm [cosmic-ray.toml](../cosmic-ray.toml) is
-   restored to its default non-release test command, rerun changed-surface
-   closeout if needed, then commit and push.
-2. After push, watch the hosted mutation workflow. #183 is closable only when
-   the full hosted run succeeds and the issue state verifies as `CLOSED`.
-3. Cut/publish the next Charness release after hosted proof so plugin users get
-   the updated quality/testability contract.
+1. If picked up for this slice, treat #183 as closed and released unless a new
+   GitHub run regresses. Re-check `gh issue view 183`,
+   `gh run view 26196843109`, and `gh release view v0.7.8` before reopening.
+2. The remaining release-side caveat is real-host verification for the
+   integrations/control-plane seam recorded in
+   [release latest](../charness-artifacts/release/latest.md); it is not a #183
+   mutation-testability blocker.
 
 ## Discuss
 
@@ -65,6 +67,4 @@
   mutation scope-gap RCA, detection gap, sibling search, and prevention.
 - [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md):
   current quality posture and commands for this slice.
-- [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md):
-  current release surface.
-- [.github/workflows/mutation-tests.yml](../.github/workflows/mutation-tests.yml): #183 validation workflow.
+- [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md): current release surface.

@@ -67,7 +67,9 @@ Advanced `charness` toward release `0.7.8` (tag `v0.7.8`) through the repo-owned
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`.
+- Issue closeout verification: GitHub issue #183 verified `CLOSED` at
+  `2026-05-21T00:01:10Z` after hosted Mutation Tests run `26196843109`
+  completed successfully.
 
 ## User Update Steps
 
