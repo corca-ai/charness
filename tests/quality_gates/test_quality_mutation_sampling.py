@@ -220,6 +220,7 @@ def test_sample_script_rewrites_config_and_manifest(tmp_path: Path) -> None:
 
     assert result.returncode == 0, result.stderr
     manifest = json.loads((repo / "reports" / "mutation" / "sample.json").read_text(encoding="utf-8"))
+    assert manifest["base_sha"] is None
     assert len(manifest["sample"]) == 2
     text = (repo / "cosmic-ray.toml").read_text(encoding="utf-8")
     assert 'module-path = [\n' in text

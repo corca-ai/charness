@@ -241,6 +241,178 @@ def test_check_mutation_score_fails_scope_gap_skips(tmp_path: Path) -> None:
     assert "Blocking signal: sampled mutants were not covered by the selected test command." in summary
 
 
+def _write_score_fixture(tmp_path: Path, sample_payload: dict | str | None) -> Path:
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
+        _ADAPTER_HEADER
+        + dedent(
+            """\
+            mutation_testing:
+              score_break: 50
+              report_paths:
+                summary_md: reports/mutation/summary.md
+            """
+        ),
+        encoding="utf-8",
+    )
+    reports = tmp_path / "reports" / "mutation"
+    reports.mkdir(parents=True)
+    if isinstance(sample_payload, dict):
+        (reports / "sample.json").write_text(json.dumps(sample_payload) + "\n", encoding="utf-8")
+    elif isinstance(sample_payload, str):
+        (reports / "sample.json").write_text(sample_payload, encoding="utf-8")
+    dump = tmp_path / "dump.jsonl"
+    dump.write_text(
+        json.dumps([{"job_id": "a"}, {"worker_outcome": "normal", "test_outcome": "killed"}])
+        + "\n",
+        encoding="utf-8",
+    )
+    return dump
+
+
+def test_check_mutation_score_fails_missing_sample_manifest(tmp_path: Path) -> None:
+    dump = _write_score_fixture(tmp_path, sample_payload=None)
+
+    result = subprocess.run(
+        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+    assert "Blocking signal: mutation sample manifest not found" in summary
+
+
+def test_check_mutation_score_fails_malformed_sample_manifest(tmp_path: Path) -> None:
+    dump = _write_score_fixture(tmp_path, sample_payload="{not-json\n")
+
+    result = subprocess.run(
+        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+    assert "Blocking signal: could not read mutation sample manifest" in summary
+
+
+def test_check_mutation_score_fails_non_object_sample_manifest(tmp_path: Path) -> None:
+    dump = _write_score_fixture(tmp_path, sample_payload="[]\n")
+
+    result = subprocess.run(
+        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+    assert "Blocking signal: mutation sample manifest root must be an object" in summary
+
+
+def test_check_mutation_score_fails_missing_base_sha_sample_manifest(tmp_path: Path) -> None:
+    dump = _write_score_fixture(tmp_path, sample_payload={})
+
+    result = subprocess.run(
+        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+    assert "Blocking signal: mutation sample manifest missing `base_sha`" in summary
+
+
+def test_check_mutation_score_fails_empty_base_sha_sample_manifest(tmp_path: Path) -> None:
+    dump = _write_score_fixture(tmp_path, sample_payload={"base_sha": ""})
+
+    result = subprocess.run(
+        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+    assert "Blocking signal: mutation sample manifest `base_sha` must be a non-empty string or null" in summary
+
+
+def test_check_mutation_score_fails_wrong_typed_scope_gap_section(tmp_path: Path) -> None:
+    dump = _write_score_fixture(
+        tmp_path,
+        sample_payload={"base_sha": None, "uncovered_changed_files": "scripts/changed.py"},
+    )
+
+    result = subprocess.run(
+        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+    assert (
+        "Blocking signal: mutation sample manifest `uncovered_changed_files` must be a list of strings"
+        in summary
+    )
+
+
+def test_check_mutation_score_fails_non_string_scope_gap_entry(tmp_path: Path) -> None:
+    dump = _write_score_fixture(
+        tmp_path,
+        sample_payload={"base_sha": None, "uncovered_changed_files": ["scripts/changed.py", 3]},
+    )
+
+    result = subprocess.run(
+        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+    assert (
+        "Blocking signal: mutation sample manifest `uncovered_changed_files` must be a list of strings"
+        in summary
+    )
+
+
+def test_check_mutation_score_allows_manifest_with_changed_file_proof_disabled(
+    tmp_path: Path,
+) -> None:
+    dump = _write_score_fixture(tmp_path, sample_payload={"base_sha": None})
+
+    result = subprocess.run(
+        ["python3", "scripts/check_mutation_score.py", "--repo-root", str(tmp_path), "--stats", str(dump)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+    assert "Status: **PASS**" in summary
+    assert "Blocking signal:" not in summary
+
+
 def test_check_mutation_score_fails_changed_files_excluded_by_sampling(tmp_path: Path) -> None:
     (tmp_path / ".agents").mkdir()
     (tmp_path / ".agents" / "quality-adapter.yaml").write_text(

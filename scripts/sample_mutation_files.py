@@ -379,7 +379,7 @@ def main() -> int:
         positive_int(os.environ.get("MUTATION_SAMPLE_CHANGED_QUOTA"), DEFAULT_CHANGED_QUOTA),
         max_files,
     )
-    base_sha = (os.environ.get("MUTATION_BASE_SHA") or "").strip()
+    base_sha = (os.environ.get("MUTATION_BASE_SHA") or "").strip() or None
     head_sha = (os.environ.get("MUTATION_HEAD_SHA") or "").strip()
     seed = (os.environ.get("MUTATION_SAMPLE_SEED") or "").strip() or str(int(time.time()))
     min_file_coverage = parse_min_file_coverage()
@@ -409,7 +409,7 @@ def main() -> int:
     all_eligible_set = set(all_eligible)
     eligible_set = set(eligible)
     changed_before_coverage = [
-        path for path in list_changed(repo_root, base_sha, head_sha) if path in all_eligible_set
+        path for path in list_changed(repo_root, base_sha or "", head_sha) if path in all_eligible_set
     ]
     changed = [path for path in changed_before_coverage if path in eligible_set]
     (

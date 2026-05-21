@@ -23,6 +23,10 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.mutation_sample_manifest_score_lib import (  # noqa: E402
+    changed_scope_gap_section_lines,
+    sample_manifest_scope_gap_details,
+)
 from scripts.quality_adapter_lib import load_quality_adapter  # noqa: E402
 
 SURVIVED_DETAIL_LIMIT = 10
@@ -181,7 +185,9 @@ def mutation_metrics(
     exec_timed_out: bool = False,
     per_file_completion_ok: bool = True,
     changed_scope_gap_count: int = 0,
-) -> dict[str, float | int | bool]:
+    sample_manifest_ok: bool = True,
+    sample_manifest_issue: str = "",
+) -> dict[str, float | int | bool | str]:
     killed = stats["killed"]
     survived = stats["survived"]
     reachable = killed + survived
@@ -196,6 +202,7 @@ def mutation_metrics(
         and stats["no_tests"] == 0
         and stats.get("scope_gap", 0) == 0
         and changed_scope_gap_count == 0
+        and sample_manifest_ok
         and score >= score_break
     )
     incomplete_exec = stats["pending"] > 0
@@ -226,48 +233,12 @@ def mutation_metrics(
         "incomplete_exec": incomplete_exec,
         "per_file_completion_ok": per_file_completion_ok,
         "changed_scope_gap_count": changed_scope_gap_count,
+        "sample_manifest_ok": sample_manifest_ok,
+        "sample_manifest_issue": sample_manifest_issue,
         "passed": passed,
         "status": status,
     }
 
-
-SCOPE_GAP_MANIFEST_SECTIONS = (
-    ("changed_files_excluded_by_file_coverage", "File coverage floor"),
-    ("changed_files_excluded_by_mutation_line_coverage", "Mutation-line coverage"),
-    ("selection_excluded_changed_files", "Selection budget or nodeid"),
-    ("workload_excluded_changed_files", "Workload budget"),
-    ("uncovered_changed_files", "Compatibility union"),
-)
-
-
-def sample_manifest_scope_gap_details(manifest_path: Path) -> tuple[list[str], dict[str, list[str]]]:
-    if not manifest_path.is_file():
-        return [], {}
-    try:
-        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return [], {}
-    if not isinstance(payload, dict):
-        return [], {}
-    all_paths: set[str] = set()
-    details: dict[str, list[str]] = {}
-    for key, _heading in SCOPE_GAP_MANIFEST_SECTIONS:
-        value = payload.get(key) or []
-        if not isinstance(value, list):
-            continue
-        paths = sorted({str(path) for path in value if isinstance(path, str)})
-        if paths:
-            details[key] = paths
-            all_paths.update(paths)
-    return sorted(all_paths), details
-
-
-def changed_scope_gap_section_lines(paths: list[str], details: dict[str, list[str]]) -> list[str]:
-    lines = ["", "## Changed Files Excluded Before Mutation", "", *[f"- `{path}`" for path in paths[:10]], ""]
-    for key, heading in SCOPE_GAP_MANIFEST_SECTIONS:
-        if detail_paths := details.get(key):
-            lines.extend([f"### {heading}", "", *[f"- `{path}`" for path in detail_paths[:10]], ""])
-    return lines
 
 def mutation_file_completion(
     records: list[tuple[dict, dict | None]],
@@ -364,6 +335,8 @@ def build_summary_lines(
         lines.append(
             "- Blocking signal: changed files were excluded before mutation by coverage, mutation-line, or selection-budget filters."
         )
+    if not metrics.get("sample_manifest_ok", True):
+        lines.append(f"- Blocking signal: {metrics['sample_manifest_issue']}")
     if metrics["survived"]:
         survived_details = summarize_survived_mutations(records, repo_root)
         lines += [
@@ -430,7 +403,7 @@ def main() -> int:
     )
     exec_timed_out, _ = _read_timeout_marker(timeout_marker_path)
     per_file_completion_ok, incomplete_files = mutation_file_completion(records)
-    changed_scope_gap_files, changed_scope_gap_details = sample_manifest_scope_gap_details(
+    changed_scope_gap_files, changed_scope_gap_details, sample_manifest_issue = sample_manifest_scope_gap_details(
         sample_manifest_path
     )
     changed_scope_gap_count = len(changed_scope_gap_files)
@@ -440,6 +413,8 @@ def main() -> int:
         exec_timed_out=exec_timed_out,
         per_file_completion_ok=per_file_completion_ok,
         changed_scope_gap_count=changed_scope_gap_count,
+        sample_manifest_ok=not sample_manifest_issue,
+        sample_manifest_issue=sample_manifest_issue,
     )
     lines = build_summary_lines(records, repo_root, metrics)
     if changed_scope_gap_files:
