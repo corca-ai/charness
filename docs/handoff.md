@@ -21,9 +21,10 @@
   standing Python scans onto git-visible file listing.
 - Mutation #189 follow-up killed the worktree/eval-registry survivor cluster
   with focused tests and made mutation sampling collect subprocess coverage
-  with inherited pytest context; the latest `b882398..HEAD` sample ran cleanly
-  but still selected `0` changed files because mutable-line coverage is
-  incomplete, so the open issue is not closable yet.
+  with inherited pytest context; the latest `b882398..HEAD` sample selected
+  [scripts/worktree_doctor_state.py](../scripts/worktree_doctor_state.py) and now splits remaining exclusions into
+  file-coverage-floor and mutation-line buckets, so the open issue is not
+  closable yet.
 - Usage episodes are configured but disabled; validation should report
   `disabled`, not `no_adapter`.
 - README first-touch routing moved to [workflow routes](./workflow-routes.md);
@@ -38,8 +39,8 @@
 3. Keep PR CI mirroring paused unless the maintainer changes policy; local
    pre-push plus scheduled mutation deeper-check remain the current stance.
 4. Mutation changed-file eligibility is still the active watch item: add direct
-   tests for the current-pointer slice until a `b882398..HEAD` sample selects
-   changed files instead of excluding them on mutable-line coverage.
+   tests for the current-pointer slice until a `b882398..HEAD` sample reports
+   no file-coverage-floor or mutation-line changed-file exclusions.
 5. The remaining release-side caveat is real-host verification for the
    integrations/control-plane seam recorded in
    [release latest](../charness-artifacts/release/latest.md).

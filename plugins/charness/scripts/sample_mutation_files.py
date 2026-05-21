@@ -176,9 +176,14 @@ def select_eligible_for_mutation(
     coverage_json: Path,
     test_command: str,
     min_file_coverage: float,
-) -> tuple[list[str], dict[str, dict[int, set[str]]], dict[str, dict[str, int]]]:
+) -> tuple[
+    list[str],
+    list[str],
+    dict[str, dict[int, set[str]]],
+    dict[str, dict[str, int]],
+]:
     if not coverage_enabled:
-        return all_eligible, {}, {}
+        return all_eligible, all_eligible, {}, {}
     try:
         run_test_coverage(repo_root, test_command, coverage_json)
     except subprocess.CalledProcessError as exc:
@@ -203,8 +208,35 @@ def select_eligible_for_mutation(
     )
     return (
         filter_eligible_by_mutation_line_coverage(coverage_eligible, mutation_line_coverage),
+        coverage_eligible,
         line_contexts,
         mutation_line_coverage,
+    )
+
+
+def classify_changed_file_exclusions(
+    *,
+    changed_before_coverage: list[str],
+    coverage_eligible: list[str],
+    eligible: list[str],
+    coverage_enabled: bool,
+) -> tuple[list[str], list[str], list[str]]:
+    if not coverage_enabled:
+        return [], [], []
+    coverage_eligible_set = set(coverage_eligible)
+    eligible_set = set(eligible)
+    file_coverage_excluded = [
+        path for path in changed_before_coverage if path not in coverage_eligible_set
+    ]
+    mutation_line_excluded = [
+        path
+        for path in changed_before_coverage
+        if path in coverage_eligible_set and path not in eligible_set
+    ]
+    return (
+        file_coverage_excluded,
+        mutation_line_excluded,
+        file_coverage_excluded + mutation_line_excluded,
     )
 
 
@@ -353,7 +385,7 @@ def main() -> int:
     )
 
     all_eligible = list_eligible(repo_root)
-    eligible, line_contexts, mutation_line_coverage = select_eligible_for_mutation(
+    eligible, coverage_eligible, line_contexts, mutation_line_coverage = select_eligible_for_mutation(
         repo_root=repo_root,
         config_path=config_path,
         all_eligible=all_eligible,
@@ -372,9 +404,16 @@ def main() -> int:
         path for path in list_changed(repo_root, base_sha, head_sha) if path in all_eligible_set
     ]
     changed = [path for path in changed_before_coverage if path in eligible_set]
-    uncovered_changed_files = [
-        path for path in changed_before_coverage if coverage_enabled and path not in eligible_set
-    ]
+    (
+        changed_files_excluded_by_file_coverage,
+        changed_files_excluded_by_mutation_line_coverage,
+        uncovered_changed_files,
+    ) = classify_changed_file_exclusions(
+        changed_before_coverage=changed_before_coverage,
+        coverage_eligible=coverage_eligible,
+        eligible=eligible,
+        coverage_enabled=coverage_enabled,
+    )
 
     (
         changed_sample,

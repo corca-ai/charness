@@ -29,6 +29,7 @@ from scripts.mutation_sampling_lib import (  # noqa: E402
     select_test_nodeids,
 )
 from scripts.sample_mutation_files import (  # noqa: E402
+    classify_changed_file_exclusions,
     list_eligible,
     mutation_pathspecs,
     pool_for_path,
@@ -192,6 +193,30 @@ def test_sample_requires_mutation_line_coverage_after_file_coverage() -> None:
             "scripts/c.py": {"mutable": 0, "covered": 0, "uncovered": 0},
         },
     ) == ["scripts/a.py"]
+
+
+def test_changed_file_exclusions_split_filter_boundaries() -> None:
+    assert classify_changed_file_exclusions(
+        changed_before_coverage=[
+            "scripts/file_floor.py",
+            "scripts/mutation_line.py",
+            "scripts/selected.py",
+        ],
+        coverage_eligible=["scripts/mutation_line.py", "scripts/selected.py"],
+        eligible=["scripts/selected.py"],
+        coverage_enabled=True,
+    ) == (
+        ["scripts/file_floor.py"],
+        ["scripts/mutation_line.py"],
+        ["scripts/file_floor.py", "scripts/mutation_line.py"],
+    )
+
+    assert classify_changed_file_exclusions(
+        changed_before_coverage=["scripts/a.py"],
+        coverage_eligible=[],
+        eligible=[],
+        coverage_enabled=False,
+    ) == ([], [], [])
 
 
 def test_sample_budget_limits_executable_mutants_and_test_nodeids(tmp_path: Path) -> None:
@@ -382,6 +407,8 @@ def test_manifest_surfaces_changed_files_excluded_by_coverage(tmp_path: Path) ->
         "mutation_line_coverage": {"scripts/a.py": {"mutable": 1, "covered": 1, "uncovered": 0}},
         "changed_files_before_coverage": ["scripts/a.py", "scripts/b.py"],
         "changed_files": ["scripts/a.py"],
+        "changed_files_excluded_by_file_coverage": ["scripts/file_floor.py"],
+        "changed_files_excluded_by_mutation_line_coverage": ["scripts/mutation_line.py"],
         "uncovered_changed_files": ["scripts/b.py"],
         "selection_excluded_changed_files": ["scripts/c.py"],
         "changed_sample": ["scripts/a.py"],
@@ -399,10 +426,20 @@ def test_manifest_surfaces_changed_files_excluded_by_coverage(tmp_path: Path) ->
     payload = json.loads(manifest_json.read_text(encoding="utf-8"))
     text = manifest_md.read_text(encoding="utf-8")
     assert payload["uncovered_changed_files"] == ["scripts/b.py"]
+    assert payload["changed_files_excluded_by_file_coverage"] == ["scripts/file_floor.py"]
+    assert payload["changed_files_excluded_by_mutation_line_coverage"] == [
+        "scripts/mutation_line.py"
+    ]
     assert payload["selection_excluded_changed_files"] == ["scripts/c.py"]
     assert "- Changed pool files: 2" in text
-    assert "- Changed files excluded by coverage/mutation-line filters: 1" in text
+    assert "- Changed files excluded by coverage/mutation-line filters (compatibility union): 1" in text
+    assert "- Changed files excluded by file coverage floor: 1" in text
+    assert "- Changed files excluded by mutation-line coverage: 1" in text
     assert "- Changed files excluded by selection budgets: 1" in text
+    assert "## Changed files excluded by file coverage" in text
+    assert "- `scripts/file_floor.py`" in text
+    assert "## Changed files excluded by mutation-line coverage" in text
+    assert "- `scripts/mutation_line.py`" in text
     assert "- File coverage floor: 1.0" in text
     assert "- Eligible files after mutation-line filter: 1" in text
     assert "- Mutation pools: core-python 1/1 selected (2 pool)" in text

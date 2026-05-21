@@ -11,8 +11,8 @@
     "alpha_t": "alpha_base * min(1, source_count / warmup_n)"
   },
   "as_of_source_date": "2026-05-21",
-  "source_artifact_count": 62,
-  "candidate_count": 385,
+  "source_artifact_count": 63,
+  "candidate_count": 390,
   "top_candidates": [
     {
       "candidate_id": "current_focus:717726f1363a",
@@ -29,6 +29,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Context"
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:82fae4e4128b",
+      "kind": "current_focus",
+      "lesson": "This slice continued the mutation regression sibling scan by splitting changed file exclusions into file-coverage-floor and mutation-line buckets.",
+      "normalized_key": "this slice continued the mutation regression sibling scan by splitting changed file exclusions into",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
           "date": "2026-05-21",
           "section": "Context"
         }
@@ -69,6 +89,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2007e8e34197",
+      "kind": "next_improvement",
+      "lesson": "after adding diagnostic rendering to a near-limit script, run the file-length gate before full quality.",
+      "normalized_key": "after adding diagnostic rendering to a near limit script run the file length gate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
           "date": "2026-05-21",
           "section": "Next Improvements"
         }
@@ -135,6 +175,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:0e134fe1e63b",
+      "kind": "next_improvement",
+      "lesson": "keep release proof suppression as the next sibling bug axis after the mutation changed-file eligibility path is made closable.",
+      "normalized_key": "keep release proof suppression as the next sibling bug axis after the mutation changed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
+          "date": "2026-05-21",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:f623a534c65f",
       "kind": "next_improvement",
       "lesson": "keep the debug artifact's #189 caveat visible until a later slice adds direct tests for the current-pointer changed-file set.",
@@ -149,6 +209,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:292c7d629fe3",
+      "kind": "next_improvement",
+      "lesson": "next mutation repair should add direct tests for the file-floor exclusions before broad sampler policy changes.",
+      "normalized_key": "next mutation repair should add direct tests for the file floor exclusions before broad",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
           "date": "2026-05-21",
           "section": "Next Improvements"
         }
@@ -170,86 +250,6 @@
         {
           "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
           "date": "2026-05-21",
-          "section": "Next Improvements"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:1cdb30ef44fd",
-      "kind": "repeat_trap",
-      "lesson": "The first full `b882398..HEAD` sample exposed Coverage.py warning text leaking into helper subprocess output; a smaller probe would have found that sooner.",
-      "normalized_key": "the first full b882398 head sample exposed coverage py warning text leaking into helper",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
-      "latest_source_date": "2026-05-21",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
-          "date": "2026-05-21",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:feb94196e2bb",
-      "kind": "repeat_trap",
-      "lesson": "The first subprocess coverage version captured executed lines but not selectable nodeids, so a fresh-eye review had to catch the missing inherited pytest context.",
-      "normalized_key": "the first subprocess coverage version captured executed lines but not selectable nodeids so a",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
-      "latest_source_date": "2026-05-21",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.07,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
-          "date": "2026-05-21",
-          "section": "Waste"
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:ec92bbcebfe1",
-      "kind": "current_focus",
-      "lesson": "Reviewing the 2026-05-20 quality session that landed depth-bounded `_pytest_temp_footprint`, `release_only` routing, `## References` link inventory, and the seed-fixture budget gate.",
-      "normalized_key": "reviewing the 2026 05 20 quality session that landed depth bounded pytest temp footprint",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-      "latest_source_date": "2026-05-20",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-          "date": "2026-05-20",
-          "section": "Context"
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:ab22b6301e12",
-      "kind": "next_improvement",
-      "lesson": "**Anti-need before need in `Recommended Next Gates`.** Before proposing a new enforcement gate for an advisory cost, the workflow must check (a) `git log -S <subject>` for origin context, (b) `grep -rn <subject>` for existing markers and conventions, (c) `rg -tpython \"<subject>\" pyproject.toml` for existing routing. Add a new gate only after confirming no existing convention is being violated; otherwise the recommendation is a routing fix. ### capability",
-      "normalized_key": "anti need before need in recommended next gates before proposing a new enforcement gate",
-      "source_count": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-      "latest_source_date": "2026-05-20",
-      "age_days": 1,
-      "recency_weight": 0.9517,
-      "alpha": 0.07,
-      "selection_weight": 0.9517,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-05-20-quality-treadmill-vs-root-cause.md",
-          "date": "2026-05-20",
           "section": "Next Improvements"
         }
       ]
@@ -277,6 +277,26 @@
       ]
     },
     {
+      "candidate_id": "current_focus:82fae4e4128b",
+      "kind": "current_focus",
+      "lesson": "This slice continued the mutation regression sibling scan by splitting changed file exclusions into file-coverage-floor and mutation-line buckets.",
+      "normalized_key": "this slice continued the mutation regression sibling scan by splitting changed file exclusions into",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
+          "date": "2026-05-21",
+          "section": "Context"
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:e4cf3faf9cf8",
       "kind": "current_focus",
       "lesson": "This slice reviewed recent bug-fix patterns and closed issues, then hardened two sibling seams: direct current-pointer writes to `latest.*` artifacts and gitignore-blind standing scans.",
@@ -311,6 +331,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2007e8e34197",
+      "kind": "next_improvement",
+      "lesson": "after adding diagnostic rendering to a near-limit script, run the file-length gate before full quality.",
+      "normalized_key": "after adding diagnostic rendering to a near limit script run the file length gate",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
           "date": "2026-05-21",
           "section": "Next Improvements"
         }
@@ -377,6 +417,26 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:0e134fe1e63b",
+      "kind": "next_improvement",
+      "lesson": "keep release proof suppression as the next sibling bug axis after the mutation changed-file eligibility path is made closable.",
+      "normalized_key": "keep release proof suppression as the next sibling bug axis after the mutation changed",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
+          "date": "2026-05-21",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:f623a534c65f",
       "kind": "next_improvement",
       "lesson": "keep the debug artifact's #189 caveat visible until a later slice adds direct tests for the current-pointer changed-file set.",
@@ -391,6 +451,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Next Improvements"
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:292c7d629fe3",
+      "kind": "next_improvement",
+      "lesson": "next mutation repair should add direct tests for the file-floor exclusions before broad sampler policy changes.",
+      "normalized_key": "next mutation repair should add direct tests for the file floor exclusions before broad",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
           "date": "2026-05-21",
           "section": "Next Improvements"
         }
@@ -431,6 +511,26 @@
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-subprocess-coverage-session.md",
+          "date": "2026-05-21",
+          "section": "Waste"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:66c3af3f7cdb",
+      "kind": "repeat_trap",
+      "lesson": "The first implementation exceeded the 480-line Python file limit in `scripts/check_mutation_score.py`; the quality gate caught it only after the broader run.",
+      "normalized_key": "the first implementation exceeded the 480 line python file limit in scripts check mutation",
+      "source_count": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
+      "latest_source_date": "2026-05-21",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.07,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-05-21-mutation-diagnostic-split-session.md",
           "date": "2026-05-21",
           "section": "Waste"
         }

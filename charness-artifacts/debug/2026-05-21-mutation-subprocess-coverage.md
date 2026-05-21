@@ -29,6 +29,9 @@ changed files as uncovered.
 - After subprocess coverage support, the `b882398..HEAD` coverage run passed
   (`1308 passed`) and changed scripts had non-empty test contexts, but every
   changed file still missed the full mutation-line eligibility threshold.
+- After diagnostic splitting, the `b882398..HEAD` sample selected
+  `scripts/worktree_doctor_state.py` and separated remaining exclusions into
+  file coverage floor versus mutation-line coverage buckets.
 - The sampler-only rcfile suppresses Coverage.py's `dynamic-conflict` warning
   because subprocess context switching is intentional and warning text must not
   contaminate helper subprocess output.
@@ -73,6 +76,10 @@ visible to nodeid selection.
   test command successfully and produced coverage contexts for changed files,
   but selected `0` changed files because their mutable-line coverage is still
   incomplete.
+- A later `b882398..HEAD` sample after manifest diagnostic splitting ran
+  `1310` tests, selected `scripts/worktree_doctor_state.py`, reported `6`
+  changed files below the file coverage floor, and reported `3` changed files
+  with incomplete mutation-line coverage.
 
 ## Root Cause
 
@@ -90,8 +97,8 @@ sampling even when the tests existed and passed.
   inherited pytest context | add sampler subprocess startup/context switching.
 - changed-file mutation eligibility | scheduled workflow found exclusions only
   after main advanced | still needs a pre-merge or closeout decision; current
-  slice makes the subprocess portion visible but does not eliminate all
-  eligibility gaps.
+  slice makes the subprocess portion visible and splits exclusion causes, but
+  does not eliminate all eligibility gaps.
 
 ## Sibling Search
 
@@ -133,6 +140,8 @@ sampling even when the tests existed and passed.
   CLI/script tests spawned from pytest can contribute selectable nodeids.
 - Keep changed-file mutation eligibility on the watch list until a full
   `b882398..HEAD` sample reports zero changed exclusions.
+- Split changed-file exclusion diagnostics so file coverage floor misses and
+  mutation-line misses are no longer both only labeled `uncovered_changed_files`.
 
 ## Related Prior Incidents
 

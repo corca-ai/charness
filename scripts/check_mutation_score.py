@@ -231,27 +231,43 @@ def mutation_metrics(
     }
 
 
-def sample_manifest_scope_gaps(manifest_path: Path) -> tuple[int, list[str]]:
+SCOPE_GAP_MANIFEST_SECTIONS = (
+    ("changed_files_excluded_by_file_coverage", "File coverage floor"),
+    ("changed_files_excluded_by_mutation_line_coverage", "Mutation-line coverage"),
+    ("selection_excluded_changed_files", "Selection budget or nodeid"),
+    ("workload_excluded_changed_files", "Workload budget"),
+    ("uncovered_changed_files", "Compatibility union"),
+)
+
+
+def sample_manifest_scope_gap_details(manifest_path: Path) -> tuple[list[str], dict[str, list[str]]]:
     if not manifest_path.is_file():
-        return 0, []
+        return [], {}
     try:
         payload = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        return 0, []
+        return [], {}
     if not isinstance(payload, dict):
-        return 0, []
-    excluded: list[object] = []
-    for key in (
-        "uncovered_changed_files",
-        "selection_excluded_changed_files",
-        "workload_excluded_changed_files",
-    ):
+        return [], {}
+    all_paths: set[str] = set()
+    details: dict[str, list[str]] = {}
+    for key, _heading in SCOPE_GAP_MANIFEST_SECTIONS:
         value = payload.get(key) or []
-        if isinstance(value, list):
-            excluded.extend(value)
-    paths = sorted({str(path) for path in excluded if isinstance(path, str)})
-    return len(paths), paths
+        if not isinstance(value, list):
+            continue
+        paths = sorted({str(path) for path in value if isinstance(path, str)})
+        if paths:
+            details[key] = paths
+            all_paths.update(paths)
+    return sorted(all_paths), details
 
+
+def changed_scope_gap_section_lines(paths: list[str], details: dict[str, list[str]]) -> list[str]:
+    lines = ["", "## Changed Files Excluded Before Mutation", "", *[f"- `{path}`" for path in paths[:10]], ""]
+    for key, heading in SCOPE_GAP_MANIFEST_SECTIONS:
+        if detail_paths := details.get(key):
+            lines.extend([f"### {heading}", "", *[f"- `{path}`" for path in detail_paths[:10]], ""])
+    return lines
 
 def mutation_file_completion(
     records: list[tuple[dict, dict | None]],
@@ -414,7 +430,10 @@ def main() -> int:
     )
     exec_timed_out, _ = _read_timeout_marker(timeout_marker_path)
     per_file_completion_ok, incomplete_files = mutation_file_completion(records)
-    changed_scope_gap_count, changed_scope_gap_files = sample_manifest_scope_gaps(sample_manifest_path)
+    changed_scope_gap_files, changed_scope_gap_details = sample_manifest_scope_gap_details(
+        sample_manifest_path
+    )
+    changed_scope_gap_count = len(changed_scope_gap_files)
     metrics = mutation_metrics(
         stats,
         score_break,
@@ -428,13 +447,10 @@ def main() -> int:
             insert_at = lines.index("Score denominator: `killed / (killed + survived)` (reachable mutants only;")
         except ValueError:
             insert_at = len(lines)
-        lines[insert_at:insert_at] = [
-            "",
-            "## Changed Files Excluded Before Mutation",
-            "",
-            *[f"- `{path}`" for path in changed_scope_gap_files[:10]],
-            "",
-        ]
+        lines[insert_at:insert_at] = changed_scope_gap_section_lines(
+            changed_scope_gap_files,
+            changed_scope_gap_details,
+        )
     if incomplete_files:
         try:
             insert_at = lines.index("Score denominator: `killed / (killed + survived)` (reachable mutants only;")

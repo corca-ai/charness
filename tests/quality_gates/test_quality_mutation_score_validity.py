@@ -339,3 +339,68 @@ def test_check_mutation_score_fails_changed_files_excluded_by_selection_budget(t
     summary = (reports / "summary.md").read_text(encoding="utf-8")
     assert "## Changed Files Excluded Before Mutation" in summary
     assert "`scripts/expensive.py`" in summary
+
+
+def test_check_mutation_score_fails_changed_files_excluded_by_split_keys_only(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
+        _ADAPTER_HEADER
+        + dedent(
+            """\
+            mutation_testing:
+              score_break: 50
+              report_paths:
+                summary_md: reports/mutation/summary.md
+            """
+        ),
+        encoding="utf-8",
+    )
+    reports = tmp_path / "reports" / "mutation"
+    reports.mkdir(parents=True)
+    (reports / "sample.json").write_text(
+        json.dumps(
+            {
+                "changed_files_excluded_by_file_coverage": ["scripts/file_floor.py"],
+                "changed_files_excluded_by_mutation_line_coverage": [
+                    "scripts/mutation_line.py"
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    dump = tmp_path / "dump.jsonl"
+    dump.write_text(
+        json.dumps([{"job_id": "a"}, {"worker_outcome": "normal", "test_outcome": "killed"}])
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            "python3",
+            "scripts/check_mutation_score.py",
+            "--repo-root",
+            str(tmp_path),
+            "--stats",
+            str(dump),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    summary = (reports / "summary.md").read_text(encoding="utf-8")
+    assert (
+        "Blocking signal: changed files were excluded before mutation by coverage, mutation-line, or selection-budget filters."
+        in summary
+    )
+    assert "## Changed Files Excluded Before Mutation" in summary
+    assert "### File coverage floor" in summary
+    assert "`scripts/file_floor.py`" in summary
+    assert "### Mutation-line coverage" in summary
+    assert "`scripts/mutation_line.py`" in summary

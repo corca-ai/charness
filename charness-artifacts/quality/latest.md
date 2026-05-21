@@ -41,9 +41,9 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
 
 ## Testability and Selection
 - Mutation sampling now starts subprocess coverage with inherited pytest context,
-  so CLI/script tests can contribute selectable nodeids. The latest
-  `b882398..HEAD` sample ran cleanly but still selected `0` changed files
-  because their mutable-line coverage is incomplete.
+  so CLI/script tests can contribute selectable nodeids. The latest sample
+  selected one changed file and now splits remaining changed-file exclusions
+  into file-coverage-floor and mutation-line buckets.
 
 ## Coverage and Eval Depth
 - `inventory_public_spec_quality.py` reported `public_spec_count=4`,

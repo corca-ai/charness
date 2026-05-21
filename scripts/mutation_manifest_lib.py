@@ -37,10 +37,29 @@ def write_manifest(manifest: dict, manifest_json: Path, manifest_md: Path) -> No
         f"- Selected test nodeids: {manifest.get('sample_test_nodeid_count', 'n/a')}",
         f"- Changed pool files: {len(manifest.get('changed_files_before_coverage', manifest['changed_files']))}",
         f"- Changed eligible files after coverage/mutation-line filters: {len(manifest['changed_files'])}",
-        f"- Changed files excluded by coverage/mutation-line filters: {len(manifest.get('uncovered_changed_files', []))}",
+        f"- Changed files excluded by coverage/mutation-line filters (compatibility union): {len(manifest.get('uncovered_changed_files', []))}",
+        f"- Changed files excluded by file coverage floor: {len(manifest.get('changed_files_excluded_by_file_coverage', []))}",
+        f"- Changed files excluded by mutation-line coverage: {len(manifest.get('changed_files_excluded_by_mutation_line_coverage', []))}",
         f"- Changed files excluded by selection budgets: {len(manifest.get('selection_excluded_changed_files', []))}",
         f"- Selected: {len(manifest['sample'])}/{manifest['max_files']}",
         f"- Test command: `{manifest.get('test_command') or '(not recorded)'}`",
+        "",
+        "## Changed files excluded by file coverage",
+        "",
+        *(
+            [f"- `{path}`" for path in manifest.get("changed_files_excluded_by_file_coverage", [])]
+            or ["(none)"]
+        ),
+        "",
+        "## Changed files excluded by mutation-line coverage",
+        "",
+        *(
+            [
+                f"- `{path}`"
+                for path in manifest.get("changed_files_excluded_by_mutation_line_coverage", [])
+            ]
+            or ["(none)"]
+        ),
         "",
         "## Changed sample",
         "",
@@ -93,6 +112,12 @@ def build_manifest_from_state(state: dict) -> dict:
         if coverage_enabled
         else None,
         "changed_files_before_coverage": state["changed_before_coverage"],
+        "changed_files_excluded_by_file_coverage": state[
+            "changed_files_excluded_by_file_coverage"
+        ],
+        "changed_files_excluded_by_mutation_line_coverage": state[
+            "changed_files_excluded_by_mutation_line_coverage"
+        ],
         "uncovered_changed_files": state["uncovered_changed_files"],
         "selection_excluded_changed_files": state["selection_excluded_changed_files"],
         "selection_excluded_fill_files": state["selection_excluded_fill_files"],
