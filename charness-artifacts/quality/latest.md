@@ -98,7 +98,7 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
 ## Advisory
 - `inventory_entrypoint_docs_ergonomics.py` advisory: high core-line counts
   and low `internal_doc_link_count` suggest review work, not a blocking gate.
-- Docs ergonomics follow-up: separate generated reference noise from
+- `inventory_entrypoint_docs_ergonomics.py` follow-up: separate generated reference noise from
   first-touch prose before adding any gate. Treat
   [docs/cli-reference.md](../../docs/cli-reference.md) as a generated leaf,
   then target [README.md](../../README.md) route/procedure duplication for
@@ -115,16 +115,10 @@ scan hygiene, security and supply-chain gates, and durable quality artifacts.
   fixture-economics, parallel-critical-path, duplicated-proof.
 
 ## Commands Run
-- `find-skills list_capabilities.py`, quality `resolve_adapter.py`, and `bootstrap_adapter.py`
-- `inventory_skill_ergonomics.py`, `inventory_entrypoint_docs_ergonomics.py`,
-  `inventory_standing_test_economics.py`, `inventory_public_spec_quality.py`,
-  `inventory_lint_ignores.py`, `inventory_ci_local_gate_parity.py`,
-  `inventory_gitignore_scan_hygiene.py`
-- `render_runtime_summary.py` and `suggest_public_skill_dogfood.py --skill-id quality`
-- `./scripts/run-quality.sh --read-only`
-- `CHARNESS_QUALITY_LABELS=inventory-gitignore-scan-hygiene ./scripts/run-quality.sh --read-only`
-- `ruff check ...changed quality files...`
-- focused pytest inventory/doc-link tests (`65 passed`)
+- Capability/bootstrap helpers; skill/docs/test-economics/spec/lint/CI/gitignore
+  inventories; runtime summary and dogfood suggestion.
+- `./scripts/run-quality.sh --read-only`, targeted gitignore hygiene quality
+  run, ruff, and focused pytest inventory/doc-link tests (`65 passed`).
 
 ## Recommended Next Gates
 - active `AUTO_EXISTING`: keep `inventory-gitignore-scan-hygiene` in
