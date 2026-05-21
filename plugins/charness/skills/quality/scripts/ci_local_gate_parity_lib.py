@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 from typing import Any, Callable
 
@@ -53,7 +54,16 @@ _STEP_KEY_PREFIXES = (
 
 
 def iter_workflow_files(repo_root: Path, glob_pattern: str) -> list[Path]:
-    return sorted(p for p in repo_root.glob(glob_pattern) if p.is_file())
+    result = subprocess.run(
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        return sorted(p for p in repo_root.glob(glob_pattern) if p.is_file())
+    visible = {repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel}
+    return sorted(p for p in repo_root.glob(glob_pattern) if p.is_file() and p in visible)
 
 
 def classify_step(step: dict[str, Any]) -> str:

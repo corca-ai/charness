@@ -62,6 +62,40 @@ def test_gitignore_scan_hygiene_accepts_git_aware_glob(tmp_path: Path) -> None:
     assert payload["findings"] == []
 
 
+def test_gitignore_scan_hygiene_flags_raw_scan_in_mixed_file(tmp_path: Path) -> None:
+    script = tmp_path / "scan.py"
+    script.write_text(
+        "import subprocess\n"
+        "from pathlib import Path\n"
+        "def safe(repo_root: Path):\n"
+        "    subprocess.run(['git', 'ls-files', '--exclude-standard'], cwd=repo_root)\n"
+        "    return list(repo_root.glob('**/*.py'))\n"
+        "def unsafe(repo_root: Path):\n"
+        "    return list(repo_root.rglob('*'))\n",
+        encoding="utf-8",
+    )
+
+    payload = _run_hygiene(tmp_path, "--path-glob", "*.py")
+
+    assert [finding["call"] for finding in payload["findings"]] == ["repo_root.rglob('*')"]
+
+
+def test_gitignore_scan_hygiene_require_empty_fails_on_findings(tmp_path: Path) -> None:
+    script = tmp_path / "scan.py"
+    script.write_text("def scan(repo_root):\n    return list(repo_root.rglob('*'))\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(tmp_path), "--path-glob", "*.py", "--require-empty"],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert "repo_root.rglob('*')" in result.stdout
+
+
 def test_gitignore_scan_hygiene_respects_gitignore_for_inventory_inputs(tmp_path: Path) -> None:
     subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True, text=True)
     (tmp_path / ".gitignore").write_text("ignored/\n", encoding="utf-8")

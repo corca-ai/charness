@@ -11,6 +11,8 @@ from pathlib import Path
 
 GIT_AWARE_MARKERS = (
     "git ls-files",
+    "git_visible_repo_files",
+    "_git_visible_repo_files",
     "git_list_repo_files",
     "iter_repo_files",
     "iter_matching_repo_files",
@@ -93,20 +95,36 @@ def _is_repo_walk(node: ast.Call) -> bool:
     return False
 
 
+def _parent_map(tree: ast.AST) -> dict[ast.AST, ast.AST]:
+    return {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
+
+
+def _git_aware_context(node: ast.AST, parents: dict[ast.AST, ast.AST], source: str) -> bool:
+    current = node
+    while current in parents:
+        current = parents[current]
+        if isinstance(current, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            segment = ast.get_source_segment(source, current) or ""
+            return any(marker in segment for marker in GIT_AWARE_MARKERS)
+    segment = ast.get_source_segment(source, node) or ""
+    return any(marker in segment for marker in GIT_AWARE_MARKERS)
+
+
 def analyze_file(path: Path, repo_root: Path) -> list[dict[str, object]]:
     source = path.read_text(encoding="utf-8")
-    if any(marker in source for marker in GIT_AWARE_MARKERS):
-        return []
     try:
         tree = ast.parse(source, filename=str(path))
     except SyntaxError:
         return []
 
+    parents = _parent_map(tree)
     findings: list[dict[str, object]] = []
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
             continue
         if not (_is_repo_wide_glob(node) or _is_repo_walk(node)):
+            continue
+        if _git_aware_context(node, parents, source):
             continue
         findings.append(
             {
@@ -128,6 +146,7 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--path-glob", action="append", default=[])
     parser.add_argument("--exclude-glob", action="append", default=[])
+    parser.add_argument("--require-empty", action="store_true")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
@@ -154,7 +173,7 @@ def main() -> int:
             print(f"{finding['path']}:{finding['line']} {finding['reason']}")
             print(f"  call: {finding['call']}")
             print(f"  next: {finding['recommendation']}")
-    return 0
+    return 1 if args.require_empty and findings else 0
 
 
 if __name__ == "__main__":

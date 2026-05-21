@@ -382,6 +382,37 @@ def test_run_quality_enforces_ci_local_gate_parity_inventory(
     assert "Quality summary: 1 passed, 0 failed" in result.stdout
 
 
+def test_run_quality_enforces_gitignore_scan_hygiene_inventory(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    inventory_script = (
+        repo / "skills" / "public" / "quality" / "scripts" / "inventory_gitignore_scan_hygiene.py"
+    )
+    inventory_script.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import sys",
+                "if '--require-empty' not in sys.argv:",
+                "    print('missing --require-empty')",
+                "    sys.exit(1)",
+                "print('quality success output from inventory-gitignore-scan-hygiene')",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    inventory_script.chmod(0o755)
+    env["CHARNESS_QUALITY_LABELS"] = "inventory-gitignore-scan-hygiene"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert "PASS inventory-gitignore-scan-hygiene" in result.stdout
+    assert "Quality summary: 1 passed, 0 failed" in result.stdout
+
+
 def test_run_quality_read_only_skips_check_coverage_without_control_plane_changes(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     (repo / "README.md").write_text("# demo\n", encoding="utf-8")

@@ -72,7 +72,7 @@
     },
     "inventory_gitignore_scan_hygiene.py": {
       "non_headline_fields": [],
-      "opt_out_reason": "no committed quality artifact currently consumes this inventory; declare non_headline_fields when an artifact starts engaging with its findings."
+      "opt_out_reason": "consumed by the run-quality phase that fails on findings via --require-empty; consumer-side engagement is the gate's pass/fail status, not artifact-body field citation."
     },
     "inventory_sloc.py": {
       "non_headline_fields": [],

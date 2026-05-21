@@ -7,6 +7,7 @@ import fnmatch
 import importlib.util
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -69,7 +70,17 @@ def _matches_pattern(rel: str, pattern: str) -> bool:
 
 def _iter_files(repo_root: Path, globs: list[str], exemption_globs: list[str]) -> list[Path]:
     matched: list[Path] = []
-    for path in repo_root.rglob("*"):
+    result = subprocess.run(
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+    )
+    if result.returncode == 0:
+        candidates = [repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel]
+    else:
+        candidates = list(repo_root.rglob("*"))
+    for path in candidates:
         if not path.is_file():
             continue
         rel = path.relative_to(repo_root).as_posix()

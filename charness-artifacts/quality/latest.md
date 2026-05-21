@@ -2,134 +2,136 @@
 Date: 2026-05-21
 
 ## Scope
+Current slice: broad `charness:quality` posture review for the self-repo after
+the #183 release. Scope covers standing gates, local enforcement, public/support
+skill ergonomics, docs drift, CI/local parity, runtime/test economics, source
+scan hygiene, security and supply-chain gates, and durable quality artifacts.
 
-Current slice: resolved #183's mutation-testability regression without hiding
-the repo-quality problem behind looser mutation scoring. The slice covers
-mutation sampling, pytest selection, summary closeout semantics, repo-owned
-mutation dependencies, and representative source/testability repairs for
-scripts that were hostile to line-level mutation proof.
+## Concept Risks
+- The previous `latest.md` was a mutation-closeout artifact; this review
+  restores the current-pointer role and archives that closeout under `history/`.
+- The unresolved boundary is policy: local pre-push is enforced, while no
+  non-exempt PR CI quality workflow mirrors it.
 
 ## Current Gates
-
-- `scripts/sample_mutation_files.py` now runs coverage with test-function
-  contexts, filters files by statement coverage, probes Cosmic Ray work items,
-  and keeps only files whose non-skipped mutable lines are covered.
-- `scripts/check_mutation_score.py` keeps `PASS-partial` diagnostic-only:
-  partial mutation runs exit non-zero and cannot close a recovery issue.
-- Changed files excluded before mutation by coverage, mutation-line, or
-  selection-budget filters are now blocking summary signals.
-- The sampler now treats workload as executable mutants and selected pytest
-  nodeids, not file count alone. Defaults are 120 executable mutants total, 80
-  per file, and 40 pytest nodeids; each selected file must contribute at least
-  one focused pytest nodeid.
-- `.github/workflows/mutation-tests.yml` installs
-  `packaging/mutation-requirements.txt` instead of relying on inline ambient
-  dependency drift.
+- `./scripts/run-quality.sh` passed with `65` phases and now includes
+  `inventory-gitignore-scan-hygiene`.
+- `.githooks/pre-push` syncs plugin exports, validates current pointers, runs
+  read-only quality, and fails if `charness-artifacts/` mutates.
+- `scripts/validate_maintainer_setup.py` proved this clone uses `.githooks`.
+- Security and supply chain are locally covered by `check-secrets`,
+  `check-supply-chain`, `check-github-actions`, `check-shell`, and link gates.
 
 ## Runtime Signals
+- runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
+  rendered by `render_runtime_summary.py` via `scripts/record_quality_runtime.py`.
+- runtime hot spots: `check-coverage` 38.3s latest / 39.2s median, `pytest`
+  21.3s latest / 32.4s median, `check-duplicates` 7.5s latest / 7.6s median,
+  all within configured local-profile budgets.
+- coverage gate: `check-coverage` passed in the read-only gate; the reference
+  `coverage_floor_inventory.py` sample is not this repo's coverage carrier.
+- evaluator depth: no live Cautilus run; this request was a generic quality
+  review, so deterministic gates plus bounded fresh-eye review were the proof.
 
-- runtime source: structured runner output from `scripts/run_slice_closeout.py`
-  summarized by this artifact, plus local mutation probe artifacts under
-  ignored `reports/mutation/` <!-- reproduction-source -->.
-- runtime hot spots: broad changed-surface pytest took 183.35s; local sampler
-  coverage probe took 214.17s; cancelled hosted run `26193059859` proved that a
-  5-file cap could still expand to 538 executable mutants and spend more than
-  20 minutes in `Run mutation`.
-- coverage gate: local hosted-seed replay selected 2 files, 81 executable
-  mutants, and 6 pytest nodeids; full mutation passed at `88.9%`, `81/81`
-  executed, and zero scope gaps after sanitizer tests were strengthened.
-- hosted proof: run `26196843109` passed on `5666571bce0f9544b0128e41a78380b007d29598`; #183 is `CLOSED`, and `v0.7.8` is published.
-- evaluator depth: no live Cautilus run; deterministic validators, checked-in
-  dogfood scenario review, and fresh-eye review own this repo-local
-  mutation/testability slice.
+## Standing Test Economics
+- `inventory_standing_test_economics.py` reported `test_file_count=177`,
+  `nested_cli_file_count=75`, runner_snippets from shell/JS gates, and a
+  measured pytest temp footprint of `3532247040` allocated bytes across `3`
+  retained sessions.
+
+## Testability and Selection
+- The #183 mutation sampler owns mutation-line/selected-nodeid proof, but
+  standing tests still contain many real CLI/subprocess smokes. Move repeated
+  assertions below that boundary before adding another selector or budget.
+
+## Coverage and Eval Depth
+- `inventory_public_spec_quality.py` reported `public_spec_count=4`,
+  `source_guard_row_count=0`, `implementation_path_ref_density=0.0`,
+  `executable_block_count=8`; public specs are not the brittle proof layer.
+- The `quality` dogfood case resolves to `charness-artifacts/quality/latest.md`
+  and tier `hitl-recommended`.
+
+## Maintainer-Local Enforcement
+- Healthy: checked-in `.githooks/pre-push`, `scripts/install-git-hooks.sh`, and
+  clone validator exist and passed; the hook also fails on artifact mutation.
+
+## CI/Local Gate Parity
+- `inventory_ci_local_gate_parity.py` scanned one workflow with `0`
+  parity-issue steps; the only workflow is exempt as `scheduled-deeper-check`.
+
+## Enforcement Triage
+- `AUTO_EXISTING`: pre-push/read-only quality, validators, runtime budgets,
+  coverage, secrets/supply chain, CI/local parity, and gitignore scan hygiene.
+- `AUTO_CANDIDATE`: docs ownership and repeated CLI-boundary test fanout.
+- `NON_AUTOMATABLE`: whether PR CI should mirror local pre-push.
 
 ## Healthy
-
-- The previous file-level sampling vs mutation-line scoring mismatch is closed
-  locally: the sampler now proves the same kind of scope the summary enforces.
-- The test command is no longer a static broad-or-narrow guess; it is derived
-  from coverage contexts for the selected mutation sample, and every selected
-  file must contribute to that focused command.
-- High reachable score no longer masks uncovered mutation lines, changed-file
-  exclusions, or incomplete timeout execution.
-- The bounded mutation run now exposes useful test gaps: hosted proof found
-  sanitizer survivors, and focused tests were strengthened until local replay
-  crossed the threshold honestly.
-- The mutation workload budget is now visible in the sample manifest, so a
-  future slow sample fails selection honestly instead of pretending "5 files"
-  is a runtime budget.
-- Fresh-eye reviewers judged the testability posture sufficient for this slice;
-  hosted workflow proof and issue closeout have now verified that judgment.
+- `inventory_skill_ergonomics.py` returned `scope_status=scanned`,
+  `checked_skill_count=22`, `heuristic_finding_count=0`, and
+  `prose_review_status=still_required`.
+- prose review result: no skill trigger boundary blocker found for this pass.
+- `inventory_gitignore_scan_hygiene.py` is now clean after replacing five
+  repo-wide scans with git-visible file discovery and promoting it into
+  `scripts/run-quality.sh`.
+- `inventory_lint_ignores.py` found `blanket_count=0`, `file_level_count=0`,
+  `codes` limited to narrow inline records, and `scope=inline`.
 
 ## Weak
-
-- The Cosmic Ray work-db integration is exercised by local dry-run proof more
-  than by pure unit tests; hosted workflow success is the real closeout signal.
-- The focused pytest nodeid command can still become long if a future sample
-  approaches the 40-nodeid cap; monitor workflow ergonomics before adding
-  helper-file indirection.
-- Release-side real-host verification remains recorded in
-  `charness-artifacts/release/latest.md`; it is separate from #183 proof.
+- Docs ergonomics is noisy: `README.md` has `core_nonempty_lines=289`,
+  `internal_doc_link_count=68`, `numbered_procedure_count=12`; `docs/cli-reference.md`
+  has `core_nonempty_lines=670`.
+- Standing test economics still shows nested CLI fanout across `75` files and
+  a multi-GB retained pytest temp footprint from real packaging/tool tests.
+- Usage-episodes validation is visible but skipped: `validate_usage_episodes.py`
+  reported `no_adapter`, so this product-signal surface remains opt-in.
 
 ## Missing
-
-- No missing #183 closeout proof remains. The hosted mutation workflow,
-  issue state, and release publication are all verified.
+- No non-exempt standing PR CI workflow runs the local quality gate. Current
+  proof is maintainer-local pre-push plus scheduled mutation deeper-check.
 
 ## Deferred
-
-- Make missing or malformed sample manifests an explicit full-run invariant if
-  the mutation summary starts running outside the current workflow shape.
-- Consider a pytest-selection helper file only if command length becomes a
-  CI problem.
+- Release-side real-host verification remains in `charness-artifacts/release/latest.md`.
+- Do not add docs/runtime gates from the noisy inventories until a concrete
+  ownership rule or duplicated-proof deletion candidate is selected.
 
 ## Advisory
-
-- Debug artifact: [mutation scope-gap testability](../debug/2026-05-21-mutation-scope-gap-testability.md).
-- RCA from debug artifact: sampling accepted “some covered line in the file”
-  while scoring failed per uncovered mutation line.
-- Similar-pattern scan from `scripts/check_changed_surfaces.py` and fresh-eye
-  review fixed sibling closeout gaps: changed-file exclusions, `PASS-partial`,
-  dependency setup drift, and root-level probe config leakage.
-- Hosted workflow RCA fixed CI-portability siblings found by run `26192428031`:
-  live Cautilus tests now skip when `cautilus` is absent, and worktree-create
-  setup commits no longer execute ambient git hooks.
-- Hosted workload RCA cancelled run `26193059859`: file count was not a
-  workload cap; fake `agent-browser` tests now use temp `--repo-root`.
+- `inventory_entrypoint_docs_ergonomics.py` advisory: high core-line counts
+  and low `internal_doc_link_count` suggest review work, not a blocking gate.
+- `inventory_standing_test_economics.py` advisory: `nested_cli_files` are the
+  review queue; reduce process-boundary proof before changing budgets.
+- `inventory_adapter_gate_design.py` advisory: phrase detectors stay advisory
+  unless adapter policy makes them reviewable.
 
 ## Delegated Review
-
-- status: executed. Fresh-eye causal/design/code/testability reviewers found
-  the file-level-vs-line-level sampling mismatch, changed-file exclusion gap,
-  dependency setup drift, `PASS-partial` closeout risk, and local probe config
-  leakage. A later fresh-eye performance reviewer found the file-count budget
-  bug through slow-gate lenses: fixture-economics, parallel-critical-path, and
-  duplicated-proof. It was fixed by executable-mutant/nodeid budget sampling.
+- Delegated Review: executed. Fresh-eye satisfaction context: parent-delegated.
+  Reviewer confirmed the artifact scope gap, gitignore gate promotion, CI
+  policy gap, docs noise, and standing-test risk through slow-gate lenses:
+  fixture-economics, parallel-critical-path, duplicated-proof.
 
 ## Commands Run
-
-- `ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts`
-- focused pytest suite for mutation sampling, mutation scoring, workflow
-  dependency setup, portable artifacts, worktree doctor state, announcement
-  preflight, and control-plane helpers
-- `pytest -q tests/quality_gates tests/control_plane tests/test_*.py tests/charness_cli/test_doctor_cache_selection.py tests/charness_cli/test_tool_lifecycle.py`
-- `MUTATION_SAMPLE_SEED=26193059859:..f0b560ad79ce0794b3d2e7fdd5f7bc3dadd657ec MUTATION_SAMPLE_MAX_FILES=5 MUTATION_SAMPLE_CHANGED_QUOTA=0 MUTATION_SAMPLE_MAX_EXECUTABLE_MUTANTS=120 MUTATION_SAMPLE_MAX_EXECUTABLE_MUTANTS_PER_FILE=80 MUTATION_SAMPLE_MAX_TEST_NODEIDS=40 python3 scripts/sample_mutation_files.py --repo-root .`
-- `python3 scripts/run_cosmic_ray_mutation.py --repo-root . --mode dry-run`
-- `python3 scripts/sync_root_plugin_manifests.py --repo-root .`
-- changed-surface validators: packaging, adapters, docs, markdown, secrets,
-  Cautilus policy, skill policy/dogfood, integrations, support/tool dry-runs,
-  and debug artifact validation.
+- `find-skills list_capabilities.py`, quality `resolve_adapter.py`, and `bootstrap_adapter.py`
+- `inventory_skill_ergonomics.py`, `inventory_entrypoint_docs_ergonomics.py`,
+  `inventory_standing_test_economics.py`, `inventory_public_spec_quality.py`,
+  `inventory_lint_ignores.py`, `inventory_ci_local_gate_parity.py`,
+  `inventory_gitignore_scan_hygiene.py`
+- `render_runtime_summary.py` and `suggest_public_skill_dogfood.py --skill-id quality`
+- `./scripts/run-quality.sh --read-only`
+- `CHARNESS_QUALITY_LABELS=inventory-gitignore-scan-hygiene ./scripts/run-quality.sh --read-only`
+- `ruff check ...changed quality files...`
+- focused pytest inventory/doc-link tests (`65 passed`)
 
 ## Recommended Next Gates
-
-- active `AUTO_EXISTING`: preserve the hosted mutation workflow as the closeout
-  carrier for future regressions; do not downgrade scope-gap, partial-run, or
-  changed-file exclusion blockers into score-only diagnostics.
-- passive `AUTO_EXISTING`: because it is not a #183 blocker, complete release
-  real-host verification before claiming the broader release surface is closed.
+- active `AUTO_EXISTING`: keep `inventory-gitignore-scan-hygiene` in
+  `scripts/run-quality.sh`; existing-convention check found helper/inventory
+  lineage via `git log -S inventory_gitignore_scan_hygiene` and `rg repo_file_listing`.
+- passive `NON_AUTOMATABLE`: because CI policy is unresolved, decide whether PR CI should mirror
+  `./scripts/run-quality.sh --read-only`; existing-convention check found
+  `scheduled-deeper-check` as the only CI policy, so this is a policy choice,
+  not an accidental local gate omission.
+- passive `AUTO_CANDIDATE`: because current docs signals need owner judgment,
+  audit docs ergonomics ownership before adding a gate.
 
 ## History
-
+- [2026-05-21 mutation-testability closeout](history/2026-05-21-mutation-testability-closeout.md)
 - [2026-05-14 mutation testing dogfood](history/2026-05-14-mutation-testing-dogfood.md)
 - [2026-05-12 archive](history/2026-05-12-quality-review.md)
-- [2026-05-10 archive](history/2026-05-10-quality-review.md)

@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 from pathlib import Path
 from typing import Iterable
 from urllib.parse import unquote
@@ -74,7 +75,17 @@ def iter_doc_paths(repo_root: Path, requested: list[str]) -> Iterable[Path]:
 
 
 def iter_markdown_files(repo_root: Path) -> Iterable[Path]:
-    for path in sorted(repo_root.rglob("*.md")):
+    result = subprocess.run(
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "*.md"],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+    )
+    if result.returncode == 0:
+        candidates = sorted(repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel)
+    else:
+        candidates = sorted(repo_root.rglob("*.md"))
+    for path in candidates:
         try:
             relative = path.relative_to(repo_root)
         except ValueError:

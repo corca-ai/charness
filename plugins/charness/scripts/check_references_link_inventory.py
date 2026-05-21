@@ -8,6 +8,11 @@ import re
 import sys
 from pathlib import Path
 
+try:
+    from scripts.repo_file_listing import iter_matching_repo_files
+except ModuleNotFoundError:
+    from repo_file_listing import iter_matching_repo_files
+
 BULLET_RE = re.compile(r"^[-*]\s+")
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")
 BACKTICK_PATH_RE = re.compile(r"`[^`]+\.[A-Za-z0-9]+`")
@@ -108,12 +113,11 @@ def main() -> int:
     globs = args.target_glob or list(DEFAULT_TARGET_GLOBS)
     inspected: list[dict[str, object]] = []
     seen: set[Path] = set()
-    for pattern in globs:
-        for path in sorted(repo_root.glob(pattern)):
-            if not path.is_file() or path in seen:
-                continue
-            seen.add(path)
-            inspected.append(scan_file(path, repo_root))
+    for path in iter_matching_repo_files(repo_root, tuple(globs)):
+        if path in seen:
+            continue
+        seen.add(path)
+        inspected.append(scan_file(path, repo_root))
     flagged = [entry for entry in inspected if entry["findings"]]
     payload = {
         "repo_root": str(repo_root),

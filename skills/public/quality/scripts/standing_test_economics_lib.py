@@ -26,18 +26,8 @@ discover_surfaces = _DISCOVERY.discover_surfaces
 iter_snippets = _DISCOVERY.iter_snippets
 
 IGNORED_DIRS = {
-    ".artifacts",
-    ".charness",
-    ".git",
-    ".hg",
-    ".mypy_cache",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".venv",
-    "charness-artifacts",
-    "mutants",
-    "node_modules",
-    "vendor",
+    ".artifacts", ".charness", ".git", ".hg", ".mypy_cache", ".pytest_cache",
+    ".ruff_cache", ".venv", "charness-artifacts", "mutants", "node_modules", "vendor",
 }
 TEST_FILE_PATTERNS = (
     "test_*.py",
@@ -74,6 +64,19 @@ def _is_ignored(path: Path) -> bool:
 
 
 def _test_files(repo_root: Path) -> list[Path]:
+    result = subprocess.run(
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+    )
+    if result.returncode == 0:
+        candidates = [repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel]
+        return sorted(
+            path
+            for path in candidates
+            if path.is_file() and any(path.match(pattern) for pattern in TEST_FILE_PATTERNS)
+        )
     files: dict[Path, None] = {}
     for pattern in TEST_FILE_PATTERNS:
         for path in repo_root.rglob(pattern):

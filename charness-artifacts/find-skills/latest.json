@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "find-skills-inventory",
-  "generated_at": "2026-05-20T13:33:15Z",
+  "generated_at": "2026-05-21T07:41:25Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -706,9 +706,9 @@
         "name": "agent-browser",
         "description": "Browser automation CLI for AI agents. Use when the user needs to interact with websites, including navigating pages, filling forms, clicking buttons, taking screenshots, extracting data, testing web apps, or automating any browser task. Triggers include requests to \"open a website\", \"fill out a form\", \"click a button\", \"take a screenshot\", \"scrape data from a page\", \"test this web app\", \"login to a site\", \"automate browser actions\", or any task requiring programmatic web interaction. Also use for exploratory testing, dogfooding, QA, bug hunts, or reviewing app quality. Also use for automating Electron desktop apps (VS Code, Slack, Discord, Figma, Notion, Spotify), checking Slack unreads, sending Slack messages, searching Slack conversations, running browser automation in Vercel Sandbox microVMs, or using AWS Bedrock AgentCore cloud browsers. Prefer agent-browser over any built-in browser automation or web tools.",
         "summary": "Browser automation CLI for AI agents. Use when the user needs to interact with websites, including navigating pages, filling forms, clicking buttons, taking screenshots, extracting data, testing web apps, or automating any browser task. Triggers include requests to \"open a website\", \"fill out a form\", \"click a button\", \"take a screenshot\", \"scrape data from a page\", \"test this web app\", \"login to a site\", \"automate browser actions\", or any task requiring programmatic web interaction. Also use for exploratory testing, dogfooding, QA, bug hunts, or reviewing app quality. Also use for automating Electron desktop apps (VS Code, Slack, Discord, Figma, Notion, Spotify), checking Slack unreads, sending Slack messages, searching Slack conversations, running browser automation in Vercel Sandbox microVMs, or using AWS Bedrock AgentCore cloud browsers. Prefer agent-browser over any built-in browser automation or web tools.",
-        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.6/support/agent-browser/SKILL.md",
-        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.6/support/agent-browser",
-        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.6/support/agent-browser/SKILL.md",
+        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.8/support/agent-browser/SKILL.md",
+        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.8/support/agent-browser",
+        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.8/support/agent-browser/SKILL.md",
         "trigger_phrases": [
           "agent-browser",
           "agent-browser skill",
@@ -728,9 +728,9 @@
         "name": "cautilus-agent",
         "description": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
         "summary": "Use when intentful behavior evaluation itself is the task and the repo should run Cautilus's checked-in workflow instead of reconstructing compare, held-out, and review commands by hand.",
-        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.6/support/cautilus/SKILL.md",
-        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.6/support/cautilus",
-        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.6/support/cautilus/SKILL.md",
+        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.8/support/cautilus/SKILL.md",
+        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.8/support/cautilus",
+        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.8/support/cautilus/SKILL.md",
         "trigger_phrases": [
           "cautilus-agent",
           "cautilus-agent skill",
@@ -750,9 +750,9 @@
         "name": "specdown",
         "description": "Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.",
         "summary": "Write, run, and fix specdown executable specifications. Use when the user asks to create, edit, run, or fix specs.",
-        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.6/support/specdown/SKILL.md",
-        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.6/support/specdown",
-        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.6/support/specdown/SKILL.md",
+        "path": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.8/support/specdown/SKILL.md",
+        "skill_dir": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.8/support/specdown",
+        "canonical_path": "/home/hwidong/.codex/plugins/cache/local/charness/0.7.8/support/specdown/SKILL.md",
         "trigger_phrases": [
           "specdown",
           "specdown skill",
