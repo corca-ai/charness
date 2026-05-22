@@ -13,37 +13,35 @@
 
 ## Current State
 
-- Current shipped release is `v0.7.10`; local `main` is 5 commits ahead of
+- Current shipped release is `v0.7.10`; local `main` is 7 commits ahead of
   origin pending push.
-- Bug-pattern sibling scan complete: helper, scanner, gitignore-aware standing
-  scans, and the adapter-resolved hitl writer migration all landed.
-- Issue #190 (mutation regression on main) resolved: nested pytest probe was
-  inheriting `MUTATION_BASE_SHA`/`MUTATION_HEAD_SHA` from the parent step env;
-  the vulnerable test now scrubs both keys.
-- Generated reference docs separated under `docs/generated/` with an enforced
-  GENERATED header.
-- PR CI mirror absence documented in
-  [operating-contract.md Local Enforcement Policy](./conventions/operating-contract.md)
-  as intended under the single-maintainer push model.
-- Deferred decision D19 records the current-pointer scanner generalization
-  posture (defer until a second adapter-resolved sibling appears).
-- Usage episodes adapter remains `enabled: false`. Spec for completing the
-  H-LAM/T loop (session grouping + T signal) landed at
-  [charness-artifacts/spec/usage-episodes-h-lam-t-completion.md](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md);
-  implementation is split into two slices not yet executed.
+- Bug-pattern sibling scan complete; the adapter-resolved hitl writer
+  migration and gitignore-aware standing scans landed alongside the
+  generated reference docs split under `docs/generated/`.
+- Usage episodes adapter remains `enabled: false`. Slice A of the
+  [H-LAM/T completion spec](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md)
+  landed in commit `33a5c57`: episode schema gained `session_id`,
+  `t_evidence`, and `classification_skipped` with the conditional clause;
+  the new [classify_t_signal helper](../scripts/classify_t_signal.py) runs
+  the diff-rule catalog; the slice-closeout emitter attaches `session_id`
+  from
+  `.charness/usage-episodes/sessions/current` plus the classifier's
+  `t_status`/`t_evidence` (or `classification_skipped` on skip); validator
+  returns `no_records` warning when `enabled:true` with no records yet.
+- Slice B (host SessionStart hook surface + `charness session-capture status`
+  CLI) is not yet executed.
 
 ## Next Session
 
-1. Implement Slice A from the usage-episodes spec: schema extension
-   (`session_id`, `t_evidence`, `classification_skipped`) plus
-   `classify_t_signal` helper, emitter wiring, validator relaxation
-   (`no_records` warning), and fixture updates — all in one atomic commit.
-2. Implement Slice B from the same spec. Start with Step 0 (resolve Codex
-   `hooks.json` vs `config.toml` precedence as a Fixed Decision via the
-   existing [codex hooks gather](../charness-artifacts/gather/2026-05-22-codex-hooks-surface.md)),
-   then build the SessionStart hook script, install lib, and
-   `charness session-capture status` subcommand.
-3. After both slices ship, flip
+1. Implement Slice B from the usage-episodes spec. Start with Step 0
+   (resolve Codex `hooks.json` vs `config.toml` precedence as a Fixed
+   Decision via the existing
+   [codex hooks gather](../charness-artifacts/gather/2026-05-22-codex-hooks-surface.md)),
+   then build the SessionStart hook script and host-hook install library
+   under `scripts/`, wire `charness init`/`charness update` to read
+   `host_hooks.{claude,codex}`, and add the `charness session-capture status`
+   subcommand.
+2. After Slice B ships, flip
    [usage-episodes adapter](../.agents/usage-episodes-adapter.yaml)
    `enabled: true` as a separate intentional commit.
 
