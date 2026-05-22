@@ -13,50 +13,58 @@
 
 ## Current State
 
-- Current shipped release is `v0.7.10`; local `main` is in sync with origin.
-- Bug-pattern sibling scan complete: `check-current-pointer-writes` scanner,
-  symlink-safe helper, gitignore-aware standing Python scans, and the
-  adapter-resolved hitl writer migration are all in place.
-- Issue #190 (mutation regression on main) resolved: the sampler-spawned
-  pytest probe was inheriting `MUTATION_BASE_SHA`/`MUTATION_HEAD_SHA` from the
-  parent step env. The vulnerable test now scrubs both keys before subprocess.
-- Mutation sampling/score, critique artifact, read-only quality, and shell
-  markdown/link/secret/shell gates fail closed on discovery, manifest, or
-  scan-staging failures.
-- Release publishing fails closed when unreleased-path diff, real-host proof
-  config, previous-tag base-ref lookup/fetch, or post-create verification fails.
-- Usage episodes are configured but disabled; validation reports `disabled`.
+- Current shipped release is `v0.7.10`; local `main` is 5 commits ahead of
+  origin pending push.
+- Bug-pattern sibling scan complete: helper, scanner, gitignore-aware standing
+  scans, and the adapter-resolved hitl writer migration all landed.
+- Issue #190 (mutation regression on main) resolved: nested pytest probe was
+  inheriting `MUTATION_BASE_SHA`/`MUTATION_HEAD_SHA` from the parent step env;
+  the vulnerable test now scrubs both keys.
+- Generated reference docs separated under `docs/generated/` with an enforced
+  GENERATED header.
+- PR CI mirror absence documented in
+  [operating-contract.md Local Enforcement Policy](./conventions/operating-contract.md)
+  as intended under the single-maintainer push model.
+- Deferred decision D19 records the current-pointer scanner generalization
+  posture (defer until a second adapter-resolved sibling appears).
+- Usage episodes adapter remains `enabled: false`. Spec for completing the
+  H-LAM/T loop (session grouping + T signal) landed at
+  [charness-artifacts/spec/usage-episodes-h-lam-t-completion.md](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md);
+  implementation is split into two slices not yet executed.
 
 ## Next Session
 
-1. Static `check-current-pointer-writes` scanner only catches string-literal
-   `latest.md`/`latest.json` writes; future adapter-resolved writers must adopt
-   the helper by convention. Scanner generalization stays deferred until a
-   second adapter-resolved sibling appears.
-2. PR CI mirroring of `./scripts/run-quality.sh --read-only` stays paused under
-   the single-maintainer push model; document the absence as intended.
-3. Keep usage episodes disabled until maintainers intentionally opt into local
-   runtime capture.
-4. Generated reference docs (cli-reference) move to `docs/generated/` with an
-   enforced "GENERATED" header.
+1. Implement Slice A from the usage-episodes spec: schema extension
+   (`session_id`, `t_evidence`, `classification_skipped`) plus
+   `classify_t_signal` helper, emitter wiring, validator relaxation
+   (`no_records` warning), and fixture updates — all in one atomic commit.
+2. Implement Slice B from the same spec. Start with Step 0 (resolve Codex
+   `hooks.json` vs `config.toml` precedence as a Fixed Decision via the
+   existing [codex hooks gather](../charness-artifacts/gather/2026-05-22-codex-hooks-surface.md)),
+   then build the SessionStart hook script, install lib, and
+   `charness session-capture status` subcommand.
+3. After both slices ship, flip
+   [usage-episodes adapter](../.agents/usage-episodes-adapter.yaml)
+   `enabled: true` as a separate intentional commit.
 
 ## Discuss
 
-- Mutation selection lessons: sampler predicates must be at least as strict as
-  fatal downstream closeout predicates, and runtime is executable mutants times
-  selected test command cost, not just file count.
+- Static `check-current-pointer-writes` scanner only catches string-literal
+  writes; future adapter-resolved writers must adopt the helper by convention
+  until D19's reopen trigger fires.
 - Step-env leakage into nested test-command coverage probes is a class of bug;
   subprocess tests that build `env={**os.environ, ...}` must scrub
   workflow-controlled `MUTATION_*` keys before invoking the script under test.
 - Watch list: Yarn Berry hook idiom; pnpm+lefthook stale snippets; `filelock`
-  plus `pytest-xdist`; seed-cache LRU eviction; CLI docs ownership;
-  release proof suppression.
+  plus `pytest-xdist`; seed-cache LRU eviction; release proof suppression.
 
 ## References
 
+- [usage-episodes H-LAM/T completion spec](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md):
+  fixed decisions and two-slice implementation plan.
+- [codex hooks surface](../charness-artifacts/gather/2026-05-22-codex-hooks-surface.md):
+  Codex SessionStart/Stop/UserPromptSubmit/PreToolUse/PostToolUse hook surface.
 - [bug-pattern sibling scan](../charness-artifacts/debug/2026-05-21-bug-pattern-sibling-scan.md):
   current-pointer and gitignore sibling scan RCA and prevention.
-- [mutation subprocess coverage](../charness-artifacts/debug/2026-05-21-mutation-subprocess-coverage.md):
-  mutation #189 survivor and subprocess coverage RCA.
 - [quality posture](../charness-artifacts/quality/latest.md) and
   [release surface](../charness-artifacts/release/latest.md): current state pointers.
