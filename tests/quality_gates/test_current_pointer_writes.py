@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import json
 from pathlib import Path
 
 from .support import ROOT, init_git_repo, run_script
@@ -106,6 +107,48 @@ def test_find_skills_inventory_noops_when_canonical_inventory_unchanged(tmp_path
     assert first["updated"] is True
     assert second["updated"] is False
     assert (output / "latest.json").read_text(encoding="utf-8") == first_text
+
+
+def test_hitl_sync_artifact_does_not_follow_symlinked_latest(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    target = repo / "docs" / "decision.md"
+    target.parent.mkdir(parents=True)
+    target.write_text("# Decision\n", encoding="utf-8")
+
+    bootstrap = run_script(
+        "skills/public/hitl/scripts/bootstrap_review.py",
+        "--repo-root",
+        str(repo),
+        "--session-id",
+        "hitl-symlink",
+        "--target",
+        str(target),
+    )
+    assert bootstrap.returncode == 0, bootstrap.stderr
+
+    hitl_dir = repo / "charness-artifacts" / "hitl"
+    hitl_dir.mkdir(parents=True, exist_ok=True)
+    prior = hitl_dir / "2026-05-01-prior.md"
+    prior.write_text("# prior hitl record\n", encoding="utf-8")
+    pointer = hitl_dir / "latest.md"
+    pointer.symlink_to(prior.name)
+    prior_sha = _sha(prior)
+
+    sync = run_script(
+        "skills/public/hitl/scripts/sync_review_artifact.py",
+        "--repo-root",
+        str(repo),
+        "--session-id",
+        "hitl-symlink",
+    )
+
+    assert sync.returncode == 0, sync.stderr
+    payload = json.loads(sync.stdout)
+    assert payload["status"] == "synced"
+    assert payload["artifact_path"] == "charness-artifacts/hitl/latest.md"
+    assert not pointer.is_symlink()
+    assert "<!-- hitl-runtime-sync" in pointer.read_text(encoding="utf-8")
+    assert _sha(prior) == prior_sha
 
 
 def test_current_pointer_write_scanner_flags_direct_latest_write(tmp_path: Path) -> None:

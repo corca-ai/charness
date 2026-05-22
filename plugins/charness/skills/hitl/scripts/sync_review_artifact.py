@@ -25,7 +25,9 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 _sync_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.hitl_review_artifact_lib")
 _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
+_current_pointer_writer = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.current_pointer_writer_lib")
 load_adapter = _resolve_adapter.load_adapter
+write_current_pointer_text = _current_pointer_writer.write_current_pointer_text
 
 
 def main() -> int:
@@ -45,8 +47,7 @@ def main() -> int:
     artifact_path = repo_root / adapter["artifact_path"]
     errors = _sync_lib.check_artifact(repo_root, artifact_path, session) if args.check else []
     if not args.check:
-        artifact_path.parent.mkdir(parents=True, exist_ok=True)
-        artifact_path.write_text(_sync_lib.render_artifact(repo_root, artifact_path, session), encoding="utf-8")
+        write_current_pointer_text(artifact_path, _sync_lib.render_artifact(repo_root, artifact_path, session))
 
     payload = {
         "status": "stale" if errors else ("current" if args.check else "synced"),

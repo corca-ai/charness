@@ -13,11 +13,13 @@
 
 ## Current State
 
-- Current shipped release is `v0.7.9`; local `main` carries unpushed bug-pattern
-  hardening commits.
+- Current shipped release is `v0.7.10`; local `main` is in sync with origin.
 - Current bug-pattern sibling scan added `check-current-pointer-writes`,
   migrated direct `latest.*` writers to a symlink-safe helper, and moved two
-  standing Python scans onto git-visible file listing.
+  standing Python scans onto git-visible file listing. The completion audit
+  closed the remaining sibling in
+  [hitl sync_review_artifact.py](../skills/public/hitl/scripts/sync_review_artifact.py)
+  (adapter-resolved current-pointer write) and added a symlink regression test.
 - Mutation #189 is closed; mutation sampling/score, critique artifact,
   read-only quality, and shell markdown/link/secret/shell gates fail closed on
   discovery, manifest, or scan-staging failures.
@@ -36,8 +38,11 @@
    first separate retained release/full-test sessions from current pre-push work.
 3. Keep PR CI mirroring paused unless the maintainer changes policy; local
    pre-push plus scheduled mutation deeper-check remain the current stance.
-4. The named release suppression queue is clear through post-create verification;
-   next work is a completion audit for remaining bug-pattern surfaces.
+4. The completion audit closed the remaining adapter-resolved current-pointer
+   sibling (hitl); the static `check-current-pointer-writes` scanner still only
+   catches string-literal `latest.md`/`latest.json` writes, so future
+   adapter-resolved writers must adopt the helper by convention or via a
+   future scanner generalization.
 5. `_release_base_ref()` lookup/fetch and post-create release visibility failures
    now fail closed with recovery artifacts or no-mutation boundaries.
 
