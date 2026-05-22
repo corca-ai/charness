@@ -49,6 +49,13 @@ def ceal_episode() -> dict:
             "path": "charness-artifacts/spec/issue-171-hlam-usage-episodes.md",
             "ref": "issue-171-hlam-usage-episodes",
         },
+        "t_evidence": {
+            "rule_id": "issue-closed",
+            "confidence": "medium",
+            "matched_paths": ["charness-artifacts/spec/issue-171-hlam-usage-episodes.md"],
+            "commit_refs": ["deadbeefdeadbeefdeadbeefdeadbeefdeadbeef"],
+            "diff_kind": "added",
+        },
     }
 
 
@@ -223,3 +230,91 @@ def test_usage_episodes_exported_to_checked_in_plugin() -> None:
     plugin_dir = REPO_ROOT / "plugins" / "charness" / "integrations" / "usage-episodes"
     for name in ("adapter.example.yaml", "episode.schema.json", "manifest.schema.json"):
         assert (plugin_dir / name).read_text(encoding="utf-8") == (USAGE_DIR / name).read_text(encoding="utf-8")
+
+
+def test_session_id_accepted_when_present() -> None:
+    record = crill_episode()
+    record["session_id"] = "a1b2c3d4-e5f6-7890-abcd-ef0123456789"
+    jsonschema.validate(record, _load_json(USAGE_DIR / "episode.schema.json"))
+
+
+@pytest.mark.parametrize(
+    "session_id",
+    [
+        "",
+        "has space",
+        "with/slash",
+        "line\nbreak",
+        "_leading_underscore_forbidden",
+        "x" * 129,
+    ],
+)
+def test_invalid_session_id_rejected(session_id: str) -> None:
+    record = crill_episode()
+    record["session_id"] = session_id
+
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(record, _load_json(USAGE_DIR / "episode.schema.json"))
+
+
+def test_classifier_signal_episode_validates() -> None:
+    record = crill_episode()
+    record["t_status"] = "memory_lesson_added"
+    record["t_evidence"] = {
+        "rule_id": "retro-lesson-path-added",
+        "confidence": "high",
+        "matched_paths": ["charness-artifacts/retro/2026-05-22-foo-session.md"],
+        "commit_refs": ["abc1234"],
+        "diff_kind": "added",
+    }
+    jsonschema.validate(record, _load_json(USAGE_DIR / "episode.schema.json"))
+
+
+def test_classifier_signal_requires_t_evidence_when_t_status_nonempty() -> None:
+    record = crill_episode()
+    record["t_status"] = "memory_lesson_added"
+
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(record, _load_json(USAGE_DIR / "episode.schema.json"))
+
+
+def test_classification_skipped_forbidden_when_t_status_nonempty() -> None:
+    record = crill_episode()
+    record["t_status"] = "memory_lesson_added"
+    record["t_evidence"] = {
+        "rule_id": "retro-lesson-path-added",
+        "confidence": "high",
+        "matched_paths": ["charness-artifacts/retro/2026-05-22-foo-session.md"],
+        "commit_refs": ["abc1234"],
+        "diff_kind": "added",
+    }
+    record["classification_skipped"] = "no_parent"
+
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(record, _load_json(USAGE_DIR / "episode.schema.json"))
+
+
+def test_classification_skipped_allowed_when_t_status_none() -> None:
+    record = crill_episode()
+    record["classification_skipped"] = "no_parent"
+    jsonschema.validate(record, _load_json(USAGE_DIR / "episode.schema.json"))
+
+
+@pytest.mark.parametrize(
+    "evidence",
+    [
+        {"rule_id": "bad rule", "confidence": "high", "matched_paths": ["a"], "commit_refs": ["abc1234"], "diff_kind": "added"},
+        {"rule_id": "ok", "confidence": "unknown", "matched_paths": ["a"], "commit_refs": ["abc1234"], "diff_kind": "added"},
+        {"rule_id": "ok", "confidence": "high", "matched_paths": [], "commit_refs": ["abc1234"], "diff_kind": "added"},
+        {"rule_id": "ok", "confidence": "high", "matched_paths": ["../escape"], "commit_refs": ["abc1234"], "diff_kind": "added"},
+        {"rule_id": "ok", "confidence": "high", "matched_paths": ["a"], "commit_refs": ["NOT-HEX"], "diff_kind": "added"},
+        {"rule_id": "ok", "confidence": "high", "matched_paths": ["a"], "commit_refs": ["abc1234"], "diff_kind": "rotated"},
+    ],
+)
+def test_invalid_t_evidence_rejected(evidence: dict) -> None:
+    record = crill_episode()
+    record["t_status"] = "memory_lesson_added"
+    record["t_evidence"] = evidence
+
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(record, _load_json(USAGE_DIR / "episode.schema.json"))

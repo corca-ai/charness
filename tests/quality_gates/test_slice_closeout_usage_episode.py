@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 from pathlib import Path
 
 from .support import run_script
@@ -81,6 +83,9 @@ def test_run_slice_closeout_emits_usage_episode_when_enabled(tmp_path: Path) -> 
     assert "raw_prompt" not in record
     assert "raw_transcript" not in record
     assert "user_identity" not in record
+    assert record["t_status"] == "none"
+    assert record["classification_skipped"] == "diff_unavailable"
+    assert "session_id" not in record
 
     valid = run_script("scripts/validate_usage_episodes.py", "--repo-root", str(repo), "--json")
     assert valid.returncode == 0, valid.stderr
@@ -116,6 +121,60 @@ def test_run_slice_closeout_fails_usage_episode_invalid_adapter(tmp_path: Path) 
     assert payload["status"] == "failed"
     assert payload["usage_episode"]["status"] == "invalid_adapter"
     assert payload["usage_episode"]["error"].endswith("ValidationError")
+
+
+def test_run_slice_closeout_attaches_session_id_and_classifier_signal(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _write_closeout_fixture(
+        repo,
+        "\n".join(
+            [
+                "version: 1",
+                "repo: charness",
+                "enabled: true",
+                "storage_path: .charness/usage-episodes",
+                "",
+            ]
+        ),
+    )
+
+    env = dict(os.environ)
+    env.update(
+        {
+            "GIT_AUTHOR_NAME": "Test",
+            "GIT_AUTHOR_EMAIL": "test@example.com",
+            "GIT_COMMITTER_NAME": "Test",
+            "GIT_COMMITTER_EMAIL": "test@example.com",
+        }
+    )
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True, env=env)
+    subprocess.run(["git", "checkout", "-q", "-b", "main"], cwd=repo, check=True, env=env)
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, env=env)
+    subprocess.run(["git", "commit", "-q", "-m", "baseline"], cwd=repo, check=True, env=env)
+
+    retro_path = repo / "charness-artifacts" / "retro" / "2026-05-22-demo-session.md"
+    retro_path.parent.mkdir(parents=True, exist_ok=True)
+    retro_path.write_text("lesson\n", encoding="utf-8")
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, env=env)
+    subprocess.run(["git", "commit", "-q", "-m", "add retro lesson"], cwd=repo, check=True, env=env)
+
+    sessions_dir = repo / ".charness" / "usage-episodes" / "sessions"
+    sessions_dir.mkdir(parents=True, exist_ok=True)
+    (sessions_dir / "current").write_text("session-abc-123\n", encoding="utf-8")
+
+    result = _run_closeout(repo)
+
+    assert result.returncode == 0, result.stderr
+    records_path = repo / ".charness" / "usage-episodes" / "usage_episode.jsonl"
+    record = json.loads(records_path.read_text(encoding="utf-8"))
+    assert record["session_id"] == "session-abc-123"
+    assert record["t_status"] == "memory_lesson_added"
+    assert record["t_evidence"]["rule_id"] == "retro-lesson-path-added"
+    assert record["t_evidence"]["confidence"] == "high"
+    assert record["t_evidence"]["matched_paths"] == [
+        "charness-artifacts/retro/2026-05-22-demo-session.md"
+    ]
+    assert "classification_skipped" not in record
 
 
 def test_run_slice_closeout_rotates_usage_episode_records(tmp_path: Path) -> None:

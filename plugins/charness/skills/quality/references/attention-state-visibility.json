@@ -134,11 +134,17 @@
       "evidence_terms": ["cautilus_plan"],
       "rationale": "Slice closeout carries the Cautilus planner disabled state into closeout decisions."
     },
-    "scripts/slice_closeout_usage_episode.py": {
-      "states": ["disabled", "no_adapter"],
+    "scripts/classify_t_signal.py": {
+      "states": ["skipped"],
       "visibility": ["terminal_payload"],
-      "evidence_terms": ["status", "no_adapter"],
-      "rationale": "Slice closeout usage emission reports disabled or missing adapter state in the closeout payload instead of treating telemetry absence as successful capture."
+      "evidence_terms": ["skipped_reason"],
+      "rationale": "T-signal classifier exposes skipped reasons (no_parent, shallow_clone, diff_unavailable) in its structured result so callers can attach classification_skipped to the durable episode record instead of silently emitting t_status none."
+    },
+    "scripts/slice_closeout_usage_episode.py": {
+      "states": ["disabled", "no_adapter", "skipped"],
+      "visibility": ["terminal_payload"],
+      "evidence_terms": ["status", "no_adapter", "classification_skipped"],
+      "rationale": "Slice closeout usage emission reports disabled or missing adapter state in the closeout payload, and propagates the classifier's skipped reason as classification_skipped on the durable episode record instead of treating telemetry absence as successful capture."
     },
     "scripts/sync_support.py": {
       "states": ["skipped"],

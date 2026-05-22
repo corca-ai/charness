@@ -172,6 +172,26 @@ def test_validate_usage_episodes_rejects_bad_timestamp(tmp_path: Path) -> None:
     assert payload["errors"]
 
 
+def test_validate_usage_episodes_reports_no_records_when_enabled_without_file(tmp_path: Path) -> None:
+    write_adapter(tmp_path, "version: 1\nenabled: true\n")
+
+    result = run_validator("--repo-root", str(tmp_path), "--json")
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "no_records"
+    assert payload["valid"] is True
+    assert payload["valid_count"] == 0
+    assert payload["errors"] == []
+    assert [warning["warning_id"] for warning in payload["warnings"]] == [
+        "usage_episodes_no_records"
+    ]
+
+    plain = run_validator("--repo-root", str(tmp_path))
+    assert plain.returncode == 0
+    assert "WARNING: usage-episodes adapter at" in plain.stdout
+
+
 def test_validate_usage_episodes_rejects_records_path_outside_repo(tmp_path: Path) -> None:
     write_adapter(tmp_path, "version: 1\nenabled: true\n")
     outside = tmp_path.parent / "outside-usage-episode.jsonl"

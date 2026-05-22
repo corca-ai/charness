@@ -65,8 +65,6 @@ def _validate_jsonl(path: Path, episode_schema: dict[str, Any]) -> tuple[int, li
     errors: list[str] = []
     valid_count = 0
     validator = jsonschema.Draft7Validator(episode_schema, format_checker=jsonschema.FormatChecker())
-    if not path.is_file():
-        return 0, [f"missing records file: {path}"]
     for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         stripped = line.strip()
         if not stripped:
@@ -94,6 +92,31 @@ def _validate_jsonl(path: Path, episode_schema: dict[str, Any]) -> tuple[int, li
     return valid_count, errors
 
 
+def _no_records_payload(repo_root: Path, adapter_path: Path, records_path: Path) -> dict[str, Any]:
+    return {
+        "status": "no_records",
+        "valid": True,
+        "adapter_path": _portable_path(repo_root, adapter_path),
+        "records_path": _portable_path(repo_root, records_path),
+        "valid_count": 0,
+        "errors": [],
+        "warnings": [
+            _warning(
+                "usage_episodes_no_records",
+                f"usage-episodes adapter at {_portable_path(repo_root, adapter_path)} is enabled but no records file exists yet at {_portable_path(repo_root, records_path)}",
+                "Capture is opt-in; the records file is created on the first emitted episode. Disable the adapter if no capture is expected.",
+            )
+        ],
+    }
+
+
+def _resolve_records_path(repo_root: Path, adapter: dict[str, Any], explicit: Path | None) -> Path:
+    if explicit is None:
+        return (_storage_dir(repo_root, adapter) / EVENT_FILENAME).resolve()
+    candidate = explicit if explicit.is_absolute() else repo_root / explicit
+    return candidate.resolve()
+
+
 def _print_result(payload: dict[str, Any], *, as_json: bool) -> None:
     if as_json:
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
@@ -107,6 +130,8 @@ def _print_result(payload: dict[str, Any], *, as_json: bool) -> None:
         print(f"no_adapter: no adapter at {payload['adapter_path']}; validation skipped")
     elif status == "disabled":
         print(f"disabled: adapter at {payload['adapter_path']} has enabled:false; validation skipped")
+    elif status == "no_records":
+        print(f"no_records: adapter at {payload['adapter_path']} is enabled but no records file at {payload['records_path']}")
     else:
         print(f"{status}: {len(payload.get('errors', []))} error(s)")
         for error in payload.get("errors", []):
@@ -181,12 +206,7 @@ def main() -> int:
         _print_result(payload, as_json=args.json)
         return 0
 
-    records_path = args.records_path
-    if records_path is None:
-        records_path = _storage_dir(repo_root, adapter) / EVENT_FILENAME
-    elif not records_path.is_absolute():
-        records_path = repo_root / records_path
-    records_path = records_path.resolve()
+    records_path = _resolve_records_path(repo_root, adapter, args.records_path)
     try:
         records_path.relative_to(repo_root)
     except ValueError:
@@ -201,6 +221,9 @@ def main() -> int:
         }
         _print_result(payload, as_json=args.json)
         return 1
+    if not records_path.is_file():
+        _print_result(_no_records_payload(repo_root, adapter_path, records_path), as_json=args.json)
+        return 0
     valid_count, errors = _validate_jsonl(records_path, episode_schema)
     payload = {
         "status": "valid" if not errors else "invalid_records",

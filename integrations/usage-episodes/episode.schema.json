@@ -42,6 +42,13 @@
       "minLength": 1,
       "description": "Opaque product-owned id. Must not embed user identity, raw prompt, transcript, or source body."
     },
+    "session_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "description": "Optional opaque host session identifier linking multiple episodes from one SessionStart-rooted session. Omit when no session pointer is found; reporting treats absent session_id as ungrouped."
+    },
     "actor_kind": {
       "type": "string",
       "enum": [
@@ -124,11 +131,85 @@
         "none",
         "candidate",
         "promoted",
-        "rejected"
+        "rejected",
+        "memory_lesson_added",
+        "debug_rca_added",
+        "gate_added",
+        "gate_modified",
+        "quality_runner_modified",
+        "convention_modified",
+        "skill_or_reference_modified",
+        "deferred_decision_added",
+        "issue_closed"
       ]
     },
     "t_link": {
       "$ref": "#/$defs/opaque_ref"
+    },
+    "t_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule_id",
+        "confidence",
+        "matched_paths",
+        "commit_refs",
+        "diff_kind"
+      ],
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._-]*$",
+          "description": "Stable diff-rule identifier from the T-classifier rule catalog."
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "matched_paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(^|/)\\.\\.(/|$))(?!.*[\\r\\n]).+$"
+          }
+        },
+        "commit_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 64,
+            "pattern": "^[0-9a-f]+$"
+          }
+        },
+        "diff_kind": {
+          "type": "string",
+          "enum": [
+            "added",
+            "modified",
+            "removed"
+          ]
+        }
+      },
+      "description": "Evidence emitted by the diff-rule T-classifier. Required when t_status is not none."
+    },
+    "classification_skipped": {
+      "type": "string",
+      "enum": [
+        "no_parent",
+        "shallow_clone",
+        "diff_unavailable"
+      ],
+      "description": "Why the T-classifier produced no signal. Set when t_status is none and the classifier was invoked but could not run."
     }
   },
   "allOf": [
@@ -168,7 +249,30 @@
         ]
       }
     },
-    {}
+    {
+      "if": {
+        "not": {
+          "properties": {
+            "t_status": {
+              "const": "none"
+            }
+          },
+          "required": [
+            "t_status"
+          ]
+        }
+      },
+      "then": {
+        "required": [
+          "t_evidence"
+        ],
+        "not": {
+          "required": [
+            "classification_skipped"
+          ]
+        }
+      }
+    }
   ],
   "$defs": {
     "opaque_ref": {
