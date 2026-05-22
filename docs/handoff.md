@@ -13,50 +13,48 @@
 
 ## Current State
 
-- Current shipped release is `v0.7.10`; local `main` is 10 commits ahead of
+- Current shipped release is `v0.7.10`; local `main` is 11 commits ahead of
   origin pending push.
-- Usage-episodes adapter remains `enabled: false` and `host_hooks` commented
-  out. Slice B of the
-  [H-LAM/T completion spec](../charness-artifacts/spec/usage-episodes-h-lam-t-completion.md)
-  landed: SessionStart hook, host-hook install lib, reconcile runner, init/
-  update reconcile, and `charness session-capture status/install/uninstall`.
-  Codex precedence was resolved via the refreshed
-  [codex hooks gather](../charness-artifacts/gather/2026-05-22-codex-hooks-surface.md):
-  default install is `~/.codex/config.toml`, with fallback to `hooks.json`
-  when that file already carries entries. Critique follow-ups (SC2 wording,
-  structured reconcile errors, installed_at only on real install, CLI
-  round-trip test) landed inline; remainder is recorded as D20/D21/D22 in
-  [deferred-decisions](./deferred-decisions.md).
+- Usage-episodes adapter is now `enabled: true` with
+  `host_hooks: {claude: enabled, codex: enabled}` and the SessionStart hook
+  is installed in `~/.claude/settings.json` plus `~/.codex/config.toml`. Slice
+  closeout emission has already landed at least one
+  `slice-closeout-*` record in `.charness/usage-episodes/usage_episode.jsonl`;
+  a SessionStart-driven record carrying `session_id` is expected on the next
+  Claude/Codex session. The flip critique
+  ([2026-05-22-usage-episodes-adapter-flip.md](../charness-artifacts/critique/2026-05-22-usage-episodes-adapter-flip.md))
+  triaged all surfaced concerns to over-worry, existing D21/D22, four new
+  deferred decisions (D23–D26), and one GH issue for the test isolation leak.
 
 ## Next Session
 
-1. Flip [usage-episodes adapter](../.agents/usage-episodes-adapter.yaml)
-   `enabled: true` (and optionally set `host_hooks.{claude,codex}: enabled`
-   for dogfood) as a separate intentional commit. Before flipping, run
-   `python3 charness session-capture status` to confirm a clean baseline and
-   capture the resulting reconcile payload so the first session-grouped
-   episode lands deliberately.
-2. After enable, monitor `.charness/usage-episodes/usage_episode.jsonl` for
-   at least one closeout episode with `session_id` and `t_evidence`
-   populated; this satisfies SC5/SC6 against real charness commits.
-3. Reopen-trigger watchlist: D21 (orphan hook after checkout move) and D22
-   (depth cap on hook script repo-root walk) are the most likely first hits
-   once a maintainer adopts the hook on a real machine.
+1. Monitor `.charness/usage-episodes/usage_episode.jsonl` for the first
+   SessionStart-driven record with `session_id` and `t_evidence` populated;
+   that record (combined with any closeout episode it pairs with) satisfies
+   SC5/SC6 against a real charness commit.
+2. After SC5/SC6 evidence lands, push the staged commits to `origin/main`
+   (currently 11 ahead) so the dogfood adapter state and the new deferred
+   decisions are visible to the next checkout.
+3. Reopen-trigger watchlist after enable: D21 (orphan hook after checkout
+   move), D22 (depth cap on hook script repo-root walk), D23 (Codex TOML
+   block dedup + boundary), D24 (closeout emitter best-effort), D25 (per-host
+   install exit code), D26 (hook command interpreter). The maintainer-filed
+   GH issue for the test isolation leak in
+   [tests/test_usage_episodes_host_hooks.py](../tests/test_usage_episodes_host_hooks.py)
+   is the most likely first hit once the next test run rewrites
+   `host-hooks-state.json`.
 
 ## Discuss
 
-- Static `check-current-pointer-writes` scanner only catches string-literal
-  writes; future adapter-resolved writers must adopt the helper until D19's
-  reopen trigger fires.
 - Step-env leakage into nested test-command coverage probes: subprocess tests
   building `env={**os.environ, ...}` must scrub `MUTATION_*` keys first.
 - Watch list: Yarn Berry hooks; pnpm+lefthook stale snippets; `filelock` +
   `pytest-xdist`; seed-cache LRU eviction; release proof suppression.
 - Usage-episodes Slice A non-blockers (reopen when reporting consumes
-  episode data): schema cannot enforce `classification_skipped`
-  required-when-classifier-invoked; `issue-closed` uses `<commit-message>`
-  as a matched_paths sentinel; emitter's `emit_failed` reports only the
-  exception class name.
+  episode data): `classification_skipped` required-when-classifier-invoked
+  not enforceable in schema; `issue-closed` uses `<commit-message>` sentinel;
+  `emit_failed` reports only the exception class name. Privacy block on the
+  adapter is advisory until a non-gitignored upload pipeline appears.
 
 ## References
 

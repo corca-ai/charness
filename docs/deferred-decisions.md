@@ -203,6 +203,38 @@ Reopen trigger:
 - Impact surfaces: [scripts/usage_episode_session_start.py](../scripts/usage_episode_session_start.py)
 - Reopen trigger: First report of a host session blocking on SessionStart due to slow parent traversal.
 
+### D23. Codex Hook Block Representation Flip And Boundary Fragility
+
+- Question: Should `install_codex_hook` / `uninstall_codex_hook` de-duplicate across the `codex-toml` and `codex-json` representations, and should the TOML block matcher tolerate hand edits between the `# charness:usage-episodes` marker and the `[[hooks.SessionStart]]` table header?
+- Current choice: Defer. `resolve_codex_target` picks the representation at install time, and the TOML block matcher requires the marker line to be immediately followed (modulo blank lines) by the table header. A user who later creates `~/.codex/hooks.json` will get a second hook installed there without removing the original TOML block; hand-edited markers silently break uninstall.
+- Why now: Slice B closeout enables capture on a single canonical Codex layer; cross-representation churn and hand-edit recovery are not on the current dogfood path.
+- Impact surfaces: [scripts/host_hook_install_lib.py](../scripts/host_hook_install_lib.py), [scripts/host_hook_codex_toml_lib.py](../scripts/host_hook_codex_toml_lib.py)
+- Reopen trigger: First report of an orphaned Codex hook block after a representation flip, or a hand-edited Codex `config.toml` where uninstall reports `not_installed` while the block is still on disk.
+
+### D24. Slice Closeout Emitter Best-Effort Posture
+
+- Question: Should [`scripts/run_slice_closeout.py`](../scripts/run_slice_closeout.py) treat `emit_usage_episode_for_slice_closeout` failure (`invalid_adapter`, `invalid_records_path`, `emit_failed`) as a soft warning instead of a slice-fatal `payload["status"] = "failed"`?
+- Current choice: Defer. Current behavior fails the slice on emitter error so a malformed adapter or full disk surfaces loudly. The maintainer accepts that trade-off on the current dogfood path.
+- Why now: SC5/SC6 needs an actual emit to land for verification; a best-effort posture before that signal exists would mask the very evidence the slice is trying to capture.
+- Impact surfaces: [scripts/run_slice_closeout.py](../scripts/run_slice_closeout.py), [scripts/slice_closeout_usage_episode.py](../scripts/slice_closeout_usage_episode.py)
+- Reopen trigger: First time a verified slice fails closeout solely because the local emitter could not append (e.g. full disk, locked JSONL, gitignored path missing); revisit whether emitter errors should warn instead of fail.
+
+### D25. Per-Host Install Exit Code
+
+- Question: Should `cmd_session_capture_install` exit non-zero when one host installs and the other reports a `HostHookError`?
+- Current choice: Defer. `reconcile_host_hooks` swallows per-host `HostHookError` into the JSON payload and the CLI returns 0 as long as the runner produced any payload. The operator must read the JSON to notice partial drift.
+- Why now: First-time install on the maintainer's box succeeded for both hosts; a partial-failure exit code is not on the critical path for SC5/SC6.
+- Impact surfaces: [scripts/host_hook_install_lib.py](../scripts/host_hook_install_lib.py), [`charness`](../charness) `cmd_session_capture_install`
+- Reopen trigger: First time install succeeds on one host and silently fails on the other and the operator misses it because exit code is 0.
+
+### D26. Hook Command Python Interpreter Resolution
+
+- Question: Should the installed SessionStart command use `sys.executable` (or a `which python3` snapshot at install time) instead of the bare string `python3`?
+- Current choice: Defer. `build_command` emits `python3 <abs-path>`; if a host session's PATH lacks `python3`, the host surfaces the failure noisily.
+- Why now: The maintainer's machine has `python3` on PATH for every host session; pinning an interpreter would also complicate venv-based dogfood.
+- Impact surfaces: [scripts/host_hook_install_lib.py](../scripts/host_hook_install_lib.py)
+- Reopen trigger: First report of a Claude/Codex session surfacing `python3: command not found` from the installed SessionStart hook.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and
