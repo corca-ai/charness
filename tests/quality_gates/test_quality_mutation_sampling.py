@@ -208,6 +208,10 @@ def test_sample_script_rewrites_config_and_manifest(tmp_path: Path) -> None:
         "MUTATION_SAMPLE_SEED": "fixed-seed",
         "MUTATION_SAMPLE_COVERAGE": "0",
     }
+    # Scrub leakage from the parent step env so the nested coverage probe
+    # cannot drag real SHAs into a tmp_path repo. See issue #190.
+    env.pop("MUTATION_BASE_SHA", None)
+    env.pop("MUTATION_HEAD_SHA", None)
 
     result = subprocess.run(
         ["python3", "scripts/sample_mutation_files.py", "--repo-root", str(repo)],

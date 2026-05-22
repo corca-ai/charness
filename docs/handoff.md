@@ -14,62 +14,49 @@
 ## Current State
 
 - Current shipped release is `v0.7.10`; local `main` is in sync with origin.
-- Current bug-pattern sibling scan added `check-current-pointer-writes`,
-  migrated direct `latest.*` writers to a symlink-safe helper, and moved two
-  standing Python scans onto git-visible file listing. The completion audit
-  closed the remaining sibling in
-  [hitl sync_review_artifact.py](../skills/public/hitl/scripts/sync_review_artifact.py)
-  (adapter-resolved current-pointer write) and added a symlink regression test.
-- Mutation #189 is closed; mutation sampling/score, critique artifact,
-  read-only quality, and shell markdown/link/secret/shell gates fail closed on
-  discovery, manifest, or scan-staging failures.
-- Release publishing now fails closed when unreleased-path diff, real-host proof
+- Bug-pattern sibling scan complete: `check-current-pointer-writes` scanner,
+  symlink-safe helper, gitignore-aware standing Python scans, and the
+  adapter-resolved hitl writer migration are all in place.
+- Issue #190 (mutation regression on main) resolved: the sampler-spawned
+  pytest probe was inheriting `MUTATION_BASE_SHA`/`MUTATION_HEAD_SHA` from the
+  parent step env. The vulnerable test now scrubs both keys before subprocess.
+- Mutation sampling/score, critique artifact, read-only quality, and shell
+  markdown/link/secret/shell gates fail closed on discovery, manifest, or
+  scan-staging failures.
+- Release publishing fails closed when unreleased-path diff, real-host proof
   config, previous-tag base-ref lookup/fetch, or post-create verification fails.
-- Usage episodes are configured but disabled; validation should report
-  `disabled`, not `no_adapter`.
-- README first-touch routing moved to [workflow routes](./workflow-routes.md);
-  [docs/cli-reference.md](./cli-reference.md) remains generated reference.
+- Usage episodes are configured but disabled; validation reports `disabled`.
 
 ## Next Session
 
-1. Keep usage episodes disabled until maintainers intentionally opt into local
+1. Static `check-current-pointer-writes` scanner only catches string-literal
+   `latest.md`/`latest.json` writes; future adapter-resolved writers must adopt
+   the helper by convention. Scanner generalization stays deferred until a
+   second adapter-resolved sibling appears.
+2. PR CI mirroring of `./scripts/run-quality.sh --read-only` stays paused under
+   the single-maintainer push model; document the absence as intended.
+3. Keep usage episodes disabled until maintainers intentionally opt into local
    runtime capture.
-2. Copy-heavy repo/home/plugin tests are now guarded as `release_only`; if pytest temp looks large,
-   first separate retained release/full-test sessions from current pre-push work.
-3. Keep PR CI mirroring paused unless the maintainer changes policy; local
-   pre-push plus scheduled mutation deeper-check remain the current stance.
-4. The completion audit closed the remaining adapter-resolved current-pointer
-   sibling (hitl); the static `check-current-pointer-writes` scanner still only
-   catches string-literal `latest.md`/`latest.json` writes, so future
-   adapter-resolved writers must adopt the helper by convention or via a
-   future scanner generalization.
-5. `_release_base_ref()` lookup/fetch and post-create release visibility failures
-   now fail closed with recovery artifacts or no-mutation boundaries.
+4. Generated reference docs (cli-reference) move to `docs/generated/` with an
+   enforced "GENERATED" header.
 
 ## Discuss
 
 - Mutation selection lessons: sampler predicates must be at least as strict as
   fatal downstream closeout predicates, and runtime is executable mutants times
   selected test command cost, not just file count.
+- Step-env leakage into nested test-command coverage probes is a class of bug;
+  subprocess tests that build `env={**os.environ, ...}` must scrub
+  workflow-controlled `MUTATION_*` keys before invoking the script under test.
 - Watch list: Yarn Berry hook idiom; pnpm+lefthook stale snippets; `filelock`
-  plus `pytest-xdist`; seed-cache LRU eviction; usage
-  episodes; CLI docs ownership; release proof suppression.
+  plus `pytest-xdist`; seed-cache LRU eviction; CLI docs ownership;
+  release proof suppression.
 
 ## References
 
-- [charness-artifacts/debug/2026-05-21-bug-pattern-sibling-scan.md](../charness-artifacts/debug/2026-05-21-bug-pattern-sibling-scan.md):
+- [bug-pattern sibling scan](../charness-artifacts/debug/2026-05-21-bug-pattern-sibling-scan.md):
   current-pointer and gitignore sibling scan RCA and prevention.
-- [charness-artifacts/debug/2026-05-21-mutation-subprocess-coverage.md](../charness-artifacts/debug/2026-05-21-mutation-subprocess-coverage.md):
+- [mutation subprocess coverage](../charness-artifacts/debug/2026-05-21-mutation-subprocess-coverage.md):
   mutation #189 survivor and subprocess coverage RCA.
-- [charness-artifacts/debug/2026-05-22-mutation-changed-diff-suppression.md](../charness-artifacts/debug/2026-05-22-mutation-changed-diff-suppression.md):
-  mutation sampler changed-file diff fail-closed RCA and proof.
-- [shell git file-listing](../charness-artifacts/debug/2026-05-22-shell-file-listing-suppression.md)
-  and [find collector](../charness-artifacts/debug/2026-05-22-shell-find-collector-suppression.md):
-  shell gate fail-closed RCAs and proof.
-- [charness-artifacts/debug/2026-05-22-release-diff-failure-suppression.md](../charness-artifacts/debug/2026-05-22-release-diff-failure-suppression.md),
-  [real-host config suppression](../charness-artifacts/debug/2026-05-22-release-real-host-config-suppression.md),
-  [base-ref fallback suppression](../charness-artifacts/debug/2026-05-22-release-base-ref-fallback-suppression.md),
-  and [post-create verification suppression](../charness-artifacts/debug/2026-05-22-release-post-create-verification-suppression.md):
-  release proof suppression RCAs and fail-closed proof.
-- [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md): current quality posture.
-- [charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md): current release surface.
+- [quality posture](../charness-artifacts/quality/latest.md) and
+  [release surface](../charness-artifacts/release/latest.md): current state pointers.
